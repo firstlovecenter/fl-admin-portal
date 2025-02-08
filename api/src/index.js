@@ -20,10 +20,15 @@ const driver = neo4j.driver(
   neo4j.auth.basic(
     SECRETS.NEO4J_USER || 'neo4j',
     SECRETS.NEO4J_PASSWORD || 'letmein'
-  ),
-  {
-    encrypted: SECRETS.NEO4J_ENCRYPTED ? 'ENCRYPTION_ON' : 'ENCRYPTION_OFF',
-  }
+  )
+  // {
+  //   encrypted: SECRETS.NEO4J_ENCRYPTED ? 'ENCRYPTION_ON' : 'ENCRYPTION_OFF',
+  // }
+)
+console.log('🚀 ~ index.js:28 ~ SECRETS.NEO4J_URI:', SECRETS.NEO4J_URI)
+console.log(
+  '🚀 ~ index.js:24 ~ SECRETS.NEO4J_PASSWORD:',
+  SECRETS.NEO4J_PASSWORD
 )
 
 const neoSchema = new Neo4jGraphQL({
