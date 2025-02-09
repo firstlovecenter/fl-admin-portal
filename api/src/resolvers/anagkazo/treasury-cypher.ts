@@ -98,7 +98,7 @@ const anagkazo = {
         AND record.bankingSlip IS NULL
         AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
         AND record.tellerConfirmationTime IS NULL
-    MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(this)
+    MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas)<-[:HAS]-(this)
 
     RETURN COUNT(DISTINCT this) as bankingDefaulters
   `,
