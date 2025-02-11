@@ -69,7 +69,12 @@ const handler = async () => {
         'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
       },
       data: {
-        recipient: ['233594760323', '233592219407', '233555542340'],
+        recipient: [
+          '233594760323',
+          '233592219407',
+          '233555542340',
+          '233263995059',
+        ],
         sender: 'FLC Admin',
         message: `WEEK ${
           getWeekNumber() - 1
