@@ -84,7 +84,7 @@ const handler = async () => {
   const amountBankedData = response[12]
   // const anagkazoAmountBankedData = response[13]
 
-  const accraSheet = 'Accra Graph Data'
+  const accraSheet = 'ALL Accra Graph Data'
 
   await clearGSheet(accraSheet)
 
@@ -120,10 +120,9 @@ const handler = async () => {
       },
       data: {
         recipient: [
-          '233594760323',
-          '233592219407',
-          '233541805641',
-          '233596075970',
+          '233594760323', // JD
+          '233541805641', // Becks
+          '233596075970', // Daniel
           '233248659695', // Hillary
         ],
         sender: 'FLC Admin',

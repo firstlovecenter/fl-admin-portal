@@ -70,10 +70,9 @@ const handler = async () => {
       },
       data: {
         recipient: [
-          '233594760323',
-          '233592219407',
-          '233555542340',
-          '233263995059',
+          '233594760323', // JD
+          '233592219407', // Latisha
+          '233263995059', // Abigail Tay
         ],
         sender: 'FLC Admin',
         message: `WEEK ${
