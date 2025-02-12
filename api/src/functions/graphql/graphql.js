@@ -36,8 +36,8 @@ const neoSchema = new Neo4jGraphQL({
   driver,
   plugins: {
     auth: new Neo4jGraphQLAuthJWTPlugin({
-      secret: SECRETS.JWT_SECRET.replace(/\\n/gm, '\n'),
-      rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
+      // secret: SECRETS.JWT_SECRET.replace(/\\n/gm, '\n'),
+      // rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
     }),
   },
   features: {
