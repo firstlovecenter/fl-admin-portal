@@ -1,3 +1,28 @@
+#### 7.18.64 (2025-02-12)
+
+##### Chores
+
+*  remove sensitive information logging from index.js ([de19d1cf](https://github.com/firstlovecenter/fl-admin-portal/commit/de19d1cf7d214809f90db3b33e142efc235b8999))
+
+##### New Features
+
+*  show maintenance mode message ([31fbdbee](https://github.com/firstlovecenter/fl-admin-portal/commit/31fbdbeea66800ad16227d3d553e9eb2e4a77d84))
+
+##### Bug Fixes
+
+*  enable JWT secret and roles path in GraphQL configuration ([d1ceaaf1](https://github.com/firstlovecenter/fl-admin-portal/commit/d1ceaaf1b14e1d42ee405669ab3d06a26a0a1495))
+*  restore user authentication logic and re-enable related components ([f0f1c38a](https://github.com/firstlovecenter/fl-admin-portal/commit/f0f1c38ad3d1795eb2e9d670f49a2649d07223be))
+*  add new recipient phone number to gsheets update function ([c99c5835](https://github.com/firstlovecenter/fl-admin-portal/commit/c99c5835d8ef3473c708c0cebce99909a4867394))
+*  wrong logic for retrieving anagkazo banking defaulters ([f3cdb49b](https://github.com/firstlovecenter/fl-admin-portal/commit/f3cdb49b22a0c4e0519e2dbe9da0ff910b083aa6))
+*  add Hillary's phone number to SMS recipient lists in multiple functions ([98a59652](https://github.com/firstlovecenter/fl-admin-portal/commit/98a596528986cca5cdbf08df89a7cac84f83122f))
+*  update error message in sendBulkSMS function for clarity ([afd44f64](https://github.com/firstlovecenter/fl-admin-portal/commit/afd44f641e7419e70ba0a724ef40f22a5ee46149))
+*  parameterize week value in GraphQL query for improved flexibility ([26ca4b38](https://github.com/firstlovecenter/fl-admin-portal/commit/26ca4b38968650175eb6f5b79f1586c22957316d))
+*  update GraphQL query to use fixed week value and enhance record matching logic ([84a0a3bb](https://github.com/firstlovecenter/fl-admin-portal/commit/84a0a3bb4f31ab2c338d2b5e3d1ba4343f9ee00b))
+
+##### Refactors
+
+*  simplify Cypher queries and update Neo4j driver configuration logging ([8fe1529a](https://github.com/firstlovecenter/fl-admin-portal/commit/8fe1529a206cd6d8e0077194f2ae4104999d36b6))
+
 #### 7.18.63 (2024-12-08)
 
 ##### Chores
