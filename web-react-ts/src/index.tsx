@@ -4,6 +4,7 @@ import { RetryLink } from '@apollo/client/link/retry'
 import { onError } from '@apollo/client/link/error'
 import {
   ApolloClient,
+  ApolloProvider,
   // ApolloProvider,
   createHttpLink,
   from,
@@ -16,10 +17,7 @@ import CacheBuster from 'CacheBuster'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './color-theme.css'
 import './index.css'
-// import AppWithContext from 'AppWithContext'
-// import Login from 'components/Login'
 import ReactGA from 'react-ga4'
-// import SplashSreen from 'pages/splash-screen/SplashSreen'
 import * as Sentry from '@sentry/react'
 import {
   useLocation,
@@ -30,17 +28,18 @@ import {
 import { BrowserTracing } from '@sentry/tracing'
 import {
   SnackbarKey,
-  // SnackbarProvider,
+  SnackbarProvider,
   closeSnackbar,
   enqueueSnackbar,
 } from 'notistack'
-import { Button, Card, Container } from 'react-bootstrap'
-import MaintenanceMode from 'auth/MaintenanceMode'
+import { Button, Card } from 'react-bootstrap'
+import SplashSreen from 'pages/splash-screen/SplashSreen'
+import Login from 'components/Login'
+import AppWithContext from 'AppWithContext'
 
 const AppWithApollo = () => {
   const [accessToken, setAccessToken] = useState<string>('')
-  // const { getAccessTokenSilently, isLoading, user } = useAuth0()
-  const { getAccessTokenSilently } = useAuth0()
+  const { getAccessTokenSilently, isLoading, user } = useAuth0()
 
   const getAccessToken = useCallback(async () => {
     try {
@@ -180,28 +179,28 @@ const AppWithApollo = () => {
   //   return <Sabbath />
   // }
 
-  if (true) {
-    return (
-      <Container>
-        <MaintenanceMode />
-      </Container>
-    )
+  // if (true) {
+  //   return (
+  //     <Container>
+  //       <MaintenanceMode />
+  //     </Container>
+  //   )
+  // }
+
+  if (isLoading) {
+    return <SplashSreen />
   }
 
-  // if (isLoading) {
-  //   return <SplashSreen />
-  // }
+  if (!user) {
+    return <Login />
+  }
 
-  // if (!user) {
-  //   return <Login />
-  // }
-
-  // return (
-  //   <ApolloProvider client={client}>
-  //     <SnackbarProvider />
-  //     <AppWithContext token={accessToken} />
-  //   </ApolloProvider>
-  // )
+  return (
+    <ApolloProvider client={client}>
+      <SnackbarProvider />
+      <AppWithContext token={accessToken} />
+    </ApolloProvider>
+  )
 }
 
 const AppWithAuth = () => (
