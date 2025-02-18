@@ -12,6 +12,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       WHERE NOT r.inactive = true
       RETURN title.name ORDER BY title.priority DESC LIMIT 1
       """
+      columnName: "currentTitle"
     )
   nameWithTitle: String @customResolver
   email: String
@@ -35,6 +36,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:BELONGS_TO]->(:Fellowship)<-[:HAS*4]-(stream:Stream)
       RETURN DISTINCT toLower(stream.name)
       """
+      columnName: "stream_name"
     )
   # Church Details
   members: [Member!]!
@@ -43,6 +45,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
 
   memberCount: Int
@@ -51,6 +54,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   basontaMembers: [Member!]!
     @cypher(
@@ -59,6 +63,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (members)-[:BELONGS_TO]->(:Basonta)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "basontaMembers"
     )
   basontaMembershipCount: Int
     @cypher(
@@ -67,10 +72,12 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (members)-[:BELONGS_TO]->(:Basonta)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "basontaMembershipCount"
     )
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "history"
     )
   loggedHistory: [HistoryLog!]! @relationship(type: "LOGGED_BY", direction: IN)
   bacenta: Bacenta @relationship(type: "BELONGS_TO", direction: OUT)
@@ -81,6 +88,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS]->(fellowships:Fellowship)
       RETURN COUNT(fellowships)
       """
+      columnName: "leadsFellowshipCount"
     )
   leadsBacenta: [Bacenta!]! @relationship(type: "LEADS", direction: OUT)
   leadsBacentaCount: Int
@@ -89,6 +97,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS]->(bacentas:Bacenta)
       RETURN COUNT(bacentas)
       """
+      columnName: "leadsBacentaCount"
     )
 
   ### CREATIVE ARTS WORK ###
@@ -104,6 +113,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS]->(governorship:Governorship)
       RETURN COUNT(DISTINCT governorship)
       """
+      columnName: "leadsGovernorshipCount"
     )
   isAdminForGovernorshipCount: Int
     @cypher(
@@ -111,6 +121,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:IS_ADMIN_FOR]->(governorship:Governorship)
       RETURN COUNT(DISTINCT governorship)
       """
+      columnName: "isAdminForGovernorshipCount"
     )
   leadsAdminsGovernorshipCount: Int
     @cypher(
@@ -118,6 +129,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS|IS_ADMIN_FOR]->(governorship:Governorship)
       RETURN COUNT(DISTINCT governorship)
       """
+      columnName: "leadsAdminsGovernorshipCount"
     )
   leadsCouncil: [Council!]! @relationship(type: "LEADS", direction: OUT)
   leadsCouncilCount: Int
@@ -126,6 +138,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS]->(council:Council)
       RETURN COUNT(DISTINCT council)
       """
+      columnName: "leadsCouncilCount"
     )
   isAdminForCouncilCount: Int
     @cypher(
@@ -133,6 +146,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:IS_ADMIN_FOR]->(council:Council)
       RETURN COUNT(DISTINCT council)
       """
+      columnName: "isAdminForCouncilCount"
     )
   leadsAdminsCouncilCount: Int
     @cypher(
@@ -140,6 +154,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS|IS_ADMIN_FOR]->(council:Council)
       RETURN COUNT(DISTINCT council)
       """
+      columnName: "leadsAdminsCouncilCount"
     )
   leadsStream: [Stream!]! @relationship(type: "LEADS", direction: OUT)
   leadsStreamCount: Int
@@ -148,6 +163,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS]->(stream:Stream)
       RETURN COUNT(DISTINCT stream)
       """
+      columnName: "leadsStreamCount"
     )
   isAdminForStreamCount: Int
     @cypher(
@@ -155,6 +171,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:IS_ADMIN_FOR]->(stream:Stream)
       RETURN COUNT(DISTINCT stream)
       """
+      columnName: "isAdminForStreamCount"
     )
   leadsCampus: [Campus!]! @relationship(type: "LEADS", direction: OUT)
   isAdminForCampusCount: Int
@@ -163,6 +180,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:IS_ADMIN_FOR]->(campus:Campus)
       RETURN COUNT(DISTINCT campus)
       """
+      columnName: "isAdminForCampusCount"
     )
   leadsCampusCount: Int
     @cypher(
@@ -170,6 +188,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS]->(campus:Campus)
       RETURN COUNT(DISTINCT campus)
       """
+      columnName: "leadsCampusCount"
     )
   leadsAdminsCampusCount: Int
     @cypher(
@@ -177,6 +196,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS|IS_ADMIN_FOR]->(campus:Campus)
       RETURN COUNT(DISTINCT campus)
       """
+      columnName: "leadsAdminsCampusCount"
     )
 
   leadsOversight: [Oversight!]! @relationship(type: "LEADS", direction: OUT)
@@ -186,6 +206,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:IS_ADMIN_FOR]->(oversight:Oversight)
       RETURN COUNT(DISTINCT oversight)
       """
+      columnName: "isAdminForOversightCount"
     )
   leadsOversightCount: Int!
     @cypher(
@@ -193,6 +214,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS]->(oversight:Oversight)
       RETURN COUNT(DISTINCT oversight)
       """
+      columnName: "leadsOversightCount"
     )
   leadsAdminsOversight: Int!
     @cypher(
@@ -200,6 +222,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS|IS_ADMIN_FOR]->(oversight:Oversight)
       RETURN COUNT(DISTINCT oversight)
       """
+      columnName: "leadsAdminsOversight"
     )
   leadsDenomination: [Denomination!]!
     @relationship(type: "LEADS", direction: OUT)
@@ -209,6 +232,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:IS_ADMIN_FOR]->(denomination:Denomination)
       RETURN COUNT(DISTINCT denomination)
       """
+      columnName: "isAdminForDenominationCount"
     )
   leadsDenominationCount: Int!
     @cypher(
@@ -216,6 +240,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS]->(denomination:Denomination)
       RETURN COUNT(DISTINCT denomination)
       """
+      columnName: "leadsDenominationCount"
     )
   leadsAdminsDenominationCount: Int!
     @cypher(
@@ -223,6 +248,7 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:LEADS|IS_ADMIN_FOR]->(denomination:Denomination)
       RETURN COUNT(DISTINCT denomination)
       """
+      columnName: "leadsAdminsDenominationCount"
     )
 
   isAdminForDenomination: [Denomination!]!
@@ -349,14 +375,17 @@ type Denomination implements Church {
   councils: [Council!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(councils:Council) RETURN councils"
+      columnName: "councils"
     )
   governorships: [Governorship!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(governorships:Governorship) RETURN governorships"
+      columnName: "governorships"
     )
   bacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*6]->(bacentas:Bacenta) RETURN bacentas"
+      columnName: "bacentas"
     )
   members: [Member!]!
     @cypher(
@@ -364,6 +393,7 @@ type Denomination implements Church {
       MATCH (this)-[:HAS*7]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
 
   memberCount: Int!
@@ -372,6 +402,7 @@ type Denomination implements Church {
       MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
@@ -379,56 +410,69 @@ type Denomination implements Church {
       MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "pastorCount"
     )
   campusCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(campus:Campus) RETURN COUNT(campus)"
+      columnName: "campusCount"
     )
   streamCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(stream:Stream) RETURN COUNT(stream)"
+      columnName: "streamCount"
     )
   councilCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(council:Council) RETURN COUNT(council)"
+      columnName: "councilCount"
     )
   governorshipCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(governorship:Governorship) RETURN COUNT(governorship)"
+      columnName: "governorshipCount"
     )
   bacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*6]->(bacentas:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "bacentaCount"
     )
   activeBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*6]->(bacentas:Active:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaCount"
     )
   vacationBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*6]-(bacentas:Vacation:Bacenta) RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaCount"
     )
   activeBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*6]->(bacentas:Active:Bacenta:Red) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaICCount"
     )
   vacationBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*6]-(bacentas:Vacation:Bacenta:Red) RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaICCount"
     )
   activeGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*6]->(bacentas:Active:Bacenta:Green) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeGraduatedBacentaCount"
     )
   vacationGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*6]-(bacentas:Vacation:Bacenta:Green) RETURN COUNT(bacentas)"
+      columnName: "vacationGraduatedBacentaCount"
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "history"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -438,6 +482,7 @@ type Denomination implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
 }
 
@@ -453,14 +498,17 @@ type Oversight implements Church {
   councils: [Council!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(councils:Council) RETURN councils"
+      columnName: "councils"
     )
   governorships: [Governorship!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(governorships:Governorship) RETURN governorships"
+      columnName: "governorships"
     )
   bacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Bacenta) RETURN bacentas"
+      columnName: "bacentas"
     )
   members: [Member!]!
     @cypher(
@@ -468,6 +516,7 @@ type Oversight implements Church {
       MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
 
   memberCount: Int!
@@ -476,6 +525,7 @@ type Oversight implements Church {
       MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
@@ -483,56 +533,69 @@ type Oversight implements Church {
       MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "pastorCount"
     )
   campusCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(campus:Campus) RETURN COUNT(campus)"
+      columnName: "campusCount"
     )
   streamCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(stream:Stream) RETURN COUNT(stream)"
+      columnName: "streamCount"
     )
   councilCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(council:Council) RETURN COUNT(council)"
+      columnName: "councilCount"
     )
   governorshipCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(governorship:Governorship) RETURN COUNT(governorship)"
+      columnName: "governorshipCount"
     )
   bacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "bacentaCount"
     )
   activeBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Active:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaCount"
     )
   vacationBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]-(bacentas:Vacation:Bacenta) RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaCount"
     )
   activeBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Active:Bacenta:Red) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaICCount"
     )
   vacationBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]-(bacentas:Vacation:Bacenta:Red) RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaICCount"
     )
   activeGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Active:Bacenta:Green) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeGraduatedBacentaCount"
     )
   vacationGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]-(bacentas:Vacation:Bacenta:Green) RETURN COUNT(bacentas)"
+      columnName: "vacationGraduatedBacentaCount"
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "history"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -542,6 +605,7 @@ type Oversight implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
 }
 
@@ -561,14 +625,17 @@ type Campus implements Church {
   councils: [Council!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(councils:Council) RETURN councils"
+      columnName: "councils"
     )
   governorships: [Governorship!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(governorships:Governorship) RETURN governorships"
+      columnName: "governorships"
     )
   bacentas(limit: Int): [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Bacenta) RETURN bacentas"
+      columnName: "bacentas"
     )
   members: [Member!]!
     @cypher(
@@ -576,6 +643,7 @@ type Campus implements Church {
       MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
 
   memberCount: Int!
@@ -584,6 +652,7 @@ type Campus implements Church {
       MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
@@ -591,52 +660,64 @@ type Campus implements Church {
       MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "pastorCount"
     )
   streamCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(stream:Stream) RETURN COUNT(stream)"
+      columnName: "streamCount"
     )
   councilCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(council:Council) RETURN COUNT(council)"
+      columnName: "councilCount"
     )
   governorshipCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(governorship:Governorship) RETURN COUNT(governorship)"
+      columnName: "governorshipCount"
     )
   bacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Bacenta)  RETURN COUNT(DISTINCT bacentas)"
+      columnName: "bacentaCount"
     )
   activeBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaCount"
     )
   vacationBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]-(bacentas:Vacation:Bacenta) RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaCount"
     )
   activeBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Bacenta:Active:Red) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaICCount"
     )
   vacationBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]-(bacentas:Vacation:Bacenta:Red) RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaICCount"
     )
   activeGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Active:Bacenta:Green) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeGraduatedBacentaCount"
     )
   vacationGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]-(bacentas:Vacation:Bacenta:Green) RETURN COUNT(bacentas)"
+      columnName: "vacationGraduatedBacentaCount"
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "history"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -646,6 +727,7 @@ type Campus implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
 }
 
@@ -661,6 +743,7 @@ type Stream implements Church {
       WITH status WHERE status = 'Active' OR status = 'Vacation'
       RETURN status
       """
+      columnName: "vacationStatus"
     )
   leader: Member @relationship(type: "LEADS", direction: IN)
   councils: [Council!]! @relationship(type: "HAS", direction: OUT)
@@ -674,14 +757,17 @@ type Stream implements Church {
       MATCH (this:Stream)
       RETURN DISTINCT toLower(this.name)
       """
+      columnName: "stream_name"
     )
   governorships: [Governorship!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(governorships:Governorship) RETURN governorships"
+      columnName: "governorships"
     )
   bacentas(limit: Int): [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Bacenta)  RETURN bacentas"
+      columnName: "bacentas"
     )
   ics(limit: Int): [Bacenta!]!
     @cypher(statement: "MATCH (this)-[:HAS*3]->(bacentas:Red) RETURN bacentas")
@@ -692,6 +778,7 @@ type Stream implements Church {
       MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -699,6 +786,7 @@ type Stream implements Church {
       MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
@@ -706,48 +794,59 @@ type Stream implements Church {
       MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "pastorCount"
     )
   councilCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(council:Council) RETURN COUNT(council)"
+      columnName: "councilCount"
     )
   governorshipCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(governorship:Governorship) RETURN COUNT(governorship)"
+      columnName: "governorshipCount"
     )
   bacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Bacenta)  RETURN COUNT(DISTINCT bacentas)"
+      columnName: "bacentaCount"
     )
   activeBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Bacenta:Active)  RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaCount"
     )
   vacationBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]-(bacentas:Vacation:Bacenta)  RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaCount"
     )
   activeBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Bacenta:Active:Red)  RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaICCount"
     )
   vacationBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]-(bacentas:Vacation:Bacenta:Red)  RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaICCount"
     )
   activeGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Active:Bacenta:Green) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeGraduatedBacentaCount"
     )
   vacationGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]-(bacentas:Vacation:Bacenta:Green) RETURN COUNT(bacentas)"
+      columnName: "vacationGraduatedBacentaCount"
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "history"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -759,6 +858,7 @@ type Stream implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
 }
 
@@ -772,11 +872,13 @@ type Council implements Church {
       MATCH (this)<-[:HAS]-(stream:Stream)
       RETURN DISTINCT toLower(stream.name)
       """
+      columnName: "stream_name"
     )
   stream: Stream @relationship(type: "HAS", direction: IN)
   bacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*1..2]->(bacentas:Bacenta) RETURN bacentas"
+      columnName: "bacentas"
     )
   governorships: [Governorship!]! @relationship(type: "HAS", direction: OUT)
   members: [Member!]!
@@ -785,6 +887,7 @@ type Council implements Church {
       MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -792,6 +895,7 @@ type Council implements Church {
       MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
@@ -799,44 +903,54 @@ type Council implements Church {
       MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "pastorCount"
     )
   governorshipCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(governorship:Governorship) RETURN COUNT(governorship)"
+      columnName: "governorshipCount"
     )
   bacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(bacentas:Bacenta)  RETURN COUNT(DISTINCT bacentas)"
+      columnName: "bacentaCount"
     )
   activeBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(bacentas:Bacenta:Active)  RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaCount"
     )
   vacationBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]-(bacentas:Vacation:Bacenta)  RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaCount"
     )
   activeBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(bacentas:Bacenta:Active:Red)  RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeBacentaICCount"
     )
   vacationBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]-(bacentas:Vacation:Bacenta:Red)  RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaICCount"
     )
   activeGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(bacentas:Active:Bacenta:Green) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeGraduatedBacentaCount"
     )
   vacationGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]-(bacentas:Vacation:Bacenta:Green) RETURN COUNT(bacentas)"
+      columnName: "vacationGraduatedBacentaCount"
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "history"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -848,6 +962,7 @@ type Council implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
 }
 
@@ -860,6 +975,7 @@ type Governorship implements Church {
       MATCH (this)<-[:HAS*2]-(stream:Stream)
       RETURN DISTINCT toLower(stream.name)
       """
+      columnName: "stream_name"
     )
   members: [Member!]!
     @cypher(
@@ -867,6 +983,7 @@ type Governorship implements Church {
       MATCH (this)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -874,6 +991,7 @@ type Governorship implements Church {
       MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
@@ -881,36 +999,44 @@ type Governorship implements Church {
       MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "pastorCount"
     )
   bacentas: [Bacenta!]! @relationship(type: "HAS", direction: OUT)
 
   bacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(bacentas:Bacenta)  RETURN COUNT(bacentas)"
+      columnName: "bacentaCount"
     )
   activeBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(bacentas:Active:Bacenta)  RETURN COUNT(bacentas)"
+      columnName: "activeBacentaCount"
     )
   vacationBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]-(bacentas:Vacation:Bacenta)  RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaCount"
     )
   activeBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(bacentas:Active:Bacenta:Red)  RETURN COUNT(bacentas)"
+      columnName: "activeBacentaICCount"
     )
   vacationBacentaICCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]-(bacentas:Vacation:Bacenta:Red)  RETURN COUNT(bacentas)"
+      columnName: "vacationBacentaICCount"
     )
   activeGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(bacentas:Active:Bacenta:Green) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeGraduatedBacentaCount"
     )
   vacationGraduatedBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]-(bacentas:Vacation:Bacenta:Green) RETURN COUNT(bacentas)"
+      columnName: "vacationGraduatedBacentaCount"
     )
 
   leader: Member @relationship(type: "LEADS", direction: IN)
@@ -920,6 +1046,7 @@ type Governorship implements Church {
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "history"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -931,6 +1058,7 @@ type Governorship implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
 }
 
@@ -946,6 +1074,7 @@ type Bacenta implements Church {
       MATCH (this)<-[:HAS*3]-(stream:Stream)
       RETURN DISTINCT toLower(stream.name)
       """
+      columnName: "stream_name"
     )
   vacationStatus: String!
     @cypher(
@@ -955,6 +1084,7 @@ type Bacenta implements Church {
       WITH status WHERE status = 'Active' OR status = 'Vacation'
       RETURN status
       """
+      columnName: "vacationStatus"
     )
   labels: [String]
     @cypher(
@@ -969,6 +1099,7 @@ type Bacenta implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -976,6 +1107,7 @@ type Bacenta implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   pastorCount: Int!
     @cypher(
@@ -983,6 +1115,7 @@ type Bacenta implements Church {
       MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "pastorCount"
     )
   leader: Member @relationship(type: "LEADS", direction: IN)
 
@@ -990,6 +1123,7 @@ type Bacenta implements Church {
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC LIMIT $limit"
+      columnName: "history"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int! = 12, skip: Int = 0): [ServiceRecord!]!
@@ -999,6 +1133,7 @@ type Bacenta implements Church {
       WITH DISTINCT services, date
       RETURN services ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
 
   council: Council
@@ -1032,6 +1167,7 @@ type Fellowship implements Church {
       MATCH (this)<-[:HAS*4]-(stream:Stream)
       RETURN DISTINCT toLower(stream.name)
       """
+      columnName: "stream_name"
     )
   vacationStatus: String!
     @cypher(
@@ -1041,6 +1177,7 @@ type Fellowship implements Church {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
+      columnName: "vacationStatus"
     )
   hubStatus: Boolean!
     @cypher(statement: "MATCH (this) RETURN EXISTS((this)<-[:HAS]-(:Hub))")
@@ -1052,6 +1189,7 @@ type Fellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -1059,6 +1197,7 @@ type Fellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   ministryMemberCount: Int
     @cypher(
@@ -1066,6 +1205,7 @@ type Fellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)-[:BELONGS_TO]->(:Ministry)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "ministryMemberCount"
     )
   pastorCount: Int
     @cypher(
@@ -1073,11 +1213,13 @@ type Fellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "pastorCount"
     )
   meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC LIMIT $limit"
+      columnName: "history"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -1087,6 +1229,7 @@ type Fellowship implements Church {
       WITH DISTINCT records,date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
   labels: [String]
     @cypher(
@@ -1115,6 +1258,7 @@ type ClosedFellowship {
       MATCH (this)<-[:HAS*4]-(stream:Stream)
       RETURN DISTINCT toLower(stream.name)
       """
+      columnName: "stream_name"
     )
   bacenta: Bacenta @relationship(type: "HAS", direction: IN)
   leader: Member @relationship(type: "LEADS", direction: IN)
@@ -1129,6 +1273,7 @@ type ClosedFellowship {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "services"
     )
   labels: [String]
     @cypher(
@@ -1136,6 +1281,7 @@ type ClosedFellowship {
       MATCH (this)
       RETURN labels(this)
       """
+      columnName: "labels"
     )
   council: Council
     @cypher(
@@ -1143,6 +1289,7 @@ type ClosedFellowship {
       MATCH (this)<-[:HAS*3]-(council:Council)
       RETURN council
       """
+      columnName: "council"
     )
   hub: Hub! @relationship(type: "HAS", direction: IN)
 }
