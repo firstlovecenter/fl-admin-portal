@@ -70,7 +70,10 @@ const host = SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'
  * This also also allows us to specify a path for the GraphQL endpoint
  */
 const startServer = async () => {
-  const schema = await neoSchema.getSchema()
+  const schema = await neoSchema.getSchema().catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
 
   const server = new ApolloServer({
     context: async ({ req }) => ({
