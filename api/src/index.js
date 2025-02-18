@@ -7,7 +7,6 @@ import cors from 'cors'
 import { json } from 'body-parser'
 import neo4j from 'neo4j-driver'
 import { Neo4jGraphQL } from '@neo4j/graphql'
-import { Neo4jGraphQLAuthJWTPlugin } from '@neo4j/graphql-plugin-auth'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import SECRETS from './resolvers/getSecrets'
@@ -30,13 +29,14 @@ const neoSchema = new Neo4jGraphQL({
   typeDefs,
   resolvers,
   driver,
-  plugins: {
-    auth: new Neo4jGraphQLAuthJWTPlugin({
-      secret: SECRETS.JWT_SECRET,
-      rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
-    }),
-  },
   features: {
+    authorization: {
+      key: SECRETS.JWT_SECRET,
+      rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
+    },
+    config: {
+      debug: true,
+    },
     excludeDeprecatedFields: {
       bookmark: true,
       negationFilters: true,
@@ -73,7 +73,11 @@ const startServer = async () => {
   const schema = await neoSchema.getSchema()
 
   const server = new ApolloServer({
-    context: ({ req }) => ({ req, executionContext: driver }),
+    context: async ({ req }) => ({
+      req,
+      executionContext: driver,
+      token: req.headers.authorization,
+    }),
     introspection: true,
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
