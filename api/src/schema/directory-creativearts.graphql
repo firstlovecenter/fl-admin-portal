@@ -11,6 +11,7 @@ extend type Member {
       MATCH (this)-[:LEADS]->(fellowships:HubFellowship:Fellowship)
       RETURN COUNT(fellowships)
       """
+      columnName: "leadsHubFellowshipCount"
     )
   leadsHubCount: Int!
     @cypher(
@@ -18,6 +19,7 @@ extend type Member {
       MATCH (this)-[:LEADS]->(hubs:Hub)
       RETURN COUNT(hubs)
       """
+      columnName: "leadsHubCount"
     )
   leadsMinistryCount: Int!
     @cypher(
@@ -25,6 +27,7 @@ extend type Member {
       MATCH (this)-[:LEADS]->(ministries:Ministry)
       RETURN COUNT(ministries)
       """
+      columnName: "leadsMinistryCount"
     )
   isAdminForMinistryCount: Int!
     @cypher(
@@ -32,6 +35,7 @@ extend type Member {
       MATCH (this)-[:IS_ADMIN_FOR]->(ministries:Ministry)
       RETURN COUNT (ministries)
       """
+      columnName: "isAdminForMinistryCount"
     )
   leadsAdminsMinistryCount: Int!
     @cypher(
@@ -39,6 +43,7 @@ extend type Member {
       MATCH (this)-[:LEADS|IS_ADMIN_FOR]->(ministries:Ministry)
       RETURN COUNT(ministries)
       """
+      columnName: "leadsAdminsMinistryCount"
     )
   leadscreativeArtCount: Int!
     @cypher(
@@ -46,6 +51,7 @@ extend type Member {
       MATCH (this)-[:LEADS]->(creativeArts:CreativeArts)
       RETURN COUNT(creativeArts)
       """
+      columnName: "leadscreativeArtCount"
     )
   isAdminForcreativeArtCount: Int!
     @cypher(
@@ -53,6 +59,7 @@ extend type Member {
       MATCH (this)-[:IS_ADMIN_FOR]->(creativeArts:CreativeArts)
       RETURN COUNT (creativeArts)
       """
+      columnName: "isAdminForcreativeArtCount"
     )
   leadsAdminsCreativeArtsCount: Int!
     @cypher(
@@ -60,6 +67,7 @@ extend type Member {
       MATCH (this)-[:LEADS|IS_ADMIN_FOR]->(creativeArts:CreativeArts)
       RETURN COUNT(creativeArts)
       """
+      columnName: "leadsAdminsCreativeArtsCount"
     )
   isAdminForMinistry: [Ministry!]!
     @relationship(type: "IS_ADMIN_FOR", direction: OUT)
@@ -86,6 +94,7 @@ type CreativeArts {
       MATCH (members)-[:BELONGS_TO]->(this)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -94,6 +103,7 @@ type CreativeArts {
       MATCH (members)-[:BELONGS_TO]->(this)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   hubFellowshipCount: Int!
     @cypher(
@@ -101,6 +111,7 @@ type CreativeArts {
       MATCH (this)-[:HAS*4]->(fellowships:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "hubFellowshipCount"
     )
   activeHubFellowshipCount: Int!
     @cypher(
@@ -108,6 +119,7 @@ type CreativeArts {
       MATCH (this)-[:HAS*4]->(fellowships:HubFellowship:Active)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "activeHubFellowshipCount"
     )
   vacationHubFellowshipCount: Int!
     @cypher(
@@ -115,6 +127,7 @@ type CreativeArts {
       MATCH (this)-[:HAS*4]->(fellowships:HubFellowship:Vacation)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "vacationHubFellowshipCount"
     )
   hubCount: Int!
     @cypher(
@@ -122,6 +135,7 @@ type CreativeArts {
       MATCH (this)-[:HAS*3]->(hubs:Hub)
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "hubCount"
     )
   hubCouncilCount: Int!
     @cypher(
@@ -129,6 +143,7 @@ type CreativeArts {
       MATCH (this)-[:HAS]->(ministries:Ministry)-[:HAS]->(hubCouncils:HubCouncil)
       RETURN COUNT(DISTINCT hubCouncils)
       """
+      columnName: "hubCouncilCount"
     )
   ministryCount: Int!
     @cypher(
@@ -136,6 +151,7 @@ type CreativeArts {
       MATCH (this)-[:HAS]->(ministries:Ministry)
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "ministryCount"
     )
   id: ID @id
   name: String!
@@ -169,6 +185,7 @@ type Ministry {
         ELSE this.bankAccount
         END
       """
+      columnName: "bankAccount"
     )
   vacationStatus: String!
     @cypher(
@@ -178,6 +195,7 @@ type Ministry {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
+      columnName: "vacationStatus"
     )
   members: [Member!]!
     @cypher(
@@ -187,6 +205,7 @@ type Ministry {
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -196,6 +215,7 @@ type Ministry {
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   hubFellowshipCount: Int!
     @cypher(
@@ -203,6 +223,7 @@ type Ministry {
       MATCH (this)-[:HAS*3]->(fellowships:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "hubFellowshipCount"
     )
   activeHubFellowshipCount: Int!
     @cypher(
@@ -210,6 +231,7 @@ type Ministry {
       MATCH (this)-[:HAS*3]->(fellowships:Active:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "activeHubFellowshipCount"
     )
   vacationHubFellowshipCount: Int!
     @cypher(
@@ -217,6 +239,7 @@ type Ministry {
       MATCH (this)-[:HAS*3]->(fellowships:Vacation:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "vacationHubFellowshipCount"
     )
   hubCount: Int!
     @cypher(
@@ -224,6 +247,7 @@ type Ministry {
       MATCH (this)-[:HAS*2]->(hubs:Hub)
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "hubCount"
     )
   hubCouncilCount: Int!
     @cypher(
@@ -231,6 +255,7 @@ type Ministry {
       MATCH (this)-[:HAS]->(hubs:HubCouncil)
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "hubCouncilCount"
     )
   id: ID @id
   name: String!
@@ -280,6 +305,7 @@ type HubCouncil {
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -289,6 +315,7 @@ type HubCouncil {
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   hubCount: Int!
     @cypher(
@@ -296,6 +323,7 @@ type HubCouncil {
       MATCH (this)-[:HAS]->(hub:Hub)
       RETURN COUNT(DISTINCT hub)
       """
+      columnName: "hubCount"
     )
   hubFellowshipCount: Int!
     @cypher(
@@ -303,6 +331,7 @@ type HubCouncil {
       MATCH (this)-[:HAS]->(:Hub)-[:HAS]->(fellowships:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "hubFellowshipCount"
     )
   activeHubFellowshipCount: Int!
     @cypher(
@@ -310,6 +339,7 @@ type HubCouncil {
       MATCH (this)-[:HAS]->(:Hub)-[:HAS]->(fellowships:Active:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "activeHubFellowshipCount"
     )
   vacationHubFellowshipCount: Int!
     @cypher(
@@ -317,6 +347,7 @@ type HubCouncil {
       MATCH (this)-[:HAS]->(:Hub)-[:HAS]->(fellowships:Vacation:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "vacationHubFellowshipCount"
     )
   id: ID! @id
   name: String!
@@ -364,6 +395,7 @@ type Hub {
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
+      columnName: "members"
     )
   memberCount: Int!
     @cypher(
@@ -373,6 +405,7 @@ type Hub {
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "memberCount"
     )
   hubFellowshipCount: Int!
     @cypher(
@@ -380,6 +413,7 @@ type Hub {
       MATCH (this)-[:HAS]->(fellowships:Active:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "hubFellowshipCount"
     )
   activeHubFellowshipCount: Int!
     @cypher(
@@ -387,6 +421,7 @@ type Hub {
       MATCH (this)-[:HAS]->(fellowships:Active:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "activeHubFellowshipCount"
     )
   vacationHubFellowshipCount: Int!
     @cypher(
@@ -394,6 +429,7 @@ type Hub {
       MATCH (this)-[:HAS]->(fellowships:Vacation:HubFellowship)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "vacationHubFellowshipCount"
     )
   id: ID! @id
   name: String!
@@ -432,19 +468,23 @@ extend type Campus {
   creativeArtsCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts) RETURN COUNT(creativeArts)"
+      columnName: "creativeArtsCount"
     )
 
   ministryCount: Int!
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry) RETURN COUNT(ministry)"
+      columnName: "ministryCount"
     )
   hubCount: Int!
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS*2]->(hubs:Hub) RETURN COUNT(hub)"
+      columnName: "hubCount"
     )
   hubFellowshipCount: Int!
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS*4]->(fellowship:HubFellowship) RETURN COUNT(fellowship)"
+      columnName: "hubFellowshipCount"
     )
   hubFellowships: [Fellowship!]!
     @cypher(
@@ -464,6 +504,7 @@ extend type Stream {
       MATCH (this)-[:HAS_MINISTRY]->(ministry:Ministry)
       RETURN COUNT(ministry)
       """
+      columnName: "ministryCount"
     )
   hubCouncils: [Hub!]!
     @cypher(
@@ -472,6 +513,7 @@ extend type Stream {
   hubCouncilCount: Int!
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(ministry:Ministry)-[:HAS]->(hubCouncils:HubCouncil) RETURN COUNT(hubCouncils)"
+      columnName: "hubCouncilCount"
     )
   hubs: [Hub!]!
     @cypher(
@@ -480,6 +522,7 @@ extend type Stream {
   hubCount: Int!
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(ministry:Ministry)-[:HAS*2]->(hubs:Hub) RETURN COUNT(hubs)"
+      columnName: "hubCount"
     )
   hubFellowshipCount: Int!
     @cypher(
@@ -487,6 +530,7 @@ extend type Stream {
       MATCH (this)-[:HAS_MINISTRY]->(:Ministry)-[:HAS*2]->(:Hub)-[:HAS]->(hubFellowships:HubFellowship)
       RETURN COUNT(hubFellowships)
       """
+      columnName: "hubFellowshipCount"
     )
 
   hubFellowships: [Fellowship!]!
@@ -514,6 +558,7 @@ extend type Council {
       MATCH (this)-[:HAS_MINISTRY]->(hubs:HubCouncil)
       RETURN COUNT(hubs)
       """
+      columnName: "hubCouncilCount"
     )
   hubCount: Int!
     @cypher(
@@ -521,6 +566,7 @@ extend type Council {
       MATCH (this)-[:HAS_MINISTRY]->(:HubCouncil)-[:HAS]->(hubs:Hub)
       RETURN COUNT(hubs)
       """
+      columnName: "hubCount"
     )
   hubFellowshipCount: Int!
     @cypher(
@@ -528,6 +574,7 @@ extend type Council {
       MATCH (this)-[:HAS_MINISTRY]->(:HubCouncil)-[:HAS*2]->(fellowship:HubFellowship)
       RETURN COUNT(fellowship)
       """
+      columnName: "hubFellowshipCount"
     )
 }
 
@@ -539,6 +586,7 @@ extend type Governorship {
       MATCH (this)-[:HAS_MINISTRY]->(hubs:Hub)
       RETURN COUNT(hubs)
       """
+      columnName: "hubCount"
     )
   hubFellowshipCount: Int!
     @cypher(
@@ -546,6 +594,7 @@ extend type Governorship {
       MATCH (this)-[:HAS_MINISTRY]->(:Hub)-[:HAS]->(fellowship:HubFellowship)
       RETURN COUNT(fellowship)
       """
+      columnName: "hubFellowshipCount"
     )
 }
 

@@ -39,6 +39,7 @@ extend type Oversight {
         avgWeeklyIncome: round(avgWeeklyIncome, 2)
         }
       """
+      columnName: "statsForYearTillDate"
     )
 }
 
@@ -70,6 +71,7 @@ extend type Campus {
         avgWeeklyIncome: round(avgWeeklyIncome, 2)
         }
       """
+      columnName: "statsForYearTillDate"
     )
 }
 
@@ -101,6 +103,7 @@ extend type Stream {
         avgWeeklyIncome: round(avgWeeklyIncome, 2)
         }
       """
+      columnName: "statsForYearTillDate"
     )
 }
 
@@ -132,6 +135,7 @@ extend type Council {
         avgWeeklyIncome: round(avgWeeklyIncome, 2)
         }
       """
+      columnName: "statsForYearTillDate"
     )
 }
 
@@ -163,6 +167,7 @@ extend type Governorship {
         avgWeeklyIncome: round(avgWeeklyIncome, 2)
         }
       """
+      columnName: "statsForYearTillDate"
     )
 }
 
@@ -194,6 +199,7 @@ extend type Bacenta {
         avgWeeklyIncome: round(avgWeeklyIncome, 2)
         }
       """
+      columnName: "statsForYearTillDate"
     )
 }
 
@@ -217,5 +223,6 @@ extend type Fellowship {
         avgWeeklyIncome: round(avgWeeklyIncome, 2)
         }
       """
+      columnName: "statsForYearTillDate"
     )
 }

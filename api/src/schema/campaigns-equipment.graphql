@@ -55,6 +55,7 @@ extend type Campus {
       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "fellowshipEquipmentFilledCount"
     )
   fellowshipEquipmentFilled: [Fellowship!]!
     @cypher(
@@ -70,6 +71,7 @@ extend type Campus {
       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
       RETURN DISTINCT fellowships
       """
+      columnName: "fellowshipEquipmentFilled"
     )
 
   fellowshipEquipmentNotFilled: [Fellowship!]!
@@ -90,6 +92,7 @@ extend type Campus {
 
       RETURN DISTINCT defaulters
       """
+      columnName: "fellowshipEquipmentNotFilled"
     )
 
   fellowshipEquipmentNotFilledCount: Int!
@@ -110,6 +113,7 @@ extend type Campus {
 
       RETURN  COUNT(DISTINCT defaulters)
       """
+      columnName: "fellowshipEquipmentNotFilledCount"
     )
 
   governorshipEquipmentFilledCount: Int!
@@ -121,13 +125,14 @@ extend type Campus {
       MATCH (date:EquipmentDate {date:latestEquipmentDate})
        MATCH (date)<-[:HAS_EQUIPMENT_DATE]-(record:EquipmentRecord)
        WITH DISTINCT date, this, record
-        MATCH (record)<-[:HAS_EQUIPMENT_RECORD]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship
+        MATCH (record)<-[:HAS_EQUIPMENT_RECORD]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships:Governorship)
        WITH DISTINCT governorships, this
        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
       RETURN COUNT(DISTINCT governorships)
       """
+      columnName: "governorshipEquipmentFilledCount"
     )
-  governorshipEquipmentFilled: [Fellowship!]!
+  governorshipEquipmentFilled: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -141,6 +146,7 @@ extend type Campus {
        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipEquipmentFilled"
     )
 
   governorshipEquipmentNotFilled: [Governorship!]!
@@ -161,6 +167,7 @@ extend type Campus {
 
        RETURN DISTINCT defaulters
       """
+      columnName: "governorshipEquipmentNotFilled"
     )
 
   governorshipEquipmentNotFilledCount: Int!
@@ -181,6 +188,7 @@ extend type Campus {
 
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "governorshipEquipmentNotFilledCount"
     )
 }
 
@@ -200,6 +208,7 @@ extend type Stream {
       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "fellowshipEquipmentFilledCount"
     )
   fellowshipEquipmentFilled: [Fellowship!]!
     @cypher(
@@ -215,6 +224,7 @@ extend type Stream {
       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
       RETURN DISTINCT fellowships
       """
+      columnName: "fellowshipEquipmentFilled"
     )
 
   fellowshipEquipmentNotFilled: [Fellowship!]!
@@ -235,6 +245,7 @@ extend type Stream {
 
       RETURN DISTINCT defaulters
       """
+      columnName: "fellowshipEquipmentNotFilled"
     )
 
   fellowshipEquipmentNotFilledCount: Int!
@@ -255,6 +266,7 @@ extend type Stream {
 
       RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "fellowshipEquipmentNotFilledCount"
     )
 
   governorshipEquipmentFilledCount: Int!
@@ -271,8 +283,9 @@ extend type Stream {
        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
       RETURN COUNT(DISTINCT governorships)
       """
+      columnName: "governorshipEquipmentFilledCount"
     )
-  governorshipEquipmentFilled: [Fellowship!]!
+  governorshipEquipmentFilled: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -286,6 +299,7 @@ extend type Stream {
        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipEquipmentFilled"
     )
 
   governorshipEquipmentNotFilled: [Governorship!]!
@@ -306,6 +320,7 @@ extend type Stream {
 
        RETURN DISTINCT defaulters
       """
+      columnName: "governorshipEquipmentNotFilled"
     )
 
   governorshipEquipmentNotFilledCount: Int!
@@ -326,6 +341,7 @@ extend type Stream {
 
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "governorshipEquipmentNotFilledCount"
     )
 }
 
@@ -345,6 +361,7 @@ extend type Council {
       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(this)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "fellowshipEquipmentFilledCount"
     )
   fellowshipEquipmentFilled: [Fellowship!]!
     @cypher(
@@ -360,6 +377,7 @@ extend type Council {
        MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(this)
        RETURN DISTINCT fellowships
       """
+      columnName: "fellowshipEquipmentFilled"
     )
 
   fellowshipEquipmentNotFilled: [Fellowship!]!
@@ -380,6 +398,7 @@ extend type Council {
 
       RETURN DISTINCT defaulters
       """
+      columnName: "fellowshipEquipmentNotFilled"
     )
 
   fellowshipEquipmentNotFilledCount: Int!
@@ -400,6 +419,7 @@ extend type Council {
 
       RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "fellowshipEquipmentNotFilledCount"
     )
 
   governorshipEquipmentFilledCount: Int!
@@ -416,6 +436,7 @@ extend type Council {
        MATCH (governorships)<-[:HAS]-(this)
       RETURN COUNT(DISTINCT governorships)
       """
+      columnName: "governorshipEquipmentFilledCount"
     )
   governorshipEquipmentFilled: [Governorship!]!
     @cypher(
@@ -431,6 +452,7 @@ extend type Council {
        MATCH (governorships)<-[:HAS]-(this)
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipEquipmentFilled"
     )
 
   governorshipEquipmentNotFilled: [Governorship!]!
@@ -451,6 +473,7 @@ extend type Council {
 
        RETURN DISTINCT defaulters
       """
+      columnName: "governorshipEquipmentNotFilled"
     )
 
   governorshipEquipmentNotFilledCount: Int!
@@ -471,6 +494,7 @@ extend type Council {
 
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "governorshipEquipmentNotFilledCount"
     )
 }
 
@@ -490,6 +514,7 @@ extend type Governorship {
       MATCH (fellowships)<-[:HAS]-(bacentas:Bacenta)<-[:HAS]-(this)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "fellowshipEquipmentFilledCount"
     )
   fellowshipEquipmentFilled: [Fellowship!]!
     @cypher(
@@ -505,6 +530,7 @@ extend type Governorship {
       MATCH (fellowships)<-[:HAS]-(bacentas:Bacenta)<-[:HAS]-(this)
       RETURN DISTINCT fellowships
       """
+      columnName: "fellowshipEquipmentFilled"
     )
 
   fellowshipEquipmentNotFilled: [Fellowship!]!
@@ -525,6 +551,7 @@ extend type Governorship {
 
       RETURN DISTINCT defaulters
       """
+      columnName: "fellowshipEquipmentNotFilled"
     )
 
   fellowshipEquipmentNotFilledCount: Int!
@@ -545,6 +572,7 @@ extend type Governorship {
 
       RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "fellowshipEquipmentNotFilledCount"
     )
 }
 
@@ -579,6 +607,7 @@ extend type Bacenta {
       MATCH (fellowships)<-[:HAS]-(this)
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "fellowshipEquipmentFilledCount"
     )
   fellowshipEquipmentFilled: [Fellowship!]!
     @cypher(
@@ -594,6 +623,7 @@ extend type Bacenta {
       MATCH (fellowships)<-[:HAS]-(this)
       RETURN DISTINCT fellowships
       """
+      columnName: "fellowshipEquipmentFilled"
     )
 
   fellowshipEquipmentNotFilled: [Fellowship!]!
@@ -614,6 +644,7 @@ extend type Bacenta {
 
       RETURN DISTINCT defaulters
       """
+      columnName: "fellowshipEquipmentNotFilled"
     )
 
   fellowshipEquipmentNotFilledCount: Int!
@@ -634,6 +665,7 @@ extend type Bacenta {
 
       RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "fellowshipEquipmentNotFilledCount"
     )
 }
 

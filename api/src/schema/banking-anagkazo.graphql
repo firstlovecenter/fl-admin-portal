@@ -46,6 +46,7 @@ extend type Stream {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaultersThisWeek"
     )
   governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -73,6 +74,7 @@ extend type Stream {
 
       RETURN COUNT(DISTINCT governorships)
       """
+      columnName: "governorshipBankingDefaultersThisWeekCount"
     )
 }
 
@@ -110,6 +112,7 @@ extend type Governorship {
         foreignCurrency: list
       }
       """
+      columnName: "aggregateServiceRecordForWeek"
     )
   banked: Boolean!
     @cypher(
@@ -142,6 +145,7 @@ extend type Governorship {
       ELSE false
       END AS banked
       """
+      columnName: "banked"
     )
 
   bankedBy: Member
@@ -170,5 +174,6 @@ extend type Governorship {
 
       RETURN DISTINCT teller
       """
+      columnName: "bankedBy"
     )
 }

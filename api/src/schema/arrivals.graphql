@@ -39,22 +39,27 @@ extend type Oversight {
   graduatedBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Green:Bacenta) RETURN bacentas"
+      columnName: "graduatedBacentas"
     )
   icBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Red:Bacenta) RETURN bacentas"
+      columnName: "icBacentas"
     )
   icBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*5]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(bacentas)"
+      columnName: "vacationIcBacentaCount"
     )
 }
 
@@ -168,7 +173,7 @@ extend type Campus {
       statement: """
       MATCH (this)-[:HAS*4]->(bacentas:Active:Bacenta)
       MATCH (bacentas)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
-       WHERE date(date.date)=date($arrivalDate)
+      WHERE date(date.date)=date($arrivalDate)
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
@@ -274,22 +279,27 @@ extend type Campus {
   graduatedBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Green:Bacenta) RETURN bacentas"
+      columnName: "graduatedBacentas"
     )
   icBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Red:Bacenta) RETURN bacentas"
+      columnName: "icBacentas"
     )
   icBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*4]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "vacationIcBacentaCount"
     )
 }
 
@@ -511,22 +521,27 @@ extend type Stream {
   graduatedBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Green:Bacenta) RETURN bacentas"
+      columnName: "graduatedBacentas"
     )
   icBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Red:Bacenta) RETURN bacentas"
+      columnName: "icBacentas"
     )
   icBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*3]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "vacationIcBacentaCount"
     )
 }
 

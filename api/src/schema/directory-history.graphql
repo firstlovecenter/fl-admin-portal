@@ -64,6 +64,7 @@ extend type Mutation {
 
       RETURN stream
       """
+      columnName: "stream"
     )
 
   LogCampusHistory(
@@ -131,6 +132,7 @@ extend type Mutation {
 
       RETURN campus
       """
+      columnName: "campus"
     )
 
   LogOversightHistory(
@@ -198,6 +200,7 @@ extend type Mutation {
 
       RETURN oversight
       """
+      columnName: "oversight"
     )
 
   LogDenominationHistory(
@@ -244,6 +247,7 @@ extend type Mutation {
 
       RETURN denomination
       """
+      columnName: "denomination"
     )
 
   LogMemberHistory(ids: [ID], historyRecord: String!): Member
@@ -272,6 +276,7 @@ extend type Mutation {
 
       RETURN node
       """
+      columnName: "member"
     )
 
   LogFellowshipHistory(
@@ -315,6 +320,7 @@ extend type Mutation {
 
       RETURN fellowship
       """
+      columnName: "fellowship"
     )
   LogBacentaHistory(
     bacentaId: ID!
@@ -374,6 +380,7 @@ extend type Mutation {
 
        RETURN bacenta
       """
+      columnName: "bacenta"
     )
   LogGovernorshipHistory(
     governorshipId: ID!
@@ -440,6 +447,7 @@ extend type Mutation {
 
       RETURN governorship
       """
+      columnName: "governorship"
     )
 
   LogCouncilHistory(
@@ -575,6 +583,7 @@ extend type Mutation {
 
       RETURN creativeArts
       """
+      columnName: "creativeArts"
     )
 
   LogMinistryHistory(
@@ -641,6 +650,7 @@ extend type Mutation {
 
       RETURN ministry
       """
+      columnName: "ministry"
     )
   LogMinistryHistoryWithStream(
     ministryId: ID!
@@ -706,6 +716,7 @@ extend type Mutation {
 
       RETURN ministry
       """
+      columnName: "ministry"
     )
   LogHubCouncilHistory(
     hubCouncilId: ID!
@@ -771,6 +782,7 @@ extend type Mutation {
 
       RETURN hubCouncil
       """
+      columnName: "hubCouncil"
     )
   LogHubCouncilHistoryWithCouncil(
     hubCouncilId: ID!
@@ -836,6 +848,7 @@ extend type Mutation {
 
       RETURN hubCouncil
       """
+      columnName: "hubCouncil"
     )
 
   LogHubHistory(
@@ -902,6 +915,7 @@ extend type Mutation {
 
       RETURN hub
       """
+      columnName: "hub"
     )
   LogHubHistoryWithGovernorship(
     hubId: ID!
@@ -967,6 +981,7 @@ extend type Mutation {
 
       RETURN hub
       """
+      columnName: "hub"
     )
   LogHubFellowshipHistory(
     hubFellowshipId: ID!
@@ -1032,5 +1047,6 @@ extend type Mutation {
 
       RETURN hubFellowship
       """
+      columnName: "hubFellowship"
     )
 }

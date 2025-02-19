@@ -46,6 +46,7 @@ extend type RehearsalRecord {
       OR this.tellerConfirmationTime IS NOT NULL
       RETURN true
       """
+      columnName: "bankingProof"
     )
 }
 
@@ -75,6 +76,7 @@ extend type ServiceRecord {
       OR this.tellerConfirmationTime IS NOT NULL
       RETURN true
       """
+      columnName: "bankingProof"
     )
 }
 
@@ -90,6 +92,7 @@ extend type Governorship {
 
       RETURN record
       """
+      columnName: "servicesNotBanked"
     )
 }
 
@@ -119,6 +122,7 @@ extend type Council {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankedThisWeek"
     )
   governorshipBankedThisWeekCount: Int
     @cypher(
@@ -145,6 +149,7 @@ extend type Council {
 
       RETURN COUNT(DISTINCT governorships) as count
       """
+      columnName: "governorshipBankedThisWeekCount"
     )
   governorshipBankingDefaultersThisWeek: [Governorship!]!
     @cypher(
@@ -172,6 +177,7 @@ extend type Council {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaultersThisWeek"
     )
   governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -204,8 +210,8 @@ extend type Council {
        ELSE count
        END AS result
       """
+      columnName: "governorshipBankingDefaultersThisWeekCount"
     )
-
   governorshipBankingDefaulters: [Governorship!]!
     @cypher(
       statement: """
@@ -220,6 +226,7 @@ extend type Council {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaulters"
     )
   governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -239,6 +246,7 @@ extend type Council {
       ELSE count
       END AS result
       """
+      columnName: "governorshipBankingDefaultersThisWeekCount"
     )
   servicesNotBanked: [ServiceRecord!]!
     @cypher(
@@ -251,6 +259,7 @@ extend type Council {
 
       RETURN record
       """
+      columnName: "servicesNotBanked"
     )
 }
 
@@ -280,6 +289,7 @@ extend type Stream {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankedThisWeek"
     )
   governorshipBankedThisWeekCount: Int
     @cypher(
@@ -311,6 +321,7 @@ extend type Stream {
        ELSE count
        END AS result
       """
+      columnName: "governorshipBankedThisWeekCount"
     )
   governorshipBankingDefaultersThisWeek: [Governorship!]!
     @cypher(
@@ -338,6 +349,7 @@ extend type Stream {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaultersThisWeek"
     )
   governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -370,8 +382,8 @@ extend type Stream {
       ELSE count
       END AS result
       """
+      columnName: "governorshipBankingDefaultersThisWeekCount"
     )
-
   governorshipBankingDefaulters: [Governorship!]!
     @cypher(
       statement: """
@@ -386,6 +398,7 @@ extend type Stream {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaulters"
     )
   governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -405,8 +418,8 @@ extend type Stream {
       ELSE count
       END AS result
       """
+      columnName: "governorshipBankingDefaultersThisWeekCount"
     )
-
   councilBankedThisWeek: [Council!]!
     @cypher(
       statement: """
@@ -432,6 +445,7 @@ extend type Stream {
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankedThisWeek"
     )
   councilBankedThisWeekCount: Int
     @cypher(
@@ -463,6 +477,7 @@ extend type Stream {
       ELSE count
       END AS result
       """
+      columnName: "councilBankedThisWeekCount"
     )
   councilBankingDefaulters: [Council!]!
     @cypher(
@@ -478,6 +493,7 @@ extend type Stream {
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankingDefaulters"
     )
   councilBankingDefaultersCount: Int
     @cypher(
@@ -497,6 +513,7 @@ extend type Stream {
       ELSE count
       END AS result
       """
+      columnName: "councilBankingDefaultersCount"
     )
 
   servicesNotBanked: [ServiceRecord!]!
@@ -510,6 +527,7 @@ extend type Stream {
 
       RETURN record
       """
+      columnName: "servicesNotBanked"
     )
 
   councilBankingDefaultersThisWeek: [Council!]!
@@ -538,6 +556,7 @@ extend type Stream {
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankingDefaultersThisWeek"
     )
   councilBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -570,6 +589,7 @@ extend type Stream {
       ELSE count
       END AS result
       """
+      columnName: "councilBankingDefaultersThisWeekCount"
     )
 }
 
@@ -599,6 +619,7 @@ extend type Campus {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankedThisWeek"
     )
   governorshipBankedThisWeekCount: Int
     @cypher(
@@ -630,6 +651,7 @@ extend type Campus {
        ELSE count
        END AS result
       """
+      columnName: "governorshipBankedThisWeekCount"
     )
   governorshipBankingDefaultersThisWeek: [Governorship!]!
     @cypher(
@@ -657,6 +679,7 @@ extend type Campus {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaultersThisWeek"
     )
   governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -689,6 +712,7 @@ extend type Campus {
        ELSE count
        END AS result
       """
+      columnName: "governorshipBankingDefaultersThisWeekCount"
     )
 
   governorshipBankingDefaulters: [Governorship!]!
@@ -706,6 +730,7 @@ extend type Campus {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaulters"
     )
   governorshipBankingDefaultersCount: Int
     @cypher(
@@ -726,6 +751,7 @@ extend type Campus {
       ELSE count
       END AS result
       """
+      columnName: "governorshipBankingDefaultersCount"
     )
 
   councilBankingDefaulters: [Council!]!
@@ -742,6 +768,7 @@ extend type Campus {
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankingDefaulters"
     )
   councilBankingDefaultersCount: Int
     @cypher(
@@ -761,6 +788,7 @@ extend type Campus {
       ELSE count
       END AS result
       """
+      columnName: "councilBankingDefaultersCount"
     )
   councilBankedThisWeek: [Council!]!
     @cypher(
@@ -787,6 +815,7 @@ extend type Campus {
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankedThisWeek"
     )
   councilBankedThisWeekCount: Int
     @cypher(
@@ -818,6 +847,7 @@ extend type Campus {
       ELSE count
       END AS result
       """
+      columnName: "councilBankedThisWeekCount"
     )
   councilBankingDefaultersThisWeek: [Council!]!
     @cypher(
@@ -841,10 +871,11 @@ extend type Campus {
        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(council) WHERE council:Council OR council:ClosedCouncil
 
        WITH DISTINCT council, this
-       MATCH (council:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       MATCH (council:Council)<-[:HAS]-(this)
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankingDefaultersThisWeek"
     )
   councilBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -868,7 +899,7 @@ extend type Campus {
        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(council) WHERE council:Council OR council:ClosedCouncil
 
        WITH DISTINCT council, this
-       MATCH (council:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       MATCH (council:Council)<-[:HAS]-(this)
 
       WITH COUNT(DISTINCT council) as count
       RETURN
@@ -877,6 +908,7 @@ extend type Campus {
       ELSE count
       END AS result
       """
+      columnName: "councilBankingDefaultersThisWeekCount"
     )
 }
 
@@ -906,6 +938,7 @@ extend type Oversight {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankedThisWeek"
     )
   governorshipBankedThisWeekCount: Int
     @cypher(
@@ -937,6 +970,7 @@ extend type Oversight {
        ELSE count
        END AS result
       """
+      columnName: "governorshipBankedThisWeekCount"
     )
   governorshipBankingDefaultersThisWeek: [Governorship!]!
     @cypher(
@@ -964,6 +998,7 @@ extend type Oversight {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaultersThisWeek"
     )
   governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -996,6 +1031,7 @@ extend type Oversight {
       ELSE count
       END AS result
       """
+      columnName: "governorshipBankingDefaultersThisWeekCount"
     )
 
   governorshipBankingDefaulters: [Governorship!]!
@@ -1013,6 +1049,7 @@ extend type Oversight {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipBankingDefaulters"
     )
   governorshipBankingDefaultersCount: Int
     @cypher(
@@ -1033,6 +1070,7 @@ extend type Oversight {
       ELSE count
       END AS result
       """
+      columnName: "governorshipBankingDefaultersCount"
     )
 
   councilBankedThisWeek: [Council!]!
@@ -1060,6 +1098,7 @@ extend type Oversight {
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankedThisWeek"
     )
   councilBankedThisWeekCount: Int
     @cypher(
@@ -1091,6 +1130,7 @@ extend type Oversight {
       ELSE count
       END AS result
       """
+      columnName: "councilBankedThisWeekCount"
     )
   councilBankingDefaulters: [Council!]!
     @cypher(
@@ -1106,6 +1146,7 @@ extend type Oversight {
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankingDefaulters"
     )
   councilBankingDefaultersCount: Int
     @cypher(
@@ -1125,6 +1166,7 @@ extend type Oversight {
       ELSE count
       END AS result
       """
+      columnName: "councilBankingDefaultersCount"
     )
 
   councilBankingDefaultersThisWeek: [Council!]!
@@ -1153,6 +1195,7 @@ extend type Oversight {
 
       RETURN DISTINCT council
       """
+      columnName: "councilBankingDefaultersThisWeek"
     )
   councilBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1185,5 +1228,6 @@ extend type Oversight {
       ELSE count
       END AS result
       """
+      columnName: "councilBankingDefaultersThisWeekCount"
     )
 }

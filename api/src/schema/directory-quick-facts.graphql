@@ -6,6 +6,7 @@ extend type ServiceRecord {
       WHERE church:Fellowship OR church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
       RETURN church.name
       """
+      columnName: "church_name"
     )
 }
 
@@ -34,6 +35,7 @@ extend type Fellowship {
         income: round(avg(record.income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   peakFellowshipAttendance(days: Int!): ServiceRecord
@@ -49,6 +51,7 @@ extend type Fellowship {
       WHERE record.attendance = max
       RETURN  record LIMIT 1
       """
+      columnName: "record"
     )
 
   peakFellowshipIncome(days: Int!): ServiceRecord
@@ -64,6 +67,7 @@ extend type Fellowship {
       WHERE record.income = max
       RETURN record LIMIT 1
       """
+      columnName: "record"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
@@ -79,6 +83,7 @@ extend type Fellowship {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -96,6 +101,7 @@ extend type Bacenta {
       WHERE record.attendance = max
       RETURN record ORDER BY record.attendance DESC LIMIT 1
       """
+      columnName: "record"
     )
 
   peakFellowshipIncome(days: Int!): ServiceRecord!
@@ -111,6 +117,7 @@ extend type Bacenta {
       WHERE record.income = max
       RETURN  record ORDER BY record.income DESC LIMIT 1
       """
+      columnName: "record"
     )
 
   avgWeekdayStats(days: Int!): Stats!
@@ -130,6 +137,7 @@ extend type Bacenta {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   avgBussingAttendance(days: Int!): Float
@@ -143,6 +151,7 @@ extend type Bacenta {
       WITH sum(bussing.attendance) AS sum, this, date(date.date).week as weeknumber
       RETURN round(avg(sum)) AS average
       """
+      columnName: "average"
     )
 
   aggregateMemberConversion: [MemberConversion!]!
@@ -159,6 +168,7 @@ extend type Bacenta {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -180,6 +190,7 @@ extend type Governorship {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   avgBacentaBussingAttendance(days: Int!): Float
@@ -196,6 +207,7 @@ extend type Governorship {
       WITH  agg.attendance as attendance, bacenta, agg.week as weeknumber
        RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgBussingAttendance(days: Int): Float
@@ -212,6 +224,7 @@ extend type Governorship {
       WITH sum(agg.attendance) AS attendance, this, agg.week as weeknumber
        RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
@@ -227,6 +240,7 @@ extend type Governorship {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -247,6 +261,7 @@ extend type Council {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgFellowshipWeekdayStats"
     )
 
   avgBacentaWeekdayStats(days: Int!): Stats!
@@ -266,6 +281,7 @@ extend type Council {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgBacentaWeekdayStats"
     )
 
   avgGovernorshipWeekdayStats(days: Int!): Stats!
@@ -285,6 +301,7 @@ extend type Council {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgGovernorshipWeekdayStats"
     )
 
   avgWeekdayStats(days: Int!): Stats!
@@ -304,6 +321,7 @@ extend type Council {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   avgBacentaBussingAttendance(days: Int!): Float
@@ -320,6 +338,7 @@ extend type Council {
       WITH sum(agg.attendance) AS attendance, bacenta, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgGovernorshipBussingAttendance(days: Int!): Float
@@ -336,6 +355,7 @@ extend type Council {
       WITH sum(agg.attendance) AS attendance, governorship, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgBussingAttendance(days: Int!): Float
@@ -352,6 +372,7 @@ extend type Council {
       WITH sum(agg.attendance) AS attendance, this, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   aggregateMemberConversion: [MemberConversion!]!
@@ -368,6 +389,7 @@ extend type Council {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -389,6 +411,7 @@ extend type Stream {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   avgCouncilWeekdayStats(days: Int!): Stats
@@ -408,6 +431,7 @@ extend type Stream {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgCouncilWeekdayStats"
     )
 
   avgCouncilBussingAttendance(days: Int!): Float
@@ -424,6 +448,7 @@ extend type Stream {
       WITH sum(agg.attendance) AS attendance, council, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgBussingAttendance(days: Int!): Float
@@ -440,6 +465,7 @@ extend type Stream {
       WITH sum(agg.attendance) AS attendance, this, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
@@ -455,6 +481,7 @@ extend type Stream {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -473,6 +500,7 @@ extend type Campus {
       WITH sum(agg.attendance) AS attendance, governorship, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgGovernorshipWeekdayStats(days: Int!): Stats!
@@ -492,6 +520,7 @@ extend type Campus {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgGovernorshipWeekdayStats"
     )
 
   avgCouncilBussingAttendance(days: Int!): Float!
@@ -508,6 +537,7 @@ extend type Campus {
       WITH sum(agg.attendance) AS attendance, council, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgStreamWeekdayStats(days: Int!): Stats!
@@ -527,6 +557,7 @@ extend type Campus {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgStreamWeekdayStats"
     )
 
   avgStreamBussingAttendance(days: Int!): Float
@@ -543,6 +574,7 @@ extend type Campus {
       WITH sum(agg.attendance) AS attendance, stream, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgBussingAttendance(days: Int!): Float
@@ -559,6 +591,7 @@ extend type Campus {
       WITH sum(agg.attendance) AS attendance, this, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgWeekdayStats(days: Int!): Stats!
@@ -578,6 +611,7 @@ extend type Campus {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
@@ -593,6 +627,7 @@ extend type Campus {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -614,6 +649,7 @@ extend type Oversight {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgCampusWeekdayStats"
     )
 
   avgCampusBussingAttendance(days: Int!): Float
@@ -630,6 +666,7 @@ extend type Oversight {
       WITH sum(agg.attendance) AS attendance, campus, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
@@ -645,5 +682,6 @@ extend type Oversight {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }

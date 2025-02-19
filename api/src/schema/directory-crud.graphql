@@ -93,6 +93,7 @@ extend type Mutation {
 
       RETURN fellowship
       """
+      columnName: "SetVacationFellowship"
     )
   #Set Bacenta to be 'OnVacation
   SetVacationBacenta(bacentaId: ID!): Bacenta!
@@ -118,6 +119,7 @@ extend type Mutation {
 
       RETURN bacenta
       """
+      columnName: "SetVacationBacenta"
     )
   SetVacationStream(streamId: ID!): Fellowship!
     @cypher(
@@ -142,6 +144,7 @@ extend type Mutation {
 
       RETURN stream
       """
+      columnName: "SetVacationStream"
     )
 
   #Set Fellowship to be 'Active
@@ -168,6 +171,7 @@ extend type Mutation {
 
       RETURN stream
       """
+      columnName: "SetActiveStream"
     )
   SetActiveFellowship(fellowshipId: ID!): Fellowship!
     @cypher(
@@ -192,6 +196,7 @@ extend type Mutation {
 
       RETURN fellowship
       """
+      columnName: "SetActiveFellowship"
     )
   SetActiveHub(hubId: ID!): Hub!
     @cypher(
@@ -216,6 +221,7 @@ extend type Mutation {
 
       RETURN hub
       """
+      columnName: "SetActiveHub"
     )
   SetVacationHub(hubId: ID!): Hub!
     @cypher(
@@ -240,6 +246,7 @@ extend type Mutation {
 
       RETURN hub
       """
+      columnName: "SetVacationHub"
     )
 
   # Set fellowship to be 'Online'
@@ -266,6 +273,7 @@ extend type Mutation {
 
       RETURN fellowship
       """
+      columnName: "SetOnlineFellowship"
     )
 
   #Set Bacenta to be 'Active
@@ -292,6 +300,7 @@ extend type Mutation {
 
       RETURN bacenta
       """
+      columnName: "SetActiveBacenta"
     )
 }
 
@@ -345,6 +354,7 @@ extend type Mutation {
 
       RETURN oversight
       """
+      columnName: "oversight"
     )
 
   CreateCampus(
@@ -386,6 +396,7 @@ extend type Mutation {
 
       RETURN campus
       """
+      columnName: "campus"
     )
 
   CreateStream(
@@ -428,6 +439,7 @@ extend type Mutation {
 
        RETURN stream
       """
+      columnName: "stream"
     )
 
   CreateCouncil(name: String!, leaderId: ID!, streamId: ID!): Council
@@ -464,6 +476,7 @@ extend type Mutation {
 
       RETURN council
       """
+      columnName: "council"
     )
 
   CreateGovernorship(
@@ -500,6 +513,7 @@ extend type Mutation {
 
       RETURN governorship
       """
+      columnName: "governorship"
     )
 
   CreateBacenta(
@@ -548,6 +562,7 @@ extend type Mutation {
 
       RETURN bacenta
       """
+      columnName: "bacenta"
     )
 
   CreateFellowship(
@@ -592,6 +607,7 @@ extend type Mutation {
 
       RETURN fellowship
       """
+      columnName: "fellowship"
     )
 }
 
@@ -611,6 +627,7 @@ extend type Mutation {
       MERGE (member)-[:HAS_TITLE {date: $appointmentDate}]->(pastor)
       RETURN member
       """
+      columnName: "member"
     )
   UpdateMemberOrdinationDate(id: ID!, ordinationDate: String!): Member!
     @auth(rules: [{ roles: ["adminDenomination"] }])
@@ -625,6 +642,7 @@ extend type Mutation {
       MERGE (member)-[:HAS_TITLE {date: $ordinationDate}]->(reverend)
       RETURN member
       """
+      columnName: "member"
     )
   UpdateMemberConsecrationDate(id: ID!, consecrationDate: String!): Member!
     @auth(rules: [{ roles: ["adminDenomination"] }])
@@ -639,6 +657,7 @@ extend type Mutation {
       MERGE (member)-[:HAS_TITLE {date: $consecrationDate}]->(bishop)
       RETURN member
       """
+      columnName: "member"
     )
 
   DeleteMemberTitles(id: ID!): Member!
@@ -650,6 +669,7 @@ extend type Mutation {
        DELETE r
       RETURN member
       """
+      columnName: "member"
     )
   UpdateMemberBacenta(memberId: ID!, bacentaId: ID!): Member!
 
@@ -672,6 +692,7 @@ extend type Mutation {
 
       RETURN member
       """
+      columnName: "member"
     )
 
   UpdateMemberDetails(
@@ -782,6 +803,7 @@ extend type Mutation {
 
       RETURN member
       """
+      columnName: "member"
     )
 
   UpdateDenominationDetails(denominationId: ID!, name: String!): Denomination
@@ -793,6 +815,7 @@ extend type Mutation {
 
       RETURN denomination
       """
+      columnName: "denomination"
     )
   UpdateOversightDetails(oversightId: ID!, name: String!): Oversight!
     @auth(rules: [{ roles: ["adminDenomination"] }])
@@ -803,6 +826,7 @@ extend type Mutation {
 
       RETURN oversight
       """
+      columnName: "oversight"
     )
 
   UpdateCampusDetails(
@@ -823,6 +847,7 @@ extend type Mutation {
 
       RETURN campus
       """
+      columnName: "campus"
     )
   UpdateStreamDetails(
     streamId: ID!
@@ -852,6 +877,7 @@ extend type Mutation {
 
       RETURN stream
       """
+      columnName: "stream"
     )
   UpdateCouncilDetails(councilId: ID!, name: String!): Council
     @auth(
@@ -873,6 +899,7 @@ extend type Mutation {
 
       RETURN council
       """
+      columnName: "council"
     )
 
   UpdateGovernorshipDetails(governorshipId: ID!, name: String!): Governorship
@@ -884,6 +911,7 @@ extend type Mutation {
 
       RETURN governorship
       """
+      columnName: "governorship"
     )
   UpdateBacentaDetails(
     id: ID!
@@ -926,6 +954,7 @@ extend type Mutation {
 
       RETURN bacenta
       """
+      columnName: "bacenta"
     )
 
   UpdateFellowshipDetails(
@@ -967,6 +996,7 @@ extend type Mutation {
 
       RETURN fellowship
       """
+      columnName: "fellowship"
     )
 }
 
@@ -1004,6 +1034,7 @@ extend type Mutation {
       MERGE (denomination)-[:HAS]->(oversight)
       RETURN oversight
       """
+      columnName: "oversight"
     )
 
   MoveCampusToOversight(campusId: ID!, oversightId: ID!): Campus!
@@ -1017,6 +1048,7 @@ extend type Mutation {
       MERGE (oversight)-[:HAS]->(campus)
       RETURN campus
       """
+      columnName: "campus"
     )
 
   MoveStreamToCampus(streamId: ID!, campusId: ID!): Stream!
@@ -1030,6 +1062,7 @@ extend type Mutation {
       MERGE (campus)-[:HAS]->(stream)
       RETURN stream
       """
+      columnName: "stream"
     )
 
   MoveCouncilToStream(councilId: ID!, streamId: ID!): Council!
@@ -1043,6 +1076,7 @@ extend type Mutation {
       MERGE (stream)-[:HAS]->(council)
       RETURN council
       """
+      columnName: "council"
     )
 
   MoveGovernorshipToCouncil(governorshipId: ID!, councilId: ID!): Governorship!
@@ -1056,6 +1090,7 @@ extend type Mutation {
       MERGE (council)-[:HAS]->(governorship)
       RETURN governorship
       """
+      columnName: "governorship"
     )
   MoveBacentaToGovernorship(bacentaId: ID!, governorshipId: ID!): Bacenta!
     @cypher(
@@ -1068,6 +1103,7 @@ extend type Mutation {
       MERGE (governorship)-[:HAS]->(bacenta)
       RETURN bacenta
       """
+      columnName: "bacenta"
     )
 
   MoveFellowshipToBacenta(fellowshipId: ID!, bacentaId: ID!): Fellowship!
@@ -1081,6 +1117,7 @@ extend type Mutation {
       MERGE (bacenta)-[:HAS]->(fellowship)
       RETURN fellowship
       """
+      columnName: "fellowship"
     )
 
   MoveCreativeArtsToCampus(creativeArtsId: ID!, campusId: ID!): CreativeArts!
@@ -1094,6 +1131,7 @@ extend type Mutation {
       MERGE (campus)-[:HAS_MINISTRY]->(creativeArts)
       RETURN creativeArts
       """
+      columnName: "creativeArts"
     )
 
   MoveMinistryToCreativeArts(ministryId: ID!, creativeArtsId: ID!): Ministry!
@@ -1107,6 +1145,7 @@ extend type Mutation {
       MERGE (creativeArts)-[:HAS]->(ministry)
       RETURN ministry
       """
+      columnName: "ministry"
     )
   MoveMinistryToStream(ministryId: ID!, streamId: ID!): Ministry!
     @cypher(
@@ -1119,6 +1158,7 @@ extend type Mutation {
       MERGE (stream)-[:HAS_MINISTRY]->(ministry)
       RETURN ministry
       """
+      columnName: "ministry"
     )
   MoveHubCouncilToMinistry(hubCouncilId: ID!, ministryId: ID!): HubCouncil!
     @cypher(
@@ -1131,6 +1171,7 @@ extend type Mutation {
       MERGE (ministry)-[:HAS]->(hubCouncil)
       RETURN hubCouncil
       """
+      columnName: "hubCouncil"
     )
   MoveHubCouncilToCouncil(hubCouncilId: ID!, councilId: ID!): HubCouncil!
     @cypher(
@@ -1143,6 +1184,7 @@ extend type Mutation {
       MERGE (council)-[:HAS_MINISTRY]->(hubCouncil)
       RETURN hubCouncil
       """
+      columnName: "hubCouncil"
     )
   MoveHubToHubCouncil(hubId: ID!, hubCouncilId: ID!): Hub!
     @cypher(
@@ -1155,6 +1197,7 @@ extend type Mutation {
       MERGE (hubCouncil)-[:HAS]->(hub)
       RETURN hub
       """
+      columnName: "hub"
     )
   MoveHubToGovernorship(hubId: ID!, governorshipId: ID!): Hub!
     @cypher(
@@ -1167,6 +1210,7 @@ extend type Mutation {
       MERGE (governorship)-[:HAS_MINISTRY]->(hub)
       RETURN hub
       """
+      columnName: "hub"
     )
   MoveHubFellowshipToHub(hubFellowshipId: ID!, hubId: ID!): HubFellowship!
     @cypher(
@@ -1179,5 +1223,6 @@ extend type Mutation {
       MERGE (hub)-[:HAS]->(hubFellowship)
       RETURN hubFellowship
       """
+      columnName: "hubFellowship"
     )
 }
