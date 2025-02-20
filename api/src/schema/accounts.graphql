@@ -27,6 +27,7 @@ extend type Oversight {
       MATCH (this)-[:HAS*3]->(council:Council)
       RETURN SUM(council.hrAmount)
       """
+      columnName: "hrAmount"
     )
   bussingAmount: Float!
     @cypher(
@@ -34,6 +35,7 @@ extend type Oversight {
       MATCH (this)-[:HAS*3]->(council:Council)
       RETURN SUM(council.bussingAmount)
       """
+      columnName: "bussingAmount"
     )
   weekdayBalance: Float!
     @cypher(
@@ -41,6 +43,7 @@ extend type Oversight {
       MATCH (this)-[:HAS*3]->(council:Council)
       RETURN SUM(council.weekdayBalance)
       """
+      columnName: "weekdayBalance"
     )
   bussingSocietyBalance: Float!
     @cypher(
@@ -48,6 +51,7 @@ extend type Oversight {
       MATCH (this)-[:HAS*3]->(council:Council)
       RETURN SUM(council.bussingSocietyBalance)
       """
+      columnName: "bussingSocietyBalance"
     )
 }
 
@@ -58,6 +62,7 @@ extend type Campus {
       MATCH (this)-[:HAS*2]->(council:Council)
       RETURN SUM(council.hrAmount)
       """
+      columnName: "hrAmount"
     )
   bussingAmount: Float!
     @cypher(
@@ -65,6 +70,7 @@ extend type Campus {
       MATCH (this)-[:HAS*2]->(council:Council)
       RETURN SUM(council.bussingAmount)
       """
+      columnName: "bussingAmount"
     )
   weekdayBalance: Float!
     @cypher(
@@ -72,6 +78,7 @@ extend type Campus {
       MATCH (this)-[:HAS*2]->(council:Council)
       RETURN SUM(council.weekdayBalance)
       """
+      columnName: "weekdayBalance"
     )
   bussingSocietyBalance: Float!
     @cypher(
@@ -79,6 +86,7 @@ extend type Campus {
       MATCH (this)-[:HAS*2]->(council:Council)
       RETURN SUM(council.bussingSocietyBalance)
       """
+      columnName: "bussingSocietyBalance"
     )
   transactions: [AccountTransaction!]!
     @cypher(
@@ -88,6 +96,7 @@ extend type Campus {
 
       RETURN transaction ORDER BY transaction.lastModified DESC
       """
+      columnName: "transactions"
     )
 }
 
@@ -98,6 +107,7 @@ extend type Stream {
       MATCH (this)-[:HAS]->(council:Council)
       RETURN SUM(council.hrAmount)
       """
+      columnName: "hrAmount"
     )
   bussingAmount: Float!
     @cypher(
@@ -105,6 +115,7 @@ extend type Stream {
       MATCH (this)-[:HAS]->(council:Council)
       RETURN SUM(council.bussingAmount)
       """
+      columnName: "bussingAmount"
     )
   weekdayBalance: Float!
     @cypher(
@@ -112,6 +123,7 @@ extend type Stream {
       MATCH (this)-[:HAS]->(council:Council)
       RETURN SUM(council.weekdayBalance)
       """
+      columnName: "weekdayBalance"
     )
   bussingSocietyBalance: Float!
     @cypher(
@@ -119,6 +131,7 @@ extend type Stream {
       MATCH (this)-[:HAS]->(council:Council)
       RETURN SUM(council.bussingSocietyBalance)
       """
+      columnName: "bussingSocietyBalance"
     )
   transactions: [AccountTransaction!]!
     @cypher(
@@ -128,6 +141,7 @@ extend type Stream {
 
       RETURN transaction ORDER BY transaction.lastModified DESC
       """
+      columnName: "transactions"
     )
 }
 
@@ -149,6 +163,7 @@ extend type Mutation {
         SET council.hrAmount = $amount
       RETURN council
       """
+      columnName: "council"
     )
   DepositIntoCouncilCurrentAccount(
     councilId: ID!
@@ -194,6 +209,7 @@ extend type Mutation {
 
       RETURN transaction
       """
+      columnName: "transaction"
     )
 
   ApproveExpense(transactionId: ID!, charge: Float!): AccountTransaction!
@@ -207,6 +223,7 @@ extend type Mutation {
 
       RETURN transaction
       """
+      columnName: "transaction"
     )
   UndoBussingTransaction(transactionId: ID!): Council!
     @cypher(
@@ -218,6 +235,7 @@ extend type Mutation {
 
       RETURN council
       """
+      columnName: "council"
     )
   UndoWeekdayTransaction(transactionId: ID!): Council!
     @cypher(
@@ -229,6 +247,7 @@ extend type Mutation {
 
       RETURN council
       """
+      columnName: "council"
     )
 
   DebitBussingSociety(
