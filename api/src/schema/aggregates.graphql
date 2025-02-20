@@ -29,6 +29,7 @@ extend type Bacenta {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
     @cypher(
@@ -37,6 +38,7 @@ extend type Bacenta {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateBussingRecords"
     )
 }
 
@@ -48,6 +50,7 @@ extend type Governorship {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
     @cypher(
@@ -56,6 +59,7 @@ extend type Governorship {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateBussingRecords"
     )
 }
 
@@ -67,6 +71,7 @@ extend type Council {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
     @cypher(
@@ -75,6 +80,7 @@ extend type Council {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateBussingRecords"
     )
 }
 
@@ -86,6 +92,7 @@ extend type Stream {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
     @cypher(
@@ -94,6 +101,7 @@ extend type Stream {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateBussingRecords"
     )
 }
 
@@ -105,6 +113,7 @@ extend type Campus {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
     @cypher(
@@ -113,6 +122,7 @@ extend type Campus {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateBussingRecords"
     )
 }
 
@@ -124,6 +134,7 @@ extend type Oversight {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
     @cypher(
@@ -132,6 +143,7 @@ extend type Oversight {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateBussingRecords"
     )
 }
 
@@ -143,6 +155,7 @@ extend type Denomination {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
     @cypher(
@@ -151,6 +164,7 @@ extend type Denomination {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateBussingRecords"
     )
 }
 
@@ -181,6 +195,7 @@ extend type Hub {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
 }
 
@@ -192,6 +207,7 @@ extend type HubCouncil {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateRehearsalRecords(limit: Int! = 4): [AggregateRehearsalRecord!]!
     @cypher(
@@ -200,6 +216,7 @@ extend type HubCouncil {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateRehearsalRecords"
     )
 }
 
@@ -211,6 +228,7 @@ extend type Ministry {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateRehearsalRecords(limit: Int! = 4): [AggregateRehearsalRecord!]!
     @cypher(
@@ -219,6 +237,7 @@ extend type Ministry {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateRehearsalRecords"
     )
 }
 
@@ -230,6 +249,7 @@ extend type CreativeArts {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateServiceRecords"
     )
   aggregateRehearsalRecords(limit: Int! = 4): [AggregateRehearsalRecord!]!
     @cypher(
@@ -238,6 +258,7 @@ extend type CreativeArts {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateRehearsalRecords"
     )
   aggregateStageAttendanceRecords(
     limit: Int! = 4
@@ -248,5 +269,6 @@ extend type CreativeArts {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
       """
+      columnName: "aggregateStageAttendanceRecords"
     )
 }
