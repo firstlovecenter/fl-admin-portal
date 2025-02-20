@@ -6,6 +6,7 @@ type SwellDate implements TimeGraphNode
       MATCH (this)
       RETURN toString(this.date)
       """
+      columnName: "id"
     )
   date: Date
   swell: Boolean
@@ -16,6 +17,7 @@ type SwellDate implements TimeGraphNode
       WITH swellStatus WHERE swellStatus ='SwellDate'
       RETURN true
       """
+      columnName: "swell"
     )
   bussingDate: [BussingRecord!]! @relationship(type: "BUSSED_ON", direction: IN)
 }
@@ -68,6 +70,7 @@ extend type Campus {
         }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasNoActivity"
     )
   bacentasNoActivityCount(arrivalDate: String!): Int
     @cypher(
@@ -79,6 +82,7 @@ extend type Campus {
          }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasNoActivityCount"
     )
   bacentasMobilising(arrivalDate: String): [Bacenta!]!
     @cypher(
@@ -90,6 +94,7 @@ extend type Campus {
         AND bussing.leaderDeclaration IS NULL
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasMobilising"
     )
   bacentasMobilisingCount(arrivalDate: String!): Int
     @cypher(
@@ -101,6 +106,7 @@ extend type Campus {
         AND bussing.leaderDeclaration IS NULL
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasMobilisingCount"
     )
   bacentasOnTheWay(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -114,6 +120,7 @@ extend type Campus {
         }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasOnTheWay"
     )
   bacentasOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -127,6 +134,7 @@ extend type Campus {
         }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasOnTheWayCount"
     )
   bussingMembersOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -139,6 +147,7 @@ extend type Campus {
       WITH DISTINCT record
       RETURN SUM(record.leaderDeclaration)
       """
+      columnName: "bussingMembersOnTheWayCount"
     )
   bacentasNotCounted(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -152,6 +161,7 @@ extend type Campus {
       }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasNotCounted"
     )
   vehiclesNotCountedCount(arrivalDate: String!): Int
     @cypher(
@@ -165,6 +175,7 @@ extend type Campus {
       }
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "vehiclesNotCountedCount"
     )
   bacentasBelow8(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -176,6 +187,7 @@ extend type Campus {
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasBelow8"
     )
   bacentasBelow8Count(arrivalDate: String!): Int!
     @cypher(
@@ -187,6 +199,7 @@ extend type Campus {
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasBelow8Count"
     )
   bacentasHaveArrived(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -201,6 +214,7 @@ extend type Campus {
         WITH bacentas, bussing ORDER BY bussing.attendance DESC
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasHaveArrived"
     )
   bacentasHaveArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -214,6 +228,7 @@ extend type Campus {
         }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasHaveArrivedCount"
     )
   bussingMembersHaveArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -226,6 +241,7 @@ extend type Campus {
         WITH DISTINCT record
       RETURN SUM(record.attendance)
       """
+      columnName: "bussingMembersHaveArrivedCount"
     )
   bussesOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -239,6 +255,7 @@ extend type Campus {
         AND record.vehicle <> 'Car'
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "bussesOnTheWayCount"
     )
   bussesThatArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -252,6 +269,7 @@ extend type Campus {
         AND record.vehicle <> 'Car'
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "bussesThatArrivedCount"
     )
   graduatedBacentas: [Bacenta!]!
     @cypher(
@@ -289,6 +307,7 @@ extend type Stream {
         }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasNoActivity"
     )
   bacentasNoActivityCount(arrivalDate: String!): Int
     @cypher(
@@ -300,6 +319,7 @@ extend type Stream {
          }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasNoActivityCount"
     )
   bacentasMobilising(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -311,6 +331,7 @@ extend type Stream {
         AND bussing.leaderDeclaration IS NULL
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasMobilising"
     )
   bacentasMobilisingCount(arrivalDate: String!): Int
     @cypher(
@@ -322,6 +343,7 @@ extend type Stream {
         AND bussing.leaderDeclaration IS NULL
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasMobilisingCount"
     )
   bacentasOnTheWay(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -335,6 +357,7 @@ extend type Stream {
         }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasOnTheWay"
     )
   bacentasOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -348,6 +371,7 @@ extend type Stream {
         }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasOnTheWayCount"
     )
   bussesOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -361,6 +385,7 @@ extend type Stream {
         AND record.vehicle <> 'Car'
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "bussesOnTheWayCount"
     )
   bussingMembersOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -373,6 +398,7 @@ extend type Stream {
       WITH DISTINCT record
       RETURN SUM(record.leaderDeclaration)
       """
+      columnName: "bussingMembersOnTheWayCount"
     )
   bacentasNotCounted(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -386,6 +412,7 @@ extend type Stream {
       }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasNotCounted"
     )
   vehiclesNotCountedCount(arrivalDate: String!): Int
     @cypher(
@@ -399,6 +426,7 @@ extend type Stream {
       }
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "vehiclesNotCountedCount"
     )
   bacentasBelow8(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -410,6 +438,7 @@ extend type Stream {
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasBelow8"
     )
   bacentasBelow8Count(arrivalDate: String!): Int!
     @cypher(
@@ -421,6 +450,7 @@ extend type Stream {
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasBelow8Count"
     )
   bacentasHaveArrived(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -435,6 +465,7 @@ extend type Stream {
         WITH bacentas, bussing ORDER BY bussing.attendance DESC
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasHaveArrived"
     )
   bacentasHaveArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -448,6 +479,7 @@ extend type Stream {
         }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasHaveArrivedCount"
     )
   bussingMembersHaveArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -460,6 +492,7 @@ extend type Stream {
         WITH DISTINCT record
       RETURN SUM(record.attendance)
       """
+      columnName: "bussingMembersHaveArrivedCount"
     )
   bussesThatArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -473,6 +506,7 @@ extend type Stream {
         AND record.vehicle <> 'Car'
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "bussesThatArrivedCount"
     )
   graduatedBacentas: [Bacenta!]!
     @cypher(
@@ -508,6 +542,7 @@ extend type Council {
         }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasNoActivity"
     )
   bacentasNoActivityCount(arrivalDate: String!): Int
     @cypher(
@@ -519,6 +554,7 @@ extend type Council {
          }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasNoActivityCount"
     )
   bacentasMobilising(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -530,6 +566,7 @@ extend type Council {
         AND bussing.leaderDeclaration IS NULL
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasMobilising"
     )
   bacentasMobilisingCount(arrivalDate: String!): Int
     @cypher(
@@ -541,6 +578,7 @@ extend type Council {
         AND bussing.leaderDeclaration IS NULL
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasMobilisingCount"
     )
   bacentasOnTheWay(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -554,6 +592,7 @@ extend type Council {
         }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasOnTheWay"
     )
   bacentasOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -567,6 +606,7 @@ extend type Council {
         }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasOnTheWayCount"
     )
   bussesOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -580,6 +620,7 @@ extend type Council {
         AND record.vehicle <> 'Car'
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "bussesOnTheWayCount"
     )
   bussingMembersOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -592,6 +633,7 @@ extend type Council {
       WITH DISTINCT record
       RETURN SUM(record.leaderDeclaration)
       """
+      columnName: "bussingMembersOnTheWayCount"
     )
   bacentasNotCounted(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -605,6 +647,7 @@ extend type Council {
       }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasNotCounted"
     )
   vehiclesNotCountedCount(arrivalDate: String!): Int
     @cypher(
@@ -618,6 +661,7 @@ extend type Council {
       }
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "vehiclesNotCountedCount"
     )
   bacentasBelow8(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -629,6 +673,7 @@ extend type Council {
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasBelow8"
     )
   bacentasBelow8Count(arrivalDate: String!): Int!
     @cypher(
@@ -640,6 +685,7 @@ extend type Council {
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasBelow8Count"
     )
   bacentasHaveArrived(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -654,6 +700,7 @@ extend type Council {
         WITH bacentas, bussing ORDER BY bussing.attendance DESC
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasHaveArrived"
     )
   bacentasHaveArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -667,6 +714,7 @@ extend type Council {
         }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasHaveArrivedCount"
     )
   bussingMembersHaveArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -679,6 +727,7 @@ extend type Council {
       WITH DISTINCT record
       RETURN SUM(record.attendance)
       """
+      columnName: "bussingMembersHaveArrivedCount"
     )
   bussesThatArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -692,26 +741,32 @@ extend type Council {
         AND record.vehicle <> 'Car'
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "bussesThatArrivedCount"
     )
   graduatedBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(bacentas:Green:Bacenta) RETURN bacentas"
+      columnName: "graduatedBacentas"
     )
   icBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(bacentas:Red:Bacenta) RETURN bacentas"
+      columnName: "icBacentas"
     )
   icBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS*2]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "vacationIcBacentaCount"
     )
 }
 
@@ -728,6 +783,7 @@ extend type Governorship {
         }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasNoActivity"
     )
   bacentasNoActivityCount(arrivalDate: String!): Int
     @cypher(
@@ -739,6 +795,7 @@ extend type Governorship {
          }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasNoActivityCount"
     )
   bacentasMobilising(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -750,6 +807,7 @@ extend type Governorship {
         AND bussing.leaderDeclaration IS NULL
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasMobilising"
     )
   bacentasMobilisingCount(arrivalDate: String!): Int
     @cypher(
@@ -761,6 +819,7 @@ extend type Governorship {
         AND bussing.leaderDeclaration IS NULL
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasMobilisingCount"
     )
   bacentasOnTheWay(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -774,6 +833,7 @@ extend type Governorship {
         }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasOnTheWay"
     )
   bacentasOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -787,6 +847,7 @@ extend type Governorship {
         }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasOnTheWayCount"
     )
   bussesOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -800,6 +861,7 @@ extend type Governorship {
         AND record.vehicle <> 'Car'
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "bussesOnTheWayCount"
     )
   bussingMembersOnTheWayCount(arrivalDate: String!): Int
     @cypher(
@@ -812,6 +874,7 @@ extend type Governorship {
       WITH DISTINCT record
       RETURN SUM(record.leaderDeclaration)
       """
+      columnName: "bussingMembersOnTheWayCount"
     )
   bacentasNotCounted(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -825,6 +888,7 @@ extend type Governorship {
       }
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasNotCounted"
     )
   vehiclesNotCountedCount(arrivalDate: String!): Int
     @cypher(
@@ -838,6 +902,7 @@ extend type Governorship {
       }
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "vehiclesNotCountedCount"
     )
   bacentasBelow8(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -849,6 +914,7 @@ extend type Governorship {
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasBelow8"
     )
   bacentasBelow8Count(arrivalDate: String!): Int!
     @cypher(
@@ -860,6 +926,7 @@ extend type Governorship {
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasBelow8Count"
     )
   bacentasHaveArrived(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -874,6 +941,7 @@ extend type Governorship {
         WITH bacentas, bussing ORDER BY bussing.attendance DESC
       RETURN DISTINCT bacentas
       """
+      columnName: "bacentasHaveArrived"
     )
   bacentasHaveArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -887,6 +955,7 @@ extend type Governorship {
         }
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bacentasHaveArrivedCount"
     )
   bussingMembersHaveArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -899,6 +968,7 @@ extend type Governorship {
         WITH DISTINCT record
       RETURN SUM(record.attendance)
       """
+      columnName: "bussingMembersHaveArrivedCount"
     )
   bussesThatArrivedCount(arrivalDate: String!): Int
     @cypher(
@@ -912,26 +982,32 @@ extend type Governorship {
         AND record.vehicle <> 'Car'
       RETURN COUNT(DISTINCT record)
       """
+      columnName: "bussesThatArrivedCount"
     )
   graduatedBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS]->(bacentas:Green:Bacenta) RETURN bacentas"
+      columnName: "graduatedBacentas"
     )
   icBacentas: [Bacenta!]!
     @cypher(
       statement: "MATCH (this)-[:HAS]->(bacentas:Red:Bacenta) RETURN bacentas"
+      columnName: "icBacentas"
     )
   icBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
       statement: "MATCH (this)-[:HAS]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas)"
+      columnName: "vacationIcBacentaCount"
     )
 }
 
@@ -948,6 +1024,7 @@ extend type Bacenta {
       WITH status WHERE status = 'Green' OR status = 'Red'
       RETURN status
       """
+      columnName: "graduationStatus"
     )
 
   mobileNetwork: String
@@ -958,6 +1035,7 @@ extend type Bacenta {
   arrivalsCodeOfTheDay: String!
     @cypher(
       statement: "MATCH (arrivals:ArrivalsCodeOfTheDay) RETURN arrivals.code"
+      columnName: "arrivalsCodeOfTheDay"
     )
   bussing(limit: Int!): [BussingRecord!]!
     @cypher(
@@ -965,6 +1043,7 @@ extend type Bacenta {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
       RETURN bussing ORDER BY date.date DESC LIMIT $limit
       """
+      columnName: "bussing"
     )
   bussingThisWeek(limit: Int! = 1, bussingDate: String!): BussingRecord
     @cypher(
@@ -973,6 +1052,7 @@ extend type Bacenta {
       WHERE date(date.date).week = date($bussingDate).week AND date(date.date).year = date($bussingDate).year
       RETURN bussing ORDER BY date.date DESC LIMIT $limit
       """
+      columnName: "bussingThisWeek"
     )
   code: Int!
 }
@@ -986,6 +1066,7 @@ type BussingRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:BUSSED_ON]->(date:TimeGraph)
       RETURN date(date.date).week
       """
+      columnName: "week"
     )
   # Mobilisation
   createdAt: DateTime! #mobilisation time is the time the record was created
@@ -1003,6 +1084,7 @@ type BussingRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
       WHERE record.picture IS NOT NULL
       RETURN collect(record.picture)
       """
+      columnName: "bussingPictures"
     )
   numberOfBusses: Int #Legacy Property for before we started collecting Spinter/Urvan details
   numberOfSprinters: Int
@@ -1022,6 +1104,7 @@ type BussingRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:INCLUDES_RECORD]->(record:VehicleRecord)-[:COUNTED_BY]->(member:Member)
       RETURN DISTINCT member
       """
+      columnName: "counted_by"
     )
 
   vehicleRecords: [VehicleRecord!]!
@@ -1115,6 +1198,7 @@ extend type Mutation {
       SET arr.code = apoc.text.random(5, 'A-Z0-9')
       RETURN arr.code
       """
+      columnName: "code"
     )
   SetCodeOfTheDay(code: String!): String!
     @auth(rules: [{ roles: ["adminCampus", "arrivalsAdminCampus"] }])
@@ -1124,6 +1208,7 @@ extend type Mutation {
       SET arr.code = $code
       RETURN arr.code
       """
+      columnName: "code"
     )
 
   UpdateBacentaBussingDetails(
@@ -1148,7 +1233,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})
-    
+
       WITH bacenta
       MATCH (bacenta)
         SET bacenta.sprinterTopUp = $sprinterTopUp,
@@ -1170,6 +1255,7 @@ extend type Mutation {
 
       RETURN bacenta
       """
+      columnName: "bacenta"
     )
 
   UpdateBusPaymentDetails(
@@ -1201,6 +1287,7 @@ extend type Mutation {
 
       RETURN bacenta
       """
+      columnName: "bacenta"
     )
 
   UploadMobilisationPicture(
@@ -1240,6 +1327,7 @@ extend type Mutation {
 
       RETURN vehicleRecord
       """
+      columnName: "vehicleRecord"
     )
 
   SetSwellDate(date: String!): TimeGraph!
@@ -1269,6 +1357,7 @@ extend type Mutation {
         stream.arrivalEndTime = $arrivalEndTime
       RETURN stream
       """
+      columnName: "stream"
     )
     @auth(
       rules: [
@@ -1315,6 +1404,7 @@ extend type Mutation {
         stream.arrivalEndTime = $arrivalEndTime
       RETURN stream
       """
+      columnName: "stream"
     )
     @auth(
       rules: [
