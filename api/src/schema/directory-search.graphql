@@ -7,6 +7,7 @@ extend type Member {
       OR toLower(members.firstName + ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
+      columnName: "memberSearch"
     )
   basontaMemberSearch(key: String!, limit: Int! = 5): [Member!]!
     @cypher(
@@ -19,6 +20,7 @@ extend type Member {
       OR toLower(members.firstName + ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
+      columnName: "basontaMemberSearch"
     )
   basontaMemberSearchFromHub(
     hubId: ID!
@@ -37,6 +39,7 @@ extend type Member {
       OR toLower(members.firstName + ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
+      columnName: "basontaMemberSearchFromHub"
     )
   fellowshipSearch(key: String!, limit: Int! = 5): [Fellowship!]!
     @cypher(
@@ -45,6 +48,7 @@ extend type Member {
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship LIMIT $limit
       """
+      columnName: "fellowshipSearch"
     )
   bacentaSearch(key: String!, limit: Int! = 5): [Bacenta!]!
     @cypher(
@@ -53,6 +57,7 @@ extend type Member {
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
       RETURN DISTINCT bacenta LIMIT $limit
       """
+      columnName: "bacentaSearch"
     )
   governorshipSearch(key: String!, limit: Int! = 5): [Governorship!]!
     @cypher(
@@ -61,6 +66,7 @@ extend type Member {
       WHERE toLower(governorship.name) CONTAINS toLower($key)
       RETURN DISTINCT governorship LIMIT $limit
       """
+      columnName: "governorshipSearch"
     )
   councilSearch(key: String!, limit: Int! = 5): [Council!]!
     @cypher(
@@ -69,6 +75,7 @@ extend type Member {
       WHERE toLower(council.name) CONTAINS toLower($key)
       RETURN DISTINCT council LIMIT $limit
       """
+      columnName: "councilSearch"
     )
   streamSearch(key: String!, limit: Int! = 5): [Stream!]!
     @cypher(
@@ -77,6 +84,7 @@ extend type Member {
       WHERE toLower(stream.name) CONTAINS toLower($key)
       RETURN DISTINCT stream LIMIT $limit
       """
+      columnName: "streamSearch"
     )
   campusSearch(key: String!, limit: Int! = 5): [Campus!]!
     @cypher(
@@ -85,6 +93,7 @@ extend type Member {
       WHERE toLower(campus.name) CONTAINS toLower($key)
       RETURN DISTINCT campus LIMIT $limit
       """
+      columnName: "campusSearch"
     )
   oversightSearch(key: String!, limit: Int! = 5): [Oversight!]!
     @cypher(
@@ -93,6 +102,7 @@ extend type Member {
       WHERE toLower(oversight.name) CONTAINS toLower($key)
       RETURN DISTINCT oversight LIMIT $limit
       """
+      columnName: "oversightSearch"
     )
 
   creativeArtsSearch(key: String!, limit: Int! = 5): [CreativeArts!]!
@@ -102,6 +112,7 @@ extend type Member {
       WHERE toLower(creativeArts.name) CONTAINS toLower($key)
       RETURN DISTINCT creativeArts LIMIT $limit
       """
+      columnName: "creativeArtsSearch"
     )
   ministrySearch(key: String!, limit: Int! = 5): [Ministry!]!
     @cypher(
@@ -110,6 +121,7 @@ extend type Member {
       WHERE toLower(ministry.name) CONTAINS toLower($key)
       RETURN DISTINCT ministry LIMIT $limit
       """
+      columnName: "ministrySearch"
     )
   hubCouncilSearch(key: String!, limit: Int! = 5): [HubCouncil!]!
     @cypher(
@@ -118,6 +130,7 @@ extend type Member {
       WHERE toLower(hub.name) CONTAINS toLower($key)
       RETURN DISTINCT hub LIMIT $limit
       """
+      columnName: "hubCouncilSearch"
     )
   hubSearch(key: String!, limit: Int! = 5): [Hub!]!
     @cypher(
@@ -126,6 +139,7 @@ extend type Member {
       WHERE toLower(hub.name) CONTAINS toLower($key)
       RETURN DISTINCT hub LIMIT $limit
       """
+      columnName: "hubSearch"
     )
   hubFellowshipSearch(key: String!, limit: Int! = 5): [HubFellowship!]!
     @cypher(
@@ -134,6 +148,7 @@ extend type Member {
       WHERE toLower(hub.name) CONTAINS toLower($key)
       RETURN DISTINCT hub LIMIT $limit
       """
+      columnName: "hubFellowshipSearch"
     )
 }
 
@@ -145,6 +160,7 @@ extend type Denomination {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
+      columnName: "memberSearch"
     )
   fellowshipSearch(key: String!, limit: Int!): [Fellowship!]!
     @cypher(
@@ -153,6 +169,7 @@ extend type Denomination {
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship LIMIT $limit
       """
+      columnName: "fellowshipSearch"
     )
   bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
     @cypher(
@@ -161,6 +178,7 @@ extend type Denomination {
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
       RETURN DISTINCT bacenta LIMIT $limit
       """
+      columnName: "bacentaSearch"
     )
   governorshipSearch(key: String!, limit: Int!): [Governorship!]!
     @cypher(
@@ -169,6 +187,7 @@ extend type Denomination {
       WHERE toLower(governorship.name) CONTAINS toLower($key)
       RETURN DISTINCT governorship LIMIT $limit
       """
+      columnName: "governorshipSearch"
     )
   councilSearch(key: String!, limit: Int!): [Council!]!
     @cypher(
@@ -177,6 +196,7 @@ extend type Denomination {
       WHERE toLower(council.name) CONTAINS toLower($key)
       RETURN DISTINCT council LIMIT $limit
       """
+      columnName: "councilSearch"
     )
   streamSearch(key: String!, limit: Int!): [Stream!]!
     @cypher(
@@ -185,6 +205,7 @@ extend type Denomination {
       WHERE toLower(stream.name) CONTAINS toLower($key)
       RETURN DISTINCT stream LIMIT $limit
       """
+      columnName: "streamSearch"
     )
   campusSearch(key: String!, limit: Int!): [Campus!]!
     @cypher(
@@ -193,6 +214,7 @@ extend type Denomination {
       WHERE toLower(campus.name) CONTAINS toLower($key)
       RETURN DISTINCT campus LIMIT $limit
       """
+      columnName: "campusSearch"
     )
   oversightSearch(key: String!, limit: Int!): [Oversight!]!
     @cypher(
@@ -201,6 +223,7 @@ extend type Denomination {
       WHERE toLower(oversight.name) CONTAINS toLower($key)
       RETURN DISTINCT oversight LIMIT $limit
       """
+      columnName: "oversightSearch"
     )
 }
 
@@ -212,6 +235,7 @@ extend type Oversight {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
+      columnName: "memberSearch"
     )
   fellowshipSearch(key: String!, limit: Int!): [Fellowship!]!
     @cypher(
@@ -220,6 +244,7 @@ extend type Oversight {
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship LIMIT $limit
       """
+      columnName: "fellowshipSearch"
     )
   bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
     @cypher(
@@ -228,6 +253,7 @@ extend type Oversight {
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
       RETURN DISTINCT bacenta LIMIT $limit
       """
+      columnName: "bacentaSearch"
     )
   governorshipSearch(key: String!, limit: Int!): [Governorship!]!
     @cypher(
@@ -236,6 +262,7 @@ extend type Oversight {
       WHERE toLower(governorship.name) CONTAINS toLower($key)
       RETURN DISTINCT governorship LIMIT $limit
       """
+      columnName: "governorshipSearch"
     )
   councilSearch(key: String!, limit: Int!): [Council!]!
     @cypher(
@@ -244,6 +271,7 @@ extend type Oversight {
       WHERE toLower(council.name) CONTAINS toLower($key)
       RETURN DISTINCT council LIMIT $limit
       """
+      columnName: "councilSearch"
     )
   streamSearch(key: String!, limit: Int!): [Stream!]!
     @cypher(
@@ -252,6 +280,7 @@ extend type Oversight {
       WHERE toLower(stream.name) CONTAINS toLower($key)
       RETURN DISTINCT stream LIMIT $limit
       """
+      columnName: "streamSearch"
     )
   campusSearch(key: String!, limit: Int!): [Campus!]!
     @cypher(
@@ -260,6 +289,7 @@ extend type Oversight {
       WHERE toLower(campus.name) CONTAINS toLower($key)
       RETURN DISTINCT campus LIMIT $limit
       """
+      columnName: "campusSearch"
     )
 }
 
@@ -271,6 +301,7 @@ extend type Campus {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
+      columnName: "memberSearch"
     )
   fellowshipSearch(key: String!, limit: Int!): [Fellowship!]!
     @cypher(
@@ -279,6 +310,7 @@ extend type Campus {
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship LIMIT $limit
       """
+      columnName: "fellowshipSearch"
     )
   bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
     @cypher(
@@ -287,6 +319,7 @@ extend type Campus {
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
       RETURN DISTINCT bacenta LIMIT $limit
       """
+      columnName: "bacentaSearch"
     )
   governorshipSearch(key: String!, limit: Int!): [Governorship!]!
     @cypher(
@@ -295,6 +328,7 @@ extend type Campus {
       WHERE toLower(governorship.name) CONTAINS toLower($key)
       RETURN DISTINCT governorship LIMIT $limit
       """
+      columnName: "governorshipSearch"
     )
   councilSearch(key: String!, limit: Int!): [Council!]!
     @cypher(
@@ -303,6 +337,7 @@ extend type Campus {
       WHERE toLower(council.name) CONTAINS toLower($key)
       RETURN DISTINCT council LIMIT $limit
       """
+      columnName: "councilSearch"
     )
   streamSearch(key: String!, limit: Int!): [Stream!]!
     @cypher(
@@ -311,6 +346,7 @@ extend type Campus {
       WHERE toLower(stream.name) CONTAINS toLower($key)
       RETURN DISTINCT stream LIMIT $limit
       """
+      columnName: "streamSearch"
     )
   creativeArtsSearch(key: String!, limit: Int!): [CreativeArts!]!
     @cypher(
@@ -319,6 +355,7 @@ extend type Campus {
       WHERE toLower(creativeArts.name) CONTAINS toLower($key)
       RETURN DISTINCT creativeArts LIMIT $limit
       """
+      columnName: "creativeArtsSearch"
     )
   ministrySearch(key: String!, limit: Int!): [Ministry!]!
     @cypher(
@@ -327,6 +364,7 @@ extend type Campus {
       WHERE toLower(ministry.name) CONTAINS toLower($key)
       RETURN DISTINCT ministry LIMIT $limit
       """
+      columnName: "ministrySearch"
     )
   hubSearch(key: String!, limit: Int!): [Hub!]!
     @cypher(
@@ -335,6 +373,7 @@ extend type Campus {
       WHERE toLower(hub.name) CONTAINS toLower($key)
       RETURN DISTINCT hub LIMIT $limit
       """
+      columnName: "hubSearch"
     )
 }
 
@@ -346,6 +385,7 @@ extend type Stream {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
       """
+      columnName: "memberSearch"
     )
   fellowshipSearch(key: String!, limit: Int!): [Fellowship!]!
     @cypher(
@@ -354,6 +394,7 @@ extend type Stream {
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship LIMIT $limit
       """
+      columnName: "fellowshipSearch"
     )
   bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
     @cypher(
@@ -362,6 +403,7 @@ extend type Stream {
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
       RETURN DISTINCT bacenta LIMIT $limit
       """
+      columnName: "bacentaSearch"
     )
   governorshipSearch(key: String!, limit: Int!): [Governorship!]!
     @cypher(
@@ -370,6 +412,7 @@ extend type Stream {
       WHERE toLower(governorship.name) CONTAINS toLower($key)
       RETURN DISTINCT governorship LIMIT $limit
       """
+      columnName: "governorshipSearch"
     )
   councilSearch(key: String!, limit: Int!): [Council!]!
     @cypher(
@@ -378,6 +421,7 @@ extend type Stream {
       WHERE toLower(council.name) CONTAINS toLower($key)
       RETURN DISTINCT council LIMIT $limit
       """
+      columnName: "councilSearch"
     )
   ministrySearch(key: String!, limit: Int!): [Ministry!]!
     @cypher(
@@ -386,6 +430,7 @@ extend type Stream {
       WHERE toLower(ministry.name) CONTAINS toLower($key)
       RETURN DISTINCT ministry LIMIT $limit
       """
+      columnName: "ministrySearch"
     )
   hubSearch(key: String!, limit: Int!): [Hub!]!
     @cypher(
@@ -394,6 +439,7 @@ extend type Stream {
       WHERE toLower(hub.name) CONTAINS toLower($key)
       RETURN DISTINCT hub LIMIT $limit
       """
+      columnName: "hubSearch"
     )
 }
 
@@ -405,6 +451,7 @@ extend type Council {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
       """
+      columnName: "memberSearch"
     )
   fellowshipSearch(key: String!, limit: Int!): [Fellowship!]!
     @cypher(
@@ -413,6 +460,7 @@ extend type Council {
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship LIMIT $limit
       """
+      columnName: "fellowshipSearch"
     )
   bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
     @cypher(
@@ -421,6 +469,7 @@ extend type Council {
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
       RETURN DISTINCT bacenta LIMIT $limit
       """
+      columnName: "bacentaSearch"
     )
   governorshipSearch(key: String!, limit: Int!): [Governorship!]!
     @cypher(
@@ -429,6 +478,7 @@ extend type Council {
       WHERE toLower(governorship.name) CONTAINS toLower($key)
       RETURN DISTINCT governorship LIMIT $limit
       """
+      columnName: "governorshipSearch"
     )
   hubSearch(key: String!, limit: Int!): [Hub!]!
     @cypher(
@@ -437,6 +487,7 @@ extend type Council {
       WHERE toLower(hub.name) CONTAINS toLower($key)
       RETURN DISTINCT hub LIMIT $limit
       """
+      columnName: "hubSearch"
     )
 }
 
@@ -448,6 +499,7 @@ extend type Governorship {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
       """
+      columnName: "memberSearch"
     )
   fellowshipSearch(key: String!, limit: Int!): [Fellowship!]!
     @cypher(
@@ -456,6 +508,7 @@ extend type Governorship {
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship LIMIT $limit
       """
+      columnName: "fellowshipSearch"
     )
   bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
     @cypher(
@@ -464,6 +517,7 @@ extend type Governorship {
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
       RETURN DISTINCT bacenta LIMIT $limit
       """
+      columnName: "bacentaSearch"
     )
 }
 
@@ -475,6 +529,7 @@ extend type Bacenta {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
       """
+      columnName: "memberSearch"
     )
   fellowshipSearch(key: String!, limit: Int!): [Fellowship!]!
     @cypher(
@@ -483,6 +538,7 @@ extend type Bacenta {
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship LIMIT $limit
       """
+      columnName: "fellowshipSearch"
     )
 }
 
@@ -494,6 +550,7 @@ extend type Fellowship {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
       """
+      columnName: "memberSearch"
     )
 }
 
@@ -505,6 +562,7 @@ extend type HubFellowship {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
       """
+      columnName: "memberSearch"
     )
 }
 
@@ -519,6 +577,7 @@ extend type Hub {
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
       """
+      columnName: "memberSearch"
     )
 }
 
@@ -535,6 +594,7 @@ extend type Query {
       OR toLower(member.firstName + ' ' + member.middleName+ ' '+ member.lastName) CONTAINS toLower($searchKey)
       RETURN member LIMIT 5
       """
+      columnName: "oversightMemberSearch"
     )
 
   campusMemberSearch(searchKey: String!, campusId: ID!): [Member!]!
@@ -551,6 +611,7 @@ extend type Query {
       OR toLower(member.firstName + ' ' + member.middleName+ ' '+ member.lastName) CONTAINS toLower($searchKey)
       RETURN member LIMIT 5
       """
+      columnName: "campusMemberSearch"
     )
   streamMemberSearch(searchKey: String!, streamId: ID!): [Member!]!
     @auth(
@@ -567,6 +628,7 @@ extend type Query {
       WITH member WHERE member IS NOT NULL
       RETURN DISTINCT(member) LIMIT 5
       """
+      columnName: "streamMemberSearch"
     )
   councilMemberSearch(searchKey: String!, councilId: ID!): [Member!]!
     @auth(
@@ -592,6 +654,7 @@ extend type Query {
       WITH member WHERE member IS NOT NULL
       RETURN DISTINCT(member) LIMIT 5
       """
+      columnName: "councilMemberSearch"
     )
   governorshipMemberSearch(searchKey: String!, governorshipId: ID!): [Member!]!
     @auth(
@@ -617,6 +680,7 @@ extend type Query {
 
       RETURN member LIMIT 5
       """
+      columnName: "governorshipMemberSearch"
     )
   bacentaMemberSearch(searchKey: String!, bacentaId: ID!): [Member!]!
     @auth(rules: [{ roles: ["leaderBacenta"] }])
@@ -631,6 +695,7 @@ extend type Query {
 
       RETURN member LIMIT 5
       """
+      columnName: "bacentaMemberSearch"
     )
   fellowshipMemberSearch(searchKey: String!, fellowshipId: ID!): [Member!]!
     @auth(rules: [{ roles: ["leaderFellowship"] }])
@@ -645,6 +710,7 @@ extend type Query {
 
       RETURN member LIMIT 5
       """
+      columnName: "fellowshipMemberSearch"
     )
   creativeArtsMemberSearch(searchKey: String!, creativeArtsId: ID!): [Member!]!
     @auth(rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }])
@@ -658,6 +724,7 @@ extend type Query {
       OR toLower(member.firstName + ' ' + member.middleName+ ' '+ member.lastName) CONTAINS toLower($searchKey)
       RETURN member LIMIT 5
       """
+      columnName: "creativeArtsMemberSearch"
     )
   ministryMemberSearch(searchKey: String!, ministryId: ID!): [Member!]!
     @auth(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
@@ -668,9 +735,10 @@ extend type Query {
       OR toLower(member.middleName) STARTS WITH toLower($searchKey)
       OR toLower(member.lastName) STARTS WITH toLower($searchKey)
       OR toLower(member.firstName + ' ' + member.lastName) CONTAINS toLower($searchKey)
-      OR toLower(member.firstName + ' ' + member.middleName+ ' '+ member.lastName) CONTAINS toLower($searchKey)
+      OR toLower(member.firstName + ' ' + member middleName+ ' '+ member.lastName) CONTAINS toLower($searchKey)
       RETURN member LIMIT 5
       """
+      columnName: "ministryMemberSearch"
     )
   hubMemberSearch(searchKey: String!, hubId: ID!): [Member!]!
     @auth(rules: [{ roles: ["leaderHub"] }])
@@ -680,10 +748,11 @@ extend type Query {
       WHERE toLower(member.firstName) STARTS WITH toLower($searchKey)
       OR toLower(member.middleName) STARTS WITH toLower($searchKey)
       OR toLower(member.lastName) STARTS WITH toLower($searchKey)
-      OR toLower(member.firstName + ' ' + member.lastName) CONTAINS toLower($searchKey)
-      OR toLower(member.firstName + ' ' + member.middleName+ ' '+ member.lastName) CONTAINS toLower($searchKey)
+      OR toLower(member.firstName + ' ' + member lastName) CONTAINS toLower($searchKey)
+      OR toLower(member.firstName + ' ' + member middleName+ ' '+ member lastName) CONTAINS toLower($searchKey)
       RETURN member LIMIT 5
       """
+      columnName: "hubMemberSearch"
     )
 
   ### Fellowship Search ###
@@ -705,6 +774,7 @@ extend type Query {
       OR toLower(fellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT fellowship LIMIT 5
       """
+      columnName: "oversightFellowshipSearch"
     )
 
   campusFellowshipSearch(searchKey: String!, campusId: ID!): [Fellowship!]!
@@ -718,6 +788,7 @@ extend type Query {
       OR toLower(fellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT fellowship LIMIT 5
       """
+      columnName: "campusFellowshipSearch"
     )
 
   streamFellowshipSearch(searchKey: String!, streamId: ID!): [Fellowship!]!
@@ -732,6 +803,7 @@ extend type Query {
       OR toLower(fellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT fellowship LIMIT 5
       """
+      columnName: "streamFellowshipSearch"
     )
 
   councilFellowshipSearch(searchKey: String!, councilId: ID!): [Fellowship!]!
@@ -748,6 +820,7 @@ extend type Query {
       OR toLower(fellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT fellowship LIMIT 5
       """
+      columnName: "councilFellowshipSearch"
     )
   governorshipFellowshipSearch(
     searchKey: String!
@@ -772,6 +845,7 @@ extend type Query {
       OR toLower(fellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT fellowship LIMIT 5
       """
+      columnName: "governorshipFellowshipSearch"
     )
   bacentaFellowshipSearch(searchKey: String!, bacentaId: ID!): [Fellowship!]!
     @auth(rules: [{ roles: ["leaderBacenta"] }])
@@ -782,6 +856,7 @@ extend type Query {
       OR toLower(fellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT fellowship LIMIT 5
       """
+      columnName: "bacentaFellowshipSearch"
     )
 
   creativeArtsHubFellowshipSearch(
@@ -796,6 +871,7 @@ extend type Query {
       OR toLower(hubFellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT hubFellowship LIMIT 5
       """
+      columnName: "creativeArtsHubFellowshipSearch"
     )
   ministryHubFellowshipSearch(
     searchKey: String!
@@ -809,6 +885,7 @@ extend type Query {
       OR toLower(hubFellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT hubFellowship LIMIT 5
       """
+      columnName: "ministryHubFellowshipSearch"
     )
   hubHubFellowshipSearch(searchKey: String!, hubId: ID!): [HubFellowship!]!
     @auth(rules: [{ roles: ["leaderHub"] }])
@@ -819,6 +896,7 @@ extend type Query {
       OR toLower(hubFellowship.name) CONTAINS toLower($searchKey)
       RETURN DISTINCT hubFellowship LIMIT 5
       """
+      columnName: "hubHubFellowshipSearch"
     )
 
   ### Bacenta Search ###
@@ -838,6 +916,7 @@ extend type Query {
       OR toLower(bacenta.name) CONTAINS toLower($searchKey)
       RETURN bacenta LIMIT 5
       """
+      columnName: "oversightBacentaSearch"
     )
 
   campusBacentaSearch(searchKey: String!, campusId: ID!): [Bacenta]
@@ -851,6 +930,7 @@ extend type Query {
       OR toLower(bacenta.name) CONTAINS toLower($searchKey)
       RETURN bacenta LIMIT 5
       """
+      columnName: "campusBacentaSearch"
     )
   streamBacentaSearch(searchKey: String!, streamId: ID!): [Bacenta]
     @auth(
@@ -864,6 +944,7 @@ extend type Query {
       OR toLower(bacenta.name) CONTAINS toLower($searchKey)
       RETURN bacenta LIMIT 5
       """
+      columnName: "streamBacentaSearch"
     )
   councilBacentaSearch(searchKey: String!, councilId: ID!): [Bacenta]
     @auth(
@@ -879,6 +960,7 @@ extend type Query {
       OR toLower(bacenta.name) CONTAINS toLower($searchKey)
       RETURN bacenta LIMIT 5
       """
+      columnName: "councilBacentaSearch"
     )
   governorshipBacentaSearch(
     searchKey: String!
@@ -901,9 +983,10 @@ extend type Query {
       MATCH (governorship)-[:HAS]->(bacenta:Bacenta)
 
       WHERE toLower(bacenta.name) STARTS WITH toLower($searchKey)
-      OR toLower(bacenta.name) CONTAINS toLower($searchKey)
+      OR toLower(bacenta name) CONTAINS toLower($searchKey)
       RETURN bacenta LIMIT 5
       """
+      columnName: "governorshipBacentaSearch"
     )
 
   ### Governorship Search ###
@@ -925,6 +1008,7 @@ extend type Query {
       OR toLower(governorship.name) CONTAINS toLower($searchKey)
       RETURN governorship LIMIT 5
       """
+      columnName: "oversightGovernorshipSearch"
     )
 
   campusGovernorshipSearch(searchKey: String!, campusId: ID!): [Governorship!]!
@@ -938,6 +1022,7 @@ extend type Query {
       OR toLower(governorship.name) CONTAINS toLower($searchKey)
       RETURN governorship LIMIT 5
       """
+      columnName: "campusGovernorshipSearch"
     )
   streamGovernorshipSearch(searchKey: String!, streamId: ID!): [Governorship!]!
     @auth(
@@ -951,6 +1036,7 @@ extend type Query {
       OR toLower(governorship.name) CONTAINS toLower($searchKey)
       RETURN governorship LIMIT 5
       """
+      columnName: "streamGovernorshipSearch"
     )
   councilGovernorshipSearch(
     searchKey: String!
@@ -969,6 +1055,7 @@ extend type Query {
       OR toLower(governorship.name) CONTAINS toLower($searchKey)
       RETURN governorship LIMIT 5
       """
+      columnName: "councilGovernorshipSearch"
     )
 
   ### Council Search ###
@@ -987,6 +1074,7 @@ extend type Query {
       OR toLower(council.name) CONTAINS toLower($searchKey)
       RETURN council LIMIT 5
       """
+      columnName: "oversightCouncilSearch"
     )
 
   campusCouncilSearch(searchKey: String!, campusId: ID!): [Council!]!
@@ -1000,6 +1088,7 @@ extend type Query {
       OR toLower(council.name) CONTAINS toLower($searchKey)
       RETURN council LIMIT 5
       """
+      columnName: "campusCouncilSearch"
     )
   streamCouncilSearch(searchKey: String!, streamId: ID!): [Council!]!
     @auth(
@@ -1013,6 +1102,7 @@ extend type Query {
       OR toLower(council.name) CONTAINS toLower($searchKey)
       RETURN council LIMIT 5
       """
+      columnName: "streamCouncilSearch"
     )
 
   ### Stream Search ###
@@ -1031,6 +1121,7 @@ extend type Query {
       OR toLower(stream.name) CONTAINS toLower($searchKey)
       RETURN stream LIMIT 5
       """
+      columnName: "oversightStreamSearch"
     )
   campusStreamSearch(searchKey: String!, campusId: ID!): [Stream!]!
     @auth(
@@ -1043,6 +1134,7 @@ extend type Query {
       OR toLower(stream.name) CONTAINS toLower($searchKey)
       RETURN stream LIMIT 5
       """
+      columnName: "campusStreamSearch"
     )
 
   ### Campus Search ###
@@ -1061,6 +1153,7 @@ extend type Query {
       OR toLower(gathering.name) CONTAINS toLower($searchKey)
       RETURN gathering LIMIT 5
       """
+      columnName: "oversightCampusSearch"
     )
 
   ### Creative Arts Search ###
@@ -1073,6 +1166,7 @@ extend type Query {
       OR toLower(creativeArts.name) CONTAINS toLower($searchKey)
       RETURN creativeArts LIMIT 5
       """
+      columnName: "campusCreativeArtsSearch"
     )
 
   ### Ministry Search ###
@@ -1085,6 +1179,7 @@ extend type Query {
       OR toLower(ministry.name) CONTAINS toLower($searchKey)
       RETURN ministry LIMIT 5
       """
+      columnName: "campusMinistrySearch"
     )
   streamMinistrySearch(searchKey: String!, streamId: ID!): [Ministry!]!
     @auth(rules: [{ roles: ["adminStream", "leaderStream"] }])
@@ -1092,9 +1187,10 @@ extend type Query {
       statement: """
       MATCH (stream:Stream {id: $streamId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)
       WHERE toLower(ministry.name) STARTS WITH toLower($searchKey)
-      OR toLower(ministry.name) CONTAINS toLower($searchKey)
+      OR toLower(ministry name) CONTAINS toLower($searchKey)
       RETURN ministry LIMIT 5
       """
+      columnName: "streamMinistrySearch"
     )
   creativeArtsMinistrySearch(
     searchKey: String!
@@ -1105,9 +1201,10 @@ extend type Query {
       statement: """
       MATCH (creativeArts:CreativeArts {id: $creativeArtsId})-[:HAS]->(ministry:Ministry)
       WHERE toLower(ministry.name) STARTS WITH toLower($searchKey)
-      OR toLower(ministry.name) CONTAINS toLower($searchKey)
+      OR toLower(ministry name) CONTAINS toLower($searchKey)
       RETURN ministry LIMIT 5
       """
+      columnName: "creativeArtsMinistrySearch"
     )
 
   ### Hub Search ###
@@ -1117,48 +1214,53 @@ extend type Query {
       statement: """
       MATCH (gathering:Campus {id: $campusId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)-[:HAS]->(hub:Hub)
       WHERE toLower(hub.name) STARTS WITH toLower($searchKey)
-      OR toLower(hub.name) CONTAINS toLower($searchKey)
+      OR toLower(hub name) CONTAINS toLower($searchKey)
       RETURN hub LIMIT 5
       """
+      columnName: "campusHubSearch"
     )
   streamHubSearch(searchKey: String!, streamId: ID!): [Hub!]!
     @auth(rules: [{ roles: ["adminStream", "leaderStream"] }])
     @cypher(
       statement: """
       MATCH (stream:Stream {id: $streamId})-[:HAS_MINISTRY]->(ministry:Ministry)-[:HAS]->(hub:Hub)
-      WHERE toLower(hub.name) STARTS WITH toLower($searchKey)
-      OR toLower(hub.name) CONTAINS toLower($searchKey)
+      WHERE toLower(hub name) STARTS WITH toLower($searchKey)
+      OR toLower(hub name) CONTAINS toLower($searchKey)
       RETURN hub LIMIT 5
       """
+      columnName: "streamHubSearch"
     )
   creativeArtsHubSearch(searchKey: String!, creativeArtsId: ID!): [Hub!]!
     @auth(rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }])
     @cypher(
       statement: """
       MATCH (creativeArts:CreativeArts {id: $creativeArtsId})-[:HAS]->(ministry:Ministry)-[:HAS]->(hub:Hub)
-      WHERE toLower(hub.name) STARTS WITH toLower($searchKey)
-      OR toLower(hub.name) CONTAINS toLower($searchKey)
+      WHERE toLower(hub name) STARTS WITH toLower($searchKey)
+      OR toLower(hub name) CONTAINS toLower($searchKey)
       RETURN hub LIMIT 5
       """
+      columnName: "creativeArtsHubSearch"
     )
   ministryHubSearch(searchKey: String!, ministryId: ID!): [Hub!]!
     @auth(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
     @cypher(
       statement: """
       MATCH (ministry:Ministry {id: $ministryId})-[:HAS]->(hub:Hub)
-      WHERE toLower(hub.name) STARTS WITH toLower($searchKey)
-      OR toLower(hub.name) CONTAINS toLower($searchKey)
+      WHERE toLower(hub name) STARTS WITH toLower($searchKey)
+      OR toLower(hub name) CONTAINS toLower($searchKey)
       RETURN hub LIMIT 5
       """
+      columnName: "ministryHubSearch"
     )
   councilHubSearch(searchKey: String!, councilId: ID!): [Hub!]!
     @auth(rules: [{ roles: ["leaderCouncil", "adminCouncil"] }])
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})-[:HAS]->(hub:Hub)
-      WHERE toLower(hub.name) STARTS WITH toLower($searchKey)
-      OR toLower(hub.name) CONTAINS toLower($searchKey)
+      WHERE toLower(hub name) STARTS WITH toLower($searchKey)
+      OR toLower(hub name) CONTAINS toLower($searchKey)
       RETURN hub LIMIT 5
       """
+      columnName: "councilHubSearch"
     )
 }

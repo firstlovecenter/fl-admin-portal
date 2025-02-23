@@ -24,6 +24,7 @@ extend type Mutation {
 
       RETURN church.downloadCredits
       """
+      columnName: "downloadCredits"
     )
 
   ConfirmCreditTransaction(transactionReference: String!): CreditTransaction!
