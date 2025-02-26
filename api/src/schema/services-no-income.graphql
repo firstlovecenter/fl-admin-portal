@@ -14,6 +14,7 @@ extend type Fellowship {
       MATCH (this)<-[:HAS*5]-(campus:Campus)
       RETURN campus.noIncomeTracking
       """
+      columName: "noIncomeTracking"
     )
 }
 
@@ -24,5 +25,6 @@ extend type HubFellowship {
       MATCH (this)<-[:HAS*5]-(campus:Campus)
       RETURN campus.noIncomeTracking
       """
+      columnName: "noIncomeTracking"
     )
 }
