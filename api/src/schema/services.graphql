@@ -27,6 +27,7 @@ extend type Stream {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "servicesThisWeek"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -50,6 +51,7 @@ extend type Stream {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "servicesThisWeekCount"
     )
   cancelledServicesThisWeek: [Bacenta!]!
     @cypher(
@@ -74,6 +76,7 @@ extend type Stream {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "cancelledServicesThisWeek"
     )
   cancelledServicesThisWeekCount: Int
     @cypher(
@@ -98,6 +101,7 @@ extend type Stream {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "cancelledServicesThisWeekCount"
     )
   formDefaultersThisWeek: [Bacenta!]!
     @cypher(
@@ -126,6 +130,7 @@ extend type Stream {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN DISTINCT defaulters
       """
+      columnName: "formDefaultersThisWeek"
     )
   formDefaultersThisWeekCount: Int
     @cypher(
@@ -154,6 +159,7 @@ extend type Stream {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "formDefaultersThisWeekCount"
     )
   bankingDefaultersThisWeek: [Bacenta!]!
     @cypher(
@@ -181,6 +187,7 @@ extend type Stream {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "bankingDefaultersThisWeek"
     )
   bankingDefaultersThisWeekCount: Int
     @cypher(
@@ -208,6 +215,7 @@ extend type Stream {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bankingDefaultersThisWeekCount"
     )
   bankedThisWeek: [Bacenta!]!
     @cypher(
@@ -233,6 +241,8 @@ extend type Stream {
 
       RETURN DISTINCT bacentas
       """
+
+      columnName: "bankedThisWeek"
     )
   bankedThisWeekCount: Int
     @cypher(
@@ -258,6 +268,7 @@ extend type Stream {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bankedThisWeekCount"
     )
   governorshipServicesThisWeek: [Governorship!]!
     @cypher(
@@ -281,6 +292,7 @@ extend type Stream {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipServicesThisWeek"
     )
   governorshipServicesThisWeekCount: Int
     @cypher(
@@ -304,6 +316,7 @@ extend type Stream {
 
       RETURN COUNT(DISTINCT governorships)
       """
+      columnName: "governorshipServicesThisWeekCount"
     )
   councilServicesThisWeek: [Council!]!
     @cypher(
@@ -327,6 +340,7 @@ extend type Stream {
 
       RETURN DISTINCT councils
       """
+      columnName: "councilServicesThisWeek"
     )
   councilServicesThisWeekCount: Int
     @cypher(
@@ -350,6 +364,7 @@ extend type Stream {
 
       RETURN COUNT(DISTINCT councils)
       """
+      columnName: "councilServicesThisWeekCount"
     )
 }
 extend type Council {
@@ -375,6 +390,7 @@ extend type Council {
 
       RETURN bacentas ORDER BY governorship.name
       """
+      columnName: "servicesThisWeek"
     )
   servicesThisWeekCount: Int
     @cypher(
@@ -398,6 +414,7 @@ extend type Council {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "servicesThisWeekCount"
     )
   cancelledServicesThisWeek: [Bacenta!]!
     @cypher(
@@ -421,6 +438,7 @@ extend type Council {
 
       RETURN bacentas ORDER BY governorship.name
       """
+      columnName: "cancelledServicesThisWeek"
     )
   cancelledServicesThisWeekCount: Int
     @cypher(
@@ -444,6 +462,7 @@ extend type Council {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "cancelledServicesThisWeekCount"
     )
   formDefaultersThisWeek: [Bacenta!]!
     @cypher(
@@ -473,6 +492,7 @@ extend type Council {
         WITH DISTINCT defaulters, governorship
        RETURN defaulters ORDER BY governorship.name
       """
+      columnName: "formDefaultersThisWeek"
     )
   formDefaultersThisWeekCount: Int
     @cypher(
@@ -501,6 +521,7 @@ extend type Council {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "formDefaultersThisWeekCount"
     )
   bankingDefaultersThisWeek: [Bacenta!]!
     @cypher(
@@ -528,6 +549,7 @@ extend type Council {
 
       RETURN bacentas ORDER BY governorship.name
       """
+      columnName: "bankingDefaultersThisWeek"
     )
   bankingDefaultersThisWeekCount: Int
     @cypher(
@@ -555,6 +577,7 @@ extend type Council {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bankingDefaultersThisWeekCount"
     )
   bankedThisWeek: [Bacenta!]!
     @cypher(
@@ -580,6 +603,7 @@ extend type Council {
 
       RETURN bacentas ORDER BY governorship.name
       """
+      columnName: "bankedThisWeek"
     )
   bankedThisWeekCount: Int
     @cypher(
@@ -605,6 +629,7 @@ extend type Council {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bankedThisWeekCount"
     )
   governorshipServicesThisWeek: [Governorship!]!
     @cypher(
@@ -628,6 +653,7 @@ extend type Council {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipServicesThisWeek"
     )
   governorshipServicesThisWeekCount: Int
     @cypher(
@@ -651,6 +677,7 @@ extend type Council {
 
       RETURN COUNT(DISTINCT governorships)
       """
+      columnName: "governorshipServicesThisWeekCount"
     )
 }
 
@@ -678,6 +705,7 @@ extend type Governorship {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "servicesThisWeek"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -702,6 +730,7 @@ extend type Governorship {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "servicesThisWeekCount"
     )
   cancelledServicesThisWeek: [Bacenta!]!
     @cypher(
@@ -726,6 +755,7 @@ extend type Governorship {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "cancelledServicesThisWeek"
     )
   cancelledServicesThisWeekCount: Int
     @cypher(
@@ -750,6 +780,7 @@ extend type Governorship {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "cancelledServicesThisWeekCount"
     )
   formDefaultersThisWeek: [Bacenta!]!
     @cypher(
@@ -779,6 +810,7 @@ extend type Governorship {
 
        RETURN DISTINCT defaulters
       """
+      columnName: "formDefaultersThisWeek"
     )
   formDefaultersThisWeekCount: Int
     @cypher(
@@ -808,6 +840,7 @@ extend type Governorship {
 
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "formDefaultersThisWeekCount"
     )
   bankingDefaultersThisWeek: [Bacenta!]!
     @cypher(
@@ -835,6 +868,7 @@ extend type Governorship {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "bankingDefaultersThisWeek"
     )
   bankingDefaultersThisWeekCount: Int
     @cypher(
@@ -862,6 +896,7 @@ extend type Governorship {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bankingDefaultersThisWeekCount"
     )
   bankedThisWeek: [Bacenta!]!
     @cypher(
@@ -887,6 +922,7 @@ extend type Governorship {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "bankedThisWeek"
     )
   bankedThisWeekCount: Int
     @cypher(
@@ -912,6 +948,7 @@ extend type Governorship {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bankedThisWeekCount"
     )
 }
 
@@ -938,6 +975,7 @@ type ServiceRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
       RETURN date(date.date).week
       """
+      columNName: "week"
     )
   attendance: Int
   income: Float
@@ -964,6 +1002,7 @@ type ServiceRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (church)<-[:HAS*1..4]-(stream:Stream)
       RETURN stream.name
       """
+      columnName: "stream_name"
     )
   bankedBy: Member
     @cypher(
@@ -973,6 +1012,7 @@ type ServiceRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)<-[:CONFIRMED_BANKING_FOR | :UPLOADED_SLIP_FOR | :OFFERING_BANKED_BY]-(member:Member)
       RETURN member
       """
+      columnName: "bankedBy"
     )
 }
 
@@ -987,6 +1027,7 @@ type NoService implements Record @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
       RETURN date(date.date).week
       """
+      columnName: "week"
     )
   serviceLog: ServiceLog @relationship(type: "HAS_SERVICE", direction: IN)
   noServiceReason: String!
@@ -1066,6 +1107,7 @@ extend type Mutation {
       DETACH DELETE this
       RETURN bacenta
       """
+      columnName: "bacenta"
     )
 }
 
@@ -1075,6 +1117,7 @@ extend type Campus {
       statement: """
       MATCH (this)-[:HAS]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream)
       """
+      columnName: "activeStreamCount"
     )
   streamServicesThisWeek: [Stream!]!
     @cypher(
@@ -1091,6 +1134,7 @@ extend type Campus {
 
       RETURN DISTINCT streams
       """
+      columnName: "streams"
     )
   streamServicesThisWeekCount: Int!
     @cypher(
@@ -1107,6 +1151,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamServicesThisWeekCount"
     )
   streamCancelledServicesThisWeek: [Stream!]!
     @cypher(
@@ -1124,6 +1169,7 @@ extend type Campus {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamCancelledServicesThisWeek"
     )
   streamCancelledServicesThisWeekCount: Int
     @cypher(
@@ -1140,6 +1186,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamCancelledServicesThisWeekCount"
     )
   streamFormDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1162,6 +1209,7 @@ extend type Campus {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters
       """
+      columnName: "streamFormDefaultersThisWeek"
     )
   streamFormDefaultersThisWeekCount: Int
     @cypher(
@@ -1183,6 +1231,7 @@ extend type Campus {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "streamFormDefaultersThisWeekCount"
     )
   streamBankingDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1203,6 +1252,7 @@ extend type Campus {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamBankingDefaultersThisWeek"
     )
   streamBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1223,6 +1273,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamBankingDefaultersThisWeekCount"
     )
   streamBankedThisWeek: [Stream!]!
     @cypher(
@@ -1241,6 +1292,7 @@ extend type Campus {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamBankedThisWeek"
     )
   streamBankedThisWeekCount: Int
     @cypher(
@@ -1259,6 +1311,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamBankedThisWeekCount"
     )
 }
 
@@ -1285,6 +1338,7 @@ extend type Campus {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "servicesThisWeek"
     )
   servicesThisWeekCount: Int
     @cypher(
@@ -1308,6 +1362,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "servicesThisWeekCount"
     )
   cancelledServicesThisWeek: [Bacenta!]!
     @cypher(
@@ -1331,6 +1386,7 @@ extend type Campus {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "cancelledServicesThisWeek"
     )
   cancelledServicesThisWeekCount: Int
     @cypher(
@@ -1354,6 +1410,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "cancelledServicesThisWeekCount"
     )
   formDefaultersThisWeek: [Bacenta!]!
     @cypher(
@@ -1382,6 +1439,7 @@ extend type Campus {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN DISTINCT defaulters
       """
+      columnName: "formDefaultersThisWeek"
     )
   formDefaultersThisWeekCount: Int
     @cypher(
@@ -1410,6 +1468,7 @@ extend type Campus {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "formDefaultersThisWeekCount"
     )
   bankingDefaultersThisWeek: [Bacenta!]!
     @cypher(
@@ -1437,6 +1496,7 @@ extend type Campus {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "bankingDefaultersThisWeek"
     )
   bankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1464,6 +1524,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bankingDefaultersThisWeekCount"
     )
   bankedThisWeek: [Bacenta!]!
     @cypher(
@@ -1489,6 +1550,7 @@ extend type Campus {
 
       RETURN DISTINCT bacentas
       """
+      columnName: "bankedThisWeek"
     )
   bankedThisWeekCount: Int
     @cypher(
@@ -1514,6 +1576,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT bacentas)
       """
+      columnName: "bankedThisWeekCount"
     )
   governorshipServicesThisWeek: [Governorship!]!
     @cypher(
@@ -1537,6 +1600,7 @@ extend type Campus {
 
       RETURN DISTINCT governorships
       """
+      columnName: "governorshipServicesThisWeek"
     )
   governorshipServicesThisWeekCount: Int
     @cypher(
@@ -1560,6 +1624,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT governorships)
       """
+      columnName: "governorshipServicesThisWeekCount"
     )
   councilServicesThisWeek: [Council!]!
     @cypher(
@@ -1583,6 +1648,7 @@ extend type Campus {
 
       RETURN DISTINCT councils
       """
+      columnName: "councilServicesThisWeek"
     )
   councilServicesThisWeekCount: Int
     @cypher(
@@ -1606,6 +1672,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT councils)
       """
+      columnName: "councilServicesThisWeekCount"
     )
 }
 
@@ -1615,6 +1682,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS*2]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream)
       """
+      columnName: "activeStreamCount"
     )
   streamServicesThisWeek: [Stream!]!
     @cypher(
@@ -1631,6 +1699,7 @@ extend type Oversight {
 
       RETURN DISTINCT streams
       """
+      columnName: "streams"
     )
   streamServicesThisWeekCount: Int!
     @cypher(
@@ -1647,6 +1716,7 @@ extend type Oversight {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamServicesThisWeekCount"
     )
   streamCancelledServicesThisWeek: [Stream!]!
     @cypher(
@@ -1664,6 +1734,7 @@ extend type Oversight {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamCancelledServicesThisWeek"
     )
   streamCancelledServicesThisWeekCount: Int
     @cypher(
@@ -1680,6 +1751,7 @@ extend type Oversight {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamCancelledServicesThisWeekCount"
     )
   streamFormDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1702,6 +1774,7 @@ extend type Oversight {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters
       """
+      columnName: "streamFormDefaultersThisWeek"
     )
   streamFormDefaultersThisWeekCount: Int
     @cypher(
@@ -1723,6 +1796,7 @@ extend type Oversight {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "streamFormDefaultersThisWeekCount"
     )
   streamBankingDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1743,6 +1817,7 @@ extend type Oversight {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamBankingDefaultersThisWeek"
     )
   streamBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1763,6 +1838,7 @@ extend type Oversight {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamBankingDefaultersThisWeekCount"
     )
   streamBankedThisWeek: [Stream!]!
     @cypher(
@@ -1781,6 +1857,7 @@ extend type Oversight {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamBankedThisWeek"
     )
   streamBankedThisWeekCount: Int
     @cypher(
@@ -1799,6 +1876,7 @@ extend type Oversight {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamBankedThisWeekCount"
     )
 }
 
@@ -1808,6 +1886,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*3]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream)
       """
+      columnName: "activeStreamCount"
     )
   streamServicesThisWeek: [Stream!]!
     @cypher(
@@ -1824,6 +1903,7 @@ extend type Denomination {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamServicesThisWeek"
     )
   streamServicesThisWeekCount: Int!
     @cypher(
@@ -1840,6 +1920,7 @@ extend type Denomination {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamServicesThisWeekCount"
     )
   streamCancelledServicesThisWeek: [Stream!]!
     @cypher(
@@ -1857,6 +1938,7 @@ extend type Denomination {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamCancelledServicesThisWeek"
     )
   streamCancelledServicesThisWeekCount: Int
     @cypher(
@@ -1873,6 +1955,7 @@ extend type Denomination {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamCancelledServicesThisWeekCount"
     )
   streamFormDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1895,6 +1978,7 @@ extend type Denomination {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters
       """
+      columnName: "streamFormDefaultersThisWeek"
     )
   streamFormDefaultersThisWeekCount: Int
     @cypher(
@@ -1916,6 +2000,7 @@ extend type Denomination {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "streamFormDefaultersThisWeekCount"
     )
   streamBankingDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1936,6 +2021,7 @@ extend type Denomination {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamBankingDefaultersThisWeek"
     )
   streamBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1956,6 +2042,7 @@ extend type Denomination {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamBankingDefaultersThisWeekCount"
     )
   streamBankedThisWeek: [Stream!]!
     @cypher(
@@ -1974,6 +2061,7 @@ extend type Denomination {
 
       RETURN DISTINCT streams
       """
+      columnName: "streamBankedThisWeek"
     )
   streamBankedThisWeekCount: Int
     @cypher(
@@ -1992,5 +2080,6 @@ extend type Denomination {
 
       RETURN COUNT(DISTINCT streams)
       """
+      columnName: "streamBankedThisWeekCount"
     )
 }
