@@ -81,7 +81,7 @@ extend type Campus {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_MULTIPLICATION_RECORD]->(records:MultiplicationRecord)-[:CRUSADE_HELD_ON]->(date:TimeGraph)
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC LIMIT $limit
-      """,
+      """
       columnName: "multiplicationRecords"
     )
   aggregateMultiplicationRecords(
@@ -92,10 +92,13 @@ extend type Campus {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_MULTIPLICATION_AGGREGATE]->(aggregate:AggregateMultiplicationRecord)
       WHERE aggregate.year = date().year
       RETURN aggregate ORDER BY aggregate.year, aggregate.week DESC LIMIT $limit
-      """,
+      """
       columnName: "aggregateMultiplicationRecords"
     )
-  multiplicationRecords(startDate: String!, endDate: String!): [MultiplicationStats!]!
+  multiplicationRecords(
+    startDate: String!
+    endDate: String!
+  ): [MultiplicationStats!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -107,7 +110,7 @@ extend type Campus {
       WITH collect(DISTINCT(date(multiplication.date).week)) as list, aggregate, this, target
       MATCH (aggregate) WHERE aggregate.week IN list
       RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
-      """,
+      """
       columnName: "multiplicationRecords"
     )
   target: Int
@@ -115,7 +118,7 @@ extend type Campus {
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)
       RETURN target.target ORDER BY target.date DESC LIMIT 1
-      """,
+      """
       columnName: "target"
     )
 }
@@ -127,7 +130,7 @@ extend type Stream {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_MULTIPLICATION_RECORD]->(records:MultiplicationRecord)-[:CRUSADE_HELD_ON]->(date:TimeGraph)
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC LIMIT $limit
-      """,
+      """
       columnName: "multiplicationRecords"
     )
 
@@ -139,10 +142,13 @@ extend type Stream {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_MULTIPLICATION_AGGREGATE]->(aggregate:AggregateMultiplicationRecord)
       WHERE aggregate.year = date().year
       RETURN aggregate ORDER BY aggregate.year, aggregate.week DESC LIMIT $limit
-      """,
+      """
       columnName: "aggregateMultiplicationRecords"
     )
-  multiplicationRecords(startDate: String!, endDate: String!): [MultiplicationStats!]!
+  multiplicationRecords(
+    startDate: String!
+    endDate: String!
+  ): [MultiplicationStats!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -154,7 +160,7 @@ extend type Stream {
       WITH collect(DISTINCT(date(multiplication.date).week)) as list, aggregate, this, target
       MATCH (aggregate) WHERE aggregate.week IN list
       RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
-      """,
+      """
       columnName: "multiplicationRecords"
     )
   target: Int
@@ -162,7 +168,7 @@ extend type Stream {
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)
       RETURN target.target ORDER BY target.date DESC LIMIT 1
-      """,
+      """
       columnName: "target"
     )
 }
@@ -174,7 +180,7 @@ extend type Council {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_MULTIPLICATION_RECORD]->(records:MultiplicationRecord)-[:CRUSADE_HELD_ON]->(date:TimeGraph)
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC LIMIT $limit
-      """,
+      """
       columnName: "multiplicationRecords"
     )
 
@@ -186,10 +192,13 @@ extend type Council {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_MULTIPLICATION_AGGREGATE]->(aggregate:AggregateMultiplicationRecord)
       WHERE aggregate.year = date().year
       RETURN aggregate ORDER BY aggregate.year, aggregate.week DESC LIMIT $limit
-      """,
+      """
       columnName: "aggregateMultiplicationRecords"
     )
-  multiplicationRecords(startDate: String!, endDate: String!): [MultiplicationStats!]!
+  multiplicationRecords(
+    startDate: String!
+    endDate: String!
+  ): [MultiplicationStats!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -201,7 +210,7 @@ extend type Council {
       WITH collect(DISTINCT(date(multiplication.date).week)) as list, aggregate, this, target
       MATCH (aggregate) WHERE aggregate.week IN list
       RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
-      """,
+      """
       columnName: "multiplicationRecords"
     )
   target: Int
@@ -209,7 +218,7 @@ extend type Council {
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
       RETURN target.target ORDER BY target.date DESC LIMIT 1
-      """,
+      """
       columnName: "target"
     )
 }
@@ -221,7 +230,7 @@ extend type Governorship {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_MULTIPLICATION_RECORD]->(records:MultiplicationRecord)-[:CRUSADE_HELD_ON]->(date:TimeGraph)
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC LIMIT $limit
-      """,
+      """
       columnName: "multiplicationRecords"
     )
 
@@ -233,10 +242,13 @@ extend type Governorship {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_MULTIPLICATION_AGGREGATE]->(aggregate:AggregateMultiplicationRecord)
       WHERE aggregate.year = date().year
       RETURN aggregate ORDER BY aggregate.year, aggregate.week DESC LIMIT $limit
-      """,
+      """
       columnName: "aggregateMultiplicationRecords"
     )
-  multiplicationRecords(startDate: String!, endDate: String!): [MultiplicationStats!]!
+  multiplicationRecords(
+    startDate: String!
+    endDate: String!
+  ): [MultiplicationStats!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -248,7 +260,7 @@ extend type Governorship {
       WITH collect(DISTINCT(date(multiplication.date).week)) as list, aggregate, this, target
       MATCH (aggregate) WHERE aggregate.week IN list
       RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
-      """,
+      """
       columnName: "multiplicationRecords"
     )
   target: Int
@@ -258,7 +270,7 @@ extend type Governorship {
       MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
 
       RETURN target.target ORDER BY target.date DESC LIMIT 1
-      """,
+      """
       columnName: "target"
     )
 }
@@ -269,10 +281,13 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)
       RETURN target.target ORDER BY target.date DESC LIMIT 1
-      """,
+      """
       columnName: "target"
     )
-  multiplicationRecords(startDate: String!, endDate: String!): [MultiplicationStats!]!
+  multiplicationRecords(
+    startDate: String!
+    endDate: String!
+  ): [MultiplicationStats!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -284,13 +299,16 @@ extend type Oversight {
       WITH collect(DISTINCT(date(multiplication.date).week)) as list, aggregate, this, target
       MATCH (aggregate) WHERE aggregate.week IN list
       RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
-      """,
+      """
       columnName: "multiplicationRecords"
     )
 }
 
 extend type Bacenta {
-  multiplicationRecords(startDate: String!, endDate: String!): [MultiplicationStats!]!
+  multiplicationRecords(
+    startDate: String!
+    endDate: String!
+  ): [MultiplicationStats!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -302,7 +320,7 @@ extend type Bacenta {
       WITH collect(DISTINCT(date(multiplication.date).week)) as list, aggregate, this, target
       MATCH (aggregate) WHERE aggregate.week IN list
       RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
-      """,
+      """
       columnName: "multiplicationRecords"
     )
   target: Int
@@ -310,7 +328,7 @@ extend type Bacenta {
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
       RETURN target.target ORDER BY target.date DESC LIMIT 1
-      """,
+      """
       columnName: "target"
     )
 }
