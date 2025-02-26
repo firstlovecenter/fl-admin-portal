@@ -95,7 +95,7 @@ extend type Campus {
       """
       columnName: "aggregateMultiplicationRecords"
     )
-  multiplicationRecords(
+  multiplicationStats(
     startDate: String!
     endDate: String!
   ): [MultiplicationStats!]!
@@ -145,7 +145,7 @@ extend type Stream {
       """
       columnName: "aggregateMultiplicationRecords"
     )
-  multiplicationRecords(
+  multiplicationStats(
     startDate: String!
     endDate: String!
   ): [MultiplicationStats!]!
@@ -195,7 +195,7 @@ extend type Council {
       """
       columnName: "aggregateMultiplicationRecords"
     )
-  multiplicationRecords(
+  multiplicationStats(
     startDate: String!
     endDate: String!
   ): [MultiplicationStats!]!
@@ -245,7 +245,7 @@ extend type Governorship {
       """
       columnName: "aggregateMultiplicationRecords"
     )
-  multiplicationRecords(
+  multiplicationStats(
     startDate: String!
     endDate: String!
   ): [MultiplicationStats!]!
