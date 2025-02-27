@@ -955,7 +955,7 @@ extend type Governorship {
 interface Record {
   id: ID
   createdAt: DateTime!
-  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
+  created_by: Member @declareRelationship
 }
 
 interface HadService {
@@ -967,7 +967,7 @@ interface HadService {
 type ServiceRecord implements Record {
   id: ID!
   createdAt: DateTime!
-  created_by: Member
+  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int
     @cypher(
@@ -1019,7 +1019,7 @@ type ServiceRecord implements Record {
 type NoService implements Record {
   id: ID!
   createdAt: DateTime!
-  created_by: Member!
+  created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int!
     @cypher(

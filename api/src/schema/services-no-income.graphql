@@ -14,7 +14,7 @@ extend type Fellowship {
       MATCH (this)<-[:HAS*5]-(campus:Campus)
       RETURN campus.noIncomeTracking
       """
-      columName: "noIncomeTracking"
+      columnName: "noIncomeTracking"
     )
 }
 

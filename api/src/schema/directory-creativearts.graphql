@@ -1110,7 +1110,7 @@ extend type Mutation {
 type MinistryAttendanceRecord implements Record {
   id: ID!
   createdAt: DateTime!
-  created_by: Member
+  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int
     @cypher(
@@ -1139,7 +1139,7 @@ type MinistryAttendanceRecord implements Record {
 type StageAttendanceRecord implements Record {
   id: ID!
   createdAt: DateTime!
-  created_by: Member
+  created_by: Member @relationship(type: "HAS_SERVICE", direction: IN)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int
     @cypher(

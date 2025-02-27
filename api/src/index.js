@@ -71,7 +71,7 @@ const host = SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'
  */
 const startServer = async () => {
   const schema = await neoSchema.getSchema().catch((error) => {
-    console.error(error)
+    console.error(JSON.stringify(error, null, 2))
     process.exit(1)
   })
 
