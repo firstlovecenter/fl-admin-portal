@@ -44,6 +44,7 @@ type MultiplicationRecord {
       OR this.tellerConfirmationTime IS NOT NULL
       RETURN true
       """
+      columnName: "result"
     )
   createdAt: Date!
   created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)

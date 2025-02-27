@@ -170,6 +170,7 @@ type CreativeArts {
       MATCH (this)<-[:HAS_MINISTRY]-(:Campus)-[:HAS]->(stream:Stream)
       RETURN stream
       """
+      columnName: "result"
     )
 }
 
@@ -275,6 +276,7 @@ type Ministry {
       MATCH (this)<-[:HAS_MINISTRY]-(stream:Stream)-[:HAS]->(councils:Council)
       RETURN councils
       """
+      columnName: "result"
     )
   hubFellowships: [Fellowship!]!
     @cypher(
@@ -282,6 +284,7 @@ type Ministry {
       MATCH (this)-[:HAS*3]->(fellowships:HubFellowship)
       RETURN fellowship
       """
+      columnName: "result"
     )
   onStageAttendanceRecords(
     limit: Int!
@@ -293,6 +296,7 @@ type Ministry {
       WITH DISTINCT records,date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "result"
     )
 }
 
@@ -364,6 +368,7 @@ type HubCouncil {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
+      columnName: "result"
     )
   hubs: [Hub!]! @relationship(type: "HAS", direction: OUT)
   ministry: Ministry! @relationship(type: "HAS", direction: IN)
@@ -374,6 +379,7 @@ type HubCouncil {
       MATCH (this)<-[:HAS_MINISTRY]-(council:Council)-[:HAS]->(governorships:Governorship)
       RETURN governorships
       """
+      columnName: "result"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   rehearsals(limit: Int!, skip: Int = 0): [RehearsalRecord!]!
@@ -383,6 +389,7 @@ type HubCouncil {
       WITH DISTINCT records,date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "result"
     )
 }
 
@@ -448,6 +455,7 @@ type Hub {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
+      columnName: "result"
     )
   hubFellowships: [Fellowship!]! @relationship(type: "HAS", direction: OUT)
   hubCouncil: HubCouncil! @relationship(type: "HAS", direction: IN)
@@ -460,6 +468,7 @@ type Hub {
       WITH DISTINCT records,date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
+      columnName: "result"
     )
 }
 
@@ -539,6 +548,7 @@ extend type Stream {
       MATCH (this)-[:HAS_MINISTRY]->(:Ministry)-[:HAS*2]->(:Hub)-[:HAS]->(hubFellowships:HubFellowship)
       RETURN hubFellowships
       """
+      columnName: "result"
     )
 }
 
@@ -551,6 +561,7 @@ extend type Council {
       MATCH (this)-[:HAS_MINISTRY]->(hubs:HubCouncil)<-[:HAS]-(ministry:Ministry {id:$ministryId})
       RETURN hubs
       """
+      columnName: "result"
     )
   hubCouncilCount: Int!
     @cypher(
@@ -607,6 +618,7 @@ extend type Fellowship {
       MATCH (council)-[:HAS_MINISTRY]->(hub:Hub)
       RETURN hub
       """
+      columnName: "result"
     )
 }
 
@@ -621,6 +633,7 @@ type HubFellowship implements Church {
       MATCH (this)<-[:HAS*4]-(stream:Stream)
       RETURN DISTINCT toLower(stream.name)
       """
+      columnName: "result"
     )
   vacationStatus: String!
     @cypher(
@@ -630,6 +643,7 @@ type HubFellowship implements Church {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
+      columnName: "result"
     )
   bacenta: Bacenta @relationship(type: "HAS", direction: IN)
   leader: Member @relationship(type: "LEADS", direction: IN)
@@ -639,6 +653,7 @@ type HubFellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
+      columnName: "result"
     )
   memberCount: Int!
     @cypher(
@@ -646,6 +661,7 @@ type HubFellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "result"
     )
   ministryMemberCount: Int
     @cypher(
@@ -653,6 +669,7 @@ type HubFellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)-[:BELONGS_TO]->(:Ministry)
       RETURN COUNT(DISTINCT members)
       """
+      columnName: "result"
     )
   pastorCount: Int
     @cypher(
@@ -660,6 +677,7 @@ type HubFellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
       RETURN COUNT(DISTINCT pastors)
       """
+      columnName: "result"
     )
   meetingDay: ServiceDay @relationship(type: "MEETS_ON", direction: OUT)
   history(limit: Int! = 3): [HistoryLog!]!
@@ -674,6 +692,7 @@ type HubFellowship implements Church {
       WITH DISTINCT records,date
       RETURN records ORDER BY date.date DESC LIMIT $limit
       """
+      columnName: "result"
     )
   labels: [String]
     @cypher(
@@ -681,6 +700,7 @@ type HubFellowship implements Church {
       MATCH (this)
       RETURN labels(this)
       """
+      columnName: "result"
     )
 
   council: Council
@@ -689,6 +709,7 @@ type HubFellowship implements Church {
       MATCH (this)<-[:HAS*3]-(council:Council)
       RETURN council
       """
+      columnName: "result"
     )
   hub: Hub! @relationship(type: "HAS", direction: IN)
 }
@@ -726,6 +747,7 @@ extend type Mutation {
 
       RETURN creativeArt
       """
+      columnName: "result"
     )
   CreateMinistry(
     leaderId: ID!
@@ -770,6 +792,7 @@ extend type Mutation {
 
       RETURN ministry
       """
+      columnName: "result"
     )
   CreateHubCouncil(leaderId: ID!, ministryId: ID!, councilId: ID!): HubCouncil!
     @authentication(
@@ -813,6 +836,7 @@ extend type Mutation {
 
       RETURN hub
       """
+      columnName: "result"
     )
   CreateHub(
     name: String!
@@ -873,6 +897,7 @@ extend type Mutation {
 
       RETURN hub
       """
+      columnName: "result"
     )
 }
 
@@ -886,6 +911,7 @@ extend type Mutation {
 
       RETURN creativeArt
       """
+      columnName: "result"
     )
   UpdateMinistryDetails(
     ministryId: ID!
@@ -905,6 +931,7 @@ extend type Mutation {
 
       RETURN ministry
       """
+      columnName: "result"
     )
   UpdateHubCouncilDetails(hubCouncilId: ID!, name: String!): HubCouncil!
     @authentication(
@@ -924,6 +951,7 @@ extend type Mutation {
 
       RETURN hub
       """
+      columnName: "result"
     )
   UpdateHubDetails(
     hubId: ID!
@@ -961,6 +989,7 @@ extend type Mutation {
 
       RETURN hub
       """
+      columnName: "result"
     )
 
   #Set Fellowship to be 'HubFellowship'
@@ -998,6 +1027,7 @@ extend type Mutation {
 
       RETURN fellowship
       """
+      columnName: "result"
     )
 
   SetHubFellowshipToRegularFellowship(fellowshipId: ID!): Fellowship!
@@ -1036,6 +1066,7 @@ extend type Mutation {
 
       RETURN fellowship
       """
+      columnName: "result"
     )
 }
 

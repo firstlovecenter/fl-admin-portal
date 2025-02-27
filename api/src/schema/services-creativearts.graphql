@@ -22,6 +22,7 @@ extend type Hub {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -46,6 +47,7 @@ extend type Hub {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   cancelledServicesThisWeek: [Fellowship!]!
     @cypher(
@@ -70,6 +72,7 @@ extend type Hub {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   cancelledServicesThisWeekCount: Int!
     @cypher(
@@ -94,6 +97,7 @@ extend type Hub {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   formDefaultersThisWeek: [Fellowship!]!
     @cypher(
@@ -120,6 +124,7 @@ extend type Hub {
        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
       RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   formDefaultersThisWeekCount: Int!
     @cypher(
@@ -146,6 +151,7 @@ extend type Hub {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   bankingDefaultersThisWeek: [Fellowship!]!
     @cypher(
@@ -173,6 +179,7 @@ extend type Hub {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   bankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -200,6 +207,7 @@ extend type Hub {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   bankedThisWeek: [Fellowship!]!
     @cypher(
@@ -225,6 +233,7 @@ extend type Hub {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   bankedThisWeekCount: Int!
     @cypher(
@@ -250,6 +259,7 @@ extend type Hub {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
 }
 extend type HubCouncil {
@@ -259,6 +269,7 @@ extend type HubCouncil {
       MATCH (this)-[:HAS]->(hubs:Active:Hub)
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   servicesThisWeek: [Fellowship!]!
@@ -284,6 +295,7 @@ extend type HubCouncil {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -308,6 +320,7 @@ extend type HubCouncil {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   cancelledServicesThisWeek: [Fellowship!]!
     @cypher(
@@ -332,6 +345,7 @@ extend type HubCouncil {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   cancelledServicesThisWeekCount: Int!
     @cypher(
@@ -356,6 +370,7 @@ extend type HubCouncil {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   formDefaultersThisWeek: [Fellowship!]!
     @cypher(
@@ -382,6 +397,7 @@ extend type HubCouncil {
        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
       RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   formDefaultersThisWeekCount: Int!
     @cypher(
@@ -408,6 +424,7 @@ extend type HubCouncil {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   bankingDefaultersThisWeek: [Fellowship!]!
     @cypher(
@@ -435,6 +452,7 @@ extend type HubCouncil {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   bankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -462,6 +480,7 @@ extend type HubCouncil {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   bankedThisWeek: [Fellowship!]!
     @cypher(
@@ -487,6 +506,7 @@ extend type HubCouncil {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   bankedThisWeekCount: Int!
     @cypher(
@@ -512,6 +532,7 @@ extend type HubCouncil {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
 
   hubRehearsalsThisWeek: [Hub!]!
@@ -536,6 +557,7 @@ extend type HubCouncil {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubRehearsalsThisWeekCount: Int!
     @cypher(
@@ -559,6 +581,7 @@ extend type HubCouncil {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   hubCancelledRehearsalsThisWeek: [Hub!]!
@@ -584,6 +607,7 @@ extend type HubCouncil {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubCancelledRehearsalsThisWeekCount: Int!
     @cypher(
@@ -608,6 +632,7 @@ extend type HubCouncil {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubFormDefaultersThisWeek: [Hub!]!
     @cypher(
@@ -636,6 +661,7 @@ extend type HubCouncil {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
       RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   hubFormDefaultersThisWeekCount: Int!
     @cypher(
@@ -664,6 +690,7 @@ extend type HubCouncil {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   hubBankingDefaultersThisWeek: [Hub!]!
     @cypher(
@@ -691,6 +718,7 @@ extend type HubCouncil {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubBankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -718,6 +746,7 @@ extend type HubCouncil {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubsBankedThisWeek: [Hub!]!
     @cypher(
@@ -743,6 +772,7 @@ extend type HubCouncil {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubsBankedThisWeekCount: Int!
     @cypher(
@@ -768,6 +798,7 @@ extend type HubCouncil {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 }
 
@@ -795,6 +826,7 @@ extend type Ministry {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -819,6 +851,7 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   cancelledServicesThisWeek: [Fellowship!]!
     @cypher(
@@ -843,6 +876,7 @@ extend type Ministry {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   cancelledServicesThisWeekCount: Int!
     @cypher(
@@ -867,6 +901,7 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   formDefaultersThisWeek: [Fellowship!]!
     @cypher(
@@ -893,6 +928,7 @@ extend type Ministry {
        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
       RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   formDefaultersThisWeekCount: Int!
     @cypher(
@@ -919,6 +955,7 @@ extend type Ministry {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   bankingDefaultersThisWeek: [Fellowship!]!
     @cypher(
@@ -946,6 +983,7 @@ extend type Ministry {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   bankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -973,6 +1011,7 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   bankedThisWeek: [Fellowship!]!
     @cypher(
@@ -998,6 +1037,7 @@ extend type Ministry {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   bankedThisWeekCount: Int!
     @cypher(
@@ -1023,6 +1063,7 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
 
   activeHubCount: Int!
@@ -1031,6 +1072,7 @@ extend type Ministry {
       MATCH (this)-[:HAS]->(:HubCouncil)-[:HAS]->(hubs:Active:Hub)
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubRehearsalsThisWeek: [Hub!]!
     @cypher(
@@ -1054,6 +1096,7 @@ extend type Ministry {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubRehearsalsThisWeekCount: Int!
     @cypher(
@@ -1077,6 +1120,7 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   hubCancelledRehearsalsThisWeek: [Hub!]!
@@ -1102,6 +1146,7 @@ extend type Ministry {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubCancelledRehearsalsThisWeekCount: Int!
     @cypher(
@@ -1126,6 +1171,7 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubFormDefaultersThisWeek: [Hub!]!
     @cypher(
@@ -1154,6 +1200,7 @@ extend type Ministry {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   hubFormDefaultersThisWeekCount: Int!
     @cypher(
@@ -1182,6 +1229,7 @@ extend type Ministry {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   hubBankingDefaultersThisWeek: [Hub!]!
     @cypher(
@@ -1209,6 +1257,7 @@ extend type Ministry {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubBankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -1236,6 +1285,7 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubsBankedThisWeek: [Hub!]!
     @cypher(
@@ -1261,6 +1311,7 @@ extend type Ministry {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubsBankedThisWeekCount: Int!
     @cypher(
@@ -1286,6 +1337,7 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   hubCouncilRehearsalsThisWeek: [HubCouncil!]!
@@ -1310,6 +1362,7 @@ extend type Ministry {
 
       RETURN DISTINCT hubCouncils
       """
+      columnName: "result"
     )
   hubCouncilRehearsalsThisWeekCount: Int!
     @cypher(
@@ -1333,11 +1386,11 @@ extend type Ministry {
 
       RETURN COUNT(DISTINCT hubCouncils)
       """
+      columnName: "result"
     )
 }
 
 extend type CreativeArts {
-
   servicesThisWeek: [Fellowship!]!
     @cypher(
       statement: """
@@ -1361,6 +1414,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -1385,6 +1439,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   cancelledServicesThisWeek: [Fellowship!]!
     @cypher(
@@ -1409,6 +1464,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   cancelledServicesThisWeekCount: Int!
     @cypher(
@@ -1433,6 +1489,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   formDefaultersThisWeek: [Fellowship!]!
     @cypher(
@@ -1459,6 +1516,7 @@ extend type CreativeArts {
        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
       RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   formDefaultersThisWeekCount: Int!
     @cypher(
@@ -1485,6 +1543,7 @@ extend type CreativeArts {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   bankingDefaultersThisWeek: [Fellowship!]!
     @cypher(
@@ -1512,6 +1571,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   bankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -1539,6 +1599,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
   bankedThisWeek: [Fellowship!]!
     @cypher(
@@ -1564,6 +1625,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT fellowships
       """
+      columnName: "result"
     )
   bankedThisWeekCount: Int!
     @cypher(
@@ -1589,6 +1651,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT fellowships)
       """
+      columnName: "result"
     )
 }
 
@@ -1599,6 +1662,7 @@ extend type CreativeArts {
       MATCH (this)-[:HAS]->(:Ministry)-[:HAS]->(:HubCouncil)-[:HAS]->(hubs:Active:Hub)
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubRehearsalsThisWeek: [Hub!]!
     @cypher(
@@ -1622,6 +1686,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubRehearsalsThisWeekCount: Int!
     @cypher(
@@ -1645,6 +1710,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   hubCancelledRehearsalsThisWeek: [Hub!]!
@@ -1670,6 +1736,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubCancelledRehearsalsThisWeekCount: Int!
     @cypher(
@@ -1694,6 +1761,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubFormDefaultersThisWeek: [Hub!]!
     @cypher(
@@ -1722,6 +1790,7 @@ extend type CreativeArts {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
       RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   hubFormDefaultersThisWeekCount: Int!
     @cypher(
@@ -1750,6 +1819,7 @@ extend type CreativeArts {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
       RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   hubBankingDefaultersThisWeek: [Hub!]!
     @cypher(
@@ -1777,6 +1847,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubBankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -1804,6 +1875,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubsBankedThisWeek: [Hub!]!
     @cypher(
@@ -1829,6 +1901,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubsBankedThisWeekCount: Int!
     @cypher(
@@ -1854,6 +1927,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   hubCouncilServicesThisWeek: [HubCouncil!]!
@@ -1878,6 +1952,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT hubCouncils
       """
+      columnName: "result"
     )
   hubCouncilServicesThisWeekCount: Int!
     @cypher(
@@ -1901,12 +1976,14 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT hubCouncils)
       """
+      columnName: "result"
     )
   activeMinistryCount: Int!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(ministry:Ministry) RETURN COUNT(DISTINCT ministry)
       """
+      columnName: "result"
     )
   ministryServicesThisWeek: [Ministry!]!
     @cypher(
@@ -1923,6 +2000,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT ministries
       """
+      columnName: "result"
     )
   ministryServicesThisWeekCount: Int!
     @cypher(
@@ -1939,6 +2017,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "result"
     )
   ministryCancelledServicesThisWeek: [Ministry!]!
     @cypher(
@@ -1956,6 +2035,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT ministries
       """
+      columnName: "result"
     )
   ministryCancelledServicesThisWeekCount: Int!
     @cypher(
@@ -1972,6 +2052,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "result"
     )
   ministryFormDefaultersThisWeek: [Ministry!]!
     @cypher(
@@ -1994,6 +2075,7 @@ extend type CreativeArts {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   ministryFormDefaultersThisWeekCount: Int!
     @cypher(
@@ -2015,6 +2097,7 @@ extend type CreativeArts {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   ministryBankingDefaultersThisWeek: [Ministry!]!
     @cypher(
@@ -2035,6 +2118,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT ministries
       """
+      columnName: "result"
     )
   ministryBankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -2055,6 +2139,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "result"
     )
   ministriesBankedThisWeek: [Ministry!]!
     @cypher(
@@ -2073,6 +2158,7 @@ extend type CreativeArts {
 
       RETURN DISTINCT ministries
       """
+      columnName: "result"
     )
   ministriesBankedThisWeekCount: Int!
     @cypher(
@@ -2091,6 +2177,7 @@ extend type CreativeArts {
 
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "result"
     )
 }
 
@@ -2101,6 +2188,7 @@ extend type Campus {
       MATCH (this)-[:HAS_MINISTRY]->(:CreativeArts)-[:HAS]->(:Ministry)-[:HAS]->(:HubCouncil)-[:HAS]->(hubs:Active:Hub)
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   hubRehearsalsThisWeek: [Hub!]!
@@ -2125,6 +2213,7 @@ extend type Campus {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubRehearsalsThisWeekCount: Int!
     @cypher(
@@ -2148,6 +2237,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   hubCancelledRehearsalsThisWeek: [Hub!]!
@@ -2173,6 +2263,7 @@ extend type Campus {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubCancelledRehearsalsThisWeekCount: Int!
     @cypher(
@@ -2197,6 +2288,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubFormDefaultersThisWeek: [Hub!]!
     @cypher(
@@ -2225,6 +2317,7 @@ extend type Campus {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
       RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   hubFormDefaultersThisWeekCount: Int!
     @cypher(
@@ -2253,6 +2346,7 @@ extend type Campus {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   hubBankingDefaultersThisWeek: [Hub!]!
     @cypher(
@@ -2280,6 +2374,7 @@ extend type Campus {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubBankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -2307,6 +2402,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
   hubsBankedThisWeek: [Hub!]!
     @cypher(
@@ -2332,6 +2428,7 @@ extend type Campus {
 
       RETURN DISTINCT hubs
       """
+      columnName: "result"
     )
   hubsBankedThisWeekCount: Int!
     @cypher(
@@ -2357,6 +2454,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT hubs)
       """
+      columnName: "result"
     )
 
   hubCouncilServicesThisWeek: [HubCouncil!]!
@@ -2381,6 +2479,7 @@ extend type Campus {
 
       RETURN DISTINCT hubCouncils
       """
+      columnName: "result"
     )
   hubCouncilServicesThisWeekCount: Int!
     @cypher(
@@ -2404,12 +2503,14 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT hubCouncils)
       """
+      columnName: "result"
     )
   activeMinistryCount: Int!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry) RETURN COUNT(DISTINCT ministry)
       """
+      columnName: "result"
     )
   ministryServicesThisWeek: [Ministry!]!
     @cypher(
@@ -2426,6 +2527,7 @@ extend type Campus {
 
       RETURN DISTINCT ministries
       """
+      columnName: "result"
     )
   ministryServicesThisWeekCount: Int!
     @cypher(
@@ -2442,6 +2544,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "result"
     )
   ministryCancelledServicesThisWeek: [Ministry!]!
     @cypher(
@@ -2459,6 +2562,7 @@ extend type Campus {
 
       RETURN DISTINCT ministries
       """
+      columnName: "result"
     )
   ministryCancelledServicesThisWeekCount: Int!
     @cypher(
@@ -2475,6 +2579,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "result"
     )
   ministryFormDefaultersThisWeek: [Ministry!]!
     @cypher(
@@ -2497,6 +2602,7 @@ extend type Campus {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters
       """
+      columnName: "result"
     )
   ministryFormDefaultersThisWeekCount: Int!
     @cypher(
@@ -2518,6 +2624,7 @@ extend type Campus {
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters)
       """
+      columnName: "result"
     )
   ministryBankingDefaultersThisWeek: [Ministry!]!
     @cypher(
@@ -2538,6 +2645,7 @@ extend type Campus {
 
       RETURN DISTINCT ministries
       """
+      columnName: "result"
     )
   ministryBankingDefaultersThisWeekCount: Int!
     @cypher(
@@ -2558,6 +2666,7 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "result"
     )
   ministriesBankedThisWeek: [Ministry!]!
     @cypher(
@@ -2576,6 +2685,7 @@ extend type Campus {
 
       RETURN DISTINCT ministries
       """
+      columnName: "result"
     )
   ministriesBankedThisWeekCount: Int!
     @cypher(
@@ -2594,5 +2704,6 @@ extend type Campus {
 
       RETURN COUNT(DISTINCT ministries)
       """
+      columnName: "result"
     )
 }

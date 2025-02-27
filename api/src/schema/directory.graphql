@@ -305,6 +305,7 @@ type TimeGraph implements TimeGraphNode {
       MATCH (this)
       RETURN toString(this.date)
       """
+      columnName: "result"
     )
   date: Date
   swell: Boolean
@@ -315,6 +316,7 @@ type TimeGraph implements TimeGraphNode {
       WITH swellStatus WHERE swellStatus ='SwellDate'
       RETURN true
       """
+      columnName: "result"
     )
   memberDob: Member @relationship(type: "WAS_BORN_ON", direction: IN)
   # titleAppointmentDate: Member @relationship(type: "APPOINTED_ON", direction: IN)
@@ -1103,6 +1105,7 @@ type Bacenta implements Church {
       MATCH (this)
       RETURN labels(this)
       """
+      columnName: "result"
     )
   members: [Member!]!
     @cypher(
@@ -1153,6 +1156,7 @@ type Bacenta implements Church {
       MATCH (this)<-[:HAS*2]-(council:Council)
       RETURN council
       """
+      columnName: "result"
     )
   stream: Stream
     @cypher(
@@ -1166,6 +1170,7 @@ type Bacenta implements Church {
       MATCH (this)<-[:HAS*2]-(council:Council)-[:HAS_MINISTRY]->(hubs:Hub)
       RETURN hubs
       """
+      columnName: "result"
     )
 }
 
@@ -1254,6 +1259,7 @@ type Fellowship implements Church {
       MATCH (this)
       RETURN labels(this)
       """
+      columnName: "result"
     )
 
   council: Council
@@ -1262,6 +1268,7 @@ type Fellowship implements Church {
       MATCH (this)<-[:HAS*3]-(council:Council)
       RETURN council
       """
+      columnName: "result"
     )
 }
 type ClosedFellowship {

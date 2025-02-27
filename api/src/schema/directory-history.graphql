@@ -515,6 +515,7 @@ extend type Mutation {
 
       RETURN council
       """
+      columnName: "result"
     )
 
   ### CREATIVE ARTS ###

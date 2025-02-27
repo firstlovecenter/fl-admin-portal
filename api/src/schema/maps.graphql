@@ -95,6 +95,7 @@ extend type Mutation {
 
       RETURN indoorVenue
       """
+      columnName: "result"
     )
 
   CreateOutdoorVenue(
@@ -131,6 +132,7 @@ extend type Mutation {
 
       RETURN outdoorVenue
       """
+      columnName: "result"
     )
 
   CreateHostel(
@@ -167,6 +169,7 @@ extend type Mutation {
 
       RETURN hostel
       """
+      columnName: "result"
     )
   CreateHighSchool(
     name: String!
@@ -203,6 +206,7 @@ extend type Mutation {
 
       RETURN highSchool
       """
+      columnName: "result"
     )
 }
 
@@ -224,6 +228,7 @@ extend type Mutation {
 
       RETURN indoorVenue
       """
+      columnName: "result"
     )
   UpdateOutdoorVenue(
     longitude: Float!
@@ -242,6 +247,7 @@ extend type Mutation {
 
       RETURN outdoorVenue
       """
+      columnName: "result"
     )
   UpdateHostel(
     longitude: Float!
@@ -262,6 +268,7 @@ extend type Mutation {
 
       RETURN hostel
       """
+      columnName: "result"
     )
   UpdateHighSchool(
     longitude: Float!
@@ -281,6 +288,7 @@ extend type Mutation {
 
       RETURN highSchool
       """
+      columnName: "result"
     )
 }
 
@@ -306,6 +314,7 @@ extend type Mutation {
       DETACH DELETE indoorVenue
       RETURN true
       """
+      columnName: "result"
     )
   CloseDownOutdoorVenue(outdoorVenueId: ID!): Boolean!
     @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
@@ -327,6 +336,7 @@ extend type Mutation {
       DETACH DELETE outdoorVenue
       RETURN true
       """
+      columnName: "result"
     )
 
   CloseDownHostel(hostelId: ID!): Boolean!
@@ -349,6 +359,7 @@ extend type Mutation {
       DETACH DELETE hostel
       RETURN true
       """
+      columnName: "result"
     )
   CloseDownHighSchool(highSchoolId: ID!): Boolean!
     @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
@@ -370,5 +381,6 @@ extend type Mutation {
       DETACH DELETE highSchool
       RETURN true
       """
+      columnName: "result"
     )
 }
