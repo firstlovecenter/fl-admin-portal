@@ -598,7 +598,7 @@ extend type Query {
     )
 
   campusMemberSearch(searchKey: String!, campusId: ID!): [Member!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
     )
     @cypher(
@@ -614,7 +614,7 @@ extend type Query {
       columnName: "campusMemberSearch"
     )
   streamMemberSearch(searchKey: String!, streamId: ID!): [Member!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
     )
     @cypher(
@@ -631,7 +631,7 @@ extend type Query {
       columnName: "streamMemberSearch"
     )
   councilMemberSearch(searchKey: String!, councilId: ID!): [Member!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -657,7 +657,7 @@ extend type Query {
       columnName: "councilMemberSearch"
     )
   governorshipMemberSearch(searchKey: String!, governorshipId: ID!): [Member!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -683,7 +683,7 @@ extend type Query {
       columnName: "governorshipMemberSearch"
     )
   bacentaMemberSearch(searchKey: String!, bacentaId: ID!): [Member!]!
-    @auth(rules: [{ roles: ["leaderBacenta"] }])
+    @authentication(rules: [{ roles: ["leaderBacenta"] }])
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(member:Active:Member)
@@ -698,7 +698,7 @@ extend type Query {
       columnName: "bacentaMemberSearch"
     )
   fellowshipMemberSearch(searchKey: String!, fellowshipId: ID!): [Member!]!
-    @auth(rules: [{ roles: ["leaderFellowship"] }])
+    @authentication(rules: [{ roles: ["leaderFellowship"] }])
     @cypher(
       statement: """
       MATCH (fellowship:Fellowship {id: $fellowshipId})<-[:BELONGS_TO]-(member:Active:Member)
@@ -713,7 +713,9 @@ extend type Query {
       columnName: "fellowshipMemberSearch"
     )
   creativeArtsMemberSearch(searchKey: String!, creativeArtsId: ID!): [Member!]!
-    @auth(rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }])
+    @authentication(
+      rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }]
+    )
     @cypher(
       statement: """
       MATCH (creativeArts:CreativeArts {id: $creativeArtsId})-[:HAS]->(ministry:Ministry)-[:HAS]->(:Hub)-[:HAS]->(:HubFellowship)<-[:BELONGS_TO]-(member:Active:Member)
@@ -727,7 +729,7 @@ extend type Query {
       columnName: "creativeArtsMemberSearch"
     )
   ministryMemberSearch(searchKey: String!, ministryId: ID!): [Member!]!
-    @auth(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
+    @authentication(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
     @cypher(
       statement: """
       MATCH (ministry:Ministry {id: $ministryId})-[:HAS]->(:Hub)-[:HAS]->(:HubFellowship)<-[:BELONGS_TO]-(member:Active:Member)
@@ -741,7 +743,7 @@ extend type Query {
       columnName: "ministryMemberSearch"
     )
   hubMemberSearch(searchKey: String!, hubId: ID!): [Member!]!
-    @auth(rules: [{ roles: ["leaderHub"] }])
+    @authentication(rules: [{ roles: ["leaderHub"] }])
     @cypher(
       statement: """
       MATCH (hub:Hub {id: $hubId})-[:HAS]->(:HubFellowship)<-[:BELONGS_TO]-(member:Active:Member)
@@ -760,7 +762,7 @@ extend type Query {
     searchKey: String!
     oversightId: ID!
   ): [Fellowship!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
@@ -778,7 +780,7 @@ extend type Query {
     )
 
   campusFellowshipSearch(searchKey: String!, campusId: ID!): [Fellowship!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
     )
     @cypher(
@@ -792,7 +794,7 @@ extend type Query {
     )
 
   streamFellowshipSearch(searchKey: String!, streamId: ID!): [Fellowship!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
     )
     @cypher(
@@ -807,7 +809,7 @@ extend type Query {
     )
 
   councilFellowshipSearch(searchKey: String!, councilId: ID!): [Fellowship!]!
-    @auth(
+    @authentication(
       rules: [
         { roles: ["adminCouncil", "leaderCouncil", "arrivalsAdminCouncil"] }
       ]
@@ -826,7 +828,7 @@ extend type Query {
     searchKey: String!
     governorshipId: ID!
   ): [Fellowship!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -848,7 +850,7 @@ extend type Query {
       columnName: "governorshipFellowshipSearch"
     )
   bacentaFellowshipSearch(searchKey: String!, bacentaId: ID!): [Fellowship!]!
-    @auth(rules: [{ roles: ["leaderBacenta"] }])
+    @authentication(rules: [{ roles: ["leaderBacenta"] }])
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})-[:HAS]->(fellowship:Fellowship)
@@ -863,7 +865,9 @@ extend type Query {
     searchKey: String!
     creativeArtsId: ID!
   ): [HubFellowship!]!
-    @auth(rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }])
+    @authentication(
+      rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }]
+    )
     @cypher(
       statement: """
       MATCH (creativeArts:CreativeArts {id: $creativeArtsId})-[:HAS]->(ministry:Ministry)-[:HAS]->(hub:Hub)-[:HAS]->(hubFellowship:HubFellowship)
@@ -877,7 +881,7 @@ extend type Query {
     searchKey: String!
     ministryId: ID!
   ): [HubFellowship!]!
-    @auth(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
+    @authentication(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
     @cypher(
       statement: """
       MATCH (ministry:Ministry {id: $ministryId})-[:HAS]->(hub:Hub)-[:HAS]->(hubFellowship:HubFellowship)
@@ -888,7 +892,7 @@ extend type Query {
       columnName: "ministryHubFellowshipSearch"
     )
   hubHubFellowshipSearch(searchKey: String!, hubId: ID!): [HubFellowship!]!
-    @auth(rules: [{ roles: ["leaderHub"] }])
+    @authentication(rules: [{ roles: ["leaderHub"] }])
     @cypher(
       statement: """
       MATCH (hub:Hub {id: $hubId})-[:HAS]->(hubFellowship:HubFellowship)
@@ -902,7 +906,7 @@ extend type Query {
   ### Bacenta Search ###
 
   oversightBacentaSearch(searchKey: String!, oversightId: ID!): [Bacenta!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
@@ -920,7 +924,7 @@ extend type Query {
     )
 
   campusBacentaSearch(searchKey: String!, campusId: ID!): [Bacenta]
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
     )
     @cypher(
@@ -933,7 +937,7 @@ extend type Query {
       columnName: "campusBacentaSearch"
     )
   streamBacentaSearch(searchKey: String!, streamId: ID!): [Bacenta]
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
     )
     @cypher(
@@ -947,7 +951,7 @@ extend type Query {
       columnName: "streamBacentaSearch"
     )
   councilBacentaSearch(searchKey: String!, councilId: ID!): [Bacenta]
-    @auth(
+    @authentication(
       rules: [
         { roles: ["adminCouncil", "leaderCouncil", "arrivalsAdminCouncil"] }
       ]
@@ -966,7 +970,7 @@ extend type Query {
     searchKey: String!
     governorshipId: ID!
   ): [Fellowship!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -994,7 +998,7 @@ extend type Query {
     searchKey: String!
     oversightId: ID!
   ): [Governorship!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
@@ -1012,7 +1016,7 @@ extend type Query {
     )
 
   campusGovernorshipSearch(searchKey: String!, campusId: ID!): [Governorship!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
     )
     @cypher(
@@ -1025,7 +1029,7 @@ extend type Query {
       columnName: "campusGovernorshipSearch"
     )
   streamGovernorshipSearch(searchKey: String!, streamId: ID!): [Governorship!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
     )
     @cypher(
@@ -1042,7 +1046,7 @@ extend type Query {
     searchKey: String!
     councilId: ID!
   ): [Governorship!]!
-    @auth(
+    @authentication(
       rules: [
         { roles: ["adminCouncil", "leaderCouncil", "arrivalsAdminCouncil"] }
       ]
@@ -1060,7 +1064,7 @@ extend type Query {
 
   ### Council Search ###
   oversightCouncilSearch(searchKey: String!, oversightId: ID!): [Council!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
@@ -1078,7 +1082,7 @@ extend type Query {
     )
 
   campusCouncilSearch(searchKey: String!, campusId: ID!): [Council!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
     )
     @cypher(
@@ -1091,7 +1095,7 @@ extend type Query {
       columnName: "campusCouncilSearch"
     )
   streamCouncilSearch(searchKey: String!, streamId: ID!): [Council!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
     )
     @cypher(
@@ -1107,7 +1111,7 @@ extend type Query {
 
   ### Stream Search ###
   oversightStreamSearch(searchKey: String!, oversightId: ID!): [Stream!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
@@ -1124,7 +1128,7 @@ extend type Query {
       columnName: "oversightStreamSearch"
     )
   campusStreamSearch(searchKey: String!, campusId: ID!): [Stream!]!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
     )
     @cypher(
@@ -1139,7 +1143,7 @@ extend type Query {
 
   ### Campus Search ###
   oversightCampusSearch(searchKey: String!, oversightId: ID!): [Campus!]!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
@@ -1158,7 +1162,7 @@ extend type Query {
 
   ### Creative Arts Search ###
   campusCreativeArtsSearch(searchKey: String!, campusId: ID!): [CreativeArts!]!
-    @auth(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
+    @authentication(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
     @cypher(
       statement: """
       MATCH (gathering:Campus {id: $campusId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)
@@ -1171,7 +1175,7 @@ extend type Query {
 
   ### Ministry Search ###
   campusMinistrySearch(searchKey: String!, campusId: ID!): [Ministry!]!
-    @auth(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
+    @authentication(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
     @cypher(
       statement: """
       MATCH (gathering:Campus {id: $campusId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)
@@ -1182,7 +1186,7 @@ extend type Query {
       columnName: "campusMinistrySearch"
     )
   streamMinistrySearch(searchKey: String!, streamId: ID!): [Ministry!]!
-    @auth(rules: [{ roles: ["adminStream", "leaderStream"] }])
+    @authentication(rules: [{ roles: ["adminStream", "leaderStream"] }])
     @cypher(
       statement: """
       MATCH (stream:Stream {id: $streamId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)
@@ -1196,7 +1200,9 @@ extend type Query {
     searchKey: String!
     creativeArtsId: ID!
   ): [Ministry!]!
-    @auth(rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }])
+    @authentication(
+      rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }]
+    )
     @cypher(
       statement: """
       MATCH (creativeArts:CreativeArts {id: $creativeArtsId})-[:HAS]->(ministry:Ministry)
@@ -1209,7 +1215,7 @@ extend type Query {
 
   ### Hub Search ###
   campusHubSearch(searchKey: String!, campusId: ID!): [Hub!]!
-    @auth(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
+    @authentication(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
     @cypher(
       statement: """
       MATCH (gathering:Campus {id: $campusId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)-[:HAS]->(hub:Hub)
@@ -1220,7 +1226,7 @@ extend type Query {
       columnName: "campusHubSearch"
     )
   streamHubSearch(searchKey: String!, streamId: ID!): [Hub!]!
-    @auth(rules: [{ roles: ["adminStream", "leaderStream"] }])
+    @authentication(rules: [{ roles: ["adminStream", "leaderStream"] }])
     @cypher(
       statement: """
       MATCH (stream:Stream {id: $streamId})-[:HAS_MINISTRY]->(ministry:Ministry)-[:HAS]->(hub:Hub)
@@ -1231,7 +1237,9 @@ extend type Query {
       columnName: "streamHubSearch"
     )
   creativeArtsHubSearch(searchKey: String!, creativeArtsId: ID!): [Hub!]!
-    @auth(rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }])
+    @authentication(
+      rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }]
+    )
     @cypher(
       statement: """
       MATCH (creativeArts:CreativeArts {id: $creativeArtsId})-[:HAS]->(ministry:Ministry)-[:HAS]->(hub:Hub)
@@ -1242,7 +1250,7 @@ extend type Query {
       columnName: "creativeArtsHubSearch"
     )
   ministryHubSearch(searchKey: String!, ministryId: ID!): [Hub!]!
-    @auth(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
+    @authentication(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
     @cypher(
       statement: """
       MATCH (ministry:Ministry {id: $ministryId})-[:HAS]->(hub:Hub)
@@ -1253,7 +1261,7 @@ extend type Query {
       columnName: "ministryHubSearch"
     )
   councilHubSearch(searchKey: String!, councilId: ID!): [Hub!]!
-    @auth(rules: [{ roles: ["leaderCouncil", "adminCouncil"] }])
+    @authentication(rules: [{ roles: ["leaderCouncil", "adminCouncil"] }])
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})-[:HAS]->(hub:Hub)

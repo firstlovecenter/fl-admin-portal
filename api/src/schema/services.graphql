@@ -1,4 +1,4 @@
-type ServiceDay @auth(rules: [{ isAuthenticated: true }]) {
+type ServiceDay {
   day: String!
   dayNumber: Int!
   bacenta: Bacenta @relationship(type: "MEETS_ON", direction: IN)
@@ -964,7 +964,7 @@ interface HadService {
   income: Float!
 }
 
-type ServiceRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
+type ServiceRecord implements Record {
   id: ID!
   createdAt: DateTime!
   created_by: Member
@@ -1016,7 +1016,7 @@ type ServiceRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
     )
 }
 
-type NoService implements Record @auth(rules: [{ isAuthenticated: true }]) {
+type NoService implements Record {
   id: ID!
   createdAt: DateTime!
   created_by: Member!
@@ -1033,7 +1033,7 @@ type NoService implements Record @auth(rules: [{ isAuthenticated: true }]) {
   noServiceReason: String!
 }
 
-type ServiceLog @auth(rules: [{ isAuthenticated: true }]) {
+type ServiceLog {
   id: ID
   historyRecord: String #leader was transferred to
   createdAt: TimeGraph @relationship(type: "RECORDED_ON", direction: OUT)
@@ -1089,7 +1089,7 @@ extend type Mutation {
   ): NoService!
 
   UndoCancelledService(serviceRecordId: ID!): Bacenta!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [

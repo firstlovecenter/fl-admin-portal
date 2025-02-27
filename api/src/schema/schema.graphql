@@ -1,11 +1,12 @@
 #Query Definitions
+extend schema @authentication
+
 type Query {
   currentUser(id: ID): Member!
     @cypher(
       statement: "MATCH (member:Active:Member {auth_id: $auth.jwt.sub}) RETURN member"
       columnName: "member"
     )
-    @auth(rules: [{ isAuthenticated: true }])
 
   memberByEmail(email: String!): Member
     @cypher(

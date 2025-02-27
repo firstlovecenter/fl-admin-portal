@@ -324,7 +324,7 @@ extend type Mutation {
   ): Member!
 
   CreateOversight(name: String!, leaderId: ID!, denominationId: ID!): Oversight
-    @auth(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminDenomination"] }])
     @cypher(
       statement: """
       CREATE (oversight:Oversight {id:apoc.create.uuid(), name:$name})
@@ -365,7 +365,7 @@ extend type Mutation {
     currency: String!
     conversionRateToDollar: Float!
   ): Campus
-    @auth(rules: [{ roles: ["adminOversight", "adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminOversight", "adminDenomination"] }])
     @cypher(
       statement: """
       CREATE (campus:Campus {id:apoc.create.uuid(), name:$name})
@@ -406,7 +406,7 @@ extend type Mutation {
     meetingDay: String!
     bankAccount: String!
   ): Stream
-    @auth(rules: [{ roles: ["adminCampus", "adminOversight"] }])
+    @authentication(rules: [{ roles: ["adminCampus", "adminOversight"] }])
     @cypher(
       statement: """
       CREATE (stream:Active:Stream {id:apoc.create.uuid(), name: $name})
@@ -443,7 +443,7 @@ extend type Mutation {
     )
 
   CreateCouncil(name: String!, leaderId: ID!, streamId: ID!): Council
-    @auth(rules: [{ roles: ["adminCampus", "adminStream"] }])
+    @authentication(rules: [{ roles: ["adminCampus", "adminStream"] }])
     @cypher(
       statement: """
        CREATE (council:Council {id:apoc.create.uuid(), name:$name})
@@ -484,7 +484,9 @@ extend type Mutation {
     leaderId: ID!
     councilId: ID!
   ): Governorship
-    @auth(rules: [{ roles: ["adminCampus", "adminStream", "adminCouncil"] }])
+    @authentication(
+      rules: [{ roles: ["adminCampus", "adminStream", "adminCouncil"] }]
+    )
     @cypher(
       statement: """
        CREATE (governorship:Governorship {name: $name})
@@ -524,7 +526,7 @@ extend type Mutation {
     venueLongitude: Float
     venueLatitude: Float
   ): Bacenta!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminStream", "adminCampus", "arrivalsAdminCampus"] }]
     )
     @cypher(
@@ -573,7 +575,7 @@ extend type Mutation {
     venueLongitude: Float
     venueLatitude: Float
   ): Fellowship!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -615,7 +617,7 @@ extend type Mutation {
 extend type Mutation {
   UpdateMemberEmail(id: ID!, email: String!): Member!
   UpdateMemberAppointmentDate(id: ID!, appointmentDate: String): Member!
-    @auth(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminDenomination"] }])
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -630,7 +632,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberOrdinationDate(id: ID!, ordinationDate: String!): Member!
-    @auth(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminDenomination"] }])
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -645,7 +647,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberConsecrationDate(id: ID!, consecrationDate: String!): Member!
-    @auth(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminDenomination"] }])
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -661,7 +663,7 @@ extend type Mutation {
     )
 
   DeleteMemberTitles(id: ID!): Member!
-    @auth(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminDenomination"] }])
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -710,7 +712,7 @@ extend type Mutation {
     ministry: String
     pictureUrl: String!
   ): Member
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -807,7 +809,7 @@ extend type Mutation {
     )
 
   UpdateDenominationDetails(denominationId: ID!, name: String!): Denomination
-    @auth(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminDenomination"] }])
     @cypher(
       statement: """
       MATCH (denomination:Denomination {id: $denominationId})
@@ -818,7 +820,7 @@ extend type Mutation {
       columnName: "denomination"
     )
   UpdateOversightDetails(oversightId: ID!, name: String!): Oversight!
-    @auth(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminDenomination"] }])
     @cypher(
       statement: """
       MATCH (oversight:Oversight {id: $oversightId})
@@ -836,7 +838,7 @@ extend type Mutation {
     currency: String!
     conversionRateToDollar: Float!
   ): Campus
-    @auth(rules: [{ roles: ["adminOversight", "adminDenomination"] }])
+    @authentication(rules: [{ roles: ["adminOversight", "adminDenomination"] }])
     @cypher(
       statement: """
            MATCH (campus:Campus {id: $campusId})
@@ -855,7 +857,7 @@ extend type Mutation {
     bankAccount: String!
     meetingDay: String!
   ): Stream
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "adminOversight", "adminDenomination"] }]
     )
     @cypher(
@@ -880,7 +882,7 @@ extend type Mutation {
       columnName: "stream"
     )
   UpdateCouncilDetails(councilId: ID!, name: String!): Council
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -903,7 +905,9 @@ extend type Mutation {
     )
 
   UpdateGovernorshipDetails(governorshipId: ID!, name: String!): Governorship
-    @auth(rules: [{ roles: ["adminCampus", "adminStream", "adminCouncil"] }])
+    @authentication(
+      rules: [{ roles: ["adminCampus", "adminStream", "adminCouncil"] }]
+    )
     @cypher(
       statement: """
            MATCH (governorship:Governorship {id: $governorshipId})
@@ -920,7 +924,7 @@ extend type Mutation {
     venueLongitude: Float!
     venueLatitude: Float!
   ): Bacenta
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -964,7 +968,7 @@ extend type Mutation {
     venueLongitude: Float
     venueLatitude: Float
   ): Fellowship
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [

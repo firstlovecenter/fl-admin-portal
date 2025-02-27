@@ -699,7 +699,7 @@ extend type Mutation {
     leaderId: ID!
     campusId: ID!
   ): CreativeArts!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(rules: [{ roles: ["adminCampus"] }])
     @cypher(
       statement: """
       CREATE (creativeArt:CreativeArts:Basonta {name:$name})
@@ -733,7 +733,7 @@ extend type Mutation {
     creativeArtsId: ID!
     bankAccount: String!
   ): Ministry!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "adminStream", "adminCreativeArts"] }]
     )
     @cypher(
@@ -770,7 +770,7 @@ extend type Mutation {
       """
     )
   CreateHubCouncil(leaderId: ID!, ministryId: ID!, councilId: ID!): HubCouncil!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -823,7 +823,7 @@ extend type Mutation {
     venueLongitude: Float
     venueLatitude: Float
   ): Hub!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -880,7 +880,7 @@ extend type Mutation {
 
 extend type Mutation {
   UpdateCreativeArtsDetails(creativeArtsId: ID!, name: String!): CreativeArts!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(rules: [{ roles: ["adminCampus"] }])
     @cypher(
       statement: """
       MATCH (creativeArt:CreativeArts {id: $creativeArtsId})
@@ -894,7 +894,7 @@ extend type Mutation {
     name: String!
     bankAccount: String!
   ): Ministry!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminCampus", "adminStream", "adminCreativeArts"] }]
     )
     @cypher(
@@ -907,7 +907,7 @@ extend type Mutation {
       """
     )
   UpdateHubCouncilDetails(hubCouncilId: ID!, name: String!): HubCouncil!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -934,7 +934,7 @@ extend type Mutation {
     venueLongitude: Float
     venueLatitude: Float
   ): Hub!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -969,7 +969,7 @@ extend type Mutation {
 
   #Set Fellowship to be 'HubFellowship'
   SetFellowshipToHubFellowship(fellowshipId: ID!, hubId: ID!): Fellowship!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -1007,7 +1007,7 @@ extend type Mutation {
     )
 
   SetHubFellowshipToRegularFellowship(fellowshipId: ID!): Fellowship!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -1086,8 +1086,7 @@ extend type Mutation {
   RemoveMinistryAdmin(adminId: ID!, ministryId: ID!, newAdminId: ID!): Member
 }
 
-type MinistryAttendanceRecord implements Record
-  @auth(rules: [{ isAuthenticated: true }]) {
+type MinistryAttendanceRecord implements Record {
   id: ID!
   createdAt: DateTime!
   created_by: Member
@@ -1114,8 +1113,7 @@ type MinistryAttendanceRecord implements Record
     )
 }
 
-type StageAttendanceRecord implements Record
-  @auth(rules: [{ isAuthenticated: true }]) {
+type StageAttendanceRecord implements Record {
   id: ID!
   createdAt: DateTime!
   created_by: Member
@@ -1133,8 +1131,7 @@ type StageAttendanceRecord implements Record
   noStagePerformanceReason: String
 }
 
-type RehearsalRecord implements Record
-  @auth(rules: [{ isAuthenticated: true }]) {
+type RehearsalRecord implements Record {
   id: ID!
   createdAt: DateTime!
   created_by: Member

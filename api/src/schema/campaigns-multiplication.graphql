@@ -50,7 +50,7 @@ type MultiplicationRecord {
   bankingSlip: String
 }
 
-type AggregateMultiplicationRecord @auth(rules: [{ isAuthenticated: true }]) {
+type AggregateMultiplicationRecord {
   id: ID!
   week: Int!
   year: Int!

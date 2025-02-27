@@ -1,5 +1,4 @@
-type SwellDate implements TimeGraphNode
-  @auth(rules: [{ isAuthenticated: true }]) {
+type SwellDate implements TimeGraphNode {
   id: ID!
     @cypher(
       statement: """
@@ -1072,7 +1071,7 @@ extend type Bacenta {
   code: Int!
 }
 
-type BussingRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
+type BussingRecord implements Record {
   id: ID!
 
   week: Int!
@@ -1204,7 +1203,7 @@ extend type Mutation {
 
   ## GENERATE CODE OF THE DAY
   GenerateCodeOfTheDay: String!
-    @auth(
+    @authentication(
       rules: [{ roles: ["adminStream", "adminCampus", "arrivalsAdminCampus"] }]
     )
     @cypher(
@@ -1216,7 +1215,7 @@ extend type Mutation {
       columnName: "code"
     )
   SetCodeOfTheDay(code: String!): String!
-    @auth(rules: [{ roles: ["adminCampus", "arrivalsAdminCampus"] }])
+    @authentication(rules: [{ roles: ["adminCampus", "arrivalsAdminCampus"] }])
     @cypher(
       statement: """
       MATCH (arr:ArrivalsCodeOfTheDay)
@@ -1233,7 +1232,7 @@ extend type Mutation {
     urvanTopUp: Float!
     outbound: Boolean!
   ): Bacenta!
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -1279,7 +1278,7 @@ extend type Mutation {
     momoName: String!
     momoNumber: String!
   ): Bacenta!
-    @auth(rules: [{ roles: ["leaderBacenta"] }])
+    @authentication(rules: [{ roles: ["leaderBacenta"] }])
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})
@@ -1328,7 +1327,7 @@ extend type Mutation {
     vehicle: String!
     comments: String
   ): VehicleRecord!
-    @auth(rules: [{ roles: ["arrivalsCounterStream"] }])
+    @authentication(rules: [{ roles: ["arrivalsCounterStream"] }])
     @cypher(
       statement: """
       MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId}) WHERE vehicleRecord.arrivalTime IS NULL
@@ -1374,7 +1373,7 @@ extend type Mutation {
       """
       columnName: "stream"
     )
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [
@@ -1421,7 +1420,7 @@ extend type Mutation {
       """
       columnName: "stream"
     )
-    @auth(
+    @authentication(
       rules: [
         {
           roles: [

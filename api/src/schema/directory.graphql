@@ -1,4 +1,4 @@
-type Member @auth(rules: [{ isAuthenticated: true }]) {
+type Member {
   id: ID! @id
   auth_id: String
   firstName: String #@search
@@ -269,22 +269,22 @@ type Member @auth(rules: [{ isAuthenticated: true }]) {
     @relationship(type: "WAS_TREASURER_FOR", direction: OUT)
 }
 
-type Gender @auth(rules: [{ isAuthenticated: true }]) {
+type Gender {
   gender: String
   members: [Member!]! @relationship(type: "HAS_GENDER", direction: IN)
 }
 
-type MaritalStatus @auth(rules: [{ isAuthenticated: true }]) {
+type MaritalStatus {
   status: String
   members: [Member!]! @relationship(type: "HAS_MARITAL_STATUS", direction: IN)
 }
 
-type Occupation @auth(rules: [{ isAuthenticated: true }]) {
+type Occupation {
   occupation: String
   members: [Member!]! @relationship(type: "HAS_OCCUPATION", direction: IN)
 }
 
-type Title @auth(rules: [{ isAuthenticated: true }]) {
+type Title {
   name: String! #Pastor, Reverend, Apostle, Bishop (Mother)
   members: [Member!]!
     @relationship(type: "HAS_TITLE", properties: "HasTitle", direction: IN)
@@ -298,8 +298,7 @@ interface TimeGraphNode {
   date: Date
 }
 
-type TimeGraph implements TimeGraphNode
-  @auth(rules: [{ isAuthenticated: true }]) {
+type TimeGraph implements TimeGraphNode {
   id: ID
     @cypher(
       statement: """
@@ -329,7 +328,7 @@ type TimeGraph implements TimeGraphNode
   bussingDate: [BussingRecord!]! @relationship(type: "BUSSED_ON", direction: IN)
 }
 
-type HistoryLog @auth(rules: [{ isAuthenticated: true }]) {
+type HistoryLog {
   id: ID @id
   timeStamp: DateTime
   historyRecord: String #leader was transferred to
@@ -347,7 +346,7 @@ type HistoryLog @auth(rules: [{ isAuthenticated: true }]) {
 }
 
 ##Church Types##
-interface Church @auth(rules: [{ isAuthenticated: true }]) {
+interface Church {
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)

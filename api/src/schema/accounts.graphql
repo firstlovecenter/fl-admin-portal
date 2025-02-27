@@ -156,7 +156,7 @@ extend type Council {
 
 extend type Mutation {
   SetCouncilHRAmount(councilId: ID!, amount: Float!): Council!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
@@ -182,7 +182,7 @@ extend type Mutation {
     accountType: String!
     description: String! #momoNumber: String! #momoName: String! #invoiceUrl: String!
   ): AccountTransaction!
-    @auth(rules: [{ roles: ["leaderCouncil", "adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: ["leaderCouncil", "adminCampus"] })
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
@@ -215,7 +215,7 @@ extend type Mutation {
   ApproveExpense(transactionId: ID!, charge: Float!): AccountTransaction!
 
   DeclineExpense(transactionId: ID!): AccountTransaction!
-    @auth(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "leaderCampus"] })
     @cypher(
       statement: """
       MATCH (transaction:AccountTransaction {id: $transactionId})

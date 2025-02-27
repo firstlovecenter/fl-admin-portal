@@ -1,5 +1,4 @@
-type AggregateServiceRecord implements HadService
-  @auth(rules: [{ isAuthenticated: true }]) {
+type AggregateServiceRecord implements HadService {
   id: ID!
   week: Int!
   year: Int!
@@ -9,7 +8,7 @@ type AggregateServiceRecord implements HadService
   numberOfServices: Int
 }
 
-type AggregateBussingRecord @auth(rules: [{ isAuthenticated: true }]) {
+type AggregateBussingRecord {
   id: ID!
   week: Int!
   year: Int!
@@ -168,8 +167,7 @@ extend type Denomination {
     )
 }
 
-type AggregateRehearsalRecord implements HadService
-  @auth(rules: [{ isAuthenticated: true }]) {
+type AggregateRehearsalRecord implements HadService {
   id: ID!
   week: Int!
   year: Int!
@@ -179,7 +177,7 @@ type AggregateRehearsalRecord implements HadService
   numberOfServices: Int
 }
 
-type AggregateStageAttendanceRecord @auth(rules: [{ isAuthenticated: true }]) {
+type AggregateStageAttendanceRecord {
   id: ID!
   week: Int!
   year: Int!
