@@ -10,7 +10,6 @@ extend type Campus {
       WITH DISTINCT record
       RETURN COUNT(record)
       """
-      columnName: "vehiclesHaveBeenPaidCount"
     )
   vehiclesToBePaidCount(arrivalDate: String!): Int!
     @cypher(
@@ -23,7 +22,6 @@ extend type Campus {
       WITH DISTINCT record
       RETURN COUNT(record)
       """
-      columnName: "vehiclesToBePaidCount"
     )
   vehicleAmountHasBeenPaid(arrivalDate: String!): Float!
     @cypher(
@@ -36,7 +34,6 @@ extend type Campus {
       WITH DISTINCT record
       RETURN SUM(record.vehicleTopUp)
       """
-      columnName: "vehicleAmountHasBeenPaid"
     )
   vehicleAmountToBePaid(arrivalDate: String!): Float!
     @cypher(
@@ -49,7 +46,6 @@ extend type Campus {
       WITH DISTINCT record
       RETURN SUM(record.vehicleTopUp)
       """
-      columnName: "vehicleAmountToBePaid"
     )
   bacentasToBePaid(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -62,7 +58,6 @@ extend type Campus {
       WITH DISTINCT bacentas
       RETURN bacentas
       """
-      columnName: "bacentasToBePaid"
     )
 }
 
@@ -78,7 +73,6 @@ extend type Stream {
       WITH DISTINCT record
       RETURN COUNT(record)
       """
-      columnName: "vehiclesHaveBeenPaidCount"
     )
   vehiclesToBePaidCount(arrivalDate: String!): Int!
     @cypher(
@@ -91,7 +85,6 @@ extend type Stream {
       WITH DISTINCT record
       RETURN COUNT(record)
       """
-      columnName: "vehiclesToBePaidCount"
     )
   vehicleAmountHasBeenPaid(arrivalDate: String!): Float!
     @cypher(
@@ -104,7 +97,6 @@ extend type Stream {
       WITH DISTINCT record
       RETURN SUM(record.vehicleTopUp)
       """
-      columnName: "vehicleAmountHasBeenPaid"
     )
   vehicleAmountToBePaid(arrivalDate: String!): Float!
     @cypher(
@@ -117,7 +109,6 @@ extend type Stream {
       WITH DISTINCT record
       RETURN SUM(record.vehicleTopUp)
       """
-      columnName: "vehicleAmountToBePaid"
     )
   bacentasToBePaid(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -130,7 +121,6 @@ extend type Stream {
       WITH DISTINCT bacentas
       RETURN bacentas
       """
-      columnName: "bacentasToBePaid"
     )
 }
 
@@ -148,7 +138,6 @@ extend type Council {
       WITH DISTINCT record
       RETURN COUNT(record)
       """
-      columnName: "vehiclesHaveBeenPaidCount"
     )
   vehiclesToBePaidCount(arrivalDate: String!): Int!
     @cypher(
@@ -161,7 +150,6 @@ extend type Council {
       WITH DISTINCT record
       RETURN COUNT(record)
       """
-      columnName: "vehiclesToBePaidCount"
     )
   vehicleAmountHasBeenPaid(arrivalDate: String!): Float!
     @cypher(
@@ -174,7 +162,6 @@ extend type Council {
       WITH DISTINCT record
       RETURN SUM(record.vehicleTopUp)
       """
-      columnName: "vehicleAmountHasBeenPaid"
     )
   vehicleAmountToBePaid(arrivalDate: String!): Float!
     @cypher(
@@ -187,7 +174,6 @@ extend type Council {
       WITH DISTINCT record
       RETURN SUM(record.vehicleTopUp)
       """
-      columnName: "vehicleAmountToBePaid"
     )
   bacentasToBePaid(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -200,7 +186,6 @@ extend type Council {
       WITH DISTINCT bacentas
       RETURN bacentas
       """
-      columnName: "bacentasToBePaid"
     )
 }
 

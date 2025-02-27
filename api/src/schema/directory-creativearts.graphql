@@ -699,7 +699,7 @@ extend type Mutation {
     leaderId: ID!
     campusId: ID!
   ): CreativeArts!
-    @authentication(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
     @cypher(
       statement: """
       CREATE (creativeArt:CreativeArts:Basonta {name:$name})
@@ -734,7 +734,9 @@ extend type Mutation {
     bankAccount: String!
   ): Ministry!
     @authentication(
-      rules: [{ roles: ["adminCampus", "adminStream", "adminCreativeArts"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "adminStream", "adminCreativeArts"]
+      }
     )
     @cypher(
       statement: """
@@ -771,16 +773,14 @@ extend type Mutation {
     )
   CreateHubCouncil(leaderId: ID!, ministryId: ID!, councilId: ID!): HubCouncil!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminCreativeArts"
-            "adminMinistry"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCampus"
+          "adminStream"
+          "adminCreativeArts"
+          "adminMinistry"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -824,17 +824,15 @@ extend type Mutation {
     venueLatitude: Float
   ): Hub!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCouncil"
-            "adminCampus"
-            "adminStream"
-            "adminCreativeArts"
-            "adminMinistry"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCouncil"
+          "adminCampus"
+          "adminStream"
+          "adminCreativeArts"
+          "adminMinistry"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -880,7 +878,7 @@ extend type Mutation {
 
 extend type Mutation {
   UpdateCreativeArtsDetails(creativeArtsId: ID!, name: String!): CreativeArts!
-    @authentication(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
     @cypher(
       statement: """
       MATCH (creativeArt:CreativeArts {id: $creativeArtsId})
@@ -895,7 +893,9 @@ extend type Mutation {
     bankAccount: String!
   ): Ministry!
     @authentication(
-      rules: [{ roles: ["adminCampus", "adminStream", "adminCreativeArts"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "adminStream", "adminCreativeArts"]
+      }
     )
     @cypher(
       statement: """
@@ -908,16 +908,14 @@ extend type Mutation {
     )
   UpdateHubCouncilDetails(hubCouncilId: ID!, name: String!): HubCouncil!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminCreativeArts"
-            "adminMinistry"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCampus"
+          "adminStream"
+          "adminCreativeArts"
+          "adminMinistry"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -935,16 +933,14 @@ extend type Mutation {
     venueLatitude: Float
   ): Hub!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminCreativeArts"
-            "adminMinistry"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCampus"
+          "adminStream"
+          "adminCreativeArts"
+          "adminMinistry"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -970,17 +966,15 @@ extend type Mutation {
   #Set Fellowship to be 'HubFellowship'
   SetFellowshipToHubFellowship(fellowshipId: ID!, hubId: ID!): Fellowship!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminCouncil"
-            "adminCreativeArts"
-            "adminMinistry"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCampus"
+          "adminStream"
+          "adminCouncil"
+          "adminCreativeArts"
+          "adminMinistry"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -1008,17 +1002,15 @@ extend type Mutation {
 
   SetHubFellowshipToRegularFellowship(fellowshipId: ID!): Fellowship!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminCouncil"
-            "adminCreativeArts"
-            "adminMinistry"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCampus"
+          "adminStream"
+          "adminCouncil"
+          "adminCreativeArts"
+          "adminMinistry"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -1097,6 +1089,7 @@ type MinistryAttendanceRecord implements Record {
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
       RETURN date(date.date).week
       """
+      columnName: "week"
     )
   attendance: Int
   familyPicture: String
@@ -1110,6 +1103,7 @@ type MinistryAttendanceRecord implements Record {
       MATCH (church)<-[:HAS*1..4]-(stream:Stream)
       RETURN stream.name
       """
+      columnName: "stream"
     )
 }
 
@@ -1124,6 +1118,7 @@ type StageAttendanceRecord implements Record {
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
       RETURN date(date.date).week
       """
+      columnName: "week"
     )
   attendance: Int!
   onStagePictures: [String!]!
@@ -1142,6 +1137,7 @@ type RehearsalRecord implements Record {
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
       RETURN date(date.date).week
       """
+      columnName: "week"
     )
   attendance: Int
   income: Float
@@ -1166,6 +1162,7 @@ type RehearsalRecord implements Record {
       MATCH (church)<-[:HAS*1..4]-(stream:Stream)
       RETURN stream.name
       """
+      columnName: "stream"
     )
   bankedBy: Member
     @cypher(
@@ -1175,6 +1172,7 @@ type RehearsalRecord implements Record {
       MATCH (this)<-[:CONFIRMED_BANKING_FOR | :UPLOADED_SLIP_FOR | :OFFERING_BANKED_BY]-(member:Member)
       RETURN member
       """
+      columnName: "bankedBy"
     )
 }
 

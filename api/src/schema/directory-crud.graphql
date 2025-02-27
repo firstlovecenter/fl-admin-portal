@@ -324,7 +324,7 @@ extend type Mutation {
   ): Member!
 
   CreateOversight(name: String!, leaderId: ID!, denominationId: ID!): Oversight
-    @authentication(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
     @cypher(
       statement: """
       CREATE (oversight:Oversight {id:apoc.create.uuid(), name:$name})
@@ -365,7 +365,9 @@ extend type Mutation {
     currency: String!
     conversionRateToDollar: Float!
   ): Campus
-    @authentication(rules: [{ roles: ["adminOversight", "adminDenomination"] }])
+    @authentication(
+      jwt: { roles_INCLUDES: ["adminOversight", "adminDenomination"] }
+    )
     @cypher(
       statement: """
       CREATE (campus:Campus {id:apoc.create.uuid(), name:$name})
@@ -406,7 +408,7 @@ extend type Mutation {
     meetingDay: String!
     bankAccount: String!
   ): Stream
-    @authentication(rules: [{ roles: ["adminCampus", "adminOversight"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "adminOversight"] })
     @cypher(
       statement: """
       CREATE (stream:Active:Stream {id:apoc.create.uuid(), name: $name})
@@ -443,7 +445,7 @@ extend type Mutation {
     )
 
   CreateCouncil(name: String!, leaderId: ID!, streamId: ID!): Council
-    @authentication(rules: [{ roles: ["adminCampus", "adminStream"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "adminStream"] })
     @cypher(
       statement: """
        CREATE (council:Council {id:apoc.create.uuid(), name:$name})
@@ -485,7 +487,7 @@ extend type Mutation {
     councilId: ID!
   ): Governorship
     @authentication(
-      rules: [{ roles: ["adminCampus", "adminStream", "adminCouncil"] }]
+      jwt: { roles_INCLUDES: ["adminCampus", "adminStream", "adminCouncil"] }
     )
     @cypher(
       statement: """
@@ -527,7 +529,9 @@ extend type Mutation {
     venueLatitude: Float
   ): Bacenta!
     @authentication(
-      rules: [{ roles: ["adminStream", "adminCampus", "arrivalsAdminCampus"] }]
+      jwt: {
+        roles_INCLUDES: ["adminStream", "adminCampus", "arrivalsAdminCampus"]
+      }
     )
     @cypher(
       statement: """
@@ -576,16 +580,14 @@ extend type Mutation {
     venueLatitude: Float
   ): Fellowship!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminCouncil"
-            "adminGovernorship"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCampus"
+          "adminStream"
+          "adminCouncil"
+          "adminGovernorship"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -617,7 +619,7 @@ extend type Mutation {
 extend type Mutation {
   UpdateMemberEmail(id: ID!, email: String!): Member!
   UpdateMemberAppointmentDate(id: ID!, appointmentDate: String): Member!
-    @authentication(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -632,7 +634,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberOrdinationDate(id: ID!, ordinationDate: String!): Member!
-    @authentication(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -647,7 +649,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberConsecrationDate(id: ID!, consecrationDate: String!): Member!
-    @authentication(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -663,7 +665,7 @@ extend type Mutation {
     )
 
   DeleteMemberTitles(id: ID!): Member!
-    @authentication(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -712,34 +714,6 @@ extend type Mutation {
     ministry: String
     pictureUrl: String!
   ): Member
-    @authentication(
-      rules: [
-        {
-          roles: [
-            "adminDenomination"
-            "adminOversight"
-            "adminCampus"
-            "adminStream"
-            "adminCouncil"
-            "adminGovernorship"
-            "leaderDenomination"
-            "leaderOversight"
-            "leaderCampus"
-            "leaderStream"
-            "leaderCouncil"
-            "leaderGovernorship"
-            "leaderBacenta"
-            "leaderFellowship"
-            "leaderCreativeArts"
-            "leaderMinistry"
-            "leaderHubCouncil"
-            "leaderHub"
-            "adminCreativeArts"
-            "adminMinistry"
-          ]
-        }
-      ]
-    )
     @cypher(
       statement: """
       MATCH (member:Active:Member {id:$id})
@@ -809,7 +783,7 @@ extend type Mutation {
     )
 
   UpdateDenominationDetails(denominationId: ID!, name: String!): Denomination
-    @authentication(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
     @cypher(
       statement: """
       MATCH (denomination:Denomination {id: $denominationId})
@@ -820,7 +794,7 @@ extend type Mutation {
       columnName: "denomination"
     )
   UpdateOversightDetails(oversightId: ID!, name: String!): Oversight!
-    @authentication(rules: [{ roles: ["adminDenomination"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
     @cypher(
       statement: """
       MATCH (oversight:Oversight {id: $oversightId})
@@ -838,7 +812,9 @@ extend type Mutation {
     currency: String!
     conversionRateToDollar: Float!
   ): Campus
-    @authentication(rules: [{ roles: ["adminOversight", "adminDenomination"] }])
+    @authentication(
+      jwt: { roles_INCLUDES: ["adminOversight", "adminDenomination"] }
+    )
     @cypher(
       statement: """
            MATCH (campus:Campus {id: $campusId})
@@ -858,7 +834,9 @@ extend type Mutation {
     meetingDay: String!
   ): Stream
     @authentication(
-      rules: [{ roles: ["adminCampus", "adminOversight", "adminDenomination"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "adminOversight", "adminDenomination"]
+      }
     )
     @cypher(
       statement: """
@@ -883,16 +861,14 @@ extend type Mutation {
     )
   UpdateCouncilDetails(councilId: ID!, name: String!): Council
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminOversight"
-            "adminDenomination"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCampus"
+          "adminStream"
+          "adminOversight"
+          "adminDenomination"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -906,7 +882,7 @@ extend type Mutation {
 
   UpdateGovernorshipDetails(governorshipId: ID!, name: String!): Governorship
     @authentication(
-      rules: [{ roles: ["adminCampus", "adminStream", "adminCouncil"] }]
+      jwt: { roles_INCLUDES: ["adminCampus", "adminStream", "adminCouncil"] }
     )
     @cypher(
       statement: """
@@ -925,19 +901,17 @@ extend type Mutation {
     venueLatitude: Float!
   ): Bacenta
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminDenomination"
-            "adminOversight"
-            "adminCampus"
-            "adminStream"
-            "adminCouncil"
-            "adminGovernorship"
-            "arrivalsAdminGovernorship"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminDenomination"
+          "adminOversight"
+          "adminCampus"
+          "adminStream"
+          "adminCouncil"
+          "adminGovernorship"
+          "arrivalsAdminGovernorship"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -969,17 +943,15 @@ extend type Mutation {
     venueLatitude: Float
   ): Fellowship
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminCouncil"
-            "adminGovernorship"
-            "leaderFellowship"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCampus"
+          "adminStream"
+          "adminCouncil"
+          "adminGovernorship"
+          "leaderFellowship"
+        ]
+      }
     )
     @cypher(
       statement: """

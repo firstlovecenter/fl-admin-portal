@@ -599,7 +599,9 @@ extend type Query {
 
   campusMemberSearch(searchKey: String!, campusId: ID!): [Member!]!
     @authentication(
-      rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"]
+      }
     )
     @cypher(
       statement: """
@@ -615,7 +617,9 @@ extend type Query {
     )
   streamMemberSearch(searchKey: String!, streamId: ID!): [Member!]!
     @authentication(
-      rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
+      jwt: {
+        roles_INCLUDES: ["adminStream", "leaderStream", "arrivalsAdminStream"]
+      }
     )
     @cypher(
       statement: """
@@ -632,16 +636,13 @@ extend type Query {
     )
   councilMemberSearch(searchKey: String!, councilId: ID!): [Member!]!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminCouncil"
-            "leaderCouncil"
-            "arrivalsAdminCouncil"
-            "arrivalsAdminCouncil"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCouncil"
+          "leaderCouncil"
+          "arrivalsAdminCouncil"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -658,15 +659,13 @@ extend type Query {
     )
   governorshipMemberSearch(searchKey: String!, governorshipId: ID!): [Member!]!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminGovernorship"
-            "leaderGovernorship"
-            "arrivalsAdminGovernorship"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminGovernorship"
+          "leaderGovernorship"
+          "arrivalsAdminGovernorship"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -683,7 +682,7 @@ extend type Query {
       columnName: "governorshipMemberSearch"
     )
   bacentaMemberSearch(searchKey: String!, bacentaId: ID!): [Member!]!
-    @authentication(rules: [{ roles: ["leaderBacenta"] }])
+    @authentication(jwt: { roles_INCLUDES: ["leaderBacenta"] })
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(member:Active:Member)
@@ -698,7 +697,7 @@ extend type Query {
       columnName: "bacentaMemberSearch"
     )
   fellowshipMemberSearch(searchKey: String!, fellowshipId: ID!): [Member!]!
-    @authentication(rules: [{ roles: ["leaderFellowship"] }])
+    @authentication(jwt: { roles_INCLUDES: ["leaderFellowship"] })
     @cypher(
       statement: """
       MATCH (fellowship:Fellowship {id: $fellowshipId})<-[:BELONGS_TO]-(member:Active:Member)
@@ -714,7 +713,7 @@ extend type Query {
     )
   creativeArtsMemberSearch(searchKey: String!, creativeArtsId: ID!): [Member!]!
     @authentication(
-      rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }]
+      jwt: { roles_INCLUDES: ["leaderCreativeArts", "adminCreativeArts"] }
     )
     @cypher(
       statement: """
@@ -729,21 +728,23 @@ extend type Query {
       columnName: "creativeArtsMemberSearch"
     )
   ministryMemberSearch(searchKey: String!, ministryId: ID!): [Member!]!
-    @authentication(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
+    @authentication(
+      jwt: { roles_INCLUDES: ["leaderMinistry", "adminMinistry"] }
+    )
     @cypher(
       statement: """
       MATCH (ministry:Ministry {id: $ministryId})-[:HAS]->(:Hub)-[:HAS]->(:HubFellowship)<-[:BELONGS_TO]-(member:Active:Member)
       WHERE toLower(member.firstName) STARTS WITH toLower($searchKey)
       OR toLower(member.middleName) STARTS WITH toLower($searchKey)
       OR toLower(member.lastName) STARTS WITH toLower($searchKey)
-      OR toLower(member.firstName + ' ' + member.lastName) CONTAINS toLower($searchKey)
-      OR toLower(member.firstName + ' ' + member middleName+ ' '+ member.lastName) CONTAINS toLower($searchKey)
+      OR toLower(member.firstName + ' ' + member lastName) CONTAINS toLower($searchKey)
+      OR toLower(member.firstName + ' ' + member middleName+ ' '+ member lastName) CONTAINS toLower($searchKey)
       RETURN member LIMIT 5
       """
       columnName: "ministryMemberSearch"
     )
   hubMemberSearch(searchKey: String!, hubId: ID!): [Member!]!
-    @authentication(rules: [{ roles: ["leaderHub"] }])
+    @authentication(jwt: { roles_INCLUDES: ["leaderHub"] })
     @cypher(
       statement: """
       MATCH (hub:Hub {id: $hubId})-[:HAS]->(:HubFellowship)<-[:BELONGS_TO]-(member:Active:Member)
@@ -763,11 +764,13 @@ extend type Query {
     oversightId: ID!
   ): [Fellowship!]!
     @authentication(
-      rules: [
-        {
-          roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminOversight"
+          "leaderOversight"
+          "arrivalsAdminOversight"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -781,7 +784,9 @@ extend type Query {
 
   campusFellowshipSearch(searchKey: String!, campusId: ID!): [Fellowship!]!
     @authentication(
-      rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"]
+      }
     )
     @cypher(
       statement: """
@@ -795,7 +800,9 @@ extend type Query {
 
   streamFellowshipSearch(searchKey: String!, streamId: ID!): [Fellowship!]!
     @authentication(
-      rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
+      jwt: {
+        roles_INCLUDES: ["adminStream", "leaderStream", "arrivalsAdminStream"]
+      }
     )
     @cypher(
       statement: """
@@ -810,9 +817,13 @@ extend type Query {
 
   councilFellowshipSearch(searchKey: String!, councilId: ID!): [Fellowship!]!
     @authentication(
-      rules: [
-        { roles: ["adminCouncil", "leaderCouncil", "arrivalsAdminCouncil"] }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCouncil"
+          "leaderCouncil"
+          "arrivalsAdminCouncil"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -829,15 +840,13 @@ extend type Query {
     governorshipId: ID!
   ): [Fellowship!]!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminGovernorship"
-            "leaderGovernorship"
-            "arrivalsAdminGovernorship"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminGovernorship"
+          "leaderGovernorship"
+          "arrivalsAdminGovernorship"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -850,7 +859,7 @@ extend type Query {
       columnName: "governorshipFellowshipSearch"
     )
   bacentaFellowshipSearch(searchKey: String!, bacentaId: ID!): [Fellowship!]!
-    @authentication(rules: [{ roles: ["leaderBacenta"] }])
+    @authentication(jwt: { roles_INCLUDES: ["leaderBacenta"] })
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})-[:HAS]->(fellowship:Fellowship)
@@ -866,7 +875,7 @@ extend type Query {
     creativeArtsId: ID!
   ): [HubFellowship!]!
     @authentication(
-      rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }]
+      jwt: { roles_INCLUDES: ["leaderCreativeArts", "adminCreativeArts"] }
     )
     @cypher(
       statement: """
@@ -881,7 +890,9 @@ extend type Query {
     searchKey: String!
     ministryId: ID!
   ): [HubFellowship!]!
-    @authentication(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
+    @authentication(
+      jwt: { roles_INCLUDES: ["leaderMinistry", "adminMinistry"] }
+    )
     @cypher(
       statement: """
       MATCH (ministry:Ministry {id: $ministryId})-[:HAS]->(hub:Hub)-[:HAS]->(hubFellowship:HubFellowship)
@@ -892,7 +903,7 @@ extend type Query {
       columnName: "ministryHubFellowshipSearch"
     )
   hubHubFellowshipSearch(searchKey: String!, hubId: ID!): [HubFellowship!]!
-    @authentication(rules: [{ roles: ["leaderHub"] }])
+    @authentication(jwt: { roles_INCLUDES: ["leaderHub"] })
     @cypher(
       statement: """
       MATCH (hub:Hub {id: $hubId})-[:HAS]->(hubFellowship:HubFellowship)
@@ -907,11 +918,13 @@ extend type Query {
 
   oversightBacentaSearch(searchKey: String!, oversightId: ID!): [Bacenta!]!
     @authentication(
-      rules: [
-        {
-          roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminOversight"
+          "leaderOversight"
+          "arrivalsAdminOversight"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -925,7 +938,9 @@ extend type Query {
 
   campusBacentaSearch(searchKey: String!, campusId: ID!): [Bacenta]
     @authentication(
-      rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"]
+      }
     )
     @cypher(
       statement: """
@@ -938,7 +953,9 @@ extend type Query {
     )
   streamBacentaSearch(searchKey: String!, streamId: ID!): [Bacenta]
     @authentication(
-      rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
+      jwt: {
+        roles_INCLUDES: ["adminStream", "leaderStream", "arrivalsAdminStream"]
+      }
     )
     @cypher(
       statement: """
@@ -952,9 +969,13 @@ extend type Query {
     )
   councilBacentaSearch(searchKey: String!, councilId: ID!): [Bacenta]
     @authentication(
-      rules: [
-        { roles: ["adminCouncil", "leaderCouncil", "arrivalsAdminCouncil"] }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCouncil"
+          "leaderCouncil"
+          "arrivalsAdminCouncil"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -971,15 +992,13 @@ extend type Query {
     governorshipId: ID!
   ): [Fellowship!]!
     @authentication(
-      rules: [
-        {
-          roles: [
-            "adminGovernorship"
-            "leaderGovernorship"
-            "arrivalsAdminGovernorship"
-          ]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminGovernorship"
+          "leaderGovernorship"
+          "arrivalsAdminGovernorship"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -999,11 +1018,13 @@ extend type Query {
     oversightId: ID!
   ): [Governorship!]!
     @authentication(
-      rules: [
-        {
-          roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminOversight"
+          "leaderOversight"
+          "arrivalsAdminOversight"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -1017,7 +1038,9 @@ extend type Query {
 
   campusGovernorshipSearch(searchKey: String!, campusId: ID!): [Governorship!]!
     @authentication(
-      rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"]
+      }
     )
     @cypher(
       statement: """
@@ -1030,7 +1053,9 @@ extend type Query {
     )
   streamGovernorshipSearch(searchKey: String!, streamId: ID!): [Governorship!]!
     @authentication(
-      rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
+      jwt: {
+        roles_INCLUDES: ["adminStream", "leaderStream", "arrivalsAdminStream"]
+      }
     )
     @cypher(
       statement: """
@@ -1047,9 +1072,13 @@ extend type Query {
     councilId: ID!
   ): [Governorship!]!
     @authentication(
-      rules: [
-        { roles: ["adminCouncil", "leaderCouncil", "arrivalsAdminCouncil"] }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminCouncil"
+          "leaderCouncil"
+          "arrivalsAdminCouncil"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -1065,11 +1094,13 @@ extend type Query {
   ### Council Search ###
   oversightCouncilSearch(searchKey: String!, oversightId: ID!): [Council!]!
     @authentication(
-      rules: [
-        {
-          roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminOversight"
+          "leaderOversight"
+          "arrivalsAdminOversight"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -1083,7 +1114,9 @@ extend type Query {
 
   campusCouncilSearch(searchKey: String!, campusId: ID!): [Council!]!
     @authentication(
-      rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"]
+      }
     )
     @cypher(
       statement: """
@@ -1096,7 +1129,9 @@ extend type Query {
     )
   streamCouncilSearch(searchKey: String!, streamId: ID!): [Council!]!
     @authentication(
-      rules: [{ roles: ["adminStream", "leaderStream", "arrivalsAdminStream"] }]
+      jwt: {
+        roles_INCLUDES: ["adminStream", "leaderStream", "arrivalsAdminStream"]
+      }
     )
     @cypher(
       statement: """
@@ -1112,11 +1147,13 @@ extend type Query {
   ### Stream Search ###
   oversightStreamSearch(searchKey: String!, oversightId: ID!): [Stream!]!
     @authentication(
-      rules: [
-        {
-          roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminOversight"
+          "leaderOversight"
+          "arrivalsAdminOversight"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -1129,7 +1166,9 @@ extend type Query {
     )
   campusStreamSearch(searchKey: String!, campusId: ID!): [Stream!]!
     @authentication(
-      rules: [{ roles: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"] }]
+      jwt: {
+        roles_INCLUDES: ["adminCampus", "leaderCampus", "arrivalsAdminCampus"]
+      }
     )
     @cypher(
       statement: """
@@ -1144,11 +1183,13 @@ extend type Query {
   ### Campus Search ###
   oversightCampusSearch(searchKey: String!, oversightId: ID!): [Campus!]!
     @authentication(
-      rules: [
-        {
-          roles: ["adminOversight", "leaderOversight", "arrivalsAdminOversight"]
-        }
-      ]
+      jwt: {
+        roles_INCLUDES: [
+          "adminOversight"
+          "leaderOversight"
+          "arrivalsAdminOversight"
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -1162,7 +1203,7 @@ extend type Query {
 
   ### Creative Arts Search ###
   campusCreativeArtsSearch(searchKey: String!, campusId: ID!): [CreativeArts!]!
-    @authentication(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "leaderCampus"] })
     @cypher(
       statement: """
       MATCH (gathering:Campus {id: $campusId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)
@@ -1175,7 +1216,7 @@ extend type Query {
 
   ### Ministry Search ###
   campusMinistrySearch(searchKey: String!, campusId: ID!): [Ministry!]!
-    @authentication(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "leaderCampus"] })
     @cypher(
       statement: """
       MATCH (gathering:Campus {id: $campusId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)
@@ -1186,7 +1227,7 @@ extend type Query {
       columnName: "campusMinistrySearch"
     )
   streamMinistrySearch(searchKey: String!, streamId: ID!): [Ministry!]!
-    @authentication(rules: [{ roles: ["adminStream", "leaderStream"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminStream", "leaderStream"] })
     @cypher(
       statement: """
       MATCH (stream:Stream {id: $streamId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)
@@ -1201,7 +1242,7 @@ extend type Query {
     creativeArtsId: ID!
   ): [Ministry!]!
     @authentication(
-      rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }]
+      jwt: { roles_INCLUDES: ["leaderCreativeArts", "adminCreativeArts"] }
     )
     @cypher(
       statement: """
@@ -1215,7 +1256,7 @@ extend type Query {
 
   ### Hub Search ###
   campusHubSearch(searchKey: String!, campusId: ID!): [Hub!]!
-    @authentication(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "leaderCampus"] })
     @cypher(
       statement: """
       MATCH (gathering:Campus {id: $campusId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)-[:HAS]->(hub:Hub)
@@ -1226,7 +1267,7 @@ extend type Query {
       columnName: "campusHubSearch"
     )
   streamHubSearch(searchKey: String!, streamId: ID!): [Hub!]!
-    @authentication(rules: [{ roles: ["adminStream", "leaderStream"] }])
+    @authentication(jwt: { roles_INCLUDES: ["adminStream", "leaderStream"] })
     @cypher(
       statement: """
       MATCH (stream:Stream {id: $streamId})-[:HAS_MINISTRY]->(ministry:Ministry)-[:HAS]->(hub:Hub)
@@ -1238,7 +1279,7 @@ extend type Query {
     )
   creativeArtsHubSearch(searchKey: String!, creativeArtsId: ID!): [Hub!]!
     @authentication(
-      rules: [{ roles: ["leaderCreativeArts", "adminCreativeArts"] }]
+      jwt: { roles_INCLUDES: ["leaderCreativeArts", "adminCreativeArts"] }
     )
     @cypher(
       statement: """
@@ -1250,7 +1291,9 @@ extend type Query {
       columnName: "creativeArtsHubSearch"
     )
   ministryHubSearch(searchKey: String!, ministryId: ID!): [Hub!]!
-    @authentication(rules: [{ roles: ["leaderMinistry", "adminMinistry"] }])
+    @authentication(
+      jwt: { roles_INCLUDES: ["leaderMinistry", "adminMinistry"] }
+    )
     @cypher(
       statement: """
       MATCH (ministry:Ministry {id: $ministryId})-[:HAS]->(hub:Hub)
@@ -1261,7 +1304,7 @@ extend type Query {
       columnName: "ministryHubSearch"
     )
   councilHubSearch(searchKey: String!, councilId: ID!): [Hub!]!
-    @authentication(rules: [{ roles: ["leaderCouncil", "adminCouncil"] }])
+    @authentication(jwt: { roles_INCLUDES: ["leaderCouncil", "adminCouncil"] })
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})-[:HAS]->(hub:Hub)
