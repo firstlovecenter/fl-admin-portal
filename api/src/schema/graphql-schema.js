@@ -129,4 +129,10 @@ const array = [
   downloadCredits,
 ]
 
-exports.typeDefs = array.join(' ')
+const combinedSchema = array.join(' ')
+
+// Write the combined schema to a file
+const outputPath = path.join(__dirname, 'combined-schema.graphql')
+fs.writeFileSync(outputPath, combinedSchema, 'utf-8')
+
+exports.typeDefs = combinedSchema

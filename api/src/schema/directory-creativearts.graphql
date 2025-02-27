@@ -81,6 +81,7 @@ type Basonta {
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC LIMIT $limit"
+      columnName: "log"
     )
 }
 
@@ -159,6 +160,7 @@ type CreativeArts {
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC LIMIT $limit"
+      columnName: "log"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   ministries: [Ministry!]! @relationship(type: "HAS", direction: OUT)
@@ -264,6 +266,7 @@ type Ministry {
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "log"
     )
   servicelogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   creativeArts: CreativeArts! @relationship(type: "HAS", direction: IN)
@@ -357,6 +360,7 @@ type HubCouncil {
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "log"
     )
   vacationStatus: String!
     @cypher(
@@ -443,6 +447,7 @@ type Hub {
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
+      columnName: "log"
     )
   meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
   vacationStatus: String!
@@ -496,10 +501,12 @@ extend type Campus {
   hubFellowships: [Fellowship!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(fellowship:HubFellowship) RETURN fellowship"
+      columnName: "fellowship"
     )
   hubs: [Hub!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS*2]->(hub:Hub) RETURN hub"
+      columnName: "hub"
     )
 }
 
@@ -516,6 +523,7 @@ extend type Stream {
   hubCouncils: [Hub!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(ministry:Ministry)-[HAS]->(hubCouncils:HubCouncil) RETURN hubCouncils"
+      columnName: "hubCouncils"
     )
   hubCouncilCount: Int!
     @cypher(
@@ -525,6 +533,7 @@ extend type Stream {
   hubs: [Hub!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_MINISTRY]->(ministry:Ministry)-[HAS*2]->(hubs:Hub) RETURN hubs"
+      columnName: "hubs"
     )
   hubCount: Int!
     @cypher(
@@ -681,6 +690,7 @@ type HubFellowship implements Church {
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC LIMIT $limit"
+      columnName: "log"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int): [ServiceRecord!]!
@@ -1139,7 +1149,7 @@ type MinistryAttendanceRecord implements Record {
 type StageAttendanceRecord implements Record {
   id: ID!
   createdAt: DateTime!
-  created_by: Member @relationship(type: "HAS_SERVICE", direction: IN)
+  created_by: Member! @relationship(type: "HAS_SERVICE", direction: IN)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int
     @cypher(
@@ -1158,7 +1168,7 @@ type StageAttendanceRecord implements Record {
 type RehearsalRecord implements Record {
   id: ID!
   createdAt: DateTime!
-  created_by: Member
+  created_by: Member! @relationship(type: "HAS_SERVICE", direction: IN)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int
     @cypher(
