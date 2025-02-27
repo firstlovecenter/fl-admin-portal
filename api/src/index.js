@@ -32,7 +32,6 @@ const neoSchema = new Neo4jGraphQL({
   features: {
     authorization: {
       key: SECRETS.JWT_SECRET,
-      rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
     },
     config: {
       debug: true,

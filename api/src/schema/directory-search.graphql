@@ -1205,7 +1205,7 @@ extend type Query {
   campusCreativeArtsSearch(searchKey: String!, campusId: ID!): [CreativeArts!]!
     @authentication(
       operations: [READ]
-      jwt: { aud_INCLUDES: ["adminCampus", "leaderCampus"] }
+      jwt: { roles_INCLUDES: ["adminCampus", "leaderCampus"] }
     )
     @cypher(
       statement: """
@@ -1230,7 +1230,7 @@ extend type Query {
       columnName: "campusMinistrySearch"
     )
   streamMinistrySearch(searchKey: String!, streamId: ID!): [Ministry!]!
-    @authentication(jwt: { roles_INCLUDES: ["adminStream", "leaderStream"] })
+    @authentication(jwt: { roles_INCLUDES: "adminStream", "leaderStream"] })
     @cypher(
       statement: """
       MATCH (stream:Stream {id: $streamId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry)

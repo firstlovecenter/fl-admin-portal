@@ -1,5 +1,9 @@
 #Query Definitions
 extend schema @authentication
+type JWT @jwt {
+  roles: [String!]!
+    @jwtClaim(path: "https://flcadmin\\\\.netlify\\\\.app/roles")
+}
 
 type Query {
   currentUser(id: ID): Member!
