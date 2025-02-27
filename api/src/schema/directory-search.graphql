@@ -1203,7 +1203,10 @@ extend type Query {
 
   ### Creative Arts Search ###
   campusCreativeArtsSearch(searchKey: String!, campusId: ID!): [CreativeArts!]!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "leaderCampus"] })
+    @authentication(
+      operations: [READ]
+      jwt: { aud_INCLUDES: ["adminCampus", "leaderCampus"] }
+    )
     @cypher(
       statement: """
       MATCH (gathering:Campus {id: $campusId})-[:HAS_MINISTRY]->(creativeArts:CreativeArts)

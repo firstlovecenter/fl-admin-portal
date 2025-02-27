@@ -25,4 +25,4 @@ yarn-error.log*
 *~
 *.orig
 credentials.json
-combined-schema.graphql
+combined-schema.*
