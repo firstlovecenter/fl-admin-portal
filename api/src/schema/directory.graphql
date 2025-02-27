@@ -368,9 +368,15 @@ type Denomination implements Church {
   leader: Member @relationship(type: "LEADS", direction: IN)
   oversights: [Oversight!]! @relationship(type: "HAS", direction: OUT)
   campuses: [Campus!]!
-    @cypher(statement: "MATCH (this)-[:HAS*2]->(campus:Campus) RETURN campus")
+    @cypher(
+      statement: "MATCH (this)-[:HAS*2]->(campus:Campus) RETURN campus"
+      columnName: "campuses"
+    )
   streams: [Stream!]!
-    @cypher(statement: "MATCH (this)-[:HAS*3]->(stream:Stream) RETURN stream")
+    @cypher(
+      statement: "MATCH (this)-[:HAS*3]->(stream:Stream) RETURN stream"
+      columnName: "streams"
+    )
   councils: [Council!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(councils:Council) RETURN councils"
@@ -493,7 +499,10 @@ type Oversight implements Church {
   denomination: Denomination @relationship(type: "HAS", direction: IN)
   campuses: [Campus!]! @relationship(type: "HAS", direction: OUT)
   streams: [Stream!]!
-    @cypher(statement: "MATCH (this)-[:HAS*2]->(stream:Stream) RETURN stream")
+    @cypher(
+      statement: "MATCH (this)-[:HAS*2]->(stream:Stream) RETURN stream"
+      columnName: "streams"
+    )
   councils: [Council!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*3]->(councils:Council) RETURN councils"
@@ -769,7 +778,10 @@ type Stream implements Church {
       columnName: "bacentas"
     )
   ics(limit: Int): [Bacenta!]!
-    @cypher(statement: "MATCH (this)-[:HAS*3]->(bacentas:Red) RETURN bacentas")
+    @cypher(
+      statement: "MATCH (this)-[:HAS*3]->(bacentas:Red) RETURN bacentas"
+      columnName: "ics"
+    )
 
   members: [Member!]!
     @cypher(
@@ -1143,7 +1155,10 @@ type Bacenta implements Church {
       """
     )
   stream: Stream
-    @cypher(statement: "MATCH (this)<-[:HAS*3]-(stream:Stream) RETURN stream")
+    @cypher(
+      statement: "MATCH (this)<-[:HAS*3]-(stream:Stream) RETURN stream"
+      columnName: "stream"
+    )
 
   hubs: [Hub!]!
     @cypher(
@@ -1179,7 +1194,10 @@ type Fellowship implements Church {
       columnName: "vacationStatus"
     )
   hubStatus: Boolean!
-    @cypher(statement: "MATCH (this) RETURN EXISTS((this)<-[:HAS]-(:Hub))")
+    @cypher(
+      statement: "MATCH (this) RETURN EXISTS((this)<-[:HAS]-(:Hub))"
+      columnName: "hubStatus"
+    )
   bacenta: Bacenta @relationship(type: "HAS", direction: IN)
   leader: Member @relationship(type: "LEADS", direction: IN)
   members: [Member!]!

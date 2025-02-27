@@ -49,7 +49,8 @@ type Hostel implements MapLocation {
   location: Point!
   capacity: Int!
   school: String!
-  university: String! @cypher(statement: "MATCH (this) RETURN this.school")
+  university: String!
+    @cypher(statement: "MATCH (this) RETURN this.school", columnName: "school")
 }
 
 type HighSchool implements MapLocation {
