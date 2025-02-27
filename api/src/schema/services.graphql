@@ -975,7 +975,7 @@ type ServiceRecord implements Record {
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
       RETURN date(date.date).week
       """
-      columNName: "week"
+      columnName: "week"
     )
   attendance: Int
   income: Float

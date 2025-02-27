@@ -99,7 +99,7 @@ extend type Campus {
   multiplicationStats(
     startDate: String!
     endDate: String!
-  ): [MultiplicationStats!]!
+  ): [MultiplicationRecord!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -149,7 +149,7 @@ extend type Stream {
   multiplicationStats(
     startDate: String!
     endDate: String!
-  ): [MultiplicationStats!]!
+  ): [MultiplicationRecord!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -199,7 +199,7 @@ extend type Council {
   multiplicationStats(
     startDate: String!
     endDate: String!
-  ): [MultiplicationStats!]!
+  ): [MultiplicationRecord!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -249,7 +249,7 @@ extend type Governorship {
   multiplicationStats(
     startDate: String!
     endDate: String!
-  ): [MultiplicationStats!]!
+  ): [MultiplicationRecord!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -288,7 +288,7 @@ extend type Oversight {
   multiplicationRecords(
     startDate: String!
     endDate: String!
-  ): [MultiplicationStats!]!
+  ): [MultiplicationRecord!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -309,7 +309,7 @@ extend type Bacenta {
   multiplicationRecords(
     startDate: String!
     endDate: String!
-  ): [MultiplicationStats!]!
+  ): [MultiplicationRecord!]!
     @cypher(
       statement: """
       MATCH (this)

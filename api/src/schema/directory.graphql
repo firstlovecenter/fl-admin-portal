@@ -290,7 +290,7 @@ type Title {
     @relationship(type: "HAS_TITLE", properties: "HasTitle", direction: IN)
 }
 
-interface HasTitle @relationshipProperties {
+type HasTitle @relationshipProperties {
   date: Date
 }
 
@@ -349,18 +349,16 @@ type HistoryLog {
 
 ##Church Types##
 interface Church {
-  id: ID @id
+  id: ID
   name: String!
-  leader: Member @relationship(type: "LEADS", direction: IN)
+  leader: Member @declareRelationship
   members: [Member!]!
   memberSearch(key: String!, limit: Int!): [Member!]!
   memberCount: Int!
   pastorCount: Int
   history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log ORDER BY log.timeStamp DESC  LIMIT $limit"
-    )
-  serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
+
+  serviceLogs: [ServiceLog!]! @declareRelationship
   services(limit: Int!, skip: Int): [ServiceRecord!]!
 }
 

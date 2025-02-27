@@ -1,6 +1,4 @@
 extend type Member {
-  leadscreativeArt: [CreativeArts!]!
-    @relationship(type: "LEADS", direction: OUT)
   leadsHubCouncil: [HubCouncil!]! @relationship(type: "LEADS", direction: OUT)
   leadsHub: [Hub!]! @relationship(type: "LEADS", direction: OUT)
   leadsHubFellowship: [HubFellowship!]!
