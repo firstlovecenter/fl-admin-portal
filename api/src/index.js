@@ -70,7 +70,11 @@ const host = SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'
  */
 const startServer = async () => {
   const schema = await neoSchema.getSchema().catch((error) => {
-    console.error(JSON.stringify(error, null, 2))
+    console.error('\x1b[31m######## 🚨SCHEMA ERROR🚨 #######\x1b[0m')
+    console.error(`${JSON.stringify(error, null, 2)}`)
+    console.log(
+      '\x1b[31m########## 🚨END OF SCHEMA ERROR🚨 ##################\x1b[0m'
+    )
     process.exit(1)
   })
 
@@ -104,6 +108,7 @@ const startServer = async () => {
   await new Promise((resolve) => httpServer.listen({ port }, resolve))
   // eslint-disable-next-line
   console.log(`🚀 GraphQL Server ready at http://${host}:${port}${path}`)
+  console.log('🚀 ~ index.js:108 ~ error:', error)
 }
 
 startServer()
