@@ -927,7 +927,7 @@ extend type Mutation {
                       OPTIONAL MATCH (bacenta)-[r:MEETS_ON]->()
                       DELETE r
                       MERGE (bacenta)-[:MEETS_ON]->(meetingDay)
-                     	RETURN count(bacenta)
+                       RETURN count(bacenta) AS bacentaCount
                      	}
 
       RETURN bacenta
