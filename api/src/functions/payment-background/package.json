@@ -9,6 +9,6 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "firebase-admin": "^11.8.0",
-    "neo4j-driver": "^5.0.1"
+    "neo4j-driver": "^5.28.1"
   }
 }

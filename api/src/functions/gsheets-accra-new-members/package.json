@@ -11,6 +11,6 @@
     "@netlify/functions": "^2.5.1",
     "axios": "^1.6.7",
     "googleapis": "^131.0.0",
-    "neo4j-driver": "^5.16.0"
+    "neo4j-driver": "^5.28.1"
   }
 }
