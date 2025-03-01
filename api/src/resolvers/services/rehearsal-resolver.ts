@@ -99,7 +99,10 @@ const SontaServiceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('HubCouncil'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('HubCouncil'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     await checkServantHasCurrentHistory(session, context, {
@@ -160,7 +163,10 @@ const SontaServiceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Hub'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Hub'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -249,7 +255,10 @@ const SontaServiceMutation = {
     args: RecordStageAttendanceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Ministry'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Ministry'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -336,7 +345,10 @@ const SontaServiceMutation = {
     args: RecordCancelledOnstageMinistryPerformanceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Ministry'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Ministry'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     try {

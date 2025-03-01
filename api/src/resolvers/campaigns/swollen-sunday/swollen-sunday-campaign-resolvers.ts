@@ -66,7 +66,10 @@ const UploadBacentaTargets = async (
   args: { data: string; swellDate: string },
   context: Context
 ) => {
-  isAuth(permitAdmin('Council'), context.auth.roles)
+  isAuth(
+    permitAdmin('Council'),
+    context.jwt['https://flcadmin.netlify.app/roles']
+  )
   const session = context.executionContext.session()
 
   const jsonData: [] = JSON.parse(args.data)
@@ -129,7 +132,10 @@ const ShareBacentaTargets = async (
   args: { data: string; swellDate: string },
   context: Context
 ) => {
-  isAuth(permitAdmin('Council'), context.auth.roles)
+  isAuth(
+    permitAdmin('Council'),
+    context.jwt['https://flcadmin.netlify.app/roles']
+  )
   const session = context.executionContext.session()
 
   const parsedTargets: TargetArg[] = JSON.parse(args.data, convertToNumber)

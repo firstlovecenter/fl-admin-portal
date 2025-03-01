@@ -37,15 +37,13 @@ const resolvers = {
     nameWithTitle: async (source: Member, args: unknown, context: Context) => {
       const session = context.executionContext.session()
 
-      const res = await session.executeRead((tx) =>
-        tx.run(
-          `MATCH (member:Member {id: $id})-[:HAS_GENDER]->(gender:Gender)
+      const res = await session.run(
+        `MATCH (member:Member {id: $id})-[:HAS_GENDER]->(gender:Gender)
           MATCH (member)-[:HAS_TITLE]->(title:Title)
           RETURN member AS member, gender.gender AS gender, title.name AS title, title.priority AS priority ORDER BY priority DESC LIMIT 1`,
-          {
-            id: source.id,
-          }
-        )
+        {
+          id: source.id,
+        }
       )
 
       const gender = res.records[0]?.get('gender')

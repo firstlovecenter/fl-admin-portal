@@ -4,7 +4,7 @@ type Member {
   firstName: String #@search
   middleName: String
   lastName: String
-  fullName: String @customResolver
+  fullName: String @customResolver(requires: "firstName, lastName")
   currentTitle: String
     @cypher(
       statement: """
@@ -14,7 +14,7 @@ type Member {
       """
       columnName: "currentTitle"
     )
-  nameWithTitle: String @customResolver
+  nameWithTitle: String @customResolver(requires: "firstName, lastName")
   email: String
   phoneNumber: String
   whatsappNumber: String!

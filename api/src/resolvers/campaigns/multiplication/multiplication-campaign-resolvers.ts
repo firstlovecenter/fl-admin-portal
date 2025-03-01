@@ -35,7 +35,10 @@ const multiplicationCampaignMutations = {
     args: RecordMultiplicationEventArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Governorship'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Governorship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     if (checkIfArrayHasRepeatingValues(args.treasurers)) {

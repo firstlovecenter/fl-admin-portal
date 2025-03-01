@@ -101,7 +101,10 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Fellowship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -177,7 +180,10 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Fellowship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -243,7 +249,10 @@ const serviceMutation = {
     args: RecordCancelledServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Bacenta'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Bacenta'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(

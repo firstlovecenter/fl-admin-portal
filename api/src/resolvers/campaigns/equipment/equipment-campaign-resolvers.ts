@@ -99,7 +99,10 @@ export const equipmentCampaignMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(permitAdmin('Campus'), context.auth.roles)
+    isAuth(
+      permitAdmin('Campus'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     try {
       const equipmentCampaign = rearrangeCypherObject(
@@ -137,7 +140,10 @@ export const equipmentCampaignMutations = {
     args: { id: string; pulpits: number; date: Date },
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Governorship'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Governorship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
 
@@ -210,7 +216,10 @@ export const equipmentCampaignMutations = {
     args: { id: string; offeringBags: number; date: Date },
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Fellowship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
 

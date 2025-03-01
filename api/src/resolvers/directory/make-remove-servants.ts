@@ -1,3 +1,4 @@
+/* eslint-disable react/destructuring-assignment */
 import axios from 'axios'
 import {
   errorHandling,
@@ -42,10 +43,13 @@ const setUp = (setUpArgs: {
 }) => {
   const { permittedRoles, context, churchLower, servantLower, args } = setUpArgs
 
-  if (directoryLock(context.auth.roles) && servantLower !== 'arrivalsCounter') {
+  if (
+    directoryLock(context.jwt['https://flcadmin.netlify.app/roles']) &&
+    servantLower !== 'arrivalsCounter'
+  ) {
     throw new Error('Directory is locked till next Tuesday')
   }
-  isAuth(permittedRoles, context.auth.roles)
+  isAuth(permittedRoles, context.jwt['https://flcadmin.netlify.app/roles'])
 
   noEmptyArgsValidation([
     `${churchLower}Id`,
@@ -87,26 +91,21 @@ export const MakeServant = async (
 
   const session = context.executionContext.session()
 
-  const churchRes = await session.executeRead((tx) =>
-    tx.run(matchChurchQuery, {
-      id: args[`${churchLower}Id`],
-    })
-  )
+  const churchRes = await session.run(matchChurchQuery, {
+    id: args[`${churchLower}Id`],
+  })
 
   const church = rearrangeCypherObject(churchRes)
   const churchNameInEmail = `${church.name} ${church.type}`
 
-  const servantRes = await session.executeRead((tx) =>
-    tx.run(memberQuery, {
-      id: args[`${servantLower}Id`],
-    })
-  )
+  const servantRes = await session.run(memberQuery, {
+    id: args[`${servantLower}Id`],
+  })
 
-  const oldServantRes = await session.executeRead((tx) =>
-    tx.run(memberQuery, {
-      id: args[`old${servantType}Id`] ?? '',
-    })
-  )
+  const oldServantRes = await session.run(memberQuery, {
+    id: args[`old${servantType}Id`] ?? '',
+  })
+
   const servant = rearrangeCypherObject(servantRes)
   const oldServant = rearrangeCypherObject(oldServantRes)
   servantValidation(servant)
@@ -230,23 +229,19 @@ export const RemoveServant = async (
 
   const session = context.executionContext.session()
 
-  const churchRes = await session.executeRead((tx) =>
-    tx.run(matchChurchQuery, {
-      id: args[`${churchLower}Id`],
-    })
-  )
+  const churchRes = await session.run(matchChurchQuery, {
+    id: args[`${churchLower}Id`],
+  })
+
   const church = rearrangeCypherObject(churchRes)
 
-  const servantRes = await session.executeRead((tx) =>
-    tx.run(memberQuery, {
-      id: args[`${servantLower}Id`],
-    })
-  )
-  const newServantRes = await session.executeRead((tx) =>
-    tx.run(memberQuery, {
-      id: args[`new${servantType}Id`] ?? '',
-    })
-  )
+  const servantRes = await session.run(memberQuery, {
+    id: args[`${servantLower}Id`],
+  })
+
+  const newServantRes = await session.run(memberQuery, {
+    id: args[`new${servantType}Id`] ?? '',
+  })
 
   const servant: MemberWithKeys = rearrangeCypherObject(servantRes)
   const newServant: MemberWithKeys = rearrangeCypherObject(newServantRes)
@@ -331,11 +326,14 @@ export const RemoveServant = async (
       servant,
       church,
     })
+
+    const { jwt } = context
+
     await session.executeWrite((tx) =>
       tx.run(removeMemberAuthId, {
         log: `${servant.firstName} ${servant.lastName} was removed as a ${churchType} ${servantType}`,
         auth_id: servant.auth_id,
-        auth: context.auth,
+        jwt,
       })
     )
 

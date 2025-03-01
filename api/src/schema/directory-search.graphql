@@ -5,7 +5,7 @@ extend type Member {
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.middleName + ' ' + members.lastName) CONTAINS toLower($key)
       OR toLower(members.firstName + ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
       columnName: "memberSearch"
     )
@@ -18,7 +18,7 @@ extend type Member {
       MATCH (members)-[:BELONGS_TO]->(basonta)
       WHERE toLower(members.firstName+ ' ' + members.middleName + ' ' + members.lastName) CONTAINS toLower($key)
       OR toLower(members.firstName + ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members AS basontaMemberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
       columnName: "basontaMemberSearch"
     )
@@ -37,7 +37,7 @@ extend type Member {
       MATCH (members)-[:BELONGS_TO]->(creative)
       WHERE toLower(members.firstName+ ' ' + members.middleName + ' ' + members.lastName) CONTAINS toLower($key)
       OR toLower(members.firstName + ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members AS basontaMemberSearchFromHub ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
       columnName: "basontaMemberSearchFromHub"
     )
@@ -46,7 +46,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..8]->(fellowship:Fellowship)
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
-      RETURN DISTINCT fellowship LIMIT $limit
+      RETURN DISTINCT fellowship AS fellowshipSearch LIMIT $limit
       """
       columnName: "fellowshipSearch"
     )
@@ -55,7 +55,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..7]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta LIMIT $limit
+      RETURN DISTINCT bacenta AS bacentaSearch LIMIT $limit
       """
       columnName: "bacentaSearch"
     )
@@ -64,7 +64,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..6]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship LIMIT $limit
+      RETURN DISTINCT governorship AS governorshipSearch LIMIT $limit
       """
       columnName: "governorshipSearch"
     )
@@ -73,7 +73,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..5]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
-      RETURN DISTINCT council LIMIT $limit
+      RETURN DISTINCT council AS councilSearch LIMIT $limit
       """
       columnName: "councilSearch"
     )
@@ -82,7 +82,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..4]->(stream:Stream)
       WHERE toLower(stream.name) CONTAINS toLower($key)
-      RETURN DISTINCT stream LIMIT $limit
+      RETURN DISTINCT stream AS streamSearch LIMIT $limit
       """
       columnName: "streamSearch"
     )
@@ -91,7 +91,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..3]->(campus:Campus)
       WHERE toLower(campus.name) CONTAINS toLower($key)
-      RETURN DISTINCT campus LIMIT $limit
+      RETURN DISTINCT campus AS campusSearch LIMIT $limit
       """
       columnName: "campusSearch"
     )
@@ -100,7 +100,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|IS_ADMIN_FOR*1..2]->(oversight:Oversight)
       WHERE toLower(oversight.name) CONTAINS toLower($key)
-      RETURN DISTINCT oversight LIMIT $limit
+      RETURN DISTINCT oversight AS oversightSearch LIMIT $limit
       """
       columnName: "oversightSearch"
     )
@@ -110,7 +110,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|HAS_MINISTRY|IS_ADMIN_FOR*1..4]->(creativeArts:CreativeArts)
       WHERE toLower(creativeArts.name) CONTAINS toLower($key)
-      RETURN DISTINCT creativeArts LIMIT $limit
+      RETURN DISTINCT creativeArts AS creativeArtsSearch LIMIT $limit
       """
       columnName: "creativeArtsSearch"
     )
@@ -119,7 +119,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|HAS_MINISTRY|IS_ADMIN_FOR*1..5]->(ministry:Ministry)
       WHERE toLower(ministry.name) CONTAINS toLower($key)
-      RETURN DISTINCT ministry LIMIT $limit
+      RETURN DISTINCT ministry AS ministrySearch LIMIT $limit
       """
       columnName: "ministrySearch"
     )
@@ -128,7 +128,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|HAS_MINISTRY|IS_ADMIN_FOR*1..6]->(hub:HubCouncil)
       WHERE toLower(hub.name) CONTAINS toLower($key)
-      RETURN DISTINCT hub LIMIT $limit
+      RETURN DISTINCT hub AS hubCouncilSearch LIMIT $limit
       """
       columnName: "hubCouncilSearch"
     )
@@ -137,7 +137,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|HAS_MINISTRY|IS_ADMIN_FOR*1..7]->(hub:Hub)
       WHERE toLower(hub.name) CONTAINS toLower($key)
-      RETURN DISTINCT hub LIMIT $limit
+      RETURN DISTINCT hub AS hubSearch LIMIT $limit
       """
       columnName: "hubSearch"
     )
@@ -146,7 +146,7 @@ extend type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|HAS_MINISTRY|IS_ADMIN_FOR*1..8]->(hub:HubFellowship)
       WHERE toLower(hub.name) CONTAINS toLower($key)
-      RETURN DISTINCT hub LIMIT $limit
+      RETURN DISTINCT hub AS hubFellowshipSearch LIMIT $limit
       """
       columnName: "hubFellowshipSearch"
     )
@@ -158,7 +158,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
       columnName: "memberSearch"
     )
@@ -167,7 +167,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*7]->(fellowship:Fellowship)
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
-      RETURN DISTINCT fellowship LIMIT $limit
+      RETURN DISTINCT fellowship AS fellowshipSearch LIMIT $limit
       """
       columnName: "fellowshipSearch"
     )
@@ -176,7 +176,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*6]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta LIMIT $limit
+      RETURN DISTINCT bacenta AS bacentaSearch LIMIT $limit
       """
       columnName: "bacentaSearch"
     )
@@ -185,7 +185,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*5]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship LIMIT $limit
+      RETURN DISTINCT governorship AS governorshipSearch LIMIT $limit
       """
       columnName: "governorshipSearch"
     )
@@ -194,7 +194,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*4]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
-      RETURN DISTINCT council LIMIT $limit
+      RETURN DISTINCT council AS councilSearch LIMIT $limit
       """
       columnName: "councilSearch"
     )
@@ -203,7 +203,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*3]->(stream:Stream)
       WHERE toLower(stream.name) CONTAINS toLower($key)
-      RETURN DISTINCT stream LIMIT $limit
+      RETURN DISTINCT stream AS streamSearch LIMIT $limit
       """
       columnName: "streamSearch"
     )
@@ -212,7 +212,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*2]->(campus:Campus)
       WHERE toLower(campus.name) CONTAINS toLower($key)
-      RETURN DISTINCT campus LIMIT $limit
+      RETURN DISTINCT campus AS campusSearch LIMIT $limit
       """
       columnName: "campusSearch"
     )
@@ -221,7 +221,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS]->(oversight:Oversight)
       WHERE toLower(oversight.name) CONTAINS toLower($key)
-      RETURN DISTINCT oversight LIMIT $limit
+      RETURN DISTINCT oversight AS oversightSearch LIMIT $limit
       """
       columnName: "oversightSearch"
     )
@@ -233,7 +233,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS*7]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
       """
       columnName: "memberSearch"
     )
@@ -242,7 +242,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS*6]->(fellowship:Fellowship)
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
-      RETURN DISTINCT fellowship LIMIT $limit
+      RETURN DISTINCT fellowship AS fellowshipSearch LIMIT $limit
       """
       columnName: "fellowshipSearch"
     )
@@ -251,7 +251,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS*5]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta LIMIT $limit
+      RETURN DISTINCT bacenta AS bacentaSearch LIMIT $limit
       """
       columnName: "bacentaSearch"
     )
@@ -260,7 +260,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS*4]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship LIMIT $limit
+      RETURN DISTINCT governorship AS governorshipSearch LIMIT $limit
       """
       columnName: "governorshipSearch"
     )
@@ -269,7 +269,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS*3]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
-      RETURN DISTINCT council LIMIT $limit
+      RETURN DISTINCT council AS councilSearch LIMIT $limit
       """
       columnName: "councilSearch"
     )
@@ -278,7 +278,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS*2]->(stream:Stream)
       WHERE toLower(stream.name) CONTAINS toLower($key)
-      RETURN DISTINCT stream LIMIT $limit
+      RETURN DISTINCT stream AS streamSearch LIMIT $limit
       """
       columnName: "streamSearch"
     )
@@ -287,7 +287,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS]->(campus:Campus)
       WHERE toLower(campus.name) CONTAINS toLower($key)
-      RETURN DISTINCT campus LIMIT $limit
+      RETURN DISTINCT campus AS campusSearch LIMIT $limit
       """
       columnName: "campusSearch"
     )

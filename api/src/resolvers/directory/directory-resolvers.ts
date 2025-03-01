@@ -141,7 +141,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitMe('Bacenta'), ...permitMe('Hub'), ...permitSheepSeeker()],
-      context.auth.roles
+      context.jwt['https://flcadmin.netlify.app/roles']
     )
 
     const session = context.executionContext.session()
@@ -178,7 +178,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitMe('Fellowship'), ...permitMe('Hub'), ...permitSheepSeeker()],
-      context.auth.roles
+      context.jwt['https://flcadmin.netlify.app/roles']
     )
 
     const authToken: string = await getAuthToken()
@@ -220,7 +220,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitLeaderAdmin('Governorship'), ...permitSheepSeeker()],
-      context.auth.roles
+      context.jwt['https://flcadmin.netlify.app/roles']
     )
     const session = context.executionContext.session()
 
@@ -252,7 +252,10 @@ const directoryMutation = {
     return member?.properties
   },
   CloseDownFellowship: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Governorship'), context.auth.roles)
+    isAuth(
+      permitAdmin('Governorship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -328,7 +331,10 @@ const directoryMutation = {
   },
 
   CloseDownBacenta: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdminArrivals('Governorship'), context.auth.roles)
+    isAuth(
+      permitAdminArrivals('Governorship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
 
@@ -373,7 +379,10 @@ const directoryMutation = {
     return null
   },
   CloseDownGovernorship: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Council'), context.auth.roles)
+    isAuth(
+      permitAdmin('Council'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -466,7 +475,10 @@ const directoryMutation = {
   },
 
   CloseDownCouncil: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Stream'), context.auth.roles)
+    isAuth(
+      permitAdmin('Stream'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -558,7 +570,10 @@ const directoryMutation = {
   },
 
   CloseDownStream: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Campus'), context.auth.roles)
+    isAuth(
+      permitAdmin('Campus'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -647,7 +662,10 @@ const directoryMutation = {
   },
 
   CloseDownCampus: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Oversight'), context.auth.roles)
+    isAuth(
+      permitAdmin('Oversight'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -736,7 +754,10 @@ const directoryMutation = {
   },
 
   CloseDownOversight: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Denomination'), context.auth.roles)
+    isAuth(
+      permitAdmin('Denomination'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()

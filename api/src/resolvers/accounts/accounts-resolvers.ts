@@ -24,7 +24,7 @@ export const accountsMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(['adminCampus'], context.auth.roles)
+    isAuth(['adminCampus'], context.jwt['https://flcadmin.netlify.app/roles'])
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)
@@ -75,7 +75,7 @@ export const accountsMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    // isAuth(['arrivalsAdminCampus'], context.auth.roles)
+    // isAuth(['arrivalsAdminCampus'], context.jwt['https://flcadmin.netlify.app/roles'])
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)
@@ -137,7 +137,7 @@ export const accountsMutations = {
   ) => {
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
-    isAuth(['adminCampus'], context.auth.roles)
+    isAuth(['adminCampus'], context.jwt['https://flcadmin.netlify.app/roles'])
 
     try {
       const councilBalancesResult = await session.run(
@@ -222,7 +222,10 @@ export const accountsMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(['arrivalsAdminCampus', 'adminCampus'], context.auth.roles)
+    isAuth(
+      ['arrivalsAdminCampus', 'adminCampus'],
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)

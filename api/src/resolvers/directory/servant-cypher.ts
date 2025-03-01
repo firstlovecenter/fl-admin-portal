@@ -200,7 +200,7 @@ const servantCypher = {
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    OR church:ClosedFellowship OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
-   MATCH (currentUser:Member {auth_id: $auth.jwt.sub}) 
+   MATCH (currentUser:Member {auth_id: $jwt.sub}) 
    MATCH (log:ServiceLog {id: $logId})
    
    MERGE (date:TimeGraph {date: date()})
@@ -237,7 +237,7 @@ const servantCypher = {
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    OR church:ClosedFellowship OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
-   MATCH (currentUser:Member {auth_id: $auth.jwt.sub}) 
+   MATCH (currentUser:Member {auth_id: $jwt.sub}) 
    MATCH (log:HistoryLog {id: $logId})
    
    MERGE (date:TimeGraph {date: date()})
