@@ -42,9 +42,9 @@ type MultiplicationRecord {
       WITH this WHERE this.bankingSlip IS NOT NULL
       OR  this.transactionStatus = 'success'
       OR this.tellerConfirmationTime IS NOT NULL
-      RETURN true
+      RETURN true AS bankingProof
       """
-      columnName: "result"
+      columnName: "bankingProof"
     )
   createdAt: Date!
   created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)
@@ -118,7 +118,7 @@ extend type Campus {
     @cypher(
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)
-      RETURN target.target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target  ORDER BY target.date DESC LIMIT 1
       """
       columnName: "target"
     )
@@ -168,7 +168,7 @@ extend type Stream {
     @cypher(
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)
-      RETURN target.target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target  ORDER BY target.date DESC LIMIT 1
       """
       columnName: "target"
     )
@@ -218,7 +218,7 @@ extend type Council {
     @cypher(
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
-      RETURN target.target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target  ORDER BY target.date DESC LIMIT 1
       """
       columnName: "target"
     )
@@ -270,7 +270,7 @@ extend type Governorship {
       MATCH (this)
       MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
 
-      RETURN target.target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target  ORDER BY target.date DESC LIMIT 1
       """
       columnName: "target"
     )
@@ -281,7 +281,7 @@ extend type Oversight {
     @cypher(
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)
-      RETURN target.target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target  ORDER BY target.date DESC LIMIT 1
       """
       columnName: "target"
     )
@@ -328,7 +328,7 @@ extend type Bacenta {
     @cypher(
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
-      RETURN target.target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target  ORDER BY target.date DESC LIMIT 1
       """
       columnName: "target"
     )

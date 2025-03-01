@@ -973,7 +973,7 @@ type ServiceRecord implements Record {
     @cypher(
       statement: """
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      RETURN date(date.date).week
+      RETURN date(date.date).week AS week
       """
       columnName: "week"
     )
@@ -1025,7 +1025,7 @@ type NoService implements Record {
     @cypher(
       statement: """
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      RETURN date(date.date).week
+      RETURN date(date.date).week AS week
       """
       columnName: "week"
     )

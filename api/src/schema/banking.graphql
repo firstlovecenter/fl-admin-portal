@@ -44,7 +44,7 @@ extend type RehearsalRecord {
       WITH this WHERE this.bankingSlip IS NOT NULL
       OR  this.transactionStatus = 'success'
       OR this.tellerConfirmationTime IS NOT NULL
-      RETURN true
+      RETURN true AS bankingProof
       """
       columnName: "bankingProof"
     )
@@ -74,7 +74,7 @@ extend type ServiceRecord {
       WITH this WHERE this.bankingSlip IS NOT NULL
       OR  this.transactionStatus = 'success'
       OR this.tellerConfirmationTime IS NOT NULL
-      RETURN true
+      RETURN true AS bankingProof
       """
       columnName: "bankingProof"
     )

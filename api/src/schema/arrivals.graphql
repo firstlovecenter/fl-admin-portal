@@ -14,7 +14,7 @@ type SwellDate implements TimeGraphNode {
       MATCH (this)
       UNWIND labels(this) AS swellStatus
       WITH swellStatus WHERE swellStatus ='SwellDate'
-      RETURN true
+      RETURN true AS swell
       """
       columnName: "swell"
     )
@@ -47,17 +47,17 @@ extend type Oversight {
     )
   icBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*5]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*5]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas) AS icBacentaCount"
       columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*5]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*5]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas) AS activeIcBacentaCount"
       columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*5]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(bacentas)"
+      statement: "MATCH (this)-[:HAS*5]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas) AS vacationIcBacentaCount"
       columnName: "vacationIcBacentaCount"
     )
 }
@@ -84,7 +84,7 @@ extend type Campus {
          MATCH (bacentas)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
          WHERE date(date.date)=date($arrivalDate)
          }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasNoActivityCount
       """
       columnName: "bacentasNoActivityCount"
     )
@@ -108,7 +108,7 @@ extend type Campus {
         WHERE date(date.date)=date($arrivalDate)
         AND bussing.mobilisationPicture IS NOT NULL
         AND bussing.leaderDeclaration IS NULL
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasMobilisingCount
       """
       columnName: "bacentasMobilisingCount"
     )
@@ -136,7 +136,7 @@ extend type Campus {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NULL
         }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasOnTheWayCount
       """
       columnName: "bacentasOnTheWayCount"
     )
@@ -149,7 +149,7 @@ extend type Campus {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NULL
       WITH DISTINCT record
-      RETURN SUM(record.leaderDeclaration)
+      RETURN SUM(record.leaderDeclaration) AS bussingMembersOnTheWayCount
       """
       columnName: "bussingMembersOnTheWayCount"
     )
@@ -177,7 +177,7 @@ extend type Campus {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS vehiclesNotCountedCount
       """
       columnName: "vehiclesNotCountedCount"
     )
@@ -201,7 +201,7 @@ extend type Campus {
         WHERE date(date.date)=date($arrivalDate)
         AND bussing.attendance < 8
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasBelow8Count
       """
       columnName: "bacentasBelow8Count"
     )
@@ -230,7 +230,7 @@ extend type Campus {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NOT NULL AND record.attendance > 0
         }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasHaveArrivedCount
       """
       columnName: "bacentasHaveArrivedCount"
     )
@@ -243,7 +243,7 @@ extend type Campus {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NOT NULL
         WITH DISTINCT record
-      RETURN SUM(record.attendance)
+      RETURN SUM(record.attendance) AS bussingMembersHaveArrivedCount
       """
       columnName: "bussingMembersHaveArrivedCount"
     )
@@ -257,7 +257,7 @@ extend type Campus {
         WHERE record.arrivalTime IS NULL
         AND record.leaderDeclaration IS NOT NULL
         AND record.vehicle <> 'Car'
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS bussesOnTheWayCount
       """
       columnName: "bussesOnTheWayCount"
     )
@@ -271,7 +271,7 @@ extend type Campus {
         WHERE record.arrivalTime IS NOT NULL
         AND record.attendance > 0
         AND record.vehicle <> 'Car'
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS bussesThatArrivedCount
       """
       columnName: "bussesThatArrivedCount"
     )
@@ -287,17 +287,17 @@ extend type Campus {
     )
   icBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*4]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*4]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas) AS icBacentaCount"
       columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*4]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*4]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas) AS activeIcBacentaCount"
       columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*4]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*4]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas) AS vacationIcBacentaCount"
       columnName: "vacationIcBacentaCount"
     )
 }
@@ -326,7 +326,7 @@ extend type Stream {
          MATCH (bacentas)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
          WHERE date(date.date)=date($arrivalDate)
          }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasNoActivityCount
       """
       columnName: "bacentasNoActivityCount"
     )
@@ -350,7 +350,7 @@ extend type Stream {
         WHERE date(date.date)=date($arrivalDate)
         AND bussing.mobilisationPicture IS NOT NULL
         AND bussing.leaderDeclaration IS NULL
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasMobilisingCount
       """
       columnName: "bacentasMobilisingCount"
     )
@@ -378,7 +378,7 @@ extend type Stream {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NULL
         }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasOnTheWayCount
       """
       columnName: "bacentasOnTheWayCount"
     )
@@ -392,7 +392,7 @@ extend type Stream {
         WHERE record.arrivalTime IS NULL
         AND record.leaderDeclaration IS NOT NULL
         AND record.vehicle <> 'Car'
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS bussesOnTheWayCount
       """
       columnName: "bussesOnTheWayCount"
     )
@@ -405,7 +405,7 @@ extend type Stream {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NULL
       WITH DISTINCT record
-      RETURN SUM(record.leaderDeclaration)
+      RETURN SUM(record.leaderDeclaration) AS bussingMembersOnTheWayCount
       """
       columnName: "bussingMembersOnTheWayCount"
     )
@@ -433,7 +433,7 @@ extend type Stream {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS vehiclesNotCountedCount
       """
       columnName: "vehiclesNotCountedCount"
     )
@@ -457,7 +457,7 @@ extend type Stream {
         WHERE date(date.date)=date($arrivalDate)
         AND bussing.attendance < 8
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasBelow8Count
       """
       columnName: "bacentasBelow8Count"
     )
@@ -486,7 +486,7 @@ extend type Stream {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NOT NULL AND record.attendance > 0
         }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasHaveArrivedCount
       """
       columnName: "bacentasHaveArrivedCount"
     )
@@ -499,7 +499,7 @@ extend type Stream {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NOT NULL
         WITH DISTINCT record
-      RETURN SUM(record.attendance)
+      RETURN SUM(record.attendance) AS bussingMembersHaveArrivedCount
       """
       columnName: "bussingMembersHaveArrivedCount"
     )
@@ -513,7 +513,7 @@ extend type Stream {
         WHERE record.arrivalTime IS NOT NULL
         AND record.attendance > 0
         AND record.vehicle <> 'Car'
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS bussesThatArrivedCount
       """
       columnName: "bussesThatArrivedCount"
     )
@@ -529,17 +529,17 @@ extend type Stream {
     )
   icBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*3]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*3]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas) AS icBacentaCount"
       columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*3]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*3]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas) AS activeIcBacentaCount"
       columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*3]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*3]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas) AS vacationIcBacentaCount"
       columnName: "vacationIcBacentaCount"
     )
 }
@@ -566,7 +566,7 @@ extend type Council {
          MATCH (bacentas)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
          WHERE date(date.date)=date($arrivalDate)
          }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasNoActivityCount
       """
       columnName: "bacentasNoActivityCount"
     )
@@ -590,7 +590,7 @@ extend type Council {
         WHERE date(date.date)=date($arrivalDate)
         AND bussing.mobilisationPicture IS NOT NULL
         AND bussing.leaderDeclaration IS NULL
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasMobilisingCount
       """
       columnName: "bacentasMobilisingCount"
     )
@@ -618,7 +618,7 @@ extend type Council {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NULL
         }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasOnTheWayCount
       """
       columnName: "bacentasOnTheWayCount"
     )
@@ -632,7 +632,7 @@ extend type Council {
         WHERE record.arrivalTime IS NULL
         AND record.leaderDeclaration IS NOT NULL
         AND record.vehicle <> 'Car'
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS bussesOnTheWayCount
       """
       columnName: "bussesOnTheWayCount"
     )
@@ -645,7 +645,7 @@ extend type Council {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NULL
       WITH DISTINCT record
-      RETURN SUM(record.leaderDeclaration)
+      RETURN SUM(record.leaderDeclaration) AS bussingMembersOnTheWayCount
       """
       columnName: "bussingMembersOnTheWayCount"
     )
@@ -673,7 +673,7 @@ extend type Council {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS vehiclesNotCountedCount
       """
       columnName: "vehiclesNotCountedCount"
     )
@@ -697,7 +697,7 @@ extend type Council {
         WHERE date(date.date)=date($arrivalDate)
         AND bussing.attendance < 8
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasBelow8Count
       """
       columnName: "bacentasBelow8Count"
     )
@@ -726,7 +726,7 @@ extend type Council {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NOT NULL AND record.attendance > 0
         }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasHaveArrivedCount
       """
       columnName: "bacentasHaveArrivedCount"
     )
@@ -739,7 +739,7 @@ extend type Council {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NOT NULL
       WITH DISTINCT record
-      RETURN SUM(record.attendance)
+      RETURN SUM(record.attendance) AS bussingMembersHaveArrivedCount
       """
       columnName: "bussingMembersHaveArrivedCount"
     )
@@ -753,7 +753,7 @@ extend type Council {
         WHERE record.arrivalTime IS NOT NULL
         AND record.attendance > 0
         AND record.vehicle <> 'Car'
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS bussesThatArrivedCount
       """
       columnName: "bussesThatArrivedCount"
     )
@@ -769,17 +769,17 @@ extend type Council {
     )
   icBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*2]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*2]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas) AS icBacentaCount"
       columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*2]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*2]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas) AS activeIcBacentaCount"
       columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS*2]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS*2]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas) AS vacationIcBacentaCount"
       columnName: "vacationIcBacentaCount"
     )
 }
@@ -807,7 +807,7 @@ extend type Governorship {
          MATCH (bacentas)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
          WHERE date(date.date)=date($arrivalDate)
          }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasNoActivityCount
       """
       columnName: "bacentasNoActivityCount"
     )
@@ -831,7 +831,7 @@ extend type Governorship {
         WHERE date(date.date)=date($arrivalDate)
         AND bussing.mobilisationPicture IS NOT NULL
         AND bussing.leaderDeclaration IS NULL
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasMobilisingCount
       """
       columnName: "bacentasMobilisingCount"
     )
@@ -859,7 +859,7 @@ extend type Governorship {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NULL
         }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasOnTheWayCount
       """
       columnName: "bacentasOnTheWayCount"
     )
@@ -873,7 +873,7 @@ extend type Governorship {
         WHERE record.arrivalTime IS NULL
         AND record.leaderDeclaration IS NOT NULL
         AND record.vehicle <> 'Car'
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS bussesOnTheWayCount
       """
       columnName: "bussesOnTheWayCount"
     )
@@ -886,7 +886,7 @@ extend type Governorship {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NULL
       WITH DISTINCT record
-      RETURN SUM(record.leaderDeclaration)
+      RETURN SUM(record.leaderDeclaration) AS bussingMembersOnTheWayCount
       """
       columnName: "bussingMembersOnTheWayCount"
     )
@@ -914,7 +914,7 @@ extend type Governorship {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS vehiclesNotCountedCount
       """
       columnName: "vehiclesNotCountedCount"
     )
@@ -938,7 +938,7 @@ extend type Governorship {
         WHERE date(date.date)=date($arrivalDate)
         AND bussing.attendance < 8
         WITH bacentas, bussing ORDER BY bussing.attendance ASC
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasBelow8Count
       """
       columnName: "bacentasBelow8Count"
     )
@@ -967,7 +967,7 @@ extend type Governorship {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NOT NULL AND record.attendance > 0
         }
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bacentasHaveArrivedCount
       """
       columnName: "bacentasHaveArrivedCount"
     )
@@ -980,7 +980,7 @@ extend type Governorship {
         MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.arrivalTime IS NOT NULL
         WITH DISTINCT record
-      RETURN SUM(record.attendance)
+      RETURN SUM(record.attendance) AS bussingMembersHaveArrivedCount
       """
       columnName: "bussingMembersHaveArrivedCount"
     )
@@ -994,7 +994,7 @@ extend type Governorship {
         WHERE record.arrivalTime IS NOT NULL
         AND record.attendance > 0
         AND record.vehicle <> 'Car'
-      RETURN COUNT(DISTINCT record)
+      RETURN COUNT(DISTINCT record) AS bussesThatArrivedCount
       """
       columnName: "bussesThatArrivedCount"
     )
@@ -1010,17 +1010,17 @@ extend type Governorship {
     )
   icBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS]->(bacentas:Red:Bacenta) RETURN COUNT(DISTINCT bacentas) AS icBacentaCount"
       columnName: "icBacentaCount"
     )
   activeIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS]->(bacentas:Red:Bacenta:Active) RETURN COUNT(DISTINCT bacentas) AS activeIcBacentaCount"
       columnName: "activeIcBacentaCount"
     )
   vacationIcBacentaCount: Int
     @cypher(
-      statement: "MATCH (this)-[:HAS]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas)"
+      statement: "MATCH (this)-[:HAS]-(bacentas:Red:Bacenta:Vacation) RETURN COUNT(DISTINCT bacentas) AS vacationIcBacentaCount"
       columnName: "vacationIcBacentaCount"
     )
 }
@@ -1078,7 +1078,7 @@ type BussingRecord implements Record {
     @cypher(
       statement: """
       MATCH (this)-[:BUSSED_ON]->(date:TimeGraph)
-      RETURN date(date.date).week
+      RETURN date(date.date).week AS week
       """
       columnName: "week"
     )

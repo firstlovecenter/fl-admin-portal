@@ -312,7 +312,7 @@ extend type Mutation {
       MERGE (log)-[:RECORDED_ON]->(date)
 
       DETACH DELETE indoorVenue
-      RETURN true
+      RETURN true AS result
       """
       columnName: "result"
     )
@@ -334,7 +334,7 @@ extend type Mutation {
       MERGE (log)-[:RECORDED_ON]->(date)
 
       DETACH DELETE outdoorVenue
-      RETURN true
+      RETURN true AS result
       """
       columnName: "result"
     )
@@ -357,7 +357,7 @@ extend type Mutation {
       MERGE (log)-[:RECORDED_ON]->(date)
 
       DETACH DELETE hostel
-      RETURN true
+      RETURN true AS result
       """
       columnName: "result"
     )
@@ -379,7 +379,7 @@ extend type Mutation {
       MERGE (log)-[:RECORDED_ON]->(date)
 
       DETACH DELETE highSchool
-      RETURN true
+      RETURN true AS result
       """
       columnName: "result"
     )
