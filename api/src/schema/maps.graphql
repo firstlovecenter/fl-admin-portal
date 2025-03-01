@@ -68,7 +68,7 @@ extend type Mutation {
     longitude: Float!
     latitude: Float!
   ): IndoorVenue!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (indoorVenue:IndoorVenue:OutreachVenue)
@@ -104,7 +104,7 @@ extend type Mutation {
     longitude: Float!
     latitude: Float!
   ): OutdoorVenue!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (outdoorVenue:OutdoorVenue:OutreachVenue)
@@ -142,7 +142,7 @@ extend type Mutation {
     longitude: Float!
     school: String!
   ): Hostel!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (hostel:Hostel)
@@ -178,7 +178,7 @@ extend type Mutation {
     longitude: Float!
     school: String!
   ): HighSchool!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (highSchool:HighSchool)
@@ -218,7 +218,7 @@ extend type Mutation {
     capacity: Int!
     name: String!
   ): IndoorVenue!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (indoorVenue:IndoorVenue:OutreachVenue {id: $indoorVenueId})
@@ -237,7 +237,7 @@ extend type Mutation {
     capacity: Int!
     name: String!
   ): OutdoorVenue!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (outdoorVenue:OutdoorVenue:OutreachVenue {id: $outdoorVenueId})
@@ -257,7 +257,7 @@ extend type Mutation {
     capacity: Int!
     university: String!
   ): Hostel!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (hostel:Hostel {id: $hostelId})
@@ -277,7 +277,7 @@ extend type Mutation {
     name: String!
     capacity: Int!
   ): HighSchool!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (highSchool:HighSchool {id: $highSchoolId})
@@ -294,7 +294,7 @@ extend type Mutation {
 
 extend type Mutation {
   CloseDownIndoorVenue(indoorVenueId: ID!): Boolean!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (indoorVenue:IndoorVenue:OutreachVenue {id: $indoorVenueId})
@@ -317,7 +317,7 @@ extend type Mutation {
       columnName: "result"
     )
   CloseDownOutdoorVenue(outdoorVenueId: ID!): Boolean!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (outdoorVenue:OutdoorVenue:OutreachVenue {id: $outdoorVenueId})
@@ -340,7 +340,7 @@ extend type Mutation {
     )
 
   CloseDownHostel(hostelId: ID!): Boolean!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (hostel:Hostel {id: $hostelId})
@@ -362,7 +362,7 @@ extend type Mutation {
       columnName: "result"
     )
   CloseDownHighSchool(highSchoolId: ID!): Boolean!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (highSchool:HighSchool {id: $highSchoolId})

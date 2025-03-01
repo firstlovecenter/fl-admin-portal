@@ -182,7 +182,14 @@ extend type Mutation {
     accountType: String!
     description: String! #momoNumber: String! #momoName: String! #invoiceUrl: String!
   ): AccountTransaction!
-    @authentication(jwt: { roles_INCLUDES: ["leaderCouncil", "adminCampus"] })
+    @authentication(
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "leaderCouncil" }
+          { roles_INCLUDES: "adminCampus" }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
@@ -215,7 +222,14 @@ extend type Mutation {
   ApproveExpense(transactionId: ID!, charge: Float!): AccountTransaction!
 
   DeclineExpense(transactionId: ID!): AccountTransaction!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "leaderCampus"] })
+    @authentication(
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "leaderCampus" }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (transaction:AccountTransaction {id: $transactionId})

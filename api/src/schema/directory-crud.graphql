@@ -324,7 +324,7 @@ extend type Mutation {
   ): Member!
 
   CreateOversight(name: String!, leaderId: ID!, denominationId: ID!): Oversight
-    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
+    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
     @cypher(
       statement: """
       CREATE (oversight:Oversight {id:apoc.create.uuid(), name:$name})
@@ -366,7 +366,12 @@ extend type Mutation {
     conversionRateToDollar: Float!
   ): Campus
     @authentication(
-      jwt: { roles_INCLUDES: ["adminOversight", "adminDenomination"] }
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminOversight" }
+          { roles_INCLUDES: "adminDenomination" }
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -408,7 +413,14 @@ extend type Mutation {
     meetingDay: String!
     bankAccount: String!
   ): Stream
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "adminOversight"] })
+    @authentication(
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminOversight" }
+        ]
+      }
+    )
     @cypher(
       statement: """
       CREATE (stream:Active:Stream {id:apoc.create.uuid(), name: $name})
@@ -445,7 +457,14 @@ extend type Mutation {
     )
 
   CreateCouncil(name: String!, leaderId: ID!, streamId: ID!): Council
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus", "adminStream"] })
+    @authentication(
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+        ]
+      }
+    )
     @cypher(
       statement: """
        CREATE (council:Council {id:apoc.create.uuid(), name:$name})
@@ -487,7 +506,13 @@ extend type Mutation {
     councilId: ID!
   ): Governorship
     @authentication(
-      jwt: { roles_INCLUDES: ["adminCampus", "adminStream", "adminCouncil"] }
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -530,7 +555,11 @@ extend type Mutation {
   ): Bacenta!
     @authentication(
       jwt: {
-        roles_INCLUDES: ["adminStream", "adminCampus", "arrivalsAdminCampus"]
+        OR: [
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "arrivalsAdminCampus" }
+        ]
       }
     )
     @cypher(
@@ -581,11 +610,11 @@ extend type Mutation {
   ): Fellowship!
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminCouncil"
-          "adminGovernorship"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+          { roles_INCLUDES: "adminGovernorship" }
         ]
       }
     )
@@ -619,7 +648,7 @@ extend type Mutation {
 extend type Mutation {
   UpdateMemberEmail(id: ID!, email: String!): Member!
   UpdateMemberAppointmentDate(id: ID!, appointmentDate: String): Member!
-    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
+    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -634,7 +663,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberOrdinationDate(id: ID!, ordinationDate: String!): Member!
-    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
+    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -649,7 +678,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberConsecrationDate(id: ID!, consecrationDate: String!): Member!
-    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
+    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -665,7 +694,7 @@ extend type Mutation {
     )
 
   DeleteMemberTitles(id: ID!): Member!
-    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
+    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -783,7 +812,7 @@ extend type Mutation {
     )
 
   UpdateDenominationDetails(denominationId: ID!, name: String!): Denomination
-    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
+    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
     @cypher(
       statement: """
       MATCH (denomination:Denomination {id: $denominationId})
@@ -794,7 +823,7 @@ extend type Mutation {
       columnName: "denomination"
     )
   UpdateOversightDetails(oversightId: ID!, name: String!): Oversight!
-    @authentication(jwt: { roles_INCLUDES: ["adminDenomination"] })
+    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
     @cypher(
       statement: """
       MATCH (oversight:Oversight {id: $oversightId})
@@ -813,7 +842,12 @@ extend type Mutation {
     conversionRateToDollar: Float!
   ): Campus
     @authentication(
-      jwt: { roles_INCLUDES: ["adminOversight", "adminDenomination"] }
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminOversight" }
+          { roles_INCLUDES: "adminDenomination" }
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -835,7 +869,11 @@ extend type Mutation {
   ): Stream
     @authentication(
       jwt: {
-        roles_INCLUDES: ["adminCampus", "adminOversight", "adminDenomination"]
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminOversight" }
+          { roles_INCLUDES: "adminDenomination" }
+        ]
       }
     )
     @cypher(
@@ -862,11 +900,11 @@ extend type Mutation {
   UpdateCouncilDetails(councilId: ID!, name: String!): Council
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminOversight"
-          "adminDenomination"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminOversight" }
+          { roles_INCLUDES: "adminDenomination" }
         ]
       }
     )
@@ -882,7 +920,13 @@ extend type Mutation {
 
   UpdateGovernorshipDetails(governorshipId: ID!, name: String!): Governorship
     @authentication(
-      jwt: { roles_INCLUDES: ["adminCampus", "adminStream", "adminCouncil"] }
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+        ]
+      }
     )
     @cypher(
       statement: """
@@ -902,14 +946,14 @@ extend type Mutation {
   ): Bacenta
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminDenomination"
-          "adminOversight"
-          "adminCampus"
-          "adminStream"
-          "adminCouncil"
-          "adminGovernorship"
-          "arrivalsAdminGovernorship"
+        OR: [
+          { roles_INCLUDES: "adminDenomination" }
+          { roles_INCLUDES: "adminOversight" }
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+          { roles_INCLUDES: "adminGovernorship" }
+          { roles_INCLUDES: "arrivalsAdminGovernorship" }
         ]
       }
     )
@@ -944,12 +988,12 @@ extend type Mutation {
   ): Fellowship
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminCouncil"
-          "adminGovernorship"
-          "leaderFellowship"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+          { roles_INCLUDES: "adminGovernorship" }
+          { roles_INCLUDES: "leaderFellowship" }
         ]
       }
     )

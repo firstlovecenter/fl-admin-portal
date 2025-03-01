@@ -728,7 +728,7 @@ extend type Mutation {
     leaderId: ID!
     campusId: ID!
   ): CreativeArts!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (creativeArt:CreativeArts:Basonta {name:$name})
@@ -765,7 +765,11 @@ extend type Mutation {
   ): Ministry!
     @authentication(
       jwt: {
-        roles_INCLUDES: ["adminCampus", "adminStream", "adminCreativeArts"]
+      OR: [
+        { roles_INCLUDES: "adminCampus" },
+        { roles_INCLUDES: "adminStream" },
+        { roles_INCLUDES: "adminCreativeArts" }
+      ]
       }
     )
     @cypher(
@@ -805,11 +809,11 @@ extend type Mutation {
   CreateHubCouncil(leaderId: ID!, ministryId: ID!, councilId: ID!): HubCouncil!
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminCreativeArts"
-          "adminMinistry"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCreativeArts" }
+          { roles_INCLUDES: "adminMinistry" }
         ]
       }
     )
@@ -857,12 +861,12 @@ extend type Mutation {
   ): Hub!
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCouncil"
-          "adminCampus"
-          "adminStream"
-          "adminCreativeArts"
-          "adminMinistry"
+        OR: [
+          { roles_INCLUDES: "adminCouncil" }
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCreativeArts" }
+          { roles_INCLUDES: "adminMinistry" }
         ]
       }
     )
@@ -911,7 +915,7 @@ extend type Mutation {
 
 extend type Mutation {
   UpdateCreativeArtsDetails(creativeArtsId: ID!, name: String!): CreativeArts!
-    @authentication(jwt: { roles_INCLUDES: ["adminCampus"] })
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (creativeArt:CreativeArts {id: $creativeArtsId})
@@ -928,7 +932,11 @@ extend type Mutation {
   ): Ministry!
     @authentication(
       jwt: {
-        roles_INCLUDES: ["adminCampus", "adminStream", "adminCreativeArts"]
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCreativeArts" }
+        ]
       }
     )
     @cypher(
@@ -944,11 +952,11 @@ extend type Mutation {
   UpdateHubCouncilDetails(hubCouncilId: ID!, name: String!): HubCouncil!
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminCreativeArts"
-          "adminMinistry"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCreativeArts" }
+          { roles_INCLUDES: "adminMinistry" }
         ]
       }
     )
@@ -970,11 +978,11 @@ extend type Mutation {
   ): Hub!
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminCreativeArts"
-          "adminMinistry"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCreativeArts" }
+          { roles_INCLUDES: "adminMinistry" }
         ]
       }
     )
@@ -1004,12 +1012,12 @@ extend type Mutation {
   SetFellowshipToHubFellowship(fellowshipId: ID!, hubId: ID!): Fellowship!
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminCouncil"
-          "adminCreativeArts"
-          "adminMinistry"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+          { roles_INCLUDES: "adminCreativeArts" }
+          { roles_INCLUDES: "adminMinistry" }
         ]
       }
     )
@@ -1041,12 +1049,12 @@ extend type Mutation {
   SetHubFellowshipToRegularFellowship(fellowshipId: ID!): Fellowship!
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminCouncil"
-          "adminCreativeArts"
-          "adminMinistry"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+          { roles_INCLUDES: "adminCreativeArts" }
+          { roles_INCLUDES: "adminMinistry" }
         ]
       }
     )

@@ -108,7 +108,6 @@ const startServer = async () => {
   await new Promise((resolve) => httpServer.listen({ port }, resolve))
   // eslint-disable-next-line
   console.log(`🚀 GraphQL Server ready at http://${host}:${port}${path}`)
-  console.log('🚀 ~ index.js:108 ~ error:', error)
 }
 
 startServer()

@@ -1090,11 +1090,11 @@ extend type Mutation {
   UndoCancelledService(serviceRecordId: ID!): Bacenta!
     @authentication(
       jwt: {
-        roles_INCLUDES: [
-          "adminCampus"
-          "adminStream"
-          "adminCouncil"
-          "adminGovernorship"
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+          { roles_INCLUDES: "adminGovernorship" }
         ]
       }
     )
