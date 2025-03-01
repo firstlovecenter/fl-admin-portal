@@ -8,9 +8,9 @@ type Member {
   currentTitle: String
     @cypher(
       statement: """
-      MATCH (this)-[r:HAS_TITLE]->(title:Title)
+      OPTIONAL MATCH (this)-[r:HAS_TITLE]->(title:Title)
       WHERE NOT r.inactive = true
-      RETURN title.name ORDER BY title.priority DESC LIMIT 1
+      RETURN title.name AS currentTitle ORDER BY title.priority DESC LIMIT 1
       """
       columnName: "currentTitle"
     )
@@ -33,8 +33,8 @@ type Member {
   stream_name: String
     @cypher(
       statement: """
-      MATCH (this)-[:BELONGS_TO]->(:Fellowship)<-[:HAS*4]-(stream:Stream)
-      RETURN DISTINCT toLower(stream.name)
+      OPTIONAL MATCH (this)-[:BELONGS_TO]->(:Bacenta)<-[:HAS*3]-(stream:Stream)
+      RETURN DISTINCT toLower(stream.name) AS stream_name
       """
       columnName: "stream_name"
     )
@@ -751,7 +751,7 @@ type Stream implements Church {
       WITH status WHERE status = 'Active' OR status = 'Vacation'
       RETURN status
       """
-      columnName: "vacationStatus"
+      columnName: "status"
     )
   leader: Member @relationship(type: "LEADS", direction: IN)
   councils: [Council!]! @relationship(type: "HAS", direction: OUT)
@@ -1095,7 +1095,7 @@ type Bacenta implements Church {
       WITH status WHERE status = 'Active' OR status = 'Vacation'
       RETURN status
       """
-      columnName: "vacationStatus"
+      columnName: "status"
     )
   labels: [String]
     @cypher(
@@ -1194,7 +1194,7 @@ type Fellowship implements Church {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
-      columnName: "vacationStatus"
+      columnName: "status"
     )
   hubStatus: Boolean!
     @cypher(

@@ -7,6 +7,7 @@ import cors from 'cors'
 import { json } from 'body-parser'
 import neo4j from 'neo4j-driver'
 import { Neo4jGraphQL } from '@neo4j/graphql'
+import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import SECRETS from './resolvers/getSecrets'
@@ -31,7 +32,7 @@ const neoSchema = new Neo4jGraphQL({
   driver,
   features: {
     authorization: {
-      key: SECRETS.JWT_SECRET,
+      key: SECRETS.JWT_SECRET.toString(),
     },
     config: {
       debug: true,
@@ -79,11 +80,24 @@ const startServer = async () => {
   })
 
   const server = new ApolloServer({
-    context: async ({ req }) => ({
-      req,
-      executionContext: driver,
-      token: req.headers.authorization,
-    }),
+    context: async ({ req }) => {
+      const token = req.headers.authorization
+      let jwt = null
+
+      if (token) {
+        try {
+          jwt = jwtDecode(token)
+        } catch (error) {
+          console.error('Invalid token:', error)
+        }
+      }
+
+      return {
+        req,
+        executionContext: driver,
+        jwt,
+      }
+    },
     introspection: true,
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
@@ -96,11 +110,24 @@ const startServer = async () => {
     cors(),
     json(),
     expressMiddleware(server, {
-      context: async ({ req }) => ({
-        req,
-        executionContext: driver,
-        token: req.headers.authorization,
-      }),
+      context: async ({ req }) => {
+        const token = req.headers.authorization
+        let jwt = null
+
+        if (token) {
+          try {
+            jwt = jwtDecode(token)
+          } catch (error) {
+            console.error('Invalid token:', error)
+          }
+        }
+
+        return {
+          req,
+          executionContext: driver,
+          jwt,
+        }
+      },
     })
   )
 
