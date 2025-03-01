@@ -196,7 +196,7 @@ type Ministry {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
-      columnName: "vacationStatus"
+      columnName: "status"
     )
   members: [Member!]!
     @cypher(
@@ -370,7 +370,7 @@ type HubCouncil {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
-      columnName: "result"
+      columnName: "status"
     )
   hubs: [Hub!]! @relationship(type: "HAS", direction: OUT)
   ministry: Ministry! @relationship(type: "HAS", direction: IN)
@@ -458,7 +458,7 @@ type Hub {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
-      columnName: "result"
+      columnName: "status"
     )
   hubFellowships: [Fellowship!]! @relationship(type: "HAS", direction: OUT)
   hubCouncil: HubCouncil! @relationship(type: "HAS", direction: IN)
@@ -638,7 +638,7 @@ type HubFellowship implements Church {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS*4]-(stream:Stream)
-      RETURN DISTINCT toLower(stream.name)
+      RETURN DISTINCT toLower(stream.name) AS result
       """
       columnName: "result"
     )
@@ -650,7 +650,7 @@ type HubFellowship implements Church {
       WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
       RETURN status
       """
-      columnName: "result"
+      columnName: "status"
     )
   bacenta: Bacenta @relationship(type: "HAS", direction: IN)
   leader: Member @relationship(type: "LEADS", direction: IN)
@@ -765,11 +765,11 @@ extend type Mutation {
   ): Ministry!
     @authentication(
       jwt: {
-      OR: [
-        { roles_INCLUDES: "adminCampus" },
-        { roles_INCLUDES: "adminStream" },
-        { roles_INCLUDES: "adminCreativeArts" }
-      ]
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCreativeArts" }
+        ]
       }
     )
     @cypher(

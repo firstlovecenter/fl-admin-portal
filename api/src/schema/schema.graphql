@@ -20,6 +20,5 @@ type Query {
 }
 
 type Mutation {
-  MakeFellowshipIntoBacenta(fellowshipId: ID!): Bacenta!
   CreateMemberAccount(memberId: ID!): Member!
 }
