@@ -37,7 +37,7 @@ const churchCampaigns = async (context: Context, church: ChurchLevel) => {
     default:
       campaignsList = []
   }
-  const userRoles: Role[] = context.auth?.roles
+  const userRoles: Role[] = context.jwt['https://flcadmin.netlify.app/roles']
   const permittedRoles: Role[] = ['sheepseekerStream']
   permittedRoles.push(...permitAdmin('Stream'))
   permittedRoles.push(...permitLeader('Stream'))
