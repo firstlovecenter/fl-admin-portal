@@ -16,6 +16,7 @@ module.exports = {
     ],
     '@babel/preset-typescript',
   ],
+  ignore: ['node_modules/**/*', '**/node_modules/**'],
   plugins: [
     [
       'babel-plugin-module-resolver',
