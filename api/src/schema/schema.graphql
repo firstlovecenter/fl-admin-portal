@@ -8,7 +8,7 @@ type JWT @jwt {
 type Query {
   currentUser(id: ID): Member!
     @cypher(
-      statement: "MATCH (member:Active:Member {auth_id: $auth.jwt.sub}) RETURN member"
+      statement: "MATCH (member:Active:Member {auth_id: $jwt.sub}) RETURN member"
       columnName: "member"
     )
 

@@ -1,5 +1,5 @@
 export const matchMemberFromAuthId = `
- MATCH (member:Member  {auth_id: $auth.jwt.sub})
+ MATCH (member:Member  {auth_id: $jwt.sub})
  RETURN member
 `
 
@@ -167,7 +167,7 @@ log.historyRecord = $reason
 
 WITH log, node
 MATCH (node)-[:BELONGS_TO]->(church)
-MATCH (admin:Member {auth_id:$auth.jwt.sub})
+MATCH (admin:Member {auth_id:$jwt.sub})
 MERGE (today:TimeGraph {date: date()})
 MERGE (admin)<-[:LOGGED_BY]-(log)
 MERGE (node)-[:HAS_HISTORY]->(log)
@@ -190,7 +190,7 @@ log.historyRecord = $reason
 
 WITH log, member 
 MATCH (member)-[:BELONGS_TO]->(church)
-MATCH (admin:Member {auth_id:$auth.jwt.sub})
+MATCH (admin:Member {auth_id:$jwt.sub})
 MERGE (today:TimeGraph {date: date()})
 MERGE (admin)<-[:LOGGED_BY]-(log)
 MERGE (member)-[:HAS_HISTORY]->(log)

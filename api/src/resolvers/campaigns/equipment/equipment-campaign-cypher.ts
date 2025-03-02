@@ -10,7 +10,7 @@ RETURN campus
 export const createFellowshipEquipmentRecord = `
 MATCH (fellowship:Fellowship {id:$id})
 MATCH (fellowship)-[:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (member:Member {auth_id: $auth.jwt.sub})
+MATCH (member:Member {auth_id: $jwt.sub})
 CREATE (record:EquipmentRecord)
 SET
 record.id = apoc.create.uuid(),
@@ -34,7 +34,7 @@ RETURN church.id AS id, church.name AS name, labels(church) AS labels, record AS
 export const createGovernorshipEquipmentRecord = `
 MATCH (con:Governorship {id:$id})
 MATCH (con)-[:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (member:Member {auth_id: $auth.jwt.sub})
+MATCH (member:Member {auth_id: $jwt.sub})
 CREATE (record:EquipmentRecord)
 SET
 record.id = apoc.create.uuid(),

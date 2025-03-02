@@ -29,7 +29,7 @@ LIMIT toInteger($limit)
 export const memberLoadCouncilUnvisitedMembers = `
 MATCH (this:Member {id: $id})-[:LEADS|IS_ADMIN_FOR]->(council:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(member:Member)-[:LEADS|IS_ADMIN_FOR]->()
 MATCH (cycle:CouncilCycle {half: toInteger(ceil(toFloat(date().month)/toFloat(6))) - 1, year: date().year})
-MATCH (author:Member {auth_id: $auth.jwt.sub})-[:CURRENT_HISTORY]->(log:ServiceLog)<-[:CURRENT_HISTORY]-(council)
+MATCH (author:Member {auth_id: $jwt.sub})-[:CURRENT_HISTORY]->(log:ServiceLog)<-[:CURRENT_HISTORY]-(council)
 WHERE NOT EXISTS {
    MATCH (log)-[:PERFORMED_DUTY]->(visitation:VisitationActivity)
    WHERE (visitation)-[:TOWARDS]->(member) AND (visitation)-[:DURING_CYCLE]->(cycle)

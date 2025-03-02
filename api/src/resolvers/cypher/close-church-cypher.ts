@@ -59,7 +59,7 @@ SET log.timeStamp = datetime(),
 log.historyRecord = fellowship.name + ' Fellowship was closed down under ' + bacenta.name +' Bacenta'
 
 WITH fellowship, bacenta, log
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 MERGE (date:TimeGraph {date:date()})
 MERGE (log)-[:LOGGED_BY]->(admin)
 MERGE (log)-[:RECORDED_ON]->(date)
@@ -89,7 +89,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
 
 WITH bacenta, governorship, log
 MATCH (governorship)-[:HAS]->(bacentas:Bacenta)   
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 OPTIONAL MATCH (bacenta)-[:HAS]->(fellowships:Fellowship)
 UNWIND labels(governorship) AS stream
 
@@ -118,7 +118,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
   log.historyRecord = governorship.name + ' Governorship was closed down under ' + council.name +' Council'
 
 WITH governorship, council, log
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 MATCH (council)-[:HAS]->(governorships)
 OPTIONAL MATCH (governorship)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
 
@@ -147,7 +147,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
   log.historyRecord = council.name + ' Council was closed down under ' + stream.name +' stream'
 
 WITH council, stream, log
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 MATCH (stream)-[:HAS]->(councils)
 OPTIONAL MATCH (council)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
 
@@ -173,7 +173,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
   log.historyRecord = stream.name + ' Stream was closed down under ' + campus.name +' Campus'
 
 WITH stream, campus, log
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 MATCH (campus)-[:HAS]->(streams)
 OPTIONAL MATCH (stream)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
 
@@ -199,7 +199,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
   log.historyRecord = campus.name + ' Campus was closed down under ' + oversight.name +' Oversight'
 
 WITH campus, oversight, log
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 MATCH (oversight)-[:HAS]->(campuses)
 OPTIONAL MATCH (campus)-[:HAS]->(streams)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
 
@@ -226,7 +226,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
   log.historyRecord = oversight.name + ' Oversight was closed down under ' + denomination.name +' Denomination'
 
 WITH oversight, denomination, log
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 MATCH (denomination)-[:HAS]->(oversights)
 OPTIONAL MATCH (oversight)-[:HAS]->(campuses)-[:HAS]->(streams)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
 

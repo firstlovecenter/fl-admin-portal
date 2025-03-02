@@ -1271,7 +1271,7 @@ extend type Mutation {
         log.historyRecord = bacenta.name + ' Bussing Details were updated'
 
       WITH log,bacenta
-      MATCH (admin:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Member {auth_id: $jwt.sub})
       MERGE (date:TimeGraph {date: date()})
 
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -1304,7 +1304,7 @@ extend type Mutation {
         log.historyRecord = bacenta.name + ' Bus Payment Details were updated'
 
       WITH log,bacenta
-      MATCH (admin:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Member {auth_id: $jwt.sub})
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
       MERGE (log)-[:RECORDED_ON]->(date)
@@ -1347,7 +1347,7 @@ extend type Mutation {
         vehicleRecord.comments = $comments
 
          WITH vehicleRecord
-          MATCH (admin:Member {auth_id: $auth.jwt.sub})
+          MATCH (admin:Member {auth_id: $jwt.sub})
           MERGE (vehicleRecord)-[:COUNTED_BY]->(admin)
 
       RETURN vehicleRecord

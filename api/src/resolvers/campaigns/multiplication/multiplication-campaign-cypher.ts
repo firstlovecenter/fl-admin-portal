@@ -14,7 +14,7 @@ WITH record
 MATCH (church {id: $churchId}) WHERE church:Governorship OR church:Council OR church:Stream OR church:Campus
 MATCH (preacher:Member {id: $preacherId})
 MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (currentUser:Member {auth_id: $auth.jwt.sub})
+MATCH (currentUser:Member {auth_id: $jwt.sub})
 
 
 MERGE (crusadeDate:TimeGraph {date:date($crusadeDate)})
@@ -144,7 +144,7 @@ export const submitMultiplicationBankingSlip = `
 MATCH (record:MultiplicationRecord {id: $multiplicationRecordId})
 SET record.bankingSlip = $bankingSlip
 WITH record
-MATCH (banker:Member {auth_id: $auth.jwt.sub})
+MATCH (banker:Member {auth_id: $jwt.sub})
 MERGE (banker)-[:UPLOADED_SLIP_FOR]->(record)
 RETURN record
 `

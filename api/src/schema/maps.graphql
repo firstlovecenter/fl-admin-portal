@@ -78,7 +78,7 @@ extend type Mutation {
          indoorVenue.location = point({latitude: $latitude, longitude:$longitude})
 
       WITH indoorVenue
-      MATCH (currentUser:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
 
       WITH indoorVenue, currentUser
       CREATE (log:HistoryLog)
@@ -115,7 +115,7 @@ extend type Mutation {
 
 
       WITH outdoorVenue
-      MATCH (currentUser:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
 
       WITH outdoorVenue, currentUser
       CREATE (log:HistoryLog)
@@ -153,7 +153,7 @@ extend type Mutation {
         SET hostel.school = $school
 
       WITH hostel,
-      MATCH (currentUser:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
 
       WITH hostel, currentUser
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
@@ -189,7 +189,7 @@ extend type Mutation {
         SET highSchool.school = $school
 
       WITH highSchool,
-      MATCH (currentUser:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
 
       WITH highSchool, currentUser
       CREATE (log:HistoryLog)
@@ -298,7 +298,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH (indoorVenue:IndoorVenue:OutreachVenue {id: $indoorVenueId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
 
       WITH indoorVenue, admin
       CREATE (log:HistoryLog)
@@ -321,7 +321,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH (outdoorVenue:OutdoorVenue:OutreachVenue {id: $outdoorVenueId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
 
       CREATE (log:HistoryLog)
         SET log.id = apoc.create.uuid()
@@ -344,7 +344,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH (hostel:Hostel {id: $hostelId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
 
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.timestamp = datetime()
@@ -366,7 +366,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH (highSchool:HighSchool {id: $highSchoolId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
 
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.timestamp = datetime()

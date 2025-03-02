@@ -10,7 +10,7 @@ UNWIND labels(church) AS churchLevel
 WITH record, church, churchLevel
 WHERE churchLevel IN ['Bacenta','Governorship','Council', 'Stream', 'Campus', 'Hub', 'HubCouncil', 'Ministry', 'CreativeArts'] 
 
-MATCH (author:Member {auth_id: $auth.jwt.sub})
+MATCH (author:Member {auth_id: $jwt.sub})
 MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
 SET record.sourceNumber = $mobileNumber,
     record.sourceNetwork = $mobileNetwork,
@@ -156,7 +156,7 @@ WHERE record.transactionStatus IS NULL
 OR NOT record.transactionStatus IN ['pending', 'success']
 SET record.bankingSlip = $bankingSlip
 WITH record
-MATCH (banker:Member {auth_id: $auth.jwt.sub})
+MATCH (banker:Member {auth_id: $jwt.sub})
 MERGE (banker)-[:UPLOADED_SLIP_FOR]->(record)
 RETURN record
 `
@@ -172,7 +172,7 @@ MATCH (service:ServiceRecord {id: $serviceRecordId})
     SET service.tellerConfirmationTime = datetime()
 
 WITH service
-MATCH (author:Member {auth_id: $auth.jwt.sub})
+MATCH (author:Member {auth_id: $jwt.sub})
 MERGE (service)<-[:CONFIRMED_BANKING_FOR]-(author)
 RETURN service
 `
