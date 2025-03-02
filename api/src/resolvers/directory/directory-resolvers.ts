@@ -45,7 +45,7 @@ const directoryMutation = {
         ...permitLeaderAdmin('Fellowship'),
         ...permitLeader('Hub'),
       ],
-      context?.auth.roles
+      context?.jwt['https://flcadmin.netlify.app/roles']
     )
 
     const session = context.executionContext.session()
@@ -74,7 +74,7 @@ const directoryMutation = {
           basonta: args?.basonta ?? '',
           visitationArea: args?.visitationArea ?? '',
           pictureUrl: args?.pictureUrl ?? '',
-          auth_id: context.auth.jwt.sub ?? '',
+          auth_id: context.jwt.sub ?? '',
         })
       )
 
@@ -125,7 +125,7 @@ const directoryMutation = {
         basonta: args?.basonta ?? '',
         visitationArea: args?.visitationArea ?? '',
         pictureUrl: args?.pictureUrl ?? '',
-        auth_id: context.auth.jwt.sub ?? '',
+        auth_id: context.jwt.sub ?? '',
       })
     )
 
