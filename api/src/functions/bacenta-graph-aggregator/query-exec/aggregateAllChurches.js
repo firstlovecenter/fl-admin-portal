@@ -13,9 +13,7 @@ export const zeroAllNullBussingRecords = async (neoDriver) => {
 
   try {
     console.log('Zeroing all null bussing records')
-    await session.executeWrite(async (tx) =>
-      tx.run(zeroAllNullBussingRecordsCypher)
-    )
+    await session.run(zeroAllNullBussingRecordsCypher)
 
     console.log('Zeroed all null bussing records')
   } catch (error) {
@@ -30,9 +28,7 @@ export const aggregateBussingOnGovernorship = async (neoDriver) => {
 
   try {
     console.log('Aggregating Bussing on Governorship')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateBussingOnGovernorshipQuery)
-    )
+    const result = await session.run(aggregateBussingOnGovernorshipQuery)
 
     const returnValues = [
       ...result.records.map((record) => [
@@ -55,9 +51,7 @@ export const aggregateBussingOnCouncil = async (neoDriver) => {
 
   try {
     console.log('Aggregating Bussing on Council')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateBussingOnCouncilQuery)
-    )
+    const result = await session.run(aggregateBussingOnCouncilQuery)
 
     const returnValues = [
       ...result.records.map((record) => [
@@ -80,9 +74,7 @@ export const aggregateBussingOnStream = async (neoDriver) => {
 
   try {
     console.log('Aggregating Bussing on Stream')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateBussingOnStreamQuery)
-    )
+    const result = await session.run(aggregateBussingOnStreamQuery)
 
     const returnValues = [
       ...result.records.map((record) => [record.get('streamCount').toString()]),
@@ -103,9 +95,7 @@ export const aggregateBussingOnCampus = async (neoDriver) => {
 
   try {
     console.log('Aggregating Bussing on Campus')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateBussingOnCampusQuery)
-    )
+    const result = await session.run(aggregateBussingOnCampusQuery)
 
     const returnValues = [
       ...result.records.map((record) => [record.get('campusCount').toString()]),
@@ -126,9 +116,7 @@ export const aggregateBussingOnOversight = async (neoDriver) => {
 
   try {
     console.log('Aggregating Bussing on Oversight')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateBussingOnOversightQuery)
-    )
+    const result = await session.run(aggregateBussingOnOversightQuery)
 
     const returnValues = [
       ...result.records.map((record) => [
@@ -151,9 +139,7 @@ export const aggregateBussingOnDenomination = async (neoDriver) => {
 
   try {
     console.log('Aggregating Bussing on Denomination')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateBussingOnDenominationQuery)
-    )
+    const result = await session.run(aggregateBussingOnDenominationQuery)
 
     const returnValues = [
       ...result.records.map((record) => [

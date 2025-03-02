@@ -5,11 +5,9 @@ export const monthlyDataRetrieval = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(getMonthlyData, {
-        month: lastMonth,
-      })
-    )
+    const result = await session.run(getMonthlyData, {
+      month: lastMonth,
+    })
 
     const returnValues = result.records.map((record) => ({
       oversight: record.get('Oversight').toString(),

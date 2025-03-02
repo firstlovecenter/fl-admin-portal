@@ -12,9 +12,7 @@ export const aggregateBacentaOnGovernorship = async (neoDriver) => {
 
   try {
     console.log('Aggregating Bacenta on Governorship')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateBacentaOnGovernorshipQuery)
-    )
+    const result = await session.run(aggregateBacentaOnGovernorshipQuery)
 
     const returnValues = [
       ...result.records.map((record) => [
@@ -37,9 +35,7 @@ export const aggregateGovernorshipOnCouncil = async (neoDriver) => {
 
   try {
     console.log('Aggregating Governorship on Council')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateGovernorshipOnCouncilQuery)
-    )
+    const result = await session.run(aggregateGovernorshipOnCouncilQuery)
 
     const returnValues = [
       ...result.records.map((record) => [
@@ -62,9 +58,7 @@ export const aggregateCouncilOnStream = async (neoDriver) => {
 
   try {
     console.log('Aggregating Council on Stream')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateCouncilOnStreamQuery)
-    )
+    const result = await session.run(aggregateCouncilOnStreamQuery)
 
     const returnValues = [
       ...result.records.map((record) => [record.get('streamCount').toString()]),
@@ -85,9 +79,7 @@ export const aggregateStreamOnCampus = async (neoDriver) => {
 
   try {
     console.log('Aggregating Stream on Campus')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateStreamOnCampusQuery)
-    )
+    const result = await session.run(aggregateStreamOnCampusQuery)
 
     const returnValues = [
       ...result.records.map((record) => [record.get('campusCount').toString()]),
@@ -108,9 +100,7 @@ export const aggregateCampusOnOversight = async (neoDriver) => {
 
   try {
     console.log('Aggregating Campus on Oversight')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateCampusOnOversightQuery)
-    )
+    const result = await session.run(aggregateCampusOnOversightQuery)
 
     const returnValues = [
       ...result.records.map((record) => [
@@ -133,9 +123,7 @@ export const aggregateOversightOnDenomination = async (neoDriver) => {
 
   try {
     console.log('Aggregating Oversight on Denomination')
-    const result = await session.executeWrite(async (tx) =>
-      tx.run(aggregateOversightOnDenominationQuery)
-    )
+    const result = await session.run(aggregateOversightOnDenominationQuery)
 
     const returnValues = [
       ...result.records.map((record) => [
