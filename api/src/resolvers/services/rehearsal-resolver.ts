@@ -140,7 +140,7 @@ const SontaServiceMutation = {
     const cypherResponse = await session
       .run(recordSundayMinistryAttendance, {
         ...args,
-        auth: context.auth,
+        jwt: context.jwt,
       })
       .catch((error: any) =>
         throwToSentry('Error fellowship ministry attendance meeting', error)
@@ -221,7 +221,7 @@ const SontaServiceMutation = {
         .run(recordHubRehearsalService, {
           ...args,
           conversionRateToDollar: currencyCheck.conversionRateToDollar,
-          auth: context.auth,
+          jwt: context.jwt,
         })
         .catch((error: any) => throwToSentry('', error))
 
@@ -307,7 +307,7 @@ const SontaServiceMutation = {
       const cypherResponse = await session
         .run(recordOnStageAttendance, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
         })
         .catch((error: any) =>
           throwToSentry('Error Recording OnStage Performance attendance', error)
@@ -383,7 +383,7 @@ const SontaServiceMutation = {
       const cypherResponse = await session
         .run(recordCancelledOnStagePerformance, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
         })
         .catch((error: any) =>
           throwToSentry(

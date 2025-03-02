@@ -39,7 +39,7 @@ export const downloadCreditsMutations = {
 
       const memberResponse = await session.executeRead((tx) =>
         tx.run(getMember, {
-          auth: context.auth,
+          jwt: context.jwt,
         })
       )
       const member: Member =
@@ -67,7 +67,7 @@ export const downloadCreditsMutations = {
       const cypherRes = await session.executeWrite((tx) =>
         tx.run(initiateDownloadCreditsTransaction, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
           transactionStatus: paymentRes.status,
           transactionReference: paymentRes.reference,
         })

@@ -244,7 +244,7 @@ const directoryMutation = {
       await session.run(mutation, {
         id: args.id,
         reason: args.reason,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 
@@ -313,7 +313,7 @@ const directoryMutation = {
       const closeFellowshipResponse = await session.run(
         closeChurchCypher.closeDownFellowship,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           fellowshipId: args.fellowshipId,
         }
       )
@@ -364,7 +364,7 @@ const directoryMutation = {
       const closeBacentaResponse = await session.run(
         closeChurchCypher.closeDownBacenta,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           bacentaId: args.bacentaId,
         }
       )
@@ -456,7 +456,7 @@ const directoryMutation = {
       const closeGovernorshipResponse = await session.run(
         closeChurchCypher.closeDownGovernorship,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           governorshipId: args.governorshipId,
         }
       )
@@ -553,7 +553,7 @@ const directoryMutation = {
       const closeCouncilResponse = await session.run(
         closeChurchCypher.closeDownCouncil,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           councilId: args.councilId,
         }
       )
@@ -645,7 +645,7 @@ const directoryMutation = {
       const closeStreamResponse = await session.run(
         closeChurchCypher.closeDownStream,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           streamId: args.streamId,
         }
       )
@@ -737,7 +737,7 @@ const directoryMutation = {
       const closeCampusResponse = await session.run(
         closeChurchCypher.closeDownCampus,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           campusId: args.campusId,
         }
       )
@@ -826,7 +826,7 @@ const directoryMutation = {
       const closeOversightResponse = await session.run(
         closeChurchCypher.closeDownOversight,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           oversightId: args.oversightId,
         }
       )

@@ -146,7 +146,7 @@ const serviceMutation = {
           tx.run(recordService, {
             ...args,
             conversionRateToDollar: currencyCheck.conversionRateToDollar,
-            auth: context.auth,
+            jwt: context.jwt,
           })
         )
         .catch((error: any) => throwToSentry('Error Recording Service', error))
@@ -215,7 +215,7 @@ const serviceMutation = {
           tx.run(recordSpecialService, {
             ...args,
             conversionRateToDollar: currencyCheck.conversionRateToDollar,
-            auth: context.auth,
+            jwt: context.jwt,
           })
         )
         .catch((error: any) => throwToSentry('Error Recording Service', error))
@@ -307,7 +307,7 @@ const serviceMutation = {
     const cypherResponse = await session.executeWrite((tx) =>
       tx.run(cypher, {
         ...args,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 

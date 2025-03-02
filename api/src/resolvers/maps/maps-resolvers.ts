@@ -182,7 +182,7 @@ export const mapsResolvers = {
         const res = await session.executeRead((tx: any) =>
           tx.run(memberLoadCouncilUnvisitedMembers, {
             id: source.id,
-            auth: context.auth,
+            jwt: context.jwt,
           })
         )
         const peopleRes: PeopleResultShape[] = rearrangeCypherObject(res, true)

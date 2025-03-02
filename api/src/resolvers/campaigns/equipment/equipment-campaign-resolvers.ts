@@ -186,7 +186,7 @@ export const equipmentCampaignMutations = {
         await session
           .run(createGovernorshipEquipmentRecord, {
             ...args,
-            auth: context.auth,
+            jwt: context.jwt,
             date,
           })
           .catch((error: any) => {
@@ -262,7 +262,7 @@ export const equipmentCampaignMutations = {
         await session
           .run(createFellowshipEquipmentRecord, {
             ...args,
-            auth: context.auth,
+            jwt: context.jwt,
             date,
           })
           .catch((error: any) => {

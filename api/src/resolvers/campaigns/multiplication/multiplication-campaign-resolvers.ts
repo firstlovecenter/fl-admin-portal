@@ -53,7 +53,7 @@ const multiplicationCampaignMutations = {
     const cypherResponse = await Promise.all([
       session.run(recordMultiplicationEvent, {
         ...args,
-        auth: context.auth,
+        jwt: context.jwt,
       }),
       secondSession.run(aggregateMultiplicationDataOnHigherChurches, {
         ...args,

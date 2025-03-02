@@ -45,11 +45,11 @@ export const checkIfLastServiceBanked = async (
   const lastServiceResponse = await Promise.all([
     session.run(getLastServiceRecord, {
       serviceRecordId,
-      auth: context.auth,
+      jwt: context.jwt,
     }),
     sessionTwo.run(checkIfIMCLNotFilled, {
       serviceRecordId,
-      auth: context.auth,
+      jwt: context.jwt,
     }),
   ]).catch((error: any) =>
     throwToSentry('There was a problem checking the lastService', error)
@@ -157,7 +157,7 @@ const bankingMutation = {
       const cypherResponse = rearrangeCypherObject(
         await session
           .run(initiateServiceRecordTransaction, {
-            auth: context.auth,
+            jwt: context.jwt,
             ...args,
           })
           .catch((error: any) =>
@@ -309,7 +309,7 @@ const bankingMutation = {
       const cypherResponse = rearrangeCypherObject(
         await session
           .run(initiateServiceRecordTransaction, {
-            auth: context.auth,
+            jwt: context.jwt,
             ...args,
             serviceRecordId: args.rehearsalRecordId,
           })
@@ -666,7 +666,7 @@ const bankingMutation = {
 
     const submissionResponse = rearrangeCypherObject(
       await session
-        .run(submitBankingSlip, { ...args, auth: context.auth })
+        .run(submitBankingSlip, { ...args, jwt: context.jwt })
         .catch((error: any) =>
           throwToSentry('There was an error submitting banking slip', error)
         )
@@ -720,7 +720,7 @@ const bankingMutation = {
 
     const submissionResponse = rearrangeCypherObject(
       await session
-        .run(manuallyConfirmOfferingPayment, { ...args, auth: context.auth })
+        .run(manuallyConfirmOfferingPayment, { ...args, jwt: context.jwt })
         .catch((error: any) =>
           throwToSentry('There was an error confirming offering payment', error)
         )

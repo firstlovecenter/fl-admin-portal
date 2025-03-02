@@ -71,7 +71,7 @@ const serviceNoIncomeMutations = {
       await session.executeWrite((tx) =>
         tx.run(recordService, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
         })
       )
     )

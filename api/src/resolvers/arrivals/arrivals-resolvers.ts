@@ -245,7 +245,7 @@ export const arrivalsMutation = {
     const response = rearrangeCypherObject(
       await session.run(uploadMobilisationPicture, {
         ...args,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 
@@ -316,7 +316,7 @@ export const arrivalsMutation = {
         momoNumber: bacenta.momoNumber ?? '',
         mobileNetwork: bacenta.mobileNetwork ?? '',
         outbound: bacenta.outbound,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 
@@ -419,7 +419,7 @@ export const arrivalsMutation = {
     const response = rearrangeCypherObject(
       await session.run(confirmVehicleByAdmin, {
         ...adjustedArgs,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 

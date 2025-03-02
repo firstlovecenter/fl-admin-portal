@@ -112,7 +112,7 @@ const treasuryMutations = {
       const response = await session.executeWrite((tx) =>
         tx.run(anagkazo.confirmBanking, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
         })
       )
       const confirmationResponse = rearrangeCypherObject(response)

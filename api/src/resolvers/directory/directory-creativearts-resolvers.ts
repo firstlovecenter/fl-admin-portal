@@ -64,7 +64,7 @@ const directoryCreativeArtsMutation = {
       const closeHubResponse = await session.run(
         closeChurchCypher.closeDownHub,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           hubId: args.hubId,
         }
       )
@@ -151,7 +151,7 @@ const directoryCreativeArtsMutation = {
       const closeHubCouncilResponse = await session.run(
         closeChurchCypher.closeDownHubCouncil,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           hubCouncilId: args.hubCouncilId,
         }
       )
@@ -240,7 +240,7 @@ const directoryCreativeArtsMutation = {
       const closeMinistryResponse = await session.run(
         closeChurchCypher.closeDownMinistry,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           ministryId: args.ministryId,
         }
       )
@@ -307,7 +307,7 @@ const directoryCreativeArtsMutation = {
       const closeCreativeArtsResponse = await session.run(
         closeChurchCypher.closeDownCreativeArts,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           creativeArtsId: args.creativeArtsId,
         }
       )

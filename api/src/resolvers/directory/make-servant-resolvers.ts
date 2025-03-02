@@ -22,7 +22,7 @@ const MakeServantResolvers = {
 
       const servantRes = await session.executeRead((tx) =>
         tx.run(matchMemberFromAuthId, {
-          auth: context.auth,
+          jwt: context.jwt,
         })
       )
       const userRoleResponse = await axios(
