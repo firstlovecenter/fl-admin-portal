@@ -40,11 +40,15 @@ extend type RehearsalRecord {
   bankingProof: Boolean
     @cypher(
       statement: """
-      MATCH (this)
-      WITH this WHERE this.bankingSlip IS NOT NULL
-      OR  this.transactionStatus = 'success'
-      OR this.tellerConfirmationTime IS NOT NULL
-      RETURN true AS bankingProof
+       MATCH (this)
+      WITH this
+      RETURN CASE
+        WHEN this.bankingSlip IS NOT NULL
+        OR this.transactionStatus = 'success'
+        OR this.tellerConfirmationTime IS NOT NULL
+        THEN true
+        ELSE false
+      END AS bankingProof
       """
       columnName: "bankingProof"
     )
@@ -71,10 +75,14 @@ extend type ServiceRecord {
     @cypher(
       statement: """
       MATCH (this)
-      WITH this WHERE this.bankingSlip IS NOT NULL
-      OR  this.transactionStatus = 'success'
-      OR this.tellerConfirmationTime IS NOT NULL
-      RETURN true AS bankingProof
+      WITH this
+      RETURN CASE
+        WHEN this.bankingSlip IS NOT NULL
+        OR this.transactionStatus = 'success'
+        OR this.tellerConfirmationTime IS NOT NULL
+        THEN true
+        ELSE false
+      END AS bankingProof
       """
       columnName: "bankingProof"
     )
