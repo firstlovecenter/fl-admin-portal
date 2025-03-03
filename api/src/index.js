@@ -32,7 +32,7 @@ const neoSchema = new Neo4jGraphQL({
   driver,
   features: {
     authorization: {
-      key: SECRETS.JWT_SECRET.toString(),
+      key: SECRETS.JWT_SECRET,
     },
     config: {
       debug: true,

@@ -36,8 +36,7 @@ const neoSchema = new Neo4jGraphQL({
   driver,
   plugins: {
     auth: new Neo4jGraphQLAuthJWTPlugin({
-      secret: SECRETS.JWT_SECRET.replace(/\\n/gm, '\n'),
-      rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
+      key: SECRETS.JWT_SECRET,
     }),
   },
   features: {
@@ -53,7 +52,14 @@ const neoSchema = new Neo4jGraphQL({
 
 // eslint-disable-next-line import/prefer-default-export
 export const handler = async (event, context, ...args) => {
-  const schema = await neoSchema.getSchema()
+  const schema = await neoSchema.getSchema().catch((error) => {
+    console.error('\x1b[31m######## 🚨SCHEMA ERROR🚨 #######\x1b[0m')
+    console.error(`${JSON.stringify(error, null, 2)}`)
+    console.log(
+      '\x1b[31m########## 🚨END OF SCHEMA ERROR🚨 ##################\x1b[0m'
+    )
+    process.exit(1)
+  })
 
   const server = new ApolloServer({
     // eslint-disable-next-line no-shadow
