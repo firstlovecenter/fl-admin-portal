@@ -720,7 +720,7 @@ extend type Mutation {
         MATCH (ministry:Basonta {id: $basontaId})
         MERGE (member)-[:BELONGS_TO]->(ministry)
 
-        RETURN count(member)
+        RETURN count(member) AS memberCount
         }
 
       RETURN member
@@ -781,7 +781,7 @@ extend type Mutation {
       	OPTIONAL MATCH (member)-[r1:WAS_BORN_ON]->()
       	DELETE r1
       	MERGE (member)-[:WAS_BORN_ON]->(date)
-         	RETURN count(member)
+         	RETURN count(member) AS memberCount
          	}
 
       WITH member
@@ -792,7 +792,7 @@ extend type Mutation {
       	OPTIONAL MATCH (member)-[r1:HAS_MARITAL_STATUS]->()
       	DELETE r1
       	MERGE (member)-[:HAS_MARITAL_STATUS]-> (maritalStatus)
-         	RETURN count(member)
+         	RETURN count(member) AS memberCount
          	}
 
          WITH member
@@ -803,7 +803,7 @@ extend type Mutation {
         MERGE (occupation:Occupation {occupation:$occupation})
       	DELETE r1
       	MERGE (member)-[:HAS_OCCUPATION]-> (occupation)
-         	RETURN count(member)
+         	RETURN count(member) AS memberCount
          	}
 
       RETURN member
