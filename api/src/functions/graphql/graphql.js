@@ -8,6 +8,7 @@ const Sentry = require('@sentry/node')
 
 // This module is copied during the build step
 // Be sure to run `npm run build`
+const { jwtDecode } = require('jwt-decode')
 const { typeDefs } = require('./schema/graphql-schema')
 const resolvers = require('../../resolvers/resolvers').default
 const SECRETS = require('../../resolvers/getSecrets').default
