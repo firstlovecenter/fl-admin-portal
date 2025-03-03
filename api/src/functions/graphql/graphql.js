@@ -3,7 +3,6 @@
 
 const { ApolloServer } = require('apollo-server-lambda')
 const { Neo4jGraphQL } = require('@neo4j/graphql')
-const { Neo4jGraphQLAuthJWTPlugin } = require('@neo4j/graphql-plugin-auth')
 const neo4j = require('neo4j-driver')
 const Sentry = require('@sentry/node')
 
@@ -34,12 +33,13 @@ const neoSchema = new Neo4jGraphQL({
   typeDefs,
   resolvers,
   driver,
-  plugins: {
-    auth: new Neo4jGraphQLAuthJWTPlugin({
-      key: SECRETS.JWT_SECRET,
-    }),
-  },
   features: {
+    authorization: {
+      key: SECRETS.JWT_SECRET,
+    },
+    config: {
+      debug: true,
+    },
     excludeDeprecatedFields: {
       bookmark: true,
       negationFilters: true,
@@ -63,7 +63,24 @@ export const handler = async (event, context, ...args) => {
 
   const server = new ApolloServer({
     // eslint-disable-next-line no-shadow
-    context: ({ event }) => ({ req: event }),
+    context: async ({ event }) => {
+      const token = event.headers.authorization
+      let jwt = null
+
+      if (token) {
+        try {
+          jwt = jwtDecode(token)
+        } catch (error) {
+          console.error('Invalid token:', error)
+        }
+      }
+
+      return {
+        req: event,
+        executionContext: driver,
+        jwt,
+      }
+    },
     introspection: true,
     schema,
   })
