@@ -487,7 +487,7 @@ type Denomination implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
-      columnName: "services"
+      columnName: "records"
     )
 }
 
@@ -613,7 +613,7 @@ type Oversight implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
-      columnName: "services"
+      columnName: "records"
     )
 }
 
@@ -733,9 +733,9 @@ type Campus implements Church {
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
       WITH DISTINCT records, date
-      RETURN records AS services ORDER BY date.date DESC SKIP $skip LIMIT $limit
+      RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
-      columnName: "services"
+      columnName: "records"
     )
 }
 
@@ -867,9 +867,9 @@ type Stream implements Church {
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
       WITH DISTINCT records, date
-      RETURN records AS services ORDER BY date.date DESC SKIP $skip LIMIT $limit
+      RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
-      columnName: "services"
+      columnName: "records"
     )
 }
 
@@ -973,7 +973,7 @@ type Council implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
-      columnName: "services"
+      columnName: "records"
     )
 }
 
@@ -1069,7 +1069,7 @@ type Governorship implements Church {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
-      columnName: "services"
+      columnName: "records"
     )
 }
 
@@ -1249,7 +1249,7 @@ type Fellowship implements Church {
       WITH DISTINCT records,date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
-      columnName: "services"
+      columnName: "records"
     )
   labels: [String]
     @cypher(
@@ -1295,7 +1295,7 @@ type ClosedFellowship {
       WITH DISTINCT records, date
       RETURN records ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
-      columnName: "services"
+      columnName: "records"
     )
   labels: [String]
     @cypher(
