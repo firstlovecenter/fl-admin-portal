@@ -1000,9 +1000,9 @@ type ServiceRecord implements Record {
       MATCH (this)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
       WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)<-[:HAS*1..4]-(stream:Stream)
-      RETURN stream.name
+      RETURN stream.name AS stream
       """
-      columnName: "stream_name"
+      columnName: "stream"
     )
   bankedBy: Member
     @cypher(

@@ -1148,7 +1148,7 @@ type MinistryAttendanceRecord implements Record {
       MATCH (this)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
       WHERE church:HubFellowship
       MATCH (church)<-[:HAS*1..4]-(stream:Stream)
-      RETURN stream.name
+      RETURN stream.name AS stream
       """
       columnName: "stream"
     )
@@ -1207,7 +1207,7 @@ type RehearsalRecord implements Record {
       MATCH (this)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
       WHERE church:Fellowship OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)<-[:HAS*1..4]-(stream:Stream)
-      RETURN stream.name
+      RETURN  AS stream
       """
       columnName: "stream"
     )
