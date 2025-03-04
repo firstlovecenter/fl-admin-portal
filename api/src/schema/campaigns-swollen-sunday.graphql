@@ -98,7 +98,7 @@ extend type Council {
       """
       columnName: "swellBussingRecords"
     )
-  target: Int!
+  target: Int
     @cypher(
       statement: """
       MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
