@@ -41,7 +41,7 @@ extend type Oversight {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(council:Council)
-      RETURN SUM(council.weekdayBalance)
+      RETURN SUM(council.weekdayBalance) AS weekdayBalance
       """
       columnName: "weekdayBalance"
     )
@@ -49,7 +49,7 @@ extend type Oversight {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(council:Council)
-      RETURN SUM(council.bussingSocietyBalance)
+      RETURN SUM(council.bussingSocietyBalance) AS bussingSocietyBalance
       """
       columnName: "bussingSocietyBalance"
     )
@@ -60,7 +60,7 @@ extend type Campus {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.hrAmount)
+      RETURN SUM(council.hrAmount) AS hrAmount
       """
       columnName: "hrAmount"
     )
@@ -68,7 +68,7 @@ extend type Campus {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.bussingAmount)
+      RETURN SUM(council.bussingAmount) AS bussingAmount
       """
       columnName: "bussingAmount"
     )
@@ -76,7 +76,7 @@ extend type Campus {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.weekdayBalance)
+      RETURN SUM(council.weekdayBalance) AS weekdayBalance
       """
       columnName: "weekdayBalance"
     )
@@ -84,7 +84,7 @@ extend type Campus {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.bussingSocietyBalance)
+      RETURN SUM(council.bussingSocietyBalance) AS bussingSocietyBalance
       """
       columnName: "bussingSocietyBalance"
     )
@@ -96,7 +96,7 @@ extend type Campus {
 
       RETURN transaction ORDER BY transaction.lastModified DESC
       """
-      columnName: "transactions"
+      columnName: "transaction"
     )
 }
 
@@ -105,7 +105,7 @@ extend type Stream {
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(council:Council)
-      RETURN SUM(council.hrAmount)
+      RETURN SUM(council.hrAmount) AS hrAmount
       """
       columnName: "hrAmount"
     )
@@ -113,7 +113,7 @@ extend type Stream {
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(council:Council)
-      RETURN SUM(council.bussingAmount)
+      RETURN SUM(council.bussingAmount) AS bussingAmount
       """
       columnName: "bussingAmount"
     )
@@ -121,7 +121,7 @@ extend type Stream {
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(council:Council)
-      RETURN SUM(council.weekdayBalance)
+      RETURN SUM(council.weekdayBalance) AS weekdayBalance
       """
       columnName: "weekdayBalance"
     )
@@ -129,7 +129,7 @@ extend type Stream {
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(council:Council)
-      RETURN SUM(council.bussingSocietyBalance)
+      RETURN SUM(council.bussingSocietyBalance) AS bussingSocietyBalance
       """
       columnName: "bussingSocietyBalance"
     )
@@ -141,7 +141,7 @@ extend type Stream {
 
       RETURN transaction ORDER BY transaction.lastModified DESC
       """
-      columnName: "transactions"
+      columnName: "transaction"
     )
 }
 
@@ -182,14 +182,14 @@ extend type Mutation {
     accountType: String!
     description: String! #momoNumber: String! #momoName: String! #invoiceUrl: String!
   ): AccountTransaction!
-    @authentication(
-      jwt: {
-        OR: [
-          { roles_INCLUDES: "leaderCouncil" }
-          { roles_INCLUDES: "adminCampus" }
-        ]
-      }
-    )
+    # @authentication(
+    #   jwt: {
+    #     OR: [
+    #       { roles_INCLUDES: "leaderCouncil" }
+    #       { roles_INCLUDES: "adminCampus" }
+    #     ]
+    #   }
+    # )
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
