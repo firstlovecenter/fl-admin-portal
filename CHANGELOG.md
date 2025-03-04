@@ -1,3 +1,63 @@
+## 8.0.0 (2025-03-04)
+
+##### Chores
+
+*  update Neo4j dependencies and refactor authorization plugin integration ([f488b21a](https://github.com/firstlovecenter/fl-admin-portal/commit/f488b21a3ab23e5ee260bb47355e462c2367a7cc))
+
+##### Bug Fixes
+
+*  change target field type from Int! to Int in campaigns-swollen-sunday GraphQL schema ([9293aa99](https://github.com/firstlovecenter/fl-admin-portal/commit/9293aa999b2dca43bf0417daeba172be19d31e2f))
+*  refactor bankingProof logic to use CASE statement for clarity in GraphQL schema ([0467358d](https://github.com/firstlovecenter/fl-admin-portal/commit/0467358dc1ea80596fc6becbc4bcb145f6243bf8))
+*  standardize return count naming to memberCount in directory CRUD mutations ([598dab68](https://github.com/firstlovecenter/fl-admin-portal/commit/598dab68af77d6f1e42fe3a6b94818ce10e01ac5))
+*  update GraphQL schema to return stream name consistently ([9cf66f95](https://github.com/firstlovecenter/fl-admin-portal/commit/9cf66f95d70472f789bce8d1cccefc1cbcfe0703))
+*  rename column references from "services" to "records" in GraphQL schema ([3d514b9a](https://github.com/firstlovecenter/fl-admin-portal/commit/3d514b9a701fdd8a8b3e83dafa583577f359f8bf))
+*  import jwtDecode from jwt-decode for JWT handling in GraphQL ([80399dce](https://github.com/firstlovecenter/fl-admin-portal/commit/80399dceaf0752d3fc2902cd3ce20381720b843f))
+*  conditionally write combined schema file based on environment ([a942d8bd](https://github.com/firstlovecenter/fl-admin-portal/commit/a942d8bd76073da3d6cf6414bcb2d84c29df0acd))
+*  add jwt-decode package and update context to handle JWT in Apollo Server ([7301fa25](https://github.com/firstlovecenter/fl-admin-portal/commit/7301fa25095ec75012d153591a476c2baa96ffc8))
+*  update JWT secret handling and improve schema error logging ([cf31a887](https://github.com/firstlovecenter/fl-admin-portal/commit/cf31a887b3a8c1bb53c012f2ec37b7706ee9e408))
+*  replace executeWrite with run for session queries in multiple aggregators ([7b82faf1](https://github.com/firstlovecenter/fl-admin-portal/commit/7b82faf1f1d4f0148dc0c0fddf7fff730845a259))
+*  update package-lock.json to reflect changes in dependencies and lockfile version ([c005797a](https://github.com/firstlovecenter/fl-admin-portal/commit/c005797ab93dded5381f6bd20322a88da8a41dec))
+*  update user roles retrieval to use JWT for consistency in campaigns resolver ([11fe45b9](https://github.com/firstlovecenter/fl-admin-portal/commit/11fe45b930544caafdecd2da8876313b8fdd97f7))
+*  update resolvers to use JWT for role and auth_id references ([2f7c3bee](https://github.com/firstlovecenter/fl-admin-portal/commit/2f7c3bee866122acd66fa18c873cb95f999d35c9))
+*  replace auth context references with jwt for consistency across resolvers ([a28c21be](https://github.com/firstlovecenter/fl-admin-portal/commit/a28c21be86108c437d4f76ba71b10a4f42607628))
+*  update auth_id references to use $jwt.sub for consistency across resolvers and schemas ([043807bb](https://github.com/firstlovecenter/fl-admin-portal/commit/043807bb8b49db1903ae1aa60e0926db833f04a5))
+*  update authentication context to use JWT roles and enhance resolver logic ([f61937e9](https://github.com/firstlovecenter/fl-admin-portal/commit/f61937e97aaf00588457dddb634fa3b033ff5dca))
+*  standardize column names in GraphQL schema for consistency ([1044ddff](https://github.com/firstlovecenter/fl-admin-portal/commit/1044ddff5c3a90a442b0e4ff8d5a45323b7d9e69))
+*  refactor Cypher queries for Member type and enhance JWT handling in context ([cf863c66](https://github.com/firstlovecenter/fl-admin-portal/commit/cf863c66eeeecc15b1a3853d90cfb14ba962f1bf))
+*  update authentication roles to use OR syntax in GraphQL mutations ([ea62b1d3](https://github.com/firstlovecenter/fl-admin-portal/commit/ea62b1d3fd146dd34a43ad4460a3a7aaa6cf65ee))
+*  enhance error logging for GraphQL schema initialization ([03812d65](https://github.com/firstlovecenter/fl-admin-portal/commit/03812d655b9c788bc548b6795f981b71a214dc30))
+*  remove unused Cypher script and update GraphQL mutation return value ([cee653b1](https://github.com/firstlovecenter/fl-admin-portal/commit/cee653b10becdf6263e4350fc125ad27d104c9dc))
+*  update dependencies for @apollo/server, @neo4j/graphql, graphql, ([ec9a7a23](https://github.com/firstlovecenter/fl-admin-portal/commit/ec9a7a233fd2cfc7ee21918f4ea0151adef6afe9))
+*  update neo4j-driver dependency to version 5.28.1 across multiple functions ([ccbe1e64](https://github.com/firstlovecenter/fl-admin-portal/commit/ccbe1e64fbc482c4527bca97b28fbe19ee32dbb3))
+*  improve performance of GraphQL queries by optimizing resolver functions ([8d85a02a](https://github.com/firstlovecenter/fl-admin-portal/commit/8d85a02af39ddc6f4e00da295677f1fe47d385a3))
+*  update authentication roles handling in GraphQL schema and remove hardcoded roles path ([257bf92c](https://github.com/firstlovecenter/fl-admin-portal/commit/257bf92cdce31478030d8cb8bc689ea7cee360fc))
+*  update .gitignore to include combined-schema wildcard and change output file extension to .gql ([5dfc7486](https://github.com/firstlovecenter/fl-admin-portal/commit/5dfc748651b751fef0906f974c09df8c0df5fa89))
+*  update .gitignore to include combined-schema.graphql ([113cfc17](https://github.com/firstlovecenter/fl-admin-portal/commit/113cfc17214fa6251932705f9e443e4bb9400137))
+*  write combined GraphQL schema to file and add columnName argument to cypher directives ([33dd7c42](https://github.com/firstlovecenter/fl-admin-portal/commit/33dd7c42f84f998f6d7d891a8a3abcfbd5cdd12b))
+*  enhance error logging and standardize relationship directives in GraphQL schema ([0c77fa84](https://github.com/firstlovecenter/fl-admin-portal/commit/0c77fa842c9b0b6cf6814105103b0df02cf82246))
+*  update GraphQL schema to ([3d76a213](https://github.com/firstlovecenter/fl-admin-portal/commit/3d76a213cf30c278f6053ad776ddc3cfa8e81b92))
+*  add columnName argument to various GraphQL types for consistency ([76ed1617](https://github.com/firstlovecenter/fl-admin-portal/commit/76ed1617cd25803a237ce4bf42ca3136ef23fc2f))
+*  add columnName argument to cypher directives for consistency in GraphQL schema ([5d487417](https://github.com/firstlovecenter/fl-admin-portal/commit/5d487417e1b89327678b7b3362bab70add82c0bc))
+*  update authentication directives to use jwt roles_INCLUDES for consistency ([dd170662](https://github.com/firstlovecenter/fl-admin-portal/commit/dd1706620c878d4afa50cba664b79294aa7e9492))
+*  remove authentication directives from various GraphQL types for consistency ([02867109](https://github.com/firstlovecenter/fl-admin-portal/commit/02867109358dc8fac83e182196f74231270ebcf2))
+*  add columnName argument to currentUser and memberByEmail queries for consistency ([f7d0e135](https://github.com/firstlovecenter/fl-admin-portal/commit/f7d0e135cf7545a7c8daa7c8358a74087a963169))
+*  rename multiplicationRecords to multiplicationStats for consistency in GraphQL schema ([af4ad5b8](https://github.com/firstlovecenter/fl-admin-portal/commit/af4ad5b8ceec0d365a18e08572d2eed1665a400b))
+*  add columnName argument to userRecords and update related GraphQL types for consistency ([12d07821](https://github.com/firstlovecenter/fl-admin-portal/commit/12d07821a3cf77388e85e41bbc0283292317936b))
+*  add columnName argument to multiplicationRecords and target fields in campaigns-multiplication ([3c3f441e](https://github.com/firstlovecenter/fl-admin-portal/commit/3c3f441e06e5e688f62aaeb1d65a4321ef627dbb))
+*  add columnName argument to downloadCredits mutation and remove unused columnName fields in campus and stream types ([b6cec651](https://github.com/firstlovecenter/fl-admin-portal/commit/b6cec65139f6f65f2adc924d7f13512af3bf41c2))
+*  add columnName arguments to various GraphQL directives for improved clarity ([8155f162](https://github.com/firstlovecenter/fl-admin-portal/commit/8155f162590da6e77aae3188efd9c5f49904cd1d))
+*  added columnName argument to @cypher directives in arrivlals.graphql ([e2e9aaf9](https://github.com/firstlovecenter/fl-admin-portal/commit/e2e9aaf92c0b78aff0cd26ffbc5816cbc82b69bf))
+*  added columnName argument to @cypher directives in arrivlals-payment.graphql ([498a958c](https://github.com/firstlovecenter/fl-admin-portal/commit/498a958c9a6d734a4ebd86cc9b98c364bb01b1b1))
+*  added columnName argument to @cypher directives in aggregates.graphql ([7f469d2b](https://github.com/firstlovecenter/fl-admin-portal/commit/7f469d2b485da5cfe4729603c81c748e72bd9909))
+*  added columnName argument to @cypher directives in accounts.graphql ([db80c1fa](https://github.com/firstlovecenter/fl-admin-portal/commit/db80c1fa2c8c02d0734f42c3eae9b555dca6d1dd))
+*  added columnName argument to @cypher directives in directory.graphql ([6039df8d](https://github.com/firstlovecenter/fl-admin-portal/commit/6039df8d5d95e6fbee0abb331256bb4dba88f35e))
+*  handle schema retrieval errors in GraphQL server startup ([45016fc2](https://github.com/firstlovecenter/fl-admin-portal/commit/45016fc24faa0d92b4e6943e3de6870e6d074689))
+
+##### Refactors
+
+*  ensure church display pages are working effectively ([a9adbab5](https://github.com/firstlovecenter/fl-admin-portal/commit/a9adbab50fecfae1c752ab6608ba9988966086b3))
+*  update recipient identifiers with names in notification functions ([71df68e3](https://github.com/firstlovecenter/fl-admin-portal/commit/71df68e3b55bb882f6a53e459ee655ade5f3c2e2))
+
 #### 7.18.64 (2025-02-12)
 
 ##### Chores
