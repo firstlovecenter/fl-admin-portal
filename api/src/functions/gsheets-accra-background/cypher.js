@@ -110,13 +110,7 @@ WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussin
 WITH DISTINCT record, pastor
 WITH  pastor AS amartey,SUM(record.attendance) AS totalAttendance,SUM(round(record.income,2)) AS totalIncome
 
-MATCH (council:Council)<-[:LEADS]-(donald:Member {lastName: "Penney"})
-MATCH (council)-[:HAS_HISTORY|HAS_SERVICE|HAS*2..5]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussingDate).week
-
-WITH amartey, totalAttendance, SUM(record.attendance) AS donaldAttendance, totalIncome,SUM(round(record.income,2)) AS donaldIncome
-
-RETURN amartey.firstName, amartey.lastName, totalAttendance - donaldAttendance as anagkazoAttendance, totalIncome - donaldIncome AS anagkazoIncome
+RETURN amartey.firstName, amartey.lastName, totalAttendance as anagkazoAttendance, totalIncome AS anagkazoIncome
 `
 
 export const anagkazoAmountNotBankedQuery = `
@@ -128,20 +122,12 @@ WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussin
         AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
         AND record.tellerConfirmationTime IS NULL
 WITH DISTINCT record, pastor
-WITH  pastor AS amartey,SUM(record.attendance) AS totalAttendance,SUM(round(record.income,2)) AS totalIncome
-
-MATCH (council:Council)<-[:LEADS]-(donald:Member {lastName: "Penney"})
-MATCH (council)-[:HAS_HISTORY|HAS_SERVICE|HAS*2..5]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-        WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussingDate).week
-        AND record.noServiceReason IS NULL
-          AND record.bankingSlip IS NULL
-          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
-          AND record.tellerConfirmationTime IS NULL
-
-WITH amartey, totalAttendance, SUM(record.attendance) AS donaldAttendance, totalIncome,SUM(round(record.income,2)) AS donaldIncome
+WITH  pastor AS amartey,SUM(round(record.income,2)) AS totalIncome
 
 
-RETURN amartey.firstName, amartey.lastName,SUM(round(totalIncome,2)) - donaldIncome AS notBanked ORDER BY amartey.firstName, amartey.lastName
+WITH amartey, totalIncome
+
+RETURN amartey.firstName, amartey.lastName, totalIncome AS notBanked ORDER BY amartey.firstName, amartey.lastName
 `
 
 export const anagkazoAmountBankedQuery = `
@@ -153,18 +139,8 @@ WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussin
         OR record.transactionStatus = 'success'
         OR record.tellerConfirmationTime IS  NOT NULL)
 WITH DISTINCT record, pastor
-WITH  pastor AS amartey,SUM(record.attendance) AS totalAttendance,SUM(round(record.income,2)) AS totalIncome
-
-MATCH (council:Council)<-[:LEADS]-(donald:Member {lastName: "Penney"})
-MATCH (council)-[:HAS_HISTORY|HAS_SERVICE|HAS*2..5]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-        WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussingDate).week
-        AND record.noServiceReason IS NULL
-        AND (record.bankingSlip IS NOT NULL
-        OR record.transactionStatus = 'success'
-        OR record.tellerConfirmationTime IS  NOT NULL)
-
-WITH amartey, totalAttendance, SUM(record.attendance) AS donaldAttendance, totalIncome,SUM(round(record.income,2)) AS donaldIncome
+WITH  pastor AS amartey, SUM(round(record.income,2)) AS totalIncome
 
 
-RETURN amartey.firstName, amartey.lastName,SUM(round(totalIncome,2)) - donaldIncome AS Banked ORDER BY amartey.firstName, amartey.lastName
+RETURN amartey.firstName, amartey.lastName, totalIncome AS Banked ORDER BY amartey.firstName, amartey.lastName
 `
