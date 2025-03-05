@@ -22,7 +22,7 @@ extend type Hub {
 
       RETURN DISTINCT fellowships
       """
-      columnName: "result"
+      columnName: "fellowships"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -45,7 +45,7 @@ extend type Hub {
        WITH DISTINCT fellowships, this
        MATCH (fellowships)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT fellowships) AS result
       """
       columnName: "result"
     )
@@ -70,7 +70,7 @@ extend type Hub {
        WITH DISTINCT fellowships, this
        MATCH (fellowships)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT fellowships AS result
       """
       columnName: "result"
     )
@@ -95,7 +95,7 @@ extend type Hub {
        WITH DISTINCT fellowships, this
        MATCH (fellowships)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT fellowships) AS result
       """
       columnName: "result"
     )
@@ -122,7 +122,7 @@ extend type Hub {
       WITH defaulters, this
       MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-      RETURN DISTINCT defaulters
+      RETURN DISTINCT defaulters AS result
       """
       columnName: "result"
     )
@@ -149,7 +149,7 @@ extend type Hub {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS result
       """
       columnName: "result"
     )
@@ -177,7 +177,7 @@ extend type Hub {
        WITH DISTINCT fellowships, this
        MATCH (fellowships)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT fellowships AS result
       """
       columnName: "result"
     )
@@ -205,7 +205,7 @@ extend type Hub {
        WITH DISTINCT fellowships, this
        MATCH (fellowships)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT fellowships) AS result
       """
       columnName: "result"
     )
@@ -231,7 +231,7 @@ extend type Hub {
        WITH DISTINCT fellowships, this
        MATCH (fellowships)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT fellowships AS result
       """
       columnName: "result"
     )
@@ -257,7 +257,7 @@ extend type Hub {
        WITH DISTINCT fellowships, this
        MATCH (fellowships)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT fellowships) AS result
       """
       columnName: "result"
     )
@@ -267,7 +267,7 @@ extend type HubCouncil {
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(hubs:Active:Hub)
-      RETURN COUNT(DISTINCT hubs)
+      RETURN COUNT(DISTINCT hubs) AS result
       """
       columnName: "result"
     )
@@ -293,7 +293,7 @@ extend type HubCouncil {
        WITH DISTINCT fellowships, this
        MATCH (fellowships)<-[:HAS]-(:Hub)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT fellowships AS result
       """
       columnName: "result"
     )
@@ -2186,7 +2186,7 @@ extend type Campus {
     @cypher(
       statement: """
       MATCH (this)-[:HAS_MINISTRY]->(:CreativeArts)-[:HAS]->(:Ministry)-[:HAS]->(:HubCouncil)-[:HAS]->(hubs:Active:Hub)
-      RETURN COUNT(DISTINCT hubs)
+      RETURN COUNT(DISTINCT hubs) AS result
       """
       columnName: "result"
     )
@@ -2211,7 +2211,7 @@ extend type Campus {
        WITH DISTINCT hubs, this
        MATCH (hubs)<-[:HAS]-(:HubCouncil)<-[:HAS]-(:Ministry)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN DISTINCT hubs
+      RETURN DISTINCT hubs AS result
       """
       columnName: "result"
     )
@@ -2235,7 +2235,7 @@ extend type Campus {
        WITH DISTINCT hubs, this
        MATCH (hubs)<-[:HAS]-(:HubCouncil)<-[:HAS]-(:Ministry)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT hubs)
+      RETURN COUNT(DISTINCT hubs) AS result
       """
       columnName: "result"
     )
@@ -2261,7 +2261,7 @@ extend type Campus {
        WITH DISTINCT hubs, this
        MATCH (hubs)<-[:HAS]-(hubCouncil:HubCouncil)<-[:HAS]-(ministry:Ministry)<-[:HAS]-(creativeArts:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN DISTINCT hubs
+      RETURN DISTINCT hubs AS result
       """
       columnName: "result"
     )
@@ -2286,7 +2286,7 @@ extend type Campus {
        WITH DISTINCT hubs, this
        MATCH (hubs)<-[:HAS]-(hubCouncil:HubCouncil)<-[:HAS]-(ministry:Ministry)<-[:HAS]-(creativeArts:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT hubs)
+      RETURN COUNT(DISTINCT hubs) AS result
       """
       columnName: "result"
     )
@@ -2315,7 +2315,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-      RETURN DISTINCT defaulters
+      RETURN DISTINCT defaulters AS result
       """
       columnName: "result"
     )
@@ -2344,7 +2344,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS result
       """
       columnName: "result"
     )
@@ -2372,7 +2372,7 @@ extend type Campus {
        WITH DISTINCT hubs, this
        MATCH (hubs)<-[:HAS]-(hubCouncil:HubCouncil)<-[:HAS]-(ministry:Ministry)<-[:HAS]-(creativeArts:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN DISTINCT hubs
+      RETURN DISTINCT hubs AS result
       """
       columnName: "result"
     )
@@ -2400,7 +2400,7 @@ extend type Campus {
        WITH DISTINCT hubs, this
        MATCH (hubs)<-[:HAS]-(hubCouncil:HubCouncil)<-[:HAS]-(ministry:Ministry)<-[:HAS]-(creativeArts:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT hubs)
+      RETURN COUNT(DISTINCT hubs) AS result
       """
       columnName: "result"
     )
@@ -2426,7 +2426,7 @@ extend type Campus {
        WITH DISTINCT hubs, this
        MATCH (hubs)<-[:HAS]-(hubCouncil:HubCouncil)<-[:HAS]-(ministry:Ministry)<-[:HAS]-(creativeArts:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN DISTINCT hubs
+      RETURN DISTINCT hubs AS result
       """
       columnName: "result"
     )
@@ -2452,7 +2452,7 @@ extend type Campus {
        WITH DISTINCT hubs, this
        MATCH (hubs)<-[:HAS]-(hubCouncil:HubCouncil)<-[:HAS]-(ministry:Ministry)<-[:HAS]-(creativeArts:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT hubs)
+      RETURN COUNT(DISTINCT hubs) AS result
       """
       columnName: "result"
     )
@@ -2477,7 +2477,7 @@ extend type Campus {
        WITH DISTINCT hubCouncils, this
        MATCH (hubCouncils)<-[:HAS]-(:Ministry)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN DISTINCT hubCouncils
+      RETURN DISTINCT hubCouncils AS result
       """
       columnName: "result"
     )
@@ -2501,14 +2501,14 @@ extend type Campus {
        WITH DISTINCT hubCouncils, this
        MATCH (hubCouncils)<-[:HAS]-(:Ministry)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT hubCouncils)
+      RETURN COUNT(DISTINCT hubCouncils) AS result
       """
       columnName: "result"
     )
   activeMinistryCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry) RETURN COUNT(DISTINCT ministry)
+      MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS]->(ministry:Ministry) RETURN COUNT(DISTINCT ministry) AS result
       """
       columnName: "result"
     )
@@ -2525,7 +2525,7 @@ extend type Campus {
        WITH DISTINCT ministries, this
        MATCH (ministries)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN DISTINCT ministries
+      RETURN DISTINCT ministries AS result
       """
       columnName: "result"
     )
@@ -2542,7 +2542,7 @@ extend type Campus {
        WITH DISTINCT ministries, this
        MATCH (ministries)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT ministries)
+      RETURN COUNT(DISTINCT ministries) AS result
       """
       columnName: "result"
     )
@@ -2560,7 +2560,7 @@ extend type Campus {
        MATCH (ministries)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
 
-      RETURN DISTINCT ministries
+      RETURN DISTINCT ministries AS result
       """
       columnName: "result"
     )
@@ -2577,7 +2577,7 @@ extend type Campus {
        WITH DISTINCT ministries, this
        MATCH (ministries)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT ministries)
+      RETURN COUNT(DISTINCT ministries) AS result
       """
       columnName: "result"
     )
@@ -2600,7 +2600,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS result
       """
       columnName: "result"
     )
@@ -2622,7 +2622,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS result
       """
       columnName: "result"
     )
@@ -2643,7 +2643,7 @@ extend type Campus {
        WITH DISTINCT ministries, this
        MATCH (ministries)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN DISTINCT ministries
+      RETURN DISTINCT ministries AS result
       """
       columnName: "result"
     )
@@ -2664,7 +2664,7 @@ extend type Campus {
        WITH DISTINCT ministries, this
        MATCH (ministries)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT ministries)
+      RETURN COUNT(DISTINCT ministries) AS result
       """
       columnName: "result"
     )
@@ -2683,7 +2683,7 @@ extend type Campus {
        WITH DISTINCT ministries, this
        MATCH (ministries)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN DISTINCT ministries
+      RETURN DISTINCT ministries AS result
       """
       columnName: "result"
     )
@@ -2702,7 +2702,7 @@ extend type Campus {
        WITH DISTINCT ministries, this
        MATCH (ministries)<-[:HAS]-(:CreativeArts)<-[:HAS_MINISTRY]-(this)
 
-      RETURN COUNT(DISTINCT ministries)
+      RETURN COUNT(DISTINCT ministries) AS result
       """
       columnName: "result"
     )
