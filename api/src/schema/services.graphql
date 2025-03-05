@@ -1146,7 +1146,7 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamServicesThisWeekCount
       """
       columnName: "streamServicesThisWeekCount"
     )
@@ -1164,7 +1164,7 @@ extend type Campus {
        MATCH (streams)<-[:HAS]-(this)
 
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamCancelledServicesThisWeek ORDER BY streams.name
       """
       columnName: "streamCancelledServicesThisWeek"
     )
@@ -1181,7 +1181,7 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamCancelledServicesThisWeekCount
       """
       columnName: "streamCancelledServicesThisWeekCount"
     )
@@ -1204,7 +1204,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
       columnName: "streamFormDefaultersThisWeek"
     )
@@ -1226,7 +1226,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
       columnName: "streamFormDefaultersThisWeekCount"
     )
@@ -1247,7 +1247,7 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankingDefaultersThisWeek ORDER BY streams.name
       """
       columnName: "streamBankingDefaultersThisWeek"
     )
@@ -1268,7 +1268,7 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankingDefaultersThisWeekCount
       """
       columnName: "streamBankingDefaultersThisWeekCount"
     )
@@ -1287,7 +1287,7 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankedThisWeek ORDER BY streams.name
       """
       columnName: "streamBankedThisWeek"
     )
@@ -1306,7 +1306,7 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankedThisWeekCount
       """
       columnName: "streamBankedThisWeekCount"
     )
@@ -1333,7 +1333,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name
       """
       columnName: "servicesThisWeek"
     )
@@ -1357,7 +1357,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS servicesThisWeekCount
       """
       columnName: "servicesThisWeekCount"
     )
@@ -1381,7 +1381,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name
       """
       columnName: "cancelledServicesThisWeek"
     )
@@ -1405,7 +1405,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS cancelledServicesThisWeekCount
       """
       columnName: "cancelledServicesThisWeekCount"
     )
@@ -1434,7 +1434,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name
       """
       columnName: "formDefaultersThisWeek"
     )
@@ -1463,7 +1463,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
       columnName: "formDefaultersThisWeekCount"
     )
@@ -1491,7 +1491,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY bacentas.name
       """
       columnName: "bankingDefaultersThisWeek"
     )
@@ -1519,7 +1519,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bankingDefaultersThisWeekCount
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
@@ -1545,7 +1545,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY bacentas.name
       """
       columnName: "bankedThisWeek"
     )
@@ -1571,7 +1571,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bankedThisWeekCount
       """
       columnName: "bankedThisWeekCount"
     )
@@ -1595,7 +1595,7 @@ extend type Campus {
        WITH DISTINCT governorships, this
        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT governorships
+      RETURN DISTINCT governorships AS governorshipServicesThisWeek ORDER BY governorships.name
       """
       columnName: "governorshipServicesThisWeek"
     )
@@ -1619,7 +1619,7 @@ extend type Campus {
        WITH DISTINCT governorships, this
        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT governorships)
+      RETURN COUNT(DISTINCT governorships) AS governorshipServicesThisWeekCount
       """
       columnName: "governorshipServicesThisWeekCount"
     )
@@ -1643,7 +1643,7 @@ extend type Campus {
        WITH DISTINCT councils, this
        MATCH (councils)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT councils
+      RETURN DISTINCT councils AS councilServicesThisWeek ORDER BY councils.name
       """
       columnName: "councilServicesThisWeek"
     )
@@ -1667,7 +1667,7 @@ extend type Campus {
        WITH DISTINCT councils, this
        MATCH (councils)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT councils)
+      RETURN COUNT(DISTINCT councils) AS councilServicesThisWeekCount
       """
       columnName: "councilServicesThisWeekCount"
     )
@@ -1677,7 +1677,7 @@ extend type Oversight {
   activeStreamCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream)
+      MATCH (this)-[:HAS*2]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream) AS activeStreamCount
       """
       columnName: "activeStreamCount"
     )
@@ -1711,7 +1711,7 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamServicesThisWeekCount
       """
       columnName: "streamServicesThisWeekCount"
     )
@@ -1729,7 +1729,7 @@ extend type Oversight {
        MATCH (streams)<-[:HAS*2]-(this)
 
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamCancelledServicesThisWeek ORDER BY streams.name
       """
       columnName: "streamCancelledServicesThisWeek"
     )
@@ -1746,7 +1746,7 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamCancelledServicesThisWeekCount
       """
       columnName: "streamCancelledServicesThisWeekCount"
     )
@@ -1769,7 +1769,7 @@ extend type Oversight {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
       columnName: "streamFormDefaultersThisWeek"
     )
@@ -1791,7 +1791,7 @@ extend type Oversight {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
       columnName: "streamFormDefaultersThisWeekCount"
     )
@@ -1812,7 +1812,7 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankingDefaultersThisWeek ORDER BY streams.name
       """
       columnName: "streamBankingDefaultersThisWeek"
     )
@@ -1833,7 +1833,7 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankingDefaultersThisWeekCount
       """
       columnName: "streamBankingDefaultersThisWeekCount"
     )
@@ -1852,7 +1852,7 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankedThisWeek ORDER BY streams.name
       """
       columnName: "streamBankedThisWeek"
     )
@@ -1871,7 +1871,7 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankedThisWeekCount
       """
       columnName: "streamBankedThisWeekCount"
     )
@@ -1881,7 +1881,7 @@ extend type Denomination {
   activeStreamCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream)
+      MATCH (this)-[:HAS*3]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream) AS activeStreamCount
       """
       columnName: "activeStreamCount"
     )
@@ -1898,7 +1898,7 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamServicesThisWeek ORDER BY streams.name
       """
       columnName: "streamServicesThisWeek"
     )
@@ -1915,7 +1915,7 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamServicesThisWeekCount
       """
       columnName: "streamServicesThisWeekCount"
     )
@@ -1933,7 +1933,7 @@ extend type Denomination {
        MATCH (streams)<-[:HAS*3]-(this)
 
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamCancelledServicesThisWeek ORDER BY streams.name
       """
       columnName: "streamCancelledServicesThisWeek"
     )
@@ -1950,7 +1950,7 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamCancelledServicesThisWeekCount
       """
       columnName: "streamCancelledServicesThisWeekCount"
     )
@@ -1973,7 +1973,7 @@ extend type Denomination {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
       columnName: "streamFormDefaultersThisWeek"
     )
@@ -1995,7 +1995,7 @@ extend type Denomination {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
       columnName: "streamFormDefaultersThisWeekCount"
     )
@@ -2016,7 +2016,7 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankingDefaultersThisWeek ORDER BY streams.name
       """
       columnName: "streamBankingDefaultersThisWeek"
     )
@@ -2037,7 +2037,7 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankingDefaultersThisWeekCount
       """
       columnName: "streamBankingDefaultersThisWeekCount"
     )
@@ -2056,7 +2056,7 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankedThisWeek ORDER BY streams.name
       """
       columnName: "streamBankedThisWeek"
     )
@@ -2075,7 +2075,7 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankedThisWeekCount
       """
       columnName: "streamBankedThisWeekCount"
     )
