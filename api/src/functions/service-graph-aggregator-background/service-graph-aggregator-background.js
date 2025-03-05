@@ -13,8 +13,6 @@ const {
 const SECRETS = loadSecrets()
 
 const executeQuery = async (neoDriver) => {
-  const session = neoDriver.session()
-
   try {
     await Promise.all([
       aggregateBacentaOnGovernorship(neoDriver),
@@ -27,8 +25,6 @@ const executeQuery = async (neoDriver) => {
     console.log('All Aggregations Complete!')
   } catch (error) {
     console.error('Error aggregating graphs', error)
-  } finally {
-    await session.close()
   }
 }
 
@@ -73,4 +69,4 @@ const handler = async () => {
   }
 }
 
-module.exports.handler = schedule('* * * * *', handler)
+module.exports.handler = schedule('0 * * * *', handler)
