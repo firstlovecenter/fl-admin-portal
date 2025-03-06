@@ -1,3 +1,28 @@
+#### 8.0.1 (2025-03-06)
+
+##### New Features
+
+*  update GraphQL schema to enhance clarity with descriptive aliases ([93e07ad9](https://github.com/firstlovecenter/fl-admin-portal/commit/93e07ad9e6bc3864abb592648456298951aedc3f))
+*  enhance GraphQL schema with distinct service and defaulter counts for improved reporting ([ad277eeb](https://github.com/firstlovecenter/fl-admin-portal/commit/ad277eeb8fa1987c630f0d1d28a7249b9e0e2a95))
+*  add bacenta aggregation script and Neo4j constraints for performance optimization ([dcd4eec8](https://github.com/firstlovecenter/fl-admin-portal/commit/dcd4eec877f1b53fa71a4ea56b94c060687b08ba))
+*  add background aggregators for bacenta and service graphs with optimized queries ([0a3bc557](https://github.com/firstlovecenter/fl-admin-portal/commit/0a3bc5578463d2bff65185dd85af5d12bf555bc1))
+
+##### Bug Fixes
+
+*  update service graph aggregator scheduling to run hourly ([b422c37d](https://github.com/firstlovecenter/fl-admin-portal/commit/b422c37da40908057ed4c8b8f4dca91edf13210c))
+*  update service graph aggregator scheduling to run every minute ([d5f3420f](https://github.com/firstlovecenter/fl-admin-portal/commit/d5f3420fbdd53bc29f951f37f62e3ed0ecc97b92))
+*  update scheduling for graph aggregators to run at specified intervals ([2abf8b4a](https://github.com/firstlovecenter/fl-admin-portal/commit/2abf8b4ae589efe3e8d4a827bb1f6075117f8786))
+*  update GraphQL queries to use 'result' alias for clarity in return values ([3eeba874](https://github.com/firstlovecenter/fl-admin-portal/commit/3eeba87437707e6d87127ad2f3c9936f93f3f1ff))
+*  enhance error handling in GraphQL resolvers for improved reliability ([a567ba30](https://github.com/firstlovecenter/fl-admin-portal/commit/a567ba302e01d03e216094c28fae1f736f32abd3))
+*  update GraphQL queries to include aliasing for clarity and consistency in column naming ([03945077](https://github.com/firstlovecenter/fl-admin-portal/commit/03945077442f95025aef5c95671e59d19ea0493f))
+*  update column names in GraphQL schema for consistency and clarity ([e7655a54](https://github.com/firstlovecenter/fl-admin-portal/commit/e7655a54ac1ad9e94bbb42799909b5ea16f6761c))
+*  update Cypher queries to include aliasing for clarity and correct column naming in GQL ([6e68f9eb](https://github.com/firstlovecenter/fl-admin-portal/commit/6e68f9eb5f28a0ff972a278be96b0bed974d9673))
+*  simplify Cypher queries by removing unnecessary MATCH clauses and aggregations ([43163bd9](https://github.com/firstlovecenter/fl-admin-portal/commit/43163bd91bb929774278890d61bc21490677e885))
+
+##### Refactors
+
+*  adjust GraphQL query to use 'bacenta' instead of 'fellowship' ([565f3fd4](https://github.com/firstlovecenter/fl-admin-portal/commit/565f3fd43397d76f8475a3bc2a4e65e77b51ca9e))
+
 ## 8.0.0 (2025-03-04)
 
 ##### Chores
