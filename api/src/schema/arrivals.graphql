@@ -3,7 +3,7 @@ type SwellDate implements TimeGraphNode {
     @cypher(
       statement: """
       MATCH (this)
-      RETURN toString(this.date)
+      RETURN toString(this.date) AS id
       """
       columnName: "id"
     )
@@ -1048,7 +1048,7 @@ extend type Bacenta {
   #Arrivals Data
   arrivalsCodeOfTheDay: String!
     @cypher(
-      statement: "MATCH (arrivals:ArrivalsCodeOfTheDay) RETURN arrivals.code"
+      statement: "MATCH (arrivals:ArrivalsCodeOfTheDay) RETURN arrivals.code AS arrivalsCodeOfTheDay"
       columnName: "arrivalsCodeOfTheDay"
     )
   bussing(limit: Int!): [BussingRecord!]!
@@ -1064,7 +1064,7 @@ extend type Bacenta {
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
       WHERE date(date.date).week = date($bussingDate).week AND date(date.date).year = date($bussingDate).year
-      RETURN bussing ORDER BY date.date DESC LIMIT $limit
+      RETURN bussing AS bussingThisWeek ORDER BY date.date DESC LIMIT $limit
       """
       columnName: "bussingThisWeek"
     )

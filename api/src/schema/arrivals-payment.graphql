@@ -8,9 +8,9 @@ extend type Campus {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus = 'success'
       WITH DISTINCT record
-      RETURN COUNT(record)
+      RETURN COUNT(record) AS vehiclesHaveBeenPaidCount
       """
-      columnName: "result"
+      columnName: "vehiclesHaveBeenPaidCount"
     )
   vehiclesToBePaidCount(arrivalDate: String!): Int!
     @cypher(
@@ -21,9 +21,9 @@ extend type Campus {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus IS NULL
       WITH DISTINCT record
-      RETURN COUNT(record)
+      RETURN COUNT(record) AS vehiclesToBePaidCount
       """
-      columnName: "result"
+      columnName: "vehiclesToBePaidCount"
     )
   vehicleAmountHasBeenPaid(arrivalDate: String!): Float!
     @cypher(
@@ -34,9 +34,9 @@ extend type Campus {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus = 'success'
       WITH DISTINCT record
-      RETURN SUM(record.vehicleTopUp)
+      RETURN SUM(record.vehicleTopUp) AS vehicleAmountHasBeenPaid
       """
-      columnName: "result"
+      columnName: "vehicleAmountHasBeenPaid"
     )
   vehicleAmountToBePaid(arrivalDate: String!): Float!
     @cypher(
@@ -47,9 +47,9 @@ extend type Campus {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus IS NULL
       WITH DISTINCT record
-      RETURN SUM(record.vehicleTopUp)
+      RETURN SUM(record.vehicleTopUp) AS vehicleAmountToBePaid
       """
-      columnName: "result"
+      columnName: "vehicleAmountToBePaid"
     )
   bacentasToBePaid(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -60,9 +60,9 @@ extend type Campus {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0
       WITH DISTINCT bacentas
-      RETURN bacentas
+      RETURN bacentas AS bacentasToBePaid
       """
-      columnName: "result"
+      columnName: "bacentasToBePaid"
     )
 }
 
@@ -76,9 +76,9 @@ extend type Stream {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus = 'success'
       WITH DISTINCT record
-      RETURN COUNT(record)
+      RETURN COUNT(record) AS vehiclesHaveBeenPaidCount
       """
-      columnName: "result"
+      columnName: "vehiclesHaveBeenPaidCount"
     )
   vehiclesToBePaidCount(arrivalDate: String!): Int!
     @cypher(
@@ -89,9 +89,9 @@ extend type Stream {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus IS NULL
       WITH DISTINCT record
-      RETURN COUNT(record)
+      RETURN COUNT(record) AS vehiclesToBePaidCount
       """
-      columnName: "result"
+      columnName: "vehiclesToBePaidCount"
     )
   vehicleAmountHasBeenPaid(arrivalDate: String!): Float!
     @cypher(
@@ -102,9 +102,9 @@ extend type Stream {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus = 'success'
       WITH DISTINCT record
-      RETURN SUM(record.vehicleTopUp)
+      RETURN SUM(record.vehicleTopUp) AS vehicleAmountHasBeenPaid
       """
-      columnName: "result"
+      columnName: "vehicleAmountHasBeenPaid"
     )
   vehicleAmountToBePaid(arrivalDate: String!): Float!
     @cypher(
@@ -115,9 +115,9 @@ extend type Stream {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus IS NULL
       WITH DISTINCT record
-      RETURN SUM(record.vehicleTopUp)
+      RETURN SUM(record.vehicleTopUp) AS vehicleAmountToBePaid
       """
-      columnName: "result"
+      columnName: "vehicleAmountToBePaid"
     )
   bacentasToBePaid(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -128,9 +128,9 @@ extend type Stream {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0
       WITH DISTINCT bacentas
-      RETURN bacentas
+      RETURN bacentas AS bacentasToBePaid
       """
-      columnName: "result"
+      columnName: "bacentasToBePaid"
     )
 }
 
@@ -146,9 +146,9 @@ extend type Council {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus = 'success'
       WITH DISTINCT record
-      RETURN COUNT(record)
+      RETURN COUNT(record) AS vehiclesHaveBeenPaidCount
       """
-      columnName: "result"
+      columnName: "vehiclesHaveBeenPaidCount"
     )
   vehiclesToBePaidCount(arrivalDate: String!): Int!
     @cypher(
@@ -159,9 +159,9 @@ extend type Council {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus IS NULL
       WITH DISTINCT record
-      RETURN COUNT(record)
+      RETURN COUNT(record) AS vehiclesToBePaidCount
       """
-      columnName: "result"
+      columnName: "vehiclesToBePaidCount"
     )
   vehicleAmountHasBeenPaid(arrivalDate: String!): Float!
     @cypher(
@@ -172,9 +172,9 @@ extend type Council {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus = 'success'
       WITH DISTINCT record
-      RETURN SUM(record.vehicleTopUp)
+      RETURN SUM(record.vehicleTopUp) AS vehicleAmountHasBeenPaid
       """
-      columnName: "result"
+      columnName: "vehicleAmountHasBeenPaid"
     )
   vehicleAmountToBePaid(arrivalDate: String!): Float!
     @cypher(
@@ -185,9 +185,9 @@ extend type Council {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0 AND record.transactionStatus IS NULL
       WITH DISTINCT record
-      RETURN SUM(record.vehicleTopUp)
+      RETURN SUM(record.vehicleTopUp) AS vehicleAmountToBePaid
       """
-      columnName: "result"
+      columnName: "vehicleAmountToBePaid"
     )
   bacentasToBePaid(arrivalDate: String!): [Bacenta!]!
     @cypher(
@@ -198,9 +198,9 @@ extend type Council {
       MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
         WHERE record.vehicleTopUp > 0
       WITH DISTINCT bacentas
-      RETURN bacentas
+      RETURN bacentas AS bacentasToBePaid
       """
-      columnName: "result"
+      columnName: "bacentasToBePaid"
     )
 }
 
