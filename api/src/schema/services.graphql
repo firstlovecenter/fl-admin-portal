@@ -25,7 +25,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name
       """
       columnName: "servicesThisWeek"
     )
@@ -49,7 +49,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS servicesThisWeekCount
       """
       columnName: "servicesThisWeekCount"
     )
@@ -74,7 +74,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name
       """
       columnName: "cancelledServicesThisWeek"
     )
@@ -99,7 +99,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS cancelledServicesThisWeekCount
       """
       columnName: "cancelledServicesThisWeekCount"
     )
@@ -128,7 +128,7 @@ extend type Stream {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name
       """
       columnName: "formDefaultersThisWeek"
     )
@@ -157,7 +157,7 @@ extend type Stream {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
       columnName: "formDefaultersThisWeekCount"
     )
@@ -185,7 +185,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY governorship.name
       """
       columnName: "bankingDefaultersThisWeek"
     )
@@ -213,7 +213,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bankingDefaultersThisWeekCount
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
@@ -239,7 +239,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY governorship.name
       """
 
       columnName: "bankedThisWeek"
@@ -266,7 +266,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT bacentas)
+      RETURN COUNT(DISTINCT bacentas) AS bankedThisWeekCount
       """
       columnName: "bankedThisWeekCount"
     )
@@ -290,7 +290,7 @@ extend type Stream {
        WITH DISTINCT governorships, this
        MATCH (governorships)<-[:HAS]-(council:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT governorships
+      RETURN DISTINCT governorships AS governorshipServicesThisWeek ORDER BY governorships.name
       """
       columnName: "governorshipServicesThisWeek"
     )
@@ -314,7 +314,7 @@ extend type Stream {
        WITH DISTINCT governorships, this
        MATCH (governorships)<-[:HAS]-(council:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT governorships)
+      RETURN COUNT(DISTINCT governorships) AS governorshipServicesThisWeekCount
       """
       columnName: "governorshipServicesThisWeekCount"
     )
@@ -338,7 +338,7 @@ extend type Stream {
        WITH DISTINCT councils, this
        MATCH (councils)<-[:HAS]-(this)
 
-      RETURN DISTINCT councils
+      RETURN DISTINCT councils AS councilServicesThisWeek ORDER BY councils.name
       """
       columnName: "councilServicesThisWeek"
     )
@@ -362,7 +362,7 @@ extend type Stream {
        WITH DISTINCT councils, this
        MATCH (councils)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT councils)
+      RETURN COUNT(DISTINCT councils) AS councilServicesThisWeekCount
       """
       columnName: "councilServicesThisWeekCount"
     )
