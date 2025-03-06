@@ -41,7 +41,9 @@
     "release:major": "npm run clean:git && node scripts/release.js major",
     "release:minor": "npm run clean:git && node scripts/release.js minor",
     "release:patch": "npm run clean:git && node scripts/release.js patch",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "aggregate-bacenta": "doppler run node ./api/src/scripts/run-bacenta-aggregation.js",
+    "aggregate-bacenta:help": "doppler run node ./api/src/scripts/run-bacenta-aggregation.js --help"
   },
   "husky": {
     "hooks": {
