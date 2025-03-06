@@ -80,7 +80,7 @@ export const RECORD_CANCELLED_SERVICE = gql`
       id
       serviceLog {
         id
-        fellowship {
+        bacenta {
           id
           services(limit: 3) {
             id
