@@ -1217,7 +1217,7 @@ type RehearsalRecord implements Record {
       MATCH (this)
       WHERE NOT  (this:NoService)
       MATCH (this)<-[:CONFIRMED_BANKING_FOR | :UPLOADED_SLIP_FOR | :OFFERING_BANKED_BY]-(member:Member)
-      RETURN member
+      RETURN member AS bankedBy
       """
       columnName: "bankedBy"
     )

@@ -44,7 +44,7 @@ extend type Stream {
        WITH DISTINCT governorships, this
        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT governorships
+      RETURN DISTINCT governorships AS governorshipBankingDefaultersThisWeek
       """
       columnName: "governorshipBankingDefaultersThisWeek"
     )
@@ -72,7 +72,7 @@ extend type Stream {
        WITH DISTINCT governorships, this
        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT governorships)
+      RETURN COUNT(DISTINCT governorships) AS governorshipBankingDefaultersThisWeekCount
       """
       columnName: "governorshipBankingDefaultersThisWeekCount"
     )
@@ -110,7 +110,7 @@ extend type Governorship {
         week: agg.week,
         year: agg.year,
         foreignCurrency: list
-      }
+      } AS aggregateServiceRecordForWeek
       """
       columnName: "aggregateServiceRecordForWeek"
     )
@@ -172,7 +172,7 @@ extend type Governorship {
       MATCH (teller:Member)-[:CONFIRMED_BANKING_FOR]->(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(this)
 
 
-      RETURN DISTINCT teller
+      RETURN DISTINCT teller AS bankedBy
       """
       columnName: "bankedBy"
     )
