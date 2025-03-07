@@ -87,6 +87,7 @@ const startServer = async () => {
       if (token) {
         try {
           jwt = jwtDecode(token)
+          console.log('🚀 ~ index.js:90 ~ jwt:', jwt)
         } catch (error) {
           console.error('Invalid token:', error)
         }
@@ -95,7 +96,10 @@ const startServer = async () => {
       return {
         req,
         executionContext: driver,
-        jwt,
+        jwt: {
+          ...jwt,
+          roles: jwt?.['https://flcadmin.netlify.app/roles'],
+        },
       }
     },
     introspection: true,
@@ -125,7 +129,10 @@ const startServer = async () => {
         return {
           req,
           executionContext: driver,
-          jwt,
+          jwt: {
+            ...jwt,
+            roles: jwt?.['https://flcadmin.netlify.app/roles'],
+          },
         }
       },
     })

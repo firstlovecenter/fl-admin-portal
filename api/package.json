@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "./node_modules/.bin/nodemon --watch src --ext js,ts,graphql --delay 3 --exec DEBUG=@neo4j/graphql:* babel-node  src/index.js --extensions '.js,.ts'",
+    "start:dev": "./node_modules/.bin/nodemon --watch src --ext js,ts,graphql --delay 3 --exec DEBUG=@neo4j/graphql:auth babel-node  src/index.js --extensions '.js,.ts'",
     "prebuild": " cd src/resolvers && tsc",
     "build": "babel src --out-dir build && shx cp .env build 2>/dev/null || : && shx cp -r src/schema build",
     "now-build": "babel src --out-dir build && shx cp -r src/schema build",
