@@ -79,7 +79,10 @@ export const handler = async (event, context, ...args) => {
       return {
         req: event,
         executionContext: driver,
-        jwt,
+        jwt: {
+          ...jwt,
+          roles: jwt?.['https://flcadmin.netlify.app/roles'],
+        },
       }
     },
     introspection: true,
