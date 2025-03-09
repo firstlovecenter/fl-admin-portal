@@ -163,7 +163,7 @@ extend type Campus {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS bacentasNotCounted
       """
       columnName: "bacentasNotCounted"
     )
@@ -419,7 +419,7 @@ extend type Stream {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS bacentasNotCounted
       """
       columnName: "bacentasNotCounted"
     )
@@ -659,7 +659,7 @@ extend type Council {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacenta AS bacentasNotCounted
       """
       columnName: "bacentasNotCounted"
     )
@@ -900,7 +900,7 @@ extend type Governorship {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN DISTINCT bacentas
+      RETURN DISTINCT bacentas AS bacentasNotCounted
       """
       columnName: "bacentasNotCounted"
     )
