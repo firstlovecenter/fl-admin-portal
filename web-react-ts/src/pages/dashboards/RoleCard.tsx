@@ -32,7 +32,7 @@ const RoleCard = ({ number, role, authRoles, loading }: RoleCardProps) => {
 
   return (
     <div
-      className={`card rounded-corners role-card colour-${role?.toLowerCase()}`}
+      className={`card rounded-corners role-card pointer colour-${role?.toLowerCase()}`}
     >
       <PlaceholderCustom
         className={`card rounded-corners role-card`}

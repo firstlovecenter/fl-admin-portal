@@ -27,7 +27,7 @@ const DetailsCard = (props: DetailsCardPropsType) => {
 
   return (
     <Card
-      className={`p-2 m-1 ${creativearts && 'creativearts'}`}
+      className={`p-2 m-1 pointer ${creativearts && 'creativearts'}`}
       onClick={onClick}
     >
       <Row>

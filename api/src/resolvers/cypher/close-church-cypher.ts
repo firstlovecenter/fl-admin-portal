@@ -1,10 +1,10 @@
-export const checkFellowshipHasNoMembers = `
+export const checkFellowshipHasNoMembers = `//cypher
 MATCH (fellowship:Fellowship {id: $fellowshipId})
 OPTIONAL MATCH (fellowship)<-[:BELONGS_TO]-(member:Active:Member)
 RETURN fellowship.name AS name, COUNT(member) AS memberCount
 `
 
-export const getLastServiceRecord = `
+export const getLastServiceRecord = `//cypher
 MATCH (church {id: $churchId}) WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
 MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(otherRecords:ServiceRecord)-[:SERVICE_HELD_ON]->(otherDate:TimeGraph)
 WHERE NOT (otherRecords:NoService) AND duration.between(otherDate.date, date()).weeks < 52
@@ -14,44 +14,44 @@ WITH DISTINCT otherRecords AS lastService ORDER BY otherRecords.createdAt DESC L
 RETURN lastService
 `
 
-export const checkBacentaHasNoMembers = `
+export const checkBacentaHasNoMembers = `//cypher
 MATCH (bacenta:Bacenta {id:$bacentaId})
 OPTIONAL MATCH (bacenta)<-[:BELONGS_TO]-(member:Active:Member)
 RETURN bacenta.name AS name, COUNT(member) AS memberCount
 `
 
-export const checkGovernorshipHasNoMembers = `
+export const checkGovernorshipHasNoMembers = `//cypher
 MATCH (governorship:Governorship {id:$governorshipId})
 OPTIONAL MATCH (governorship)-[:HAS]->(bacentas:Bacenta)
 OPTIONAL MATCH (governorship)-[:HAS_MINISTRY]->(hub:Hub)
 RETURN governorship.name AS name,  COUNT(bacentas) AS bacentaCount,  COUNT(hub) AS hubCount
 `
-export const checkCouncilHasNoMembers = `
+export const checkCouncilHasNoMembers = `//cypher
 MATCH (council:Council {id:$councilId})
 OPTIONAL MATCH (council)-[:HAS]->(governorships:Governorship)<-[:LEADS]-(member:Active:Member)
 OPTIONAL MATCH (council)-[:HAS_MINISTRY]->(hubCouncils:HubCouncil)<-[:LEADS]-(leader:Active:Member)
 RETURN council.name AS name, COUNT(member) AS memberCount, COUNT(governorships) AS governorshipCount, COUNT(leader) AS hubCouncilLeaderCount, COUNT(hubCouncils) AS hubCouncilCount
 `
 
-export const checkStreamHasNoMembers = `
+export const checkStreamHasNoMembers = `//cypher
 MATCH (stream:Stream {id:$streamId})
 OPTIONAL MATCH (stream)-[:HAS]->(councils:Council)<-[:LEADS]-(member:Active:Member)
 OPTIONAL MATCH (stream)-[:HAS_MINISTRY]->(ministries:Ministry)<-[:LEADS]-(leader:Active:Member)
 RETURN stream.name AS name, COUNT(member) AS memberCount, COUNT(councils) AS councilCount, COUNT(leader) AS ministryLeaderCount, COUNT(ministries) as ministryCount
 `
-export const checkCampusHasNoMembers = `
+export const checkCampusHasNoMembers = `//cypher
 MATCH (campus:Campus {id:$campusId})
 OPTIONAL MATCH (campus)-[:HAS]->(streams:Stream)<-[:LEADS]-(member:Active:Member)
 OPTIONAL MATCH (campus)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)<-[:LEADS]-(leader:Active:Member)
 RETURN campus.name AS name, COUNT(member) AS memberCount, COUNT(streams) AS streamCount, COUNT(leader) AS leaderCount, COUNT(creativeArts) AS creativeArtsCount
 `
-export const checkOversightHasNoMembers = `
+export const checkOversightHasNoMembers = `//cypher
 MATCH (oversight:Oversight {id:$oversightId})
 MATCH (oversight)-[:HAS]->(campuses:Campus)<-[:LEADS]-(member:Active:Member)
 RETURN oversight.name AS name, COUNT(member) AS memberCount, COUNT(campuses) AS campusCount
 `
 
-export const closeDownFellowship = `
+export const closeDownFellowship = `//cypher
 MATCH (fellowship:Fellowship {id: $fellowshipId})<-[:HAS]-(bacenta:Bacenta)
 
 CREATE (log:HistoryLog {id: apoc.create.uuid()})
@@ -79,7 +79,7 @@ RETURN bacenta {
     }
 `
 
-export const closeDownBacenta = `
+export const closeDownBacenta = `//cypher
 MATCH (bacenta:Bacenta {id:$bacentaId})<-[:HAS]-(governorship:Governorship)
 
 WITH bacenta, governorship
@@ -109,7 +109,7 @@ RETURN governorship {
     }
 `
 
-export const closeDownGovernorship = `
+export const closeDownGovernorship = `//cypher
 MATCH (governorship:Governorship {id:$governorshipId})<-[:HAS]-(council:Council)
 WITH governorship, council
 
@@ -138,7 +138,7 @@ RETURN council {
 }
 `
 
-export const closeDownCouncil = `
+export const closeDownCouncil = `//cypher
 MATCH (council:Council {id:$councilId})<-[:HAS]-(stream:Stream)
 WITH council, stream
 
@@ -164,7 +164,7 @@ RETURN stream {
   councils: [councils {.id, .name}]
 }
 `
-export const closeDownStream = `
+export const closeDownStream = `//cypher
 MATCH (stream:Stream {id:$streamId})<-[:HAS]-(campus:Campus)
 WITH stream, campus
 
@@ -190,7 +190,7 @@ RETURN campus {
   streams: [streams {.id, .name}]
 }
 `
-export const closeDownCampus = `
+export const closeDownCampus = `//cypher
 MATCH (campus:Campus {id:$campusId})<-[:HAS]-(oversight:Oversight)
 WITH campus, oversight
 
@@ -217,7 +217,7 @@ RETURN oversight {
 }
 `
 
-export const closeDownOversight = `
+export const closeDownOversight = `//cypher
 MATCH (oversight:OverSight {id:$oversightId})<-[:HAS]-(denomination:Denomination)
 WITH oversight, denomination
 
