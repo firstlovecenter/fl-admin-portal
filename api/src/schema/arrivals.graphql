@@ -1118,7 +1118,7 @@ type BussingRecord implements Record {
       MATCH (this)-[:INCLUDES_RECORD]->(record:VehicleRecord)-[:COUNTED_BY]->(member:Member)
       RETURN DISTINCT member
       """
-      columnName: "counted_by"
+      columnName: "member"
     )
 
   vehicleRecords: [VehicleRecord!]!
