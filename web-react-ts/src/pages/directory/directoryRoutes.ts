@@ -676,7 +676,7 @@ export const directory: LazyRouteTypes[] = [
   {
     path: '/bacenta/addbacenta',
     element: CreateBacenta,
-    roles: permitAdminArrivals('Stream'),
+    roles: permitAdminArrivals('Council'),
     placeholder: false,
   },
 

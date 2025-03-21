@@ -556,6 +556,7 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
+          { roles_INCLUDES: "adminCouncil" }
           { roles_INCLUDES: "adminStream" }
           { roles_INCLUDES: "adminCampus" }
           { roles_INCLUDES: "arrivalsAdminCampus" }
