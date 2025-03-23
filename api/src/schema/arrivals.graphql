@@ -1096,7 +1096,7 @@ type BussingRecord implements Record {
       statement: """
       MATCH (this)-[:INCLUDES_RECORD]->(record:VehicleRecord)
       WHERE record.picture IS NOT NULL
-      RETURN collect(record.picture)
+      RETURN collect(record.picture) AS bussingPictures
       """
       columnName: "bussingPictures"
     )
