@@ -1,7 +1,7 @@
 const servantCypher = {
   disconnectChurchLeader: `
    MATCH (church {id: $churchId}) 
-   WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream 
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight OR church:Denomination
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    MATCH (church)<-[oldLeads:LEADS]-(leader:Member)
@@ -22,7 +22,7 @@ const servantCypher = {
 
   disconnectChurchAdmin: `
    MATCH (church {id: $churchId}) 
-   WHERE church:Constituency OR church:Council OR church:Stream 
+   WHERE church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight OR church:Denomination 
    OR church:CreativeArts OR church:Ministry
    MATCH (church)<-[oldAdmin:IS_ADMIN_FOR]-(admin:Member)
@@ -33,7 +33,7 @@ const servantCypher = {
    `,
   disconnectChurchArrivalsAdmin: `
    MATCH (church {id: $churchId}) 
-   WHERE church:Constituency OR church:Council OR church:Stream 
+   WHERE church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight 
    OR church:CreativeArts OR church:Ministry
    MATCH (church)<-[oldAdmin:DOES_ARRIVALS_FOR]-(admin:Member)
@@ -90,7 +90,7 @@ const servantCypher = {
   // Create Church Leader Connection
   connectChurchLeader: `
    MATCH (church {id: $churchId})
-   WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream 
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight OR church:Denomination
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    MATCH (leader:Member {id:$leaderId})
@@ -104,7 +104,7 @@ const servantCypher = {
    `,
   connectChurchAdmin: `
    MATCH (church {id:$churchId})
-   WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream 
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight OR church:Denomination
    OR church:CreativeArts OR church:Ministry
    MATCH (admin:Member {id:$adminId})
@@ -119,7 +119,7 @@ const servantCypher = {
 
   connectChurchArrivalsAdmin: `
    MATCH (church {id:$churchId})<-[:HAS]-(higherChurch)
-   WHERE church:Constituency OR church:Council OR church:Stream OR church:Campus
+   WHERE church:Governorship OR church:Council OR church:Stream OR church:Campus
    MATCH (admin:Member {id: $arrivalsAdminId})
       SET admin.auth_id =  $auth_id
    MERGE (admin)-[:DOES_ARRIVALS_FOR]->(church)
@@ -195,12 +195,12 @@ const servantCypher = {
   // Connect log  leader, new church, and old leader
   connectServiceLog: `
    MATCH (church {id: $churchId}) 
-   WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream 
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight 
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    OR church:ClosedFellowship OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
-   MATCH (currentUser:Member {auth_id: $auth.jwt.sub}) 
+   MATCH (currentUser:Member {auth_id: $jwt.sub}) 
    MATCH (log:ServiceLog {id: $logId})
    
    MERGE (date:TimeGraph {date: date()})
@@ -232,12 +232,12 @@ const servantCypher = {
   // First Connection
   connectHistoryLog: `
    MATCH (church {id:$churchId}) 
-   WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream 
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight 
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    OR church:ClosedFellowship OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
-   MATCH (currentUser:Member {auth_id: $auth.jwt.sub}) 
+   MATCH (currentUser:Member {auth_id: $jwt.sub}) 
    MATCH (log:HistoryLog {id: $logId})
    
    MERGE (date:TimeGraph {date: date()})

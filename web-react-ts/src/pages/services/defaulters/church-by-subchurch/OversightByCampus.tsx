@@ -100,7 +100,7 @@ const OversightByCampus = () => {
                         </div>
                         <hr />
                         <div className="fw-bold">
-                          Active Fellowships {campus.activeFellowshipCount}
+                          Active Bacentas {campus.activeBacentaCount}
                         </div>
                         <div className="good">
                           Services This Week {campus.servicesThisWeekCount}

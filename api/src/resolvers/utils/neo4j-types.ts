@@ -1,7 +1,24 @@
 import { Session } from 'neo4j-driver'
 import { Role } from './types'
 
+export interface JwtPayload {
+  sub: string
+  'https://flcadmin.netlify.app/roles': Role[]
+  iss: string
+  aud: string[]
+  iat: number
+  exp: number
+  scope: string
+  azp: string
+  permissions: Role[]
+  // Add other properties as needed
+}
+
+export interface AuthContext {
+  jwt: JwtPayload
+}
+
 export type Context = {
-  auth: { roles: Role[]; jwt: { sub: string } }
+  jwt: JwtPayload
   executionContext: { session: () => Session }
 }

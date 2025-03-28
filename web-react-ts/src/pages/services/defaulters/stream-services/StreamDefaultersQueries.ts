@@ -56,7 +56,7 @@ export const OVERSIGHT_BY_CAMPUS = gql`
         streamServicesThisWeekCount
         streamCancelledServicesThisWeekCount
 
-        activeFellowshipCount
+        activeBacentaCount
         formDefaultersThisWeekCount
         bankingDefaultersThisWeekCount
         bankedThisWeekCount

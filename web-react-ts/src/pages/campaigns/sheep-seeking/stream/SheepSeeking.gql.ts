@@ -11,7 +11,7 @@ export const STREAM_SHEEP_SEEKERS = gql`
         lastName
         fullName
         pictureUrl
-        fellowship {
+        bacenta {
           id
           name
         }
@@ -20,7 +20,7 @@ export const STREAM_SHEEP_SEEKERS = gql`
           name
         }
       }
-      activeFellowshipCount
+      activeBacentaCount
     }
   }
 `

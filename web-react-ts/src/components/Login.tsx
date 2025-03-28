@@ -24,7 +24,7 @@ const Login = () => {
     arrows: false,
     autoplaySpeed: 2100,
   }
-  const catchPhrase = 'A church full of young people on fire for the Lord'
+  const catchPhrase = 'Be thou diligent to know the state of your flock...'
 
   return (
     <>
@@ -54,7 +54,7 @@ const Login = () => {
                 </div>
               </Slider>
               <h2 className="mb-3 mt-3 text-white font-weight-bold">
-                FLC SYNAGO
+                FLC State of the Flock
               </h2>
               <p>
                 <span className="mt-3 text-white">{catchPhrase}</span>
@@ -99,7 +99,7 @@ const Login = () => {
               </div>
             </Slider>
             <h3 className="mb-3 mt-3 text-white font-weight-bold">
-              FLC SYNAGO
+              FLC State of the Flock
             </h3>
 
             <p>

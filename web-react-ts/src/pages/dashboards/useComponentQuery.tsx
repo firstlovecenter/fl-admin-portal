@@ -19,12 +19,12 @@ import { parseRoles } from './dashboard-utils'
 import {
   SERVANT_FELLOWSHIP_LEADER,
   SERVANT_BACENTA_LEADER,
-  SERVANT_CONSTITUENCY_LEADER,
+  SERVANT_GOVERNORSHIP_LEADER,
   SERVANT_COUNCIL_LEADER,
   SERVANT_STREAM_LEADER,
   SERVANT_CAMPUS_LEADER,
   SERVANT_OVERSIGHT_LEADER,
-  SERVANT_CONSTITUENCY_ADMIN,
+  SERVANT_GOVERNORSHIP_ADMIN,
   SERVANT_COUNCIL_ADMIN,
   SERVANTS_STREAM_ADMIN,
   SERVANTS_CAMPUS_ADMIN,
@@ -32,7 +32,7 @@ import {
   SERVANTS_CAMPUS_ARRIVALS_ADMIN,
   SERVANTS_STREAM_ARRIVALS_ADMIN,
   SERVANTS_COUNCIL_ARRIVALS_ADMIN,
-  SERVANTS_CONSTITUENCY_ARRIVALS_ADMIN,
+  SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN,
   SERVANTS_STREAM_ARRIVALS_COUNTER,
   SERVANTS_STREAM_TELLER,
   SERVANTS_SHEEP_SEEKER_STREAM,
@@ -71,22 +71,22 @@ const useComponentQuery = (props?: UseComponentQuery) => {
     useState<DashboardChurchType>()
   const [fellowshipLeaderQuery] = useLazyQuery(SERVANT_FELLOWSHIP_LEADER)
   const [bacentaLeaderQuery] = useLazyQuery(SERVANT_BACENTA_LEADER)
-  const [constituencyLeaderQuery] = useLazyQuery(SERVANT_CONSTITUENCY_LEADER)
+  const [governorshipLeaderQuery] = useLazyQuery(SERVANT_GOVERNORSHIP_LEADER)
   const [councilLeaderQuery] = useLazyQuery(SERVANT_COUNCIL_LEADER)
   const [streamLeaderQuery] = useLazyQuery(SERVANT_STREAM_LEADER)
   const [campusLeaderQuery] = useLazyQuery(SERVANT_CAMPUS_LEADER)
   const [oversightLeaderQuery] = useLazyQuery(SERVANT_OVERSIGHT_LEADER)
   const [denominationLeaderQuery] = useLazyQuery(SERVANT_DENOMINATION_LEADER)
   //Admin Queries
-  const [constituencyAdminQuery] = useLazyQuery(SERVANT_CONSTITUENCY_ADMIN)
+  const [governorshipAdminQuery] = useLazyQuery(SERVANT_GOVERNORSHIP_ADMIN)
   const [councilAdminQuery] = useLazyQuery(SERVANT_COUNCIL_ADMIN)
   const [streamAdminQuery] = useLazyQuery(SERVANTS_STREAM_ADMIN)
   const [campusAdminQuery] = useLazyQuery(SERVANTS_CAMPUS_ADMIN)
   const [oversightAdminQuery] = useLazyQuery(SERVANTS_OVERSIGHT_ADMIN)
   const [denominationAdminQuery] = useLazyQuery(SERVANTS_DENOMINATION_ADMIN)
   //Arrivals Admin Queries
-  const [constituencyArrivalsAdminQuery] = useLazyQuery(
-    SERVANTS_CONSTITUENCY_ARRIVALS_ADMIN
+  const [governorshipArrivalsAdminQuery] = useLazyQuery(
+    SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN
   )
   const [councilArrivalsAdminQuery] = useLazyQuery(
     SERVANTS_COUNCIL_ARRIVALS_ADMIN
@@ -122,10 +122,10 @@ const useComponentQuery = (props?: UseComponentQuery) => {
     Bacenta: {
       leader: bacentaLeaderQuery,
     },
-    Constituency: {
-      leader: constituencyLeaderQuery,
-      admin: constituencyAdminQuery,
-      arrivalsAdmin: constituencyArrivalsAdminQuery,
+    Governorship: {
+      leader: governorshipLeaderQuery,
+      admin: governorshipAdminQuery,
+      arrivalsAdmin: governorshipArrivalsAdminQuery,
     },
     Council: {
       leader: councilLeaderQuery,

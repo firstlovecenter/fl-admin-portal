@@ -35,7 +35,10 @@ const multiplicationCampaignMutations = {
     args: RecordMultiplicationEventArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Constituency'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Governorship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     if (checkIfArrayHasRepeatingValues(args.treasurers)) {
@@ -50,7 +53,7 @@ const multiplicationCampaignMutations = {
     const cypherResponse = await Promise.all([
       session.run(recordMultiplicationEvent, {
         ...args,
-        auth: context.auth,
+        jwt: context.jwt,
       }),
       secondSession.run(aggregateMultiplicationDataOnHigherChurches, {
         ...args,

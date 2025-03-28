@@ -8,7 +8,7 @@ import React from 'react'
 import { Container, Row, Col } from 'react-bootstrap'
 import DefaulterCard from './DefaulterCard'
 import {
-  CONSTITUENCY_BANKED_LIST,
+  GOVERNORSHIP_BANKED_LIST,
   COUNCIL_BANKED_LIST,
   STREAM_BANKED_LIST,
   CAMPUS_BANKED_LIST,
@@ -25,8 +25,8 @@ import {
 import useSontaLevel from 'hooks/useSontaLevel'
 
 const Banked = () => {
-  const [constituencyBanked, { refetch: constituencyRefetch }] = useLazyQuery(
-    CONSTITUENCY_BANKED_LIST
+  const [governorshipBanked, { refetch: governorshipRefetch }] = useLazyQuery(
+    GOVERNORSHIP_BANKED_LIST
   )
   const [councilBanked, { refetch: councilRefetch }] =
     useLazyQuery(COUNCIL_BANKED_LIST)
@@ -45,8 +45,8 @@ const Banked = () => {
   const [hubBanked, { refetch: hubRefetch }] = useLazyQuery(HUB_BANKED_LIST)
 
   const data = useSontaLevel({
-    constituencyFunction: constituencyBanked,
-    constituencyRefetch,
+    governorshipFunction: governorshipBanked,
+    governorshipRefetch,
     councilFunction: councilBanked,
     councilRefetch,
     streamFunction: streamBanked,
@@ -85,7 +85,7 @@ const Banked = () => {
               <Col key={i} xs={12} className="mb-3">
                 <DefaulterCard
                   defaulter={defaulter}
-                  link="/fellowship/service-details"
+                  link="/bacenta/service-details"
                 />
               </Col>
             ))}

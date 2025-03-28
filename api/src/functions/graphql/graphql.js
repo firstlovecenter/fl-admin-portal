@@ -3,12 +3,12 @@
 
 const { ApolloServer } = require('apollo-server-lambda')
 const { Neo4jGraphQL } = require('@neo4j/graphql')
-const { Neo4jGraphQLAuthJWTPlugin } = require('@neo4j/graphql-plugin-auth')
 const neo4j = require('neo4j-driver')
 const Sentry = require('@sentry/node')
 
 // This module is copied during the build step
 // Be sure to run `npm run build`
+const { jwtDecode } = require('jwt-decode')
 const { typeDefs } = require('./schema/graphql-schema')
 const resolvers = require('../../resolvers/resolvers').default
 const SECRETS = require('../../resolvers/getSecrets').default
@@ -34,21 +34,57 @@ const neoSchema = new Neo4jGraphQL({
   typeDefs,
   resolvers,
   driver,
-  plugins: {
-    auth: new Neo4jGraphQLAuthJWTPlugin({
-      secret: SECRETS.JWT_SECRET.replace(/\\n/gm, '\n'),
-      rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
-    }),
+  features: {
+    authorization: {
+      key: SECRETS.JWT_SECRET,
+    },
+    config: {
+      debug: true,
+    },
+    excludeDeprecatedFields: {
+      bookmark: true,
+      negationFilters: true,
+      arrayFilters: true,
+      stringAggregation: true,
+      aggregationFilters: true,
+    },
   },
 })
 
 // eslint-disable-next-line import/prefer-default-export
 export const handler = async (event, context, ...args) => {
-  const schema = await neoSchema.getSchema()
+  const schema = await neoSchema.getSchema().catch((error) => {
+    console.error('\x1b[31m######## 🚨SCHEMA ERROR🚨 #######\x1b[0m')
+    console.error(`${JSON.stringify(error, null, 2)}`)
+    console.log(
+      '\x1b[31m########## 🚨END OF SCHEMA ERROR🚨 ##################\x1b[0m'
+    )
+    process.exit(1)
+  })
 
   const server = new ApolloServer({
     // eslint-disable-next-line no-shadow
-    context: ({ event }) => ({ req: event }),
+    context: async ({ event }) => {
+      const token = event.headers.authorization
+      let jwt = null
+
+      if (token) {
+        try {
+          jwt = jwtDecode(token)
+        } catch (error) {
+          console.error('Invalid token:', error)
+        }
+      }
+
+      return {
+        req: event,
+        executionContext: driver,
+        jwt: {
+          ...jwt,
+          roles: jwt?.['https://flcadmin.netlify.app/roles'],
+        },
+      }
+    },
     introspection: true,
     schema,
   })

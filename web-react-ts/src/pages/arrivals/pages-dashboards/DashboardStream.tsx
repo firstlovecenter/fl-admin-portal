@@ -21,7 +21,7 @@ import {
 import MenuButton from 'components/buttons/MenuButton'
 import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
 import usePopup from 'hooks/usePopup'
-import { AdminFormOptions } from './DashboardConstituency'
+import { AdminFormOptions } from './DashboardGovernorship'
 import SearchMember from 'components/formik/SearchMember'
 import ArrivalsMenuDropdown from '../ArrivalsMenuDropdown'
 import { beforeStreamArrivalsDeadline } from '../arrivals-utils'

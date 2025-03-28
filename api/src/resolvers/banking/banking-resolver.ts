@@ -32,6 +32,7 @@ import {
   PayStackRequestBody,
   SendPaymentOTP,
 } from './banking-types'
+import SECRETS from '../getSecrets'
 
 export const checkIfLastServiceBanked = async (
   serviceRecordId: string,
@@ -44,25 +45,25 @@ export const checkIfLastServiceBanked = async (
   const lastServiceResponse = await Promise.all([
     session.run(getLastServiceRecord, {
       serviceRecordId,
-      auth: context.auth,
+      jwt: context.jwt,
     }),
     sessionTwo.run(checkIfIMCLNotFilled, {
       serviceRecordId,
-      auth: context.auth,
+      jwt: context.jwt,
     }),
   ]).catch((error: any) =>
     throwToSentry('There was a problem checking the lastService', error)
   )
   const lastServiceRecord: any = rearrangeCypherObject(lastServiceResponse[0])
-  const imclNotFilled: boolean =
-    lastServiceResponse[1].records[0]?.get('imclNotFilled')
+  // const imclNotFilled: boolean =
+  //   lastServiceResponse[1].records[0]?.get('imclNotFilled')
 
   if (!('lastService' in lastServiceRecord)) return true
 
   const lastService = lastServiceRecord.lastService.properties
-  const currentService = lastServiceRecord.record.properties
+  // const currentService = lastServiceRecord.record.properties
   const date = lastServiceRecord.lastDate.properties
-  const { church } = lastServiceRecord
+  // const { church } = lastServiceRecord
 
   if (
     !(
@@ -78,20 +79,17 @@ export const checkIfLastServiceBanked = async (
     )
   }
 
-  if (
-    !currentService.markedAttendance &&
-    church.labels.includes('Fellowship')
-  ) {
-    throw new Error(
-      'Please log in to the Poimen App to mark the service attendance before you will be allowed to bank your offering'
-    )
-  }
+  // if (!currentService.markedAttendance && church.labels.includes('Bacenta')) {
+  //   throw new Error(
+  //     'Please tick the present members on the Poimen App before you will be allowed to bank your offering'
+  //   )
+  // }
 
-  if (imclNotFilled) {
-    throw new Error(
-      'Please fill the IMCL form on the Poimen App before you will be allowed to bank your offering'
-    )
-  }
+  // if (imclNotFilled) {
+  //   throw new Error(
+  //     'Please fill the IMCL form on the Poimen App before you will be allowed to bank your offering'
+  //   )
+  // }
 
   return true
 }
@@ -108,7 +106,10 @@ const bankingMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Bacenta'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     // This code checks if there has already been a successful transaction
@@ -128,7 +129,7 @@ const bankingMutation = {
         transactionResponse?.stream
       )
 
-      if (!subaccount) {
+      if (!subaccount && SECRETS.TEST_ENV !== 'true') {
         throw new Error(
           `There was an error with the payment. Please email admin@firstlovecenter.com ${JSON.stringify(
             {
@@ -156,7 +157,7 @@ const bankingMutation = {
       const cypherResponse = rearrangeCypherObject(
         await session
           .run(initiateServiceRecordTransaction, {
-            auth: context.auth,
+            jwt: context.jwt,
             ...args,
           })
           .catch((error: any) =>
@@ -255,7 +256,10 @@ const bankingMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Hub'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Hub'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     // This code checks if there has already been a successful transaction
@@ -305,8 +309,9 @@ const bankingMutation = {
       const cypherResponse = rearrangeCypherObject(
         await session
           .run(initiateServiceRecordTransaction, {
-            auth: context.auth,
+            jwt: context.jwt,
             ...args,
+            serviceRecordId: args.rehearsalRecordId,
           })
           .catch((error: any) =>
             throwToSentry(
@@ -404,7 +409,10 @@ const bankingMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitMe('Fellowship'), context.auth.roles)
+    isAuth(
+      permitMe('Fellowship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
 
@@ -500,7 +508,10 @@ const bankingMutation = {
     args: { serviceRecordId: string },
     context: Context
   ) => {
-    isAuth(permitMe('Fellowship'), context.auth.roles)
+    isAuth(
+      permitMe('Bacenta'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     const transactionResponse = rearrangeCypherObject(
@@ -517,7 +528,7 @@ const bankingMutation = {
     let record = transactionResponse?.record
     const banker = transactionResponse?.banker
     const stream = transactionResponse?.stream
-    const { auth } = getStreamFinancials(stream.bankAccount)
+    const { auth } = getStreamFinancials(stream)
 
     // if transactionTime is within the last 1 minute then return the record
     if (
@@ -569,11 +580,6 @@ const bankingMutation = {
 
     const confirmationResponse = await axios(confirmPaymentBody).catch(
       async (error) => {
-        throwToSentry(
-          'There was an error confirming transaction - ',
-          JSON.stringify(error.response.data)
-        )
-
         if (error.response.data.code === 'transaction_not_found') {
           record = rearrangeCypherObject(
             await session.executeWrite((tx) =>
@@ -585,6 +591,11 @@ const bankingMutation = {
             )
           )
         }
+
+        throwToSentry(
+          'There was an error confirming transaction - ',
+          JSON.stringify(error.response.data)
+        )
       }
     )
 
@@ -638,7 +649,10 @@ const bankingMutation = {
     args: { serviceRecordId: string; bankingSlip: string },
     context: Context
   ) => {
-    isAuth(permitAdmin('Campus'), context.auth.roles)
+    isAuth(
+      permitAdmin('Campus'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
@@ -652,7 +666,7 @@ const bankingMutation = {
 
     const submissionResponse = rearrangeCypherObject(
       await session
-        .run(submitBankingSlip, { ...args, auth: context.auth })
+        .run(submitBankingSlip, { ...args, jwt: context.jwt })
         .catch((error: any) =>
           throwToSentry('There was an error submitting banking slip', error)
         )
@@ -667,8 +681,8 @@ const bankingMutation = {
     context: Context
   ) => {
     isAuth(
-      [...permitAdmin('Campus'), ...permitTellerStream()],
-      context.auth.roles
+      ['fishers', ...permitTellerStream()],
+      context.jwt['https://flcadmin.netlify.app/roles']
     )
     const session = context.executionContext.session()
 
@@ -683,7 +697,9 @@ const bankingMutation = {
     const churchLabels: string[] = churchRes.records[0].get('churchLabels')
 
     if (
-      context.auth.roles.includes('tellerStream') &&
+      context.jwt['https://flcadmin.netlify.app/roles'].includes(
+        'tellerStream'
+      ) &&
       !['Stream', 'Campus', 'Oversight', 'Denomination'].some((churchLevel) =>
         churchLabels.includes(churchLevel)
       )
@@ -704,7 +720,7 @@ const bankingMutation = {
 
     const submissionResponse = rearrangeCypherObject(
       await session
-        .run(manuallyConfirmOfferingPayment, { ...args, auth: context.auth })
+        .run(manuallyConfirmOfferingPayment, { ...args, jwt: context.jwt })
         .catch((error: any) =>
           throwToSentry('There was an error confirming offering payment', error)
         )

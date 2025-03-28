@@ -5,9 +5,9 @@ CREATE (serviceRecord:ServiceRecord {createdAt:datetime()})
         serviceRecord.familyPicture = $familyPicture
       WITH serviceRecord
 
-      MATCH (church {id: $churchId}) WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream
+      MATCH (church {id: $churchId}) WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-      MATCH (leader:Member {auth_id: $auth.jwt.sub})
+      MATCH (leader:Member {auth_id: $jwt.sub})
       
       MERGE (serviceDate:TimeGraph {date:date($serviceDate)})
 

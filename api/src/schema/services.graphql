@@ -1,11 +1,11 @@
-type ServiceDay @auth(rules: [{ isAuthenticated: true }]) {
+type ServiceDay {
   day: String!
   dayNumber: Int!
-  fellowship: Fellowship @relationship(type: "MEETS_ON", direction: IN)
+  bacenta: Bacenta @relationship(type: "MEETS_ON", direction: IN)
 }
 
 extend type Stream {
-  servicesThisWeek: [Fellowship!]!
+  servicesThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -20,13 +20,14 @@ extend type Stream {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name
       """
+      columnName: "servicesThisWeek"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -43,15 +44,16 @@ extend type Stream {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS servicesThisWeekCount
       """
+      columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek: [Fellowship!]!
+  cancelledServicesThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -67,13 +69,14 @@ extend type Stream {
 
        WITH DISTINCT record, this
        WHERE record.noServiceReason IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name
       """
+      columnName: "cancelledServicesThisWeek"
     )
   cancelledServicesThisWeekCount: Int
     @cypher(
@@ -91,15 +94,16 @@ extend type Stream {
 
        WITH DISTINCT record, this
        WHERE record.noServiceReason IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS cancelledServicesThisWeekCount
       """
+      columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek: [Fellowship!]!
+  formDefaultersThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -114,18 +118,19 @@ extend type Stream {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships:Active:Fellowship)
-       MATCH (fellowships)-[:MEETS_ON]->(day:ServiceDay)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas:Active:Bacenta)
+       MATCH (bacentas)-[:MEETS_ON]->(day:ServiceDay)
 
-       WITH collect(DISTINCT fellowships) as services, this
-       MATCH (defaulters:Active:Fellowship)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH collect(DISTINCT bacentas) as services, this
+       MATCH (defaulters:Active:Bacenta)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
        WHERE NOT defaulters IN services
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name
       """
+      columnName: "formDefaultersThisWeek"
     )
   formDefaultersThisWeekCount: Int
     @cypher(
@@ -142,20 +147,21 @@ extend type Stream {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships:Active:Fellowship)
-       MATCH (fellowships)-[:MEETS_ON]->(day:ServiceDay)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas:Active:Bacenta)
+       MATCH (bacentas)-[:MEETS_ON]->(day:ServiceDay)
 
-       WITH collect(DISTINCT fellowships) as services, this
-       MATCH (defaulters:Active:Fellowship)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH collect(DISTINCT bacentas) as services, this
+       MATCH (defaulters:Active:Bacenta)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
        WHERE NOT defaulters IN services
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
+      columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek: [Fellowship!]!
+  bankingDefaultersThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -174,13 +180,14 @@ extend type Stream {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY governorship.name
       """
+      columnName: "bankingDefaultersThisWeek"
     )
   bankingDefaultersThisWeekCount: Int
     @cypher(
@@ -201,15 +208,16 @@ extend type Stream {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS bankingDefaultersThisWeekCount
       """
+      columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek: [Fellowship!]!
+  bankedThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -226,13 +234,15 @@ extend type Stream {
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NULL
          AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY governorship.name
       """
+
+      columnName: "bankedThisWeek"
     )
   bankedThisWeekCount: Int
     @cypher(
@@ -251,15 +261,16 @@ extend type Stream {
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NULL
          AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS bankedThisWeekCount
       """
+      columnName: "bankedThisWeekCount"
     )
-  constituencyServicesThisWeek: [Constituency!]!
+  governorshipServicesThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -274,15 +285,16 @@ extend type Stream {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(council:Council)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(council:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships AS governorshipServicesThisWeek ORDER BY governorships.name
       """
+      columnName: "governorshipServicesThisWeek"
     )
-  constituencyServicesThisWeekCount: Int
+  governorshipServicesThisWeekCount: Int
     @cypher(
       statement: """
       MATCH (this)
@@ -297,13 +309,14 @@ extend type Stream {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(council:Council)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(council:Council)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT constituencies)
+      RETURN COUNT(DISTINCT governorships) AS governorshipServicesThisWeekCount
       """
+      columnName: "governorshipServicesThisWeekCount"
     )
   councilServicesThisWeek: [Council!]!
     @cypher(
@@ -325,8 +338,9 @@ extend type Stream {
        WITH DISTINCT councils, this
        MATCH (councils)<-[:HAS]-(this)
 
-      RETURN DISTINCT councils
+      RETURN DISTINCT councils AS councilServicesThisWeek ORDER BY councils.name
       """
+      columnName: "councilServicesThisWeek"
     )
   councilServicesThisWeekCount: Int
     @cypher(
@@ -348,12 +362,13 @@ extend type Stream {
        WITH DISTINCT councils, this
        MATCH (councils)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT councils)
+      RETURN COUNT(DISTINCT councils) AS councilServicesThisWeekCount
       """
+      columnName: "councilServicesThisWeekCount"
     )
 }
 extend type Council {
-  servicesThisWeek: [Fellowship!]!
+  servicesThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -368,13 +383,14 @@ extend type Council {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN bacentas AS servicesThisWeek ORDER BY governorship.name
       """
+      columnName: "servicesThisWeek"
     )
   servicesThisWeekCount: Int
     @cypher(
@@ -391,15 +407,16 @@ extend type Council {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS servicesThisWeekCount
       """
+      columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek: [Fellowship!]!
+  cancelledServicesThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -414,13 +431,14 @@ extend type Council {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.noServiceReason IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN bacentas AS cancelledServicesThisWeek ORDER BY governorship.name
       """
+      columnName: "cancelledServicesThisWeek"
     )
   cancelledServicesThisWeekCount: Int
     @cypher(
@@ -437,15 +455,16 @@ extend type Council {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.noServiceReason IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS cancelledServicesThisWeekCount
       """
+      columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek: [Fellowship!]!
+  formDefaultersThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -460,18 +479,20 @@ extend type Council {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships:Active:Fellowship)
-       MATCH (fellowships)-[:MEETS_ON]->(day:ServiceDay)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas:Active:Bacenta)
+       MATCH (bacentas)-[:MEETS_ON]->(day:ServiceDay)
 
-       WITH collect(DISTINCT fellowships) as services, this
-       MATCH (defaulters:Active:Fellowship)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH collect(DISTINCT bacentas) as services, this
+       MATCH (defaulters:Active:Bacenta)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
        WHERE NOT defaulters IN services
 
-       WITH defaulters, this
+       WITH defaulters, this, governorship
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN DISTINCT defaulters
+        WITH DISTINCT defaulters, governorship
+       RETURN defaulters AS formDefaultersThisWeek ORDER BY governorship.name
       """
+      columnName: "formDefaultersThisWeek"
     )
   formDefaultersThisWeekCount: Int
     @cypher(
@@ -488,20 +509,21 @@ extend type Council {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships:Active:Fellowship)
-       MATCH (fellowships)-[:MEETS_ON]->(day:ServiceDay)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas:Active:Bacenta)
+       MATCH (bacentas)-[:MEETS_ON]->(day:ServiceDay)
 
-       WITH collect(DISTINCT fellowships) as services, this
-       MATCH (defaulters:Active:Fellowship)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH collect(DISTINCT bacentas) as services, this
+       MATCH (defaulters:Active:Bacenta)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
        WHERE NOT defaulters IN services
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
+      columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek: [Fellowship!]!
+  bankingDefaultersThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -520,13 +542,14 @@ extend type Council {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN bacentas AS bankingDefaultersThisWeek ORDER BY governorship.name
       """
+      columnName: "bankingDefaultersThisWeek"
     )
   bankingDefaultersThisWeekCount: Int
     @cypher(
@@ -547,15 +570,16 @@ extend type Council {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS bankingDefaultersThisWeekCount
       """
+      columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek: [Fellowship!]!
+  bankedThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -572,13 +596,14 @@ extend type Council {
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NULL
          AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN bacentas AS bankedThisWeek ORDER BY governorship.name
       """
+      columnName: "bankedThisWeek"
     )
   bankedThisWeekCount: Int
     @cypher(
@@ -597,15 +622,16 @@ extend type Council {
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NULL
          AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS bankedThisWeekCount
       """
+      columnName: "bankedThisWeekCount"
     )
-  constituencyServicesThisWeek: [Constituency!]!
+  governorshipServicesThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -620,15 +646,16 @@ extend type Council {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships AS governorshipServicesThisWeek
       """
+      columnName: "governorshipServicesThisWeek"
     )
-  constituencyServicesThisWeekCount: Int
+  governorshipServicesThisWeekCount: Int
     @cypher(
       statement: """
       MATCH (this)
@@ -643,18 +670,19 @@ extend type Council {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-      MATCH (constituencies)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+      MATCH (governorships)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT constituencies)
+      RETURN COUNT(DISTINCT governorships) AS governorshipServicesThisWeekCount
       """
+      columnName: "governorshipServicesThisWeekCount"
     )
 }
 
-extend type Constituency {
-  servicesThisWeek: [Fellowship!]!
+extend type Governorship {
+  servicesThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -670,13 +698,14 @@ extend type Constituency {
 
        WITH DISTINCT record, this
         WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name
       """
+      columnName: "servicesThisWeek"
     )
   servicesThisWeekCount: Int!
     @cypher(
@@ -694,15 +723,16 @@ extend type Constituency {
 
        WITH DISTINCT record, this
         WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS servicesThisWeekCount
       """
+      columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek: [Fellowship!]!
+  cancelledServicesThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -718,13 +748,14 @@ extend type Constituency {
 
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name
       """
+      columnName: "cancelledServicesThisWeek"
     )
   cancelledServicesThisWeekCount: Int
     @cypher(
@@ -742,15 +773,16 @@ extend type Constituency {
 
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS cancelledServicesThisWeekCount
       """
+      columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek: [Fellowship!]!
+  formDefaultersThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -765,19 +797,20 @@ extend type Constituency {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships:Active:Fellowship)
-       MATCH (fellowships)-[:MEETS_ON]->(day:ServiceDay)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas:Active:Bacenta)
+       MATCH (bacentas)-[:MEETS_ON]->(day:ServiceDay)
 
-       WITH collect(DISTINCT fellowships) as services, this
-       MATCH (defaulters:Active:Fellowship)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(this)
+       WITH collect(DISTINCT bacentas) as services, this
+       MATCH (defaulters:Active:Bacenta)<-[:HAS]-(this)
        WHERE NOT defaulters IN services
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
 
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name
       """
+      columnName: "formDefaultersThisWeek"
     )
   formDefaultersThisWeekCount: Int
     @cypher(
@@ -794,21 +827,22 @@ extend type Constituency {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships:Active:Fellowship)
-       MATCH (fellowships)-[:MEETS_ON]->(day:ServiceDay)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas:Active:Bacenta)
+       MATCH (bacentas)-[:MEETS_ON]->(day:ServiceDay)
 
-       WITH collect(DISTINCT fellowships) as services, this
-       MATCH (defaulters:Active:Fellowship)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(this)
+       WITH collect(DISTINCT bacentas) as services, this
+       MATCH (defaulters:Active:Bacenta)<-[:HAS]-(this)
        WHERE NOT defaulters IN services
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
 
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
+      columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek: [Fellowship!]!
+  bankingDefaultersThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -827,13 +861,14 @@ extend type Constituency {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY bacentas.name
       """
+      columnName: "bankingDefaultersThisWeek"
     )
   bankingDefaultersThisWeekCount: Int
     @cypher(
@@ -854,15 +889,16 @@ extend type Constituency {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS bankingDefaultersThisWeekCount
       """
+      columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek: [Fellowship!]!
+  bankedThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -879,13 +915,14 @@ extend type Constituency {
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NULL
          AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY bacentas.name
       """
+      columnName: "bankedThisWeek"
     )
   bankedThisWeekCount: Int
     @cypher(
@@ -904,20 +941,21 @@ extend type Constituency {
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NULL
          AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS bankedThisWeekCount
       """
+      columnName: "bankedThisWeekCount"
     )
 }
 
 interface Record {
   id: ID
   createdAt: DateTime!
-  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
+  created_by: Member @declareRelationship
 }
 
 interface HadService {
@@ -926,17 +964,18 @@ interface HadService {
   income: Float!
 }
 
-type ServiceRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
+type ServiceRecord implements Record {
   id: ID!
   createdAt: DateTime!
-  created_by: Member
+  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int
     @cypher(
       statement: """
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      RETURN date(date.date).week
+      RETURN date(date.date).week AS week
       """
+      columnName: "week"
     )
   attendance: Int
   income: Float
@@ -959,10 +998,11 @@ type ServiceRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
-      WHERE church:Fellowship OR church:Constituency OR church:Council OR church:Stream
+      WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)<-[:HAS*1..4]-(stream:Stream)
-      RETURN stream.name
+      RETURN stream.name AS stream
       """
+      columnName: "stream"
     )
   bankedBy: Member
     @cypher(
@@ -970,28 +1010,30 @@ type ServiceRecord implements Record @auth(rules: [{ isAuthenticated: true }]) {
       MATCH (this)
       WHERE NOT  (this:NoService)
       MATCH (this)<-[:CONFIRMED_BANKING_FOR | :UPLOADED_SLIP_FOR | :OFFERING_BANKED_BY]-(member:Member)
-      RETURN member
+      RETURN member AS bankedBy
       """
+      columnName: "bankedBy"
     )
 }
 
-type NoService implements Record @auth(rules: [{ isAuthenticated: true }]) {
+type NoService implements Record {
   id: ID!
   createdAt: DateTime!
-  created_by: Member!
+  created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int!
     @cypher(
       statement: """
       MATCH (this)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      RETURN date(date.date).week
+      RETURN date(date.date).week AS week
       """
+      columnName: "week"
     )
   serviceLog: ServiceLog @relationship(type: "HAS_SERVICE", direction: IN)
   noServiceReason: String!
 }
 
-type ServiceLog @auth(rules: [{ isAuthenticated: true }]) {
+type ServiceLog {
   id: ID
   historyRecord: String #leader was transferred to
   createdAt: TimeGraph @relationship(type: "RECORDED_ON", direction: OUT)
@@ -1003,14 +1045,13 @@ type ServiceLog @auth(rules: [{ isAuthenticated: true }]) {
   bussingRecords: [BussingRecord!]!
     @relationship(type: "HAS_BUSSING", direction: OUT)
   leaders: [Member!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  fellowship: [Fellowship!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  bacenta: [Bacenta!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  constituency: [Constituency!]!
+  governorship: [Governorship!]!
     @relationship(type: "HAS_HISTORY", direction: IN)
   council: [Council!]! @relationship(type: "HAS_HISTORY", direction: IN)
   stream: [Stream!]! @relationship(type: "HAS_HISTORY", direction: IN)
   ministry: [Ministry!]! @relationship(type: "HAS_HISTORY", direction: IN)
   hub: [Hub!]! @relationship(type: "HAS_HISTORY", direction: IN)
+  bacenta: [Bacenta!]! @relationship(type: "HAS_HISTORY", direction: IN)
 }
 
 extend type Mutation {
@@ -1046,25 +1087,24 @@ extend type Mutation {
     noServiceReason: String!
   ): NoService!
 
-  UndoCancelledService(serviceRecordId: ID!): Fellowship!
-    @auth(
-      rules: [
-        {
-          roles: [
-            "adminCampus"
-            "adminStream"
-            "adminCouncil"
-            "adminConstituency"
-          ]
-        }
-      ]
+  UndoCancelledService(serviceRecordId: ID!): Bacenta!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "adminStream" }
+          { roles_INCLUDES: "adminCouncil" }
+          { roles_INCLUDES: "adminGovernorship" }
+        ]
+      }
     )
     @cypher(
       statement: """
-      MATCH (this:NoService {id: $serviceRecordId})<-[:HAS_SERVICE]-(serviceLog:ServiceLog)<-[:HAS_HISTORY]-(fellowship:Fellowship)
+      MATCH (this:NoService {id: $serviceRecordId})<-[:HAS_SERVICE]-(serviceLog:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)
       DETACH DELETE this
-      RETURN fellowship
+      RETURN bacenta
       """
+      columnName: "bacenta"
     )
 }
 
@@ -1072,8 +1112,9 @@ extend type Campus {
   activeStreamCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream)
+      MATCH (this)-[:HAS]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream) AS activeStreamCount
       """
+      columnName: "activeStreamCount"
     )
   streamServicesThisWeek: [Stream!]!
     @cypher(
@@ -1090,6 +1131,7 @@ extend type Campus {
 
       RETURN DISTINCT streams
       """
+      columnName: "streams"
     )
   streamServicesThisWeekCount: Int!
     @cypher(
@@ -1104,8 +1146,9 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamServicesThisWeekCount
       """
+      columnName: "streamServicesThisWeekCount"
     )
   streamCancelledServicesThisWeek: [Stream!]!
     @cypher(
@@ -1121,8 +1164,9 @@ extend type Campus {
        MATCH (streams)<-[:HAS]-(this)
 
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamCancelledServicesThisWeek ORDER BY streams.name
       """
+      columnName: "streamCancelledServicesThisWeek"
     )
   streamCancelledServicesThisWeekCount: Int
     @cypher(
@@ -1137,8 +1181,9 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamCancelledServicesThisWeekCount
       """
+      columnName: "streamCancelledServicesThisWeekCount"
     )
   streamFormDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1159,8 +1204,9 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
+      columnName: "streamFormDefaultersThisWeek"
     )
   streamFormDefaultersThisWeekCount: Int
     @cypher(
@@ -1180,8 +1226,9 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
+      columnName: "streamFormDefaultersThisWeekCount"
     )
   streamBankingDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1200,8 +1247,9 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankingDefaultersThisWeek ORDER BY streams.name
       """
+      columnName: "streamBankingDefaultersThisWeek"
     )
   streamBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1220,8 +1268,9 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankingDefaultersThisWeekCount
       """
+      columnName: "streamBankingDefaultersThisWeekCount"
     )
   streamBankedThisWeek: [Stream!]!
     @cypher(
@@ -1238,8 +1287,9 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankedThisWeek ORDER BY streams.name
       """
+      columnName: "streamBankedThisWeek"
     )
   streamBankedThisWeekCount: Int
     @cypher(
@@ -1256,13 +1306,14 @@ extend type Campus {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankedThisWeekCount
       """
+      columnName: "streamBankedThisWeekCount"
     )
 }
 
 extend type Campus {
-  servicesThisWeek: [Fellowship!]!
+  servicesThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1277,13 +1328,14 @@ extend type Campus {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name
       """
+      columnName: "servicesThisWeek"
     )
   servicesThisWeekCount: Int
     @cypher(
@@ -1300,15 +1352,16 @@ extend type Campus {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS servicesThisWeekCount
       """
+      columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek: [Fellowship!]!
+  cancelledServicesThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1323,13 +1376,14 @@ extend type Campus {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this WHERE record.noServiceReason IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name
       """
+      columnName: "cancelledServicesThisWeek"
     )
   cancelledServicesThisWeekCount: Int
     @cypher(
@@ -1346,15 +1400,16 @@ extend type Campus {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this WHERE record.noServiceReason IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS cancelledServicesThisWeekCount
       """
+      columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek: [Fellowship!]!
+  formDefaultersThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1369,18 +1424,19 @@ extend type Campus {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships:Active:Fellowship)
-       MATCH (fellowships)-[:MEETS_ON]->(day:ServiceDay)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas:Active:Bacenta)
+       MATCH (bacentas)-[:MEETS_ON]->(day:ServiceDay)
 
-       WITH collect(DISTINCT fellowships) as services, this
-       MATCH (defaulters:Active:Fellowship)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH collect(DISTINCT bacentas) as services, this
+       MATCH (defaulters:Active:Bacenta)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
        WHERE NOT defaulters IN services
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name
       """
+      columnName: "formDefaultersThisWeek"
     )
   formDefaultersThisWeekCount: Int
     @cypher(
@@ -1397,20 +1453,21 @@ extend type Campus {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT record, this
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships:Active:Fellowship)
-       MATCH (fellowships)-[:MEETS_ON]->(day:ServiceDay)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas:Active:Bacenta)
+       MATCH (bacentas)-[:MEETS_ON]->(day:ServiceDay)
 
-       WITH collect(DISTINCT fellowships) as services, this
-       MATCH (defaulters:Active:Fellowship)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH collect(DISTINCT bacentas) as services, this
+       MATCH (defaulters:Active:Bacenta)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
        WHERE NOT defaulters IN services
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
+      columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek: [Fellowship!]!
+  bankingDefaultersThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1429,13 +1486,14 @@ extend type Campus {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY bacentas.name
       """
+      columnName: "bankingDefaultersThisWeek"
     )
   bankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1456,15 +1514,16 @@ extend type Campus {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS bankingDefaultersThisWeekCount
       """
+      columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek: [Fellowship!]!
+  bankedThisWeek: [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1481,13 +1540,14 @@ extend type Campus {
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NULL
          AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT fellowships
+      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY bacentas.name
       """
+      columnName: "bankedThisWeek"
     )
   bankedThisWeekCount: Int
     @cypher(
@@ -1506,15 +1566,16 @@ extend type Campus {
        WITH DISTINCT record, this
         WHERE record.noServiceReason IS NULL
          AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships) WHERE fellowships:Fellowship OR fellowships:ClosedFellowship
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-       WITH DISTINCT fellowships, this
-       MATCH (fellowships)<-[:HAS]-(bacenta:Bacenta)<-[:HAS]-(constituency:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT bacentas, this
+       MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT fellowships)
+      RETURN COUNT(DISTINCT bacentas) AS bankedThisWeekCount
       """
+      columnName: "bankedThisWeekCount"
     )
-  constituencyServicesThisWeek: [Constituency!]!
+  governorshipServicesThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1529,15 +1590,16 @@ extend type Campus {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships AS governorshipServicesThisWeek ORDER BY governorships.name
       """
+      columnName: "governorshipServicesThisWeek"
     )
-  constituencyServicesThisWeekCount: Int
+  governorshipServicesThisWeekCount: Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1552,13 +1614,14 @@ extend type Campus {
       MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
 
        WITH DISTINCT this, record WHERE record.attendance IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT constituencies)
+      RETURN COUNT(DISTINCT governorships) AS governorshipServicesThisWeekCount
       """
+      columnName: "governorshipServicesThisWeekCount"
     )
   councilServicesThisWeek: [Council!]!
     @cypher(
@@ -1580,8 +1643,9 @@ extend type Campus {
        WITH DISTINCT councils, this
        MATCH (councils)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT councils
+      RETURN DISTINCT councils AS councilServicesThisWeek ORDER BY councils.name
       """
+      columnName: "councilServicesThisWeek"
     )
   councilServicesThisWeekCount: Int
     @cypher(
@@ -1603,8 +1667,9 @@ extend type Campus {
        WITH DISTINCT councils, this
        MATCH (councils)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT councils)
+      RETURN COUNT(DISTINCT councils) AS councilServicesThisWeekCount
       """
+      columnName: "councilServicesThisWeekCount"
     )
 }
 
@@ -1612,8 +1677,9 @@ extend type Oversight {
   activeStreamCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream)
+      MATCH (this)-[:HAS*2]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream) AS activeStreamCount
       """
+      columnName: "activeStreamCount"
     )
   streamServicesThisWeek: [Stream!]!
     @cypher(
@@ -1630,6 +1696,7 @@ extend type Oversight {
 
       RETURN DISTINCT streams
       """
+      columnName: "streams"
     )
   streamServicesThisWeekCount: Int!
     @cypher(
@@ -1644,8 +1711,9 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamServicesThisWeekCount
       """
+      columnName: "streamServicesThisWeekCount"
     )
   streamCancelledServicesThisWeek: [Stream!]!
     @cypher(
@@ -1661,8 +1729,9 @@ extend type Oversight {
        MATCH (streams)<-[:HAS*2]-(this)
 
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamCancelledServicesThisWeek ORDER BY streams.name
       """
+      columnName: "streamCancelledServicesThisWeek"
     )
   streamCancelledServicesThisWeekCount: Int
     @cypher(
@@ -1677,8 +1746,9 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamCancelledServicesThisWeekCount
       """
+      columnName: "streamCancelledServicesThisWeekCount"
     )
   streamFormDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1699,8 +1769,9 @@ extend type Oversight {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
+      columnName: "streamFormDefaultersThisWeek"
     )
   streamFormDefaultersThisWeekCount: Int
     @cypher(
@@ -1720,8 +1791,9 @@ extend type Oversight {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
+      columnName: "streamFormDefaultersThisWeekCount"
     )
   streamBankingDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1740,8 +1812,9 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankingDefaultersThisWeek ORDER BY streams.name
       """
+      columnName: "streamBankingDefaultersThisWeek"
     )
   streamBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1760,8 +1833,9 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankingDefaultersThisWeekCount
       """
+      columnName: "streamBankingDefaultersThisWeekCount"
     )
   streamBankedThisWeek: [Stream!]!
     @cypher(
@@ -1778,8 +1852,9 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankedThisWeek ORDER BY streams.name
       """
+      columnName: "streamBankedThisWeek"
     )
   streamBankedThisWeekCount: Int
     @cypher(
@@ -1796,8 +1871,9 @@ extend type Oversight {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*2]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankedThisWeekCount
       """
+      columnName: "streamBankedThisWeekCount"
     )
 }
 
@@ -1805,8 +1881,9 @@ extend type Denomination {
   activeStreamCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream)
+      MATCH (this)-[:HAS*3]->(stream:Stream:Active) RETURN COUNT(DISTINCT stream) AS activeStreamCount
       """
+      columnName: "activeStreamCount"
     )
   streamServicesThisWeek: [Stream!]!
     @cypher(
@@ -1821,8 +1898,9 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamServicesThisWeek ORDER BY streams.name
       """
+      columnName: "streamServicesThisWeek"
     )
   streamServicesThisWeekCount: Int!
     @cypher(
@@ -1837,8 +1915,9 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamServicesThisWeekCount
       """
+      columnName: "streamServicesThisWeekCount"
     )
   streamCancelledServicesThisWeek: [Stream!]!
     @cypher(
@@ -1854,8 +1933,9 @@ extend type Denomination {
        MATCH (streams)<-[:HAS*3]-(this)
 
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamCancelledServicesThisWeek ORDER BY streams.name
       """
+      columnName: "streamCancelledServicesThisWeek"
     )
   streamCancelledServicesThisWeekCount: Int
     @cypher(
@@ -1870,8 +1950,9 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamCancelledServicesThisWeekCount
       """
+      columnName: "streamCancelledServicesThisWeekCount"
     )
   streamFormDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1892,8 +1973,9 @@ extend type Denomination {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN DISTINCT defaulters
+       RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
+      columnName: "streamFormDefaultersThisWeek"
     )
   streamFormDefaultersThisWeekCount: Int
     @cypher(
@@ -1913,8 +1995,9 @@ extend type Denomination {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
-       RETURN COUNT(DISTINCT defaulters)
+       RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
+      columnName: "streamFormDefaultersThisWeekCount"
     )
   streamBankingDefaultersThisWeek: [Stream!]!
     @cypher(
@@ -1933,8 +2016,9 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankingDefaultersThisWeek ORDER BY streams.name
       """
+      columnName: "streamBankingDefaultersThisWeek"
     )
   streamBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1953,8 +2037,9 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankingDefaultersThisWeekCount
       """
+      columnName: "streamBankingDefaultersThisWeekCount"
     )
   streamBankedThisWeek: [Stream!]!
     @cypher(
@@ -1971,8 +2056,9 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN DISTINCT streams
+      RETURN DISTINCT streams AS streamBankedThisWeek ORDER BY streams.name
       """
+      columnName: "streamBankedThisWeek"
     )
   streamBankedThisWeekCount: Int
     @cypher(
@@ -1989,7 +2075,8 @@ extend type Denomination {
        WITH DISTINCT streams, this
        MATCH (streams)<-[:HAS*3]-(this)
 
-      RETURN COUNT(DISTINCT streams)
+      RETURN COUNT(DISTINCT streams) AS streamBankedThisWeekCount
       """
+      columnName: "streamBankedThisWeekCount"
     )
 }

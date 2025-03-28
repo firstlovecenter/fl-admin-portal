@@ -33,7 +33,7 @@ const SearchPageMobile = () => {
         ...member.campusSearch,
         ...member.streamSearch,
         ...member.councilSearch,
-        ...member.constituencySearch,
+        ...member.governorshipSearch,
         ...member.bacentaSearch,
         ...member.fellowshipSearch,
         ...member.creativeArtsSearch,

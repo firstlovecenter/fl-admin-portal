@@ -44,7 +44,7 @@ const Combobox = (props: ComboBoxProps) => {
           name: row[`${suggestionText}`],
           id: row[`${suggestionId}`],
           bacenta: row.bacenta,
-          constituency: row.constituency,
+          governorship: row.governorship,
         }))
       )
     },

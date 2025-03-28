@@ -20,6 +20,27 @@ export const GET_MEMBER_TITLES = gql`
   }
 `
 
+export const DELETE_MEMBER_TITLES = gql`
+  mutation DeleteMemberTitles($id: ID!) {
+    DeleteMemberTitles(id: $id) {
+      id
+
+      firstName
+      lastName
+      fullName
+      nameWithTitle
+      titleConnection {
+        edges {
+          date
+          node {
+            name
+          }
+        }
+      }
+    }
+  }
+`
+
 export const UPDATE_MEMBER_APPOINTMENT_DATE = gql`
   mutation UpdateMemberAppointmentDate($id: ID!, $appointmentDate: String!) {
     UpdateMemberAppointmentDate(id: $id, appointmentDate: $appointmentDate) {

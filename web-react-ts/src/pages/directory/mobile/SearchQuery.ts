@@ -11,7 +11,7 @@ export const MEMBER_SEARCH = gql`
         nameWithTitle
         pictureUrl
         stream_name
-        fellowship {
+        bacenta {
           id
           name
         }
@@ -68,7 +68,7 @@ export const MEMBER_SEARCH = gql`
           pictureUrl
         }
       }
-      constituencySearch(key: $key, limit: $limit) {
+      governorshipSearch(key: $key, limit: $limit) {
         id
         name
         leader {

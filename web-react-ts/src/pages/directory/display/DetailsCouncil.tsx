@@ -6,7 +6,7 @@ import { permitAdmin } from 'permission-utils'
 import React, { useContext, useEffect } from 'react'
 import { DISPLAY_COUNCIL } from './ReadQueries'
 import useClickCard from 'hooks/useClickCard'
-import { DetailsArray } from './DetailsFellowship'
+import { DetailsArray } from './DetailsBacenta'
 
 const DetailsCouncil = () => {
   const { councilId } = useContext(ChurchContext)
@@ -29,28 +29,22 @@ const DetailsCouncil = () => {
       width: 12,
     },
     {
-      title: 'Constituencies',
-      number: council?.constituencyCount || 0,
-      link: `/${`Constituency`.toLowerCase()}/displayall`,
+      title: 'Governorships',
+      number: council?.governorshipCount || 0,
+      link: `/${`Governorship`.toLowerCase()}/displayall`,
     },
     { title: 'Target', number: council?.target, link: '#' },
     { title: 'Pastors', number: council?.pastorCount, link: '#' },
     {
-      title: 'Bacentas',
-      number: council?.activeBacentaCount,
-      vacationCount: council?.vacationBacentaCount,
+      title: 'Greens',
+      number: council?.activeGraduatedBacentaCount,
+      vacationCount: council?.vacationGraduatedBacentaCount,
       link: `#`,
     },
     {
-      title: 'IC Bacentas',
+      title: 'Reds',
       number: council?.activeIcBacentaCount,
       vacationCount: council?.vacationIcBacentaCount,
-      link: '#',
-    },
-    {
-      title: 'Fellowships',
-      number: council?.activeFellowshipCount,
-      vacationCount: council?.vacationFellowshipCount,
       link: '#',
     },
     {
@@ -65,12 +59,6 @@ const DetailsCouncil = () => {
       link: '#',
       creativearts: true,
     },
-    {
-      title: 'Hub Fellowships',
-      number: council?.hubFellowshipCount,
-      link: `#`,
-      creativearts: true,
-    },
   ]
 
   return (
@@ -83,12 +71,12 @@ const DetailsCouncil = () => {
         leader={council?.leader}
         admin={council?.admin}
         churchType={council?.__typename}
-        subChurch="Constituency"
+        subChurch="Governorship"
         details={details}
         editlink="/council/editcouncil"
         editPermitted={permitAdmin('Stream')}
         history={council?.history.length !== 0 && council?.history}
-        buttons={council ? council.constituencies : []}
+        buttons={council ? council.governorships : []}
         breadcrumb={breadcrumb && breadcrumb}
       />
     </ApolloWrapper>

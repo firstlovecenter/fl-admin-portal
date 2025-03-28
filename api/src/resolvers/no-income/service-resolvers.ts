@@ -18,7 +18,10 @@ const serviceNoIncomeMutations = {
     args: Member,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Fellowship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(
@@ -68,7 +71,7 @@ const serviceNoIncomeMutations = {
       await session.executeWrite((tx) =>
         tx.run(recordService, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
         })
       )
     )

@@ -10,7 +10,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH  (stream:Stream {id: $streamId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.historyRecord = $historyRecord,
           log.timeStamp = datetime()
@@ -31,7 +31,7 @@ extend type Mutation {
       CREATE (newLeader)-[r:HAS_HISTORY]->(log)
          SET r.current = true
          WITH log
-      RETURN COUNT(log)
+      RETURN COUNT(log) AS logCount
       }
 
       WITH log,stream
@@ -40,7 +40,7 @@ extend type Mutation {
         WITH log WHERE $oldLeaderId IS NOT NULL
         MATCH (oldLeader:Active:Member {id: $oldLeaderId})
         CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log)  AS logCount
       }
 
 
@@ -50,7 +50,7 @@ extend type Mutation {
         WITH log WHERE $oldCampusId IS NOT NULL
         MATCH (campus:Campus {id: $oldCampusId})
         MERGE (campus)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       WITH log,stream
@@ -59,11 +59,12 @@ extend type Mutation {
         WITH log WHERE $newCampusId IS NOT NULL
         MATCH (campus:Campus {id: $newCampusId})
         MERGE (campus)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       RETURN stream
       """
+      columnName: "stream"
     )
 
   LogCampusHistory(
@@ -77,7 +78,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH  (campus:Campus {id: $campusId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.historyRecord = $historyRecord,
           log.timeStamp = datetime()
@@ -98,7 +99,7 @@ extend type Mutation {
       CREATE (newLeader)-[r:HAS_HISTORY]->(log)
          SET r.current = true
          WITH log
-      RETURN COUNT(log)
+      RETURN COUNT(log) AS logCount
       }
 
       WITH log,campus
@@ -107,7 +108,7 @@ extend type Mutation {
         WITH log WHERE $oldLeaderId IS NOT NULL
         MATCH (oldLeader:Active:Member {id: $oldLeaderId})
         CREATE (oldLeader)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
 
@@ -117,7 +118,7 @@ extend type Mutation {
         WITH log WHERE $oldOversightId IS NOT NULL
         MATCH (oversight:Oversight {id: $oldOversightId})
         MERGE (oversight)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       WITH log,campus
@@ -126,11 +127,12 @@ extend type Mutation {
         WITH log WHERE $newOversightId IS NOT NULL
         MATCH (oversight:Oversight {id: $newOversightId})
         MERGE (oversight)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       RETURN campus
       """
+      columnName: "campus"
     )
 
   LogOversightHistory(
@@ -144,7 +146,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH  (oversight:Oversight {id: $oversightId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.historyRecord = $historyRecord,
           log.timeStamp = datetime()
@@ -165,7 +167,7 @@ extend type Mutation {
       CREATE (newLeader)-[r:HAS_HISTORY]->(log)
          SET r.current = true
          WITH log
-      RETURN COUNT(log)
+      RETURN COUNT(log) AS logCount
       }
 
       WITH log, oversight
@@ -174,7 +176,7 @@ extend type Mutation {
         WITH log WHERE $oldLeaderId IS NOT NULL
         MATCH (oldLeader:Active:Member {id: $oldLeaderId})
         CREATE (oldLeader)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
 
@@ -184,7 +186,7 @@ extend type Mutation {
         WITH log WHERE $oldDenominationId IS NOT NULL
         MATCH (denomination:Denomination {id: $oldDenominationId})
         MERGE (denomination)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       WITH log, oversight
@@ -193,11 +195,12 @@ extend type Mutation {
         WITH log WHERE $newDenominationId IS NOT NULL
         MATCH (denomination:Denomination {id: $newDenominationId})
         MERGE (denomination)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       RETURN oversight
       """
+      columnName: "oversight"
     )
 
   LogDenominationHistory(
@@ -209,7 +212,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH  (denomination:Denomination {id: $denominationId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.historyRecord = $historyRecord,
           log.timeStamp = datetime()
@@ -230,7 +233,7 @@ extend type Mutation {
       CREATE (newLeader)-[r:HAS_HISTORY]->(log)
          SET r.current = true
          WITH log
-      RETURN COUNT(log)
+      RETURN COUNT(log) AS logCount
       }
 
       WITH log,denomination
@@ -239,11 +242,12 @@ extend type Mutation {
         WITH log WHERE $oldLeaderId IS NOT NULL
         MATCH (oldLeader:Active:Member {id: $oldLeaderId})
         CREATE (oldLeader)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       RETURN denomination
       """
+      columnName: "denomination"
     )
 
   LogMemberHistory(ids: [ID], historyRecord: String!): Member
@@ -258,7 +262,7 @@ extend type Mutation {
       MERGE (date:TimeGraph {date: date()})
 
       WITH log, date
-      MATCH (author:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (author:Active:Member {auth_id: $jwt.sub})
        MERGE (log)-[:LOGGED_BY]->(author)
        MERGE (log)-[:RECORDED_ON]->(date)
 
@@ -270,8 +274,9 @@ extend type Mutation {
 
        WITH node WHERE node:Active:Member
 
-      RETURN node
+      RETURN node AS member
       """
+      columnName: "member"
     )
 
   LogFellowshipHistory(
@@ -285,7 +290,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH  (fellowship:Fellowship {id: $fellowshipId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.historyRecord = $historyRecord,
           log.timeStamp = datetime()
@@ -301,7 +306,7 @@ extend type Mutation {
         WITH log WHERE $oldBacentaId IS NOT NULL
         MATCH (oldBacenta:Bacenta {id: $oldBacentaId})
         MERGE (oldBacenta)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       WITH log,fellowship
@@ -310,24 +315,25 @@ extend type Mutation {
         WITH log WHERE $newBacentaId IS NOT NULL
         MATCH (newBacenta:Bacenta {id: $newBacentaId})
         MERGE (newBacenta)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       RETURN fellowship
       """
+      columnName: "fellowship"
     )
   LogBacentaHistory(
     bacentaId: ID!
     historyRecord: String!
     newLeaderId: ID
     oldLeaderId: ID
-    newConstituencyId: ID
-    oldConstituencyId: ID
+    newGovernorshipId: ID
+    oldGovernorshipId: ID
   ): Bacenta
     @cypher(
       statement: """
        MATCH  (bacenta:Bacenta {id: $bacentaId})
-       MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+       MATCH (admin:Active:Member {auth_id: $jwt.sub})
        CREATE (log:HistoryLog {id: apoc.create.uuid()})
          SET log.historyRecord = $historyRecord,
            log.timeStamp = datetime()
@@ -350,52 +356,53 @@ extend type Mutation {
        CREATE (newLeader)-[:HAS_HISTORY]->(log)
 
           WITH log
-       RETURN COUNT(log)
+       RETURN COUNT(log) AS logCount
        }
 
 
        WITH log,bacenta
        CALL {
          WITH log
-         WITH log WHERE $oldConstituencyId IS NOT NULL
-         MATCH (oldconstituency:Constituency {id: $oldConstituencyId})
-         MERGE (oldconstituency)-[:OLD_HISTORY]->(log)
+         WITH log WHERE $oldGovernorshipId IS NOT NULL
+         MATCH (oldgovernorship:Governorship {id: $oldGovernorshipId})
+         MERGE (oldgovernorship)-[:OLD_HISTORY]->(log)
          RETURN COUNT(log)
        }
 
        WITH log,bacenta
        CALL {
          WITH log
-         WITH log WHERE $newConstituencyId IS NOT NULL
-         MATCH (newconstituency:Constituency {id: $newConstituencyId})
-         MERGE (newconstituency)-[:HAS_HISTORY]->(log)
-         RETURN COUNT(log)
+         WITH log WHERE $newGovernorshipId IS NOT NULL
+         MATCH (newgovernorship:Governorship {id: $newGovernorshipId})
+         MERGE (newgovernorship)-[:HAS_HISTORY]->(log)
+         RETURN COUNT(log) AS logCount
        }
 
        RETURN bacenta
       """
+      columnName: "bacenta"
     )
-  LogConstituencyHistory(
-    constituencyId: ID!
+  LogGovernorshipHistory(
+    governorshipId: ID!
     historyRecord: String!
     newLeaderId: ID
     oldLeaderId: ID
     newCouncilId: ID
     oldCouncilId: ID
-  ): Constituency
+  ): Governorship
     @cypher(
       statement: """
-      MATCH (constituency:Constituency {id: $constituencyId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (governorship:Governorship {id: $governorshipId})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.historyRecord = $historyRecord,
           log.timeStamp = datetime()
       MERGE (date:TimeGraph {date: date()})
-      MERGE (constituency)-[r:HAS_HISTORY]->(log)
+      MERGE (governorship)-[r:HAS_HISTORY]->(log)
       MERGE (log)-[:RECORDED_ON]->(date)
       MERGE (log)-[:LOGGED_BY]->(admin)
 
-      WITH log,constituency
+      WITH log,governorship
       CALL{
         WITH log
         WITH log WHERE $newLeaderId IS NOT NULL
@@ -407,39 +414,40 @@ extend type Mutation {
       CREATE (newLeader)-[r:HAS_HISTORY]->(log)
          SET r.current = true
          WITH log
-      RETURN COUNT(log)
+      RETURN COUNT(log) AS logCount
       }
 
-      WITH log,constituency
+      WITH log,governorship
       CALL {
         WITH log
         WITH log WHERE $oldLeaderId IS NOT NULL
         MATCH (oldLeader:Active:Member {id: $oldLeaderId})
         CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
 
-      WITH log,constituency
+      WITH log,governorship
       CALL {
         WITH log
         WITH log WHERE $oldCouncilId IS NOT NULL
         MATCH (council:Council {id: $oldCouncilId})
         MERGE (council)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
-      WITH log,constituency
+      WITH log,governorship
       CALL {
         WITH log
         WITH log WHERE $newCouncilId IS NOT NULL
         MATCH (council:Council {id: $newCouncilId})
         MERGE (council)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
-      RETURN constituency
+      RETURN governorship
       """
+      columnName: "governorship"
     )
 
   LogCouncilHistory(
@@ -453,7 +461,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH  (council:Council {id: $councilId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.historyRecord = $historyRecord,
           log.timeStamp = datetime()
@@ -474,7 +482,7 @@ extend type Mutation {
       CREATE (newLeader)-[r:HAS_HISTORY]->(log)
          SET r.current = true
          WITH log
-      RETURN COUNT(log)
+      RETURN COUNT(log) AS logCount
       }
 
       WITH log,council
@@ -483,7 +491,7 @@ extend type Mutation {
         WITH log WHERE $oldLeaderId IS NOT NULL
         MATCH (oldLeader:Active:Member {id: $oldLeaderId})
         CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
 
@@ -493,7 +501,7 @@ extend type Mutation {
         WITH log WHERE $oldStreamId IS NOT NULL
         MATCH (council:Council {id: $oldStreamId})
         MERGE (council)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       WITH log,council
@@ -502,11 +510,12 @@ extend type Mutation {
         WITH log WHERE $newStreamId IS NOT NULL
         MATCH (council:Council {id: $newStreamId})
         MERGE (council)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       RETURN council
       """
+      columnName: "council"
     )
 
   ### CREATIVE ARTS ###
@@ -521,7 +530,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH  (creativeArts:CreativeArts {id: $creativeArtsId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.historyRecord = $historyRecord,
           log.timeStamp = datetime()
@@ -542,7 +551,7 @@ extend type Mutation {
       CREATE (newLeader)-[r:HAS_HISTORY]->(log)
          SET r.current = true
          WITH log
-      RETURN COUNT(log)
+      RETURN COUNT(log) AS logCount
       }
 
       WITH log, creativeArts
@@ -551,7 +560,7 @@ extend type Mutation {
         WITH log WHERE $oldLeaderId IS NOT NULL
         MATCH (oldLeader:Active:Member {id: $oldLeaderId})
         CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
 
@@ -561,7 +570,7 @@ extend type Mutation {
         WITH log WHERE $oldCampusId IS NOT NULL
         MATCH (campus:Campus {id: $oldCampusId})
         MERGE (campus)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       WITH log, creativeArts
@@ -570,11 +579,12 @@ extend type Mutation {
         WITH log WHERE $newCampusId IS NOT NULL
         MATCH (campus:Campus {id: $newCampusId})
         MERGE (campus)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
       }
 
       RETURN creativeArts
       """
+      columnName: "creativeArts"
     )
 
   LogMinistryHistory(
@@ -588,7 +598,7 @@ extend type Mutation {
     @cypher(
       statement: """
         MATCH  (ministry:Ministry {id: $ministryId})
-        MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+        MATCH (admin:Active:Member {auth_id: $jwt.sub})
         CREATE (log:HistoryLog {id: apoc.create.uuid()})
           SET log.historyRecord = $historyRecord,
             log.timeStamp = datetime()
@@ -609,7 +619,7 @@ extend type Mutation {
         CREATE (newLeader)-[r:HAS_HISTORY]->(log)
            SET r.current = true
            WITH log
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
         }
 
         WITH log, ministry
@@ -618,7 +628,7 @@ extend type Mutation {
           WITH log WHERE $oldLeaderId IS NOT NULL
           MATCH (oldLeader:Active:Member {id: $oldLeaderId})
           CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, ministry
@@ -627,7 +637,7 @@ extend type Mutation {
           WITH log WHERE $oldCreativeArtsId IS NOT NULL
           MATCH (creativeArts:CreativeArts {id: $oldCreativeArtsId})
           MERGE (creativeArts)-[:OLD_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, ministry
@@ -636,11 +646,12 @@ extend type Mutation {
           WITH log WHERE $newCreativeArtsId IS NOT NULL
           MATCH (creativeArts:CreativeArts {id: $newCreativeArtsId})
           MERGE (creativeArts)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
       RETURN ministry
       """
+      columnName: "ministry"
     )
   LogMinistryHistoryWithStream(
     ministryId: ID!
@@ -653,7 +664,7 @@ extend type Mutation {
     @cypher(
       statement: """
         MATCH  (ministry:Ministry {id: $ministryId})
-        MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+        MATCH (admin:Active:Member {auth_id: $jwt.sub})
         CREATE (log:HistoryLog {id: apoc.create.uuid()})
           SET log.historyRecord = $historyRecord,
             log.timeStamp = datetime()
@@ -674,7 +685,7 @@ extend type Mutation {
         CREATE (newLeader)-[r:HAS_HISTORY]->(log)
            SET r.current = true
            WITH log
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
         }
 
         WITH log, ministry
@@ -683,7 +694,7 @@ extend type Mutation {
           WITH log WHERE $oldLeaderId IS NOT NULL
           MATCH (oldLeader:Active:Member {id: $oldLeaderId})
           CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, ministry
@@ -692,7 +703,7 @@ extend type Mutation {
           WITH log WHERE $oldStreamId IS NOT NULL
           MATCH (stream:Stream {id: $oldStreamId})
           MERGE (stream)-[:OLD_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, ministry
@@ -701,11 +712,12 @@ extend type Mutation {
           WITH log WHERE $newStreamId IS NOT NULL
           MATCH (stream:Stream {id: $newStreamId})
           MERGE (stream)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
       RETURN ministry
       """
+      columnName: "ministry"
     )
   LogHubCouncilHistory(
     hubCouncilId: ID!
@@ -718,7 +730,7 @@ extend type Mutation {
     @cypher(
       statement: """
         MATCH  (hubCouncil:HubCouncil {id: $hubCouncilId})
-        MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+        MATCH (admin:Active:Member {auth_id: $jwt.sub})
         CREATE (log:HistoryLog {id: apoc.create.uuid()})
           SET log.historyRecord = $historyRecord,
             log.timeStamp = datetime()
@@ -727,7 +739,7 @@ extend type Mutation {
         MERGE (log)-[:RECORDED_ON]->(date)
         MERGE (log)-[:LOGGED_BY]->(admin)
 
-        WITH log,hubCouncil
+        WITH log, hubCouncil
         CALL{
           WITH log
           WITH log WHERE $newLeaderId IS NOT NULL
@@ -739,7 +751,7 @@ extend type Mutation {
         CREATE (newLeader)-[r:HAS_HISTORY]->(log)
            SET r.current = true
            WITH log
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubCouncil
@@ -748,7 +760,7 @@ extend type Mutation {
           WITH log WHERE $oldLeaderId IS NOT NULL
           MATCH (oldLeader:Active:Member {id: $oldLeaderId})
           CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubCouncil
@@ -757,7 +769,7 @@ extend type Mutation {
           WITH log WHERE $oldMinistryId IS NOT NULL
           MATCH (ministry:Ministry {id: $oldMinistryId})
           MERGE (ministry)-[:OLD_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubCouncil
@@ -766,11 +778,12 @@ extend type Mutation {
           WITH log WHERE $newMinistryId IS NOT NULL
           MATCH (ministry:Ministry {id: $newMinistryId})
           MERGE (ministry)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
       RETURN hubCouncil
       """
+      columnName: "hubCouncil"
     )
   LogHubCouncilHistoryWithCouncil(
     hubCouncilId: ID!
@@ -783,7 +796,7 @@ extend type Mutation {
     @cypher(
       statement: """
         MATCH  (hubCouncil:HubCouncil {id: $hubCouncilId})
-        MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+        MATCH (admin:Active:Member {auth_id: $jwt.sub})
         CREATE (log:HistoryLog {id: apoc.create.uuid()})
           SET log.historyRecord = $historyRecord,
             log.timeStamp = datetime()
@@ -792,7 +805,7 @@ extend type Mutation {
         MERGE (log)-[:RECORDED_ON]->(date)
         MERGE (log)-[:LOGGED_BY]->(admin)
 
-        WITH log,hubCouncil
+        WITH log, hubCouncil
         CALL{
           WITH log
           WITH log WHERE $newLeaderId IS NOT NULL
@@ -804,7 +817,7 @@ extend type Mutation {
         CREATE (newLeader)-[r:HAS_HISTORY]->(log)
            SET r.current = true
            WITH log
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubCouncil
@@ -813,7 +826,7 @@ extend type Mutation {
           WITH log WHERE $oldLeaderId IS NOT NULL
           MATCH (oldLeader:Active:Member {id: $oldLeaderId})
           CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubCouncil
@@ -822,7 +835,7 @@ extend type Mutation {
           WITH log WHERE $oldCouncilId IS NOT NULL
           MATCH (council:Council {id: $oldCouncilId})
           MERGE (council)-[:OLD_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubCouncil
@@ -831,11 +844,12 @@ extend type Mutation {
           WITH log WHERE $newCouncilId IS NOT NULL
           MATCH (council:Council {id: $newCouncilId})
           MERGE (council)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
       RETURN hubCouncil
       """
+      columnName: "hubCouncil"
     )
 
   LogHubHistory(
@@ -849,7 +863,7 @@ extend type Mutation {
     @cypher(
       statement: """
         MATCH  (hub:Hub {id: $hubId})
-        MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+        MATCH (admin:Active:Member {auth_id: $jwt.sub})
         CREATE (log:HistoryLog {id: apoc.create.uuid()})
           SET log.historyRecord = $historyRecord,
             log.timeStamp = datetime()
@@ -870,7 +884,7 @@ extend type Mutation {
         CREATE (newLeader)-[r:HAS_HISTORY]->(log)
            SET r.current = true
            WITH log
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
         }
 
         WITH log, hub
@@ -879,7 +893,7 @@ extend type Mutation {
           WITH log WHERE $oldLeaderId IS NOT NULL
           MATCH (oldLeader:Active:Member {id: $oldLeaderId})
           CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hub
@@ -888,7 +902,7 @@ extend type Mutation {
           WITH log WHERE $oldHubCouncilId IS NOT NULL
           MATCH (hubCouncil:HubCouncil {id: $oldHubCouncilId})
           MERGE (hubCouncil)-[:OLD_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hub
@@ -897,24 +911,25 @@ extend type Mutation {
           WITH log WHERE $newHubCouncilId IS NOT NULL
           MATCH (hubCouncil:HubCouncil {id: $newHubCouncilId})
           MERGE (hubCouncil)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
       RETURN hub
       """
+      columnName: "hub"
     )
-  LogHubHistoryWithConstituency(
+  LogHubHistoryWithGovernorship(
     hubId: ID!
     historyRecord: String!
     newLeaderId: ID
     oldLeaderId: ID
-    newConstituencyId: ID
-    oldConstituencyId: ID
+    newGovernorshipId: ID
+    oldGovernorshipId: ID
   ): Hub!
     @cypher(
       statement: """
       MATCH  (hub:Hub {id: $hubId})
-        MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+        MATCH (admin:Active:Member {auth_id: $jwt.sub})
         CREATE (log:HistoryLog {id: apoc.create.uuid()})
           SET log.historyRecord = $historyRecord,
             log.timeStamp = datetime()
@@ -935,7 +950,7 @@ extend type Mutation {
         CREATE (newLeader)-[r:HAS_HISTORY]->(log)
            SET r.current = true
            WITH log
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
         }
 
         WITH log, hub
@@ -944,29 +959,30 @@ extend type Mutation {
           WITH log WHERE $oldLeaderId IS NOT NULL
           MATCH (oldLeader:Active:Member {id: $oldLeaderId})
           CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hub
         CALL {
           WITH log
-          WITH log WHERE $oldConstituencyId IS NOT NULL
-          MATCH (constituency:Constituency {id: $oldConstituencyId})
-          MERGE (constituency)-[:OLD_HISTORY]->(log)
-          RETURN COUNT(log)
+          WITH log WHERE $oldGovernorshipId IS NOT NULL
+          MATCH (governorship:Governorship {id: $oldGovernorshipId})
+          MERGE (governorship)-[:OLD_HISTORY]->(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hub
         CALL {
           WITH log
-          WITH log WHERE $newConstituencyId IS NOT NULL
-          MATCH (constituency:Constituency {id: $newConstituencyId})
-          MERGE (constituency)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          WITH log WHERE $newGovernorshipId IS NOT NULL
+          MATCH (governorship:Governorship {id: $newGovernorshipId})
+          MERGE (governorship)-[:HAS_HISTORY]->(log)
+          RETURN COUNT(log) AS logCount
         }
 
       RETURN hub
       """
+      columnName: "hub"
     )
   LogHubFellowshipHistory(
     hubFellowshipId: ID!
@@ -979,7 +995,7 @@ extend type Mutation {
     @cypher(
       statement: """
         MATCH  (hubFellowship:HubFellowship {id: $hubFellowshipId})
-        MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+        MATCH (admin:Active:Member {auth_id: $jwt.sub})
         CREATE (log:HistoryLog {id: apoc.create.uuid()})
           SET log.historyRecord = $historyRecord,
             log.timeStamp = datetime()
@@ -1000,7 +1016,7 @@ extend type Mutation {
         CREATE (newLeader)-[r:HAS_HISTORY]->(log)
            SET r.current = true
            WITH log
-        RETURN COUNT(log)
+        RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubFellowship
@@ -1009,7 +1025,7 @@ extend type Mutation {
           WITH log WHERE $oldLeaderId IS NOT NULL
           MATCH (oldLeader:Active:Member {id: $oldLeaderId})
           CREATE (oldLeader)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubFellowship
@@ -1018,7 +1034,7 @@ extend type Mutation {
           WITH log WHERE $oldHubId IS NOT NULL
           MATCH (hub:Hub {id: $oldHubId})
           MERGE (hub)-[:OLD_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
         WITH log, hubFellowship
@@ -1027,10 +1043,11 @@ extend type Mutation {
           WITH log WHERE $newHubId IS NOT NULL
           MATCH (hub:Hub {id: $newHubId})
           MERGE (hub)-[:HAS_HISTORY]->(log)
-          RETURN COUNT(log)
+          RETURN COUNT(log) AS logCount
         }
 
       RETURN hubFellowship
       """
+      columnName: "hubFellowship"
     )
 }

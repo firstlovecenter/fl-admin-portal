@@ -5,10 +5,10 @@ import { ChurchContext } from '../../../contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Church } from 'global-types'
 import DisplaySontaDetails from 'components/DisplayChurchDetails/DisplaySontaDetails'
-import { DetailsArray } from './DetailsFellowship'
 import { permitAdmin } from 'permission-utils'
 import { Container } from 'react-bootstrap'
 import Breadcrumb from 'components/DisplayChurchDetails/Breadcrumb'
+import { DetailsArray } from './DetailsBacenta'
 
 const DetailsMinistry = () => {
   const { ministryId } = useContext(ChurchContext)
@@ -41,6 +41,11 @@ const DetailsMinistry = () => {
     {
       title: 'Vacation Status',
       number: ministry?.vacationStatus,
+      link: '#',
+    },
+    {
+      title: 'Bank Account',
+      number: ministry?.bankAccount,
       link: '#',
     },
     {

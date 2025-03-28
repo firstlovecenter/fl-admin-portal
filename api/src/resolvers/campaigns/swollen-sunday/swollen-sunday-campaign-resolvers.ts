@@ -14,7 +14,7 @@ type TargetArg = {
 }
 
 type TargetFields = {
-  constituency: string
+  governorship: string
   bacenta: string
   target: number
   code: number
@@ -66,14 +66,17 @@ const UploadBacentaTargets = async (
   args: { data: string; swellDate: string },
   context: Context
 ) => {
-  isAuth(permitAdmin('Council'), context.auth.roles)
+  isAuth(
+    permitAdmin('Council'),
+    context.jwt['https://flcadmin.netlify.app/roles']
+  )
   const session = context.executionContext.session()
 
   const jsonData: [] = JSON.parse(args.data)
 
   jsonData.every((item: TargetFields) => {
     if (
-      item.constituency === '' ||
+      item.governorship === '' ||
       item.bacenta === '' ||
       item.code === null ||
       item.leader === '' ||
@@ -129,7 +132,10 @@ const ShareBacentaTargets = async (
   args: { data: string; swellDate: string },
   context: Context
 ) => {
-  isAuth(permitAdmin('Council'), context.auth.roles)
+  isAuth(
+    permitAdmin('Council'),
+    context.jwt['https://flcadmin.netlify.app/roles']
+  )
   const session = context.executionContext.session()
 
   const parsedTargets: TargetArg[] = JSON.parse(args.data, convertToNumber)

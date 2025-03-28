@@ -12,7 +12,7 @@ export const UPDATE_MEMBER_MUTATION = gql`
     $maritalStatus: String!
     $gender: String!
     $occupation: String
-    $fellowship: String!
+    $bacenta: String!
     $pictureUrl: String!
   ) {
     UpdateMemberDetails(
@@ -26,7 +26,7 @@ export const UPDATE_MEMBER_MUTATION = gql`
       maritalStatus: $maritalStatus
       gender: $gender
       occupation: $occupation
-      fellowship: $fellowship
+      bacenta: $bacenta
       pictureUrl: $pictureUrl
     ) {
       firstName
@@ -52,6 +52,41 @@ export const UPDATE_MEMBER_MUTATION = gql`
 
       occupation {
         occupation
+      }
+    }
+  }
+`
+
+export const UPDATE_MEMBER_STICKY_NOTE = gql`
+  mutation UpdateMemberStickyNote(
+    $id: ID!
+    $stickyNote: String
+    $ids: [ID]
+    $historyRecord: String!
+  ) {
+    updateMembers(where: { id: $id }, update: { stickyNote: $stickyNote }) {
+      members {
+        id
+        stickyNote
+      }
+    }
+    LogMemberHistory(ids: $ids, historyRecord: $historyRecord) {
+      id
+      firstName
+      lastName
+      history(limit: 3) {
+        id
+        timeStamp
+        createdAt {
+          date
+        }
+        loggedBy {
+          id
+          firstName
+          lastName
+          stream_name
+        }
+        historyRecord
       }
     }
   }
@@ -105,18 +140,18 @@ export const LOG_MEMBER_HISTORY = gql`
   }
 `
 
-export const UPDATE_MEMBER_FELLOWSHIP = gql`
-  mutation UpdateMemberFellowship(
+export const UPDATE_MEMBER_BACENTA = gql`
+  mutation UpdateMemberBacenta(
     $memberId: ID!
-    $fellowshipId: ID!
+    $bacentaId: ID!
     $ids: [ID]
     $historyRecord: String!
   ) {
-    UpdateMemberFellowship(memberId: $memberId, fellowshipId: $fellowshipId) {
+    UpdateMemberBacenta(memberId: $memberId, bacentaId: $bacentaId) {
       id
       firstName
       lastName
-      fellowship {
+      bacenta {
         id
         name
       }
@@ -168,7 +203,7 @@ export const UPDATE_STREAM_MUTATION = gql`
         id
         firstName
         lastName
-        fellowship {
+        bacenta {
           id
           stream_name
         }
@@ -219,7 +254,7 @@ export const UPDATE_OVERSIGHT_MUTATION = gql`
         id
         firstName
         lastName
-        fellowship {
+        bacenta {
           id
           stream_name
         }
@@ -264,7 +299,7 @@ export const UPDATE_DENOMINATION_MUTATION = gql`
         id
         firstName
         lastName
-        fellowship {
+        bacenta {
           id
           stream_name
         }
@@ -330,7 +365,7 @@ export const UPDATE_CAMPUS_MUTATION = gql`
         id
         firstName
         lastName
-        fellowship {
+        bacenta {
           id
           stream_name
         }
@@ -362,7 +397,7 @@ export const UPDATE_COUNCIL_MUTATION = gql`
     UpdateCouncilDetails(councilId: $councilId, name: $name) {
       id
       name
-      constituencies {
+      governorships {
         id
         name
         council {
@@ -381,7 +416,7 @@ export const UPDATE_COUNCIL_MUTATION = gql`
         id
         firstName
         lastName
-        fellowship {
+        bacenta {
           id
           stream_name
         }
@@ -408,20 +443,20 @@ export const UPDATE_COUNCIL_MUTATION = gql`
   }
 `
 
-export const UPDATE_CONSTITUENCY_MUTATION = gql`
-  mutation UpdateConstituency($constituencyId: ID!, $name: String!) {
-    UpdateConstituencyDetails(constituencyId: $constituencyId, name: $name) {
+export const UPDATE_GOVERNORSHIP_MUTATION = gql`
+  mutation UpdateGovernorship($governorshipId: ID!, $name: String!) {
+    UpdateGovernorshipDetails(governorshipId: $governorshipId, name: $name) {
       id
       name
       bacentas {
         id
         name
-        constituency {
+        governorship {
           id
           name
           council {
             id
-            constituencies {
+            governorships {
               id
             }
           }
@@ -432,7 +467,7 @@ export const UPDATE_CONSTITUENCY_MUTATION = gql`
         id
         firstName
         lastName
-        fellowship {
+        bacenta {
           id
           stream_name
         }
@@ -460,27 +495,26 @@ export const UPDATE_CONSTITUENCY_MUTATION = gql`
 `
 
 export const UPDATE_BACENTA_MUTATION = gql`
-  mutation UpdateBacenta($bacentaId: ID!, $name: String!) {
-    UpdateBacentaDetails(bacentaId: $bacentaId, name: $name) {
+  mutation UpdateBacenta(
+    $id: ID!
+    $name: String!
+    $meetingDay: String!
+    $venueLongitude: Float!
+    $venueLatitude: Float!
+  ) {
+    UpdateBacentaDetails(
+      id: $id
+      name: $name
+      meetingDay: $meetingDay
+      venueLongitude: $venueLongitude
+      venueLatitude: $venueLatitude
+    ) {
       id
       name
       sprinterTopUp
       urvanTopUp
-      fellowships {
-        id
-        name
-        bacenta {
-          id
-          name
-          constituency {
-            id
-            council {
-              id
-            }
-          }
-        }
-      }
-      constituency {
+
+      governorship {
         id
         name
         bacentas {
@@ -763,15 +797,15 @@ export const MOVE_COUNCIL_TO_STREAM = gql`
   }
 `
 
-export const MOVE_CONSTITUENCY_TO_COUNCIL = gql`
-  mutation MoveConstituencyToCouncil(
-    $constituencyId: ID!
+export const MOVE_GOVERNORSHIP_TO_COUNCIL = gql`
+  mutation MoveGovernorshipToCouncil(
+    $governorshipId: ID!
     $newCouncilId: ID!
     $oldCouncilId: ID!
     $historyRecord: String!
   ) {
-    MoveConstituencyToCouncil(
-      constituencyId: $constituencyId
+    MoveGovernorshipToCouncil(
+      governorshipId: $governorshipId
       councilId: $newCouncilId
     ) {
       id
@@ -779,14 +813,14 @@ export const MOVE_CONSTITUENCY_TO_COUNCIL = gql`
       council {
         id
         name
-        constituencies {
+        governorships {
           id
           name
         }
       }
     }
-    LogConstituencyHistory(
-      constituencyId: $constituencyId
+    LogGovernorshipHistory(
+      governorshipId: $governorshipId
       historyRecord: $historyRecord
       oldCouncilId: $oldCouncilId
       newCouncilId: $newCouncilId
@@ -811,20 +845,20 @@ export const MOVE_CONSTITUENCY_TO_COUNCIL = gql`
   }
 `
 
-export const MOVE_BACENTA_TO_CONSTITUENCY = gql`
-  mutation MoveBacentaToConstituency(
+export const MOVE_BACENTA_TO_GOVERNORSHIP = gql`
+  mutation MoveBacentaToGovernorship(
     $bacentaId: ID!
-    $newConstituencyId: ID!
-    $oldConstituencyId: ID!
+    $newGovernorshipId: ID!
+    $oldGovernorshipId: ID!
     $historyRecord: String!
   ) {
-    MoveBacentaToConstituency(
+    MoveBacentaToGovernorship(
       bacentaId: $bacentaId
-      constituencyId: $newConstituencyId
+      governorshipId: $newGovernorshipId
     ) {
       id
       name
-      constituency {
+      governorship {
         id
         name
         bacentas {
@@ -836,56 +870,8 @@ export const MOVE_BACENTA_TO_CONSTITUENCY = gql`
     LogBacentaHistory(
       bacentaId: $bacentaId
       historyRecord: $historyRecord
-      oldConstituencyId: $oldConstituencyId
-      newConstituencyId: $newConstituencyId
-    ) {
-      id
-      name
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_FELLOWSHIP_TO_BACENTA = gql`
-  mutation MoveFellowshipToBacenta(
-    $fellowshipId: ID!
-    $newBacentaId: ID!
-    $oldBacentaId: ID!
-    $historyRecord: String!
-  ) {
-    MoveFellowshipToBacenta(
-      fellowshipId: $fellowshipId
-      bacentaId: $newBacentaId
-    ) {
-      id
-      name
-      bacenta {
-        id
-        name
-        fellowships {
-          id
-          name
-        }
-      }
-    }
-    LogFellowshipHistory(
-      fellowshipId: $fellowshipId
-      historyRecord: $historyRecord
-      oldBacentaId: $oldBacentaId
-      newBacentaId: $newBacentaId
+      oldGovernorshipId: $oldGovernorshipId
+      newGovernorshipId: $newGovernorshipId
     ) {
       id
       name
@@ -1229,17 +1215,17 @@ export const MOVE_HUB_TO_HUBCOUNCIL = gql`
   }
 `
 
-export const MOVE_HUB_TO_CONSTITUENCY = gql`
-  mutation MoveHubToConstituency(
+export const MOVE_HUB_TO_GOVERNORSHIP = gql`
+  mutation MoveHubToGovernorship(
     $hubId: ID!
-    $newConstituencyId: ID!
-    $oldConstituencyId: ID!
+    $newGovernorshipId: ID!
+    $oldGovernorshipId: ID!
     $historyRecord: String!
   ) {
-    MoveHubToConstituency(hubId: $hubId, constituencyId: $newConstituencyId) {
+    MoveHubToGovernorship(hubId: $hubId, governorshipId: $newGovernorshipId) {
       id
       name
-      constituency {
+      governorship {
         id
         name
         hubs {
@@ -1248,74 +1234,18 @@ export const MOVE_HUB_TO_CONSTITUENCY = gql`
         }
       }
     }
-    LogHubHistoryWithConstituency(
+    LogHubHistoryWithGovernorship(
       hubId: $hubId
       historyRecord: $historyRecord
-      oldConstituencyId: $oldConstituencyId
-      newConstituencyId: $newConstituencyId
+      oldGovernorshipId: $oldGovernorshipId
+      newGovernorshipId: $newGovernorshipId
     ) {
       id
       name
-      constituency {
+      governorship {
         id
         name
         hubs {
-          id
-          name
-        }
-      }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          stream_name
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_HUBFELLOWSHIP_TO_HUB = gql`
-  mutation MoveHubFellowshipToHub(
-    $hubFellowshipId: ID!
-    $newHubId: ID!
-    $oldHubId: ID!
-    $historyRecord: String!
-  ) {
-    MoveHubFellowshipToHub(
-      hubFellowshipId: $hubFellowshipId
-      hubId: $newHubId
-    ) {
-      id
-      name
-      hub {
-        id
-        name
-        hubFellowships {
-          id
-          name
-        }
-      }
-    }
-    LogHubFellowshipHistory(
-      hubFellowshipId: $hubFellowshipId
-      historyRecord: $historyRecord
-      oldHubId: $oldHubId
-      newHubId: $newHubId
-    ) {
-      id
-      name
-      hub {
-        id
-        name
-        hubFellowships {
           id
           name
         }

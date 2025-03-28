@@ -27,7 +27,7 @@ const DetailsCard = (props: DetailsCardPropsType) => {
 
   return (
     <Card
-      className={`p-2 m-1 ${creativearts && 'creativearts'}`}
+      className={`p-2 m-1 pointer ${creativearts && 'creativearts'}`}
       onClick={onClick}
     >
       <Row>
@@ -43,15 +43,14 @@ const DetailsCard = (props: DetailsCardPropsType) => {
                 <small>{detail?.match(currentUser.currency)}</small>
               </h3>
               {!!trailing && <>{trailing}</>}
-              {heading === 'IC Bacentas' &&
-                props?.vacationIcBacentaCount !== '0' && (
-                  <div>
-                    <Badge bg="danger" className="badge-vacation mt-auto">
-                      <span className="font-danger">{`+ `}</span>
-                      {`${props?.vacationIcBacentaCount} on Vacation`}
-                    </Badge>
-                  </div>
-                )}
+              {heading === 'Reds' && props?.vacationIcBacentaCount !== '0' && (
+                <div>
+                  <Badge bg="danger" className="badge-vacation mt-auto">
+                    <span className="font-danger">{`+ `}</span>
+                    {`${props?.vacationIcBacentaCount} on Vacation`}
+                  </Badge>
+                </div>
+              )}
               {parseFloat(props?.vacationCount?.toString() || '0') !== 0.0 && (
                 <div>
                   <Badge bg="danger" className="badge-vacation mt-auto">

@@ -36,11 +36,10 @@ type Stream = {
   bankAccount:
     | 'manual'
     | 'aes_account'
-    | 'kwabenya_account'
-    | 'adenta_account'
     | 'fle_account'
+    | 'acc_floc'
+    | 'bjosh_special'
     | 'oa_kumasi'
-    | 'kwabenya_morning_account'
     | 'oa_ghnorth'
     | 'oa_ghsouth'
     | 'oa_gheast'
@@ -50,6 +49,13 @@ type Stream = {
     | 'accra_greater_love_choir'
     | 'accra_dancing_stars'
     | 'accra_film_stars'
+}
+
+export const getCreditsFinancials = () => {
+  const auth = SECRETS.PAYSTACK_PRIVATE_KEY_WEEKDAY
+  const subaccount = SECRETS.PS_SB_DOWNLOAD_CREDITS
+
+  return { auth, subaccount }
 }
 
 export const getStreamFinancials = (stream: Stream) => {
@@ -62,17 +68,15 @@ export const getStreamFinancials = (stream: Stream) => {
         'Payment Error' +
           'Anagkazo has a different financial system. Thank you!'
       )
-    case 'adenta_account':
-      subaccount = SECRETS.PS_SB_ADENTA
-      break
-    case 'kwabenya_account':
-      subaccount = SECRETS.PS_SB_KWABENYA
-      break
-    case 'kwabenya_morning_account':
-      subaccount = SECRETS.PS_SB_MORNING_KWABENYA
-      break
+
     case 'fle_account':
       subaccount = SECRETS.PS_SB_FLE
+      break
+    case 'acc_floc':
+      subaccount = SECRETS.PS_SB_FLOC
+      break
+    case 'bjosh_special':
+      subaccount = SECRETS.PS_SB_BJOSH
       break
     case 'oa_kumasi':
       subaccount = SECRETS.PS_SB_KUMASI
@@ -98,16 +102,17 @@ export const getStreamFinancials = (stream: Stream) => {
 
     // Creative Arts Accounts
     case 'accra_greater_love_choir':
-      subaccount = SECRETS.PS_SB_FLE // SECRETS.PS_SB_CA_GREATER_LOVE_CHOIR
+      subaccount = SECRETS.PS_SB_CA_GREATER_LOVE_CHOIR
       break
     case 'accra_dancing_stars':
       subaccount = SECRETS.PS_SB_CA_DANCING_STARS
       break
     case 'accra_film_stars':
-      subaccount = SECRETS.PS_SB_FLE // SECRETS.PS_SB_CA_FILM_STARS
+      subaccount = SECRETS.PS_SB_CA_FILM_STARS
       break
 
     default:
+      subaccount = SECRETS.PS_SB_FLE
       break
   }
 

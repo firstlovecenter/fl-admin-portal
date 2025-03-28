@@ -1,5 +1,8 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+
+# Ensure npx is available
+export PATH=$PATH:/Users/jd/.npm-global/bin
+
 
 # lint-staged
 npx lint-staged

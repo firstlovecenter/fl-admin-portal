@@ -119,7 +119,7 @@ const MembersGrid = (props) => {
               <RoleView
                 roles={[
                   'sheepseekerStream',
-                  ...permitLeaderAdmin('Fellowship'),
+                  ...permitLeaderAdmin('Bacenta'),
                   ...permitLeaderAdmin('Hub'),
                 ]}
               >

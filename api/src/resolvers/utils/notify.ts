@@ -85,7 +85,7 @@ export const sendBulkSMS = async (recipient: string[], message: string) => {
       `There was a problem sending your SMS ${JSON.stringify(res.data)}`
     )
   } catch (error: any) {
-    throwToSentry('There was a problem sending your message', error)
+    throwToSentry('There was a problem sending your SMS', error)
   }
 
   return 'Message sent successfully'

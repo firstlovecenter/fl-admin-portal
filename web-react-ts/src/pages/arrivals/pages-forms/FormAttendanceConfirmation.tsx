@@ -22,7 +22,7 @@ import Input from 'components/formik/Input'
 import Textarea from 'components/formik/Textarea'
 import CloudinaryImage from 'components/CloudinaryImage'
 import Select from 'components/formik/Select'
-import { VEHICLE_OPTIONS, VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
+import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import '../Arrivals.css'
 
 type FormOptions = {
@@ -158,11 +158,7 @@ const FormAttendanceConfirmation = () => {
                 <Select
                   name="vehicle"
                   label="Type of Vehicle"
-                  options={
-                    bacenta.bussing[0].vehicleRecords.length > 1
-                      ? VEHICLE_OPTIONS_WITH_CAR
-                      : VEHICLE_OPTIONS
-                  }
+                  options={VEHICLE_OPTIONS_WITH_CAR}
                   defaultOption="Select a vehicle type"
                 />
 

@@ -103,23 +103,6 @@ const BusVehicleFormDetails = () => {
                       </PlaceholderCustom>
                     </td>
                   </tr>
-                  <tr>
-                    <td>Vehicle Cost</td>
-                    <td>
-                      <PlaceholderCustom loading={loading}>
-                        <CurrencySpan number={vehicle?.vehicleCost} />
-                      </PlaceholderCustom>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>Personal Contribution</td>
-                    <td className="good">
-                      <PlaceholderCustom loading={loading}>
-                        <CurrencySpan number={vehicle?.personalContribution} />
-                      </PlaceholderCustom>
-                    </td>
-                  </tr>
 
                   <tr>
                     <td>Vehicle Top Up</td>

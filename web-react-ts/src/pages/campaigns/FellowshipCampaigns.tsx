@@ -34,7 +34,7 @@ const FellowshipCampaigns = () => {
               <CampaignsWithIcons
                 key={index}
                 campaign={campaign}
-                churchLevel="Fellowship"
+                churchLevel="Bacenta"
               />
             ))}
           </div>

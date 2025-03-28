@@ -10,38 +10,24 @@ export const GET_LOGGED_IN_USER = gql`
       nameWithTitle
       pictureUrl
       stream_name
-      fellowship {
+
+      bacenta {
         id
-        hub {
+        governorship {
           id
-          hubCouncil {
+          council {
             id
-            ministry {
+            stream {
               id
-              creativeArts {
+              campus {
                 id
-              }
-            }
-          }
-        }
-        bacenta {
-          id
-          constituency {
-            id
-            council {
-              id
-              stream {
-                id
-                campus {
+                noIncomeTracking
+                currency
+                conversionRateToDollar
+                oversight {
                   id
-                  noIncomeTracking
-                  currency
-                  conversionRateToDollar
-                  oversight {
+                  denomination {
                     id
-                    denomination {
-                      id
-                    }
                   }
                 }
               }

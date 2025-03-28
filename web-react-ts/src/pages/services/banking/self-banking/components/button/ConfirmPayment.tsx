@@ -21,9 +21,13 @@ type ButtonConfirmPaymentProps = {
       | Partial<{
           id?: string
           serviceRecordId?: string
-          fellowshipId?: string
-          constituencyId?: string
+          bacentaId?: string
+          governorshipId?: string
           councilId?: string
+
+          hubId?: string
+          hubCouncilId?: string
+          ministryId?: string
         }>
       | undefined
   ) => Promise<ApolloQueryResult<any>>
@@ -36,8 +40,15 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
   const { refetch, service, handleClose, ...rest } = props
   const [sending, setSending] = useState(false)
   const navigate = useNavigate()
-  const { fellowshipId, constituencyId, councilId, clickCard } =
-    useContext(ChurchContext)
+  const {
+    bacentaId,
+    governorshipId,
+    councilId,
+    hubId,
+    hubCouncilId,
+    ministryId,
+    clickCard,
+  } = useContext(ChurchContext)
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
   const location = useLocation()
 
@@ -51,10 +62,14 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
 
         try {
           const res = await refetch({
-            fellowshipId,
-            constituencyId,
+            bacentaId,
+            governorshipId,
             councilId,
+            hubId,
+            hubCouncilId,
+            ministryId,
           })
+
           clickCard({
             id: service?.id,
             __typename: 'ServiceRecord',
@@ -65,18 +80,33 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
             transactionStatus: '',
           }
 
-          if (res.data?.fellowships) {
-            serviceRecord = res.data?.fellowships[0].services.find(
+          if (res.data?.bacentas) {
+            serviceRecord = res.data?.bacentas[0].services.find(
               (serviceFromList: ConfirmPaymentServiceType) =>
                 serviceFromList?.id === service?.id
             )
-          } else if (res.data?.constituencies) {
-            serviceRecord = res.data?.constituencies[0].services.find(
+          } else if (res.data?.governorships) {
+            serviceRecord = res.data?.governorships[0].services.find(
               (serviceFromList: ConfirmPaymentServiceType) =>
                 serviceFromList?.id === service?.id
             )
           } else if (res.data?.councils) {
             serviceRecord = res.data?.councils[0].services.find(
+              (serviceFromList: ConfirmPaymentServiceType) =>
+                serviceFromList?.id === service?.id
+            )
+          } else if (res.data?.hubs) {
+            serviceRecord = res.data?.hubs[0].rehearsals.find(
+              (serviceFromList: ConfirmPaymentServiceType) =>
+                serviceFromList?.id === service?.id
+            )
+          } else if (res.data?.hubCouncils) {
+            serviceRecord = res.data?.hubCouncils[0].rehearsals.find(
+              (serviceFromList: ConfirmPaymentServiceType) =>
+                serviceFromList?.id === service?.id
+            )
+          } else if (res.data?.ministries) {
+            serviceRecord = res.data?.ministries[0].services.find(
               (serviceFromList: ConfirmPaymentServiceType) =>
                 serviceFromList?.id === service?.id
             )
@@ -114,7 +144,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               confirmationRes.data.ConfirmOfferingPayment?.transactionStatus ===
               'failed'
             ) {
-              navigate('/services/fellowship/self-banking')
+              navigate('/services/bacenta/self-banking')
               alertMsg('Your Payment Failed 😞. Please try again!')
               return
             }
@@ -132,7 +162,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
           if (
             ['failed', 'abandoned'].includes(serviceRecord.transactionStatus)
           ) {
-            navigate('/services/fellowship/self-banking')
+            navigate('/services/bacenta/self-banking')
             alertMsg('Your Payment Failed 😞. Please try again!')
             return
           }
@@ -143,7 +173,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
             return
           }
         } catch (error: any) {
-          navigate('/services/fellowship/self-banking')
+          navigate('/services/bacenta/self-banking')
           alert('Something went wrong 😞' + JSON.stringify(error))
         } finally {
           if (handleClose) {

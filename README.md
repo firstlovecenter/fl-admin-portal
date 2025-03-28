@@ -79,7 +79,7 @@ All Contributors welcome. Go ahead and fork the project and submit a PR. Read th
 1. Maintain an accurate Bacenta Directory
 2. Accept Bacenta Records of Attendance, Cost, Offering Raised, Amount Paid from the Church
 3. Close Down any Bacenta/IC that busses under 8 for four consecutive weeks
-4. Registration of ICs
+4. Registration of Reds
 5. Graduate IC to Bacenta after bussing above 8 for 4 consecutive weeks.
 6. Accept IC Records of Attendance, Cost, Offering Raised, Amount Paid from the Church
 7. IC Training Attendance Tracking. Attendance to be filled by IC Trainers.

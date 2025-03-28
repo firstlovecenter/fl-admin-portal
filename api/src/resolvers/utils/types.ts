@@ -11,7 +11,7 @@ export type RearragedCypherResponse = {
 export type ChurchLevel =
   | 'Fellowship'
   | 'Bacenta'
-  | 'Constituency'
+  | 'Governorship'
   | 'Council'
   | 'Stream'
   | 'Campus'
@@ -27,7 +27,7 @@ export type ChurchLevelWithClosed = 'ClosedFellowship' | 'ClosedBacenta'
 export type Role =
   | 'leaderFellowship'
   | 'leaderBacenta'
-  | 'leaderConstituency'
+  | 'leaderGovernorship'
   | 'leaderCouncil'
   | 'leaderStream'
   | 'leaderHub'
@@ -37,7 +37,7 @@ export type Role =
   | 'leaderCampus'
   | 'leaderOversight'
   | 'leaderDenomination'
-  | 'adminConstituency'
+  | 'adminGovernorship'
   | 'adminCouncil'
   | 'adminStream'
   | 'adminCampus'
@@ -48,7 +48,7 @@ export type Role =
   | 'arrivalsAdminCampus'
   | 'arrivalsAdminStream'
   | 'arrivalsAdminCouncil'
-  | 'arrivalsAdminConstituency'
+  | 'arrivalsAdminGovernorship'
   | 'arrivalsCounterStream'
   | 'arrivalsPayerCouncil'
   | 'tellerStream'
@@ -113,7 +113,7 @@ export interface Member {
   gender: string
   visitationArea?: string
   occupation: string
-  fellowship: string
+  bacenta: string
   basonta: string
 }
 
@@ -170,24 +170,10 @@ interface ChurchesForAggregateion {
     [key: string]: string | number | boolean | string[]
   }
 }
-interface HigherChurchesForAgggregation extends ChurchesForAggregateion {
-  cypher: string
-}
-
 interface SontaHigherChurchesForAgggregation extends ChurchesForAggregateion {
   rehearsalCypher: string
   ministryMeetingCypher: string
   ministryStagePerformanceCypher: string
-}
-
-export type HigherChurches = {
-  bacenta?: HigherChurchesForAgggregation
-  constituency?: HigherChurchesForAgggregation
-  council?: HigherChurchesForAgggregation
-  stream?: HigherChurchesForAgggregation
-  campus?: HigherChurchesForAgggregation
-  oversight?: HigherChurchesForAgggregation
-  denomination?: HigherChurchesForAgggregation
 }
 
 export type SontaHigherChurches = {

@@ -80,7 +80,7 @@ export const RECORD_CANCELLED_SERVICE = gql`
       id
       serviceLog {
         id
-        fellowship {
+        bacenta {
           id
           services(limit: 3) {
             id
@@ -247,14 +247,14 @@ export const RECORD_MINISTRY_REHEARSAL_MEETING = gql`
   }
 `
 
-export const RECORD_HUB_SUNDAY_MEETING = gql`
-  mutation RecordHubSundayMeeting(
+export const RECORD_HUBCOUNCIL_SUNDAY_MEETING = gql`
+  mutation RecordHubCouncilSundayMeeting(
     $churchId: ID!
     $serviceDate: String!
     $attendance: Int!
     $familyPicture: String!
   ) {
-    RecordHubFellowshipSundayAttendance(
+    RecordHubCouncilSundayAttendance(
       churchId: $churchId
       serviceDate: $serviceDate
       attendance: $attendance
@@ -326,8 +326,8 @@ export const DISPLAY_FELLOWSHIP_SERVICE = gql`
   }
 `
 export const DISPLAY_AGGREGATE_SERVICE_RECORD = gql`
-  query aggregateServiceRecordForWeek($week: Int!, $constituencyId: ID!) {
-    constituencies(where: { id: $constituencyId }) {
+  query aggregateServiceRecordForWeek($week: Int!, $governorshipId: ID!) {
+    governorships(where: { id: $governorshipId }) {
       id
       name
       aggregateServiceRecordForWeek(week: $week) {
@@ -398,10 +398,10 @@ export const DISPLAY_BACENTA_SERVICE = gql`
   }
 `
 
-export const DISPLAY_HUBFELLOWSHIP_SUNDAY_MEETING = gql`
-  query hubFellowshipDisplaySundayMeetingRecords(
+export const DISPLAY_HUBCOUNCIL_SUNDAY_MEETING = gql`
+  query hubCouncilDisplaySundayMeetingRecords(
     $serviceId: ID!
-    $hubfellowshipId: ID!
+    $hubCouncilId: ID!
   ) {
     ministryAttendanceRecords(where: { id: $serviceId }) {
       id
@@ -419,7 +419,7 @@ export const DISPLAY_HUBFELLOWSHIP_SUNDAY_MEETING = gql`
         fullName
       }
     }
-    hubFellowships(where: { id: $hubfellowshipId }) {
+    hubCouncils(where: { id: $hubCouncilId }) {
       id
       name
     }
@@ -585,10 +585,10 @@ export const DISPLAY_MINISTRY_REHEARSAL = gql`
   }
 `
 
-export const DISPLAY_CONSTITUENCY_SERVICE = gql`
-  query constituencyDisplayServiceRecords(
+export const DISPLAY_GOVERNORSHIP_SERVICE = gql`
+  query governorshipDisplayServiceRecords(
     $serviceId: ID!
-    $constituencyId: ID!
+    $governorshipId: ID!
   ) {
     serviceRecords(where: { id: $serviceId }) {
       id
@@ -639,7 +639,7 @@ export const DISPLAY_CONSTITUENCY_SERVICE = gql`
         fullName
       }
     }
-    constituencies(where: { id: $constituencyId }) {
+    governorships(where: { id: $governorshipId }) {
       id
       name
       stream_name

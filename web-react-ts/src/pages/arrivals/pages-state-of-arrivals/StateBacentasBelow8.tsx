@@ -6,7 +6,7 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import { useContext } from 'react'
 import { Container } from 'react-bootstrap'
 import {
-  CONSTITUENCY_BACENTAS_BELOW_8,
+  GOVERNORSHIP_BACENTAS_BELOW_8,
   COUNCIL_BACENTAS_BELOW_8,
   CAMPUS_BACENTAS_BELOW_8,
   STREAM_BACENTAS_BELOW_8,
@@ -23,8 +23,8 @@ import { LONG_POLL_INTERVAL } from 'global-utils'
 const BacentasBelow8 = () => {
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
-  const [constituencyBacentasBelow8, { refetch: constituencyRefetch }] =
-    useLazyQuery(CONSTITUENCY_BACENTAS_BELOW_8, {
+  const [governorshipBacentasBelow8, { refetch: governorshipRefetch }] =
+    useLazyQuery(GOVERNORSHIP_BACENTAS_BELOW_8, {
       pollInterval: LONG_POLL_INTERVAL,
     })
   const [councilBacentasBelow8, { refetch: councilRefetch }] = useLazyQuery(
@@ -47,8 +47,8 @@ const BacentasBelow8 = () => {
   )
 
   const data = useChurchLevel({
-    constituencyFunction: constituencyBacentasBelow8,
-    constituencyRefetch,
+    governorshipFunction: governorshipBacentasBelow8,
+    governorshipRefetch,
     councilFunction: councilBacentasBelow8,
     councilRefetch,
     streamFunction: streamBacentasBelow8,

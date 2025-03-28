@@ -1,7 +1,10 @@
-import { ChurchIdAndName, Council } from 'global-types'
+import { ChurchIdAndName, Council, Stream } from 'global-types'
 import { AccountTransaction } from './transaction-history/transaction-types'
 
-export interface StreamForAccounts extends ChurchIdAndName {
+export interface StreamForAccounts extends Stream {
+  bussingAmount: number
+  weekdayBalance: number
+  bussingSocietyBalance: number
   councils: CouncilForAccounts[]
 }
 
@@ -12,4 +15,8 @@ export interface CouncilForAccounts extends Council {
   weekdayBalance: number
   bussingSocietyBalance: number
   transactions: AccountTransaction[]
+}
+
+export interface CampusForAccounts extends ChurchIdAndName {
+  streams: StreamForAccounts[]
 }

@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client'
 
-export const CAMPUS_FELLOWSHIP_SERVICES_THIS_WEEK = gql`
-  query campusFellowshipServicesThisWeekReport($id: ID!) {
+export const CAMPUS_BACENTA_SERVICES_THIS_WEEK = gql`
+  query campusBacentaServicesThisWeekReport($id: ID!) {
     campuses(where: { id: $id }) {
       id
       name

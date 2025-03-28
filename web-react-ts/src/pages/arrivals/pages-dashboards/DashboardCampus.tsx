@@ -3,11 +3,7 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { useContext } from 'react'
 import * as Yup from 'yup'
 import { useNavigate } from 'react-router'
-import {
-  MAKE_CAMPUSARRIVALS_ADMIN,
-  SET_SWELL_DATE,
-  SET_CODE_OF_THE_DAY,
-} from '../arrivalsMutation'
+import { MAKE_CAMPUSARRIVALS_ADMIN, SET_SWELL_DATE } from '../arrivalsMutation'
 import { CAMPUS_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
 import { alertMsg, SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -26,7 +22,7 @@ import { getHumanReadableDate } from 'jd-date-utils'
 import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
 import usePopup from 'hooks/usePopup'
 import ArrivalsMenuDropdown from '../ArrivalsMenuDropdown'
-import { AdminFormOptions } from './DashboardConstituency'
+import { AdminFormOptions } from './DashboardGovernorship'
 import SearchMember from 'components/formik/SearchMember'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import Input from 'components/formik/Input'
@@ -57,7 +53,6 @@ const CampusDashboard = () => {
   )
 
   const [SetSwellDate] = useMutation(SET_SWELL_DATE)
-  const [SetCodeOfTheDay] = useMutation(SET_CODE_OF_THE_DAY)
   const [MakeCampusArrivalsAdmin] = useMutation(MAKE_CAMPUSARRIVALS_ADMIN)
   const campus = data?.campuses[0]
 
@@ -73,19 +68,19 @@ const CampusDashboard = () => {
     ),
   })
 
-  const submitCodeOfTheDay = async () => {
-    const promptBox = window.prompt('Enter the Code of The Day')
+  // const submitCodeOfTheDay = async () => {
+  //   const promptBox = window.prompt('Enter the Code of The Day')
 
-    await SetCodeOfTheDay({ variables: { code: promptBox } })
-      .then((res) => {
-        alertMsg(
-          `Code of the day has been set to "${res?.data?.SetCodeOfTheDay}"`
-        )
-      })
-      .catch((error) => {
-        alertMsg(error)
-      })
-  }
+  //   await SetCodeOfTheDay({ variables: { code: promptBox } })
+  //     .then((res) => {
+  //       alertMsg(
+  //         `Code of the day has been set to "${res?.data?.SetCodeOfTheDay}"`
+  //       )
+  //     })
+  //     .catch((error) => {
+  //       alertMsg(error)
+  //     })
+  // }
 
   const onSubmit = (
     values: AdminFormOptions,
@@ -132,7 +127,7 @@ const CampusDashboard = () => {
           },
         }
       : {},
-    { title: 'Code of the Day', onClick: () => submitCodeOfTheDay() },
+    // { title: 'Code of the Day', onClick: () => submitCodeOfTheDay() },
   ]
 
   const dateValidationSchema = Yup.object({

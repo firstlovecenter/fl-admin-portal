@@ -23,7 +23,6 @@ import {
   recordOnStageAttendance,
   checkMinistryStageAttendanceFormFilledThisWeek,
   recordCancelledOnStagePerformance,
-  cancelLowerChurchRehearsals,
 } from './rehearsal-cypher'
 
 import { SontaHigherChurches } from '../utils/types'
@@ -95,12 +94,15 @@ export const checkServantHasCurrentHistory = async (
 }
 
 const SontaServiceMutation = {
-  RecordHubFellowshipSundayAttendance: async (
+  RecordHubCouncilSundayAttendance: async (
     object: any,
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('HubCouncil'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     await checkServantHasCurrentHistory(session, context, {
@@ -138,7 +140,7 @@ const SontaServiceMutation = {
     const cypherResponse = await session
       .run(recordSundayMinistryAttendance, {
         ...args,
-        auth: context.auth,
+        jwt: context.jwt,
       })
       .catch((error: any) =>
         throwToSentry('Error fellowship ministry attendance meeting', error)
@@ -161,7 +163,10 @@ const SontaServiceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Hub'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Hub'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -216,7 +221,7 @@ const SontaServiceMutation = {
         .run(recordHubRehearsalService, {
           ...args,
           conversionRateToDollar: currencyCheck.conversionRateToDollar,
-          auth: context.auth,
+          jwt: context.jwt,
         })
         .catch((error: any) => throwToSentry('', error))
 
@@ -231,19 +236,6 @@ const SontaServiceMutation = {
       await Promise.all(aggregatePromises).catch((error: any) =>
         throwToSentry('Error Aggregating Hub Rehearsals', error)
       )
-
-      if (
-        ['Ministry', 'HubCouncil'].some((label) =>
-          serviceCheck.labels?.includes(label)
-        )
-      ) {
-        await sessionThree.executeWrite((tx) =>
-          tx.run(cancelLowerChurchRehearsals, {
-            ...args,
-            auth: context.auth,
-          })
-        )
-      }
 
       const serviceDetails = rearrangeCypherObject(cypherResponse)
 
@@ -263,7 +255,10 @@ const SontaServiceMutation = {
     args: RecordStageAttendanceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Ministry'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Ministry'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -312,7 +307,7 @@ const SontaServiceMutation = {
       const cypherResponse = await session
         .run(recordOnStageAttendance, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
         })
         .catch((error: any) =>
           throwToSentry('Error Recording OnStage Performance attendance', error)
@@ -350,7 +345,10 @@ const SontaServiceMutation = {
     args: RecordCancelledOnstageMinistryPerformanceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Ministry'), context.auth.roles)
+    isAuth(
+      permitLeaderAdmin('Ministry'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     try {
@@ -385,7 +383,7 @@ const SontaServiceMutation = {
       const cypherResponse = await session
         .run(recordCancelledOnStagePerformance, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
         })
         .catch((error: any) =>
           throwToSentry(

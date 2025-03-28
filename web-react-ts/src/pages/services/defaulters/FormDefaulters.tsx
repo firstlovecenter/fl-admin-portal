@@ -6,7 +6,7 @@ import { getWeekNumber } from 'jd-date-utils'
 import React from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
 import {
-  CONSTITUENCY_FORM_DEFAULTERS_LIST,
+  GOVERNORSHIP_FORM_DEFAULTERS_LIST,
   COUNCIL_FORM_DEFAULTERS_LIST,
   STREAM_FORM_DEFAULTERS_LIST,
   CAMPUS_FORM_DEFAULTERS_LIST,
@@ -25,8 +25,8 @@ import {
 import useSontaLevel from 'hooks/useSontaLevel'
 
 const FormDefaulters = () => {
-  const [constituencyFormDefaulters, { refetch: constituencyRefetch }] =
-    useLazyQuery(CONSTITUENCY_FORM_DEFAULTERS_LIST)
+  const [governorshipFormDefaulters, { refetch: governorshipRefetch }] =
+    useLazyQuery(GOVERNORSHIP_FORM_DEFAULTERS_LIST)
   const [councilFormDefaulters, { refetch: councilRefetch }] = useLazyQuery(
     COUNCIL_FORM_DEFAULTERS_LIST
   )
@@ -48,8 +48,8 @@ const FormDefaulters = () => {
   )
 
   const data = useSontaLevel({
-    constituencyFunction: constituencyFormDefaulters,
-    constituencyRefetch,
+    governorshipFunction: governorshipFormDefaulters,
+    governorshipRefetch,
     councilFunction: councilFormDefaulters,
     councilRefetch,
     streamFunction: streamFormDefaulters,

@@ -24,7 +24,7 @@ function MemberHistory() {
         </div>
 
         <Container className="mt-5">
-          <Timeline record={member?.history} limit={10} />
+          <Timeline record={member?.history} limit={100} />
         </Container>
       </>
     </ApolloWrapper>

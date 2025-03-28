@@ -20,34 +20,73 @@ type AccountTransaction {
   weekdayBalance: Float!
 }
 
+extend type Oversight {
+  hrAmount: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS*3]->(council:Council)
+      RETURN SUM(council.hrAmount)
+      """
+      columnName: "hrAmount"
+    )
+  bussingAmount: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS*3]->(council:Council)
+      RETURN SUM(council.bussingAmount)
+      """
+      columnName: "bussingAmount"
+    )
+  weekdayBalance: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS*3]->(council:Council)
+      RETURN SUM(council.weekdayBalance) AS weekdayBalance
+      """
+      columnName: "weekdayBalance"
+    )
+  bussingSocietyBalance: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS*3]->(council:Council)
+      RETURN SUM(council.bussingSocietyBalance) AS bussingSocietyBalance
+      """
+      columnName: "bussingSocietyBalance"
+    )
+}
+
 extend type Campus {
   hrAmount: Float!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.hrAmount)
+      RETURN SUM(council.hrAmount) AS hrAmount
       """
+      columnName: "hrAmount"
     )
   bussingAmount: Float!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.bussingAmount)
+      RETURN SUM(council.bussingAmount) AS bussingAmount
       """
+      columnName: "bussingAmount"
     )
   weekdayBalance: Float!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.weekdayBalance)
+      RETURN SUM(council.weekdayBalance) AS weekdayBalance
       """
+      columnName: "weekdayBalance"
     )
   bussingSocietyBalance: Float!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.bussingSocietyBalance)
+      RETURN SUM(council.bussingSocietyBalance) AS bussingSocietyBalance
       """
+      columnName: "bussingSocietyBalance"
     )
   transactions: [AccountTransaction!]!
     @cypher(
@@ -57,6 +96,52 @@ extend type Campus {
 
       RETURN transaction ORDER BY transaction.lastModified DESC
       """
+      columnName: "transaction"
+    )
+}
+
+extend type Stream {
+  hrAmount: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS]->(council:Council)
+      RETURN SUM(council.hrAmount) AS hrAmount
+      """
+      columnName: "hrAmount"
+    )
+  bussingAmount: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS]->(council:Council)
+      RETURN SUM(council.bussingAmount) AS bussingAmount
+      """
+      columnName: "bussingAmount"
+    )
+  weekdayBalance: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS]->(council:Council)
+      RETURN SUM(council.weekdayBalance) AS weekdayBalance
+      """
+      columnName: "weekdayBalance"
+    )
+  bussingSocietyBalance: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS]->(council:Council)
+      RETURN SUM(council.bussingSocietyBalance) AS bussingSocietyBalance
+      """
+      columnName: "bussingSocietyBalance"
+    )
+  transactions: [AccountTransaction!]!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS]->(council:Council)
+      MATCH (council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+
+      RETURN transaction ORDER BY transaction.lastModified DESC
+      """
+      columnName: "transaction"
     )
 }
 
@@ -71,13 +156,14 @@ extend type Council {
 
 extend type Mutation {
   SetCouncilHRAmount(councilId: ID!, amount: Float!): Council!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
         SET council.hrAmount = $amount
       RETURN council
       """
+      columnName: "council"
     )
   DepositIntoCouncilCurrentAccount(
     councilId: ID!
@@ -96,11 +182,18 @@ extend type Mutation {
     accountType: String!
     description: String! #momoNumber: String! #momoName: String! #invoiceUrl: String!
   ): AccountTransaction!
-    @auth(rules: [{ roles: ["leaderCouncil", "adminCampus"] }])
+    # @authentication(
+    #   jwt: {
+    #     OR: [
+    #       { roles_INCLUDES: "leaderCouncil" }
+    #       { roles_INCLUDES: "adminCampus" }
+    #     ]
+    #   }
+    # )
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
-      MATCH (requester:Member {auth_id: $auth.jwt.sub})
+      MATCH (requester:Member {auth_id: $jwt.sub})
 
       WITH council, requester
 
@@ -123,12 +216,20 @@ extend type Mutation {
 
       RETURN transaction
       """
+      columnName: "transaction"
     )
 
   ApproveExpense(transactionId: ID!, charge: Float!): AccountTransaction!
 
   DeclineExpense(transactionId: ID!): AccountTransaction!
-    @auth(rules: [{ roles: ["adminCampus", "leaderCampus"] }])
+    @authentication(
+      jwt: {
+        OR: [
+          { roles_INCLUDES: "adminCampus" }
+          { roles_INCLUDES: "leaderCampus" }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (transaction:AccountTransaction {id: $transactionId})
@@ -136,6 +237,7 @@ extend type Mutation {
 
       RETURN transaction
       """
+      columnName: "transaction"
     )
   UndoBussingTransaction(transactionId: ID!): Council!
     @cypher(
@@ -147,6 +249,7 @@ extend type Mutation {
 
       RETURN council
       """
+      columnName: "council"
     )
   UndoWeekdayTransaction(transactionId: ID!): Council!
     @cypher(
@@ -158,6 +261,7 @@ extend type Mutation {
 
       RETURN council
       """
+      columnName: "council"
     )
 
   DebitBussingSociety(

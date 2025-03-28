@@ -47,15 +47,12 @@ const ProtectedRoute: (props: ProtectedRouteProps) => JSX.Element = (props) => {
     (placeholder && !isAuthenticated && roleBased)
   ) {
     //User has no permission but there is a placeholder, and he's authenticated so let's load the screen
-    if (isAuthorised(permitMe('Fellowship'), currentUser.roles)) {
-      //If the user does not have permission but is a Fellowship Leader
-      church.setFellowshipId(currentUser.fellowship)
-    } else if (isAuthorised(permitMe('Bacenta'), currentUser.roles)) {
+    if (isAuthorised(permitMe('Bacenta'), currentUser.roles)) {
       //If the user does not have permission but is a Bacenta Leader
       church.setBacentaId(currentUser.bacenta)
-    } else if (isAuthorised(permitMe('Constituency'), currentUser.roles)) {
-      //If the user does not have permission but is a Constituency Leader
-      church.setConstituencyId(currentUser.constituency)
+    } else if (isAuthorised(permitMe('Governorship'), currentUser.roles)) {
+      //If the user does not have permission but is a Governorship Leader
+      church.setGovernorshipId(currentUser.governorship)
     } else if (isAuthorised(permitMe('Council'), currentUser.roles)) {
       //If the user does not have permission but is a Council Leader
       church.setCouncilId(currentUser.council)

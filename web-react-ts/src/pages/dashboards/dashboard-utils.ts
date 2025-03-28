@@ -11,7 +11,6 @@ import { churchLevels } from 'pages/directory/update/directory-utils'
 import {
   permitArrivals,
   permitArrivalsHelpers,
-  permitLeader,
   permitLeaderAdmin,
   permitLeaderAdminArrivals,
   permitMe,
@@ -26,8 +25,8 @@ type MenuItem = {
   exact?: 'true'
 }
 
-export const arrayDiff = (a1: any[], a2: any[]) => {
-  return a1.filter((i) => a2.indexOf(i) < 0)
+export const arrayDiff = (membersIn: any[], notIn: any[]) => {
+  return membersIn.filter((i) => notIn.indexOf(i) < 0)
 }
 
 export const menuItems: MenuItem[] = [
@@ -36,13 +35,13 @@ export const menuItems: MenuItem[] = [
     name: 'Directory',
     exact: 'true',
     to: '/directory',
-    roles: [...permitMe('Fellowship'), ...permitMe('Hub')],
+    roles: [...permitMe('Bacenta'), ...permitMe('Hub')],
   },
   {
     name: 'Services',
     to: '/services/church-list',
     roles: [
-      ...permitLeaderAdmin('Fellowship'),
+      ...permitLeaderAdmin('Bacenta'),
       ...permitTellerStream(),
       ...permitLeaderAdmin('Hub'),
     ],
@@ -63,23 +62,27 @@ export const menuItems: MenuItem[] = [
     name: 'Campaigns',
     to: '/campaigns/churchlist',
     roles: arrayDiff(
-      [...permitLeaderAdmin('Fellowship'), ...permitSheepSeeker()],
+      [...permitLeaderAdmin('Bacenta'), ...permitSheepSeeker()],
       permitLeaderAdminArrivals('Oversight')
     ),
   },
   {
     name: 'Accounts',
     to: '/accounts',
-    roles: arrayDiff(
-      [...permitLeader('Council'), 'fishers'],
-      permitLeaderAdminArrivals('Oversight')
-    ),
+    roles: [
+      'fishers',
+      'adminOversight',
+      'adminCampus',
+      'leaderCouncil',
+      'leaderStream',
+      'leaderCampus',
+    ],
   },
   {
     name: 'Maps',
     to: '/maps',
     roles: [
-      ...permitLeaderAdminArrivals('Fellowship'),
+      ...permitLeaderAdminArrivals('Bacenta'),
       ...permitLeaderAdmin('Hub'),
     ],
   },
@@ -88,9 +91,8 @@ export const menuItems: MenuItem[] = [
 export const roles: {
   [key in ChurchLevel]: VerbTypes[]
 } = {
-  Fellowship: ['leads'],
   Bacenta: ['leads'],
-  Constituency: ['leads', 'isAdminFor', 'isArrivalsAdminFor'],
+  Governorship: ['leads', 'isAdminFor', 'isArrivalsAdminFor'],
   Council: ['leads', 'isAdminFor', 'isArrivalsAdminFor', 'isArrivalsPayerFor'],
   Stream: [
     'leads',
@@ -103,7 +105,6 @@ export const roles: {
   Campus: ['leads', 'isAdminFor', 'isArrivalsAdminFor'],
   Oversight: ['leads', 'isAdminFor'],
   Denomination: ['leads', 'isAdminFor'],
-  HubFellowship: ['leads'],
   Hub: ['leads'],
   HubCouncil: ['leads'],
   Ministry: ['leads', 'isAdminFor'],
@@ -293,7 +294,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
       number: servant?.leadsFellowship?.length,
       link: authorisedLink(
         servant,
-        permitMe('Fellowship'),
+        permitMe('Bacenta'),
         '/fellowship/displaydetails'
       ),
     })
@@ -380,45 +381,45 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     })
   }
 
-  if (servant?.leadsConstituency?.length) {
-    roleTitles.push('leaderConstituency')
+  if (servant?.leadsGovernorship?.length) {
+    roleTitles.push('leaderGovernorship')
     userroles.push({
-      authRoles: 'leaderConstituency',
-      name: 'Constituency',
-      church: servant?.leadsConstituency,
-      number: servant?.leadsConstituency?.length,
+      authRoles: 'leaderGovernorship',
+      name: 'Governorship',
+      church: servant?.leadsGovernorship,
+      number: servant?.leadsGovernorship?.length,
       link: authorisedLink(
         servant,
-        permitMe('Constituency'),
-        '/constituency/displaydetails'
+        permitMe('Governorship'),
+        '/governorship/displaydetails'
       ),
     })
   }
-  if (servant?.isAdminForConstituency?.length) {
-    roleTitles.push('adminConstituency')
+  if (servant?.isAdminForGovernorship?.length) {
+    roleTitles.push('adminGovernorship')
     userroles.push({
-      authRoles: 'adminConstituency',
-      name: 'Constituency Admin',
-      church: servant?.isAdminForConstituency,
-      number: servant?.isAdminForConstituency?.length,
+      authRoles: 'adminGovernorship',
+      name: 'Governorship Admin',
+      church: servant?.isAdminForGovernorship,
+      number: servant?.isAdminForGovernorship?.length,
       link: authorisedLink(
         servant,
-        permitMe('Constituency'),
-        '/constituency/displaydetails'
+        permitMe('Governorship'),
+        '/governorship/displaydetails'
       ),
     })
   }
-  if (servant?.isArrivalsAdminForConstituency?.length) {
-    roleTitles.push('arrivalsAdminConstituency')
+  if (servant?.isArrivalsAdminForGovernorship?.length) {
+    roleTitles.push('arrivalsAdminGovernorship')
     userroles.push({
-      authRoles: 'arrivalsAdminConstituency',
-      name: 'Constituency Arrivals Admin',
-      church: servant?.isArrivalsAdminForConstituency,
-      number: servant?.isArrivalsAdminForConstituency?.length,
+      authRoles: 'arrivalsAdminGovernorship',
+      name: 'Governorship Arrivals Admin',
+      church: servant?.isArrivalsAdminForGovernorship,
+      number: servant?.isArrivalsAdminForGovernorship?.length,
       link: authorisedLink(
         servant,
-        permitMe('Constituency'),
-        `/constituency/displaydetails`
+        permitMe('Governorship'),
+        `/governorship/displaydetails`
       ),
     })
   }

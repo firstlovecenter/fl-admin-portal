@@ -12,7 +12,7 @@ export const STREAM_ARRIVALS_HELPERS = gql`
         lastName
         fullName
         pictureUrl
-        fellowship {
+        bacenta {
           id
           name
         }
@@ -68,7 +68,7 @@ export const COUNCIL_ARRIVALSPAYERS = gql`
         lastName
         fullName
         pictureUrl
-        fellowship {
+        bacenta {
           id
           name
         }

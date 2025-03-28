@@ -12,7 +12,7 @@ import {
   COUNCIL_BACENTA_SEARCH,
   CAMPUS_BACENTA_SEARCH,
   STREAM_BACENTA_SEARCH,
-  CONSTITUENCY_BACENTA_SEARCH,
+  GOVERNORSHIP_BACENTA_SEARCH,
   MEMBER_BACENTA_SEARCH,
 } from './SearchBacentaQueries'
 import TextError from './TextError/TextError'
@@ -50,11 +50,11 @@ const SearchBacenta = (props: RoleBasedSearch) => {
     }
   )
 
-  const [constituencySearch, { error: constituencyError }] = useLazyQuery(
-    CONSTITUENCY_BACENTA_SEARCH,
+  const [governorshipSearch, { error: governorshipError }] = useLazyQuery(
+    GOVERNORSHIP_BACENTA_SEARCH,
     {
       onCompleted: (data) => {
-        setSuggestions(data.constituencies[0].bacentaSearch)
+        setSuggestions(data.governorships[0].bacentaSearch)
         return
       },
     }
@@ -75,7 +75,7 @@ const SearchBacenta = (props: RoleBasedSearch) => {
     campusError ||
     streamError ||
     councilError ||
-    constituencyError
+    governorshipError
   throwToSentry('', error)
 
   const whichSearch = (searchString: string) => {
@@ -107,10 +107,10 @@ const SearchBacenta = (props: RoleBasedSearch) => {
             key: searchString?.trim(),
           },
         })
-      } else if (isAuthorised(permitMe('Constituency'), currentUser.roles)) {
-        constituencySearch({
+      } else if (isAuthorised(permitMe('Governorship'), currentUser.roles)) {
+        governorshipSearch({
           variables: {
-            id: currentUser.constituency,
+            id: currentUser.governorship,
             key: searchString?.trim(),
           },
         })

@@ -23,7 +23,7 @@ function CampusHistory() {
           <HeadingSecondary>Campus History</HeadingSecondary>
         </div>
         <Container>
-          <Timeline record={campus?.history} limit={10} />
+          <Timeline record={campus?.history} limit={100} />
         </Container>
       </>
     </ApolloWrapper>

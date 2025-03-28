@@ -44,7 +44,7 @@ const UserProfileEditPage = () => {
     maritalStatus: member?.maritalStatus ? member?.maritalStatus.status : '',
     occupation: member?.occupation ? member?.occupation.occupation : '',
     pictureUrl: member?.pictureUrl ? member?.pictureUrl : '',
-    fellowship: memberChurch?.fellowship ?? '',
+    bacenta: memberChurch?.bacenta ?? '',
     visitationArea: member?.visitationArea ?? '',
     basonta: memberChurch?.basonta ? memberChurch?.basonta.id : '',
   }
@@ -73,7 +73,7 @@ const UserProfileEditPage = () => {
         occupation: values.occupation,
         pictureUrl: values.pictureUrl,
 
-        fellowship: values.fellowship.id,
+        bacenta: values.bacenta.id,
         basonta: values.basonta,
       },
     })

@@ -49,7 +49,8 @@ type Hostel implements MapLocation {
   location: Point!
   capacity: Int!
   school: String!
-  university: String! @cypher(statement: "MATCH (this) RETURN this.school")
+  university: String!
+    @cypher(statement: "MATCH (this) RETURN this.school", columnName: "school")
 }
 
 type HighSchool implements MapLocation {
@@ -67,7 +68,7 @@ extend type Mutation {
     longitude: Float!
     latitude: Float!
   ): IndoorVenue!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (indoorVenue:IndoorVenue:OutreachVenue)
@@ -77,7 +78,7 @@ extend type Mutation {
          indoorVenue.location = point({latitude: $latitude, longitude:$longitude})
 
       WITH indoorVenue
-      MATCH (currentUser:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
 
       WITH indoorVenue, currentUser
       CREATE (log:HistoryLog)
@@ -94,6 +95,7 @@ extend type Mutation {
 
       RETURN indoorVenue
       """
+      columnName: "result"
     )
 
   CreateOutdoorVenue(
@@ -102,7 +104,7 @@ extend type Mutation {
     longitude: Float!
     latitude: Float!
   ): OutdoorVenue!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (outdoorVenue:OutdoorVenue:OutreachVenue)
@@ -113,7 +115,7 @@ extend type Mutation {
 
 
       WITH outdoorVenue
-      MATCH (currentUser:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
 
       WITH outdoorVenue, currentUser
       CREATE (log:HistoryLog)
@@ -130,6 +132,7 @@ extend type Mutation {
 
       RETURN outdoorVenue
       """
+      columnName: "result"
     )
 
   CreateHostel(
@@ -139,7 +142,7 @@ extend type Mutation {
     longitude: Float!
     school: String!
   ): Hostel!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (hostel:Hostel)
@@ -150,7 +153,7 @@ extend type Mutation {
         SET hostel.school = $school
 
       WITH hostel,
-      MATCH (currentUser:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
 
       WITH hostel, currentUser
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
@@ -166,6 +169,7 @@ extend type Mutation {
 
       RETURN hostel
       """
+      columnName: "result"
     )
   CreateHighSchool(
     name: String!
@@ -174,7 +178,7 @@ extend type Mutation {
     longitude: Float!
     school: String!
   ): HighSchool!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       CREATE (highSchool:HighSchool)
@@ -185,7 +189,7 @@ extend type Mutation {
         SET highSchool.school = $school
 
       WITH highSchool,
-      MATCH (currentUser:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
 
       WITH highSchool, currentUser
       CREATE (log:HistoryLog)
@@ -202,6 +206,7 @@ extend type Mutation {
 
       RETURN highSchool
       """
+      columnName: "result"
     )
 }
 
@@ -213,7 +218,7 @@ extend type Mutation {
     capacity: Int!
     name: String!
   ): IndoorVenue!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (indoorVenue:IndoorVenue:OutreachVenue {id: $indoorVenueId})
@@ -223,6 +228,7 @@ extend type Mutation {
 
       RETURN indoorVenue
       """
+      columnName: "result"
     )
   UpdateOutdoorVenue(
     longitude: Float!
@@ -231,7 +237,7 @@ extend type Mutation {
     capacity: Int!
     name: String!
   ): OutdoorVenue!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (outdoorVenue:OutdoorVenue:OutreachVenue {id: $outdoorVenueId})
@@ -241,6 +247,7 @@ extend type Mutation {
 
       RETURN outdoorVenue
       """
+      columnName: "result"
     )
   UpdateHostel(
     longitude: Float!
@@ -250,7 +257,7 @@ extend type Mutation {
     capacity: Int!
     university: String!
   ): Hostel!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (hostel:Hostel {id: $hostelId})
@@ -261,6 +268,7 @@ extend type Mutation {
 
       RETURN hostel
       """
+      columnName: "result"
     )
   UpdateHighSchool(
     longitude: Float!
@@ -269,7 +277,7 @@ extend type Mutation {
     name: String!
     capacity: Int!
   ): HighSchool!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (highSchool:HighSchool {id: $highSchoolId})
@@ -280,16 +288,17 @@ extend type Mutation {
 
       RETURN highSchool
       """
+      columnName: "result"
     )
 }
 
 extend type Mutation {
   CloseDownIndoorVenue(indoorVenueId: ID!): Boolean!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (indoorVenue:IndoorVenue:OutreachVenue {id: $indoorVenueId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
 
       WITH indoorVenue, admin
       CREATE (log:HistoryLog)
@@ -303,15 +312,16 @@ extend type Mutation {
       MERGE (log)-[:RECORDED_ON]->(date)
 
       DETACH DELETE indoorVenue
-      RETURN true
+      RETURN true AS result
       """
+      columnName: "result"
     )
   CloseDownOutdoorVenue(outdoorVenueId: ID!): Boolean!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (outdoorVenue:OutdoorVenue:OutreachVenue {id: $outdoorVenueId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
 
       CREATE (log:HistoryLog)
         SET log.id = apoc.create.uuid()
@@ -324,16 +334,17 @@ extend type Mutation {
       MERGE (log)-[:RECORDED_ON]->(date)
 
       DETACH DELETE outdoorVenue
-      RETURN true
+      RETURN true AS result
       """
+      columnName: "result"
     )
 
   CloseDownHostel(hostelId: ID!): Boolean!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (hostel:Hostel {id: $hostelId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
 
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.timestamp = datetime()
@@ -346,15 +357,16 @@ extend type Mutation {
       MERGE (log)-[:RECORDED_ON]->(date)
 
       DETACH DELETE hostel
-      RETURN true
+      RETURN true AS result
       """
+      columnName: "result"
     )
   CloseDownHighSchool(highSchoolId: ID!): Boolean!
-    @auth(rules: [{ roles: ["adminCampus"] }])
+    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
     @cypher(
       statement: """
       MATCH (highSchool:HighSchool {id: $highSchoolId})
-      MATCH (admin:Active:Member {auth_id: $auth.jwt.sub})
+      MATCH (admin:Active:Member {auth_id: $jwt.sub})
 
       CREATE (log:HistoryLog {id: apoc.create.uuid()})
         SET log.timestamp = datetime()
@@ -367,7 +379,8 @@ extend type Mutation {
       MERGE (log)-[:RECORDED_ON]->(date)
 
       DETACH DELETE highSchool
-      RETURN true
+      RETURN true AS result
       """
+      columnName: "result"
     )
 }

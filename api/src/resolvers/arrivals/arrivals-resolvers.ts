@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { getHumanReadableDate } from 'jd-date-utils'
+import { Integer } from 'neo4j-driver'
 import { getStreamFinancials } from '../utils/financial-utils'
 import { Context } from '../utils/neo4j-types'
 import {
@@ -17,7 +18,6 @@ import {
 } from '../permissions'
 import { MakeServant, RemoveServant } from '../directory/make-remove-servants'
 import {
-  aggregateBussingDataOnHigherChurches,
   aggregateVehicleBussingRecordData,
   checkArrivalTimeFromVehicle,
   checkArrivalTimes,
@@ -40,7 +40,6 @@ import { neonumber, RearragedCypherResponse } from '../utils/types'
 import texts from '../texts.json'
 import { CreateTransferRecipientBody, SendMoneyBody } from './arrivals-types'
 import { checkServantHasCurrentHistory } from '../services/service-resolvers'
-import { setBacentaStatus } from './bacenta-status/utils-bacenta-status'
 
 const dotenv = require('dotenv')
 
@@ -64,7 +63,7 @@ const arrivalEndTimeCalculator = (arrivalEndTime: string) => {
 }
 
 export const arrivalsMutation = {
-  MakeConstituencyArrivalsAdmin: async (
+  MakeGovernorshipArrivalsAdmin: async (
     object: any,
     args: any,
     context: Context
@@ -73,10 +72,10 @@ export const arrivalsMutation = {
       context,
       args,
       [...permitAdmin('Stream')],
-      'Constituency',
+      'Governorship',
       'ArrivalsAdmin'
     ),
-  RemoveConstituencyArrivalsAdmin: async (
+  RemoveGovernorshipArrivalsAdmin: async (
     object: any,
     args: any,
     context: Context
@@ -85,7 +84,7 @@ export const arrivalsMutation = {
       context,
       args,
       [...permitAdmin('Stream')],
-      'Constituency',
+      'Governorship',
       'ArrivalsAdmin'
     ),
   MakeCouncilArrivalsAdmin: async (object: any, args: any, context: Context) =>
@@ -147,7 +146,7 @@ export const arrivalsMutation = {
     args: { arrivalsCounterId: string; streamId: string },
     context: Context
   ) => {
-    checkIfSelf(args.arrivalsCounterId, context.auth.jwt.sub)
+    checkIfSelf(args.arrivalsCounterId, context.jwt.sub)
 
     return MakeServant(
       context,
@@ -204,7 +203,7 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(['leaderBacenta'], context.auth.roles)
+    isAuth(['leaderBacenta'], context.jwt['https://flcadmin.netlify.app/roles'])
 
     const recordResponse = rearrangeCypherObject(
       await session.run(checkArrivalTimes, args)
@@ -246,7 +245,7 @@ export const arrivalsMutation = {
     const response = rearrangeCypherObject(
       await session.run(uploadMobilisationPicture, {
         ...args,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 
@@ -286,14 +285,12 @@ export const arrivalsMutation = {
       bacentaId: string
       bussingRecordId: string
       leaderDeclaration: number
-      vehicleCost: number
-      personalContribution: number
       vehicle: string
       picture: string
     },
     context: Context
   ) => {
-    isAuth(['leaderBacenta'], context.auth.roles)
+    isAuth(['leaderBacenta'], context.jwt['https://flcadmin.netlify.app/roles'])
     const session = context.executionContext.session()
 
     const recordResponse = rearrangeCypherObject(
@@ -319,8 +316,7 @@ export const arrivalsMutation = {
         momoNumber: bacenta.momoNumber ?? '',
         mobileNetwork: bacenta.mobileNetwork ?? '',
         outbound: bacenta.outbound,
-        vehicleCostWithOutbound: args.vehicleCost,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 
@@ -331,8 +327,6 @@ export const arrivalsMutation = {
       id: vehicleRecord.id,
       leaderDeclaration: vehicleRecord.leaderDeclaration,
       attendance: vehicleRecord.attendance,
-      vehicleCost: vehicleRecord.vehicleCost,
-      personalContribution: vehicleRecord.personalContribution,
       vehicle: vehicleRecord.vehicle,
       picture: vehicleRecord.picture,
       outbound: vehicleRecord.outbound,
@@ -349,8 +343,6 @@ export const arrivalsMutation = {
                     date,
                   },
                   week: response.week,
-                  vehicleCost: vehicleRecord.vehicleCost,
-                  personalContribution: vehicleRecord.personalContribution,
                   vehicle: vehicleRecord.vehicle,
                   picture: vehicleRecord.picture,
                   outbound: vehicleRecord.outbound,
@@ -370,14 +362,15 @@ export const arrivalsMutation = {
       bussingRecordId: string
       leaderDeclaration: number
       attendance: number
-      vehicleCost: number
-      personalContribution: number
       vehicle: 'Urvan' | 'Sprinter' | 'Car'
       picture: string
     },
     context: Context
   ) => {
-    isAuth(permitArrivalsCounter(), context.auth.roles)
+    isAuth(
+      permitArrivalsCounter(),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     const recordResponse = rearrangeCypherObject(
@@ -386,17 +379,10 @@ export const arrivalsMutation = {
 
     const {
       arrivalEndTime,
-      bacentaId,
-      streamName,
       numberOfVehicles,
       totalAttendance,
-      leaderPhoneNumber,
-      leaderFirstName,
-      bacentaName,
     }: {
       arrivalEndTime: string
-      bacentaId: string
-      streamName: string
       numberOfVehicles: neonumber
       totalAttendance: neonumber
       leaderPhoneNumber: string
@@ -412,17 +398,7 @@ export const arrivalsMutation = {
 
     const adjustedArgs = args
 
-    if (streamName === 'anagkazo encounter') {
-      if (args.attendance < 20 && parseNeoNumber(numberOfVehicles) < 2) {
-        adjustedArgs.attendance = 0
-      } else if (
-        parseNeoNumber(numberOfVehicles) >= 2 &&
-        parseNeoNumber(totalAttendance) < 20
-      ) {
-        // Two or more vehicles but the combined attendance is less than the expected minimum
-        adjustedArgs.attendance = 0
-      }
-    } else if (args.vehicle !== 'Car') {
+    if (args.vehicle !== 'Car') {
       if (parseNeoNumber(numberOfVehicles) < 1 && args.attendance < 8) {
         // No arrived vehicles and attendance is less than 8
         adjustedArgs.attendance = 0
@@ -443,7 +419,7 @@ export const arrivalsMutation = {
     const response = rearrangeCypherObject(
       await session.run(confirmVehicleByAdmin, {
         ...adjustedArgs,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 
@@ -452,24 +428,6 @@ export const arrivalsMutation = {
       .catch((error: any) =>
         throwToSentry('Error Running aggregateVehicleBussingRecordData', error)
       )
-    await session
-      .run(aggregateBussingDataOnHigherChurches, { bacentaId })
-      .catch((error: any) =>
-        throwToSentry(
-          'Error Running aggregateLeaderBussingDataOnHigherChurches',
-          error
-        )
-      )
-
-    await setBacentaStatus(
-      bacentaId,
-      leaderFirstName,
-      leaderPhoneNumber,
-      bacentaName,
-      context
-    ).catch((error: any) =>
-      console.error('Error Setting bacenta Status', error)
-    )
 
     const vehicleRecord = response.vehicleRecord.properties
     const date = new Date().toISOString().slice(0, 10)
@@ -478,8 +436,6 @@ export const arrivalsMutation = {
       id: vehicleRecord.id,
       leaderDeclaration: vehicleRecord.leaderDeclaration,
       attendance: vehicleRecord.attendance,
-      vehicleCost: vehicleRecord.vehicleCost,
-      personalContribution: vehicleRecord.personalContribution,
       vehicle: vehicleRecord.vehicle,
       picture: vehicleRecord.picture,
       outbound: vehicleRecord.outbound,
@@ -497,8 +453,6 @@ export const arrivalsMutation = {
                     date,
                   },
                   week: response.week,
-                  vehicleCost: vehicleRecord.vehicleCost,
-                  personalContribution: vehicleRecord.personalContribution,
                   vehicle: vehicleRecord.vehicle,
                   picture: vehicleRecord.picture,
                   outbound: vehicleRecord.outbound,
@@ -526,7 +480,6 @@ export const arrivalsMutation = {
       vehicle: 'Sprinter' | 'Urvan' | 'Car'
       vehicleCost: number
       outbound: boolean
-      personalContribution: number
       bacentaSprinterTopUp: number
       bacentaUrvanTopUp: number
       arrivalTime: string
@@ -543,10 +496,14 @@ export const arrivalsMutation = {
 
     const calculateVehicleTopUp = (data: responseType) => {
       const outbound = response.outbound ? 2 : 1
-      const sprinterTopUp = data.bacentaSprinterTopUp * outbound
-      const urvanTopUp = data.bacentaUrvanTopUp * outbound
+      const sprinterTopUp =
+        parseNeoNumber(data.bacentaSprinterTopUp as unknown as Integer) *
+        outbound
 
-      const amountToPay = data.vehicleCost - data.personalContribution
+      const urvanTopUp =
+        parseNeoNumber(data.bacentaUrvanTopUp as unknown as Integer) * outbound
+
+      const amountToPay = data.vehicleCost
 
       if (data.vehicle === 'Sprinter') {
         if (sprinterTopUp === 0) return 0
@@ -569,6 +526,7 @@ export const arrivalsMutation = {
 
       return 0
     }
+    console.log('🚀 ~ file: arrivals-resolvers.ts:544 ~ response:', response)
     const vehicleTopUp = calculateVehicleTopUp(response)
 
     if (response.vehicle === 'Car') {
@@ -655,7 +613,10 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitArrivalsHelpers('Stream'), context.auth.roles)
+    isAuth(
+      permitArrivalsHelpers('Stream'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
 
     try {
@@ -782,7 +743,10 @@ export const arrivalsMutation = {
     return null
   },
   SetSwellDate: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdminArrivals('Campus'), context.auth.roles)
+    isAuth(
+      permitAdminArrivals('Campus'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
 
@@ -797,7 +761,7 @@ export const arrivalsMutation = {
     args: { firstName: string; phoneNumber: string; otp: string },
     context: Context
   ) => {
-    isAuth(['leaderBacenta'], context.auth.roles)
+    isAuth(['leaderBacenta'], context.jwt['https://flcadmin.netlify.app/roles'])
 
     const response = await sendBulkSMS(
       [args.phoneNumber],
@@ -814,7 +778,10 @@ const getArrivalsPaymentData = async (
   args: { arrivalsDate: string },
   context: Context
 ) => {
-  isAuth(permitAdminArrivals('Stream'), context.auth.roles)
+  isAuth(
+    permitAdminArrivals('Stream'),
+    context.jwt['https://flcadmin.netlify.app/roles']
+  )
 
   const session = context.executionContext.session()
 

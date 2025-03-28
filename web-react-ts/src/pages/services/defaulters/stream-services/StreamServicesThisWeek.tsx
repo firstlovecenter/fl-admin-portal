@@ -29,8 +29,8 @@ const StreamServicesThisWeek = () => {
   )
 
   const data = useChurchLevel({
-    constituencyFunction: campusThisWeek,
-    constituencyRefetch: campusRefetch,
+    governorshipFunction: campusThisWeek,
+    governorshipRefetch: campusRefetch,
     councilFunction: campusThisWeek,
     councilRefetch: campusRefetch,
     streamFunction: campusThisWeek,

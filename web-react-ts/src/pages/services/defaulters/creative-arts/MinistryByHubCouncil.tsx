@@ -95,7 +95,7 @@ const MinistryByHubCouncil = () => {
                         </div>
                         <hr />
                         <div className="fw-bold">
-                          Active Fellowships {hub.activeFellowshipCount}
+                          Active Bacentas {hub.activeBacentaCount}
                         </div>
                         <div className="good">
                           Services This Week {hub.servicesThisWeekCount}

@@ -119,9 +119,9 @@ const MemberTable = (props) => {
 
                   <div className="flex-grow-1 ms-3">
                     <p className="card-title">{`${soul?.firstName} ${soul?.lastName}`}</p>
-                    {soul?.fellowship ? (
+                    {soul?.bacenta ? (
                       <span className={`text-secondary card-subinfo ${theme}`}>
-                        {soul?.fellowship.name}
+                        {soul?.bacenta.name}
                         {' - '}
                       </span>
                     ) : null}

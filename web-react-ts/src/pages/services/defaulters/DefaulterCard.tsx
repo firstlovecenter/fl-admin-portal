@@ -14,7 +14,7 @@ import {
 import { useNavigate } from 'react-router'
 import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
-  FellowshipWithDefaulters,
+  BacentaWithDefaulters,
   HubWithDefaulters,
   StreamWithDefaulters,
 } from './defaulters-types'
@@ -22,7 +22,7 @@ import './Defaulters.css'
 import { MemberContext } from 'contexts/MemberContext'
 
 type DefaulterCardProps = {
-  defaulter: FellowshipWithDefaulters | StreamWithDefaulters | HubWithDefaulters
+  defaulter: BacentaWithDefaulters | StreamWithDefaulters | HubWithDefaulters
   link?: string
 }
 
@@ -56,10 +56,10 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
           {`${defaulter?.name} ${defaulter?.__typename}`}
           <br />
 
-          {defaulter?.__typename === 'Fellowship' &&
-            defaulter?.bacenta?.constituency?.name && (
+          {defaulter?.__typename === 'Bacenta' &&
+            defaulter?.governorship?.name && (
               <span className="text-secondary">
-                {`${defaulter?.bacenta?.constituency?.name} ${defaulter?.bacenta?.constituency?.__typename}`}
+                {`${defaulter?.governorship?.name} ${defaulter?.governorship?.__typename}`}
               </span>
             )}
 
@@ -117,7 +117,7 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             </Button>
           </a>
           {serviceDetails?.noServiceReason && (
-            <RoleView roles={permitLeaderAdmin('Constituency')}>
+            <RoleView roles={permitLeaderAdmin('Governorship')}>
               <Button
                 className="ms-3"
                 variant="warning"

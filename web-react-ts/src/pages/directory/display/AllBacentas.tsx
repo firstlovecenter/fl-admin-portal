@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
-import { GET_CONSTITUENCY_BACENTAS } from '../../../queries/ListQueries'
+import { GET_GOVERNORSHIP_BACENTAS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import RoleView from '../../../auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -12,14 +12,14 @@ import 'components/AllChurchesSummary.css'
 import ChurchSearch from 'components/ChurchSearch'
 
 const DisplayAllBacentas = () => {
-  const { constituencyId, setConstituencyId, clickCard } =
+  const { governorshipId, setGovernorshipId, clickCard } =
     useContext(ChurchContext)
 
-  const { data, loading, error } = useQuery(GET_CONSTITUENCY_BACENTAS, {
-    variables: { id: constituencyId },
+  const { data, loading, error } = useQuery(GET_GOVERNORSHIP_BACENTAS, {
+    variables: { id: governorshipId },
   })
 
-  const constituency = data?.constituencies[0]
+  const governorship = data?.governorships[0]
 
   return (
     <ApolloWrapper loading={loading} data={data} error={error}>
@@ -27,38 +27,38 @@ const DisplayAllBacentas = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to={`/constituency/displaydetails`}
+              to={`/governorship/displaydetails`}
               onClick={() => {
-                setConstituencyId(constituencyId)
+                setGovernorshipId(governorshipId)
               }}
             >
               {' '}
-              <h2 className="text-white">{`${constituency?.name} Constituency`}</h2>
+              <h2 className="text-white">{`${governorship?.name} Governorship`}</h2>
             </Link>
             <Link
               to="/member/displaydetails"
               onClick={() => {
-                clickCard(constituency?.leader)
+                clickCard(governorship?.leader)
               }}
             >
               <h6 className="text-white d-block text-small">
                 <span className="text-muted">CO:</span>
-                {constituency?.leader && ` ${constituency?.leader.fullName}`}
+                {governorship?.leader && ` ${governorship?.leader.fullName}`}
               </h6>
             </Link>
-            {constituency?.admin ? (
+            {governorship?.admin ? (
               <Link
                 className="pb-4"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(constituency?.admin)
+                  clickCard(governorship?.admin)
                 }}
               >
-                {`Admin: ${constituency?.admin?.fullName}`}
+                {`Admin: ${governorship?.admin?.fullName}`}
               </Link>
             ) : null}
           </Col>
-          <RoleView roles={permitAdminArrivals('Stream')} directoryLock>
+          <RoleView roles={permitAdminArrivals('Council')} directoryLock>
             <Col className="col-auto">
               <Link
                 to="/bacenta/addbacenta"
@@ -70,14 +70,14 @@ const DisplayAllBacentas = () => {
           </RoleView>
         </Row>
         <AllChurchesSummary
-          church={constituency}
-          memberCount={constituency?.memberCount}
-          numberOfChurchesBelow={constituency?.bacentas.length}
+          church={governorship}
+          memberCount={governorship?.memberCount}
+          numberOfChurchesBelow={governorship?.bacentas.length}
           churchType="Bacenta"
-          route="constituency"
+          route="governorship"
         />
 
-        <ChurchSearch data={constituency?.bacentas} churchType="Bacenta" />
+        <ChurchSearch data={governorship?.bacentas} churchType="Bacenta" />
       </Container>
     </ApolloWrapper>
   )

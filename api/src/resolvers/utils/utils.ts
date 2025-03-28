@@ -136,8 +136,8 @@ export const nextHigherChurch = (churchLevel: ChurchLevel) => {
     case 'Fellowship':
       return 'Bacenta'
     case 'Bacenta':
-      return 'Constituency'
-    case 'Constituency':
+      return 'Governorship'
+    case 'Governorship':
       return 'Council'
     case 'Council':
       return 'Stream'

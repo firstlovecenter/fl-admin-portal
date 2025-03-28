@@ -4,6 +4,10 @@
   padding-bottom: 60px;
 }
 
+.pointer {
+  cursor: pointer;
+}
+
 .small {
   font-size: 11px;
 }

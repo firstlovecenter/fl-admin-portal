@@ -37,10 +37,8 @@ RETURN record.id AS vehicleRecordId,
 record.target AS target,
 record.attendance AS attendance, 
 record.vehicle AS vehicle,
-record.vehicleCost AS vehicleCost,
 record.outbound AS outbound,
 record.arrivalTime  AS arrivalTime,
-record.personalContribution AS personalContribution,
 leader.phoneNumber AS leaderPhoneNumber,
 leader.firstName AS leaderFirstName,
 
@@ -52,7 +50,7 @@ labels(date) AS dateLabels
 
 export const checkTransactionReference = `
 MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)
-MATCH (bacenta)<-[:HAS]-(:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
+MATCH (bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
 MATCH (bacenta)<-[:LEADS]-(leader:Active:Member)
 WITH record, bacenta, leader, stream
 
@@ -61,7 +59,7 @@ RETURN record, stream, bacenta, leader
 `
 
 export const checkArrivalTimes = `
-MATCH (bacenta {id: $bacentaId})<-[:HAS]-(:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
+MATCH (bacenta {id: $bacentaId})<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
 RETURN stream, bacenta
 `
 
@@ -72,11 +70,10 @@ RETURN bussing.mobilisationPicture IS NOT NULL AS status
 `
 
 export const checkArrivalTimeFromVehicle = `
-MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)<-[:HAS]-(:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
+MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
 MATCH (bacenta)<-[:LEADS]-(leader:Active:Member)
 OPTIONAL MATCH (bussing)-[:INCLUDES_RECORD]->(records:VehicleRecord) WHERE records.arrivalTime IS NOT NULL
-RETURN toLower(stream.name) AS streamName, 
-stream.arrivalEndTime AS arrivalEndTime, 
+RETURN stream.arrivalEndTime AS arrivalEndTime, 
 bacenta.id AS bacentaId, 
 COUNT(DISTINCT records) AS numberOfVehicles, 
 SUM(records.attendance) AS totalAttendance, 
@@ -153,8 +150,8 @@ CREATE (bussingRecord:BussingRecord {createdAt:datetime()})
     MERGE (bussingRecord)-[:BUSSED_ON]->(serviceDate)
 
 WITH bussingRecord, bacenta, serviceDate,  date($serviceDate).week AS week
-    MATCH (leader:Member {auth_id: $auth.jwt.sub})
-    MATCH (bacenta)<-[:HAS]-(:Constituency)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
+    MATCH (leader:Member {auth_id: $jwt.sub})
+    MATCH (bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
     MERGE (bussingRecord)-[:LOGGED_BY]->(leader)
 
     RETURN bussingRecord AS bussingRecord, 
@@ -172,7 +169,7 @@ MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId})
       vehicleRecord.arrivalTime = datetime()
 
     WITH vehicleRecord
-          MATCH (admin:Member {auth_id: $auth.jwt.sub})
+          MATCH (admin:Member {auth_id: $jwt.sub})
           MERGE (vehicleRecord)-[:COUNTED_BY]->(admin)
 
       RETURN vehicleRecord
@@ -182,11 +179,9 @@ MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId})
 export const aggregateVehicleBussingRecordData = `
 MATCH (vehicle:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)
 MATCH (bussing)-[:INCLUDES_RECORD]->(allVehicles:VehicleRecord)
-WITH bussing, SUM(allVehicles.attendance) AS attendance, SUM(allVehicles.leaderDeclaration) AS leaderDeclaration, SUM(allVehicles.personalContribution) AS personalContribution, SUM(allVehicles.vehicleCost) AS vehicleCost, SUM(allVehicles.vehicleTopUp) AS vehicleTopUp
+WITH bussing, SUM(allVehicles.attendance) AS attendance, SUM(allVehicles.leaderDeclaration) AS leaderDeclaration, SUM(allVehicles.vehicleTopUp) AS vehicleTopUp
 SET bussing.attendance = attendance,
 bussing.leaderDeclaration = leaderDeclaration,
-bussing.personalContribution = personalContribution,
-bussing.bussingCost = vehicleCost,
 bussing.bussingTopUp = vehicleTopUp
 
 WITH bussing
@@ -216,8 +211,6 @@ MERGE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord)
 
 SET vehicleRecord.leaderDeclaration = $leaderDeclaration,
 vehicleRecord.createdAt = datetime(),
-vehicleRecord.vehicleCost = $vehicleCostWithOutbound,
-vehicleRecord.personalContribution = $personalContribution,
 vehicleRecord.vehicle = $vehicle,
 vehicleRecord.picture =  $picture,
 vehicleRecord.outbound = $outbound,
@@ -225,189 +218,27 @@ vehicleRecord.momoNumber = $momoNumber,
 vehicleRecord.mobileNetwork = $mobileNetwork
 
 WITH vehicleRecord, bussingRecord
-MATCH (leader:Member {auth_id: $auth.jwt.sub})
+MATCH (leader:Member {auth_id: $jwt.sub})
 MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
 
 WITH vehicleRecord, bussingRecord
 MATCH (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecords)
-WITH vehicleRecord, bussingRecord, sum(vehicleRecords.leaderDeclaration) as summedLeaderDeclaration, toFloat(SUM(vehicleRecords.personalContribution)) as summedPersonalContribution, toFloat(SUM(vehicleRecords.vehicleCost)) as summedVehicleCost
-SET bussingRecord.leaderDeclaration = summedLeaderDeclaration,
-bussingRecord.personalContribution = summedPersonalContribution,
-bussingRecord.bussingCost = summedVehicleCost
+WITH vehicleRecord, bussingRecord, sum(vehicleRecords.leaderDeclaration) as summedLeaderDeclaration 
+SET bussingRecord.leaderDeclaration = summedLeaderDeclaration
 
 RETURN vehicleRecord, bussingRecord, date().week AS week
 `
 
-export const aggregateBussingDataOnHigherChurches = `
-   MATCH (bacenta:Bacenta {id: $bacentaId}) 
-   MATCH (bacenta)<-[:HAS]-(constituency:Constituency)
-   MATCH (constituency)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
-
-   WITH constituency, aggregate
-
-   MATCH (constituency)-[:HAS]->(bacentas:Bacenta)
-   MATCH (date:TimeGraph {date: date()})
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph) WHERE date.date.week = date().week AND date.date.year = date().year
-   WITH DISTINCT constituency, aggregate, record
-   WITH constituency, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.bussingCost) AS bussingCost, SUM(record.personalContribution) AS personalContribution, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
-   SUM(record.numberOfSprinters) AS numberOfSprinters,
-   SUM(record.numberOfUrvans) AS numberOfUrvans,
-   SUM(record.numberOfCars) AS numberOfCars
-  
-
-   SET aggregate.leaderDeclaration = leaderDeclaration,
-    aggregate.bussingCost = bussingCost,
-    aggregate.personalContribution = personalContribution,
-    aggregate.attendance = attendance,
-    aggregate.bussingTopUp = bussingTopUp,
-    aggregate.componentBussingIds = componentBussingIds,
-    aggregate.numberOfSprinters = numberOfSprinters,
-    aggregate.numberOfUrvans = numberOfUrvans,
-    aggregate.numberOfCars = numberOfCars
-
-   WITH constituency AS lowerChurch
-   MATCH (lowerChurch)<-[:HAS]-(council:Council)
-   MATCH (council)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
-
-   WITH council, aggregate
-   MATCH (council)-[:HAS]->(:Constituency)-[:HAS]->(bacentas:Bacenta)
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph) WHERE date.date.week = date().week AND date.date.year = date().year
-   WITH DISTINCT council, aggregate, record
-   WITH council, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.bussingCost) AS bussingCost, SUM(record.personalContribution) AS personalContribution, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
-   SUM(record.numberOfSprinters) AS numberOfSprinters,
-   SUM(record.numberOfUrvans) AS numberOfUrvans,
-   SUM(record.numberOfCars) AS numberOfCars
-  
-
-   SET aggregate.leaderDeclaration = leaderDeclaration,
-    aggregate.bussingCost = bussingCost,
-    aggregate.personalContribution = personalContribution,
-    aggregate.attendance = attendance,
-    aggregate.bussingTopUp = bussingTopUp,
-    aggregate.componentBussingIds = componentBussingIds,
-    aggregate.numberOfSprinters = numberOfSprinters,
-    aggregate.numberOfUrvans = numberOfUrvans,
-    aggregate.numberOfCars = numberOfCars
-
-WITH council AS lowerChurch
-   MATCH (lowerChurch)<-[:HAS]-(stream:Stream)
-   MATCH (stream)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
-
-   WITH stream, aggregate
-   MATCH (stream)-[:HAS]->(:Council)-[:HAS]->(:Constituency)-[:HAS]->(bacentas:Bacenta)
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph) WHERE date.date.week = date().week AND date.date.year = date().year
-   WITH DISTINCT stream, aggregate, record
-    WITH stream, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.bussingCost) AS bussingCost, SUM(record.personalContribution) AS personalContribution, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
-    SUM(record.numberOfSprinters) AS numberOfSprinters,
-    SUM(record.numberOfUrvans) AS numberOfUrvans,
-    SUM(record.numberOfCars) AS numberOfCars
-  
-
-   SET aggregate.leaderDeclaration = leaderDeclaration,
-    aggregate.bussingCost = bussingCost,
-    aggregate.personalContribution = personalContribution,
-    aggregate.attendance = attendance,
-    aggregate.bussingTopUp = bussingTopUp,
-    aggregate.componentBussingIds = componentBussingIds,
-    aggregate.numberOfSprinters = numberOfSprinters,
-    aggregate.numberOfUrvans = numberOfUrvans,
-    aggregate.numberOfCars = numberOfCars
-
-   WITH stream AS lowerChurch
-   MATCH (lowerChurch)<-[:HAS]-(gathering:Campus)
-   MATCH (gathering)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
-
-   WITH gathering, aggregate
-   MATCH (gathering)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Constituency)-[:HAS]->(bacentas:Bacenta)
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph) WHERE date.date.week = date().week AND date.date.year = date().year
-   WITH DISTINCT gathering, aggregate, record
-    WITH gathering, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.bussingCost) AS bussingCost, SUM(record.personalContribution) AS personalContribution, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
-   SUM(record.numberOfSprinters) AS numberOfSprinters,
-   SUM(record.numberOfUrvans) AS numberOfUrvans,
-   SUM(record.numberOfCars) AS numberOfCars
-  
-
-   SET aggregate.leaderDeclaration = leaderDeclaration,
-    aggregate.bussingCost = bussingCost,
-    aggregate.personalContribution = personalContribution,
-    aggregate.attendance = attendance,
-    aggregate.bussingTopUp = bussingTopUp,
-    aggregate.componentBussingIds = componentBussingIds,
-    aggregate.numberOfSprinters = numberOfSprinters,
-    aggregate.numberOfUrvans = numberOfUrvans,
-    aggregate.numberOfCars = numberOfCars
-
-   WITH gathering AS lowerChurch
-   MATCH (lowerChurch)<-[:HAS]-(oversight:Oversight)
-   MATCH (oversight)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
-
-   WITH oversight, aggregate
-   MATCH (oversight)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Constituency)-[:HAS]->(bacentas:Bacenta)
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph) WHERE date.date.week = date().week AND date.date.year = date().year
-   WITH DISTINCT oversight, aggregate, record
-    WITH oversight, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.bussingCost) AS bussingCost, SUM(record.personalContribution) AS personalContribution, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
-   SUM(record.numberOfSprinters) AS numberOfSprinters,
-   SUM(record.numberOfUrvans) AS numberOfUrvans,
-   SUM(record.numberOfCars) AS numberOfCars
-  
-
-   SET aggregate.leaderDeclaration = leaderDeclaration,
-    aggregate.bussingCost = bussingCost,
-    aggregate.personalContribution = personalContribution,
-    aggregate.attendance = attendance,
-    aggregate.bussingTopUp = bussingTopUp,
-    aggregate.componentBussingIds = componentBussingIds,
-    aggregate.numberOfSprinters = numberOfSprinters,
-    aggregate.numberOfUrvans = numberOfUrvans,
-    aggregate.numberOfCars = numberOfCars
-
-   WITH oversight AS lowerChurch
-   MATCH (lowerChurch)<-[:HAS]-(denomination:Denomination)
-   MATCH (denomination)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
-
-   WITH denomination, aggregate
-   MATCH (denomination)-[:HAS]->(:Oversight)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Constituency)-[:HAS]->(bacentas:Bacenta)
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph) WHERE date.date.week = date().week AND date.date.year = date().year
-   WITH DISTINCT denomination, aggregate, record
-   WITH denomination, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.bussingCost) AS bussingCost, SUM(record.personalContribution) AS personalContribution, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
-   SUM(record.numberOfSprinters) AS numberOfSprinters,
-   SUM(record.numberOfUrvans) AS numberOfUrvans,
-   SUM(record.numberOfCars) AS numberOfCars
-  
-
-   SET aggregate.leaderDeclaration = leaderDeclaration,
-    aggregate.bussingCost = bussingCost,
-    aggregate.personalContribution = personalContribution,
-    aggregate.attendance = attendance,
-    aggregate.bussingTopUp = bussingTopUp,
-    aggregate.componentBussingIds = componentBussingIds,
-    aggregate.numberOfSprinters = numberOfSprinters,
-    aggregate.numberOfUrvans = numberOfUrvans,
-    aggregate.numberOfCars = numberOfCars
-`
-
 export const getArrivalsPaymentDataCypher = `
-MATCH (stream:Stream {id:$streamId})-[:HAS]->(council:Council)-[:HAS]->(constituency:Constituency)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph {date:date($date)})
+MATCH (stream:Stream {id:$streamId})-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph {date:date($date)})
 MATCH (leader:Member)-[:LEADS]->(bacenta)
 MATCH (councilHead:Member)-[:LEADS]->(council)
-MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7 AND record.vehicle <> "Car"
-OPTIONAL MATCH (constituency)-[:IS_SUPPORTED_BY]->(society:BussingSociety)
+MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7 
+OPTIONAL MATCH (governorship)-[:IS_SUPPORTED_BY]->(society:BussingSociety)
 RETURN DISTINCT date.date as date, stream.name as stream, (councilHead.firstName+ " "+ councilHead.lastName) as councilHead, bacenta.name as bacenta, (stream.arrivalsPrefix+toString(bacenta.code)) as bacentaCode, record.leaderDeclaration as attendance, record.attendance as confirmedAttendance, record.vehicle as vehicle, 
 (CASE 
     WHEN record.outbound = true THEN 'In and Out'
     WHEN record.outbound = false THEN 'In Only'
     END) as outbound, 
-round(toFloat(record.vehicleTopUp), 2) as topUp, record.vehicleCost as vehicleCost, record.momoNumber as momoNumber, record.comments as comments, record.arrivalTime as arrivalTime, (leader.firstName+ " "+ leader.lastName) as leader, council.name as council, constituency.name as constituency, record.momoName as momoName, society.society as society ORDER BY toInteger(society) ASC
+round(toFloat(record.vehicleTopUp), 2) as topUp, record.vehicleCost as vehicleCost, record.momoNumber as momoNumber, record.comments as comments, record.arrivalTime as arrivalTime, (leader.firstName+ " "+ leader.lastName) as leader, council.name as council, governorship.name as governorship, record.momoName as momoName, society.society as society ORDER BY toInteger(society) ASC
 `

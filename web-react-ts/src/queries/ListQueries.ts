@@ -11,9 +11,9 @@ export const GET_BISHOPS = gql`
   }
 `
 
-export const GET_CONSTITUENCY_BACENTAS = gql`
-  query getConstituencyBacentas($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GET_GOVERNORSHIP_BACENTAS = gql`
+  query getGovernorshipBacentas($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 
@@ -33,9 +33,8 @@ export const GET_CONSTITUENCY_BACENTAS = gql`
       bacentas {
         id
         name
-        stream_name
+        memberCount
         vacationStatus
-        fellowshipCount
         target
         council {
           id
@@ -51,13 +50,12 @@ export const GET_CONSTITUENCY_BACENTAS = gql`
   }
 `
 
-export const GET_CONSTITUENCY_ICBACENTAS = gql`
-  query getConstituencyIcBacentas($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GET_GOVERNORSHIP_ICBACENTAS = gql`
+  query getGovernorshipIcBacentas($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 
-      stream_name
       council {
         id
       }
@@ -73,9 +71,8 @@ export const GET_CONSTITUENCY_ICBACENTAS = gql`
       icBacentas {
         id
         name
-        stream_name
+        memberCount
         vacationStatus
-        fellowshipCount
         target
         council {
           id
@@ -91,8 +88,8 @@ export const GET_CONSTITUENCY_ICBACENTAS = gql`
   }
 `
 
-export const GET_COUNCIL_CONSTITUENCIES = gql`
-  query getCouncilConstituencies($id: ID!) {
+export const GET_COUNCIL_GOVERNORSHIPS = gql`
+  query getCouncilGovernorships($id: ID!) {
     councils(where: { id: $id }) {
       id
       name
@@ -109,7 +106,7 @@ export const GET_COUNCIL_CONSTITUENCIES = gql`
         lastName
         stream_name
       }
-      constituencies {
+      governorships {
         name
         id
         stream_name
@@ -138,8 +135,8 @@ export const GET_COUNCIL_CONSTITUENCIES = gql`
     }
   }
 `
-export const GET_CAMPUS_CONSTITUENCIES = gql`
-  query getGatheringConstituencies($id: ID!) {
+export const GET_CAMPUS_GOVERNORSHIPS = gql`
+  query getGatheringGovernorships($id: ID!) {
     campuses(where: { id: $id }) {
       id
       name
@@ -160,7 +157,7 @@ export const GET_CAMPUS_CONSTITUENCIES = gql`
         stream_name
         fullName
       }
-      constituencies {
+      governorships {
         name
         id
         stream_name
@@ -210,9 +207,8 @@ export const GET_STREAM_COUNCILS = gql`
         stream_name
         memberCount
         target
-        constituencyCount
-        fellowshipCount
-        constituencies {
+        governorshipCount
+        governorships {
           id
         }
         leader {
@@ -369,8 +365,8 @@ export const GET_OVERSIGHT_CAMPUSES = gql`
   }
 `
 
-export const GET_STREAM_CONSTITUENCIES = gql`
-  query getStreamConstituencies($id: ID!) {
+export const GET_STREAM_GOVERNORSHIPS = gql`
+  query getStreamGovernorships($id: ID!) {
     streams(where: { id: $id }) {
       id
       name
@@ -388,7 +384,7 @@ export const GET_STREAM_CONSTITUENCIES = gql`
         fullName
         stream_name
       }
-      constituencies {
+      governorships {
         name
         id
         stream_name
@@ -413,7 +409,7 @@ export const GET_COUNCILS = gql`
     councils {
       id
       name
-      constituencies {
+      governorships {
         id
       }
     }
@@ -508,41 +504,6 @@ export const GET_CAMPUS_BASONTAS = gql`
   }
 `
 
-export const GET_BACENTA_FELLOWSHIPS = gql`
-  query getBacentaFellowships($id: ID!) {
-    bacentas(where: { id: $id }) {
-      id
-      name
-      memberCount
-      fellowships {
-        id
-        name
-        vacationStatus
-        memberCount
-        leader {
-          id
-          firstName
-          lastName
-          pictureUrl
-        }
-        bacenta {
-          id
-          name
-          leader {
-            id
-            firstName
-            lastName
-            fullName
-          }
-          constituency {
-            id
-          }
-        }
-      }
-    }
-  }
-`
-
 export const GET_HUB_HUBFELLOWSHIPS = gql`
   query getHubFellowships($id: ID!) {
     hubs(where: { id: $id }) {
@@ -569,7 +530,7 @@ export const GET_HUB_HUBFELLOWSHIPS = gql`
             lastName
             fullName
           }
-          constituency {
+          governorship {
             id
           }
         }
@@ -882,7 +843,6 @@ export const GET_COUNCIL_HUBCOUNCILS = gql`
         name
         id
         memberCount
-        hubFellowshipCount
         leader {
           id
           firstName
@@ -895,9 +855,9 @@ export const GET_COUNCIL_HUBCOUNCILS = gql`
   }
 `
 
-export const GET_CONSTITUENCY_HUBS = gql`
-  query getConstituencyHubs($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GET_GOVERNORSHIP_HUBS = gql`
+  query getGovernorshipHubs($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 

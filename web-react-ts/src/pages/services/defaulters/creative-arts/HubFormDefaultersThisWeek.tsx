@@ -11,7 +11,7 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import {
   DefaultersUseChurchType,
-  FellowshipWithDefaulters,
+  BacentaWithDefaulters,
 } from '../defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import {
@@ -64,7 +64,7 @@ const ServicesThisWeek = () => {
 
           <Row>
             {church?.hubFormDefaultersThisWeek.map(
-              (service: FellowshipWithDefaulters, i: number) => (
+              (service: BacentaWithDefaulters, i: number) => (
                 <Col key={i} xs={12} className="mb-3">
                   <DefaulterCard
                     defaulter={service}

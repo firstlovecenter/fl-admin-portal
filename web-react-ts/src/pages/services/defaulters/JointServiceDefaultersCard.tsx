@@ -5,14 +5,14 @@ import { Card, Button } from 'react-bootstrap'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
 import { useNavigate } from 'react-router'
 import {
-  ConstituencyWithDefaulters,
+  GovernorshipWithDefaulters,
   CouncilWithDefaulters,
 } from './defaulters-types'
 import './Defaulters.css'
 import { MemberContext } from 'contexts/MemberContext'
 
 type DefaulterCardProps = {
-  defaulter: ConstituencyWithDefaulters | CouncilWithDefaulters
+  defaulter: GovernorshipWithDefaulters | CouncilWithDefaulters
   link?: string
 }
 

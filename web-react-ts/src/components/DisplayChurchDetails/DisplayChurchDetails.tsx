@@ -13,7 +13,7 @@ import * as Yup from 'yup'
 import { useMutation } from '@apollo/client'
 import {
   MAKE_CAMPUS_ADMIN,
-  MAKE_CONSTITUENCY_ADMIN,
+  MAKE_GOVERNORSHIP_ADMIN,
   MAKE_COUNCIL_ADMIN,
   MAKE_OVERSIGHT_ADMIN,
   MAKE_STREAM_ADMIN,
@@ -42,13 +42,13 @@ import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
 import SearchMember from 'components/formik/SearchMember'
 import useModal from 'hooks/useModal'
 import SubmitButton from 'components/formik/SubmitButton'
-import { DetailsArray } from 'pages/directory/display/DetailsFellowship'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import Last3WeeksCard, {
   Last3WeeksCardProps,
   shouldFill,
 } from 'components/Last3WeeksCard'
+import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
 
 type DisplayChurchDetailsProps = {
   details: DetailsArray
@@ -94,7 +94,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   let roles: Role[] = []
 
   switch (props.churchType) {
-    case 'Constituency':
+    case 'Governorship':
       needsAdmin = true
       roles = permitAdmin('Council')
       break
@@ -125,14 +125,14 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
 
   const { currentUser } = useContext(MemberContext)
   const { show, handleShow, handleClose } = useModal()
-  const { constituencyId, councilId, streamId, campusId, clickCard } =
+  const { governorshipId, councilId, streamId, campusId, clickCard } =
     useContext(ChurchContext)
 
   const htmlElement = document.querySelector('html')
   const currentTheme = htmlElement?.getAttribute('data-bs-theme') || 'dark'
 
   //Change Admin Initialised
-  const [MakeConstituencyAdmin] = useMutation(MAKE_CONSTITUENCY_ADMIN)
+  const [MakeGovernorshipAdmin] = useMutation(MAKE_GOVERNORSHIP_ADMIN)
   const [MakeCouncilAdmin] = useMutation(MAKE_COUNCIL_ADMIN)
   const [MakeStreamAdmin] = useMutation(MAKE_STREAM_ADMIN)
   const [MakeCampusAdmin] = useMutation(MAKE_CAMPUS_ADMIN)
@@ -206,15 +206,15 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         alertMsg('Council Admin has been changed successfully')
       }
 
-      if (props.churchType === 'Constituency') {
-        await MakeConstituencyAdmin({
+      if (props.churchType === 'Governorship') {
+        await MakeGovernorshipAdmin({
           variables: {
-            constituencyId: constituencyId,
+            governorshipId: governorshipId,
             newAdminId: values.adminSelect,
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertMsg('Constituency Admin has been changed successfully')
+        alertMsg('Governorship Admin has been changed successfully')
       }
     } catch (e) {
       throwToSentry('', e)
@@ -331,32 +331,23 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             ))}
           </Row>
         )}
+
         {props.churchType === 'Bacenta' &&
         (props.church?.sprinterTopUp !== 0 ||
           props.church?.urvanTopUp !== 0) ? (
-          <RoleView
-            roles={['leaderBacenta']}
-            permittedStream={[
-              'Gospel Encounter',
-              'First Love Experience',
-              'Holy Ghost Encounter',
-            ]}
-            verifyId={props?.leader?.id}
-          >
+          <RoleView roles={['leaderBacenta']} verifyId={props?.leader?.id}>
             {!props.momoNumber && !props.loading && (
               <p className="my-1 bad fw-bold text-center">
                 There is no valid Mobile Money Number! Please update!
               </p>
             )}
-
-            <div className="d-grid gap-2">
+            <div className="d-grid gap-2 mt-2">
               <PlaceholderCustom
                 loading={props.loading}
-                className={`btn-graphs ${currentTheme}`}
+                className={`btn-graphs`}
                 button="true"
               >
                 <Button
-                  className={`${currentTheme}`}
                   onClick={() => {
                     navigate(`/${props.churchType.toLowerCase()}/editbussing`)
                   }}

@@ -76,10 +76,10 @@ const CouncilSwollenSundayTrends = () => {
 
   const churchBelow = [
     {
-      name: 'Constituencies',
-      number: church?.constituencyCount,
+      name: 'Governorships',
+      number: church?.governorshipCount,
       onClick: () =>
-        navigate('/campaigns/constituency/swollen-sunday/constituencies'),
+        navigate('/campaigns/governorship/swollen-sunday/governorships'),
     },
     {
       name: 'Bacentas',

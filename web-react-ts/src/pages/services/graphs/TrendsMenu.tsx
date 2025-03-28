@@ -9,6 +9,7 @@ import Charts from 'assets/icons/Charts'
 import PieChart from 'assets/icons/PieChart'
 import { Download } from 'react-bootstrap-icons'
 import RoleView from 'auth/RoleView'
+import { permitLeaderAdmin } from 'permission-utils'
 
 const TrendsMenu = () => {
   const { currentUser, theme } = useContext(MemberContext)
@@ -45,17 +46,21 @@ const TrendsMenu = () => {
             }
             caption={'Quick facts about your church'}
           />
-          <RoleView roles={['adminCampus', 'leaderCampus']}>
-            <MenuButton
-              title="Download Reports"
-              color="green"
-              iconComponent={<Download />}
-              onClick={() =>
-                navigate(`/download-reports/${church.__typename.toLowerCase()}`)
-              }
-              caption={'Download reports of your church'}
-            />
-          </RoleView>
+          {['Council'].includes(churchType) && (
+            <RoleView roles={permitLeaderAdmin('Council')}>
+              <MenuButton
+                title="Download Reports"
+                color="green"
+                iconComponent={<Download />}
+                onClick={() =>
+                  navigate(
+                    `/download-reports/${church.__typename.toLowerCase()}`
+                  )
+                }
+                caption={'Download reports of your church'}
+              />
+            </RoleView>
+          )}
           <MenuButton
             iconComponent={<PieChart />}
             title="Member Conversion Chart"

@@ -45,11 +45,11 @@ const StreamByCouncil = () => {
                       <Card.Body
                         onClick={() => {
                           clickCard(council)
-                          navigate('/services/council-by-constituency')
+                          navigate('/services/council-by-governorship')
                         }}
                       >
                         <div className="fw-bold">
-                          Active Fellowships {council.activeFellowshipCount}
+                          Active Bacentas {council.activeBacentaCount}
                         </div>
                         <div className="good">
                           Services This Week {council.servicesThisWeekCount}

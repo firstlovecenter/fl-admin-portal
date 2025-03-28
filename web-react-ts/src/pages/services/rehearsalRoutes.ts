@@ -26,7 +26,7 @@ const MinistryRehearsalService = lazy(
     )
 )
 const HubSundayMeeting = lazy(
-  () => import('pages/services/ministry-meeting/HubSundayMeeting')
+  () => import('pages/services/ministry-meeting/HubCouncilSundayMeeting')
 )
 const HubRehearsalServiceDetails = lazy(
   () =>
@@ -47,7 +47,7 @@ const MinistryRehearsalServiceDetails = lazy(
     )
 )
 const HubSundayMeetingDetails = lazy(
-  () => import('pages/services/ministry-meeting/HubSundayMeetingDetails')
+  () => import('pages/services/ministry-meeting/HubCouncilSundayMeetingDetails')
 )
 
 export const rehearsalRoutes: LazyRouteTypes[] = [

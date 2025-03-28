@@ -19,17 +19,15 @@ const BacentaService = lazy(
 const BacentaServiceDetails = lazy(
   () => import('pages/services/record-service/BacentaServiceDetails')
 )
-const ConstituencyService = lazy(
-  () => import('pages/services/record-service/ConstituencyService')
+const GovernorshipService = lazy(
+  () => import('pages/services/record-service/GovernorshipService')
 )
-const ConstituencyServiceDetails = lazy(
-  () => import('pages/services/record-service/ConstituencyServiceDetails')
+const GovernorshipServiceDetails = lazy(
+  () => import('pages/services/record-service/GovernorshipServiceDetails')
 )
-const FellowshipService = lazy(
-  () => import('pages/services/record-service/FellowshipService')
-)
-const FellowshipServiceCancelled = lazy(
-  () => import('pages/services/record-service/FellowshipServiceCancelled')
+
+const BacentaServiceCancelled = lazy(
+  () => import('pages/services/record-service/BacentaServiceCancelled')
 )
 const StreamServiceCancelled = lazy(
   () => import('pages/services/record-service/StreamServiceCancelled')
@@ -45,8 +43,8 @@ const HubRehearsalService = lazy(
   () =>
     import('pages/services/record-service/creative-arts/HubRehearsalService')
 )
-const HubSundayMeeting = lazy(
-  () => import('pages/services/ministry-meeting/HubSundayMeeting')
+const HubCouncilSundayMeeting = lazy(
+  () => import('pages/services/ministry-meeting/HubCouncilSundayMeeting')
 )
 const HubRehearsalServiceDetails = lazy(
   () =>
@@ -55,8 +53,8 @@ const HubRehearsalServiceDetails = lazy(
     )
 )
 
-const HubSundayMeetingDetails = lazy(
-  () => import('pages/services/ministry-meeting/HubSundayMeetingDetails')
+const HubCouncilSundayMeetingDetails = lazy(
+  () => import('pages/services/ministry-meeting/HubCouncilSundayMeetingDetails')
 )
 const BacentaReport = lazy(() => import('pages/services/graphs/BacentaGraphs'))
 const HubReport = lazy(() => import('pages/services/graphs/HubGraphs'))
@@ -69,16 +67,15 @@ const MinistryReport = lazy(
 const CreativeArtsReport = lazy(
   () => import('pages/services/graphs/CreativeArtsGraphs')
 )
-const ConstituencyReport = lazy(
-  () => import('pages/services/graphs/ConstituencyGraphs')
+const GovernorshipReport = lazy(
+  () => import('pages/services/graphs/GovernorshipGraphs')
 )
 const CouncilReport = lazy(() => import('pages/services/graphs/CouncilGraphs'))
 const FellowshipReport = lazy(
   () => import('pages/services/graphs/FellowshipGraphs')
 )
-const BacentaJoint = lazy(() => import('pages/services/BacentaJoint'))
 
-const ConstituencyJoint = lazy(() => import('pages/services/ConstituencyJoint'))
+const GovernorshipJoint = lazy(() => import('pages/services/GovernorshipJoint'))
 const Banked = lazy(() => import('pages/services/defaulters/Banked'))
 const BankingDefaulters = lazy(
   () => import('pages/services/defaulters/BankingDefaulters')
@@ -86,10 +83,10 @@ const BankingDefaulters = lazy(
 const CancelledServicesThisWeek = lazy(
   () => import('pages/services/defaulters/CancelledServiceThisWeek')
 )
-const CouncilByConstituency = lazy(
+const CouncilByGovernorship = lazy(
   () =>
     import(
-      'pages/services/defaulters/church-by-subchurch/CouncilByConstituency'
+      'pages/services/defaulters/church-by-subchurch/CouncilByGovernorship'
     )
 )
 const FormDefaulters = lazy(
@@ -98,14 +95,14 @@ const FormDefaulters = lazy(
 const ServicesThisWeek = lazy(
   () => import('pages/services/defaulters/ServicesThisWeek')
 )
-const ConstituencyJointNotBanked = lazy(
-  () => import('pages/services/defaulters/ConstituencyNotBankedThisWeek')
+const GovernorshipJointNotBanked = lazy(
+  () => import('pages/services/defaulters/GovernorshipNotBankedThisWeek')
 )
 const CouncilJointNotBanked = lazy(
   () => import('pages/services/defaulters/CouncilNotBankedThisWeek')
 )
-const ConstituencyJointBanked = lazy(
-  () => import('pages/services/defaulters/ConstituencyBankedThisWeek')
+const GovernorshipJointBanked = lazy(
+  () => import('pages/services/defaulters/GovernorshipBankedThisWeek')
 )
 const CouncilJointBanked = lazy(
   () => import('pages/services/defaulters/CouncilBankedThisWeek')
@@ -142,11 +139,11 @@ const CreativeArtsByMinistry = lazy(
 const MinistryByHubCouncil = lazy(
   () => import('pages/services/defaulters/creative-arts/MinistryByHubCouncil')
 )
-const ConstituencyBankingSlipView = lazy(
-  () => import('pages/services/banking/banking-slip/ConstituencyView')
+const GovernorshipBankingSlipView = lazy(
+  () => import('pages/services/banking/banking-slip/GovernorshipView')
 )
-const ConstituencyBankingSlipSubmission = lazy(
-  () => import('pages/services/banking/banking-slip/ConstituencySubmission')
+const GovernorshipBankingSlipSubmission = lazy(
+  () => import('pages/services/banking/banking-slip/GovernorshipSubmission')
 )
 const CouncilService = lazy(
   () => import('pages/services/record-service/CouncilService')
@@ -192,14 +189,20 @@ const TrendsMenu = lazy(() => import('./graphs/TrendsMenu'))
 
 const HubFormMenu = lazy(() => import('./menus/HubFormMenu'))
 const MinistryFormMenu = lazy(() => import('./menus/MinistryFormMenu'))
-const FellowshipBankingSlipSubmission = lazy(
-  () => import('pages/services/banking/banking-slip/FellowshipSubmission')
+const BacentaBankingSlipSubmission = lazy(
+  () => import('pages/services/banking/banking-slip/BacentaSubmission')
 )
-const FellowshipBankingSlipView = lazy(
-  () => import('pages/services/banking/banking-slip/FellowshipView')
+const BacentaBankingSlipView = lazy(
+  () => import('pages/services/banking/banking-slip/BacentaView')
 )
 const HubRehearsalsThisWeek = lazy(
   () => import('pages/services/defaulters/creative-arts/HubRehearsalsThisWeek')
+)
+const CancelledRehearsalsThisWeek = lazy(
+  () =>
+    import(
+      'pages/services/defaulters/creative-arts/HubCancelledRehearsalsThisWeek'
+    )
 )
 const HubFormDefaultersThisWeek = lazy(
   () =>
@@ -217,7 +220,7 @@ export const services: LazyRouteTypes[] = [
     path: '/services',
     element: ServicesMenu,
     roles: [
-      ...permitLeaderAdmin('Fellowship'),
+      ...permitLeaderAdmin('Bacenta'),
       ...permitTellerStream(),
       ...permitLeader('Hub'),
     ],
@@ -227,34 +230,34 @@ export const services: LazyRouteTypes[] = [
     path: '/services/church-list',
     element: ServicesChurchList,
     roles: [
-      ...permitLeaderAdmin('Fellowship'),
+      ...permitLeaderAdmin('Bacenta'),
       ...permitTellerStream(),
       ...permitLeader('Hub'),
     ],
     placeholder: true,
   },
-  {
-    path: '/fellowship/record-service',
-    element: FellowshipService,
-    roles: permitLeaderAdmin('Fellowship'),
-    placeholder: true,
-  },
+  // {
+  //   path: '/bacenta/record-service',
+  //   element: BacentaService,
+  //   roles: permitLeaderAdmin('Bacenta'),
+  //   placeholder: true,
+  // },
   {
     path: '/services/fellowship',
     element: Fellowship,
-    roles: permitLeaderAdmin('Fellowship'),
-    placeholder: true,
-  },
-  {
-    path: '/services/bacenta',
-    element: BacentaJoint,
     roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
   {
-    path: '/services/constituency',
-    element: ConstituencyJoint,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/services/bacenta',
+    element: Fellowship,
+    roles: permitLeaderAdmin('Bacenta'),
+    placeholder: true,
+  },
+  {
+    path: '/services/governorship',
+    element: GovernorshipJoint,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
@@ -277,20 +280,20 @@ export const services: LazyRouteTypes[] = [
   },
 
   {
-    path: '/services/fellowship/banking-slips',
-    element: FellowshipBankingSlipView,
-    roles: permitLeaderAdmin('Fellowship'),
+    path: '/services/bacenta/banking-slips',
+    element: BacentaBankingSlipView,
+    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
   {
-    path: '/fellowship/banking-slip/submission',
-    element: FellowshipBankingSlipSubmission,
+    path: '/bacenta/banking-slip/submission',
+    element: BacentaBankingSlipSubmission,
     roles: permitLeaderAdmin('Campus'),
     placeholder: true,
   },
   {
-    path: '/services/constituency/banking-slips',
-    element: ConstituencyBankingSlipView,
+    path: '/services/governorship/banking-slips',
+    element: GovernorshipBankingSlipView,
     roles: permitLeaderAdmin('Campus'),
     placeholder: true,
   },
@@ -307,8 +310,8 @@ export const services: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
-    path: '/constituency/banking-slip/submission',
-    element: ConstituencyBankingSlipSubmission,
+    path: '/governorship/banking-slip/submission',
+    element: GovernorshipBankingSlipSubmission,
     roles: permitLeaderAdmin('Campus'),
     placeholder: true,
   },
@@ -349,7 +352,7 @@ export const graphs: LazyRouteTypes[] = [
     path: '/fellowship/graphs',
     element: FellowshipReport,
     roles: [
-      ...permitLeaderAdminArrivals('Constituency'),
+      ...permitLeaderAdminArrivals('Bacenta'),
       ...permitTellerStream(),
       ...permitLeaderAdmin('Hub'),
     ],
@@ -358,18 +361,15 @@ export const graphs: LazyRouteTypes[] = [
   {
     path: '/bacenta/graphs',
     element: BacentaReport,
-    roles: [
-      ...permitLeaderAdminArrivals('Constituency'),
-      ...permitTellerStream(),
-    ],
+    roles: [...permitLeaderAdminArrivals('Bacenta'), ...permitTellerStream()],
     placeholder: true,
   },
 
   {
-    path: '/constituency/graphs',
-    element: ConstituencyReport,
+    path: '/governorship/graphs',
+    element: GovernorshipReport,
     roles: [
-      ...permitLeaderAdminArrivals('Constituency'),
+      ...permitLeaderAdminArrivals('Governorship'),
       ...permitTellerStream(),
     ],
     placeholder: true,
@@ -430,20 +430,14 @@ export const graphs: LazyRouteTypes[] = [
   {
     path: '/fellowship/service-details',
     element: FellowshipServiceDetails,
-    roles: [...permitLeaderAdmin('Fellowship'), ...permitTellerStream()],
+    roles: [...permitLeaderAdmin('Bacenta'), ...permitTellerStream()],
     placeholder: true,
   },
   {
-    path: '/services/fellowship/no-service',
-    element: FellowshipServiceCancelled,
-    roles: permitLeaderAdmin('Fellowship'),
+    path: '/services/bacenta/no-service',
+    element: BacentaServiceCancelled,
+    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
-  },
-  {
-    path: '/fellowship/record-service',
-    element: FellowshipService,
-    roles: permitLeaderAdmin('Fellowship'),
-    placeholder: false,
   },
 
   //Hub Service Details
@@ -460,9 +454,9 @@ export const graphs: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
-    path: '/hub/record-sundayservice',
-    element: HubSundayMeeting,
-    roles: permitLeaderAdmin('Hub'),
+    path: '/hubcouncil/record-sundayservice',
+    element: HubCouncilSundayMeeting,
+    roles: permitLeaderAdmin('HubCouncil'),
     placeholder: false,
   },
   {
@@ -472,15 +466,15 @@ export const graphs: LazyRouteTypes[] = [
     placeholder: false,
   },
   {
-    path: '/hub/sunday-meeting-details',
-    element: HubSundayMeetingDetails,
-    roles: permitLeaderAdmin('Hub'),
+    path: '/hubcouncil/sunday-meeting-details',
+    element: HubCouncilSundayMeetingDetails,
+    roles: permitLeaderAdmin('HubCouncil'),
     placeholder: false,
   },
 
   //Bacenta Service Things
   {
-    path: '/bacenta/record-service-not-exist',
+    path: '/bacenta/record-service',
     element: BacentaService,
     roles: permitLeaderAdmin('Bacenta'),
     placeholder: false,
@@ -492,17 +486,17 @@ export const graphs: LazyRouteTypes[] = [
     placeholder: false,
   },
 
-  //Constituency Services
+  //Governorship Services
   {
-    path: '/constituency/record-service',
-    element: ConstituencyService,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/governorship/record-service',
+    element: GovernorshipService,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: false,
   },
   {
-    path: '/constituency/service-details',
-    element: ConstituencyServiceDetails,
-    roles: [...permitLeaderAdmin('Constituency'), ...permitTellerStream()],
+    path: '/governorship/service-details',
+    element: GovernorshipServiceDetails,
+    roles: [...permitLeaderAdmin('Governorship'), ...permitTellerStream()],
     placeholder: false,
   },
 
@@ -564,30 +558,30 @@ export const graphs: LazyRouteTypes[] = [
   {
     path: '/services/defaulters',
     element: Defaulters,
-    roles: [...permitLeaderAdmin('Constituency'), ...permitLeaderAdmin('Hub')],
+    roles: [...permitLeaderAdmin('Governorship'), ...permitLeaderAdmin('Hub')],
     placeholder: true,
   },
   {
     path: '/services/defaulters/dashboard',
     element: DefaultersDashboard,
-    roles: [...permitLeaderAdmin('Constituency'), ...permitLeaderAdmin('Hub')],
+    roles: [...permitLeaderAdmin('Governorship'), ...permitLeaderAdmin('Hub')],
     placeholder: true,
   },
   {
     path: '/services/form-defaulters',
     element: FormDefaulters,
-    roles: [...permitLeaderAdmin('Constituency'), ...permitLeaderAdmin('Hub')],
+    roles: [...permitLeaderAdmin('Governorship'), ...permitLeaderAdmin('Hub')],
     placeholder: true,
   },
   {
     path: '/services/banking-defaulters',
     element: BankingDefaulters,
-    roles: [...permitLeaderAdmin('Constituency'), ...permitLeaderAdmin('Hub')],
+    roles: [...permitLeaderAdmin('Governorship'), ...permitLeaderAdmin('Hub')],
     placeholder: true,
   },
   {
-    path: '/services/constituency-banking-defaulters',
-    element: ConstituencyJointNotBanked,
+    path: '/services/governorship-banking-defaulters',
+    element: GovernorshipJointNotBanked,
     roles: permitLeaderAdmin('Council'),
     placeholder: true,
   },
@@ -598,8 +592,8 @@ export const graphs: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
-    path: '/services/constituency-banked',
-    element: ConstituencyJointBanked,
+    path: '/services/governorship-banked',
+    element: GovernorshipJointBanked,
     roles: permitLeaderAdmin('Council'),
     placeholder: true,
   },
@@ -612,24 +606,24 @@ export const graphs: LazyRouteTypes[] = [
   {
     path: '/services/banked',
     element: Banked,
-    roles: [...permitLeaderAdmin('Constituency'), ...permitLeader('Hub')],
+    roles: [...permitLeaderAdmin('Governorship'), ...permitLeader('Hub')],
     placeholder: true,
   },
   {
     path: '/services/filled-services',
     element: ServicesThisWeek,
-    roles: [...permitLeaderAdmin('Constituency'), ...permitLeader('Hub')],
+    roles: [...permitLeaderAdmin('Governorship'), ...permitLeader('Hub')],
     placeholder: true,
   },
   {
     path: '/services/cancelled-services',
     element: CancelledServicesThisWeek,
-    roles: [...permitLeaderAdmin('Constituency'), ...permitLeader('Hub')],
+    roles: [...permitLeaderAdmin('Governorship'), ...permitLeader('Hub')],
     placeholder: true,
   },
   {
-    path: '/services/council-by-constituency',
-    element: CouncilByConstituency,
+    path: '/services/council-by-governorship',
+    element: CouncilByGovernorship,
     roles: permitLeaderAdmin('Council'),
     placeholder: true,
   },
@@ -686,6 +680,12 @@ export const graphs: LazyRouteTypes[] = [
   {
     path: '/rehearsal/rehearsal-this-week',
     element: HubRehearsalsThisWeek,
+    roles: permitLeaderAdmin('HubCouncil'),
+    placeholder: true,
+  },
+  {
+    path: '/rehearsal/cancelled-rehearsals',
+    element: CancelledRehearsalsThisWeek,
     roles: permitLeaderAdmin('HubCouncil'),
     placeholder: true,
   },

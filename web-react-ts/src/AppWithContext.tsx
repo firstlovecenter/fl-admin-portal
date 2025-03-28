@@ -48,7 +48,7 @@ const AppWithContext = (props: AppPropsType) => {
     campusId,
     streamId,
     councilId,
-    constituencyId,
+    governorshipId,
     bacentaId,
     fellowshipId,
     hubId,
@@ -70,7 +70,7 @@ const AppWithContext = (props: AppPropsType) => {
     setChurch,
     setStreamId,
     setCouncilId,
-    setConstituencyId,
+    setGovernorshipId,
     setHubId,
     setHubCouncilId,
     setMinistryId,
@@ -85,7 +85,7 @@ const AppWithContext = (props: AppPropsType) => {
     setChurch,
     setStreamId,
     setCouncilId,
-    setConstituencyId,
+    setGovernorshipId,
     setHubId,
     setHubCouncilId,
     setMinistryId,
@@ -135,7 +135,7 @@ const AppWithContext = (props: AppPropsType) => {
           campusId,
           streamId,
           councilId,
-          constituencyId,
+          governorshipId,
           bacentaId,
           fellowshipId,
           hubId,
@@ -218,7 +218,7 @@ const AppWithContext = (props: AppPropsType) => {
                           path="/dashboard/servants"
                           element={
                             <ProtectedRouteHome
-                              roles={permitMe('Fellowship')}
+                              roles={permitMe('Bacenta')}
                               component={<ServantsDashboard />}
                             />
                           }
@@ -227,7 +227,7 @@ const AppWithContext = (props: AppPropsType) => {
                           path="/servants/church-list"
                           element={
                             <ProtectedRoute
-                              roles={permitMe('Fellowship')}
+                              roles={permitMe('Bacenta')}
                               placeholder
                             >
                               <ServantsChurchList />

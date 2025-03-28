@@ -33,7 +33,7 @@ const StreamByCouncilEquipmentDefaulters = () => {
             <HeadingSecondary>Equipment Campaign</HeadingSecondary>
           </div>
           <h6 className="mt-4">
-            Fellowships and Constituencies that haven't filled their form
+            Fellowships and Governorships that haven't filled their form
           </h6>
 
           <Container>
@@ -42,7 +42,7 @@ const StreamByCouncilEquipmentDefaulters = () => {
                 <DefaulterDetailsCard
                   key={index}
                   church={council}
-                  route={'council/constituency'}
+                  route={'council/governorship'}
                 />
               ))}
             </Row>

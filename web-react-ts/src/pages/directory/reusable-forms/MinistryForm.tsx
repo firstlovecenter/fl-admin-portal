@@ -1,7 +1,11 @@
 import { useMutation, useQuery } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { makeSelectOptions, throwToSentry } from 'global-utils'
+import {
+  MINISTRY_ACCOUNT_OPTIONS,
+  makeSelectOptions,
+  throwToSentry,
+} from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_MINISTRY_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
@@ -34,6 +38,10 @@ export interface MinistryFormValues extends FormikInitialValues {
   name: string
   stream?: string
   creativeArts?: CreativeArts
+  bankAccount:
+    | 'accra_greater_love_choir'
+    | 'accra_dancing_stars'
+    | 'accra_film_stars'
   hubCouncil?: HubCouncil
   hubCouncils?: HubCouncil[]
 }
@@ -134,6 +142,11 @@ const MinistryForm = ({
                         name="name"
                         label={`Name of Ministry`}
                         placeholder={`Name of Ministry`}
+                      />
+                      <Select
+                        label="Ministry Account"
+                        name="bankAccount"
+                        options={MINISTRY_ACCOUNT_OPTIONS}
                       />
 
                       <Row className="d-flex align-items-center mb-3">

@@ -22,7 +22,7 @@ function FellowshipHistory() {
           <HeadingSecondary>Fellowship History</HeadingSecondary>
         </div>
         <Container>
-          <Timeline record={fellowship?.history} limit={10} />
+          <Timeline record={fellowship?.history} limit={100} />
         </Container>
       </>
     </ApolloWrapper>

@@ -1,17 +1,18 @@
 export const isAccountOpen = () => {
-  const isThursday = new Date().getDay() === 4
-  const isWednesday = new Date().getDay() === 3 && new Date().getHours() <= 10
+  const currentDate = new Date()
+  const currentDay = currentDate.getUTCDay()
+  const currentHour = currentDate.getUTCHours()
 
-  const validDays = [0, 1, 2]
-  const currentHour = new Date().getHours()
-
-  if (isThursday && currentHour >= 6 && currentHour < 18) {
+  // From Sunday (0) to Wednesday (3), always return true
+  if (currentDay >= 0 && currentDay <= 3) {
     return true
   }
 
-  if (validDays.includes(new Date().getDay()) || isWednesday) {
+  // For Thursday (4), return true only before 10am
+  if (currentDay === 4 && currentHour < 10) {
     return true
   }
 
+  // For Thursday after 10am, all of Friday (5), and Saturday (6), return false
   return false
 }

@@ -12,7 +12,7 @@ export const STREAM_BANK_TELLERS = gql`
         lastName
         fullName
         pictureUrl
-        fellowship {
+        bacenta {
           id
           name
         }
@@ -22,7 +22,7 @@ export const STREAM_BANK_TELLERS = gql`
         }
       }
 
-      activeFellowshipCount
+      activeBacentaCount
     }
   }
 `
@@ -48,8 +48,8 @@ export const REMOVE_STREAM_TELLER = gql`
 `
 
 export const CONFIRM_BANKING = gql`
-  mutation ConfirmBanking($constituencyId: ID!) {
-    ConfirmBanking(constituencyId: $constituencyId) {
+  mutation ConfirmBanking($governorshipId: ID!) {
+    ConfirmBanking(governorshipId: $governorshipId) {
       id
     }
   }

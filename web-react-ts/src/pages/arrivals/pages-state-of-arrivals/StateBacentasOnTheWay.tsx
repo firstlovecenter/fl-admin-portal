@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { ArrivalsUseChurchType } from '../arrivals-types'
 import {
-  CONSTITUENCY_BACENTAS_ON_THE_WAY,
+  GOVERNORSHIP_BACENTAS_ON_THE_WAY,
   COUNCIL_BACENTAS_ON_THE_WAY,
   CAMPUS_BACENTAS_ON_THE_WAY,
   STREAM_BACENTAS_ON_THE_WAY,
@@ -23,8 +23,8 @@ import NoData from '../CompNoData'
 const BacentasOnTheWay = () => {
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
-  const [constituencyOnTheWay, { refetch: constituencyRefetch }] = useLazyQuery(
-    CONSTITUENCY_BACENTAS_ON_THE_WAY,
+  const [governorshipOnTheWay, { refetch: governorshipRefetch }] = useLazyQuery(
+    GOVERNORSHIP_BACENTAS_ON_THE_WAY,
     {
       pollInterval: LONG_POLL_INTERVAL,
     }
@@ -49,8 +49,8 @@ const BacentasOnTheWay = () => {
   )
 
   const data = useChurchLevel({
-    constituencyFunction: constituencyOnTheWay,
-    constituencyRefetch,
+    governorshipFunction: governorshipOnTheWay,
+    governorshipRefetch,
     councilFunction: councilOnTheWay,
     councilRefetch,
     streamFunction: streamOnTheWay,

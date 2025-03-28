@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client'
 
-export const FELLOWSHIP_BANKING_SLIP_QUERIES = gql`
-  query fellowshipServices($fellowshipId: ID!, $skip: Int) {
-    fellowships(where: { id: $fellowshipId }) {
+export const BACENTA_BANKING_SLIP_QUERIES = gql`
+  query bacentaServices($bacentaId: ID!, $skip: Int) {
+    bacentas(where: { id: $bacentaId }) {
       id
       bankingCode
       name
@@ -64,9 +64,9 @@ export const BANKING_SLIP_SUBMISSION = gql`
   }
 `
 
-export const CONSTITUENCY_BANKING_SLIP_QUERIES = gql`
-  query constituencyServices($constituencyId: ID!) {
-    constituencies(where: { id: $constituencyId }) {
+export const GOVERNORSHIP_BANKING_SLIP_QUERIES = gql`
+  query governorshipServices($governorshipId: ID!) {
+    governorships(where: { id: $governorshipId }) {
       id
 
       name
@@ -193,12 +193,12 @@ export const COUNCIL_BANKING_SLIP_QUERIES = gql`
   }
 `
 
-export const FELLOWSHIP_SERVICE_RECORDS = gql`
-  query FellowshipServiceRecords($serviceId: ID!) {
+export const BACENTA_SERVICE_RECORDS = gql`
+  query BacentaServiceRecords($serviceId: ID!) {
     serviceRecords(where: { id: $serviceId }) {
       id
       serviceLog {
-        fellowship {
+        bacenta {
           id
           name
           bankingCode
@@ -222,12 +222,12 @@ export const FELLOWSHIP_SERVICE_RECORDS = gql`
   }
 `
 
-export const CONSTITUENCY_SERVICE_RECORDS = gql`
-  query ConstituencyServiceRecords($serviceId: ID!) {
+export const GOVERNORSHIP_SERVICE_RECORDS = gql`
+  query GovernorshipServiceRecords($serviceId: ID!) {
     serviceRecords(where: { id: $serviceId }) {
       id
       serviceLog {
-        constituency {
+        governorship {
           id
           name
         }

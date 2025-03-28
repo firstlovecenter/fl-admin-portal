@@ -10,6 +10,9 @@ import {
 const LandingPage = lazy(() => import('pages/accounts/LandingPage'))
 const CouncilDashboard = lazy(() => import('pages/accounts/CouncilDashboard'))
 const CampusDashboard = lazy(() => import('pages/accounts/CampusDashboard'))
+const OversightDashboard = lazy(
+  () => import('pages/accounts/OversightDashboard')
+)
 const ExpenseForm = lazy(
   () => import('pages/accounts/request-expense/ExpenseForm')
 )
@@ -30,6 +33,9 @@ const CampusCouncilListForDeposits = lazy(
 )
 const CampusCouncilListForAccounts = lazy(
   () => import('pages/accounts/CampusCouncilListForViewingAccounts')
+)
+const OversightCampusListForAccount = lazy(
+  () => import('pages/accounts/OversightCampusListForViewingAccounts')
 )
 const Approvals = lazy(() => import('pages/accounts/approvals/Approvals'))
 const CampusCouncilListForBussingExpense = lazy(
@@ -67,6 +73,11 @@ export const accountsRoutes: LazyRouteTypes[] = [
       ...permitAdmin('Campus'),
       ...permitArrivals('Campus'),
     ],
+  },
+  {
+    path: '/accounts/oversight/dashboard',
+    element: OversightDashboard,
+    roles: [...permitAdmin('Oversight')],
   },
   {
     path: '/accounts/request-expense',
@@ -118,6 +129,11 @@ export const accountsRoutes: LazyRouteTypes[] = [
       ...permitAdmin('Campus'),
       ...permitArrivals('Campus'),
     ],
+  },
+  {
+    path: '/accounts/oversight/view-campuses',
+    element: OversightCampusListForAccount,
+    roles: [...permitAdmin('Oversight')],
   },
   {
     path: '/accounts/campus/approvals',

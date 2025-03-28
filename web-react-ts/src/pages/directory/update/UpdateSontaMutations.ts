@@ -39,10 +39,19 @@ export const UPDATE_CREATIVEARTS_MUTATION = gql`
 `
 
 export const UPDATE_MINISTRY_MUTATION = gql`
-  mutation UpdateMinistry($ministryId: ID!, $name: String!) {
-    UpdateMinistryDetails(ministryId: $ministryId, name: $name) {
+  mutation UpdateMinistry(
+    $ministryId: ID!
+    $name: String!
+    $bankAccount: String!
+  ) {
+    UpdateMinistryDetails(
+      ministryId: $ministryId
+      name: $name
+      bankAccount: $bankAccount
+    ) {
       id
       name
+      bankAccount
 
       creativeArts {
         id

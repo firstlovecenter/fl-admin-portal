@@ -49,7 +49,7 @@ const CampusByStream = () => {
                         }}
                       >
                         <div className="fw-bold">
-                          Active Fellowships {stream.activeFellowshipCount}
+                          Active Bacentas {stream.activeBacentaCount}
                         </div>
                         <div className="good">
                           Services This Week {stream.servicesThisWeekCount}

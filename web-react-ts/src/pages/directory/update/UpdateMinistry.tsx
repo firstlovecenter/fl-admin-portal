@@ -30,6 +30,7 @@ const UpdateMinistry = () => {
     leaderId: ministry?.leader?.id || '',
     leaderEmail: ministry?.leader?.email || '',
     hubCouncils: ministry?.hubCouncils,
+    bankAccount: ministry?.bankAccount || '',
   }
   const [LogMinistryHistory] = useMutation(LOG_MINISTRY_HISTORY, {
     refetchQueries: [
@@ -62,6 +63,7 @@ const UpdateMinistry = () => {
         variables: {
           ministryId: ministryId,
           name: values.name,
+          bankAccount: values.bankAccount,
         },
       })
 

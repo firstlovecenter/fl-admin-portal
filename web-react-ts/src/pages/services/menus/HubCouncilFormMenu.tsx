@@ -36,7 +36,7 @@ const HubCouncilFormMenu = () => {
           <MenuButton
             iconComponent={<PencilSquare />}
             title="Fill Sunday Meeting Form"
-            caption="Council Joint"
+            caption="Maturity Classes"
             color="green"
             onClick={() => navigate(`/hubCouncil/record-sundayservice`)}
           />

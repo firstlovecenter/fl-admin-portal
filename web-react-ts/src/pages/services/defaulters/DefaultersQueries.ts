@@ -1,12 +1,12 @@
 import { gql } from '@apollo/client'
 
-export const CONSTITUENCY_DEFAULTERS = gql`
-  query constituencyDefaulters($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_DEFAULTERS = gql`
+  query governorshipDefaulters($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 
-      activeFellowshipCount
+      activeBacentaCount
       formDefaultersThisWeekCount
       bankingDefaultersThisWeekCount
       bankedThisWeekCount
@@ -16,9 +16,9 @@ export const CONSTITUENCY_DEFAULTERS = gql`
   }
 `
 
-export const CONSTITUENCY_SERVICES_LIST = gql`
-  query constituencyServicesThisWeek($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_SERVICES_LIST = gql`
+  query governorshipServicesThisWeek($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 
@@ -47,9 +47,9 @@ export const CONSTITUENCY_SERVICES_LIST = gql`
   }
 `
 
-export const CONSTITUENCY_CANCELLED_SERVICES_LIST = gql`
-  query constituencyCancelledServicesThisWeek($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_CANCELLED_SERVICES_LIST = gql`
+  query governorshipCancelledServicesThisWeek($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 
@@ -76,9 +76,9 @@ export const CONSTITUENCY_CANCELLED_SERVICES_LIST = gql`
   }
 `
 
-export const CONSTITUENCY_FORM_DEFAULTERS_LIST = gql`
-  query constituencyFormDefaulters($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_FORM_DEFAULTERS_LIST = gql`
+  query governorshipFormDefaulters($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 
@@ -101,9 +101,9 @@ export const CONSTITUENCY_FORM_DEFAULTERS_LIST = gql`
   }
 `
 
-export const CONSTITUENCY_BANKING_DEFAULTERS_LIST = gql`
-  query constituencyBankingDefaulters($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_BANKING_DEFAULTERS_LIST = gql`
+  query governorshipBankingDefaulters($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 
@@ -131,9 +131,9 @@ export const CONSTITUENCY_BANKING_DEFAULTERS_LIST = gql`
   }
 `
 
-export const CONSTITUENCY_BANKED_LIST = gql`
-  query constituencyBanked($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_BANKED_LIST = gql`
+  query governorshipBanked($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
 
@@ -166,15 +166,15 @@ export const COUNCIL_DEFAULTERS = gql`
     councils(where: { id: $id }) {
       id
       name
-      constituencyCount
-      activeFellowshipCount
+      governorshipCount
+      activeBacentaCount
       formDefaultersThisWeekCount
       bankingDefaultersThisWeekCount
       bankedThisWeekCount
       servicesThisWeekCount
       cancelledServicesThisWeekCount
-      constituencyBankedThisWeekCount
-      constituencyBankingDefaultersThisWeekCount
+      governorshipBankedThisWeekCount
+      governorshipBankingDefaultersThisWeekCount
     }
   }
 `
@@ -199,12 +199,9 @@ export const COUNCIL_SERVICES_LIST = gql`
         meetingDay {
           day
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         services(limit: 1) {
           id
@@ -234,12 +231,9 @@ export const COUNCIL_CANCELLED_SERVICES_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -270,12 +264,9 @@ export const COUNCIL_FORM_DEFAULTERS_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -302,12 +293,9 @@ export const COUNCIL_BANKING_DEFAULTERS_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -339,12 +327,9 @@ export const COUNCIL_BANKED_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -359,12 +344,12 @@ export const COUNCIL_BANKED_LIST = gql`
   }
 `
 
-export const COUNCIL_BY_CONSTITUENCY = gql`
-  query councilByConstituency($id: ID!) {
+export const COUNCIL_BY_GOVERNORSHIP = gql`
+  query councilByGovernorship($id: ID!) {
     councils(where: { id: $id }) {
       id
       name
-      constituencies {
+      governorships {
         id
         name
         leader {
@@ -386,7 +371,7 @@ export const COUNCIL_BY_CONSTITUENCY = gql`
           firstName
           lastName
         }
-        activeFellowshipCount
+        activeBacentaCount
         formDefaultersThisWeekCount
         bankingDefaultersThisWeekCount
         bankedThisWeekCount
@@ -403,14 +388,14 @@ export const STREAM_DEFAULTERS = gql`
       id
       name
       councilCount
-      activeFellowshipCount
+      activeBacentaCount
       formDefaultersThisWeekCount
       bankingDefaultersThisWeekCount
       bankedThisWeekCount
       servicesThisWeekCount
       cancelledServicesThisWeekCount
-      constituencyBankedThisWeekCount
-      constituencyBankingDefaultersThisWeekCount
+      governorshipBankedThisWeekCount
+      governorshipBankingDefaultersThisWeekCount
       councilBankedThisWeekCount
       councilBankingDefaultersThisWeekCount
     }
@@ -437,13 +422,12 @@ export const STREAM_SERVICES_LIST = gql`
         meetingDay {
           day
         }
-        bacenta {
+
+        council {
           id
-          council {
-            id
-            name
-          }
+          name
         }
+
         services(limit: 1) {
           id
           noServiceReason
@@ -472,13 +456,12 @@ export const STREAM_CANCELLED_SERVICES_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+
+        council {
           id
-          council {
-            id
-            name
-          }
+          name
         }
+
         meetingDay {
           day
         }
@@ -508,13 +491,12 @@ export const STREAM_FORM_DEFAULTERS_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+
+        council {
           id
-          council {
-            id
-            name
-          }
+          name
         }
+
         meetingDay {
           day
         }
@@ -541,13 +523,12 @@ export const STREAM_BANKING_DEFAULTERS_LIST = gql`
           whatsappNumber
           pictureUrl
         }
-        bacenta {
+
+        council {
           id
-          council {
-            id
-            name
-          }
+          name
         }
+
         meetingDay {
           day
         }
@@ -561,12 +542,12 @@ export const STREAM_BANKING_DEFAULTERS_LIST = gql`
   }
 `
 
-export const CONSTITUENCY_BANKING_DEFUALTERS_THIS_WEEK = gql`
-  query constitiuencyBankingDefaultersThisWeek($id: ID!) {
+export const GOVERNORSHIP_BANKING_DEFUALTERS_THIS_WEEK = gql`
+  query governorshipBankingDefaultersThisWeek($id: ID!) {
     streams(where: { id: $id }) {
       id
       name
-      constitiuencyBankingDefaultersThisWeek {
+      governorshipBankingDefaultersThisWeek {
         id
         name
         leader {
@@ -600,12 +581,10 @@ export const STREAM_BANKED_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+
+        council {
           id
-          council {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -642,7 +621,7 @@ export const STREAM_BY_COUNCIL = gql`
           phoneNumber
           whatsappNumber
         }
-        activeFellowshipCount
+        activeBacentaCount
         formDefaultersThisWeekCount
         bankingDefaultersThisWeekCount
         bankedThisWeekCount
@@ -668,14 +647,14 @@ export const CAMPUS_DEFAULTERS = gql`
       streamServicesThisWeekCount
       streamCancelledServicesThisWeekCount
 
-      activeFellowshipCount
+      activeBacentaCount
       formDefaultersThisWeekCount
       bankingDefaultersThisWeekCount
       bankedThisWeekCount
       servicesThisWeekCount
       cancelledServicesThisWeekCount
-      constituencyBankedThisWeekCount
-      constituencyBankingDefaultersThisWeekCount
+      governorshipBankedThisWeekCount
+      governorshipBankingDefaultersThisWeekCount
       councilBankedThisWeekCount
       councilBankingDefaultersThisWeekCount
 
@@ -709,12 +688,9 @@ export const CAMPUS_SERVICES_LIST = gql`
         meetingDay {
           day
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         services(limit: 1) {
           id
@@ -744,12 +720,9 @@ export const CAMPUS_CANCELLED_SERVICES_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -780,12 +753,9 @@ export const CAMPUS_FORM_DEFAULTERS_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -812,12 +782,9 @@ export const CAMPUS_BANKING_DEFAULTERS_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -849,12 +816,9 @@ export const CAMPUS_BANKED_LIST = gql`
           phoneNumber
           whatsappNumber
         }
-        bacenta {
+        governorship {
           id
-          constituency {
-            id
-            name
-          }
+          name
         }
         meetingDay {
           day
@@ -891,7 +855,7 @@ export const CAMPUS_BY_STREAM = gql`
           phoneNumber
           whatsappNumber
         }
-        activeFellowshipCount
+        activeBacentaCount
         formDefaultersThisWeekCount
         bankingDefaultersThisWeekCount
         bankedThisWeekCount
@@ -902,13 +866,13 @@ export const CAMPUS_BY_STREAM = gql`
   }
 `
 
-export const CAMPUS_SERVICES_CONSTITUENCY_JOINT_DEFAULTERS_LIST = gql`
-  query gatheringConstituencyJointServicesThisWeek($id: ID!) {
+export const CAMPUS_SERVICES_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
+  query gatheringGovernorshipJointServicesThisWeek($id: ID!) {
     campuses(where: { id: $id }) {
       id
       name
 
-      constituencyBankingDefaultersThisWeek {
+      governorshipBankingDefaultersThisWeek {
         id
         name
         leader {
@@ -939,13 +903,13 @@ export const CAMPUS_SERVICES_CONSTITUENCY_JOINT_DEFAULTERS_LIST = gql`
   }
 `
 
-export const CAMPUS_SERVICES_CONSTITUENCY_JOINT_BANKED_LIST = gql`
-  query gatheringConstituencyJointServicesBankedThisWeek($id: ID!) {
+export const CAMPUS_SERVICES_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
+  query gatheringGovernorshipJointServicesBankedThisWeek($id: ID!) {
     campuses(where: { id: $id }) {
       id
       name
 
-      constituencyBankedThisWeek {
+      governorshipBankedThisWeek {
         id
         name
         leader {
@@ -976,13 +940,13 @@ export const CAMPUS_SERVICES_CONSTITUENCY_JOINT_BANKED_LIST = gql`
   }
 `
 
-export const STREAM_CONSTITUENCY_JOINT_DEFAULTERS_LIST = gql`
-  query streamConstituencyJointServicesDefaultersThisWeek($id: ID!) {
+export const STREAM_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
+  query streamGovernorshipJointServicesDefaultersThisWeek($id: ID!) {
     streams(where: { id: $id }) {
       id
       name
 
-      constituencyBankingDefaultersThisWeek {
+      governorshipBankingDefaultersThisWeek {
         id
         name
         leader {
@@ -1013,13 +977,13 @@ export const STREAM_CONSTITUENCY_JOINT_DEFAULTERS_LIST = gql`
   }
 `
 
-export const STREAM_CONSTITUENCY_JOINT_BANKED_LIST = gql`
-  query streamConstituencyJointServicesBankedThisWeek($id: ID!) {
+export const STREAM_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
+  query streamGovernorshipJointServicesBankedThisWeek($id: ID!) {
     streams(where: { id: $id }) {
       id
       name
 
-      constituencyBankedThisWeek {
+      governorshipBankedThisWeek {
         id
         name
         leader {
@@ -1050,13 +1014,13 @@ export const STREAM_CONSTITUENCY_JOINT_BANKED_LIST = gql`
   }
 `
 
-export const COUNCIL_CONSTITUENCY_JOINT_DEFAULTERS_LIST = gql`
-  query councilConstituencyJointServicesDefaultersThisWeek($id: ID!) {
+export const COUNCIL_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
+  query councilGovernorshipJointServicesDefaultersThisWeek($id: ID!) {
     councils(where: { id: $id }) {
       id
       name
 
-      constituencyBankingDefaultersThisWeek {
+      governorshipBankingDefaultersThisWeek {
         id
         name
         leader {
@@ -1087,13 +1051,13 @@ export const COUNCIL_CONSTITUENCY_JOINT_DEFAULTERS_LIST = gql`
   }
 `
 
-export const COUNCIL_CONSTITUENCY_JOINT_BANKED_LIST = gql`
-  query councilConstituencyJointServicesBankedThisWeek($id: ID!) {
+export const COUNCIL_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
+  query councilGovernorshipJointServicesBankedThisWeek($id: ID!) {
     councils(where: { id: $id }) {
       id
       name
 
-      constituencyBankedThisWeek {
+      governorshipBankedThisWeek {
         id
         name
         leader {

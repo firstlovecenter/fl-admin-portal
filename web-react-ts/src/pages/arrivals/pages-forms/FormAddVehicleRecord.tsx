@@ -16,15 +16,12 @@ import { ServiceContext } from 'contexts/ServiceContext'
 import { throwToSentry } from 'global-utils'
 import Input from 'components/formik/Input'
 import Select from 'components/formik/Select'
-import { VEHICLE_OPTIONS, VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
+import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import ImageUpload from 'components/formik/ImageUpload'
 import { BacentaWithArrivals } from '../arrivals-types'
-import { MemberContext } from 'contexts/MemberContext'
 
 type FormOptions = {
   leaderDeclaration: string
-  vehicleCost: string
-  personalContribution: string
   vehicle: string
   picture: string
 }
@@ -32,7 +29,6 @@ type FormOptions = {
 const FormAddVehicleRecord = () => {
   const navigate = useNavigate()
   const { bacentaId, clickCard } = useContext(ChurchContext)
-  const { currentUser } = useContext(MemberContext)
   const { bussingRecordId } = useContext(ServiceContext)
 
   const { data, loading, error } = useQuery(BACENTA_ARRIVALS, {
@@ -42,25 +38,16 @@ const FormAddVehicleRecord = () => {
 
   const initialValues: FormOptions = {
     leaderDeclaration: '',
-    vehicleCost: '',
-    personalContribution: '',
     vehicle: '',
     picture: '',
   }
 
-  const swell = data?.timeGraphs[0].swell
   const [RecordVehicleFromBacenta] = useMutation(RECORD_BUSSING_FROM_BACENTA)
   const validationSchema = Yup.object({
     leaderDeclaration: Yup.number()
       .typeError('Please enter a valid number')
       .positive()
       .integer('You cannot have attendance with decimals!')
-      .required('This is a required field'),
-    vehicleCost: Yup.number()
-      .typeError('Please enter a valid number')
-      .required('This is a required field'),
-    personalContribution: Yup.number()
-      .typeError('Please enter a valid number')
       .required('This is a required field'),
     vehicle: Yup.string().required('This is a required field'),
     picture: Yup.string().required('This is a required field'),
@@ -77,8 +64,6 @@ const FormAddVehicleRecord = () => {
           bacentaId,
           leaderDeclaration: parseInt(values.leaderDeclaration),
           bussingRecordId: bussingRecordId,
-          vehicleCost: parseFloat(values.vehicleCost),
-          personalContribution: parseFloat(values.personalContribution),
           vehicle: values.vehicle,
           picture: values.picture,
         },
@@ -128,26 +113,10 @@ const FormAddVehicleRecord = () => {
                   <Select
                     name="vehicle"
                     label="Type of Vehicle"
-                    options={
-                      bacenta?.bussing[0].attendance >= 8 && swell
-                        ? VEHICLE_OPTIONS_WITH_CAR
-                        : VEHICLE_OPTIONS
-                    }
+                    options={VEHICLE_OPTIONS_WITH_CAR}
                     defaultOption="Select a vehicle type"
                   />
-
-                  <hr />
-                  <div className="mb-2 yellow">
-                    This section will be used to calculate your bussing top up
-                    so fill it carefully
-                  </div>
-                  <Input name="vehicleCost" label="Vehicle Cost*" />
                 </Col>
-
-                <Input
-                  name="personalContribution"
-                  label={`Personal Contribution* (in ${currentUser.currency})`}
-                />
 
                 <ImageUpload
                   label="Upload A Bussing Picture"

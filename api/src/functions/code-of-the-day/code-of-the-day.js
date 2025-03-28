@@ -16,36 +16,24 @@ const executeQuery = async (neoDriver) => {
 
   const codeOfTheDay = [
     {
-      date: '2024-02-03',
-      code: 'HANGOUT',
+      date: '2024-09-01',
+      code: 'Abundance',
     },
     {
-      date: '2024-02-04',
-      code: 'HANGOUT',
+      date: '2024-09-08',
+      code: 'Increase',
     },
     {
-      date: '2024-02-10',
-      code: 'STEPS',
+      date: '2024-09-15',
+      code: 'Growth',
     },
     {
-      date: '2024-02-11',
-      code: 'STEPS',
+      date: '2024-09-22',
+      code: 'Enlarge',
     },
     {
-      date: '2024-02-17',
-      code: 'FLOW',
-    },
-    {
-      date: '2024-02-18',
-      code: 'FLOW',
-    },
-    {
-      date: '2024-02-24',
-      code: 'WALK',
-    },
-    {
-      date: '2024-02-25',
-      code: 'WALK',
+      date: '2024-09-29',
+      code: 'Flourish',
     },
   ]
 

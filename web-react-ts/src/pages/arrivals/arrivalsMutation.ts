@@ -1,13 +1,13 @@
 import { gql } from '@apollo/client'
 
-export const MAKE_CONSTITUENCYARRIVALS_ADMIN = gql`
-  mutation MakeConstituencyArrrivalsAdmin(
-    $constituencyId: ID!
+export const MAKE_GOVERNORSHIPARRIVALS_ADMIN = gql`
+  mutation MakeGovernorshipArrrivalsAdmin(
+    $governorshipId: ID!
     $newAdminId: ID!
     $oldAdminId: ID!
   ) {
-    RemoveConstituencyArrivalsAdmin(
-      constituencyId: $constituencyId
+    RemoveGovernorshipArrivalsAdmin(
+      governorshipId: $governorshipId
       arrivalsAdminId: $oldAdminId
       newArrivalsAdminId: $newAdminId
     ) {
@@ -15,8 +15,8 @@ export const MAKE_CONSTITUENCYARRIVALS_ADMIN = gql`
       firstName
       lastName
     }
-    MakeConstituencyArrivalsAdmin(
-      constituencyId: $constituencyId
+    MakeGovernorshipArrivalsAdmin(
+      governorshipId: $governorshipId
       arrivalsAdminId: $newAdminId
       oldArrivalsAdminId: $oldAdminId
     ) {
@@ -24,7 +24,7 @@ export const MAKE_CONSTITUENCYARRIVALS_ADMIN = gql`
       firstName
       lastName
       fullName
-      isArrivalsAdminForConstituency {
+      isArrivalsAdminForGovernorship {
         id
         arrivalsAdmin {
           id
@@ -179,8 +179,6 @@ export const RECORD_BUSSING_FROM_BACENTA = gql`
     $bacentaId: ID!
     $bussingRecordId: ID!
     $leaderDeclaration: Int!
-    $vehicleCost: Float!
-    $personalContribution: Float!
     $vehicle: String!
     $picture: String!
   ) {
@@ -188,16 +186,12 @@ export const RECORD_BUSSING_FROM_BACENTA = gql`
       bacentaId: $bacentaId
       bussingRecordId: $bussingRecordId
       leaderDeclaration: $leaderDeclaration
-      vehicleCost: $vehicleCost
-      personalContribution: $personalContribution
       vehicle: $vehicle
       picture: $picture
     ) {
       id
       leaderDeclaration
       attendance
-      vehicleCost
-      personalContribution
       vehicleTopUp
       bussingRecord {
         serviceLog {

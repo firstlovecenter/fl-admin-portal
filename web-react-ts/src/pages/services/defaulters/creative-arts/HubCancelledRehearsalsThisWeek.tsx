@@ -10,7 +10,7 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import {
   DefaultersUseChurchType,
-  FellowshipWithDefaulters,
+  BacentaWithDefaulters,
 } from '../defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import {
@@ -21,7 +21,7 @@ import {
 } from './SontaDefaultersQueries'
 import useSontaLevel from 'hooks/useSontaLevel'
 
-const CancelledServicesThisWeek = () => {
+const CancelledRehearsalssThisWeek = () => {
   const [
     hubCouncilCancelledRehearsalsThisWeeek,
     { refetch: hubCouncilRefetch },
@@ -39,7 +39,7 @@ const CancelledServicesThisWeek = () => {
     hubRefetch: hubCouncilRefetch,
     hubCouncilFunction: hubCouncilCancelledRehearsalsThisWeeek,
     hubCouncilRefetch,
-    councilFunction: ministryCancelledRehearsalsThisWeek,
+    ministryFunction: ministryCancelledRehearsalsThisWeek,
     ministryRefetch,
     creativeArtsFunction: creativeArtsCancelledRehearsalsThisWeek,
     creativeArtsRefetch,
@@ -67,7 +67,7 @@ const CancelledServicesThisWeek = () => {
 
           <Row>
             {church?.hubCancelledRehearsalsThisWeek.map(
-              (service: FellowshipWithDefaulters, i: number) => (
+              (service: BacentaWithDefaulters, i: number) => (
                 <Col key={i} xs={12} className="mb-3">
                   <DefaulterCard defaulter={service} />
                 </Col>
@@ -81,4 +81,4 @@ const CancelledServicesThisWeek = () => {
   )
 }
 
-export default CancelledServicesThisWeek
+export default CancelledRehearsalssThisWeek

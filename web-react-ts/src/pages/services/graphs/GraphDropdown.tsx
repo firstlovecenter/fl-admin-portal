@@ -48,7 +48,7 @@ const GraphDropdown = ({
           </Dropdown.Item>
         )}
 
-        {!['Bacenta', ...sontaLevels].includes(churchLevel) && (
+        {![...sontaLevels].includes(churchLevel) && (
           <Dropdown.Item
             className="py-3"
             onClick={() => {
@@ -82,7 +82,7 @@ const GraphDropdown = ({
           </Dropdown.Item>
         )}
 
-        {!['Bacenta', 'Fellowship', ...sontaLevels].includes(churchLevel) && (
+        {!['Bacenta', ...sontaLevels].includes(churchLevel) && (
           <Dropdown.Item
             className="py-3"
             onClick={() => {
@@ -93,11 +93,11 @@ const GraphDropdown = ({
             Bussing Total
           </Dropdown.Item>
         )}
-        {!['Fellowship', 'Oversight', 'Denomination'].includes(churchLevel) && (
+        {!['Bacenta', 'Oversight', 'Denomination'].includes(churchLevel) && (
           <Dropdown.Item
             className="py-3"
             onClick={() => {
-              setSelected('Fellowship Total')
+              setSelected('Bacenta Total')
               setGraphs('serviceAggregate')
             }}
           >

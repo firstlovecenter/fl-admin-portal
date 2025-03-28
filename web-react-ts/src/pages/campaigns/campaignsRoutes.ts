@@ -9,34 +9,34 @@ import { lazy } from 'react'
 const CampusEquipmentHaveNotFilledByFellowship = lazy(
   () => import('./equipment/campus/CampusEquipmentHaveNotFilledByFellowship')
 )
-const CampusEquipmentHaveNotFilledByConstituency = lazy(
-  () => import('./equipment/campus/CampusEquipmentHaveNotFilledByConstituency')
+const CampusEquipmentHaveNotFilledByGovernorship = lazy(
+  () => import('./equipment/campus/CampusEquipmentHaveNotFilledByGovernorship')
 )
 
 const StreamEquipmentHaveNotFilledByFellowship = lazy(
   () => import('./equipment/stream/StreamEquipmentHaveNotFilledByFellowship')
 )
 
-const StreamEquipmentHaveNotFilledByConstituency = lazy(
-  () => import('./equipment/stream/StreamEquipmentHaveNotFilledByConstituency')
+const StreamEquipmentHaveNotFilledByGovernorship = lazy(
+  () => import('./equipment/stream/StreamEquipmentHaveNotFilledByGovernorship')
 )
 
-const ConstituencyEquipmentCampaign = lazy(
+const GovernorshipEquipmentCampaign = lazy(
   () =>
     import(
-      'pages/campaigns/equipment/constituency/ConstituencyEquipmentCampaign'
+      'pages/campaigns/equipment/governorship/GovernorshipEquipmentCampaign'
     )
 )
-const ConstituencyEquipmentForm = lazy(
+const GovernorshipEquipmentForm = lazy(
   () =>
-    import('pages/campaigns/equipment/constituency/ConstituencyEquipmentForm')
+    import('pages/campaigns/equipment/governorship/GovernorshipEquipmentForm')
 )
 const CampaignChurchList = lazy(() => import('pages/campaigns/ChurchList'))
-const ConstituencyEquipmentTrends = lazy(
-  () => import('pages/campaigns/equipment/constituency/ConstituencyTrends')
+const GovernorshipEquipmentTrends = lazy(
+  () => import('pages/campaigns/equipment/governorship/GovernorshipTrends')
 )
-const ConstituencyCampaigns = lazy(
-  () => import('pages/campaigns/ConstituencyCampaigns')
+const GovernorshipCampaigns = lazy(
+  () => import('pages/campaigns/GovernorshipCampaigns')
 )
 const FellowshipEquipmentCampaign = lazy(
   () =>
@@ -54,10 +54,10 @@ const FellowshipEquipmentForm = lazy(
 const FellowshipCampaigns = lazy(
   () => import('pages/campaigns/FellowshipCampaigns')
 )
-const ConstituencyEquipmentFormDetails = lazy(
+const GovernorshipEquipmentFormDetails = lazy(
   () =>
     import(
-      'pages/campaigns/equipment/constituency/ConstituencyEquipmentFormDetails'
+      'pages/campaigns/equipment/governorship/GovernorshipEquipmentFormDetails'
     )
 )
 const FellowshipEquipmentFormDetails = lazy(
@@ -88,11 +88,11 @@ const CouncilTrends = lazy(() => import('./equipment/council/CouncilTrends'))
 const BacentaTrends = lazy(() => import('./equipment/bacenta/BacentaTrends'))
 const CampusByStream = lazy(() => import('./equipment/campus/CampusByStream'))
 const StreamByCouncil = lazy(() => import('./equipment/stream/StreamByCouncil'))
-const CouncilByConstituency = lazy(
-  () => import('./equipment/council/CouncilByConstituency')
+const CouncilByGovernorship = lazy(
+  () => import('./equipment/council/CouncilByGovernorship')
 )
-const ConstituencyByBacenta = lazy(
-  () => import('./equipment/constituency/ConstituencyByBacenta')
+const GovernorshipByBacenta = lazy(
+  () => import('./equipment/governorship/GovernorshipByBacenta')
 )
 const BacentaByFellowship = lazy(
   () => import('./equipment/bacenta/BacentaByFellowship')
@@ -118,9 +118,9 @@ const StreamMemberConversionChart = lazy(
 const CouncilMemberConversionChart = lazy(
   () => import('./multiplication/council/CouncilMemberConversionChart')
 )
-const ConstituencyMemberConversionChart = lazy(
+const GovernorshipMemberConversionChart = lazy(
   () =>
-    import('./multiplication/constituency/ConstituencyMemberConversionChart')
+    import('./multiplication/governorship/GovernorshipMemberConversionChart')
 )
 const BacentaMemberConversionChart = lazy(
   () => import('./multiplication/bacenta/BacentaMemberConversionChart')
@@ -162,27 +162,27 @@ const CouncilSwollenSundayCampaign = lazy(
 const BacentaSwollenSundayCampaign = lazy(
   () => import('./swollen-sunday/bacenta/BacentaSwollenSundayCampaign')
 )
-const ConstituencyAntiBrutishCampaign = lazy(
-  () => import('./anti-brutish/constituency/ConstituencyAntiBrutishCampaign')
+const GovernorshipAntiBrutishCampaign = lazy(
+  () => import('./anti-brutish/governorship/GovernorshipAntiBrutishCampaign')
 )
-const ConstituencyMultiplicationCampaign = lazy(
+const GovernorshipMultiplicationCampaign = lazy(
   () =>
-    import('./multiplication/constituency/ConstituencyMultiplicationCampaign')
+    import('./multiplication/governorship/GovernorshipMultiplicationCampaign')
 )
-const ConstituencySwollenSundayCampaign = lazy(
+const GovernorshipSwollenSundayCampaign = lazy(
   () =>
-    import('./swollen-sunday/constituency/ConstituencySwollenSundayCampaign')
+    import('./swollen-sunday/governorship/GovernorshipSwollenSundayCampaign')
 )
-const ConstituencyTelepastoringCampaign = lazy(
-  () => import('./telepastoring/constituency/ConstituencyTelepastoringCampaign')
+const GovernorshipTelepastoringCampaign = lazy(
+  () => import('./telepastoring/governorship/GovernorshipTelepastoringCampaign')
 )
-const ConstituencyEquipmentDefaulters = lazy(
-  () => import('./equipment/constituency/ConstituencyEquipmentDefaulters')
+const GovernorshipEquipmentDefaulters = lazy(
+  () => import('./equipment/governorship/GovernorshipEquipmentDefaulters')
 )
-const ConstituencyEquipmentHaveNotFilledByFellowship = lazy(
+const GovernorshipEquipmentHaveNotFilledByFellowship = lazy(
   () =>
     import(
-      './equipment/constituency/ConstituencyEquipmentHaveNotFilledByFellowship'
+      './equipment/governorship/GovernorshipEquipmentHaveNotFilledByFellowship'
     )
 )
 const CouncilEquipmentDefaulters = lazy(
@@ -191,9 +191,9 @@ const CouncilEquipmentDefaulters = lazy(
 const CouncilEquipmentHaveNotFilledByFellowship = lazy(
   () => import('./equipment/council/CouncilEquipmentHaveNotFilledByFellowship')
 )
-const CouncilEquipmentHaveNotFilledByConstituency = lazy(
+const CouncilEquipmentHaveNotFilledByGovernorship = lazy(
   () =>
-    import('./equipment/council/CouncilEquipmentHaveNotFilledByConstituency')
+    import('./equipment/council/CouncilEquipmentHaveNotFilledByGovernorship')
 )
 const CampusEquipmentDefaulters = lazy(
   () => import('./equipment/campus/CampusEquipmentDefaulters')
@@ -204,8 +204,8 @@ const CampusByStreamEquipmentDefaulters = lazy(
 const StreamByCouncilEquipmentDefaulters = lazy(
   () => import('./equipment/stream/StreamByCouncilEquipmentDefaulters')
 )
-const CouncilByConstituencyEquipmentDefaulters = lazy(
-  () => import('./equipment/council/CouncilByConstituencyEquipmentDefaulters')
+const CouncilByGovernorshipEquipmentDefaulters = lazy(
+  () => import('./equipment/council/CouncilByGovernorshipEquipmentDefaulters')
 )
 const StreamEquipmentDefaulters = lazy(
   () => import('./equipment/stream/StreamEquipmentDefaulters')
@@ -242,16 +242,16 @@ const CouncilMultiplicationCampaignServiceForm = lazy(
     )
 )
 
-const ConstituencyMultiplicationCampaignServiceForm = lazy(
+const GovernorshipMultiplicationCampaignServiceForm = lazy(
   () =>
     import(
-      '../campaigns/multiplication/constituency/ConstituencyMultiplicationCampaignServiceForm'
+      '../campaigns/multiplication/governorship/GovernorshipMultiplicationCampaignServiceForm'
     )
 )
-const ConstituencyMultiplicationCampaignServiceDetails = lazy(
+const GovernorshipMultiplicationCampaignServiceDetails = lazy(
   () =>
     import(
-      '../campaigns/multiplication/constituency/ConstituencyMultiplicationCampaignServiceDetails'
+      '../campaigns/multiplication/governorship/GovernorshipMultiplicationCampaignServiceDetails'
     )
 )
 
@@ -291,10 +291,10 @@ const CouncilSwollenSundayTrends = lazy(
   () => import('../campaigns/swollen-sunday/council/CouncilSwollenSundayTrends')
 )
 
-const ConstituencySwollenSundayTrends = lazy(
+const GovernorshipSwollenSundayTrends = lazy(
   () =>
     import(
-      '../campaigns/swollen-sunday/constituency/ConstituencySwollenSundayTrends'
+      '../campaigns/swollen-sunday/governorship/GovernorshipSwollenSundayTrends'
     )
 )
 
@@ -337,17 +337,17 @@ const SwollenSundayStreamList = lazy(
 const SwollenSundayCouncilList = lazy(
   () => import('./swollen-sunday/council/SwollenSundayCouncilList')
 )
-const SwollenSundayConstituencyList = lazy(
-  () => import('./swollen-sunday/constituency/SwollenSundayConstituencyList')
+const SwollenSundayGovernorshipList = lazy(
+  () => import('./swollen-sunday/governorship/SwollenSundayGovernorshipList')
 )
 const SwollenSundayBacentaList = lazy(
   () => import('./swollen-sunday/bacenta/SwollenSundayBacentaList')
 )
 
-const ConstituencyMultiplicationCampaignTrends = lazy(
+const GovernorshipMultiplicationCampaignTrends = lazy(
   () =>
     import(
-      '../campaigns/multiplication/constituency/ConstituencyMultiplicationCampaignTrends'
+      '../campaigns/multiplication/governorship/GovernorshipMultiplicationCampaignTrends'
     )
 )
 
@@ -369,10 +369,10 @@ const CampusMultiplicationCampaignTrends = lazy(
   () => import('./multiplication/campus/CampusMultiplicationCampaignTrends')
 )
 
-const ConstituencyMultiplicationCampaignUploadReceipts = lazy(
+const GovernorshipMultiplicationCampaignUploadReceipts = lazy(
   () =>
     import(
-      '../campaigns/multiplication/constituency/ConstituencyMultiplicationCampaignUploadReceipts'
+      '../campaigns/multiplication/governorship/GovernorshipMultiplicationCampaignUploadReceipts'
     )
 )
 
@@ -395,10 +395,10 @@ const StreamMultiplicationCampaignUploadReceipts = lazy(
     )
 )
 
-const ConstituencyMultiplicationCampaignBankingSlipView = lazy(
+const GovernorshipMultiplicationCampaignBankingSlipView = lazy(
   () =>
     import(
-      '../campaigns/multiplication/constituency/ConstituencyMultiplicationCampaignBankingSlipView'
+      '../campaigns/multiplication/governorship/GovernorshipMultiplicationCampaignBankingSlipView'
     )
 )
 const CouncilMultiplicationCampaignBankingSlipView = lazy(
@@ -427,10 +427,10 @@ const BacentaShepherdingControlCampaign = lazy(
     )
 )
 
-const ConstituencyShepherdingControlCampaign = lazy(
+const GovernorshipShepherdingControlCampaign = lazy(
   () =>
     import(
-      '../campaigns/shepherding-control/constituency/ConstituencyShepherdingControlCampaign'
+      '../campaigns/shepherding-control/governorship/GovernorshipShepherdingControlCampaign'
     )
 )
 const CouncilShepherdingControlCampaign = lazy(
@@ -459,10 +459,10 @@ const BacentaShepherdingControlYearTillDate = lazy(
     )
 )
 
-const ConstituencyShepherdingControlYearTillDate = lazy(
+const GovernorshipShepherdingControlYearTillDate = lazy(
   () =>
     import(
-      '../campaigns/shepherding-control/constituency/ConstituencyShepherdingControlYearTillDate'
+      '../campaigns/shepherding-control/governorship/GovernorshipShepherdingControlYearTillDate'
     )
 )
 const CouncilShepherdingControlYearTillDate = lazy(
@@ -559,8 +559,8 @@ export const campaigns: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
-    path: '/campaigns/campus/equipment/have-not-filled/constituency',
-    element: CampusEquipmentHaveNotFilledByConstituency,
+    path: '/campaigns/campus/equipment/have-not-filled/governorship',
+    element: CampusEquipmentHaveNotFilledByGovernorship,
     roles: permitLeaderAdmin('Council'),
     placeholder: true,
   },
@@ -699,8 +699,8 @@ export const campaigns: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
-    path: '/campaigns/stream/equipment/have-not-filled/constituency',
-    element: StreamEquipmentHaveNotFilledByConstituency,
+    path: '/campaigns/stream/equipment/have-not-filled/governorship',
+    element: StreamEquipmentHaveNotFilledByGovernorship,
     roles: permitLeaderAdmin('Council'),
     placeholder: true,
   },
@@ -815,8 +815,8 @@ export const campaigns: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
-    path: '/campaigns/equipment/council/constituency',
-    element: CouncilByConstituency,
+    path: '/campaigns/equipment/council/governorship',
+    element: CouncilByGovernorship,
     roles: permitLeaderAdmin('Council'),
     placeholder: true,
   },
@@ -857,14 +857,14 @@ export const campaigns: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
-    path: '/campaigns/council/equipment/have-not-filled/constituency',
-    element: CouncilEquipmentHaveNotFilledByConstituency,
+    path: '/campaigns/council/equipment/have-not-filled/governorship',
+    element: CouncilEquipmentHaveNotFilledByGovernorship,
     roles: permitLeaderAdmin('Council'),
     placeholder: true,
   },
   {
-    path: '/campaigns/council/constituency/equipment/defaulters',
-    element: CouncilByConstituencyEquipmentDefaulters,
+    path: '/campaigns/council/governorship/equipment/defaulters',
+    element: CouncilByGovernorshipEquipmentDefaulters,
     roles: permitLeaderAdmin('Council'),
     placeholder: true,
   },
@@ -941,137 +941,137 @@ export const campaigns: LazyRouteTypes[] = [
     placeholder: true,
   },
 
-  //constituency routes
+  //governorship routes
   {
-    path: '/campaigns/constituency',
-    element: ConstituencyCampaigns,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship',
+    element: GovernorshipCampaigns,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/equipment',
-    element: ConstituencyEquipmentCampaign,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/equipment',
+    element: GovernorshipEquipmentCampaign,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/equipment/trends',
-    element: ConstituencyEquipmentTrends,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/equipment/trends',
+    element: GovernorshipEquipmentTrends,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/equipment/constituency/bacenta',
-    element: ConstituencyByBacenta,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/equipment/governorship/bacenta',
+    element: GovernorshipByBacenta,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/equipment/form',
-    element: ConstituencyEquipmentForm,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/equipment/form',
+    element: GovernorshipEquipmentForm,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/equipment/form-details',
-    element: ConstituencyEquipmentFormDetails,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/equipment/form-details',
+    element: GovernorshipEquipmentFormDetails,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/anti-brutish',
-    element: ConstituencyAntiBrutishCampaign,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/anti-brutish',
+    element: GovernorshipAntiBrutishCampaign,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/multiplication',
-    element: ConstituencyMultiplicationCampaign,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/multiplication',
+    element: GovernorshipMultiplicationCampaign,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/swollen-sunday',
-    element: ConstituencySwollenSundayCampaign,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/swollen-sunday',
+    element: GovernorshipSwollenSundayCampaign,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/telepastoring',
-    element: ConstituencyTelepastoringCampaign,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/telepastoring',
+    element: GovernorshipTelepastoringCampaign,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/equipment/defaulters',
-    element: ConstituencyEquipmentDefaulters,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/equipment/defaulters',
+    element: GovernorshipEquipmentDefaulters,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/equipment/have-not-filled/fellowship',
-    element: ConstituencyEquipmentHaveNotFilledByFellowship,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/equipment/have-not-filled/fellowship',
+    element: GovernorshipEquipmentHaveNotFilledByFellowship,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/multiplication/service-form',
-    element: ConstituencyMultiplicationCampaignServiceForm,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/multiplication/service-form',
+    element: GovernorshipMultiplicationCampaignServiceForm,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/multiplication/service-details',
-    element: ConstituencyMultiplicationCampaignServiceDetails,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/multiplication/service-details',
+    element: GovernorshipMultiplicationCampaignServiceDetails,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/swollen-sunday/trends',
-    element: ConstituencySwollenSundayTrends,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/swollen-sunday/trends',
+    element: GovernorshipSwollenSundayTrends,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/swollen-sunday/constituencies',
-    element: SwollenSundayConstituencyList,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/swollen-sunday/governorships',
+    element: SwollenSundayGovernorshipList,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/multiplication/trends',
-    element: ConstituencyMultiplicationCampaignTrends,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/multiplication/trends',
+    element: GovernorshipMultiplicationCampaignTrends,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/multiplication/upload-receipts',
-    element: ConstituencyMultiplicationCampaignUploadReceipts,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/multiplication/upload-receipts',
+    element: GovernorshipMultiplicationCampaignUploadReceipts,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/multiplication/banking-slips',
-    element: ConstituencyMultiplicationCampaignBankingSlipView,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/multiplication/banking-slips',
+    element: GovernorshipMultiplicationCampaignBankingSlipView,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/shepherding-control',
-    element: ConstituencyShepherdingControlCampaign,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/shepherding-control',
+    element: GovernorshipShepherdingControlCampaign,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/shepherding-control/year-to-date',
-    element: ConstituencyShepherdingControlYearTillDate,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/shepherding-control/year-to-date',
+    element: GovernorshipShepherdingControlYearTillDate,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
   {
-    path: '/campaigns/constituency/multiplication/member-conversion-chart',
-    element: ConstituencyMemberConversionChart,
-    roles: permitLeaderAdmin('Constituency'),
+    path: '/campaigns/governorship/multiplication/member-conversion-chart',
+    element: GovernorshipMemberConversionChart,
+    roles: permitLeaderAdmin('Governorship'),
     placeholder: true,
   },
 
@@ -1147,43 +1147,43 @@ export const campaigns: LazyRouteTypes[] = [
   {
     path: '/campaigns/fellowship',
     element: FellowshipCampaigns,
-    roles: permitLeaderAdmin('Fellowship'),
+    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
   {
     path: '/campaigns/fellowship/equipment',
     element: FellowshipEquipmentCampaign,
-    roles: permitLeaderAdmin('Fellowship'),
+    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
   {
     path: '/campaigns/fellowship/equipment/trends',
     element: FellowshipTrends,
-    roles: permitLeaderAdmin('Fellowship'),
+    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
   {
     path: '/campaigns/fellowship/equipment/form',
     element: FellowshipEquipmentForm,
-    roles: permitLeaderAdmin('Fellowship'),
+    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
   {
     path: '/campaigns/fellowship/equipment/form-details',
     element: FellowshipEquipmentFormDetails,
-    roles: permitLeaderAdmin('Fellowship'),
+    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
   {
     path: '/campaigns/fellowship/multiplication/member-conversion-chart',
     element: FellowshipMemberConversionChart,
-    roles: permitLeader('Fellowship'),
+    roles: permitLeader('Bacenta'),
     placeholder: true,
   },
   {
     path: '/campaigns/fellowship/multiplication',
     element: FellowshipMultiplicationCampaign,
-    roles: permitLeader('Fellowship'),
+    roles: permitLeader('Bacenta'),
     placeholder: true,
   },
 

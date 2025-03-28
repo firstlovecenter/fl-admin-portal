@@ -4,6 +4,7 @@ export const DISPLAY_MEMBER_BIO = gql`
   query displayMemberBio($id: ID!) {
     members(where: { id: $id }) {
       id
+      auth_id
       firstName
       middleName
       lastName
@@ -11,6 +12,7 @@ export const DISPLAY_MEMBER_BIO = gql`
       nameWithTitle
       email
       phoneNumber
+      stickyNote
       pictureUrl
       visitationArea
       whatsappNumber
@@ -38,22 +40,12 @@ export const DISPLAY_MEMBER_LEADERSHIP = gql`
     members(where: { id: $id }) {
       id
 
-      #Leadership Information
-      leadsFellowship {
-        id
-        name
-        stream_name
-        leader {
-          firstName
-          lastName
-        }
-      }
       leadsBacenta {
         id
         name
         stream_name
       }
-      leadsConstituency {
+      leadsGovernorship {
         id
         name
         stream_name
@@ -99,6 +91,10 @@ export const DISPLAY_MEMBER_ADMIN = gql`
       id
 
       #Admin Information
+      isAdminForOversight {
+        id
+        name
+      }
       isAdminForCampus {
         id
         name
@@ -112,7 +108,7 @@ export const DISPLAY_MEMBER_ADMIN = gql`
         name
         stream_name
       }
-      isAdminForConstituency {
+      isAdminForGovernorship {
         id
         name
         stream_name
@@ -135,7 +131,6 @@ export const DISPLAY_MEMBER_CHURCH = gql`
     members(where: { id: $id }) {
       id
       #church info
-      stream_name
       basonta {
         id
         name
@@ -145,7 +140,7 @@ export const DISPLAY_MEMBER_CHURCH = gql`
         }
       }
 
-      fellowship {
+      bacenta {
         id
         name
         leader {
@@ -154,6 +149,7 @@ export const DISPLAY_MEMBER_CHURCH = gql`
         }
         council {
           id
+          name
           leader {
             id
             firstName
@@ -219,7 +215,7 @@ export const DISPLAY_FELLOWSHIP = gql`
       bacenta {
         id
         name
-        constituency {
+        governorship {
           id
           name
         }
@@ -265,13 +261,49 @@ export const DISPLAY_FELLOWSHIP_HISTORY = gql`
   }
 `
 
+export const DISPLAY_BACENTA_HISTORY = gql`
+  query displayBacentaHistory($id: ID!) {
+    bacentas(where: { id: $id }, options: { limit: 1 }) {
+      id
+      services(limit: 5) {
+        id
+        bankingProof
+        week
+        noServiceReason
+      }
+      history(limit: 5) {
+        id
+        timeStamp
+        createdAt {
+          date
+        }
+        loggedBy {
+          id
+          firstName
+          lastName
+          stream_name
+        }
+        historyRecord
+      }
+    }
+  }
+`
+
 export const DISPLAY_BACENTA = gql`
   query displayBacenta($id: ID!) {
     bacentas(where: { id: $id }, options: { limit: 1 }) {
       id
       name
+      bankingCode
+      location {
+        longitude
+        latitude
+      }
+      meetingDay {
+        day
+        dayNumber
+      }
       vacationStatus
-      graduationStatus
       target
       outbound
       sprinterTopUp
@@ -279,26 +311,8 @@ export const DISPLAY_BACENTA = gql`
 
       momoNumber
       stream_name
-      activeFellowshipCount
-      vacationFellowshipCount
-      fellowships(options: { limit: 5 }) {
-        id
-        name
-        leader {
-          id
-        }
-        bacenta {
-          id
-          name
-          council {
-            id
-            name
-          }
-          stream_name
-        }
-      }
 
-      constituency {
+      governorship {
         id
         name
         stream_name
@@ -315,36 +329,22 @@ export const DISPLAY_BACENTA = gql`
         nameWithTitle
         pictureUrl
       }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
+
       memberCount
     }
   }
 `
 
-export const DISPLAY_CONSTITUENCY = gql`
-  query displayConstituency($id: ID!) {
-    constituencies(where: { id: $id }, options: { limit: 1 }) {
+export const DISPLAY_GOVERNORSHIP = gql`
+  query displayGovernorship($id: ID!) {
+    governorships(where: { id: $id }, options: { limit: 1 }) {
       id
       name
       target
       stream_name
       hubCount
-      activeBacentaCount
-      vacationBacentaCount
-      vacationFellowshipCount
+      bacentaCount
+      vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
       bacentas(options: { limit: 5 }) {
@@ -396,7 +396,6 @@ export const DISPLAY_CONSTITUENCY = gql`
         historyRecord
       }
       memberCount
-      activeFellowshipCount
     }
   }
 `
@@ -412,23 +411,21 @@ export const DISPLAY_COUNCIL = gql`
         name
       }
       stream_name
-      constituencyCount
-      activeBacentaCount
-      activeFellowshipCount
+      governorshipCount
+      bacentaCount
       hubCouncilCount
       hubCount
       hubFellowshipCount
       memberCount
       pastorCount
-      vacationBacentaCount
-      vacationFellowshipCount
+      vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
       stream {
         id
         name
       }
-      constituencies(options: { limit: 5 }) {
+      governorships(options: { limit: 5 }) {
         id
         name
       }
@@ -479,14 +476,12 @@ export const DISPLAY_STREAM = gql`
       bankAccount
       target
       councilCount
-      constituencyCount
-      activeBacentaCount
-      activeFellowshipCount
+      governorshipCount
+      bacentaCount
       hubFellowshipCount
       memberCount
       pastorCount
-      vacationBacentaCount
-      vacationFellowshipCount
+      vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
       ministryCount
@@ -552,13 +547,11 @@ export const DISPLAY_CAMPUS = gql`
       target
       streamCount
       councilCount
-      constituencyCount
-      activeBacentaCount
-      activeFellowshipCount
+      governorshipCount
+      bacentaCount
       memberCount
       pastorCount
-      vacationBacentaCount
-      vacationFellowshipCount
+      vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
       creativeArtsCount
@@ -617,13 +610,11 @@ export const DISPLAY_OVERSIGHT = gql`
       campusCount
       streamCount
       councilCount
-      constituencyCount
-      activeBacentaCount
-      activeFellowshipCount
+      governorshipCount
+      bacentaCount
       memberCount
       pastorCount
-      vacationBacentaCount
-      vacationFellowshipCount
+      vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
       denomination {
@@ -730,13 +721,11 @@ export const DISPLAY_DENOMINATION = gql`
       campusCount
       streamCount
       councilCount
-      constituencyCount
-      activeBacentaCount
-      activeFellowshipCount
+      governorshipCount
+      bacentaCount
       memberCount
       pastorCount
-      vacationBacentaCount
-      vacationFellowshipCount
+      vacationGraduatedBacentaCount
 
       oversights {
         id
@@ -781,6 +770,7 @@ export const DISPLAY_MINISTRY = gql`
       id
       name
       vacationStatus
+      bankAccount
       stream {
         id
         name
@@ -906,7 +896,7 @@ export const DISPLAY_HUB = gql`
         longitude
         latitude
       }
-      constituency {
+      governorship {
         id
         name
       }
@@ -1011,7 +1001,7 @@ export const DISPLAY_HUBFELLOWSHIP = gql`
       bacenta {
         id
         name
-        constituency {
+        governorship {
           id
           name
         }

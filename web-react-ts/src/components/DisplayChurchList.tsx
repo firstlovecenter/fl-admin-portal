@@ -65,8 +65,8 @@ const DisplayChurchList = (props: {
                             {church.bacentaCount
                               ? `| ${church?.bacentaCount} Bacentas`
                               : null}{' '}
-                            {church.constituencyCount
-                              ? `| ${church?.constituencyCount} Constituencies`
+                            {church.governorshipCount
+                              ? `| ${church?.governorshipCount} Governorships`
                               : null}{' '}
                             {church.councilCount
                               ? `| ${church?.councilCount} Councils`

@@ -22,11 +22,11 @@ const MakeServantResolvers = {
 
       const servantRes = await session.executeRead((tx) =>
         tx.run(matchMemberFromAuthId, {
-          auth: context.auth,
+          jwt: context.jwt,
         })
       )
       const userRoleResponse = await axios(
-        getUserRoles(context.auth.jwt.sub, authToken)
+        getUserRoles(context.jwt.sub, authToken)
       )
       const roles: Role[] = userRoleResponse.data.map(
         (role: Auth0RoleObject) => role.name
@@ -72,9 +72,9 @@ const MakeServantResolvers = {
     MakeServant(context, args, permitAdmin('Stream'), 'Council', 'Admin'),
   RemoveCouncilAdmin: async (object: any, args: Member, context: Context) =>
     RemoveServant(context, args, permitAdmin('Stream'), 'Council', 'Admin'),
-  MakeConstituencyAdmin: async (object: any, args: Member, context: Context) =>
-    MakeServant(context, args, permitAdmin('Council'), 'Constituency', 'Admin'),
-  RemoveConstituencyAdmin: async (
+  MakeGovernorshipAdmin: async (object: any, args: Member, context: Context) =>
+    MakeServant(context, args, permitAdmin('Council'), 'Governorship', 'Admin'),
+  RemoveGovernorshipAdmin: async (
     object: any,
     args: Member,
     context: Context
@@ -83,7 +83,7 @@ const MakeServantResolvers = {
       context,
       args,
       permitAdmin('Council'),
-      'Constituency',
+      'Governorship',
       'Admin'
     ),
   MakeCreativeArtsAdmin: async (object: any, args: Member, context: Context) =>
@@ -144,15 +144,15 @@ const MakeServantResolvers = {
       'Bacenta',
       'Leader'
     ),
-  MakeConstituencyLeader: async (object: any, args: Member, context: Context) =>
+  MakeGovernorshipLeader: async (object: any, args: Member, context: Context) =>
     MakeServant(
       context,
       args,
       permitAdmin('Council'),
-      'Constituency',
+      'Governorship',
       'Leader'
     ),
-  RemoveConstituencyLeader: async (
+  RemoveGovernorshipLeader: async (
     object: any,
     args: Member,
     context: Context
@@ -161,7 +161,7 @@ const MakeServantResolvers = {
       context,
       args,
       permitAdmin('Council'),
-      'Constituency',
+      'Governorship',
       'Leader'
     ),
   MakeCouncilLeader: async (object: any, args: Member, context: Context) =>

@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client'
 
-export const CONSTITUENCY_ARRIVALS_DASHBOARD = gql`
-  query constituencyArrivalsDashboard($id: ID!, $arrivalDate: String!) {
-    constituencies(where: { id: $id }, options: { limit: 1 }) {
+export const GOVERNORSHIP_ARRIVALS_DASHBOARD = gql`
+  query governorshipArrivalsDashboard($id: ID!, $arrivalDate: String!) {
+    governorships(where: { id: $id }, options: { limit: 1 }) {
       id
       name
       council {
@@ -64,7 +64,7 @@ export const COUNCIL_ARRIVALS_DASHBOARD = gql`
         fullName
         pictureUrl
       }
-      constituencyCount
+      governorshipCount
       bacentasNoActivityCount(arrivalDate: $arrivalDate)
       bacentasMobilisingCount(arrivalDate: $arrivalDate)
       bacentasOnTheWayCount(arrivalDate: $arrivalDate)
@@ -167,9 +167,9 @@ export const CAMPUS_ARRIVALS_DASHBOARD = gql`
   }
 `
 
-export const CONFIRM_CONSTITUENCY_ARRIVALS = gql`
-  query confirmConstituencyArrivals($id: ID!, $arrivalDate: String!) {
-    constituencies(where: { id: $id }, options: { limit: 1 }) {
+export const CONFIRM_GOVERNORSHIP_ARRIVALS = gql`
+  query confirmGovernorshipArrivals($id: ID!, $arrivalDate: String!) {
+    governorships(where: { id: $id }, options: { limit: 1 }) {
       id
       name
       stream_name
@@ -343,18 +343,18 @@ export const BACENTA_ARRIVALS = gql`
   }
 `
 
-export const CONSTITUENCY_LEADER_ARRIVALS = gql`
-  query constituencyLeaderArrivals($id: ID!) {
+export const GOVERNORSHIP_LEADER_ARRIVALS = gql`
+  query governorshipLeaderArrivals($id: ID!) {
     members(where: { id: $id }, options: { limit: 1 }) {
       id
       firstName
       lastName
       fullName
-      leadsConstituency {
+      leadsGovernorship {
         id
         name
       }
-      isAdminForConstituency {
+      isAdminForGovernorship {
         id
         name
       }
@@ -444,8 +444,6 @@ export const DISPLAY_BUSSING_RECORDS = gql`
       mobilisationPicture
       leaderDeclaration
       attendance
-      bussingCost
-      personalContribution
       bussingTopUp
       numberOfBusses
       bussingPictures
@@ -491,8 +489,6 @@ export const DISPLAY_VEHICLE_RECORDS = gql`
 
       leaderDeclaration
       attendance
-      vehicleCost
-      personalContribution
       vehicleTopUp
       vehicle
       picture
@@ -552,8 +548,6 @@ export const DISPLAY_VEHICLE_PAYMENT_RECORDS = gql`
       attendance
       vehicleCost
       picture
-      personalContribution
-      vehicleTopUp
       momoNumber
       momoName
       vehicle
@@ -572,7 +566,7 @@ export const DISPLAY_VEHICLE_PAYMENT_RECORDS = gql`
         fullName
         pictureUrl
       }
-      constituency {
+      governorship {
         id
         name
         council {
@@ -621,7 +615,7 @@ export const DISPLAY_ARRIVALS_PAYMENT_DATA = gql`
         momoName
         comments
         council
-        constituency
+        governorship
         society
         date
         arrivalTime

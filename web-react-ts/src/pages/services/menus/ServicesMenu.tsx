@@ -11,11 +11,16 @@ import {
   PersonPlus,
   Coin,
   FileEarmarkArrowUpFill,
+  EmojiFrown,
 } from 'react-bootstrap-icons'
 import { useNavigate } from 'react-router'
 import { ChurchLevel } from 'global-types'
 import RoleView from 'auth/RoleView'
-import { permitAdmin, permitTellerStream } from 'permission-utils'
+import {
+  permitAdmin,
+  permitLeaderAdmin,
+  permitTellerStream,
+} from 'permission-utils'
 
 const Services = () => {
   const { currentUser, theme } = useContext(MemberContext)
@@ -35,16 +40,15 @@ const Services = () => {
           </div>
         </PlaceholderCustom>
         <div className="d-grid gap-2 mt-5 text-left">
-          {churchType === 'Fellowship' &&
-            church?.vacationStatus === 'Active' && (
-              <MenuButton
-                iconComponent={<Book />}
-                title="Fellowship Service"
-                color="members"
-                onClick={() => navigate(`/services/fellowship`)}
-                noCaption
-              />
-            )}
+          {churchType === 'Bacenta' && church?.vacationStatus === 'Active' && (
+            <MenuButton
+              iconComponent={<Book />}
+              title="Bacenta Service"
+              color="members"
+              onClick={() => navigate(`/services/bacenta`)}
+              noCaption
+            />
+          )}
           {['Hub', 'Ministry'].includes(churchType) &&
             church?.vacationStatus === 'Active' && (
               <MenuButton
@@ -57,16 +61,8 @@ const Services = () => {
                 noCaption
               />
             )}
-          {churchType === 'Bacenta' && (
-            <MenuButton
-              iconComponent={<Book />}
-              title="Bacenta Service"
-              color="members"
-              onClick={() => navigate(`/services/bacenta`)}
-              noCaption
-            />
-          )}
-          {['Stream', 'Constituency', 'Council'].includes(churchType) && (
+
+          {['Stream', 'Governorship', 'Council'].includes(churchType) && (
             <MenuButton
               iconComponent={<Book />}
               title={`${churchType === 'Stream' ? 'Weekend' : 'Joint'} Service`}
@@ -96,7 +92,7 @@ const Services = () => {
               onClick={() => navigate(`/stream/record-special-service`)}
             />
           )} */}
-          {['Stream', 'Council', 'Constituency', 'Fellowship'].includes(
+          {['Stream', 'Council', 'Governorship', 'Bacenta'].includes(
             churchType
           ) &&
             church?.bankAccount !== 'manual' && (
@@ -114,13 +110,13 @@ const Services = () => {
               />
             )}
 
-          {['Stream', 'Council', 'Constituency', 'Fellowship', 'Hub'].includes(
+          {['Stream', 'Council', 'Governorship', 'Bacenta', 'Hub'].includes(
             churchType
           ) &&
             church?.bankAccount !== 'manual' && (
               <MenuButton
                 iconComponent={<Coin />}
-                title="Self Banking Option"
+                title="Self Banking"
                 color="banking"
                 noCaption
                 onClick={() =>
@@ -153,6 +149,23 @@ const Services = () => {
                 </RoleView>
               </>
             )}
+
+          {church.__typename !== 'Bacenta' ? (
+            <RoleView
+              roles={[
+                ...permitLeaderAdmin('Governorship'),
+                ...permitLeaderAdmin('Hub'),
+              ]}
+            >
+              <MenuButton
+                title="Defaulters"
+                color="danger"
+                iconComponent={<EmojiFrown />}
+                onClick={() => navigate('/services/defaulters/dashboard')}
+                noCaption
+              />
+            </RoleView>
+          ) : null}
         </div>
       </Container>
     </div>

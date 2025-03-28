@@ -20,15 +20,13 @@ export type HTMLElement =
 
 // CHURCHES
 export type ChurchLevel =
-  | 'Fellowship'
   | 'Bacenta'
-  | 'Constituency'
+  | 'Governorship'
   | 'Council'
   | 'Stream'
   | 'Campus'
   | 'Oversight'
   | 'Denomination'
-  | 'HubFellowship'
   | 'Ministry'
   | 'HubCouncil'
   | 'Hub'
@@ -38,7 +36,7 @@ export type ChurchLevel =
 export type ChurchLevelLower =
   | 'fellowship'
   | 'bacenta'
-  | 'constituency'
+  | 'governorship'
   | 'council'
   | 'stream'
   | 'campus'
@@ -65,6 +63,9 @@ export type HistoryLog = {
 export interface Church {
   id: string
   name: string
+  downloadCredits: number
+  downloadMembership: Member[]
+  creditsTransactionHistory: CreditTransaction[]
   vacationStatus?: VacationStatusOptions
   stream_name?: StreamOptions
   leader: MemberWithoutBioData
@@ -72,24 +73,32 @@ export interface Church {
   hubs?: Church[]
   lowerChurch?: Church[]
   memberCount: number
+  members: Member[]
   history: HistoryLog[]
   __typename: ChurchLevel
 }
 
-export interface Fellowship extends Church {
-  __typename: 'Fellowship'
-  bacenta: Bacenta
+export interface CreditTransaction {
+  id: string
+  amount: number
+  mobileNetwork: 'MTN' | 'Vodafone' | 'AirtelTigo'
+  mobileNumber: string
+  transactionStatus: 'pending' | 'success' | 'failed' | 'send_otp'
+  transactionReference: string
+  createdAt: string
+  credited: boolean
+}
+
+export interface Bacenta extends Church {
+  __typename: 'Bacenta'
+  governorship: Governorship
+  council: Council
   bankingCode: number
   services: ServiceRecord[]
   vacationStatus: VacationStatusOptions
   meetingDay: {
     day: 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
   }
-}
-
-export interface Bacenta extends Church {
-  __typename: 'Bacenta'
-  constituency: Constituency
 }
 
 export type ChurchIdAndName = {
@@ -132,8 +141,8 @@ export interface Stream extends Church {
   ministries?: Ministry[]
   councils?: Council[]
 }
-export interface Constituency extends Church {
-  __typename: 'Constituency'
+export interface Governorship extends Church {
+  __typename: 'Governorship'
   stream: Stream
   council: Council
 }
@@ -142,7 +151,7 @@ export interface Council extends Church {
   __typename: 'Council'
   stream: Stream
   hubCouncils?: HubCouncil[]
-  constituencies?: Constituency[]
+  governorships?: Governorship[]
   hubCouncilsFromMinistry?: HubCouncil[]
 }
 
@@ -176,21 +185,15 @@ export interface Hub extends Church {
     latitude: number
     longitude: number
   }
-  hubFellowships?: HubFellowship[]
   activeHubFellowshipCount: number
   vacationHubFellowshipCount: number
   hubCouncil: HubCouncil
-  constituency: Constituency
+  governorship: Governorship
   creativeArts: Campus
   vacationStatus: VacationStatusOptions
   meetingDay: {
     day: 'Wednesday' | 'Friday' | 'Saturday'
   }
-}
-
-export interface HubFellowship extends Church {
-  __typename: 'HubFellowship'
-  hub: Hub
 }
 
 //MEMBERSHIP
@@ -215,6 +218,7 @@ export interface Member {
   id: string
   // eslint-disable-next-line camelcase
   auth_id: string
+  stickyNote?: string
   firstName: string
   middleName?: string
   lastName: string
@@ -232,11 +236,12 @@ export interface Member {
   maritalStatus: { status: 'Married' | 'Single' }
   gender: { gender: 'Male' | 'Female' }
   occupation: { occupation: string }
+  bacenta: Bacenta
   fellowship: {
     id: string
     name: string
   }
-  ministry: {
+  basonta: {
     id: string
     name: string
   }
@@ -246,7 +251,7 @@ export interface MemberWithChurches extends Member {
   roles?: Role[]
   leadsFellowship: Church[]
   leadsBacenta: Church[]
-  leadsConstituency: Church[]
+  leadsGovernorship: Church[]
   leadsCouncil: Church[]
   leadsStream: Church[]
 
@@ -260,14 +265,14 @@ export interface MemberWithChurches extends Member {
   leadsCampus: Church[]
   leadsOversight: Church[]
   leadsDenomination: Church[]
-  isAdminForConstituency: Church[]
+  isAdminForGovernorship: Church[]
   isAdminForCouncil: Church[]
   isAdminForStream: Church[]
   isAdminForCampus: Church[]
   isAdminForOversight: Church[]
   isAdminForDenomination: Church[]
 
-  isArrivalsAdminForConstituency: Church[]
+  isArrivalsAdminForGovernorship: Church[]
   isArrivalsAdminForCouncil: Church[]
   isArrivalsAdminForStream: Church[]
   isArrivalsAdminForCampus: Church[]
@@ -323,7 +328,7 @@ export interface LazyRouteTypes {
 export type Role =
   | 'leaderFellowship'
   | 'leaderBacenta'
-  | 'leaderConstituency'
+  | 'leaderGovernorship'
   | 'leaderCouncil'
   | 'leaderStream'
   | 'leaderHub'
@@ -333,7 +338,7 @@ export type Role =
   | 'leaderCampus'
   | 'leaderOversight'
   | 'leaderDenomination'
-  | 'adminConstituency'
+  | 'adminGovernorship'
   | 'adminCouncil'
   | 'adminStream'
   | 'adminCampus'
@@ -344,7 +349,7 @@ export type Role =
   | 'arrivalsAdminCampus'
   | 'arrivalsAdminStream'
   | 'arrivalsAdminCouncil'
-  | 'arrivalsAdminConstituency'
+  | 'arrivalsAdminGovernorship'
   | 'arrivalsCounterStream'
   | 'arrivalsPayerCouncil'
   | 'tellerStream'
@@ -394,6 +399,7 @@ export type ServiceRecord = {
   // Offering
   treasurerSelfie: string
   bankingProof: boolean
+  tellerConfirmationTime: string
   bankingSlip: string
   transactionStatus: 'pending' | 'success' | 'failed' | 'send OTP'
   bankingSlipUploader: Member
@@ -415,7 +421,7 @@ export type EquipmentChurch = {
   name: string
   equipmentRecord: EquipmentRecord
   fellowshipEquipmentFilledCount: number
-  constituencyEquipmentFilledCount: number
+  governorshipEquipmentFilledCount: number
 }
 
 export type EquipmentRecord = {
@@ -430,7 +436,7 @@ export interface HigherChurch extends Church {
   admin: MemberWithoutBioData
   fellowshipCount: number
   bacentaCount: number
-  constituencyCount: number
+  governorshipCount: number
   councilCount: number
   streamCount: number
   memberCount: number

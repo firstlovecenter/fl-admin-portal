@@ -39,26 +39,20 @@ const DetailsDenomination = () => {
       link: `#`,
     },
     {
-      title: 'Constituencies',
-      number: denomination?.constituencyCount,
-      link: `/campus/constituencies`,
+      title: 'Governorships',
+      number: denomination?.governorshipCount,
+      link: `/campus/governorships`,
     },
     {
-      title: 'Bacentas',
-      number: denomination?.activeBacentaCount,
-      vacationCount: denomination?.vacationBacentaCount,
+      title: 'Greens',
+      number: denomination?.activeGraduatedBacentaCount,
+      vacationCount: denomination?.vacationGraduatedBacentaCount,
       link: `#`,
     },
     {
-      title: 'IC Bacentas',
+      title: 'Reds',
       number: denomination?.activeIcBacentaCount,
       vacationCount: denomination?.vacationIcBacentaCount,
-      link: '#',
-    },
-    {
-      title: 'Fellowships',
-      number: denomination?.activeFellowshipCount,
-      vacationCount: denomination?.vacationFellowshipCount,
       link: '#',
     },
   ]

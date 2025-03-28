@@ -23,7 +23,7 @@ function CouncilHistory() {
           <HeadingSecondary>Council History</HeadingSecondary>
         </div>
         <Container>
-          <Timeline record={council?.history} limit={10} />
+          <Timeline record={council?.history} limit={100} />
         </Container>
       </>
     </ApolloWrapper>

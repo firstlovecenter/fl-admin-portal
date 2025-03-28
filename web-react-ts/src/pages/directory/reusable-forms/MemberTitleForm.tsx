@@ -3,11 +3,12 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import { Form, Formik, FormikHelpers } from 'formik'
-import React, { useContext } from 'react'
-import { Col, Container, Row } from 'react-bootstrap'
+import React, { useContext, useState } from 'react'
+import { Button, Col, Container, Row, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import * as Yup from 'yup'
 import {
+  DELETE_MEMBER_TITLES,
   GET_MEMBER_TITLES,
   UPDATE_MEMBER_APPOINTMENT_DATE,
   UPDATE_MEMBER_CONSECRATION_DATE,
@@ -74,6 +75,7 @@ const MemberTitleForm = () => {
       id: memberId,
     },
   })
+  const [deleting, setDeleting] = useState(false)
   const [UpdateMemberAppointmentDate] = useMutation(
     UPDATE_MEMBER_APPOINTMENT_DATE
   )
@@ -83,6 +85,7 @@ const MemberTitleForm = () => {
   const [UpdateMemberConsecrationDate] = useMutation(
     UPDATE_MEMBER_CONSECRATION_DATE
   )
+  const [DeleteMemberTitles] = useMutation(DELETE_MEMBER_TITLES)
   const member = data?.members[0]
 
   const titles = data
@@ -170,6 +173,30 @@ const MemberTitleForm = () => {
             <Form>
               <div className="form-group">
                 <Row className="row-cols-1 row-cols-md-2">
+                  <div>
+                    <Button
+                      variant="danger"
+                      disabled={deleting}
+                      onClick={async () => {
+                        setDeleting(true)
+                        try {
+                          await DeleteMemberTitles({
+                            variables: {
+                              id: memberId,
+                            },
+                          })
+                          navigate('/member/displaydetails')
+                        } catch (err) {
+                          throwToSentry('Error Deleting Member Title', err)
+                        } finally {
+                          setDeleting(false)
+                        }
+                      }}
+                    >
+                      {deleting ? <Spinner /> : 'Delete Title'}
+                    </Button>
+                  </div>
+
                   <Col>
                     <Input
                       name="appointmentDate"

@@ -59,7 +59,7 @@ const DisplayAllMinistries = () => {
               </Link>
             ) : null}
           </Col>
-          <RoleView roles={permitAdmin('Campus')} directoryLock>
+          <RoleView roles={permitAdmin('CreativeArts')} directoryLock>
             <Col className="col-auto">
               <Link to="/ministry/addministry" className="btn btn-danger">
                 Add Ministry

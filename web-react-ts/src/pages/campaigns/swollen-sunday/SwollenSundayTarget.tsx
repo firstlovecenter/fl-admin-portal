@@ -11,7 +11,7 @@ import MenuButton from 'components/buttons/MenuButton'
 
 interface BacentaTarget {
   council: string
-  constituency: string
+  governorship: string
   bacenta: string
   code: number
   leader: string
@@ -33,7 +33,7 @@ const SwollenSundayTarget = ({
 
   const headers = [
     { label: 'Council', key: 'council' },
-    { label: 'Constituency', key: 'constituency' },
+    { label: 'Governorship', key: 'governorship' },
     { label: 'Bacenta', key: 'bacenta' },
     { label: 'Code', key: 'code' },
     { label: 'Leader', key: 'leader' },

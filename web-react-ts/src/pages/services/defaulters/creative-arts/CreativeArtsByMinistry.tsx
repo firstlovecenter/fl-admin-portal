@@ -94,7 +94,7 @@ const CreativeArtsByMinistry = () => {
                         </div>
                         <hr />
                         <div className="fw-bold">
-                          Active Fellowships {ministry.activeFellowshipCount}
+                          Active Bacentas {ministry.activeBacentaCount}
                         </div>
                         <div className="good">
                           Services This Week {ministry.servicesThisWeekCount}

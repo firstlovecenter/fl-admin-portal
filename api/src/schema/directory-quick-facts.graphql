@@ -3,9 +3,10 @@ extend type ServiceRecord {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS_SERVICE]-(:ServiceLog:HistoryLog)<-[:HAS_HISTORY]-(church)
-      WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream OR church:Campus
+      WHERE church:Fellowship OR church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
       RETURN church.name
       """
+      columnName: "church_name"
     )
 }
 
@@ -34,6 +35,7 @@ extend type Fellowship {
         income: round(avg(record.income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   peakFellowshipAttendance(days: Int!): ServiceRecord
@@ -49,6 +51,7 @@ extend type Fellowship {
       WHERE record.attendance = max
       RETURN  record LIMIT 1
       """
+      columnName: "record"
     )
 
   peakFellowshipIncome(days: Int!): ServiceRecord
@@ -64,6 +67,7 @@ extend type Fellowship {
       WHERE record.income = max
       RETURN record LIMIT 1
       """
+      columnName: "record"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
@@ -79,6 +83,7 @@ extend type Fellowship {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -96,6 +101,7 @@ extend type Bacenta {
       WHERE record.attendance = max
       RETURN record ORDER BY record.attendance DESC LIMIT 1
       """
+      columnName: "record"
     )
 
   peakFellowshipIncome(days: Int!): ServiceRecord!
@@ -111,6 +117,7 @@ extend type Bacenta {
       WHERE record.income = max
       RETURN  record ORDER BY record.income DESC LIMIT 1
       """
+      columnName: "record"
     )
 
   avgWeekdayStats(days: Int!): Stats!
@@ -130,6 +137,7 @@ extend type Bacenta {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   avgBussingAttendance(days: Int!): Float
@@ -143,6 +151,7 @@ extend type Bacenta {
       WITH sum(bussing.attendance) AS sum, this, date(date.date).week as weeknumber
       RETURN round(avg(sum)) AS average
       """
+      columnName: "average"
     )
 
   aggregateMemberConversion: [MemberConversion!]!
@@ -159,10 +168,11 @@ extend type Bacenta {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
-extend type Constituency {
+extend type Governorship {
   avgWeekdayStats(days: Int!): Stats!
     @cypher(
       statement: """
@@ -180,6 +190,7 @@ extend type Constituency {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   avgBacentaBussingAttendance(days: Int!): Float
@@ -196,6 +207,7 @@ extend type Constituency {
       WITH  agg.attendance as attendance, bacenta, agg.week as weeknumber
        RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgBussingAttendance(days: Int): Float
@@ -212,14 +224,15 @@ extend type Constituency {
       WITH sum(agg.attendance) AS attendance, this, agg.week as weeknumber
        RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WITH this,COUNT(DISTINCT members) AS total
 
-      MATCH (this)-[:HAS*2]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
 
       WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
       WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
@@ -227,6 +240,7 @@ extend type Constituency {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -234,7 +248,7 @@ extend type Council {
   avgFellowshipWeekdayStats(days: Int!): Stats!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Constituency)-[:HAS]->(:Bacenta)-[:HAS]->(fellowship)
+      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(fellowship)
           WHERE fellowship:Fellowship OR fellowship:ClosedFellowship
       MATCH (fellowship)-[:HAS_HISTORY]-(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
       MATCH (record) WHERE NOT (record:NoService)
@@ -247,6 +261,7 @@ extend type Council {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgFellowshipWeekdayStats"
     )
 
   avgBacentaWeekdayStats(days: Int!): Stats!
@@ -257,7 +272,7 @@ extend type Council {
       WITH date(today) - duration({days: $days}) AS startDate, this
       WITH  range(date(startDate).week, date().week) as weeks, this
 
-      MATCH (this)-[:HAS]->(:Constituency)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
+      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
       MATCH (agg)
       WHERE agg.week IN weeks and agg.year = date().year
       WITH sum(agg.attendance) AS attendance, sum(agg.income) as income, bacenta, agg.week as weeknumber
@@ -266,9 +281,10 @@ extend type Council {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgBacentaWeekdayStats"
     )
 
-  avgConstituencyWeekdayStats(days: Int!): Stats!
+  avgGovernorshipWeekdayStats(days: Int!): Stats!
     @cypher(
       statement: """
       MATCH (this)
@@ -276,15 +292,16 @@ extend type Council {
       WITH date(today) - duration({days: $days}) AS startDate, this
       WITH  range(date(startDate).week, date().week) as weeks, this
 
-      MATCH (this)-[:HAS]->(constituency:Constituency)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
+      MATCH (this)-[:HAS]->(governorship:Governorship)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
       MATCH (agg)
       WHERE agg.week IN weeks and agg.year = date().year
-      WITH sum(agg.attendance) AS attendance, sum(agg.income) as income, constituency, agg.week as weeknumber
+      WITH sum(agg.attendance) AS attendance, sum(agg.income) as income, governorship, agg.week as weeknumber
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgGovernorshipWeekdayStats"
     )
 
   avgWeekdayStats(days: Int!): Stats!
@@ -304,6 +321,7 @@ extend type Council {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   avgBacentaBussingAttendance(days: Int!): Float
@@ -314,15 +332,16 @@ extend type Council {
       WITH date(today) - duration({days: $days}) AS startDate, this
       WITH  range(date(startDate).week, date().week) as weeks, this
 
-      MATCH (this)-[:HAS]->(:Constituency)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(agg:AggregateBussingRecord)
+      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(agg:AggregateBussingRecord)
       MATCH (agg)
       WHERE agg.week IN weeks and agg.year = date().year
       WITH sum(agg.attendance) AS attendance, bacenta, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
-  avgConstituencyBussingAttendance(days: Int!): Float
+  avgGovernorshipBussingAttendance(days: Int!): Float
     @cypher(
       statement: """
       MATCH (this)
@@ -330,12 +349,13 @@ extend type Council {
       WITH date(today) - duration({days: $days}) AS startDate, this
       WITH  range(date(startDate).week, date().week) as weeks, this
 
-      MATCH (this)-[:HAS]->(constituency:Constituency)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(agg:AggregateBussingRecord)
+      MATCH (this)-[:HAS]->(governorship:Governorship)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(agg:AggregateBussingRecord)
       MATCH (agg)
       WHERE agg.week IN weeks and agg.year = date().year
-      WITH sum(agg.attendance) AS attendance, constituency, agg.week as weeknumber
+      WITH sum(agg.attendance) AS attendance, governorship, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgBussingAttendance(days: Int!): Float
@@ -352,15 +372,16 @@ extend type Council {
       WITH sum(agg.attendance) AS attendance, this, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WITH this,COUNT(DISTINCT members) AS total
 
-      MATCH (this)-[:HAS*3]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
 
       WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
       WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
@@ -368,6 +389,7 @@ extend type Council {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -389,6 +411,7 @@ extend type Stream {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
 
   avgCouncilWeekdayStats(days: Int!): Stats
@@ -408,6 +431,7 @@ extend type Stream {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgCouncilWeekdayStats"
     )
 
   avgCouncilBussingAttendance(days: Int!): Float
@@ -424,6 +448,7 @@ extend type Stream {
       WITH sum(agg.attendance) AS attendance, council, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgBussingAttendance(days: Int!): Float
@@ -440,14 +465,15 @@ extend type Stream {
       WITH sum(agg.attendance) AS attendance, this, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*4]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WITH this,COUNT(DISTINCT members) AS total
 
-      MATCH (this)-[:HAS*4]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
 
       WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
       WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
@@ -455,11 +481,12 @@ extend type Stream {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
 extend type Campus {
-  avgConstituencyBussingAttendance(days: Int!): Float
+  avgGovernorshipBussingAttendance(days: Int!): Float
     @cypher(
       statement: """
       MATCH (this)
@@ -467,15 +494,16 @@ extend type Campus {
       WITH date(today) - duration({days: $days}) AS startDate, this
       WITH  range(date(startDate).week, date().week) as weeks, this
 
-      MATCH (this)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(constituency:Constituency)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(agg:AggregateBussingRecord)
+      MATCH (this)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(governorship:Governorship)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(agg:AggregateBussingRecord)
       MATCH (agg)
       WHERE agg.week IN weeks and agg.year = date().year
-      WITH sum(agg.attendance) AS attendance, constituency, agg.week as weeknumber
+      WITH sum(agg.attendance) AS attendance, governorship, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
-  avgConstituencyWeekdayStats(days: Int!): Stats!
+  avgGovernorshipWeekdayStats(days: Int!): Stats!
     @cypher(
       statement: """
       MATCH (this)
@@ -483,15 +511,16 @@ extend type Campus {
       WITH date(today) - duration({days: $days}) AS startDate, this
       WITH  range(date(startDate).week, date().week) as weeks, this
 
-      MATCH (this)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(constituency:Constituency)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
+      MATCH (this)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(governorship:Governorship)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
       MATCH (agg)
       WHERE agg.week IN weeks and agg.year = date().year
-      WITH sum(agg.attendance) AS attendance, sum(agg.income) as income, constituency, agg.week as weeknumber
+      WITH sum(agg.attendance) AS attendance, sum(agg.income) as income, governorship, agg.week as weeknumber
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgGovernorshipWeekdayStats"
     )
 
   avgCouncilBussingAttendance(days: Int!): Float!
@@ -508,6 +537,7 @@ extend type Campus {
       WITH sum(agg.attendance) AS attendance, council, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgStreamWeekdayStats(days: Int!): Stats!
@@ -527,6 +557,7 @@ extend type Campus {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgStreamWeekdayStats"
     )
 
   avgStreamBussingAttendance(days: Int!): Float
@@ -543,6 +574,7 @@ extend type Campus {
       WITH sum(agg.attendance) AS attendance, stream, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgBussingAttendance(days: Int!): Float
@@ -559,6 +591,7 @@ extend type Campus {
       WITH sum(agg.attendance) AS attendance, this, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
 
   avgWeekdayStats(days: Int!): Stats!
@@ -578,14 +611,15 @@ extend type Campus {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgWeekdayStats"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*5]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WITH this,COUNT(DISTINCT members) AS total
 
-      MATCH (this)-[:HAS*5]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
 
       WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
       WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
@@ -593,6 +627,7 @@ extend type Campus {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }
 
@@ -614,6 +649,7 @@ extend type Oversight {
         income: round(avg(income), 2)
         }
       """
+      columnName: "avgCampusWeekdayStats"
     )
 
   avgCampusBussingAttendance(days: Int!): Float
@@ -630,14 +666,15 @@ extend type Oversight {
       WITH sum(agg.attendance) AS attendance, campus, agg.week as weeknumber
       RETURN round(avg(attendance)) AS average
       """
+      columnName: "average"
     )
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*6]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WITH this,COUNT(DISTINCT members) AS total
 
-      MATCH (this)-[:HAS*6]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
 
       WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
       WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
@@ -645,5 +682,6 @@ extend type Oversight {
       UNWIND data as row
       RETURN DISTINCT row
       """
+      columnName: "row"
     )
 }

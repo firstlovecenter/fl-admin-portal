@@ -22,7 +22,7 @@ import ModalSubmitButton from './ModalSubmitButton'
 
 interface StreamWithSheepSeeker extends Stream {
   sheepseekers: Member[]
-  activeFellowshipCount: number
+  activeBacentaCount: number
 }
 
 type FormOptions = {
@@ -102,7 +102,7 @@ const SheepSeekerSelect = () => {
         <HeadingSecondary>
           Use the buttons below to choose a sheep seeker
         </HeadingSecondary>
-        <div>{`Number of Active Fellowships: ${stream?.activeFellowshipCount}`}</div>
+        <div>{`Number of Active Fellowships: ${stream?.activeBacentaCount}`}</div>
 
         <Modal
           contentClassName="dark"

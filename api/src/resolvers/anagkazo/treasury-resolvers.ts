@@ -2,7 +2,6 @@
 import {
   isAuth,
   noEmptyArgsValidation,
-  parseNeoNumber,
   rearrangeCypherObject,
   throwToSentry,
 } from '../utils/utils'
@@ -24,13 +23,16 @@ const treasuryMutations = {
     ),
   ConfirmBanking: async (
     object: never,
-    args: { constituencyId: string },
+    args: { governorshipId: string },
     context: Context
   ): Promise<any> => {
-    isAuth(permitTellerStream(), context?.auth.roles)
+    isAuth(
+      permitTellerStream(),
+      context?.jwt['https://flcadmin.netlify.app/roles']
+    )
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
-    noEmptyArgsValidation(['constituencyId'])
+    noEmptyArgsValidation(['governorshipId'])
 
     // const today = new Date()
     // if (today.getDay() > 6) {
@@ -47,52 +49,52 @@ const treasuryMutations = {
         )
     )
 
-    const checks = await Promise.all([
-      session.executeRead((tx) =>
-        tx.run(anagkazo.membershipAttendanceDefaultersCount, args)
-      ),
-      sessionTwo.executeRead((tx) =>
-        tx.run(anagkazo.imclDefaultersCount, args)
-      ),
-    ])
+    // const checks = await Promise.all([
+    //   session.executeRead((tx) =>
+    //     tx.run(anagkazo.membershipAttendanceDefaultersCount, args)
+    //   ),
+    //   sessionTwo.executeRead((tx) =>
+    //     tx.run(anagkazo.imclDefaultersCount, args)
+    //   ),
+    // ])
 
-    const membershipAttendanceDefaultersCount = parseNeoNumber(
-      checks[0].records[0]?.get('defaulters')
-    )
-    const membershipAttendanceDefaultersList =
-      checks[0].records[0]?.get('defaultersNames')
+    // const membershipAttendanceDefaultersCount = parseNeoNumber(
+    //   checks[0].records[0]?.get('defaulters')
+    // )
+    // const membershipAttendanceDefaultersList =
+    //   checks[0].records[0]?.get('defaultersNames')
 
-    const imclDefaultersCount = parseNeoNumber(
-      checks[1].records[0]?.get('defaulters')
-    )
-    const imcleDefaultersList = checks[1].records[0]?.get('defaultersNames')
+    // const imclDefaultersCount = parseNeoNumber(
+    //   checks[1].records[0]?.get('defaulters')
+    // )
+    // const imcleDefaultersList = checks[1].records[0]?.get('defaultersNames')
 
     const formDefaultersCount = formDefaultersResponse.defaulters.low
     const formDefaultersList = formDefaultersResponse.defaultersNames
 
     if (formDefaultersCount > 0) {
       throw new Error(
-        `You cannot confirm this constituency until all the active fellowships have filled their forms. Outstanding fellowships are: ${formDefaultersList.join(
+        `You cannot confirm this governorship until all the active fellowships have filled their forms. Outstanding fellowships are: ${formDefaultersList.join(
           ', '
         )}`
       )
     }
 
-    if (membershipAttendanceDefaultersCount > 0) {
-      throw new Error(
-        `You cannot confirm this constituency until all the active fellowships have marked their attendance on the Poimen App. Outstanding fellowships are: ${membershipAttendanceDefaultersList.join(
-          ', '
-        )}`
-      )
-    }
+    // if (membershipAttendanceDefaultersCount > 0) {
+    //   throw new Error(
+    //     `You cannot confirm this governorship until all the active fellowships have marked their attendance on the Poimen App. Outstanding fellowships are: ${membershipAttendanceDefaultersList.join(
+    //       ', '
+    //     )}`
+    //   )
+    // }
 
-    if (imclDefaultersCount > 0) {
-      throw new Error(
-        `You cannot confirm this constituency until all the active fellowships have filled their IMCL forms on the Poimen App. Oustanding fellowships are: ${imcleDefaultersList.join(
-          ', '
-        )}`
-      )
-    }
+    // if (imclDefaultersCount > 0) {
+    //   throw new Error(
+    //     `You cannot confirm this governorship until all the active fellowships have filled their IMCL forms on the Poimen App. Oustanding fellowships are: ${imcleDefaultersList.join(
+    //       ', '
+    //     )}`
+    //   )
+    // }
 
     const checkAlreadyConfirmedResponse = rearrangeCypherObject(
       await session
@@ -106,14 +108,14 @@ const treasuryMutations = {
       checkAlreadyConfirmedResponse.bankingDefaulters.low
 
     if (checkAlreadyConfirmed < 1) {
-      throw new Error("This constituency's offering has already been banked!")
+      throw new Error("This governorship's offering has already been banked!")
     }
 
     try {
       const response = await session.executeWrite((tx) =>
         tx.run(anagkazo.confirmBanking, {
           ...args,
-          auth: context.auth,
+          jwt: context.jwt,
         })
       )
       const confirmationResponse = rearrangeCypherObject(response)
@@ -122,9 +124,9 @@ const treasuryMutations = {
         return confirmationResponse
       }
 
-      // return confirmationResponse.constituency.properties
+      // return confirmationResponse.governorship.properties
       return {
-        ...confirmationResponse.constituency.properties,
+        ...confirmationResponse.governorship.properties,
         banked: true,
       }
     } catch (error: any) {

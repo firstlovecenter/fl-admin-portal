@@ -40,26 +40,20 @@ const DetailsOversight = () => {
       link: `#`,
     },
     {
-      title: 'Constituencies',
-      number: oversight?.constituencyCount,
-      link: `/campus/constituencies`,
+      title: 'Governorships',
+      number: oversight?.governorshipCount,
+      link: `/campus/governorships`,
     },
     {
-      title: 'Bacentas',
-      number: oversight?.activeBacentaCount,
-      vacationCount: oversight?.vacationBacentaCount,
+      title: 'Greens',
+      number: oversight?.activeGraduatedBacentaCount,
+      vacationCount: oversight?.vacationGraduatedBacentaCount,
       link: `#`,
     },
     {
-      title: 'IC Bacentas',
+      title: 'Reds',
       number: oversight?.activeIcBacentaCount,
       vacationCount: oversight?.vacationIcBacentaCount,
-      link: '#',
-    },
-    {
-      title: 'Fellowships',
-      number: oversight?.activeFellowshipCount,
-      vacationCount: oversight?.vacationFellowshipCount,
       link: '#',
     },
   ]

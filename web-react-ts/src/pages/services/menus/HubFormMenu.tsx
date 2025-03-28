@@ -37,16 +37,6 @@ const HubFormMenu = () => {
             onClick={() => navigate(`/hub/cancel-rehearsal`)}
             noCaption
           />
-
-          <hr />
-          <HeadingSecondary>Weekend Ministry Meeting</HeadingSecondary>
-          <MenuButton
-            iconComponent={<PencilSquare />}
-            title="Fill Sunday Meeting Form"
-            color="green"
-            onClick={() => navigate(`/hub/record-sundayservice`)}
-            noCaption
-          />
         </div>
       </Container>
     </div>

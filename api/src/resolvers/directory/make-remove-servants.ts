@@ -1,3 +1,4 @@
+/* eslint-disable react/destructuring-assignment */
 import axios from 'axios'
 import {
   errorHandling,
@@ -46,10 +47,13 @@ const setUp = (setUpArgs: {
 }) => {
   const { permittedRoles, context, churchLower, servantLower, args } = setUpArgs
 
-  if (directoryLock(context.auth.roles) && servantLower !== 'arrivalsCounter') {
+  if (
+    directoryLock(context.jwt['https://flcadmin.netlify.app/roles']) &&
+    servantLower !== 'arrivalsCounter'
+  ) {
     throw new Error('Directory is locked till next Tuesday')
   }
-  isAuth(permittedRoles, context.auth.roles)
+  isAuth(permittedRoles, context.jwt['https://flcadmin.netlify.app/roles'])
 
   noEmptyArgsValidation([
     `${churchLower}Id`,
@@ -91,26 +95,21 @@ export const MakeServant = async (
 
   const session = context.executionContext.session()
 
-  const churchRes = await session.executeRead((tx) =>
-    tx.run(matchChurchQuery, {
-      id: args[`${churchLower}Id`],
-    })
-  )
+  const churchRes = await session.run(matchChurchQuery, {
+    id: args[`${churchLower}Id`],
+  })
 
   const church = rearrangeCypherObject(churchRes)
   const churchNameInEmail = `${church.name} ${church.type}`
 
-  const servantRes = await session.executeRead((tx) =>
-    tx.run(memberQuery, {
-      id: args[`${servantLower}Id`],
-    })
-  )
+  const servantRes = await session.run(memberQuery, {
+    id: args[`${servantLower}Id`],
+  })
 
-  const oldServantRes = await session.executeRead((tx) =>
-    tx.run(memberQuery, {
-      id: args[`old${servantType}Id`] ?? '',
-    })
-  )
+  const oldServantRes = await session.run(memberQuery, {
+    id: args[`old${servantType}Id`] ?? '',
+  })
+
   const servant = rearrangeCypherObject(servantRes)
   const oldServant = rearrangeCypherObject(oldServantRes)
   servantValidation(servant)
@@ -137,7 +136,7 @@ export const MakeServant = async (
         // Send Mail to the Person after Password Change Ticket has been generated
         sendSingleEmail(
           servant,
-          'Your Account Has Been Created On The FL Synago Admin Portal',
+          'Your Account Has Been Created On The FL State of the Flock Admin Portal',
           undefined,
           `<p>Hi ${servant.firstName} ${servant.lastName},<br/><br/>Congratulations on being made the <b>${churchType} ${servantType}</b> for <b>${churchNameInEmail}</b>.<br/><br/>Your account has just been created on the First Love Church Administrative Portal. Please set up your password by clicking <b><a href=${passwordTicketResponse.data.ticket}>this link</a></b>. After setting up your password, you can log in by clicking <b>https://synago.firstlovecenter.com/</b><br/><br/>Please go through ${texts.html.helpdesk} to find guidelines and instructions on how to use it as well as answers to questions you may have.</p>${texts.html.subscription}`
         ),
@@ -233,22 +232,21 @@ export const RemoveServant = async (
 
   const session = context.executionContext.session()
 
-  const churchRes = await session.executeRead((tx) =>
-    tx.run(matchChurchQuery, {
-      id: args[`${churchLower}Id`],
-    })
-  )
+  const churchRes = await session.run(matchChurchQuery, {
+    id: args[`${churchLower}Id`],
+  })
+
   const church = rearrangeCypherObject(churchRes)
-  const servantRes = await session.executeRead((tx) =>
-    tx.run(memberQuery, {
-      id: args[`${servantLower}Id`],
-    })
-  )
-  const newServantRes = await session.executeRead((tx) =>
-    tx.run(memberQuery, {
-      id: args[`new${servantType}Id`] ?? '',
-    })
-  )
+
+
+  const servantRes = await session.run(memberQuery, {
+    id: args[`${servantLower}Id`],
+  })
+
+  const newServantRes = await session.run(memberQuery, {
+    id: args[`new${servantType}Id`] ?? '',
+  })
+
   const servant: MemberWithKeys = rearrangeCypherObject(servantRes)
   const newServant: MemberWithKeys = rearrangeCypherObject(newServantRes)
 
@@ -334,7 +332,7 @@ export const RemoveServant = async (
     (role: Auth0RoleObject) => role.name
   )
   const rolesToCompare: string[] = roles
-  // If the person is only a constituency Admin, delete auth0 profile
+  // If the person is only a governorship Admin, delete auth0 profile
   if (
     rolesToCompare.includes(`${servantLower}${churchType}`) &&
     roles.length === 1
@@ -352,11 +350,14 @@ export const RemoveServant = async (
       servant,
       church,
     })
+
+    const { jwt } = context
+
     await session.executeWrite((tx) =>
       tx.run(removeMemberAuthId, {
         log: `${servant.firstName} ${servant.lastName} was removed as a ${churchType} ${servantType}`,
         auth_id: servant.auth_id,
-        auth: context.auth,
+        jwt,
       })
     )
 
@@ -367,7 +368,7 @@ export const RemoveServant = async (
       undefined,
       `Hi ${servant.firstName} ${
         servant.lastName
-      },<br/><br/>This is to inform you that your servant account has been deleted from the First Love Synago Admin Portal. You will no longer have access to any data<br/><br/>his is due to the fact that you have been removed as a ${churchType} ${servantType} for ${churchInEmail(
+      },<br/><br/>This is to inform you that your servant account has been deleted from the First Love State of the Flock Admin Portal. You will no longer have access to any data<br/><br/>his is due to the fact that you have been removed as a ${churchType} ${servantType} for ${churchInEmail(
         church
       )}.<br/><br/>We however encourage you to strive to serve the Lord faithfully. Do not be discouraged from loving God by this removal; we hope it is just temporary.${
         texts.html.subscription

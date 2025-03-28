@@ -81,7 +81,7 @@ const DisplayPage = () => {
 
             <PlaceholderCustom as="h6" className="text-center">
               <h6 className="text-center text-secondary">
-                {memberChurch?.fellowship?.name}
+                {memberChurch?.bacenta?.name}
               </h6>
             </PlaceholderCustom>
           </>
@@ -213,18 +213,15 @@ const DisplayPage = () => {
                                 Overseeing Pastor
                               </Col>
                               <Col className="placeholder-display">
-                                {
-                                  memberChurch?.fellowship.council.leader
-                                    .fullName
-                                }
+                                {memberChurch?.bacenta.council.leader.fullName}
                               </Col>
                             </Row>
                             <Row>
                               <Col className="text-secondary placeholder-display">
-                                Fellowship
+                                Bacenta
                               </Col>
                               <Col className="placeholder-display">
-                                {memberChurch?.fellowship?.name}
+                                {memberChurch?.bacenta?.name}
                               </Col>
                             </Row>
                             <Row>

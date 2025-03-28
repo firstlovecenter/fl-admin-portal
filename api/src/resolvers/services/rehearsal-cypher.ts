@@ -31,8 +31,8 @@ RETURN church.id AS churchId, church.name AS churchName, servant.id AS servantId
 
 export const checkMinistryAttendanceFormFilledThisWeek = `
     MATCH (church {id: $churchId})
-    WHERE church:Hub OR church:HubCouncil OR church:Ministry 
-    MATCH (church)<-[:HAS]-(higherChurch) WHERE higherChurch:Hub OR higherChurch:HubCouncil OR higherChurch:Ministry OR higherChurch:CreativeArts
+    WHERE church:HubCouncil OR church:Ministry 
+    MATCH (church)<-[:HAS]-(higherChurch) WHERE higherChurch:Ministry OR higherChurch:CreativeArts
     
     OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record)-[:SERVICE_HELD_ON]->(date)    
     WHERE date(date.date).week = date().week AND date(date.date).year = date().year AND (record:MinistryAttendanceRecord)
@@ -56,9 +56,9 @@ export const recordSundayMinistryAttendance = `
         ministryAttendanceRecord.familyPicture = $familyPicture
     
     WITH ministryAttendanceRecord
-    MATCH (church {id: $churchId}) WHERE church:HubFellowship OR church:Hub
+    MATCH (church {id: $churchId}) WHERE church:HubCouncil
     MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-    MATCH (leader:Member {auth_id: $auth.jwt.sub})
+    MATCH (leader:Member {auth_id: $jwt.sub})
 
     MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 
@@ -93,7 +93,7 @@ WITH rehearsalRecord
 
 MATCH (church {id: $churchId}) WHERE church:Hub OR church:HubCouncil OR church:Ministry
 MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (leader:Member {auth_id: $auth.jwt.sub})
+MATCH (leader:Member {auth_id: $jwt.sub})
 
 MERGE (serviceDate:TimeGraph {date:date($serviceDate)})
 
@@ -131,7 +131,7 @@ export const recordOnStageAttendance = `
     WITH stageAttendanceRecord
     MATCH (church {id: $churchId}) WHERE church:Ministry
     MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-    MATCH (leader:Member {auth_id: $auth.jwt.sub})
+    MATCH (leader:Member {auth_id: $jwt.sub})
 
     MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 
@@ -141,12 +141,14 @@ export const recordOnStageAttendance = `
     MERGE (log)-[:HAS_SERVICE]->(stageAttendanceRecord)
 
     WITH log, stageAttendanceRecord
-    MERGE (aggregate:AggregateRehearsalRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateStageAttendanceRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
 
-    WITH stageAttendanceRecord, aggregate, SUM(stageAttendanceRecord.attendance) AS attendance, SUM(aggregate.attendance) AS aggregateAttendance
+    WITH stageAttendanceRecord, aggregate, COUNT(DISTINCT stageAttendanceRecord) AS recordCount, SUM(stageAttendanceRecord.attendance) AS attendance, SUM(aggregate.attendance) AS aggregateAttendance
+    
     MATCH (aggregate)
-    SET aggregate.attendance = aggregateAttendance + attendance
+    SET aggregate.attendance = aggregateAttendance + attendance,
+    aggregate.numberOfServices = recordCount
     
     RETURN stageAttendanceRecord
 `
@@ -159,7 +161,7 @@ serviceRecord.noServiceReason = $noServiceReason
 WITH serviceRecord
 MATCH (church {id: $churchId}) WHERE church:Hub
 MATCH (church)-[:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (leader:Active:Member {auth_id: $auth.jwt.sub})
+MATCH (leader:Active:Member {auth_id: $jwt.sub})
 
 MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 MERGE (serviceRecord)-[:LOGGED_BY]->(leader)
@@ -176,7 +178,7 @@ stagePerformanceRecord.noStagePerformanceReason = $noStagePerformanceReason
 WITH stagePerformanceRecord
 MATCH (church {id: $churchId}) WHERE church:Ministry
 MATCH (church)-[:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (leader:Active:Member {auth_id: $auth.jwt.sub})
+MATCH (leader:Active:Member {auth_id: $jwt.sub})
 
 MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 MERGE (stagePerformanceRecord)-[:LOGGED_BY]->(leader)
@@ -440,24 +442,6 @@ export const aggregateHubRehearsalDataForCreativeArts = `
     RETURN creativeArt, aggregate
 `
 
-export const cancelLowerChurchRehearsals = `
-MATCH (church {id: $churchId}) WHERE church:HubCouncil OR church:Ministry
-CREATE (serviceRecord:RehearsalRecord:NoService {createdAt:datetime()})
-SET serviceRecord.id = apoc.create.uuid(),
-serviceRecord.noServiceReason = 'Joint Rehearsal'
-
-WITH serviceRecord
-MATCH (church)-[:HAS*1..2]->(lowerChurch) WHERE lowerChurch:Hub
-MATCH (lowerChurch)-[:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (leader:Member {auth_id: $auth.jwt.sub})
-
-MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
-MERGE (serviceRecord)-[:LOGGED_BY]->(leader)
-MERGE (serviceRecord)-[:SERVICE_HELD_ON]->(serviceDate)
-MERGE (log)-[:HAS_SERVICE]->(serviceRecord)
-
-RETURN serviceRecord
-`
 export const aggregateStageAttendanceDataForCreativeArts = `
     MATCH (ministry:Ministry {id: $churchId})
     

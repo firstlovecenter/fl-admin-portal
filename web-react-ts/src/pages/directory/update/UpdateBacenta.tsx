@@ -1,8 +1,8 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
-import { alertMsg, throwToSentry } from '../../../global-utils'
-import { GET_CONSTITUENCY_BACENTAS } from '../../../queries/ListQueries'
+import { alertMsg, repackDecimals, throwToSentry } from '../../../global-utils'
+import { GET_GOVERNORSHIP_BACENTAS } from '../../../queries/ListQueries'
 import { UPDATE_BACENTA_MUTATION } from './UpdateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import { DISPLAY_BACENTA } from '../display/ReadQueries'
@@ -27,10 +27,11 @@ const UpdateBacenta = () => {
       bacenta?.leader?.firstName + ' ' + bacenta?.leader?.lastName ?? '',
     leaderId: bacenta?.leader?.id || '',
     leaderEmail: bacenta?.leader?.email ?? '',
-    constituency: bacenta?.constituency,
-    fellowships: bacenta?.fellowships.length ? bacenta?.fellowships : [''],
+    governorship: bacenta?.governorship,
     vacationStatus: bacenta?.vacationStatus,
-    graduationStatus: bacenta?.graduationStatus,
+    meetingDay: bacenta.meetingDay.day,
+    venueLatitude: repackDecimals(bacenta?.location?.latitude) ?? '',
+    venueLongitude: repackDecimals(bacenta?.location?.longitude) ?? '',
   }
 
   const [LogBacentaHistory] = useMutation(LOG_BACENTA_HISTORY, {
@@ -43,8 +44,8 @@ const UpdateBacenta = () => {
   const [UpdateBacenta] = useMutation(UPDATE_BACENTA_MUTATION, {
     refetchQueries: [
       {
-        query: GET_CONSTITUENCY_BACENTAS,
-        variables: { id: initialValues?.constituency?.id },
+        query: GET_GOVERNORSHIP_BACENTAS,
+        variables: { id: initialValues?.governorship?.id },
       },
     ],
   })
@@ -56,13 +57,19 @@ const UpdateBacenta = () => {
   ) => {
     const { setSubmitting, resetForm } = onSubmitProps
     setSubmitting(true)
+
+    values.venueLongitude = parseFloat(values.venueLongitude.toString())
+    values.venueLatitude = parseFloat(values.venueLatitude.toString())
     try {
       await UpdateBacenta({
         variables: {
-          bacentaId: bacentaId,
+          id: bacentaId,
           name: values.name,
           leaderId: values.leaderId,
-          constituencyId: values.constituency,
+          meetingDay: values.meetingDay,
+          governorshipId: values.governorship,
+          venueLongitude: values.venueLongitude,
+          venueLatitude: values.venueLatitude,
         },
       })
 
@@ -73,9 +80,24 @@ const UpdateBacenta = () => {
             bacentaId: bacentaId,
             newLeaderId: '',
             oldLeaderId: '',
-            oldConstituencyId: '',
-            newConstituencyId: '',
+            oldGovernorshipId: '',
+            newGovernorshipId: '',
             historyRecord: `Bacenta name has been changed from ${initialValues.name} to ${values.name}`,
+          },
+        })
+      }
+
+      // Log if the Meeting Day Changes
+      if (values.meetingDay !== initialValues.meetingDay) {
+        await LogBacentaHistory({
+          variables: {
+            bacentaId: bacentaId,
+            newLeaderId: '',
+            oldLeaderId: '',
+            oldBacentaId: '',
+            newBacentaId: '',
+
+            historyRecord: `${values.name} Bacenta has changed their meeting day from ${initialValues.meetingDay} to ${values.meetingDay}`,
           },
         })
       }
@@ -96,6 +118,26 @@ const UpdateBacenta = () => {
             },
           })
         }
+      }
+
+      //Log if the Venue Changes
+      if (
+        repackDecimals(values.venueLongitude) !==
+          repackDecimals(initialValues.venueLongitude) ||
+        repackDecimals(values.venueLatitude) !==
+          repackDecimals(initialValues.venueLatitude)
+      ) {
+        await LogBacentaHistory({
+          variables: {
+            bacentaId: bacentaId,
+            newLeaderId: '',
+            oldLeaderId: '',
+            oldBacentaId: '',
+            newBacentaId: '',
+
+            historyRecord: `${values.name} Bacenta has changed their venue`,
+          },
+        })
       }
 
       //Log if the Leader Changes

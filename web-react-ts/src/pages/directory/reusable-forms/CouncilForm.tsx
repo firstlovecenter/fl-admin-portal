@@ -21,11 +21,11 @@ import SubmitButton from 'components/formik/SubmitButton'
 import { permitAdmin } from 'permission-utils'
 import Input from 'components/formik/Input'
 import SearchMember from 'components/formik/SearchMember'
-import SearchConstituency from 'components/formik/SearchConstituency'
+import SearchGovernorship from 'components/formik/SearchGovernorship'
 import { FormikInitialValues } from 'components/formik/formik-types'
-import { Constituency, HubCouncil } from 'global-types'
+import { Governorship, HubCouncil } from 'global-types'
 import {
-  MOVE_CONSTITUENCY_TO_COUNCIL,
+  MOVE_GOVERNORSHIP_TO_COUNCIL,
   MOVE_HUBCOUNCIL_TO_COUNCIL,
 } from '../update/UpdateMutations'
 import NoDataComponent from 'pages/arrivals/CompNoData'
@@ -36,8 +36,8 @@ import SearchHubCouncil from 'components/formik/SearchHubCouncil'
 
 export interface CouncilFormValues extends FormikInitialValues {
   stream?: Stream
-  constituencies?: Constituency[]
-  constituency?: Constituency
+  governorships?: Governorship[]
+  governorship?: Governorship
   hubCouncil?: HubCouncil
   hubCouncils?: HubCouncil[]
 }
@@ -59,7 +59,7 @@ const CouncilForm = ({
   newCouncil,
 }: CouncilFormProps) => {
   const { clickCard, councilId } = useContext(ChurchContext)
-  const [constituencyModal, setConstituencyModal] = useState(false)
+  const [governorshipModal, setGovernorshipModal] = useState(false)
   const [hubCouncilModal, setHubCouncilModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
@@ -70,8 +70,8 @@ const CouncilForm = ({
       { query: DISPLAY_STREAM, variables: { id: initialValues?.stream?.id } },
     ],
   })
-  const [MoveConstituencyToCouncil] = useMutation(
-    MOVE_CONSTITUENCY_TO_COUNCIL,
+  const [MoveGovernorshipToCouncil] = useMutation(
+    MOVE_GOVERNORSHIP_TO_COUNCIL,
     {
       refetchQueries: [
         { query: DISPLAY_COUNCIL, variables: { id: councilId } },
@@ -96,8 +96,8 @@ const CouncilForm = ({
       <ButtonGroup className="mt-3">
         {!newCouncil && (
           <>
-            <Button onClick={() => setConstituencyModal(true)}>
-              Add Constituency
+            <Button onClick={() => setGovernorshipModal(true)}>
+              Add Governorship
             </Button>
             <Button variant="warning" onClick={() => setHubCouncilModal(true)}>
               Add Hub Council
@@ -144,17 +144,17 @@ const CouncilForm = ({
                       </RoleView>
                     </Row>
                     <div className="d-grid gap-2">
-                      {initialValues.constituencies?.length && (
-                        <p className="fw-bold fs-5">Constituencies</p>
+                      {initialValues.governorships?.length && (
+                        <p className="fw-bold fs-5">Governorships</p>
                       )}
 
-                      {initialValues.constituencies?.map(
-                        (constituency, index) => {
-                          if (!constituency && !index)
-                            return <NoDataComponent text="No Constituencies" />
+                      {initialValues.governorships?.map(
+                        (governorship, index) => {
+                          if (!governorship && !index)
+                            return <NoDataComponent text="No Governorships" />
                           return (
                             <Button variant="secondary" className="text-start">
-                              {constituency.name} Constituency
+                              {governorship.name} Governorship
                             </Button>
                           )
                         }
@@ -186,43 +186,43 @@ const CouncilForm = ({
             </Form>
 
             <Modal
-              show={constituencyModal}
-              onHide={() => setConstituencyModal(false)}
+              show={governorshipModal}
+              onHide={() => setGovernorshipModal(false)}
               centered
             >
-              <Modal.Header closeButton>Add A Constituency</Modal.Header>
+              <Modal.Header closeButton>Add A Governorship</Modal.Header>
               <Modal.Body>
-                <p>Choose a constituency to move to this council</p>
-                <SearchConstituency
-                  name={`constituency`}
-                  placeholder="Constituency Name"
+                <p>Choose a governorship to move to this council</p>
+                <SearchGovernorship
+                  name={`governorship`}
+                  placeholder="Governorship Name"
                   initialValue=""
                   setFieldValue={formik.setFieldValue}
-                  aria-describedby="Constituency Name"
+                  aria-describedby="Governorship Name"
                 />
               </Modal.Body>
               <Modal.Footer>
                 <Button
                   variant="success"
                   type="submit"
-                  disabled={buttonLoading || !formik.values.constituency}
+                  disabled={buttonLoading || !formik.values.governorship}
                   onClick={async () => {
                     try {
                       setButtonLoading(true)
-                      const res = await MoveConstituencyToCouncil({
+                      const res = await MoveGovernorshipToCouncil({
                         variables: {
-                          constituencyId: formik.values.constituency?.id,
-                          historyRecord: `${formik.values.constituency?.name} Constituency has been moved to ${formik.values.name} Council from ${formik.values.constituency?.council.name} Council`,
+                          governorshipId: formik.values.governorship?.id,
+                          historyRecord: `${formik.values.governorship?.name} Governorship has been moved to ${formik.values.name} Council from ${formik.values.governorship?.council.name} Council`,
                           newCouncilId: councilId,
-                          oldCouncilId: formik.values.constituency?.council.id,
+                          oldCouncilId: formik.values.governorship?.council.id,
                         },
                       })
 
-                      clickCard(res.data.MoveConstituencyToCouncil)
-                      setConstituencyModal(false)
+                      clickCard(res.data.MoveGovernorshipToCouncil)
+                      setGovernorshipModal(false)
                     } catch (error) {
                       throwToSentry(
-                        `There was an error moving this constituency to this council`,
+                        `There was an error moving this governorship to this council`,
                         error
                       )
                     } finally {
@@ -234,7 +234,7 @@ const CouncilForm = ({
                 </Button>
                 <Button
                   variant="primary"
-                  onClick={() => setConstituencyModal(false)}
+                  onClick={() => setGovernorshipModal(false)}
                 >
                   Close
                 </Button>

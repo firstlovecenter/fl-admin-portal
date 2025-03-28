@@ -126,7 +126,7 @@ const FormMobilisationSubmission = () => {
                     aria-describedby="ImageUpload"
                   />
                 </Col>
-                <Col>
+                <Col className="text-center">
                   <SubmitButton formik={formik} />
                 </Col>
               </Row>

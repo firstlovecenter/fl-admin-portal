@@ -26,7 +26,7 @@ const UserDashboard = () => {
 
   let graphType: GraphTypes = 'serviceAggregate'
 
-  if (assessmentChurch?.__typename === 'Fellowship') {
+  if (assessmentChurch?.__typename === 'Bacenta') {
     graphType = 'services'
   }
   if (assessmentChurch?.__typename === 'Hub') {

@@ -1,6 +1,8 @@
 const neo4j = require('neo4j-driver')
 const { schedule } = require('@netlify/functions')
 const { google } = require('googleapis')
+const { default: axios } = require('axios')
+const { getWeekNumber } = require('@jaedag/admin-portal-types')
 const { GOOGLE_APPLICATION_CREDENTIALS, SECRETS } = require('./gsecrets.js')
 
 const fetchData = `
@@ -10,10 +12,10 @@ WHERE record.noServiceReason IS NULL
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-      MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)-[:HAS_HISTORY]-(church) WHERE church:Fellowship OR church:Constituency OR church:Council
+      MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)-[:HAS_HISTORY]-(church) WHERE church:Bacenta OR church:Governorship OR church:Council
       MATCH (church)<-[:LEADS]-(leader:Member)
 RETURN DISTINCT toString(date.date.week) AS week, toString(date.date) AS date, pastor.firstName, pastor.lastName,church.name AS churchName, leader.firstName, 
-leader.lastName, labels(church), record.attendance AS attendance, record.income AS NotBanked ORDER BY pastor.firstName,
+leader.lastName, labels(church), toString(record.attendance) AS attendance, record.income AS NotBanked ORDER BY pastor.firstName,
 pastor.lastName, date, week
 `
 
@@ -68,7 +70,7 @@ const executeQuery = async (neoDriver) => {
   return []
 }
 
-const SPREADSHEET_ID = '1s7jxlEIuerZ8hNPmzVAAhggQAD6LToqSLj0Sd9oU1qY'
+const SPREADSHEET_ID = '1qaDQM5RlOPpSC9Gi78xfOGAETLhQyfZ1qsDxM4GUF68'
 const googleAuth = new google.auth.GoogleAuth({
   credentials: GOOGLE_APPLICATION_CREDENTIALS,
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -127,6 +129,40 @@ const handler = async () => {
   const sheetName = 'Accra Services'
 
   await writeToGsheet(data, sheetName).catch((error) => {
+    throw new Error(
+      `Error writing to google sheet\n${error.message}\n${error.stack}`
+    )
+  })
+
+  await axios({
+    method: 'post',
+    baseURL: 'https://flc-microservices.netlify.app/.netlify/functions/notify',
+    url: '/send-sms',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
+    },
+    data: {
+      recipient: [
+        '233594760323', // JD
+        '233541805641', // Becks
+        '233596075970', // Daniel
+        '233248659695', // Hillary
+      ],
+      sender: 'FLC Admin',
+      message: `WEEK ${
+        getWeekNumber() - 1
+      } UPDATE\n\nServices Not Banked Sheets updated successfully on date ${
+        new Date()
+          .toLocaleString('en-GB', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+          .split('T')[0]
+      }`,
+    },
+  }).catch((error) => {
     throw new Error(
       `Error writing to google sheet\n${error.message}\n${error.stack}`
     )

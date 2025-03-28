@@ -37,7 +37,7 @@ const CampusByStreamEquipmentDefaulters = () => {
             <HeadingSecondary>Equipment Campaign</HeadingSecondary>
           </div>
           <h6 className="mt-4">
-            Fellowships and Constituencies that haven't filled their form
+            Fellowships and Governorships that haven't filled their form
           </h6>
 
           <Container>

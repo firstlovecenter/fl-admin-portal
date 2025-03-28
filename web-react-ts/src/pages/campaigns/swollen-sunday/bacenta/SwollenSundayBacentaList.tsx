@@ -8,22 +8,22 @@ import CampaignChurchList from '../../CampaignChurchList'
 import { BACENTA_LIST } from '../SwollenSundayQueries'
 
 const SwollenSundayBacentaList = () => {
-  const { constituencyId } = useContext(ChurchContext)
+  const { governorshipId } = useContext(ChurchContext)
 
   const { data, loading, error } = useQuery(BACENTA_LIST, {
     variables: {
-      constituencyId: constituencyId,
+      governorshipId: governorshipId,
     },
   })
 
-  const bacentas = data?.constituencies[0]?.bacentas
+  const bacentas = data?.governorships[0]?.bacentas
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data}>
       <div className="text-center">
         <HeadingPrimary>Swollen Sunday Campaign</HeadingPrimary>
         <HeadingSecondary>
-          {`${data?.constituencies[0]?.name} ${data?.constituencies[0]?.__typename}`}{' '}
+          {`${data?.governorships[0]?.name} ${data?.governorships[0]?.__typename}`}{' '}
           Bacentas
         </HeadingSecondary>
         <CampaignChurchList data={bacentas} page="swollen-sunday" />

@@ -6,7 +6,7 @@ export const MEMBER_HISTORY = gql`
       id
       firstName
       lastName
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -28,7 +28,7 @@ export const STREAM_HISTORY = gql`
     streams(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -50,7 +50,7 @@ export const COUNCIL_HISTORY = gql`
     councils(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -67,12 +67,12 @@ export const COUNCIL_HISTORY = gql`
     }
   }
 `
-export const CONSTITUENCY_HISTORY = gql`
-  query ConstituenciesHistory($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_HISTORY = gql`
+  query GovernorshipsHistory($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -95,7 +95,7 @@ export const BACENTA_HISTORY = gql`
     bacentas(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -118,7 +118,7 @@ export const HUB_COUNCIL_HISTORY = gql`
     hubCouncils(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -140,7 +140,7 @@ export const HUB_HISTORY = gql`
     hubs(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -162,7 +162,7 @@ export const MINISTRY_HISTORY = gql`
     ministries(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -185,7 +185,7 @@ export const CREATIVE_ARTS_HISTORY = gql`
     creativeArts(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -207,7 +207,7 @@ export const FELLOWSHIP_HISTORY = gql`
     fellowships(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {
@@ -229,7 +229,7 @@ export const CAMPUS_HISTORY = gql`
     campuses(where: { id: $id }) {
       id
       name
-      history(limit: 10) {
+      history(limit: 100) {
         id
         timeStamp
         createdAt {

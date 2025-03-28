@@ -22,6 +22,7 @@ export const SHORT_POLL_INTERVAL = 30000
 export const isIncomeGraph = (graphs: GraphTypes, currentUser: any) => {
   const noIncomeGraphLevels = [
     'onStageAttendance',
+    'onStageAttendanceAggregate',
     'bussing',
     'bussingAggregate',
   ]
@@ -73,6 +74,7 @@ export const SERVICE_DAY_OPTIONS: FormikSelectOptions = [
 ]
 
 export const STREAM_SERVICE_DAY_OPTIONS: FormikSelectOptions = [
+  { key: 'Thursday', value: 'Thursday' },
   { key: 'Friday', value: 'Friday' },
   { key: 'Saturday', value: 'Saturday' },
   { key: 'Sunday', value: 'Sunday' },
@@ -150,10 +152,9 @@ export const BUSSING_STATUS_OPTIONS: FormikSelectOptions = [
 export const STREAM_ACCOUNT_OPTIONS: FormikSelectOptions = [
   { key: 'Manual Finances', value: 'manual' },
   { key: 'FLE Account', value: 'fle_account' },
+  { key: 'Accra FLOC', value: 'acc_floc' },
+  { key: 'BJosh Special', value: 'bjosh_special' },
   { key: 'AES Account', value: 'aes_account' },
-  { key: 'Kwabenya Account', value: 'kwabenya_account' },
-  { key: 'Kwabenya Morning Account', value: 'kwabenya_morning_account' },
-  { key: 'Adenta Account', value: 'adenta_account' },
   { key: 'Kumasi Account', value: 'oa_kumasi' },
   { key: 'OA GH North', value: 'oa_ghnorth' },
   { key: 'OA GH South', value: 'oa_ghsouth' },
@@ -161,6 +162,12 @@ export const STREAM_ACCOUNT_OPTIONS: FormikSelectOptions = [
   { key: 'OA GH West', value: 'oa_ghwest' },
   { key: 'OA Tarkwa', value: 'oa_tarkwa' },
   { key: 'OA Sunyani', value: 'oa_sunyani' },
+]
+
+export const MINISTRY_ACCOUNT_OPTIONS: FormikSelectOptions = [
+  { key: 'Accra Greater Love Choir', value: 'accra_greater_love_choir' },
+  { key: 'Accra Dancing Stars', value: 'accra_dancing_stars' },
+  { key: 'Accra Film Stars', value: 'accra_film_stars' },
 ]
 
 export const throwToSentry = (
@@ -289,10 +296,10 @@ export const plural = (church: ChurchLevel | string) => {
       return 'campuses'
     case 'Campus':
       return 'Campuses'
-    case 'Constituency':
-      return 'Constituencies'
-    case 'constituency':
-      return 'constituencies'
+    case 'Governorship':
+      return 'Governorships'
+    case 'governorship':
+      return 'governorships'
     case 'senior high school':
       return 'senior high schools'
     case 'Senior High School':
@@ -400,7 +407,7 @@ interface MemberWithChurchCount extends Member {
   leadsFellowshipCount: number
   leadsBacentaCount: number
   leadsAdminsCouncilCount: number
-  leadsAdminsConstituencyCount: number
+  leadsAdminsGovernorshipCount: number
   leadsAdminsCampusCount: number
   leadsAdminsOversightCount: number
 
@@ -457,19 +464,19 @@ export const getChurchCount = (servant: MemberWithChurchCount) => {
     }
   }
 
-  if (servant?.leadsAdminsConstituencyCount) {
+  if (servant?.leadsAdminsGovernorshipCount) {
     if (churchesCount) {
       churchesCount += ','
 
-      if (servant.leadsAdminsConstituencyCount === 1) {
-        churchesCount = `${churchesCount} ${servant.leadsAdminsConstituencyCount} Constituency`
+      if (servant.leadsAdminsGovernorshipCount === 1) {
+        churchesCount = `${churchesCount} ${servant.leadsAdminsGovernorshipCount} Governorship`
       } else {
-        churchesCount = `${churchesCount} ${servant.leadsAdminsConstituencyCount} Constituencies`
+        churchesCount = `${churchesCount} ${servant.leadsAdminsGovernorshipCount} Governorships`
       }
-    } else if (servant.leadsAdminsConstituencyCount === 1) {
-      churchesCount = `${servant.leadsAdminsConstituencyCount} Constituency`
+    } else if (servant.leadsAdminsGovernorshipCount === 1) {
+      churchesCount = `${servant.leadsAdminsGovernorshipCount} Governorship`
     } else {
-      churchesCount = `${servant.leadsAdminsConstituencyCount} Constituencies`
+      churchesCount = `${servant.leadsAdminsGovernorshipCount} Governorships`
     }
   }
 
@@ -558,10 +565,10 @@ export const getChurchCount = (servant: MemberWithChurchCount) => {
 
 export const getSubChurchLevel = (churchType: ChurchLevel) => {
   switch (churchType) {
-    case 'Constituency':
+    case 'Governorship':
       return 'Bacenta'
     case 'Council':
-      return 'Constituency'
+      return 'Governorship'
     case 'Stream':
       return 'Council'
     case 'Campus':
@@ -576,7 +583,7 @@ export const getSubChurchLevel = (churchType: ChurchLevel) => {
       return 'Hub'
 
     default:
-      return 'Fellowship'
+      return 'Bacenta'
   }
 }
 
@@ -671,8 +678,8 @@ export const directoryLock = (
     (new Date().getDay() === 1 && new Date().getHours() >= 12) ||
     new Date().getDay() === 2 ||
     ['fishers']?.some((r) => currentUser?.roles?.includes(r as Role)) ||
-    (churchType === 'Fellowship' &&
-      currentUser?.roles?.includes('leaderFellowship' as Role))
+    (churchType === 'Bacenta' &&
+      currentUser?.roles?.includes('leaderBacenta' as Role))
   ) {
     return true
   }
@@ -682,11 +689,11 @@ export const directoryLock = (
 
 export const firstDayOfThisYear = new Date(new Date().getFullYear(), 0, 1)
 
-export const check = (fellowship: any) => {
+export const check = (bacenta: any) => {
   let serviceType: 'services' | 'rehearsals' = 'services'
-  if (fellowship.__typename === 'Hub') serviceType = 'rehearsals'
+  if (bacenta.__typename === 'Hub') serviceType = 'rehearsals'
 
-  const lastFilled = fellowship?.[serviceType].map(
+  const lastFilled = bacenta?.[serviceType].map(
     ({
       bankingProof,
       noServiceReason,

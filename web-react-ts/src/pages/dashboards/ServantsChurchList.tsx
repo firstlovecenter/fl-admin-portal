@@ -61,8 +61,8 @@ const ServantsChurchList = () => {
     if (servant.leadsBacenta) {
       pushIntoChurch(servant?.leadsBacenta)
     }
-    if (servant.leadsConstituency?.length) {
-      pushIntoChurch(servant?.leadsConstituency)
+    if (servant.leadsGovernorship?.length) {
+      pushIntoChurch(servant?.leadsGovernorship)
     }
 
     if (servant?.leadsCouncil?.length) {
@@ -79,8 +79,8 @@ const ServantsChurchList = () => {
     }
 
     //Administrative
-    if (servant?.isArrivalsAdminForConstituency?.length) {
-      pushIntoChurch(servant?.isArrivalsAdminForConstituency)
+    if (servant?.isArrivalsAdminForGovernorship?.length) {
+      pushIntoChurch(servant?.isArrivalsAdminForGovernorship)
     }
     if (servant?.isArrivalsAdminForCouncil?.length) {
       pushIntoChurch(servant?.isArrivalsAdminForCouncil)
@@ -101,8 +101,8 @@ const ServantsChurchList = () => {
     if (servant?.isAdminForCouncil?.length) {
       pushIntoChurch(servant?.isAdminForCouncil)
     }
-    if (servant?.isAdminForConstituency?.length) {
-      pushIntoChurch(servant?.isAdminForConstituency)
+    if (servant?.isAdminForGovernorship?.length) {
+      pushIntoChurch(servant?.isAdminForGovernorship)
     }
     if (servant?.isAdminForStream?.length) {
       pushIntoChurch(servant?.isAdminForStream)

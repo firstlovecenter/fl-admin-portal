@@ -47,7 +47,7 @@ export const setPriorityLevel = (churchType: ChurchLevel) => {
       priority = 5
       break
     case 'HubCouncil':
-    case 'Constituency':
+    case 'Governorship':
       priority = 6
       break
     case 'Hub':
@@ -170,7 +170,7 @@ export const removeServantCypher = async ({
       [`${servantLower}Id`]: servant.id ?? '',
       churchId: church.id,
       auth_id: servant.auth_id,
-      auth: context.auth,
+      jwt: context.jwt,
     })
   )
 
@@ -197,7 +197,7 @@ export const removeServantCypher = async ({
       churchId: church.id,
       servantId: servant.id,
       logId: historyLogRes.id,
-      auth: context.auth,
+      jwt: context.jwt,
     })
   )
 }
@@ -223,7 +223,7 @@ export const makeServantCypher = async ({
         [`${servantLower}Id`]: servant.id,
         churchId: church.id,
         auth_id: servant.auth_id,
-        auth: context.auth,
+        jwt: context.jwt,
       })
       .catch((e: any) =>
         throwToSentry(`Error Connecting Church${servantType}`, e)
@@ -268,7 +268,7 @@ export const makeServantCypher = async ({
         servantId: servant.id,
         oldServantId: oldServant?.id ?? '',
         logId: serviceLogRes.id,
-        auth: context.auth,
+        jwt: context.jwt,
       })
       .catch((e: any) => throwToSentry(`Error Connecting Service Log`, e))
   } else {
@@ -278,7 +278,7 @@ export const makeServantCypher = async ({
         servantId: servant.id,
         oldServantId: oldServant?.id ?? '',
         logId: serviceLogRes.id,
-        auth: context.auth,
+        jwt: context.jwt,
       })
       .catch((e: any) => throwToSentry(`Error Connecting History Log`, e))
   }

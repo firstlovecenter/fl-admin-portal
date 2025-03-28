@@ -19,7 +19,7 @@ extend type Council {
   campaigns: [String!]!
 }
 
-extend type Constituency {
+extend type Governorship {
   campaigns: [String!]!
 }
 

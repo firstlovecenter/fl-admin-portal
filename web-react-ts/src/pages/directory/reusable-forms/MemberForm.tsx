@@ -17,13 +17,12 @@ import ErrorScreen from 'components/base-component/ErrorScreen'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { Button, ButtonGroup, Col, Container, Row } from 'react-bootstrap'
 import LoadingScreen from 'components/base-component/LoadingScreen'
-import { permitAdmin } from 'permission-utils'
+import { permitAdmin, permitLeaderAdmin } from 'permission-utils'
 import SubmitButton from 'components/formik/SubmitButton'
 import { MemberContext } from 'contexts/MemberContext'
 import { CreateMemberFormOptions } from '../create/CreateMember'
 import Input from 'components/formik/Input'
 import ImageUpload from 'components/formik/ImageUpload'
-import SearchFellowship from 'components/formik/SearchFellowship'
 import Select from 'components/formik/Select'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_MEMBER_INACTIVE } from '../update/UpdateMutations'
@@ -32,6 +31,7 @@ import Popup from 'components/Popup/Popup'
 import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
 import RadioButtons from 'components/formik/RadioButtons'
+import SearchBacenta from 'components/formik/SearchBacenta'
 
 type MemberFormProps = {
   initialValues: CreateMemberFormOptions
@@ -101,13 +101,13 @@ const MemberForm = ({
       })
 
       clickCard({
-        __typename: 'Fellowship',
-        id: initialValues.fellowship.id,
+        __typename: 'Bacenta',
+        id: initialValues.bacenta.id,
       })
 
       togglePopup()
       alertMsg('Member has been deleted successfully')
-      navigate('/fellowship/displaydetails')
+      navigate('/bacenta/displaydetails')
     } catch (e) {
       throwToSentry('Cannot delete member', e)
     } finally {
@@ -121,7 +121,7 @@ const MemberForm = ({
     }
     if (
       update &&
-      isAuthorised(permitAdmin('Constituency'), currentUser.roles)
+      isAuthorised(permitAdmin('Governorship'), currentUser.roles)
     ) {
       return true
     }
@@ -152,9 +152,7 @@ const MemberForm = ({
         `Phone Number must start with + and country code (eg. '+233')`
       ),
     visitationArea: Yup.string().required('Location is a required field'),
-    fellowship: Yup.object().required(
-      'Please pick a fellowship from the dropdown'
-    ),
+    bacenta: Yup.object().required('Please pick a bacenta from the dropdown'),
   })
 
   if (basontasLoading || loading) {
@@ -237,7 +235,7 @@ const MemberForm = ({
                               Add Title
                             </Button>
                           </RoleView>
-                          <RoleView roles={permitAdmin('Stream')}>
+                          <RoleView roles={permitLeaderAdmin('Governorship')}>
                             <Button
                               onClick={() => togglePopup()}
                               variant="danger"
@@ -368,16 +366,14 @@ const MemberForm = ({
                     )}
 
                     <Col sm={10}>
-                      <SearchFellowship
-                        name="fellowship"
-                        label="Fellowship*"
+                      <SearchBacenta
+                        name="bacenta"
+                        label="Bacenta*"
                         placeholder="Start Typing"
                         setFieldValue={formik.setFieldValue}
-                        aria-describedby="Fellowship Name"
-                        initialValue={initialValues?.fellowship?.name || null}
-                        error={
-                          formik.errors.fellowship && formik.errors.fellowship
-                        }
+                        aria-describedby="Bacenta Name"
+                        initialValue={initialValues?.bacenta?.name || null}
+                        error={formik.errors.bacenta && formik.errors.bacenta}
                       />
                     </Col>
                     <Col sm={10}>

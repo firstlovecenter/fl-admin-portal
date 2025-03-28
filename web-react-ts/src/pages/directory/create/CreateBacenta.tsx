@@ -9,7 +9,7 @@ import { throwToSentry } from 'global-utils'
 import { FormikHelpers } from 'formik'
 
 const CreateBacenta = () => {
-  const { clickCard, constituencyId } = useContext(ChurchContext)
+  const { clickCard, governorshipId } = useContext(ChurchContext)
   const navigate = useNavigate()
 
   const initialValues: BacentaFormValues = {
@@ -17,9 +17,11 @@ const CreateBacenta = () => {
     leaderId: '',
     leaderName: '',
     leaderEmail: '',
-    constituency: constituencyId ?? '',
-    graduationStatus: '',
+    governorship: governorshipId ?? '',
     vacationStatus: '',
+    meetingDay: 'Thursday',
+    venueLatitude: '0.0',
+    venueLongitude: '0.0',
   }
 
   const [NewBacentaLeader] = useMutation(NEW_BACENTA_LEADER)
@@ -42,8 +44,11 @@ const CreateBacenta = () => {
       const res = await CreateBacenta({
         variables: {
           name: values.name,
-          constituencyId: values.constituency,
+          governorshipId: values.governorship,
           leaderId: values.leaderId,
+          meetingDay: values.meetingDay,
+          venueLongitude: parseFloat(values.venueLongitude.toString()),
+          venueLatitude: parseFloat(values.venueLatitude.toString()),
         },
       })
 

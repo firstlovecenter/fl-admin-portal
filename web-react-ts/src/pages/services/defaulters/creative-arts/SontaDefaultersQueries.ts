@@ -6,7 +6,7 @@ export const HUB_DEFAULTERS = gql`
       id
       name
 
-      activeFellowshipCount
+      activeBacentaCount
       formDefaultersThisWeekCount
       bankingDefaultersThisWeekCount
       bankedThisWeekCount
@@ -168,7 +168,7 @@ export const HUBCOUNCIL_DEFAULTERS = gql`
       name
 
       hubCount
-      activeFellowshipCount
+      activeBacentaCount
       formDefaultersThisWeekCount
       bankingDefaultersThisWeekCount
       bankedThisWeekCount
@@ -337,7 +337,7 @@ export const MINISTRY_DEFAULTERS = gql`
       name
 
       hubCouncilCount
-      activeFellowshipCount
+      activeBacentaCount
       formDefaultersThisWeekCount
       bankingDefaultersThisWeekCount
       bankedThisWeekCount
@@ -507,7 +507,7 @@ export const CREATIVEARTS_DEFAULTERS = gql`
 
       ministryCount
       activeHubCount
-      activeFellowshipCount
+      activeBacentaCount
       formDefaultersThisWeekCount
       bankingDefaultersThisWeekCount
       bankedThisWeekCount
@@ -695,7 +695,7 @@ export const CAMPUS_BY_CREATIVEARTS = gql`
         hubRehearsalsThisWeekCount
         hubCancelledRehearsalsThisWeekCount
 
-        activeFellowshipCount
+        activeBacentaCount
         servicesThisWeekCount
         formDefaultersThisWeekCount
         bankingDefaultersThisWeekCount
@@ -731,7 +731,7 @@ export const CREATIVEARTS_BY_MINISTRY = gql`
         hubRehearsalsThisWeekCount
         hubCancelledRehearsalsThisWeekCount
 
-        activeFellowshipCount
+        activeBacentaCount
         servicesThisWeekCount
         formDefaultersThisWeekCount
         bankingDefaultersThisWeekCount
@@ -767,7 +767,7 @@ export const MINISTRY_BY_HUBCOUNCIL = gql`
         hubRehearsalsThisWeekCount
         hubCancelledRehearsalsThisWeekCount
 
-        activeFellowshipCount
+        activeBacentaCount
         servicesThisWeekCount
         formDefaultersThisWeekCount
         bankingDefaultersThisWeekCount
@@ -796,7 +796,7 @@ export const HUBCOUNCIL_BY_HUB = gql`
           whatsappNumber
         }
 
-        activeFellowshipCount
+        activeBacentaCount
         servicesThisWeekCount
         formDefaultersThisWeekCount
         bankingDefaultersThisWeekCount

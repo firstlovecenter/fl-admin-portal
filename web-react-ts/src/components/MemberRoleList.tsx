@@ -11,6 +11,99 @@ interface MemberForRoles extends MemberWithChurches {
   [key: string]: any
 }
 
+const roleTypes = [
+  'Bacenta',
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+  'CreativeArts',
+  'Ministry',
+  'Hub',
+  'HubCouncil',
+]
+
+const adminTypes = [
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+  'Oversight',
+  'CreativeArts',
+  'Ministry',
+]
+
+const updateRank = (
+  member: MemberForRoles,
+  churchType: ChurchLevelLower,
+  rank: any
+) => {
+  member[`isAdminFor${capitalise(churchType)}`]?.map((church: any) => {
+    let ch: ChurchLevelLower = church.__typename.toLowerCase()
+    rank[`${ch}Admin`].push({
+      name: church.name,
+      stream_name: church.stream_name,
+      bacenta: church.bacenta,
+      hub: church.hub,
+      governorship: church.governorship,
+      id: church.id,
+      admin: true,
+      link: '',
+      __typename: church.__typename,
+    })
+    return null
+  })
+
+  member[`leads${capitalise(churchType)}`]?.map((church: any) => {
+    let ch: ChurchLevelLower = church.__typename.toLowerCase()
+    rank[`${ch}Leader`].push({
+      name: church.name,
+      stream_name: church.stream_name,
+      bacenta: church.bacenta,
+      hub: church.hub,
+      governorship: church.governorship,
+      id: church.id,
+      link: '',
+      __typename: church.__typename,
+    })
+    return null
+  })
+
+  return rank
+}
+
+export const getRank = (
+  memberLeader: MemberForRoles,
+  memberAdmin: MemberForRoles
+) => {
+  if (!memberLeader || !memberAdmin) return {}
+
+  let rank = roleTypes.reduce((acc, role) => {
+    acc[`${role.toLowerCase()}Leader`] = []
+    acc[`${role.toLowerCase()}Admin`] = []
+    return acc
+  }, {} as any)
+
+  roleTypes.forEach((role) => {
+    if (roleTypes.includes(role) && memberLeader[`leads${role}`][0]) {
+      rank = updateRank(
+        memberLeader,
+        role.toLowerCase() as ChurchLevelLower,
+        rank
+      )
+    }
+    if (adminTypes.includes(role) && memberAdmin[`isAdminFor${role}`][0]) {
+      rank = updateRank(
+        memberAdmin,
+        role.toLowerCase() as ChurchLevelLower,
+        rank
+      )
+    }
+  })
+
+  return rank
+}
+
 const MemberRoleList = ({
   memberLeader,
   memberAdmin,
@@ -25,124 +118,7 @@ const MemberRoleList = ({
     return null
   }
 
-  //To Display Ranks on the Member Card
-  let rank = {
-    oversightLeader: [],
-    campusLeader: [],
-    streamLeader: [],
-    councilLeader: [],
-    constituencyLeader: [],
-    bacentaLeader: [],
-    fellowshipLeader: [],
-    oversightAdmin: [],
-    campusAdmin: [],
-    streamAdmin: [],
-    councilAdmin: [],
-    constituencyAdmin: [],
-    creativeartsLeader: [],
-    ministryLeader: [],
-    hubcouncilLeader: [],
-    hubLeader: [],
-    creativeartsAdmin: [],
-    ministryAdmin: [],
-  }
-  let isServant = false
-
-  const updateRank = (member: MemberForRoles, churchType: ChurchLevelLower) => {
-    isServant = true
-
-    member[`isAdminFor${capitalise(churchType)}`]?.map((church: any) => {
-      let ch: ChurchLevelLower = church.__typename.toLowerCase()
-
-      // @ts-ignore
-      rank[`${ch}Admin`].push({
-        name: church.name,
-        stream_name: church.stream_name,
-        bacenta: church.bacenta,
-        hub: church.hub,
-        constituency: church.constituency,
-        id: church.id,
-        admin: true,
-        link: '',
-        __typename: church.__typename,
-      })
-      return null
-    })
-
-    member[`leads${capitalise(churchType)}`]?.map((church: any) => {
-      let ch: ChurchLevelLower = church.__typename.toLowerCase()
-      // @ts-ignore
-      rank[`${ch}Leader`].push({
-        name: church.name,
-        stream_name: church.stream_name,
-        bacenta: church.bacenta,
-        hub: church.hub,
-        constituency: church.constituency,
-        id: church.id,
-        link: '',
-        __typename: church.__typename,
-      })
-      return null
-    })
-    return null
-  }
-
-  if (memberLeader.leadsFellowship[0]) {
-    updateRank(memberLeader, 'fellowship')
-  }
-  if (memberLeader.leadsBacenta[0]) {
-    updateRank(memberLeader, 'bacenta')
-  }
-  if (memberLeader.leadsConstituency[0]) {
-    updateRank(memberLeader, 'constituency')
-  }
-  if (memberLeader?.leadsCouncil[0]) {
-    updateRank(memberLeader, 'council')
-  }
-  if (memberLeader?.leadsStream[0]) {
-    updateRank(memberLeader, 'stream')
-  }
-  if (memberLeader?.leadsCampus[0]) {
-    updateRank(memberLeader, 'campus')
-  }
-
-  if (memberAdmin.isAdminForConstituency[0]) {
-    updateRank(memberAdmin, 'constituency')
-  }
-  if (memberAdmin.isAdminForCouncil[0]) {
-    updateRank(memberAdmin, 'council')
-  }
-  if (memberAdmin.isAdminForStream[0]) {
-    updateRank(memberAdmin, 'stream')
-  }
-  if (memberAdmin.isAdminForCampus[0]) {
-    updateRank(memberAdmin, 'campus')
-  }
-
-  if (memberLeader?.leadsCreativeArts[0]) {
-    updateRank(memberLeader, 'creativeArts')
-  }
-  if (memberLeader?.leadsMinistry[0]) {
-    updateRank(memberLeader, 'ministry')
-  }
-  if (memberLeader?.leadsHub[0]) {
-    updateRank(memberLeader, 'hub')
-  }
-
-  if (memberLeader?.leadsHubCouncil[0]) {
-    updateRank(memberLeader, 'hubCouncil')
-  }
-
-  if (memberAdmin?.isAdminForCreativeArts[0]) {
-    updateRank(memberAdmin, 'creativeArts')
-  }
-  if (memberAdmin?.isAdminForMinistry[0]) {
-    updateRank(memberAdmin, 'ministry')
-  }
-
-  if (!isServant) {
-    return null
-  }
+  const rank = getRank(memberLeader, memberAdmin)
 
   return (
     <PlaceholderCustom>
@@ -157,7 +133,7 @@ const MemberRoleList = ({
 
         {
           //Rank Discussions */}
-          Object.entries(rank).map((rank) => {
+          Object.entries(rank).map((rank: any) => {
             return rank[1].map(
               (
                 place: {
@@ -166,7 +142,7 @@ const MemberRoleList = ({
                   admin: boolean
                   link: string
                 },
-                i
+                i: number
               ) => {
                 let servant = 'Leader'
 

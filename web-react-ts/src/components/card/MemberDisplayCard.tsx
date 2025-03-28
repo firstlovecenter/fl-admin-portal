@@ -4,7 +4,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import BusIcon from 'assets/icons/BusIcon'
 import FellowshipIcon from 'assets/icons/FellowshipIcon'
 import BacentaIcon from 'assets/icons/BacentaIcon'
-import ConstituencyIcon from 'assets/icons/ConstituencyIcon'
+import GovernorshipIcon from 'assets/icons/GovernorshipIcon'
 import CouncilIcon from 'assets/icons/CouncilIcon'
 import StreamIcon from 'assets/icons/StreamIcon'
 import { Badge, Button, Card } from 'react-bootstrap'
@@ -27,7 +27,7 @@ type CardMember = {
   lastName?: string
   nameWithTitle?: string
   pictureUrl?: string
-  fellowship?: {
+  bacenta?: {
     id: string
     name: string
   }
@@ -87,7 +87,7 @@ export const Icons = ({
       <div className={`${picture && 'rounded-circle'} img-search`}>
         {member.__typename === 'Fellowship' && <FellowshipIcon />}
         {member.__typename === 'Bacenta' && <BacentaIcon />}
-        {member.__typename === 'Constituency' && <ConstituencyIcon />}
+        {member.__typename === 'Governorship' && <GovernorshipIcon />}
         {member.__typename === 'Council' && <CouncilIcon />}
         {member.__typename === 'Stream' && <StreamIcon />}
         {member.__typename === 'Oversight' && <BsEyeFill />}
@@ -126,7 +126,7 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
     case 'Member':
       name = member?.nameWithTitle || member.firstName + ' ' + member.lastName
       details = [
-        member.fellowship ? member.fellowship.name + ' Fellowship' : '',
+        member.bacenta ? member.bacenta.name + ' Bacenta' : '',
         member.basonta ? member.basonta.name : '',
       ]
       break

@@ -5,6 +5,7 @@ import { onError } from '@apollo/client/link/error'
 import {
   ApolloClient,
   ApolloProvider,
+  // ApolloProvider,
   createHttpLink,
   from,
   InMemoryCache,
@@ -16,10 +17,7 @@ import CacheBuster from 'CacheBuster'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './color-theme.css'
 import './index.css'
-import AppWithContext from 'AppWithContext'
-import Login from 'components/Login'
 import ReactGA from 'react-ga4'
-import SplashSreen from 'pages/splash-screen/SplashSreen'
 import * as Sentry from '@sentry/react'
 import {
   useLocation,
@@ -35,6 +33,9 @@ import {
   enqueueSnackbar,
 } from 'notistack'
 import { Button, Card } from 'react-bootstrap'
+import SplashSreen from 'pages/splash-screen/SplashSreen'
+import Login from 'components/Login'
+import AppWithContext from 'AppWithContext'
 
 const AppWithApollo = () => {
   const [accessToken, setAccessToken] = useState<string>('')
@@ -100,7 +101,9 @@ const AppWithApollo = () => {
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors) {
-      graphQLErrors.forEach(({ message, locations, path }) =>
+      graphQLErrors.forEach(({ message, locations, path }) => {
+        if (message.includes('Unauthenticated')) return
+
         enqueueSnackbar(
           <Card>
             <Card.Header className="fw-bold">GraphQL Error</Card.Header>
@@ -122,30 +125,34 @@ const AppWithApollo = () => {
             },
           }
         )
-      )
+      })
     }
 
-    // if (networkError)
-    //   enqueueSnackbar(
-    //     <Card>
-    //       <Card.Header className="fw-bold">Network Error</Card.Header>
-    //       <Card.Body>
-    //         <div>{`Message: ${networkError?.message}`}</div>
-    //         {/* <div>{`Stack: ${JSON.stringify(networkError?.stack)}`}</div> */}
-    //       </Card.Body>
-    //     </Card>,
-    //     {
-    //       action,
-    //       preventDuplicate: true,
-    //       variant: 'error',
-    //       autoHideDuration: 20000,
-    //       hideIconVariant: true,
-    //       anchorOrigin: {
-    //         vertical: 'bottom',
-    //         horizontal: 'right',
-    //       },
-    //     }
-    //   )
+    if (
+      networkError &&
+      !networkError.message.includes('400') &&
+      !networkError.message.includes('Failed to fetch')
+    )
+      enqueueSnackbar(
+        <Card>
+          <Card.Header className="fw-bold">Network Error</Card.Header>
+          <Card.Body>
+            <div>{`Message: ${networkError?.message}`}</div>
+            {/* <div>{`Stack: ${JSON.stringify(networkError?.stack)}`}</div> */}
+          </Card.Body>
+        </Card>,
+        {
+          action,
+          preventDuplicate: true,
+          variant: 'error',
+          autoHideDuration: 20000,
+          hideIconVariant: true,
+          anchorOrigin: {
+            vertical: 'bottom',
+            horizontal: 'right',
+          },
+        }
+      )
   })
 
   const errorPolicy = 'all'
@@ -170,6 +177,14 @@ const AppWithApollo = () => {
 
   // if (new Date().getDay() === 1 && new Date().getHours() > 4) {
   //   return <Sabbath />
+  // }
+
+  // if (true) {
+  //   return (
+  //     <Container>
+  //       <MaintenanceMode />
+  //     </Container>
+  //   )
   // }
 
   if (isLoading) {

@@ -34,7 +34,7 @@ const SelfBankingList = ({
       | Partial<{
           serviceRecordId?: string
           fellowshipId?: string
-          constituencyId?: string
+          governorshipId?: string
           councilId?: string
         }>
       | undefined
@@ -117,7 +117,11 @@ const SelfBankingList = ({
       </ButtonGroup>
 
       {church?.services?.map((service: ServiceRecord, index: number) => {
-        if (service.noServiceReason || service.bankingSlip) {
+        if (
+          service.noServiceReason ||
+          service.bankingSlip ||
+          service.tellerConfirmationTime
+        ) {
           if (index === 0) {
             return (
               <NoDataComponent text="No services to bank. When you have a service, it will show up here" />

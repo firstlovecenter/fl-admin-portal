@@ -16,6 +16,10 @@ import { mapsResolvers } from './maps/maps-resolvers'
 import SontaServiceMutation from './services/rehearsal-resolver'
 import { Context } from './utils/neo4j-types'
 import MakeServantResolvers from './directory/make-servant-resolvers'
+import {
+  downloadCreditsMutations,
+  downloadCreditsQueries,
+} from './download-credits/download-credits-resolvers'
 
 const dotenv = require('dotenv')
 
@@ -33,15 +37,13 @@ const resolvers = {
     nameWithTitle: async (source: Member, args: unknown, context: Context) => {
       const session = context.executionContext.session()
 
-      const res = await session.executeRead((tx) =>
-        tx.run(
-          `MATCH (member:Member {id: $id})-[:HAS_GENDER]->(gender:Gender)
+      const res = await session.run(
+        `MATCH (member:Member {id: $id})-[:HAS_GENDER]->(gender:Gender)
           MATCH (member)-[:HAS_TITLE]->(title:Title)
           RETURN member AS member, gender.gender AS gender, title.name AS title, title.priority AS priority ORDER BY priority DESC LIMIT 1`,
-          {
-            id: source.id,
-          }
-        )
+        {
+          id: source.id,
+        }
       )
 
       const gender = res.records[0]?.get('gender')
@@ -49,26 +51,26 @@ const resolvers = {
       let shortTitle = ''
 
       if (title === 'Bishop') {
-        shortTitle = 'Bishop '
+        shortTitle = 'Bishop'
       }
       if (title === 'Bishop' && gender === 'Female') {
-        shortTitle = 'Mother '
+        shortTitle = 'Mother'
       }
 
       if (title === 'Reverend') {
-        shortTitle = 'Rev. '
+        shortTitle = 'Rev.'
       }
       if (title === 'Reverend' && gender === 'Female') {
-        shortTitle = 'LR '
+        shortTitle = 'LR'
       }
       if (title === 'Pastor') {
-        shortTitle = 'Ps. '
+        shortTitle = 'Ps.'
       }
       if (title === 'Pastor' && gender === 'Female') {
-        shortTitle = 'LP '
+        shortTitle = 'LP'
       }
 
-      return `${shortTitle}${source.firstName} ${source.lastName}`
+      return `${shortTitle} ${source.firstName} ${source.lastName}`
     },
     ...mapsResolvers.Member,
   },
@@ -78,11 +80,12 @@ const resolvers = {
   Bacenta: {
     ...campaignsResolvers.Bacenta,
   },
-  Constituency: {
-    ...campaignsResolvers.Constituency,
+  Governorship: {
+    ...campaignsResolvers.Governorship,
   },
   Council: {
     ...campaignsResolvers.Council,
+    ...downloadCreditsQueries.Council,
   },
   Stream: {
     ...campaignsResolvers.Stream,
@@ -104,6 +107,7 @@ const resolvers = {
     ...SontaServiceMutation,
     ...accountsMutations,
     ...directoryCreativeArtsMutation,
+    ...downloadCreditsMutations,
   },
 }
 

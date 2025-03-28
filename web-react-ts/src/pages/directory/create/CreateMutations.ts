@@ -12,7 +12,7 @@ export const CREATE_MEMBER_MUTATION = gql`
     $maritalStatus: String!
     $gender: String!
     $occupation: String
-    $fellowship: String!
+    $bacenta: String!
     $visitationArea: String!
     $basonta: String
     $pictureUrl: String!
@@ -29,7 +29,7 @@ export const CREATE_MEMBER_MUTATION = gql`
       gender: $gender
       occupation: $occupation
       visitationArea: $visitationArea
-      fellowship: $fellowship
+      bacenta: $bacenta
       basonta: $basonta
       pictureUrl: $pictureUrl
     ) {
@@ -37,16 +37,14 @@ export const CREATE_MEMBER_MUTATION = gql`
       firstName
       lastName
       stream_name
-      fellowship {
-        id
-        bacenta {
-          id
 
-          constituency {
+      bacenta {
+        id
+
+        governorship {
+          id
+          council {
             id
-            council {
-              id
-            }
           }
         }
       }
@@ -111,26 +109,32 @@ export const CREATE_FELLOWSHIP_MUTATION = gql`
       }
       bacenta {
         id
-        fellowships {
-          id
-          name
-        }
       }
     }
   }
 `
 
 export const CREATE_BACENTA_MUTATION = gql`
-  mutation CreateBacenta($name: String!, $constituencyId: ID!, $leaderId: ID!) {
+  mutation CreateBacenta(
+    $name: String!
+    $governorshipId: ID!
+    $leaderId: ID!
+    $meetingDay: String!
+    $venueLongitude: Float
+    $venueLatitude: Float
+  ) {
     CreateBacenta(
       name: $name
-      constituencyId: $constituencyId
+      governorshipId: $governorshipId
       leaderId: $leaderId
+      meetingDay: $meetingDay
+      venueLongitude: $venueLongitude
+      venueLatitude: $venueLatitude
     ) {
       id
       name
       stream_name
-      constituency {
+      governorship {
         id
         bacentas {
           id
@@ -147,9 +151,9 @@ export const CREATE_BACENTA_MUTATION = gql`
   }
 `
 
-export const CREATE_CONSTITUENCY_MUTATION = gql`
-  mutation CreateConstituency($name: String!, $leaderId: ID!, $councilId: ID!) {
-    CreateConstituency(
+export const CREATE_GOVERNORSHIP_MUTATION = gql`
+  mutation CreateGovernorship($name: String!, $leaderId: ID!, $councilId: ID!) {
+    CreateGovernorship(
       name: $name
       leaderId: $leaderId
       councilId: $councilId
@@ -159,7 +163,7 @@ export const CREATE_CONSTITUENCY_MUTATION = gql`
       stream_name
       council {
         id
-        constituencies {
+        governorships {
           id
           name
         }
@@ -291,14 +295,17 @@ export const CREATE_MINISTRY_MUTATION = gql`
     $creativeArtsId: ID!
     $leaderId: ID!
     $streamId: ID!
+    $bankAccount: String!
   ) {
     CreateMinistry(
       creativeArtsId: $creativeArtsId
       leaderId: $leaderId
       streamId: $streamId
+      bankAccount: $bankAccount
     ) {
       id
       name
+      bankAccount
     }
   }
 `
@@ -321,7 +328,7 @@ export const CREATE_HUB_MUTATION = gql`
     $name: String!
     $leaderId: ID!
     $hubCouncilId: ID!
-    $constituencyId: ID!
+    $governorshipId: ID!
     $meetingDay: String!
     $venueLongitude: Float
     $venueLatitude: Float
@@ -330,13 +337,32 @@ export const CREATE_HUB_MUTATION = gql`
       name: $name
       leaderId: $leaderId
       hubCouncilId: $hubCouncilId
-      constituencyId: $constituencyId
+      governorshipId: $governorshipId
       meetingDay: $meetingDay
       venueLongitude: $venueLongitude
       venueLatitude: $venueLatitude
     ) {
       id
       name
+    }
+  }
+`
+export const CREATE_MEMBER_ACCOUNT = gql`
+  mutation CreateMemberAccount($memberId: ID!) {
+    CreateMemberAccount(memberId: $memberId) {
+      id
+      auth_id
+      firstName
+      middleName
+      lastName
+      fullName
+      nameWithTitle
+      email
+      phoneNumber
+      pictureUrl
+      visitationArea
+      whatsappNumber
+      pictureUrl
     }
   }
 `

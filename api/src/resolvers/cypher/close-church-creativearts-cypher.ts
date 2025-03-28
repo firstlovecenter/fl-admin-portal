@@ -10,7 +10,7 @@ RETURN lastService
 
 export const checkHubHasNoMembers = `
 MATCH (hub:Hub {id:$hubId})
-MATCH (hub)-[:HAS]->(fellowships:HubFellowship)<-[:LEADS]-(member:Active:Member)
+MATCH (hub)-[:HAS]->(fellowships:HubFellowship)<-[:LEADS]-(member:Active:Member) WHERE NOT fellowships:ClosedFellowship
 MATCH (fellowships)<-[:LEADS]-(leader:Member)
 RETURN hub.name AS name, COUNT(member) AS memberCount, COUNT(fellowships) AS fellowshipCount
 `
@@ -41,7 +41,7 @@ log.historyRecord = hub.name + ' Hub was closed down under ' + hubCouncil.name +
 
 WITH hub, hubCouncil, log
 MATCH (hubCouncil)-[:HAS]->(hubs:Hub)   
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 OPTIONAL MATCH (hub)-[:HAS]->(hubFellowships)
 
 MERGE (date:TimeGraph {date:date()})
@@ -74,7 +74,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
 
 WITH hubCouncil, ministry, log
 MATCH (ministry)-[:HAS]->(hubCouncils:HubCouncil)   
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 OPTIONAL MATCH (hubCouncil)-[:HAS]->(hubs)-[:HAS]->(hubFellowships)
 
 MERGE (date:TimeGraph {date:date()})
@@ -106,7 +106,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
   log.historyRecord = ministry.name + ' Ministry was closed down under ' + creativeArts.name +' CreativeArts'
 
 WITH ministry, creativeArts, log
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 MATCH (creativeArts)-[:HAS]->(ministries)
 OPTIONAL MATCH (ministry)-[:HAS]->(hubCouncils)-[:HAS]->(hubs)-[:HAS]->(hubFellowships)
 
@@ -140,7 +140,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
 
 WITH creativeArt, campus, log
 MATCH (campus)-[:HAS_MINISTRY]->(creativeArts)
-MATCH (admin:Member {auth_id: $auth.jwt.sub})
+MATCH (admin:Member {auth_id: $jwt.sub})
 OPTIONAL MATCH (creativeArt)-[:HAS]->(ministries)-[:HAS]->(hubCouncils)-[:HAS]->(hubs)-[:HAS]->(hubFellowships)
 
 MERGE (date:TimeGraph {date:date()})

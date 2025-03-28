@@ -5,7 +5,7 @@ import { parsePhoneNum, throwToSentry } from '../../../global-utils'
 import { CREATE_MEMBER_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import MemberForm from '../reusable-forms/MemberForm'
-import { Fellowship } from 'global-types'
+import { Bacenta } from 'global-types'
 import { FormikHelpers } from 'formik'
 
 export type CreateMemberFormOptions = {
@@ -21,7 +21,7 @@ export type CreateMemberFormOptions = {
   occupation: string
   pictureUrl: string
   visitationArea: string
-  fellowship: Fellowship | { [key: string]: any }
+  bacenta: Bacenta | { [key: string]: any }
   basonta: string
 }
 
@@ -39,7 +39,7 @@ const CreateMember = () => {
     occupation: '',
     pictureUrl: '',
     visitationArea: '',
-    fellowship: '' as unknown as Fellowship,
+    bacenta: '' as unknown as Bacenta,
     basonta: '',
   }
 
@@ -79,7 +79,7 @@ const CreateMember = () => {
           pictureUrl: values.pictureUrl,
 
           visitationArea: values.visitationArea,
-          fellowship: values.fellowship?.id,
+          bacenta: values.bacenta?.id,
           basonta: values.basonta,
         },
       })

@@ -25,7 +25,7 @@ export const BacentaGraphs = () => {
 
   const [churchData, setChurchData] = useState<any[] | undefined>([])
   const { data, loading, error } = useQuery(BACENTA_GRAPHS, {
-    variables: { bacentaId: bacentaId },
+    variables: { id: bacentaId },
     onCompleted: (data) => {
       if (!setChurchData) return
       setChurchData(getServiceGraphData(data?.bacentas[0], graphs))

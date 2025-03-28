@@ -47,25 +47,20 @@ const SetPermissions = ({
         const streamName = data.memberByEmail.stream_name
 
         const denominationId =
-          data.memberByEmail?.fellowship?.bacenta.constituency?.council.stream
-            .campus?.oversight?.denomination.id
+          data.memberByEmail?.bacenta.governorship?.council.stream.campus
+            ?.oversight?.denomination.id
 
         const oversightId =
-          data.memberByEmail?.fellowship?.bacenta.constituency?.council.stream
-            .campus?.oversight.id
+          data.memberByEmail?.bacenta.governorship?.council.stream.campus
+            ?.oversight.id
         const campusId =
-          data.memberByEmail?.fellowship?.bacenta.constituency?.council.stream
-            .campus?.id
+          data.memberByEmail?.bacenta.governorship?.council.stream.campus?.id
         const campus =
-          data.memberByEmail?.fellowship?.bacenta.constituency?.council?.stream
-            .campus
+          data.memberByEmail?.bacenta.governorship?.council?.stream.campus
         const streamId =
-          data.memberByEmail?.fellowship?.bacenta.constituency?.council.stream
-            .id
-        const councilId =
-          data.memberByEmail?.fellowship?.bacenta.constituency?.council.id
-        const constituencyId =
-          data.memberByEmail?.fellowship?.bacenta.constituency?.id
+          data.memberByEmail?.bacenta.governorship?.council.stream.id
+        const councilId = data.memberByEmail?.bacenta.governorship?.council.id
+        const governorshipId = data.memberByEmail?.bacenta.governorship?.id
         const hubId = data.memberByEmail?.fellowship?.hub?.id
 
         const hubCouncilId = data.memberByEmail?.fellowship?.hub?.hubCouncil.id
@@ -83,8 +78,8 @@ const SetPermissions = ({
         doNotUse.setCampusId(sessionStorage.getItem('campusId') ?? campusId)
         doNotUse.setStreamId(sessionStorage.getItem('streamId') ?? streamId)
         doNotUse.setCouncilId(sessionStorage.getItem('councilId') ?? councilId)
-        doNotUse.setConstituencyId(
-          sessionStorage.getItem('constituencyId') ?? constituencyId
+        doNotUse.setGovernorshipId(
+          sessionStorage.getItem('governorshipId') ?? governorshipId
         )
         doNotUse.setHubId(sessionStorage.getItem('hubId') ?? hubId)
         doNotUse.setHubCouncilId(
@@ -103,9 +98,8 @@ const SetPermissions = ({
           nameWithTitle: data.memberByEmail.nameWithTitle,
 
           // Bacenta Levels
-          fellowship: data.memberByEmail?.fellowship.id,
-          bacenta: data.memberByEmail?.fellowship?.bacenta?.id,
-          constituency: constituencyId,
+          bacenta: data.memberByEmail?.bacenta.id,
+          governorship: governorshipId,
           council: councilId,
           stream: streamId,
           campus: campusId,
@@ -158,9 +152,9 @@ const SetPermissions = ({
               doNotUse.setCouncilId(currentUser.council)
               //User is not at the Council Level
 
-              if (!isAuthorised(permitMe('Constituency'))) {
-                //User is not a Constituency Admin the he can only be looking at his bacenta membership
-                doNotUse.setConstituencyId(currentUser.constituency)
+              if (!isAuthorised(permitMe('Governorship'))) {
+                //User is not a Governorship Admin the he can only be looking at his bacenta membership
+                doNotUse.setGovernorshipId(currentUser.governorship)
                 // doNotUse.setBacentaId(currentUser.bacenta)
                 // if (!isAuthorised(['leaderBacenta'])) {
                 //   //User is not a Bacenta Leader and he can only be looking at his fellowship membership

@@ -22,7 +22,7 @@ import SearchMember from 'components/formik/SearchMember'
 
 interface StreamWithTellers extends Stream {
   tellers: Member[]
-  activeFellowshipCount: number
+  activeBacentaCount: number
 }
 
 type FormOptions = {
@@ -102,7 +102,7 @@ const TellerSelect = () => {
         <HeadingSecondary>
           Use the buttons below to choose tellers
         </HeadingSecondary>
-        <div>{`Number of Active Fellowships: ${stream?.activeFellowshipCount}`}</div>
+        <div>{`Number of Active Bacentas: ${stream?.activeBacentaCount}`}</div>
 
         <Modal
           contentClassName="dark"

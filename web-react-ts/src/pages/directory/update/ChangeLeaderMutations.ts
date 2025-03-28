@@ -85,14 +85,14 @@ export const MAKE_BACENTA_LEADER = gql`
   }
 `
 
-export const MAKE_CONSTITUENCY_LEADER = gql`
-  mutation MakeConstituencyLeader(
-    $constituencyId: ID!
+export const MAKE_GOVERNORSHIP_LEADER = gql`
+  mutation MakeGovernorshipLeader(
+    $governorshipId: ID!
     $newLeaderId: ID!
     $oldLeaderId: ID!
   ) {
-    RemoveConstituencyLeader(
-      constituencyId: $constituencyId
+    RemoveGovernorshipLeader(
+      governorshipId: $governorshipId
       leaderId: $oldLeaderId
       newLeaderId: $newLeaderId
     ) {
@@ -100,15 +100,15 @@ export const MAKE_CONSTITUENCY_LEADER = gql`
       firstName
       lastName
     }
-    MakeConstituencyLeader(
-      constituencyId: $constituencyId
+    MakeGovernorshipLeader(
+      governorshipId: $governorshipId
       leaderId: $newLeaderId
       oldLeaderId: $oldLeaderId
     ) {
       id
       firstName
       lastName
-      leadsConstituency {
+      leadsGovernorship {
         id
         leader {
           id

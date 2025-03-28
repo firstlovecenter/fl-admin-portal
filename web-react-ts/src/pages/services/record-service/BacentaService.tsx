@@ -1,42 +1,46 @@
 import React, { useContext } from 'react'
 import { ChurchContext } from '../../../contexts/ChurchContext'
-import ServiceFormNoIncome from './ServiceFormNoIncome'
 
 import { useMutation, useQuery } from '@apollo/client'
-import { RECORD_SERVICE } from './RecordServiceMutations'
+import {
+  RECORD_SERVICE,
+  RECORD_SERVICE_NO_INCOME,
+} from './RecordServiceMutations'
 import { DISPLAY_BACENTA } from '../../directory/display/ReadQueries'
 import ServiceForm from './ServiceForm'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { MemberContext } from '../../../contexts/MemberContext'
+import { BACENTA_GRAPHS } from '../graphs/GraphsQueries'
+import ServiceFormNoIncome from './ServiceFormNoIncome'
 
 const BacentaService = () => {
-  const { currentUser } = useContext(MemberContext)
-
   const { bacentaId } = useContext(ChurchContext)
-  const {
-    data: bacentaData,
-    loading: bacentaLoading,
-    error: bacentaError,
-  } = useQuery(DISPLAY_BACENTA, { variables: { id: bacentaId } })
-  const [RecordService] = useMutation(RECORD_SERVICE)
+  const { data, loading, error } = useQuery(DISPLAY_BACENTA, {
+    variables: { id: bacentaId },
+  })
+  const [RecordService] = useMutation(RECORD_SERVICE, {
+    refetchQueries: [{ query: BACENTA_GRAPHS, variables: { id: bacentaId } }],
+  })
+  const [RecordServiceNoIncome] = useMutation(RECORD_SERVICE_NO_INCOME, {
+    refetchQueries: [{ query: BACENTA_GRAPHS, variables: { id: bacentaId } }],
+  })
+
+  const bacenta = data?.bacentas[0]
+  const shouldNotRecordIncome =
+    bacenta?.noIncomeTracking || bacenta?.vacationStatus === 'Online'
 
   return (
-    <ApolloWrapper
-      loading={bacentaLoading}
-      error={bacentaError}
-      data={bacentaData}
-    >
-      {currentUser.noIncomeTracking ? (
+    <ApolloWrapper loading={loading} error={error} data={data}>
+      {shouldNotRecordIncome ? (
         <ServiceFormNoIncome
-          RecordServiceMutation={RecordService}
-          church={bacentaData?.bacentas[0]}
+          RecordServiceMutation={RecordServiceNoIncome}
+          church={data?.bacentas[0]}
           churchId={bacentaId}
           churchType="Bacenta"
         />
       ) : (
         <ServiceForm
           RecordServiceMutation={RecordService}
-          church={bacentaData?.bacentas[0]}
+          church={data?.bacentas[0]}
           churchId={bacentaId}
           churchType="Bacenta"
         />

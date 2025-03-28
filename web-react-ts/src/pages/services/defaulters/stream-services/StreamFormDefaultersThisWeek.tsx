@@ -26,8 +26,8 @@ const StreamFormDefaulters = () => {
     useLazyQuery(DENOMINATION_STREAM_FORM_DEFAULTERS_LIST)
 
   const data = useChurchLevel({
-    constituencyFunction: campusStreamFormDefaulters,
-    constituencyRefetch: campusRefetch,
+    governorshipFunction: campusStreamFormDefaulters,
+    governorshipRefetch: campusRefetch,
     councilFunction: campusStreamFormDefaulters,
     councilRefetch: campusRefetch,
     streamFunction: campusStreamFormDefaulters,

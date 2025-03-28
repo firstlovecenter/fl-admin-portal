@@ -15,7 +15,7 @@ const CreateHub = () => {
 
   const initialValues: HubFormValues = {
     hubCouncil: hubCouncilId ?? '',
-    constituency: '',
+    governorship: '',
     leaderId: '',
     leaderName: '',
     leaderEmail: '',
@@ -44,7 +44,7 @@ const CreateHub = () => {
       const res = await CreateHub({
         variables: {
           hubCouncilId: values.hubCouncil,
-          constituencyId: values.constituency,
+          governorshipId: values.governorship,
           leaderId: values.leaderId,
           name: values.name,
           meetingDay: values.meetingDay,

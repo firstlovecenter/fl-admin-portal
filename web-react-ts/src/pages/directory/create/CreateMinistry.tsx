@@ -21,6 +21,7 @@ const CreateMinistry = () => {
     leaderId: '',
     leaderName: '',
     leaderEmail: '',
+    bankAccount: 'accra_greater_love_choir',
     creativeArts: (creativeArtsId ?? '') as CreativeArts,
     stream: '',
   }
@@ -46,6 +47,7 @@ const CreateMinistry = () => {
           creativeArtsId: values.creativeArts,
           leaderId: values.leaderId,
           streamId: values.stream,
+          bankAccount: values.bankAccount,
         },
       })
 

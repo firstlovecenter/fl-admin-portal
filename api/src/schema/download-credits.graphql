@@ -1,0 +1,44 @@
+extend type Council {
+  downloadCredits: Int
+  downloadMembership: [Member!]!
+  creditsTransactionHistory: [CreditTransaction!]!
+    @relationship(type: "PURCHASED_CREDITS", direction: OUT)
+}
+
+extend type Mutation {
+  PurchaseDownloadCredits(
+    churchId: ID!
+    amount: Float!
+    mobileNetwork: String!
+    mobileNumber: String!
+  ): CreditTransaction!
+
+  RemoveDownloadCredit(churchId: ID!): Int!
+    @cypher(
+      statement: """
+      MATCH (church {id: $churchId})
+      WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
+      AND church.downloadCredits > 0
+
+      SET church.downloadCredits = church.downloadCredits - 1
+
+      RETURN church.downloadCredits
+      """
+      columnName: "downloadCredits"
+    )
+
+  ConfirmCreditTransaction(transactionReference: String!): CreditTransaction!
+}
+
+type CreditTransaction {
+  id: ID!
+  amount: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  mobileNetwork: String!
+  mobileNumber: String!
+  transactionReference: String!
+  transactionStatus: String!
+  credited: Boolean!
+  council: Council! @relationship(type: "PURCHASED_CREDITS", direction: IN)
+}

@@ -2,17 +2,16 @@ import { ApolloError } from '@apollo/client'
 import {
   Church,
   StreamOptions,
-  Fellowship,
   ServiceRecord,
   Member,
-  Constituency,
+  Governorship,
   Council,
-  Bacenta,
   MemberWithoutBioData,
   Campus,
   Stream,
   Hub,
   ChurchLevel,
+  Bacenta,
 } from 'global-types'
 
 export interface HigherChurchWithDefaulters extends Church {
@@ -24,13 +23,13 @@ export interface HubWithDefaulters extends Hub {
   campus: Campus
   rehearsals: ServiceRecord[]
 }
-export interface FellowshipWithDefaulters extends Fellowship {
-  __typename: 'Fellowship'
-  bacenta: Bacenta
+export interface BacentaWithDefaulters extends Bacenta {
+  __typename: 'Bacenta'
+  governorship: Governorship
   services: ServiceRecord[]
 }
-export interface ConstituencyWithDefaulters extends Constituency {
-  __typename: 'Constituency'
+export interface GovernorshipWithDefaulters extends Governorship {
+  __typename: 'Governorship'
   council: Council
   services: ServiceRecord[]
 }
@@ -54,14 +53,14 @@ export interface HigherChurchWithDefaulters extends Church {
   __typename: ChurchLevel
   admin?: MemberWithoutBioData
   stream_name: StreamOptions
-  servicesThisWeek: FellowshipWithDefaulters[]
-  formDefaultersThisWeek: FellowshipWithDefaulters[]
-  bankedThisWeek: FellowshipWithDefaulters[]
-  bankingDefaultersThisWeek: FellowshipWithDefaulters[]
-  cancelledServicesThisWeek: FellowshipWithDefaulters[]
-  constituencyBankingDefaultersThisWeek: ConstituencyWithDefaulters[]
+  servicesThisWeek: BacentaWithDefaulters[]
+  formDefaultersThisWeek: BacentaWithDefaulters[]
+  bankedThisWeek: BacentaWithDefaulters[]
+  bankingDefaultersThisWeek: BacentaWithDefaulters[]
+  cancelledServicesThisWeek: BacentaWithDefaulters[]
+  governorshipBankingDefaultersThisWeek: GovernorshipWithDefaulters[]
   councilBankingDefaultersThisWeek: CouncilWithDefaulters[]
-  constituencyBankedThisWeek: ConstituencyWithDefaulters[]
+  governorshipBankedThisWeek: GovernorshipWithDefaulters[]
   councilBankedThisWeek: CouncilWithDefaulters[]
 
   streamServicesThisWeek?: StreamWithDefaulters[]
@@ -74,7 +73,7 @@ export interface HigherChurchWithDefaulters extends Church {
   streamBankedThisWeekCount?: number
   streamBankingDefaultersThisWeekCount?: number
   streamCancelledServicesThisWeekCount?: number
-  streamConstituencyBankingDefaultersThisWeekCount?: number
+  streamGovernorshipBankingDefaultersThisWeekCount?: number
 
   bankedBy: Member
   servicesThisWeekCount: number
@@ -82,7 +81,7 @@ export interface HigherChurchWithDefaulters extends Church {
   bankedThisWeekCount: number
   bankingDefaultersThisWeekCount: number
   cancelledServicesThisWeekCount: number
-  constituencyBankingDefaultersThisWeekCount: number
+  governorshipBankingDefaultersThisWeekCount: number
 
   [key: string]: any
 }
@@ -92,14 +91,14 @@ export interface HigherSontaChurchWithDefaulters
   __typename: 'Ministry' | 'HubCouncil' | 'CreativeArts'
   admin?: MemberWithoutBioData
   stream_name: StreamOptions
-  hubRehearsalsThisWeek: FellowshipWithDefaulters[]
-  hubFormDefaultersThisWeek: FellowshipWithDefaulters[]
-  hubsBankedThisWeek: FellowshipWithDefaulters[]
-  hubBankingDefaultersThisWeek: FellowshipWithDefaulters[]
-  hubCancelledRehearsalsThisWeek: FellowshipWithDefaulters[]
-  constituencyBankingDefaultersThisWeek: ConstituencyWithDefaulters[]
+  hubRehearsalsThisWeek: BacentaWithDefaulters[]
+  hubFormDefaultersThisWeek: BacentaWithDefaulters[]
+  hubsBankedThisWeek: BacentaWithDefaulters[]
+  hubBankingDefaultersThisWeek: BacentaWithDefaulters[]
+  hubCancelledRehearsalsThisWeek: BacentaWithDefaulters[]
+  governorshipBankingDefaultersThisWeek: GovernorshipWithDefaulters[]
   councilBankingDefaultersThisWeek: CouncilWithDefaulters[]
-  constituencyBankedThisWeek: ConstituencyWithDefaulters[]
+  governorshipBankedThisWeek: GovernorshipWithDefaulters[]
   councilBankedThisWeek: CouncilWithDefaulters[]
 
   streamServicesThisWeek?: StreamWithDefaulters[]
@@ -112,7 +111,7 @@ export interface HigherSontaChurchWithDefaulters
   streamBankedThisWeekCount?: number
   streamBankingDefaultersThisWeekCount?: number
   streamCancelledServicesThisWeekCount?: number
-  streamConstituencyBankingDefaultersThisWeekCount?: number
+  streamGovernorshipBankingDefaultersThisWeekCount?: number
 
   bankedBy: Member
   hubRehearsalsThisWeekCount: number
@@ -120,7 +119,7 @@ export interface HigherSontaChurchWithDefaulters
   hubsBankedThisWeekCount: number
   hubBankingDefaultersThisWeekCount: number
   hubCancelledRehearsalsThisWeekCount: number
-  hubConstituencyBankingDefaultersThisWeekCount: number
+  hubGovernorshipBankingDefaultersThisWeekCount: number
 
   // [key: string]: any
 }

@@ -15,7 +15,6 @@ export const DISPLAY_BACENTA_BUSSING_DETAILS = gql`
       urvanTopUp
       outbound
       vacationStatus
-      graduationStatus
 
       momoName
       momoNumber

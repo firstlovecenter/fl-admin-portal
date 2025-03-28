@@ -29,8 +29,8 @@ export const FELLOWSHIP_GRAPHS = gql`
 `
 
 export const BACENTA_GRAPHS = gql`
-  query bacentaGraphs($bacentaId: ID!) {
-    bacentas(where: { id: $bacentaId }) {
+  query bacentaGraphs($id: ID!) {
+    bacentas(where: { id: $id }) {
       id
       name
       leader {
@@ -81,9 +81,9 @@ export const BACENTA_GRAPHS = gql`
   }
 `
 
-export const CONSTITUENCY_GRAPHS = gql`
-  query constituencyGraphs($id: ID!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_GRAPHS = gql`
+  query governorshipGraphs($id: ID!) {
+    governorships(where: { id: $id }) {
       id
       name
       leader {

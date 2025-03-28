@@ -22,13 +22,11 @@ export interface BussingRecord {
   bussingPictures?: string[]
   attendance: number
   leaderDeclaration: number
-  personalContribution: number
   numberOfBusses: number
   numberOfSprinters: number
   numberOfUrvans: number
   numberOfCars: number
 
-  bussingCost: number
   bussingTopUp: number
   counted_by: [Member]
 
@@ -48,11 +46,9 @@ export type AggregateBussingRecords = {
   week: number
   attendance: number
   leaderDeclaration: number
-  personalContribution: number
   numberOfSprinters: number
   numberOfUrvans: number
   numberOfCars: number
-  bussingCost: number
   bussingTopUp: number
 }
 
@@ -63,14 +59,12 @@ export type VehicleRecord = {
 
   leaderDeclaration: number
   attendance: number
-  personalContribution: number
   vehicle: 'Sprinter' | 'Urvan' | 'Car'
 
   momoNumber: string
   momoName: string
   mobileNetwork: Network
   vehicleTopUp: number
-  vehicleCost: number
   picture: string
 
   counted_by: Member
@@ -110,7 +104,7 @@ export interface BacentaWithArrivals extends Bacenta {
 }
 
 export interface HigherChurchWithArrivals extends Church {
-  __typename: 'Constituency' | 'Stream' | 'Council' | 'Campus'
+  __typename: 'Governorship' | 'Stream' | 'Council' | 'Campus'
   stream_name?: StreamOptions
   stream: Stream
   arrivalsAdmin: Member

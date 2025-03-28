@@ -1,9 +1,14 @@
 import { useMutation } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { VACATION_OPTIONS, throwToSentry } from 'global-utils'
+import {
+  DECIMAL_NUM_REGEX,
+  SERVICE_DAY_OPTIONS,
+  VACATION_OPTIONS,
+  throwToSentry,
+} from 'global-utils'
 import { FormikInitialValues } from 'components/formik/formik-types'
-import { Constituency, Fellowship } from 'global-types'
+import { Governorship } from 'global-types'
 import { permitAdminArrivals } from 'permission-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -17,28 +22,23 @@ import {
   Button,
   ButtonGroup,
   Modal,
+  Spinner,
 } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
-import {
-  DISPLAY_BACENTA,
-  DISPLAY_CONSTITUENCY,
-} from 'pages/directory/display/ReadQueries'
+import { DISPLAY_GOVERNORSHIP } from 'pages/directory/display/ReadQueries'
 import Select from 'components/formik/Select'
 import Input from 'components/formik/Input'
 import SearchMember from 'components/formik/SearchMember'
-import NoDataComponent from 'pages/arrivals/CompNoData'
-import SearchFellowship from 'components/formik/SearchFellowship'
-import { MOVE_FELLOWSHIP_TO_BACENTA } from '../update/UpdateMutations'
 import BtnSubmitText from 'components/formik/BtnSubmitText'
 
 export interface BacentaFormValues extends FormikInitialValues {
-  constituency?: Constituency
-  graduationStatus: string
+  governorship?: Governorship
+  meetingDay: string
   vacationStatus: string
-  fellowship?: Fellowship
-  fellowships?: Fellowship[]
+  venueLatitude: string | number
+  venueLongitude: string | number
 }
 
 type BacentaFormProps = {
@@ -58,21 +58,18 @@ const BacentaForm = ({
   newBacenta,
 }: BacentaFormProps) => {
   const { clickCard, bacentaId } = useContext(ChurchContext)
-  const [fellowshipModal, setFellowshipModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
   const navigate = useNavigate()
   const [buttonLoading, setButtonLoading] = useState(false)
+  const [positionLoading, setPositionLoading] = useState(false)
   const [CloseDownBacenta] = useMutation(MAKE_BACENTA_INACTIVE, {
     refetchQueries: [
       {
-        query: DISPLAY_CONSTITUENCY,
-        variables: { id: initialValues.constituency?.id },
+        query: DISPLAY_GOVERNORSHIP,
+        variables: { id: initialValues.governorship?.id },
       },
     ],
-  })
-  const [MoveFellowshipToBacenta] = useMutation(MOVE_FELLOWSHIP_TO_BACENTA, {
-    refetchQueries: [{ query: DISPLAY_BACENTA, variables: { id: bacentaId } }],
   })
 
   const validationSchema = Yup.object({
@@ -81,6 +78,21 @@ const BacentaForm = ({
     vacationStatus: Yup.string().required(
       'Vacation Status is a required field'
     ),
+    meetingDay: Yup.string().required('Meeting Day is a required field'),
+    venueLatitude: Yup.string()
+      .required('Please fill in your location info')
+      .test(
+        'is-decimal',
+        'Please enter valid coordinates',
+        (value) => !!(value + '').match(DECIMAL_NUM_REGEX)
+      ),
+    venueLongitude: Yup.string()
+      .required('Please fill in your location info')
+      .test(
+        'is-decimal',
+        'Please enter valid coordinates',
+        (value) => !!(value + '').match(DECIMAL_NUM_REGEX)
+      ),
   })
 
   return (
@@ -90,10 +102,6 @@ const BacentaForm = ({
       <ButtonGroup className="mt-3">
         {!newBacenta && (
           <>
-            <Button onClick={() => setFellowshipModal(true)}>
-              Add Fellowship
-            </Button>
-
             <Button variant="danger" onClick={() => setCloseDown(true)}>
               {`Close Down Bacenta`}
             </Button>
@@ -101,7 +109,7 @@ const BacentaForm = ({
         )}
       </ButtonGroup>
 
-      <RoleView roles={permitAdminArrivals('Stream')}>
+      <RoleView roles={permitAdminArrivals('Governorship')}>
         <Button
           variant="warning"
           className="mt-1"
@@ -139,9 +147,8 @@ const BacentaForm = ({
                         />
                       </Col>
                     </Row>
-
                     <Row className="d-flex align-items-center mb-3">
-                      <RoleView roles={permitAdminArrivals('Constituency')}>
+                      <RoleView roles={permitAdminArrivals('Governorship')}>
                         <Col>
                           <SearchMember
                             name="leaderId"
@@ -155,19 +162,70 @@ const BacentaForm = ({
                         </Col>
                       </RoleView>
                     </Row>
+                    <Col sm={12}>
+                      <Select
+                        label="Meeting Day"
+                        name="meetingDay"
+                        options={SERVICE_DAY_OPTIONS}
+                        defaultOption="Pick a Service Day"
+                      />
+                    </Col>
 
-                    <div className="d-grid gap-2">
-                      <div className="fw-bold fs-5">Fellowship</div>
-                      {initialValues.fellowships?.map((fellowship, index) => {
-                        if (!fellowship && !index)
-                          return <NoDataComponent text="No Fellowships" />
-                        return (
-                          <Button variant="secondary" className="text-start">
-                            {fellowship.name} {fellowship.__typename}
-                          </Button>
-                        )
-                      })}
-                    </div>
+                    <small className="text-muted">
+                      Enter The Coordinates for the Service Venue
+                    </small>
+                    <Row className="row-cols-2 d-flex align-items-center">
+                      <Col>
+                        <Input name="venueLatitude" placeholder="Latitude" />
+                      </Col>
+                      <Col>
+                        <Input name="venueLongitude" placeholder="Longitude" />
+                      </Col>
+                      <Col className="my-2">
+                        <Button
+                          variant="primary"
+                          className="btn-loading"
+                          disabled={positionLoading}
+                          onClick={() => {
+                            setPositionLoading(true)
+
+                            window.navigator.geolocation.getCurrentPosition(
+                              (position) => {
+                                formik.setFieldValue(
+                                  'venueLatitude',
+                                  position.coords.latitude
+                                )
+                                formik.setFieldValue(
+                                  'venueLongitude',
+                                  position.coords.longitude
+                                )
+                                document
+                                  .getElementById('venueLongitude')
+                                  ?.focus()
+                                document
+                                  .getElementById('venueLatitude')
+                                  ?.focus()
+                                document.getElementById('venueLatitude')?.blur()
+                                setPositionLoading(false)
+                              }
+                            )
+                          }}
+                        >
+                          {positionLoading ? (
+                            <>
+                              <Spinner animation="grow" size="sm" />
+                              <span> Loading</span>
+                            </>
+                          ) : (
+                            'Locate Me Now'
+                          )}
+                        </Button>
+                      </Col>
+                    </Row>
+                    <small className="text-muted">
+                      Click this button if you are currently at your bacenta
+                      service venue
+                    </small>
                   </Col>
                 </Row>
               </div>
@@ -176,62 +234,6 @@ const BacentaForm = ({
                 <SubmitButton formik={formik} />
               </div>
             </Form>
-
-            <Modal
-              show={fellowshipModal}
-              onHide={() => setFellowshipModal(false)}
-              centered
-            >
-              <Modal.Header closeButton>Add A Fellowship</Modal.Header>
-              <Modal.Body>
-                <p>Choose a fellowship to move to this bacenta</p>
-                <SearchFellowship
-                  name={`fellowship`}
-                  placeholder="Fellowship Name"
-                  initialValue=""
-                  setFieldValue={formik.setFieldValue}
-                  aria-describedby="Fellowship Name"
-                />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading || !formik.values.fellowship}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await MoveFellowshipToBacenta({
-                        variables: {
-                          fellowshipId: formik.values.fellowship?.id,
-                          historyRecord: `${formik.values.fellowship?.name} Fellowship has been moved to ${formik.values.name} Bacenta from ${formik.values.fellowship?.bacenta.name} Bacenta`,
-                          newBacentaId: bacentaId,
-                          oldBacentaId: formik.values.fellowship?.bacenta.id,
-                        },
-                      })
-
-                      clickCard(res.data.MoveFellowshipToBacenta)
-                      setFellowshipModal(false)
-                    } catch (error) {
-                      throwToSentry(
-                        `There was an error moving this bacenta to this constituency`,
-                        error
-                      )
-                    } finally {
-                      setButtonLoading(false)
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => setFellowshipModal(false)}
-                >
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
 
             <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
               <Modal.Header closeButton>Close Down Bacenta</Modal.Header>
@@ -258,11 +260,11 @@ const BacentaForm = ({
                       setButtonLoading(false)
                       clickCard(res.data.CloseDownBacenta)
                       setCloseDown(false)
-                      navigate(`/constituency/displayall`)
+                      navigate(`/governorship/displayall`)
                     } catch (error) {
                       setButtonLoading(false)
                       throwToSentry(
-                        `There was an error closing down this constituency`,
+                        `There was an error closing down this governorship`,
                         error
                       )
                     }

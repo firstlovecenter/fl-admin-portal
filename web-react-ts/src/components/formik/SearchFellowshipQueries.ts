@@ -48,9 +48,9 @@ export const COUNCIL_FELLOWSHIP_SEARCH = gql`
   }
 `
 
-export const CONSTITUENCY_FELLOWSHIP_SEARCH = gql`
-  query constituencyFellowshipSearch($id: ID!, $key: String!) {
-    constituencies(where: { id: $id }) {
+export const GOVERNORSHIP_FELLOWSHIP_SEARCH = gql`
+  query governorshipFellowshipSearch($id: ID!, $key: String!) {
+    governorships(where: { id: $id }) {
       id
       fellowshipSearch(key: $key, limit: 5) {
         id

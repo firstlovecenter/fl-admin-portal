@@ -29,8 +29,8 @@ const StreamBanked = () => {
   )
 
   const data = useChurchLevel({
-    constituencyFunction: campusBanked,
-    constituencyRefetch: campusRefetch,
+    governorshipFunction: campusBanked,
+    governorshipRefetch: campusRefetch,
     councilFunction: campusBanked,
     councilRefetch: campusRefetch,
     streamFunction: campusBanked,

@@ -70,7 +70,7 @@ const ArrivalsPayerSelect = () => {
 
   const validationSchema = Yup.object({
     arrivalsPayerSelect: Yup.string().required(
-      'Please select a arrivals payment team member from the dropdown'
+      'Please select a arrivals payment governorship member from the dropdown'
     ),
   })
 
@@ -89,7 +89,7 @@ const ArrivalsPayerSelect = () => {
 
       handleClose()
       onSubmitProps.setSubmitting(false)
-      alert('Arrivals Payment Team Member has been added successfully!')
+      alert('Arrivals Payment Governorship Member has been added successfully!')
     } catch (e: any) {
       onSubmitProps.setSubmitting(false)
       throwToSentry(e)
@@ -101,9 +101,9 @@ const ArrivalsPayerSelect = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <Container>
-        <HeadingPrimary>{`Select ${council?.name} Council Arrivals Payment Team Members`}</HeadingPrimary>
+        <HeadingPrimary>{`Select ${council?.name} Council Arrivals Payment Governorship Members`}</HeadingPrimary>
         <HeadingSecondary>
-          Use the buttons below to choose Arrivals Payment Team Members
+          Use the buttons below to choose Arrivals Payment Governorship Members
         </HeadingSecondary>
         <div>{`Number of Active Bacentas: ${council?.activeBacentaCount}`}</div>
 
@@ -114,7 +114,9 @@ const ArrivalsPayerSelect = () => {
           centered
         >
           <Modal.Header closeButton>
-            <Modal.Title>Choose an Arrivals Payment Team Member</Modal.Title>
+            <Modal.Title>
+              Choose an Arrivals Payment Governorship Member
+            </Modal.Title>
           </Modal.Header>
 
           <Formik
@@ -151,7 +153,7 @@ const ArrivalsPayerSelect = () => {
 
         <div className="d-grid gap-2 mt-5">
           <Button variant="success" onClick={handleOpen}>
-            Choose Arrivals Payment Team Members
+            Choose Arrivals Payment Governorship Members
           </Button>
         </div>
 
@@ -198,7 +200,7 @@ const ArrivalsPayerSelect = () => {
         ))}
 
         {!council?.arrivalsPayers?.length && (
-          <NoDataComponent text="You have no Arrivals Payment Team Members at this time" />
+          <NoDataComponent text="You have no Arrivals Payment Governorship Members at this time" />
         )}
       </Container>
     </ApolloWrapper>

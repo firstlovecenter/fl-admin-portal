@@ -9,7 +9,7 @@ import DefaulterCard from '../DefaulterCard'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import {
   DefaultersUseChurchType,
-  FellowshipWithDefaulters,
+  BacentaWithDefaulters,
 } from '../defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import {
@@ -66,7 +66,7 @@ const Banked = () => {
 
           <Row>
             {church?.hubsBankedThisWeek.map(
-              (defaulter: FellowshipWithDefaulters, i: number) => (
+              (defaulter: BacentaWithDefaulters, i: number) => (
                 <Col key={i} xs={12} className="mb-3">
                   <DefaulterCard
                     defaulter={defaulter}

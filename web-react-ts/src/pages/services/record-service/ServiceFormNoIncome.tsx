@@ -79,8 +79,9 @@ const ServiceForm = ({
       })
 
       if (recordType === 'MinistryAttendanceRecord') {
-        clickCard(res.data.RecordSontaSundayMeeting)
-        navigate(`/sonta/sunday-meeting-details`)
+        if (res.errors) throw new Error(res.errors[0].message)
+        clickCard(res.data.RecordHubCouncilSundayAttendance)
+        navigate(`/hub/sunday-meeting-details`)
       } else {
         clickCard(res.data.RecordServiceNoIncome)
         navigate(`/${churchType}/service-details`)

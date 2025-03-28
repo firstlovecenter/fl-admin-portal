@@ -16,7 +16,7 @@ interface ArrivalPaymentData {
   bacenta: string
   council: string
   councilHead: string
-  constituency: string
+  governorship: string
   leader: string
   bacentaCode: string
   attendance: number
@@ -43,7 +43,7 @@ const ArrivalsPaymentData = () => {
     { label: 'Stream', key: 'stream' },
     { label: 'Council', key: 'council' },
     { label: 'Council Head', key: 'councilHead' },
-    { label: 'Constituency', key: 'constituency' },
+    { label: 'Governorship', key: 'governorship' },
     { label: 'Bacenta', key: 'bacenta' },
     { label: 'Leader', key: 'leader' },
     { label: 'Bacenta Code', key: 'bacentaCode' },
@@ -89,7 +89,7 @@ const ArrivalsPaymentData = () => {
                     <th scope="col">Stream</th>
                     <th scope="col">Council</th>
                     <th scope="col">Council Head</th>
-                    <th scope="col">Constituency</th>
+                    <th scope="col">Governorship</th>
                     <th scope="col">Bacenta</th>
                     <th scope="col">Leader</th>
                     <th scope="col">Bacenta Code</th>
@@ -116,7 +116,7 @@ const ArrivalsPaymentData = () => {
                         <td>{data?.stream}</td>
                         <td>{data?.council}</td>
                         <td>{data?.councilHead}</td>
-                        <td>{data?.constituency}</td>
+                        <td>{data?.governorship}</td>
                         <td>{data?.bacenta}</td>
                         <td>{data?.leader}</td>
                         <td>{data?.bacentaCode}</td>

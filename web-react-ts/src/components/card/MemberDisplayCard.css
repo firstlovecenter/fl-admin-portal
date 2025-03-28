@@ -43,7 +43,7 @@
   border: 5px solid var(--chakra-colors-orange-200) !important;
 }
 
-.badge.constituency {
+.badge.governorship {
   background-color: var(--chakra-colors-teal-800) !important;
   border: 5px solid var(--chakra-colors-teal-200) !important;
 }

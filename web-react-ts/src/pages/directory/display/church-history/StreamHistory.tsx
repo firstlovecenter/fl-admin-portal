@@ -23,7 +23,7 @@ function StreamHistory() {
           <HeadingSecondary>Stream History</HeadingSecondary>
         </div>
         <Container>
-          <Timeline record={stream?.history} limit={10} />
+          <Timeline record={stream?.history} limit={100} />
         </Container>
       </>
     </ApolloWrapper>

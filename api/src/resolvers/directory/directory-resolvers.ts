@@ -13,7 +13,12 @@ import {
 } from '../permissions'
 import { RemoveServant } from './make-remove-servants'
 
-import { updateAuthUserConfig } from '../utils/auth0'
+import {
+  changePasswordConfig,
+  createAuthUserConfig,
+  getAuthIdConfig,
+  updateAuthUserConfig,
+} from '../utils/auth0'
 import {
   makeMemberInactive,
   matchMemberQuery,
@@ -22,11 +27,14 @@ import {
   activateInactiveMember,
   removeDuplicateMember,
   matchMemberAndIMCLStatus,
-  updateMemberFellowship,
+  updateMemberAuthId,
+  updateMemberBacenta,
 } from '../cypher/resolver-cypher'
 import { getAuthToken } from '../authenticate'
+import { sendSingleEmail } from '../utils/notify'
 
 const cypher = require('../cypher/resolver-cypher')
+const texts = require('../texts.json')
 const closeChurchCypher = require('../cypher/close-church-cypher')
 
 const directoryMutation = {
@@ -37,7 +45,7 @@ const directoryMutation = {
         ...permitLeaderAdmin('Fellowship'),
         ...permitLeader('Hub'),
       ],
-      context?.auth.roles
+      context?.jwt['https://flcadmin.netlify.app/roles']
     )
 
     const session = context.executionContext.session()
@@ -62,11 +70,11 @@ const directoryMutation = {
           dob: args?.dob ?? '',
           maritalStatus: args?.maritalStatus ?? '',
           occupation: args?.occupation ?? '',
-          fellowship: args?.fellowship ?? '',
+          bacenta: args?.bacenta ?? '',
           basonta: args?.basonta ?? '',
           visitationArea: args?.visitationArea ?? '',
           pictureUrl: args?.pictureUrl ?? '',
-          auth_id: context.auth.jwt.sub ?? '',
+          auth_id: context.jwt.sub ?? '',
         })
       )
 
@@ -113,11 +121,11 @@ const directoryMutation = {
         maritalStatus: args?.maritalStatus ?? '',
         gender: args?.gender ?? '',
         occupation: args?.occupation ?? '',
-        fellowship: args?.fellowship ?? '',
+        bacenta: args?.bacenta ?? '',
         basonta: args?.basonta ?? '',
         visitationArea: args?.visitationArea ?? '',
         pictureUrl: args?.pictureUrl ?? '',
-        auth_id: context.auth.jwt.sub ?? '',
+        auth_id: context.jwt.sub ?? '',
       })
     )
 
@@ -126,14 +134,14 @@ const directoryMutation = {
 
     return member
   },
-  UpdateMemberFellowship: async (
+  UpdateMemberBacenta: async (
     object: Member,
-    args: { memberId: string; fellowshipId: string },
+    args: { memberId: string; bacentaId: string },
     context: Context
   ) => {
     isAuth(
-      [...permitMe('Fellowship'), ...permitMe('Hub'), ...permitSheepSeeker()],
-      context.auth.roles
+      [...permitMe('Bacenta'), ...permitMe('Hub'), ...permitSheepSeeker()],
+      context.jwt['https://flcadmin.netlify.app/roles']
     )
 
     const session = context.executionContext.session()
@@ -153,9 +161,9 @@ const directoryMutation = {
     }
 
     const moveRes = await session.executeWrite((tx) =>
-      tx.run(updateMemberFellowship, {
+      tx.run(updateMemberBacenta, {
         id: args.memberId,
-        fellowshipId: args.fellowshipId,
+        bacentaId: args.bacentaId,
       })
     )
 
@@ -170,7 +178,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitMe('Fellowship'), ...permitMe('Hub'), ...permitSheepSeeker()],
-      context.auth.roles
+      context.jwt['https://flcadmin.netlify.app/roles']
     )
 
     const authToken: string = await getAuthToken()
@@ -211,8 +219,8 @@ const directoryMutation = {
     context: Context
   ) => {
     isAuth(
-      [...permitLeaderAdmin('Stream'), ...permitSheepSeeker()],
-      context.auth.roles
+      [...permitLeaderAdmin('Governorship'), ...permitSheepSeeker()],
+      context.jwt['https://flcadmin.netlify.app/roles']
     )
     const session = context.executionContext.session()
 
@@ -236,7 +244,7 @@ const directoryMutation = {
       await session.run(mutation, {
         id: args.id,
         reason: args.reason,
-        auth: context.auth,
+        jwt: context.jwt,
       })
     )
 
@@ -244,7 +252,10 @@ const directoryMutation = {
     return member?.properties
   },
   CloseDownFellowship: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Constituency'), context.auth.roles)
+    isAuth(
+      permitAdmin('Governorship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -293,7 +304,7 @@ const directoryMutation = {
       await RemoveServant(
         context,
         args,
-        ['adminCampus', 'adminStream', 'adminCouncil', 'adminConstituency'],
+        ['adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'],
         'Fellowship',
         'Leader',
         true
@@ -302,7 +313,7 @@ const directoryMutation = {
       const closeFellowshipResponse = await session.run(
         closeChurchCypher.closeDownFellowship,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           fellowshipId: args.fellowshipId,
         }
       )
@@ -320,7 +331,10 @@ const directoryMutation = {
   },
 
   CloseDownBacenta: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdminArrivals('Constituency'), context.auth.roles)
+    isAuth(
+      permitAdminArrivals('Governorship'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
 
@@ -331,9 +345,9 @@ const directoryMutation = {
       )
       const bacentaCheck = rearrangeCypherObject(bacentaCheckResponse)
 
-      if (bacentaCheck.memberCount) {
+      if (bacentaCheck.memberCount > 0) {
         throw new Error(
-          `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.fellowshipCount} active fellowships. Please close down all fellowships and try again.`
+          `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.memberCount} members. Please transfer all members and try again.`
         )
       }
 
@@ -341,7 +355,7 @@ const directoryMutation = {
       await RemoveServant(
         context,
         args,
-        permitAdmin('Constituency'),
+        permitAdmin('Governorship'),
         'Bacenta',
         'Leader',
         true
@@ -350,49 +364,52 @@ const directoryMutation = {
       const closeBacentaResponse = await session.run(
         closeChurchCypher.closeDownBacenta,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           bacentaId: args.bacentaId,
         }
       )
 
       const bacentaResponse = rearrangeCypherObject(closeBacentaResponse)
-      return bacentaResponse.constituency
+      return bacentaResponse.governorship
     } catch (error: any) {
-      throwToSentry('There was an error closing down this bacenta', error)
+      throwToSentry('a', error)
     } finally {
       await session.close()
     }
     return null
   },
-  CloseDownConstituency: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Council'), context.auth.roles)
+  CloseDownGovernorship: async (object: any, args: any, context: Context) => {
+    isAuth(
+      permitAdmin('Council'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
 
     const res: any = await Promise.all([
-      session.run(closeChurchCypher.checkConstituencyHasNoMembers, args),
+      session.run(closeChurchCypher.checkGovernorshipHasNoMembers, args),
       sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-        churchId: args.constituencyId,
+        churchId: args.governorshipId,
       }),
     ]).catch((error: any) => {
       throwToSentry(
-        'There was an error running checkConstituencyHasNoMembers',
+        'There was an error running checkGovernorshipHasNoMembers',
         error
       )
     })
 
-    const constituencyCheck = rearrangeCypherObject(res[0])
+    const governorshipCheck = rearrangeCypherObject(res[0])
     const lastServiceRecord = rearrangeCypherObject(res[1])
 
-    if (constituencyCheck.bacentaCount.toNumber()) {
+    if (governorshipCheck.bacentaCount.toNumber()) {
       throw new Error(
-        `${constituencyCheck?.name} Constituency has ${constituencyCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
+        `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
       )
     }
-    if (constituencyCheck.hubCount.toNumber()) {
+    if (governorshipCheck.hubCount.toNumber()) {
       throw new Error(
-        `${constituencyCheck?.name} Constituency has ${constituencyCheck?.hubCount} active hubs. Please close down all hubs and try again.`
+        `${governorshipCheck?.name} Governorship has ${governorshipCheck?.hubCount} active hubs. Please close down all hubs and try again.`
       )
     }
 
@@ -410,7 +427,7 @@ const directoryMutation = {
       throw new Error(
         `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
           record.createdAt
-        )} before attempting to close down this constituency`
+        )} before attempting to close down this governorship`
       )
     }
 
@@ -421,7 +438,7 @@ const directoryMutation = {
           context,
           args,
           permitAdmin('Council'),
-          'Constituency',
+          'Governorship',
           'Leader',
           true
         ),
@@ -430,26 +447,26 @@ const directoryMutation = {
               context,
               args,
               permitAdmin('Council'),
-              'Constituency',
+              'Governorship',
               'Admin'
             )
           : null,
       ])
 
-      const closeConstituencyResponse = await session.run(
-        closeChurchCypher.closeDownConstituency,
+      const closeGovernorshipResponse = await session.run(
+        closeChurchCypher.closeDownGovernorship,
         {
-          auth: context.auth,
-          constituencyId: args.constituencyId,
+          jwt: context.jwt,
+          governorshipId: args.governorshipId,
         }
       )
 
-      const constituencyResponse = rearrangeCypherObject(
-        closeConstituencyResponse
+      const governorshipResponse = rearrangeCypherObject(
+        closeGovernorshipResponse
       )
-      return constituencyResponse.council
+      return governorshipResponse.council
     } catch (error: any) {
-      throwToSentry('There was an error closing down this constituency', error)
+      throwToSentry('There was an error closing down this governorship', error)
     } finally {
       await session.close()
       await sessionTwo.close()
@@ -458,7 +475,10 @@ const directoryMutation = {
   },
 
   CloseDownCouncil: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Stream'), context.auth.roles)
+    isAuth(
+      permitAdmin('Stream'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -478,9 +498,9 @@ const directoryMutation = {
     const councilCheck = rearrangeCypherObject(res[0])
     const lastServiceRecord = rearrangeCypherObject(res[1])
 
-    if (councilCheck.constituencyCount.toNumber()) {
+    if (councilCheck.governorshipCount.toNumber()) {
       throw new Error(
-        `${councilCheck?.name} Council has ${councilCheck?.constituencyCount} active constituencies. Please close down all constituencies and try again.`
+        `${councilCheck?.name} Council has ${councilCheck?.governorshipCount} active governorships. Please close down all governorships and try again.`
       )
     }
 
@@ -533,7 +553,7 @@ const directoryMutation = {
       const closeCouncilResponse = await session.run(
         closeChurchCypher.closeDownCouncil,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           councilId: args.councilId,
         }
       )
@@ -550,7 +570,10 @@ const directoryMutation = {
   },
 
   CloseDownStream: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Campus'), context.auth.roles)
+    isAuth(
+      permitAdmin('Campus'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -622,7 +645,7 @@ const directoryMutation = {
       const closeStreamResponse = await session.run(
         closeChurchCypher.closeDownStream,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           streamId: args.streamId,
         }
       )
@@ -639,7 +662,10 @@ const directoryMutation = {
   },
 
   CloseDownCampus: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Oversight'), context.auth.roles)
+    isAuth(
+      permitAdmin('Oversight'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -711,7 +737,7 @@ const directoryMutation = {
       const closeCampusResponse = await session.run(
         closeChurchCypher.closeDownCampus,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           campusId: args.campusId,
         }
       )
@@ -728,7 +754,10 @@ const directoryMutation = {
   },
 
   CloseDownOversight: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Denomination'), context.auth.roles)
+    isAuth(
+      permitAdmin('Denomination'),
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -797,7 +826,7 @@ const directoryMutation = {
       const closeOversightResponse = await session.run(
         closeChurchCypher.closeDownOversight,
         {
-          auth: context.auth,
+          jwt: context.jwt,
           oversightId: args.oversightId,
         }
       )
@@ -811,6 +840,58 @@ const directoryMutation = {
       await sessionTwo.close()
     }
     return null
+  },
+  CreateMemberAccount: async (object: any, args: any, context: Context) => {
+    const authToken = await getAuthToken()
+    const session = context.executionContext.session()
+
+    const memberRes = await session.executeRead((tx) =>
+      tx.run(matchMemberQuery, {
+        id: args.memberId,
+      })
+    )
+
+    const member = memberRes.records[0]?.get('member')
+    const authIdResponse = await axios(getAuthIdConfig(member, authToken))
+
+    if (!authIdResponse.data[0]?.user_id) {
+      const authProfileResponse = await axios(
+        createAuthUserConfig(member, authToken)
+      )
+      const passwordTicketResponse = await axios(
+        changePasswordConfig(member, authToken)
+      )
+
+      const res = await Promise.all([
+        session.executeWrite((tx) =>
+          tx.run(updateMemberAuthId, {
+            id: args.memberId,
+            auth_id: authProfileResponse.data.user_id,
+          })
+        ),
+        sendSingleEmail(
+          member,
+          'Welcome to the My First Love Portal',
+          undefined,
+          `<p>Hi ${member.firstName} ${member.lastName},<br/><br/>Welcome to your First Love Membership Portal</b>.<br/><br/>Your account has just been created. Please set up your password by clicking <b><a href=${passwordTicketResponse.data.ticket}>this link</a></b>. After setting up your password, you can log in by clicking <b>https://my.firstlovecenter.com/</b><br/><br/>${texts.html.subscription}`
+        ),
+      ])
+
+      return res[0].records[0]?.get('member').properties
+    }
+
+    if (!member.auth_id && authIdResponse.data[0]?.user_id) {
+      const res = await session.executeWrite((tx) =>
+        tx.run(updateMemberAuthId, {
+          id: args.memberId,
+          auth_id: authIdResponse.data[0]?.user_id,
+        })
+      )
+
+      return res.records[0]?.get('member').properties
+    }
+
+    return member
   },
 }
 

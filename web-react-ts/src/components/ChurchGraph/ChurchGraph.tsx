@@ -218,7 +218,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                 barSize={30}
                 yAxisId="left"
                 fill="url(#colorPrimary)"
-                onClick={(data) => {
+                onClick={(data: any) => {
                   const graphTypeActions: {
                     [key in string]: { typename: string; route: string }
                   } = {
@@ -236,7 +236,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                     },
                   }
 
-                  if (data.category.includes('Aggregate') || !data.id) {
+                  if (data.category?.includes('Aggregate') || !data.id) {
                     return
                   }
 
@@ -246,12 +246,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   navigate(`/${props.church}/${action.route}`)
                 }}
               >
-                <LabelList
-                  dataKey={`${stat1}`}
-                  position="top"
-                  fill="#FFF"
-                  fontSize="12"
-                />
+                <LabelList dataKey={`${stat1}`} position="top" />
               </Bar>
               {stat2 && (
                 <Bar
@@ -260,7 +255,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   barSize={35}
                   yAxisId="right"
                   fill="url(#colorSecondary)"
-                  onClick={(data) => {
+                  onClick={(data: any) => {
                     if (data.category.includes('Aggregate')) {
                       return
                     }
@@ -274,19 +269,13 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                     }
                   }}
                 >
-                  <LabelList
-                    dataKey={`${stat2}`}
-                    position="top"
-                    fill="#FFF"
-                    fontSize="12"
-                  />
+                  <LabelList dataKey={`${stat2}`} position="top" />
                 </Bar>
               )}
 
               <XAxis
                 dataKey="week"
                 tickLine={false}
-                fontSize="13"
                 tickFormatter={(week) => {
                   if (!week) {
                     return 'No Data Found'

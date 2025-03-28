@@ -10,7 +10,7 @@ import './Breadcrumb.css'
 interface BreadcrumbType extends Church {
   __typename: ChurchLevel
   name: string
-  constituency?: {
+  governorship?: {
     name: string
   }
 }

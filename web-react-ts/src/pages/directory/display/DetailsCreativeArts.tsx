@@ -5,7 +5,7 @@ import { ChurchContext } from '../../../contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Church } from 'global-types'
 import DisplaySontaDetails from 'components/DisplayChurchDetails/DisplaySontaDetails'
-import { DetailsArray } from './DetailsFellowship'
+import { DetailsArray } from './DetailsBacenta'
 
 const DetailsCreativeArts = () => {
   const { creativeArtsId } = useContext(ChurchContext)

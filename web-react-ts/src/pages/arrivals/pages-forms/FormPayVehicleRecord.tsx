@@ -100,9 +100,9 @@ const FormPayVehicleRecord = () => {
 
   const detailRows = [
     ['Stream', bacenta?.stream.name],
-    ['Council Pastor', bacenta?.constituency.council.leader.fullName],
-    ['Council', bacenta?.constituency.council.name],
-    ['Constituency', bacenta?.constituency.name],
+    ['Council Pastor', bacenta?.governorship.council.leader.fullName],
+    ['Council', bacenta?.governorship.council.name],
+    ['Governorship', bacenta?.governorship.name],
     ['Attendance', `${vehicle?.attendance || 0}`],
     ['Vehicle Type', vehicle?.vehicle || 0],
     [

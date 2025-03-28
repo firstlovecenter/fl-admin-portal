@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const concurrently = require('concurrently')
-const { API_DIR, runner, concurrentOpts, TEMPLATE_DIR } = require('./common')
+const { API_DIR, concurrentOpts, TEMPLATE_DIR } = require('./common')
 
 const versionBump = []
 const release = []
@@ -11,12 +11,12 @@ switch (process.argv[2]) {
     versionBump.push(
       {
         name: 'bump-api',
-        command: `cd ${API_DIR} && ${runner} version patch `,
+        command: `cd ${API_DIR} && npm version patch `,
         prefixColor: 'red',
       },
       {
         name: 'bump-frontend',
-        command: `cd ${TEMPLATE_DIR} && ${runner} version patch`,
+        command: `cd ${TEMPLATE_DIR} && npm version patch`,
         prefixColor: 'red',
       }
     )
@@ -31,12 +31,12 @@ switch (process.argv[2]) {
     versionBump.push(
       {
         name: 'bump-api',
-        command: `cd ${API_DIR} && ${runner} version minor`,
+        command: `cd ${API_DIR} && npm version minor`,
         prefixColor: 'red',
       },
       {
         name: 'bump-frontend',
-        command: `cd ${TEMPLATE_DIR} && ${runner} version minor`,
+        command: `cd ${TEMPLATE_DIR} && npm version minor`,
         prefixColor: 'red',
       }
     )
@@ -51,12 +51,12 @@ switch (process.argv[2]) {
     versionBump.push(
       {
         name: 'bump-api',
-        command: `cd ${API_DIR} && ${runner} version major`,
+        command: `cd ${API_DIR} && npm version major`,
         prefixColor: 'red',
       },
       {
         name: 'bump-frontend',
-        command: `cd ${TEMPLATE_DIR} && ${runner} version major`,
+        command: `cd ${TEMPLATE_DIR} && npm version major`,
         prefixColor: 'red',
       }
     )

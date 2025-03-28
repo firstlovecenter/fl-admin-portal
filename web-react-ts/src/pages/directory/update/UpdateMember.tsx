@@ -6,9 +6,9 @@ import { parsePhoneNum, throwToSentry } from 'global-utils'
 import {
   LOG_MEMBER_HISTORY,
   UPDATE_MEMBER_EMAIL,
-  UPDATE_MEMBER_FELLOWSHIP,
   UPDATE_MEMBER_BASONTA,
   UPDATE_MEMBER_MUTATION,
+  UPDATE_MEMBER_BACENTA,
 } from './UpdateMutations'
 import {
   DISPLAY_MEMBER_BIO,
@@ -50,7 +50,7 @@ const UpdateMember = () => {
     occupation: member?.occupation?.occupation ?? '',
     pictureUrl: member?.pictureUrl ?? '',
     visitationArea: member?.visitationArea ?? 'no-location',
-    fellowship: memberChurch?.fellowship,
+    bacenta: memberChurch?.bacenta,
     basonta: memberChurch?.basonta?.id ?? '',
   }
 
@@ -63,7 +63,7 @@ const UpdateMember = () => {
     ],
   })
   const [UpdateMemberEmail] = useMutation(UPDATE_MEMBER_EMAIL)
-  const [UpdateMemberFellowship] = useMutation(UPDATE_MEMBER_FELLOWSHIP)
+  const [UpdateMemberBacenta] = useMutation(UPDATE_MEMBER_BACENTA)
   const [UpdateMemberBasonta] = useMutation(UPDATE_MEMBER_BASONTA)
   const [LogMemberHistory] = useMutation(LOG_MEMBER_HISTORY)
 
@@ -88,7 +88,7 @@ const UpdateMember = () => {
           occupation: values.occupation,
           pictureUrl: values.pictureUrl,
 
-          fellowship: values.fellowship?.id,
+          bacenta: values.bacenta?.id,
         },
       })
 
@@ -132,13 +132,13 @@ const UpdateMember = () => {
         }
       }
 
-      if (memberChurch?.fellowship.id !== values.fellowship.id) {
-        await UpdateMemberFellowship({
+      if (memberChurch?.bacenta.id !== values.bacenta.id) {
+        await UpdateMemberBacenta({
           variables: {
             memberId: memberId,
-            fellowshipId: values.fellowship?.id,
-            ids: [memberId, values.fellowship?.id, memberChurch?.fellowship.id],
-            historyRecord: `${member.firstName} ${member.lastName} moved from ${memberChurch?.fellowship.name} Fellowship to ${values.fellowship?.name} Fellowship`,
+            bacentaId: values.bacenta?.id,
+            ids: [memberId, values.bacenta?.id, memberChurch?.bacenta.id],
+            historyRecord: `${member.firstName} ${member.lastName} moved from ${memberChurch?.bacenta.name} Bacenta to ${values.bacenta?.name} Bacenta`,
           },
         })
       }

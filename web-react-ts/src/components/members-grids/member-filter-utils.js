@@ -87,7 +87,7 @@ export const memberFilter = (memberData, filters) => {
 
   if (filters.leaderRank.includes('Admin')) {
     leaderData.admins = filteredData.filter((member) => {
-      if (member.isAdminForConstituency[0] || member.isAdminForCouncil[0]) {
+      if (member.isAdminForGovernorship[0] || member.isAdminForCouncil[0]) {
         return member
       }
       return null
@@ -122,7 +122,7 @@ export const memberFilter = (memberData, filters) => {
   }
   if (filters.leaderRank.includes('CO')) {
     leaderData.cOs = filteredData.filter((member) => {
-      if (member.leadsConstituency[0]) {
+      if (member.leadsGovernorship[0]) {
         return member
       }
       return null

@@ -76,7 +76,7 @@ const SwollenSundayUploadTargets = () => {
           const jsonData = results?.data?.map((column: any) => {
             return {
               council: column[0],
-              constituency: column[1],
+              governorship: column[1],
               bacenta: column[2],
               code: column[3],
               leader: column[4],
@@ -87,7 +87,7 @@ const SwollenSundayUploadTargets = () => {
 
           for (const i in jsonData) {
             if (
-              jsonData[i].constituency === '' ||
+              jsonData[i].governorship === '' ||
               jsonData[i].bacenta === '' ||
               jsonData[i].code === '' ||
               jsonData[i].leader === '' ||

@@ -40,12 +40,17 @@ extend type RehearsalRecord {
   bankingProof: Boolean
     @cypher(
       statement: """
-      MATCH (this)
-      WITH this WHERE this.bankingSlip IS NOT NULL
-      OR  this.transactionStatus = 'success'
-      OR this.tellerConfirmationTime IS NOT NULL
-      RETURN true
+       MATCH (this)
+      WITH this
+      RETURN CASE
+        WHEN this.bankingSlip IS NOT NULL
+        OR this.transactionStatus = 'success'
+        OR this.tellerConfirmationTime IS NOT NULL
+        THEN true
+        ELSE false
+      END AS bankingProof
       """
+      columnName: "bankingProof"
     )
 }
 
@@ -70,15 +75,20 @@ extend type ServiceRecord {
     @cypher(
       statement: """
       MATCH (this)
-      WITH this WHERE this.bankingSlip IS NOT NULL
-      OR  this.transactionStatus = 'success'
-      OR this.tellerConfirmationTime IS NOT NULL
-      RETURN true
+      WITH this
+      RETURN CASE
+        WHEN this.bankingSlip IS NOT NULL
+        OR this.transactionStatus = 'success'
+        OR this.tellerConfirmationTime IS NOT NULL
+        THEN true
+        ELSE false
+      END AS bankingProof
       """
+      columnName: "bankingProof"
     )
 }
 
-extend type Constituency {
+extend type Governorship {
   servicesNotBanked: [ServiceRecord!]!
     @cypher(
       statement: """
@@ -90,11 +100,12 @@ extend type Constituency {
 
       RETURN record
       """
+      columnName: "record"
     )
 }
 
 extend type Council {
-  constituencyBankedThisWeek: [Constituency!]!
+  governorshipBankedThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -112,15 +123,16 @@ extend type Council {
         WHERE record.bankingSlip IS NOT NULL
           OR record.transactionStatus = 'success'
           OR record.tellerConfirmationTime IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankedThisWeekCount: Int
+  governorshipBankedThisWeekCount: Int
     @cypher(
       statement: """
        MATCH (this)
@@ -138,15 +150,16 @@ extend type Council {
         WHERE record.bankingSlip IS NOT NULL
           OR record.transactionStatus = 'success'
           OR record.tellerConfirmationTime IS NOT NULL
-        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-        WITH DISTINCT constituencies, this
-         MATCH (constituencies)<-[:HAS]-(this)
+        WITH DISTINCT governorships, this
+         MATCH (governorships)<-[:HAS]-(this)
 
-      RETURN COUNT(DISTINCT constituencies) as count
+      RETURN COUNT(DISTINCT governorships) as count
       """
+      columnName: "count"
     )
-  constituencyBankingDefaultersThisWeek: [Constituency!]!
+  governorshipBankingDefaultersThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -165,15 +178,16 @@ extend type Council {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankingDefaultersThisWeekCount: Int
+  governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
       statement: """
       MATCH (this)
@@ -192,25 +206,25 @@ extend type Council {
            AND record.bankingSlip IS NULL
            AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
            AND record.tellerConfirmationTime IS NULL
-        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-        WITH DISTINCT constituencies, this
-        MATCH (constituencies)<-[:HAS]-(this)
+        WITH DISTINCT governorships, this
+        MATCH (governorships)<-[:HAS]-(this)
 
-        WITH COUNT(DISTINCT constituencies) as count
+        WITH COUNT(DISTINCT governorships) as count
        RETURN
        CASE
        WHEN count < 1 THEN null
        ELSE count
        END AS result
       """
+      columnName: "result"
     )
-
-  constituencyBankingDefaulters: [Constituency!]!
+  governorshipBankingDefaulters: [Governorship!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
-      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies)
+      MATCH (this)-[:HAS]->(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
+      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships)
 
       WHERE record.noServiceReason IS NULL
         AND record.bankingSlip IS NULL
@@ -218,27 +232,29 @@ extend type Council {
         AND record.tellerConfirmationTime IS NULL
 
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankingDefaultersThisWeekCount: Int
+  governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
-      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies)
+      MATCH (this)-[:HAS]->(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
+      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships)
 
        WHERE record.noServiceReason IS NULL
          AND record.bankingSlip IS NULL
          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
          AND record.tellerConfirmationTime IS NULL
 
-        WITH COUNT(DISTINCT constituencies) as count
+        WITH COUNT(DISTINCT governorships) as count
       RETURN
       CASE
       WHEN count < 1 THEN null
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
   servicesNotBanked: [ServiceRecord!]!
     @cypher(
@@ -251,11 +267,12 @@ extend type Council {
 
       RETURN record
       """
+      columnName: "record"
     )
 }
 
 extend type Stream {
-  constituencyBankedThisWeek: [Constituency!]!
+  governorshipBankedThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -273,15 +290,16 @@ extend type Stream {
         WHERE record.bankingSlip IS NOT NULL
           OR record.transactionStatus = 'success'
           OR record.tellerConfirmationTime IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankedThisWeekCount: Int
+  governorshipBankedThisWeekCount: Int
     @cypher(
       statement: """
        MATCH (this)
@@ -299,20 +317,21 @@ extend type Stream {
         WHERE record.bankingSlip IS NOT NULL
           OR record.transactionStatus = 'success'
           OR record.tellerConfirmationTime IS NOT NULL
-        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-        WITH DISTINCT constituencies, this
-        MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(this)
+        WITH DISTINCT governorships, this
+        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      WITH COUNT(DISTINCT constituencies) as count
+      WITH COUNT(DISTINCT governorships) as count
        RETURN
        CASE
        WHEN count < 1 THEN null
        ELSE count
        END AS result
       """
+      columnName: "result"
     )
-  constituencyBankingDefaultersThisWeek: [Constituency!]!
+  governorshipBankingDefaultersThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -331,15 +350,16 @@ extend type Stream {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankingDefaultersThisWeekCount: Int
+  governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
       statement: """
       MATCH (this)
@@ -358,25 +378,25 @@ extend type Stream {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-       WITH COUNT(DISTINCT constituencies) as count
+       WITH COUNT(DISTINCT governorships) as count
       RETURN
       CASE
       WHEN count < 1 THEN null
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
-
-  constituencyBankingDefaulters: [Constituency!]!
+  governorshipBankingDefaulters: [Governorship!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Council)-[:HAS]->(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
-      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies)
+      MATCH (this)-[:HAS]->(:Council)-[:HAS]->(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
+      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships)
 
       WHERE record.noServiceReason IS NULL
         AND record.bankingSlip IS NULL
@@ -384,29 +404,30 @@ extend type Stream {
         AND record.tellerConfirmationTime IS NULL
 
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankingDefaultersThisWeekCount: Int
+  governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Council)-[:HAS]->(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
-      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies)
+      MATCH (this)-[:HAS]->(:Council)-[:HAS]->(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
+      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships)
 
       WHERE record.noServiceReason IS NULL
         AND record.bankingSlip IS NULL
         AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
         AND record.tellerConfirmationTime IS NULL
 
-        WITH COUNT(DISTINCT constituencies) as count
+        WITH COUNT(DISTINCT governorships) as count
       RETURN
       CASE
       WHEN count < 1 THEN null
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
-
   councilBankedThisWeek: [Council!]!
     @cypher(
       statement: """
@@ -432,6 +453,7 @@ extend type Stream {
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankedThisWeekCount: Int
     @cypher(
@@ -463,6 +485,7 @@ extend type Stream {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
   councilBankingDefaulters: [Council!]!
     @cypher(
@@ -478,6 +501,7 @@ extend type Stream {
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankingDefaultersCount: Int
     @cypher(
@@ -497,6 +521,7 @@ extend type Stream {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
 
   servicesNotBanked: [ServiceRecord!]!
@@ -510,6 +535,7 @@ extend type Stream {
 
       RETURN record
       """
+      columnName: "record"
     )
 
   councilBankingDefaultersThisWeek: [Council!]!
@@ -538,6 +564,7 @@ extend type Stream {
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -570,11 +597,12 @@ extend type Stream {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
 }
 
 extend type Campus {
-  constituencyBankedThisWeek: [Constituency!]!
+  governorshipBankedThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -592,15 +620,16 @@ extend type Campus {
         WHERE record.bankingSlip IS NOT NULL
           OR record.transactionStatus = 'success'
           OR record.tellerConfirmationTime IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankedThisWeekCount: Int
+  governorshipBankedThisWeekCount: Int
     @cypher(
       statement: """
        MATCH (this)
@@ -618,20 +647,21 @@ extend type Campus {
         WHERE record.bankingSlip IS NOT NULL
           OR record.transactionStatus = 'success'
           OR record.tellerConfirmationTime IS NOT NULL
-        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-        WITH DISTINCT constituencies, this
-        MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+        WITH DISTINCT governorships, this
+        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      WITH COUNT(DISTINCT constituencies) as count
+      WITH COUNT(DISTINCT governorships) as count
        RETURN
        CASE
        WHEN count < 1 THEN null
        ELSE count
        END AS result
       """
+      columnName: "result"
     )
-  constituencyBankingDefaultersThisWeek: [Constituency!]!
+  governorshipBankingDefaultersThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -650,15 +680,16 @@ extend type Campus {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankingDefaultersThisWeekCount: Int
+  governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
       statement: """
        MATCH (this)
@@ -677,26 +708,27 @@ extend type Campus {
            AND record.bankingSlip IS NULL
            AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
            AND record.tellerConfirmationTime IS NULL
-        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-        WITH DISTINCT constituencies, this
-        MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+        WITH DISTINCT governorships, this
+        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      WITH COUNT(DISTINCT constituencies) as count
+      WITH COUNT(DISTINCT governorships) as count
        RETURN
        CASE
        WHEN count < 1 THEN null
        ELSE count
        END AS result
       """
+      columnName: "result"
     )
 
-  constituencyBankingDefaulters: [Constituency!]!
+  governorshipBankingDefaulters: [Governorship!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(constituencies)
-      WHERE constituencies:Constituency OR constituencies:ClosedConstituency
-      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies)
+      MATCH (this)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(governorships)
+      WHERE governorships:Governorship OR governorships:ClosedGovernorship
+      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships)
 
       WHERE record.noServiceReason IS NULL
         AND record.bankingSlip IS NULL
@@ -704,28 +736,30 @@ extend type Campus {
         AND record.tellerConfirmationTime IS NULL
 
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankingDefaultersCount: Int
+  governorshipBankingDefaultersCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(constituencies)
-      WHERE constituencies:Constituency OR constituencies:ClosedConstituency
-       MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies)
+      MATCH (this)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(governorships)
+      WHERE governorships:Governorship OR governorships:ClosedGovernorship
+       MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships)
 
        WHERE record.noServiceReason IS NULL
          AND record.bankingSlip IS NULL
          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
          AND record.tellerConfirmationTime IS NULL
 
-      WITH COUNT(DISTINCT constituencies) as count
+      WITH COUNT(DISTINCT governorships) as count
       RETURN
       CASE
       WHEN count < 1 THEN null
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
 
   councilBankingDefaulters: [Council!]!
@@ -742,6 +776,7 @@ extend type Campus {
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankingDefaultersCount: Int
     @cypher(
@@ -761,6 +796,7 @@ extend type Campus {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
   councilBankedThisWeek: [Council!]!
     @cypher(
@@ -787,6 +823,7 @@ extend type Campus {
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankedThisWeekCount: Int
     @cypher(
@@ -818,6 +855,7 @@ extend type Campus {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
   councilBankingDefaultersThisWeek: [Council!]!
     @cypher(
@@ -841,10 +879,11 @@ extend type Campus {
        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(council) WHERE council:Council OR council:ClosedCouncil
 
        WITH DISTINCT council, this
-       MATCH (council:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       MATCH (council:Council)<-[:HAS]-(this)
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -868,7 +907,7 @@ extend type Campus {
        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(council) WHERE council:Council OR council:ClosedCouncil
 
        WITH DISTINCT council, this
-       MATCH (council:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
+       MATCH (council:Council)<-[:HAS]-(this)
 
       WITH COUNT(DISTINCT council) as count
       RETURN
@@ -877,11 +916,12 @@ extend type Campus {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
 }
 
 extend type Oversight {
-  constituencyBankedThisWeek: [Constituency!]!
+  governorshipBankedThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -899,15 +939,16 @@ extend type Oversight {
         WHERE record.bankingSlip IS NOT NULL
           OR record.transactionStatus = 'success'
           OR record.tellerConfirmationTime IS NOT NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(:Campus)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(:Campus)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankedThisWeekCount: Int
+  governorshipBankedThisWeekCount: Int
     @cypher(
       statement: """
        MATCH (this)
@@ -925,20 +966,21 @@ extend type Oversight {
         WHERE record.bankingSlip IS NOT NULL
           OR record.transactionStatus = 'success'
           OR record.tellerConfirmationTime IS NOT NULL
-        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-        WITH DISTINCT constituencies, this
-        MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(:Campus)<-[:HAS]-(this)
+        WITH DISTINCT governorships, this
+        MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(:Campus)<-[:HAS]-(this)
 
-      WITH COUNT(DISTINCT constituencies) as count
+      WITH COUNT(DISTINCT governorships) as count
        RETURN
        CASE
        WHEN count < 1 THEN null
        ELSE count
        END AS result
       """
+      columnName: "result"
     )
-  constituencyBankingDefaultersThisWeek: [Constituency!]!
+  governorshipBankingDefaultersThisWeek: [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -957,15 +999,16 @@ extend type Oversight {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(:Campus)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(:Campus)<-[:HAS]-(this)
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankingDefaultersThisWeekCount: Int
+  governorshipBankingDefaultersThisWeekCount: Int
     @cypher(
       statement: """
       MATCH (this)
@@ -984,26 +1027,27 @@ extend type Oversight {
           AND record.bankingSlip IS NULL
           AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
           AND record.tellerConfirmationTime IS NULL
-       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies) WHERE constituencies:Constituency OR constituencies:ClosedConstituency
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
 
-       WITH DISTINCT constituencies, this
-       MATCH (constituencies)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(:Campus)<-[:HAS]-(this)
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(:Campus)<-[:HAS]-(this)
 
-      WITH COUNT(DISTINCT constituencies) as count
+      WITH COUNT(DISTINCT governorships) as count
       RETURN
       CASE
       WHEN count < 1 THEN null
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
 
-  constituencyBankingDefaulters: [Constituency!]!
+  governorshipBankingDefaulters: [Governorship!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(constituencies)
-      WHERE constituencies:Constituency OR constituencies:ClosedConstituency
-      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies)
+      MATCH (this)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(governorships)
+      WHERE governorships:Governorship OR governorships:ClosedGovernorship
+      MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships)
 
       WHERE record.noServiceReason IS NULL
         AND record.bankingSlip IS NULL
@@ -1011,28 +1055,30 @@ extend type Oversight {
         AND record.tellerConfirmationTime IS NULL
 
 
-      RETURN DISTINCT constituencies
+      RETURN DISTINCT governorships
       """
+      columnName: "governorships"
     )
-  constituencyBankingDefaultersCount: Int
+  governorshipBankingDefaultersCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(constituencies)
-      WHERE constituencies:Constituency OR constituencies:ClosedConstituency
-       MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(constituencies)
+      MATCH (this)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(governorships)
+      WHERE governorships:Governorship OR governorships:ClosedGovernorship
+       MATCH (record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(governorships)
 
        WHERE record.noServiceReason IS NULL
          AND record.bankingSlip IS NULL
          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
          AND record.tellerConfirmationTime IS NULL
 
-      WITH COUNT(DISTINCT constituencies) as count
+      WITH COUNT(DISTINCT governorships) as count
       RETURN
       CASE
       WHEN count < 1 THEN null
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
 
   councilBankedThisWeek: [Council!]!
@@ -1060,6 +1106,7 @@ extend type Oversight {
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankedThisWeekCount: Int
     @cypher(
@@ -1091,6 +1138,7 @@ extend type Oversight {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
   councilBankingDefaulters: [Council!]!
     @cypher(
@@ -1106,6 +1154,7 @@ extend type Oversight {
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankingDefaultersCount: Int
     @cypher(
@@ -1125,6 +1174,7 @@ extend type Oversight {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
 
   councilBankingDefaultersThisWeek: [Council!]!
@@ -1153,6 +1203,7 @@ extend type Oversight {
 
       RETURN DISTINCT council
       """
+      columnName: "council"
     )
   councilBankingDefaultersThisWeekCount: Int
     @cypher(
@@ -1185,5 +1236,6 @@ extend type Oversight {
       ELSE count
       END AS result
       """
+      columnName: "result"
     )
 }

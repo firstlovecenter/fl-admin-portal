@@ -34,7 +34,7 @@ const CouncilTrends = () => {
             <TrendsButton
               church={councils}
               onClick={() =>
-                navigate(`/campaigns/equipment/council/constituency`)
+                navigate(`/campaigns/equipment/council/governorship`)
               }
             />
           </div>

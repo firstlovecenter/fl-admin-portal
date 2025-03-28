@@ -7,7 +7,7 @@ import cors from 'cors'
 import { json } from 'body-parser'
 import neo4j from 'neo4j-driver'
 import { Neo4jGraphQL } from '@neo4j/graphql'
-import { Neo4jGraphQLAuthJWTPlugin } from '@neo4j/graphql-plugin-auth'
+import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import SECRETS from './resolvers/getSecrets'
@@ -20,21 +20,30 @@ const driver = neo4j.driver(
   neo4j.auth.basic(
     SECRETS.NEO4J_USER || 'neo4j',
     SECRETS.NEO4J_PASSWORD || 'letmein'
-  ),
-  {
-    encrypted: SECRETS.NEO4J_ENCRYPTED ? 'ENCRYPTION_ON' : 'ENCRYPTION_OFF',
-  }
+  )
+  // {
+  //   encrypted: SECRETS.NEO4J_ENCRYPTED ? 'ENCRYPTION_ON' : 'ENCRYPTION_OFF',
+  // }
 )
 
 const neoSchema = new Neo4jGraphQL({
   typeDefs,
   resolvers,
   driver,
-  plugins: {
-    auth: new Neo4jGraphQLAuthJWTPlugin({
-      secret: SECRETS.JWT_SECRET,
-      rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
-    }),
+  features: {
+    authorization: {
+      key: SECRETS.JWT_SECRET,
+    },
+    config: {
+      debug: true,
+    },
+    excludeDeprecatedFields: {
+      bookmark: true,
+      negationFilters: true,
+      arrayFilters: true,
+      stringAggregation: true,
+      aggregationFilters: true,
+    },
   },
 })
 
@@ -61,10 +70,38 @@ const host = SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'
  * This also also allows us to specify a path for the GraphQL endpoint
  */
 const startServer = async () => {
-  const schema = await neoSchema.getSchema()
+  const schema = await neoSchema.getSchema().catch((error) => {
+    console.error('\x1b[31m######## 🚨SCHEMA ERROR🚨 #######\x1b[0m')
+    console.error(`${JSON.stringify(error, null, 2)}`)
+    console.log(
+      '\x1b[31m########## 🚨END OF SCHEMA ERROR🚨 ##################\x1b[0m'
+    )
+    process.exit(1)
+  })
 
   const server = new ApolloServer({
-    context: ({ req }) => ({ req, executionContext: driver }),
+    context: async ({ req }) => {
+      const token = req.headers.authorization
+      let jwt = null
+
+      if (token) {
+        try {
+          jwt = jwtDecode(token)
+          console.log('🚀 ~ index.js:90 ~ jwt:', jwt)
+        } catch (error) {
+          console.error('Invalid token:', error)
+        }
+      }
+
+      return {
+        req,
+        executionContext: driver,
+        jwt: {
+          ...jwt,
+          roles: jwt?.['https://flcadmin.netlify.app/roles'],
+        },
+      }
+    },
     introspection: true,
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
@@ -77,11 +114,27 @@ const startServer = async () => {
     cors(),
     json(),
     expressMiddleware(server, {
-      context: async ({ req }) => ({
-        req,
-        executionContext: driver,
-        token: req.headers.authorization,
-      }),
+      context: async ({ req }) => {
+        const token = req.headers.authorization
+        let jwt = null
+
+        if (token) {
+          try {
+            jwt = jwtDecode(token)
+          } catch (error) {
+            console.error('Invalid token:', error)
+          }
+        }
+
+        return {
+          req,
+          executionContext: driver,
+          jwt: {
+            ...jwt,
+            roles: jwt?.['https://flcadmin.netlify.app/roles'],
+          },
+        }
+      },
     })
   )
 

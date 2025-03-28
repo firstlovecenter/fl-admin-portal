@@ -23,7 +23,7 @@ function BacentaHistory() {
           <HeadingSecondary>Bacenta History</HeadingSecondary>
         </div>
         <Container>
-          <Timeline record={bacenta?.history} limit={10} />
+          <Timeline record={bacenta?.history} limit={100} />
         </Container>
       </>
     </ApolloWrapper>

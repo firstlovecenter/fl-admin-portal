@@ -25,7 +25,7 @@ import {
 } from 'permission-utils'
 import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
 import usePopup from 'hooks/usePopup'
-import { AdminFormOptions } from './DashboardConstituency'
+import { AdminFormOptions } from './DashboardGovernorship'
 import SearchMember from 'components/formik/SearchMember'
 import { beforeStreamArrivalsDeadline } from '../arrivals-utils'
 import ErrorText from 'components/ErrorText'
@@ -93,15 +93,15 @@ const CouncilDashboard = () => {
   }
 
   const aggregates = {
-    title: 'Constituencies',
-    data: council?.constituencyCount,
-    link: `/arrivals/council-by-constituency`,
+    title: 'Governorships',
+    data: council?.governorshipCount,
+    link: `/arrivals/council-by-governorship`,
   }
 
   const ArrivalsMenu = [
     { title: 'Change Arrivals Admin', onClick: togglePopup },
     {
-      title: 'Arrivals Payment Team',
+      title: 'Arrivals Payment Governorship',
       onClick: () => navigate('/council/arrivals-payers'),
     },
   ]

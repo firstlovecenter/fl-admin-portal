@@ -1,17 +1,23 @@
 #Query Definitions
+extend schema @authentication
+type JWT @jwt {
+  roles: [String!]!
+}
+
 type Query {
   currentUser(id: ID): Member!
     @cypher(
-      statement: "MATCH (member:Active:Member {auth_id: $auth.jwt.sub}) RETURN member"
+      statement: "MATCH (member:Active:Member {auth_id: $jwt.sub}) RETURN member"
+      columnName: "member"
     )
-    @auth(rules: [{ isAuthenticated: true }])
 
   memberByEmail(email: String!): Member
     @cypher(
       statement: "MATCH (member:Active:Member {email:$email}) RETURN member LIMIT 1"
+      columnName: "member"
     )
 }
 
 type Mutation {
-  MakeFellowshipIntoBacenta(fellowshipId: ID!): Bacenta!
+  CreateMemberAccount(memberId: ID!): Member!
 }

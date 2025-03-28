@@ -1,10 +1,9 @@
 import { Church, ChurchLevel, Role, VerbTypes } from 'global-types'
 
 export const churchLevels: ChurchLevel[] = [
-  'Fellowship',
   'Hub',
   'Bacenta',
-  'Constituency',
+  'Governorship',
   'HubCouncil',
   'Ministry',
   'CreativeArts',
@@ -18,7 +17,7 @@ export const churchLevels: ChurchLevel[] = [
 export const getHighestRole = (roles: Role[]) => {
   let highestRole
 
-  let highestLevel: ChurchLevel = 'Fellowship'
+  let highestLevel: ChurchLevel = 'Bacenta'
   let highestVerb: VerbTypes = 'leader'
 
   for (let i = churchLevels.length; i >= 0; i--) {
@@ -58,11 +57,9 @@ export const getHighestRole = (roles: Role[]) => {
 
 export const nextHigherChurch = (churchLevel: ChurchLevel): ChurchLevel => {
   switch (churchLevel) {
-    case 'Fellowship':
-      return 'Bacenta'
     case 'Bacenta':
-      return 'Constituency'
-    case 'Constituency':
+      return 'Governorship'
+    case 'Governorship':
       return 'Council'
     case 'Council':
       return 'Stream'
@@ -71,20 +68,18 @@ export const nextHigherChurch = (churchLevel: ChurchLevel): ChurchLevel => {
     case 'Campus':
       return 'Oversight'
     default:
-      return 'Fellowship'
+      return 'Bacenta'
   }
 }
 
 export const nextLowerChurch = (churchLevel: ChurchLevel) => {
   switch (churchLevel) {
-    case 'Fellowship':
-      return 'Fellowship'
     case 'Bacenta':
-      return 'Fellowship'
-    case 'Constituency':
+      return 'Bacenta'
+    case 'Governorship':
       return 'Bacenta'
     case 'Council':
-      return 'Constituency'
+      return 'Governorship'
     case 'Stream':
       return 'Council'
     case 'Campus':

@@ -72,9 +72,9 @@ export const MULTIPLICATION_RECORDS = gql`
   }
 `
 
-export const CONSTITUENCY_MULTIPLICATION_GRAPHS = gql`
-  query constituencyServiceMultiplicationGraphs($constituencyId: ID!) {
-    constituencies(where: { id: $constituencyId }) {
+export const GOVERNORSHIP_MULTIPLICATION_GRAPHS = gql`
+  query governorshipServiceMultiplicationGraphs($governorshipId: ID!) {
+    governorships(where: { id: $governorshipId }) {
       id
       name
       leader {
@@ -292,9 +292,9 @@ export const COUNCIL_MULTIPLICATION_BANKING_SLIP_QUERY = gql`
   }
 `
 
-export const CONSTITUENCY_MULTIPLICATION_BANKING_SLIP_QUERY = gql`
-  query constituencyMultiplicationBankingSlipQueries($constituencyId: ID!) {
-    constituencies(where: { id: $constituencyId }) {
+export const GOVERNORSHIP_MULTIPLICATION_BANKING_SLIP_QUERY = gql`
+  query governorshipMultiplicationBankingSlipQueries($governorshipId: ID!) {
+    governorships(where: { id: $governorshipId }) {
       id
       name
       multiplicationRecords(limit: 20) {
@@ -361,9 +361,9 @@ export const COUNCIL_AGGREGATE_MEMBER_CONVERSION = gql`
   }
 `
 
-export const CONSTITUENCY_AGGREGATE_MEMBER_CONVERSION = gql`
-  query constituencyAggregateMemberConversion($constituencyId: ID!) {
-    constituencies(where: { id: $constituencyId }) {
+export const GOVERNORSHIP_AGGREGATE_MEMBER_CONVERSION = gql`
+  query governorshipAggregateMemberConversion($governorshipId: ID!) {
+    governorships(where: { id: $governorshipId }) {
       id
       name
       aggregateMemberConversion {

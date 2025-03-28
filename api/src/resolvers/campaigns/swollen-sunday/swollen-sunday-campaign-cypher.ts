@@ -39,7 +39,7 @@ RETURN true as result
 
 export const getCouncilAverage = `
 MATCH (this:Council {id:$councilId})
-MATCH (this)-[:HAS]->(:Constituency)-[:HAS]->(bacenta:Active:Bacenta)
+MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Active:Bacenta)
 
 CALL apoc.cypher.run('
  WITH $bacenta AS bacenta
@@ -55,7 +55,7 @@ RETURN toFloat(averageCouncilBussing) as averageCouncilBussing
 
 export const shareBacentaTargetsCypher = `
 MATCH (this:Council {id:$councilId})
-MATCH (this)-[:HAS]->(:Constituency)-[:HAS]->(bacenta:Active:Bacenta)
+MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Active:Bacenta)
 OPTIONAL MATCH (bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(oldTarget:Target {date:date($swellDate)})
 DETACH DELETE oldTarget
 
@@ -119,7 +119,7 @@ export const aggregateTargetsCypher = `
 MATCH (bacenta:Bacenta)
 
 WITH bacenta as lowerChurch
-MATCH (lowerChurch)<-[:HAS]-(higherChurch:Constituency)
+MATCH (lowerChurch)<-[:HAS]-(higherChurch:Governorship)
 MATCH (lowerChurch)-[:CURRENT_HISTORY]->(lowerLog:ServiceLog)-[:HAS_TARGET]->(target:Target)
 WHERE target.date = date($swellDate)
 

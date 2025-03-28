@@ -3,7 +3,7 @@ import { Button, Card, Container, Spinner, Table } from 'react-bootstrap'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
 import PlaceholderCustom from 'components/Placeholder'
-import { CONSTITUENCY_BANKING_DEFUALTERS_THIS_WEEK } from 'pages/services/defaulters/DefaultersQueries'
+import { GOVERNORSHIP_BANKING_DEFUALTERS_THIS_WEEK } from 'pages/services/defaulters/DefaultersQueries'
 import { useQuery, useMutation, useLazyQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Formik, Form, FormikHelpers } from 'formik'
@@ -18,14 +18,14 @@ import NoDataComponent from 'pages/arrivals/CompNoData'
 import Input from 'components/formik/Input'
 import './TellerSelect.css'
 import { getWeekNumber } from '@jaedag/admin-portal-types'
+import { Church } from 'global-types'
 
 type FormOptions = {
   defaulterSearch: string
 }
 
-type Defaulter = {
+interface Defaulter extends Church {
   id: string
-  leader: { pictureUrl: string; fullName: string }
   name: string
 }
 
@@ -37,12 +37,12 @@ const ConfirmAnagkazoBanking = () => {
   const [isSubmitting, setSubmitting] = useState(false)
   const [defaulterIndex, setDefaulterIndex] = useState(0)
   const [selected, setSelected] = useState<Defaulter>()
-  const [defaultersData, setDefaultersData] = useState([])
+  const [defaultersData, setDefaultersData] = useState<Church[]>([])
   const { togglePopup, isOpen } = usePopup()
   const navigate = useNavigate()
 
   const { data, loading, error, refetch } = useQuery(
-    CONSTITUENCY_BANKING_DEFUALTERS_THIS_WEEK,
+    GOVERNORSHIP_BANKING_DEFUALTERS_THIS_WEEK,
     {
       variables: { id: streamId },
       fetchPolicy: 'cache-and-network',
@@ -50,17 +50,19 @@ const ConfirmAnagkazoBanking = () => {
   )
 
   const [
-    getConstituencyServiceRecordThisWeek,
-    { data: constituencyServiceData, loading: constituencyServiceLoading },
+    getGovernorshipServiceRecordThisWeek,
+    { data: governorshipServiceData, loading: governorshipServiceLoading },
   ] = useLazyQuery(DISPLAY_AGGREGATE_SERVICE_RECORD)
 
   const [ConfirmBanking] = useMutation(CONFIRM_BANKING)
 
   const service =
-    constituencyServiceData?.constituencies[0]?.aggregateServiceRecordForWeek
+    governorshipServiceData?.governorships[0]?.aggregateServiceRecordForWeek
 
-  const bankingDefaultersList =
-    data?.streams[0]?.constitiuencyBankingDefaultersThisWeek
+  const governorshipServices =
+    data?.streams[0]?.governorshipBankingDefaultersThisWeek ?? []
+
+  const bankingDefaultersList: Church[] = [...governorshipServices]
 
   const onSubmit = (
     values: FormOptions,
@@ -80,7 +82,7 @@ const ConfirmAnagkazoBanking = () => {
 
   useEffect(() => {
     setDefaultersData(bankingDefaultersList)
-  }, [bankingDefaultersList])
+  }, [governorshipServices])
 
   const initialValues: FormOptions = {
     defaulterSearch: '',
@@ -117,14 +119,14 @@ const ConfirmAnagkazoBanking = () => {
               <div className="d-grid ">
                 {isOpen && (
                   <Popup handleClose={togglePopup}>
-                    {constituencyServiceLoading ? (
+                    {governorshipServiceLoading ? (
                       <div className="center-spinner">
                         <Spinner animation="border" variant="secondary" />
                       </div>
                     ) : (
                       <>
                         <h3 className={` menu-subheading text-center`}>
-                          {selected?.name} Constituency
+                          {selected?.name} {selected?.__typename}
                         </h3>
                         <h6 className="text-center">Confirm Offering?</h6>
                         <Table striped bordered hover variant="dark">
@@ -145,51 +147,48 @@ const ConfirmAnagkazoBanking = () => {
                         </Table>
                         <i className="text-danger">
                           NB: You must only click this button if the amount the
-                          constituency is submitting is the same as what is
+                          governorship is submitting is the same as what is
                           displayed here
                         </i>
-                        <Button
-                          variant="primary"
-                          type="submit"
-                          className={`btn-main `}
-                          disabled={isSubmitting}
-                          onClick={async () => {
-                            setSubmitting(true)
+                        <div className="text-end mt-3">
+                          <Button
+                            variant="primary"
+                            type="submit"
+                            disabled={isSubmitting}
+                            onClick={async () => {
+                              setSubmitting(true)
 
-                            try {
-                              await ConfirmBanking({
-                                variables: {
-                                  constituencyId: selected?.id,
-                                },
-                              })
-                              togglePopup()
-                              alertMsg('Banking Confirmed Successfully')
+                              try {
+                                await ConfirmBanking({
+                                  variables: {
+                                    governorshipId: selected?.id,
+                                  },
+                                })
+                                togglePopup()
+                                alertMsg('Banking Confirmed Successfully')
 
-                              setSubmitting(false)
-                              refetch({ id: streamId })
-                              navigate('/anagkazo/receive-banking')
-                            } catch (error: any) {
-                              setSubmitting(false)
-                              throwToSentry(error)
-                            }
-                          }}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Spinner animation="grow" size="sm" />
-                              <span> Submitting</span>
-                            </>
-                          ) : (
-                            `Yes, I'm sure`
-                          )}
-                        </Button>
-                        <Button
-                          variant="primary"
-                          className={`btn-secondary mt-2 `}
-                          onClick={togglePopup}
-                        >
-                          No, take me back
-                        </Button>
+                                setSubmitting(false)
+                                refetch({ id: streamId })
+                                navigate('/anagkazo/receive-banking')
+                              } catch (error: any) {
+                                setSubmitting(false)
+                                throwToSentry(error)
+                              }
+                            }}
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <Spinner animation="grow" size="sm" />
+                                <span> Submitting</span>
+                              </>
+                            ) : (
+                              `Yes, I'm sure`
+                            )}
+                          </Button>
+                          <Button variant="secondary" onClick={togglePopup}>
+                            No, take me back
+                          </Button>
+                        </div>
                       </>
                     )}
                   </Popup>
@@ -206,7 +205,7 @@ const ConfirmAnagkazoBanking = () => {
                       </div>
 
                       <div className="flex-grow-1 ms-3">
-                        <h6 className="fw-bold">{`${defaulter?.name} Constituency`}</h6>
+                        <h6 className="fw-bold">{`${defaulter?.name} ${defaulter.__typename}`}</h6>
                         <p className={`text-secondary mb-0 `}>
                           <span>{defaulter?.leader?.fullName}</span>
                         </p>
@@ -214,21 +213,21 @@ const ConfirmAnagkazoBanking = () => {
                     </div>
                     <Card.Footer className="text-center">
                       <Button
-                        disabled={constituencyServiceLoading}
+                        disabled={governorshipServiceLoading}
                         onClick={async () => {
                           setDefaulterIndex(index)
                           setSelected(defaulter)
                           togglePopup()
-                          await getConstituencyServiceRecordThisWeek({
+                          await getGovernorshipServiceRecordThisWeek({
                             variables: {
-                              constituencyId: defaulter.id,
+                              governorshipId: defaulter.id,
                               week: getWeekNumber(),
                             },
                           })
                         }}
                         variant="info"
                       >
-                        {constituencyServiceLoading &&
+                        {governorshipServiceLoading &&
                         index === defaulterIndex ? (
                           <>
                             <Spinner animation="border" size="sm" />{' '}

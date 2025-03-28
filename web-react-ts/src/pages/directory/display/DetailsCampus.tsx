@@ -3,9 +3,9 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { DetailsArray } from './DetailsFellowship'
 import { DISPLAY_CAMPUS } from './ReadQueries'
 import { permitAdmin } from 'permission-utils'
+import { DetailsArray } from './DetailsBacenta'
 
 const DetailsCampus = () => {
   const { campusId } = useContext(ChurchContext)
@@ -38,26 +38,20 @@ const DetailsCampus = () => {
       link: `#`,
     },
     {
-      title: 'Constituencies',
-      number: gathering?.constituencyCount,
-      link: `/campus/constituencies`,
+      title: 'Governorships',
+      number: gathering?.governorshipCount,
+      link: `/campus/governorships`,
     },
     {
-      title: 'Bacentas',
-      number: gathering?.activeBacentaCount,
-      vacationCount: gathering?.vacationBacentaCount,
+      title: 'Greens',
+      number: gathering?.activeGraduatedBacentaCount,
+      vacationCount: gathering?.vacationGraduatedBacentaCount,
       link: `#`,
     },
     {
-      title: 'IC Bacentas',
+      title: 'Reds',
       number: gathering?.activeIcBacentaCount,
       vacationCount: gathering?.vacationIcBacentaCount,
-      link: '#',
-    },
-    {
-      title: 'Fellowships',
-      number: gathering?.activeFellowshipCount,
-      vacationCount: gathering?.vacationFellowshipCount,
       link: '#',
     },
     {

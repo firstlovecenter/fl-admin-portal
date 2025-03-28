@@ -24,7 +24,7 @@ export const accountsMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(['adminCampus'], context.auth.roles)
+    isAuth(['adminCampus'], context.jwt['https://flcadmin.netlify.app/roles'])
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)
@@ -45,7 +45,7 @@ export const accountsMutations = {
 
       const debitRes = await Promise.all([
         session.run(depositIntoCouncilCurrentAccount, {
-          auth: context.auth,
+          jwt: context.jwt,
           ...args,
         }),
         sendBulkSMS([leader.phoneNumber], message),
@@ -75,7 +75,7 @@ export const accountsMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    // isAuth(['arrivalsAdminCampus'], context.auth.roles)
+    // isAuth(['arrivalsAdminCampus'], context.jwt['https://flcadmin.netlify.app/roles'])
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)
@@ -103,7 +103,7 @@ export const accountsMutations = {
 
       const debitRes = await Promise.all([
         session.run(depositIntoCoucilBussingSociety, {
-          auth: context.auth,
+          jwt: context.jwt,
           ...args,
           transactionDescription,
           transactionType,
@@ -137,7 +137,7 @@ export const accountsMutations = {
   ) => {
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
-    isAuth(['adminCampus'], context.auth.roles)
+    isAuth(['adminCampus'], context.jwt['https://flcadmin.netlify.app/roles'])
 
     try {
       const councilBalancesResult = await session.run(
@@ -170,7 +170,7 @@ export const accountsMutations = {
           session.run(approveBussingExpense, args),
           sessionTwo.run(creditBussingSocietyFromWeekday, {
             ...args,
-            auth: context.auth,
+            jwt: context.jwt,
           }),
           sendBulkSMS([leader.phoneNumber], message),
         ])
@@ -222,7 +222,10 @@ export const accountsMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(['arrivalsAdminCampus', 'adminCampus'], context.auth.roles)
+    isAuth(
+      ['arrivalsAdminCampus', 'adminCampus'],
+      context.jwt['https://flcadmin.netlify.app/roles']
+    )
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)
@@ -235,7 +238,7 @@ export const accountsMutations = {
       const message = `Dear ${leader.firstName}, ${council.name} Council spent ${args.expenseAmount} GHS on bussing. Bussing Society Balance remaining is ${amountRemaining} GHS`
 
       const debitRes = await Promise.all([
-        session.run(debitBussingSociety, { ...args, auth: context.auth }),
+        session.run(debitBussingSociety, { ...args, jwt: context.jwt }),
         sendBulkSMS([leader.phoneNumber], message),
       ])
 

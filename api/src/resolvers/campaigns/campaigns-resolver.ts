@@ -18,7 +18,7 @@ const churchCampaigns = async (context: Context, church: ChurchLevel) => {
       ]
       break
     case 'Council':
-    case 'Constituency':
+    case 'Governorship':
       campaignsList = [
         'Equipment',
         'Anti-Brutish',
@@ -37,7 +37,7 @@ const churchCampaigns = async (context: Context, church: ChurchLevel) => {
     default:
       campaignsList = []
   }
-  const userRoles: Role[] = context.auth?.roles
+  const userRoles: Role[] = context.jwt['https://flcadmin.netlify.app/roles']
   const permittedRoles: Role[] = ['sheepseekerStream']
   permittedRoles.push(...permitAdmin('Stream'))
   permittedRoles.push(...permitLeader('Stream'))
@@ -77,11 +77,11 @@ const campaignsResolvers = {
     equipmentRecord: (obj: any, args: any, context: Context) =>
       getEquipmentDetails(obj, args, context, 'Council'),
   },
-  Constituency: {
+  Governorship: {
     campaigns: async (obj: any, args: any, context: Context) =>
-      churchCampaigns(context, 'Constituency'),
+      churchCampaigns(context, 'Governorship'),
     equipmentRecord: (obj: any, args: any, context: Context) =>
-      getEquipmentDetails(obj, args, context, 'Constituency'),
+      getEquipmentDetails(obj, args, context, 'Governorship'),
   },
   Bacenta: {
     campaigns: async (obj: any, args: any, context: Context) =>

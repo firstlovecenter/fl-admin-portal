@@ -18,7 +18,7 @@ import { Button, Col, Container, Modal, Row, Spinner } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { parseDate } from 'jd-date-utils'
-import { Fellowship } from 'global-types'
+import { Bacenta } from 'global-types'
 import usePopup from 'hooks/usePopup'
 import ErrorPopup from 'components/Popup/ErrorPopup'
 import Input from 'components/formik/Input'
@@ -28,7 +28,7 @@ import './ConfirmPayment.css'
 import { MemberContext } from 'contexts/MemberContext'
 
 type PayOfferingProps = {
-  church: Fellowship
+  church: Bacenta
   loading: boolean
   error: ApolloError | undefined
 }
