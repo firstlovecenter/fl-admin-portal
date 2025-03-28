@@ -105,6 +105,24 @@ export const matchChurchQuery = `
   RETURN church.id AS id, church.name AS name, church.firstName AS firstName, church.lastName AS lastName, label AS type
   `
 
+export const getChurchDataQuery = `
+  MATCH (church {id:$id}) 
+  WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream 
+  OR church:Campus OR church:Oversight OR church:Denomination
+  OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
+
+  MATCH (church)-[:HAS_HISTORY]->(:SERVICE_LOG)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
+  WHERE date.date >= date() - duration('P8W')
+  
+  OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
+  WHERE date.date >= date() - duration('P8W')
+  
+  WITH records, bussing
+  RETURN COLLECT(records.income) as income, COLLECT(records.attendance) as attendance,
+  ROUND(AVG(records.income)) AS averageIncome, ROUND(AVG(records.attendance)) AS averageAttendance,
+  COLLECT(bussing.attendance) as bussingAttendance, ROUND(AVG(bussing.attendance)) as averageBussingAttendance
+`
+
 export const setMemberAuthId = `
 MATCH (member:Member {id:$id})
 SET member.auth_id = $auth_id

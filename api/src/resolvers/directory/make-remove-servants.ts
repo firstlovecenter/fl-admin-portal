@@ -19,7 +19,11 @@ import {
   getUserRoles,
   updateAuthUserConfig,
 } from '../utils/auth0'
-import { matchChurchQuery, removeMemberAuthId } from '../cypher/resolver-cypher'
+import {
+  matchChurchQuery,
+  removeMemberAuthId,
+  getChurchDataQuery,
+} from '../cypher/resolver-cypher'
 import { getAuth0Roles, getAuthToken } from '../authenticate'
 import {
   assignRoles,
@@ -224,7 +228,6 @@ export const RemoveServant = async (
     servantLower,
     args,
   }
-
   setUp(setUpArgs)
 
   const session = context.executionContext.session()
@@ -234,6 +237,7 @@ export const RemoveServant = async (
   })
 
   const church = rearrangeCypherObject(churchRes)
+
 
   const servantRes = await session.run(memberQuery, {
     id: args[`${servantLower}Id`],
@@ -246,6 +250,14 @@ export const RemoveServant = async (
   const servant: MemberWithKeys = rearrangeCypherObject(servantRes)
   const newServant: MemberWithKeys = rearrangeCypherObject(newServantRes)
 
+  // fetch church data
+  const churchDataRes = rearrangeCypherObject(
+    await session.executeRead((tx) =>
+      tx.run(getChurchDataQuery, {
+        id: args[`${churchLower}Id`],
+      })
+    )
+  )
   if (
     (!servantValidation(servant) || !servantValidation(newServant)) &&
     !['ArrivalsCounter', 'Teller', 'SheepSeeker', 'ArrivalsPayer'].includes(
@@ -273,7 +285,6 @@ export const RemoveServant = async (
     console.log(
       `${servant.firstName} ${servant.lastName} leads more than one ${churchType}`
     )
-
     await Promise.all([
       // Disconnect him from the Church
       removeServantCypher({
@@ -292,9 +303,22 @@ export const RemoveServant = async (
           servant.lastName
         },<br/><br/>We regret to inform you that you have been removed as the <b>${churchType} ${servantType}</b> for <b>${churchInEmail(
           church
-        )}</b>.<br/><br/>We however encourage you to strive to serve the Lord faithfully in your other roles. Do not be discouraged by this removal; as you work hard we hope and pray that you will soon be restored to your service to him.</p>${
-          texts.html.subscription
-        }`
+        )}</b>. Your church data for the last 8 weeks are as follows:
+          <br/>
+          Service attendance:<b>${churchDataRes.attendance}</b>, Average:<b>${
+          churchDataRes.averageAttendance
+        }</b>
+          <br/>
+          Income:<b>${churchDataRes.income}</b>, Average:<b>${
+          churchDataRes.averageIncome
+        }</b>
+          <br/>
+          Bussing:<b>${churchDataRes.bussingAttendance}</b>, Average:${
+          churchDataRes.averageBussingAttendance
+        }.
+         <br/><br/>We however encourage you to strive to serve the Lord faithfully in your other roles. Do not be discouraged by this removal; as you work hard we hope and pray that you will soon be restored to your service to him.</p>${
+           texts.html.subscription
+         }`
       ),
     ])
 
