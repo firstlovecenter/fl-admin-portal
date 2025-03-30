@@ -26,3 +26,8 @@ yarn-error.log*
 *.orig
 credentials.json
 combined-schema.*
+
+# Lambda deployment files
+lambda-package/
+lambda-package.zip
+temp-compiled-resolvers/

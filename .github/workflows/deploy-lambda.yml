@@ -1,0 +1,118 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    # Manual trigger option
+
+jobs:
+  deploy:
+    name: Deploy to AWS Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Compile TypeScript resolvers
+        run: |
+          # Create a temp directory for compiled resolvers
+          mkdir -p temp-compiled-resolvers
+
+          # Copy TypeScript resolvers to the temp directory
+          cp -r api/src/resolvers/* temp-compiled-resolvers/
+
+          # Create a tsconfig.json file for compilation
+          echo '{
+            "compilerOptions": {
+              "target": "es2018",
+              "module": "commonjs",
+              "esModuleInterop": true,
+              "outDir": "./",
+              "strict": false,
+              "declaration": false,
+              "allowJs": true,
+              "skipLibCheck": true
+            },
+            "include": ["./**/*"],
+            "exclude": ["node_modules"]
+          }' > temp-compiled-resolvers/tsconfig.json
+
+          # Install TypeScript if not already available
+          npm install -g typescript
+
+          # Compile TypeScript files
+          cd temp-compiled-resolvers && tsc
+
+          # Remove any .ts files after compilation
+          find . -name "*.ts" -type f -delete
+          cd ..
+
+      - name: Prepare GraphQL function directory
+        run: |
+          # Create a temporary directory for the Lambda package
+          mkdir -p lambda-package
+
+          # Copy the GraphQL function files
+          cp -r api/src/functions/graphql/* lambda-package/
+
+          # Copy schema directory to the package
+          mkdir -p lambda-package/schema
+          cp -r api/src/schema/* lambda-package/schema/
+
+          # Copy compiled resolvers to the package
+          mkdir -p lambda-package/resolvers
+          cp -r temp-compiled-resolvers/* lambda-package/resolvers/
+
+          # Copy necessary dependencies
+          cp -r node_modules lambda-package/
+
+          # Install dependencies in the function directory
+          cd lambda-package && npm ci --production
+
+      - name: Create deployment package
+        run: |
+          cd lambda-package
+          # Make sure index.mjs is included
+          ls -la
+          # Create the zip file directly from the function directory
+          zip -r ../lambda-package.zip .
+
+      - name: Deploy to Lambda
+        uses: imehedi/actions-awscli-v2@latest
+        with:
+          args: 'lambda update-function-code --function-name ${{ secrets.AWS_LAMBDA_FUNCTION_NAME }} --zip-file fileb://lambda-package.zip'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Notify deployment status
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 'GraphQL API Lambda Deployment'
+          SLACK_MESSAGE: 'Deploying GraphQL API to AWS Lambda ${{ job.status }}'
