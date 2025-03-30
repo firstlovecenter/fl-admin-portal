@@ -1,4 +1,4 @@
-name: Deploy to AWS Lambda
+name: Deploy GraphQL API to AWS Lambda
 
 on:
   push:

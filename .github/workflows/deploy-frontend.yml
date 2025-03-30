@@ -1,0 +1,70 @@
+name: Deploy Frontend to S3 & CloudFront
+
+on:
+  push:
+    branches:
+      - main # Adjust to your deployment branch
+    paths:
+      - 'web-react-ts/**' # Only trigger when frontend files change
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: web-react-ts/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('web-react-ts/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        run: npm install
+        working-directory: ./web-react-ts
+
+      - name: Build Vite App
+        run: npm run build
+        working-directory: ./web-react-ts
+        env:
+          VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN }}
+          VITE_AUTH0_CLIENT_ID: ${{ secrets.VITE_AUTH0_CLIENT_ID }}
+          VITE_GRAPHQL_URI: ${{ secrets.VITE_GRAPHQL_URI }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Generate build version
+        run: node generate-build-version.js
+        working-directory: ./web-react-ts
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: aws s3 sync ./dist s3://${{ secrets.S3_BUCKET_NAME }} --delete
+        working-directory: ./web-react-ts
+
+      - name: Invalidate CloudFront Cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+
+      - name: Send Slack Notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: ':rocket: Successfully deployed FLC Admin Portal frontend to S3 and invalidated CloudFront cache'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: success()
