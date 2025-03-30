@@ -37,6 +37,7 @@
     "@apollo/client": "^3.8.9",
     "@apollo/server": "^4.10.0",
     "@as-integrations/aws-lambda": "^2.0.1",
+    "@aws-sdk/client-secrets-manager": "^3.777.0",
     "@jaedag/admin-portal-api-core": "^2.2.2",
     "@jaedag/admin-portal-types": "^1.5.16",
     "@neo4j/graphql": "^6.3.0",

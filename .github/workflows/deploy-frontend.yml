@@ -3,7 +3,7 @@ name: Deploy Frontend to S3 & CloudFront
 on:
   push:
     branches:
-      - main # Adjust to your deployment branch
+      - develop # Adjust to your deployment branch
     paths:
       - 'web-react-ts/**' # Only trigger when frontend files change
 
