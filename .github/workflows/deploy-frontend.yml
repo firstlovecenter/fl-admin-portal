@@ -23,7 +23,7 @@ jobs:
       - name: Setup npm authentication
         run: |
           echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.PAT_TOKEN }}" >> .npmrc
         working-directory: ./web-react-ts
 
       - name: Cache Node.js modules
