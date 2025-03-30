@@ -23,6 +23,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Setup npm authentication
+        run: |
+          echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
