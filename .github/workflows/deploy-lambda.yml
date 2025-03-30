@@ -3,7 +3,6 @@ name: Deploy GraphQL API to AWS Lambda
 on:
   push:
     branches:
-      - main
       - develop
   workflow_dispatch:
     # Manual trigger option
