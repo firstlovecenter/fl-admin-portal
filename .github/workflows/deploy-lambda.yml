@@ -101,7 +101,7 @@ jobs:
       - name: Deploy to Lambda
         uses: imehedi/actions-awscli-v2@latest
         with:
-          args: 'lambda update-function-code --function-name ${{ secrets.AWS_LAMBDA_FUNCTION_NAME }} --zip-file fileb://lambda-package.zip'
+          args: 'lambda update-function-code --function-name arn:aws:lambda:eu-west-2:871777052000:function:fl-synago-graphql --zip-file fileb://lambda-package.zip'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
