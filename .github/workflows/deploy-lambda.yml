@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          cd api && npm ci
 
       - name: Compile TypeScript resolvers
         run: |
@@ -114,5 +114,5 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: 'GraphQL API Lambda Deployment'
+          SLACK_TITLE: 'Synago GraphQL API Lambda Deployment'
           SLACK_MESSAGE: 'Deploying GraphQL API to AWS Lambda ${{ job.status }}'
