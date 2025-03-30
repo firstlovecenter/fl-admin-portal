@@ -27,6 +27,7 @@ jobs:
         run: |
           echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.PAT_TOKEN }}" >> .npmrc
+        working-directory: ./api
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
