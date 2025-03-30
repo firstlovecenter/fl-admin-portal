@@ -8,7 +8,7 @@
     "@auth0/auth0-react": "^1.11.0",
     "@cloudinary/react": "^1.2.0",
     "@cloudinary/url-gen": "^1.14.0",
-    "@jaedag/admin-portal-types": "^1.5.11",
+    "@jaedag/admin-portal-types": "^1.5.16",
     "@react-google-maps/api": "^2.18.1",
     "@sentry/react": "^7.27.0",
     "@sentry/tracing": "^7.27.0",
