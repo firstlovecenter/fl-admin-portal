@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - develop
-  workflow_dispatch:
-    # Manual trigger option
+    paths:
+      - 'api/**' # Only trigger when frontend files change
 
 jobs:
   deploy:
