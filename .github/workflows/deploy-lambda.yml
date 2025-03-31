@@ -47,10 +47,7 @@ jobs:
           # Copy TypeScript resolvers to the temp directory
           cp -r api/src/resolvers/* temp-compiled-resolvers/
 
-          # Copy package.json to the temp directory to ensure dependencies are available
-          cp api/package.json api/package-lock.json temp-compiled-resolvers/
-
-          # Create a tsconfig.json file for compilation with improved settings
+          # Create a tsconfig.json file for compilation
           echo '{
             "compilerOptions": {
               "target": "es2018",
@@ -60,27 +57,17 @@ jobs:
               "strict": false,
               "declaration": false,
               "allowJs": true,
-              "skipLibCheck": true,
-              "resolveJsonModule": true,
-              "moduleResolution": "node",
-              "typeRoots": ["./node_modules/@types"]
+              "skipLibCheck": true
             },
             "include": ["./**/*"],
             "exclude": ["node_modules"]
           }' > temp-compiled-resolvers/tsconfig.json
 
-          # Install dependencies in the temp-compiled-resolvers directory
-          cd temp-compiled-resolvers
-          npm ci
-
-          # Install additional type definitions
-          npm install --save-dev @types/node typescript
-
-          # Install specific dependencies mentioned in the error
-          npm install axios neo4j-driver dotenv jd-date-utils @aws-sdk/client-secrets-manager @jaedag/admin-portal-api-core @jaedag/admin-portal-types
+          # Install TypeScript if not already available
+          npm install -g typescript
 
           # Compile TypeScript files
-          npx tsc
+          cd temp-compiled-resolvers && tsc
 
           # Remove any .ts files after compilation
           find . -name "*.ts" -type f -delete
