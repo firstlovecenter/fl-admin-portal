@@ -64,7 +64,7 @@ jobs:
           }' > temp-compiled-resolvers/tsconfig.json
 
           # Install TypeScript if not already available
-          npm install -g typescript
+          cd api && npm install -g typescript
 
           # Compile TypeScript files
           cd temp-compiled-resolvers && tsc
@@ -90,7 +90,7 @@ jobs:
           cp -r temp-compiled-resolvers/* lambda-package/resolvers/
 
           # Copy necessary dependencies
-          cp -r node_modules lambda-package/
+          cp -r api/node_modules lambda-package/
 
           # Install dependencies in the function directory
           cd lambda-package && npm ci --production
