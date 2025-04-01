@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:
-      - 'api/**' # Only trigger when frontend files change
+      - 'api/**' # Only trigger when backend files change
 
 jobs:
   deploy:
@@ -71,7 +71,7 @@ jobs:
 
           # Copy compiled resolvers to the package
           mkdir -p lambda-package/resolvers
-          cp -r temp-compiled-resolvers/* lambda-package/resolvers/
+          cp -r api/temp-compiled-resolvers/* lambda-package/resolvers/
 
           # Copy necessary dependencies
           cp -r api/node_modules lambda-package/
