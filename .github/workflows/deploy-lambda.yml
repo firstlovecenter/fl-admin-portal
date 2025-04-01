@@ -48,7 +48,7 @@ jobs:
           cp -r api/src/resolvers/* api/temp-compiled-resolvers/
 
           # Create a tsconfig.json file for compilation if it doesn't exist
-          if [ ! -f temp-compiled-resolvers/tsconfig.json ]; then
+          if [ ! -f api/temp-compiled-resolvers/tsconfig.json ]; then
             echo '{
               "compilerOptions": {
                 "target": "es2018",
