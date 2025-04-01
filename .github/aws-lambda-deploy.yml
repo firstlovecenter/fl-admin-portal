@@ -58,14 +58,14 @@ jobs:
               },
               "include": ["./**/*"],
               "exclude": ["node_modules"]
-            }' > temp-compiled-resolvers/tsconfig.json
+            }' > temp-compiled-resolvers/c
           fi
           
           # Install TypeScript if not already available
           npm install -g typescript
           
           # Compile TypeScript files
-          cd temp-compiled-resolvers && tsc
+          c
           
           # Remove any .ts files after compilation
           find . -name "*.ts" -type f -delete
@@ -110,12 +110,12 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           
-      # - name: Notify deployment status
-      #   if: always()
-      #   uses: rtCamp/action-slack-notify@v2
-      #   env:
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-      #     SLACK_CHANNEL: deployments
-      #     SLACK_COLOR: ${{ job.status }}
-      #     SLACK_TITLE: "Poimen Backend AWS Lambda Deployment"
-      #     SLACK_MESSAGE: "Deploying Poimen Backend to AWS Lambda ${{ job.status }}"
+      - name: Notify deployment status
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: "Poimen Backend AWS Lambda Deployment"
+          SLACK_MESSAGE: "Deploying Poimen Backend to AWS Lambda ${{ job.status }}"
