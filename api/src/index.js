@@ -21,9 +21,6 @@ const driver = neo4j.driver(
     SECRETS.NEO4J_USER || 'neo4j',
     SECRETS.NEO4J_PASSWORD || 'letmein'
   )
-  // {
-  //   encrypted: SECRETS.NEO4J_ENCRYPTED ? 'ENCRYPTION_ON' : 'ENCRYPTION_OFF',
-  // }
 )
 
 const neoSchema = new Neo4jGraphQL({
