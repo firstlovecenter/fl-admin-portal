@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - develop
-    paths:
-      - 'api/**' # Only trigger when backend files change
+    # paths:
+    #   - 'api/**' # Only trigger when backend files change
 
 jobs:
   deploy:
