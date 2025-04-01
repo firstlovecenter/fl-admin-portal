@@ -6,7 +6,6 @@ const {
   startServerAndCreateLambdaHandler,
 } = require('@as-integrations/aws-lambda')
 const neo4j = require('neo4j-driver')
-const { Neo4jGraphQLAuthJWTPlugin } = require('@neo4j/graphql-plugin-auth')
 const Sentry = require('@sentry/node')
 const { typeDefs } = require('./schema/graphql-schema')
 const resolvers = require('./resolvers/resolvers').default
@@ -65,12 +64,6 @@ const initializeServer = async () => {
       typeDefs,
       resolvers,
       driver,
-      plugins: {
-        auth: new Neo4jGraphQLAuthJWTPlugin({
-          secret: SECRETS.JWT_SECRET,
-          rolesPath: 'https://flcadmin\\.netlify\\.app/roles',
-        }),
-      },
       features: {
         authorization: {
           key: SECRETS.JWT_SECRET,
