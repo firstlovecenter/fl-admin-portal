@@ -42,32 +42,16 @@ jobs:
       - name: Compile TypeScript resolvers
         run: |
           # Create a temp directory for compiled resolvers
-          mkdir -p temp-compiled-resolvers
+          mkdir -p api/temp-compiled-resolvers
 
           # Copy TypeScript resolvers to the temp directory
-          cp -r api/src/resolvers/* temp-compiled-resolvers/
-
-          # Create a tsconfig.json file for compilation
-          echo '{
-            "compilerOptions": {
-              "target": "es2018",
-              "module": "commonjs",
-              "esModuleInterop": true,
-              "outDir": "./",
-              "strict": false,
-              "declaration": false,
-              "allowJs": true,
-              "skipLibCheck": true
-            },
-            "include": ["./**/*"],
-            "exclude": ["node_modules"]
-          }' > temp-compiled-resolvers/tsconfig.json
+          cp -r api/src/resolvers/* api/temp-compiled-resolvers/
 
           # Install TypeScript if not already available
-          cd api && npm install -g typescript
+          npm install -g typescript
 
           # Compile TypeScript files
-          cd temp-compiled-resolvers && tsc
+          cd api/temp-compiled-resolvers && tsc
 
           # Remove any .ts files after compilation
           find . -name "*.ts" -type f -delete
