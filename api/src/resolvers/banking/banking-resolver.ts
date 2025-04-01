@@ -578,60 +578,61 @@ const bankingMutation = {
       },
     }
 
-    const confirmationResponse = await axios(confirmPaymentBody).catch(
-      async (error) => {
-        if (error.response.data.code === 'transaction_not_found') {
-          record = rearrangeCypherObject(
-            await session.executeWrite((tx) =>
-              tx.run(setTransactionStatusFailed, {
-                ...args,
-                status: error.response.data.status,
-                error: error.response.data.message,
-              })
-            )
-          )
-        }
+    let confirmationResponse
+    try {
+      confirmationResponse = await axios(confirmPaymentBody)
 
-        throwToSentry(
-          'There was an error confirming transaction - ',
-          JSON.stringify(error.response.data)
+      if (confirmationResponse.data.data.status === 'success') {
+        record = rearrangeCypherObject(
+          await session
+            .run(setTransactionStatusSuccess, {
+              ...args,
+              status: confirmationResponse.data.data.status,
+            })
+            .catch((error: any) =>
+              throwToSentry(
+                'There was an error setting the successful transaction',
+                error
+              )
+            )
+        )
+        record = record.record.properties
+      }
+
+      if (
+        confirmationResponse.data.data.status === 'failed' ||
+        confirmationResponse.data.data.status === 'abandoned'
+      ) {
+        record = rearrangeCypherObject(
+          await session
+            .run(setTransactionStatusFailed, {
+              ...args,
+              status: confirmationResponse.data.data.status,
+              error: confirmationResponse.data.data.gateway_response,
+            })
+            .catch((error: any) =>
+              throwToSentry('There was an error setting the transaction', error)
+            )
+        )
+        record = record.record.properties
+      }
+    } catch (error: any) {
+      if (error.response?.data?.code === 'transaction_not_found') {
+        record = rearrangeCypherObject(
+          await session.executeWrite((tx) =>
+            tx.run(setTransactionStatusFailed, {
+              ...args,
+              status: error.response.data.status,
+              error: error.response.data.message,
+            })
+          )
         )
       }
-    )
 
-    if (confirmationResponse?.data.data.status === 'success') {
-      record = rearrangeCypherObject(
-        await session
-          .run(setTransactionStatusSuccess, {
-            ...args,
-            status: confirmationResponse?.data.data.status,
-          })
-          .catch((error: any) =>
-            throwToSentry(
-              'There was an error setting the successful transaction',
-              error
-            )
-          )
+      throwToSentry(
+        'There was an error confirming transaction - ',
+        JSON.stringify(error.response?.data || error.message)
       )
-      record = record.record.properties
-    }
-
-    if (
-      confirmationResponse?.data.data.status === 'failed' ||
-      confirmationResponse?.data.data.status === 'abandoned'
-    ) {
-      record = rearrangeCypherObject(
-        await session
-          .run(setTransactionStatusFailed, {
-            ...args,
-            status: confirmationResponse?.data.data.status,
-            error: confirmationResponse?.data.data.gateway_response,
-          })
-          .catch((error: any) =>
-            throwToSentry('There was an error setting the transaction', error)
-          )
-      )
-      record = record.record.properties
     }
 
     return {

@@ -47,6 +47,26 @@ jobs:
           # Copy TypeScript resolvers to the temp directory
           cp -r api/src/resolvers/* api/temp-compiled-resolvers/
 
+          # Create a tsconfig.json file for compilation if it doesn't exist
+          if [ ! -f temp-compiled-resolvers/tsconfig.json ]; then
+            echo '{
+              "compilerOptions": {
+                "target": "es2018",
+                "module": "commonjs",
+                "esModuleInterop": true,
+                "allowSyntheticDefaultImports": true,
+                "resolveJsonModule": true,
+                "outDir": "./",
+                "strict": false,
+                "declaration": false,
+                "allowJs": true,
+                "skipLibCheck": true
+              },
+              "include": ["./**/*"],
+              "exclude": ["node_modules"]
+            }' > temp-compiled-resolvers/tsconfig.json
+          fi
+
           # Install TypeScript if not already available
           npm install -g typescript
 
