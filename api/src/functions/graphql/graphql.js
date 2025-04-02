@@ -1,10 +1,6 @@
-// // This module can be used to serve the GraphQL endpoint
-// // as a lambda function
 const { Neo4jGraphQL } = require('@neo4j/graphql')
 const { ApolloServer } = require('@apollo/server')
-const {
-  startServerAndCreateLambdaHandler,
-} = require('@as-integrations/aws-lambda')
+// Removed startServerAndCreateLambdaHandler import
 const neo4j = require('neo4j-driver')
 const Sentry = require('@sentry/node')
 const { jwtDecode } = require('jwt-decode')
@@ -120,44 +116,88 @@ const initializeServer = async () => {
 }
 
 // Lambda handler function
-exports.handler = startServerAndCreateLambdaHandler(
-  async () => {
+exports.handler = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false
+
+  try {
+    // Initialize on cold start
     await initializeServer()
-    return server
-  },
-  {
-    context: async ({ event }) => {
-      console.log('[Request] Incoming request:', {
-        path: event.path,
-        httpMethod: event.httpMethod,
-        headers: Object.keys(event.headers),
-      })
 
-      const token = event.headers.authorization || event.headers.Authorization
-      let jwt = null
+    // Parse and validate request
+    const { body, headers, httpMethod } = event
+    const { query, variables = {}, operationName } = JSON.parse(body)
 
-      if (token) {
-        try {
-          const cleanToken = token.replace(/^Bearer\s+/i, '')
-          console.log('[Auth] Decoding JWT token')
-          jwt = jwtDecode(cleanToken)
-          console.log('[Auth] JWT decoded successfully', {
-            roles: jwt?.['https://flcadmin.netlify.app/roles'],
-          })
-        } catch (error) {
-          console.error('[Auth] Invalid token:', error)
-          Sentry.captureException(error)
-        }
-      }
+    // Log request info
+    console.log('[Request] Incoming request:', {
+      path: event.path,
+      httpMethod: event.httpMethod,
+      headers: Object.keys(headers),
+    })
 
-      return {
-        req: event,
-        executionContext: driver,
-        jwt: {
-          ...jwt,
+    // Handle JWT authentication
+    const token = headers.authorization || headers.Authorization
+    let jwt = null
+
+    if (token) {
+      try {
+        const cleanToken = token.replace(/^Bearer\s+/i, '')
+        console.log('[Auth] Decoding JWT token')
+        jwt = jwtDecode(cleanToken)
+        console.log('[Auth] JWT decoded successfully', {
           roles: jwt?.['https://flcadmin.netlify.app/roles'],
-        },
+        })
+      } catch (error) {
+        console.error('[Auth] Invalid token:', error)
+        Sentry.captureException(error)
       }
-    },
+    }
+
+    // Build context for GraphQL operation
+    const contextValue = {
+      req: event,
+      executionContext: driver,
+      jwt: {
+        ...jwt,
+        roles: jwt?.['https://flcadmin.netlify.app/roles'],
+      },
+    }
+
+    // Execute GraphQL operation
+    const result = await server.executeOperation(
+      {
+        query,
+        variables,
+        operationName,
+        http: { method: httpMethod, headers: new Headers(headers) },
+      },
+      {
+        contextValue,
+      }
+    )
+
+    // Format response
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: result.body.singleResult.data,
+        errors: result.body.singleResult.errors,
+      }),
+    }
+  } catch (error) {
+    console.error('[Request] Processing failed:', error)
+    Sentry.captureException(error)
+
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        errors: [
+          {
+            message: 'Internal server error',
+            extensions: { code: 'INTERNAL_SERVER_ERROR' },
+          },
+        ],
+      }),
+    }
   }
-)
+}
