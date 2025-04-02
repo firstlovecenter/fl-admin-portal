@@ -40,8 +40,19 @@ jobs:
 
       - name: Retrieve and Export Secrets from AWS Secrets Manager
         run: |
-          secrets=$(aws secretsmanager get-secret-value --secret-id ${{ secrets.AWS_SECRETS_COLLECTION_NAME }} --query SecretString --output text)
-          echo "$secrets" | jq -r 'to_entries | .[] | "export \(.key)=\(.value)"' >> $GITHUB_ENV
+          # Get secrets JSON and create temporary file to process
+          aws secretsmanager get-secret-value --secret-id ${{ secrets.AWS_SECRETS_COLLECTION_NAME }} --query SecretString --output text > secrets.json
+
+          # Use jq to properly handle multi-line values with escaping
+          jq -r 'to_entries[] | "\(.key)<<EOF
+          \(.value)
+          EOF"' secrets.json > env_file
+
+          # Add the env file to GITHUB_ENV
+          cat env_file >> $GITHUB_ENV
+
+          # Clean up
+          rm secrets.json env_file
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
