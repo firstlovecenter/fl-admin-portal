@@ -3,9 +3,9 @@ name: Deploy GraphQL API to AWS Lambda
 on:
   push:
     branches:
-      - develop
-    # paths:
-    #   - 'api/**' # Only trigger when backend files change
+      - deploy 
+    paths:
+      - 'api/**' # Only trigger when backend files change
 
 jobs:
   deploy:
