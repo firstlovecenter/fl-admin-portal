@@ -40,7 +40,6 @@ jobs:
 
       - name: Retrieve Secrets from AWS Secrets Manager
         run: |
-          export TEST_PHONE_NUMBER=$(aws secretsmanager get-secret-value --secret-id TEST_PHONE_NUMBER --query SecretString --output text)
           export VITE_AUTH0_AUDIENCE=$(aws secretsmanager get-secret-value --secret-id VITE_AUTH0_AUDIENCE --query SecretString --output text)
           export VITE_AUTH0_CLIENT_ID=$(aws secretsmanager get-secret-value --secret-id VITE_AUTH0_CLIENT_ID --query SecretString --output text)
           export VITE_AUTH0_DOMAIN=$(aws secretsmanager get-secret-value --secret-id VITE_AUTH0_DOMAIN --query SecretString --output text)
@@ -62,7 +61,6 @@ jobs:
         run: npm run build
         working-directory: ./web-react-ts
         env:
-          TEST_PHONE_NUMBER: $TEST_PHONE_NUMBER
           VITE_AUTH0_AUDIENCE: $VITE_AUTH0_AUDIENCE
           VITE_AUTH0_CLIENT_ID: $VITE_AUTH0_CLIENT_ID
           VITE_AUTH0_DOMAIN: $VITE_AUTH0_DOMAIN
