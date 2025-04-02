@@ -62,6 +62,7 @@ jobs:
         run: npm run build
         working-directory: ./web-react-ts
         env:
+          VITE_SYNAGO_GRAPHQL_URI: ${{ env.VITE_SYNAGO_GRAPHQL_URI }}
           VITE_CLOUDINARY_BANKING: ${{ env.VITE_CLOUDINARY_BANKING }}
           VITE_CLOUDINARY_BUSSING: ${{ env.VITE_CLOUDINARY_BUSSING }}
           VITE_CLOUDINARY_BUS_MOBILISATION: ${{ env.VITE_CLOUDINARY_BUS_MOBILISATION }}

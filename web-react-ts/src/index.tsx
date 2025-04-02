@@ -61,7 +61,7 @@ const AppWithApollo = () => {
   }, [getAccessToken])
 
   const httpLink = createHttpLink({
-    uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
+    uri: import.meta.env.VITE_SYNAGO_GRAPHQL_URI || '/graphql',
   })
 
   const authLink = setContext((_, { headers }) => {
@@ -158,7 +158,7 @@ const AppWithApollo = () => {
   const errorPolicy = 'all'
 
   const client = new ApolloClient({
-    uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
+    uri: import.meta.env.VITE_SYNAGO_GRAPHQL_URI || '/graphql',
     link: from([retryLink, errorLink, authLink.concat(httpLink)]),
     cache: new InMemoryCache(),
     connectToDevTools: true,
