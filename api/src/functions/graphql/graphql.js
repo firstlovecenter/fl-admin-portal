@@ -139,7 +139,19 @@ exports.handler = async (event, context) => {
 
     // Parse and validate request
     const { body, headers, httpMethod } = event
-    const { query, variables = {}, operationName } = JSON.parse(body)
+
+    if (!body) {
+      throw new SyntaxError('Request body is undefined or empty')
+    }
+
+    let parsedBody
+    try {
+      parsedBody = JSON.parse(body)
+    } catch (error) {
+      throw new SyntaxError('Invalid JSON in request body')
+    }
+
+    const { query, variables = {}, operationName } = parsedBody
 
     // Log request info
     console.log('[Request] Incoming request:', {
@@ -207,7 +219,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         errors: [
           {
-            message: 'Internal server error',
+            message: error.message || 'Internal server error',
             extensions: { code: 'INTERNAL_SERVER_ERROR' },
           },
         ],
