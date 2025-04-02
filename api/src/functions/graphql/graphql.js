@@ -119,18 +119,21 @@ const initializeServer = async () => {
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false
 
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': 'https://admin.firstlovecenter.com',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+
   try {
     // Handle OPTIONS preflight request
     if (event.httpMethod === 'OPTIONS') {
       return {
-        statusCode: 200,
+        statusCode: 204,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          ...corsHeaders,
         },
-        body: JSON.stringify({ message: 'CORS preflight response' }),
+        body: null,
       }
     }
 
@@ -204,7 +207,10 @@ exports.handler = async (event, context) => {
     // Format response
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders,
+      },
       body: JSON.stringify({
         data: result.body.singleResult.data,
         errors: result.body.singleResult.errors,
@@ -216,6 +222,10 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders,
+      },
       body: JSON.stringify({
         errors: [
           {
