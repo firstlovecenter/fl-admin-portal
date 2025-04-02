@@ -7,10 +7,10 @@ const {
 } = require('@as-integrations/aws-lambda')
 const neo4j = require('neo4j-driver')
 const Sentry = require('@sentry/node')
-const { typeDefs } = require('./schema/graphql-schema')
-const resolvers = require('./resolvers/resolvers').default
-const SECRETS = require('./resolvers/getSecrets').default
 const { jwtDecode } = require('jwt-decode')
+const { typeDefs } = require('./schema/graphql-schema')
+const { loadSecrets } = require('./resolvers/secrets')
+const resolvers = require('./resolvers/resolvers').default
 
 // Initialize Sentry
 Sentry.init({
@@ -33,6 +33,7 @@ let isInitialized = false
 let driver
 let server
 let schema
+let SECRETS
 
 const initializeServer = async () => {
   if (isInitialized) return
@@ -40,6 +41,9 @@ const initializeServer = async () => {
   console.log('[Initialization] Starting server initialization')
 
   try {
+    // Load secrets
+    SECRETS = await loadSecrets()
+
     // Configure encrypted connection if required
     const uri =
       SECRETS.NEO4J_ENCRYPTED === 'true'
@@ -112,26 +116,6 @@ const initializeServer = async () => {
     console.error('[Initialization] Server initialization failed:', error)
     Sentry.captureException(error)
     throw error
-  }
-}
-
-const verifyNodeExists = async (id, label = 'Bacenta') => {
-  const session = driver.session()
-  try {
-    console.log(`[Neo4j] Verifying existence of node ${id} with label ${label}`)
-    const result = await session.run(
-      `MATCH (n:${label} {id: $id}) RETURN n.id AS id`,
-      { id }
-    )
-    const exists = result.records.length > 0
-    console.log(`[Neo4j] Node ${id} exists: ${exists}`)
-    return exists
-  } catch (error) {
-    console.error(`[Neo4j] Error verifying node ${id}:`, error)
-    Sentry.captureException(error)
-    throw error
-  } finally {
-    await session.close()
   }
 }
 
