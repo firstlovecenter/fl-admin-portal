@@ -38,20 +38,10 @@ jobs:
         run: npm install
         working-directory: ./web-react-ts
 
-      - name: Retrieve Secrets from AWS Secrets Manager
+      - name: Retrieve and Export Secrets from AWS Secrets Manager
         run: |
-          export VITE_AUTH0_AUDIENCE=$(aws secretsmanager get-secret-value --secret-id VITE_AUTH0_AUDIENCE --query SecretString --output text)
-          export VITE_AUTH0_CLIENT_ID=$(aws secretsmanager get-secret-value --secret-id VITE_AUTH0_CLIENT_ID --query SecretString --output text)
-          export VITE_AUTH0_DOMAIN=$(aws secretsmanager get-secret-value --secret-id VITE_AUTH0_DOMAIN --query SecretString --output text)
-          export VITE_CLOUDINARY_BANKING=$(aws secretsmanager get-secret-value --secret-id VITE_CLOUDINARY_BANKING --query SecretString --output text)
-          export VITE_CLOUDINARY_BUSSING=$(aws secretsmanager get-secret-value --secret-id VITE_CLOUDINARY_BUSSING --query SecretString --output text)
-          export VITE_CLOUDINARY_BUS_MOBILISATION=$(aws secretsmanager get-secret-value --secret-id VITE_CLOUDINARY_BUS_MOBILISATION --query SecretString --output text)
-          export VITE_CLOUDINARY_MEMBERS=$(aws secretsmanager get-secret-value --secret-id VITE_CLOUDINARY_MEMBERS --query SecretString --output text)
-          export VITE_CLOUDINARY_SERVICES=$(aws secretsmanager get-secret-value --secret-id VITE_CLOUDINARY_SERVICES --query SecretString --output text)
-          export VITE_CLOUDINARY_TREASURERS=$(aws secretsmanager get-secret-value --secret-id VITE_CLOUDINARY_TREASURERS --query SecretString --output text)
-          export VITE_GOOGLE_MAPS_API_KEY=$(aws secretsmanager get-secret-value --secret-id VITE_GOOGLE_MAPS_API_KEY --query SecretString --output text)
-          export VITE_GRAPHQL_URI=$(aws secretsmanager get-secret-value --secret-id VITE_GRAPHQL_URI --query SecretString --output text)
-          export SENTRY_AUTH_TOKEN=$(aws secretsmanager get-secret-value --secret-id SENTRY_AUTH_TOKEN --query SecretString --output text)
+          secrets=$(aws secretsmanager get-secret-value --secret-id ${{ secrets.AWS_SECRETS_COLLECTION_NAME }} --query SecretString --output text)
+          echo "$secrets" | jq -r 'to_entries | .[] | "export \(.key)=\(.value)"' >> $GITHUB_ENV
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -61,18 +51,14 @@ jobs:
         run: npm run build
         working-directory: ./web-react-ts
         env:
-          VITE_AUTH0_AUDIENCE: $VITE_AUTH0_AUDIENCE
-          VITE_AUTH0_CLIENT_ID: $VITE_AUTH0_CLIENT_ID
-          VITE_AUTH0_DOMAIN: $VITE_AUTH0_DOMAIN
-          VITE_CLOUDINARY_BANKING: $VITE_CLOUDINARY_BANKING
-          VITE_CLOUDINARY_BUSSING: $VITE_CLOUDINARY_BUSSING
-          VITE_CLOUDINARY_BUS_MOBILISATION: $VITE_CLOUDINARY_BUS_MOBILISATION
-          VITE_CLOUDINARY_MEMBERS: $VITE_CLOUDINARY_MEMBERS
-          VITE_CLOUDINARY_SERVICES: $VITE_CLOUDINARY_SERVICES
-          VITE_CLOUDINARY_TREASURERS: $VITE_CLOUDINARY_TREASURERS
-          VITE_GOOGLE_MAPS_API_KEY: $VITE_GOOGLE_MAPS_API_KEY
-          VITE_GRAPHQL_URI: $VITE_GRAPHQL_URI
-          SENTRY_AUTH_TOKEN: $SENTRY_AUTH_TOKEN
+          VITE_CLOUDINARY_BANKING: ${{ env.VITE_CLOUDINARY_BANKING }}
+          VITE_CLOUDINARY_BUSSING: ${{ env.VITE_CLOUDINARY_BUSSING }}
+          VITE_CLOUDINARY_BUS_MOBILISATION: ${{ env.VITE_CLOUDINARY_BUS_MOBILISATION }}
+          VITE_CLOUDINARY_MEMBERS: ${{ env.VITE_CLOUDINARY_MEMBERS }}
+          VITE_CLOUDINARY_SERVICES: ${{ env.VITE_CLOUDINARY_SERVICES }}
+          VITE_CLOUDINARY_TREASURERS: ${{ env.VITE_CLOUDINARY_TREASURERS }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ env.VITE_GOOGLE_MAPS_API_KEY }}
+          SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
 
       - name: Generate build version
         run: node generate-build-version.js
