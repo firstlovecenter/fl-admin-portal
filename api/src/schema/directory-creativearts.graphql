@@ -100,7 +100,7 @@ type CreativeArts {
       statement: """
       MATCH (this)<-[:HAS_MINISTRY]-(campus:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(this)
-      RETURN COUNT(DISTINCT members)
+      RETURN COUNT(DISTINCT members) AS memberCount
       """
       columnName: "memberCount"
     )
@@ -214,7 +214,7 @@ type Ministry {
       MATCH (this)<-[:HAS]-(creativeArts:CreativeArts)
       MATCH (this)<-[:HAS_MINISTRY]-(stream:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
-      RETURN COUNT(DISTINCT members)
+      RETURN COUNT(DISTINCT members) AS memberCount
       """
       columnName: "memberCount"
     )
@@ -318,7 +318,7 @@ type HubCouncil {
       MATCH (this)<-[:HAS]-(:Ministry)<-[:HAS]-(creativeArts:CreativeArts)
       MATCH (this)<-[:HAS_MINISTRY]-(council:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
-      RETURN COUNT(DISTINCT members)
+      RETURN COUNT(DISTINCT members) AS memberCount
       """
       columnName: "memberCount"
     )
@@ -412,7 +412,7 @@ type Hub {
       MATCH (this)<-[:HAS]-(:HubCouncil)<-[:HAS]-(:Ministry)<-[:HAS]-(creativeArts:CreativeArts)
       MATCH (this)<-[:HAS_MINISTRY]-(governorship:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
-      RETURN COUNT(DISTINCT members)
+      RETURN COUNT(DISTINCT members) AS memberCount
       """
       columnName: "memberCount"
     )
@@ -666,7 +666,7 @@ type HubFellowship implements Church {
     @cypher(
       statement: """
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members)
+      RETURN COUNT(DISTINCT members) AS memberCount
       """
       columnName: "result"
     )
@@ -674,9 +674,9 @@ type HubFellowship implements Church {
     @cypher(
       statement: """
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)-[:BELONGS_TO]->(:Ministry)
-      RETURN COUNT(DISTINCT members)
+      RETURN COUNT(DISTINCT members) AS ministryMemberCount
       """
-      columnName: "result"
+      columnName: "ministryMemberCount"
     )
   pastorCount: Int
     @cypher(
