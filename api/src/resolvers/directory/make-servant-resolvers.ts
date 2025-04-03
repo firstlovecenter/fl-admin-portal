@@ -25,9 +25,8 @@ const MakeServantResolvers = {
           jwt: context.jwt,
         })
       )
-      const userRoleResponse = await axios(
-        getUserRoles(context.jwt.sub, authToken)
-      )
+      const userRolesUrl = await getUserRoles(context.jwt.sub, authToken)
+      const userRoleResponse = await axios(userRolesUrl)
       const roles: Role[] = userRoleResponse.data.map(
         (role: Auth0RoleObject) => role.name
       )

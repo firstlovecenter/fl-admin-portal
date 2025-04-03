@@ -32,7 +32,7 @@ import {
   PayStackRequestBody,
   SendPaymentOTP,
 } from './banking-types'
-import { loadSecrets } from '../secrets'
+import loadSecrets from '../secrets'
 
 export const checkIfLastServiceBanked = async (
   serviceRecordId: string,

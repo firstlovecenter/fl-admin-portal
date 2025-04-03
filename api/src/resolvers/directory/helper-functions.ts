@@ -77,7 +77,12 @@ export const removeRoles = async (
 
   // A remove roles function to simplify removing roles with an axios request
   if (userRoleIds.includes(rolesToRemove)) {
-    return axios(deleteUserRoles(servant.auth_id, [rolesToRemove], authToken))
+    const deleteRoleConfig = await deleteUserRoles(
+      servant.auth_id,
+      [rolesToRemove],
+      authToken
+    )
+    return axios(deleteRoleConfig)
       .then(() =>
         console.log(
           `Role successfully removed for ${servant.firstName} ${servant.lastName}`
@@ -120,7 +125,12 @@ export const assignRoles = async (
   // An assign roles function to simplify assigning roles with an axios request
   if (!userRoleIds.includes(rolesToAssign[0])) {
     try {
-      await axios(setUserRoles(servant.auth_id, rolesToAssign, authToken))
+      const setRoleConfig = await setUserRoles(
+        servant.auth_id,
+        rolesToAssign,
+        authToken
+      )
+      await axios(setRoleConfig)
 
       console.log(
         nameOfRoles[0],

@@ -203,7 +203,8 @@ const directoryMutation = {
 
     if (member.auth_id) {
       // Update a user's Auth Profile with Picture and Name Details
-      await axios(updateAuthUserConfig(updatedMember, authToken))
+      const config = await updateAuthUserConfig(updatedMember, authToken)
+      await axios(config)
     }
 
     await session.close()
@@ -852,15 +853,15 @@ const directoryMutation = {
     )
 
     const member = memberRes.records[0]?.get('member')
-    const authIdResponse = await axios(getAuthIdConfig(member, authToken))
+    const authIdConfig = await getAuthIdConfig(member, authToken)
+    const authIdResponse = await axios(authIdConfig)
 
     if (!authIdResponse.data[0]?.user_id) {
-      const authProfileResponse = await axios(
-        createAuthUserConfig(member, authToken)
-      )
-      const passwordTicketResponse = await axios(
-        changePasswordConfig(member, authToken)
-      )
+      const authUserConfig = await createAuthUserConfig(member, authToken)
+      const authProfileResponse = await axios(authUserConfig)
+
+      const changePassConfig = await changePasswordConfig(member, authToken)
+      const passwordTicketResponse = await axios(changePassConfig)
 
       const res = await Promise.all([
         session.executeWrite((tx) =>

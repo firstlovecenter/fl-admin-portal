@@ -115,19 +115,22 @@ export const MakeServant = async (
   servantValidation(servant)
 
   // Check for AuthID of servant
-  const authIdResponse = await axios(getAuthIdConfig(servant, authToken))
+  const authIdConfig = await getAuthIdConfig(servant, authToken)
+  const authIdResponse = await axios(authIdConfig)
 
   servant.auth_id = authIdResponse.data[0]?.user_id
 
   if (!servant.auth_id) {
     try {
       // If servant Does Not Have Auth0 Profile, Create One
-      const authProfileResponse = await axios(
-        createAuthUserConfig(servant, authToken)
+      const createUserCfg = await createAuthUserConfig(servant, authToken)
+      const authProfileResponse = await axios(createUserCfg)
+
+      const passwordTicketConfig = await changePasswordConfig(
+        servant,
+        authToken
       )
-      const passwordTicketResponse = await axios(
-        changePasswordConfig(servant, authToken)
-      )
+      const passwordTicketResponse = await axios(passwordTicketConfig)
 
       servant.auth_id = authProfileResponse.data.user_id
       const roles: Role[] = []
@@ -166,12 +169,13 @@ export const MakeServant = async (
     }
   } else if (servant.auth_id) {
     // Update a user's Auth Profile with Picture and Name Details
-    await axios(updateAuthUserConfig(servant, authToken))
+    const updateUserConfig = await updateAuthUserConfig(servant, authToken)
+    await axios(updateUserConfig)
 
     // Check auth0 roles and add roles 'leaderBacenta'
-    const userRoleResponse = await axios(
-      getUserRoles(servant.auth_id, authToken)
-    )
+    const userRoleConfig = await getUserRoles(servant.auth_id, authToken)
+
+    const userRoleResponse = await axios(userRoleConfig)
     const roles = userRoleResponse.data.map(
       (role: { name: string }) => role.name
     )
@@ -237,7 +241,6 @@ export const RemoveServant = async (
   })
 
   const church = rearrangeCypherObject(churchRes)
-
 
   const servantRes = await session.run(memberQuery, {
     id: args[`${servantLower}Id`],
@@ -327,7 +330,8 @@ export const RemoveServant = async (
   }
 
   // Check auth0 roles and remove roles 'leaderBacenta'
-  const userRoleResponse = await axios(getUserRoles(servant.auth_id, authToken))
+  const userRoleConfig = await getUserRoles(servant.auth_id, authToken)
+  const userRoleResponse = await axios(userRoleConfig)
   const roles: Role[] = userRoleResponse.data.map(
     (role: Auth0RoleObject) => role.name
   )
@@ -337,7 +341,11 @@ export const RemoveServant = async (
     rolesToCompare.includes(`${servantLower}${churchType}`) &&
     roles.length === 1
   ) {
-    await axios(deleteAuthUserConfig(servant.auth_id, authToken))
+    const deleteUserConfig = await deleteAuthUserConfig(
+      servant.auth_id,
+      authToken
+    )
+    await axios(deleteUserConfig)
 
     console.log(
       `Auth0 Account successfully deleted for ${servant.firstName} ${servant.lastName}`

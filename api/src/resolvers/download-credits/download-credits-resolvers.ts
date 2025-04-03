@@ -35,7 +35,7 @@ export const downloadCreditsMutations = {
     )
 
     try {
-      const { auth, subaccount } = getCreditsFinancials()
+      const { auth, subaccount } = await getCreditsFinancials()
 
       const memberResponse = await session.executeRead((tx) =>
         tx.run(getMember, {
@@ -95,7 +95,7 @@ export const downloadCreditsMutations = {
     )
 
     try {
-      const { auth } = getCreditsFinancials()
+      const { auth } = await getCreditsFinancials()
 
       const confirmRes = await axios(
         confirmTransactionStatus({
