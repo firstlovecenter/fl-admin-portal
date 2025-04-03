@@ -1,4 +1,4 @@
-import SECRETS from '../getSecrets'
+import loadSecrets from '../secrets'
 
 const dotenv = require('dotenv')
 
@@ -51,14 +51,16 @@ type Stream = {
     | 'accra_film_stars'
 }
 
-export const getCreditsFinancials = () => {
+export const getCreditsFinancials = async () => {
+  const SECRETS = await loadSecrets()
   const auth = SECRETS.PAYSTACK_PRIVATE_KEY_WEEKDAY
   const subaccount = SECRETS.PS_SB_DOWNLOAD_CREDITS
 
   return { auth, subaccount }
 }
 
-export const getStreamFinancials = (stream: Stream) => {
+export const getStreamFinancials = async (stream: Stream) => {
+  const SECRETS = await loadSecrets()
   const auth = SECRETS.PAYSTACK_PRIVATE_KEY_WEEKDAY
   let subaccount
 

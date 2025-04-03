@@ -10,63 +10,43 @@ import { Neo4jGraphQL } from '@neo4j/graphql'
 import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
-import SECRETS from './resolvers/getSecrets'
+import { loadSecrets } from './resolvers/secrets'
 
-const app = express()
-const httpServer = http.createServer(app)
-
-const driver = neo4j.driver(
-  SECRETS.NEO4J_URI || 'bolt://localhost:7687/',
-  neo4j.auth.basic(
-    SECRETS.NEO4J_USER || 'neo4j',
-    SECRETS.NEO4J_PASSWORD || 'letmein'
-  )
-)
-
-const neoSchema = new Neo4jGraphQL({
-  typeDefs,
-  resolvers,
-  driver,
-  features: {
-    authorization: {
-      key: SECRETS.JWT_SECRET,
-    },
-    config: {
-      debug: true,
-    },
-    excludeDeprecatedFields: {
-      bookmark: true,
-      negationFilters: true,
-      arrayFilters: true,
-      stringAggregation: true,
-      aggregationFilters: true,
-    },
-  },
-})
-
-/*
- * Create a Neo4j driver instance to connect to the database
- * using credentials specified as environment variables
- * with fallback to defaults
- */
-
-/*
- * Create a new ApolloServer instance, serving the GraphQL schema
- * created using makeAugmentedSchema above and injecting the Neo4j driver
- * instance into the context object so it is available in the
- * generated resolvers to connect to the database.
- */
-
-// Specify host, port and path for GraphQL endpoint
-const port = SECRETS.GRAPHQL_SERVER_PORT || 4001
-const path = SECRETS.GRAPHQL_SERVER_PATH || '/graphql'
-const host = SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'
-
-/*
- * Optionally, apply Express middleware for authentication, etc
- * This also also allows us to specify a path for the GraphQL endpoint
- */
 const startServer = async () => {
+  const SECRETS = await loadSecrets()
+
+  const app = express()
+  const httpServer = http.createServer(app)
+
+  const driver = neo4j.driver(
+    SECRETS.NEO4J_URI || 'bolt://localhost:7687/',
+    neo4j.auth.basic(
+      SECRETS.NEO4J_USER || 'neo4j',
+      SECRETS.NEO4J_PASSWORD || 'letmein'
+    )
+  )
+
+  const neoSchema = new Neo4jGraphQL({
+    typeDefs,
+    resolvers,
+    driver,
+    features: {
+      authorization: {
+        key: SECRETS.JWT_SECRET,
+      },
+      config: {
+        debug: true,
+      },
+      excludeDeprecatedFields: {
+        bookmark: true,
+        negationFilters: true,
+        arrayFilters: true,
+        stringAggregation: true,
+        aggregationFilters: true,
+      },
+    },
+  })
+
   const schema = await neoSchema.getSchema().catch((error) => {
     console.error('\x1b[31m######## 🚨SCHEMA ERROR🚨 #######\x1b[0m')
     console.error(`${JSON.stringify(error, null, 2)}`)
@@ -107,7 +87,7 @@ const startServer = async () => {
   await server.start()
 
   app.use(
-    path,
+    SECRETS.GRAPHQL_SERVER_PATH || '/graphql',
     cors(),
     json(),
     expressMiddleware(server, {
@@ -135,10 +115,16 @@ const startServer = async () => {
     })
   )
 
-  // eslint-disable-next-line no-promise-executor-return
-  await new Promise((resolve) => httpServer.listen({ port }, resolve))
-  // eslint-disable-next-line
-  console.log(`🚀 GraphQL Server ready at http://${host}:${port}${path}`)
+  await new Promise((resolve) =>
+    httpServer.listen({ port: SECRETS.GRAPHQL_SERVER_PORT || 4001 }, resolve)
+  )
+  console.log(
+    `🚀 GraphQL Server ready at http://${
+      SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'
+    }:${SECRETS.GRAPHQL_SERVER_PORT || 4001}${
+      SECRETS.GRAPHQL_SERVER_PATH || '/graphql'
+    }`
+  )
 }
 
 startServer()

@@ -46,9 +46,11 @@ const fetchAwsSecret = async () => {
   }
 }
 
-const loadSecrets = async () => {
+const loadSecrets = async (): Promise<Record<string, string>> => {
   const secrets = await fetchAwsSecret()
   return secrets
 }
 
 module.exports = { loadSecrets }
+
+export default loadSecrets

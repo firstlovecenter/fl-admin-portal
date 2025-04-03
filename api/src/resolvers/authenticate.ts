@@ -1,22 +1,22 @@
 import axios from 'axios'
 import { Auth0RoleObject } from './utils/auth0'
 import { throwToSentry } from './utils/utils'
-import SECRETS from './getSecrets'
-
-const getTokenConfig = {
-  method: 'post',
-  url: `${SECRETS.AUTH0_BASE_URL}oauth/token`,
-  headers: { 'content-type': 'application/json' },
-  data: {
-    client_id: SECRETS.AUTH0_MGMT_CLIENT_ID,
-    client_secret: SECRETS.AUTH0_CLIENT_SECRET,
-    audience: `${SECRETS.AUTH0_BASE_URL}api/v2/`,
-    grant_type: 'client_credentials',
-  },
-}
+import loadSecrets from './secrets'
 
 export const getAuthToken = async () => {
   try {
+    const SECRETS = await loadSecrets() // Await secrets here
+    const getTokenConfig = {
+      method: 'post',
+      url: `${SECRETS.AUTH0_BASE_URL}oauth/token`,
+      headers: { 'content-type': 'application/json' },
+      data: {
+        client_id: SECRETS.AUTH0_MGMT_CLIENT_ID,
+        client_secret: SECRETS.AUTH0_CLIENT_SECRET,
+        audience: `${SECRETS.AUTH0_BASE_URL}api/v2/`,
+        grant_type: 'client_credentials',
+      },
+    }
     const tokenRes = await axios(getTokenConfig)
     return tokenRes.data.access_token
   } catch (error) {
@@ -25,6 +25,7 @@ export const getAuthToken = async () => {
 }
 
 export const getAuth0Roles = async (authToken: string) => {
+  const SECRETS = await loadSecrets() // Await secrets here
   const getRolesConfig = {
     method: 'get',
     baseURL: SECRETS.AUTH0_BASE_URL,

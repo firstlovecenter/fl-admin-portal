@@ -32,7 +32,7 @@ import {
   PayStackRequestBody,
   SendPaymentOTP,
 } from './banking-types'
-import SECRETS from '../getSecrets'
+import { loadSecrets } from '../secrets'
 
 export const checkIfLastServiceBanked = async (
   serviceRecordId: string,
@@ -106,6 +106,7 @@ const bankingMutation = {
     },
     context: Context
   ) => {
+    const SECRETS = await loadSecrets()
     isAuth(
       permitLeaderAdmin('Bacenta'),
       context.jwt['https://flcadmin.netlify.app/roles']

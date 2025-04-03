@@ -2,26 +2,24 @@
 import axios from 'axios'
 import { Member } from './types'
 import { throwToSentry } from './utils'
-import SECRETS from '../getSecrets'
+import loadSecrets from '../secrets'
 
 const formData = require('form-data')
 const Mailgun = require('mailgun.js')
-const dotenv = require('dotenv')
 
-dotenv.config()
-
-const mailgun = new Mailgun(formData)
-const mg = mailgun.client({
-  username: 'api',
-  key: SECRETS.MAILGUN_API_KEY,
-})
-
-export const sendSingleEmail = (
+export const sendSingleEmail = async (
   member: Member,
   subject: string,
   body?: string,
   html?: string
 ) => {
+  const SECRETS = await loadSecrets() // Await secrets here
+  const mailgun = new Mailgun(formData)
+  const mg = mailgun.client({
+    username: 'api',
+    key: SECRETS.MAILGUN_API_KEY,
+  })
+
   mg.messages
     .create(SECRETS.MAILGUN_DOMAIN, {
       from: 'FL Accra Admin <no-reply@firstlovecenter.org>',
@@ -35,12 +33,19 @@ export const sendSingleEmail = (
     .catch((err: any) => console.log('Mailgun API error', err)) // logs any error
 }
 
-export const sendBulkEmail = (
+export const sendBulkEmail = async (
   recipient: string[],
   subject: string,
   body?: string,
   html?: string
 ) => {
+  const SECRETS = await loadSecrets() // Await secrets here
+  const mailgun = new Mailgun(formData)
+  const mg = mailgun.client({
+    username: 'api',
+    key: SECRETS.MAILGUN_API_KEY,
+  })
+
   mg.messages
     .create(SECRETS.MAILGUN_DOMAIN, {
       from: 'FL Accra Admin <no-reply@firstlovecenter.org>',
@@ -55,6 +60,7 @@ export const sendBulkEmail = (
 }
 
 export const sendBulkSMS = async (recipient: string[], message: string) => {
+  const SECRETS = await loadSecrets() // Await secrets here
   const sendMessage = {
     method: 'post',
     url: `https://api.mnotify.com/api/sms/quick?key=${SECRETS.MNOTIFY_KEY}`,

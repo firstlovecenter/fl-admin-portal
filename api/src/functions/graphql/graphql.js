@@ -29,7 +29,6 @@ let isInitialized = false
 let driver
 let server
 let schema
-let SECRETS
 
 const initializeServer = async () => {
   if (isInitialized) return
@@ -38,7 +37,7 @@ const initializeServer = async () => {
 
   try {
     // Load secrets
-    SECRETS = await loadSecrets()
+    const SECRETS = await loadSecrets()
 
     // Configure encrypted connection if required
     const uri =
