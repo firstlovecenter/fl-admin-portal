@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { Member } from './types'
 import { throwToSentry } from './utils'
-import loadSecrets from '../secrets'
+import { loadSecrets } from '../secrets'
 
 const formData = require('form-data')
 const Mailgun = require('mailgun.js')

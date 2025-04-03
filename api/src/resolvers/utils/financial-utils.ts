@@ -1,4 +1,4 @@
-import loadSecrets from '../secrets'
+import { loadSecrets } from '../secrets'
 
 const dotenv = require('dotenv')
 

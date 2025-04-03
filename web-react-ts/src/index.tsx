@@ -61,7 +61,9 @@ const AppWithApollo = () => {
   }, [getAccessToken])
 
   const httpLink = createHttpLink({
-    uri: import.meta.env.VITE_SYNAGO_GRAPHQL_URI || '/graphql',
+    uri:
+      import.meta.env.VITE_SYNAGO_GRAPHQL_URI ||
+      'http://localhost:4001/graphql',
   })
 
   const authLink = setContext((_, { headers }) => {
@@ -179,10 +181,6 @@ const AppWithApollo = () => {
   //   return <Sabbath />
   // }
 
-
-
-
-  
   // if (true) {
   //   return (
   //     <Container>
