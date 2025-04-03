@@ -126,7 +126,7 @@ const bankingMutation = {
     )
 
     try {
-      const { auth, subaccount } = getStreamFinancials(
+      const { auth, subaccount } = await getStreamFinancials(
         transactionResponse?.stream
       )
 
@@ -280,7 +280,7 @@ const bankingMutation = {
       : transactionResponse?.stream
 
     try {
-      const { auth, subaccount } = getStreamFinancials(bankAccountChurch)
+      const { auth, subaccount } = await getStreamFinancials(bankAccountChurch)
 
       if (!subaccount) {
         throw new Error(
@@ -428,7 +428,7 @@ const bankingMutation = {
         )
     )
 
-    const { auth } = getStreamFinancials(
+    const { auth } = await getStreamFinancials(
       transactionResponse?.stream.bankAccount
     )
 
@@ -529,7 +529,7 @@ const bankingMutation = {
     let record = transactionResponse?.record
     const banker = transactionResponse?.banker
     const stream = transactionResponse?.stream
-    const { auth } = getStreamFinancials(stream)
+    const { auth } = await getStreamFinancials(stream)
 
     // if transactionTime is within the last 1 minute then return the record
     if (

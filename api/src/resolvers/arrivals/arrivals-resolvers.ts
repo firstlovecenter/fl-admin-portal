@@ -625,7 +625,9 @@ export const arrivalsMutation = {
           tx.run(checkTransactionReference, args)
         )
       )
-      const { auth } = getStreamFinancials(recordResponse.stream.properties)
+      const { auth } = await getStreamFinancials(
+        recordResponse.stream.properties
+      )
 
       const vehicleRecord = recordResponse.record.properties
       const bacenta = recordResponse.bacenta.properties
