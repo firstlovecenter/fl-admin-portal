@@ -29,10 +29,6 @@ const CreateGovernorship = () => {
     refetchQueries: [
       { query: GET_COUNCIL_GOVERNORSHIPS, variables: { id: councilId } },
     ],
-    onCompleted: (newGovernorshipData) => {
-      clickCard(newGovernorshipData.CreateGovernorship)
-      navigate(`/governorship/displaydetails`)
-    },
   })
 
   //onSubmit receives the form state as argument
