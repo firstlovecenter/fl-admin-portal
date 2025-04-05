@@ -123,5 +123,5 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: 'Synago GraphQL API Lambda Deployment'
+          SLACK_TITLE: '🚀 Synago GraphQL API Lambda Deployment'
           SLACK_MESSAGE: 'Deploying GraphQL API to AWS Lambda ${{ job.status }}'

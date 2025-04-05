@@ -93,12 +93,13 @@ jobs:
       - name: Invalidate CloudFront Cache
         run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
 
-      - name: Send Slack Notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow
-          text: ':rocket: Successfully deployed FLC Admin Portal frontend to S3 and invalidated CloudFront cache'
+      - name: Notify deployment status
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: success()
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: '🚀 FLC Admin Portal Frontend Deployment'
+          SLACK_MESSAGE: |
+            ${{ job.status == 'success' && 'rocket Woohoo The FLC Admin Portal frontend has been deployed faster than a squirrel on espresso squirrel Time to celebrate tada' || 'fire Oh no The deployment crashed harder than a penguin on roller skates penguin Lets fix it team wrench' }}
