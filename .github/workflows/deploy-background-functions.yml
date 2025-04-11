@@ -35,10 +35,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install dependencies
-        run: |
-          cd api && npm ci
-
       - name: Compile Background Functions
         run: |
           # Create a temp directory for compiled background functions
@@ -104,9 +100,15 @@ jobs:
               # Copy function files
               cp -r $FUNC_DIR/* lambda-package-$FUNC_NAME/
               
-              # Copy node modules
-              mkdir -p lambda-package-$FUNC_NAME/node_modules
-              cp -r api/node_modules/* lambda-package-$FUNC_NAME/node_modules/
+              # Install dependencies from function's package.json
+              if [ -f "lambda-package-$FUNC_NAME/package.json" ]; then
+                echo "Installing dependencies for $FUNC_NAME"
+                cd lambda-package-$FUNC_NAME
+                npm install --production
+                cd ..
+              else
+                echo "Warning: No package.json found for $FUNC_NAME"
+              fi
               
               # Create the deployment package
               cd lambda-package-$FUNC_NAME
