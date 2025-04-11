@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for Payment Webhook Lambda function'
+
+Resources:
+  PaymentWebhookFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: fl-synago-payment-webhook
+      Handler: payment-webhook.handler
+      Role: !GetAtt PaymentWebhookLambdaRole.Arn
+      Runtime: nodejs18.x
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          SECRET_NAME: fl-synago-secrets
+          NODE_ENV: production
+      Tags:
+        - Key: Project
+          Value: fl-synago
+
+  # API Gateway REST API for exposing the Lambda function as a webhook
+  PaymentWebhookApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: fl-synago-payment-webhook-api
+      Description: API Gateway for Paystack payment webhook
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  # API Gateway resource
+  PaymentWebhookResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref PaymentWebhookApi
+      ParentId: !GetAtt PaymentWebhookApi.RootResourceId
+      PathPart: webhook
+
+  # API Gateway method to handle POST requests
+  PaymentWebhookMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref PaymentWebhookApi
+      ResourceId: !Ref PaymentWebhookResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PaymentWebhookFunction.Arn}/invocations
+
+  # API Gateway deployment
+  PaymentWebhookDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: PaymentWebhookMethod
+    Properties:
+      RestApiId: !Ref PaymentWebhookApi
+      StageName: prod
+
+  # Permission for API Gateway to invoke Lambda
+  PaymentWebhookPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PaymentWebhookFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PaymentWebhookApi}/*/POST/webhook
+
+  PaymentWebhookLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SecretsManagerAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: 
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:fl-synago-secrets*
+
+Outputs:
+  PaymentWebhookFunctionArn:
+    Description: 'ARN of the Payment Webhook Lambda function'
+    Value: !GetAtt PaymentWebhookFunction.Arn
+  
+  WebhookUrl:
+    Description: 'URL of the Payment Webhook endpoint'
+    Value: !Sub https://${PaymentWebhookApi}.execute-api.${AWS::Region}.amazonaws.com/prod/webhook
