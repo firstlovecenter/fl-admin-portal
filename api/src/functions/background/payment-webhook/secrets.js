@@ -28,7 +28,7 @@ const loadSecrets = async () => {
     })
 
     // Retrieve secrets from AWS Secrets Manager
-    const secretName = process.env.SECRET_NAME || 'fl-synago-secrets'
+    const secretName = process.env.AWS_SECRET_NAME || 'fl-synago-secrets'
     const command = new GetSecretValueCommand({
       SecretId: secretName,
     })

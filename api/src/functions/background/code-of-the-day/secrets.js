@@ -16,7 +16,7 @@ const loadSecrets = async () => {
     })
 
     const command = new GetSecretValueCommand({
-      SecretId: process.env.SECRET_NAME || 'secrets',
+      SecretId: process.env.AWS_SECRET_NAME || 'secrets',
     })
 
     const response = await client.send(command)
