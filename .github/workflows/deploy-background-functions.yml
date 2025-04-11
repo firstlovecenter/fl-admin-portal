@@ -39,46 +39,56 @@ jobs:
         run: |
           cd api && npm ci
 
-      - name: Compile TypeScript background functions
+      - name: Compile Background Functions
         run: |
           # Create a temp directory for compiled background functions
           mkdir -p api/temp-compiled-background
-          mkdir -p api/temp-source-background
 
-          # Copy source files to the temp source directory
-          cp -r api/src/functions/background/* api/temp-source-background/
+          # Debug: Check what's in the background functions directory
+          echo "Files in background functions directory:"
+          find api/src/functions/background -type f | sort
 
-          # Create a tsconfig.json file for compilation
-          echo '{
-            "compilerOptions": {
-              "target": "es2018",
-              "module": "commonjs",
-              "esModuleInterop": true,
-              "allowSyntheticDefaultImports": true,
-              "resolveJsonModule": true,
-              "outDir": "../temp-compiled-background",
-              "strict": false,
-              "declaration": false,
-              "allowJs": true,
-              "skipLibCheck": true
-            },
-            "include": ["./**/*.ts"],
-            "exclude": ["node_modules"]
-          }' > api/temp-source-background/tsconfig.json
+          # Copy all background function files directly to the compiled directory
+          cp -r api/src/functions/background/* api/temp-compiled-background/
 
-          # Install TypeScript if not already available
-          npm install -g typescript
+          # Debug: List files in the compiled directory
+          echo "Files copied to temp-compiled-background:"
+          find api/temp-compiled-background -type f | sort
 
-          # Compile TypeScript files
-          cd api/temp-source-background && tsc
-
-          # Copy any JS files from source to compiled directory
-          find . -name "*.js" -type f -exec cp {} ../temp-compiled-background/{} \;
-
-          # Copy any JSON or other necessary files
-          find . -name "*.json" -type f -exec cp {} ../temp-compiled-background/{} \;
-
-          cd ../..
+          # If there are TypeScript files, compile them in place
+          if find api/temp-compiled-background -name "*.ts" -type f | grep -q .; then
+            echo "TypeScript files found. Installing TypeScript if needed..."
+            npm install -g typescript
+            
+            # Create a tsconfig for the compilation
+            echo '{
+              "compilerOptions": {
+                "target": "es2018",
+                "module": "commonjs",
+                "esModuleInterop": true,
+                "allowSyntheticDefaultImports": true,
+                "resolveJsonModule": true,
+                "outDir": "./",
+                "strict": false,
+                "declaration": false,
+                "allowJs": true,
+                "skipLibCheck": true
+              },
+              "include": ["**/*.ts"],
+              "exclude": ["node_modules"]
+            }' > api/temp-compiled-background/tsconfig.json
+            
+            # Compile TypeScript files in place
+            cd api/temp-compiled-background && tsc
+            
+            # Clean up .ts files after compilation
+            find . -name "*.ts" -type f -delete
+            
+            # Go back to the root directory
+            cd ../..
+          else
+            echo "No TypeScript files found. Skipping compilation."
+          fi
 
       - name: Process and deploy each background function
         run: |
