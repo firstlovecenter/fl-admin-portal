@@ -37,7 +37,7 @@ const executeQuery = async (neoDriver) => {
   try {
     await session.executeWrite(async (tx) => {
       console.log('Setting code of the day for date ', new Date())
-      console.log('Code of the day', codeOfTheDay)
+      // console.log('Code of the day', codeOfTheDay)
 
       const pad = (n) => (n < 10 ? `0${n}` : n)
 
