@@ -91,17 +91,6 @@ jobs:
               # Copy function files
               cp -r $FUNC_DIR/* lambda-package-$FUNC_NAME/
               
-              # Copy necessary shared resources
-              if [ -d "api/src/schema" ]; then
-                mkdir -p lambda-package-$FUNC_NAME/schema
-                cp -r api/src/schema/* lambda-package-$FUNC_NAME/schema/
-              fi
-              
-              if [ -d "api/temp-compiled-resolvers" ]; then
-                mkdir -p lambda-package-$FUNC_NAME/resolvers
-                cp -r api/temp-compiled-resolvers/* lambda-package-$FUNC_NAME/resolvers/
-              fi
-              
               # Copy node modules
               mkdir -p lambda-package-$FUNC_NAME/node_modules
               cp -r api/node_modules/* lambda-package-$FUNC_NAME/node_modules/
