@@ -1,0 +1,138 @@
+name: Deploy Background Functions to AWS Lambda
+
+on:
+  push:
+    branches:
+      - deploy
+    paths:
+      - 'api/src/functions/background/**' # Only trigger when background function files change
+
+jobs:
+  deploy:
+    name: Deploy Background Functions to AWS Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup npm authentication
+        run: |
+          echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.PAT_TOKEN }}" >> .npmrc
+        working-directory: ./api
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install dependencies
+        run: |
+          cd api && npm ci
+
+      - name: Compile TypeScript background functions
+        run: |
+          # Create a temp directory for compiled background functions
+          mkdir -p api/temp-compiled-background
+
+          # Copy TypeScript files to the temp directory
+          cp -r api/src/functions/background/* api/temp-compiled-background/
+
+          # Create a tsconfig.json file for compilation if it doesn't exist
+          if [ ! -f api/temp-compiled-background/tsconfig.json ]; then
+            echo '{
+              "compilerOptions": {
+                "target": "es2018",
+                "module": "commonjs",
+                "esModuleInterop": true,
+                "allowSyntheticDefaultImports": true,
+                "resolveJsonModule": true,
+                "outDir": "./",
+                "strict": false,
+                "declaration": false,
+                "allowJs": true,
+                "skipLibCheck": true
+              },
+              "include": ["./**/*"],
+              "exclude": ["node_modules"]
+            }' > api/temp-compiled-background/tsconfig.json
+          fi
+
+          # Install TypeScript if not already available
+          npm install -g typescript
+
+          # Compile TypeScript files
+          cd api/temp-compiled-background && tsc
+
+          # Remove any .ts files after compilation
+          find . -name "*.ts" -type f -delete
+          cd ../..
+
+      - name: Process and deploy each background function
+        run: |
+          # Find all function directories
+          for FUNC_DIR in api/temp-compiled-background/*; do
+            if [ -d "$FUNC_DIR" ]; then
+              FUNC_NAME=$(basename "$FUNC_DIR")
+              echo "Processing function: $FUNC_NAME"
+              
+              # Create a temporary directory for this function
+              mkdir -p lambda-package-$FUNC_NAME
+              
+              # Copy function files
+              cp -r $FUNC_DIR/* lambda-package-$FUNC_NAME/
+              
+              # Copy necessary shared resources
+              if [ -d "api/src/schema" ]; then
+                mkdir -p lambda-package-$FUNC_NAME/schema
+                cp -r api/src/schema/* lambda-package-$FUNC_NAME/schema/
+              fi
+              
+              if [ -d "api/temp-compiled-resolvers" ]; then
+                mkdir -p lambda-package-$FUNC_NAME/resolvers
+                cp -r api/temp-compiled-resolvers/* lambda-package-$FUNC_NAME/resolvers/
+              fi
+              
+              # Copy node modules
+              mkdir -p lambda-package-$FUNC_NAME/node_modules
+              cp -r api/node_modules/* lambda-package-$FUNC_NAME/node_modules/
+              
+              # Create the deployment package
+              cd lambda-package-$FUNC_NAME
+              zip -r ../lambda-package-$FUNC_NAME.zip .
+              cd ..
+              
+              # Deploy to Lambda
+              echo "Deploying $FUNC_NAME to Lambda"
+              aws lambda update-function-code \
+                --function-name arn:aws:lambda:eu-west-2:871777052000:function:fl-synago-$FUNC_NAME \
+                --zip-file fileb://lambda-package-$FUNC_NAME.zip
+              
+              # Clean up
+              rm -rf lambda-package-$FUNC_NAME
+              rm lambda-package-$FUNC_NAME.zip
+            fi
+          done
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Notify deployment status
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: '🚀 Synago Background Functions Deployment'
+          SLACK_MESSAGE: 'Deploying Background Functions to AWS Lambda ${{ job.status }}'

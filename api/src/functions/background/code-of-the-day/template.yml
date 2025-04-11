@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for Code of the Day Lambda function'
+
+Resources:
+  CodeOfTheDayFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: fl-synago-code-of-the-day
+      Handler: code-of-the-day.handler
+      Role: !GetAtt CodeOfTheDayLambdaRole.Arn
+      Runtime: nodejs18.x
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          SECRET_NAME: fl-synago-secrets
+          NODE_ENV: production
+      Tags:
+        - Key: Project
+          Value: fl-synago
+
+  CodeOfTheDayScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: fl-synago-code-of-the-day-schedule
+      Description: 'Triggers the Code of the Day Lambda function at 00:30 UTC daily'
+      ScheduleExpression: 'cron(30 0 * * ? *)'
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt CodeOfTheDayFunction.Arn
+          Id: CodeOfTheDayTarget
+
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CodeOfTheDayFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt CodeOfTheDayScheduleRule.Arn
+
+  CodeOfTheDayLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SecretsManagerAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: 
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:fl-synago-secrets*
+
+Outputs:
+  CodeOfTheDayFunctionArn:
+    Description: 'ARN of the Code of the Day Lambda function'
+    Value: !GetAtt CodeOfTheDayFunction.Arn
