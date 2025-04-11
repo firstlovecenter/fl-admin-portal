@@ -43,38 +43,41 @@ jobs:
         run: |
           # Create a temp directory for compiled background functions
           mkdir -p api/temp-compiled-background
+          mkdir -p api/temp-source-background
 
-          # Copy TypeScript files to the temp directory
-          cp -r api/src/functions/background/* api/temp-compiled-background/
+          # Copy source files to the temp source directory
+          cp -r api/src/functions/background/* api/temp-source-background/
 
-          # Create a tsconfig.json file for compilation if it doesn't exist
-          if [ ! -f api/temp-compiled-background/tsconfig.json ]; then
-            echo '{
-              "compilerOptions": {
-                "target": "es2018",
-                "module": "commonjs",
-                "esModuleInterop": true,
-                "allowSyntheticDefaultImports": true,
-                "resolveJsonModule": true,
-                "outDir": "./",
-                "strict": false,
-                "declaration": false,
-                "allowJs": true,
-                "skipLibCheck": true
-              },
-              "include": ["./**/*"],
-              "exclude": ["node_modules"]
-            }' > api/temp-compiled-background/tsconfig.json
-          fi
+          # Create a tsconfig.json file for compilation
+          echo '{
+            "compilerOptions": {
+              "target": "es2018",
+              "module": "commonjs",
+              "esModuleInterop": true,
+              "allowSyntheticDefaultImports": true,
+              "resolveJsonModule": true,
+              "outDir": "../temp-compiled-background",
+              "strict": false,
+              "declaration": false,
+              "allowJs": true,
+              "skipLibCheck": true
+            },
+            "include": ["./**/*.ts"],
+            "exclude": ["node_modules"]
+          }' > api/temp-source-background/tsconfig.json
 
           # Install TypeScript if not already available
           npm install -g typescript
 
           # Compile TypeScript files
-          cd api/temp-compiled-background && tsc
+          cd api/temp-source-background && tsc
 
-          # Remove any .ts files after compilation
-          find . -name "*.ts" -type f -delete
+          # Copy any JS files from source to compiled directory
+          find . -name "*.js" -type f -exec cp {} ../temp-compiled-background/{} \;
+
+          # Copy any JSON or other necessary files
+          find . -name "*.json" -type f -exec cp {} ../temp-compiled-background/{} \;
+
           cd ../..
 
       - name: Process and deploy each background function
