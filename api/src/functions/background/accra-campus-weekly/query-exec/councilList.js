@@ -1,7 +1,7 @@
-import { councilListQuery } from '../cypher'
-import { CAMPUS_NAME } from '../utils/constants'
+const { councilListQuery } = require('../cypher')
+const { CAMPUS_NAME } = require('../utils/constants')
 
-export const councilList = async (neoDriver) => {
+const councilList = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -42,4 +42,4 @@ export const councilList = async (neoDriver) => {
   return []
 }
 
-export default councilList
+module.exports = { councilList }
