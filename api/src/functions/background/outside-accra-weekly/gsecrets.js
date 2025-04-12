@@ -2,7 +2,7 @@ const { loadSecrets } = require('./secrets')
 
 /**
  * Helper module to handle Google Application Credentials
- * Works with both AWS Lambda and Netlify Functions
+ * Works with AWS Lambda
  */
 
 // Export secrets for accessing Neo4j and other services
@@ -12,7 +12,7 @@ exports.getSecrets = async () => {
     const secrets = await loadSecrets()
     return secrets
   } catch (error) {
-    console.warn('Falling back to environment variables:', error.message)
+    console.warn('Failed to load from AWS Secrets Manager:', error.message)
     // Fallback to environment variables
     return process.env
   }

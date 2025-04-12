@@ -1,15 +1,17 @@
 const { google } = require('googleapis')
-const {
-  GOOGLE_APPLICATION_CREDENTIALS,
-} = require('../../den-office-monthly-report/gsecrets.js')
+const { getGoogleCredentials } = require('../gsecrets.js')
 
 const SPREADSHEET_ID = '14YuUSVf_SFWZEcwx3AuchQ_0-ZTNaHCHcf9-cGQaPl4'
-const googleAuth = new google.auth.GoogleAuth({
-  credentials: GOOGLE_APPLICATION_CREDENTIALS,
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-})
 
 export const clearGSheet = async (sheetName) => {
+  // Get credentials using AWS Secrets Manager compatible helper
+  const credentials = await getGoogleCredentials()
+
+  const googleAuth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+
   const auth = await googleAuth.getClient()
   const sheets = google.sheets({ version: 'v4', auth })
 
@@ -25,6 +27,14 @@ export const clearGSheet = async (sheetName) => {
 }
 
 export const writeToGsheet = async (data, sheetName, writeRange) => {
+  // Get credentials using AWS Secrets Manager compatible helper
+  const credentials = await getGoogleCredentials()
+
+  const googleAuth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+
   const auth = await googleAuth.getClient()
   const sheets = google.sheets({ version: 'v4', auth })
 

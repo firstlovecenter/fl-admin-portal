@@ -1,12 +1,13 @@
 {
-  "name": "update-gsheet",
+  "name": "outside-accra-weekly",
   "version": "0.0.1",
-  "description": "copy data from the neo4j db into a google sheet",
-  "main": "update-g-sheets.js",
+  "description": "Copy data from the neo4j db into a google sheet for Outside Accra campuses",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.535.0",
     "axios": "^1.6.7",
     "googleapis": "^131.0.0",
     "neo4j-driver": "^5.28.1"
