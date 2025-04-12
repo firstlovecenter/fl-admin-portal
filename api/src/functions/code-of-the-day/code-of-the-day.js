@@ -1,6 +1,8 @@
 const neo4j = require('neo4j-driver')
 const { schedule } = require('@netlify/functions')
 const { default: axios } = require('axios')
+const fs = require('fs')
+const path = require('path')
 const { loadSecrets } = require('./secrets.js')
 
 const SECRETS = loadSecrets()
@@ -14,30 +16,11 @@ const setCodeOfTheDay = `
 const executeQuery = async (neoDriver) => {
   const session = neoDriver.session()
 
-  const codeOfTheDay = [
-    {
-      date: '2024-09-01',
-      code: 'Abundance',
-    },
-    {
-      date: '2024-09-08',
-      code: 'Increase',
-    },
-    {
-      date: '2024-09-15',
-      code: 'Growth',
-    },
-    {
-      date: '2024-09-22',
-      code: 'Enlarge',
-    },
-    {
-      date: '2024-09-29',
-      code: 'Flourish',
-    },
-  ]
-
   try {
+    // Load codes data from JSON file
+    const codesDataPath = path.join(__dirname, 'codes-data.json')
+    const codesData = JSON.parse(fs.readFileSync(codesDataPath, 'utf8'))
+
     await session.executeWrite(async (tx) => {
       console.log('Setting code of the day')
 
@@ -49,19 +32,47 @@ const executeQuery = async (neoDriver) => {
       const year = today.getFullYear()
       const date = `${year}-${pad(month)}-${pad(day)}`
 
-      const code = codeOfTheDay.filter((item) => item.date === date).pop()
+      // Try to find a predefined code for today's date
+      const codeForToday = codesData.dailyCodes.find(
+        (item) => item.date === date
+      )
+      let finalCode
 
-      const res = await axios({
-        method: 'get',
-        url: 'https://random-word-api.herokuapp.com/word',
-      })
+      if (codeForToday) {
+        // We have a predefined code for this date
+        finalCode = codeForToday.code
+      } else {
+        // Check if today is Saturday or Sunday
+        const dayOfWeek = today.getDay()
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          // For weekends without predefined code, use a random one from weekDayCodes array
+          const randomIndex = Math.floor(
+            Math.random() * codesData.weekDayCodes.length
+          )
+          finalCode = codesData.weekDayCodes[randomIndex]
+        } else {
+          // For weekdays or if no specific code is found, fetch from random word API
+          try {
+            const res = await axios({
+              method: 'get',
+              url: 'https://random-word-api.herokuapp.com/word',
+            })
+            finalCode = res.data[0].toUpperCase()
+          } catch (error) {
+            console.error('Error fetching random word, using fallback', error)
+            // Fallback to a random word from our list if API fails
+            const randomIndex = Math.floor(
+              Math.random() * codesData.weekDayCodes.length
+            )
+            finalCode = codesData.weekDayCodes[randomIndex]
+          }
+        }
+      }
 
-      const dictionaryCode = res.data[0].toUpperCase()
-
-      console.log('code', code?.code ?? dictionaryCode)
+      console.log('Setting code of the day to:', finalCode)
 
       return tx.run(setCodeOfTheDay, {
-        code: code?.code ?? dictionaryCode,
+        code: finalCode,
       })
     })
   } catch (error) {
