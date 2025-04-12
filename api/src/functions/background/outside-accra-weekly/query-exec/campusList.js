@@ -1,7 +1,7 @@
-import { campusListQuery } from '../cypher'
-import { OVERSIGHT_NAME } from '../utils/constants'
+const { campusListQuery } = require('../cypher')
+const { OVERSIGHT_NAME } = require('../utils/constants')
 
-export const campusList = async (neoDriver) => {
+const campusList = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -33,4 +33,7 @@ export const campusList = async (neoDriver) => {
   return []
 }
 
-export default campusList
+// Use CommonJS exports for AWS Lambda compatibility
+module.exports = {
+  campusList,
+}

@@ -3,7 +3,7 @@ const { getGoogleCredentials } = require('../gsecrets.js')
 
 const SPREADSHEET_ID = '14YuUSVf_SFWZEcwx3AuchQ_0-ZTNaHCHcf9-cGQaPl4'
 
-export const clearGSheet = async (sheetName) => {
+const clearGSheet = async (sheetName) => {
   // Get credentials using AWS Secrets Manager compatible helper
   const credentials = await getGoogleCredentials()
 
@@ -26,7 +26,7 @@ export const clearGSheet = async (sheetName) => {
   }
 }
 
-export const writeToGsheet = async (data, sheetName, writeRange) => {
+const writeToGsheet = async (data, sheetName, writeRange) => {
   // Get credentials using AWS Secrets Manager compatible helper
   const credentials = await getGoogleCredentials()
 
@@ -53,4 +53,8 @@ export const writeToGsheet = async (data, sheetName, writeRange) => {
   }
 }
 
-export default writeToGsheet
+// Use CommonJS exports for AWS Lambda compatibility
+module.exports = {
+  clearGSheet,
+  writeToGsheet,
+}

@@ -1,7 +1,7 @@
-import { fellowshipAttendanceIncomeQuery } from '../cypher'
-import { OVERSIGHT_NAME, lastSunday } from '../utils/constants'
+const { fellowshipAttendanceIncomeQuery } = require('../cypher')
+const { OVERSIGHT_NAME, lastSunday } = require('../utils/constants')
 
-export const fellowshipAttendanceIncome = async (neoDriver) => {
+const fellowshipAttendanceIncome = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -32,4 +32,5 @@ export const fellowshipAttendanceIncome = async (neoDriver) => {
   return []
 }
 
-export default fellowshipAttendanceIncome
+// Use CommonJS exports for AWS Lambda compatibility
+module.exports = fellowshipAttendanceIncome

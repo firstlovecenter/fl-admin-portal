@@ -1,23 +1,13 @@
 const neo4j = require('neo4j-driver')
 const { default: axios } = require('axios')
 const { getSecrets } = require('./gsecrets.js')
-const { writeToGsheet, clearGSheet } = require('./utils/writeToGSheet.js')
+const { clearGSheet, writeToGsheet } = require('./utils/writeToGSheet.js')
 const { campusList } = require('./query-exec/campusList.js')
-const {
-  default: totalAttendanceIncome,
-} = require('./query-exec/totalAttendanceIncome.js')
-const {
-  default: totalNotBankedIncome,
-} = require('./query-exec/totalNotBankedIncome.js')
-const {
-  default: totalBankedIncome,
-} = require('./query-exec/totalBankedIncome.js')
-const {
-  default: campusAttendanceIncome,
-} = require('./query-exec/campusAttendanceIncome.js')
-const {
-  default: fellowshipAttendanceIncome,
-} = require('./query-exec/fellowshipAttendanceIncome.js')
+const totalAttendanceIncome = require('./query-exec/totalAttendanceIncome.js')
+const totalNotBankedIncome = require('./query-exec/totalNotBankedIncome.js')
+const totalBankedIncome = require('./query-exec/totalBankedIncome.js')
+const campusAttendanceIncome = require('./query-exec/campusAttendanceIncome.js')
+const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceIncome.js')
 const { notifyBaseURL } = require('./utils/constants.js')
 
 /**

@@ -1,7 +1,7 @@
-import { totalBankedIncomeQuery } from '../cypher'
-import { OVERSIGHT_NAME, lastSunday } from '../utils/constants'
+const { totalBankedIncomeQuery } = require('../cypher')
+const { OVERSIGHT_NAME, lastSunday } = require('../utils/constants')
 
-export const totalBankedIncome = async (neoDriver) => {
+const totalBankedIncome = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -29,4 +29,5 @@ export const totalBankedIncome = async (neoDriver) => {
   return []
 }
 
-export default totalBankedIncome
+// Use CommonJS exports for AWS Lambda compatibility
+module.exports = totalBankedIncome
