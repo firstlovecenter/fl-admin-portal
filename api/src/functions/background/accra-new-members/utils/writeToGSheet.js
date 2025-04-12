@@ -1,7 +1,5 @@
 const { google } = require('googleapis')
-const {
-  getGoogleCredentials,
-} = require('../../den-office-monthly-report/gsecrets.js')
+const { getGoogleCredentials } = require('../gsecrets.js')
 
 const SPREADSHEET_ID = '1v0N6YAv1Ov3JnZ10QmM2kochZHAdlNVtnCS6SgTuHII'
 

@@ -1,8 +1,7 @@
 const neo4j = require('neo4j-driver')
 const { schedule } = require('@netlify/functions')
 const { default: axios } = require('axios')
-const { getWeekNumber } = require('@jaedag/admin-portal-types')
-const { SECRETS } = require('./gsecrets.js')
+const { SECRETS } = require('../den-office-monthly-report/gsecrets.js')
 const { writeToGsheet, clearGSheet } = require('./utils/writeToGSheet.js')
 const { campusList } = require('./query-exec/campusList.js')
 const {
