@@ -1,0 +1,16 @@
+{
+  "name": "services-not-banked",
+  "version": "1.0.0",
+  "description": "AWS Lambda function to update services not banked data",
+  "main": "index.js",
+  "dependencies": {
+    "neo4j-driver": "^5.6.0",
+    "axios": "^1.4.0",
+    "@aws-sdk/client-secrets-manager": "^3.388.0",
+    "googleapis": "^126.0.1",
+    "@jaedag/admin-portal-types": "^1.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

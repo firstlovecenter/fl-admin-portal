@@ -1,9 +1,11 @@
 const neo4j = require('neo4j-driver')
-const { schedule } = require('@netlify/functions')
 const { google } = require('googleapis')
 const { default: axios } = require('axios')
 const { getWeekNumber } = require('@jaedag/admin-portal-types')
-const { GOOGLE_APPLICATION_CREDENTIALS, SECRETS } = require('./gsecrets.js')
+const { loadSecrets } = require('./secrets')
+const { getGoogleCredentials } = require('./google-credentials')
+
+const SPREADSHEET_ID = '1qaDQM5RlOPpSC9Gi78xfOGAETLhQyfZ1qsDxM4GUF68'
 
 const fetchData = `
 MATCH (gs:Campus {name: $campusName})-[:HAS*2]->(council:Council)<-[:LEADS]-(pastor:Member)
@@ -63,20 +65,18 @@ const executeQuery = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
-const SPREADSHEET_ID = '1qaDQM5RlOPpSC9Gi78xfOGAETLhQyfZ1qsDxM4GUF68'
-const googleAuth = new google.auth.GoogleAuth({
-  credentials: GOOGLE_APPLICATION_CREDENTIALS,
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-})
+const writeToGsheet = async (data, sheetName, googleCredentials) => {
+  const googleAuth = new google.auth.GoogleAuth({
+    credentials: googleCredentials,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
 
-const writeToGsheet = async (data, sheetName) => {
   const auth = await googleAuth.getClient()
   const sheets = google.sheets({ version: 'v4', auth })
 
@@ -94,53 +94,23 @@ const writeToGsheet = async (data, sheetName) => {
     })
 
     console.log('Response from google sheets:', response.data)
+    return response.data
   } catch (error) {
     console.error('Error adding data to google sheet:', error)
     throw error
   }
 }
 
-const initializeDatabase = (driver) =>
-  executeQuery(driver).catch((error) => {
-    console.error('Database query failed to complete\n', error.message)
-  })
+const sendNotificationSMS = async (secrets) => {
+  console.log('Sending notification SMS')
 
-const handler = async () => {
-  const driver = neo4j.driver(
-    SECRETS.NEO4J_URI || 'bolt://localhost:7687',
-    neo4j.auth.basic(
-      SECRETS.NEO4J_USER || 'neo4j',
-      SECRETS.NEO4J_PASSWORD || 'neo4j'
-    )
-  )
-
-  const init = async (neoDriver) => initializeDatabase(neoDriver)
-
-  const data = await init(driver).catch((error) => {
-    throw new Error(
-      `Database initialization failed\n${error.message}\n${error.stack}`
-    )
-  })
-
-  /*
-   * We catch any errors that occur during initialization of the google client
-   * In this case, ensure that the google client is authentication occurs
-   */
-  const sheetName = 'Accra Services'
-
-  await writeToGsheet(data, sheetName).catch((error) => {
-    throw new Error(
-      `Error writing to google sheet\n${error.message}\n${error.stack}`
-    )
-  })
-
-  await axios({
+  const response = await axios({
     method: 'post',
     baseURL: 'https://flc-microservices.netlify.app/.netlify/functions/notify',
     url: '/send-sms',
     headers: {
       'Content-Type': 'application/json',
-      'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
+      'x-secret-key': secrets.FLC_NOTIFY_KEY,
     },
     data: {
       recipient: [
@@ -162,15 +132,81 @@ const handler = async () => {
           .split('T')[0]
       }`,
     },
-  }).catch((error) => {
-    throw new Error(
-      `Error writing to google sheet\n${error.message}\n${error.stack}`
-    )
   })
 
-  return {
-    statusCode: 200,
-  }
+  console.log('SMS notification sent successfully')
+  return response.data
 }
 
-module.exports.handler = schedule('30 23 * * 1', handler)
+/**
+ * AWS Lambda handler for updating services not banked data
+ * This function is designed to be triggered by CloudWatch Events/EventBridge
+ * Schedule: Runs weekly on Monday at 23:30 UTC
+ */
+exports.handler = async (event, context) => {
+  console.log('Services not banked Lambda function invoked', { event })
+
+  try {
+    // Load secrets
+    const SECRETS = await loadSecrets()
+
+    // Configure encrypted connection if required
+    const uri =
+      SECRETS.NEO4J_ENCRYPTED === 'true'
+        ? SECRETS.NEO4J_URI.replace('bolt://', 'neo4j+s://')
+        : SECRETS.NEO4J_URI
+
+    console.log(
+      `[Neo4j] Connecting to ${uri.replace(/:\/\/.*@/, '://[REDACTED]@')}`
+    )
+
+    // Create Neo4j driver
+    const driver = neo4j.driver(
+      uri,
+      neo4j.auth.basic(SECRETS.NEO4J_USER, SECRETS.NEO4J_PASSWORD),
+      {
+        maxConnectionPoolSize: 10,
+        connectionTimeout: 30000,
+      }
+    )
+
+    // Verify connection
+    await driver.verifyConnectivity()
+    console.log('[Neo4j] Connection established successfully')
+
+    // Fetch data from Neo4j
+    const data = await executeQuery(driver)
+    console.log(`Retrieved ${data.length - 1} records from database`)
+
+    // Format Google credentials
+    const googleCredentials = getGoogleCredentials(SECRETS)
+
+    // Write data to Google Sheet
+    const sheetName = 'Accra Services'
+    await writeToGsheet(data, sheetName, googleCredentials)
+    console.log('Successfully wrote data to Google Sheet')
+
+    // Send notification SMS
+    await sendNotificationSMS(SECRETS)
+
+    // Close the driver when done
+    await driver.close()
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Services not banked data updated successfully',
+      }),
+    }
+  } catch (error) {
+    console.error('Error in services-not-banked Lambda function:', error)
+
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Error updating services not banked data',
+        error: error.message,
+      }),
+    }
+  }
+}
