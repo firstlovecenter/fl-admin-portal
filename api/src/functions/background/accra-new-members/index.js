@@ -1,6 +1,6 @@
 const neo4j = require('neo4j-driver')
 const { default: axios } = require('axios')
-const { getSecrets } = require('./gsecrets.js')
+const { getSecrets } = require('../den-office-monthly-report/gsecrets.js')
 const { writeToGsheet, clearGSheet } = require('./utils/writeToGSheet.js')
 const { newMembersList } = require('./query-exec/newMembersList.js')
 const { notifyBaseURL } = require('./utils/constants.js')
@@ -28,13 +28,13 @@ const getWeekNumber = (date = new Date()) => {
 
 /**
  * Main handler for the Accra New Members data update
- * Compatible with both AWS Lambda and Netlify Functions
+ * AWS Lambda function handler
  */
 const handler = async () => {
   console.log('Running function on date', new Date().toISOString())
 
   try {
-    // Load secrets (works in both AWS Lambda and Netlify Functions)
+    // Load secrets from AWS Secrets Manager
     const SECRETS = await getSecrets()
 
     // Configure encrypted connection if required (for AWS)
