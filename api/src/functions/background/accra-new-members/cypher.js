@@ -1,4 +1,4 @@
-export const newMembersListQuery = `
+const newMembersListQuery = `
 MATCH (:Campus {name: $campusName})-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)<-[:LEADS]-(bishop:Member)
 MATCH (council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
 MATCH (governorship)<-[:LEADS]-(governor)
@@ -10,4 +10,9 @@ bacentaLeader.firstName + " " + bacentaLeader.lastName AS BacentaLeader,
 member.firstName AS MemberFirstName, member.lastName AS MemberLastName, member.phoneNumber AS MemberPhoneNumber, member.whatsappNumber AS MemberWhatsappNumber, toString(date(member.registrationDate)) AS RegistrationDate
 `
 
-export const membersDidntComeToChurchQuery = ``
+const membersDidntComeToChurchQuery = ``
+
+module.exports = {
+  newMembersListQuery,
+  membersDidntComeToChurchQuery,
+}

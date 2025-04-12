@@ -1,7 +1,7 @@
-import { newMembersListQuery } from '../cypher'
-import { CAMPUS_NAME } from '../utils/constants'
+const { newMembersListQuery } = require('../cypher')
+const { CAMPUS_NAME } = require('../utils/constants')
 
-export const newMembersList = async (neoDriver) => {
+const newMembersList = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -52,4 +52,5 @@ export const newMembersList = async (neoDriver) => {
   return []
 }
 
-export default newMembersList
+module.exports = { newMembersList }
+module.exports.default = newMembersList

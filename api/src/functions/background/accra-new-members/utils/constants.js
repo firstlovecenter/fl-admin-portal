@@ -1,8 +1,14 @@
-export const CAMPUS_NAME = 'Accra'
-export const notifyBaseURL = 'https://api-notify.firstlovecenter.com'
+const CAMPUS_NAME = 'Accra'
+const notifyBaseURL = 'https://api-notify.firstlovecenter.com'
 
-export const lastSunday = new Date(
+const lastSunday = new Date(
   new Date().setDate(new Date().getDate() - new Date().getDay())
 )
   .toISOString()
   .split('T')[0]
+
+module.exports = {
+  CAMPUS_NAME,
+  notifyBaseURL,
+  lastSunday,
+}
