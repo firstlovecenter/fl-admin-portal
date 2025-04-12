@@ -1,3 +1,8 @@
-export const notifyBaseURL = 'https://api-notify.firstlovecenter.com'
+const notifyBaseURL = 'https://api-notify.firstlovecenter.com'
 
-export const lastMonth = ((new Date().getMonth() + 11) % 12) + 1
+const lastMonth = ((new Date().getMonth() + 11) % 12) + 1
+
+module.exports = {
+  notifyBaseURL,
+  lastMonth,
+}

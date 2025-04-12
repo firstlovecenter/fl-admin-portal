@@ -3,9 +3,7 @@ const { default: axios } = require('axios')
 const { getSecrets } = require('./gsecrets.js')
 
 const { notifyBaseURL, lastMonth } = require('./utils/constants.js')
-const {
-  default: monthlyDataRetrieval,
-} = require('./query-exec/monthly-data-query.js')
+const monthlyDataRetrieval = require('./query-exec/monthly-data-query.js')
 
 /**
  * Main handler for the Hillary's Monthly Report data update

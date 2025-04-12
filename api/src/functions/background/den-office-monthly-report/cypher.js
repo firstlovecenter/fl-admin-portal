@@ -1,4 +1,4 @@
-export const getMonthlyData = `
+const getMonthlyData = `
 MATCH (oversight:Oversight) WHERE oversight.name IN ['Accra', 'Outside Accra']
 MATCH (oversight)-[:HAS*2]->(stream:Stream)
  MATCH (stream)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
@@ -11,4 +11,6 @@ MATCH (oversight)-[:HAS*2]->(stream:Stream)
 RETURN oversight.name AS Oversight, COUNT(DISTINCT bacenta) AS Bacentas, AverageAttendance
 `
 
-export default getMonthlyData
+module.exports = {
+  getMonthlyData,
+}

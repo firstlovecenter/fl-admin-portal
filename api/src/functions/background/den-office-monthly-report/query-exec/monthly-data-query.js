@@ -1,7 +1,7 @@
-import { getMonthlyData } from '../cypher'
-import { lastMonth } from '../utils/constants'
+const { getMonthlyData } = require('../cypher')
+const { lastMonth } = require('../utils/constants')
 
-export const monthlyDataRetrieval = async (neoDriver) => {
+const monthlyDataRetrieval = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -25,4 +25,4 @@ export const monthlyDataRetrieval = async (neoDriver) => {
   return []
 }
 
-export default monthlyDataRetrieval
+module.exports = monthlyDataRetrieval
