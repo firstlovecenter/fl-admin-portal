@@ -1,7 +1,7 @@
-import { anagkazoAmountNotBankedQuery } from '../cypher'
-import { CAMPUS_NAME, lastSunday } from '../utils/constants'
+const { anagkazoAmountNotBankedQuery } = require('../cypher')
+const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
-export const anagkazoAmountNotBanked = async (neoDriver) => {
+const anagkazoAmountNotBanked = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -26,4 +26,5 @@ export const anagkazoAmountNotBanked = async (neoDriver) => {
   return []
 }
 
-export default anagkazoAmountNotBanked
+module.exports = { anagkazoAmountNotBanked }
+module.exports.default = anagkazoAmountNotBanked

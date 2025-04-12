@@ -1,7 +1,7 @@
-import { amountNotBankedQuery } from '../cypher'
-import { CAMPUS_NAME, lastSunday } from '../utils/constants'
+const { amountNotBankedQuery } = require('../cypher')
+const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
-export const amountNotBanked = async (neoDriver) => {
+const amountNotBanked = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -29,4 +29,5 @@ export const amountNotBanked = async (neoDriver) => {
   return []
 }
 
-export default amountNotBanked
+module.exports = { amountNotBanked }
+module.exports.default = amountNotBanked

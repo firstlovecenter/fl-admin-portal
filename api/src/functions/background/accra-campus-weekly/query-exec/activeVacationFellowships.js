@@ -1,7 +1,7 @@
-import { activeVacationFellowshipsQuery } from '../cypher'
-import { CAMPUS_NAME, lastSunday } from '../utils/constants'
+const { activeVacationFellowshipsQuery } = require('../cypher')
+const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
-export const activeVacationFellowships = async (neoDriver) => {
+const activeVacationFellowships = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -32,4 +32,5 @@ export const activeVacationFellowships = async (neoDriver) => {
   return []
 }
 
-export default activeVacationFellowships
+module.exports = { activeVacationFellowships }
+module.exports.default = activeVacationFellowships

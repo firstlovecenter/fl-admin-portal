@@ -1,7 +1,7 @@
-import { bacentasThatDidntBusQuery } from '../cypher'
-import { CAMPUS_NAME, lastSunday } from '../utils/constants'
+const { bacentasThatDidntBusQuery } = require('../cypher')
+const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
-export const bacentasThatBussed = async (neoDriver) => {
+const bacentasThatDidntBus = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -31,4 +31,5 @@ export const bacentasThatBussed = async (neoDriver) => {
   return []
 }
 
-export default bacentasThatBussed
+module.exports = { bacentasThatDidntBus }
+module.exports.default = bacentasThatDidntBus

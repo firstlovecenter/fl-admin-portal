@@ -1,12 +1,12 @@
-import { anagkazoAttendanceIncomeQuery } from '../cypher'
-import { CAMPUS_NAME, lastSunday } from '../utils/constants'
+const { anagkazoIncomeAttendanceQuery } = require('../cypher')
+const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
-export const anagkazoIncomeAttendance = async (neoDriver) => {
+const anagkazoIncomeAttendance = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
     const result = await session.executeRead(async (tx) =>
-      tx.run(anagkazoAttendanceIncomeQuery, {
+      tx.run(anagkazoIncomeAttendanceQuery, {
         campusName: CAMPUS_NAME,
         bussingDate: lastSunday,
       })
@@ -29,4 +29,5 @@ export const anagkazoIncomeAttendance = async (neoDriver) => {
   return []
 }
 
-export default anagkazoIncomeAttendance
+module.exports = { anagkazoIncomeAttendance }
+module.exports.default = anagkazoIncomeAttendance

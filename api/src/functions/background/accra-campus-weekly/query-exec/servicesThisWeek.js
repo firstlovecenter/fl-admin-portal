@@ -1,7 +1,7 @@
-import { servicesThisWeekQuery } from '../cypher'
-import { CAMPUS_NAME, lastSunday } from '../utils/constants'
+const { servicesThisWeekQuery } = require('../cypher')
+const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
-export const servicesThisWeek = async (neoDriver) => {
+const servicesThisWeek = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -31,4 +31,5 @@ export const servicesThisWeek = async (neoDriver) => {
   return []
 }
 
-export default servicesThisWeek
+module.exports = { servicesThisWeek }
+module.exports.default = servicesThisWeek
