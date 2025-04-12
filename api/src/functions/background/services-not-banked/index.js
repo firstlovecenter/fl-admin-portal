@@ -1,7 +1,6 @@
 const neo4j = require('neo4j-driver')
 const { google } = require('googleapis')
 const { default: axios } = require('axios')
-const { getWeekNumber } = require('@jaedag/admin-portal-types')
 const { loadSecrets } = require('./secrets')
 const { getGoogleCredentials } = require('./google-credentials')
 
@@ -103,6 +102,19 @@ const writeToGsheet = async (data, sheetName, googleCredentials) => {
 
 const sendNotificationSMS = async (secrets) => {
   console.log('Sending notification SMS')
+
+  const getWeekNumber = () => {
+    const now = new Date()
+    const startOfYear = new Date(now.getFullYear(), 0, 1)
+    const pastDaysOfYear =
+      (now -
+        startOfYear +
+        (startOfYear.getTimezoneOffset() - now.getTimezoneOffset()) *
+          60 *
+          1000) /
+      86400000
+    return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7)
+  }
 
   const response = await axios({
     method: 'post',
