@@ -118,7 +118,7 @@ const sendNotificationSMS = async (secrets) => {
 
   const response = await axios({
     method: 'post',
-    baseURL: 'https://flc-microservices.netlify.app/.netlify/functions/notify',
+    baseURL: 'https://api-notify.firstlovecenter.com',
     url: '/send-sms',
     headers: {
       'Content-Type': 'application/json',
