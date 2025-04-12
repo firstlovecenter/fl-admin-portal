@@ -1,4 +1,4 @@
-import {
+const {
   aggregateBussingOnCampusQuery,
   aggregateBussingOnCouncilQuery,
   aggregateBussingOnDenominationQuery,
@@ -6,9 +6,9 @@ import {
   aggregateBussingOnOversightQuery,
   aggregateBussingOnStreamQuery,
   zeroAllNullBussingRecordsCypher,
-} from '../bacenta-cypher'
+} = require('../bacenta-cypher')
 
-export const zeroAllNullBussingRecords = async (neoDriver) => {
+const zeroAllNullBussingRecords = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -23,7 +23,7 @@ export const zeroAllNullBussingRecords = async (neoDriver) => {
   }
 }
 
-export const aggregateBussingOnGovernorship = async (neoDriver) => {
+const aggregateBussingOnGovernorship = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -46,7 +46,7 @@ export const aggregateBussingOnGovernorship = async (neoDriver) => {
   return []
 }
 
-export const aggregateBussingOnCouncil = async (neoDriver) => {
+const aggregateBussingOnCouncil = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -69,7 +69,7 @@ export const aggregateBussingOnCouncil = async (neoDriver) => {
   return []
 }
 
-export const aggregateBussingOnStream = async (neoDriver) => {
+const aggregateBussingOnStream = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -90,7 +90,7 @@ export const aggregateBussingOnStream = async (neoDriver) => {
   return []
 }
 
-export const aggregateBussingOnCampus = async (neoDriver) => {
+const aggregateBussingOnCampus = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -111,7 +111,7 @@ export const aggregateBussingOnCampus = async (neoDriver) => {
   return []
 }
 
-export const aggregateBussingOnOversight = async (neoDriver) => {
+const aggregateBussingOnOversight = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -134,7 +134,7 @@ export const aggregateBussingOnOversight = async (neoDriver) => {
   return []
 }
 
-export const aggregateBussingOnDenomination = async (neoDriver) => {
+const aggregateBussingOnDenomination = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -155,4 +155,14 @@ export const aggregateBussingOnDenomination = async (neoDriver) => {
   }
 
   return []
+}
+
+module.exports = {
+  zeroAllNullBussingRecords,
+  aggregateBussingOnGovernorship,
+  aggregateBussingOnCouncil,
+  aggregateBussingOnStream,
+  aggregateBussingOnCampus,
+  aggregateBussingOnOversight,
+  aggregateBussingOnDenomination,
 }

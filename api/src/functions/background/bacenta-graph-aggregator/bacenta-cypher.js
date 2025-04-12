@@ -1,4 +1,4 @@
-export const aggregateBussingOnGovernorshipQuery = `
+const aggregateBussingOnGovernorshipQuery = `
    MATCH (governorship:Governorship)-[:CURRENT_HISTORY]->(log:ServiceLog)
    MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     SET aggregate.month = date().month
@@ -26,7 +26,7 @@ export const aggregateBussingOnGovernorshipQuery = `
     RETURN COUNT(governorship) as governorshipCount
 `
 
-export const aggregateBussingOnCouncilQuery = `
+const aggregateBussingOnCouncilQuery = `
    MATCH (council:Council)-[:CURRENT_HISTORY]->(log:ServiceLog)
    MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     SET aggregate.month = date().month
@@ -53,7 +53,7 @@ export const aggregateBussingOnCouncilQuery = `
     RETURN COUNT(council) as councilCount
 `
 
-export const aggregateBussingOnStreamQuery = `
+const aggregateBussingOnStreamQuery = `
    MATCH (stream:Stream)-[:CURRENT_HISTORY]->(log:ServiceLog)
    MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     SET aggregate.month = date().month
@@ -80,7 +80,7 @@ export const aggregateBussingOnStreamQuery = `
     RETURN COUNT(stream) as streamCount
 `
 
-export const aggregateBussingOnCampusQuery = `
+const aggregateBussingOnCampusQuery = `
    MATCH (campus:Campus)-[:CURRENT_HISTORY]->(log:ServiceLog)
    MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     SET aggregate.month = date().month
@@ -107,7 +107,7 @@ export const aggregateBussingOnCampusQuery = `
     RETURN COUNT(campus) as campusCount
 `
 
-export const aggregateBussingOnOversightQuery = `
+const aggregateBussingOnOversightQuery = `
     MATCH (oversight:Oversight)-[:CURRENT_HISTORY]->(log:ServiceLog)
     MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
         SET aggregate.month = date().month
@@ -134,7 +134,7 @@ export const aggregateBussingOnOversightQuery = `
      RETURN COUNT(oversight) as oversightCount
     `
 
-export const aggregateBussingOnDenominationQuery = `
+const aggregateBussingOnDenominationQuery = `
     MATCH (denomination:Denomination)-[:CURRENT_HISTORY]->(log:ServiceLog)
     MERGE (aggregate:AggregateBussingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
         SET aggregate.month = date().month
@@ -160,7 +160,7 @@ export const aggregateBussingOnDenominationQuery = `
         RETURN COUNT(denomination) as denominationCount
         `
 
-export const zeroAllNullBussingRecordsCypher = `
+const zeroAllNullBussingRecordsCypher = `
     MATCH (aggregate:AggregateBussingRecord)
    WHERE aggregate.numberOfSprinters IS NULL AND aggregate.numberOfUrvans IS NULL AND aggregate.numberOfCars IS NULL
 
@@ -173,3 +173,13 @@ export const zeroAllNullBussingRecordsCypher = `
     aggregate.numberOfCars = 0
    RETURN COUNT(aggregate) as aggregateCount
    `
+
+module.exports = {
+  aggregateBussingOnCampusQuery,
+  aggregateBussingOnCouncilQuery,
+  aggregateBussingOnDenominationQuery,
+  aggregateBussingOnGovernorshipQuery,
+  aggregateBussingOnOversightQuery,
+  aggregateBussingOnStreamQuery,
+  zeroAllNullBussingRecordsCypher,
+}
