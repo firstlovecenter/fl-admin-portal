@@ -203,7 +203,7 @@ const handler = async () => {
 }
 
 // Export for AWS Lambda
-exports.lambdaHandler = async (event, context) => {
+exports.handler = async (event, context) => {
   console.log('AWS Lambda handler invoked', { event })
   return handler()
 }
