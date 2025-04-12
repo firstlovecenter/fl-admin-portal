@@ -1,13 +1,13 @@
-import {
+const {
   aggregateBacentaOnGovernorshipQuery,
   aggregateCampusOnOversightQuery,
   aggregateCouncilOnStreamQuery,
   aggregateGovernorshipOnCouncilQuery,
   aggregateOversightOnDenominationQuery,
   aggregateStreamOnCampusQuery,
-} from '../sevice-cypher'
+} = require('../sevice-cypher')
 
-export const aggregateBacentaOnGovernorship = async (neoDriver) => {
+const aggregateBacentaOnGovernorship = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -30,7 +30,7 @@ export const aggregateBacentaOnGovernorship = async (neoDriver) => {
   return []
 }
 
-export const aggregateGovernorshipOnCouncil = async (neoDriver) => {
+const aggregateGovernorshipOnCouncil = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -53,7 +53,7 @@ export const aggregateGovernorshipOnCouncil = async (neoDriver) => {
   return []
 }
 
-export const aggregateCouncilOnStream = async (neoDriver) => {
+const aggregateCouncilOnStream = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -74,7 +74,7 @@ export const aggregateCouncilOnStream = async (neoDriver) => {
   return []
 }
 
-export const aggregateStreamOnCampus = async (neoDriver) => {
+const aggregateStreamOnCampus = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -95,7 +95,7 @@ export const aggregateStreamOnCampus = async (neoDriver) => {
   return []
 }
 
-export const aggregateCampusOnOversight = async (neoDriver) => {
+const aggregateCampusOnOversight = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -118,7 +118,7 @@ export const aggregateCampusOnOversight = async (neoDriver) => {
   return []
 }
 
-export const aggregateOversightOnDenomination = async (neoDriver) => {
+const aggregateOversightOnDenomination = async (neoDriver) => {
   const session = neoDriver.session()
 
   try {
@@ -139,4 +139,13 @@ export const aggregateOversightOnDenomination = async (neoDriver) => {
   }
 
   return []
+}
+
+module.exports = {
+  aggregateBacentaOnGovernorship,
+  aggregateGovernorshipOnCouncil,
+  aggregateCouncilOnStream,
+  aggregateStreamOnCampus,
+  aggregateCampusOnOversight,
+  aggregateOversightOnDenomination,
 }

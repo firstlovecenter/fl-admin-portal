@@ -1,5 +1,4 @@
 const neo4j = require('neo4j-driver')
-const { schedule } = require('@netlify/functions')
 const { loadSecrets } = require('./secrets.js')
 const {
   aggregateBacentaOnGovernorship,
@@ -10,8 +9,11 @@ const {
   aggregateOversightOnDenomination,
 } = require('./query-exec/aggregateAllChurches.js')
 
-const SECRETS = loadSecrets()
-
+/**
+ * Execute all aggregation queries
+ * @param {Object} neoDriver - Neo4j driver instance
+ * @returns {Promise<void>}
+ */
 const executeQuery = async (neoDriver) => {
   try {
     await Promise.all([
@@ -25,48 +27,83 @@ const executeQuery = async (neoDriver) => {
     console.log('All Aggregations Complete!')
   } catch (error) {
     console.error('Error aggregating graphs', error)
+    throw error
   }
 }
 
+/**
+ * Initialize database and run aggregation queries
+ * @param {Object} driver - Neo4j driver instance
+ * @returns {Promise<void>}
+ */
 const initializeDatabase = (driver) => {
   return executeQuery(driver).catch((error) => {
     console.error('Database query failed to complete\n', error.message)
+    throw error
   })
 }
-// This module can be used to serve the GraphQL endpoint
-// as a lambda function
 
-// This module is copied during the build step
-// Be sure to run `npm run build`
-
+/**
+ * Main handler for the Service Graph Aggregator
+ * Compatible with both AWS Lambda and Netlify Functions
+ * @returns {Promise<Object>} - Response object
+ */
 const handler = async () => {
-  const driver = neo4j.driver(
-    SECRETS.NEO4J_URI || 'bolt://localhost:7687',
-    neo4j.auth.basic(
-      SECRETS.NEO4J_USER || 'neo4j',
-      SECRETS.NEO4J_PASSWORD || 'neo4j'
-    )
+  console.log(
+    'Running service graph aggregator on date',
+    new Date().toISOString()
   )
 
-  const init = async (neoDriver) => initializeDatabase(neoDriver)
+  try {
+    // Load secrets (works in both AWS Lambda and Netlify Functions)
+    const SECRETS = await loadSecrets()
 
-  /*
-   * We catch any errors that occur during initialization
-   * to handle cases where we still want the API to start
-   * regardless, such as running with a read only user.
-   * In this case, ensure that any desired initialization steps
-   * have occurred
-   */
+    // Configure encrypted connection if required (for AWS)
+    const uri =
+      SECRETS.NEO4J_ENCRYPTED === 'true'
+        ? SECRETS.NEO4J_URI?.replace('bolt://', 'neo4j+s://')
+        : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
 
-  await init(driver).catch((error) => {
-    throw new Error(
-      `Database initialization failed\n${error.message}\n${error.stack}`
+    // Create Neo4j driver
+    const driver = neo4j.driver(
+      uri,
+      neo4j.auth.basic(
+        SECRETS.NEO4J_USER || 'neo4j',
+        SECRETS.NEO4J_PASSWORD || 'neo4j'
+      )
     )
-  })
 
-  return {
-    statusCode: 200,
+    // Verify connection
+    await driver.verifyConnectivity()
+    console.log('[Neo4j] Connection established successfully')
+
+    // Run aggregation queries
+    await initializeDatabase(driver)
+
+    // Close the Neo4j driver when done
+    await driver.close()
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Service graphs aggregated successfully',
+      }),
+    }
+  } catch (error) {
+    console.error('Error in service graph aggregator function:', error)
+
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Error aggregating service graphs',
+        error: error.message,
+      }),
+    }
   }
 }
 
-module.exports.handler = schedule('0 * * * *', handler)
+// Export for AWS Lambda
+exports.handler = async (event, context) => {
+  console.log('AWS Lambda handler invoked', { event })
+  return handler()
+}

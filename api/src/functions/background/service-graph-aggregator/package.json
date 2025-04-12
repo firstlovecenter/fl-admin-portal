@@ -1,13 +1,13 @@
 {
-  "name": "code-of-the-day-setter",
+  "name": "service-graph-aggregator",
   "version": "0.0.1",
-  "description": "Ensures that income and attendance  data is correctly aggregated",
-  "main": "code-of-the-day.js",
+  "description": "Ensures that income and attendance data is correctly aggregated",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@netlify/functions": "^1.2.0",
+    "@aws-sdk/client-secrets-manager": "^3.388.0",
     "axios": "^0.27.2",
     "neo4j-driver": "^5.28.1"
   }

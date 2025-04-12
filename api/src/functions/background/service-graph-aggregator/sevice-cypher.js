@@ -1,4 +1,4 @@
-export const aggregateBacentaOnGovernorshipQuery = `
+const aggregateBacentaOnGovernorshipQuery = `
    MATCH (governorship:Governorship)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..3]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph) 
    WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
@@ -20,7 +20,7 @@ export const aggregateBacentaOnGovernorshipQuery = `
     RETURN COUNT(governorship) as governorshipCount
 `
 
-export const aggregateGovernorshipOnCouncilQuery = `
+const aggregateGovernorshipOnCouncilQuery = `
     MATCH (council:Council)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..4]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph) 
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
@@ -42,7 +42,7 @@ export const aggregateGovernorshipOnCouncilQuery = `
     RETURN COUNT(council) as councilCount
 `
 
-export const aggregateCouncilOnStreamQuery = `
+const aggregateCouncilOnStreamQuery = `
     MATCH (stream:Stream)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..5]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph) 
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
@@ -64,7 +64,7 @@ export const aggregateCouncilOnStreamQuery = `
     RETURN COUNT(stream) as streamCount
 `
 
-export const aggregateStreamOnCampusQuery = `
+const aggregateStreamOnCampusQuery = `
     MATCH (campus:Campus)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..6]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph) 
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
@@ -86,7 +86,7 @@ export const aggregateStreamOnCampusQuery = `
     RETURN COUNT(campus) as campusCount
 `
 
-export const aggregateCampusOnOversightQuery = `
+const aggregateCampusOnOversightQuery = `
     MATCH (oversight:Oversight)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..7]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph) 
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
@@ -108,7 +108,7 @@ export const aggregateCampusOnOversightQuery = `
     RETURN COUNT(oversight) as oversightCount
 `
 
-export const aggregateOversightOnDenominationQuery = `
+const aggregateOversightOnDenominationQuery = `
     MATCH (denomination:Denomination)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..8]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph) 
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
@@ -129,3 +129,12 @@ export const aggregateOversightOnDenominationQuery = `
 
     RETURN COUNT(denomination) as denominationCount
 `
+
+module.exports = {
+  aggregateBacentaOnGovernorshipQuery,
+  aggregateGovernorshipOnCouncilQuery,
+  aggregateCouncilOnStreamQuery,
+  aggregateStreamOnCampusQuery,
+  aggregateCampusOnOversightQuery,
+  aggregateOversightOnDenominationQuery,
+}
