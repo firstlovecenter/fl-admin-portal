@@ -891,7 +891,7 @@ extend type Mutation {
                       OPTIONAL MATCH (stream)-[r:MEETS_ON]->()
                       DELETE r
                       MERGE (stream)-[:MEETS_ON]->(meetingDay)
-                     	RETURN count(stream) AS stream
+                     	RETURN count(stream) AS streamCount
                      	}
 
       RETURN stream
