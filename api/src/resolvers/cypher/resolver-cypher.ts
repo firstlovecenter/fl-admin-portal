@@ -52,35 +52,30 @@ RETURN member
 `
 
 export const matchMemberOversightQuery = `
-WITH apoc.cypher.runFirstColumnMany(  
-  "MATCH (member:Member {id:$id})
-  RETURN member", {offset:0, first:5, id: $id}, True) AS x UNWIND x AS member
-  RETURN member { .id,.auth_id, .firstName,.lastName,.email,.phoneNumber,.whatsappNumber,.pictureUrl,
-  leadsOversight: [ member_oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(oversight:Oversight)
-  RETURN oversight", {this:member}, true) | member_oversight {.id, .name}],
-  isAdminForOversight: [ member_oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(oversight:Oversight)
-  RETURN oversight", {this:member}, true) | member_oversight {.id, .name}]} AS member
-    `
+MATCH (member:Member {id:$id})
+RETURN member { 
+  .id, .auth_id, .firstName, .lastName, .email, .phoneNumber, .whatsappNumber, .pictureUrl,
+  leadsOversight: [oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(oversight:Oversight) RETURN oversight", {this: member}) | oversight {.id, .name}],
+  isAdminForOversight: [oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(oversight:Oversight) RETURN oversight", {this: member}) | oversight {.id, .name}]
+} AS member
+`
 
 export const matchMemberDenominationQuery = `
-WITH apoc.cypher.runFirstColumnMany(
-  "MATCH (member:Member {id:$id})
-  RETURN member", {offset:0, first:5, id: $id}, True) AS x UNWIND x AS member
-  RETURN member { .id,.auth_id, .firstName,.lastName,.email,.phoneNumber,.whatsappNumber,.pictureUrl,
-  leadsDenomination: [ member_denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(denomination:Denomination)
-  RETURN denomination", {this: member}, true) | member_denomination { .id,.name }],
-  isAdminForDenomination: [ member_denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(denomination:Denomination)
-  RETURN denomination", {this: member}, true) | member_denomination { .id,.name }]} AS member
-  `
+MATCH (member:Member {id:$id})
+RETURN member { 
+  .id, .auth_id, .firstName, .lastName, .email, .phoneNumber, .whatsappNumber, .pictureUrl,
+  leadsDenomination: [denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(denomination:Denomination) RETURN denomination", {this: member}) | denomination {.id, .name}],
+  isAdminForDenomination: [denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(denomination:Denomination) RETURN denomination", {this: member}) | denomination {.id, .name}]
+} AS member
+`
 
 export const matchMemberTellerQuery = `
-  WITH apoc.cypher.runFirstColumnMany(
-    "MATCH (member:Member {id:$id})
-    RETURN member", {offset:0, first:5, id: $id}, True) AS x UNWIND x AS member
-    RETURN member { .id,.auth_id, .firstName,.lastName,.email,.phoneNumber,.whatsappNumber,.pictureUrl,
-    isTellerForStream: [ member_tellerStreams IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_TELLER_FOR]->(tellerStream:Stream)
-    RETURN tellerStream", {this: member}, true) | member_tellerStreams { .id,.name }]} AS member 
-  `
+MATCH (member:Member {id:$id})
+RETURN member { 
+  .id, .auth_id, .firstName, .lastName, .email, .phoneNumber, .whatsappNumber, .pictureUrl,
+  isTellerForStream: [tellerStream IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_TELLER_FOR]->(tellerStream:Stream) RETURN tellerStream", {this: member}) | tellerStream {.id, .name}]
+} AS member 
+`
 
 export const matchMemberSheepSeekerQuery = `
   WITH apoc.cypher.runFirstColumnMany(
