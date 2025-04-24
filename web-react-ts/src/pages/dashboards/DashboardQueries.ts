@@ -39,30 +39,27 @@ export const SERVANT_CHURCH_LIST = gql`
       lastName
       fullName
 
-      leadsFellowship {
-        id
-        name
-        vacationStatus
-      }
-
       leadsBacenta {
         id
         name
+        isManualBanking
         vacationStatus
       }
       leadsGovernorship {
         id
         name
+        isManualBanking
       }
       leadsCouncil {
         id
         name
+        isManualBanking
       }
       leadsStream {
         id
         name
         vacationStatus
-        bankAccount
+        isManualBanking
       }
       leadsCampus {
         id
@@ -82,16 +79,18 @@ export const SERVANT_CHURCH_LIST = gql`
       isAdminForGovernorship {
         id
         name
+        isManualBanking
       }
       isAdminForCouncil {
         id
         name
+        isManualBanking
       }
       isAdminForStream {
         id
         name
         vacationStatus
-        bankAccount
+        isManualBanking
       }
       isAdminForCampus {
         id

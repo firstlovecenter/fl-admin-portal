@@ -95,7 +95,7 @@ const Services = () => {
           {['Stream', 'Council', 'Governorship', 'Bacenta'].includes(
             churchType
           ) &&
-            church?.bankAccount !== 'manual' && (
+            !church?.isManualBanking && (
               <MenuButton
                 iconComponent={<FileEarmarkArrowUpFill />}
                 title="Banking Slips"
@@ -113,7 +113,7 @@ const Services = () => {
           {['Stream', 'Council', 'Governorship', 'Bacenta', 'Hub'].includes(
             churchType
           ) &&
-            church?.bankAccount !== 'manual' && (
+            !church.isManualBanking && (
               <MenuButton
                 iconComponent={<Coin />}
                 title="Self Banking"
@@ -125,30 +125,29 @@ const Services = () => {
               />
             )}
 
-          {church?.bankAccount === 'manual' &&
-            church.__typename === 'Stream' && (
-              <>
-                <RoleView roles={permitAdmin('Stream')}>
-                  <MenuButton
-                    iconComponent={<PersonPlus />}
-                    title="Add Stream Tellers"
-                    color="banking"
-                    onClick={() => navigate(`/anagkazo/treasurer-select`)}
-                    noCaption
-                  />
-                </RoleView>
+          {church.isManualBanking && church.__typename === 'Stream' && (
+            <>
+              <RoleView roles={permitAdmin('Stream')}>
+                <MenuButton
+                  iconComponent={<PersonPlus />}
+                  title="Add Stream Tellers"
+                  color="banking"
+                  onClick={() => navigate(`/anagkazo/treasurer-select`)}
+                  noCaption
+                />
+              </RoleView>
 
-                <RoleView roles={permitTellerStream()}>
-                  <MenuButton
-                    iconComponent={<CashCoin />}
-                    title="Receive Midweek Offering"
-                    color="banking"
-                    onClick={() => navigate(`/anagkazo/receive-banking`)}
-                    noCaption
-                  />
-                </RoleView>
-              </>
-            )}
+              <RoleView roles={permitTellerStream()}>
+                <MenuButton
+                  iconComponent={<CashCoin />}
+                  title="Receive Midweek Offering"
+                  color="banking"
+                  onClick={() => navigate(`/anagkazo/receive-banking`)}
+                  noCaption
+                />
+              </RoleView>
+            </>
+          )}
 
           {church.__typename !== 'Bacenta' ? (
             <RoleView

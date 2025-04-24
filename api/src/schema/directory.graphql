@@ -743,6 +743,14 @@ type Stream implements Church {
   id: ID @id
   name: String!
   bankAccount: String!
+  isManualBanking: Boolean!
+    @cypher(
+      statement: """
+      MATCH (this)
+      RETURN this.bankAccount = 'manual' AS isManualBanking
+      """
+      columnName: "isManualBanking"
+    )
   vacationStatus: String!
     @cypher(
       statement: """
@@ -877,6 +885,14 @@ type Council implements Church {
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
+  isManualBanking: Boolean!
+    @cypher(
+      statement: """
+      MATCH (this)<-[:HAS]-(stream:Stream)
+      RETURN stream.bankAccount = 'manual' AS isManualBanking
+      """
+      columnName: "isManualBanking"
+    )
   stream_name: String
     @cypher(
       statement: """
@@ -980,6 +996,14 @@ type Council implements Church {
 type Governorship implements Church {
   id: ID @id
   name: String!
+  isManualBanking: Boolean!
+    @cypher(
+      statement: """
+      MATCH (this)<-[:HAS*2]-(stream:Stream)
+      RETURN stream.bankAccount = 'manual' AS isManualBanking
+      """
+      columnName: "isManualBanking"
+    )
   stream_name: String
     @cypher(
       statement: """
@@ -1078,6 +1102,14 @@ type Bacenta implements Church {
   name: String!
   bankingCode: Int
   location: Point
+  isManualBanking: Boolean!
+    @cypher(
+      statement: """
+      MATCH (this)<-[:HAS*3]-(stream:Stream)
+      RETURN stream.bankAccount = 'manual' AS isManualBanking
+      """
+      columnName: "isManualBanking"
+    )
   meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
   stream_name: String
     @cypher(

@@ -65,6 +65,11 @@ export const getStreamFinancials = async (stream: Stream) => {
   let subaccount
 
   switch (stream.bankAccount) {
+    case 'manual':
+      throw new Error(
+        'Payment Error ' +
+          'You may not use the self-banking platform. Please contact your admin'
+      )
     case 'aes_account':
       throw new Error(
         'Payment Error' +
