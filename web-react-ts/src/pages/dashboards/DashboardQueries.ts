@@ -117,6 +117,7 @@ export const SERVANT_CHURCH_LIST = gql`
         id
         name
         vacationStatus
+        isManualBanking
       }
       isArrivalsAdminForCampus {
         id
@@ -138,6 +139,7 @@ export const SERVANT_CHURCH_LIST = gql`
         name
         vacationStatus
         bankAccount
+        isManualBanking
       }
       isArrivalsPayerForCouncil {
         id
@@ -149,6 +151,7 @@ export const SERVANT_CHURCH_LIST = gql`
         id
         name
         bankAccount
+        isManualBanking
       }
 
       leadsHub {
