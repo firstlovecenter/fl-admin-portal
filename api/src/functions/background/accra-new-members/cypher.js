@@ -1,5 +1,5 @@
 const newMembersListQuery = `
-MATCH (:Campus {name: $campusName})-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)<-[:LEADS]-(bishop:Member)
+MATCH (oversight:Oversight {name: $campusName })-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)<-[:LEADS]-(bishop:Member)
 MATCH (council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
 MATCH (governorship)<-[:LEADS]-(governor)
 MATCH (bacenta)<-[:LEADS]-(bacentaLeader)

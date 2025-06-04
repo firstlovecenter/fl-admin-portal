@@ -7,7 +7,7 @@ const { getGoogleCredentials } = require('./google-credentials')
 const SPREADSHEET_ID = '1qaDQM5RlOPpSC9Gi78xfOGAETLhQyfZ1qsDxM4GUF68'
 
 const fetchData = `
-MATCH (gs:Campus {name: $campusName})-[:HAS*2]->(council:Council)<-[:LEADS]-(pastor:Member)
+MATCH (oversight:Oversight {name: $campusName })-[:HAS]->(campus:Campus)-[:HAS*2]->(council:Council)<-[:LEADS]-(pastor:Member)
 MATCH (council)-[:HAS_HISTORY|HAS_SERVICE|HAS*2..5]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
 WHERE record.noServiceReason IS NULL
           AND record.bankingSlip IS NULL
