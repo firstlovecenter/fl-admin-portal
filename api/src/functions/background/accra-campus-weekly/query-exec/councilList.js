@@ -2,6 +2,26 @@ const { councilListQuery } = require('../cypher')
 const { CAMPUS_NAME } = require('../utils/constants')
 
 const councilList = async (neoDriver) => {
+  const functionName = 'councilList'
+  console.log(`[${functionName}] Starting execution`)
+  
+  // Validate query before execution
+  if (
+    !councilListQuery ||
+    typeof councilListQuery !== 'string' ||
+    councilListQuery.trim() === ''
+  ) {
+    console.error(`[${functionName}] ERROR: Invalid or empty Cypher query:`, {
+      query: councilListQuery,
+      type: typeof councilListQuery,
+    })
+    return []
+  }
+
+  console.log(`[${functionName}] Query validation passed. Parameters:`, {
+    campusName: CAMPUS_NAME,
+  })
+
   const session = neoDriver.session()
 
   try {
@@ -9,6 +29,10 @@ const councilList = async (neoDriver) => {
       tx.run(councilListQuery, {
         campusName: CAMPUS_NAME,
       })
+    )
+
+    console.log(
+      `[${functionName}] Query executed successfully. Records found: ${result.records.length}`
     )
 
     const headerRow = [
@@ -32,11 +56,20 @@ const councilList = async (neoDriver) => {
       ]),
     ]
 
+    console.log(
+      `[${functionName}] Data processing completed. Returning ${returnValues.length} rows`
+    )
     return returnValues
   } catch (error) {
-    console.error('Error reading data from the DB', error)
+    console.error(`[${functionName}] ERROR: Error reading data from the DB:`, {
+      error: error.message,
+      stack: error.stack,
+      query: councilListQuery,
+      parameters: { campusName: CAMPUS_NAME },
+    })
   } finally {
     await session.close()
+    console.log(`[${functionName}] Session closed`)
   }
 
   return []

@@ -2,6 +2,27 @@ const { activeVacationFellowshipsQuery } = require('../cypher')
 const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
 const activeVacationFellowships = async (neoDriver) => {
+  const functionName = 'activeVacationFellowships'
+  console.log(`[${functionName}] Starting execution`)
+  
+  // Validate query before execution
+  if (
+    !activeVacationFellowshipsQuery ||
+    typeof activeVacationFellowshipsQuery !== 'string' ||
+    activeVacationFellowshipsQuery.trim() === ''
+  ) {
+    console.error(`[${functionName}] ERROR: Invalid or empty Cypher query:`, {
+      query: activeVacationFellowshipsQuery,
+      type: typeof activeVacationFellowshipsQuery,
+    })
+    return []
+  }
+
+  console.log(`[${functionName}] Query validation passed. Parameters:`, {
+    campusName: CAMPUS_NAME,
+    bussingDate: lastSunday,
+  })
+
   const session = neoDriver.session()
 
   try {
@@ -10,6 +31,10 @@ const activeVacationFellowships = async (neoDriver) => {
         campusName: CAMPUS_NAME,
         bussingDate: lastSunday,
       })
+    )
+
+    console.log(
+      `[${functionName}] Query executed successfully. Records found: ${result.records.length}`
     )
 
     const headerRow = ['Active Fellowships', 'Vacation Fellowships']
@@ -22,11 +47,20 @@ const activeVacationFellowships = async (neoDriver) => {
       ]),
     ]
 
+    console.log(
+      `[${functionName}] Data processing completed. Returning ${returnValues.length} rows`
+    )
     return returnValues
   } catch (error) {
-    console.error('Error reading data from the DB', error)
+    console.error(`[${functionName}] ERROR: Error reading data from the DB:`, {
+      error: error.message,
+      stack: error.stack,
+      query: activeVacationFellowshipsQuery,
+      parameters: { campusName: CAMPUS_NAME, bussingDate: lastSunday },
+    })
   } finally {
     await session.close()
+    console.log(`[${functionName}] Session closed`)
   }
 
   return []

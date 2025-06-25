@@ -2,6 +2,27 @@ const { amountNotBankedQuery } = require('../cypher')
 const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
 const amountNotBanked = async (neoDriver) => {
+  const functionName = 'amountNotBanked'
+  console.log(`[${functionName}] Starting execution`)
+  
+  // Validate query before execution
+  if (
+    !amountNotBankedQuery ||
+    typeof amountNotBankedQuery !== 'string' ||
+    amountNotBankedQuery.trim() === ''
+  ) {
+    console.error(`[${functionName}] ERROR: Invalid or empty Cypher query:`, {
+      query: amountNotBankedQuery,
+      type: typeof amountNotBankedQuery,
+    })
+    return []
+  }
+
+  console.log(`[${functionName}] Query validation passed. Parameters:`, {
+    campusName: CAMPUS_NAME,
+    bussingDate: lastSunday,
+  })
+
   const session = neoDriver.session()
 
   try {
@@ -12,6 +33,10 @@ const amountNotBanked = async (neoDriver) => {
       })
     )
 
+    console.log(
+      `[${functionName}] Query executed successfully. Records found: ${result.records.length}`
+    )
+
     const headerRow = ['Not Banked']
 
     const returnValues = [
@@ -19,11 +44,20 @@ const amountNotBanked = async (neoDriver) => {
       ...result.records.map((record) => [record.get('notBanked').toString()]),
     ]
 
+    console.log(
+      `[${functionName}] Data processing completed. Returning ${returnValues.length} rows`
+    )
     return returnValues
   } catch (error) {
-    console.error('Error reading data from the DB', error)
+    console.error(`[${functionName}] ERROR: Error reading data from the DB:`, {
+      error: error.message,
+      stack: error.stack,
+      query: amountNotBankedQuery,
+      parameters: { campusName: CAMPUS_NAME, bussingDate: lastSunday },
+    })
   } finally {
     await session.close()
+    console.log(`[${functionName}] Session closed`)
   }
 
   return []
