@@ -1,4 +1,4 @@
-const CAMPUS_NAME = 'Accra'
+const CAMPUS_NAME = 'FL Accra'
 const notifyBaseURL = 'https://api-notify.firstlovecenter.com'
 
 const lastSunday = new Date(
