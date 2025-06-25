@@ -4,7 +4,7 @@ const { CAMPUS_NAME } = require('../utils/constants')
 const councilList = async (neoDriver) => {
   const functionName = 'councilList'
   console.log(`[${functionName}] Starting execution`)
-  
+
   // Validate query before execution
   if (
     !councilListQuery ||

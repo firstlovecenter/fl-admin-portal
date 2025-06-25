@@ -4,7 +4,7 @@ const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 const servicesThisWeek = async (neoDriver) => {
   const functionName = 'servicesThisWeek'
   console.log(`[${functionName}] Starting execution`)
-  
+
   // Validate query before execution
   if (
     !servicesThisWeekQuery ||

@@ -4,7 +4,7 @@ const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 const amountNotBanked = async (neoDriver) => {
   const functionName = 'amountNotBanked'
   console.log(`[${functionName}] Starting execution`)
-  
+
   // Validate query before execution
   if (
     !amountNotBankedQuery ||

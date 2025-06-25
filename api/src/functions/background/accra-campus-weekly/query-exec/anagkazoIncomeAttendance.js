@@ -1,19 +1,19 @@
-const { anagkazoIncomeAttendanceQuery } = require('../cypher')
+const { anagkazoAttendanceIncomeQuery } = require('../cypher')
 const { CAMPUS_NAME, lastSunday } = require('../utils/constants')
 
 const anagkazoIncomeAttendance = async (neoDriver) => {
   const functionName = 'anagkazoIncomeAttendance'
   console.log(`[${functionName}] Starting execution`)
-  
+
   // Validate query before execution
   if (
-    !anagkazoIncomeAttendanceQuery ||
-    typeof anagkazoIncomeAttendanceQuery !== 'string' ||
-    anagkazoIncomeAttendanceQuery.trim() === ''
+    !anagkazoAttendanceIncomeQuery ||
+    typeof anagkazoAttendanceIncomeQuery !== 'string' ||
+    anagkazoAttendanceIncomeQuery.trim() === ''
   ) {
     console.error(`[${functionName}] ERROR: Invalid or empty Cypher query:`, {
-      query: anagkazoIncomeAttendanceQuery,
-      type: typeof anagkazoIncomeAttendanceQuery,
+      query: anagkazoAttendanceIncomeQuery,
+      type: typeof anagkazoAttendanceIncomeQuery,
     })
     return []
   }
@@ -27,7 +27,7 @@ const anagkazoIncomeAttendance = async (neoDriver) => {
 
   try {
     const result = await session.executeRead(async (tx) =>
-      tx.run(anagkazoIncomeAttendanceQuery, {
+      tx.run(anagkazoAttendanceIncomeQuery, {
         campusName: CAMPUS_NAME,
         bussingDate: lastSunday,
       })
@@ -52,7 +52,7 @@ const anagkazoIncomeAttendance = async (neoDriver) => {
     console.error(`[${functionName}] ERROR: Error reading data from the DB:`, {
       error: error.message,
       stack: error.stack,
-      query: anagkazoIncomeAttendanceQuery,
+      query: anagkazoAttendanceIncomeQuery,
       parameters: { campusName: CAMPUS_NAME, bussingDate: lastSunday },
     })
   } finally {
