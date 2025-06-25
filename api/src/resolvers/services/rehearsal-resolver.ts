@@ -25,9 +25,6 @@ import {
   recordCancelledOnStagePerformance,
 } from './rehearsal-cypher'
 
-import { SontaHigherChurches } from '../utils/types'
-import { getServiceSontaHigherChurches } from './service-utils'
-
 const errorMessage = require('../texts.json').error
 
 type RecordServiceArgs = {
@@ -192,9 +189,6 @@ const SontaServiceMutation = {
       const serviceCheck = rearrangeCypherObject(serviceCheckRes[0])
 
       const currencyCheck = rearrangeCypherObject(serviceCheckRes[1])
-      const higherChurches = getServiceSontaHigherChurches(
-        serviceCheckRes[2]?.records
-      ) as SontaHigherChurches
 
       if (
         serviceCheck.alreadyFilled &&
@@ -207,15 +201,7 @@ const SontaServiceMutation = {
         throw new Error(errorMessage.vacation_cannot_fill_service)
       }
 
-      let aggregateCypher = ''
-
-      if (higherChurches?.hubCouncil) {
-        aggregateCypher = higherChurches.hubCouncil.rehearsalCypher
-      } else if (higherChurches?.ministry) {
-        aggregateCypher = higherChurches.ministry.rehearsalCypher
-      } else if (higherChurches?.creativeArts) {
-        aggregateCypher = higherChurches.creativeArts.rehearsalCypher
-      }
+      const aggregateCypher = ''
 
       const cypherResponse = await session
         .run(recordHubRehearsalService, {
@@ -280,10 +266,6 @@ const SontaServiceMutation = {
 
       const serviceCheck = rearrangeCypherObject(serviceCheckRes[0])
 
-      const higherChurches = getServiceSontaHigherChurches(
-        serviceCheckRes[1]?.records
-      ) as SontaHigherChurches
-
       const streamServiceDayCheck = rearrangeCypherObject(serviceCheckRes[2])
 
       if (!streamServiceDayCheck.serviceDay) {
@@ -297,12 +279,7 @@ const SontaServiceMutation = {
         throw new Error(errorMessage.no_double_form_filling)
       }
 
-      let aggregateCypher = ''
-
-      if (higherChurches?.creativeArts) {
-        aggregateCypher =
-          higherChurches.creativeArts.ministryStagePerformanceCypher
-      }
+      const aggregateCypher = ''
 
       const cypherResponse = await session
         .run(recordOnStageAttendance, {
