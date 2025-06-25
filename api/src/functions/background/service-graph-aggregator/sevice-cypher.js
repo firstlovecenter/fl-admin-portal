@@ -3,7 +3,10 @@ const aggregateBacentaOnGovernorshipQuery = `
    WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
    WITH DISTINCT governorship, record
-   WITH governorship, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, SUM(record.attendance) AS totalAttendance, SUM(record.income) AS totalIncome, SUM(record.dollarIncome) AS totalDollarIncome
+   WITH governorship, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
+        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
+        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
+        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
    
    MATCH (governorship)-[:CURRENT_HISTORY]->(log:ServiceLog)
    
@@ -25,7 +28,10 @@ const aggregateGovernorshipOnCouncilQuery = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
     WITH DISTINCT council, record
-    WITH council, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, SUM(record.attendance) AS totalAttendance, SUM(record.income) AS totalIncome, SUM(record.dollarIncome) AS totalDollarIncome
+    WITH council, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
+        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
+        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
+        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
 
     MATCH (council)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -47,7 +53,10 @@ const aggregateCouncilOnStreamQuery = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
     WITH DISTINCT stream, record
-    WITH stream, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, SUM(record.attendance) AS totalAttendance, SUM(record.income) AS totalIncome, SUM(record.dollarIncome) AS totalDollarIncome
+    WITH stream, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
+        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
+        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
+        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
 
     MATCH (stream)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -69,7 +78,10 @@ const aggregateStreamOnCampusQuery = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
     WITH DISTINCT campus, record
-    WITH campus, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, SUM(record.attendance) AS totalAttendance, SUM(record.income) AS totalIncome, SUM(record.dollarIncome) AS totalDollarIncome
+    WITH campus, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
+        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
+        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
+        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
 
     MATCH (campus)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -91,7 +103,10 @@ const aggregateCampusOnOversightQuery = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
     WITH DISTINCT oversight, record
-    WITH oversight, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, SUM(record.attendance) AS totalAttendance, SUM(record.income) AS totalIncome, SUM(record.dollarIncome) AS totalDollarIncome
+    WITH oversight, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
+        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
+        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
+        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
 
     MATCH (oversight)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -100,7 +115,7 @@ const aggregateCampusOnOversightQuery = `
 
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
         SET aggregate.attendance = totalAttendance,
-        aggregate.income = totalDollarIncome,
+        aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
         aggregate.numberOfServices = numberOfServices
@@ -113,7 +128,10 @@ const aggregateOversightOnDenominationQuery = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
 
     WITH DISTINCT denomination, record
-    WITH denomination, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, SUM(record.attendance) AS totalAttendance, SUM(record.income) AS totalIncome, SUM(record.dollarIncome) AS totalDollarIncome
+    WITH denomination, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
+        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
+        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
+        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
 
     MATCH (denomination)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -122,7 +140,7 @@ const aggregateOversightOnDenominationQuery = `
 
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
         SET aggregate.attendance = totalAttendance,
-        aggregate.income = totalDollarIncome,
+        aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
         aggregate.numberOfServices = numberOfServices
