@@ -82,9 +82,9 @@ export const recordHubRehearsalService = `
 CREATE (rehearsalRecord:RehearsalRecord {id: apoc.create.uuid()})
 SET rehearsalRecord.createdAt = datetime(),
 rehearsalRecord.attendance = $attendance,
-rehearsalRecord.income = toFloat(round(100 * $income/10) / 100.0),
-rehearsalRecord.cash = toFloat(round(100 * $income/10) / 100.0),
-rehearsalRecord.dollarIncome = toFloat(round(100 * ($income / $conversionRateToDollar)/10) / 100.0),
+rehearsalRecord.income = round(toFloat($income), 2),
+rehearsalRecord.cash = round(toFloat($income), 2),
+rehearsalRecord.dollarIncome = round(toFloat($income / $conversionRateToDollar), 2),
 rehearsalRecord.foreignCurrency = $foreignCurrency,
 rehearsalRecord.numberOfTithers = $numberOfTithers,
 rehearsalRecord.treasurerSelfie = $treasurerSelfie,
@@ -109,8 +109,8 @@ MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
 WITH rehearsalRecord, aggregate, SUM(rehearsalRecord.attendance) AS attendance, SUM(rehearsalRecord.income) AS income, SUM(rehearsalRecord.dollarIncome) AS dollarIncome, SUM(aggregate.attendance) AS aggregateAttendance, SUM(aggregate.income) AS aggregateIncome, SUM(aggregate.dollarIncome) AS aggregateDollarIncome
 MATCH (aggregate)
 SET aggregate.attendance = aggregateAttendance + attendance,
-aggregate.income = toFloat(round(100 * (aggregateIncome + income)/10) / 100.0),
-aggregate.dollarIncome = toFloat(round(100 * (aggregateDollarIncome + dollarIncome)/10) / 100.0),
+aggregate.income = round(toFloat(aggregateIncome + income), 2),
+aggregate.dollarIncome = round(toFloat(aggregateDollarIncome + dollarIncome), 2),
 aggregate.numberOfServices = 1
 
 
@@ -325,9 +325,9 @@ export const aggregateMinistryMeetingDataForCreativeArts = `
     MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  creativeArt, aggregate, collect(record.id) AS componentServiceIds, COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
         SET aggregate.attendance = totalAttendance,
         aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
