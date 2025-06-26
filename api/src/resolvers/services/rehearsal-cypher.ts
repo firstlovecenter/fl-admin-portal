@@ -348,9 +348,9 @@ export const aggregateHubRehearsalDataForHubCouncil = `
     MERGE (aggregate:AggregateRehearsalRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  hubcouncil, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
         SET aggregate.attendance = totalAttendance,
         aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
