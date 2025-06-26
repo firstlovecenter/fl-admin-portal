@@ -42,15 +42,15 @@ WITH DISTINCT log, serviceRecord, transaction WHERE transaction.transactionStatu
 
 WITH serviceRecord, log, SUM(transaction.amount) AS amount
      SET serviceRecord.onlineGiving = amount,
-     serviceRecord.cash = toFloat(round(100 * serviceRecord.income/10) / 100.0),
-     serviceRecord.income = toFloat(round(100 * (amount + serviceRecord.income)/10) / 100.0),
-     serviceRecord.dollarIncome = toFloat(round(100 * (serviceRecord.income / $conversionRateToDollar)/10) / 100.0)
+     serviceRecord.cash = round(toFloat(serviceRecord.income), 2),
+     serviceRecord.income = round(toFloat(amount + serviceRecord.income), 2),
+     serviceRecord.dollarIncome = round(toFloat(serviceRecord.income / $conversionRateToDollar), 2)
 
 WITH serviceRecord, log
 MATCH (aggregate:AggregateServiceRecord {id: date().week + '-' + date().year + '-' + log.id})
 SET aggregate.onlineGiving = aggregate.onlineGiving + serviceRecord.onlineGiving,
-    aggregate.income = toFloat(round(100 * (aggregate.income + serviceRecord.income)/10) / 100.0),
-    aggregate.dollarIncome = toFloat(round(100 * (aggregate.dollarIncome + serviceRecord.dollarIncome)/10) / 100.0)
+    aggregate.income = round(toFloat(aggregate.income + serviceRecord.income), 2),
+    aggregate.dollarIncome = round(toFloat(aggregate.dollarIncome + serviceRecord.dollarIncome), 2)
 
 RETURN serviceRecord
 `
@@ -59,9 +59,9 @@ export const recordService = `
       CREATE (serviceRecord:ServiceRecord {id: apoc.create.uuid()})
         SET serviceRecord.createdAt = datetime(),
         serviceRecord.attendance = $attendance,
-        serviceRecord.income = toFloat(round(100 * $income/10) / 100.0),
-        serviceRecord.cash = toFloat(round(100 * $income/10) / 100.0),
-        serviceRecord.dollarIncome = toFloat(round(100 * ($income / $conversionRateToDollar)/10) / 100.0),
+        serviceRecord.income = round(toFloat($income), 2),
+        serviceRecord.cash = round(toFloat($income), 2),
+        serviceRecord.dollarIncome = round(toFloat($income / $conversionRateToDollar), 2),
         serviceRecord.foreignCurrency = $foreignCurrency,
         serviceRecord.numberOfTithers = $numberOfTithers,
         serviceRecord.treasurerSelfie = $treasurerSelfie,
@@ -87,8 +87,8 @@ export const recordService = `
       WITH serviceRecord, aggregate, SUM(serviceRecord.attendance) AS attendance, SUM(serviceRecord.income) AS income, SUM(serviceRecord.dollarIncome) AS dollarIncome, SUM(aggregate.attendance) AS aggregateAttendance, SUM(aggregate.income) AS aggregateIncome, SUM(aggregate.dollarIncome) AS aggregateDollarIncome
       MATCH (aggregate)
       SET aggregate.attendance = aggregateAttendance + attendance,
-      aggregate.income = toFloat(round(100 * (aggregateIncome + income)/10) / 100.0),
-      aggregate.dollarIncome = toFloat(round(100 * (aggregateDollarIncome + dollarIncome)/10) / 100.0)
+      aggregate.income = round(toFloat(aggregateIncome + income), 2),
+      aggregate.dollarIncome = round(toFloat(aggregateDollarIncome + dollarIncome), 2)
 
       WITH serviceRecord
       UNWIND $treasurers AS treasurerId WITH treasurerId, serviceRecord
@@ -101,9 +101,9 @@ export const recordSpecialService = `
       CREATE (serviceRecord:ServiceRecord {id: apoc.create.uuid()})
         SET serviceRecord.createdAt = datetime(),
         serviceRecord.attendance = $attendance,
-        serviceRecord.income = toFloat(round(100 * $income/10) / 100.0),
-        serviceRecord.cash = toFloat(round(100 * $income/10) / 100.0),
-        serviceRecord.dollarIncome = toFloat(round(100 * ($income / $conversionRateToDollar)/10) / 100.0),
+        serviceRecord.income = round(toFloat($income), 2),
+        serviceRecord.cash = round(toFloat($income), 2),
+        serviceRecord.dollarIncome = round(toFloat($income / $conversionRateToDollar), 2),
         serviceRecord.foreignCurrency = $foreignCurrency,
         serviceRecord.numberOfTithers = $numberOfTithers,
         serviceRecord.treasurerSelfie = $treasurerSelfie,
@@ -130,8 +130,8 @@ export const recordSpecialService = `
       WITH serviceRecord, aggregate, SUM(serviceRecord.attendance) AS attendance, SUM(serviceRecord.income) AS income, SUM(serviceRecord.dollarIncome) AS dollarIncome, SUM(aggregate.attendance) AS aggregateAttendance, SUM(aggregate.income) AS aggregateIncome, SUM(aggregate.dollarIncome) AS aggregateDollarIncome
       MATCH (aggregate)
       SET aggregate.attendance = aggregateAttendance + attendance,
-      aggregate.income = toFloat(round(100 * (aggregateIncome + income)/10) / 100.0),
-      aggregate.dollarIncome = toFloat(round(100 * (aggregateDollarIncome + dollarIncome)/10) / 100.0)
+      aggregate.income = round(toFloat(aggregateIncome + income), 2),
+      aggregate.dollarIncome = round(toFloat(aggregateDollarIncome + dollarIncome), 2)
 
       WITH serviceRecord
       UNWIND $treasurers AS treasurerId WITH treasurerId, serviceRecord
@@ -183,9 +183,9 @@ export const aggregateServiceDataForHub = `
    WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
    WITH DISTINCT hub, record
    WITH hub, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
    MATCH (hub)-[:CURRENT_HISTORY]->(log:ServiceLog)
    MERGE (aggregate:AggregateServiceRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     SET aggregate.month = date().month
@@ -201,9 +201,9 @@ export const aggregateServiceDataForHub = `
    WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
    WITH DISTINCT hubCouncil, record
    WITH hubCouncil, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
    MATCH (hubCouncil)-[:CURRENT_HISTORY]->(log:ServiceLog)
    MERGE (aggregate:AggregateServiceRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     SET aggregate.month = date().month
@@ -219,9 +219,9 @@ export const aggregateServiceDataForHub = `
    WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
    WITH DISTINCT ministry, record
    WITH ministry, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
    MATCH (ministry)-[:CURRENT_HISTORY]->(log:ServiceLog)
    MERGE (aggregate:AggregateServiceRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     SET aggregate.month = date().month
@@ -237,9 +237,9 @@ export const aggregateServiceDataForHub = `
    WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
    WITH DISTINCT creativearts, record
    WITH creativearts, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
    MATCH (creativearts)-[:CURRENT_HISTORY]->(log:ServiceLog)
    MERGE (aggregate:AggregateServiceRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
     SET aggregate.month = date().month

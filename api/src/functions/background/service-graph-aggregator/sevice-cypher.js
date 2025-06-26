@@ -4,9 +4,9 @@ const aggregateBacentaOnGovernorshipQuery = `
 
    WITH DISTINCT governorship, record
    WITH governorship, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
    
    MATCH (governorship)-[:CURRENT_HISTORY]->(log:ServiceLog)
    
@@ -29,9 +29,9 @@ const aggregateGovernorshipOnCouncilQuery = `
 
     WITH DISTINCT council, record
     WITH council, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
 
     MATCH (council)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -54,9 +54,9 @@ const aggregateCouncilOnStreamQuery = `
 
     WITH DISTINCT stream, record
     WITH stream, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
 
     MATCH (stream)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -79,9 +79,9 @@ const aggregateStreamOnCampusQuery = `
 
     WITH DISTINCT campus, record
     WITH campus, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
 
     MATCH (campus)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -104,9 +104,9 @@ const aggregateCampusOnOversightQuery = `
 
     WITH DISTINCT oversight, record
     WITH oversight, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
 
     MATCH (oversight)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
@@ -129,9 +129,9 @@ const aggregateOversightOnDenominationQuery = `
 
     WITH DISTINCT denomination, record
     WITH denomination, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        toFloat(round(100 * SUM(record.attendance)/10) / 100.0) AS totalAttendance, 
-        toFloat(round(100 * SUM(record.income)/10) / 100.0) AS totalIncome, 
-        toFloat(round(100 * SUM(record.dollarIncome)/10) / 100.0) AS totalDollarIncome
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
+        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+        round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
 
     MATCH (denomination)-[:CURRENT_HISTORY]->(log:ServiceLog)
     
