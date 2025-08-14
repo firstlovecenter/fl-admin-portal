@@ -70,7 +70,7 @@ type Member {
       statement: """
       MATCH (this)-[:LEADS|HAS|IS_ADMIN_FOR*1..5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(:Basonta)
-      RETURN COUNT(DISTINCT members)
+      RETURN COUNT(DISTINCT members) AS basontaMembershipCount
       """
       columnName: "basontaMembershipCount"
     )

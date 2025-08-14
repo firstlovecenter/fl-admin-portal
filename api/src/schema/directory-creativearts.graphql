@@ -668,7 +668,7 @@ type HubFellowship implements Church {
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members) AS memberCount
       """
-      columnName: "result"
+      columnName: "memberCount"
     )
   ministryMemberCount: Int
     @cypher(
