@@ -1051,11 +1051,11 @@ extend type Bacenta {
       statement: "MATCH (arrivals:ArrivalsCodeOfTheDay) RETURN arrivals.code AS arrivalsCodeOfTheDay"
       columnName: "arrivalsCodeOfTheDay"
     )
-  bussing(limit: Int!): [BussingRecord!]!
+  bussing(limit: Int!, skip: Int = 0): [BussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
-      RETURN bussing ORDER BY date.date DESC LIMIT $limit
+      RETURN bussing ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
       columnName: "bussing"
     )

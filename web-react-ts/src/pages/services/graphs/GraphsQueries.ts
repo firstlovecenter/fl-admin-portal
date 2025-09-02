@@ -29,7 +29,7 @@ export const FELLOWSHIP_GRAPHS = gql`
 `
 
 export const BACENTA_GRAPHS = gql`
-  query bacentaGraphs($id: ID!) {
+  query bacentaGraphs($id: ID!, $limit: Int = 4, $skip: Int = 0) {
     bacentas(where: { id: $id }) {
       id
       name
@@ -41,14 +41,14 @@ export const BACENTA_GRAPHS = gql`
         pictureUrl
         nameWithTitle
       }
-      aggregateServiceRecords(limit: 4) {
+      aggregateServiceRecords(limit: $limit, skip: $skip) {
         id
         attendance
         income
         numberOfServices
         week
       }
-      aggregateBussingRecords(limit: 4) {
+      aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
@@ -56,7 +56,7 @@ export const BACENTA_GRAPHS = gql`
         numberOfUrvans
         numberOfCars
       }
-      services(limit: 4) {
+      services(limit: $limit, skip: $skip) {
         id
         createdAt
         attendance
@@ -66,7 +66,7 @@ export const BACENTA_GRAPHS = gql`
           date
         }
       }
-      bussing(limit: 4) {
+      bussing(limit: $limit, skip: $skip) {
         id
         createdAt
         attendance
