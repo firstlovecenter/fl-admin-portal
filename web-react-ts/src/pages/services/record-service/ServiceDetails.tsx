@@ -14,9 +14,16 @@ import { parseNeoTime } from 'jd-date-utils'
 import { permitAdmin, permitTellerStream } from 'permission-utils'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Col, Container, Row, Button, Card } from 'react-bootstrap'
-import { CheckCircleFill, FileEarmarkArrowUpFill } from 'react-bootstrap-icons'
+import {
+  CheckCircleFill,
+  FileEarmarkArrowUpFill,
+  Trash,
+} from 'react-bootstrap-icons'
 import { useNavigate } from 'react-router'
-import { MANUALLY_CONFIRM_OFFERING_PAYMENT } from './RecordServiceMutations'
+import {
+  MANUALLY_CONFIRM_OFFERING_PAYMENT,
+  DELETE_SERVICE_RECORD,
+} from './RecordServiceMutations'
 import './ServiceDetails.css'
 import CurrencySpan from 'components/CurrencySpan'
 
@@ -33,7 +40,34 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   const [ManuallyConfirmOfferingPayment] = useMutation(
     MANUALLY_CONFIRM_OFFERING_PAYMENT
   )
+  const [DeleteServiceRecord] = useMutation(DELETE_SERVICE_RECORD)
   const [submitting, setSubmitting] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDeleteService = async () => {
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this service record? This action cannot be undone.'
+    )
+
+    if (!confirmDelete) return
+
+    setDeleting(true)
+    try {
+      // TODO: Add delete mutation here
+      await DeleteServiceRecord({
+        variables: {
+          serviceRecordId: service?.id,
+        },
+      })
+      alertMsg('Service record deleted successfully')
+      navigate(-1) // Navigate back after deletion
+    } catch (error) {
+      throwToSentry('Error deleting service record', error)
+      alertMsg('Failed to delete service record. Please try again.')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   useEffect(() => {
     if (!service && !loading) {
@@ -70,16 +104,14 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
       if (service?.foreignCurrency) {
         table.push([
           'Foreign Currency and Cheques',
-          (
-            <div>
-              {service?.foreignCurrency.split('\n').map((line, index) => (
-                <Fragment key={index}>
-                  {line}
-                  <br />
-                </Fragment>
-              ))}
-            </div>
-          ) ?? '',
+          <div>
+            {service?.foreignCurrency.split('\n').map((line, index) => (
+              <Fragment key={index}>
+                {line}
+                <br />
+              </Fragment>
+            ))}
+          </div>,
         ])
       }
 
@@ -279,6 +311,17 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                   >
                     View Last 4 Weeks
                   </Button>
+                  <RoleView roles={permitAdmin('Stream')}>
+                    <Button
+                      variant="danger"
+                      disabled={deleting}
+                      onClick={handleDeleteService}
+                      className="d-flex align-items-center justify-content-center gap-2"
+                    >
+                      <Trash />
+                      {deleting ? 'Deleting...' : 'Delete Service'}
+                    </Button>
+                  </RoleView>
                 </div>
               </div>
             </Row>

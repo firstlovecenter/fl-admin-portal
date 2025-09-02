@@ -824,3 +824,9 @@ export const DISPLAY_CAMPUS_SERVICE = gql`
     }
   }
 `
+
+export const DELETE_SERVICE_RECORD = gql`
+  mutation deleteServiceRecord($serviceRecordId: ID!) {
+    DeleteServiceRecord(serviceRecordId: $serviceRecordId)
+  }
+`

@@ -1106,6 +1106,16 @@ extend type Mutation {
       """
       columnName: "bacenta"
     )
+  DeleteServiceRecord(serviceRecordId: ID!): String!
+    @authentication(jwt: { OR: [{ roles_INCLUDES: "fishers" }] })
+    @cypher(
+      statement: """
+      MATCH (this:ServiceRecord {id: $serviceRecordId})
+      DETACH DELETE this
+      RETURN  "Deleted Successfully" AS message
+      """
+      columnName: "message"
+    )
 }
 
 extend type Campus {
