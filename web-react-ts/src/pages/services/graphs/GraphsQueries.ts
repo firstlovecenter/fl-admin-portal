@@ -82,7 +82,7 @@ export const BACENTA_GRAPHS = gql`
 `
 
 export const GOVERNORSHIP_GRAPHS = gql`
-  query governorshipGraphs($id: ID!) {
+  query governorshipGraphs($id: ID!, $limit: Int = 4, $skip: Int = 0) {
     governorships(where: { id: $id }) {
       id
       name
@@ -94,14 +94,14 @@ export const GOVERNORSHIP_GRAPHS = gql`
         pictureUrl
         nameWithTitle
       }
-      aggregateServiceRecords(limit: 4) {
+      aggregateServiceRecords(limit: $limit, skip: $skip) {
         id
         attendance
         income
         numberOfServices
         week
       }
-      aggregateBussingRecords(limit: 4) {
+      aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
@@ -109,7 +109,7 @@ export const GOVERNORSHIP_GRAPHS = gql`
         numberOfUrvans
         numberOfCars
       }
-      services(limit: 4) {
+      services(limit: $limit, skip: $skip) {
         id
         createdAt
         attendance
@@ -126,7 +126,7 @@ export const GOVERNORSHIP_GRAPHS = gql`
 `
 
 export const COUNCIL_GRAPHS = gql`
-  query councilGraphs($councilId: ID!) {
+  query councilGraphs($councilId: ID!, $limit: Int = 4, $skip: Int = 0) {
     councils(where: { id: $councilId }) {
       id
       name
@@ -138,14 +138,14 @@ export const COUNCIL_GRAPHS = gql`
         pictureUrl
         nameWithTitle
       }
-      aggregateServiceRecords(limit: 4) {
+      aggregateServiceRecords(limit: $limit, skip: $skip) {
         id
         attendance
         income
         numberOfServices
         week
       }
-      aggregateBussingRecords(limit: 4) {
+      aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
@@ -153,7 +153,7 @@ export const COUNCIL_GRAPHS = gql`
         numberOfUrvans
         numberOfCars
       }
-      services(limit: 4) {
+      services(limit: $limit, skip: $skip) {
         id
         createdAt
         attendance
@@ -170,7 +170,7 @@ export const COUNCIL_GRAPHS = gql`
 `
 
 export const STREAM_GRAPHS = gql`
-  query streamGraphs($streamId: ID!) {
+  query streamGraphs($streamId: ID!, $limit: Int = 4, $skip: Int = 0) {
     streams(where: { id: $streamId }) {
       id
       name
@@ -182,14 +182,14 @@ export const STREAM_GRAPHS = gql`
         pictureUrl
         nameWithTitle
       }
-      aggregateServiceRecords(limit: 4) {
+      aggregateServiceRecords(limit: $limit, skip: $skip) {
         id
         attendance
         income
         numberOfServices
         week
       }
-      aggregateBussingRecords(limit: 4) {
+      aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
@@ -197,7 +197,7 @@ export const STREAM_GRAPHS = gql`
         numberOfUrvans
         numberOfCars
       }
-      services(limit: 4) {
+      services(limit: $limit, skip: $skip) {
         id
         createdAt
         attendance
@@ -214,7 +214,7 @@ export const STREAM_GRAPHS = gql`
 `
 
 export const CAMPUS_GRAPHS = gql`
-  query campusGraphs($campusId: ID!) {
+  query campusGraphs($campusId: ID!, $limit: Int = 4, $skip: Int = 0) {
     campuses(where: { id: $campusId }) {
       id
       name
@@ -226,7 +226,7 @@ export const CAMPUS_GRAPHS = gql`
         pictureUrl
         nameWithTitle
       }
-      aggregateServiceRecords(limit: 4) {
+      aggregateServiceRecords(limit: $limit, skip: $skip) {
         id
         attendance
         income
@@ -234,7 +234,7 @@ export const CAMPUS_GRAPHS = gql`
         numberOfServices
         week
       }
-      aggregateBussingRecords(limit: 4) {
+      aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
@@ -242,7 +242,7 @@ export const CAMPUS_GRAPHS = gql`
         numberOfUrvans
         numberOfCars
       }
-      services(limit: 4) {
+      services(limit: $limit, skip: $skip) {
         id
         createdAt
         attendance
@@ -259,7 +259,7 @@ export const CAMPUS_GRAPHS = gql`
 `
 
 export const OVERSIGHT_GRAPHS = gql`
-  query oversightGraphs($oversightId: ID!) {
+  query oversightGraphs($oversightId: ID!, $limit: Int = 4, $skip: Int = 0) {
     oversights(where: { id: $oversightId }) {
       id
       name
@@ -271,14 +271,14 @@ export const OVERSIGHT_GRAPHS = gql`
         pictureUrl
         nameWithTitle
       }
-      aggregateServiceRecords(limit: 4) {
+      aggregateServiceRecords(limit: $limit, skip: $skip) {
         id
         attendance
         income
         numberOfServices
         week
       }
-      aggregateBussingRecords(limit: 4) {
+      aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
@@ -286,7 +286,7 @@ export const OVERSIGHT_GRAPHS = gql`
         numberOfUrvans
         numberOfCars
       }
-      services(limit: 4) {
+      services(limit: $limit, skip: $skip) {
         id
         createdAt
         attendance
@@ -303,7 +303,11 @@ export const OVERSIGHT_GRAPHS = gql`
 `
 
 export const DENOMINATION_GRAPHS = gql`
-  query denominationGraphs($denominationId: ID!) {
+  query denominationGraphs(
+    $denominationId: ID!
+    $limit: Int = 4
+    $skip: Int = 0
+  ) {
     denominations(where: { id: $denominationId }) {
       id
       name
@@ -315,7 +319,7 @@ export const DENOMINATION_GRAPHS = gql`
         pictureUrl
         nameWithTitle
       }
-      aggregateServiceRecords(limit: 4) {
+      aggregateServiceRecords(limit: $limit, skip: $skip) {
         id
         attendance
         income
@@ -323,7 +327,7 @@ export const DENOMINATION_GRAPHS = gql`
         numberOfServices
         week
       }
-      aggregateBussingRecords(limit: 4) {
+      aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
