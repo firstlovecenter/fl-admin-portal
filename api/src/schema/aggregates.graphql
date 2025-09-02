@@ -21,147 +21,147 @@ type AggregateBussingRecord {
 }
 
 extend type Bacenta {
-  aggregateServiceRecords(limit: Int! = 4): [AggregateServiceRecord!]!
+  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
+  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
 }
 
 extend type Governorship {
-  aggregateServiceRecords(limit: Int! = 4): [AggregateServiceRecord!]!
+  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
+  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
 }
 
 extend type Council {
-  aggregateServiceRecords(limit: Int! = 4): [AggregateServiceRecord!]!
+  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
+  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
 }
 
 extend type Stream {
-  aggregateServiceRecords(limit: Int! = 4): [AggregateServiceRecord!]!
+  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
+  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
 }
 
 extend type Campus {
-  aggregateServiceRecords(limit: Int! = 4): [AggregateServiceRecord!]!
+  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
+  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
 }
 
 extend type Oversight {
-  aggregateServiceRecords(limit: Int! = 4): [AggregateServiceRecord!]!
+  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
+  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
 }
 
 extend type Denomination {
-  aggregateServiceRecords(limit: Int! = 4): [AggregateServiceRecord!]!
+  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4): [AggregateBussingRecord!]!
+  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC LIMIT $limit
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
