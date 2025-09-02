@@ -44,7 +44,7 @@ export const BacentaGraphs = () => {
       setChurchData(getServiceGraphData(data?.bacentas[0], graphs))
       refetch({ id: bacentaId, limit, skip: 0 })
     }
-  }, [graphs, data?.bacentas, bacentaId, refetch])
+  }, [graphs, bacentaId, refetch])
 
   const handlePrevious = useCallback(() => {
     const newSkip = Math.max(0, skip - limit)
@@ -89,47 +89,6 @@ export const BacentaGraphs = () => {
           </Col>
         </Row>
 
-        {/* Navigation Controls */}
-        <Row className="mt-3 justify-content-center">
-          <Col xs="auto">
-            <div className="d-flex align-items-center gap-3">
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={!canGoBack || loading || isNavigating}
-                className="d-flex align-items-center"
-              >
-                {isNavigating ? (
-                  <Spinner size="sm" className="me-1" />
-                ) : (
-                  <ChevronLeft size={16} className="me-1" />
-                )}
-                Previous
-              </Button>
-
-              <span className="text-muted small">
-                Records {skip + 1} - {skip + (churchData?.length || 0)}
-              </span>
-
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                onClick={handleNext}
-                disabled={!canGoForward || loading || isNavigating}
-                className="d-flex align-items-center"
-              >
-                Next
-                {isNavigating ? (
-                  <Spinner size="sm" className="ms-1" />
-                ) : (
-                  <ChevronRight size={16} className="ms-1" />
-                )}
-              </Button>
-            </div>
-          </Col>
-        </Row>
-
         <Row className="mt-3">
           <Col>
             <StatDisplay
@@ -168,6 +127,51 @@ export const BacentaGraphs = () => {
             income={false}
           />
         )}
+
+        {/* Navigation Controls */}
+        <Row className="mt-3 justify-content-center">
+          <Col xs="auto">
+            <div className="d-flex align-items-center gap-3">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={handleNext}
+                disabled={!canGoForward || loading || isNavigating}
+                className="d-flex align-items-center"
+              >
+                {isNavigating ? (
+                  <Spinner size="sm" className="me-1" />
+                ) : (
+                  <ChevronLeft size={16} className="me-1" />
+                )}
+                Previous
+              </Button>
+
+              <span className="text-muted small">
+                {churchData && churchData.length > 0
+                  ? `Weeks ${Math.min(
+                      ...churchData.map((d) => d.week || 0)
+                    )} - ${Math.max(...churchData.map((d) => d.week || 0))}`
+                  : `Weeks ${skip + 1} - ${skip + (churchData?.length || 0)}`}
+              </span>
+
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={handlePrevious}
+                disabled={!canGoBack || loading || isNavigating}
+                className="d-flex align-items-center"
+              >
+                {isNavigating ? (
+                  <Spinner size="sm" className="ms-1" />
+                ) : (
+                  <ChevronRight size={16} className="ms-1" />
+                )}
+                Next
+              </Button>
+            </div>
+          </Col>
+        </Row>
       </Container>
     </ApolloWrapper>
   )
