@@ -53,7 +53,6 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
 
     setDeleting(true)
     try {
-      // TODO: Add delete mutation here
       await DeleteServiceRecord({
         variables: {
           serviceRecordId: service?.id,
@@ -311,7 +310,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                   >
                     View Last 4 Weeks
                   </Button>
-                  <RoleView roles={permitAdmin('Stream')}>
+                  <RoleView roles={['fishers']}>
                     <Button
                       variant="danger"
                       disabled={deleting}
