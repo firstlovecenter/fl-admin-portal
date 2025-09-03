@@ -102,4 +102,5 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: '🚀 FLC Admin Portal Frontend Deployment'
           SLACK_MESSAGE: |
+            Commit: ${{ github.event.head_commit.message }}
             ${{ job.status == 'success' && 'rocket Woohoo The FLC Admin Portal frontend has been deployed faster than a squirrel on espresso squirrel Time to celebrate tada' || 'fire Oh no The deployment crashed harder than a penguin on roller skates penguin Lets fix it team wrench' }}

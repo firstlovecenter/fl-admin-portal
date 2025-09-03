@@ -118,4 +118,4 @@ jobs:
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: '🚀 Synago GraphQL API Lambda Deployment'
-          SLACK_MESSAGE: 'Deploying GraphQL API to AWS Lambda ${{ job.status }}'
+          SLACK_MESSAGE: 'Commit: ${{ github.event.head_commit.message }} - Deploying GraphQL API to AWS Lambda ${{ job.status }}'

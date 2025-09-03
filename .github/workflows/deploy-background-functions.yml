@@ -139,4 +139,4 @@ jobs:
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: '🚀 Synago Background Functions Deployment'
-          SLACK_MESSAGE: 'Deploying Background Functions to AWS Lambda ${{ job.status }}'
+          SLACK_MESSAGE: 'Commit: ${{ github.event.head_commit.message }} - Deploying Background Functions to AWS Lambda ${{ job.status }}'
