@@ -1,14 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
 import React from 'react'
-import { Cloudinary } from '@cloudinary/url-gen'
-import {
-  AdvancedImage,
-  lazyload,
-  responsive,
-  placeholder,
-} from '@cloudinary/react'
-import { thumbnail, fill, scale } from '@cloudinary/url-gen/actions/resize'
-import { focusOn } from '@cloudinary/url-gen/qualifiers/gravity'
-import { FocusOn } from '@cloudinary/url-gen/qualifiers/focusOn'
 
 export type CloudinaryImageProps = {
   src: string
@@ -23,82 +14,35 @@ const CloudinaryImage = ({
   className,
   ...rest
 }: CloudinaryImageProps) => {
-  const getPublicId = (url: string) => {
+  const getImageSrc = (url: string) => {
     if (!url) {
-      return 'v1627893621/user_qvwhs7webp'
+      // Default placeholder image
+      return 'https://via.placeholder.com/150x150?text=No+Image'
     }
-
-    return url.replace(
-      'https://res.cloudinary.com/firstlovecenter/image/upload/',
-      ''
-    )
+    return url
   }
 
-  const dimensions = {
-    height: size === 'large' ? 300 : 150,
-    width: size === 'large' ? 300 : 150,
-  }
-
-  let plugins = [
-    lazyload({ rootMargin: '10px 20px 10px 30px', threshold: 0.1 }),
-    placeholder(),
-  ]
-
-  if (size === 'respond') {
-    plugins = [
-      lazyload({ rootMargin: '10px 20px 10px 30px', threshold: 0.1 }),
-      responsive({ steps: [800, 1000, 1400] }),
-      placeholder({ mode: 'blur' }),
-    ]
-  }
-
-  const cld = new Cloudinary({
-    cloud: {
-      cloudName: 'firstlovecenter',
-    },
-  })
-  const image = cld.image(getPublicId(src))
-
-  switch (size) {
-    case 'respond':
-      image.resize(fill().gravity(focusOn(FocusOn.face())))
-      break
-    case 'large':
-      image.resize(
-        fill()
-          .width(dimensions.width)
-          .height(dimensions.height)
-          .gravity(focusOn(FocusOn.face()))
-      )
-      break
-    case 'small':
-      image.resize(
-        fill()
-          .width(dimensions.width)
-          .height(dimensions.height)
-          .gravity(focusOn(FocusOn.face()))
-      )
-      break
-
-    case 'fullWidth':
-      image.resize(scale().width(dimensions.height))
-      break
-    default:
-      image.resize(
-        thumbnail()
-          .width(dimensions.width)
-          .height(dimensions.height)
-          .zoom(0.7)
-          .gravity(focusOn(FocusOn.face()))
-      )
-      break
-  }
+  // const getSizeStyles = () => {
+  //   switch (size) {
+  //     case 'large':
+  //       return { width: '300px', height: '300px' }
+  //     case 'small':
+  //       return { width: '150px', height: '150px' }
+  //     case 'fullWidth':
+  //       return { width: '100%', height: 'auto' }
+  //     case 'respond':
+  //       return { width: '100%', height: 'auto', maxWidth: '100%' }
+  //     default:
+  //       return { width: '150px', height: '150px' }
+  //   }
+  // }
 
   return (
-    <AdvancedImage
-      cldImg={image}
-      plugins={plugins}
+    <img
+      src={getImageSrc(src)}
       className={className}
+      // style={defaultStyle}
+      loading="lazy"
       {...rest}
     />
   )
