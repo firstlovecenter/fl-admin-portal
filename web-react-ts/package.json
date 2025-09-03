@@ -6,6 +6,7 @@
   "dependencies": {
     "@apollo/client": "^3.8.9",
     "@auth0/auth0-react": "^1.11.0",
+    "@aws-sdk/client-s3": "^3.879.0",
     "@cloudinary/react": "^1.2.0",
     "@cloudinary/url-gen": "^1.14.0",
     "@jaedag/admin-portal-types": "^1.5.16",

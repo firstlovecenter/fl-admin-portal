@@ -21,7 +21,10 @@ type AggregateBussingRecord {
 }
 
 extend type Bacenta {
-  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
+  aggregateServiceRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
@@ -30,7 +33,10 @@ extend type Bacenta {
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
+  aggregateBussingRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
@@ -42,7 +48,10 @@ extend type Bacenta {
 }
 
 extend type Governorship {
-  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
+  aggregateServiceRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
@@ -51,7 +60,10 @@ extend type Governorship {
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
+  aggregateBussingRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
@@ -63,7 +75,10 @@ extend type Governorship {
 }
 
 extend type Council {
-  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
+  aggregateServiceRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
@@ -72,7 +87,10 @@ extend type Council {
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
+  aggregateBussingRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
@@ -84,7 +102,10 @@ extend type Council {
 }
 
 extend type Stream {
-  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
+  aggregateServiceRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
@@ -93,7 +114,10 @@ extend type Stream {
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
+  aggregateBussingRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
@@ -105,7 +129,10 @@ extend type Stream {
 }
 
 extend type Campus {
-  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
+  aggregateServiceRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
@@ -114,7 +141,10 @@ extend type Campus {
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
+  aggregateBussingRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
@@ -126,7 +156,10 @@ extend type Campus {
 }
 
 extend type Oversight {
-  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
+  aggregateServiceRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
@@ -135,7 +168,10 @@ extend type Oversight {
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
+  aggregateBussingRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
@@ -147,7 +183,10 @@ extend type Oversight {
 }
 
 extend type Denomination {
-  aggregateServiceRecords(limit: Int! = 4, skip: Int = 0): [AggregateServiceRecord!]!
+  aggregateServiceRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateServiceRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
@@ -156,7 +195,10 @@ extend type Denomination {
       """
       columnName: "aggregate"
     )
-  aggregateBussingRecords(limit: Int! = 4, skip: Int = 0): [AggregateBussingRecord!]!
+  aggregateBussingRecords(
+    limit: Int! = 4
+    skip: Int = 0
+  ): [AggregateBussingRecord!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
