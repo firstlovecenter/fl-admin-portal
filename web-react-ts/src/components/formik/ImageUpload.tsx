@@ -1,77 +1,57 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { ErrorMessage } from 'formik'
+import { useMutation } from '@apollo/client'
 import TextError from './TextError/TextError'
 import { Container } from 'react-bootstrap'
-import { MemberContext } from 'contexts/MemberContext'
 import './Formik.css'
 import { FormikComponentProps } from './formik-types'
 import { MoonLoader } from 'react-spinners'
+import { uploadToS3 } from 'utils/s3Upload'
+import { GENERATE_PRESIGNED_URL } from './ImageUploadGQL'
 
 interface ImageUploadProps extends FormikComponentProps {
-  uploadPreset?: string
-  tags?: 'facial-recognition'
   initialValue?: string
   setFieldValue: (field: string, value: any) => void
 }
 
 const ImageUpload = (props: ImageUploadProps) => {
-  const {
-    label,
-    name,
-    initialValue,
-    setFieldValue,
-    uploadPreset,
-    placeholder,
-    tags,
-    ...rest
-  } = props
-  const { currentUser } = useContext(MemberContext)
+  const { label, name, initialValue, setFieldValue, placeholder, ...rest } =
+    props
   const [loading, setLoading] = useState(false)
   const [image, setImage] = useState('')
+  const [uploadError, setUploadError] = useState('')
 
-  // genereate a random 12 character string
-  const randomString = (length: number) => {
-    const chars =
-      '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    let result = ''
-    for (let i = length; i > 0; --i)
-      result += chars[Math.floor(Math.random() * 62)]
-    return result
-  }
+  const [generatePresignedUrl] = useMutation(GENERATE_PRESIGNED_URL)
 
   const uploadImage = async (e: any) => {
     const files = e.target.files
-    const date = new Date().toISOString().slice(0, 10)
-    const username = `${currentUser.firstName.toLowerCase()}-${currentUser.lastName.toLowerCase()}`
-    let filename = `${username}-${currentUser.id}/${date}_${
-      files[0]?.name ?? randomString(12)
-    }`
-    filename = filename.replace(/\s/g, '-')
-    filename = filename.replace(/~/g, '-')
-    filename = filename.replace(/[^a-zA-Z0-9-_]/g, '')
+    const file = files[0]
 
-    const data = new FormData()
-    data.append('file', files[0])
-    data.append('upload_preset', uploadPreset || '')
-    data.append('public_id', filename)
+    if (!file) return
 
-    data.append('tags', tags || '')
+    try {
+      setLoading(true)
+      setUploadError('') // Clear any previous errors
 
-    setLoading(true)
+      // Upload using presigned URL
+      const imageUrl = await uploadToS3({
+        file,
+        generatePresignedUrl,
+      })
 
-    const res = await fetch(
-      'https://api.cloudinary.com/v1_1/firstlovecenter/image/upload',
-      {
-        method: 'POST',
-        body: data,
-      }
-    )
-    const file = await res.json()
+      setImage(imageUrl)
+      setFieldValue(`${name}`, imageUrl)
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Upload failed:', error)
 
-    setImage(file.secure_url)
-
-    setFieldValue(`${name}`, file.secure_url)
-    setLoading(false)
+      // Set user-friendly error message
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to upload image'
+      setUploadError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -107,8 +87,13 @@ const ImageUpload = (props: ImageUploadProps) => {
 
         <p className={`btn btn-primary px-5 image`}>{placeholder}</p>
       </label>
-      {props.error && <TextError>{props.error}</TextError>}
-      {!props.error ?? <ErrorMessage name={name} component={TextError} />}
+      {uploadError && <TextError>{uploadError}</TextError>}
+      {!uploadError &&
+        (props.error ? (
+          <TextError>{props.error}</TextError>
+        ) : (
+          <ErrorMessage name={name} component={TextError} />
+        ))}
     </>
   )
 }

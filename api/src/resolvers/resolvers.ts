@@ -20,6 +20,7 @@ import {
   downloadCreditsMutations,
   downloadCreditsQueries,
 } from './download-credits/download-credits-resolvers'
+import uploadMutations from './uploads/upload-resolvers'
 
 const dotenv = require('dotenv')
 
@@ -108,6 +109,7 @@ const resolvers = {
     ...accountsMutations,
     ...directoryCreativeArtsMutation,
     ...downloadCreditsMutations,
+    ...uploadMutations,
   },
 }
 

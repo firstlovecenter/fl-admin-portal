@@ -18,6 +18,18 @@ type Query {
     )
 }
 
+type PresignedUrlResponse {
+  presignedUrl: String!
+  publicUrl: String!
+  key: String!
+  expiresIn: Int!
+}
+
 type Mutation {
   CreateMemberAccount(memberId: ID!): Member!
+  generatePresignedUrl(
+    fileName: String!
+    fileType: String!
+    fileSize: Int!
+  ): PresignedUrlResponse!
 }
