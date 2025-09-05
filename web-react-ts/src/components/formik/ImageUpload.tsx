@@ -8,6 +8,7 @@ import { FormikComponentProps } from './formik-types'
 import { MoonLoader } from 'react-spinners'
 import { uploadToS3 } from 'utils/s3Upload'
 import { GENERATE_PRESIGNED_URL } from './ImageUploadGQL'
+import CloudinaryImage from 'components/CloudinaryImage'
 
 interface ImageUploadProps extends FormikComponentProps {
   initialValue?: string
@@ -67,8 +68,11 @@ const ImageUpload = (props: ImageUploadProps) => {
         </Container>
       )}
       {(image || initialValue) && !loading && (
-        <Container className="text-center img-container ">
-          <img src={image || initialValue} className="img-preview" alt="" />
+        <Container className="text-center img-container pb-2">
+          <CloudinaryImage
+            src={image || initialValue || ''}
+            style={{ borderRadius: '8px' }}
+          />
         </Container>
       )}
       {!image && !initialValue && !loading && (

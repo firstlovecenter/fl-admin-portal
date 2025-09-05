@@ -40,12 +40,19 @@
   height: 260px;
   margin: 10px;
 }
+.report-picture img {
+  border-radius: 10px;
+}
 .confirmation-picture {
   width: 100%;
 }
 .bus-picture {
   max-height: 280px;
   max-width: 100vw;
+}
+.bus-picture img {
+  border-radius: 10px;
+  height: 280px;
 }
 
 .col-height {

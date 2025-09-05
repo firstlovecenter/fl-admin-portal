@@ -38,13 +38,9 @@ const CloudinaryImage = ({
   // }
 
   return (
-    <img
-      src={getImageSrc(src)}
-      className={className}
-      // style={defaultStyle}
-      loading="lazy"
-      {...rest}
-    />
+    <div className={'image-container ' + className}>
+      <img src={getImageSrc(src)} loading="lazy" {...rest} />
+    </div>
   )
 }
 
