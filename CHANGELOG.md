@@ -1,3 +1,26 @@
+#### 8.1.2 (2025-09-06)
+
+##### Chores
+
+*  update frontend deployment ([d1cc34f9](https://github.com/firstlovecenter/fl-admin-portal/commit/d1cc34f9b65fc78c82ac2840a5b07c3fca85b314))
+
+##### Documentation Changes
+
+*  update deploy workflows commit message ([fa391590](https://github.com/firstlovecenter/fl-admin-portal/commit/fa391590be25c810c16c2e08b4656248eec3531d))
+
+##### New Features
+
+*  integrate CloudinaryImage component and enhance image styling ([2dda48ef](https://github.com/firstlovecenter/fl-admin-portal/commit/2dda48ef24454504e218b2a0afd35f581a1d967a))
+*  implement S3 image upload functionality with presigned URLs ([6b13a5b9](https://github.com/firstlovecenter/fl-admin-portal/commit/6b13a5b92a50b3b023250bb13b4e81fe310a66c3))
+
+##### Bug Fixes
+
+*  enhance S3 deployment with proper cache control for static assets and HTML files ([9f29cbe6](https://github.com/firstlovecenter/fl-admin-portal/commit/9f29cbe63580897955a943abfd22391fdcd9a954))
+
+##### Refactors
+
+*  simplify CloudinaryImage component by removing unused ([16a7731b](https://github.com/firstlovecenter/fl-admin-portal/commit/16a7731b27afb14fdce4aaee41ebe3d68dca7f3d))
+
 #### 8.1.1 (2025-09-03)
 
 ### 8.1.0 (2025-09-03)
