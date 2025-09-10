@@ -366,7 +366,7 @@ extend type Mutation {
          WITH log WHERE $oldGovernorshipId IS NOT NULL
          MATCH (oldgovernorship:Governorship {id: $oldGovernorshipId})
          MERGE (oldgovernorship)-[:OLD_HISTORY]->(log)
-         RETURN COUNT(log)
+         RETURN COUNT(log) AS logCount
        }
 
        WITH log,bacenta

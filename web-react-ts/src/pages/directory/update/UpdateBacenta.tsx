@@ -7,7 +7,11 @@ import { UPDATE_BACENTA_MUTATION } from './UpdateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import { DISPLAY_BACENTA } from '../display/ReadQueries'
 import { LOG_BACENTA_HISTORY } from './LogMutations'
-import { MAKE_BACENTA_LEADER } from './ChangeLeaderMutations'
+import {
+  MAKE_BACENTA_LEADER,
+  SET_BACENTA_ADMIN,
+  SET_BACENTA_DEPUTY,
+} from './ChangeLeaderMutations'
 import BacentaForm, { BacentaFormValues } from '../reusable-forms/BacentaForm'
 import { SET_ACTIVE_BACENTA, SET_VACATION_BACENTA } from './StatusChanges'
 import { FormikHelpers } from 'formik'
@@ -23,8 +27,7 @@ const UpdateBacenta = () => {
 
   const initialValues: BacentaFormValues = {
     name: bacenta?.name,
-    leaderName:
-      bacenta?.leader?.firstName + ' ' + bacenta?.leader?.lastName ?? '',
+    leaderName: bacenta?.leader?.firstName + ' ' + bacenta?.leader?.lastName,
     leaderId: bacenta?.leader?.id || '',
     leaderEmail: bacenta?.leader?.email ?? '',
     governorship: bacenta?.governorship,
@@ -32,6 +35,18 @@ const UpdateBacenta = () => {
     meetingDay: bacenta.meetingDay.day,
     venueLatitude: repackDecimals(bacenta?.location?.latitude) ?? '',
     venueLongitude: repackDecimals(bacenta?.location?.longitude) ?? '',
+    adminId: bacenta?.admin?.id || '',
+    adminName:
+      bacenta?.admin?.firstName && bacenta?.admin?.lastName
+        ? bacenta?.admin?.firstName + ' ' + bacenta?.admin?.lastName
+        : '',
+    deputyLeaderId: bacenta?.deputyLeader?.id || '',
+    deputyLeaderName:
+      bacenta?.deputyLeader?.firstName && bacenta?.deputyLeader?.lastName
+        ? bacenta?.deputyLeader?.firstName +
+          ' ' +
+          bacenta?.deputyLeader?.lastName
+        : '',
   }
 
   const [LogBacentaHistory] = useMutation(LOG_BACENTA_HISTORY, {
@@ -49,6 +64,8 @@ const UpdateBacenta = () => {
       },
     ],
   })
+  const [SetBacentaAdmin] = useMutation(SET_BACENTA_ADMIN)
+  const [SetBacentaDeputy] = useMutation(SET_BACENTA_DEPUTY)
 
   //onSubmit receives the form state as argument
   const onSubmit = async (
@@ -163,6 +180,49 @@ const UpdateBacenta = () => {
             throwToSentry('There was a problem changing the leader', err)
           }
         }
+      }
+
+      // Log if Bacenta Admin changes
+      if (values.adminId !== initialValues.adminId && values.adminId) {
+        await SetBacentaAdmin({
+          variables: {
+            bacentaId,
+            adminId: values.adminId,
+          },
+        })
+        await LogBacentaHistory({
+          variables: {
+            bacentaId: bacentaId,
+            newLeaderId: values.adminId,
+            oldLeaderId: initialValues.adminId || '',
+            oldBacentaId: '',
+            newBacentaId: '',
+            historyRecord: `${values.name} Bacenta Admin changed from ${initialValues.adminName} to ${values.adminName}`,
+          },
+        })
+      }
+
+      // Log if Deputy Leader changes
+      if (
+        values.deputyLeaderId !== initialValues.deputyLeaderId &&
+        values.deputyLeaderId
+      ) {
+        await SetBacentaDeputy({
+          variables: {
+            bacentaId,
+            deputyLeaderId: values.deputyLeaderId,
+          },
+        })
+        await LogBacentaHistory({
+          variables: {
+            bacentaId: bacentaId,
+            newLeaderId: values.deputyLeaderId,
+            oldLeaderId: initialValues.deputyLeaderId || '',
+            oldBacentaId: '',
+            newBacentaId: '',
+            historyRecord: `${values.name} Deputy Bacenta Leader changed from ${initialValues.deputyLeaderName} to ${values.deputyLeaderName}`,
+          },
+        })
       }
 
       resetForm()

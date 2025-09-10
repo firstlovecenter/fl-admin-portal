@@ -65,6 +65,34 @@ extend type Mutation {
     newLeaderId: ID!
     denominationId: ID!
   ): Member
+
+  SetBacentaAdmin(bacentaId: ID!, adminId: ID!): Bacenta
+    @cypher(
+      statement: """
+      MATCH (bacenta:Bacenta {id: $bacentaId})
+      OPTIONAL MATCH (oldAdmin:Active:Member)-[r1:IS_ADMIN_FOR]->(bacenta)
+      DELETE r1
+      WITH bacenta
+      MATCH (admin:Active:Member {id: $adminId})
+      MERGE (admin)-[:IS_ADMIN_FOR]->(bacenta)
+      RETURN bacenta
+      """
+      columnName: "bacenta"
+    )
+
+  SetBacentaDeputy(bacentaId: ID!, deputyLeaderId: ID!): Bacenta
+    @cypher(
+      statement: """
+      MATCH (bacenta:Bacenta {id: $bacentaId})
+      OPTIONAL MATCH (oldDeputy:Active:Member)-[r2:DEPUTY_LEADS]->(bacenta)
+      DELETE r2
+      WITH bacenta
+      MATCH (deputy:Active:Member {id: $deputyLeaderId})
+      MERGE (deputy)-[:DEPUTY_LEADS]->(bacenta)
+      RETURN bacenta
+      """
+      columnName: "bacenta"
+    )
 }
 
 #### GO ON VACATION AND COME BACK ###

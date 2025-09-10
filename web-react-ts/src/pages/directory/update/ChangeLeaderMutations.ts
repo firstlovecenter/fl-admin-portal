@@ -36,6 +36,34 @@ export const MAKE_FELLOWSHIP_LEADER = gql`
   }
 `
 
+export const SET_BACENTA_ADMIN = gql`
+  mutation SetBacentaAdmin($bacentaId: ID!, $adminId: ID!) {
+    SetBacentaAdmin(bacentaId: $bacentaId, adminId: $adminId) {
+      id
+      name
+      admin {
+        id
+        firstName
+        lastName
+      }
+    }
+  }
+`
+
+export const SET_BACENTA_DEPUTY = gql`
+  mutation SetBacentaDeputy($bacentaId: ID!, $deputyLeaderId: ID!) {
+    SetBacentaDeputy(bacentaId: $bacentaId, deputyLeaderId: $deputyLeaderId) {
+      id
+      name
+      deputyLeader {
+        id
+        firstName
+        lastName
+      }
+    }
+  }
+`
+
 export const MAKE_BACENTA_LEADER = gql`
   mutation MakeBacentaLeader(
     $bacentaId: ID!

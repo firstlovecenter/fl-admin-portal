@@ -58,6 +58,7 @@ type DisplayChurchDetailsProps = {
   leaderTitle: string
   leader: MemberWithoutBioData
   admin?: MemberWithoutBioData
+  deputyLeader?: MemberWithoutBioData
   churchId: string
   churchType: ChurchLevel
   subChurch?: ChurchLevel
@@ -305,6 +306,29 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
       </div>
       <Container>
         <LeaderAvatar leader={props.leader} leaderTitle={props.leaderTitle} />
+        {/* Bacenta Admin and Deputy Leader display */}
+        {props.churchType === 'Bacenta' && (
+          <div className="d-flex flex-column align-items-start mb-3">
+            {props.deputyLeader && (
+              <div
+                className="d-flex flex-row align-items-center gap-2 mb-1"
+                style={{ fontSize: '0.95em' }}
+              >
+                <span className="fw-semibold text-muted">Deputy Leader</span>
+                <MemberAvatarWithName member={props.deputyLeader} size={32} />
+              </div>
+            )}
+            {props.admin && (
+              <div
+                className="d-flex flex-row align-items-center gap-2 mb-1"
+                style={{ fontSize: '0.95em' }}
+              >
+                <span className="fw-semibold text-muted">Bacenta Admin</span>
+                <MemberAvatarWithName member={props.admin} size={32} />
+              </div>
+            )}
+          </div>
+        )}
         {props.details?.length && (
           <Row>
             {props.details.map((detail, i) => (

@@ -329,6 +329,22 @@ export const DISPLAY_BACENTA = gql`
         nameWithTitle
         pictureUrl
       }
+      admin {
+        id
+        firstName
+        lastName
+        currentTitle
+        nameWithTitle
+        pictureUrl
+      }
+      deputyLeader {
+        id
+        firstName
+        lastName
+        currentTitle
+        nameWithTitle
+        pictureUrl
+      }
 
       memberCount
     }

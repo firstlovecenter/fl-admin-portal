@@ -39,6 +39,10 @@ export interface BacentaFormValues extends FormikInitialValues {
   vacationStatus: string
   venueLatitude: string | number
   venueLongitude: string | number
+  adminId?: string
+  adminName?: string
+  deputyLeaderId?: string
+  deputyLeaderName?: string
 }
 
 type BacentaFormProps = {
@@ -75,6 +79,8 @@ const BacentaForm = ({
   const validationSchema = Yup.object({
     name: Yup.string().required('Bacenta Name is a required field'),
     leaderId: Yup.string().required('Please choose a leader from the dropdown'),
+    adminId: Yup.string(),
+    deputyLeaderId: Yup.string(),
     vacationStatus: Yup.string().required(
       'Vacation Status is a required field'
     ),
@@ -158,6 +164,36 @@ const BacentaForm = ({
                             setFieldValue={formik.setFieldValue}
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
+                          />
+                        </Col>
+                      </RoleView>
+                    </Row>
+                    <Row className="d-flex align-items-center mb-3">
+                      <RoleView roles={permitAdminArrivals('Governorship')}>
+                        <Col>
+                          <SearchMember
+                            name="adminId"
+                            initialValue={initialValues?.adminName}
+                            placeholder="Start typing"
+                            label="Select Bacenta Admin"
+                            setFieldValue={formik.setFieldValue}
+                            aria-describedby="Admin Search Box"
+                            error={formik.errors.adminId}
+                          />
+                        </Col>
+                      </RoleView>
+                    </Row>
+                    <Row className="d-flex align-items-center mb-3">
+                      <RoleView roles={permitAdminArrivals('Governorship')}>
+                        <Col>
+                          <SearchMember
+                            name="deputyLeaderId"
+                            initialValue={initialValues?.deputyLeaderName}
+                            placeholder="Start typing"
+                            label="Select Deputy Bacenta Leader"
+                            setFieldValue={formik.setFieldValue}
+                            aria-describedby="Deputy Leader Search Box"
+                            error={formik.errors.deputyLeaderId}
                           />
                         </Col>
                       </RoleView>

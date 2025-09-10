@@ -1162,6 +1162,8 @@ type Bacenta implements Church {
       columnName: "pastorCount"
     )
   leader: Member @relationship(type: "LEADS", direction: IN)
+  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  deputyLeader: Member @relationship(type: "DEPUTY_LEADS", direction: IN)
 
   governorship: Governorship @relationship(type: "HAS", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
