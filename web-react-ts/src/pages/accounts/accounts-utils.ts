@@ -8,6 +8,5 @@ export const isAccountOpen = () => {
     return false
   }
 
-  // For Thursday after 10am, all of Friday (5), and Saturday (6), return false
-  return false
+  return true
 }
