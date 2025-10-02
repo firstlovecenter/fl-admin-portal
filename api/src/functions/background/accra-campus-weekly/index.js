@@ -164,9 +164,7 @@ const handler = async () => {
           '233248659695', // Hillary
         ],
         sender: 'FLC Admin',
-        message: `WEEK ${
-          getWeekNumber() - 1
-        } UPDATE\n\nAccra Google Sheets updated successfully on date ${
+        message: `WEEK ${getWeekNumber()} UPDATE\n\nAccra Google Sheets updated successfully on date ${
           new Date()
             .toLocaleString('en-GB', {
               year: 'numeric',
