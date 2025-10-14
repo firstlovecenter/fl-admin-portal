@@ -46,7 +46,7 @@ OPTIONAL MATCH (stream)-[:HAS_HISTORY|HAS_SERVICE*2]->(record:ServiceRecord)-[:S
 WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussingDate).week
 
 WITH DISTINCT campus, stream, record, pastor
-RETURN campus.name,  pastor.firstName + " " +pastor.lastName,stream.name, SUM(record.attendance) AS Attendance, SUM(round(record.income)) AS Income ORDER BY  campus.name,stream.name
+RETURN campus.name,  pastor.firstName + " " +pastor.lastName,stream.name, SUM(record.attendance) AS Attendance, SUM(round(record.income,2)) AS Income ORDER BY  campus.name,stream.name
 `
 
 const fellowshipAttendanceIncomeQuery = `
