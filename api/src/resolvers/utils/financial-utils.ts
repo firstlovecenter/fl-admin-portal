@@ -86,25 +86,25 @@ export const getStreamFinancials = async (stream: Stream) => {
       subaccount = SECRETS.PS_SB_BJOSH
       break
     case 'oa_kumasi':
-      subaccount = SECRETS.PS_SB_KUMASI
+      subaccount = SECRETS.PS_SB_OA_GHSOUTH
       break
     case 'oa_gheast':
-      subaccount = SECRETS.PS_SB_OA_GHEAST
+      subaccount = SECRETS.PS_SB_OA_GHSOUTH
       break
     case 'oa_ghnorth':
-      subaccount = SECRETS.PS_SB_OA_GHNORTH
+      subaccount = SECRETS.PS_SB_OA_GHSOUTH
       break
     case 'oa_ghsouth':
       subaccount = SECRETS.PS_SB_OA_GHSOUTH
       break
     case 'oa_ghwest':
-      subaccount = SECRETS.PS_SB_OA_GHWEST
+      subaccount = SECRETS.PS_SB_OA_GHSOUTH
       break
     case 'oa_tarkwa':
-      subaccount = SECRETS.PS_SB_OA_TARKWA
+      subaccount = SECRETS.PS_SB_OA_GHSOUTH
       break
     case 'oa_sunyani':
-      subaccount = SECRETS.PS_SB_OA_SUNYANI
+      subaccount = SECRETS.PS_SB_OA_GHSOUTH
       break
 
     // Creative Arts Accounts
