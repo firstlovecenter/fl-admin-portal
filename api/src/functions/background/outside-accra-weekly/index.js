@@ -3,11 +3,12 @@ const { default: axios } = require('axios')
 const { getSecrets } = require('./gsecrets.js')
 const { clearGSheet, writeToGsheet } = require('./utils/writeToGSheet.js')
 const { campusList } = require('./query-exec/campusList.js')
-const totalAttendanceIncome = require('./query-exec/totalAttendanceIncome.js')
-const totalNotBankedIncome = require('./query-exec/totalNotBankedIncome.js')
-const totalBankedIncome = require('./query-exec/totalBankedIncome.js')
 const campusAttendanceIncome = require('./query-exec/campusAttendanceIncome.js')
+const campusBankedIncome = require('./query-exec/campusBankedIncome.js')
+const campusNotBankedIncome = require('./query-exec/campusNotBankedIncome.js')
 const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceIncome.js')
+const weekdayBankedIncome = require('./query-exec/weekdayBankedIncome.js')
+const weekdayNotBankedIncome = require('./query-exec/weekdayNotBankedIncome.js')
 const { notifyBaseURL } = require('./utils/constants.js')
 
 /**
@@ -69,22 +70,24 @@ const handler = async () => {
 
     const response = await Promise.all([
       campusList(driver),
-      totalAttendanceIncome(driver),
-      totalNotBankedIncome(driver),
-      totalBankedIncome(driver),
       campusAttendanceIncome(driver),
+      campusBankedIncome(driver),
+      campusNotBankedIncome(driver),
       fellowshipAttendanceIncome(driver),
+      weekdayBankedIncome(driver),
+      weekdayNotBankedIncome(driver),
     ]).catch((error) => {
       console.error('Database query failed to complete\n', error.message)
       throw error
     })
 
     const campusListData = response[0]
-    const totalAttendanceIncomeData = response[1]
-    const totalNotBankedIncomeData = response[2]
-    const totalBankedIncomeData = response[3]
-    const campusAttendanceIncomeData = response[4]
-    const fellowshipAttendanceIncomeData = response[5]
+    const campusAttendanceIncomeData = response[1]
+    const campusBankedIncomeData = response[2]
+    const campusNotBankedIncomeData = response[3]
+    const fellowshipAttendanceIncomeData = response[4]
+    const weekdayBankedIncomeData = response[5]
+    const weekdayNotBankedIncomeData = response[6]
 
     const outsideAccraSheet = 'OA Campus'
 
@@ -92,11 +95,12 @@ const handler = async () => {
 
     await Promise.all([
       writeToGsheet(campusListData, outsideAccraSheet, 'A:D'),
-      writeToGsheet(totalAttendanceIncomeData, outsideAccraSheet, 'E:F'),
-      writeToGsheet(totalNotBankedIncomeData, outsideAccraSheet, 'G:G'),
-      writeToGsheet(totalBankedIncomeData, outsideAccraSheet, 'H:H'),
-      writeToGsheet(campusAttendanceIncomeData, outsideAccraSheet, 'J:K'),
-      writeToGsheet(fellowshipAttendanceIncomeData, outsideAccraSheet, 'M:N'),
+      writeToGsheet(campusAttendanceIncomeData, outsideAccraSheet, 'E:F'),
+      writeToGsheet(campusBankedIncomeData, outsideAccraSheet, 'G:G'),
+      writeToGsheet(campusNotBankedIncomeData, outsideAccraSheet, 'H:H'),
+      writeToGsheet(fellowshipAttendanceIncomeData, outsideAccraSheet, 'I:J'),
+      writeToGsheet(weekdayBankedIncomeData, outsideAccraSheet, 'K:K'),
+      writeToGsheet(weekdayNotBankedIncomeData, outsideAccraSheet, 'L:L'),
       // Send notification SMS
       axios({
         method: 'post',
@@ -155,7 +159,7 @@ const handler = async () => {
 }
 
 // Export for AWS Lambda
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   console.log('AWS Lambda handler invoked', { event })
   return handler()
 }
