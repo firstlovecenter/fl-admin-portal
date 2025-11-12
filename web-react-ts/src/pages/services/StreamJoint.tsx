@@ -35,13 +35,13 @@ const StreamJoint = () => {
             onClick={() => navigate(`/services/stream/no-service`)}
             noCaption
           />
-          <MenuButton
+          {/* <MenuButton
             iconComponent={<PencilSquare />}
             title="Fill Joint Service Form"
             color="members"
             noCaption
             onClick={() => navigate(`/stream/record-service`)}
-          />
+          /> */}
         </div>
       </Container>
     </div>
