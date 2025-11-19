@@ -47,10 +47,13 @@ export const uploadToS3 = async ({
       )
     }
 
+    // Sanitize file name by removing all spaces
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '')
+
     // Get presigned URL from GraphQL
     const response = await generatePresignedUrl({
       variables: {
-        fileName: file.name,
+        fileName: sanitizedFileName,
         fileType: file.type,
         fileSize: file.size,
       },
