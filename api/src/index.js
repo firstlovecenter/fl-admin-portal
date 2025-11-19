@@ -23,12 +23,12 @@ const startServer = async () => {
     neo4j.auth.basic(
       SECRETS.NEO4J_USER || 'neo4j',
       SECRETS.NEO4J_PASSWORD || 'letmein'
-    ),
-    {
-      encrypted: 'ENCRYPTION_ON',
-      trust: 'TRUST_ALL_CERTIFICATES',
-      connectionTimeout: 30000,
-    }
+    )
+    // {
+    //   encrypted: 'ENCRYPTION_ON',
+    //   trust: 'TRUST_ALL_CERTIFICATES',
+    //   connectionTimeout: 30000,
+    // }
   )
 
   // Add connection verification
@@ -85,7 +85,7 @@ const startServer = async () => {
       if (token) {
         try {
           jwt = jwtDecode(token)
-          console.log('🚀 ~ index.js:90 ~ jwt:', jwt)
+          console.log('🚀 ~ index.js:88 ~ jwt:', jwt)
         } catch (error) {
           console.error('Invalid token:', error)
         }

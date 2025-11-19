@@ -91,10 +91,11 @@ export const deleteAuthUserConfig = async (memberId: string, token: string) => {
 
 export const getAuthIdConfig = async (member: Member, token: string) => {
   const SECRETS = await loadSecrets() // Await secrets here
+  const sanitizedEmail = member.email.replace(/\s+/g, '')
   return {
     method: 'get',
     baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/users-by-email?email=${member.email}`,
+    url: `/api/v2/users-by-email?email=${sanitizedEmail}`,
     headers: {
       autho: '',
       Authorization: `Bearer ${token}`,
