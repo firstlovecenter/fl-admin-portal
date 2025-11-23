@@ -1,0 +1,25 @@
+{
+  "servers": {
+    "neo4j": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-p",
+        "8000:8000",
+        "-e",
+        "NEO4J_URI=neo4j://dev-neo4j.firstlovecenter.com:7687",
+        "-e",
+        "NEO4J_USERNAME=neo4j",
+        "-e",
+        "NEO4J_PASSWORD=7Bf9gQ2N8XmZt6pLYdV3JhR5KcW4XqM9",
+        "-e",
+        "NEO4J_NAMESPACE=neo4j",
+        "-e",
+        "NEO4J_TRANSPORT=stdio",
+        "mcp/neo4j-cypher:latest"
+      ]
+    }
+  }
+}
