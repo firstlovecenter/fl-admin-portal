@@ -98,9 +98,9 @@ const handler = async () => {
       writeToGsheet(campusAttendanceIncomeData, outsideAccraSheet, 'E:F'),
       writeToGsheet(campusBankedIncomeData, outsideAccraSheet, 'G:G'),
       writeToGsheet(campusNotBankedIncomeData, outsideAccraSheet, 'H:H'),
-      writeToGsheet(fellowshipAttendanceIncomeData, outsideAccraSheet, 'I:J'),
-      writeToGsheet(weekdayBankedIncomeData, outsideAccraSheet, 'K:K'),
-      writeToGsheet(weekdayNotBankedIncomeData, outsideAccraSheet, 'L:L'),
+      writeToGsheet(fellowshipAttendanceIncomeData, outsideAccraSheet, 'J:K'),
+      writeToGsheet(weekdayBankedIncomeData, outsideAccraSheet, 'L:L'),
+      writeToGsheet(weekdayNotBankedIncomeData, outsideAccraSheet, 'M:M'),
       // Send notification SMS
       axios({
         method: 'post',
