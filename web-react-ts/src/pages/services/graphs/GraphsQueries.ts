@@ -275,6 +275,7 @@ export const OVERSIGHT_GRAPHS = gql`
         id
         attendance
         income
+        dollarIncome
         numberOfServices
         week
       }
