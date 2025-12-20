@@ -15,8 +15,9 @@ RETURN campus.name,  pastor.firstName + " " +pastor.lastName,stream.name, SUM(re
 `
 
 const fellowshipAttendanceIncomeQuery = `
-MATCH (gs:Oversight {name: $oversightName})-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)
+MATCH (gs:Oversight {name: $oversightName})-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)
 MATCH (campus)<-[:LEADS]-(oversightLeader:Member)
+OPTIONAL MATCH (stream)-[:HAS]->(council:Council)
 OPTIONAL MATCH (council)-[:HAS_HISTORY|HAS_SERVICE|HAS*2..6]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
 WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussingDate).week
 
@@ -51,7 +52,8 @@ RETURN campus.name, stream.name, SUM(round(record.income,2)) AS NotBanked ORDER 
 `
 
 const weekdayBankedIncomeQuery = `
-MATCH (oversight:Oversight {name: $oversightName})-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)
+MATCH (oversight:Oversight {name: $oversightName})-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)
+OPTIONAL MATCH (stream)-[:HAS]->(council:Council)
 OPTIONAL MATCH (council)-[:HAS_HISTORY|HAS_SERVICE|HAS*2..6]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
 WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussingDate).week
         AND (record.noServiceReason IS NOT NULL
@@ -64,7 +66,8 @@ RETURN campus.name, stream.name, SUM(round(record.income,2)) AS Banked ORDER BY 
 `
 
 const weekdayNotBankedIncomeQuery = `
-MATCH (oversight:Oversight {name: $oversightName})-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)
+MATCH (oversight:Oversight {name: $oversightName})-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)
+OPTIONAL MATCH (stream)-[:HAS]->(council:Council)
 OPTIONAL MATCH (council)-[:HAS_HISTORY|HAS_SERVICE|HAS*2..6]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
 WHERE date.date.year = date($bussingDate).year AND date.date.week = date($bussingDate).week
         AND record.noServiceReason IS NULL
