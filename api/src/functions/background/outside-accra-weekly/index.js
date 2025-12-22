@@ -112,7 +112,6 @@ const handler = async () => {
         },
         data: {
           recipient: [
-            '233594760323', // JD
             '233592219407', // Latisha
             '233263995059', // Abigail Tay
           ],

@@ -86,7 +86,6 @@ const handler = async () => {
       },
       data: {
         recipient: [
-          '233594760323', // JD
           '233541805641', // Becks
           '233596075970', // B Daniel
           '233248659695', // Hillary

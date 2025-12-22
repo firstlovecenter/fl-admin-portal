@@ -85,7 +85,7 @@ const handler = async () => {
         'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
       },
       data: {
-        recipient: ['233594760323', '233248659695'],
+        recipient: ['233248659695'],
         sender: 'FLC Admin',
         message: `Hi Hillary\n\n${getLastMonthName()} Data\n\nAccra Oversight\nBacentas: ${
           accraData.bacentas
