@@ -129,7 +129,7 @@ Oversight → Campus → Stream → Council (weekday fellowships)
 
 ## Conventions & Gotchas
 
-- **File Size Limits**: No file should exceed 400 lines unless absolutely necessary. When approaching this limit, extract logic into separate files or helper modules. Even when necessary, keep the file as minimal as possible.
+- **File Size Limits**: No file should exceed 500 lines unless absolutely necessary. When approaching this limit, extract logic into separate files or helper modules. Even when necessary, keep the file as minimal as possible.
 - **Monorepo dependency isolation**: Root `package.json` has dev tools; each service has own `package.json` and dependencies
 - **Schema rebuilds**: Changing resolvers requires stopping/restarting dev server
 - **Lambda compatibility**: Use CommonJS exports in background functions; async/await works fine
