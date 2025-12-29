@@ -107,7 +107,7 @@ const Login = () => {
               <br />
 
               <span className="text-secondary mb-5">
-                Click to log in to your servants portal
+                Click to log in to the admin portal
               </span>
             </p>
 
