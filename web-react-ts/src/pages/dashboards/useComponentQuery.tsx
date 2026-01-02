@@ -11,7 +11,6 @@ import {
   AggregateBussingRecords,
   BussingRecord,
 } from 'pages/arrivals/arrivals-types'
-import { SwellBussingRecords } from 'pages/campaigns/swollen-sunday/SwollenSundayTrends'
 import { getHighestRole } from 'pages/directory/update/directory-utils'
 import { useState } from 'react'
 import { useContext, useEffect } from 'react'
