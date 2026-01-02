@@ -9,8 +9,6 @@ import {
   arrivalsResolvers,
 } from './arrivals/arrivals-resolvers'
 import bankingMutation from './banking/banking-resolver'
-import campaignsResolvers from './campaigns/campaigns-resolver'
-import campaignMutations from './campaigns/campaign-mutations'
 import { accountsMutations } from './accounts/accounts-resolvers'
 import { mapsResolvers } from './maps/maps-resolvers'
 import SontaServiceMutation from './services/rehearsal-resolver'
@@ -75,26 +73,16 @@ const resolvers = {
     },
     ...mapsResolvers.Member,
   },
-  Fellowship: {
-    ...campaignsResolvers.Fellowship,
-  },
-  Bacenta: {
-    ...campaignsResolvers.Bacenta,
-  },
-  Governorship: {
-    ...campaignsResolvers.Governorship,
-  },
+  Fellowship: {},
+  Bacenta: {},
+  Governorship: {},
   Council: {
-    ...campaignsResolvers.Council,
     ...downloadCreditsQueries.Council,
   },
   Stream: {
-    ...campaignsResolvers.Stream,
     ...arrivalsResolvers.Stream,
   },
-  Campus: {
-    ...campaignsResolvers.Campus,
-  },
+  Campus: {},
 
   Mutation: {
     ...MakeServantResolvers,
@@ -104,7 +92,6 @@ const resolvers = {
     ...bankingMutation,
     ...treasuryMutations,
     ...serviceNoIncomeMutations,
-    ...campaignMutations,
     ...SontaServiceMutation,
     ...accountsMutations,
     ...directoryCreativeArtsMutation,
