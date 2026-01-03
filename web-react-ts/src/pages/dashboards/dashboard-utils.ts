@@ -59,6 +59,14 @@ export const menuItems: MenuItem[] = [
     ),
   },
   {
+    name: 'Campaigns',
+    to: '/campaigns/churchlist',
+    roles: arrayDiff(
+      [...permitLeaderAdmin('Bacenta'), ...permitSheepSeeker()],
+      permitLeaderAdminArrivals('Oversight')
+    ),
+  },
+  {
     name: 'Accounts',
     to: '/accounts',
     roles: [
@@ -200,7 +208,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
       link: authorisedLink(
         servant,
         permittedForLink,
-        undefined
+        `campaigns/stream/sheep-seeking`
       ),
     })
 
@@ -607,7 +615,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
       link: authorisedLink(
         servant,
         permitSheepSeeker(),
-        undefined
+        `campaigns/stream/sheep-seeking`
       ),
     })
   }
