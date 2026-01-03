@@ -1,0 +1,32 @@
+type Campaign {
+  name: String!
+  type: String!
+}
+
+extend type Oversight {
+  campaigns: [String!]!
+}
+
+extend type Campus {
+  campaigns: [String!]!
+}
+
+extend type Stream {
+  campaigns: [String!]!
+}
+
+extend type Council {
+  campaigns: [String!]!
+}
+
+extend type Governorship {
+  campaigns: [String!]!
+}
+
+extend type Bacenta {
+  campaigns: [String!]!
+}
+
+extend type Fellowship {
+  campaigns: [String!]!
+}
