@@ -61,7 +61,17 @@ const TrendsMenu = () => {
               />
             </RoleView>
           )}
-
+          <MenuButton
+            iconComponent={<PieChart />}
+            title="Member Conversion Chart"
+            color="multiplication"
+            onClick={() =>
+              navigate(
+                `/campaigns/${church.__typename.toLowerCase()}/multiplication/member-conversion-chart`
+              )
+            }
+            caption={'Member conversion chart of your church'}
+          />
         </div>
       </Container>
     </div>

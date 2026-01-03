@@ -15,6 +15,7 @@ const ChurchList = ({
   color:
     | 'defaulters'
     | 'arrivals'
+    | 'campaigns'
     | 'quick-facts'
     | 'churches'
     | 'maps'
@@ -33,6 +34,7 @@ const ChurchList = ({
         userJobs.map((role: UserRole) =>
           role.church
             .filter((church: Church) => {
+              if (color === 'campaigns') return true
               if (includeVacation) return true
               return church?.vacationStatus !== 'Vacation'
             })
@@ -104,6 +106,8 @@ const ChurchList = ({
                       navigate(
                         `/quick-facts/this-month/${church.__typename.toLowerCase()}`
                       )
+                    } else if (color === 'campaigns') {
+                      navigate(`/campaigns/${church.__typename.toLowerCase()}`)
                     } else if (color === 'maps') {
                       navigate(`/maps/${church.__typename.toLowerCase()}`)
                     } else if (color === 'accounts') {
