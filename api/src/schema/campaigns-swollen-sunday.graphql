@@ -1,0 +1,169 @@
+type SwellStats {
+  attendance: Int!
+  target: Int
+  week: Int!
+}
+
+extend type Oversight {
+  target: Int
+    @cypher(
+      statement: """
+      MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)WITH target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target
+      """
+      columnName: "target"
+    )
+  swellBussingRecords(startDate: String!, endDate: String!): [SwellStats!]!
+    @cypher(
+      statement: """
+      MATCH (this)
+      MATCH (swell:SwellDate)
+      WHERE date(swell.date) >= date($startDate) AND date(swell.date) <= date($endDate)
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target) WHERE target.date = date(swell.date)
+
+      WITH collect(DISTINCT(date(swell.date).week)) as list, aggregate, this, target
+      MATCH (aggregate) WHERE aggregate.week IN list
+      RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
+      """
+      columnName: "swellBussingRecords"
+    )
+}
+
+extend type Campus {
+  swellBussingRecords(startDate: String!, endDate: String!): [SwellStats!]!
+    @cypher(
+      statement: """
+      MATCH (this)
+      MATCH (swell:SwellDate)
+      WHERE date(swell.date) >= date($startDate) AND date(swell.date) <= date($endDate)
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target) WHERE target.date = date(swell.date)
+
+      WITH collect(DISTINCT(date(swell.date).week)) as list, aggregate, this, target
+      MATCH (aggregate) WHERE aggregate.week IN list
+      RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
+      """
+      columnName: "swellBussingRecords"
+    )
+  target: Int
+    @cypher(
+      statement: """
+      MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)WITH target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target
+      """
+      columnName: "target"
+    )
+}
+
+extend type Stream {
+  swellBussingRecords(startDate: String!, endDate: String!): [SwellStats!]!
+    @cypher(
+      statement: """
+      MATCH (this)
+      MATCH (swell:SwellDate)
+      WHERE date(swell.date) >= date($startDate) AND date(swell.date) <= date($endDate)
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target) WHERE target.date = date(swell.date)
+
+      WITH collect(DISTINCT(date(swell.date).week)) as list, aggregate, this, target
+      MATCH (aggregate) WHERE aggregate.week IN list
+      RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
+      """
+      columnName: "swellBussingRecords"
+    )
+  target: Int
+    @cypher(
+      statement: """
+      MATCH (this)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target)WITH target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target
+      """
+      columnName: "target"
+    )
+}
+
+extend type Council {
+  swellBussingRecords(startDate: String!, endDate: String!): [SwellStats!]!
+    @cypher(
+      statement: """
+      MATCH (this)
+      MATCH (swell:SwellDate)
+      WHERE date(swell.date) >= date($startDate) AND date(swell.date) <= date($endDate)
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target) WHERE target.date = date(swell.date)
+
+      WITH collect(DISTINCT(date(swell.date).week)) as list, aggregate, this, target
+      MATCH (aggregate) WHERE aggregate.week IN list
+      RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
+      """
+      columnName: "swellBussingRecords"
+    )
+  target: Int
+    @cypher(
+      statement: """
+      MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
+      WITH target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target
+      """
+      columnName: "target"
+    )
+}
+
+extend type Governorship {
+  swellBussingRecords(startDate: String!, endDate: String!): [SwellStats!]!
+    @cypher(
+      statement: """
+      MATCH (this)
+      MATCH (swell:SwellDate)
+      WHERE date(swell.date) >= date($startDate) AND date(swell.date) <= date($endDate)
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target) WHERE target.date = date(swell.date)
+
+      WITH collect(DISTINCT(date(swell.date).week)) as list, aggregate, this, target
+      MATCH (aggregate) WHERE aggregate.week IN list
+      RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
+      """
+      columnName: "swellBussingRecords"
+    )
+  target: Int
+    @cypher(
+      statement: """
+            MATCH (this)
+            MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)
+      WITH target ORDER BY target.date DESC LIMIT 1
+            RETURN target.target AS target
+      """
+      columnName: "target"
+    )
+}
+
+extend type Bacenta {
+  swellBussingRecords(startDate: String!, endDate: String!): [SwellStats!]!
+    @cypher(
+      statement: """
+      MATCH (this)
+      MATCH (swell:SwellDate)
+      WHERE date(swell.date) >= date($startDate) AND date(swell.date) <= date($endDate)
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_TARGET]->(target:Target) WHERE target.date = date(swell.date)
+
+      WITH collect(DISTINCT(date(swell.date).week)) as list, aggregate, this, target
+      MATCH (aggregate) WHERE aggregate.week IN list
+      RETURN {attendance: toFloat(aggregate.attendance),target: target.target, week: aggregate.week} ORDER BY aggregate.week DESC
+      """
+      columnName: "swellBussingRecords"
+    )
+  target: Int
+    @cypher(
+      statement: """
+      MATCH (this)-[:CURRENT_HISTORY]->(log:ServiceLog)-[:HAS_TARGET]->(target)WITH target ORDER BY target.date DESC LIMIT 1
+      RETURN target.target AS target
+      """
+      columnName: "target"
+    )
+}
+
+extend type Mutation {
+  UploadBacentaTargets(data: String!, swellDate: String!): String!
+  ShareTargetsByCouncil(data: String!, swellDate: String!): Boolean!
+}
