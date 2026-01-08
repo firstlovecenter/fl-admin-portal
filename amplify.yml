@@ -1,0 +1,28 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Install Doppler CLI for secrets management
+        - curl -Ls https://cli.doppler.com/install.sh | sh -s -- --no-install --no-package-manager
+        # Install root dependencies
+        - npm install
+        # Install frontend dependencies
+        - cd web-react-ts && npm install && cd ..
+    build:
+      commands:
+        # Generate build version metadata
+        - cd web-react-ts
+        - npm run generate-build-version
+        # Build the React app with TypeScript
+        - npm run build
+        - cd ..
+  artifacts:
+    # Output directory for Vite build
+    baseDirectory: web-react-ts/dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - web-react-ts/node_modules/**/*

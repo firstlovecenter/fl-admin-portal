@@ -33,26 +33,30 @@ export default defineConfig(({ command, mode }) => {
         registerType: 'autoUpdate',
         manifest: manifest,
       }),
-      // Put the Sentry vite plugin after all other plugins
-      sentryVitePlugin({
-        org: 'first-love-center',
-        project: 'fap-frontend-fix',
+      // Put the Sentry vite plugin after all other plugins (only if auth token is available)
+      ...(env.SENTRY_AUTH_TOKEN
+        ? [
+            sentryVitePlugin({
+              org: 'first-love-center',
+              project: 'fap-frontend-fix',
 
-        // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
-        // and need `project:releases` and `org:read` scopes
-        authToken: env.SENTRY_AUTH_TOKEN,
+              // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
+              // and need `project:releases` and `org:read` scopes
+              authToken: env.SENTRY_AUTH_TOKEN,
 
-        sourcemaps: {
-          // Specify the directory containing build artifacts
-          assets: './dist/**',
-        },
+              sourcemaps: {
+                // Specify the directory containing build artifacts
+                assets: './dist/**',
+              },
 
-        // Use the following option if you're on an SDK version lower than 7.47.0:
-        // include: "./dist",
+              // Use the following option if you're on an SDK version lower than 7.47.0:
+              // include: "./dist",
 
-        // Optionally uncomment the line below to override automatic release name detection
-        // release: env.RELEASE,
-      }),
+              // Optionally uncomment the line below to override automatic release name detection
+              // release: env.RELEASE,
+            }),
+          ]
+        : []),
     ],
   }
 })

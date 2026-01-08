@@ -32,6 +32,8 @@
     "start": "doppler run node scripts/start-dev.js",
     "dev": "doppler run node scripts/start-dev.js",
     "build": "node scripts/build.js",
+    "build:frontend": "cd web-react-ts && npm run build",
+    "build:api": "cd api && npm run build",
     "doppler-install": "(curl -Ls https://cli.doppler.com/install.sh || wget -qO- https://cli.doppler.com/install.sh) | sh -s -- --no-install --no-package-manager",
     "encrypt-secrets": "./doppler run node scripts/encrypt-secrets.js",
     "inject-secrets": "./doppler run node scripts/inject-secrets.js",
