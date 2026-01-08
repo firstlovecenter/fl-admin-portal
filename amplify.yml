@@ -5,10 +5,13 @@ frontend:
       commands:
         # Install Doppler CLI for secrets management
         - curl -Ls https://cli.doppler.com/install.sh | sh -s -- --no-install --no-package-manager
+        # Configure GitHub Packages authentication for @jaedag scope
+        - echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
+        - echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
         # Install root dependencies
         - npm install
-        # Install frontend dependencies
-        - cd web-react-ts && npm install && cd ..
+        # Install frontend dependencies with GitHub token
+        - cd web-react-ts && cp ../.npmrc . && npm install && cd ..
     build:
       commands:
         # Generate build version metadata

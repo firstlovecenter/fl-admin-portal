@@ -48,7 +48,17 @@ VITE_GRAPHQL_URI=https://flcadmin.netlify.app/.netlify/functions/graphql
 VITE_AUTH0_DOMAIN=<your-domain>
 VITE_AUTH0_CLIENT_ID=<your-client-id>
 VITE_AUTH0_AUDIENCE=<your-audience>
+GITHUB_TOKEN=<your-github-token>  # REQUIRED for @jaedag/admin-portal-types
 ```
+
+**⚠️ CRITICAL**: You MUST add a `GITHUB_TOKEN` or the build will fail!
+
+**How to create GitHub token:**
+1. Go to https://github.com/settings/tokens
+2. Click **Generate new token (classic)**
+3. Select scope: `read:packages`
+4. Generate and copy the token
+5. Add to Amplify as `GITHUB_TOKEN`
 
 ### 5. Update API CORS
 Add your Amplify domain to the API CORS whitelist in `api/src/index.js`

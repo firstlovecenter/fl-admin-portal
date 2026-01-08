@@ -104,6 +104,23 @@ The first build will fail until you add environment variables (next step).
 |--------------|-------------|
 | `SENTRY_AUTH_TOKEN` | Sentry auth token for source maps |
 
+#### GitHub Token (REQUIRED)
+
+| Variable Name | Description |
+|--------------|-------------|
+| `GITHUB_TOKEN` | **CRITICAL**: GitHub Personal Access Token with `read:packages` scope |
+
+**How to create GitHub token:**
+1. Go to https://github.com/settings/tokens
+2. Click **Generate new token** → **Classic**
+3. Name it: `Amplify Build - Admin Portal`
+4. Select scopes: ✅ `read:packages`
+5. Click **Generate token**
+6. Copy the token (starts with `ghp_`)
+7. Add to Amplify as `GITHUB_TOKEN`
+
+**Why needed**: The project uses `@jaedag/admin-portal-types` from GitHub Packages, which requires authentication.
+
 ### Save and Redeploy
 
 After adding variables:
@@ -242,6 +259,17 @@ Amplify uses CloudFront CDN for global distribution.
 
 ### Build Fails with "Module not found"
 **Solution**: Ensure all dependencies are in `web-react-ts/package.json`, not just root `package.json`.
+
+### Build Fails with "401 Unauthorized" for @jaedag/admin-portal-types
+**Cause**: Missing GitHub token for private package.
+
+**Solution**:
+1. Create GitHub Personal Access Token at https://github.com/settings/tokens
+2. Select scope: `read:packages`
+3. Add to Amplify environment variables as `GITHUB_TOKEN`
+4. Redeploy
+
+The `.npmrc` file automatically configures authentication during build.
 
 ### Environment Variables Not Applied
 **Solution**: Redeploy after adding variables. Variables are only injected during build.
