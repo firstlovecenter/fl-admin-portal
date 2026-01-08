@@ -3,8 +3,10 @@ frontend:
   phases:
     preBuild:
       commands:
-        # Install Doppler CLI for secrets management
-        - curl -Ls https://cli.doppler.com/install.sh | sh -s -- --no-install --no-package-manager
+        # Fetch secrets from AWS Secrets Manager
+        - export SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id fl-admin-portal/${AWS_BRANCH} --query SecretString --output text)
+        # Export all secrets as environment variables
+        - export $(echo $SECRET_JSON | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]')
         # Configure GitHub Packages authentication for @jaedag scope
         - echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
         - echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc

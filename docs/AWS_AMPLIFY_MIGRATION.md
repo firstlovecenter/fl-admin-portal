@@ -56,10 +56,98 @@ The first build will fail until you add environment variables (next step).
 
 ## 🔐 Configure Environment Variables
 
-### In AWS Amplify Console:
+### ⚠️ IMPORTANT: Using AWS Secrets Manager
 
-1. Go to **App settings** → **Environment variables**
-2. Add the following variables:
+**All environment variables are stored in AWS Secrets Manager, not directly in Amplify Console.**
+
+This provides:
+- ✅ Centralized secret management
+- ✅ No need to manually configure 20+ variables
+- ✅ Automatic secret rotation
+- ✅ Better security and audit logging
+
+### Step 1: Create Secret in AWS Secrets Manager
+
+1. Go to **AWS Secrets Manager Console**: https://console.aws.amazon.com/secretsmanager
+2. Click **Store a new secret**
+3. Select **Other type of secret**
+4. Select **Plaintext** tab
+5. Paste this JSON (update with your actual values):
+
+```json
+{
+  "VITE_GRAPHQL_URI": "https://flcadmin.netlify.app/.netlify/functions/graphql",
+  "VITE_AUTH0_DOMAIN": "your-domain.auth0.com",
+  "VITE_AUTH0_CLIENT_ID": "your_client_id",
+  "VITE_AUTH0_AUDIENCE": "your_audience",
+  "VITE_CLOUDINARY_MEMBERS": "cloudinary_members_preset",
+  "VITE_CLOUDINARY_TREASURERS": "cloudinary_treasurers_preset",
+  "VITE_CLOUDINARY_SERVICES": "cloudinary_services_preset",
+  "VITE_CLOUDINARY_BUSSING": "cloudinary_bussing_preset",
+  "VITE_CLOUDINARY_BANKING": "cloudinary_banking_preset",
+  "VITE_CLOUDINARY_BUS_MOBILISATION": "cloudinary_bus_mobilisation_preset",
+  "VITE_WHATSAPP_REG": "https://wa.me/your_link",
+  "VITE_GOOGLE_MAPS_API_KEY": "your_google_maps_key",
+  "VITE_SYNAGO_GRAPHQL_URI": "https://synago-endpoint",
+  "AWS_REGION": "us-east-1",
+  "AWS_ACCESS_KEY_ID": "AKIAXXXXXXXXXXXXXXXX",
+  "AWS_SECRET_ACCESS_KEY": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "AWS_S3_BUCKET_NAME": "your-bucket",
+  "SENTRY_AUTH_TOKEN": "your_sentry_token",
+  "GITHUB_TOKEN": "ghp_xxxxxxxxxxxxxxxxxxxx"
+}
+```
+
+6. Click **Next**
+7. **Secret name**: `fl-admin-portal/main` (or `fl-admin-portal/${YOUR_BRANCH_NAME}`)
+8. Click **Next** → **Next** → **Store**
+
+### Step 2: Grant Amplify Access to Secrets
+
+1. Go to **AWS Amplify Console** → Your App
+2. Go to **App settings** → **General**
+3. Note the **Service role** name (e.g., `amplifyconsole-backend-role`)
+4. Go to **IAM Console** → **Roles** → Find the role
+5. Click **Add permissions** → **Create inline policy**
+6. Select **JSON** tab and paste:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["secretsmanager:GetSecretValue"],
+      "Resource": "arn:aws:secretsmanager:*:*:secret:fl-admin-portal/*"
+    }
+  ]
+}
+```
+
+7. Name it: `SecretsManagerAccess`
+8. Click **Create policy**
+
+### Step 3: Verify Configuration
+
+The `amplify.yml` is already configured to automatically fetch secrets during build:
+
+```yaml
+preBuild:
+  commands:
+    # Fetch secrets from AWS Secrets Manager
+    - export SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id fl-admin-portal/${AWS_BRANCH} --query SecretString --output text)
+    # Export all as environment variables
+    - export $(echo $SECRET_JSON | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]')
+```
+
+**No manual configuration needed in Amplify Console!**
+
+### Alternative: Environment Variables Table (Old Method - Not Used)
+
+<details>
+<summary>📖 Click to see the old manual method (for reference only)</summary>
+
+In Amplify Console → **App settings** → **Environment variables**, add the following variables:
 
 #### Required Frontend Variables
 
@@ -70,66 +158,26 @@ The first build will fail until you add environment variables (next step).
 | `VITE_AUTH0_CLIENT_ID` | Auth0 client ID | `your_client_id` |
 | `VITE_AUTH0_AUDIENCE` | Auth0 API audience | `https://flcadmin.netlify.app/graphql` |
 
-#### Cloudinary Presets
+(See full list in `web-react-ts/.env.example`)
 
-| Variable Name | Description |
-|--------------|-------------|
-| `VITE_CLOUDINARY_MEMBERS` | Members upload preset |
-| `VITE_CLOUDINARY_TREASURERS` | Treasurers upload preset |
-| `VITE_CLOUDINARY_SERVICES` | Services upload preset |
-| `VITE_CLOUDINARY_BUSSING` | Bussing upload preset |
-| `VITE_CLOUDINARY_BANKING` | Banking upload preset |
-| `VITE_CLOUDINARY_BUS_MOBILISATION` | Bus mobilisation preset |
+**Note**: This method is **NOT USED** when secrets are in AWS Secrets Manager.
 
-#### Additional Services
+</details>
 
-| Variable Name | Description |
-|--------------|-------------|
-| `VITE_WHATSAPP_REG` | WhatsApp registration link |
-| `VITE_GOOGLE_MAPS_API_KEY` | Google Maps API key |
-| `VITE_SYNAGO_GRAPHQL_URI` | Synago GraphQL endpoint |
+**📚 Full Secrets Manager Guide**: See [docs/AWS_SECRETS_MANAGER.md](AWS_SECRETS_MANAGER.md)
 
-#### AWS S3 Configuration (Optional)
+### Redeploy
 
-| Variable Name | Description |
-|--------------|-------------|
-| `AWS_REGION` | AWS region (e.g., `us-east-1`) |
-| `AWS_ACCESS_KEY_ID` | AWS access key |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key |
-| `AWS_S3_BUCKET_NAME` | S3 bucket name |
-
-#### Sentry (Optional)
-
-| Variable Name | Description |
-|--------------|-------------|
-| `SENTRY_AUTH_TOKEN` | Sentry auth token for source maps |
-
-#### GitHub Token (REQUIRED)
-
-| Variable Name | Description |
-|--------------|-------------|
-| `GITHUB_TOKEN` | **CRITICAL**: GitHub Personal Access Token with `read:packages` scope |
-
-**How to create GitHub token:**
-1. Go to https://github.com/settings/tokens
-2. Click **Generate new token** → **Classic**
-3. Name it: `Amplify Build - Admin Portal`
-4. Select scopes: ✅ `read:packages`
-5. Click **Generate token**
-6. Copy the token (starts with `ghp_`)
-7. Add to Amplify as `GITHUB_TOKEN`
-
-**Why needed**: The project uses `@jaedag/admin-portal-types` from GitHub Packages, which requires authentication.
-
-### Save and Redeploy
-
-After adding variables:
-1. Click **Save**
-2. Go to **App** → Click **Run build**
+After setting up secrets:
+1. Go to your Amplify app
+2. Click **Run build**
+3. Build will automatically fetch secrets from Secrets Manager ✅
 
 ---
 
 ## 🔄 Configure API CORS
+
+Update your Netlify API to allow requests from Amplify:
 
 Update your Netlify API to allow requests from Amplify:
 
