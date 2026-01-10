@@ -3,16 +3,12 @@ frontend:
   phases:
     preBuild:
       commands:
-        # Install jq for JSON processing
-        - yum install -y jq
-        # Fetch secrets from AWS Secrets Manager
-        - export SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id fl-admin-portal/${AWS_BRANCH} --query SecretString --output text)
-        # Export all secrets as environment variables
-        - export $(echo $SECRET_JSON | jq -r 'to_entries | map("\(.key)=\(.value)") | .[]')
-        # Create .env file for Vite with all VITE_ prefixed variables
-        - echo "$SECRET_JSON" | jq -r 'to_entries | map(select(.key | startswith("VITE_"))) | map("\(.key)=\(.value)") | .[]' > web-react-ts/.env
-        # Also export SENTRY_AUTH_TOKEN for Vite plugin
-        - echo "$SECRET_JSON" | jq -r 'to_entries | map(select(.key == "SENTRY_AUTH_TOKEN")) | map("\(.key)=\(.value)") | .[]' >> web-react-ts/.env
+        # Fetch secrets from AWS Secrets Manager and create .env file for Vite
+        - aws secretsmanager get-secret-value --secret-id fl-admin-portal/${AWS_BRANCH} --region eu-west-2 --query SecretString --output text > /tmp/secrets.json
+        # Extract VITE_ variables using Python (pre-installed in Amplify)
+        - python3 -c "import json; secrets = json.load(open('/tmp/secrets.json')); vite_vars = {k:v for k,v in secrets.items() if k.startswith('VITE_')}; sentry = {'SENTRY_AUTH_TOKEN':secrets.get('SENTRY_AUTH_TOKEN','')} if 'SENTRY_AUTH_TOKEN' in secrets else {}; all_vars = {**vite_vars, **sentry}; open('web-react-ts/.env','w').write('\n'.join([f'{k}={v}' for k,v in all_vars.items()]))"
+        # Export GITHUB_TOKEN for npm
+        - export GITHUB_TOKEN=$(python3 -c "import json; print(json.load(open('/tmp/secrets.json'))['GITHUB_TOKEN'])")
         # Configure GitHub Packages authentication for @jaedag scope
         - echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
         - echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
