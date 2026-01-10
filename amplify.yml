@@ -3,6 +3,8 @@ frontend:
   phases:
     preBuild:
       commands:
+        # Install jq for JSON processing
+        - yum install -y jq
         # Fetch secrets from AWS Secrets Manager
         - export SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id fl-admin-portal/${AWS_BRANCH} --query SecretString --output text)
         # Export all secrets as environment variables
