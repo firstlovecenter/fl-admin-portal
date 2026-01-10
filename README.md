@@ -1,6 +1,14 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/3fc1e26f-bccb-4196-ba57-705d3b09bb82/deploy-status)](https://app.netlify.com/sites/flcadmin/deploys)
 
+## Deployment
 
+- **Frontend**: AWS Amplify (eu-west-2) - Enables branch preview deployments
+- **GraphQL API**: Netlify Functions - Backend remains on Netlify
+- **Secrets**: AWS Secrets Manager (eu-west-2) - Centralized secret management
+
+See [AWS Amplify Migration Guide](docs/AWS_AMPLIFY_MIGRATION.md) for deployment details.
+
+---
 
 This project was built using [GRANDstack](https://grandstack.io) (GraphQL, React, Apollo, Neo4j Database) application.
 <br/><br/>
