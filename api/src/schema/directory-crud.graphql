@@ -20,6 +20,22 @@ extend type Mutation {
     governorshipId: ID!
   ): Member
 
+  # Multi-Admin Management (Following arrivals counter pattern)
+  AddGovernorshipAdmin(adminId: ID!, governorshipId: ID!): Member!
+  RemoveGovernorshipAdminOnly(adminId: ID!, governorshipId: ID!): Member
+  AddCouncilAdmin(adminId: ID!, councilId: ID!): Member!
+  RemoveCouncilAdminOnly(adminId: ID!, councilId: ID!): Member
+  AddStreamAdmin(adminId: ID!, streamId: ID!): Member!
+  RemoveStreamAdminOnly(adminId: ID!, streamId: ID!): Member
+  AddCampusAdmin(adminId: ID!, campusId: ID!): Member!
+  RemoveCampusAdminOnly(adminId: ID!, campusId: ID!): Member
+  AddOversightAdmin(adminId: ID!, oversightId: ID!): Member!
+  RemoveOversightAdminOnly(adminId: ID!, oversightId: ID!): Member
+  AddDenominationAdmin(adminId: ID!, denominationId: ID!): Member!
+  RemoveDenominationAdminOnly(adminId: ID!, denominationId: ID!): Member
+  AddBacentaAdmin(adminId: ID!, bacentaId: ID!): Member!
+  RemoveBacentaAdminOnly(adminId: ID!, bacentaId: ID!): Member
+
   #Pastoral Roles
   MakeFellowshipLeader(
     leaderId: ID!

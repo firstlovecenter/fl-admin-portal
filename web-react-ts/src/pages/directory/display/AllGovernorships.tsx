@@ -33,16 +33,18 @@ const DisplayAllGovernorships = () => {
             >
               <h2 className="text-white">{`${council?.name} Governorships`}</h2>
             </Link>
-            {council?.admin ? (
+            {council?.admins && council.admins.length > 0 ? (
               <Link
                 className="pb-1 text-white text-small d-block"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(council?.admin)
+                  clickCard(council?.admins[0])
                 }}
               >
-                <span className="text-muted">Admin: </span>
-                {`${council?.admin?.firstName} ${council?.admin?.lastName}`}
+                <span className="text-muted">Admin{council.admins.length > 1 ? 's' : ''}: </span>
+                {council.admins.length === 1
+                  ? `${council.admins[0]?.firstName} ${council.admins[0]?.lastName}`
+                  : `${council.admins[0]?.firstName} ${council.admins[0]?.lastName} (+${council.admins.length - 1} more)`}
               </Link>
             ) : null}
           </Col>

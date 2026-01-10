@@ -69,7 +69,7 @@ const DetailsCouncil = () => {
         leaderTitle={'Council Leader'}
         churchId={councilId}
         leader={council?.leader}
-        admin={council?.admin}
+        admins={council?.admins}
         churchType={council?.__typename}
         subChurch="Governorship"
         details={details}

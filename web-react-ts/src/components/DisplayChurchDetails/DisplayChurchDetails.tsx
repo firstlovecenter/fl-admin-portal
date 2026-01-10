@@ -12,11 +12,18 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useMutation } from '@apollo/client'
 import {
-  MAKE_CAMPUS_ADMIN,
-  MAKE_GOVERNORSHIP_ADMIN,
-  MAKE_COUNCIL_ADMIN,
-  MAKE_OVERSIGHT_ADMIN,
-  MAKE_STREAM_ADMIN,
+  ADD_GOVERNORSHIP_ADMIN,
+  REMOVE_GOVERNORSHIP_ADMIN,
+  ADD_COUNCIL_ADMIN,
+  REMOVE_COUNCIL_ADMIN,
+  ADD_STREAM_ADMIN,
+  REMOVE_STREAM_ADMIN,
+  ADD_CAMPUS_ADMIN,
+  REMOVE_CAMPUS_ADMIN,
+  ADD_OVERSIGHT_ADMIN,
+  REMOVE_OVERSIGHT_ADMIN,
+  ADD_BACENTA_ADMIN,
+  REMOVE_BACENTA_ADMIN,
 } from './AdminMutations'
 import {
   alertMsg,
@@ -27,7 +34,7 @@ import {
 import Breadcrumb from './Breadcrumb'
 import { Button, Col, Container, Modal, Row } from 'react-bootstrap'
 import PlaceholderCustom from 'components/Placeholder'
-import { Geo, PencilSquare } from 'react-bootstrap-icons'
+import { Geo } from 'react-bootstrap-icons'
 import ViewAll from 'components/buttons/ViewAll'
 import { permitAdmin } from 'permission-utils'
 import useSetUserChurch from 'hooks/useSetUserChurch'
@@ -57,7 +64,7 @@ type DisplayChurchDetailsProps = {
   name: string
   leaderTitle: string
   leader: MemberWithoutBioData
-  admin?: MemberWithoutBioData
+  admins?: MemberWithoutBioData[]
   deputyLeader?: MemberWithoutBioData
   churchId: string
   churchType: ChurchLevel
@@ -83,7 +90,6 @@ type DisplayChurchDetailsProps = {
 }
 
 type FormOptions = {
-  adminName: string
   adminSelect: string
 }
 
@@ -132,18 +138,22 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   const htmlElement = document.querySelector('html')
   const currentTheme = htmlElement?.getAttribute('data-bs-theme') || 'dark'
 
-  //Change Admin Initialised
-  const [MakeGovernorshipAdmin] = useMutation(MAKE_GOVERNORSHIP_ADMIN)
-  const [MakeCouncilAdmin] = useMutation(MAKE_COUNCIL_ADMIN)
-  const [MakeStreamAdmin] = useMutation(MAKE_STREAM_ADMIN)
-  const [MakeCampusAdmin] = useMutation(MAKE_CAMPUS_ADMIN)
-  const [MakeOversightAdmin] = useMutation(MAKE_OVERSIGHT_ADMIN)
+  // Multi-Admin Management
+  const [AddGovernorshipAdmin] = useMutation(ADD_GOVERNORSHIP_ADMIN)
+  const [RemoveGovernorshipAdmin] = useMutation(REMOVE_GOVERNORSHIP_ADMIN)
+  const [AddCouncilAdmin] = useMutation(ADD_COUNCIL_ADMIN)
+  const [RemoveCouncilAdmin] = useMutation(REMOVE_COUNCIL_ADMIN)
+  const [AddStreamAdmin] = useMutation(ADD_STREAM_ADMIN)
+  const [RemoveStreamAdmin] = useMutation(REMOVE_STREAM_ADMIN)
+  const [AddCampusAdmin] = useMutation(ADD_CAMPUS_ADMIN)
+  const [RemoveCampusAdmin] = useMutation(REMOVE_CAMPUS_ADMIN)
+  const [AddOversightAdmin] = useMutation(ADD_OVERSIGHT_ADMIN)
+  const [RemoveOversightAdmin] = useMutation(REMOVE_OVERSIGHT_ADMIN)
+  const [AddBacentaAdmin] = useMutation(ADD_BACENTA_ADMIN)
+  const [RemoveBacentaAdmin] = useMutation(REMOVE_BACENTA_ADMIN)
 
   const initialValues: FormOptions = {
-    adminName: props.admin
-      ? `${props.admin?.firstName} ${props.admin?.lastName}`
-      : '',
-    adminSelect: props.admin?.id ?? '',
+    adminSelect: '',
   }
   const validationSchema = Yup.object({
     adminSelect: Yup.string().required(
@@ -151,79 +161,81 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     ),
   })
 
-  const onSubmit = async (
+  const addAdmin = async (
     values: FormOptions,
     onSubmitProps: FormikHelpers<FormOptions>
   ) => {
-    if (initialValues.adminSelect === values.adminSelect) {
+    try {
+      const variables = {
+        adminId: values.adminSelect,
+        ...(props.churchType === 'Oversight' && { oversightId: props.churchId }),
+        ...(props.churchType === 'Campus' && { campusId }),
+        ...(props.churchType === 'Stream' && { streamId }),
+        ...(props.churchType === 'Council' && { councilId }),
+        ...(props.churchType === 'Governorship' && { governorshipId }),
+        ...(props.churchType === 'Bacenta' && { bacentaId: props.churchId }),
+      }
+
+      if (props.churchType === 'Oversight') {
+        await AddOversightAdmin({ variables })
+      } else if (props.churchType === 'Campus') {
+        await AddCampusAdmin({ variables })
+      } else if (props.churchType === 'Stream') {
+        await AddStreamAdmin({ variables })
+      } else if (props.churchType === 'Council') {
+        await AddCouncilAdmin({ variables })
+      } else if (props.churchType === 'Governorship') {
+        await AddGovernorshipAdmin({ variables })
+      } else if (props.churchType === 'Bacenta') {
+        await AddBacentaAdmin({ variables })
+      }
+
+      alertMsg(`Admin added successfully to ${props.churchType}`)
+      onSubmitProps.resetForm()
+      handleClose()
+      window.location.reload() // Refresh to show new admin
+    } catch (e) {
+      throwToSentry('Error adding admin', e)
+      alertMsg('Failed to add admin. Please try again.')
+    }
+  }
+
+  const removeAdmin = async (adminId: string) => {
+    if (!window.confirm('Are you sure you want to remove this admin?')) {
       return
     }
 
     try {
+      const variables = {
+        adminId,
+        ...(props.churchType === 'Oversight' && { oversightId: props.churchId }),
+        ...(props.churchType === 'Campus' && { campusId }),
+        ...(props.churchType === 'Stream' && { streamId }),
+        ...(props.churchType === 'Council' && { councilId }),
+        ...(props.churchType === 'Governorship' && { governorshipId }),
+        ...(props.churchType === 'Bacenta' && { bacentaId: props.churchId }),
+      }
+
       if (props.churchType === 'Oversight') {
-        await MakeOversightAdmin({
-          variables: {
-            oversightId: props.churchId,
-            newAdminId: values.adminSelect,
-            oldAdminId: initialValues.adminSelect || 'no-old-admin',
-          },
-        })
-        alertMsg('Oversight Admin has been changed successfully')
+        await RemoveOversightAdmin({ variables })
+      } else if (props.churchType === 'Campus') {
+        await RemoveCampusAdmin({ variables })
+      } else if (props.churchType === 'Stream') {
+        await RemoveStreamAdmin({ variables })
+      } else if (props.churchType === 'Council') {
+        await RemoveCouncilAdmin({ variables })
+      } else if (props.churchType === 'Governorship') {
+        await RemoveGovernorshipAdmin({ variables })
+      } else if (props.churchType === 'Bacenta') {
+        await RemoveBacentaAdmin({ variables })
       }
 
-      if (props.churchType === 'Campus') {
-        await MakeCampusAdmin({
-          variables: {
-            campusId: campusId,
-            newAdminId: values.adminSelect,
-            oldAdminId: initialValues.adminSelect || 'no-old-admin',
-          },
-        })
-
-        alertMsg('Campus Admin has been changed successfully')
-      }
-
-      if (props.churchType === 'Stream') {
-        await MakeStreamAdmin({
-          variables: {
-            streamId: streamId,
-            newAdminId: values.adminSelect,
-            oldAdminId: initialValues.adminSelect || 'no-old-admin',
-          },
-        })
-
-        alertMsg('Stream Admin has been changed successfully')
-      }
-
-      if (props.churchType === 'Council') {
-        await MakeCouncilAdmin({
-          variables: {
-            councilId: councilId,
-            newAdminId: values.adminSelect,
-            oldAdminId: initialValues.adminSelect || 'no-old-admin',
-          },
-        })
-
-        alertMsg('Council Admin has been changed successfully')
-      }
-
-      if (props.churchType === 'Governorship') {
-        await MakeGovernorshipAdmin({
-          variables: {
-            governorshipId: governorshipId,
-            newAdminId: values.adminSelect,
-            oldAdminId: initialValues.adminSelect || 'no-old-admin',
-          },
-        })
-        alertMsg('Governorship Admin has been changed successfully')
-      }
+      alertMsg('Admin removed successfully')
+      window.location.reload() // Refresh to update admin list
     } catch (e) {
-      throwToSentry('', e)
-    } finally {
-      handleClose()
+      throwToSentry('Error removing admin', e)
+      alertMsg('Failed to remove admin. Please try again.')
     }
-
-    onSubmitProps.resetForm()
   }
   //End of Admin Change
 
@@ -247,24 +259,41 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
 
           {needsAdmin && (
             <RoleView roles={roles}>
-              <Row className="g-0 d-flex align-items-center">
-                <Col className="col-auto">
-                  {!!props.admin && (
-                    <MemberAvatarWithName
-                      member={props.admin}
-                      onClick={() => {
-                        clickCard(props.admin)
-                        navigate('/member/displaydetails')
-                      }}
-                    />
-                  )}
-                </Col>
-                <Col>
-                  <Button className="p-1 small ms-2" onClick={handleShow}>
-                    <PencilSquare /> Change Admin
-                  </Button>
-                </Col>
-              </Row>
+              <div className="mb-3">
+                <h6>Administrators ({props.admins?.length || 0})</h6>
+                {props.admins && props.admins.length > 0 ? (
+                  <div className="d-flex flex-column gap-2">
+                    {props.admins.map((admin) => (
+                      <Row key={admin.id} className="g-0 d-flex align-items-center">
+                        <Col className="col-auto">
+                          <MemberAvatarWithName
+                            member={admin}
+                            onClick={() => {
+                              clickCard(admin)
+                              navigate('/member/displaydetails')
+                            }}
+                          />
+                        </Col>
+                        <Col>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            className="ms-2"
+                            onClick={() => removeAdmin(admin.id)}
+                          >
+                            Remove
+                          </Button>
+                        </Col>
+                      </Row>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted">No admins assigned</p>
+                )}
+                <Button className="btn-secondary mt-2" size="sm" onClick={handleShow}>
+                  + Add Admin
+                </Button>
+              </div>
             </RoleView>
           )}
         </Container>
@@ -272,20 +301,19 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={onSubmit}
+            onSubmit={addAdmin}
           >
             {(formik) => (
               <Form>
                 <Modal.Header closeButton>
-                  Change {`${props.churchType}`} Admin
+                  Add Admin to {`${props.churchType}`}
                 </Modal.Header>
                 <Modal.Body>
                   <Row className="form-row">
                     <Col>
                       <SearchMember
                         name="adminSelect"
-                        initialValue={initialValues?.adminName}
-                        placeholder="Select an Admin"
+                        placeholder="Search for a member to add as admin"
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="Member Search"
                         error={formik.errors.adminSelect}
@@ -295,7 +323,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 </Modal.Body>
                 <Modal.Footer>
                   <SubmitButton formik={formik} />
-                  <Button variant="primary" onClick={handleClose}>
+                  <Button variant="secondary" onClick={handleClose}>
                     Close
                   </Button>
                 </Modal.Footer>
@@ -318,13 +346,16 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 <MemberAvatarWithName member={props.deputyLeader} size={32} />
               </div>
             )}
-            {props.admin && (
+            {props.admins && props.admins.length > 0 && (
               <div
                 className="d-flex flex-row align-items-center gap-2 mb-1"
                 style={{ fontSize: '0.95em' }}
               >
                 <span className="fw-semibold text-muted">Bacenta Admin</span>
-                <MemberAvatarWithName member={props.admin} size={32} />
+                <MemberAvatarWithName member={props.admins[0]} size={32} />
+                {props.admins.length > 1 && (
+                  <span className="text-muted small">(+{props.admins.length - 1} more)</span>
+                )}
               </div>
             )}
           </div>

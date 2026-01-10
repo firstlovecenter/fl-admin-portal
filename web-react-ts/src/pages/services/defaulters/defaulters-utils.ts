@@ -1,10 +1,14 @@
 export const messageForAdminsOfDefaulters = (church: {
-  admin?: { firstName: string; lastName: string }
+  admins?: { firstName: string; lastName: string }[]
   formDefaultersThisWeekCount: number
   bankingDefaultersThisWeekCount: number
 }) => {
+  const adminNames = church.admins && church.admins.length > 0
+    ? church.admins.map(a => a.firstName).join(' and ')
+    : 'Admin'
+  
   return encodeURI(
-    `Hi ${church.admin?.firstName || ''}\nLooks like you have\n\n${
+    `Hi ${adminNames}\nLooks like you have\n\n${
       church.formDefaultersThisWeekCount
     } form defaulters this week and\n${
       church.bankingDefaultersThisWeekCount

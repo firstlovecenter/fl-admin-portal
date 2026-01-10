@@ -329,7 +329,7 @@ export const DISPLAY_BACENTA = gql`
         nameWithTitle
         pictureUrl
       }
-      admin {
+      admins {
         id
         firstName
         lastName
@@ -337,6 +337,7 @@ export const DISPLAY_BACENTA = gql`
         nameWithTitle
         pictureUrl
       }
+      adminCount
       deputyLeader {
         id
         firstName

@@ -155,7 +155,12 @@ type CreativeArts {
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   campus: Campus @relationship(type: "HAS_MINISTRY", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
@@ -261,7 +266,12 @@ type Ministry {
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   stream: Stream @relationship(type: "HAS_MINISTRY", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(

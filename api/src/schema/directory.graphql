@@ -473,7 +473,12 @@ type Denomination implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -599,7 +604,12 @@ type Oversight implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -721,7 +731,12 @@ type Campus implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -861,7 +876,12 @@ type Stream implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -973,7 +993,12 @@ type Council implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -1077,7 +1102,12 @@ type Governorship implements Church {
   leader: Member @relationship(type: "LEADS", direction: IN)
   council: Council @relationship(type: "HAS", direction: IN)
 
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -1162,7 +1192,12 @@ type Bacenta implements Church {
       columnName: "pastorCount"
     )
   leader: Member @relationship(type: "LEADS", direction: IN)
-  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  adminCount: Int
+    @cypher(
+      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
+      columnName: "adminCount"
+    )
   deputyLeader: Member @relationship(type: "DEPUTY_LEADS", direction: IN)
 
   governorship: Governorship @relationship(type: "HAS", direction: IN)

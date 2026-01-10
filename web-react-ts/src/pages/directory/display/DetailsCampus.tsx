@@ -93,7 +93,7 @@ const DetailsCampus = () => {
         churchId={campusId}
         leader={gathering?.leader}
         churchType={gathering?.__typename}
-        admin={gathering?.admin}
+        admins={gathering?.admins}
         subChurch="Stream"
         details={details}
         editlink="/campus/editcampus"

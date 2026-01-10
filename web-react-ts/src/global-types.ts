@@ -69,7 +69,8 @@ export interface Church {
   vacationStatus?: VacationStatusOptions
   stream_name?: StreamOptions
   leader: MemberWithoutBioData
-  admin?: MemberWithoutBioData
+  admins?: MemberWithoutBioData[]
+  adminCount?: number
   hubs?: Church[]
   lowerChurch?: Church[]
   memberCount: number

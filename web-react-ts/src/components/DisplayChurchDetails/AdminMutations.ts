@@ -166,3 +166,150 @@ export const MAKE_OVERSIGHT_ADMIN = gql`
     }
   }
 `
+
+// Multi-Admin Management Mutations (Add/Remove without replacement)
+export const ADD_GOVERNORSHIP_ADMIN = gql`
+  mutation AddGovernorshipAdmin($governorshipId: ID!, $adminId: ID!) {
+    AddGovernorshipAdmin(governorshipId: $governorshipId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const REMOVE_GOVERNORSHIP_ADMIN = gql`
+  mutation RemoveGovernorshipAdmin($governorshipId: ID!, $adminId: ID!) {
+    RemoveGovernorshipAdminOnly(
+      governorshipId: $governorshipId
+      adminId: $adminId
+    ) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const ADD_COUNCIL_ADMIN = gql`
+  mutation AddCouncilAdmin($councilId: ID!, $adminId: ID!) {
+    AddCouncilAdmin(councilId: $councilId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const REMOVE_COUNCIL_ADMIN = gql`
+  mutation RemoveCouncilAdmin($councilId: ID!, $adminId: ID!) {
+    RemoveCouncilAdminOnly(councilId: $councilId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const ADD_STREAM_ADMIN = gql`
+  mutation AddStreamAdmin($streamId: ID!, $adminId: ID!) {
+    AddStreamAdmin(streamId: $streamId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const REMOVE_STREAM_ADMIN = gql`
+  mutation RemoveStreamAdmin($streamId: ID!, $adminId: ID!) {
+    RemoveStreamAdminOnly(streamId: $streamId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const ADD_CAMPUS_ADMIN = gql`
+  mutation AddCampusAdmin($campusId: ID!, $adminId: ID!) {
+    AddCampusAdmin(campusId: $campusId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const REMOVE_CAMPUS_ADMIN = gql`
+  mutation RemoveCampusAdmin($campusId: ID!, $adminId: ID!) {
+    RemoveCampusAdminOnly(campusId: $campusId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const ADD_OVERSIGHT_ADMIN = gql`
+  mutation AddOversightAdmin($oversightId: ID!, $adminId: ID!) {
+    AddOversightAdmin(oversightId: $oversightId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const REMOVE_OVERSIGHT_ADMIN = gql`
+  mutation RemoveOversightAdmin($oversightId: ID!, $adminId: ID!) {
+    RemoveOversightAdminOnly(oversightId: $oversightId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const ADD_DENOMINATION_ADMIN = gql`
+  mutation AddDenominationAdmin($denominationId: ID!, $adminId: ID!) {
+    AddDenominationAdmin(denominationId: $denominationId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const REMOVE_DENOMINATION_ADMIN = gql`
+  mutation RemoveDenominationAdmin($denominationId: ID!, $adminId: ID!) {
+    RemoveDenominationAdminOnly(
+      denominationId: $denominationId
+      adminId: $adminId
+    ) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const ADD_BACENTA_ADMIN = gql`
+  mutation AddBacentaAdmin($bacentaId: ID!, $adminId: ID!) {
+    AddBacentaAdmin(bacentaId: $bacentaId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`
+
+export const REMOVE_BACENTA_ADMIN = gql`
+  mutation RemoveBacentaAdmin($bacentaId: ID!, $adminId: ID!) {
+    RemoveBacentaAdminOnly(bacentaId: $bacentaId, adminId: $adminId) {
+      id
+      firstName
+      lastName
+    }
+  }
+`

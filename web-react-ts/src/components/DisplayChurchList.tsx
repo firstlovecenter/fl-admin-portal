@@ -54,8 +54,8 @@ const DisplayChurchList = (props: {
                               ? `${church.leader.firstName} ${church.leader.lastName}`
                               : null}
                             <span className="text-white">
-                              {church.admin &&
-                                `| Admin: ${church.admin.firstName} ${church.admin.lastName}`}
+                              {church.admins && church.admins.length > 0 &&
+                                `| ${church.admins.length} Admin${church.admins.length > 1 ? 's' : ''}: ${church.admins.map(admin => admin.firstName).join(', ')}`}
                             </span>
                           </Row>
                           <Row className="text-muted d-block">

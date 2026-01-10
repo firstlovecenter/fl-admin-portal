@@ -100,12 +100,13 @@ export const GET_COUNCIL_GOVERNORSHIPS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         stream_name
       }
+      adminCount
       governorships {
         name
         id
@@ -120,12 +121,13 @@ export const GET_COUNCIL_GOVERNORSHIPS = gql`
           stream_name
           pictureUrl
         }
-        admin {
+        admins {
           id
           firstName
           lastName
           stream_name
         }
+        adminCount
 
         bacentas {
           id
@@ -150,13 +152,14 @@ export const GET_CAMPUS_GOVERNORSHIPS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         stream_name
         fullName
       }
+      adminCount
       governorships {
         name
         id
@@ -171,12 +174,13 @@ export const GET_CAMPUS_GOVERNORSHIPS = gql`
           pictureUrl
           stream_name
         }
-        admin {
+        admins {
           id
           firstName
           lastName
           stream_name
         }
+        adminCount
       }
     }
   }
@@ -194,13 +198,14 @@ export const GET_STREAM_COUNCILS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
         stream_name
       }
+      adminCount
       councils {
         name
         id
@@ -218,12 +223,13 @@ export const GET_STREAM_COUNCILS = gql`
           stream_name
           pictureUrl
         }
-        admin {
+        admins {
           id
           firstName
           lastName
           stream_name
         }
+        adminCount
       }
     }
   }
@@ -245,13 +251,14 @@ export const GET_CAMPUS_STREAMS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
         stream_name
       }
+      adminCount
       streams {
         name
         id
@@ -267,13 +274,14 @@ export const GET_CAMPUS_STREAMS = gql`
           stream_name
           pictureUrl
         }
-        admin {
+        admins {
           id
           firstName
           lastName
           stream_name
           fullName
         }
+        adminCount
       }
     }
   }
@@ -291,12 +299,13 @@ export const GET_DENOMINATION_OVERSIGHTS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
       }
+      adminCount
       oversights {
         name
         id
@@ -310,12 +319,13 @@ export const GET_DENOMINATION_OVERSIGHTS = gql`
           lastName
           pictureUrl
         }
-        admin {
+        admins {
           id
           firstName
           lastName
           fullName
         }
+        adminCount
       }
     }
   }
@@ -333,12 +343,13 @@ export const GET_OVERSIGHT_CAMPUSES = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
       }
+      adminCount
       campuses {
         name
         id
@@ -354,12 +365,13 @@ export const GET_OVERSIGHT_CAMPUSES = gql`
           lastName
           pictureUrl
         }
-        admin {
+        admins {
           id
           firstName
           lastName
           fullName
         }
+        adminCount
       }
     }
   }
@@ -377,13 +389,14 @@ export const GET_STREAM_GOVERNORSHIPS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
         stream_name
       }
+      adminCount
       governorships {
         name
         id
@@ -552,13 +565,14 @@ export const GET_STREAM_MINISTRIES = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
         stream_name
       }
+      adminCount
       ministries {
         name
         id
@@ -589,13 +603,14 @@ export const GET_STREAM_HUBS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
         stream_name
       }
+      adminCount
       hubs {
         name
         id
@@ -625,13 +640,14 @@ export const GET_STREAM_SONTAS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
         stream_name
       }
+      adminCount
     }
   }
 `
@@ -793,13 +809,14 @@ export const GET_CAMPUS_CREATIVEARTS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
         stream_name
       }
+      adminCount
       creativeArtsCount
       creativeArts {
         name
@@ -832,13 +849,14 @@ export const GET_COUNCIL_HUBCOUNCILS = gql`
         fullName
       }
       memberCount
-      admin {
+      admins {
         id
         firstName
         lastName
         fullName
         stream_name
       }
+      adminCount
       hubCouncils {
         name
         id

@@ -119,7 +119,7 @@ const DetailsBacenta = () => {
         name={bacenta?.name}
         leaderTitle="Bacenta Leader"
         leader={bacenta?.leader}
-        admin={bacenta?.admin}
+        admins={bacenta?.admins}
         deputyLeader={bacenta?.deputyLeader}
         location={bacenta?.location}
         last3Weeks={history && check(history)}

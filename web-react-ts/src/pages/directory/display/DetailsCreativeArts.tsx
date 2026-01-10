@@ -68,7 +68,7 @@ const DetailsCreativeArts = () => {
         editPermitted={['adminCampus']}
         churchId={creativeArtsId}
         leader={creativeArts?.leader}
-        admin={creativeArts?.admin}
+        admins={creativeArts?.admins}
         churchType="CreativeArts"
         subLevel="Ministry"
         editlink="/creativearts/editcreativearts"

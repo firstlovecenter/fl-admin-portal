@@ -47,7 +47,7 @@ const DetailsGovernorship = () => {
         leaderTitle={'Governor'}
         leader={data?.governorships[0]?.leader}
         churchId={governorshipId}
-        admin={data?.governorships[0]?.admin}
+        admins={data?.governorships[0]?.admins}
         churchType={`Governorship`}
         subChurch={`Bacenta`}
         buttons={data?.governorships[0]?.bacentas}
