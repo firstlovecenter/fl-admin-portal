@@ -27,6 +27,7 @@ yarn-error.log*
 credentials.json
 combined-schema.*
 .vscode/mcp.json
+.npmrc
 
 # Lambda deployment files
 lambda-package/
