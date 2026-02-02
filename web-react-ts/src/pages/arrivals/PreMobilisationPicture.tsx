@@ -6,7 +6,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import React, { useContext } from 'react'
 import { Button, Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { BussingRecord } from './arrivals-types'
 import { DISPLAY_BUSSING_RECORDS } from './arrivalsQueries'
 import './Arrivals.css'
@@ -14,7 +14,7 @@ import './Arrivals.css'
 const PreMobilisationPicture = () => {
   const { bacentaId } = useContext(ChurchContext)
   const { bussingRecordId } = useContext(ServiceContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data, loading, error } = useQuery(DISPLAY_BUSSING_RECORDS, {
     variables: { bussingRecordId: bussingRecordId, bacentaId: bacentaId },
   })
@@ -30,7 +30,7 @@ const PreMobilisationPicture = () => {
           size="respond"
         />
         <div className="d-grid gap-2">
-          <Button size="lg" onClick={() => navigate(-1)}>
+          <Button size="lg" onClick={() => router.back()}>
             Go Back
           </Button>
         </div>

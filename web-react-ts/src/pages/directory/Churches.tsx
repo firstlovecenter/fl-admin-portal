@@ -3,7 +3,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'
 import { Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { Church, UserRole } from 'global-types'
 import PlaceholderCustom from 'components/Placeholder'
 import SearchBadgeIcon from 'components/card/SearchBadgeIcon'
@@ -11,7 +11,7 @@ import SearchBadgeIcon from 'components/card/SearchBadgeIcon'
 const Churches = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
@@ -41,7 +41,7 @@ const Churches = () => {
                   iconCaption={church.__typename}
                   onClick={() => {
                     clickCard(church)
-                    navigate(
+                    router.push(
                       `/${church.__typename.toLowerCase()}/displaydetails`
                     )
                   }}

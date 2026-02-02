@@ -4,7 +4,7 @@ import { Badge, Card, Col, Row } from 'react-bootstrap'
 import { AccountTransaction } from './transaction-history/transaction-types'
 import CurrencySpan from 'components/CurrencySpan'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import './accounts-colors.css'
 import { Color } from 'react-bootstrap/esm/types'
 
@@ -14,7 +14,7 @@ const TransactionCard = ({
   transaction: AccountTransaction
 }) => {
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const htmlElement = document.querySelector('html')
   const currentTheme = htmlElement?.getAttribute('data-bs-theme')
 
@@ -22,7 +22,7 @@ const TransactionCard = ({
     <Card
       onClick={() => {
         clickCard(transaction)
-        navigate('/accounts/transaction-details/')
+        router.push('/accounts/transaction-details/')
       }}
     >
       <Card.Body>

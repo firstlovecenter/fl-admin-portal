@@ -7,13 +7,13 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import HeadingSecondary from 'components/HeadingSecondary'
 import './accounts-colors.css'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import AccountBalanceCard from './components/AccountBalanceCard'
 import RoleView from 'auth/RoleView'
 
 const CouncilDashboard = () => {
   const { councilId } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { data, loading, error } = useQuery(COUNCIL_ACCOUNT_DASHBOARD, {
     variables: {
@@ -39,7 +39,7 @@ const CouncilDashboard = () => {
             <Button
               variant="secondary"
               className="text-start py-3"
-              onClick={() => navigate('/accounts/request-expense')}
+              onClick={() => router.push('/accounts/request-expense')}
             >
               Request Expense
             </Button>
@@ -47,7 +47,7 @@ const CouncilDashboard = () => {
           <Button
             variant="secondary"
             className="text-start py-3"
-            onClick={() => navigate('/accounts/council/transaction-history')}
+            onClick={() => router.push('/accounts/council/transaction-history')}
           >
             Transaction History
           </Button>

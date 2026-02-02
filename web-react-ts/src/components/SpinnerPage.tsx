@@ -1,3 +1,5 @@
+'use client'
+
 import { Container } from 'react-bootstrap'
 import './SpinnerPage.css'
 import { PacmanLoader } from 'react-spinners'

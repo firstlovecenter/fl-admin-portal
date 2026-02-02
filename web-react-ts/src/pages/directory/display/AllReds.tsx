@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_GOVERNORSHIP_ICBACENTAS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -27,7 +27,7 @@ const DisplayAllReds = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to={`/governorship/displaydetails`}
+              href={`/governorship/displaydetails`}
               onClick={() => {
                 setGovernorshipId(governorshipId)
               }}
@@ -36,7 +36,7 @@ const DisplayAllReds = () => {
               <h2 className="text-white">{`${governorship?.name} Governorship`}</h2>
             </Link>
             <Link
-              to="/member/displaydetails"
+              href="/member/displaydetails"
               onClick={() => {
                 clickCard(governorship?.leader)
               }}
@@ -49,7 +49,7 @@ const DisplayAllReds = () => {
             {governorship?.admin ? (
               <Link
                 className="pb-4"
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(governorship?.admin)
                 }}
@@ -61,7 +61,7 @@ const DisplayAllReds = () => {
           <RoleView roles={permitArrivals('Stream')} directoryLock>
             <Col className="col-auto">
               <Link
-                to="/bacenta/addbacenta"
+                href="/bacenta/addbacenta"
                 className="btn btn-danger text-nowrap"
               >
                 Add Bacenta

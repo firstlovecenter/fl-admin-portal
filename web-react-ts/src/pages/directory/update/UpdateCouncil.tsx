@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { UPDATE_COUNCIL_MUTATION } from './UpdateMutations'
@@ -19,7 +19,7 @@ const UpdateCouncil = () => {
     variables: { id: councilId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const council = data?.councils[0]
 
   const initialValues: CouncilFormValues = {
@@ -83,7 +83,7 @@ const UpdateCouncil = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/council/displaydetails`)
+          router.push(`/council/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -99,7 +99,7 @@ const UpdateCouncil = () => {
 
       setSubmitting(false)
       resetForm()
-      navigate(`/council/displaydetails`)
+      router.push(`/council/displaydetails`)
     } catch (error: any) {
       throwToSentry('There was a problem updating this council', error)
       setSubmitting(false)

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_CAMPUS_MUTATION } from './CreateMutations'
@@ -13,7 +13,7 @@ import { FormikHelpers } from 'formik'
 const CreateCampus = () => {
   const { clickCard, oversightId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: CampusFormValues = {
     name: '',
@@ -65,7 +65,7 @@ const CreateCampus = () => {
       clickCard(res.data.CreateCampus)
       setSubmitting(false)
       resetForm()
-      navigate(`/campus/displaydetails`)
+      router.push(`/campus/displaydetails`)
     } catch (error: any) {
       setSubmitting(false)
       throwToSentry('There was an error creating campus', error)

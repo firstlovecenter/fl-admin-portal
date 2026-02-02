@@ -6,7 +6,7 @@ import useSetUserChurch from 'hooks/useSetUserChurch'
 import React, { useContext } from 'react'
 import { Card, Col, Row, Button, Container } from 'react-bootstrap'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
@@ -22,7 +22,7 @@ const CouncilByGovernorship = () => {
       id: councilId,
     },
   })
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -48,7 +48,7 @@ const CouncilByGovernorship = () => {
                           clickCard(governorship)
                           setUserChurch(governorship)
 
-                          navigate('/services/defaulters/dashboard')
+                          router.push('/services/defaulters/dashboard')
                         }}
                       >
                         <div className="fw-bold">

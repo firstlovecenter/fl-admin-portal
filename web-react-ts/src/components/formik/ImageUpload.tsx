@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react'
 import { ErrorMessage } from 'formik'
 import { useMutation } from '@apollo/client'

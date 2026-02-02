@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { CREATE_BACENTA_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -10,7 +10,7 @@ import { FormikHelpers } from 'formik'
 
 const CreateBacenta = () => {
   const { clickCard, governorshipId } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: BacentaFormValues = {
     name: '',
@@ -62,7 +62,7 @@ const CreateBacenta = () => {
       clickCard(res.data.CreateBacenta)
       setSubmitting(false)
       resetForm()
-      navigate('/bacenta/displaydetails')
+      router.push('/bacenta/displaydetails')
     } catch (error: any) {
       throwToSentry('There was an error creating bacenta', error)
       setSubmitting(false)

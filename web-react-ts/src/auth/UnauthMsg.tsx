@@ -1,11 +1,11 @@
 import React from 'react'
 import { Button, Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import MenAtWork from 'assets/men-at-work-shivendu-shukla.webp'
 import './UnauthMsg.css'
 
 export const UnauthMsg = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <div className="bg-img" style={{ backgroundImage: `url(${MenAtWork})` }}>
@@ -18,7 +18,7 @@ export const UnauthMsg = () => {
             variant="dark"
             size="lg"
             onClick={() => {
-              navigate('/')
+              router.push('/')
             }}
           >
             Click Here To Go Home

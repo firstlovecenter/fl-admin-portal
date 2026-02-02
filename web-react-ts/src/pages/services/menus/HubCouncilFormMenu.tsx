@@ -5,11 +5,11 @@ import { MemberContext } from 'contexts/MemberContext'
 import { useContext } from 'react'
 import { Container } from 'react-bootstrap'
 import { PencilSquare } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const HubCouncilFormMenu = () => {
   const { currentUser } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
@@ -27,7 +27,7 @@ const HubCouncilFormMenu = () => {
             iconComponent={<PencilSquare />}
             title="Fill Joint Rehearsals Form"
             color="members"
-            onClick={() => navigate(`/hubCouncil/record-rehearsal`)}
+            onClick={() => router.push(`/hubCouncil/record-rehearsal`)}
             caption="Council Joint"
           />
 
@@ -38,7 +38,7 @@ const HubCouncilFormMenu = () => {
             title="Fill Sunday Meeting Form"
             caption="Maturity Classes"
             color="green"
-            onClick={() => navigate(`/hubCouncil/record-sundayservice`)}
+            onClick={() => router.push(`/hubCouncil/record-sundayservice`)}
           />
         </div>
       </Container>

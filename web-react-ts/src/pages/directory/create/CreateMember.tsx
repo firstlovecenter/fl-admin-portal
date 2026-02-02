@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { parsePhoneNum, throwToSentry } from '../../../global-utils'
 import { CREATE_MEMBER_MUTATION } from './CreateMutations'
@@ -53,7 +53,7 @@ const CreateMember = () => {
     },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const onSubmit = async (
     values: CreateMemberFormOptions,
@@ -85,7 +85,7 @@ const CreateMember = () => {
       })
       setSubmitting(false)
       resetForm()
-      navigate('/member/displaydetails')
+      router.push('/member/displaydetails')
     } catch (error: any) {
       if (error.message.toLowerCase().includes('email')) {
         const confirmBox = window.confirm(

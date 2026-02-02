@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_DENOMINATION_OVERSIGHTS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -26,7 +26,7 @@ const DisplayAllOversights = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to="/oversight/displaydetails"
+              href="/oversight/displaydetails"
               onClick={() => {
                 clickCard(denomination)
               }}
@@ -34,7 +34,7 @@ const DisplayAllOversights = () => {
               <h4 className="text-white">{`${denomination?.name} Denomination`}</h4>
             </Link>
             <Link
-              to="/member/displaydetails"
+              href="/member/displaydetails"
               onClick={() => {
                 clickCard(denomination?.leader)
               }}
@@ -49,7 +49,7 @@ const DisplayAllOversights = () => {
             {denomination?.admin ? (
               <Link
                 className="pb-4 text-white text-small"
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(denomination?.admin)
                 }}
@@ -61,7 +61,7 @@ const DisplayAllOversights = () => {
           </Col>
           <RoleView roles={permitAdmin('Denomination')} directoryLock>
             <Col className="col-auto">
-              <Link to="/oversight/addoversight" className="btn btn-danger">
+              <Link href="/oversight/addoversight" className="btn btn-danger">
                 Add Oversight
               </Link>
             </Col>

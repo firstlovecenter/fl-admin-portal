@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { GET_CREATIVEARTS_MINISTRIES } from '../../../queries/ListQueries'
@@ -20,7 +20,7 @@ const UpdateMinistry = () => {
     variables: { id: ministryId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const ministry = data?.ministries[0]
 
   const initialValues: MinistryFormValues = {
@@ -92,7 +92,7 @@ const UpdateMinistry = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/ministry/displaydetails`)
+          router.push(`/ministry/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -107,7 +107,7 @@ const UpdateMinistry = () => {
       }
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/ministry/displaydetails`)
+      router.push(`/ministry/displaydetails`)
     } catch (err: any) {
       throwToSentry('There was a problem updating this ministry', err)
       onSubmitProps.setSubmitting(false)

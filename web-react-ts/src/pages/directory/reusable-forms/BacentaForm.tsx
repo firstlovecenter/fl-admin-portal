@@ -12,7 +12,7 @@ import { Governorship } from 'global-types'
 import { permitAdminArrivals } from 'permission-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { MAKE_BACENTA_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import RoleView from 'auth/RoleView'
 import {
@@ -64,7 +64,7 @@ const BacentaForm = ({
   const { clickCard, bacentaId } = useContext(ChurchContext)
   const [closeDown, setCloseDown] = useState(false)
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const [buttonLoading, setButtonLoading] = useState(false)
   const [positionLoading, setPositionLoading] = useState(false)
   const [CloseDownBacenta] = useMutation(MAKE_BACENTA_INACTIVE, {
@@ -119,7 +119,7 @@ const BacentaForm = ({
         <Button
           variant="warning"
           className="mt-1"
-          onClick={() => navigate('/bacenta/editbussing')}
+          onClick={() => router.push('/bacenta/editbussing')}
         >
           Edit Bussing Details
         </Button>
@@ -296,7 +296,7 @@ const BacentaForm = ({
                       setButtonLoading(false)
                       clickCard(res.data.CloseDownBacenta)
                       setCloseDown(false)
-                      navigate(`/governorship/displayall`)
+                      router.push(`/governorship/displayall`)
                     } catch (error) {
                       setButtonLoading(false)
                       throwToSentry(

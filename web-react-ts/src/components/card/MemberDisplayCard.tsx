@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { ChurchContext } from 'contexts/ChurchContext'
 import BusIcon from 'assets/icons/BusIcon'
 import FellowshipIcon from 'assets/icons/FellowshipIcon'
@@ -110,7 +112,7 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
   const { member, leader, children, contact, ...rest } = props
   const { clickCard } = useContext(ChurchContext)
   const { setUserFinancials } = useSetUserChurch()
-  const navigate = useNavigate()
+  const router = useRouter()
   let name: string = member.name + ' ' + member.__typename
   let details: string[] = [member?.leader?.nameWithTitle || '']
 
@@ -140,7 +142,7 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
     if (member.__typename === 'Campus') {
       setUserFinancials(member)
     }
-    navigate(`/${member.__typename.toLowerCase()}/displaydetails`)
+    router.push(`/${member.__typename.toLowerCase()}/displaydetails`)
   }
 
   return (

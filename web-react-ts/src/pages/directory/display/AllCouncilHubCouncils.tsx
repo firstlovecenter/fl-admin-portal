@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_COUNCIL_HUBCOUNCILS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -29,7 +29,7 @@ const DisplayAllCouncilHubs = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to="/council/displaydetails"
+              href="/council/displaydetails"
               onClick={() => {
                 clickCard(council)
               }}
@@ -37,7 +37,7 @@ const DisplayAllCouncilHubs = () => {
               <h4 className="text-white">{`${council?.name} Hubs`}</h4>
             </Link>
             <Link
-              to="/member/displaydetails"
+              href="/member/displaydetails"
               onClick={() => {
                 clickCard(council?.leader)
               }}
@@ -50,7 +50,7 @@ const DisplayAllCouncilHubs = () => {
             {council?.admin ? (
               <Link
                 className="pb-4 text-white text-small"
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(council?.admin)
                 }}
@@ -62,7 +62,7 @@ const DisplayAllCouncilHubs = () => {
           </Col>
           <RoleView roles={permitAdmin('Campus')} directoryLock>
             <Col className="col-auto">
-              <Link to="/hubcouncil/addhubcouncil" className="btn btn-danger">
+              <Link href="/hubcouncil/addhubcouncil" className="btn btn-danger">
                 Add Hub Council
               </Link>
             </Col>

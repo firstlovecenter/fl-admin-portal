@@ -1,6 +1,6 @@
 [build]
 command = "npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
-publish = "web-react-ts/dist"
+publish = "web-react-ts/.next"
 functions = "api/build/functions"
 
 [dev]

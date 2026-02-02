@@ -7,11 +7,11 @@ import { Container } from 'react-bootstrap'
 import { BsSpeakerFill } from 'react-icons/bs'
 import { FaHubspot } from 'react-icons/fa'
 import { GiNotebook } from 'react-icons/gi'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const MinistryFormMenu = () => {
   const { currentUser } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
@@ -29,7 +29,7 @@ const MinistryFormMenu = () => {
             iconComponent={<BsSpeakerFill />}
             title="Fill On Stage Attendance"
             color="red"
-            onClick={() => navigate(`/ministry/record-onstage-attendance`)}
+            onClick={() => router.push(`/ministry/record-onstage-attendance`)}
             noCaption
           />
           <HeadingSecondary>Rehearsals</HeadingSecondary>
@@ -37,7 +37,7 @@ const MinistryFormMenu = () => {
             iconComponent={<FaHubspot />}
             title="Fill Joint Rehearsals Form"
             color="members"
-            onClick={() => navigate(`/ministry/record-rehearsal`)}
+            onClick={() => router.push(`/ministry/record-rehearsal`)}
             caption="Stream Joint"
           />
 
@@ -48,7 +48,7 @@ const MinistryFormMenu = () => {
             title="Fill Sunday Meeting Form"
             caption="Stream Joint"
             color="green"
-            onClick={() => navigate(`/ministry/record-sundayservice`)}
+            onClick={() => router.push(`/ministry/record-sundayservice`)}
           />
         </div>
       </Container>

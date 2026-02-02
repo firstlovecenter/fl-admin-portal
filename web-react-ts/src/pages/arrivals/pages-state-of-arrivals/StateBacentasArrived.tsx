@@ -9,7 +9,7 @@ import useChurchLevel from 'hooks/useChurchLevel'
 import PlaceholderDefaulterList from 'pages/services/defaulters/PlaceholderDefaulterList'
 import React, { useContext } from 'react'
 import { Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { ArrivalsUseChurchType } from '../arrivals-types'
 import {
@@ -21,7 +21,7 @@ import {
 import NoData from '../CompNoData'
 
 const BacentasHaveArrived = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { clickCard } = useContext(ChurchContext)
   const [governorshipBacentasArrived, { refetch: governorshipRefetch }] =
     useLazyQuery(GOVERNORSHIP_BACENTAS_ARRIVED, {
@@ -80,7 +80,7 @@ const BacentasHaveArrived = () => {
                 onClick={() => {
                   clickCard(bacenta)
                   clickCard(bacenta.bussingThisWeek)
-                  navigate('/bacenta/bussing-details')
+                  router.push('/bacenta/bussing-details')
                 }}
               >
                 <span className="fw-bold">

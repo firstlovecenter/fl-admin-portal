@@ -9,7 +9,7 @@ import { getHumanReadableDate } from 'jd-date-utils'
 import { capitalise, throwToSentry } from 'global-utils'
 import React, { useContext } from 'react'
 import { Button, Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   CONFIRM_OFFERING_PAYMENT,
   SELF_BANKING_RECEIPT,
@@ -35,7 +35,7 @@ const ReceiptPage = () => {
   const [SetTransactionReference] = useMutation(SET_TRANSACTION_REFERENCE)
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const service = data?.serviceRecords[0]
   const tablevalues = [
     ['Date of Service', getHumanReadableDate(service?.serviceDate?.date)],
@@ -119,7 +119,10 @@ const ReceiptPage = () => {
               }}
             />
           )}
-          <Button size="lg" onClick={() => navigate('/services/church-list')}>
+          <Button
+            size="lg"
+            onClick={() => router.push('/services/church-list')}
+          >
             Go Home
           </Button>
         </div>

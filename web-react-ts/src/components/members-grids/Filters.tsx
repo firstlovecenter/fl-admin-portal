@@ -1,3 +1,5 @@
+'use client'
+
 import { ChurchContext } from 'contexts/ChurchContext'
 import {
   GENDER_OPTIONS,
@@ -5,7 +7,7 @@ import {
   TITLE_OPTIONS,
 } from 'global-utils'
 import React, { useContext } from 'react'
-import { useLocation } from 'react-router-dom'
+import { usePathname } from 'next/navigation'
 import { Formik, Form, FormikHelpers } from 'formik'
 import { GET_CAMPUS_BASONTAS } from 'queries/ListQueries'
 import { Col, Row, Button } from 'react-bootstrap'
@@ -31,8 +33,8 @@ const Filters = ({
 }) => {
   const { setFilters, filters, campusId } = useContext(ChurchContext)
 
-  const location = useLocation()
-  const atPastors = location.pathname === '/pastors'
+  const pathname = usePathname()
+  const atPastors = pathname === '/pastors'
 
   const initialValues: FormOptions = {
     gender: filters.gender || [],

@@ -7,7 +7,7 @@ import { Button, Container } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { CouncilForAccounts, StreamForAccounts } from './accounts-types'
 import HeadingSecondary from 'components/HeadingSecondary'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import CurrencySpan from 'components/CurrencySpan'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { Form, Formik } from 'formik'
@@ -22,7 +22,7 @@ const CampusCouncilList = ({
     | '/accounts/campus/bussing-expense-entry'
 }) => {
   const { campusId, clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { data, loading, error } = useQuery(CAMPUS_BY_COUNCIL_ACCOUNTS, {
     variables: {
@@ -124,7 +124,7 @@ const CampusCouncilList = ({
                   key={council.id}
                   onClick={() => {
                     clickCard(council)
-                    navigate(link)
+                    router.push(link)
                   }}
                   className="d-grid"
                 >

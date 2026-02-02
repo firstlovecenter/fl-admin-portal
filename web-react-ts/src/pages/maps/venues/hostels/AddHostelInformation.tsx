@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { CREATE_HOSTEL_INFORMATION_MUTATION } from '../venuesMutations'
 import { GET_INDOOR_VENUES } from '../venuesQueries'
@@ -21,7 +21,7 @@ export interface FormOptions {
 }
 
 const AddHostelInformation = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { clickCard } = useContext(ChurchContext)
   const [CreateHostel] = useMutation(CREATE_HOSTEL_INFORMATION_MUTATION, {
     refetchQueries: [{ query: GET_INDOOR_VENUES }],
@@ -70,7 +70,7 @@ const AddHostelInformation = () => {
         },
       })
       clickCard(res.data.CreateHostel)
-      navigate(`/maps/hostel-information`)
+      router.push(`/maps/hostel-information`)
     } catch (err) {
       setSubmitting(false)
       throwToSentry('', err)
@@ -149,7 +149,7 @@ const AddHostelInformation = () => {
                 variant="danger"
                 className="w-100 fs-5"
                 onClick={() => {
-                  navigate(`/maps/hostel-information`)
+                  router.push(`/maps/hostel-information`)
                 }}
               >
                 Cancel

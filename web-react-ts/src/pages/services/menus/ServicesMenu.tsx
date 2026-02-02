@@ -13,7 +13,7 @@ import {
   FileEarmarkArrowUpFill,
   EmojiFrown,
 } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { ChurchLevel } from 'global-types'
 import RoleView from 'auth/RoleView'
 import {
@@ -24,7 +24,7 @@ import {
 
 const Services = () => {
   const { currentUser, theme } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { clickCard } = useContext(ChurchContext)
 
   const church = currentUser.currentChurch
@@ -45,7 +45,7 @@ const Services = () => {
               iconComponent={<Book />}
               title="Bacenta Service"
               color="members"
-              onClick={() => navigate(`/services/bacenta`)}
+              onClick={() => router.push(`/services/bacenta`)}
               noCaption
             />
           )}
@@ -56,7 +56,7 @@ const Services = () => {
                 title="Fill Forms"
                 color="members"
                 onClick={() =>
-                  navigate(`/services/${churchType.toLowerCase()}`)
+                  router.push(`/services/${churchType.toLowerCase()}`)
                 }
                 noCaption
               />
@@ -69,7 +69,7 @@ const Services = () => {
               color="members"
               noCaption
               onClick={() =>
-                navigate(`/${churchType.toLowerCase()}/record-service`)
+                router.push(`/${churchType.toLowerCase()}/record-service`)
               }
             />
           )}
@@ -80,7 +80,7 @@ const Services = () => {
             noCaption
             onClick={() => {
               clickCard(church)
-              navigate(`/trends`)
+              router.push(`/trends`)
             }}
           />
           {/* {['Stream'].includes(churchType) && (
@@ -89,7 +89,7 @@ const Services = () => {
               title="Special Service Form"
               color="red"
               caption="ONLY to be used in the event of a special service"
-              onClick={() => navigate(`/stream/record-special-service`)}
+              onClick={() => router.push(`/stream/record-special-service`)}
             />
           )} */}
           {['Stream', 'Council', 'Governorship', 'Bacenta'].includes(
@@ -103,7 +103,7 @@ const Services = () => {
                 noCaption
                 onClick={() => {
                   clickCard(church)
-                  navigate(
+                  router.push(
                     `/services/${churchType.toLowerCase()}/banking-slips`
                   )
                 }}
@@ -120,7 +120,9 @@ const Services = () => {
                 color="banking"
                 noCaption
                 onClick={() =>
-                  navigate(`/services/${churchType.toLowerCase()}/self-banking`)
+                  router.push(
+                    `/services/${churchType.toLowerCase()}/self-banking`
+                  )
                 }
               />
             )}
@@ -132,7 +134,7 @@ const Services = () => {
                   iconComponent={<PersonPlus />}
                   title="Add Stream Tellers"
                   color="banking"
-                  onClick={() => navigate(`/anagkazo/treasurer-select`)}
+                  onClick={() => router.push(`/anagkazo/treasurer-select`)}
                   noCaption
                 />
               </RoleView>
@@ -142,7 +144,7 @@ const Services = () => {
                   iconComponent={<CashCoin />}
                   title="Receive Midweek Offering"
                   color="banking"
-                  onClick={() => navigate(`/anagkazo/receive-banking`)}
+                  onClick={() => router.push(`/anagkazo/receive-banking`)}
                   noCaption
                 />
               </RoleView>
@@ -160,7 +162,7 @@ const Services = () => {
                 title="Defaulters"
                 color="danger"
                 iconComponent={<EmojiFrown />}
-                onClick={() => navigate('/services/defaulters/dashboard')}
+                onClick={() => router.push('/services/defaulters/dashboard')}
                 noCaption
               />
             </RoleView>

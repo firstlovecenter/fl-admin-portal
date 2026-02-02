@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { GET_DENOMINATION_OVERSIGHTS } from '../../../queries/ListQueries'
@@ -20,7 +20,7 @@ const UpdateOversight = () => {
     variables: { id: oversightId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const oversight = data?.oversights[0]
   const initialValues: OversightFormValues = {
     name: oversight?.name,
@@ -92,7 +92,7 @@ const UpdateOversight = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/oversight/displaydetails`)
+          router.push(`/oversight/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -108,7 +108,7 @@ const UpdateOversight = () => {
 
       setSubmitting(false)
       resetForm()
-      navigate(`/oversight/displaydetails`)
+      router.push(`/oversight/displaydetails`)
     } catch (err: any) {
       throwToSentry('There was a problem updating this oversight', err)
       setSubmitting(false)

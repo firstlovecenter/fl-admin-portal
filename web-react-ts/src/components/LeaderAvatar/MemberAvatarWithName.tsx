@@ -7,7 +7,7 @@ import { MemberWithoutBioData } from 'global-types'
 import { getFirstLetterInEveryWord } from 'global-utils'
 import { useContext } from 'react'
 import { Col, Row } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const MemberAvatarWithName = ({
   member,
@@ -21,10 +21,10 @@ const MemberAvatarWithName = ({
 } & Omit<CloudinaryImageProps, 'src'>) => {
   const isLoading = loading || !member
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const defaultNav = () => {
     clickCard(member)
-    navigate('/member/displaydetails')
+    router.push('/member/displaydetails')
   }
 
   return (

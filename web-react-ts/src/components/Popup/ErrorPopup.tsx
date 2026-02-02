@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Container } from 'react-bootstrap'
 import Popup from './Popup'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 interface ErrorDialogProps {
   errorMessage: string
@@ -12,7 +12,7 @@ interface ErrorDialogProps {
 const ErrorPopup = (props: ErrorDialogProps) => {
   const { errorMessage, togglePopup, link } = props
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const isPoimenError = errorMessage.includes('Poimen')
 
@@ -34,7 +34,7 @@ const ErrorPopup = (props: ErrorDialogProps) => {
           className={`w-100 mt-2`}
           onClick={() => {
             togglePopup()
-            if (link) navigate(link)
+            if (link) router.push(link)
           }}
         >
           Okay

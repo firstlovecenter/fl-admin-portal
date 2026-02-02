@@ -14,11 +14,11 @@ import { menuItems } from './dashboard-utils'
 import SearchBox from 'components/SearchBox'
 import { ArrowClockwise, ChevronLeft, Moon, Sun } from 'react-bootstrap-icons'
 import './Navigation.css'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 const Navigator = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const isRunningStandalone = () => {
     return window.matchMedia('(display-mode: standalone)').matches
@@ -50,7 +50,7 @@ const Navigator = () => {
         {isRunningStandalone() && (
           <Navbar.Brand>
             <Button variant="transparent-outline">
-              <ChevronLeft size={24} onClick={() => navigate(-1)} />
+              <ChevronLeft size={24} onClick={() => router.back()} />
             </Button>
             <Button variant="transparent-outline">
               <ArrowClockwise
@@ -79,7 +79,7 @@ const Navigator = () => {
                     variant={`outline-${isDarkMode ? 'light' : 'dark'}`}
                     className="my-1 nav-btn"
                     onClick={() => {
-                      navigate(menuItem.to)
+                      router.push(menuItem.to)
                       handleShow()
                     }}
                   >
@@ -97,7 +97,7 @@ const Navigator = () => {
                   <div
                     onClick={() => {
                       handleShow()
-                      navigate('/user-profile')
+                      router.push('/user-profile')
                     }}
                   >
                     <UserProfileIcon />

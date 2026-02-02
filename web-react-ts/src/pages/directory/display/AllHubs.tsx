@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_HUBCOUNCIL_HUBS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -28,7 +28,7 @@ const DisplayAllHubs = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to="/hubCouncil/displaydetails"
+              href="/hubCouncil/displaydetails"
               onClick={() => {
                 clickCard(hubCouncil)
               }}
@@ -36,7 +36,7 @@ const DisplayAllHubs = () => {
               <h4 className="text-white">{`${hubCouncil?.name} Hubs`}</h4>
             </Link>
             <Link
-              to="/member/displaydetails"
+              href="/member/displaydetails"
               onClick={() => {
                 clickCard(hubCouncil?.leader)
               }}
@@ -49,7 +49,7 @@ const DisplayAllHubs = () => {
             {hubCouncil?.admin ? (
               <Link
                 className="pb-4 text-white text-small"
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(hubCouncil?.admin)
                 }}
@@ -61,7 +61,7 @@ const DisplayAllHubs = () => {
           </Col>
           <RoleView roles={permitAdmin('Ministry')} directoryLock>
             <Col className="col-auto">
-              <Link to="/hub/addhub" className="btn btn-danger">
+              <Link href="/hub/addhub" className="btn btn-danger">
                 Add Hub
               </Link>
             </Col>

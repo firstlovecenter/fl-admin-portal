@@ -9,12 +9,12 @@ import NoDataComponent from 'pages/arrivals/CompNoData'
 import React, { useContext } from 'react'
 import { Card, Col, Container, Row } from 'react-bootstrap'
 import { CheckCircleFill, XCircleFill } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { BACENTA_BANKING_SLIP_QUERIES } from '../../ServicesQueries'
 
 const BacentaBankingSlipView = () => {
   const { bacentaId, clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data, loading, error } = useQuery(BACENTA_BANKING_SLIP_QUERIES, {
     variables: { bacentaId: bacentaId },
   })
@@ -47,7 +47,7 @@ const BacentaBankingSlipView = () => {
               className="mb-2"
               onClick={() => {
                 clickCard(service)
-                navigate('/bacenta/service-details')
+                router.push('/bacenta/service-details')
               }}
             >
               <Card.Header>

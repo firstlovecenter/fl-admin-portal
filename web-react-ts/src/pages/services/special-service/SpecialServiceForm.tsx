@@ -9,7 +9,7 @@ import {
 } from 'formik'
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -60,7 +60,7 @@ const SpecialServiceForm = ({
 }: ServiceFormProps) => {
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: FormOptions = {
     serviceDate: new Date().toISOString().slice(0, 10),
@@ -142,7 +142,7 @@ const SpecialServiceForm = ({
         })
 
         clickCard(res.data?.RecordSpecialService)
-        navigate(`/${churchType.toLowerCase()}/service-details`)
+        router.push(`/${churchType.toLowerCase()}/service-details`)
       } catch (error) {
         setSubmitting(false)
         throwToSentry('', error)
@@ -253,7 +253,7 @@ const SpecialServiceForm = ({
                       <ImageUpload
                         name="treasurerSelfie"
                         uploadPreset={
-                          import.meta.env.VITE_CLOUDINARY_TREASURERS
+                          process.env.NEXT_PUBLIC_CLOUDINARY_TREASURERS
                         }
                         tags="facial-recognition"
                         placeholder="Choose"
@@ -267,7 +267,9 @@ const SpecialServiceForm = ({
                       </small>
                       <ImageUpload
                         name="familyPicture"
-                        uploadPreset={import.meta.env.VITE_CLOUDINARY_SERVICES}
+                        uploadPreset={
+                          process.env.NEXT_PUBLIC_CLOUDINARY_SERVICES
+                        }
                         placeholder="Choose"
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="UploadfamilyPicture"

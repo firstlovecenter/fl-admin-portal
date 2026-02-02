@@ -3,7 +3,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import useSetUserChurch from 'hooks/useSetUserChurch'
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { Church, UserRole } from 'global-types'
 import SearchBadgeIcon from 'components/card/SearchBadgeIcon'
 
@@ -25,7 +25,7 @@ const ChurchList = ({
   const { userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const { setUserChurch, setUserFinancials } = useSetUserChurch()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <div className="d-grid gap-2 text-left">
@@ -99,19 +99,21 @@ const ChurchList = ({
                     }
 
                     if (color === 'arrivals') {
-                      navigate(`/arrivals/${church.__typename.toLowerCase()}`)
+                      router.push(
+                        `/arrivals/${church.__typename.toLowerCase()}`
+                      )
                     } else if (color === 'quick-facts') {
-                      navigate(
+                      router.push(
                         `/quick-facts/this-month/${church.__typename.toLowerCase()}`
                       )
                     } else if (color === 'maps') {
-                      navigate(`/maps/${church.__typename.toLowerCase()}`)
+                      router.push(`/maps/${church.__typename.toLowerCase()}`)
                     } else if (color === 'accounts') {
-                      navigate(
+                      router.push(
                         `/accounts/${church.__typename.toLowerCase()}/dashboard`
                       )
                     } else {
-                      navigate(link || '#')
+                      router.push(link || '#')
                     }
                   }}
                   color={color}

@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { GET_CAMPUS_STREAMS } from '../../../queries/ListQueries'
@@ -21,7 +21,7 @@ const UpdateStream = () => {
     variables: { id: streamId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const stream = data?.streams[0]
 
   const initialValues: StreamFormValues = {
@@ -97,7 +97,7 @@ const UpdateStream = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/stream/displaydetails`)
+          router.push(`/stream/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -129,7 +129,7 @@ const UpdateStream = () => {
       }
 
       resetForm()
-      navigate(`/stream/displaydetails`)
+      router.push(`/stream/displaydetails`)
     } catch (err: any) {
       throwToSentry('There was a problem updating this stream', err)
     } finally {

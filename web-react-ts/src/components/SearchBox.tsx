@@ -1,13 +1,15 @@
+'use client'
+
 import { useContext } from 'react'
 import { Button, InputGroup, Form as bsForm } from 'react-bootstrap'
 import { SearchContext } from 'contexts/MemberContext'
 import './SearchBox.css'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { Form, Formik, FormikHelpers } from 'formik'
 
 const SearchBox = ({ handleShow }: { handleShow: () => void }) => {
   const { setSearchKey } = useContext(SearchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const initialValues = {
     searchKeyVal: '',
   }
@@ -19,7 +21,7 @@ const SearchBox = ({ handleShow }: { handleShow: () => void }) => {
     onSubmitProps.setSubmitting(true)
     setSearchKey(values.searchKeyVal)
     handleShow()
-    navigate('/search-results')
+    router.push('/search-results')
     onSubmitProps.setSubmitting(false)
   }
 

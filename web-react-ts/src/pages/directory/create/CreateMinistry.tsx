@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_MINISTRY_MUTATION } from './CreateMutations'
@@ -14,7 +14,7 @@ import { CreativeArts } from 'global-types'
 const CreateMinistry = () => {
   const { clickCard, creativeArtsId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: MinistryFormValues = {
     name: '',
@@ -63,7 +63,7 @@ const CreateMinistry = () => {
       clickCard(res.data.CreateMinistry)
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/ministry/displaydetails`)
+      router.push(`/ministry/displaydetails`)
     } catch (error: unknown) {
       throwToSentry('There was an error creating ministry', error)
     }

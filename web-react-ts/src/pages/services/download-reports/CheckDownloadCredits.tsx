@@ -1,7 +1,7 @@
 import { Church } from 'global-types'
 import React from 'react'
 import { Button, Card } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const CheckDownloadCredits = ({
   church,
@@ -10,7 +10,7 @@ const CheckDownloadCredits = ({
   church: Church
   children: React.ReactNode
 }) => {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   if (church?.downloadCredits <= 0 || !church?.downloadCredits) {
     return (
@@ -23,7 +23,7 @@ const CheckDownloadCredits = ({
           </div>
           <Button
             onClick={() =>
-              navigate(
+              router.push(
                 `/download-reports/${church.__typename.toLowerCase()}/purchase-credits`
               )
             }

@@ -1,6 +1,8 @@
+'use client'
+
 import { useContext } from 'react'
 import { Button } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { ChurchContext } from '../contexts/ChurchContext'
 import { capitalise } from '../global-utils'
 import PlaceholderCustom from './Placeholder'
@@ -112,7 +114,7 @@ const MemberRoleList = ({
   memberAdmin: MemberForRoles
 }) => {
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   if (!memberLeader || !memberAdmin) {
     return null
@@ -124,7 +126,7 @@ const MemberRoleList = ({
     <PlaceholderCustom>
       <small className="mb-5">
         <Button
-          onClick={() => navigate('/dashboard/servants')}
+          onClick={() => router.push('/dashboard/servants')}
           variant="brand"
           className="mb-3 px-5"
         >
@@ -155,7 +157,7 @@ const MemberRoleList = ({
                     key={i}
                     onClick={() => {
                       clickCard(place)
-                      navigate(place.link)
+                      router.push(place.link)
                     }}
                   >
                     <p className="mb-0">

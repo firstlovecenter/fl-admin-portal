@@ -9,7 +9,7 @@ import React from 'react'
 import { useContext } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
 import { GOVERNORSHIP_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import RoleView from 'auth/RoleView'
 import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
@@ -37,7 +37,7 @@ type DateFormOptions = {
 
 const GovernorshipDashboard = () => {
   const { isOpen, togglePopup } = usePopup()
-  const navigate = useNavigate()
+  const router = useRouter()
   const { arrivalDate, setArrivalDate, governorshipId } =
     useContext(ChurchContext)
   const today = new Date().toISOString().slice(0, 10)
@@ -206,7 +206,7 @@ const GovernorshipDashboard = () => {
               <>
                 <MenuButton
                   title="Bacentas With No Activity"
-                  onClick={() => navigate('/arrivals/bacentas-no-activity')}
+                  onClick={() => router.push('/arrivals/bacentas-no-activity')}
                   number={governorship?.bacentasNoActivityCount.toString()}
                   color="red"
                   iconBg
@@ -214,7 +214,7 @@ const GovernorshipDashboard = () => {
                 />
                 <MenuButton
                   title="Bacentas Mobilising"
-                  onClick={() => navigate('/arrivals/bacentas-mobilising')}
+                  onClick={() => router.push('/arrivals/bacentas-mobilising')}
                   number={governorship?.bacentasMobilisingCount.toString()}
                   color="orange"
                   iconBg
@@ -222,7 +222,7 @@ const GovernorshipDashboard = () => {
                 />
                 <MenuButton
                   title="Bacentas On The Way"
-                  onClick={() => navigate('/arrivals/bacentas-on-the-way')}
+                  onClick={() => router.push('/arrivals/bacentas-on-the-way')}
                   number={governorship?.bacentasOnTheWayCount.toString()}
                   color="yellow"
                   iconBg
@@ -230,7 +230,7 @@ const GovernorshipDashboard = () => {
                 />
                 <MenuButton
                   title={`Bacentas That Didn't Bus`}
-                  onClick={() => navigate('/arrivals/bacentas-below-8')}
+                  onClick={() => router.push('/arrivals/bacentas-below-8')}
                   number={governorship?.bacentasBelow8Count.toString()}
                   iconBg
                   color="red"
@@ -238,7 +238,7 @@ const GovernorshipDashboard = () => {
                 />
                 <MenuButton
                   title="Bacentas That Have Arrived"
-                  onClick={() => navigate('/arrivals/bacentas-have-arrived')}
+                  onClick={() => router.push('/arrivals/bacentas-have-arrived')}
                   number={governorship?.bacentasHaveArrivedCount.toString()}
                   color="green"
                   iconBg

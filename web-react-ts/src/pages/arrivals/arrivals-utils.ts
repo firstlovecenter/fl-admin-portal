@@ -33,7 +33,7 @@ export const OUTBOUND_OPTIONS: FormikSelectOptions = [
 
 const isArrivalsToday = (bacenta: { stream: StreamWithArrivals }) => {
   if (!bacenta) return false
-  if (import.meta.env.DEV) return true
+  if (process.env.NODE_ENV === 'development') return true
 
   const today = new Date().getDay()
 

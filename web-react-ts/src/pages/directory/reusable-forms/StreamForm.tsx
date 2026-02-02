@@ -10,7 +10,7 @@ import {
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_STREAM_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import RoleView from 'auth/RoleView'
 import {
   Button,
@@ -83,7 +83,7 @@ const StreamForm = ({
   const [ministryModal, setMinistryModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const [buttonLoading, setButtonLoading] = useState(false)
   const [CloseDownStream] = useMutation(MAKE_STREAM_INACTIVE, {
     refetchQueries: [
@@ -351,7 +351,7 @@ const StreamForm = ({
                       setButtonLoading(false)
                       clickCard(res.data.CloseDownStream)
                       setCloseDown(false)
-                      navigate(`/council/displayall`)
+                      router.push(`/council/displayall`)
                     } catch (error) {
                       setButtonLoading(false)
                       throwToSentry(

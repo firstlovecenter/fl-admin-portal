@@ -14,11 +14,11 @@ import './UserProfile.css'
 import AuthButton from 'components/buttons/AuthButton'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { USER_PLACEHOLDER } from 'global-utils'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const DisplayPage = () => {
   const { currentUser, theme } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const {
     data: bioData,
@@ -73,7 +73,7 @@ const DisplayPage = () => {
               <Button
                 variant="brand"
                 className="px-5"
-                onClick={() => navigate('/user-profile/edit')}
+                onClick={() => router.push('/user-profile/edit')}
               >
                 Edit Your Profile
               </Button>

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { GET_CAMPUS_CREATIVEARTS } from '../../../queries/ListQueries'
@@ -20,7 +20,7 @@ const UpdateCreativeArts = () => {
     variables: { id: creativeArtsId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const creativeArts = data?.creativeArts[0]
 
   const initialValues: CreativeArtsFormValues = {
@@ -90,7 +90,7 @@ const UpdateCreativeArts = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/creativeArts/displaydetails`)
+          router.push(`/creativeArts/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -105,7 +105,7 @@ const UpdateCreativeArts = () => {
       }
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/creativeArts/displaydetails`)
+      router.push(`/creativeArts/displaydetails`)
     } catch (err: any) {
       throwToSentry('There was a problem updating this creativeArts', err)
       onSubmitProps.setSubmitting(false)

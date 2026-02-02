@@ -5,7 +5,7 @@ import { makeSelectOptions, throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_HUBCOUNCIL_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   Button,
   Container,
@@ -57,7 +57,7 @@ const HubCouncilForm = ({
   const { clickCard, hubCouncilId, ministryId } = useContext(ChurchContext)
   const [hubModal, setHubModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [buttonLoading, setButtonLoading] = useState(false)
   const { data, loading, error } = useQuery(GET_MINISTRY_COUNCILS, {
@@ -251,7 +251,7 @@ const HubCouncilForm = ({
                         setButtonLoading(false)
                         clickCard(res.data.CloseDownHubCouncil)
                         setCloseDown(false)
-                        navigate(`/hubcouncil/displayall`)
+                        router.push(`/hubcouncil/displayall`)
                       } catch (error) {
                         setButtonLoading(false)
                         throwToSentry(

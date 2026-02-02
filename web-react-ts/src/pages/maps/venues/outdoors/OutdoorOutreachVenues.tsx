@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { useQuery } from '@apollo/client'
 import { GET_OUTDOOR_VENUES } from '../venuesQueries'
 import { SORT_BY_SELECT_OPTIONS } from '../../map-utils'
@@ -27,7 +27,7 @@ const OutdoorOutreachVenues = () => {
   const [sortBy, setSortBy] = useState({})
   const [selectedValue, setSelectedValue] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const navigate = useNavigate()
+  const router = useRouter()
   const limit = 20
 
   const initialValues: FormOptions = {
@@ -117,7 +117,7 @@ const OutdoorOutreachVenues = () => {
         variant="primary"
         className="p-2 d-flex justify-content-center align-items-center text-center gap-2 w-100"
         onClick={() => {
-          navigate(`/maps/outdoor-outreach-venues/add`)
+          router.push(`/maps/outdoor-outreach-venues/add`)
         }}
       >
         <AiOutlinePlusCircle />

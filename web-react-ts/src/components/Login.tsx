@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import AuthButton from './buttons/AuthButton'
 import MobileView from './responsive-design/MobileView'
@@ -5,8 +7,6 @@ import TabletDesktopView from './responsive-design/TabletDesktopView'
 import { Container, Navbar } from 'react-bootstrap'
 import './Login.css'
 import Slider from 'react-slick'
-import 'slick-carousel/slick/slick.css'
-import 'slick-carousel/slick/slick-theme.css'
 
 import GlobeIcon from 'assets/icons/Globe'
 import Silhouette from 'assets/icons/flcOutline'
@@ -33,7 +33,7 @@ const Login = () => {
           <Navbar bg="dark">
             <Container>
               <img
-                src={Logo}
+                src={Logo.src}
                 height="30"
                 className="d-inline-block align-top"
                 alt="FirstLove Logo"
@@ -79,7 +79,7 @@ const Login = () => {
           <Navbar bg="dark">
             <Container>
               <img
-                src={Logo}
+                src={Logo.src}
                 height="30"
                 className="d-inline-block align-top"
                 alt="FirstLove Logo"

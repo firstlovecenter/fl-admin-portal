@@ -5,7 +5,7 @@ import { throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_OVERSIGHT_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import RoleView from 'auth/RoleView'
 import {
   Button,
@@ -55,7 +55,7 @@ const OversightForm = ({
   const [campusModal, setCampusModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const [buttonLoading, setButtonLoading] = useState(false)
   const [CloseDownOversight] = useMutation(MAKE_OVERSIGHT_INACTIVE, {
     refetchQueries: [
@@ -227,7 +227,7 @@ const OversightForm = ({
                       setButtonLoading(false)
                       clickCard(res.data.CloseDownOversight)
                       setCloseDown(false)
-                      navigate(`/campus/displayall`)
+                      router.push(`/campus/displayall`)
                     } catch (error) {
                       setButtonLoading(false)
                       throwToSentry(

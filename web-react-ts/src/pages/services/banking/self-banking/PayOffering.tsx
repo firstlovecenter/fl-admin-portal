@@ -2,7 +2,7 @@ import { ApolloError, useMutation, useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ServiceContext } from 'contexts/ServiceContext'
 import React, { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   CONFIRM_OFFERING_PAYMENT,
   DISPLAY_OFFERING_DETAILS,
@@ -51,7 +51,7 @@ const PayOffering = (props: PayOfferingProps) => {
   const [BankServiceOffering] = useMutation(PAY_OFFERING_MUTATION)
   const [SendPaymentOTP] = useMutation(SEND_PAYMENT_OTP)
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
-  const navigate = useNavigate()
+  const router = useRouter()
   const service = data?.serviceRecords[0]
   const cashAndCharges = parseFloat(
     (service?.cash / (1 - 0.0195) + 0.01).toFixed(2)
@@ -119,7 +119,7 @@ const PayOffering = (props: PayOfferingProps) => {
         handleShow()
       } else {
         setSubmitting(false)
-        navigate('/self-banking/confirm-payment')
+        router.push('/self-banking/confirm-payment')
       }
     } catch (error: any) {
       setErrorMessage(error.message)
@@ -178,7 +178,7 @@ const PayOffering = (props: PayOfferingProps) => {
                               otp: otp,
                             },
                           }).then(() =>
-                            navigate('/self-banking/confirm-payment')
+                            router.push('/self-banking/confirm-payment')
                           )
                         }}
                       >
@@ -203,7 +203,7 @@ const PayOffering = (props: PayOfferingProps) => {
                           })
                             .then(() => {
                               setOtpSent(false)
-                              navigate('/self-banking/confirm-payment')
+                              router.push('/self-banking/confirm-payment')
                             })
                             .catch((error: any) => {
                               setOtpSent(false)

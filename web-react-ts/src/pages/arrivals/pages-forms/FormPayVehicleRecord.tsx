@@ -10,7 +10,7 @@ import { useContext } from 'react'
 import { Button, Card, Col, Container, Modal, Row } from 'react-bootstrap'
 import { DISPLAY_VEHICLE_PAYMENT_RECORDS } from '../arrivalsQueries'
 import { SEND_VEHICLE_SUPPORT } from '../arrivalsMutation'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import SubmitButton from 'components/formik/SubmitButton'
 import { alertMsg } from 'global-utils'
 import { VehicleRecord } from '../arrivals-types'
@@ -35,7 +35,7 @@ type FormOptions = {
 }
 
 const FormPayVehicleRecord = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { bacentaId } = useContext(ChurchContext)
   const { vehicleRecordId } = useContext(ServiceContext)
   const { show, handleShow, handleClose } = useModal()
@@ -89,13 +89,13 @@ const FormPayVehicleRecord = () => {
           supportRes.data.SendVehicleSupport.momoName
       )
       setSubmitting(false)
-      navigate(`/bacenta/vehicle-details`)
+      router.push(`/bacenta/vehicle-details`)
     } catch (error: any) {
       setSubmitting(false)
       alertMsg(error)
     }
 
-    navigate(`/bacenta/vehicle-details`)
+    router.push(`/bacenta/vehicle-details`)
   }
 
   const detailRows = [

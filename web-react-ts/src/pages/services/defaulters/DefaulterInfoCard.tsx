@@ -1,7 +1,7 @@
 import PlaceholderCustom from 'components/Placeholder'
 import React from 'react'
 import { Card } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import './Defaulters.css'
 
 const DefaulterInfoCard = ({
@@ -14,10 +14,10 @@ const DefaulterInfoCard = ({
     color?: string
   }
 }) => {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
-    <Card className="text-center" onClick={() => navigate(defaulter.link)}>
+    <Card className="text-center" onClick={() => router.push(defaulter.link)}>
       <Card.Header>
         <div className="text-nowrap text-truncate">{defaulter.title}</div>
       </Card.Header>

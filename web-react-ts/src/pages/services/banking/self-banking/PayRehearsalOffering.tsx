@@ -2,7 +2,7 @@ import { ApolloError, useMutation, useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ServiceContext } from 'contexts/ServiceContext'
 import { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   CONFIRM_OFFERING_PAYMENT,
   DISPLAY_REHEARSAL_OFFERING_DETAILS,
@@ -54,7 +54,7 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
   const [BankServiceOffering] = useMutation(PAY_REHEARSAL_OFFERING_MUTATION)
   const [SendPaymentOTP] = useMutation(SEND_PAYMENT_OTP)
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
-  const navigate = useNavigate()
+  const router = useRouter()
   const service = data?.rehearsalRecords[0]
   const cashAndCharges = parseFloat(
     (service?.cash / (1 - 0.0195) + 0.01).toFixed(2)
@@ -121,7 +121,7 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
         handleShow()
       } else {
         setSubmitting(false)
-        navigate('/self-banking/confirm-payment')
+        router.push('/self-banking/confirm-payment')
       }
     } catch (error: any) {
       setErrorMessage(error.message)
@@ -177,7 +177,7 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
                               otp: otp,
                             },
                           }).then(() =>
-                            navigate('/self-banking/confirm-payment')
+                            router.push('/self-banking/confirm-payment')
                           )
                         }}
                       >
@@ -202,7 +202,7 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
                           })
                             .then(() => {
                               setOtpSent(false)
-                              navigate('/self-banking/confirm-payment')
+                              router.push('/self-banking/confirm-payment')
                             })
                             .catch((error: any) => {
                               setOtpSent(false)

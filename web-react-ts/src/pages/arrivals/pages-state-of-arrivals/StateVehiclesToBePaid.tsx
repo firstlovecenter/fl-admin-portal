@@ -15,7 +15,7 @@ import { BacentaWithArrivals } from '../arrivals-types'
 import { COUNCIL_VEHICLES_TO_BE_PAID } from '../bussingStatusQueries'
 import NoData from '../CompNoData'
 import VehicleButtonPayment from '../components/VehiclePaymentButton'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 type FormOptions = {
   bacentaSearch: string
@@ -34,7 +34,7 @@ const StateBacentasToBePaid = () => {
     }
   )
   const [seePaid, setSeePaid] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const church = data?.councils[0]
 
@@ -156,8 +156,8 @@ const StateBacentasToBePaid = () => {
                     onClick={() => {
                       clickCard(record)
                       record.transactionStatus === 'success'
-                        ? navigate('/bacenta/vehicle-details')
-                        : navigate('/arrivals/pay-vehicle')
+                        ? router.push('/bacenta/vehicle-details')
+                        : router.push('/arrivals/pay-vehicle')
                     }}
                   />
                 </div>

@@ -19,7 +19,7 @@ import {
   FileEarmarkArrowUpFill,
   Trash,
 } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   MANUALLY_CONFIRM_OFFERING_PAYMENT,
   DELETE_SERVICE_RECORD,
@@ -35,7 +35,7 @@ type ServiceDetailsProps = {
 
 const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   const { currentUser } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [ManuallyConfirmOfferingPayment] = useMutation(
     MANUALLY_CONFIRM_OFFERING_PAYMENT
@@ -59,7 +59,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
         },
       })
       alertMsg('Service record deleted successfully')
-      navigate(-1) // Navigate back after deletion
+      router.back() // Navigate back after deletion
     } catch (error) {
       throwToSentry('Error deleting service record', error)
       alertMsg('Failed to delete service record. Please try again.')
@@ -70,9 +70,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
 
   useEffect(() => {
     if (!service && !loading) {
-      navigate(-1)
+      router.back()
     }
-  }, [service, navigate])
+  }, [service, loading, router])
 
   if (loading) {
     return <SpinnerPage />
@@ -212,7 +212,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                     {`${service?.offeringBankedBy.fullName} used the Self Banking Feature. Click this button to see
                     Details`}
                     <p>
-                      <Button onClick={() => navigate('/self-banking/receipt')}>
+                      <Button
+                        onClick={() => router.push('/self-banking/receipt')}
+                      >
                         View Banking Details
                       </Button>
                     </p>
@@ -290,7 +292,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                         className="mb-3"
                         variant="danger"
                         onClick={() => {
-                          navigate(
+                          router.push(
                             `/${church?.__typename.toLowerCase()}/banking-slip/submission`
                           )
                         }}
@@ -305,7 +307,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                   <Button
                     className="btn-graphs"
                     onClick={() => {
-                      navigate(`/${church?.__typename.toLowerCase()}/graphs`)
+                      router.push(`/${church?.__typename.toLowerCase()}/graphs`)
                     }}
                   >
                     View Last 4 Weeks

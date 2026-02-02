@@ -5,7 +5,7 @@ import { throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_COUNCIL_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import RoleView from 'auth/RoleView'
 import {
   Button,
@@ -63,7 +63,7 @@ const CouncilForm = ({
   const [hubCouncilModal, setHubCouncilModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const [buttonLoading, setButtonLoading] = useState(false)
   const [CloseDownCouncil] = useMutation(MAKE_COUNCIL_INACTIVE, {
     refetchQueries: [
@@ -323,7 +323,7 @@ const CouncilForm = ({
                       setButtonLoading(false)
                       clickCard(res.data.CloseDownCouncil)
                       setCloseDown(false)
-                      navigate(`/council/displayall`)
+                      router.push(`/council/displayall`)
                     } catch (error) {
                       setButtonLoading(false)
                       throwToSentry(

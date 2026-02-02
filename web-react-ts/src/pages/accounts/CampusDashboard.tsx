@@ -7,14 +7,14 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import HeadingSecondary from 'components/HeadingSecondary'
 import './accounts-colors.css'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import RoleView from 'auth/RoleView'
 import { permitArrivals, permitLeaderAdmin } from 'permission-utils'
 import AccountBalanceCard from './components/AccountBalanceCard'
 
 const CampusDashboard = () => {
   const { campusId } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { data, loading, error } = useQuery(CAMPUS_ACCOUNT_DASHBOARD, {
     variables: {
@@ -39,7 +39,9 @@ const CampusDashboard = () => {
           <Button
             variant="secondary"
             className="text-start py-3"
-            onClick={() => navigate('/accounts/campus/councils-for-deposits')}
+            onClick={() =>
+              router.push('/accounts/campus/councils-for-deposits')
+            }
           >
             Update Balances
           </Button>
@@ -47,7 +49,9 @@ const CampusDashboard = () => {
           <Button
             variant="secondary"
             className="text-start py-3"
-            onClick={() => navigate('/accounts/campus/council/view-accounts')}
+            onClick={() =>
+              router.push('/accounts/campus/council/view-accounts')
+            }
           >
             View Council Balances
           </Button>
@@ -55,7 +59,7 @@ const CampusDashboard = () => {
             <Button
               variant="secondary"
               className="text-start py-3"
-              onClick={() => navigate('/accounts/campus/approvals')}
+              onClick={() => router.push('/accounts/campus/approvals')}
             >
               Approvals
             </Button>
@@ -65,7 +69,7 @@ const CampusDashboard = () => {
               variant="secondary"
               className="text-start py-3"
               onClick={() =>
-                navigate('/accounts/campus/councils-for-bussing-expense')
+                router.push('/accounts/campus/councils-for-bussing-expense')
               }
             >
               Weekend Bussing Expense Entry
@@ -75,7 +79,9 @@ const CampusDashboard = () => {
             <Button
               variant="secondary"
               className="text-start py-3"
-              onClick={() => navigate('/accounts/campus/transaction-history')}
+              onClick={() =>
+                router.push('/accounts/campus/transaction-history')
+              }
             >
               Transaction History
             </Button>

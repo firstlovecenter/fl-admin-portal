@@ -54,3 +54,9 @@ combined-schema.*
 lambda-package/
 lambda-package.zip
 temp-compiled-resolvers/
+
+# Compiled TypeScript files in source directories
+api/src/**/*.js
+api/src/**/*.js.map
+!api/src/**/*.config.js
+api/build/

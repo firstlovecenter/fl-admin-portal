@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_OVERSIGHT_MUTATION } from './CreateMutations'
@@ -13,7 +13,7 @@ import { FormikHelpers } from 'formik'
 const CreateOversight = () => {
   const { clickCard, denominationId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: OversightFormValues = {
     name: '',
@@ -58,7 +58,7 @@ const CreateOversight = () => {
       clickCard(res.data.CreateOversight)
       setSubmitting(false)
       resetForm()
-      navigate(`/oversight/displaydetails`)
+      router.push(`/oversight/displaydetails`)
     } catch (error: any) {
       setSubmitting(false)
       throwToSentry('There was an error creating oversight', error)

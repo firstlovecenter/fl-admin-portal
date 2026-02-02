@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useContext, useState } from 'react'
 import { Formik, Form, FormikHelpers } from 'formik'
 import { SearchContext } from '../contexts/MemberContext'

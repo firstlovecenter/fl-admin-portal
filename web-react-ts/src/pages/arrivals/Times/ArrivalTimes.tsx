@@ -7,7 +7,7 @@ import { MemberContext } from 'contexts/MemberContext'
 import { parseNeoTime } from 'jd-date-utils'
 import React, { useContext } from 'react'
 import { Container, Button } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { GET_ARRIVAL_TIMES } from './time-gql'
 
 const ArrivalTimes = () => {
@@ -17,7 +17,7 @@ const ArrivalTimes = () => {
     variables: { id: church?.id },
   })
   const stream = data?.streams[0]
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const table = [
     ['Mobilisation Start', parseNeoTime(stream?.mobilisationStartTime) || ''],
@@ -33,7 +33,7 @@ const ArrivalTimes = () => {
         <HeadingSecondary>{`${church?.name} ${church?.__typename}`}</HeadingSecondary>
 
         <Button
-          onClick={() => navigate('/stream/set-arrivals-time')}
+          onClick={() => router.push('/stream/set-arrivals-time')}
           className="mb-4"
         >
           Edit Times

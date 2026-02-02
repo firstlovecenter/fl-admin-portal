@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_CREATIVEARTS_MUTATION } from './CreateMutations'
@@ -13,7 +13,7 @@ import CreativeArtsForm, {
 const CreateCreativeArts = () => {
   const { clickCard, campusId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: CreativeArtsFormValues = {
     leaderId: '',
@@ -60,7 +60,7 @@ const CreateCreativeArts = () => {
       clickCard(res.data.CreateCreativeArts)
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/creativearts/displaydetails`)
+      router.push(`/creativearts/displaydetails`)
     } catch (error: unknown) {
       throwToSentry('There was an error creating Creative Arts', error)
     }

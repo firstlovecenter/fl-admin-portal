@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_GOVERNORSHIP_HUBS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -29,7 +29,7 @@ const DisplayAllGovernorshipHubs = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to="/governorship/displaydetails"
+              href="/governorship/displaydetails"
               onClick={() => {
                 clickCard(governorship)
               }}
@@ -37,7 +37,7 @@ const DisplayAllGovernorshipHubs = () => {
               <h4 className="text-white">{`${governorship?.name} Hubs`}</h4>
             </Link>
             <Link
-              to="/member/displaydetails"
+              href="/member/displaydetails"
               onClick={() => {
                 clickCard(governorship?.leader)
               }}
@@ -52,7 +52,7 @@ const DisplayAllGovernorshipHubs = () => {
             {governorship?.admin ? (
               <Link
                 className="pb-4 text-white text-small"
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(governorship?.admin)
                 }}
@@ -64,7 +64,7 @@ const DisplayAllGovernorshipHubs = () => {
           </Col>
           <RoleView roles={permitAdmin('Campus')} directoryLock>
             <Col className="col-auto">
-              <Link to="/hub/addhub" className="btn btn-danger">
+              <Link href="/hub/addhub" className="btn btn-danger">
                 Add Hub Governorship
               </Link>
             </Col>

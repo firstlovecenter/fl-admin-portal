@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:dev": "./node_modules/.bin/nodemon --watch src --ext js,ts,graphql --delay 3 --exec DEBUG=@neo4j/graphql:auth babel-node  src/index.js --extensions '.js,.ts'",
-    "prebuild": " cd src/resolvers && tsc",
-    "build": "babel src --out-dir build && shx cp .env build 2>/dev/null || : && shx cp -r src/schema build",
-    "now-build": "babel src --out-dir build && shx cp -r src/schema build",
+    "prebuild": "cd src/resolvers && tsc",
+    "build": "npm run prebuild && babel src --out-dir build --extensions '.js,.ts' && shx cp .env build 2>/dev/null || : && shx cp -r src/schema build && shx cp -r build/resolvers/* build/resolvers/",
+    "now-build": "npm run prebuild && babel src --out-dir build --extensions '.js,.ts' && shx cp -r src/schema build && shx cp -r build/resolvers/* build/resolvers/",
     "start": "npm run build && node build/index.js"
   },
   "author": "John-Dag Addy",

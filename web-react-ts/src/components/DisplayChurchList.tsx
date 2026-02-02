@@ -2,7 +2,7 @@ import { ChurchLevel, HigherChurch } from 'global-types'
 import { capitalise } from 'global-utils'
 import React, { useContext } from 'react'
 import { Card, Col, Container, Row } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { ChurchContext } from '../contexts/ChurchContext'
 import CloudinaryImage from './CloudinaryImage'
 import useSetUserChurch from 'hooks/useSetUserChurch'
@@ -21,7 +21,7 @@ const DisplayChurchList = (props: {
         {data?.map((church, index: number) => {
           return (
             <Col key={index} sm={6} lg={4}>
-              <Link to={`/${church.__typename.toLowerCase()}/displaydetails`}>
+              <Link href={`/${church.__typename.toLowerCase()}/displaydetails`}>
                 <Card
                   className="mb-2"
                   onClick={() => {

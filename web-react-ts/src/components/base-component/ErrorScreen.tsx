@@ -1,3 +1,5 @@
+'use client'
+
 import { showUserReportDialog } from 'global-utils'
 import useModal from 'hooks/useModal'
 import React from 'react'

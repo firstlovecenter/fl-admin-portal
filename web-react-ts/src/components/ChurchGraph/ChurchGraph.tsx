@@ -1,8 +1,10 @@
+'use client'
+
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ChurchLevelLower } from 'global-types'
 import React, { useState, useEffect, useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { Container } from 'react-bootstrap'
 import {
   ResponsiveContainer,
@@ -42,7 +44,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
     graphType,
   } = props
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const [sortedData, setSortedData] = useState<any[]>([])
   const [dataMax, setDataMax] = useState<{
     attendance: number
@@ -243,7 +245,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   const action =
                     graphTypeActions[graphType] || graphTypeActions['default']
                   clickCard({ ...data, __typename: action.typename })
-                  navigate(`/${props.church}/${action.route}`)
+                  router.push(`/${props.church}/${action.route}`)
                 }}
               >
                 <LabelList dataKey={`${stat1}`} position="top" />
@@ -262,10 +264,10 @@ const ChurchGraph = (props: ChurchGraphProps) => {
 
                     if (data.id && graphType === 'bussing') {
                       clickCard({ ...data, __typename: 'BussingRecord' })
-                      navigate(`/${props.church}/bussing-details`)
+                      router.push(`/${props.church}/bussing-details`)
                     } else if (data.id) {
                       clickCard({ ...data, __typename: 'ServiceRecord' })
-                      navigate(`/${props.church}/service-details`)
+                      router.push(`/${props.church}/service-details`)
                     }
                   }}
                 >

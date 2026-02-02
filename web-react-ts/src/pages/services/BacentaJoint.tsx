@@ -4,11 +4,11 @@ import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'
 import { Container } from 'react-bootstrap'
 import { PencilSquare } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const BacentaJoint = () => {
   const { currentUser, theme } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
@@ -27,7 +27,7 @@ const BacentaJoint = () => {
             color="members"
             noCaption
             onClick={() =>
-              navigate(
+              router.push(
                 `/${currentUser.currentChurch?.__typename.toLowerCase()}/record-service`
               )
             }

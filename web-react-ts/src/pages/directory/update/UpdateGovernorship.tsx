@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { UPDATE_GOVERNORSHIP_MUTATION } from './UpdateMutations'
@@ -19,7 +19,7 @@ const UpdateGovernorship = () => {
     variables: { id: governorshipId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const governorship = data?.governorships[0]
   const initialValues: GovernorshipFormValues = {
     name: governorship?.name,
@@ -97,7 +97,7 @@ const UpdateGovernorship = () => {
 
       setSubmitting(false)
       resetForm()
-      navigate(`/governorship/displaydetails`)
+      router.push(`/governorship/displaydetails`)
     } catch (error: any) {
       throwToSentry('There was a problem updating this governorship', error)
       setSubmitting(false)

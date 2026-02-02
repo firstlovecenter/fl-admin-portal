@@ -1,9 +1,11 @@
+'use client'
+
 import { MemberContext } from 'contexts/MemberContext'
 import { Church, ChurchLevel } from 'global-types'
 import { authorisedLink } from 'global-utils'
 import { permitMe } from 'permission-utils'
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { ChurchContext } from '../../contexts/ChurchContext'
 import './Breadcrumb.css'
 
@@ -19,7 +21,7 @@ const Breadcrumb = ({ breadcrumb }: { breadcrumb: BreadcrumbType[] }) => {
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   if (!breadcrumb.length) {
     return <></>
@@ -39,7 +41,7 @@ const Breadcrumb = ({ breadcrumb }: { breadcrumb: BreadcrumbType[] }) => {
             key={i}
             onClick={() => {
               clickCard(bread)
-              navigate(
+              router.push(
                 authorisedLink(
                   currentUser,
                   permitMe(bread?.__typename),

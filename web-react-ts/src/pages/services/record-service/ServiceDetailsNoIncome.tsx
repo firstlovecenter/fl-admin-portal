@@ -9,7 +9,7 @@ import { Church, ServiceRecord } from 'global-types'
 import { parseNeoTime } from 'jd-date-utils'
 import { useEffect } from 'react'
 import { Col, Container, Row, Button, Card } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import './ServiceDetails.css'
 import CurrencySpan from 'components/CurrencySpan'
 import CloudinaryImage from 'components/CloudinaryImage'
@@ -25,13 +25,13 @@ const ServiceDetailsNoIncome = ({
   church,
   loading,
 }: ServiceDetailsProps) => {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   useEffect(() => {
     if (!service && !loading) {
-      navigate(-1)
+      router.back()
     }
-  }, [service, navigate])
+  }, [service, loading, router])
 
   if (loading) {
     return <SpinnerPage />
@@ -125,7 +125,7 @@ const ServiceDetailsNoIncome = ({
                   <Button
                     className="btn-graphs"
                     onClick={() => {
-                      navigate(`/${church?.__typename.toLowerCase()}/graphs`)
+                      router.push(`/${church?.__typename.toLowerCase()}/graphs`)
                     }}
                   >
                     View Last 4 Weeks

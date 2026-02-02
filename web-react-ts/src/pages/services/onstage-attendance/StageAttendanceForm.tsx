@@ -1,7 +1,7 @@
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -36,7 +36,7 @@ const StageAttendanceForm = ({
   recordType,
 }: StageAttendanceFormProps) => {
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: FormOptions = {
     serviceDate: new Date().toISOString().slice(0, 10),
@@ -79,7 +79,7 @@ const StageAttendanceForm = ({
       })
 
       clickCard(res.data.RecordMinistryOnStageAttendance)
-      navigate(`/${churchType}/onstage-attendance-details`)
+      router.push(`/${churchType}/onstage-attendance-details`)
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error)
@@ -133,7 +133,9 @@ const StageAttendanceForm = ({
 
                       <MultiImageUpload
                         name="onStagePictures"
-                        uploadPreset={import.meta.env.VITE_CLOUDINARY_SERVICES}
+                        uploadPreset={
+                          process.env.NEXT_PUBLIC_CLOUDINARY_SERVICES
+                        }
                         placeholder="Choose"
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="upload pictures"

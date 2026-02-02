@@ -18,7 +18,7 @@ import {
 } from 'pages/services/banking/self-banking/bankingQueries'
 import React, { useState } from 'react'
 import { Button, Col, Container, Modal, Row, Spinner } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import * as Yup from 'yup'
 import { PURCHASE_DOWNLOAD_CREDITS } from './PurchaseCredits.gql'
 
@@ -41,7 +41,7 @@ const PurchaseDownloadCredits = (props: PurchaseCreditsProps) => {
   const [PurchaseCredits] = useMutation(PURCHASE_DOWNLOAD_CREDITS)
   const [SendPaymentOTP] = useMutation(SEND_PAYMENT_OTP)
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { togglePopup, isOpen } = usePopup()
   const { show, handleClose, handleShow } = useModal()
@@ -103,7 +103,7 @@ const PurchaseDownloadCredits = (props: PurchaseCreditsProps) => {
         handleShow()
       } else {
         setSubmitting(false)
-        navigate(
+        router.push(
           `/download-reports/${church.__typename.toLowerCase()}/confirm-payment-delay`
         )
       }
@@ -159,7 +159,7 @@ const PurchaseDownloadCredits = (props: PurchaseCreditsProps) => {
                               otp: otp,
                             },
                           }).then(() =>
-                            navigate(
+                            router.push(
                               '/download-reports/council/confirm-payment-delay'
                             )
                           )
@@ -186,7 +186,7 @@ const PurchaseDownloadCredits = (props: PurchaseCreditsProps) => {
                           })
                             .then(() => {
                               setOtpSent(false)
-                              navigate(
+                              router.push(
                                 '/download-reports/council/confirm-payment-delay'
                               )
                             })

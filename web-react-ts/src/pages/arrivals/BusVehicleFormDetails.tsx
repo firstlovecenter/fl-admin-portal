@@ -19,7 +19,7 @@ import {
 } from 'permission-utils'
 import { useContext, useState } from 'react'
 import { Accordion, Button, Col, Container, Row, Table } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { BacentaWithArrivals, VehicleRecord } from './arrivals-types'
 import { beforeCountingDeadline } from './arrivals-utils'
 import { DISPLAY_VEHICLE_RECORDS } from './arrivalsQueries'
@@ -35,7 +35,7 @@ const BusVehicleFormDetails = () => {
   const { data, loading, error } = useQuery(DISPLAY_VEHICLE_RECORDS, {
     variables: { vehicleRecordId: vehicleRecordId, bacentaId: bacentaId },
   })
-  const navigate = useNavigate()
+  const router = useRouter()
   const vehicle: VehicleRecord = data?.vehicleRecords[0]
   const church: BacentaWithArrivals = data?.bacentas[0]
 
@@ -263,7 +263,7 @@ const BusVehicleFormDetails = () => {
             <RoleView roles={permitArrivalsPayer()}>
               <Button
                 variant="outline-info"
-                onClick={() => navigate('/arrivals/vehicles-to-be-paid')}
+                onClick={() => router.push('/arrivals/vehicles-to-be-paid')}
               >
                 Continue Payments
               </Button>
@@ -278,7 +278,7 @@ const BusVehicleFormDetails = () => {
                     <Button
                       variant="warning"
                       onClick={() =>
-                        navigate('/arrivals/submit-vehicle-attendance')
+                        router.push('/arrivals/submit-vehicle-attendance')
                       }
                     >
                       I Want to Count
@@ -289,7 +289,7 @@ const BusVehicleFormDetails = () => {
             )}
             <Button
               variant="outline-danger"
-              onClick={() => navigate('/arrivals/bacentas-to-count')}
+              onClick={() => router.push('/arrivals/bacentas-to-count')}
             >
               Continue Counting
             </Button>
@@ -297,7 +297,7 @@ const BusVehicleFormDetails = () => {
           <Button
             variant="outline-primary"
             size="lg"
-            onClick={() => navigate('/arrivals')}
+            onClick={() => router.push('/arrivals')}
           >
             Back to Arrivals Home
           </Button>

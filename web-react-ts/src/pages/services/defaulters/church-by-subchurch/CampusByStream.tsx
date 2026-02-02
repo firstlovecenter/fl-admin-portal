@@ -4,7 +4,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
 import { Card, Col, Row, Button, Container } from 'react-bootstrap'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { CAMPUS_BY_STREAM } from '../DefaultersQueries'
 import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -20,7 +20,7 @@ const CampusByStream = () => {
       id: campusId,
     },
   })
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -45,7 +45,7 @@ const CampusByStream = () => {
                       <Card.Body
                         onClick={() => {
                           clickCard(stream)
-                          navigate('/services/stream-by-council')
+                          router.push('/services/stream-by-council')
                         }}
                       >
                         <div className="fw-bold">

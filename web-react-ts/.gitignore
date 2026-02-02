@@ -1,4 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+.next
+
+# Next.js build output
+/dist
+/.next
+/out
 
 # dependencies
 /node_modules

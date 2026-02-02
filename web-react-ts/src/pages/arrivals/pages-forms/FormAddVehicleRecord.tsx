@@ -6,7 +6,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import { useContext } from 'react'
 import * as Yup from 'yup'
 import { Card, Col, Container, Row } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { BACENTA_ARRIVALS } from '../arrivalsQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -27,7 +27,7 @@ type FormOptions = {
 }
 
 const FormAddVehicleRecord = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { bacentaId, clickCard } = useContext(ChurchContext)
   const { bussingRecordId } = useContext(ServiceContext)
 
@@ -73,7 +73,7 @@ const FormAddVehicleRecord = () => {
 
       onSubmitProps.resetForm()
       onSubmitProps.setSubmitting(false)
-      navigate(`/bacenta/vehicle-details`)
+      router.push(`/bacenta/vehicle-details`)
     } catch (error: any) {
       throwToSentry('There was a problem submitting your form', error)
     }
@@ -121,7 +121,7 @@ const FormAddVehicleRecord = () => {
                 <ImageUpload
                   label="Upload A Bussing Picture"
                   name="picture"
-                  uploadPreset={import.meta.env.VITE_CLOUDINARY_BUSSING}
+                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_BUSSING}
                   placeholder="Choose"
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="UploadBussingPicture"

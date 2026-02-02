@@ -7,7 +7,7 @@ import {
 } from '../update/StatusChanges'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { DISPLAY_FELLOWSHIP } from '../display/ReadQueries'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -28,7 +28,7 @@ const MakeHubFellowship = () => {
     SET_HUB_FELLOWSHIP_TO_REGULAR_FELLOWSHIP
   )
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const fellowship = data?.fellowships[0]
 
   const initialValues: {
@@ -52,7 +52,7 @@ const MakeHubFellowship = () => {
         },
       })
       clickCard(fellowshipId)
-      navigate('/fellowship/displaydetails')
+      router.push('/fellowship/displaydetails')
     } catch (error) {
       throwToSentry('Error Making Hub Fellowship ', error)
     } finally {
@@ -69,7 +69,7 @@ const MakeHubFellowship = () => {
         },
       })
       clickCard(fellowshipId)
-      navigate('/fellowship/displaydetails')
+      router.push('/fellowship/displaydetails')
     } catch (error) {
       throwToSentry('Error Removing Hub Fellowship ', error)
     } finally {

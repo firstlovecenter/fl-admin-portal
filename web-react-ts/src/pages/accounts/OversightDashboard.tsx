@@ -6,13 +6,13 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import HeadingSecondary from 'components/HeadingSecondary'
 import './accounts-colors.css'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import AccountBalanceCard from './components/AccountBalanceCard'
 import { OVERSIGHT_ACCOUNT_DASHBOARD } from './accountsGQL'
 
 const OversightDashboard = () => {
   const { oversightId } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { data, loading, error } = useQuery(OVERSIGHT_ACCOUNT_DASHBOARD, {
     variables: {
@@ -37,7 +37,7 @@ const OversightDashboard = () => {
           <Button
             variant="secondary"
             className="text-start py-3"
-            onClick={() => navigate('/accounts/oversight/view-campuses')}
+            onClick={() => router.push('/accounts/oversight/view-campuses')}
           >
             View Campuses
           </Button>

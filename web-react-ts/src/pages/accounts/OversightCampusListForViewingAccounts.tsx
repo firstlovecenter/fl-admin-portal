@@ -11,11 +11,11 @@ import CurrencySpan from 'components/CurrencySpan'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { Form, Formik } from 'formik'
 import Input from 'components/formik/Input'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const CampusCouncilList = () => {
   const { oversightId, clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { data, loading, error } = useQuery(OVERSIGHT_BY_CAMPUS_ACCOUNT, {
     variables: {
@@ -117,7 +117,7 @@ const CampusCouncilList = () => {
                   key={stream.id}
                   onClick={() => {
                     clickCard(campus)
-                    navigate('/accounts/campus/dashboard')
+                    router.push('/accounts/campus/dashboard')
                   }}
                   className="d-grid"
                 >

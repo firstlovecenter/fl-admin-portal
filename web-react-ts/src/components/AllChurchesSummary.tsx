@@ -1,8 +1,10 @@
+'use client'
+
 import { Church, ChurchLevel } from 'global-types'
 import { plural } from 'global-utils'
 import React from 'react'
 import { Container, Card, Row, Col } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import './AllChurchesSummary.css'
 
 type AllChurchesSummaryProps = {
@@ -29,7 +31,7 @@ const AllChurchesSummary = (props: AllChurchesSummaryProps) => {
         </Col>
         <Col>
           <Card className="mb-2 card-border">
-            <Link to={`/${route}/members`}>
+            <Link href={`/${route}/members`}>
               <Card.Body className="summary-padding">
                 <Row className="text-muted text-small">Members</Row>
                 <Row className="number">{props?.memberCount}</Row>
@@ -40,7 +42,7 @@ const AllChurchesSummary = (props: AllChurchesSummaryProps) => {
         {churchType === 'Bacenta' || churchType === 'IC Bacenta' ? (
           <Col>
             <Card className="mb-2 card-border">
-              <Link to="/hub/displayall">
+              <Link href="/hub/displayall">
                 <Card.Body className="summary-padding">
                   <Row className="text-muted text-small">Hubs</Row>
                   <Row className="number">{church?.hubs?.length}</Row>

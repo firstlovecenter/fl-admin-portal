@@ -3,7 +3,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
 import { Card, Button } from 'react-bootstrap'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   GovernorshipWithDefaulters,
   CouncilWithDefaulters,
@@ -17,7 +17,7 @@ type DefaulterCardProps = {
 }
 
 const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
 
@@ -34,7 +34,9 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
         <Card.Header
           onClick={() => {
             clickCard(defaulter)
-            navigate(`/${defaulter?.__typename.toLowerCase()}/displaydetails`)
+            router.push(
+              `/${defaulter?.__typename.toLowerCase()}/displaydetails`
+            )
           }}
           className="fw-bold"
         >
@@ -54,7 +56,7 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             onClick={() => {
               clickCard(defaulter)
               clickCard(serviceDetails)
-              navigate(
+              router.push(
                 link || `/${defaulter?.__typename.toLowerCase()}/displaydetails`
               )
             }}

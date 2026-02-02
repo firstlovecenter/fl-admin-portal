@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import MemberTable from './MemberTable'
 import { memberFilter } from './member-filter-utils'
 import { debounce } from '../../global-utils'
@@ -123,7 +123,7 @@ const MembersGrid = (props) => {
                   ...permitLeaderAdmin('Hub'),
                 ]}
               >
-                <Link to="/member/addmember" className="just-text-btn">
+                <Link href="/member/addmember" className="just-text-btn">
                   ADD NEW
                 </Link>
               </RoleView>

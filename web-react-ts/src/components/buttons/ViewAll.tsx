@@ -1,11 +1,13 @@
+'use client'
+
 import React from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import './ViewAll.css'
 import { Button } from 'react-bootstrap'
 
-const ViewAll = ({ to }: { to: string }) => {
+const ViewAll = ({ href }: { href: string }) => {
   return (
-    <Link className="view-all" to={to}>
+    <Link className="view-all" href={href}>
       <Button variant="outline-success">VIEW ALL</Button>
     </Link>
   )

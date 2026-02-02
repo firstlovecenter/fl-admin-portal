@@ -8,7 +8,7 @@ import * as Yup from 'yup'
 import { useContext } from 'react'
 import { Accordion, Col, Container, Row } from 'react-bootstrap'
 import { COUNCIL_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import RoleView from 'auth/RoleView'
 import {
@@ -45,7 +45,7 @@ const CouncilDashboard = () => {
   const { isOpen, togglePopup } = usePopup()
   const { currentUser } = useContext(MemberContext)
   const { arrivalDate, setArrivalDate, councilId } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const today = new Date().toISOString().slice(0, 10)
   const { data, loading, error, refetch } = useQuery(
     COUNCIL_ARRIVALS_DASHBOARD,
@@ -102,7 +102,7 @@ const CouncilDashboard = () => {
     { title: 'Change Arrivals Admin', onClick: togglePopup },
     {
       title: 'Arrivals Payment Governorship',
-      onClick: () => navigate('/council/arrivals-payers'),
+      onClick: () => router.push('/council/arrivals-payers'),
     },
   ]
 
@@ -224,7 +224,9 @@ const CouncilDashboard = () => {
                   <div className="d-grid gap-2">
                     <MenuButton
                       title="Bacentas With No Activity"
-                      onClick={() => navigate('/arrivals/bacentas-no-activity')}
+                      onClick={() =>
+                        router.push('/arrivals/bacentas-no-activity')
+                      }
                       number={council?.bacentasNoActivityCount.toString()}
                       color="red"
                       iconBg
@@ -232,7 +234,9 @@ const CouncilDashboard = () => {
                     />
                     <MenuButton
                       title="Bacentas Mobilising"
-                      onClick={() => navigate('/arrivals/bacentas-mobilising')}
+                      onClick={() =>
+                        router.push('/arrivals/bacentas-mobilising')
+                      }
                       number={council?.bacentasMobilisingCount.toString()}
                       color="orange"
                       iconBg
@@ -240,7 +244,9 @@ const CouncilDashboard = () => {
                     />
                     <MenuButton
                       title="Bacentas On The Way"
-                      onClick={() => navigate('/arrivals/bacentas-on-the-way')}
+                      onClick={() =>
+                        router.push('/arrivals/bacentas-on-the-way')
+                      }
                       number={council?.bacentasOnTheWayCount.toString()}
                       color="yellow"
                       iconBg
@@ -249,7 +255,7 @@ const CouncilDashboard = () => {
 
                     <MenuButton
                       title="Bacentas That Didn't Bus"
-                      onClick={() => navigate('/arrivals/bacentas-below-8')}
+                      onClick={() => router.push('/arrivals/bacentas-below-8')}
                       number={council?.bacentasBelow8Count.toString()}
                       iconBg
                       color="red"
@@ -259,7 +265,7 @@ const CouncilDashboard = () => {
                     <MenuButton
                       title="Bacentas That Have Arrived"
                       onClick={() =>
-                        navigate('/arrivals/bacentas-have-arrived')
+                        router.push('/arrivals/bacentas-have-arrived')
                       }
                       number={council?.bacentasHaveArrivedCount.toString()}
                       iconBg
@@ -284,7 +290,7 @@ const CouncilDashboard = () => {
                       <MenuButton
                         title="Vehicles That Have Been Paid"
                         onClick={() =>
-                          navigate(
+                          router.push(
                             authorisedLink(
                               currentUser,
                               permitArrivalsPayer(),
@@ -301,7 +307,7 @@ const CouncilDashboard = () => {
                       <MenuButton
                         title="Vehicles To Be Paid"
                         onClick={() =>
-                          navigate(
+                          router.push(
                             authorisedLink(
                               currentUser,
                               permitArrivalsPayer(),
@@ -317,7 +323,7 @@ const CouncilDashboard = () => {
 
                       <MenuButton
                         title="Amount That Has Been Paid"
-                        onClick={() => navigate('#')}
+                        onClick={() => router.push('#')}
                         number={council?.vehicleAmountHasBeenPaid.toString()}
                         color="green"
                         iconBg
@@ -325,7 +331,7 @@ const CouncilDashboard = () => {
                       />
                       <MenuButton
                         title="Amount To Be Paid"
-                        onClick={() => navigate('#')}
+                        onClick={() => router.push('#')}
                         number={council?.vehicleAmountToBePaid.toString()}
                         color="yellow"
                         iconBg

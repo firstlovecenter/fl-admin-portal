@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { GET_COUNCIL_GOVERNORSHIPS } from '../../../queries/ListQueries'
@@ -14,7 +14,7 @@ import { FormikHelpers } from 'formik'
 const CreateGovernorship = () => {
   const { clickCard, councilId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: GovernorshipFormValues = {
     name: '',
@@ -64,7 +64,7 @@ const CreateGovernorship = () => {
       clickCard(res.data.CreateGovernorship)
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/governorship/displaydetails`)
+      router.push(`/governorship/displaydetails`)
     } catch (error: any) {
       throwToSentry('There was an error creating the governorship', error)
       onSubmitProps.setSubmitting(false)

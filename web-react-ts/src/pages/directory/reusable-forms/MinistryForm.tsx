@@ -9,7 +9,7 @@ import {
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_MINISTRY_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   Button,
   Container,
@@ -65,7 +65,7 @@ const MinistryForm = ({
   const { clickCard, creativeArtsId, ministryId } = useContext(ChurchContext)
   const [hubCouncilModal, setHubCouncilModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [buttonLoading, setButtonLoading] = useState(false)
   const { data, loading, error } = useQuery(GET_CREATIVEARTS_STREAMS, {
@@ -272,7 +272,7 @@ const MinistryForm = ({
                         setButtonLoading(false)
                         clickCard(res.data.CloseDownMinistry)
                         setCloseDown(false)
-                        navigate(`/ministry/displayall`)
+                        router.push(`/ministry/displayall`)
                       } catch (error) {
                         setButtonLoading(false)
                         throwToSentry(

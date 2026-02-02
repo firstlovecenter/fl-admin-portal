@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_COUNCIL_GOVERNORSHIPS } from 'queries/ListQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -26,7 +26,7 @@ const DisplayAllGovernorships = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to="/council/displaydetails"
+              href="/council/displaydetails"
               onClick={() => {
                 clickCard(governorships?.council)
               }}
@@ -36,7 +36,7 @@ const DisplayAllGovernorships = () => {
             {council?.admin ? (
               <Link
                 className="pb-1 text-white text-small d-block"
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(council?.admin)
                 }}
@@ -49,7 +49,7 @@ const DisplayAllGovernorships = () => {
           <RoleView roles={permitAdmin('Council')} directoryLock>
             <Col className="col-auto">
               <Link
-                to="/governorship/addgovernorship"
+                href="/governorship/addgovernorship"
                 className="btn btn-danger"
               >
                 Add Governorship

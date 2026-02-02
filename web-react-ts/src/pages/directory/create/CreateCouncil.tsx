@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_COUNCIL_MUTATION } from './CreateMutations'
@@ -13,7 +13,7 @@ import { FormikHelpers } from 'formik'
 const CreateCouncil = () => {
   const { clickCard, streamId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: CouncilFormValues = {
     name: '',
@@ -58,7 +58,7 @@ const CreateCouncil = () => {
       clickCard({ id: values.stream, __typename: 'Stream' })
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/council/displaydetails`)
+      router.push(`/council/displaydetails`)
     } catch (error: any) {
       onSubmitProps.setSubmitting(false)
       throwToSentry('There was an error creating council', error)

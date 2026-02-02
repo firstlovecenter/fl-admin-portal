@@ -1,5 +1,8 @@
+'use client'
+
 import React, { useContext } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import DetailsCard from '../card/DetailsCard'
 import Timeline, { TimelineElement } from '../Timeline/Timeline'
 import EditButton from '../buttons/EditButton'
@@ -64,7 +67,7 @@ type DisplayChurchDetailsProps = {
 const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
   const { setUserChurch } = useSetUserChurch()
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   let needsAdmin
 
   let roles: Role[] = []
@@ -172,7 +175,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
                         member={props.admin}
                         onClick={() => {
                           clickCard(props.admin)
-                          navigate('/member/displaydetails')
+                          router.push('/member/displaydetails')
                         }}
                       />
                     )}
@@ -231,7 +234,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
             {props.details.map((detail, i) => (
               <Col key={i} xs={detail.width ?? 6}>
                 <DetailsCard
-                  onClick={() => navigate(detail.link)}
+                  onClick={() => router.push(detail.link)}
                   heading={detail.title}
                   detail={
                     !props.loading ? detail?.number?.toString() || '0' : ''
@@ -262,7 +265,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
                   name: props.name,
                   __typename: props.churchType,
                 })
-                navigate(`/trends`)
+                router.push(`/trends`)
               }}
             >
               <BsFillBarChartFill /> View Trends
@@ -287,7 +290,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
                       __typename: props.churchType,
                     })
 
-                    navigate(`/services/${props.churchType.toLowerCase()}`)
+                    router.push(`/services/${props.churchType.toLowerCase()}`)
                   }}
                 >
                   <CgFileDocument /> Meeting Forms
@@ -322,7 +325,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
               <div className="col-auto">
                 <Link
                   className="card text-secondary px-1"
-                  to={`/${props?.subLevel.toLowerCase()}/displayall`}
+                  href={`/${props?.subLevel.toLowerCase()}/displayall`}
                 >
                   {`View All ${plural(props.subLevel)}`}
                 </Link>
@@ -367,7 +370,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
                 className="btn-graphs"
                 variant={currentTheme as 'dark' | 'light'}
                 onClick={() =>
-                  navigate(
+                  router.push(
                     `/${props.subLevel?.toLowerCase()}/add${props.subLevel?.toLowerCase()}`
                   )
                 }
@@ -385,7 +388,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
               <h3 className="mb-0">CHURCH HISTORY</h3>
             </Col>
             <Col className="col-auto">
-              <ViewAll to={`/${props.churchType.toLowerCase()}/history`} />
+              <ViewAll href={`/${props.churchType.toLowerCase()}/history`} />
             </Col>
           </Row>
 

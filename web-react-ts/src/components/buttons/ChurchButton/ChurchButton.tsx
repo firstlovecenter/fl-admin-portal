@@ -1,7 +1,9 @@
+'use client'
+
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import './ChurchButton.css'
 import useSetUserChurch from 'hooks/useSetUserChurch'
 import { Button } from 'react-bootstrap'
@@ -24,7 +26,7 @@ const ChurchButton = (props: ChurchButtonProps) => {
       as="div"
       className="card-buttons py-2 px-3 text-center text-nowrap"
     >
-      <Link to={`/${church.__typename.toLowerCase()}/displaydetails`}>
+      <Link href={`/${church.__typename.toLowerCase()}/displaydetails`}>
         <Button
           variant="gray"
           className="card-buttons py-2 px-3 text-center text-nowrap"

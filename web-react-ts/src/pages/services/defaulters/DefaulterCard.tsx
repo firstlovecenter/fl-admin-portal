@@ -11,7 +11,7 @@ import {
   TelephoneFill,
   Whatsapp,
 } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
   BacentaWithDefaulters,
@@ -27,7 +27,7 @@ type DefaulterCardProps = {
 }
 
 const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const [UndoCancelledService] = useMutation(UNDO_CANCELLED_SERVICE)
@@ -49,7 +49,9 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
         <Card.Header
           onClick={() => {
             clickCard(defaulter)
-            navigate(`/${defaulter?.__typename.toLowerCase()}/displaydetails`)
+            router.push(
+              `/${defaulter?.__typename.toLowerCase()}/displaydetails`
+            )
           }}
           className="fw-bold"
         >
@@ -76,7 +78,7 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             onClick={() => {
               clickCard(defaulter)
               clickCard(serviceDetails)
-              navigate(
+              router.push(
                 link || `/${defaulter?.__typename.toLowerCase()}/displaydetails`
               )
             }}
@@ -132,7 +134,7 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
                     }).then(() => {
                       alertMsg('Leader can now fill the form again. Thank you!')
                       clickCard(defaulter)
-                      navigate(
+                      router.push(
                         `/${defaulter?.__typename.toLowerCase()}/displaydetails`
                       )
                     })

@@ -9,12 +9,12 @@ import NoDataComponent from 'pages/arrivals/CompNoData'
 import React, { useContext } from 'react'
 import { Card, Col, Container, Row } from 'react-bootstrap'
 import { CheckCircleFill, XCircleFill } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { COUNCIL_BANKING_SLIP_QUERIES } from '../../ServicesQueries'
 
 const CouncilBankingSlipView = () => {
   const { councilId, clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data, loading, error } = useQuery(COUNCIL_BANKING_SLIP_QUERIES, {
     variables: { councilId: councilId },
   })
@@ -48,7 +48,7 @@ const CouncilBankingSlipView = () => {
               onClick={() => {
                 clickCard(service)
 
-                navigate('/council/service-details')
+                router.push('/council/service-details')
               }}
             >
               <Card.Header>

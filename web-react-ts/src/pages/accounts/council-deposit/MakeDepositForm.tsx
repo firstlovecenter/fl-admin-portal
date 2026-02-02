@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -24,7 +24,7 @@ import { CouncilForAccounts } from '../accounts-types'
 const MakeDepositForm = () => {
   const { councilId, clickCard } = useContext(ChurchContext)
   const { show, handleClose, handleShow } = useModal()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { data, loading, error } = useQuery(COUNCIL_ACCOUNT_DASHBOARD, {
     variables: {
@@ -140,9 +140,9 @@ const MakeDepositForm = () => {
       })
 
       if (parseFloat(values.hrAmount) !== council?.hrAmount) {
-        navigate('/accounts/council/dashboard')
+        router.push('/accounts/council/dashboard')
       } else {
-        navigate('/accounts/transaction-details/')
+        router.push('/accounts/transaction-details/')
       }
     } catch (err) {
       throwToSentry('Error Depositing into Council Account', err)

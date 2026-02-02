@@ -4,7 +4,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
 import { Card, Col, Row, Button, Container } from 'react-bootstrap'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
@@ -20,7 +20,7 @@ const OversightByCampus = () => {
       id: oversightId,
     },
   })
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -45,7 +45,7 @@ const OversightByCampus = () => {
                       <Card.Body
                         onClick={() => {
                           clickCard(campus)
-                          navigate('/services/campus-by-stream')
+                          router.push('/services/campus-by-stream')
                         }}
                       >
                         <div className="fw-bold">

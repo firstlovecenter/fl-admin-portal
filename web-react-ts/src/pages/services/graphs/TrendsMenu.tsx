@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
 import { Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import MenuButton from 'components/buttons/MenuButton'
 import Stars from 'assets/icons/Stars'
 import Charts from 'assets/icons/Charts'
@@ -12,7 +12,7 @@ import { permitLeaderAdmin } from 'permission-utils'
 
 const TrendsMenu = () => {
   const { currentUser, theme } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const church = currentUser.currentChurch
   const churchType = currentUser.currentChurch?.__typename
@@ -31,7 +31,7 @@ const TrendsMenu = () => {
             iconComponent={<Charts />}
             title="Last 4 Weeks"
             color="members"
-            onClick={() => navigate(`/${churchType.toLowerCase()}/graphs`)}
+            onClick={() => router.push(`/${churchType.toLowerCase()}/graphs`)}
             caption={'Income and Attendance Graphs'}
           />
           <MenuButton
@@ -39,7 +39,7 @@ const TrendsMenu = () => {
             title="Quick Facts"
             color="quick-facts"
             onClick={() =>
-              navigate(
+              router.push(
                 `/quick-facts/this-month/${church.__typename.toLowerCase()}`
               )
             }
@@ -52,7 +52,7 @@ const TrendsMenu = () => {
                 color="green"
                 iconComponent={<Download />}
                 onClick={() =>
-                  navigate(
+                  router.push(
                     `/download-reports/${church.__typename.toLowerCase()}`
                   )
                 }

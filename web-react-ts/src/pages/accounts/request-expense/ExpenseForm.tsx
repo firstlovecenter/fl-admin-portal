@@ -4,7 +4,7 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import useModal from 'hooks/useModal'
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Button, Container, Modal } from 'react-bootstrap'
@@ -25,7 +25,7 @@ const ExpenseForm = () => {
   const { councilId, clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const { show, handleClose, handleShow } = useModal()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { data, loading, error } = useQuery(COUNCIL_ACCOUNT_DASHBOARD, {
     variables: {
@@ -71,7 +71,7 @@ const ExpenseForm = () => {
       })
 
       clickCard(res.data.ExpenseRequest)
-      navigate('/accounts/transaction-details/')
+      router.push('/accounts/transaction-details/')
     } catch (err) {
       throwToSentry('Error Making Expense Request', err)
     } finally {

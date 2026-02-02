@@ -1,25 +1,40 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
-    "target": "ESNext",
+    "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["vite/client", "vite-plugin-svgr/client", "node"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
+    "jsx": "preserve",
     "module": "esnext",
     "moduleResolution": "node",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
-    "noFallthroughCasesInSwitch": true
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "components/*": ["./src/components/*"],
+      "pages/*": ["./src/pages/*"],
+      "contexts/*": ["./src/contexts/*"],
+      "hooks/*": ["./src/hooks/*"],
+      "utils/*": ["./src/utils/*"],
+      "queries/*": ["./src/queries/*"],
+      "auth/*": ["./src/auth/*"],
+      "assets/*": ["./src/assets/*"],
+      "global-types": ["./src/global-types.ts"],
+      "global-utils": ["./src/global-utils.ts"],
+      "permission-utils": ["./src/permission-utils.ts"]
+    }
   },
-  "include": ["src", "generate-build-version.js", "src/global-types.ts"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.test.tsx", "vite.config.ts"]
 }

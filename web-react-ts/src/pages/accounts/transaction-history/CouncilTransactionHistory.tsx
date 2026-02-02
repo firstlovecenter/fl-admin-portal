@@ -8,7 +8,7 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import CurrencySpan from 'components/CurrencySpan'
 import { CSVLink } from 'react-csv'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { AccountTransaction } from './transaction-types'
 import { QuestionCircleFill } from 'react-bootstrap-icons'
 import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs'
@@ -19,7 +19,7 @@ const CouncilTransactionHistory = () => {
   const { data, loading, error } = useQuery(GET_COUNCIL_TRANSACTION_HISTORY, {
     variables: { councilId },
   })
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const council = data?.councils[0]
 
@@ -102,7 +102,7 @@ const CouncilTransactionHistory = () => {
                 className="mb-1"
                 onClick={() => {
                   clickCard(transaction)
-                  navigate('/accounts/transaction-details')
+                  router.push('/accounts/transaction-details')
                 }}
               >
                 <Card.Body className="py-1">

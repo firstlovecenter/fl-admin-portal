@@ -6,7 +6,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import React, { useContext, useEffect } from 'react'
 import * as Yup from 'yup'
 import { Col, Container, Row } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { BACENTA_ARRIVALS } from '../arrivalsQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -24,7 +24,7 @@ type FormOptions = {
 }
 
 const FormMobilisationSubmission = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { bacentaId, clickCard } = useContext(ChurchContext)
   const today = new Date().toISOString().slice(0, 10)
   const initialValues: FormOptions = {
@@ -60,7 +60,7 @@ const FormMobilisationSubmission = () => {
         clickCard(res.data.UploadMobilisationPicture)
         onSubmitProps.resetForm()
         onSubmitProps.setSubmitting(false)
-        navigate(`/bacenta/bussing-details`)
+        router.push(`/bacenta/bussing-details`)
       })
       .catch((error) => {
         alertMsg(error)
@@ -75,9 +75,9 @@ const FormMobilisationSubmission = () => {
     )
 
     if (data && !beforeMobilisationDeadline(data?.bacentas[0], bussing)) {
-      navigate('/arrivals/bacenta')
+      router.push('/arrivals/bacenta')
     }
-  }, [data?.bacentas, navigate, data])
+  }, [data?.bacentas, router, data])
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
@@ -118,7 +118,7 @@ const FormMobilisationSubmission = () => {
                   <ImageUpload
                     name="mobilisationPicture"
                     uploadPreset={
-                      import.meta.env.VITE_CLOUDINARY_BUS_MOBILISATION
+                      process.env.NEXT_PUBLIC_CLOUDINARY_BUS_MOBILISATION
                     }
                     error={formik.errors.mobilisationPicture}
                     placeholder="Upload Mobilisation Picture"

@@ -4,7 +4,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberWithoutBioData } from 'global-types'
 import React, { useContext } from 'react'
 import { Col, Row } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 
 const LeaderAvatar = ({
   leader,
@@ -20,7 +20,7 @@ const LeaderAvatar = ({
 
   return (
     <Link
-      to="/member/displaydetails"
+      href="/member/displaydetails"
       onClick={() => {
         clickCard(leader)
       }}

@@ -14,7 +14,7 @@ import {
   CONFIRM_VEHICLE_BY_ADMIN,
   SET_VEHICLE_SUPPORT,
 } from '../arrivalsMutation'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import SubmitButton from 'components/formik/SubmitButton'
 import { alertMsg, throwToSentry } from 'global-utils'
 import { BacentaWithArrivals, VehicleRecord } from '../arrivals-types'
@@ -32,7 +32,7 @@ type FormOptions = {
 }
 
 const FormAttendanceConfirmation = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { bacentaId } = useContext(ChurchContext)
   const { vehicleRecordId } = useContext(ServiceContext)
 
@@ -105,10 +105,10 @@ const FormAttendanceConfirmation = () => {
       bacenta?.stream_name === 'Anagkazo Encounter'
     ) {
       //if there is no value for the vehicle top up
-      navigate(`/bacenta/vehicle-details`)
+      router.push(`/bacenta/vehicle-details`)
     }
 
-    navigate(`/bacenta/vehicle-details`)
+    router.push(`/bacenta/vehicle-details`)
   }
 
   return (

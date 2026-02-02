@@ -4,11 +4,11 @@ import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'
 import { Container } from 'react-bootstrap'
 import { PencilSquare, XCircleFill } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const StreamJoint = () => {
   const { currentUser, theme } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
@@ -25,14 +25,14 @@ const StreamJoint = () => {
             iconComponent={<PencilSquare />}
             title="Fill Service Form"
             color="members"
-            onClick={() => navigate(`/stream/record-service`)}
+            onClick={() => router.push(`/stream/record-service`)}
             noCaption
           />
           <MenuButton
             iconComponent={<XCircleFill />}
             title="Cancel Service"
             color="members"
-            onClick={() => navigate(`/services/stream/no-service`)}
+            onClick={() => router.push(`/services/stream/no-service`)}
             noCaption
           />
           {/* <MenuButton
@@ -40,7 +40,7 @@ const StreamJoint = () => {
             title="Fill Joint Service Form"
             color="members"
             noCaption
-            onClick={() => navigate(`/stream/record-service`)}
+            onClick={() => router.push(`/stream/record-service`)}
           /> */}
         </div>
       </Container>

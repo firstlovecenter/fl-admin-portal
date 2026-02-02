@@ -31,7 +31,7 @@ import { BarLoader } from 'react-spinners'
 import { FaPhone, FaSave, FaStickyNote } from 'react-icons/fa'
 import { Whatsapp } from 'react-bootstrap-icons'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { CREATE_MEMBER_ACCOUNT } from '../create/CreateMutations'
 import useModal from 'hooks/useModal'
 import { Form, Formik, FormikHelpers } from 'formik'
@@ -132,7 +132,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
     CREATE_MEMBER_ACCOUNT
   )
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const errorToThrow: any = error
   throwToSentry(errorToThrow)
 
@@ -426,7 +426,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
           <div
             onClick={() => {
               clickCard(memberChurch?.bacenta)
-              navigate('/bacenta/displaydetails')
+              router.push('/bacenta/displaydetails')
             }}
           >
             <DetailsCard
@@ -457,7 +457,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
             </PlaceholderCustom>
           </Col>
           <Col className="col-auto">
-            <ViewAll to={`/member/history`} />
+            <ViewAll href={`/member/history`} />
           </Col>
         </Row>
         <Timeline record={memberChurch?.history} limit={3} />

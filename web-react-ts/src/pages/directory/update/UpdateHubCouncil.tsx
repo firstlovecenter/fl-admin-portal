@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -20,7 +20,7 @@ const UpdateHubCouncil = () => {
     variables: { id: hubCouncilId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const hubCouncil = data?.hubCouncils[0]
 
   const initialValues: HubCouncilFormValues = {
@@ -91,7 +91,7 @@ const UpdateHubCouncil = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/hubCouncil/displaydetails`)
+          router.push(`/hubCouncil/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -106,7 +106,7 @@ const UpdateHubCouncil = () => {
       }
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/hubCouncil/displaydetails`)
+      router.push(`/hubCouncil/displaydetails`)
     } catch (err: any) {
       throwToSentry('There was a problem updating this hubCouncil', err)
       onSubmitProps.setSubmitting(false)

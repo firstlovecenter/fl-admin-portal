@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { parsePhoneNum } from 'global-utils'
 
@@ -17,7 +17,7 @@ import { FormikHelpers } from 'formik'
 
 const UserProfileEditPage = () => {
   const { currentUser } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const {
     data: memberData,
@@ -79,7 +79,7 @@ const UserProfileEditPage = () => {
     })
 
     onSubmitProps.setSubmitting(false)
-    navigate(`/user-profile`)
+    router.push(`/user-profile`)
   }
 
   return (

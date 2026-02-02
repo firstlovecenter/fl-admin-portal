@@ -11,7 +11,7 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 
 import { parseTimeToDate } from 'jd-date-utils'
 import { parseNeoTime } from 'jd-date-utils'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import Input from 'components/formik/Input'
 
 type FormOptions = {
@@ -29,7 +29,7 @@ const SetArrivalsTime = () => {
     variables: { id: church?.id },
   })
   const stream = data?.streams[0]
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: FormOptions = {
     id: church?.id,
@@ -64,7 +64,7 @@ const SetArrivalsTime = () => {
     })
     onSubmitProps.setSubmitting(false)
 
-    navigate('/stream/arrival-times')
+    router.push('/stream/arrival-times')
   }
 
   return (

@@ -1,7 +1,7 @@
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { RECORD_CANCELLED_SERVICE } from './RecordServiceMutations'
 import { useMutation } from '@apollo/client'
 import { Col, Container, Row } from 'react-bootstrap'
@@ -31,7 +31,7 @@ const CancelledServiceForm = ({
   churchType: string
 }) => {
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [RecordCancelledService] = useMutation(RECORD_CANCELLED_SERVICE)
 
@@ -63,7 +63,7 @@ const CancelledServiceForm = ({
         onSubmitProps.setSubmitting(false)
         onSubmitProps.resetForm()
         clickCard(res.data.RecordCancelledService)
-        navigate(`/${churchType}/service-details`)
+        router.push(`/${churchType}/service-details`)
       })
       .catch((error) => throwToSentry(error))
   }

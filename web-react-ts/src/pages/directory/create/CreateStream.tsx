@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_STREAM_MUTATION } from './CreateMutations'
@@ -13,7 +13,7 @@ import { FormikHelpers } from 'formik'
 const CreateStream = () => {
   const { clickCard, campusId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: StreamFormValues = {
     name: '',
@@ -63,7 +63,7 @@ const CreateStream = () => {
       clickCard(res.data.CreateStream)
       setSubmitting(false)
       resetForm()
-      navigate(`/stream/displaydetails`)
+      router.push(`/stream/displaydetails`)
     } catch (error) {
       throwToSentry('There was an error creating stream', error)
       setSubmitting(false)

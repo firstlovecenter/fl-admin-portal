@@ -11,7 +11,7 @@ import { useContext } from 'react'
 import { Container, Row, Col, Table, Button } from 'react-bootstrap'
 import { DISPLAY_BUSSING_RECORDS } from './arrivalsQueries'
 import '../services/record-service/ServiceDetails.css'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import RoleView from 'auth/RoleView'
 import { permitAdminArrivals } from 'permission-utils'
 import { parseNeoTime } from 'jd-date-utils'
@@ -35,7 +35,7 @@ const BusFormDetails = () => {
     variables: { bussingRecordId: bussingRecordId, bacentaId: bacentaId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const bussing: BussingRecord = data?.bussingRecords[0]
   const church: BacentaWithArrivals = data?.bacentas[0]
 
@@ -92,7 +92,7 @@ const BusFormDetails = () => {
                           <span
                             className="text-primary"
                             onClick={() =>
-                              navigate('/arrivals/mobilisation-picture')
+                              router.push('/arrivals/mobilisation-picture')
                             }
                           >
                             <u>Click Here To View</u>
@@ -280,7 +280,7 @@ const BusFormDetails = () => {
             <Button
               variant="outline-primary"
               size="lg"
-              onClick={() => navigate('/arrivals')}
+              onClick={() => router.push('/arrivals')}
             >
               Back to Arrivals Home
             </Button>

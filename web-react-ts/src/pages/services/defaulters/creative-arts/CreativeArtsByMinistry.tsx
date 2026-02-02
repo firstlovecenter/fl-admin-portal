@@ -4,7 +4,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
 import { Card, Col, Row, Button, Container } from 'react-bootstrap'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
@@ -21,7 +21,7 @@ const CreativeArtsByMinistry = () => {
     },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -40,7 +40,7 @@ const CreativeArtsByMinistry = () => {
                       <Card.Body
                         onClick={() => {
                           clickCard(ministry)
-                          navigate('/services/ministry-by-hubcouncil')
+                          router.push('/services/ministry-by-hubcouncil')
                         }}
                       >
                         <div className="fw-bold">

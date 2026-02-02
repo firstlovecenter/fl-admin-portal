@@ -1,3 +1,5 @@
+'use client'
+
 import { PIE_CHART_COLORS } from 'global-utils'
 import React from 'react'
 import './PieChart.css'

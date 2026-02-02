@@ -5,7 +5,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
 import { useContext } from 'react'
 import { Card, Col, Container, Row } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import '../Arrivals.css'
 import { CAMPUS_BY_STREAM_ARRIVALS } from './churchBySubchurchQueries'
@@ -16,7 +16,7 @@ import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 
 const CampusByStream = () => {
   const { clickCard, campusId, arrivalDate } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { setUserChurch } = useSetUserChurch()
 
   const { data, loading, error, refetch } = useQuery(
@@ -106,7 +106,7 @@ const CampusByStream = () => {
                         onClick={() => {
                           clickCard(stream)
                           setUserChurch(stream)
-                          navigate(`/arrivals/stream`)
+                          router.push(`/arrivals/stream`)
                         }}
                       >
                         <div className="mb-3">

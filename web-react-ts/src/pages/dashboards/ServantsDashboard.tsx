@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
 import './Dashboards.css'
 import { MemberContext } from 'contexts/MemberContext'
@@ -24,7 +24,7 @@ import { Role } from 'global-types'
 const ServantsDashboard = () => {
   const { memberId, currentUser } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   let servantId = currentUser.id
   if (isAuthorised(permitMe('Governorship'), currentUser.roles)) {
     servantId = memberId
@@ -68,7 +68,7 @@ const ServantsDashboard = () => {
                         onClick={() => {
                           clickCard(servant)
                           clickCard(role.church[0])
-                          navigate(role.link)
+                          router.push(role.link)
                         }}
                       >
                         <RoleCard

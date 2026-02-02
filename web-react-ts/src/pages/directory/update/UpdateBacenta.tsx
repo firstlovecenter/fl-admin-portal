@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, repackDecimals, throwToSentry } from '../../../global-utils'
 import { GET_GOVERNORSHIP_BACENTAS } from '../../../queries/ListQueries'
@@ -22,7 +22,7 @@ const UpdateBacenta = () => {
   const { data, loading, error } = useQuery(DISPLAY_BACENTA, {
     variables: { id: bacentaId },
   })
-  const navigate = useNavigate()
+  const router = useRouter()
   const bacenta = data?.bacentas[0]
 
   const initialValues: BacentaFormValues = {
@@ -168,7 +168,7 @@ const UpdateBacenta = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/bacenta/displaydetails`)
+          router.push(`/bacenta/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -226,7 +226,7 @@ const UpdateBacenta = () => {
       }
 
       resetForm()
-      navigate(`/bacenta/displaydetails`)
+      router.push(`/bacenta/displaydetails`)
     } catch (error: any) {
       throwToSentry(error)
     } finally {

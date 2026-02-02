@@ -1,3 +1,5 @@
+'use client'
+
 import { useAuth0 } from '@auth0/auth0-react'
 import { HTMLElement } from 'global-types'
 import React from 'react'

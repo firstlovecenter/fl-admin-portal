@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_HUBCOUNCIL_MUTATION } from './CreateMutations'
@@ -13,7 +13,7 @@ import HubCouncilForm, {
 const CreateHubCouncil = () => {
   const { clickCard, ministryId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: HubCouncilFormValues = {
     ministry: ministryId,
@@ -58,7 +58,7 @@ const CreateHubCouncil = () => {
       clickCard(res.data.CreateHubCouncil)
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/hubCouncil/displaydetails`)
+      router.push(`/hubCouncil/displaydetails`)
     } catch (error: unknown) {
       throwToSentry('There was an error creating hubCouncil', error)
     }

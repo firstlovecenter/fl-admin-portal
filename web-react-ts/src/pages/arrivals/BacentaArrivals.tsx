@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useContext } from 'react'
 import { Button, Card, Container, Modal } from 'react-bootstrap'
 import { BACENTA_ARRIVALS } from './arrivalsQueries'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ArrowDownSquare } from 'react-bootstrap-icons'
@@ -27,7 +27,7 @@ const BacentaArrivals = () => {
   const { clickCard, bacentaId } = useContext(ChurchContext)
   const { show, handleClose } = useModal()
   const { theme } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const today = new Date().toISOString().slice(0, 10)
   const { data, loading, error, refetch } = useQuery(BACENTA_ARRIVALS, {
     variables: { id: bacentaId, date: today },
@@ -147,7 +147,7 @@ const BacentaArrivals = () => {
                 <Button
                   variant="danger"
                   size="lg"
-                  onClick={() => navigate('/bacenta/editbussing')}
+                  onClick={() => router.push('/bacenta/editbussing')}
                 >
                   Please update your payment details
                 </Button>
@@ -158,7 +158,7 @@ const BacentaArrivals = () => {
             )}
             <Button
               className={`btn-graphs ${theme}`}
-              onClick={() => navigate(`/bacenta/graphs`)}
+              onClick={() => router.push(`/bacenta/graphs`)}
             >
               View Last 4 Weeks
             </Button>
@@ -193,7 +193,7 @@ const BacentaArrivals = () => {
               onClick={() => {
                 clickCard(bacenta)
                 clickCard(bussing)
-                navigate('/arrivals/submit-mobilisation-picture')
+                router.push('/arrivals/submit-mobilisation-picture')
               }}
             >
               Upload Pre-Mobilisation Picture
@@ -226,7 +226,7 @@ const BacentaArrivals = () => {
                 clickCard(bacenta)
                 clickCard(bussing)
 
-                navigate('/arrivals/submit-vehicle-record')
+                router.push('/arrivals/submit-vehicle-record')
               }}
             >
               Add A Vehicle
@@ -238,7 +238,7 @@ const BacentaArrivals = () => {
                 onClick={() => {
                   clickCard(bacenta)
                   clickCard(bussing)
-                  navigate('/bacenta/bussing-details')
+                  router.push('/bacenta/bussing-details')
                 }}
               >
                 {`Today's Bussing Summary`}

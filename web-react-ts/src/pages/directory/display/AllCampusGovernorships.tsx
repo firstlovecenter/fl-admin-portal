@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_CAMPUS_GOVERNORSHIPS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -28,7 +28,7 @@ const AllCampusGovernorships = () => {
           <Row className="mb-2">
             <Col>
               <Link
-                to="/campus/displaydetails"
+                href="/campus/displaydetails"
                 onClick={() => {
                   clickCard(campus)
                 }}
@@ -36,7 +36,7 @@ const AllCampusGovernorships = () => {
                 <h4 className="text-white">{`${campus?.name}'s Governorships`}</h4>
               </Link>
               <Link
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(campus?.leader)
                 }}
@@ -50,7 +50,7 @@ const AllCampusGovernorships = () => {
               {campus?.admin ? (
                 <Link
                   className="pb-4 text-white text-small"
-                  to="/member/displaydetails"
+                  href="/member/displaydetails"
                   onClick={() => {
                     clickCard(campus?.admin)
                   }}
@@ -63,7 +63,7 @@ const AllCampusGovernorships = () => {
             <RoleView roles={permitAdmin('Council')} directoryLock>
               <Col className="col-auto">
                 <Link
-                  to="/governorship/addgovernorship"
+                  href="/governorship/addgovernorship"
                   className="btn btn-danger"
                 >
                   Add Governorship

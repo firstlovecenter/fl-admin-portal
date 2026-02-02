@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { CREATE_INDOOR_OUTREACH_VENUE_MUTATION } from '../venuesMutations'
 import { GET_INDOOR_VENUES } from '../venuesQueries'
@@ -51,7 +51,7 @@ const AddIndoorVenue = () => {
       .typeError('Please enter a valid longitude'),
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const onSubmit = async (
     { venueName, capacity, longitude, latitude }: FormOptions,
@@ -69,7 +69,7 @@ const AddIndoorVenue = () => {
         },
       })
       clickCard(res.data.CreateOutdoorVenue)
-      navigate(`/maps/indoor-outreach-venues`)
+      router.push(`/maps/indoor-outreach-venues`)
     } catch (err) {
       setSubmitting(false)
       throwToSentry('', err)
@@ -137,7 +137,7 @@ const AddIndoorVenue = () => {
                 variant="danger"
                 className="w-100 fs-5"
                 onClick={() => {
-                  navigate(`/maps/indoor-outreach-venues`)
+                  router.push(`/maps/indoor-outreach-venues`)
                 }}
               >
                 Cancel

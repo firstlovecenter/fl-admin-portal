@@ -5,7 +5,7 @@ import SubmitButton from 'components/formik/SubmitButton'
 import { Form, Formik, FormikHelpers } from 'formik'
 import React, { useContext, useState } from 'react'
 import { Button, Col, Container, Row, Spinner } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import * as Yup from 'yup'
 import {
   DELETE_MEMBER_TITLES,
@@ -69,7 +69,7 @@ const parseData = (data: Data) => {
 
 const MemberTitleForm = () => {
   const { memberId } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data, loading, error } = useQuery(GET_MEMBER_TITLES, {
     variables: {
       id: memberId,
@@ -151,7 +151,7 @@ const MemberTitleForm = () => {
 
     try {
       await Promise.all(promises)
-      navigate('/member/displaydetails')
+      router.push('/member/displaydetails')
     } catch (err) {
       throwToSentry('Error Updating Member Title', err)
     }
@@ -185,7 +185,7 @@ const MemberTitleForm = () => {
                               id: memberId,
                             },
                           })
-                          navigate('/member/displaydetails')
+                          router.push('/member/displaydetails')
                         } catch (err) {
                           throwToSentry('Error Deleting Member Title', err)
                         } finally {

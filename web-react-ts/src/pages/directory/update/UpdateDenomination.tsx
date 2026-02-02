@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { GET_DENOMINATION_OVERSIGHTS } from '../../../queries/ListQueries'
@@ -20,7 +20,7 @@ const UpdateDenomination = () => {
     variables: { id: denominationId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const denomination = data?.denominations[0]
   const initialValues: DenominationFormValues = {
     name: denomination?.name,
@@ -92,7 +92,7 @@ const UpdateDenomination = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/denomination/displaydetails`)
+          router.push(`/denomination/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -108,7 +108,7 @@ const UpdateDenomination = () => {
 
       setSubmitting(false)
       resetForm()
-      navigate(`/denomination/displaydetails`)
+      router.push(`/denomination/displaydetails`)
     } catch (err: any) {
       throwToSentry('There was a problem updating this denomination', err)
       setSubmitting(false)

@@ -3,7 +3,8 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { alertMsg } from 'global-utils'
 import { useContext, useState } from 'react'
 import { Button } from 'react-bootstrap'
-import { useLocation, useNavigate } from 'react-router'
+import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {
   CONFIRM_OFFERING_PAYMENT,
   SELF_BANKING_RECEIPT,
@@ -39,7 +40,7 @@ type ButtonConfirmPaymentProps = {
 const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
   const { refetch, service, handleClose, ...rest } = props
   const [sending, setSending] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
   const {
     bacentaId,
     governorshipId,
@@ -50,7 +51,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
     clickCard,
   } = useContext(ChurchContext)
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
-  const location = useLocation()
+  const pathname = usePathname()
 
   return (
     <Button
@@ -133,7 +134,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               confirmationRes.data.ConfirmOfferingPayment?.transactionStatus ===
               'pending'
             ) {
-              navigate('/self-banking/receipt')
+              router.push('/self-banking/receipt')
               alertMsg(
                 'Your Payment is still pending please follow the manual steps for approval'
               )
@@ -144,7 +145,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               confirmationRes.data.ConfirmOfferingPayment?.transactionStatus ===
               'failed'
             ) {
-              navigate('/services/bacenta/self-banking')
+              router.push('/services/bacenta/self-banking')
               alertMsg('Your Payment Failed 😞. Please try again!')
               return
             }
@@ -153,7 +154,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               confirmationRes.data.ConfirmOfferingPayment?.transactionStatus ===
               'success'
             ) {
-              navigate('/self-banking/receipt')
+              router.push('/self-banking/receipt')
               alertMsg('Payment Confirmed Successfully 😊')
               return
             }
@@ -162,25 +163,25 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
           if (
             ['failed', 'abandoned'].includes(serviceRecord.transactionStatus)
           ) {
-            navigate('/services/bacenta/self-banking')
+            router.push('/services/bacenta/self-banking')
             alertMsg('Your Payment Failed 😞. Please try again!')
             return
           }
 
           if (serviceRecord.transactionStatus === 'success') {
             alertMsg('Payment Confirmed Successfully 😊')
-            navigate('/self-banking/receipt')
+            router.push('/self-banking/receipt')
             return
           }
         } catch (error: any) {
-          navigate('/services/bacenta/self-banking')
+          router.push('/services/bacenta/self-banking')
           alert('Something went wrong 😞' + JSON.stringify(error))
         } finally {
           if (handleClose) {
             handleClose()
           }
-          if (location.pathname === '/self-banking/confirm-payment') {
-            navigate(-3)
+          if (pathname === '/self-banking/confirm-payment') {
+            router.push('/services/bacenta/self-banking')
           }
           setSending(false)
         }

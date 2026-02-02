@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { useContext } from 'react'
 import * as Yup from 'yup'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { MAKE_STREAMARRIVALS_ADMIN } from '../arrivalsMutation'
 import { STREAM_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
 import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
@@ -40,7 +40,7 @@ type DateFormOptions = {
 const StreamDashboard = () => {
   const { isOpen, togglePopup } = usePopup()
   const { arrivalDate, setArrivalDate, streamId } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const today = new Date().toISOString().slice(0, 10)
   const { data, loading, error, refetch } = useQuery(
     STREAM_ARRIVALS_DASHBOARD,
@@ -96,15 +96,15 @@ const StreamDashboard = () => {
     { title: 'Change Arrivals Admin', onClick: togglePopup },
     {
       title: 'Arrivals Counters',
-      onClick: () => navigate('/stream/arrivals-counters'),
+      onClick: () => router.push('/stream/arrivals-counters'),
     },
     {
       title: 'Arrival Times',
-      onClick: () => navigate('/stream/arrival-times'),
+      onClick: () => router.push('/stream/arrival-times'),
     },
     {
       title: "Dowload Arrival's Payment Data",
-      onClick: () => navigate('/stream/arrival-excel-data'),
+      onClick: () => router.push('/stream/arrival-excel-data'),
     },
   ]
 
@@ -229,7 +229,9 @@ const StreamDashboard = () => {
                 <div className="d-grid gap-2">
                   <MenuButton
                     title="Bacentas With No Activity"
-                    onClick={() => navigate('/arrivals/bacentas-no-activity')}
+                    onClick={() =>
+                      router.push('/arrivals/bacentas-no-activity')
+                    }
                     number={stream?.bacentasNoActivityCount.toString()}
                     color="red"
                     iconBg
@@ -237,7 +239,7 @@ const StreamDashboard = () => {
                   />
                   <MenuButton
                     title="Bacentas Mobilising"
-                    onClick={() => navigate('/arrivals/bacentas-mobilising')}
+                    onClick={() => router.push('/arrivals/bacentas-mobilising')}
                     number={stream?.bacentasMobilisingCount.toString()}
                     color="orange"
                     iconBg
@@ -245,7 +247,7 @@ const StreamDashboard = () => {
                   />
                   <MenuButton
                     title="Bacentas On The Way"
-                    onClick={() => navigate('/arrivals/bacentas-on-the-way')}
+                    onClick={() => router.push('/arrivals/bacentas-on-the-way')}
                     number={stream?.bacentasOnTheWayCount.toString()}
                     color="yellow"
                     iconBg
@@ -254,7 +256,7 @@ const StreamDashboard = () => {
                   <RoleView roles={permitArrivalsCounter()}>
                     <MenuButton
                       title="Vehicles To Be Counted"
-                      onClick={() => navigate('/arrivals/bacentas-to-count')}
+                      onClick={() => router.push('/arrivals/bacentas-to-count')}
                       number={stream?.vehiclesNotCountedCount.toString()}
                       color="yellow"
                       iconBg
@@ -264,7 +266,7 @@ const StreamDashboard = () => {
 
                   <MenuButton
                     title="Bacentas That Didn't Bus"
-                    onClick={() => navigate('/arrivals/bacentas-below-8')}
+                    onClick={() => router.push('/arrivals/bacentas-below-8')}
                     number={stream?.bacentasBelow8Count.toString()}
                     iconBg
                     color="red"
@@ -273,7 +275,9 @@ const StreamDashboard = () => {
 
                   <MenuButton
                     title="Bacentas That Have Arrived"
-                    onClick={() => navigate('/arrivals/bacentas-have-arrived')}
+                    onClick={() =>
+                      router.push('/arrivals/bacentas-have-arrived')
+                    }
                     number={stream?.bacentasHaveArrivedCount.toString()}
                     iconBg
                     color="green"
@@ -295,7 +299,7 @@ const StreamDashboard = () => {
                   <div className="d-grid gap-2">
                     <MenuButton
                       title="Vehicles That Have Been Paid"
-                      onClick={() => navigate('#')}
+                      onClick={() => router.push('#')}
                       number={stream?.vehiclesHaveBeenPaidCount.toString()}
                       color="green"
                       iconBg
@@ -303,7 +307,7 @@ const StreamDashboard = () => {
                     />
                     <MenuButton
                       title="Vehicles To Be Paid"
-                      onClick={() => navigate('#')}
+                      onClick={() => router.push('#')}
                       number={stream?.vehiclesToBePaidCount.toString()}
                       color="yellow"
                       iconBg
@@ -312,7 +316,7 @@ const StreamDashboard = () => {
 
                     <MenuButton
                       title="Amount That Has Been Paid"
-                      onClick={() => navigate('#')}
+                      onClick={() => router.push('#')}
                       number={stream?.vehicleAmountHasBeenPaid.toString()}
                       color="green"
                       noCaption
@@ -320,7 +324,7 @@ const StreamDashboard = () => {
                     />
                     <MenuButton
                       title="Amount To Be Paid"
-                      onClick={() => navigate('#')}
+                      onClick={() => router.push('#')}
                       number={stream?.vehicleAmountToBePaid.toString()}
                       color="yellow"
                       noCaption

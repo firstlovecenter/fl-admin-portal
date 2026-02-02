@@ -5,7 +5,7 @@ import { throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_GOVERNORSHIP_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import RoleView from 'auth/RoleView'
 import {
   Button,
@@ -62,7 +62,7 @@ const GovernorshipForm = ({
   const [hubModal, setHubModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const [buttonLoading, setButtonLoading] = useState(false)
   const [CloseDownGovernorship] = useMutation(MAKE_GOVERNORSHIP_INACTIVE, {
     refetchQueries: [
@@ -315,7 +315,7 @@ const GovernorshipForm = ({
                       setButtonLoading(false)
                       clickCard(res.data.CloseDownGovernorship)
                       setCloseDown(false)
-                      navigate(`/governorship/displayall`)
+                      router.push(`/governorship/displayall`)
                     } catch (error) {
                       setButtonLoading(false)
                       throwToSentry(

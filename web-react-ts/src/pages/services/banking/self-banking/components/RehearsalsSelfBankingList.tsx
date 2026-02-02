@@ -9,7 +9,7 @@ import { parseDate } from 'jd-date-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import { useContext } from 'react'
 import { Button, ButtonGroup, Card, Col, Modal, Row } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import ConfirmPaymentButton, {
   ConfirmPaymentServiceType,
 } from './button/ConfirmPayment'
@@ -52,7 +52,7 @@ const SelfBankingList = ({
   const { clickCard } = useContext(ChurchContext)
   const { show, handleShow, handleClose } = popupTools
   const { confirmService, setConfirmService } = confirmationTools
-  const navigate = useNavigate()
+  const router = useRouter()
   const placeholder = ['', '', '']
 
   if (error) {
@@ -146,10 +146,10 @@ const SelfBankingList = ({
               }
 
               if (rehearsal.transactionStatus === 'success') {
-                navigate('/self-banking/receipt')
+                router.push('/self-banking/receipt')
                 return
               }
-              navigate(
+              router.push(
                 `/rehearsals/${church.__typename.toLowerCase()}/self-banking/pay`
               )
             }}

@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { GET_OVERSIGHT_CAMPUSES } from '../../../queries/ListQueries'
@@ -20,7 +20,7 @@ const UpdateCampus = () => {
     variables: { id: campusId },
   })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const campus = data?.campuses[0]
   const initialValues: CampusFormValues = {
     name: campus?.name,
@@ -100,7 +100,7 @@ const UpdateCampus = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/campus/displaydetails`)
+          router.push(`/campus/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -116,7 +116,7 @@ const UpdateCampus = () => {
 
       setSubmitting(false)
       resetForm()
-      navigate(`/campus/displaydetails`)
+      router.push(`/campus/displaydetails`)
     } catch (err: any) {
       throwToSentry('There was a problem updating this campus', err)
       setSubmitting(false)

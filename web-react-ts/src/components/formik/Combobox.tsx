@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import Autosuggest from 'react-autosuggest'
 import { DocumentNode, useLazyQuery } from '@apollo/client'

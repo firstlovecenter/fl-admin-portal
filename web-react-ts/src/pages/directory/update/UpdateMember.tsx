@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 
 import { parsePhoneNum, throwToSentry } from 'global-utils'
@@ -54,7 +54,7 @@ const UpdateMember = () => {
     basonta: memberChurch?.basonta?.id ?? '',
   }
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [UpdateMember] = useMutation(UPDATE_MEMBER_MUTATION, {
     refetchQueries: [
@@ -145,7 +145,7 @@ const UpdateMember = () => {
 
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate('/member/displaydetails')
+      router.push('/member/displaydetails')
     } catch (error: any) {
       throwToSentry('There was an error updating the member profile\n', error)
     }

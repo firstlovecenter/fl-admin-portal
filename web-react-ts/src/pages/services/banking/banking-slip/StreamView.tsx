@@ -9,12 +9,12 @@ import NoDataComponent from 'pages/arrivals/CompNoData'
 import React, { useContext } from 'react'
 import { Card, Col, Container, Row } from 'react-bootstrap'
 import { CheckCircleFill, XCircleFill } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { STREAM_BANKING_SLIP_QUERIES } from '../../ServicesQueries'
 
 const StreamBankingSlipView = () => {
   const { streamId, clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data, loading, error } = useQuery(STREAM_BANKING_SLIP_QUERIES, {
     variables: { streamId: streamId },
   })
@@ -48,7 +48,7 @@ const StreamBankingSlipView = () => {
               onClick={() => {
                 clickCard(service)
 
-                navigate('/stream/service-details')
+                router.push('/stream/service-details')
               }}
             >
               <Card.Header>

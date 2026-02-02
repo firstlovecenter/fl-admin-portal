@@ -1,3 +1,5 @@
+'use client'
+
 import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'

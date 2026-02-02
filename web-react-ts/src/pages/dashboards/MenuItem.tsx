@@ -1,37 +1,23 @@
 import { MemberContext } from 'contexts/MemberContext'
-import React, { useContext, useEffect, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import React, { useContext } from 'react'
+import Link from 'next/link'
 import './MenuItem.css'
 
 type MenuItemProps = {
   name: string
   onClick: () => void
-  inactive: boolean
   to: string
 }
 
 const MenuItem = (props: MenuItemProps) => {
-  const { name, onClick, inactive, to } = props
-  const [expand, setExpand] = useState(false)
+  const { name, onClick, to } = props
   const { theme } = useContext(MemberContext)
-
-  useEffect(() => {
-    if (inactive) {
-      setExpand(false)
-    }
-  }, [inactive])
 
   return (
     <li onClick={onClick}>
-      <NavLink
-        className={`menu-item ${theme}`}
-        to={to}
-        onClick={() => {
-          setExpand(!expand)
-        }}
-      >
-        <span>{name}</span>
-      </NavLink>
+      <Link className={`menu-item ${theme}`} href={to}>
+        {name}
+      </Link>
     </li>
   )
 }

@@ -8,7 +8,7 @@ import {
   UPDATE_BUS_PAYMENT_DETAILS,
 } from './UpdateBacentaArrivals'
 import * as Yup from 'yup'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Button, Card, Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -66,7 +66,7 @@ const UpdateBusPayment = () => {
   const { isAuthorised } = useAuth()
   const [otp] = useState(randomOTPGenerator())
   const [submitting, setSubmitting] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
   const {
     data: bacentaData,
     loading: bacentaLoading,
@@ -138,7 +138,7 @@ const UpdateBusPayment = () => {
       }
 
       if (initialValues.momoNumber === values.momoNumber)
-        navigate(`/bacenta/displaydetails`)
+        router.push(`/bacenta/displaydetails`)
     }
 
     if (initialValues.momoNumber !== values.momoNumber) {
@@ -256,7 +256,7 @@ const UpdateBusPayment = () => {
                                       'Your phone number has been successfully verified! 😃'
                                     )
                                     setSubmitting(false)
-                                    navigate(`/bacenta/displaydetails`)
+                                    router.push(`/bacenta/displaydetails`)
                                   } catch (error) {
                                     setSubmitting(false)
                                     throwToSentry(

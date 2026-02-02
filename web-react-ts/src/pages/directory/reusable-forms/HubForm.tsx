@@ -13,7 +13,7 @@ import {
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_HUB_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   Button,
   Container,
@@ -63,7 +63,7 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
   const { clickCard, hubId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const [closeDown, setCloseDown] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [buttonLoading, setButtonLoading] = useState(false)
   const { data, loading, error } = useQuery(GET_HUBCOUNCIL_GOVERNORSHIPS, {
@@ -317,7 +317,7 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
                         setButtonLoading(false)
                         clickCard(res.data.CloseDownHub)
                         setCloseDown(false)
-                        navigate(`/hub/displayall`)
+                        router.push(`/hub/displayall`)
                       } catch (error) {
                         setButtonLoading(false)
                         throwToSentry(

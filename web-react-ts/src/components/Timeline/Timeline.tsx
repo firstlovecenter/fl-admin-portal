@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { ChurchContext } from '../../contexts/ChurchContext'
 import './Timeline.css'
 import { parseDate, parseNeoTime } from 'jd-date-utils'
@@ -17,7 +19,7 @@ const Timeline = (props: TimelineProps) => {
   const { record, limit, modifier } = props
 
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   if (!record) {
     return null
@@ -41,7 +43,7 @@ const Timeline = (props: TimelineProps) => {
                       className="font-weight-bold"
                       onClick={() => {
                         clickCard(element?.loggedBy)
-                        navigate('/member/displaydetails')
+                        router.push('/member/displaydetails')
                       }}
                     >
                       {element?.loggedBy &&
@@ -74,7 +76,7 @@ const Timeline = (props: TimelineProps) => {
                     className="font-weight-bold"
                     onClick={() => {
                       clickCard(element?.loggedBy)
-                      navigate('/member/displaydetails')
+                      router.push('/member/displaydetails')
                     }}
                   >
                     {element?.loggedBy &&

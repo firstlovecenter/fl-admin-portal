@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_CAMPUS_CREATIVEARTS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -32,7 +32,7 @@ const DisplayAllCampusCreativeArts = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to="/campus/displaydetails"
+              href="/campus/displaydetails"
               onClick={() => {
                 clickCard(campus)
               }}
@@ -40,7 +40,7 @@ const DisplayAllCampusCreativeArts = () => {
               <h4 className="text-white">{`${campus?.name} Creative Arts`}</h4>
             </Link>
             <Link
-              to="/member/displaydetails"
+              href="/member/displaydetails"
               onClick={() => {
                 clickCard(campus?.leader)
               }}
@@ -53,7 +53,7 @@ const DisplayAllCampusCreativeArts = () => {
             {campus?.admin ? (
               <Link
                 className="pb-4 text-white text-small"
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(campus?.admin)
                 }}
@@ -66,7 +66,7 @@ const DisplayAllCampusCreativeArts = () => {
           <RoleView roles={permitAdmin('Campus')} directoryLock>
             <Col className="col-auto">
               <Link
-                to="/creativearts/addcreativearts"
+                href="/creativearts/addcreativearts"
                 className="btn btn-danger"
               >
                 Add Creative Arts

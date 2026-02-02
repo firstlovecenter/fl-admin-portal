@@ -3,13 +3,12 @@ import { MockedProvider } from '@apollo/client/testing'
 import ArrivalTimes from './ArrivalTimes'
 import { GET_ARRIVAL_TIMES } from './time-gql'
 import TestProvider from 'TestProvider'
-import { BrowserRouter } from 'react-router-dom'
 
 const mockedUsedNavigate = jest.fn()
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockedUsedNavigate,
+jest.mock('next/navigation', () => ({
+  ...jest.requireActual('next/navigation'),
+  useRouter: () => ({ push: mockedUsedNavigate }),
 }))
 
 const mocks = [
@@ -38,7 +37,7 @@ const mocks = [
   },
 ]
 it('renders without error if user id is present', () => {
-  const component = TestRenderer.create(
+  TestRenderer.create(
     <MockedProvider mocks={mocks} addTypename={false}>
       <TestProvider>
         <ArrivalTimes />
@@ -46,6 +45,5 @@ it('renders without error if user id is present', () => {
     </MockedProvider>
   )
 
-  const tree = component.toJSON()
   //   expect(mockedUsedNavigate).toHaveBeenCalledWith('/stream/set-arrivals-time')
 })

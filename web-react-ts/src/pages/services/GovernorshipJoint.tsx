@@ -4,11 +4,11 @@ import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'
 import { Container } from 'react-bootstrap'
 import { PencilSquare } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 const GovernorshipJoint = () => {
   const { currentUser, theme } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
@@ -26,7 +26,7 @@ const GovernorshipJoint = () => {
             title="Fill Joint Service Form"
             color="members"
             noCaption
-            onClick={() => navigate(`/governorship/record-service`)}
+            onClick={() => router.push(`/governorship/record-service`)}
           />
         </div>
       </Container>

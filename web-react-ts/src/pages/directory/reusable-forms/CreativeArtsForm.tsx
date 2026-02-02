@@ -5,7 +5,7 @@ import { throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_CREATIVEARTS_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import {
   Button,
   Container,
@@ -54,7 +54,7 @@ const CreativeArtsForm = ({
   const { clickCard, creativeArtsId } = useContext(ChurchContext)
   const [ministryModal, setMinistryModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [buttonLoading, setButtonLoading] = useState(false)
   const [CloseDownCreativeArts] = useMutation(MAKE_CREATIVEARTS_INACTIVE, {
@@ -245,7 +245,7 @@ const CreativeArtsForm = ({
                         setButtonLoading(false)
                         clickCard(res.data.CloseDownCreativeArts)
                         setCloseDown(false)
-                        navigate(`/creativearts/displayall`)
+                        router.push(`/creativearts/displayall`)
                       } catch (error) {
                         setButtonLoading(false)
                         throwToSentry(

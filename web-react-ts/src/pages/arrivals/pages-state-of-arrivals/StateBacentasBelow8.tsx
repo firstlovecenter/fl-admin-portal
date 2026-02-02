@@ -14,7 +14,7 @@ import {
 import useChurchLevel from 'hooks/useChurchLevel'
 import NoData from '../CompNoData'
 import PlaceholderDefaulterList from 'pages/services/defaulters/PlaceholderDefaulterList'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ArrivalsUseChurchType } from '../arrivals-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
@@ -22,7 +22,7 @@ import { LONG_POLL_INTERVAL } from 'global-utils'
 
 const BacentasBelow8 = () => {
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const [governorshipBacentasBelow8, { refetch: governorshipRefetch }] =
     useLazyQuery(GOVERNORSHIP_BACENTAS_BELOW_8, {
       pollInterval: LONG_POLL_INTERVAL,
@@ -82,7 +82,7 @@ const BacentasBelow8 = () => {
               onClick={() => {
                 clickCard(bacenta)
                 clickCard(bacenta.bussingThisWeek)
-                navigate('/bacenta/bussing-details')
+                router.push('/bacenta/bussing-details')
               }}
             >
               <span className="fw-bold">

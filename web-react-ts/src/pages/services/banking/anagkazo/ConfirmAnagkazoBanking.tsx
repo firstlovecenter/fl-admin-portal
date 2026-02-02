@@ -7,7 +7,7 @@ import { GOVERNORSHIP_BANKING_DEFUALTERS_THIS_WEEK } from 'pages/services/defaul
 import { useQuery, useMutation, useLazyQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Formik, Form, FormikHelpers } from 'formik'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import usePopup from 'hooks/usePopup'
 import { CONFIRM_BANKING } from './Treasury.gql'
 import CloudinaryImage from 'components/CloudinaryImage'
@@ -39,7 +39,7 @@ const ConfirmAnagkazoBanking = () => {
   const [selected, setSelected] = useState<Defaulter>()
   const [defaultersData, setDefaultersData] = useState<Church[]>([])
   const { togglePopup, isOpen } = usePopup()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { data, loading, error, refetch } = useQuery(
     GOVERNORSHIP_BANKING_DEFUALTERS_THIS_WEEK,
@@ -169,7 +169,7 @@ const ConfirmAnagkazoBanking = () => {
 
                                 setSubmitting(false)
                                 refetch({ id: streamId })
-                                navigate('/anagkazo/receive-banking')
+                                router.push('/anagkazo/receive-banking')
                               } catch (error: any) {
                                 setSubmitting(false)
                                 throwToSentry(error)

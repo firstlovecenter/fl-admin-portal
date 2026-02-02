@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_HUB_MUTATION } from './CreateMutations'
@@ -11,7 +11,7 @@ import HubForm, { HubFormValues } from '../reusable-forms/HubForm'
 const CreateHub = () => {
   const { clickCard, hubCouncilId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const initialValues: HubFormValues = {
     hubCouncil: hubCouncilId ?? '',
@@ -64,7 +64,7 @@ const CreateHub = () => {
       clickCard(res.data.CreateHub)
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
-      navigate(`/hub/displaydetails`)
+      router.push(`/hub/displaydetails`)
     } catch (error: unknown) {
       throwToSentry('There was an error creating hub', error)
     }

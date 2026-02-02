@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import { useLocation } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import { MemberContext } from '../contexts/MemberContext'
 import { ChurchContext } from '../contexts/ChurchContext'
@@ -23,7 +22,6 @@ const ProtectedRoute: (props: ProtectedRouteProps) => JSX.Element = (props) => {
   const { isAuthenticated, isLoading } = useAuth0()
   const church = useContext(ChurchContext)
 
-  const location = useLocation()
   const atHome = location?.pathname === '/'
 
   if (

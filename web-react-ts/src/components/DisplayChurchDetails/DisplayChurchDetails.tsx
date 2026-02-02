@@ -1,5 +1,8 @@
+'use client'
+
 import React, { useContext } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import DetailsCard from '../card/DetailsCard'
 import { MemberContext } from '../../contexts/MemberContext'
 import { ChurchContext } from '../../contexts/ChurchContext'
@@ -89,7 +92,7 @@ type FormOptions = {
 
 const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   const { setUserChurch } = useSetUserChurch()
-  const navigate = useNavigate()
+  const router = useRouter()
   let needsAdmin
 
   let roles: Role[] = []
@@ -254,7 +257,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                       member={props.admin}
                       onClick={() => {
                         clickCard(props.admin)
-                        navigate('/member/displaydetails')
+                        router.push('/member/displaydetails')
                       }}
                     />
                   )}
@@ -334,7 +337,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             {props.details.map((detail, i) => (
               <Col key={i} xs={detail.width ?? 6}>
                 <DetailsCard
-                  onClick={() => navigate(detail.link)}
+                  onClick={() => router.push(detail.link)}
                   heading={detail.title}
                   creativearts={detail?.creativearts}
                   detail={
@@ -373,7 +376,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               >
                 <Button
                   onClick={() => {
-                    navigate(`/${props.churchType.toLowerCase()}/editbussing`)
+                    router.push(
+                      `/${props.churchType.toLowerCase()}/editbussing`
+                    )
                   }}
                 >
                   Bus Payment Details
@@ -399,7 +404,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                   name: props.name,
                   __typename: props.churchType,
                 })
-                navigate(`/trends`)
+                router.push(`/trends`)
               }}
             >
               View Trends
@@ -426,7 +431,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                     __typename: props.churchType,
                   })
 
-                  navigate(`/services/${props.churchType.toLowerCase()}`)
+                  router.push(`/services/${props.churchType.toLowerCase()}`)
                 }}
               >
                 Service Forms
@@ -464,7 +469,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               <div className="col-auto">
                 <Link
                   className="card text-secondary px-1"
-                  to={`/${props.subChurch.toLowerCase()}/displayall`}
+                  href={`/${props.subChurch.toLowerCase()}/displayall`}
                 >
                   {`View All ${plural(props.subChurch)}`}
                 </Link>
@@ -505,7 +510,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 className="btn-graphs"
                 variant={currentTheme as 'dark' | 'light'}
                 onClick={() =>
-                  navigate(
+                  router.push(
                     `/${props.subChurch?.toLowerCase()}/add${props.subChurch?.toLowerCase()}`
                   )
                 }
@@ -524,7 +529,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               <h3 className="mb-0">CHURCH HISTORY</h3>
             </Col>
             <Col className="col-auto">
-              <ViewAll to={`/${props.churchType.toLowerCase()}/history`} />
+              <ViewAll href={`/${props.churchType.toLowerCase()}/history`} />
             </Col>
           </Row>
 

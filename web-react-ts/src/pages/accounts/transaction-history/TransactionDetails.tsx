@@ -10,7 +10,7 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Button, Container } from 'react-bootstrap'
 import { AccountTransaction } from './transaction-types'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import TransactionCard from '../TransactionCard'
 import RoleView from 'auth/RoleView'
 import { permitAdmin, permitArrivals, permitLeader } from 'permission-utils'
@@ -18,7 +18,7 @@ import { permitAdmin, permitArrivals, permitLeader } from 'permission-utils'
 const TransactionDetails = () => {
   const { transactionId } = useContext(ChurchContext)
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data, loading, error } = useQuery(GET_TRANSACTION_DETAILS, {
     variables: { id: transactionId },
   })
@@ -43,7 +43,7 @@ const TransactionDetails = () => {
               else
                 await UndoWeekdayTransaction({ variables: { transactionId } })
 
-              navigate('/accounts/council/transaction-history')
+              router.push('/accounts/council/transaction-history')
             }}
           >
             Undo Transaction
@@ -52,7 +52,7 @@ const TransactionDetails = () => {
         <div className="text-center mt-2">
           <Button
             variant="success"
-            onClick={() => navigate('/accounts/council/transaction-history')}
+            onClick={() => router.push('/accounts/council/transaction-history')}
           >
             View Council History
           </Button>
@@ -61,7 +61,7 @@ const TransactionDetails = () => {
         <div className="text-center mt-2">
           <Button
             variant="warning"
-            onClick={() => navigate('/accounts/council/dashboard')}
+            onClick={() => router.push('/accounts/council/dashboard')}
           >
             Go To Council Dashboard
           </Button>
@@ -76,7 +76,7 @@ const TransactionDetails = () => {
           >
             <Button
               variant="info"
-              onClick={() => navigate('/accounts/campus/dashboard')}
+              onClick={() => router.push('/accounts/campus/dashboard')}
             >
               Go To Campus Dashboard
             </Button>

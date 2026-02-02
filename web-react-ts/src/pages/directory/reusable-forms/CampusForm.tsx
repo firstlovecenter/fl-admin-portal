@@ -5,7 +5,7 @@ import { CURRENCY_OPTIONS, YES_NO_OPTIONS, throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_CAMPUS_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import RoleView from 'auth/RoleView'
 import {
   Button,
@@ -66,7 +66,7 @@ const CampusForm = ({
   const [creativeArtModal, setCreativeArtModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const [buttonLoading, setButtonLoading] = useState(false)
   const [CloseDownCampus] = useMutation(MAKE_CAMPUS_INACTIVE, {
     refetchQueries: [
@@ -338,7 +338,7 @@ const CampusForm = ({
                       setButtonLoading(false)
                       clickCard(res.data.CloseDownCampus)
                       setCloseDown(false)
-                      navigate(`/stream/displayall`)
+                      router.push(`/stream/displayall`)
                     } catch (error) {
                       setButtonLoading(false)
                       throwToSentry(

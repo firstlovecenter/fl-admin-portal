@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertMsg, throwToSentry } from '../../../global-utils'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -19,7 +19,7 @@ const UpdateHub = () => {
   const { data, loading, error } = useQuery(DISPLAY_HUB, {
     variables: { id: hubId },
   })
-  const navigate = useNavigate()
+  const router = useRouter()
   const hub = data?.hubs[0]
 
   const initialValues: HubFormValues = {
@@ -117,7 +117,7 @@ const UpdateHub = () => {
             },
           })
           alertMsg('Leader Changed Successfully')
-          navigate(`/hub/displaydetails`)
+          router.push(`/hub/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -152,7 +152,7 @@ const UpdateHub = () => {
       }
 
       resetForm()
-      navigate(`/hub/displaydetails`)
+      router.push(`/hub/displaydetails`)
     } catch (error: any) {
       throwToSentry(error)
     } finally {

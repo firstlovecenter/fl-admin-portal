@@ -1,3 +1,5 @@
+'use client'
+
 import CloudinaryImage from 'components/CloudinaryImage'
 import PlaceholderCustom from 'components/Placeholder'
 import { capitalise } from 'global-utils'

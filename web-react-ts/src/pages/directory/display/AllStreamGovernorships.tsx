@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_STREAM_GOVERNORSHIPS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -27,7 +27,7 @@ const AllStreamGovernorships = () => {
           <Row className="mb-2">
             <Col>
               <Link
-                to="/stream/displaydetails"
+                href="/stream/displaydetails"
                 onClick={() => {
                   clickCard(stream)
                 }}
@@ -35,7 +35,7 @@ const AllStreamGovernorships = () => {
                 <h4 className="text-white">{`${stream?.name}'s Governorships`}</h4>
               </Link>
               <Link
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(stream?.leader)
                 }}
@@ -49,7 +49,7 @@ const AllStreamGovernorships = () => {
               {stream?.admin ? (
                 <Link
                   className="pb-1 text-white d-block text-small"
-                  to="/member/displaydetails"
+                  href="/member/displaydetails"
                   onClick={() => {
                     clickCard(stream?.admin)
                   }}
@@ -62,7 +62,7 @@ const AllStreamGovernorships = () => {
             <RoleView roles={permitAdmin('Stream')} directoryLock>
               <Col className="col-auto">
                 <Link
-                  to="/governorship/addgovernorship"
+                  href="/governorship/addgovernorship"
                   className="btn btn-danger"
                 >
                   Add Governorship

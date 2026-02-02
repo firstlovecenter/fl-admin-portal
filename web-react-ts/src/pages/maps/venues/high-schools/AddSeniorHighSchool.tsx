@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@apollo/client'
 import { CREATE_SENIOR_HIGH_SCHOOL_MUTATION } from '../venuesMutations'
 import { GET_SENIOR_HIGH_SCHOOLS } from '../venuesQueries'
@@ -21,7 +21,7 @@ export interface FormOptions {
 }
 
 const AddSeniorHighSchool = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { clickCard } = useContext(ChurchContext)
   const [CreateHighSchool] = useMutation(CREATE_SENIOR_HIGH_SCHOOL_MUTATION, {
     refetchQueries: [{ query: GET_SENIOR_HIGH_SCHOOLS }],
@@ -70,7 +70,7 @@ const AddSeniorHighSchool = () => {
         },
       })
       clickCard(res.data.CreateHighSchool)
-      navigate(`/maps/senior-high-schools`)
+      router.push(`/maps/senior-high-schools`)
     } catch (err) {
       setSubmitting(false)
       throwToSentry('', err)
@@ -149,7 +149,7 @@ const AddSeniorHighSchool = () => {
                 variant="danger"
                 className="w-100 fs-5"
                 onClick={() => {
-                  navigate(`/maps/senior-high-schools`)
+                  router.push(`/maps/senior-high-schools`)
                 }}
               >
                 Cancel

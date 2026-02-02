@@ -2,7 +2,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
 import { Button } from 'react-bootstrap'
 import { CheckCircleFill } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { VehicleRecord } from '../arrivals-types'
 import ButtonIcons from './ButtonIcons'
 
@@ -18,7 +18,7 @@ const VehicleButton = ({
   className?: string
 }) => {
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <Button
@@ -29,7 +29,7 @@ const VehicleButton = ({
       disabled={canFillOnTheWay === false}
       onClick={() => {
         clickCard(record)
-        navigate('/bacenta/vehicle-details')
+        router.push('/bacenta/vehicle-details')
       }}
     >
       <ButtonIcons type={record?.vehicle} />

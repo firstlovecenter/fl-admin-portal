@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import {
@@ -18,7 +18,7 @@ import People2Icon from 'assets/icons/People2'
 const ServantsChurchList = () => {
   const { memberId } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data, loading, error } = useQuery(SERVANT_CHURCH_LIST, {
     variables: { id: memberId },
   })
@@ -160,7 +160,7 @@ const ServantsChurchList = () => {
               color="churches"
               onClick={() => {
                 clickCard(church)
-                navigate(church.link)
+                router.push(church.link)
               }}
             />
           ))}

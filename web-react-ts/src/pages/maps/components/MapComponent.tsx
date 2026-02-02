@@ -38,7 +38,7 @@ import { FaChurch, FaDirections, FaLocationArrow } from 'react-icons/fa'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
 import { ChurchIdAndName } from 'global-types'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { alertMsg, throwToSentry } from 'global-utils'
 import { BiGroup } from 'react-icons/bi'
 import { ScaleLoader } from 'react-spinners'
@@ -76,7 +76,7 @@ const MapComponent = (props: MapComponentProps) => {
   const { loading } = props
   const [libraries] = useState<LibrariesOptions>(['places'])
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
     libraries: libraries,
   })
 
@@ -92,7 +92,7 @@ const MapComponent = (props: MapComponentProps) => {
 
   const { currentUser } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const mapRef = useRef<GoogleMap>()
   const center = useMemo<LatLngLiteral>(
@@ -320,7 +320,7 @@ const MapComponent = (props: MapComponentProps) => {
             variant="secondary"
             onClick={() => {
               clickCard({ id: member.id, __typename: 'Member' })
-              navigate('/member/displaydetails')
+              router.push('/member/displaydetails')
             }}
           >
             View Member Profile
@@ -423,7 +423,7 @@ const MapComponent = (props: MapComponentProps) => {
             variant="secondary"
             onClick={() => {
               clickCard({ id: fellowship.id, __typename: 'Fellowship' })
-              navigate('/fellowship/displaydetails')
+              router.push('/fellowship/displaydetails')
             }}
           >
             View Fellowship Profile

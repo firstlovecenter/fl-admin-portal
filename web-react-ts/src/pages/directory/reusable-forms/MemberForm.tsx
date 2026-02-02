@@ -28,7 +28,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_MEMBER_INACTIVE } from '../update/UpdateMutations'
 import usePopup from 'hooks/usePopup'
 import Popup from 'components/Popup/Popup'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import RoleView from 'auth/RoleView'
 import RadioButtons from 'components/formik/RadioButtons'
 import SearchBacenta from 'components/formik/SearchBacenta'
@@ -71,7 +71,7 @@ const MemberForm = ({
   const [MakeMemberInactive] = useMutation(MAKE_MEMBER_INACTIVE)
   const { isOpen, togglePopup } = usePopup()
 
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const deleteValidationSchema = Yup.object({
     reasonCategory: Yup.string().required(),
@@ -107,7 +107,7 @@ const MemberForm = ({
 
       togglePopup()
       alertMsg('Member has been deleted successfully')
-      navigate('/bacenta/displaydetails')
+      router.push('/bacenta/displaydetails')
     } catch (e) {
       throwToSentry('Cannot delete member', e)
     } finally {
@@ -210,7 +210,7 @@ const MemberForm = ({
                     name="pictureUrl"
                     initialValue={initialValues.pictureUrl}
                     error={formik.errors.pictureUrl}
-                    uploadPreset={import.meta.env.VITE_CLOUDINARY_MEMBERS}
+                    uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_MEMBERS}
                     placeholder="Upload New Picture"
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="ImageUpload"
@@ -230,7 +230,7 @@ const MemberForm = ({
                           <RoleView roles={permitAdmin('Denomination')}>
                             <Button
                               variant="success"
-                              onClick={() => navigate('/member/title-form')}
+                              onClick={() => router.push('/member/title-form')}
                             >
                               Add Title
                             </Button>

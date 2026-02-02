@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { useContext } from 'react'
 import * as Yup from 'yup'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { MAKE_CAMPUSARRIVALS_ADMIN, SET_SWELL_DATE } from '../arrivalsMutation'
 import { CAMPUS_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
 import { alertMsg, SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
@@ -37,7 +37,7 @@ type DateFormOptions = {
 const CampusDashboard = () => {
   const { isOpen, togglePopup } = usePopup()
   const { arrivalDate, setArrivalDate, campusId } = useContext(ChurchContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const today = new Date().toISOString().slice(0, 10)
   const { data, loading, error, refetch } = useQuery(
     CAMPUS_ARRIVALS_DASHBOARD,
@@ -240,7 +240,9 @@ const CampusDashboard = () => {
                   <div className="d-grid gap-2">
                     <MenuButton
                       title="Bacentas With No Activity"
-                      onClick={() => navigate('/arrivals/bacentas-no-activity')}
+                      onClick={() =>
+                        router.push('/arrivals/bacentas-no-activity')
+                      }
                       number={campus?.bacentasNoActivityCount.toString()}
                       color="red"
                       iconBg
@@ -248,7 +250,9 @@ const CampusDashboard = () => {
                     />
                     <MenuButton
                       title="Bacentas Mobilising"
-                      onClick={() => navigate('/arrivals/bacentas-mobilising')}
+                      onClick={() =>
+                        router.push('/arrivals/bacentas-mobilising')
+                      }
                       number={campus?.bacentasMobilisingCount.toString()}
                       color="orange"
                       iconBg
@@ -256,7 +260,9 @@ const CampusDashboard = () => {
                     />
                     <MenuButton
                       title="Bacentas On The Way"
-                      onClick={() => navigate('/arrivals/bacentas-on-the-way')}
+                      onClick={() =>
+                        router.push('/arrivals/bacentas-on-the-way')
+                      }
                       number={campus?.bacentasOnTheWayCount.toString()}
                       color="yellow"
                       iconBg
@@ -265,7 +271,7 @@ const CampusDashboard = () => {
 
                     <MenuButton
                       title="Bacentas That Didn't Bus"
-                      onClick={() => navigate('/arrivals/bacentas-below-8')}
+                      onClick={() => router.push('/arrivals/bacentas-below-8')}
                       number={campus?.bacentasBelow8Count.toString()}
                       iconBg
                       color="red"
@@ -275,7 +281,7 @@ const CampusDashboard = () => {
                     <MenuButton
                       title="Bacentas That Have Arrived"
                       onClick={() =>
-                        navigate('/arrivals/bacentas-have-arrived')
+                        router.push('/arrivals/bacentas-have-arrived')
                       }
                       number={campus?.bacentasHaveArrivedCount.toString()}
                       iconBg
@@ -298,7 +304,7 @@ const CampusDashboard = () => {
                     <div className="d-grid gap-2">
                       <MenuButton
                         title="Vehicles That Have Been Paid"
-                        onClick={() => navigate('#')}
+                        onClick={() => router.push('#')}
                         number={campus?.vehiclesHaveBeenPaidCount.toString()}
                         color="green"
                         iconBg
@@ -306,7 +312,7 @@ const CampusDashboard = () => {
                       />
                       <MenuButton
                         title="Vehicles To Be Paid"
-                        onClick={() => navigate('#')}
+                        onClick={() => router.push('#')}
                         number={campus?.vehiclesToBePaidCount.toString()}
                         color="yellow"
                         iconBg
@@ -315,7 +321,7 @@ const CampusDashboard = () => {
 
                       <MenuButton
                         title="Amount That Has Been Paid"
-                        onClick={() => navigate('#')}
+                        onClick={() => router.push('#')}
                         number={campus?.vehicleAmountHasBeenPaid.toString()}
                         color="green"
                         noCaption
@@ -323,7 +329,7 @@ const CampusDashboard = () => {
                       />
                       <MenuButton
                         title="Amount To Be Paid"
-                        onClick={() => navigate('#')}
+                        onClick={() => router.push('#')}
                         number={campus?.vehicleAmountToBePaid.toString()}
                         color="yellow"
                         noCaption

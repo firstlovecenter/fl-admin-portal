@@ -11,7 +11,7 @@ import {
 import { useMutation, useQuery } from '@apollo/client'
 import HeadingSecondary from 'components/HeadingSecondary'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { getHumanReadableDate } from 'jd-date-utils'
 import SubmitButton from 'components/formik/SubmitButton'
 import usePopup from 'hooks/usePopup'
@@ -24,7 +24,7 @@ type FormOptions = {
 
 const StreamBankingSlipSubmission = () => {
   const { serviceRecordId } = useContext(ServiceContext)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { togglePopup, isOpen } = usePopup()
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -56,7 +56,7 @@ const StreamBankingSlipSubmission = () => {
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
 
-      navigate(`/stream/service-details`)
+      router.push(`/stream/service-details`)
     } catch (error: any) {
       setErrorMessage(error.message)
       togglePopup()
@@ -98,7 +98,7 @@ const StreamBankingSlipSubmission = () => {
                     <ImageUpload
                       label="Upload a Picture of Your Banking Slip"
                       name="bankingSlip"
-                      uploadPreset={import.meta.env.VITE_CLOUDINARY_BANKING}
+                      uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_BANKING}
                       placeholder="Choose"
                       setFieldValue={formik.setFieldValue}
                       aria-describedby="UploadBankingSlip"

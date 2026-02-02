@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
 import './Dashboards.css'
 import { MemberContext } from 'contexts/MemberContext'
@@ -21,7 +21,7 @@ const UserDashboard = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const { setUserChurch } = useSetUserChurch()
-  const navigate = useNavigate()
+  const router = useRouter()
   const { assessmentChurch } = useComponentQuery()
 
   let graphType: GraphTypes = 'serviceAggregate'
@@ -65,7 +65,7 @@ const UserDashboard = () => {
                         clickCard(currentUser)
                         setUserChurch(role.church[0])
                         clickCard(role.church[0])
-                        navigate(role.link)
+                        router.push(role.link)
                       }}
                     >
                       <RoleCard

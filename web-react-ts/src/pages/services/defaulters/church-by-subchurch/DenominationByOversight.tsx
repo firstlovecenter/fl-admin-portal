@@ -4,7 +4,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
 import { Card, Col, Row, Button, Container } from 'react-bootstrap'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
@@ -23,7 +23,7 @@ const DenominationByOversight = () => {
       },
     }
   )
-  const navigate = useNavigate()
+  const router = useRouter()
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -48,7 +48,7 @@ const DenominationByOversight = () => {
                       <Card.Body
                         onClick={() => {
                           clickCard(oversight)
-                          navigate('/services/oversight-by-campus')
+                          router.push('/services/oversight-by-campus')
                         }}
                       >
                         <div className="fw-bold">

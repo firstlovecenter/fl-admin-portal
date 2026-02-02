@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import TabletDesktopView from '../responsive-design/TabletDesktopView'
 import MobileView from '../responsive-design/MobileView'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -15,7 +15,7 @@ const MemberTable = (props) => {
 
   const { clickCard } = useContext(ChurchContext)
   const { theme } = useContext(MemberContext)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const pageLoading = loading || error || !data
 
@@ -75,7 +75,7 @@ const MemberTable = (props) => {
                     className="card grid-card fade-in"
                     onClick={() => {
                       clickCard(soul)
-                      navigate('/member/displaydetails')
+                      router.push('/member/displaydetails')
                     }}
                   >
                     <CloudinaryImage
@@ -105,7 +105,7 @@ const MemberTable = (props) => {
                   className={`d-flex align-items-center card-border ${theme}`}
                   onClick={() => {
                     clickCard(soul)
-                    navigate('/member/displaydetails')
+                    router.push('/member/displaydetails')
                   }}
                 >
                   <div className="flex-shrink-0">

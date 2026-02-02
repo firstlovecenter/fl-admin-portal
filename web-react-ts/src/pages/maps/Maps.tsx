@@ -1,14 +1,14 @@
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { Button, Container } from 'react-bootstrap'
 import HeadingSecondary from 'components/HeadingSecondary'
-import { useNavigate } from 'react-router'
+import { useRouter } from 'next/navigation'
 import { BiMap } from 'react-icons/bi'
 import { IoIosArrowForward } from 'react-icons/io'
 import RoleView from 'auth/RoleView'
 import { permitAdmin } from 'permission-utils'
 
 const Maps = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const lists = [
     {
       id: 1,
@@ -43,7 +43,7 @@ const Maps = () => {
           className="text-start py-4 mb-4 fs-6"
           variant="outline-primary"
           onClick={() => {
-            navigate(`/maps/view-maps`)
+            router.push(`/maps/view-maps`)
           }}
         >
           <BiMap /> View Map
@@ -58,7 +58,7 @@ const Maps = () => {
               className="text-start text-capitalize py-4 d-flex justify-content-between px-5 mb-2 fs-6"
               variant="gray"
               onClick={() => {
-                navigate(`${list.path}`)
+                router.push(`${list.path}`)
               }}
             >
               <span>{list.name}</span>

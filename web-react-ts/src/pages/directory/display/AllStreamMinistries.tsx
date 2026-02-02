@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useQuery } from '@apollo/client'
 import { GET_STREAM_MINISTRIES } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -32,7 +32,7 @@ const DisplayAllStreamMinistries = () => {
         <Row className="mb-2">
           <Col>
             <Link
-              to="/stream/displaydetails"
+              href="/stream/displaydetails"
               onClick={() => {
                 clickCard(stream)
               }}
@@ -40,7 +40,7 @@ const DisplayAllStreamMinistries = () => {
               <h4 className="text-white">{`${stream?.name} Ministries`}</h4>
             </Link>
             <Link
-              to="/member/displaydetails"
+              href="/member/displaydetails"
               onClick={() => {
                 clickCard(stream?.leader)
               }}
@@ -53,7 +53,7 @@ const DisplayAllStreamMinistries = () => {
             {stream?.admin ? (
               <Link
                 className="pb-4 text-white text-small"
-                to="/member/displaydetails"
+                href="/member/displaydetails"
                 onClick={() => {
                   clickCard(stream?.admin)
                 }}
@@ -65,7 +65,7 @@ const DisplayAllStreamMinistries = () => {
           </Col>
           <RoleView roles={permitAdmin('Campus')} directoryLock>
             <Col className="col-auto">
-              <Link to="/ministry/addministry" className="btn btn-danger">
+              <Link href="/ministry/addministry" className="btn btn-danger">
                 Add Ministry
               </Link>
             </Col>
