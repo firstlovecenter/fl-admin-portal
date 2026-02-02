@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router'
 import MenuButton from 'components/buttons/MenuButton'
 import Stars from 'assets/icons/Stars'
 import Charts from 'assets/icons/Charts'
-import PieChart from 'assets/icons/PieChart'
 import { Download } from 'react-bootstrap-icons'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
@@ -61,17 +60,6 @@ const TrendsMenu = () => {
               />
             </RoleView>
           )}
-          <MenuButton
-            iconComponent={<PieChart />}
-            title="Member Conversion Chart"
-            color="multiplication"
-            onClick={() =>
-              navigate(
-                `/campaigns/${church.__typename.toLowerCase()}/multiplication/member-conversion-chart`
-              )
-            }
-            caption={'Member conversion chart of your church'}
-          />
         </div>
       </Container>
     </div>

@@ -17,7 +17,6 @@ import {
 } from 'pages/directory/directoryRoutes'
 import { graphs, services } from 'pages/services/servicesRoutes'
 import { arrivals } from 'pages/arrivals/arrivalsRoutes'
-import { campaigns } from 'pages/campaigns/campaignsRoutes'
 import { reconciliation } from 'pages/reconciliation/reconRoutes'
 import PageNotFound from 'pages/page-not-found/PageNotFound'
 import SetPermissions from 'auth/SetPermissions'
@@ -179,7 +178,6 @@ const AppWithContext = (props: AppPropsType) => {
                           ...directory,
                           ...services,
                           ...arrivals,
-                          ...campaigns,
                           ...reconciliation,
                           ...graphs,
                           ...maps,
