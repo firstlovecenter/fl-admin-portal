@@ -1,29 +1,29 @@
 [build]
-  command = "npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
-  publish = "web-react-ts/dist"
-  functions = "api/build/functions"
+command = "npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
+publish = "web-react-ts/dist"
+functions = "api/build/functions"
 
 [dev]
-  command = "npm start"
+command = "npm start"
 
 # with gitops
 [context.deploy-preview]
-  command = "npm run doppler-install && npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run encrypt-secrets && npm run inject-secrets && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
+command = "npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
 
 [context.production]
-  command = "npm run doppler-install && npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run encrypt-secrets && npm run inject-secrets && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
+command = "npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
 
 [template.environment]
-  NEO4J_URI = "Neo4j URI (ex: bolt://localhost:7687)"
-  NEO4J_USER = "Neo4j User"
-  NEO4J_PASSWORD = "Neo4j Password"
-  
-[[redirects]]
-  from = "/graphql"
-  to = "/.netlify/functions/graphql"
-  status = 200
+NEO4J_URI = "Neo4j URI (ex: bolt://localhost:7687)"
+NEO4J_USER = "Neo4j User"
+NEO4J_PASSWORD = "Neo4j Password"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/graphql"
+to = "/.netlify/functions/graphql"
+status = 200
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200

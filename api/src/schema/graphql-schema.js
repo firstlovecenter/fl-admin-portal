@@ -101,10 +101,8 @@ const array = [
 
 const combinedSchema = array.join(' ')
 
-if (process.env.DOPPLER_ENVIRONMENT === 'dev') {
-  // Write the combined schema to a file
-  const outputPath = path.join(__dirname, 'combined-schema.gql')
-  fs.writeFileSync(outputPath, combinedSchema, 'utf-8')
-}
+// Write the combined schema to a file
+const outputPath = path.join(__dirname, 'combined-schema.gql')
+fs.writeFileSync(outputPath, combinedSchema, 'utf-8')
 
 exports.typeDefs = combinedSchema

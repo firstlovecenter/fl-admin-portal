@@ -29,13 +29,9 @@
     "typescript-eslint": "^8.0.1-alpha.4"
   },
   "scripts": {
-    "start": "doppler run node scripts/start-dev.js",
-    "dev": "doppler run node scripts/start-dev.js",
+    "start": "node scripts/start-dev.js",
+    "dev": "node scripts/start-dev.js",
     "build": "node scripts/build.js",
-    "doppler-install": "(curl -Ls https://cli.doppler.com/install.sh || wget -qO- https://cli.doppler.com/install.sh) | sh -s -- --no-install --no-package-manager",
-    "encrypt-secrets": "./doppler run node scripts/encrypt-secrets.js",
-    "inject-secrets": "./doppler run node scripts/inject-secrets.js",
-    "netlify-dev": "doppler run netlify dev",
     "format": "find . -name \"*.js\" | grep -v node_modules | grep -v build | xargs prettier --write",
     "format:log": "find . -name \"*.js\" | grep -v node_modules | grep -v build | xargs prettier",
     "clean:git": "cd web-react-ts && rm -f ./.git/index.lock && cd ../api && rm -f ./.git/index.lock && cd .. && rm -f ./.git/index.lock",
@@ -43,8 +39,8 @@
     "release:minor": "npm run clean:git && node scripts/release.js minor",
     "release:patch": "npm run clean:git && node scripts/release.js patch",
     "prepare": "husky install",
-    "aggregate-bacenta": "doppler run node ./api/src/scripts/run-bacenta-aggregation.js",
-    "aggregate-bacenta:help": "doppler run node ./api/src/scripts/run-bacenta-aggregation.js --help"
+    "aggregate-bacenta": "node ./api/src/scripts/run-bacenta-aggregation.js",
+    "aggregate-bacenta:help": "node ./api/src/scripts/run-bacenta-aggregation.js --help"
   },
   "husky": {
     "hooks": {
