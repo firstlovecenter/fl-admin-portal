@@ -14,7 +14,6 @@ import {
   permitLeaderAdmin,
   permitLeaderAdminArrivals,
   permitMe,
-  permitSheepSeeker,
   permitTellerStream,
 } from 'permission-utils'
 
@@ -56,14 +55,6 @@ export const menuItems: MenuItem[] = [
         ...permitArrivalsHelpers('Stream'),
       ],
       [...permitLeaderAdminArrivals('Oversight')]
-    ),
-  },
-  {
-    name: 'Campaigns',
-    to: '/campaigns/churchlist',
-    roles: arrayDiff(
-      [...permitLeaderAdmin('Bacenta'), ...permitSheepSeeker()],
-      permitLeaderAdminArrivals('Oversight')
     ),
   },
   {
@@ -191,25 +182,6 @@ const setServantRoles = (args: ServantRolesArgs) => {
       church: servant[`${verb}`],
       number: servant[`${verb}`]?.length,
       link: authorisedLink(servant, permittedForLink, `/services`),
-    })
-
-    return
-  }
-
-  if (servantType === 'isSheepSeekerFor') {
-    const adminsOneChurch = servant[`${verb}`]?.length === 1 ?? false
-    userroles.push({
-      authRoles,
-      name: adminsOneChurch
-        ? churchType + ' ' + parseRoles(servantType)
-        : plural(churchType) + ' ' + parseRoles(servantType),
-      church: servant[`${verb}`],
-      number: servant[`${verb}`]?.length,
-      link: authorisedLink(
-        servant,
-        permittedForLink,
-        `campaigns/stream/sheep-seeking`
-      ),
     })
 
     return
@@ -602,20 +574,6 @@ export const getServantRoles = (servant: MemberWithChurches) => {
         servant,
         permitMe('Campus'),
         `/campus/displaydetails`
-      ),
-    })
-  }
-  if (servant?.isSheepSeekerForStream?.length) {
-    roleTitles.push('sheepseekerStream')
-    userroles.push({
-      authRoles: 'sheepseekerStream',
-      name: 'Sheep Seeker',
-      church: servant?.isSheepSeekerForStream,
-      number: servant?.isSheepSeekerForStream?.length,
-      link: authorisedLink(
-        servant,
-        permitSheepSeeker(),
-        `campaigns/stream/sheep-seeking`
       ),
     })
   }
