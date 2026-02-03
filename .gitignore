@@ -33,3 +33,7 @@ combined-schema.*
 lambda-package/
 lambda-package.zip
 temp-compiled-resolvers/
+
+# Compiled TypeScript resolvers (generated from .ts files)
+api/src/resolvers/**/*.js
+!api/src/resolvers/**/*.test.js
