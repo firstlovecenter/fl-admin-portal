@@ -95,7 +95,7 @@ const initializeServer = async () => {
       status400ForVariableCoercionErrors: true,
       includeStacktraceInErrorResponses: process.env.NODE_ENV !== 'production',
       formatResponse: (response) => {
-        console.log('[Response] Formatting GraphQL response')
+        console.log('[Response] Formatting GraphQL response ✅')
         return {
           data: response.data || null,
           errors: response.errors || null,
