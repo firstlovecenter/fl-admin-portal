@@ -10,6 +10,7 @@ const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceInc
 const weekdayBankedIncome = require('./query-exec/weekdayBankedIncome.js')
 const weekdayNotBankedIncome = require('./query-exec/weekdayNotBankedIncome.js')
 const { notifyBaseURL } = require('./utils/constants.js')
+const { generateCSV } = require('./utils/generateCSV.js')
 
 /**
  * Helper function to get the ISO week number for a given date
@@ -93,6 +94,29 @@ const handler = async () => {
 
     await clearGSheet(outsideAccraSheet)
 
+    // Generate CSV from all collected data
+    const csvContent = generateCSV(
+      campusListData,
+      campusAttendanceIncomeData,
+      campusBankedIncomeData,
+      campusNotBankedIncomeData,
+      fellowshipAttendanceIncomeData,
+      weekdayBankedIncomeData,
+      weekdayNotBankedIncomeData
+    )
+
+    // Convert CSV to base64 for email attachment
+    const csvBase64 = Buffer.from(csvContent).toString('base64')
+
+    const weekNumber = getWeekNumber() - 1
+    const reportDate = new Date()
+      .toLocaleString('en-GB', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+      .split('T')[0]
+
     await Promise.all([
       writeToGsheet(campusListData, outsideAccraSheet, 'A:D'),
       writeToGsheet(campusAttendanceIncomeData, outsideAccraSheet, 'E:F'),
@@ -116,22 +140,49 @@ const handler = async () => {
             '233263995059', // Abigail Tay
           ],
           sender: 'FLC Admin',
-          message: `WEEK ${
-            getWeekNumber() - 1
-          } UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${
-            new Date()
-              .toLocaleString('en-GB', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })
-              .split('T')[0]
-          }`,
+          message: `WEEK ${weekNumber} UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${reportDate}`,
+        },
+      }),
+      // Send email with CSV attachment
+      axios({
+        method: 'post',
+        baseURL: notifyBaseURL,
+        url: '/send-email',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
+        },
+        data: {
+          recipient: 'latisha.forson@firstlovecenter.com',
+          subject: `Outside Accra Weekly Report - Week ${weekNumber} (${reportDate})`,
+          message: `
+            <h2>Outside Accra Weekly Report</h2>
+            <p>Week ${weekNumber} - ${reportDate}</p>
+            <p>Please find attached the weekly report for Outside Accra campuses.</p>
+            <p>This report includes:</p>
+            <ul>
+              <li>Campus List</li>
+              <li>Campus Attendance & Income</li>
+              <li>Campus Banked Income</li>
+              <li>Campus Not Banked Income</li>
+              <li>Fellowship Attendance & Income</li>
+              <li>Weekday Banked Income</li>
+              <li>Weekday Not Banked Income</li>
+            </ul>
+            <p>The Google Sheets have also been updated successfully.</p>
+          `,
+          attachments: [
+            {
+              filename: `outside-accra-week-${weekNumber}-${reportDate}.csv`,
+              content: csvBase64,
+              encoding: 'base64',
+            },
+          ],
         },
       }),
     ]).catch((error) => {
       throw new Error(
-        `Error writing to google sheet\n${error.message}\n${error.stack}`
+        `Error writing to google sheet or sending notifications\n${error.message}\n${error.stack}`
       )
     })
 
