@@ -18,6 +18,88 @@ This is a **GRANDstack** monorepo (GraphQL, React, Apollo, Neo4j Database) manag
 3. **Background Jobs** → Scheduled Netlify Functions aggregate data (e.g., `outside-accra-weekly/`)
 4. **Database** → Neo4j relationships model church hierarchy (Oversight→Campus→Stream→Council)
 
+## Universal Developer Guidelines
+
+All code in this project must follow these core principles for **readability, testability, predictability, and evolvability**:
+
+### 1. Single Source of Truth
+- **Every piece of logic or data must have one authoritative place**
+- Never duplicate business rules across frontend and backend
+- If logic exists in two places, at least one is wrong
+
+### 2. Deterministic Code Only
+- Code must behave the same way given the same inputs
+- No hidden globals, no implicit state
+- Explicit inputs → explicit outputs → clear naming
+
+### 3. File & Module Size Discipline
+- **Max 400 lines per file** (target < 300 lines)
+- Split by responsibility: one component/service/concept per file
+- Large files hide bugs; small files reveal intent
+
+### 4. Layered Architecture
+Code must clearly separate:
+- **Interfaces** (HTTP handlers, CLI, UI components)
+- **Application Logic** (use cases, workflows, orchestration)
+- **Domain Logic** (rules, models, decisions)
+- **Infrastructure** (databases, APIs, external services)
+
+Business logic never depends on infrastructure; infrastructure is replaceable.
+
+### 5. Explicit Data Flow
+- Trace where values come from, who transformed them, where they're stored
+- No magic mutations, no hidden transformations
+- Data must flow forward predictably
+
+### 6. Error Handling as First-Class Design
+- Errors are outputs, not afterthoughts
+- Every function either returns valid results or clearly defined errors
+- No silent failures; no swallowed exceptions
+
+### 7. Naming as Contract
+- Names explain intent, not implementation
+- Good names answer: What is this? Why does it exist? When should it be used?
+- If naming is hard, the abstraction is wrong
+
+### 8. Testability is Mandatory
+- Every important unit must be testable in isolation
+- Pure functions where possible; dependency injection always
+- No hard-coded globals
+
+### 9. Replaceability Over Optimization
+- Design assuming every dependency will be replaced one day
+- Abstractions enable replacement, not complexity
+- Performance and cleverness come last
+
+### 10. No Hidden Framework Magic
+- Frameworks are tools, not architects
+- Every non-obvious behavior must be explicit, commented, and testable
+- Avoid relying on undocumented behavior
+
+### 11. Comments Explain Why, Not What
+- Code explains what; comments explain why
+- Good comment: `// Retry count capped to prevent infinite loops`
+- Bad comment: `// increment i`
+
+### 12. Red Flags (Stop & Refactor)
+Stop if you see:
+- "We'll clean this later" / "Just this once"
+- Files > 400 lines
+- Logic copied across layers
+- Functions with unclear inputs/outputs
+- Silent errors
+
+These always become production problems.
+
+### 13. Definition of Done
+A task is done only if:
+- Code is readable without explanation
+- Logic exists in one place
+- Files are appropriately sized
+- Errors are handled explicitly
+- Tests exist (or are trivial to add)
+- Dependencies are replaceable
+
 ## Monorepo Structure & Workflows
 
 ### Local Development
