@@ -6,7 +6,7 @@ import { ChurchContext } from './contexts/ChurchContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import SetPermissions from 'auth/SetPermissions'
 import useClickCard from 'hooks/useClickCard'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/contexts/AuthContext'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import PageContainer from 'components/base-component/PageContainer'
 import Navigation from 'pages/dashboards/Navigation'
@@ -70,20 +70,23 @@ const AppWithContext = (props: AppPropsType) => {
     setCreativeArtsId,
   }
 
-  const { user } = useAuth0()
+  const { user } = useAuth()
 
   const [currentUser, setCurrentUser] = useState(
     typeof window !== 'undefined' && sessionStorage.getItem('currentUser')
       ? JSON.parse(sessionStorage.getItem('currentUser') || '{}')
       : {
           __typename: 'Member',
-          id: user?.sub?.replace('auth0|', ''),
-          firstName: user?.given_name,
-          lastName: user?.family_name,
-          fullName: user?.name,
-          picture: user?.picture,
+          id: user?.id,
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          fullName:
+            user?.firstName && user?.lastName
+              ? `${user.firstName} ${user.lastName}`
+              : undefined,
+          picture: undefined,
           email: user?.email,
-          roles: user && user[`https://flcadmin.netlify.app/roles`],
+          roles: undefined,
         }
   )
 

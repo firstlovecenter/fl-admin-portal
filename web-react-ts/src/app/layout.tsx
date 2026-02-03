@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
-import { Auth0Provider } from '@auth0/auth0-react'
-import ApolloWrapper from '@/lib/ApolloWrapper'
 import React from 'react'
+import { Providers } from './providers'
 // Global styles
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'slick-carousel/slick/slick.css'
@@ -22,17 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Auth0Provider
-          domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN || ''}
-          clientId={process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID || ''}
-          redirectUri={
-            typeof window !== 'undefined' ? window.location.origin : ''
-          }
-          audience="https://flcadmin.netlify.app/graphql"
-          scope="true"
-        >
-          <ApolloWrapper>{children}</ApolloWrapper>
-        </Auth0Provider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

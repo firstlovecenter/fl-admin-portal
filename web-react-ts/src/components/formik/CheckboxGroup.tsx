@@ -8,7 +8,7 @@ import './CheckboxGroup.css'
 import './Formik.css'
 import { FormikComponentProps } from './formik-types'
 
-interface CheckboxGroupProps extends FormikComponentProps {}
+type CheckboxGroupProps = FormikComponentProps
 
 function CheckboxGroup(props: CheckboxGroupProps) {
   const { label, name, options, ...rest } = props

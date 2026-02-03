@@ -1,6 +1,6 @@
 'use client'
 
-import GovernorshipHistory from '@/pages/directory/display/church-history/GovernorshipHistory'
+import GovernorshipHistory from '@/lib/page-components/directory/display/church-history/GovernorshipHistory'
 
 export default function Page() {
   return <GovernorshipHistory />

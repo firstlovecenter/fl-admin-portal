@@ -1,6 +1,6 @@
 'use client'
 
-import DenominationGraphs from '@/pages/services/graphs/DenominationGraphs'
+import DenominationGraphs from '@/lib/page-components/services/graphs/DenominationGraphs'
 
 export default function Page() {
   return <DenominationGraphs />

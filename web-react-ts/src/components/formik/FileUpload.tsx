@@ -42,7 +42,7 @@ const FileUpload = (props: FileUploadProps) => {
   }
 
   const uploadFile = async (e: any) => {
-    const files = e.target.files
+    const { files } = e.target
     const date = new Date().toISOString().slice(0, 10)
     const username = `${currentUser.firstName.toLowerCase()}-${currentUser.lastName.toLowerCase()}`
     let filename = `${username}-${currentUser.id}/${date}_${
@@ -94,7 +94,7 @@ const FileUpload = (props: FileUploadProps) => {
         </Container>
       )}
       {!file && !initialValue && !loading && (
-        <Container className="text-center img-container border my-3"></Container>
+        <Container className="text-center img-container border my-3" />
       )}
       <label className="w-100 text-center">
         <input
@@ -107,7 +107,7 @@ const FileUpload = (props: FileUploadProps) => {
           {...rest}
         />
 
-        <p className={`btn btn-primary px-5 file`}>{placeholder}</p>
+        <p className="btn btn-primary px-5 file">{placeholder}</p>
       </label>
       {props.error && <TextError>{props.error}</TextError>}
       {!props.error ?? <ErrorMessage name={name} component={TextError} />}

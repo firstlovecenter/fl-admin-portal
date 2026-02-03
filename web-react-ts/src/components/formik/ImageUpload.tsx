@@ -27,7 +27,7 @@ const ImageUpload = (props: ImageUploadProps) => {
   const [generatePresignedUrl] = useMutation(GENERATE_PRESIGNED_URL)
 
   const uploadImage = async (e: any) => {
-    const files = e.target.files
+    const { files } = e.target
     const file = files[0]
 
     if (!file) return
@@ -78,7 +78,7 @@ const ImageUpload = (props: ImageUploadProps) => {
         </Container>
       )}
       {!image && !initialValue && !loading && (
-        <Container className="text-center img-container border my-3"></Container>
+        <Container className="text-center img-container border my-3" />
       )}
       <label className="w-100 text-center">
         <input
@@ -91,7 +91,7 @@ const ImageUpload = (props: ImageUploadProps) => {
           {...rest}
         />
 
-        <p className={`btn btn-primary px-5 image`}>{placeholder}</p>
+        <p className="btn btn-primary px-5 image">{placeholder}</p>
       </label>
       {uploadError && <TextError>{uploadError}</TextError>}
       {!uploadError &&

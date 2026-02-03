@@ -1,6 +1,6 @@
 'use client'
 
-import OversightGraphs from '@/pages/services/graphs/OversightGraphs'
+import OversightGraphs from '@/lib/page-components/services/graphs/OversightGraphs'
 
 export default function Page() {
   return <OversightGraphs />

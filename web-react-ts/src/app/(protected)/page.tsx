@@ -1,6 +1,6 @@
 'use client'
 
-import UserDashboard from '@/pages/dashboards/UserDashboard'
+import UserDashboard from '@/lib/page-components/dashboards/UserDashboard'
 
 export default function Page() {
   return <UserDashboard />

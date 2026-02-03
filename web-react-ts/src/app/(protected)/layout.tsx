@@ -1,24 +1,24 @@
 'use client'
 
 import React, { ReactNode } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
-import SplashScreen from '@/pages/splash-screen/SplashSreen'
-import PageNotFound from '@/pages/page-not-found/PageNotFound'
+import { useAuth } from '@/contexts/AuthContext'
+import { getAccessToken } from '@/lib/auth-service'
+import SplashScreen from '@/lib/page-components/splash-screen/SplashSreen'
+import PageNotFound from '@/lib/page-components/page-not-found/PageNotFound'
 import AppWithContext from '@/AppWithContext'
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
-  const { user, isLoading, getIdTokenClaims } = useAuth0()
+  const { user, isLoading } = useAuth()
   const [token, setToken] = React.useState<string>('')
 
   React.useEffect(() => {
     if (user) {
-      getIdTokenClaims().then((claims) => {
-        if (claims?.__raw) {
-          setToken(claims.__raw)
-        }
-      })
+      const accessToken = getAccessToken()
+      if (accessToken) {
+        setToken(accessToken)
+      }
     }
-  }, [user, getIdTokenClaims])
+  }, [user])
 
   if (isLoading) {
     return <SplashScreen />

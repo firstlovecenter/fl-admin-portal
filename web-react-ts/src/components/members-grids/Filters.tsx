@@ -120,7 +120,7 @@ const Filters = ({
             <Button
               variant="primary"
               type="reset"
-              className={`btn-secondary px-5`}
+              className="btn-secondary px-5"
               onClick={() => {
                 setFilters({
                   gender: [],
@@ -139,7 +139,7 @@ const Filters = ({
               <Button
                 variant="success"
                 type="submit"
-                className={`px-5`}
+                className="px-5"
                 disabled={!formik.isValid || formik.isSubmitting}
               >
                 Apply Filters

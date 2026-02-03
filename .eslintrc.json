@@ -46,7 +46,12 @@
     "prettier/prettier": "warn",
     "react/prop-types": "error",
     "no-unused-vars": "error",
-    "no-console": "error",
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
     "import/extensions": "off",
     "react/react-in-jsx-scope": "off",
     "@typescript-eslint/no-var-requires": "off",

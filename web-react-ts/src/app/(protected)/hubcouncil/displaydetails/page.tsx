@@ -1,6 +1,6 @@
 'use client'
 
-import DetailsHubCouncil from '@/pages/directory/display/DetailsHubCouncil'
+import DetailsHubCouncil from '@/lib/page-components/directory/display/DetailsHubCouncil'
 
 export default function Page() {
   return <DetailsHubCouncil />

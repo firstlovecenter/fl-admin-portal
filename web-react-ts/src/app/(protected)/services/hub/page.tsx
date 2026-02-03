@@ -1,6 +1,6 @@
 'use client'
 
-import HubFormMenu from '@/pages/services/menus/HubFormMenu'
+import HubFormMenu from '@/lib/page-components/services/menus/HubFormMenu'
 
 export default function Page() {
   return <HubFormMenu />

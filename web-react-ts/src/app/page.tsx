@@ -1,10 +1,10 @@
 'use client'
 
 import React, { Suspense } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/contexts/AuthContext'
 import AppWithContext from '@/AppWithContext'
 import Login from '@/components/Login'
-import SplashScreen from '@/pages/splash-screen/SplashSreen'
+import SplashScreen from '@/lib/page-components/splash-screen/SplashSreen'
 import CacheBuster from '@/CacheBuster'
 
 export default function Page() {
@@ -31,7 +31,7 @@ export default function Page() {
 }
 
 function AuthWrapper() {
-  const { isLoading, user } = useAuth0()
+  const { isLoading, user } = useAuth()
 
   if (isLoading) {
     return <SplashScreen />

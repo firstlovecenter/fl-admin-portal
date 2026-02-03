@@ -1,6 +1,6 @@
 'use client'
 
-import LandingPage from '@/pages/accounts/LandingPage'
+import LandingPage from '@/lib/page-components/accounts/LandingPage'
 
 export default function Page() {
   return <LandingPage />

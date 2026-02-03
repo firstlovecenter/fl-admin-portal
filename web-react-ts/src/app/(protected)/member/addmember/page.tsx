@@ -1,6 +1,6 @@
 'use client'
 
-import CreateMember from '@/pages/directory/create/CreateMember'
+import CreateMember from '@/lib/page-components/directory/create/CreateMember'
 
 export default function Page() {
   return <CreateMember />

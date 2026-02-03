@@ -1,16 +1,15 @@
 import { useQuery } from '@apollo/client'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/contexts/AuthContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import InitialLoading from 'components/base-component/InitialLoading'
 import { GET_LOGGED_IN_USER } from 'components/UserProfileIcon/UserQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
-import { capitalise } from 'global-utils'
+import { capitalise, isAuthorised } from 'global-utils'
 import { getUserServantRoles } from 'pages/dashboards/dashboard-utils'
 import { SERVANT_CHURCH_LIST } from 'pages/dashboards/DashboardQueries'
 import { permitMe } from 'permission-utils'
 import { useContext, useEffect } from 'react'
-import useAuth from './useAuth'
 
 const SetPermissions = ({
   token,
@@ -23,8 +22,7 @@ const SetPermissions = ({
 
   const { doNotUse } = useContext(ChurchContext)
 
-  const { isAuthenticated, user } = useAuth0()
-  const { isAuthorised } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   const { data, loading, error } = useQuery(SERVANT_CHURCH_LIST, {
     variables: { id: currentUser.id },
@@ -136,27 +134,27 @@ const SetPermissions = ({
   useEffect(() => {
     doNotUse.setDenominationId(currentUser.denomination)
 
-    if (isAuthenticated && currentUser.roles.length) {
-      if (!isAuthorised(permitMe('Oversight'))) {
+    if (isAuthenticated && currentUser.roles?.length) {
+      if (!isAuthorised(permitMe('Oversight'), currentUser.roles)) {
         doNotUse.setOversightId(currentUser.oversight)
 
-        if (!isAuthorised(permitMe('Campus'))) {
+        if (!isAuthorised(permitMe('Campus'), currentUser.roles)) {
           doNotUse.setCampusId(currentUser.campus)
           //if User is not a federal admin
 
-          if (!isAuthorised(permitMe('Stream'))) {
+          if (!isAuthorised(permitMe('Stream'), currentUser.roles)) {
             doNotUse.setChurch(currentUser.church)
             doNotUse.setStreamId(currentUser.stream)
             //User is not at the Stream Level
-            if (!isAuthorised(permitMe('Council'))) {
+            if (!isAuthorised(permitMe('Council'), currentUser.roles)) {
               doNotUse.setCouncilId(currentUser.council)
               //User is not at the Council Level
 
-              if (!isAuthorised(permitMe('Governorship'))) {
+              if (!isAuthorised(permitMe('Governorship'), currentUser.roles)) {
                 //User is not a Governorship Admin the he can only be looking at his bacenta membership
                 doNotUse.setGovernorshipId(currentUser.governorship)
                 // doNotUse.setBacentaId(currentUser.bacenta)
-                // if (!isAuthorised(['leaderBacenta'])) {
+                // if (!isAuthorised(['leaderBacenta'], currentUser.roles)) {
                 //   //User is not a Bacenta Leader and he can only be looking at his fellowship membership
                 // doNotUse.setFellowshipId(currentUser.fellowship?.id)
                 // }
@@ -166,10 +164,10 @@ const SetPermissions = ({
         }
       }
     }
-  }, [isAuthenticated, currentUser, isAuthorised, doNotUse])
+  }, [isAuthenticated, currentUser, doNotUse])
 
   if (loading || !token) {
-    return <InitialLoading text={'Retrieving your church information...'} />
+    return <InitialLoading text="Retrieving your church information..." />
   }
 
   return (

@@ -31,7 +31,7 @@ const ErrorPopup = (props: ErrorDialogProps) => {
           variant="danger"
           type="submit"
           size="lg"
-          className={`w-100 mt-2`}
+          className="w-100 mt-2"
           onClick={() => {
             togglePopup()
             if (link) router.push(link)

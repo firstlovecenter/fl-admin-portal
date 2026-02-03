@@ -30,7 +30,6 @@ const SearchFellowship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.campuses[0].fellowshipSearch)
-        return
       },
     }
   )
@@ -39,7 +38,6 @@ const SearchFellowship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.streams[0].fellowshipSearch)
-        return
       },
     }
   )
@@ -48,7 +46,6 @@ const SearchFellowship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.councils[0].fellowshipSearch)
-        return
       },
     }
   )
@@ -58,7 +55,6 @@ const SearchFellowship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.governorships[0].fellowshipSearch)
-        return
       },
     }
   )
@@ -67,7 +63,6 @@ const SearchFellowship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.bacentas[0].fellowshipSearch)
-        return
       },
     }
   )
@@ -77,7 +72,6 @@ const SearchFellowship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].fellowshipSearch)
-        return
       },
     }
   )
@@ -162,7 +156,7 @@ const SearchFellowship = (props: RoleBasedSearch) => {
           id: name,
           autoComplete: 'off',
           value: searchString,
-          name: name,
+          name,
           className: 'form-control',
           onChange: (_event, { newValue }) => {
             setSearchString(newValue)
@@ -186,7 +180,7 @@ const SearchFellowship = (props: RoleBasedSearch) => {
           props.setFieldValue(`${props.name}`, suggestion)
         }}
         getSuggestionValue={(suggestion: any) => suggestion.name}
-        highlightFirstSuggestion={true}
+        highlightFirstSuggestion
         renderSuggestion={(suggestion) => (
           <div className="combobox-control">{suggestion.name}</div>
         )}

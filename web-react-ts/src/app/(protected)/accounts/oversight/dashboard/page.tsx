@@ -1,6 +1,6 @@
 'use client'
 
-import OversightDashboard from '@/pages/accounts/OversightDashboard'
+import OversightDashboard from '@/lib/page-components/accounts/OversightDashboard'
 
 export default function Page() {
   return <OversightDashboard />

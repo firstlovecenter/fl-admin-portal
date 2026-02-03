@@ -1,6 +1,6 @@
 'use client'
 
-import StreamGraphs from '@/pages/services/graphs/StreamGraphs'
+import StreamGraphs from '@/lib/page-components/services/graphs/StreamGraphs'
 
 export default function Page() {
   return <StreamGraphs />

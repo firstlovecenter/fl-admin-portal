@@ -1,6 +1,6 @@
 'use client'
 
-import CouncilHistory from '@/pages/directory/display/church-history/CouncilHistory'
+import CouncilHistory from '@/lib/page-components/directory/display/church-history/CouncilHistory'
 
 export default function Page() {
   return <CouncilHistory />

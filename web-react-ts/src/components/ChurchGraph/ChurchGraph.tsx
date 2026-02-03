@@ -243,7 +243,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   }
 
                   const action =
-                    graphTypeActions[graphType] || graphTypeActions['default']
+                    graphTypeActions[graphType] || graphTypeActions.default
                   clickCard({ ...data, __typename: action.typename })
                   router.push(`/${props.church}/${action.route}`)
                 }}
@@ -286,14 +286,14 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                 }}
               />
               <YAxis
-                hide={true}
+                hide
                 type="number"
                 domain={[0, dataMax[`${stat1}`]]}
                 yAxisId="left"
                 orientation="left"
               />
               <YAxis
-                hide={true}
+                hide
                 type="number"
                 domain={[0, stat2 ? dataMax[`${stat2}`] : '']}
                 yAxisId="right"

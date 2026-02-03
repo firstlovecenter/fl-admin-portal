@@ -11,8 +11,8 @@ export const UnauthMsg = () => {
     <div className="bg-img" style={{ backgroundImage: `url(${MenAtWork})` }}>
       <Container className="message text-center">
         {/* <!--Web Logo and text--> */}
-
-        {`Sorry! There was an error trying to view this page, but we are working on it!`}
+        Sorry! There was an error trying to view this page, but we are working
+        on it!
         <div className="pt-3">
           <Button
             variant="dark"

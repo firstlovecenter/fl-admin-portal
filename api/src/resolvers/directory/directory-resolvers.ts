@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { getHumanReadableDate } from 'jd-date-utils'
 import { Context } from '../utils/neo4j-types'
 import { Member } from '../utils/types'
@@ -14,12 +13,6 @@ import {
 import { RemoveServant } from './make-remove-servants'
 
 import {
-  changePasswordConfig,
-  createAuthUserConfig,
-  getAuthIdConfig,
-  updateAuthUserConfig,
-} from '../utils/auth0'
-import {
   makeMemberInactive,
   matchMemberQuery,
   updateMemberEmail,
@@ -27,14 +20,10 @@ import {
   activateInactiveMember,
   removeDuplicateMember,
   matchMemberAndIMCLStatus,
-  updateMemberAuthId,
   updateMemberBacenta,
 } from '../cypher/resolver-cypher'
-import { getAuthToken } from '../authenticate'
-import { sendSingleEmail } from '../utils/notify'
 
 const cypher = require('../cypher/resolver-cypher')
-const texts = require('../texts.json')
 const closeChurchCypher = require('../cypher/close-church-cypher')
 
 const directoryMutation = {
@@ -181,16 +170,7 @@ const directoryMutation = {
       context.jwt['https://flcadmin.netlify.app/roles']
     )
 
-    const authToken: string = await getAuthToken()
     const session = context.executionContext.session()
-
-    const member = rearrangeCypherObject(
-      await session.executeRead((tx) =>
-        tx.run(matchMemberQuery, {
-          id: args.id,
-        })
-      )
-    )
 
     const updatedMember: Member = rearrangeCypherObject(
       await session.executeWrite((tx) =>
@@ -201,11 +181,8 @@ const directoryMutation = {
       )
     )
 
-    if (member.auth_id) {
-      // Update a user's Auth Profile with Picture and Name Details
-      const config = await updateAuthUserConfig(updatedMember, authToken)
-      await axios(config)
-    }
+    // Auth0 user updates have been removed
+    // Email is updated in Neo4j only
 
     await session.close()
 
@@ -843,7 +820,6 @@ const directoryMutation = {
     return null
   },
   CreateMemberAccount: async (object: any, args: any, context: Context) => {
-    const authToken = await getAuthToken()
     const session = context.executionContext.session()
 
     const memberRes = await session.executeRead((tx) =>
@@ -853,46 +829,12 @@ const directoryMutation = {
     )
 
     const member = memberRes.records[0]?.get('member')
-    const authIdConfig = await getAuthIdConfig(member, authToken)
-    const authIdResponse = await axios(authIdConfig)
 
-    if (!authIdResponse.data[0]?.user_id) {
-      const authUserConfig = await createAuthUserConfig(member, authToken)
-      const authProfileResponse = await axios(authUserConfig)
+    // Auth0 removal: User account creation is now handled via the custom auth service
+    // Members can sign up through the app directly or admins can send registration links
+    // No need to create accounts in an external service anymore
 
-      const changePassConfig = await changePasswordConfig(member, authToken)
-      const passwordTicketResponse = await axios(changePassConfig)
-
-      const res = await Promise.all([
-        session.executeWrite((tx) =>
-          tx.run(updateMemberAuthId, {
-            id: args.memberId,
-            auth_id: authProfileResponse.data.user_id,
-          })
-        ),
-        sendSingleEmail(
-          member,
-          'Welcome to the My First Love Portal',
-          undefined,
-          `<p>Hi ${member.firstName} ${member.lastName},<br/><br/>Welcome to your First Love Membership Portal</b>.<br/><br/>Your account has just been created. Please set up your password by clicking <b><a href=${passwordTicketResponse.data.ticket}>this link</a></b>. After setting up your password, you can log in by clicking <b>https://my.firstlovecenter.com/</b><br/><br/>${texts.html.subscription}`
-        ),
-      ])
-
-      return res[0].records[0]?.get('member').properties
-    }
-
-    if (!member.auth_id && authIdResponse.data[0]?.user_id) {
-      const res = await session.executeWrite((tx) =>
-        tx.run(updateMemberAuthId, {
-          id: args.memberId,
-          auth_id: authIdResponse.data[0]?.user_id,
-        })
-      )
-
-      return res.records[0]?.get('member').properties
-    }
-
-    return member
+    return member.properties || member
   },
 }
 

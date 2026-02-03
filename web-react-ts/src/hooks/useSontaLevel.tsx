@@ -88,7 +88,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.creativeArtsFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 
@@ -103,7 +103,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.ministryFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 
@@ -118,7 +118,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.hubCouncilFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 
@@ -134,7 +134,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.hubFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 
@@ -149,7 +149,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.governorshipFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 
@@ -164,7 +164,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.councilFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 
@@ -180,7 +180,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.streamFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
             setChurch(res?.data?.streams[0])
@@ -195,7 +195,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.campusFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 
@@ -210,7 +210,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.oversightFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 
@@ -225,7 +225,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
             const res = await props.denominationFunction({
               variables: {
                 id: currentChurch?.id,
-                arrivalDate: arrivalDate,
+                arrivalDate,
               },
             })
 

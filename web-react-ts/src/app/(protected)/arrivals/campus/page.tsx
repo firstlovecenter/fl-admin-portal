@@ -1,6 +1,6 @@
 'use client'
 
-import DashboardCampus from '@/pages/arrivals/pages-dashboards/DashboardCampus'
+import DashboardCampus from '@/lib/page-components/arrivals/pages-dashboards/DashboardCampus'
 
 export default function Page() {
   return <DashboardCampus />

@@ -1,6 +1,6 @@
 'use client'
 
-import HubCouncilGraphs from '@/pages/services/graphs/HubCouncilGraphs'
+import HubCouncilGraphs from '@/lib/page-components/services/graphs/HubCouncilGraphs'
 
 export default function Page() {
   return <HubCouncilGraphs />

@@ -2,12 +2,12 @@ import React from 'react'
 import { Field, ErrorMessage } from 'formik'
 import TextError from './TextError/TextError'
 import PlaceholderCustom from 'components/Placeholder'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/contexts/AuthContext'
 import { FormikSelectProps } from './formik-types'
 
 function Select(props: FormikSelectProps) {
   const { label, name, options, defaultOption, ...rest } = props
-  const { isAuthenticated } = useAuth0()
+  const { isAuthenticated } = useAuth()
 
   return (
     <div>

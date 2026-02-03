@@ -57,7 +57,7 @@ const MenuButton = (props: MenuButtonProps) => {
                 {props.number && <div className="fw-bold">{props.number}</div>}
               </div>
               {props.iconCaption && (
-                <small className={`icon-caption`}>{props.iconCaption}</small>
+                <small className="icon-caption">{props.iconCaption}</small>
               )}
             </PlaceholderCustom>
           </Col>

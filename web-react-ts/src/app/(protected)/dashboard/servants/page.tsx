@@ -1,6 +1,6 @@
 'use client'
 
-import ServantsDashboard from '@/pages/dashboards/ServantsDashboard'
+import ServantsDashboard from '@/lib/page-components/dashboards/ServantsDashboard'
 
 export default function Page() {
   return <ServantsDashboard />

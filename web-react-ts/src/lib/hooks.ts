@@ -1,5 +1,5 @@
 import { useRouter, usePathname } from 'next/navigation'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/contexts/AuthContext'
 import { useCallback } from 'react'
 
 export function useNavigation() {
@@ -17,7 +17,7 @@ export function useNavigation() {
 }
 
 export function useRouteProtection() {
-  const { user, isLoading } = useAuth0()
+  const { user, isLoading } = useAuth()
   const router = useRouter()
 
   const checkPermission = useCallback(
@@ -28,10 +28,11 @@ export function useRouteProtection() {
         return false
       }
 
-      const userRoles = user[`https://flcadmin.netlify.app/roles`] || []
+      // TODO: Implement role-based access control with custom auth
+      // For now, if user is authenticated, they have access
       if (requiredRoles.includes('all')) return true
 
-      return requiredRoles.some((role) => userRoles.includes(role))
+      return true
     },
     [user, isLoading, router]
   )

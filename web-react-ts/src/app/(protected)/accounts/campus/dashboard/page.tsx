@@ -1,6 +1,6 @@
 'use client'
 
-import CampusDashboard from '@/pages/accounts/CampusDashboard'
+import CampusDashboard from '@/lib/page-components/accounts/CampusDashboard'
 
 export default function Page() {
   return <CampusDashboard />

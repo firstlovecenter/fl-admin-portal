@@ -1,6 +1,6 @@
 'use client'
 
-import Directory from '@/pages/dashboards/Directory'
+import Directory from '@/lib/page-components/dashboards/Directory'
 
 export default function Page() {
   return <Directory />

@@ -1,6 +1,6 @@
 'use client'
 
-import DetailsStream from '@/pages/directory/display/DetailsStream'
+import DetailsStream from '@/lib/page-components/directory/display/DetailsStream'
 
 export default function Page() {
   return <DetailsStream />

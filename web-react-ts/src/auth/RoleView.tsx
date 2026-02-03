@@ -89,9 +89,8 @@ const RoleView = (props: RoleViewProps) => {
     lockDirectory(directoryLock)
   ) {
     return <>{children}</>
-  } else {
-    return null
   }
+  return null
 }
 
 export default RoleView

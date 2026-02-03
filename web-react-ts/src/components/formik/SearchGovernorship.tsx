@@ -28,7 +28,6 @@ const SearchGovernorship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.campuses[0].governorshipSearch)
-        return
       },
     }
   )
@@ -37,7 +36,6 @@ const SearchGovernorship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.streams[0].governorshipSearch)
-        return
       },
     }
   )
@@ -46,7 +44,6 @@ const SearchGovernorship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.councils[0].governorshipSearch)
-        return
       },
     }
   )
@@ -56,7 +53,6 @@ const SearchGovernorship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].governorshipSearch)
-        return
       },
     }
   )
@@ -121,7 +117,7 @@ const SearchGovernorship = (props: RoleBasedSearch) => {
           id: name,
           autoComplete: 'off',
           value: searchString,
-          name: name,
+          name,
           className: 'form-control',
           onChange: (_event, { newValue }) => {
             setSearchString(newValue)
@@ -144,7 +140,7 @@ const SearchGovernorship = (props: RoleBasedSearch) => {
           props.setFieldValue(`${props.name}`, suggestion)
         }}
         getSuggestionValue={(suggestion) => suggestion.name}
-        highlightFirstSuggestion={true}
+        highlightFirstSuggestion
         renderSuggestion={(suggestion: any) => (
           <div className="combobox-control">{suggestion.name}</div>
         )}

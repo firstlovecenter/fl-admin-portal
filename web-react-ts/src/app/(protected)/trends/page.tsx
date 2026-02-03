@@ -1,6 +1,6 @@
 'use client'
 
-import TrendsMenu from '@/pages/services/graphs/TrendsMenu'
+import TrendsMenu from '@/lib/page-components/services/graphs/TrendsMenu'
 
 export default function Page() {
   return <TrendsMenu />

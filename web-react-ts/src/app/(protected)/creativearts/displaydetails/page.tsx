@@ -1,6 +1,6 @@
 'use client'
 
-import DetailsCreativeArts from '@/pages/directory/display/DetailsCreativeArts'
+import DetailsCreativeArts from '@/lib/page-components/directory/display/DetailsCreativeArts'
 
 export default function Page() {
   return <DetailsCreativeArts />

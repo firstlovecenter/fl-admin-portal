@@ -35,12 +35,12 @@ const DetailsCard = (props: DetailsCardPropsType) => {
       <Row>
         <Col>
           <PlaceholderCustom loading={loading} as="span" xs={12}>
-            <span className={`text-secondary`}>{heading}</span>
+            <span className="text-secondary">{heading}</span>
           </PlaceholderCustom>
           <PlaceholderCustom loading={loading} as="h2" xs={12}>
             <div className="d-flex justify-content-between align-items-center">
               {!!leading && <>{leading}</>}
-              <h3 className={`card-detail text-truncate`}>
+              <h3 className="card-detail text-truncate">
                 {detail?.replace(currentUser.currency, '')}{' '}
                 <small>{detail?.match(currentUser.currency)}</small>
               </h3>

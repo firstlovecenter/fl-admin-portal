@@ -1,6 +1,6 @@
 'use client'
 
-import Fellowship from '@/pages/services/Fellowship'
+import Fellowship from '@/lib/page-components/services/Fellowship'
 
 export default function Page() {
   return <Fellowship />

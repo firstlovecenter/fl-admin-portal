@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/contexts/AuthContext'
 import { MemberContext } from '../contexts/MemberContext'
 import { ChurchContext } from '../contexts/ChurchContext'
 import { isAuthorised } from '../global-utils'
@@ -19,7 +19,7 @@ type ProtectedRouteProps = {
 const ProtectedRoute: (props: ProtectedRouteProps) => JSX.Element = (props) => {
   const { children, roles, roleBased, placeholder } = props
   const { currentUser } = useContext(MemberContext)
-  const { isAuthenticated, isLoading } = useAuth0()
+  const { isAuthenticated, isLoading } = useAuth()
   const church = useContext(ChurchContext)
 
   const atHome = location?.pathname === '/'
@@ -40,7 +40,8 @@ const ProtectedRoute: (props: ProtectedRouteProps) => JSX.Element = (props) => {
   if (isAuthorised(roles, currentUser.roles)) {
     //if the user has permission to access the initialTouchedroute
     return children
-  } else if (
+  }
+  if (
     (placeholder && !isAuthenticated) ||
     (placeholder && !isAuthenticated && roleBased)
   ) {
@@ -63,10 +64,9 @@ const ProtectedRoute: (props: ProtectedRouteProps) => JSX.Element = (props) => {
     }
 
     return children
-  } else {
-    //Authenticated but not allowed to view
-    return <UnauthMsg />
   }
+  //Authenticated but not allowed to view
+  return <UnauthMsg />
 }
 
 export default ProtectedRoute

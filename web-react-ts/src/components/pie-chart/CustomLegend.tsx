@@ -29,7 +29,7 @@ const CustomLegend = ({ data }: Props) => {
                 style={{
                   background: PIE_CHART_COLORS[index],
                 }}
-              ></div>
+              />
               <div>
                 <h6 className="legend-text">{entry?.name}</h6>
                 <h6 className="text-secondary legend-text">{entry?.value}</h6>

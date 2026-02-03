@@ -1,6 +1,6 @@
 'use client'
 
-import MemberTitleForm from '@/pages/directory/reusable-forms/MemberTitleForm'
+import MemberTitleForm from '@/lib/page-components/directory/reusable-forms/MemberTitleForm'
 
 export default function Page() {
   return <MemberTitleForm />

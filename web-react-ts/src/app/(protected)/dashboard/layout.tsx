@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
-import Navigation from '@/pages/dashboards/Navigation'
+import Navigation from '@/lib/page-components/dashboards/Navigation'
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (

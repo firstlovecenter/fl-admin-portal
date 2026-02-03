@@ -95,7 +95,7 @@ const MultiImageUpload = (props: ImageUploadProps) => {
           <tbody>
             <tr>
               {!uploadedImages.length && !initialValue && !loading && (
-                <p className="text-center img-container border my-3"></p>
+                <p className="text-center img-container border my-3" />
               )}
               {uploadedImages?.map((image, index) => (
                 <td className="col-auto" key={index}>
@@ -125,7 +125,7 @@ const MultiImageUpload = (props: ImageUploadProps) => {
           {...rest}
         />
 
-        <p className={`btn btn-primary image px-5`}>{placeholder}</p>
+        <p className="btn btn-primary image px-5">{placeholder}</p>
       </label>
       {props.error && <TextError>{props.error}</TextError>}
       {!props.error ?? <ErrorMessage name={name} component={TextError} />}

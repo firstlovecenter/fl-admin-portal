@@ -19,16 +19,16 @@ const CurrencySpan = ({
         <span className="small">{currentUser.currency}</span>
       </span>
     )
-  } else if (negative) {
+  }
+  if (negative) {
     return (
       <span className={className + ' red'}>
         <span>{number.toFixed(2)} </span>
         <span className="small">{currentUser.currency}</span>
       </span>
     )
-  } else {
-    return <span></span>
   }
+  return <span />
 }
 
 export default CurrencySpan

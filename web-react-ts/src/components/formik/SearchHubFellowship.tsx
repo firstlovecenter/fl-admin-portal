@@ -21,7 +21,6 @@ const SearchHubFellowship = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].hubFellowshipSearch)
-        return
       },
     }
   )
@@ -62,7 +61,7 @@ const SearchHubFellowship = (props: RoleBasedSearch) => {
           id: name,
           autoComplete: 'off',
           value: searchString,
-          name: name,
+          name,
           className: 'form-control',
           onChange: (_event, { newValue }) => {
             setSearchString(newValue)
@@ -85,7 +84,7 @@ const SearchHubFellowship = (props: RoleBasedSearch) => {
           props.setFieldValue(`${props.name}`, suggestion)
         }}
         getSuggestionValue={(suggestion: any) => suggestion.name}
-        highlightFirstSuggestion={true}
+        highlightFirstSuggestion
         renderSuggestion={(suggestion: any) => (
           <div className="combobox-control">{suggestion.name}</div>
         )}

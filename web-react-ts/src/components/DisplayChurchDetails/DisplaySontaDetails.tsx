@@ -254,7 +254,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
         <div className="d-flex gap-2 text-center">
           <PlaceholderCustom
             loading={props.loading}
-            className={`btn-sonta w-100`}
+            className="btn-sonta w-100"
             button="button"
           >
             <Button
@@ -279,7 +279,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
             }) && (
               <PlaceholderCustom
                 loading={props.loading}
-                className={`btn-sonta w-100`}
+                className="btn-sonta w-100"
                 button="button"
               >
                 <Button

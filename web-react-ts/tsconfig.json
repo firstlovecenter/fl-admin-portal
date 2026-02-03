@@ -23,7 +23,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "components/*": ["./src/components/*"],
-      "pages/*": ["./src/pages/*"],
+      "pages/*": ["./src/lib/page-components/*"],
       "contexts/*": ["./src/contexts/*"],
       "hooks/*": ["./src/hooks/*"],
       "utils/*": ["./src/utils/*"],

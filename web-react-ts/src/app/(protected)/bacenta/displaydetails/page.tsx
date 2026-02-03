@@ -1,6 +1,6 @@
 'use client'
 
-import DetailsBacenta from '@/pages/directory/display/DetailsBacenta'
+import DetailsBacenta from '@/lib/page-components/directory/display/DetailsBacenta'
 
 export default function Page() {
   return <DetailsBacenta />

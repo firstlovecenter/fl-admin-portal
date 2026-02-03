@@ -1,6 +1,6 @@
 'use client'
 
-import DetailsCampus from '@/pages/directory/display/DetailsCampus'
+import DetailsCampus from '@/lib/page-components/directory/display/DetailsCampus'
 
 export default function Page() {
   return <DetailsCampus />

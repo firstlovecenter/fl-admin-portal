@@ -1,6 +1,6 @@
 'use client'
 
-import SearchPageMobile from '@/pages/directory/mobile/SearchPage'
+import SearchPageMobile from '@/lib/page-components/directory/mobile/SearchPage'
 
 export default function Page() {
   return <SearchPageMobile />

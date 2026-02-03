@@ -177,7 +177,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
       if (props.churchType === 'Campus') {
         await MakeCampusAdmin({
           variables: {
-            campusId: campusId,
+            campusId,
             newAdminId: values.adminSelect,
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
@@ -189,7 +189,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
       if (props.churchType === 'Stream') {
         await MakeStreamAdmin({
           variables: {
-            streamId: streamId,
+            streamId,
             newAdminId: values.adminSelect,
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
@@ -201,7 +201,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
       if (props.churchType === 'Council') {
         await MakeCouncilAdmin({
           variables: {
-            councilId: councilId,
+            councilId,
             newAdminId: values.adminSelect,
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
@@ -213,7 +213,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
       if (props.churchType === 'Governorship') {
         await MakeGovernorshipAdmin({
           variables: {
-            governorshipId: governorshipId,
+            governorshipId,
             newAdminId: values.adminSelect,
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
@@ -371,7 +371,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             <div className="d-grid gap-2 mt-2">
               <PlaceholderCustom
                 loading={props.loading}
-                className={`btn-graphs`}
+                className="btn-graphs"
                 button="true"
               >
                 <Button

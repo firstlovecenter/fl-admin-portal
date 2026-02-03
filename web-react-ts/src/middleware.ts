@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // For now, we're relying on Auth0Provider for auth checks
+  // Auth checks are handled by ProtectedRoute component and AuthContext
   // This middleware can be extended for additional security checks
 
   return NextResponse.next()

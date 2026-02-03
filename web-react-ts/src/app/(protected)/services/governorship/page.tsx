@@ -1,6 +1,6 @@
 'use client'
 
-import GovernorshipJoint from '@/pages/services/GovernorshipJoint'
+import GovernorshipJoint from '@/lib/page-components/services/GovernorshipJoint'
 
 export default function Page() {
   return <GovernorshipJoint />

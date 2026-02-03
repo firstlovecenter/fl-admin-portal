@@ -26,7 +26,6 @@ const SearchStream = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.campuses[0].streamSearch)
-        return
       },
     }
   )
@@ -35,7 +34,6 @@ const SearchStream = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.streams[0].councilSearch)
-        return
       },
     }
   )
@@ -44,7 +42,6 @@ const SearchStream = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].streamSearch)
-        return
       },
     }
   )
@@ -102,7 +99,7 @@ const SearchStream = (props: RoleBasedSearch) => {
           id: name,
           autoComplete: 'off',
           value: searchString,
-          name: name,
+          name,
           className: 'form-control',
           onChange: (_event, { newValue }) => {
             setSearchString(newValue)
@@ -125,7 +122,7 @@ const SearchStream = (props: RoleBasedSearch) => {
           props.setFieldValue(`${props.name}`, suggestion)
         }}
         getSuggestionValue={(suggestion) => suggestion.name}
-        highlightFirstSuggestion={true}
+        highlightFirstSuggestion
         renderSuggestion={(suggestion: any) => (
           <div className="combobox-control">{suggestion.name}</div>
         )}

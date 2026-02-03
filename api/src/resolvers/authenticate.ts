@@ -1,56 +1,18 @@
-import axios from 'axios'
-import { Auth0RoleObject } from './utils/auth0'
-import { throwToSentry } from './utils/utils'
-import { loadSecrets } from './secrets'
+/**
+ * Authentication utilities for custom auth service
+ * No longer using Auth0 - token verification is done in index.js context creation
+ */
 
+// Placeholder exports to maintain compatibility with existing code
+// These functions are no longer used - left for backward compatibility during migration
 export const getAuthToken = async () => {
-  try {
-    const SECRETS = await loadSecrets() // Await secrets here
-    const getTokenConfig = {
-      method: 'post',
-      url: `${SECRETS.AUTH0_BASE_URL}oauth/token`,
-      headers: { 'content-type': 'application/json' },
-      data: {
-        client_id: SECRETS.AUTH0_MGMT_CLIENT_ID,
-        client_secret: SECRETS.AUTH0_CLIENT_SECRET,
-        audience: `${SECRETS.AUTH0_BASE_URL}api/v2/`,
-        grant_type: 'client_credentials',
-      },
-    }
-    const tokenRes = await axios(getTokenConfig)
-    return tokenRes.data.access_token
-  } catch (error) {
-    return throwToSentry('Problem Obtaining Auth Token', error)
-  }
+  throw new Error(
+    'Auth0 is no longer supported. Use custom auth service instead.'
+  )
 }
 
-export const getAuth0Roles = async (authToken: string) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  const getRolesConfig = {
-    method: 'get',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/roles`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${authToken}`,
-    },
-  }
-
-  const rolesRes = await axios(getRolesConfig)
-
-  const authRoles: {
-    [key: string]: any
-  } = {}
-
-  rolesRes.data.forEach((role: Auth0RoleObject) => {
-    authRoles[role.name] = {
-      id: role.id,
-      name: role.name,
-      description: role.description,
-    }
-
-    return authRoles
-  })
-
-  return authRoles
+export const getAuth0Roles = async () => {
+  throw new Error(
+    'Auth0 is no longer supported. Roles are fetched from Neo4j database.'
+  )
 }

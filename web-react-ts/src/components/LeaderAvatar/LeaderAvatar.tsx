@@ -41,13 +41,13 @@ const LeaderAvatar = ({
         </Col>
         <Col>
           <PlaceholderCustom loading={isLoading} as="span" xs={12}>
-            <span className={`card-heading text-secondary text-truncate`}>
+            <span className="card-heading text-secondary text-truncate">
               {leaderTitle}
             </span>
           </PlaceholderCustom>
           <PlaceholderCustom loading={isLoading} as="h2" xs={12}>
             <div className="d-flex justify-content-between">
-              <h2 className={`card-detail`}>{leader?.nameWithTitle}</h2>
+              <h2 className="card-detail">{leader?.nameWithTitle}</h2>
             </div>
           </PlaceholderCustom>
         </Col>

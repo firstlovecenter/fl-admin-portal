@@ -23,7 +23,6 @@ const SearchCampus = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.campuss[0].councilSearch)
-        return
       },
     }
   )
@@ -32,7 +31,6 @@ const SearchCampus = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].campusSearch)
-        return
       },
     }
   )
@@ -90,7 +88,7 @@ const SearchCampus = (props: RoleBasedSearch) => {
           id: name,
           autoComplete: 'off',
           value: searchString,
-          name: name,
+          name,
           className: 'form-control',
           onChange: (_event, { newValue }) => {
             setSearchString(newValue)
@@ -113,7 +111,7 @@ const SearchCampus = (props: RoleBasedSearch) => {
           props.setFieldValue(`${props.name}`, suggestion)
         }}
         getSuggestionValue={(suggestion) => suggestion.name}
-        highlightFirstSuggestion={true}
+        highlightFirstSuggestion
         renderSuggestion={(suggestion: any) => (
           <div className="combobox-control">{suggestion.name}</div>
         )}

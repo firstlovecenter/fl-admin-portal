@@ -4,7 +4,7 @@ import TextError from './TextError/TextError'
 import { FormikComponentProps } from './formik-types'
 import { Form } from 'react-bootstrap'
 
-interface RadioButtonProps extends FormikComponentProps {}
+type RadioButtonProps = FormikComponentProps
 
 const RadioButtons = (props: RadioButtonProps) => {
   const { label, name, options, ...rest } = props

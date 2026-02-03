@@ -3,11 +3,11 @@
 // Example: This template shows how to migrate pages from React Router to Next.js
 // Replace this with actual dashboard pages from dashboardRoutes.ts
 
-import { useAuth0 } from '@auth0/auth0-react'
-import SplashScreen from '@/pages/splash-screen/SplashSreen'
+import { useAuth } from '@/contexts/AuthContext'
+import SplashScreen from '@/lib/page-components/splash-screen/SplashSreen'
 
 export default function DashboardPage() {
-  const { isLoading } = useAuth0()
+  const { isLoading } = useAuth()
 
   if (isLoading) {
     return <SplashScreen />

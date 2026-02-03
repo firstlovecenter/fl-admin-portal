@@ -1,6 +1,5 @@
 import { ApolloError } from '@apollo/client'
 import { last3Weeks } from '@jaedag/admin-portal-types'
-import { captureException, showReportDialog } from '@sentry/react'
 import {
   ChurchLevel,
   CurrentUser,
@@ -180,62 +179,21 @@ export const throwToSentry = (
     return
   }
 
-  const user = JSON.parse(sessionStorage.getItem('currentUser') || '{}')
-
   if (!error) {
-    // eslint-disable-next-line no-console
     console.error(message)
-    captureException(error, {
-      tags: {
-        userId: user.id,
-        userName: user.firstName + ' ' + user.lastName,
-        userEmail: user.email,
-        userRole: user.role,
-        userStream: user.stream_name,
-      },
-    })
-    // eslint-disable-next-line no-alert
-    // alert(`${message}`)
-    // window.open('/', '_self')
     return
   }
 
   if (!message) {
-    // eslint-disable-next-line no-console
     console.error(error)
-    captureException(error, {
-      tags: {
-        userId: user.id,
-        userName: user.firstName + ' ' + user.lastName,
-        userEmail: user.email,
-        userRole: user.role,
-        userStream: user.stream_name,
-      },
-    })
-    // eslint-disable-next-line no-alert
-    alert(`${error}`)
     return
   }
 
-  // eslint-disable-next-line no-console
-  console.error(error)
-  // eslint-disable-next-line no-alert
-  alert(`${message} ${error}`)
-  captureException(error, {
-    tags: {
-      userId: user.id,
-      userName: user.firstName + ' ' + user.lastName,
-      userEmail: user.email,
-      userRoles: user.roles.toString(),
-      userStream: user.stream_name,
-    },
-  })
+  console.error(message, error)
 }
 
 export const showUserReportDialog = () => {
-  showReportDialog({
-    eventId: sessionStorage.getItem('lastEventId') ?? undefined,
-  })
+  // Sentry removed - this is a no-op now
 }
 
 export const alertMsg = (message: string) => {
@@ -719,25 +677,25 @@ export const check = (bacenta: any) => {
 
       if (!service?.noServiceReason) {
         return {
-          number: number,
+          number,
           filled: true,
-          banked: service?.bankingProof ? true : false,
+          banked: !!service?.bankingProof,
         }
-      } else if (service?.noServiceReason) {
+      }
+      if (service?.noServiceReason) {
         return {
-          number: number,
+          number,
           filled: true,
           banked: 'No Service',
         }
       }
 
       return null
-    } else {
-      return {
-        number: number,
-        filled: false,
-        banked: 'No Service',
-      }
+    }
+    return {
+      number,
+      filled: false,
+      banked: 'No Service',
     }
   })
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import UpdateMember from '@/pages/directory/update/UpdateMember'
+import UpdateMember from '@/lib/page-components/directory/update/UpdateMember'
 
 export default function Page() {
   return <UpdateMember />

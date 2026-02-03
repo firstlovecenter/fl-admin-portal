@@ -16,9 +16,11 @@ const ApolloWrapper = (props: ApolloWrapperPropsType) => {
 
   if (error) {
     return <ErrorScreen error={error} />
-  } else if (data || placeholder) {
+  }
+  if (data || placeholder) {
     return <>{props.children}</>
-  } else if (loading) {
+  }
+  if (loading) {
     return <LoadingScreen />
   }
 

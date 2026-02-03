@@ -1,6 +1,6 @@
 'use client'
 
-import DashboardGovernorship from '@/pages/arrivals/pages-dashboards/DashboardGovernorship'
+import DashboardGovernorship from '@/lib/page-components/arrivals/pages-dashboards/DashboardGovernorship'
 
 export default function Page() {
   return <DashboardGovernorship />

@@ -7,10 +7,91 @@ import cors from 'cors'
 import { json } from 'body-parser'
 import neo4j from 'neo4j-driver'
 import { Neo4jGraphQL } from '@neo4j/graphql'
-import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
+import { getUserFromToken, decodeToken } from './resolvers/custom-auth'
+
+/**
+ * Get user roles from Neo4j database
+ */
+const getUserRoles = async (driver, userId) => {
+  const session = driver.session()
+  try {
+    const result = await session.run(
+      `
+      MATCH (m:Member {id: $userId})
+      RETURN m.roles as roles
+      `,
+      { userId }
+    )
+
+    if (result.records.length > 0) {
+      return result.records[0].get('roles') || []
+    }
+
+    return []
+  } catch (error) {
+    console.error('Error fetching user roles:', error)
+    return []
+  } finally {
+    await session.close()
+  }
+}
+
+/**
+ * Create context with verified user and roles
+ */
+const createContext = async (req, driver) => {
+  const token = req.headers.authorization
+
+  if (!token) {
+    return {
+      req,
+      executionContext: driver,
+      jwt: null,
+    }
+  }
+
+  try {
+    // Verify token with auth service
+    const verifiedUser = await getUserFromToken(token)
+
+    if (!verifiedUser) {
+      console.error('Token verification failed')
+      return {
+        req,
+        executionContext: driver,
+        jwt: null,
+      }
+    }
+
+    // Decode token to get all claims
+    const decodedToken = decodeToken(token.replace('Bearer ', ''))
+
+    // Get user roles from Neo4j
+    const roles = await getUserRoles(driver, verifiedUser.userId)
+
+    return {
+      req,
+      executionContext: driver,
+      jwt: {
+        userId: verifiedUser.userId,
+        email: verifiedUser.email,
+        roles,
+        'https://flcadmin.netlify.app/roles': roles, // Keep for backward compatibility
+        ...decodedToken,
+      },
+    }
+  } catch (error) {
+    console.error('Error creating context:', error)
+    return {
+      req,
+      executionContext: driver,
+      jwt: null,
+    }
+  }
+}
 
 const startServer = async () => {
   const SECRETS = await loadSecrets()
@@ -18,17 +99,26 @@ const startServer = async () => {
   const app = express()
   const httpServer = http.createServer(app)
 
+  // Configure driver options based on encryption setting
+  const driverConfig =
+    SECRETS.NEO4J_ENCRYPTED === 'true'
+      ? {
+          encrypted: 'ENCRYPTION_ON',
+
+          trust: 'TRUST_ALL_CERTIFICATES',
+          connectionTimeout: 30000,
+        }
+      : {
+          connectionTimeout: 30000,
+        }
+
   const driver = neo4j.driver(
     SECRETS.NEO4J_URI || 'bolt://localhost:7687/',
     neo4j.auth.basic(
       SECRETS.NEO4J_USER || 'neo4j',
       SECRETS.NEO4J_PASSWORD || 'letmein'
-    )
-    // {
-    //   encrypted: 'ENCRYPTION_ON',
-    //   trust: 'TRUST_ALL_CERTIFICATES',
-    //   connectionTimeout: 30000,
-    // }
+    ),
+    driverConfig
   )
 
   // Add connection verification
@@ -78,28 +168,7 @@ const startServer = async () => {
   })
 
   const server = new ApolloServer({
-    context: async ({ req }) => {
-      const token = req.headers.authorization
-      let jwt = null
-
-      if (token) {
-        try {
-          jwt = jwtDecode(token)
-          console.log('🚀 ~ index.js:88 ~ jwt:', jwt)
-        } catch (error) {
-          console.error('Invalid token:', error)
-        }
-      }
-
-      return {
-        req,
-        executionContext: driver,
-        jwt: {
-          ...jwt,
-          roles: jwt?.['https://flcadmin.netlify.app/roles'],
-        },
-      }
-    },
+    context: async ({ req }) => createContext(req, driver),
     introspection: true,
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
@@ -112,27 +181,7 @@ const startServer = async () => {
     cors(),
     json(),
     expressMiddleware(server, {
-      context: async ({ req }) => {
-        const token = req.headers.authorization
-        let jwt = null
-
-        if (token) {
-          try {
-            jwt = jwtDecode(token)
-          } catch (error) {
-            console.error('Invalid token:', error)
-          }
-        }
-
-        return {
-          req,
-          executionContext: driver,
-          jwt: {
-            ...jwt,
-            roles: jwt?.['https://flcadmin.netlify.app/roles'],
-          },
-        }
-      },
+      context: async ({ req }) => createContext(req, driver),
     })
   )
 

@@ -20,7 +20,6 @@ const SearchCreativeArts = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].creativeArtsSearch)
-        return
       },
     }
   )
@@ -61,7 +60,7 @@ const SearchCreativeArts = (props: RoleBasedSearch) => {
           id: name,
           autoComplete: 'off',
           value: searchString,
-          name: name,
+          name,
           className: 'form-control',
           onChange: (_event, { newValue }) => {
             setSearchString(newValue)
@@ -84,7 +83,7 @@ const SearchCreativeArts = (props: RoleBasedSearch) => {
           props.setFieldValue(`${props.name}`, suggestion)
         }}
         getSuggestionValue={(suggestion) => suggestion.name}
-        highlightFirstSuggestion={true}
+        highlightFirstSuggestion
         renderSuggestion={(suggestion: any) => (
           <div className="combobox-control">{suggestion.name}</div>
         )}

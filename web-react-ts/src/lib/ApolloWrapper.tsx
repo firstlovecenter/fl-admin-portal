@@ -11,7 +11,7 @@ import {
   InMemoryCache,
 } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/contexts/AuthContext'
 import { useCallback, useEffect, useState } from 'react'
 import {
   SnackbarKey,
@@ -28,14 +28,13 @@ interface ApolloProviderProps {
 function ApolloWrapper({ children }: ApolloProviderProps) {
   const [accessToken, setAccessToken] = useState<string>('')
   const [client, setClient] = useState<ApolloClient<any> | null>(null)
-  const { getAccessTokenSilently } = useAuth0()
+  const { getAccessTokenSilently, isAuthenticated } = useAuth()
 
   const getAccessToken = useCallback(async () => {
+    if (!isAuthenticated) return
+
     try {
-      const token = await getAccessTokenSilently({
-        audience: 'https://flcadmin.netlify.app/graphql',
-        scope: 'read:current_user',
-      })
+      const token = await getAccessTokenSilently()
 
       setAccessToken(token)
       if (typeof window !== 'undefined') {
@@ -45,7 +44,7 @@ function ApolloWrapper({ children }: ApolloProviderProps) {
       // eslint-disable-next-line
       console.error('Error Obtaining Token', err)
     }
-  }, [getAccessTokenSilently])
+  }, [getAccessTokenSilently, isAuthenticated])
 
   useEffect(() => {
     getAccessToken()

@@ -10,7 +10,7 @@ import GovernorshipIcon from 'assets/icons/GovernorshipIcon'
 import CouncilIcon from 'assets/icons/CouncilIcon'
 import StreamIcon from 'assets/icons/StreamIcon'
 import { Badge, Button, Card } from 'react-bootstrap'
-import '../../components/members-grids/MemberTable.css'
+import '../members-grids/MemberTable.css'
 import './MemberDisplayCard.css'
 import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
 import CloudinaryImage from 'components/CloudinaryImage'
@@ -66,7 +66,7 @@ export const Icons = ({
         <CloudinaryImage
           src={picture ?? ''}
           alt={member.nameWithTitle}
-          className={`img-search rounded`}
+          className="img-search rounded"
         />
         <Badge
           pill

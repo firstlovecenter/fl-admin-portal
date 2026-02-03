@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-import axios from 'axios'
-import { throwToSentry } from '../utils/utils'
 import {
   Church,
   ChurchIdAndName,
@@ -12,8 +10,6 @@ import {
   ServantType,
   ServantTypeLowerCase,
 } from '../utils/types'
-import { deleteUserRoles, setUserRoles } from '../utils/auth0'
-import { getAuth0Roles } from '../authenticate'
 
 export type HistoryRecordArgs = {
   servant: MemberWithoutBioData
@@ -72,26 +68,11 @@ export const removeRoles = async (
   rolesToRemove: string,
   authToken: string
 ) => {
-  const authRoles = await getAuth0Roles(authToken)
-  const userRoleIds = userRoles.map((role) => authRoles[role].id)
-
-  // A remove roles function to simplify removing roles with an axios request
-  if (userRoleIds.includes(rolesToRemove)) {
-    const deleteRoleConfig = await deleteUserRoles(
-      servant.auth_id,
-      [rolesToRemove],
-      authToken
-    )
-    return axios(deleteRoleConfig)
-      .then(() =>
-        console.log(
-          `Role successfully removed for ${servant.firstName} ${servant.lastName}`
-        )
-      )
-      .catch((err: any) =>
-        throwToSentry('There was an error removing role', err)
-      )
-  }
+  // Auth0 role management has been removed
+  // Roles are now managed directly in Neo4j database
+  console.log(
+    `Roles managed in Neo4j: ${servant.firstName} ${servant.lastName}`
+  )
   return servant
 }
 
@@ -101,45 +82,12 @@ export const assignRoles = async (
   rolesToAssign: Role[],
   authToken: string
 ) => {
-  const authRoles = await getAuth0Roles(authToken)
-  const userRoleIds = userRoles.map((role) => authRoles[role].id)
-  const authRolesArray: [string, unknown][] = Object.entries(authRoles)
-
-  const nameOfRoles = authRolesArray
-    .map((role: any) => {
-      if (rolesToAssign[0] === role[1].id) {
-        return role[1].name
-      }
-      return ''
-    })
-    .filter((role: string) => role)
-
-  if (userRoleIds.includes(rolesToAssign[0])) {
-    console.log(
-      `${servant.firstName} ${servant.lastName} already has the role`,
-      nameOfRoles[0]
-    )
-    return
-  }
-
-  // An assign roles function to simplify assigning roles with an axios request
-  if (!userRoleIds.includes(rolesToAssign[0])) {
-    try {
-      const setRoleConfig = await setUserRoles(
-        servant.auth_id,
-        rolesToAssign,
-        authToken
-      )
-      await axios(setRoleConfig)
-
-      console.log(
-        nameOfRoles[0],
-        `role successfully added to ${servant.firstName} ${servant.lastName}`
-      )
-    } catch (err: any) {
-      throwToSentry('There was an error assigning role', err)
-    }
-  }
+  // Auth0 role management has been removed
+  // Roles are now managed directly in Neo4j database
+  console.log(
+    `Roles managed in Neo4j: ${servant.firstName} ${servant.lastName}`
+  )
+  return servant
 }
 
 export const churchInEmail = (church: {
@@ -155,9 +103,6 @@ export const churchInEmail = (church: {
   }
 
   return `${church.name} ${church.type}`
-}
-export const servantInEmail = (servant: Member) => {
-  return servant
 }
 
 export interface MemberWithKeys extends Member {

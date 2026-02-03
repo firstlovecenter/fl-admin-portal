@@ -105,7 +105,23 @@ Oversight → Campus → Stream → Council (weekday fellowships)
 | `scripts/start-dev.js`                     | Dev server startup logic                            |
 
 ## Common Workflows
+onfirmingApply is not defined
+app/notes/review/page.tsx (804:23) @ SuggestionsModal
 
+
+  802 |           <Button
+  803 |             onClick={onApply}
+> 804 |             disabled={confirmingApply}
+      |                       ^
+  805 |             className="gap-2"
+  806 |           >
+  807 |             {confirmingApply && (
+Call Stack
+14
+
+Show 12 ignore-listed frame(s)
+SuggestionsModal
+app/notes/review/page.tsx (804:23)
 ### Adding a New Resolver
 
 1. Define field in schema (e.g., `api/src/schema/services.graphql`)

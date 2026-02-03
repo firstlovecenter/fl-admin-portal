@@ -1,6 +1,6 @@
 'use client'
 
-import Arrivals from '@/pages/arrivals/Arrivals'
+import Arrivals from '@/lib/page-components/arrivals/Arrivals'
 
 export default function Page() {
   return <Arrivals />

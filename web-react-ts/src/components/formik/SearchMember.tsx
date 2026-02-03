@@ -30,7 +30,6 @@ const SearchMember = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].memberSearch)
-        return
       },
     }
   )
@@ -39,7 +38,6 @@ const SearchMember = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].basontaMemberSearchFromHub)
-        return
       },
     }
   )
@@ -48,7 +46,6 @@ const SearchMember = (props: RoleBasedSearch) => {
     {
       onCompleted: (data) => {
         setSuggestions(data.members[0].basontaMemberSearch)
-        return
       },
     }
   )
@@ -95,7 +92,7 @@ const SearchMember = (props: RoleBasedSearch) => {
           id: name,
           autoComplete: 'off',
           value: searchString,
-          name: name,
+          name,
           className: 'form-control',
           onChange: (_event, { newValue }) => {
             setSearchString(newValue)
@@ -122,7 +119,7 @@ const SearchMember = (props: RoleBasedSearch) => {
         getSuggestionValue={(suggestion) =>
           suggestion.firstName + ' ' + suggestion.lastName
         }
-        highlightFirstSuggestion={true}
+        highlightFirstSuggestion
         renderSuggestion={(suggestion: any) => (
           <div className="combobox-control">
             {suggestion?.firstName +

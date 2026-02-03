@@ -76,11 +76,11 @@ const Combobox = (props: ComboBoxProps) => {
       ) : null}
       <Autosuggest
         inputProps={{
-          placeholder: placeholder,
+          placeholder,
           id: name,
           autoComplete: 'off',
           value: searchString,
-          name: name,
+          name,
           className: 'form-control',
           onChange: (_event: any, { newValue }: any) => {
             setSearchString(newValue)
@@ -116,7 +116,7 @@ const Combobox = (props: ComboBoxProps) => {
           }
         }}
         getSuggestionValue={(suggestion: { name: string }) => suggestion.name}
-        highlightFirstSuggestion={true}
+        highlightFirstSuggestion
         renderSuggestion={(suggestion) => (
           <div className="combobox-control">{suggestion.name}</div>
         )}

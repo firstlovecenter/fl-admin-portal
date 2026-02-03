@@ -5,15 +5,11 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.8.9",
-    "@auth0/auth0-react": "^1.11.0",
     "@aws-sdk/client-s3": "^3.879.0",
     "@cloudinary/react": "^1.2.0",
     "@cloudinary/url-gen": "^1.14.0",
     "@jaedag/admin-portal-types": "^1.5.16",
     "@react-google-maps/api": "^2.18.1",
-    "@sentry/nextjs": "^7.27.0",
-    "@sentry/react": "^7.27.0",
-    "@sentry/tracing": "^7.27.0",
     "bootstrap": "^5.3.1",
     "enzyme": "^3.11.0",
     "formik": "^2.2.9",
@@ -40,7 +36,6 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
-    "@sentry/cli": "^2.28.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^14.2.5",

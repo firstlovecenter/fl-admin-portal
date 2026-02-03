@@ -21,7 +21,8 @@ const ProtectedRouteHome = ({
   if (isAuthorised(roles, currentUser.roles)) {
     //if the user has permission to access the route
     return <>{component}</>
-  } else if (
+  }
+  if (
     isAuthorised(
       [
         'adminCouncil',
@@ -36,9 +37,8 @@ const ProtectedRouteHome = ({
     setMemberId(currentUser.id)
     //If the user does not have permission but is a CO Admin
     return <UserDashboard />
-  } else {
-    return <UnauthMsg />
   }
+  return <UnauthMsg />
 }
 
 export default ProtectedRouteHome

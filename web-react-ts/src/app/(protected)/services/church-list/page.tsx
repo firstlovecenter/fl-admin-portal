@@ -1,6 +1,6 @@
 'use client'
 
-import ServicesChurchList from '@/pages/services/ServicesChurchList'
+import ServicesChurchList from '@/lib/page-components/services/ServicesChurchList'
 
 export default function Page() {
   return <ServicesChurchList />
