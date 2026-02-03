@@ -3,7 +3,7 @@ name: Deploy Background Functions to AWS Lambda
 on:
   push:
     branches:
-      - deploy
+      - main
     paths:
       - 'api/src/functions/background/**' # Only trigger when background function files change
 

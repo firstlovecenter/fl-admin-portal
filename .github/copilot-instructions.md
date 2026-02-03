@@ -151,7 +151,7 @@ app/notes/review/page.tsx (804:23)
 - **Lambda compatibility**: Use CommonJS exports in background functions; async/await works fine
 - **Date handling**: Neo4j temporal filters use `date($param).year`, `.week`, `.month`
 - **Secrets**: Doppler manages env vars; `.vscode/mcp.json` ignored (see `.gitignore`)
-- **Deploy branches**: Uses `deploy` as default; production and preview contexts have separate secret injection
+- **Deploy branches**: Uses `main` as default; production and preview contexts have separate secret injection
 
 ## Testing & Validation
 
