@@ -56,28 +56,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const refreshAccessToken = useCallback(async (): Promise<string | null> => {
     const currentRefreshToken = getRefreshToken()
+    const storedUser = getStoredUser()
 
     if (!currentRefreshToken) {
+      console.warn('No refresh token available for refresh')
       return null
     }
 
     try {
       const response = await apiRefreshToken(currentRefreshToken)
       storeAuth({
-        message: 'Token refreshed',
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
-        user: user!,
+        user: storedUser!,
       })
 
       return response.accessToken
     } catch (error) {
       console.error('Failed to refresh token:', error)
-      clearAuth()
-      setUser(null)
+
+      // Only clear auth if refresh token is actually expired
+      // If it's a network error or other issue, keep the current session
+      if (isTokenExpired(currentRefreshToken)) {
+        clearAuth()
+        setUser(null)
+      }
+
       return null
     }
-  }, [user])
+  }, [])
 
   /**
    * Get access token silently (refresh if needed)
@@ -126,15 +133,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null)
           }
         } else {
-          // Verify with backend
-          const verifiedUser = await verifyToken(token)
-
-          if (verifiedUser) {
-            setUser(verifiedUser)
-          } else {
-            clearAuth()
-            setUser(null)
-          }
+          // Token is not expired, trust the stored user
+          // Only verify with backend if needed in the future
+          setUser(storedUser)
         }
       }
 

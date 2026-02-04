@@ -13,8 +13,19 @@ export interface AuthUser {
   roles?: string[]
 }
 
+export interface TokensPair {
+  accessToken: string
+  refreshToken: string
+}
+
 export interface LoginResponse {
   message: string
+  tokens: TokensPair
+  user: AuthUser
+}
+
+// Flattened version for internal use
+export interface AuthTokens {
   accessToken: string
   refreshToken: string
   user: AuthUser
@@ -61,7 +72,7 @@ class AuthServiceError extends Error {
 /**
  * Sign up a new user
  */
-export async function signup(data: SignupData): Promise<LoginResponse> {
+export async function signup(data: SignupData): Promise<AuthTokens> {
   const response = await fetch(`${AUTH_API_URL}/auth/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -85,14 +96,14 @@ export async function signup(data: SignupData): Promise<LoginResponse> {
 /**
  * Log in a user
  */
-export async function login(data: LoginData): Promise<LoginResponse> {
+export async function login(data: LoginData): Promise<AuthTokens> {
   const response = await fetch(`${AUTH_API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
 
-  const result = await response.json()
+  const result: LoginResponse = await response.json()
 
   if (!response.ok) {
     throw new AuthServiceError(
@@ -102,7 +113,12 @@ export async function login(data: LoginData): Promise<LoginResponse> {
     )
   }
 
-  return result
+  // Flatten the nested token structure
+  return {
+    accessToken: result.tokens.accessToken,
+    refreshToken: result.tokens.refreshToken,
+    user: result.user,
+  }
 }
 
 /**
@@ -134,6 +150,10 @@ export async function verifyToken(token: string): Promise<AuthUser | null> {
 export async function refreshToken(
   refreshToken: string
 ): Promise<{ accessToken: string; refreshToken: string }> {
+  if (!refreshToken) {
+    throw new AuthServiceError('No refresh token available', 401, undefined)
+  }
+
   const response = await fetch(`${AUTH_API_URL}/auth/refresh-token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -240,12 +260,20 @@ export const STORAGE_KEYS = {
 /**
  * Store authentication data
  */
-export function storeAuth(data: LoginResponse): void {
+export function storeAuth(data: AuthTokens): void {
   if (typeof window === 'undefined') return
+
+  console.log('🔐 Storing auth tokens', {
+    hasAccessToken: !!data.accessToken,
+    hasRefreshToken: !!data.refreshToken,
+    user: data.user,
+  })
 
   localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken)
   localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken)
   localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user))
+
+  console.log('✅ Auth tokens stored in localStorage')
 }
 
 /**
@@ -261,7 +289,12 @@ export function getAccessToken(): string | null {
  */
 export function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null
-  return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+  const token = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+  console.log('🔑 Retrieved refresh token from storage:', {
+    found: !!token,
+    token: token ? `${token.substring(0, 20)}...` : null,
+  })
+  return token
 }
 
 /**

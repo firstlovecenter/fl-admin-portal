@@ -32,7 +32,7 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_GRAPHQL_ENDPOINT:
       process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-      'http://localhost:4000/graphql',
+      'http://localhost:3000/graphql',
   },
   // API proxy
   async rewrites() {
@@ -40,7 +40,7 @@ const nextConfig = {
       beforeFiles: [
         {
           source: '/api/:path*',
-          destination: 'http://localhost:4000/:path*',
+          destination: 'http://localhost:3000/:path*',
         },
       ],
     }
