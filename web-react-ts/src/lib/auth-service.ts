@@ -10,6 +10,7 @@ export interface AuthUser {
   email: string
   firstName?: string
   lastName?: string
+  roles?: string[]
 }
 
 export interface LoginResponse {
