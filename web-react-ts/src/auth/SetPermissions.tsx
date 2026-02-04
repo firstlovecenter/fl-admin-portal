@@ -1,5 +1,4 @@
 import { useQuery } from '@apollo/client'
-import { useAuth0 } from '@auth0/auth0-react'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import InitialLoading from 'components/base-component/InitialLoading'
 import { GET_LOGGED_IN_USER } from 'components/UserProfileIcon/UserQueries'
@@ -23,7 +22,7 @@ const SetPermissions = ({
 
   const { doNotUse } = useContext(ChurchContext)
 
-  const { isAuthenticated, user } = useAuth0()
+  const { isAuthenticated, user } = useAuth()
   const { isAuthorised } = useAuth()
 
   const { data, loading, error } = useQuery(SERVANT_CHURCH_LIST, {

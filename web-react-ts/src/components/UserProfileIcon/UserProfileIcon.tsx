@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from 'contexts/AuthContext'
 import './UserProfileIcon.css'
 import { MemberContext } from '../../contexts/MemberContext.js'
 import { Spinner } from 'react-bootstrap'
@@ -10,7 +10,7 @@ import useClickCard from 'hooks/useClickCard'
 function UserProfileIcon() {
   const { setChurch } = useClickCard()
   const { currentUser } = useContext(MemberContext)
-  const { isAuthenticated } = useAuth0()
+  const { isAuthenticated } = useAuth()
 
   return (
     <>

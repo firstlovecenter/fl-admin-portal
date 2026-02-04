@@ -63,7 +63,7 @@ export const checkServantHasCurrentHistory = async (
       churchName: getServantAndChurch.records[0]?.get('churchName'),
       churchType: getServantAndChurch.records[0]?.get('churchType'),
       servantId: getServantAndChurch.records[0]?.get('servantId'),
-      auth_id: getServantAndChurch.records[0]?.get('auth_id'),
+      
       firstName: getServantAndChurch.records[0]?.get('firstName'),
       lastName: getServantAndChurch.records[0]?.get('lastName'),
     }
@@ -80,7 +80,7 @@ export const checkServantHasCurrentHistory = async (
       servantType: 'Leader',
       servant: {
         id: servantAndChurch.servantId,
-        auth_id: servantAndChurch.auth_id,
+        
         firstName: servantAndChurch.firstName,
         lastName: servantAndChurch.lastName,
       },
@@ -273,7 +273,7 @@ const serviceMutation = {
         servantType: 'Leader',
         servant: {
           id: getServantAndChurch.servantId,
-          auth_id: getServantAndChurch.auth_id,
+          
           firstName: getServantAndChurch.firstName,
           lastName: getServantAndChurch.lastName,
         },

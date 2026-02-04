@@ -11,21 +11,19 @@ import {
   InMemoryCache,
 } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
-import { Auth0Provider, useAuth0 } from '@auth0/auth0-react'
 import CacheBuster from 'CacheBuster'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './color-theme.css'
 import './index.css'
 import ReactGA from 'react-ga4'
-import * as Sentry from '@sentry/react'
 import {
   useLocation,
   useNavigationType,
   createRoutesFromChildren,
   matchRoutes,
 } from 'react-router-dom'
-import { BrowserTracing } from '@sentry/tracing'
 import {
   SnackbarKey,
   SnackbarProvider,
@@ -39,14 +37,11 @@ import AppWithContext from 'AppWithContext'
 
 const AppWithApollo = () => {
   const [accessToken, setAccessToken] = useState<string>('')
-  const { getAccessTokenSilently, isLoading, user } = useAuth0()
+  const { getAccessTokenSilently, isLoading, user } = useAuth()
 
   const getAccessToken = useCallback(async () => {
     try {
-      const token = await getAccessTokenSilently({
-        audience: 'https://flcadmin.netlify.app/graphql',
-        scope: 'read:current_user',
-      })
+      const token = await getAccessTokenSilently()
 
       setAccessToken(token)
       sessionStorage.setItem('token', token)
@@ -193,10 +188,6 @@ const AppWithApollo = () => {
     return <SplashSreen />
   }
 
-  if (!user) {
-    return <Login />
-  }
-
   return (
     <ApolloProvider client={client}>
       <SnackbarProvider />
@@ -222,15 +213,9 @@ const AppWithAuth = () => (
       }
 
       return (
-        <Auth0Provider
-          domain={import.meta.env.VITE_AUTH0_DOMAIN || ''}
-          clientId={import.meta.env.VITE_AUTH0_CLIENT_ID || ''}
-          redirectUri={window.location.origin}
-          audience="https://flcadmin.netlify.app/graphql"
-          scope="true"
-        >
+        <AuthProvider>
           <AppWithApollo />
-        </Auth0Provider>
+        </AuthProvider>
       )
     }}
   </CacheBuster>
@@ -242,41 +227,6 @@ ReactGA.send('pageview')
 const container: HTMLElement =
   document.getElementById('root') || document.createElement('div')
 const root = createRoot(container)
-
-Sentry.init({
-  dsn: 'https://a6fccd390f7a4cdfa48da901b0e2e22f@o1423098.ingest.sentry.io/6770463',
-
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
-  // If the entire session is not sampled, use the below sample rate to sample
-  // sessions when an error occurs.
-  replaysOnErrorSampleRate: 1.0,
-  integrations: [
-    new Sentry.Replay(),
-    new BrowserTracing({
-      routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-        React.useEffect,
-        useLocation,
-        useNavigationType,
-        createRoutesFromChildren,
-        // @ts-ignore
-        matchRoutes
-      ),
-    }),
-  ],
-  beforeSend(event) {
-    if (event.exception) {
-      sessionStorage.setItem('lastEventId', event.event_id ?? '')
-    }
-    return event
-  },
-
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-})
 
 root.render(
   <React.StrictMode>

@@ -1,6 +1,5 @@
 import { ApolloError } from '@apollo/client'
 import { last3Weeks } from '@jaedag/admin-portal-types'
-import { captureException, showReportDialog } from '@sentry/react'
 import {
   ChurchLevel,
   CurrentUser,
@@ -185,15 +184,6 @@ export const throwToSentry = (
   if (!error) {
     // eslint-disable-next-line no-console
     console.error(message)
-    captureException(error, {
-      tags: {
-        userId: user.id,
-        userName: user.firstName + ' ' + user.lastName,
-        userEmail: user.email,
-        userRole: user.role,
-        userStream: user.stream_name,
-      },
-    })
     // eslint-disable-next-line no-alert
     // alert(`${message}`)
     // window.open('/', '_self')
@@ -203,15 +193,6 @@ export const throwToSentry = (
   if (!message) {
     // eslint-disable-next-line no-console
     console.error(error)
-    captureException(error, {
-      tags: {
-        userId: user.id,
-        userName: user.firstName + ' ' + user.lastName,
-        userEmail: user.email,
-        userRole: user.role,
-        userStream: user.stream_name,
-      },
-    })
     // eslint-disable-next-line no-alert
     alert(`${error}`)
     return
@@ -221,21 +202,9 @@ export const throwToSentry = (
   console.error(error)
   // eslint-disable-next-line no-alert
   alert(`${message} ${error}`)
-  captureException(error, {
-    tags: {
-      userId: user.id,
-      userName: user.firstName + ' ' + user.lastName,
-      userEmail: user.email,
-      userRoles: user.roles.toString(),
-      userStream: user.stream_name,
-    },
-  })
 }
 
 export const showUserReportDialog = () => {
-  showReportDialog({
-    eventId: sessionStorage.getItem('lastEventId') ?? undefined,
-  })
 }
 
 export const alertMsg = (message: string) => {

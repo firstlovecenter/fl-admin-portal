@@ -23,12 +23,12 @@ const startServer = async () => {
     neo4j.auth.basic(
       SECRETS.NEO4J_USER || 'neo4j',
       SECRETS.NEO4J_PASSWORD || 'letmein'
-    )
-    // {
-    //   encrypted: 'ENCRYPTION_ON',
-    //   trust: 'TRUST_ALL_CERTIFICATES',
-    //   connectionTimeout: 30000,
-    // }
+    ),
+    {
+      encrypted: 'ENCRYPTION_ON',
+      trust: 'TRUST_ALL_CERTIFICATES',
+      connectionTimeout: 30000,
+    }
   )
 
   // Add connection verification

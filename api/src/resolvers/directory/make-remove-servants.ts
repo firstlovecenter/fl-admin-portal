@@ -11,20 +11,16 @@ import { ChurchLevel, Member, Role, ServantType } from '../utils/types'
 import { sendSingleEmail } from '../utils/notify'
 import { Context } from '../utils/neo4j-types'
 import {
-  Auth0RoleObject,
   changePasswordConfig,
   createAuthUserConfig,
   deleteAuthUserConfig,
   getAuthIdConfig,
-  getUserRoles,
   updateAuthUserConfig,
-} from '../utils/auth0'
 import {
   matchChurchQuery,
   removeMemberAuthId,
   getChurchDataQuery,
 } from '../cypher/resolver-cypher'
-import { getAuth0Roles, getAuthToken } from '../authenticate'
 import {
   assignRoles,
   churchInEmail,
@@ -79,7 +75,7 @@ export const MakeServant = async (
   servantType: ServantType
 ) => {
   const authToken = await getAuthToken()
-  const authRoles = await getAuth0Roles(authToken)
+//   const authRoles = await getAuth0Roles(authToken)
   const terms = formatting(churchType, servantType)
   const { verb, servantLower, churchLower, memberQuery } = terms
 
@@ -122,7 +118,7 @@ export const MakeServant = async (
 
   if (!servant.auth_id) {
     try {
-      // If servant Does Not Have Auth0 Profile, Create One
+//       // If servant Does Not Have Auth0 Profile, Create One
       const createUserCfg = await createAuthUserConfig(servant, authToken)
       const authProfileResponse = await axios(createUserCfg)
 
@@ -149,7 +145,7 @@ export const MakeServant = async (
           [authRoles[`${servantLower}${churchType}`].id],
           authToken
         ),
-        // Write Auth0 ID of Leader to Neo4j DB
+//         // Write Auth0 ID of Leader to Neo4j DB
         makeServantCypher({
           context,
           churchType,
@@ -161,7 +157,7 @@ export const MakeServant = async (
         }),
       ]).then(() =>
         console.log(
-          `Auth0 Account successfully created for ${servant.firstName} ${servant.lastName}`
+//           `Auth0 Account successfully created for ${servant.firstName} ${servant.lastName}`
         )
       )
     } catch (error: any) {
@@ -172,15 +168,13 @@ export const MakeServant = async (
     const updateUserConfig = await updateAuthUserConfig(servant, authToken)
     await axios(updateUserConfig)
 
-    // Check auth0 roles and add roles 'leaderBacenta'
-    const userRoleConfig = await getUserRoles(servant.auth_id, authToken)
 
     const userRoleResponse = await axios(userRoleConfig)
     const roles = userRoleResponse.data.map(
       (role: { name: string }) => role.name
     )
 
-    // Write Auth0 ID of Servant to Neo4j DB
+//     // Write Auth0 ID of Servant to Neo4j DB
 
     await Promise.all([
       assignRoles(
@@ -221,7 +215,7 @@ export const RemoveServant = async (
   removeOnly?: boolean
 ) => {
   const authToken: string = await getAuthToken()
-  const authRoles = await getAuth0Roles(authToken)
+//   const authRoles = await getAuth0Roles(authToken)
   const terms = formatting(churchType, servantType)
   const { verb, servantLower, churchLower, memberQuery } = terms
 
@@ -284,7 +278,7 @@ export const RemoveServant = async (
   }
 
   if (servant[`${verb}`].length > 1) {
-    // If he leads more than one Church don't touch his Auth0 roles
+//     // If he leads more than one Church don't touch his Auth0 roles
     console.log(
       `${servant.firstName} ${servant.lastName} leads more than one ${churchType}`
     )
@@ -329,14 +323,10 @@ export const RemoveServant = async (
     return parseForCacheRemoval(servant, church, verb, servantLower)
   }
 
-  // Check auth0 roles and remove roles 'leaderBacenta'
-  const userRoleConfig = await getUserRoles(servant.auth_id, authToken)
   const userRoleResponse = await axios(userRoleConfig)
   const roles: Role[] = userRoleResponse.data.map(
-    (role: Auth0RoleObject) => role.name
   )
   const rolesToCompare: string[] = roles
-  // If the person is only a governorship Admin, delete auth0 profile
   if (
     rolesToCompare.includes(`${servantLower}${churchType}`) &&
     roles.length === 1
@@ -348,9 +338,9 @@ export const RemoveServant = async (
     await axios(deleteUserConfig)
 
     console.log(
-      `Auth0 Account successfully deleted for ${servant.firstName} ${servant.lastName}`
+//       `Auth0 Account successfully deleted for ${servant.firstName} ${servant.lastName}`
     )
-    // Remove Auth0 ID of Leader from Neo4j DB
+//     // Remove Auth0 ID of Leader from Neo4j DB
     removeServantCypher({
       context,
       churchType,

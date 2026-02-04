@@ -1,0 +1,80 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 70px);
+  padding: 2rem 1rem;
+}
+
+.auth-card {
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  padding: 2.5rem;
+  max-width: 450px;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.text-brand {
+  color: #ff6b35;
+  text-decoration: none;
+}
+
+.text-brand:hover {
+  color: #ff8555;
+  text-decoration: underline;
+}
+
+.btn-brand {
+  background-color: #ff6b35;
+  border-color: #ff6b35;
+  color: white;
+}
+
+.btn-brand:hover {
+  background-color: #ff8555;
+  border-color: #ff8555;
+}
+
+.btn-brand:disabled {
+  background-color: #cc5528;
+  border-color: #cc5528;
+  opacity: 0.7;
+}
+
+.form-control {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.form-control:focus {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: #ff6b35;
+  color: white;
+  box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.form-check-input {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-check-input:checked {
+  background-color: #ff6b35;
+  border-color: #ff6b35;
+}
+
+.form-check-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 768px) {
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+}

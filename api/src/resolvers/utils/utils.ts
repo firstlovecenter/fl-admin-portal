@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 /* eslint-disable no-relative-import-paths/no-relative-import-paths */
-import { captureException } from '@sentry/node'
 import { QueryResult } from 'neo4j-driver'
 import { ChurchLevel, Member, neonumber, Role } from './types'
 
@@ -50,11 +49,8 @@ export const throwToSentry = (
   // eslint-disable-next-line no-console
   console.error(`${message} ${JSON.stringify(error)}`)
   console.log('🚀 ~ file: utils.ts:49 ~ errorVar:', errorVar)
-  captureException(error, {
-    tags: {
-      message,
-    },
-  })
+  // Sentry integration removed - error logged to console only
+  console.error('Error details:', error, { message })
   throw new Error(`${message} ${errorVar}`)
 }
 

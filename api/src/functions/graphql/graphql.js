@@ -2,17 +2,10 @@ const { Neo4jGraphQL } = require('@neo4j/graphql')
 const { ApolloServer } = require('@apollo/server')
 // Removed startServerAndCreateLambdaHandler import
 const neo4j = require('neo4j-driver')
-const Sentry = require('@sentry/node')
 const { jwtDecode } = require('jwt-decode')
 const { typeDefs } = require('./schema/graphql-schema')
 const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
-
-// Initialize Sentry
-Sentry.init({
-  dsn: 'https://cd02d9dbb24041f88bfa297993779123@o1423098.ingest.sentry.io/6770464',
-  tracesSampleRate: 1.0,
-})
 
 // Constants
 const DEFAULT_NEO4J_CONFIG = {
@@ -109,7 +102,6 @@ const initializeServer = async () => {
     console.log('[Apollo] Server initialized successfully')
   } catch (error) {
     console.error('[Initialization] Server initialization failed:', error)
-    Sentry.captureException(error)
     throw error
   }
 }
@@ -176,7 +168,6 @@ exports.handler = async (event, context) => {
         })
       } catch (error) {
         console.error('[Auth] Invalid token:', error)
-        Sentry.captureException(error)
       }
     }
 
@@ -217,7 +208,6 @@ exports.handler = async (event, context) => {
     }
   } catch (error) {
     console.error('[Request] Processing failed:', error)
-    Sentry.captureException(error)
 
     return {
       statusCode: 500,

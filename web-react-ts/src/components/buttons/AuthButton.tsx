@@ -1,5 +1,5 @@
 import React from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from 'contexts/AuthContext'
 import Popup from '../Popup/Popup'
 import { Button, Container, Spinner } from 'react-bootstrap'
 import usePopup from 'hooks/usePopup'
@@ -10,9 +10,13 @@ type AuthButtonPropsType = {
   mobileFullSize?: boolean
 }
 const AuthButton = (props: AuthButtonPropsType) => {
-  const { loginWithRedirect, logout, isAuthenticated } = useAuth0()
+  const { logout, isAuthenticated } = useAuth()
   const { togglePopup, isOpen } = usePopup()
   const { mobileFullSize } = props
+
+  const handleLoginClick = () => {
+    window.location.href = '/login'
+  }
 
   if (!isAuthenticated) {
     return (
@@ -23,14 +27,14 @@ const AuthButton = (props: AuthButtonPropsType) => {
           className={`auth-button px-5 ${
             !mobileFullSize && `d-none d-md-inline`
           }`}
-          onClick={() => loginWithRedirect()}
+          onClick={handleLoginClick}
         >
           Log In
         </Button>
         {!mobileFullSize && (
           <i
             className="fas fa-sign-in-alt fa-2x d-md-none px-5"
-            onClick={() => loginWithRedirect()}
+            onClick={handleLoginClick}
           />
         )}
       </Container>
