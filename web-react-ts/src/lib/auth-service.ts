@@ -103,7 +103,7 @@ export async function login(data: LoginData): Promise<AuthTokens> {
     body: JSON.stringify(data),
   })
 
-  const result: LoginResponse = await response.json()
+  const result = await response.json()
 
   if (!response.ok) {
     throw new AuthServiceError(
@@ -263,6 +263,7 @@ export const STORAGE_KEYS = {
 export function storeAuth(data: AuthTokens): void {
   if (typeof window === 'undefined') return
 
+  // eslint-disable-next-line no-console
   console.log('🔐 Storing auth tokens', {
     hasAccessToken: !!data.accessToken,
     hasRefreshToken: !!data.refreshToken,
@@ -272,8 +273,6 @@ export function storeAuth(data: AuthTokens): void {
   localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken)
   localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken)
   localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user))
-
-  console.log('✅ Auth tokens stored in localStorage')
 }
 
 /**
@@ -290,10 +289,7 @@ export function getAccessToken(): string | null {
 export function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null
   const token = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
-  console.log('🔑 Retrieved refresh token from storage:', {
-    found: !!token,
-    token: token ? `${token.substring(0, 20)}...` : null,
-  })
+
   return token
 }
 

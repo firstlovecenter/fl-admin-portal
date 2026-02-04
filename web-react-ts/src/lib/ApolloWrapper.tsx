@@ -55,8 +55,6 @@ function ApolloWrapper({ children }: ApolloProviderProps) {
       process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
       'http://localhost:3000/api/graphql'
 
-    console.log('🔗 Apollo Client initializing with endpoint:', endpoint)
-
     const httpLink = createHttpLink({
       uri: endpoint,
       credentials: 'include',
