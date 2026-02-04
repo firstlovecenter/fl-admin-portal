@@ -77,16 +77,6 @@ const servantCypher = {
    RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
    `,
 
-  disconnectChurchSheepSeeker: `
-   MATCH (church {id: $churchId})
-   WHERE church:Stream
-   MATCH (church)<-[oldSeeker:IS_SHEEP_SEEKER_FOR]-(admin:Member {id: $sheepseekerId})
-   DELETE oldSeeker 
-   
-   WITH church, admin
-   RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
-   `,
-
   // Create Church Leader Connection
   connectChurchLeader: `
    MATCH (church {id: $churchId})
@@ -157,15 +147,6 @@ const servantCypher = {
    RETURN church.id AS id, church.name AS name, higherChurch.id AS higherChurchId, higherChurch.name AS higherChurchName
    `,
 
-  connectChurchSheepSeeker: `
-   MATCH (church {id:$churchId})<-[:HAS]-(higherChurch)
-   WHERE church:Stream 
-   MATCH (seeker:Member {id: $sheepseekerId})
-      SET seeker.auth_id =  $auth_id
-   MERGE (seeker)-[:IS_SHEEP_SEEKER_FOR]->(church)
-   
-   RETURN church.id AS id, church.name AS name, higherChurch.id AS higherChurchId, higherChurch.name AS higherChurchName
-   `,
   // Create the service log and returns its ID
 
   createHistoryLog: `

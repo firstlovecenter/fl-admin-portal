@@ -53,7 +53,7 @@ function ApolloWrapper({ children }: ApolloProviderProps) {
   useEffect(() => {
     const endpoint =
       process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-      'http://localhost:3000/api/graphql'
+      'http://localhost:4001/graphql'
 
     const httpLink = createHttpLink({
       uri: endpoint,

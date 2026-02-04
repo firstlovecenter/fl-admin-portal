@@ -3,7 +3,6 @@ import { Context } from '../utils/neo4j-types'
 import { Member } from '../utils/types'
 import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'
 import {
-  permitSheepSeeker,
   permitAdmin,
   permitLeaderAdmin,
   permitAdminArrivals,
@@ -29,11 +28,7 @@ const closeChurchCypher = require('../cypher/close-church-cypher')
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
     isAuth(
-      [
-        ...permitSheepSeeker(),
-        ...permitLeaderAdmin('Fellowship'),
-        ...permitLeader('Hub'),
-      ],
+      [...permitLeaderAdmin('Fellowship'), ...permitLeader('Hub')],
       context?.jwt['https://flcadmin.netlify.app/roles']
     )
 
@@ -129,7 +124,7 @@ const directoryMutation = {
     context: Context
   ) => {
     isAuth(
-      [...permitMe('Bacenta'), ...permitMe('Hub'), ...permitSheepSeeker()],
+      [...permitMe('Bacenta'), ...permitMe('Hub')],
       context.jwt['https://flcadmin.netlify.app/roles']
     )
 
@@ -166,7 +161,7 @@ const directoryMutation = {
     context: Context
   ) => {
     isAuth(
-      [...permitMe('Fellowship'), ...permitMe('Hub'), ...permitSheepSeeker()],
+      [...permitMe('Fellowship'), ...permitMe('Hub')],
       context.jwt['https://flcadmin.netlify.app/roles']
     )
 
@@ -197,7 +192,7 @@ const directoryMutation = {
     context: Context
   ) => {
     isAuth(
-      [...permitLeaderAdmin('Governorship'), ...permitSheepSeeker()],
+      [...permitLeaderAdmin('Governorship')],
       context.jwt['https://flcadmin.netlify.app/roles']
     )
     const session = context.executionContext.session()

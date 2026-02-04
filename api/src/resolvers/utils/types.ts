@@ -52,7 +52,6 @@ export type Role =
   | 'arrivalsCounterStream'
   | 'arrivalsPayerCouncil'
   | 'tellerStream'
-  | 'sheepseekerStream'
   | 'fishers'
   | 'all'
 
@@ -74,7 +73,6 @@ export type ServantType =
   | 'ArrivalsAdmin'
   | 'ArrivalsCounter'
   | 'Teller'
-  | 'SheepSeeker'
   | 'ArrivalsPayer'
 export type ServantTypeLowerCase =
   | 'leader'
@@ -82,7 +80,6 @@ export type ServantTypeLowerCase =
   | 'arrivalsAdmin'
   | 'arrivalsCounter'
   | 'teller'
-  | 'sheepseeker'
   | 'arrivalsPayer'
 
 export type StreamOptions =

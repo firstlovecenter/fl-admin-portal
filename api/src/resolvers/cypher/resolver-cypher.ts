@@ -77,16 +77,6 @@ RETURN member {
 } AS member 
 `
 
-export const matchMemberSheepSeekerQuery = `
-  WITH apoc.cypher.runFirstColumnMany(
-    "MATCH (member:Member {id:$id})
-    RETURN member", {offset:0, first:5, id: $id}, True) AS x UNWIND x AS member
-    RETURN member { .id,.auth_id, .firstName,.lastName,.email,.phoneNumber,.whatsappNumber,.pictureUrl,
-    isSheepSeekerForStream: [ member_SheepSeekerStreams IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_SHEEP_SEEKER_FOR]->(seekerStream:Stream)
-    RETURN seekerStream", {this: member}, true) | member_SheepSeekerStreams { .id,.name }]} AS member 
-  `
-
-export const matchChurchQuery = `
   MATCH (church {id:$id}) 
   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus OR church:Oversight OR church:Denomination
   OR church:ClosedBacenta 

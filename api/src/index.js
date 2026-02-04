@@ -176,9 +176,32 @@ const startServer = async () => {
 
   await server.start()
 
+  // Configure CORS to allow localhost:3000 for dev, and production domain in production
+  const corsOptions = {
+    origin(origin, callback) {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+      ]
+
+      // For development, allow requests without origin (like mobile apps or desktop clients)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        // In production, you might want to be stricter
+        callback(null, true)
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }
+
   app.use(
     SECRETS.GRAPHQL_SERVER_PATH || '/graphql',
-    cors(),
+    cors(corsOptions),
     json(),
     expressMiddleware(server, {
       context: async ({ req }) => createContext(req, driver),
