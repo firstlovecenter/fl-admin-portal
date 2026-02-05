@@ -114,30 +114,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     const initAuth = async () => {
+      console.log('🔐 AuthContext: Initializing auth...')
       setIsLoading(true)
 
       const token = getAccessToken()
       const storedUser = getStoredUser()
 
+      console.log('🔐 AuthContext: Found stored data', {
+        hasToken: !!token,
+        hasUser: !!storedUser,
+        user: storedUser,
+      })
+
       if (token && storedUser) {
         // Verify token is still valid
         if (isTokenExpired(token)) {
+          console.log('⏰ AuthContext: Token expired, refreshing...')
           // Try to refresh
           const newToken = await refreshAccessToken()
 
           if (newToken) {
+            console.log('✅ AuthContext: Token refreshed successfully')
             setUser(storedUser)
           } else {
+            console.log('❌ AuthContext: Token refresh failed, clearing auth')
             clearAuth()
             setUser(null)
           }
         } else {
           // Token is not expired, trust the stored user
           // Only verify with backend if needed in the future
+          console.log('✅ AuthContext: Token still valid, using stored user')
           setUser(storedUser)
         }
+      } else {
+        console.log('❌ AuthContext: No stored auth data found')
       }
 
+      console.log('🏁 AuthContext: Auth initialization complete')
       setIsLoading(false)
     }
 

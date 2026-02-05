@@ -118,6 +118,7 @@ MATCH (member:Member {id: $id})
     SET member.email = $email
 `
 
+export const createHistoryLog = `
 CREATE (log:HistoryLog)
   SET
    log.id = apoc.create.uuid(),
@@ -133,7 +134,8 @@ CREATE (log:HistoryLog)
   CREATE (log)-[:LOGGED_BY]->(currentUser)
   CREATE (log)-[:RECORDED_ON]->(date)
 
-RETURN member.id`
+RETURN member.id
+`
 
 export const checkMemberEmailExists = `
 OPTIONAL MATCH (member:Member)

@@ -204,8 +204,7 @@ export const throwToSentry = (
   alert(`${message} ${error}`)
 }
 
-export const showUserReportDialog = () => {
-}
+export const showUserReportDialog = () => {}
 
 export const alertMsg = (message: string) => {
   // eslint-disable-next-line no-alert

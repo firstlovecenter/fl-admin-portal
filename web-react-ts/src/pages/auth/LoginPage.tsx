@@ -24,7 +24,9 @@ const LoginPage = () => {
       navigate('/')
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to login. Please try again.'
+        err instanceof Error
+          ? err.message
+          : 'Failed to login. Please try again.'
       )
     } finally {
       setLoading(false)

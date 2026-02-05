@@ -13,6 +13,7 @@ import {
 import { setContext } from '@apollo/client/link/context'
 import CacheBuster from 'CacheBuster'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import SimpleApp from './SimpleApp'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './color-theme.css'
@@ -41,19 +42,32 @@ const AppWithApollo = () => {
 
   const getAccessToken = useCallback(async () => {
     try {
+      console.log('🎫 AppWithApollo: Fetching access token...')
       const token = await getAccessTokenSilently()
+      console.log(
+        '✅ AppWithApollo: Got token',
+        token?.substring(0, 20) + '...'
+      )
 
       setAccessToken(token)
       sessionStorage.setItem('token', token)
     } catch (err) {
       // eslint-disable-next-line
-      console.error('Error Obtaining Token', err)
+      console.error('❌ Error Obtaining Token', err)
     }
   }, [getAccessTokenSilently])
 
   useEffect(() => {
-    getAccessToken()
-  }, [getAccessToken])
+    console.log(
+      '🚀 AppWithApollo: Initializing, isLoading:',
+      isLoading,
+      'user:',
+      user
+    )
+    if (!isLoading && user) {
+      getAccessToken()
+    }
+  }, [getAccessToken, isLoading, user])
 
   const httpLink = createHttpLink({
     uri:
@@ -185,9 +199,16 @@ const AppWithApollo = () => {
   // }
 
   if (isLoading) {
+    console.log('⏳ AppWithApollo: Auth still loading...')
     return <SplashSreen />
   }
 
+  console.log(
+    '🎨 AppWithApollo: Rendering main app, user:',
+    user,
+    'accessToken:',
+    accessToken?.substring(0, 20)
+  )
   return (
     <ApolloProvider client={client}>
       <SnackbarProvider />
@@ -230,6 +251,8 @@ const root = createRoot(container)
 
 root.render(
   <React.StrictMode>
-    <AppWithAuth />
+    <SimpleApp>
+      <AppWithAuth />
+    </SimpleApp>
   </React.StrictMode>
 )
