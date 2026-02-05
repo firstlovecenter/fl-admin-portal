@@ -34,7 +34,6 @@ import {
   SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN,
   SERVANTS_STREAM_ARRIVALS_COUNTER,
   SERVANTS_STREAM_TELLER,
-  SERVANTS_SHEEP_SEEKER_STREAM,
   SERVANTS_HUB_LEADER,
   SERVANTS_MINISTRY_LEADER,
   SERVANTS_CREATIVEARTS_LEADER,
@@ -102,7 +101,6 @@ const useComponentQuery = (props?: UseComponentQuery) => {
   )
 
   const [streamTellerQuery] = useLazyQuery(SERVANTS_STREAM_TELLER)
-  const [sheepseekerStream] = useLazyQuery(SERVANTS_SHEEP_SEEKER_STREAM)
 
   //sonta
   const [hubLeaderQuery] = useLazyQuery(SERVANTS_HUB_LEADER)
@@ -137,7 +135,6 @@ const useComponentQuery = (props?: UseComponentQuery) => {
       arrivalsAdmin: streamArrivalsAdminQuery,
       arrivalsCounter: streamArrivalsCounterQuery,
       teller: streamTellerQuery,
-      sheepseeker: sheepseekerStream,
     },
     Campus: {
       leader: campusLeaderQuery,

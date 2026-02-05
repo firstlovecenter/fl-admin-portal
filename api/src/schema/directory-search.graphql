@@ -44,7 +44,7 @@ extend type Member {
   fellowshipSearch(key: String!, limit: Int! = 5): [Fellowship!]!
     @cypher(
       statement: """
-      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..8]->(fellowship:Fellowship)
+      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..8]->(fellowship:Fellowship)
       WHERE toLower(fellowship.name) CONTAINS toLower($key)
       RETURN DISTINCT fellowship AS fellowshipSearch LIMIT $limit
       """
@@ -53,7 +53,7 @@ extend type Member {
   bacentaSearch(key: String!, limit: Int! = 5): [Bacenta!]!
     @cypher(
       statement: """
-      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..7]->(bacenta:Bacenta)
+      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
       RETURN DISTINCT bacenta AS bacentaSearch LIMIT $limit
       """
@@ -62,7 +62,7 @@ extend type Member {
   governorshipSearch(key: String!, limit: Int! = 5): [Governorship!]!
     @cypher(
       statement: """
-      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..6]->(governorship:Governorship)
+      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..6]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
       RETURN DISTINCT governorship AS governorshipSearch LIMIT $limit
       """
@@ -71,7 +71,7 @@ extend type Member {
   councilSearch(key: String!, limit: Int! = 5): [Council!]!
     @cypher(
       statement: """
-      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..5]->(council:Council)
+      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..5]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
       RETURN DISTINCT council AS councilSearch LIMIT $limit
       """
@@ -80,7 +80,7 @@ extend type Member {
   streamSearch(key: String!, limit: Int! = 5): [Stream!]!
     @cypher(
       statement: """
-      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..4]->(stream:Stream)
+      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..4]->(stream:Stream)
       WHERE toLower(stream.name) CONTAINS toLower($key)
       RETURN DISTINCT stream AS streamSearch LIMIT $limit
       """

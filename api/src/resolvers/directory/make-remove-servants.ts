@@ -258,9 +258,7 @@ export const RemoveServant = async (
   )
   if (
     (!servantValidation(servant) || !servantValidation(newServant)) &&
-    !['ArrivalsCounter', 'Teller', 'SheepSeeker', 'ArrivalsPayer'].includes(
-      servantType
-    ) &&
+    !['ArrivalsCounter', 'Teller', 'ArrivalsPayer'].includes(servantType) &&
     !removeOnly
   ) {
     return null
