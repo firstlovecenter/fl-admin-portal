@@ -5,6 +5,7 @@
 Give your **Amplify app** permission to **read secrets** from Secrets Manager during the build process.
 
 Think of it like this:
+
 - 🏠 Secrets Manager = Your locked safe with passwords
 - 🤖 Amplify = A robot trying to build your app
 - 🔑 IAM Policy = The key you give the robot to open the safe
@@ -56,6 +57,7 @@ Think of it like this:
 ```
 
 **What it means:**
+
 - ✅ Can READ secrets from Secrets Manager
 - ❌ Cannot DELETE secrets
 - ❌ Cannot MODIFY secrets
@@ -75,6 +77,7 @@ Think of it like this:
 **You'll see one of these:**
 
 - ✅ `Service role: amplifyconsole-backend-role-a1b2c3`
+
   - **Good!** Copy this name and go to Step 2
 
 - ❌ `Service role: No service role set`
@@ -94,6 +97,7 @@ Think of it like this:
 ### Step 3: Find Your Role
 
 1. In the **search box**, paste your role name from Step 1
+
    - Example: `amplifyconsole-backend-role`
 
 2. Click on the role to open it
@@ -134,7 +138,7 @@ Think of it like this:
 ### Step 6: Name and Create
 
 1. **Policy name**: Enter `SecretsManagerAccess`
-2. **Description** (optional): 
+2. **Description** (optional):
    ```
    Allows Amplify to read fl-admin-portal secrets from AWS Secrets Manager
    ```
@@ -149,12 +153,14 @@ Think of it like this:
 3. Watch the build logs - should work now! ✅
 
 **Success message:**
+
 ```
 Fetching secrets from AWS Secrets Manager...
 ✓ Build started successfully
 ```
 
 **Failure message:**
+
 ```
 ❌ AccessDeniedException: User is not authorized to perform secretsmanager:GetSecretValue
 ```
@@ -168,12 +174,14 @@ If it fails, wait 2 minutes (IAM changes propagate slowly) and try again.
 ### "AccessDeniedException" - Still Failing?
 
 **Checklist:**
+
 - [ ] Waited at least 2 minutes after creating the policy?
 - [ ] Policy uses exactly this Resource: `arn:aws:secretsmanager:*:*:secret:fl-admin-portal/*`?
 - [ ] Your secret in Secrets Manager starts with `fl-admin-portal/`?
 - [ ] Cleared Amplify build cache? (Settings → Build → Clear cache)
 
 **If still failing:**
+
 ```bash
 # Verify the policy is attached
 aws iam get-role-policy --role-name YOUR_ROLE_NAME --policy-name SecretsManagerAccess
@@ -189,6 +197,7 @@ aws secretsmanager describe-secret --secret-id fl-admin-portal/main
 ### "No service role set" in Amplify
 
 **Solution**:
+
 1. Click **Edit** in the Service role field
 2. Select **"Create and use a new service role"**
 3. Click **Save**

@@ -5,6 +5,7 @@
 All environment variables are stored in **AWS Secrets Manager** and automatically fetched during Amplify builds. This avoids manually configuring 20+ variables in the Amplify Console.
 
 ## Secret Format (JSON)
+
 ```json
 {
   "VITE_GRAPHQL_URI": "https://flcadmin.netlify.app/.netlify/functions/graphql",
@@ -50,7 +51,7 @@ All environment variables are stored in **AWS Secrets Manager** and automaticall
 5. Click **Add permissions** → **Attach policies**
 6. Click **Create policy** → JSON tab:
 
-```json
+````json
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -76,19 +77,23 @@ All environment variables are stored in **AWS Secrets Manager** and automaticall
     }
   ]
 }
-```
+````
 
 4. Name it `SecretsManagerAccess` and save
 
 ### 3. Add GITHUB_TOKEN to Amplify Environment Variables
 
 In Amplify Console → **Environment variables**, add:
+
 - **Key**: `GITHUB_TOKEN`
 - **Value**: Your GitHub Personal Access Token (for npm packages)
+
 ### Variables not available during build
+
 **Cause**: JSON parsing error.
 
 **Fix**: Check the secret is valid JSON:
+
 ```bash
 aws secretsmanager get-secret-value \
   --secret-id fl-admin-portal/main \
@@ -99,10 +104,12 @@ aws secretsmanager get-secret-value \
 ## Cost
 
 AWS Secrets Manager pricing (as of 2026):
+
 - **$0.40 per secret per month**
 - **$0.05 per 10,000 API calls**
 
 For 3 secrets (prod, staging, dev):
+
 - **~$1.20/month** for storage
 - **~$0.05/month** for API calls (30 builds/month)
 - **Total: ~$1.25/month**

@@ -5,6 +5,7 @@
 This guide covers migrating **only the React frontend** (`web-react-ts`) from Netlify to AWS Amplify, while keeping the GraphQL API on Netlify.
 
 ### Architecture After Migration
+
 - **Frontend**: AWS Amplify (React + Vite + TypeScript)
 - **API**: Netlify Functions (GraphQL + Neo4j)
 - **Database**: Neo4j (unchanged)
@@ -61,6 +62,7 @@ The first build will fail until you add environment variables (next step).
 **All environment variables are stored in AWS Secrets Manager, not directly in Amplify Console.**
 
 This provides:
+
 - ✅ Centralized secret management
 - ✅ No need to manually configure 20+ variables
 - ✅ Automatic secret rotation
@@ -161,14 +163,15 @@ const server = new ApolloServer({
     origin: [
       'https://main.your-amplify-id.amplifyapp.com', // Replace with your Amplify URL
       'https://flcadmin.netlify.app',
-      'http://localhost:3000'
+      'http://localhost:3000',
     ],
-    credentials: true
-  }
+    credentials: true,
+  },
 })
 ```
 
 Deploy the API changes to Netlify:
+
 ```bash
 git add api/src/index.js
 git commit -m "chore: add Amplify domain to CORS"
@@ -184,9 +187,9 @@ git push origin deploy
 1. Go to **App settings** → **Rewrites and redirects**
 2. Add the following rule:
 
-| Source address | Target address | Type |
-|---------------|---------------|------|
-| `/<*>` | `/index.html` | 200 (Rewrite) |
+| Source address | Target address | Type          |
+| -------------- | -------------- | ------------- |
+| `/<*>`         | `/index.html`  | 200 (Rewrite) |
 
 ---
 
@@ -209,16 +212,19 @@ git push origin deploy
 ## 🧪 Testing Deployment
 
 ### 1. Check Build Logs
+
 - Go to **Amplify Console** → **Build history**
 - Verify build succeeds without errors
 
 ### 2. Test Frontend
+
 - Open the Amplify URL: `https://main.your-amplify-id.amplifyapp.com`
 - Test authentication (Auth0 login)
 - Verify GraphQL queries work
 - Check all routes (use React Router navigation)
 
 ### 3. Monitor Network Requests
+
 - Open browser DevTools → Network tab
 - Verify API calls go to `https://flcadmin.netlify.app/.netlify/functions/graphql`
 - Check for CORS errors
@@ -228,7 +234,9 @@ git push origin deploy
 ## 📊 Performance Optimization
 
 ### Enable Build Cache
+
 Already configured in `amplify.yml`:
+
 ```yaml
 cache:
   paths:
@@ -237,9 +245,11 @@ cache:
 ```
 
 ### Enable Compression
+
 Amplify automatically enables Gzip/Brotli compression.
 
 ### CDN Distribution
+
 Amplify uses CloudFront CDN for global distribution.
 
 ---
@@ -256,6 +266,7 @@ Amplify uses CloudFront CDN for global distribution.
 - **Data transfer**: $0.15/GB after free tier
 
 ### Monthly Estimate:
+
 - 30 builds/month: ~$1.50
 - Hosting (under free tier): $0
 - **Total: ~$1.50-$5/month**
@@ -265,12 +276,15 @@ Amplify uses CloudFront CDN for global distribution.
 ## 🔧 Troubleshooting
 
 ### Build Fails with "Module not found"
+
 **Solution**: Ensure all dependencies are in `web-react-ts/package.json`, not just root `package.json`.
 
 ### Build Fails with "401 Unauthorized" for @jaedag/admin-portal-types
+
 **Cause**: Missing GitHub token for private package.
 
 **Solution**:
+
 1. Create GitHub Personal Access Token at https://github.com/settings/tokens
 2. Select scope: `read:packages`
 3. Add to Amplify environment variables as `GITHUB_TOKEN`
@@ -279,15 +293,19 @@ Amplify uses CloudFront CDN for global distribution.
 The `.npmrc` file automatically configures authentication during build.
 
 ### Environment Variables Not Applied
+
 **Solution**: Redeploy after adding variables. Variables are only injected during build.
 
 ### CORS Errors
+
 **Solution**: Add your Amplify domain to the API CORS whitelist (see above).
 
 ### 404 on Page Refresh
+
 **Solution**: Configure SPA redirects (see "Configure SPA Routing").
 
 ### Blank Page After Deployment
+
 **Solution**: Check browser console for errors. Verify `VITE_GRAPHQL_URI` is set correctly.
 
 ---
@@ -309,6 +327,7 @@ Live in ~5-7 minutes
 ```
 
 ### Branch-Based Deployments:
+
 - **Production**: `main` or `deploy` branch
 - **Staging**: `develop` branch
 - **Feature branches**: Auto-create preview URLs
@@ -318,11 +337,13 @@ Live in ~5-7 minutes
 ## 📦 Rollback Strategy
 
 ### Instant Rollback:
+
 1. Go to **Amplify Console** → **Build history**
 2. Find the last working build
 3. Click **Redeploy this version**
 
 ### Git Rollback:
+
 ```bash
 git revert <commit-hash>
 git push origin dev
@@ -333,21 +354,25 @@ git push origin dev
 ## 🚦 Migration Phases
 
 ### Phase 1: Testing (Current)
+
 - Deploy to Amplify preview environment
 - Test all functionality
 - Monitor for issues
 
 ### Phase 2: Parallel Running
+
 - Keep Netlify deployment active
 - Run Amplify alongside
 - A/B test with subset of users
 
 ### Phase 3: Full Migration
+
 - Update DNS to point to Amplify
 - Deprecate Netlify frontend deployment
 - Keep Netlify API active
 
 ### Phase 4: Optimization
+
 - Monitor performance metrics
 - Optimize build times
 - Fine-tune caching
@@ -380,4 +405,4 @@ git push origin dev
 
 ---
 
-*Last updated: February 6, 2026*
+_Last updated: February 6, 2026_

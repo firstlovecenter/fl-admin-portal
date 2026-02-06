@@ -3,6 +3,7 @@
 ## The Problem
 
 AWS Amplify build fails with:
+
 ```
 npm error 401 Unauthorized - GET https://npm.pkg.github.com/download/@jaedag/admin-portal-types/1.5.16/...
 npm error authentication token not provided
@@ -56,6 +57,7 @@ preBuild:
 ```
 
 This tells npm to:
+
 1. Use GitHub Packages for `@jaedag` scoped packages
 2. Authenticate using the `GITHUB_TOKEN` environment variable
 
@@ -68,6 +70,7 @@ This tells npm to:
 ## Verification
 
 After deploying, check the build logs in Amplify. You should see:
+
 ```
 npm install
 ✓ Installing dependencies
@@ -86,6 +89,7 @@ GITHUB_TOKEN=ghp_your_token_here
 ```
 
 Then update the `.npmrc` to use it:
+
 ```
 @jaedag:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
@@ -102,16 +106,19 @@ Then update the `.npmrc` to use it:
 ## Troubleshooting
 
 ### Build still fails with 401
+
 - Verify token was added correctly in Amplify environment variables
 - Check token hasn't expired
 - Ensure token has `read:packages` scope
 - Try regenerating the token
 
 ### "Invalid credentials"
+
 - Token may be expired
 - Generate a new token with `read:packages` scope
 
 ### Works locally but fails in Amplify
+
 - Make sure `GITHUB_TOKEN` is set in Amplify environment variables
 - Check the build logs to confirm `.npmrc` was created
 
