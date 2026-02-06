@@ -96,7 +96,7 @@ const DetailsStream = () => {
         churchType={stream?.__typename}
         details={details}
         editlink="/stream/editstream"
-        editPermitted={permitAdmin('Campus')}
+        editPermitted={permitAdmin('Stream')}
         history={stream?.history.length !== 0 && stream?.history}
         buttons={stream?.councils ?? []}
         breadcrumb={breadcrumb && breadcrumb}

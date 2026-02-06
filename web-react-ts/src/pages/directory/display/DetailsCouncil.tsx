@@ -74,7 +74,7 @@ const DetailsCouncil = () => {
         subChurch="Governorship"
         details={details}
         editlink="/council/editcouncil"
-        editPermitted={permitAdmin('Stream')}
+        editPermitted={permitAdmin('Council')}
         history={council?.history.length !== 0 && council?.history}
         buttons={council ? council.governorships : []}
         breadcrumb={breadcrumb && breadcrumb}
