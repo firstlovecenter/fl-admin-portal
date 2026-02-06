@@ -50,6 +50,7 @@ Amplify auto-detects `amplify.yml` configuration. Click **Save and deploy** to c
   "VITE_AUTH0_DOMAIN": "your-domain.auth0.com",
   "VITE_AUTH0_CLIENT_ID": "your_client_id",
   "VITE_AUTH0_AUDIENCE": "your_audience",
+  "VITE_AUTH_API_URL": "https://your-auth-service-url",
   "VITE_CLOUDINARY_MEMBERS": "cloudinary_preset",
   "VITE_CLOUDINARY_TREASURERS": "cloudinary_preset",
   "VITE_CLOUDINARY_SERVICES": "cloudinary_preset",
@@ -254,6 +255,119 @@ Or via Git:
 git revert <commit-hash>
 git push origin dev
 ```
+
+---
+
+## Preview Branches (Public Repos)
+
+Amplify **does** support preview branches for public repos. If you see a restriction message:
+
+1. **Amplify Console** → **App settings** → **Branches**
+2. Click **Manage branches**
+3. For each feature branch, toggle **Preview** to **ON**
+4. Choose which branches get automatic deployments:
+
+   - `main` → Production
+   - `develop` → Staging
+   - `feature/*` → Preview (each branch gets unique URL)
+
+5. Set **Auto-branch deletion**: Toggle ON to clean up closed PRs
+
+---
+
+## Automated CI/CD Without UI
+
+### Option 1: GitHub Actions + Amplify CLI (Recommended)
+
+Create `.github/workflows/amplify-deploy.yml`:
+
+```yaml
+name: Deploy to Amplify
+
+on:
+  push:
+    branches: ['main', 'develop', 'feature/**']
+  pull_request:
+    types: ['opened', 'synchronize']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Deploy to Amplify
+        run: |
+          npm install -g @aws-amplify/cli
+          amplify pull --appId ${{ secrets.AMPLIFY_APP_ID }} \
+            --envName ${{ github.ref_name }} \
+            --yes
+          amplify publish --yes
+```
+
+Then add these secrets in GitHub:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AMPLIFY_APP_ID` (find in Amplify Console → App details)
+
+### Option 2: Webhook-Based Deployment
+
+Enable in **Amplify Console** → **App settings** → **General** → **Webhook URLs**:
+
+Get the webhook URL and trigger deployments via:
+
+```bash
+curl -X POST https://your-amplify-webhook-url
+```
+
+Use this in external CI/CD systems (GitLab CI, Jenkins, etc.).
+
+### Option 3: Manual CLI Deployment (Local)
+
+Install Amplify CLI:
+
+```bash
+npm install -g @aws-amplify/cli
+```
+
+Configure once:
+
+```bash
+amplify configure
+amplify pull --appId your-app-id --envName main
+```
+
+Deploy any branch:
+
+```bash
+amplify publish
+```
+
+---
+
+## Branch Strategy
+
+Recommend this setup in Amplify **Branches** settings:
+
+| Branch      | Environment | URL                                       | Auto-deploy |
+| ----------- | ----------- | ----------------------------------------- | ----------- |
+| `main`      | Production  | `https://main.xxx.amplifyapp.com`         | Yes         |
+| `develop`   | Staging     | `https://develop.xxx.amplifyapp.com`      | Yes         |
+| `feature/*` | Preview     | `https://feature-name.xxx.amplifyapp.com` | Yes         |
+
+Each branch needs its own secret in AWS Secrets Manager:
+
+- `fl-admin-portal/main`
+- `fl-admin-portal/develop`
+- `fl-admin-portal/feature-name`
 
 ---
 

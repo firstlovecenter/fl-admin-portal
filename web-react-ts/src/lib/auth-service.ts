@@ -5,6 +5,12 @@
 
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || ''
 
+if (!AUTH_API_URL) {
+  throw new Error(
+    'VITE_AUTH_API_URL is missing. Set it in AWS Secrets Manager (or .env.local) to avoid requests defaulting to the Amplify domain.'
+  )
+}
+
 export interface AuthUser {
   id: string
   email: string
