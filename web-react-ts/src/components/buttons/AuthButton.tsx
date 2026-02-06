@@ -72,7 +72,7 @@ const AuthButton = (props: AuthButtonPropsType) => {
                 !mobileFullSize && `d-none d-md-inline`
               }`}
               onClick={() => {
-                logout({ returnTo: window.location.origin })
+                logout()
                 sessionStorage.removeItem('currentUser')
                 togglePopup()
               }}
@@ -86,7 +86,7 @@ const AuthButton = (props: AuthButtonPropsType) => {
       {!mobileFullSize && (
         <i
           className="fas fa-sign-out-alt fa-2x d-md-none"
-          onClick={() => logout({ returnTo: window.location.origin })}
+          onClick={() => logout()}
         />
       )}
     </Container>
