@@ -144,8 +144,8 @@ git push origin deploy
 
 In **Amplify Console** → **App settings** → **Rewrites and redirects**:
 
-| Source | Target       | Type         |
-| ------ | ------------ | ------------ |
+| Source | Target        | Type          |
+| ------ | ------------- | ------------- |
 | `/<*>` | `/index.html` | 200 (Rewrite) |
 
 ---
@@ -194,14 +194,14 @@ In **Amplify Console** → **App settings** → **Rewrites and redirects**:
 
 ## Troubleshooting
 
-| Error | Cause | Solution |
-| --- | --- | --- |
-| **Build fails: "AccessDeniedException"** | Missing IAM policy | Add policy (Step 2b), wait 2 min, retry |
-| **"401 Unauthorized" for @jaedag/admin-portal-types** | Missing GitHub token | Add `GITHUB_TOKEN` env var (Step 2c) |
-| **"SecretNotFoundException"** | Secret name doesn't match config | Update secret name in `amplify.yml` |
-| **CORS errors in browser** | API doesn't allow Amplify domain | Update CORS (Step 3) and redeploy API |
-| **404 on page refresh** | SPA routing not configured | Add redirect rule (Step 4) |
-| **Blank page** | Environment variables not applied | Redeploy after adding variables |
+| Error                                                 | Cause                             | Solution                                |
+| ----------------------------------------------------- | --------------------------------- | --------------------------------------- |
+| **Build fails: "AccessDeniedException"**              | Missing IAM policy                | Add policy (Step 2b), wait 2 min, retry |
+| **"401 Unauthorized" for @jaedag/admin-portal-types** | Missing GitHub token              | Add `GITHUB_TOKEN` env var (Step 2c)    |
+| **"SecretNotFoundException"**                         | Secret name doesn't match config  | Update secret name in `amplify.yml`     |
+| **CORS errors in browser**                            | API doesn't allow Amplify domain  | Update CORS (Step 3) and redeploy API   |
+| **404 on page refresh**                               | SPA routing not configured        | Add redirect rule (Step 4)              |
+| **Blank page**                                        | Environment variables not applied | Redeploy after adding variables         |
 
 ---
 
