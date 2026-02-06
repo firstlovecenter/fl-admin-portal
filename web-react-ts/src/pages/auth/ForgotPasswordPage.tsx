@@ -1,26 +1,41 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Container, Form, Button, Alert, Navbar } from 'react-bootstrap'
+import { Container, Form, Button, Alert, Navbar, Spinner } from 'react-bootstrap'
+import { Formik, Field, ErrorMessage } from 'formik'
+import * as Yup from 'yup'
 import { requestPasswordReset } from '../../lib/auth-service'
 import Logo from '../../assets/flc-logo-small.webp'
 import './auth.css'
+import { CheckCircleFill } from 'react-bootstrap-icons'
+
+const validationSchema = Yup.object({
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+})
 
 const ForgotPasswordPage = () => {
-  const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // Auto-hide success message after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess(false)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [success])
+
+  const handleSubmit = async (values: any, { setSubmitting, resetForm }: any) => {
     setError('')
     setSuccess(false)
-    setLoading(true)
 
     try {
-      await requestPasswordReset(email)
+      await requestPasswordReset(values.email)
       setSuccess(true)
-      setEmail('')
+      resetForm()
     } catch (err) {
       setError(
         err instanceof Error
@@ -28,7 +43,7 @@ const ForgotPasswordPage = () => {
           : 'Failed to send reset email. Please try again.'
       )
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -55,42 +70,70 @@ const ForgotPasswordPage = () => {
 
           {error && <Alert variant="danger">{error}</Alert>}
           {success && (
-            <Alert variant="success">
-              Password reset instructions have been sent to your email. Please
-              check your inbox.
+            <Alert variant="success" className="d-flex align-items-center">
+              <CheckCircleFill className="success-icon me-3" size={24} />
+              <div>
+                <strong>Password reset instructions sent!</strong>
+                <br />
+                Check your email for a link to reset your password.
+              </div>
             </Alert>
           )}
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="email">
-              <Form.Label className="text-white">Email Address</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading || success}
-              />
-            </Form.Group>
+          <Formik
+            initialValues={{ email: '' }}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ handleSubmit, isSubmitting, touched, errors }) => (
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="email">
+                  <Form.Label className="text-white">Email Address</Form.Label>
+                  <Field
+                    as={Form.Control}
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    disabled={isSubmitting}
+                    className={
+                      touched.email && errors.email
+                        ? 'is-invalid'
+                        : touched.email
+                        ? 'is-valid'
+                        : ''
+                    }
+                  />
+                  <ErrorMessage name="email">
+                    {(msg) => <small className="text-danger">{msg}</small>}
+                  </ErrorMessage>
+                </Form.Group>
 
-            <Button
-              variant="brand"
-              type="submit"
-              className="w-100 mb-3"
-              disabled={loading || success}
-            >
-              {loading ? 'Sending...' : 'Send Reset Instructions'}
-            </Button>
+                <Button
+                  variant="brand"
+                  type="submit"
+                  className="w-100 mb-3"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Spinner animation="border" size="sm" className="me-2" />
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Reset Instructions'
+                  )}
+                </Button>
 
-            <div className="text-center">
-              <Link to="/login" className="text-brand">
-                Back to Sign In
-              </Link>
-            </div>
-          </Form>
+                <div className="text-center">
+                  <Link to="/login" className="text-brand">
+                    Back to Sign In
+                  </Link>
+                </div>
+              </Form>
+            )}
+          </Formik>
 
-          <p className="text-center text-secondary mt-4">
+          <p className="text-center text-secondary mt-4 mb-0">
             Need help? Contact your administrator
           </p>
         </div>
