@@ -1,0 +1,36 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Fetch secrets from AWS Secrets Manager
+        - aws secretsmanager get-secret-value --secret-id ${AWS_BRANCH}/fl-admin-portal --region eu-west-2 --query SecretString --output text > /tmp/secrets.json
+        # Fail fast if GitHub Packages token is absent
+        - if [ -z "${GITHUB_TOKEN}" ]; then echo "GITHUB_TOKEN is missing; add it as an Amplify environment variable" && exit 1; else echo "GITHUB_TOKEN detected (length=${#GITHUB_TOKEN})"; fi
+        # Create .env file for Vite with VITE_ variables (GITHUB_TOKEN is already set as Amplify env var)
+        - python3 -c "import json; secrets = json.load(open('/tmp/secrets.json')); vite_vars = {k:v for k,v in secrets.items() if k.startswith('VITE_')}; sentry = {'SENTRY_AUTH_TOKEN':secrets.get('SENTRY_AUTH_TOKEN','')} if 'SENTRY_AUTH_TOKEN' in secrets else {}; all_vars = {**vite_vars, **sentry}; open('web-react-ts/.env','w').write('\n'.join([f'{k}={v}' for k,v in all_vars.items()]))"
+        # Configure GitHub Packages authentication (GITHUB_TOKEN already exported by Amplify)
+        - echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
+        - echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
+        - echo "always-auth=true" >> .npmrc
+        # Install root dependencies
+        - npm install
+        # Install frontend dependencies with GitHub token
+        - cd web-react-ts && cp ../.npmrc . && npm install && cd ..
+    build:
+      commands:
+        # Generate build version metadata
+        - cd web-react-ts
+        - npm run generate-build-version
+        # Build the React app with TypeScript
+        - npm run build
+        - cd ..
+  artifacts:
+    # Output directory for Vite build
+    baseDirectory: web-react-ts/dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - web-react-ts/node_modules/**/*
