@@ -1,77 +1,50 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { ErrorMessage } from 'formik'
+import { useMutation } from '@apollo/client'
 import TextError from './TextError/TextError'
 import { Container } from 'react-bootstrap'
-import { MemberContext } from 'contexts/MemberContext'
 import './Formik.css'
 import { FormikComponentProps } from './formik-types'
 import { MoonLoader } from 'react-spinners'
+import { uploadToS3 } from 'utils/s3Upload'
+import { GENERATE_PRESIGNED_URL } from './ImageUploadGQL'
 
 interface FileUploadProps extends FormikComponentProps {
-  uploadPreset?: string
-  tags?: 'facial-recognition'
   initialValue?: string
   setFieldValue: (field: string, value: any) => void
 }
 
 const FileUpload = (props: FileUploadProps) => {
-  const {
-    label,
-    name,
-    initialValue,
-    setFieldValue,
-    uploadPreset,
-    placeholder,
-    tags,
-    ...rest
-  } = props
-  const { currentUser } = useContext(MemberContext)
+  const { label, name, initialValue, setFieldValue, placeholder, ...rest } =
+    props
   const [loading, setLoading] = useState(false)
   const [file, setFile] = useState('')
+  const [uploadError, setUploadError] = useState('')
 
-  // genereate a random 12 character string
-  const randomString = (length: number) => {
-    const chars =
-      '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    let result = ''
-    for (let i = length; i > 0; --i)
-      result += chars[Math.floor(Math.random() * 62)]
-    return result
-  }
+  const [generatePresignedUrl] = useMutation(GENERATE_PRESIGNED_URL)
 
   const uploadFile = async (e: any) => {
     const files = e.target.files
-    const date = new Date().toISOString().slice(0, 10)
-    const username = `${currentUser.firstName.toLowerCase()}-${currentUser.lastName.toLowerCase()}`
-    let filename = `${username}-${currentUser.id}/${date}_${
-      files[0]?.name ?? randomString(12)
-    }`
-    filename = filename.replace(/\s/g, '-')
-    filename = filename.replace(/~/g, '-')
-    filename = filename.replace(/[^a-zA-Z0-9-_]/g, '')
+    const selectedFile = files[0]
 
-    const data = new FormData()
-    data.append('file', files[0])
-    data.append('upload_preset', uploadPreset || '')
-    data.append('public_id', filename)
-
-    data.append('tags', tags || '')
+    if (!selectedFile) {
+      setUploadError('Please select a file to upload')
+      return
+    }
 
     setLoading(true)
+    setUploadError('')
 
-    const res = await fetch(
-      'https://api.cloudinary.com/v1_1/firstlovecenter/file/upload',
-      {
-        method: 'POST',
-        body: data,
-      }
-    )
-    const file = await res.json()
-
-    setFile(file.secure_url)
-
-    setFieldValue(`${name}`, file.secure_url)
-    setLoading(false)
+    try {
+      const fileUrl = await uploadToS3(selectedFile, generatePresignedUrl)
+      setFile(fileUrl)
+      setFieldValue(`${name}`, fileUrl)
+    } catch (error: any) {
+      console.error('Upload error:', error)
+      setUploadError(error.message || 'Failed to upload file')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -84,6 +57,11 @@ const FileUpload = (props: FileUploadProps) => {
       {loading && (
         <Container className="my-3 img-container d-flex justify-content-center align-items-center border">
           <MoonLoader color="gray" />
+        </Container>
+      )}
+      {uploadError && (
+        <Container className="text-center text-danger my-2">
+          <small>{uploadError}</small>
         </Container>
       )}
       {(file || initialValue) && !loading && (

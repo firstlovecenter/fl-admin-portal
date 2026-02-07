@@ -9,10 +9,7 @@ import {
 import { ChurchLevel, Member, Role, ServantType } from '../utils/types'
 import { sendSingleEmail } from '../utils/notify'
 import { Context } from '../utils/neo4j-types'
-import {
-  matchChurchQuery,
-  getChurchDataQuery,
-} from '../cypher/resolver-cypher'
+import { matchChurchQuery, getChurchDataQuery } from '../cypher/resolver-cypher'
 import {
   assignRoles,
   churchInEmail,
@@ -196,7 +193,9 @@ export const RemoveServant = async (
     servant,
     'You Have Been Removed!',
     undefined,
-    `<p>Hi ${servant.firstName} ${servant.lastName},<br/><br/>We regret to inform you that you have been removed as the <b>${churchType} ${servantType}</b> for <b>${churchInEmail(
+    `<p>Hi ${servant.firstName} ${
+      servant.lastName
+    },<br/><br/>We regret to inform you that you have been removed as the <b>${churchType} ${servantType}</b> for <b>${churchInEmail(
       church
     )}</b>.<br/><br/>We however encourage you to strive to serve the Lord faithfully. Do not be discouraged by this removal.</p>${
       texts.html.subscription

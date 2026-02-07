@@ -5,7 +5,7 @@ on:
     branches:
       - deploy # Adjust to your deployment branch
     paths:
-      - 'web-react-ts/**' # Only trigger when frontend files change
+      - "web-react-ts/**" # Only trigger when frontend files change
 
 jobs:
   deploy:
@@ -65,15 +65,9 @@ jobs:
         run: npm run build
         working-directory: ./web-react-ts
         env:
+          VITE_AUTH_API_URL: ${{ env.VITE_AUTH_API_URL }}
           VITE_SYNAGO_GRAPHQL_URI: ${{ env.VITE_SYNAGO_GRAPHQL_URI }}
-          VITE_CLOUDINARY_BANKING: ${{ env.VITE_CLOUDINARY_BANKING }}
-          VITE_CLOUDINARY_BUSSING: ${{ env.VITE_CLOUDINARY_BUSSING }}
-          VITE_CLOUDINARY_BUS_MOBILISATION: ${{ env.VITE_CLOUDINARY_BUS_MOBILISATION }}
-          VITE_CLOUDINARY_MEMBERS: ${{ env.VITE_CLOUDINARY_MEMBERS }}
-          VITE_CLOUDINARY_SERVICES: ${{ env.VITE_CLOUDINARY_SERVICES }}
-          VITE_CLOUDINARY_TREASURERS: ${{ env.VITE_CLOUDINARY_TREASURERS }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ env.VITE_GOOGLE_MAPS_API_KEY }}
-          SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
 
       - name: Generate build version
         run: node generate-build-version.js
@@ -109,7 +103,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: '🚀 FLC Admin Portal Frontend Deployment'
+          SLACK_TITLE: "🚀 FLC Admin Portal Frontend Deployment"
           SLACK_MESSAGE: |
             Commit: ${{ github.event.head_commit.message }}
             ${{ job.status == 'success' && 'rocket Woohoo The FLC Admin Portal frontend has been deployed faster than a squirrel on espresso squirrel Time to celebrate tada' || 'fire Oh no The deployment crashed harder than a penguin on roller skates penguin Lets fix it team wrench' }}
