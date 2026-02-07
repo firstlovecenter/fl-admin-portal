@@ -36,7 +36,10 @@ const FileUpload = (props: FileUploadProps) => {
     setUploadError('')
 
     try {
-      const fileUrl = await uploadToS3(selectedFile, generatePresignedUrl)
+      const fileUrl = await uploadToS3({
+        file: selectedFile,
+        generatePresignedUrl,
+      })
       setFile(fileUrl)
       setFieldValue(`${name}`, fileUrl)
     } catch (error: any) {
