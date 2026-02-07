@@ -52,6 +52,7 @@ type Member {
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
+      RETURN COUNT(DISTINCT members) AS memberCount
       """
       columnName: "memberCount"
     )
