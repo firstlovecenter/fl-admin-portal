@@ -116,7 +116,7 @@ exports.handler = async (event, context) => {
 
   // Determine CORS origin based on environment
   const allowedOrigin =
-    SECRETS?.ENVIRONMENT === 'dev'
+    SECRETS?.ENVIRONMENT === 'development'
       ? 'https://dev-synago.firstlovecenter.com'
       : 'https://admin.firstlovecenter.com'
 
