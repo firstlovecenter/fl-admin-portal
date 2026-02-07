@@ -345,14 +345,29 @@ export function getStoredUser(): AuthUser | null {
 }
 
 /**
- * Clear all authentication data
+ * Clear all authentication data from localStorage and sessionStorage
  */
 export function clearAuth(): void {
   if (typeof window === 'undefined') return
 
+  // Clear localStorage
   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
   localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
   localStorage.removeItem(STORAGE_KEYS.USER)
+
+  // Clear sessionStorage
+  sessionStorage.removeItem('token')
+  sessionStorage.removeItem('currentUser')
+  sessionStorage.removeItem('denominationId')
+  sessionStorage.removeItem('oversightId')
+  sessionStorage.removeItem('campusId')
+  sessionStorage.removeItem('streamId')
+  sessionStorage.removeItem('councilId')
+  sessionStorage.removeItem('governorshipId')
+  sessionStorage.removeItem('hubId')
+  sessionStorage.removeItem('hubCouncilId')
+  sessionStorage.removeItem('ministryId')
+  sessionStorage.removeItem('creativeArtsId')
 }
 
 /**

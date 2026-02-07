@@ -1,18 +1,26 @@
 import React, { useEffect, useState } from 'react'
-import { getAccessToken } from './lib/auth-service'
+import { getAccessToken, getStoredUser } from './lib/auth-service'
 import SimpleLogin from './pages/auth/SimpleLogin'
 
 const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
   useEffect(() => {
-    // Check if user has a valid token
+    // Check if user has stored auth data
+    // If token is expired, AuthContext will handle refresh
     const token = getAccessToken()
-    console.log('🔍 SimpleApp: Checking auth token', {
+    const user = getStoredUser()
+
+    console.log('🔍 SimpleApp: Checking stored auth', {
       hasToken: !!token,
-      token: token?.substring(0, 20) + '...',
+      hasUser: !!user,
     })
-    setIsAuthenticated(!!token)
+
+    // User is authenticated if they have both token and user data
+    // AuthContext will handle token refresh if needed
+    const authenticated = !!token && !!user
+
+    setIsAuthenticated(authenticated)
   }, [])
 
   if (isAuthenticated === null) {

@@ -76,8 +76,8 @@ const AppWithApollo = () => {
   })
 
   const authLink = setContext((_, { headers }) => {
-    // get the authentication token from local storage if it exists
-    const token = sessionStorage.getItem('token') || accessToken
+    // get the authentication token from memory or localStorage
+    const token = accessToken
 
     // return the headers to the context so httpLink can read them
     return {

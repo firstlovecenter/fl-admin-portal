@@ -72,8 +72,7 @@ const AuthButton = (props: AuthButtonPropsType) => {
                 !mobileFullSize && `d-none d-md-inline`
               }`}
               onClick={() => {
-                logout()
-                sessionStorage.removeItem('currentUser')
+                logout() // clearAuth() handles all storage cleanup
                 togglePopup()
               }}
             >
