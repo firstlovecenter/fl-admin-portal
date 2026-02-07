@@ -22,6 +22,7 @@ let isInitialized = false
 let driver
 let server
 let schema
+let SECRETS
 
 const initializeServer = async () => {
   if (isInitialized) return
@@ -30,7 +31,7 @@ const initializeServer = async () => {
 
   try {
     // Load secrets
-    const SECRETS = await loadSecrets()
+    SECRETS = await loadSecrets()
 
     // Configure encrypted connection if required
     const uri =
@@ -110,8 +111,17 @@ const initializeServer = async () => {
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false
 
+  // Initialize on cold start to ensure SECRETS are loaded
+  await initializeServer()
+
+  // Determine CORS origin based on environment
+  const allowedOrigin =
+    SECRETS?.ENVIRONMENT === 'dev'
+      ? 'https://dev-synago.firstlovecenter.com'
+      : 'https://admin.firstlovecenter.com'
+
   const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://admin.firstlovecenter.com',
+    'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
@@ -127,9 +137,6 @@ exports.handler = async (event, context) => {
         body: null,
       }
     }
-
-    // Initialize on cold start
-    await initializeServer()
 
     // Parse and validate request
     const { body, headers, httpMethod } = event
