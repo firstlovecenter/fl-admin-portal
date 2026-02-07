@@ -129,7 +129,6 @@ const startServer = async () => {
           executionContext: driver,
           jwt: {
             ...jwt,
-            roles: jwt?.['https://flcadmin.netlify.app/roles'],
           },
         }
       },

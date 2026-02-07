@@ -164,7 +164,7 @@ exports.handler = async (event, context) => {
         console.log('[Auth] Decoding JWT token')
         jwt = jwtDecode(cleanToken)
         console.log('[Auth] JWT decoded successfully', {
-          roles: jwt?.['https://flcadmin.netlify.app/roles'],
+          roles: jwt?.roles,
         })
       } catch (error) {
         console.error('[Auth] Invalid token:', error)
@@ -177,7 +177,6 @@ exports.handler = async (event, context) => {
       executionContext: driver,
       jwt: {
         ...jwt,
-        roles: jwt?.['https://flcadmin.netlify.app/roles'],
       },
     }
 
