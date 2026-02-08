@@ -51,7 +51,7 @@ const initializeServer = async () => {
 
     // Verify connection
     await driver.verifyConnectivity()
-    console.log('[Neo4j] Connection established successfully')
+    console.log('[Neo4j] Connection established successfully!')
 
     const neoSchema = new Neo4jGraphQL({
       typeDefs,
