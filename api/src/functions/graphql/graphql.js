@@ -136,9 +136,6 @@ exports.handler = async (event, context) => {
 
     // Handle OPTIONS preflight request
     if (
-      
-     
-    
       event.httpMethod === 'OPTIONS' ||
       event.requestContext?.http?.method === 'OPTIONS'
     ) {
@@ -151,8 +148,7 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Parse and valid
-     ate request (handle both API Gateway v1 and v2 formats)
+    // Parse and validate request (handle both API Gateway v1 and v2 formats)
     const body = event.body || event.rawBody || event.requestBody
     const headers = event.headers || {}
     const httpMethod =
