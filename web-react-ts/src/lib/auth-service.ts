@@ -77,6 +77,109 @@ class AuthServiceError extends Error {
 }
 
 /**
+ * Storage keys for tokens
+ */
+export const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'fl_access_token',
+  REFRESH_TOKEN: 'fl_refresh_token',
+  USER: 'fl_user',
+} as const
+
+/**
+ * Get stored access token
+ */
+export function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+}
+
+/**
+ * Get stored refresh token
+ */
+export function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null
+  const token = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+
+  return token
+}
+
+/**
+ * Get stored user data
+ */
+export function getStoredUser(): AuthUser | null {
+  if (typeof window === 'undefined') return null
+
+  const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+  if (!userStr) return null
+
+  try {
+    return JSON.parse(userStr)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Store authentication data
+ */
+export function storeAuth(data: AuthTokens): void {
+  if (typeof window === 'undefined') return
+
+  // eslint-disable-next-line no-console
+  console.log('🔐 Storing auth tokens', {
+    hasAccessToken: !!data.accessToken,
+    hasRefreshToken: !!data.refreshToken,
+    user: data.user,
+  })
+
+  localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken)
+  localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken)
+  localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user))
+}
+
+/**
+ * Clear all authentication data from localStorage and sessionStorage
+ */
+export function clearAuth(): void {
+  if (typeof window === 'undefined') return
+
+  // Clear localStorage
+  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
+  localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+  localStorage.removeItem(STORAGE_KEYS.USER)
+
+  // Clear sessionStorage
+  sessionStorage.removeItem('token')
+  sessionStorage.removeItem('currentUser')
+  sessionStorage.removeItem('denominationId')
+  sessionStorage.removeItem('oversightId')
+  sessionStorage.removeItem('campusId')
+  sessionStorage.removeItem('streamId')
+  sessionStorage.removeItem('councilId')
+  sessionStorage.removeItem('governorshipId')
+  sessionStorage.removeItem('hubId')
+  sessionStorage.removeItem('hubCouncilId')
+  sessionStorage.removeItem('ministryId')
+  sessionStorage.removeItem('creativeArtsId')
+}
+
+/**
+ * Check if access token is expired (with 5 minute buffer)
+ */
+export function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const exp = payload.exp * 1000 // Convert to milliseconds
+    const now = Date.now()
+    const bufferTime = 5 * 60 * 1000 // 5 minutes
+
+    return now >= exp - bufferTime
+  } catch {
+    return true
+  }
+}
+
+/**
  * Sign up a new user
  */
 export async function signup(data: SignupData): Promise<AuthTokens> {
@@ -164,9 +267,22 @@ export async function refreshToken(
     throw new AuthServiceError('No refresh token available', 401, undefined)
   }
 
+  // Get the current (possibly expired) access token
+  const currentAccessToken = getAccessToken()
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+
+  // Include the access token in Authorization header if available
+  // Many auth services require this for security
+  if (currentAccessToken) {
+    headers['Authorization'] = `Bearer ${currentAccessToken}`
+  }
+
   const response = await fetch(`${AUTH_API_URL}/auth/refresh-token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ refreshToken }),
   })
 
@@ -281,109 +397,6 @@ export async function deleteAccount(
   }
 
   return result
-}
-
-/**
- * Storage keys for tokens
- */
-export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'fl_access_token',
-  REFRESH_TOKEN: 'fl_refresh_token',
-  USER: 'fl_user',
-} as const
-
-/**
- * Store authentication data
- */
-export function storeAuth(data: AuthTokens): void {
-  if (typeof window === 'undefined') return
-
-  // eslint-disable-next-line no-console
-  console.log('🔐 Storing auth tokens', {
-    hasAccessToken: !!data.accessToken,
-    hasRefreshToken: !!data.refreshToken,
-    user: data.user,
-  })
-
-  localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken)
-  localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken)
-  localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user))
-}
-
-/**
- * Get stored access token
- */
-export function getAccessToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
-}
-
-/**
- * Get stored refresh token
- */
-export function getRefreshToken(): string | null {
-  if (typeof window === 'undefined') return null
-  const token = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
-
-  return token
-}
-
-/**
- * Get stored user data
- */
-export function getStoredUser(): AuthUser | null {
-  if (typeof window === 'undefined') return null
-
-  const userStr = localStorage.getItem(STORAGE_KEYS.USER)
-  if (!userStr) return null
-
-  try {
-    return JSON.parse(userStr)
-  } catch {
-    return null
-  }
-}
-
-/**
- * Clear all authentication data from localStorage and sessionStorage
- */
-export function clearAuth(): void {
-  if (typeof window === 'undefined') return
-
-  // Clear localStorage
-  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
-  localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
-  localStorage.removeItem(STORAGE_KEYS.USER)
-
-  // Clear sessionStorage
-  sessionStorage.removeItem('token')
-  sessionStorage.removeItem('currentUser')
-  sessionStorage.removeItem('denominationId')
-  sessionStorage.removeItem('oversightId')
-  sessionStorage.removeItem('campusId')
-  sessionStorage.removeItem('streamId')
-  sessionStorage.removeItem('councilId')
-  sessionStorage.removeItem('governorshipId')
-  sessionStorage.removeItem('hubId')
-  sessionStorage.removeItem('hubCouncilId')
-  sessionStorage.removeItem('ministryId')
-  sessionStorage.removeItem('creativeArtsId')
-}
-
-/**
- * Check if access token is expired (with 5 minute buffer)
- */
-export function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    const exp = payload.exp * 1000 // Convert to milliseconds
-    const now = Date.now()
-    const bufferTime = 5 * 60 * 1000 // 5 minutes
-
-    return now >= exp - bufferTime
-  } catch {
-    return true
-  }
 }
 
 export { AuthServiceError }

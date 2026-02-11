@@ -9,12 +9,9 @@ const resolvers = require('./resolvers/resolvers').default
 
 // Constants
 const DEFAULT_NEO4J_CONFIG = {
-  maxConnectionPoolSize: 50,
+  encrypted: 'ENCRYPTION_ON',
+  trust: 'TRUST_ALL_CERTIFICATES',
   connectionTimeout: 30000,
-  logging: {
-    level: 'info',
-    logger: (level, message) => console.log(`[Neo4j ${level}] ${message}`),
-  },
 }
 
 // Server state
@@ -33,18 +30,15 @@ const initializeServer = async () => {
     // Load secrets
     SECRETS = await loadSecrets()
 
-    // Configure encrypted connection if required
-    const uri =
-      SECRETS.NEO4J_ENCRYPTED === 'true'
-        ? SECRETS.NEO4J_URI.replace('bolt://', 'neo4j+s://')
-        : SECRETS.NEO4J_URI
-
     console.log(
-      `[Neo4j] Connecting to ${uri.replace(/:\/\/.*@/, '://[REDACTED]@')}`
+      `[Neo4j] Connecting to ${SECRETS.NEO4J_URI.replace(
+        /:\/\/.*@/,
+        '://[REDACTED]@'
+      )}`
     )
 
     driver = neo4j.driver(
-      uri,
+      SECRETS.NEO4J_URI || 'bolt://localhost:7687/',
       neo4j.auth.basic(SECRETS.NEO4J_USER, SECRETS.NEO4J_PASSWORD),
       DEFAULT_NEO4J_CONFIG
     )

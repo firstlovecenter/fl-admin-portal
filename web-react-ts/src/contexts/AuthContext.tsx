@@ -58,12 +58,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = getStoredUser()
 
     if (!currentRefreshToken) {
-      console.warn('No refresh token available for refresh')
+      console.warn('❌ No refresh token available for refresh')
       return null
     }
 
+    console.log('🔄 Attempting to refresh access token...')
+
     try {
       const response = await apiRefreshToken(currentRefreshToken)
+      console.log('✅ Token refresh successful')
+
       storeAuth({
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
@@ -71,14 +75,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
 
       return response.accessToken
-    } catch (error) {
-      console.error('Failed to refresh token:', error)
+    } catch (error: any) {
+      console.error('❌ Failed to refresh token:', {
+        message: error.message,
+        statusCode: error.statusCode,
+        requestId: error.requestId,
+        error,
+      })
 
-      // Only clear auth if refresh token is actually expired
-      // If it's a network error or other issue, keep the current session
-      if (isTokenExpired(currentRefreshToken)) {
+      // Only clear auth if refresh token is actually expired or invalid (401)
+      // If it's a network error (5xx) or other issue, keep the current session
+      if (error.statusCode === 401 || isTokenExpired(currentRefreshToken)) {
+        console.warn('🔒 Refresh token expired or invalid, clearing auth')
         clearAuth()
         setUser(null)
+      } else {
+        console.warn(
+          '⚠️ Network or server error during refresh, keeping session'
+        )
       }
 
       return null
