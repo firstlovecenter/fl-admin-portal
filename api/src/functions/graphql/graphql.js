@@ -114,11 +114,17 @@ exports.handler = async (event, context) => {
   // Initialize on cold start to ensure SECRETS are loaded
   await initializeServer()
 
+  // Log secrets for debugging
+  console.log('[CORS Debug] SECRETS.ENVIRONMENT:', SECRETS?.ENVIRONMENT)
+  console.log('[CORS Debug] All SECRETS keys:', Object.keys(SECRETS || {}))
+
   // Determine CORS origin based on environment
   const allowedOrigin =
     SECRETS?.ENVIRONMENT === 'development'
       ? 'https://dev-synago.firstlovecenter.com'
       : 'https://admin.firstlovecenter.com'
+
+  console.log('[CORS Debug] Allowed origin:', allowedOrigin)
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': allowedOrigin,
