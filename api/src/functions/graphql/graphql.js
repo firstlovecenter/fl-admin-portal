@@ -136,7 +136,7 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Initialize on cold start
+    // Initialize on cold start please
     await initializeServer()
 
     // Parse and validate request
