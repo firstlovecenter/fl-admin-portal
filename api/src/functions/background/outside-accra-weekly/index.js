@@ -178,7 +178,7 @@ const handler = async () => {
       data: {
         to: ['john-dag@firstlovecenter.com', 'globalfirstlove@gmail.com'],
         subject: `Outside Accra Weekly Report - Week ${weekNumber} (${reportDate})`,
-        message: `
+        html: `
             <h2>Outside Accra Weekly Report</h2>
             <p>Week ${weekNumber} - ${reportDate}</p>
             <p>Please find attached the weekly report for Outside Accra campuses.</p>
