@@ -153,15 +153,7 @@ const handler = async () => {
       },
     }).catch((error) => {
       console.error(
-        
-       
-       
-      
-        'SMS sending f
-        ailed:',
-          
-        
-      
+        'SMS sending failed:',
         error.response?.status,
         error.response?.data
       )
@@ -207,15 +199,7 @@ const handler = async () => {
           `,
         attachments: [
           {
-        
-       
-       
-      
-            filename: 
-        `outside-accra-week-${weekNumber}-${reportDate}.csv`,
-          
-        
-      
+            filename: `outside-accra-week-${weekNumber}-${reportDate}.csv`,
             content: csvBase64,
             encoding: 'base64',
           },
