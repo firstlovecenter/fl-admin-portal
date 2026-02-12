@@ -153,7 +153,10 @@ const handler = async () => {
           'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
         },
         data: {
-          recipient: 'latisha.forson@firstlovecenter.com',
+          recipient: [
+            'john-dag@firstlovecenter.com',
+            'globalfirstlove@gmail.com',
+          ],
           subject: `Outside Accra Weekly Report - Week ${weekNumber} (${reportDate})`,
           message: `
             <h2>Outside Accra Weekly Report</h2>
