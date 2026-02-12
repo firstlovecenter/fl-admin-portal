@@ -117,6 +117,7 @@ const handler = async () => {
       })
       .split('T')[0]
 
+    // Write to Google Sheets
     await Promise.all([
       writeToGsheet(campusListData, outsideAccraSheet, 'A:D'),
       writeToGsheet(campusAttendanceIncomeData, outsideAccraSheet, 'E:F'),
@@ -125,40 +126,70 @@ const handler = async () => {
       writeToGsheet(fellowshipAttendanceIncomeData, outsideAccraSheet, 'J:K'),
       writeToGsheet(weekdayBankedIncomeData, outsideAccraSheet, 'L:L'),
       writeToGsheet(weekdayNotBankedIncomeData, outsideAccraSheet, 'M:M'),
-      // Send notification SMS
-      axios({
-        method: 'post',
-        baseURL: notifyBaseURL,
-        url: '/send-sms',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
-        },
-        data: {
-          recipient: [
-            '233592219407', // Latisha
-            '233263995059', // Abigail Tay
-          ],
-          sender: 'FLC Admin',
-          message: `WEEK ${weekNumber} UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${reportDate}`,
-        },
-      }),
-      // Send email with CSV attachment
-      axios({
-        method: 'post',
-        baseURL: notifyBaseURL,
-        url: '/send-email',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
-        },
-        data: {
-          recipient: [
-            'john-dag@firstlovecenter.com',
-            'globalfirstlove@gmail.com',
-          ],
-          subject: `Outside Accra Weekly Report - Week ${weekNumber} (${reportDate})`,
-          message: `
+    ]).catch((error) => {
+      throw new Error(
+        `Error writing to google sheet\n${error.message}\n${error.stack}`
+      )
+    })
+
+    console.log('[Google Sheets] All sheets updated successfully')
+
+    // Send notification SMS
+    await axios({
+      method: 'post',
+      baseURL: notifyBaseURL,
+      url: '/send-sms',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
+      },
+      data: {
+        recipient: [
+          '233592219407', // Latisha
+          '233263995059', // Abigail Tay
+        ],
+        sender: 'FLC Admin',
+        message: `WEEK ${weekNumber} UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${reportDate}`,
+      },
+    }).catch((error) => {
+      console.error(
+        
+       
+       
+      
+        'SMS sending f
+        ailed:',
+          
+        
+      
+        error.response?.status,
+        error.response?.data
+      )
+      throw new Error(
+        `SMS sending failed (${error.response?.status}): ${JSON.stringify(
+          error.response?.data
+        )}`
+      )
+    })
+
+    console.log('[SMS] Notification sent successfully')
+
+    // Send email with CSV attachment
+    await axios({
+      method: 'post',
+      baseURL: notifyBaseURL,
+      url: '/send-email',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
+      },
+      data: {
+        recipient: [
+          'john-dag@firstlovecenter.com',
+          'globalfirstlove@gmail.com',
+        ],
+        subject: `Outside Accra Weekly Report - Week ${weekNumber} (${reportDate})`,
+        message: `
             <h2>Outside Accra Weekly Report</h2>
             <p>Week ${weekNumber} - ${reportDate}</p>
             <p>Please find attached the weekly report for Outside Accra campuses.</p>
@@ -174,20 +205,36 @@ const handler = async () => {
             </ul>
             <p>The Google Sheets have also been updated successfully.</p>
           `,
-          attachments: [
-            {
-              filename: `outside-accra-week-${weekNumber}-${reportDate}.csv`,
-              content: csvBase64,
-              encoding: 'base64',
-            },
-          ],
-        },
-      }),
-    ]).catch((error) => {
+        attachments: [
+          {
+        
+       
+       
+      
+            filename: 
+        `outside-accra-week-${weekNumber}-${reportDate}.csv`,
+          
+        
+      
+            content: csvBase64,
+            encoding: 'base64',
+          },
+        ],
+      },
+    }).catch((error) => {
+      console.error(
+        'Email sending failed:',
+        error.response?.status,
+        error.response?.data
+      )
       throw new Error(
-        `Error writing to google sheet or sending notifications\n${error.message}\n${error.stack}`
+        `Email sending failed (${error.response?.status}): ${JSON.stringify(
+          error.response?.data
+        )}`
       )
     })
+
+    console.log('[Email] Notification sent successfully')
 
     // Close the Neo4j driver when done
     await driver.close()
