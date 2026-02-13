@@ -177,22 +177,254 @@ const handler = async () => {
       },
       data: {
         to: ['john-dag@firstlovecenter.com', 'globalfirstlove@gmail.com'],
-        subject: `Outside Accra Weekly Report - Week ${weekNumber} (${reportDate})`,
+        subject: `Outside Accra Weekly Report - Week ${weekNumber}, ${reportDate}`,
         html: `
-            <h2>Outside Accra Weekly Report</h2>
-            <p>Week ${weekNumber} - ${reportDate}</p>
-            <p>Please find attached the weekly report for Outside Accra campuses.</p>
-            <p>This report includes:</p>
-            <ul>
-              <li>Campus List</li>
-              <li>Campus Attendance & Income</li>
-              <li>Campus Banked Income</li>
-              <li>Campus Not Banked Income</li>
-              <li>Fellowship Attendance & Income</li>
-              <li>Weekday Banked Income</li>
-              <li>Weekday Not Banked Income</li>
-            </ul>
-            <p>The Google Sheets have also been updated successfully.</p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
+  </head>
+  <body
+    style='background-color:rgb(243,244,246);font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";padding-top:40px;padding-bottom:40px'>
+    <!--$-->
+    <div
+      style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0"
+      data-skip-in-text="true">
+      Outside Accra Weekly Report - Week ${weekNumber}, ${reportDate}
+      <div>
+         ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿
+      </div>
+    </div>
+    <table
+      align="center"
+      width="100%"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="background-color:rgb(255,255,255);margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px;padding-top:32px;padding-bottom:32px;max-width:600px;border-radius:8px">
+      <tbody>
+        <tr style="width:100%">
+          <td>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center;margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <div
+                      class="from-red-600 to-red-900"
+                      style="background-image:linear-gradient(to right, rgb(220,38,38), rgb(127,29,29));padding-left:24px;padding-right:24px;padding-top:20px;padding-bottom:20px;border-radius:8px;margin-bottom:24px">
+                      <h1
+                        style="color:rgb(255,255,255);font-size:28px;font-weight:700;margin:0px;line-height:1.2">
+                        Outside Accra Weekly Report
+                      </h1>
+                    </div>
+                    <p
+                      style="color:rgb(153,27,27);font-size:18px;font-weight:600;margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Week ${weekNumber} - ${reportDate}
+                    </p>
+                    <p
+                      style="color:rgb(75,85,99);font-size:14px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      Business Intelligence Summary
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <hr
+              style="border-color:rgb(229,231,235);margin-top:24px;margin-bottom:24px;width:100%;border:none;border-top:1px solid #eaeaea" />
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <p
+                      style="color:rgb(55,65,81);font-size:16px;line-height:1.6;margin-bottom:16px;margin-top:16px">
+                      Please find attached the comprehensive weekly report for
+                      Outside Accra campuses. This report provides detailed
+                      insights into campus performance and financial metrics.
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <h1
+                      style="color:rgb(153,27,27);font-size:20px;font-weight:700;margin-bottom:16px;border-left-width:4px;border-color:rgb(220,38,38);padding-left:16px">
+                      Report Contents
+                    </h1>
+                    <div
+                      style="background-color:rgb(249,250,251);border-radius:8px;padding:20px">
+                      <div style="display:grid;gap:12px">
+                        <div style="display:flex;align-items:flex-start">
+                          <div
+                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
+                          <p
+                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                            <span style="font-weight:600;color:rgb(153,27,27)"
+                              >Campus List</span
+                            >
+                            - Complete directory of all active campuses
+                          </p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start">
+                          <div
+                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
+                          <p
+                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                            <span style="font-weight:600;color:rgb(153,27,27)"
+                              >Campus Attendance &amp; Income</span
+                            >
+                            - Weekly performance metrics
+                          </p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start">
+                          <div
+                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
+                          <p
+                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                            <span style="font-weight:600;color:rgb(153,27,27)"
+                              >Campus Banked Income</span
+                            >
+                            - Processed financial transactions
+                          </p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start">
+                          <div
+                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
+                          <p
+                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                            <span style="font-weight:600;color:rgb(153,27,27)"
+                              >Campus Not Banked Income</span
+                            >
+                            - Pending financial transactions
+                          </p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start">
+                          <div
+                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
+                          <p
+                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                            <span style="font-weight:600;color:rgb(153,27,27)"
+                              >Fellowship Attendance &amp; Income</span
+                            >
+                            - Community engagement data
+                          </p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start">
+                          <div
+                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
+                          <p
+                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                            <span style="font-weight:600;color:rgb(153,27,27)"
+                              >Weekday Banked Income</span
+                            >
+                            - Processed weekday transactions
+                          </p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start">
+                          <div
+                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
+                          <p
+                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                            <span style="font-weight:600;color:rgb(153,27,27)"
+                              >Weekday Not Banked Income</span
+                            >
+                            - Pending weekday transactions
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="margin-bottom:32px">
+              <tbody>
+                <tr>
+                  <td>
+                    <div
+                      style="background-color:rgb(240,253,244);border-left-width:4px;border-color:rgb(34,197,94);padding:16px;border-top-right-radius:8px;border-bottom-right-radius:8px">
+                      <p
+                        style="color:rgb(22,101,52);font-size:15px;font-weight:600;margin:0px;margin-bottom:4px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                        ✓ System Update Complete
+                      </p>
+                      <p
+                        style="color:rgb(21,128,61);font-size:14px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                        The Google Sheets have been updated successfully with
+                        the latest data.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <hr
+              style="border-color:rgb(229,231,235);margin-top:24px;margin-bottom:24px;width:100%;border:none;border-top:1px solid #eaeaea" />
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center">
+              <tbody>
+                <tr>
+                  <td>
+                    <p
+                      style="color:rgb(107,114,128);font-size:12px;margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      First Love Church - Outside Accra Business Intelligence Team
+                    </p>
+                    <p
+                      style="color:rgb(107,114,128);font-size:12px;margin:0px;margin-bottom:16px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
+                      Accra, Ghana
+                    </p>
+                    <p
+                      style="color:rgb(156,163,175);font-size:11px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
+                      © 2026 First Love Church. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!--/$-->
+  </body>
+</html>
           `,
         attachments: [
           {
