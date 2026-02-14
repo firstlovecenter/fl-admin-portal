@@ -6,6 +6,11 @@ frontend:
         - |
           set -euo pipefail
 
+          # Ensure jq exists (required for parsing SECRET_JSON)
+          if ! command -v jq >/dev/null 2>&1; then
+            (apt-get update && apt-get install -y jq) || (yum install -y jq)
+          fi
+
           # Track start time for duration calculation
           BUILD_START_TIME=$(date +%s)
 
@@ -24,7 +29,7 @@ frontend:
           fi
 
           # Build Amplify console URL
-          AMPLIFY_URL="https://console.aws.amazon.com/amplify/home?region=${AWS_REGION:-us-east-1}#/${AWS_APP_ID:-}"
+          AMPLIFY_URL="https://console.aws.amazon.com/amplify/home?region=${AWS_REGION:-eu-west-2}#/${AWS_APP_ID:-unknown}/${AWS_BRANCH:-unknown}"
 
           slack_notify () {
             local phase="$1"
@@ -33,7 +38,7 @@ frontend:
             
             # If SLACK_WEBHOOK isn't set, don't fail the build
             if [ -z "${SLACK_WEBHOOK:-}" ]; then
-              echo "SLACK_WEBHOOK not set; skipping Slack notification."
+              echo "ERROR: SLACK_WEBHOOK is not set (Amplify App settings → Environment variables)."
               return 0
             fi
 
@@ -164,7 +169,7 @@ frontend:
           fi
 
           # Build Amplify console URL
-          AMPLIFY_URL="https://console.aws.amazon.com/amplify/home?region=${AWS_REGION:-us-east-1}#/${AWS_APP_ID:-}"
+          AMPLIFY_URL="https://console.aws.amazon.com/amplify/home?region=${AWS_REGION:-eu-west-2}#/${AWS_APP_ID:-unknown}/${AWS_BRANCH:-unknown}"
 
           slack_notify () {
             local phase="$1"
@@ -172,7 +177,7 @@ frontend:
             local extra_context="${3:-}"
             
             if [ -z "${SLACK_WEBHOOK:-}" ]; then
-              echo "SLACK_WEBHOOK not set; skipping Slack notification."
+              echo "ERROR: SLACK_WEBHOOK is not set (Amplify App settings → Environment variables)."
               return 0
             fi
 
