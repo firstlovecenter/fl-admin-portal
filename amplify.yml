@@ -120,8 +120,15 @@ frontend:
           # Fetch secrets from AWS Secrets Manager
           export SECRET_JSON="$(aws secretsmanager get-secret-value --secret-id "$SECRET_ID" --query SecretString --output text)"
 
-          # Export all secrets as environment variables (safe-ish if values have no spaces)
-          export $(echo "$SECRET_JSON" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]')
+          # Export secrets as environment variables safely (handles spaces/newlines)
+          while IFS=$'\t' read -r k v; do
+            # Only export valid shell identifiers (skip weird keys)
+            if [[ "$k" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+              export "$k=$v"
+            else
+              echo "Skipping invalid env key: $k"
+            fi
+          done < <(echo "$SECRET_JSON" | jq -r 'to_entries[] | "\(.key)\t\(.value|tostring)"')
 
           # Create .env file for Vite with all VITE_ prefixed variables
           echo "$SECRET_JSON" | jq -r '
