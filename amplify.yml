@@ -8,7 +8,7 @@ frontend:
 
           # Ensure jq exists (required for parsing SECRET_JSON)
           if ! command -v jq >/dev/null 2>&1; then
-            (apt-get update && apt-get install -y jq) || (yum install -y jq)
+            sudo yum -y install jq
           fi
 
           # Track start time for duration calculation
