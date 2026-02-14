@@ -6,26 +6,101 @@ frontend:
         - |
           set -euo pipefail
 
+          # Track start time for duration calculation
+          BUILD_START_TIME=$(date +%s)
+
+          # Get git commit details
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s" "${AWS_COMMIT_ID:-HEAD}" 2>/dev/null || echo "Unknown commit message")
+          COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an" "${AWS_COMMIT_ID:-HEAD}" 2>/dev/null || echo "Unknown author")
+          COMMIT_SHORT="${AWS_COMMIT_ID:0:7}"
+
+          # Determine environment
+          if [ "${AWS_BRANCH:-}" = "main" ]; then
+            ENV_LABEL="🔴 Production"
+            ENV_COLOR="#FF0000"
+          else
+            ENV_LABEL="🟡 Development"
+            ENV_COLOR="#FFA500"
+          fi
+
+          # Build Amplify console URL
+          AMPLIFY_URL="https://console.aws.amazon.com/amplify/home?region=${AWS_REGION:-us-east-1}#/${AWS_APP_ID:-}"
+
           slack_notify () {
-            local text="$1"
+            local phase="$1"
+            local status="$2"
+            local extra_context="${3:-}"
+            
             # If SLACK_WEBHOOK isn't set, don't fail the build
             if [ -z "${SLACK_WEBHOOK:-}" ]; then
               echo "SLACK_WEBHOOK not set; skipping Slack notification."
               return 0
             fi
+
+            # Calculate duration if this is an end notification
+            local duration_text=""
+            if [ "$status" != "started" ]; then
+              local end_time=$(date +%s)
+              local duration=$((end_time - BUILD_START_TIME))
+              local minutes=$((duration / 60))
+              local seconds=$((duration % 60))
+              if [ $minutes -gt 0 ]; then
+                duration_text="*Duration:* ${minutes}m ${seconds}s"
+              else
+                duration_text="*Duration:* ${seconds}s"
+              fi
+            fi
+
+            # Set icon and color based on status
+            local icon color title_text
+            case "$status" in
+              started)
+                icon="🚀"
+                color="#36a64f"
+                title_text="Build Started - ${phase}"
+                ;;
+              success)
+                icon="✅"
+                color="#36a64f"
+                title_text="Build Completed - ${phase}"
+                ;;
+              failed)
+                icon="❌"
+                color="#ff0000"
+                title_text="Build Failed - ${phase}"
+                ;;
+            esac
+
+            # Build optional sections
+            local duration_block=""
+            if [ -n "$duration_text" ]; then
+              duration_block=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${duration_text}\"}}"
+            fi
+
+            local context_block=""
+            if [ -n "$extra_context" ]; then
+              context_block=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${extra_context}\"}}"
+            fi
+
+            local timestamp=$(date '+%Y-%m-%d %H:%M:%S %Z')
+
+            # Build the Slack message with blocks for better formatting
+            local payload="{\"blocks\":[{\"type\":\"header\",\"text\":{\"type\":\"plain_text\",\"text\":\"${icon} ${title_text}\",\"emoji\":true}},{\"type\":\"section\",\"fields\":[{\"type\":\"mrkdwn\",\"text\":\"*App:*\\nFirst Love Admin Portal\"},{\"type\":\"mrkdwn\",\"text\":\"*Environment:*\\n${ENV_LABEL}\"},{\"type\":\"mrkdwn\",\"text\":\"*Branch:*\\n\\\`${AWS_BRANCH:-unknown}\\\`\"},{\"type\":\"mrkdwn\",\"text\":\"*Commit:*\\n<https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}|\\\`${COMMIT_SHORT}\\\`>\"}]},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Commit Message:* ${COMMIT_MSG}\\n*Author:* ${COMMIT_AUTHOR}\"}}${duration_block}${context_block},{\"type\":\"actions\",\"elements\":[{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View in Amplify Console\",\"emoji\":true},\"url\":\"${AMPLIFY_URL}\",\"style\":\"primary\"},{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View Commit\",\"emoji\":true},\"url\":\"https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}\"}]},{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"⏰ ${timestamp}\"}]}]}"
+
             curl -sS -X POST -H 'Content-type: application/json' \
-              --data "{\"text\":\"${text}\"}" \
+              --data "$payload" \
               "$SLACK_WEBHOOK" >/dev/null || true
           }
 
           on_error () {
             local exit_code="$?"
-            slack_notify "❌ Amplify *preBuild* FAILED\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}\n• Exit: ${exit_code}"
+            local error_details="*Exit Code:* ${exit_code}\n*Phase:* preBuild\n*Possible Issues:*\n• Dependencies installation failed\n• AWS Secrets Manager access issue\n• GitHub Packages authentication problem"
+            slack_notify "preBuild" "failed" "$error_details"
             exit "$exit_code"
           }
           trap on_error ERR
 
-          slack_notify "🚀 Amplify *preBuild* started\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}"
+          slack_notify "preBuild" "started"
 
           # Pick the right secret name based on branch
           # main -> prod/fl-admin-portal
@@ -64,39 +139,114 @@ frontend:
           npm install
           cd ..
 
-          slack_notify "✅ Amplify *preBuild* completed\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}"
+          slack_notify "preBuild" "success"
 
     build:
       commands:
         - |
           set -euo pipefail
 
+          # Track start time for duration calculation
+          BUILD_START_TIME=$(date +%s)
+
+          # Get git commit details
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s" "${AWS_COMMIT_ID:-HEAD}" 2>/dev/null || echo "Unknown commit message")
+          COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an" "${AWS_COMMIT_ID:-HEAD}" 2>/dev/null || echo "Unknown author")
+          COMMIT_SHORT="${AWS_COMMIT_ID:0:7}"
+
+          # Determine environment
+          if [ "${AWS_BRANCH:-}" = "main" ]; then
+            ENV_LABEL="🔴 Production"
+            ENV_COLOR="#FF0000"
+          else
+            ENV_LABEL="🟡 Development"
+            ENV_COLOR="#FFA500"
+          fi
+
+          # Build Amplify console URL
+          AMPLIFY_URL="https://console.aws.amazon.com/amplify/home?region=${AWS_REGION:-us-east-1}#/${AWS_APP_ID:-}"
+
           slack_notify () {
-            local text="$1"
+            local phase="$1"
+            local status="$2"
+            local extra_context="${3:-}"
+            
             if [ -z "${SLACK_WEBHOOK:-}" ]; then
               echo "SLACK_WEBHOOK not set; skipping Slack notification."
               return 0
             fi
+
+            # Calculate duration if this is an end notification
+            local duration_text=""
+            if [ "$status" != "started" ]; then
+              local end_time=$(date +%s)
+              local duration=$((end_time - BUILD_START_TIME))
+              local minutes=$((duration / 60))
+              local seconds=$((duration % 60))
+              if [ $minutes -gt 0 ]; then
+                duration_text="*Duration:* ${minutes}m ${seconds}s"
+              else
+                duration_text="*Duration:* ${seconds}s"
+              fi
+            fi
+
+            # Set icon and color based on status
+            local icon color title_text
+            case "$status" in
+              started)
+                icon="🛠️"
+                color="#36a64f"
+                title_text="Build Phase Started"
+                ;;
+              success)
+                icon="🎉"
+                color="#36a64f"
+                title_text="Build Phase Completed - Deployment Ready"
+                ;;
+              failed)
+                icon="❌"
+                color="#ff0000"
+                title_text="Build Phase Failed"
+                ;;
+            esac
+
+            # Build optional sections
+            local duration_block=""
+            if [ -n "$duration_text" ]; then
+              duration_block=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${duration_text}\"}}"
+            fi
+
+            local context_block=""
+            if [ -n "$extra_context" ]; then
+              context_block=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${extra_context}\"}}"
+            fi
+
+            local timestamp=$(date '+%Y-%m-%d %H:%M:%S %Z')
+
+            # Build the Slack message with blocks for better formatting
+            local payload="{\"blocks\":[{\"type\":\"header\",\"text\":{\"type\":\"plain_text\",\"text\":\"${icon} ${title_text}\",\"emoji\":true}},{\"type\":\"section\",\"fields\":[{\"type\":\"mrkdwn\",\"text\":\"*App:*\\nFirst Love Admin Portal\"},{\"type\":\"mrkdwn\",\"text\":\"*Environment:*\\n${ENV_LABEL}\"},{\"type\":\"mrkdwn\",\"text\":\"*Branch:*\\n\\\`${AWS_BRANCH:-unknown}\\\`\"},{\"type\":\"mrkdwn\",\"text\":\"*Commit:*\\n<https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}|\\\`${COMMIT_SHORT}\\\`>\"}]},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Commit Message:* ${COMMIT_MSG}\\n*Author:* ${COMMIT_AUTHOR}\"}}${duration_block}${context_block},{\"type\":\"actions\",\"elements\":[{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View in Amplify Console\",\"emoji\":true},\"url\":\"${AMPLIFY_URL}\",\"style\":\"primary\"},{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View Commit\",\"emoji\":true},\"url\":\"https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}\"}]},{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"⏰ ${timestamp}\"}]}]}"
+
             curl -sS -X POST -H 'Content-type: application/json' \
-              --data "{\"text\":\"${text}\"}" \
+              --data "$payload" \
               "$SLACK_WEBHOOK" >/dev/null || true
           }
 
           on_error () {
             local exit_code="$?"
-            slack_notify "❌ Amplify *build* FAILED\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}\n• Exit: ${exit_code}"
+            local error_details="*Exit Code:* ${exit_code}\n*Phase:* build\n*Possible Issues:*\n• TypeScript compilation errors\n• Vite build configuration issues\n• Missing environment variables\n• Build artifacts generation failed"
+            slack_notify "build" "failed" "$error_details"
             exit "$exit_code"
           }
           trap on_error ERR
 
-          slack_notify "🛠️ Amplify *build* started\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}"
+          slack_notify "build" "started"
 
           cd web-react-ts
           npm run generate-build-version
           npm run build
           cd ..
 
-          slack_notify "🎉 Amplify *build* SUCCESS\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}"
+          slack_notify "build" "success"
 
   artifacts:
     baseDirectory: web-react-ts/dist
