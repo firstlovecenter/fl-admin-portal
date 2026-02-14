@@ -37,10 +37,6 @@ const AppWithApollo = () => {
     try {
       console.log('🎫 AppWithApollo: Fetching access token...')
       const token = await getAccessTokenSilently()
-      console.log(
-        '✅ AppWithApollo: Got token',
-        token?.substring(0, 20) + '...'
-      )
 
       setAccessToken(token)
       sessionStorage.setItem('token', token)
