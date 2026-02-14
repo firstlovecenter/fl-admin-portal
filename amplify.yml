@@ -3,33 +3,106 @@ frontend:
   phases:
     preBuild:
       commands:
-        # Fetch secrets from AWS Secrets Manager
-        - aws secretsmanager get-secret-value --secret-id ${AWS_BRANCH}/fl-admin-portal --region eu-west-2 --query SecretString --output text > /tmp/secrets.json
-        # Fail fast if GitHub Packages token is absent
-        - if [ -z "${GITHUB_TOKEN}" ]; then echo "GITHUB_TOKEN is missing; add it as an Amplify environment variable" && exit 1; else echo "GITHUB_TOKEN detected (length=${#GITHUB_TOKEN})"; fi
-        # Create .env file for Vite with VITE_ variables (GITHUB_TOKEN is already set as Amplify env var)
-        - python3 -c "import json; secrets = json.load(open('/tmp/secrets.json')); vite_vars = {k:v for k,v in secrets.items() if k.startswith('VITE_')}; sentry = {'SENTRY_AUTH_TOKEN':secrets.get('SENTRY_AUTH_TOKEN','')} if 'SENTRY_AUTH_TOKEN' in secrets else {}; all_vars = {**vite_vars, **sentry}; open('web-react-ts/.env','w').write('\n'.join([f'{k}={v}' for k,v in all_vars.items()]))"
-        # Configure GitHub Packages authentication (GITHUB_TOKEN already exported by Amplify)
-        - echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
-        - echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
-        - echo "always-auth=true" >> .npmrc
-        # Install root dependencies
-        - npm install
-        # Install frontend dependencies with GitHub token
-        - cd web-react-ts && cp ../.npmrc . && npm install && cd ..
+        - |
+          set -euo pipefail
+
+          slack_notify () {
+            local text="$1"
+            # If SLACK_WEBHOOK isn't set, don't fail the build
+            if [ -z "${SLACK_WEBHOOK:-}" ]; then
+              echo "SLACK_WEBHOOK not set; skipping Slack notification."
+              return 0
+            fi
+            curl -sS -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"${text}\"}" \
+              "$SLACK_WEBHOOK" >/dev/null || true
+          }
+
+          on_error () {
+            local exit_code="$?"
+            slack_notify "❌ Amplify *preBuild* FAILED\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}\n• Exit: ${exit_code}"
+            exit "$exit_code"
+          }
+          trap on_error ERR
+
+          slack_notify "🚀 Amplify *preBuild* started\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}"
+
+          # Pick the right secret name based on branch
+          # main -> prod/fl-admin-portal
+          # anything else -> dev/fl-admin-portal
+          if [ "${AWS_BRANCH:-}" = "main" ]; then
+            SECRET_ID="prod/fl-admin-portal"
+          else
+            SECRET_ID="dev/fl-admin-portal"
+          fi
+          echo "Using Secrets Manager secret: $SECRET_ID (branch: ${AWS_BRANCH:-unknown})"
+
+          # Fetch secrets from AWS Secrets Manager
+          export SECRET_JSON="$(aws secretsmanager get-secret-value --secret-id "$SECRET_ID" --query SecretString --output text)"
+
+          # Export all secrets as environment variables (safe-ish if values have no spaces)
+          export $(echo "$SECRET_JSON" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]')
+
+          # Create .env file for Vite with all VITE_ prefixed variables
+          echo "$SECRET_JSON" | jq -r '
+            to_entries
+            | map(select(.key | startswith("VITE_")))
+            | map("\(.key)=\(.value|tostring)")
+            | .[]
+          ' > web-react-ts/.env
+
+          # Configure GitHub Packages authentication for @jaedag scope
+          echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
+
+          # Install root dependencies
+          npm install
+
+          # Install frontend dependencies with GitHub token
+          cd web-react-ts
+          cp ../.npmrc .
+          npm install
+          cd ..
+
+          slack_notify "✅ Amplify *preBuild* completed\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}"
+
     build:
       commands:
-        # Generate build version metadata
-        - cd web-react-ts
-        - npm run generate-build-version
-        # Build the React app with TypeScript
-        - npm run build
-        - cd ..
+        - |
+          set -euo pipefail
+
+          slack_notify () {
+            local text="$1"
+            if [ -z "${SLACK_WEBHOOK:-}" ]; then
+              echo "SLACK_WEBHOOK not set; skipping Slack notification."
+              return 0
+            fi
+            curl -sS -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"${text}\"}" \
+              "$SLACK_WEBHOOK" >/dev/null || true
+          }
+
+          on_error () {
+            local exit_code="$?"
+            slack_notify "❌ Amplify *build* FAILED\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}\n• Exit: ${exit_code}"
+            exit "$exit_code"
+          }
+          trap on_error ERR
+
+          slack_notify "🛠️ Amplify *build* started\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}"
+
+          cd web-react-ts
+          npm run generate-build-version
+          npm run build
+          cd ..
+
+          slack_notify "🎉 Amplify *build* SUCCESS\n• App: fl-admin-portal\n• Branch: ${AWS_BRANCH:-unknown}\n• Commit: ${AWS_COMMIT_ID:-unknown}"
+
   artifacts:
-    # Output directory for Vite build
     baseDirectory: web-react-ts/dist
     files:
       - '**/*'
+
   cache:
     paths:
       - node_modules/**/*
