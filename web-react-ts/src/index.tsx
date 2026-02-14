@@ -20,12 +20,6 @@ import './color-theme.css'
 import './index.css'
 import ReactGA from 'react-ga4'
 import {
-  useLocation,
-  useNavigationType,
-  createRoutesFromChildren,
-  matchRoutes,
-} from 'react-router-dom'
-import {
   SnackbarKey,
   SnackbarProvider,
   closeSnackbar,
@@ -33,7 +27,6 @@ import {
 } from 'notistack'
 import { Button, Card } from 'react-bootstrap'
 import SplashSreen from 'pages/splash-screen/SplashSreen'
-import Login from 'components/Login'
 import AppWithContext from 'AppWithContext'
 
 const AppWithApollo = () => {
