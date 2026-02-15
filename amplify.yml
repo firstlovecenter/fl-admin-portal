@@ -4,7 +4,7 @@ frontend:
     preBuild:
       commands:
         - |
-          set -euo pipefail
+          set -eo pipefail
 
           # Ensure jq exists (required for parsing SECRET_JSON)
           if ! command -v jq >/dev/null 2>&1; then
@@ -156,7 +156,7 @@ frontend:
     build:
       commands:
         - |
-          set -euo pipefail
+          set -eo pipefail
 
           # Track start time for duration calculation
           BUILD_START_TIME=$(date +%s)
