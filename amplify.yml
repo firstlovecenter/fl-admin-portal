@@ -54,47 +54,94 @@ frontend:
               local minutes=$((duration / 60))
               local seconds=$((duration % 60))
               if [ $minutes -gt 0 ]; then
-                duration_text="*Duration:* ${minutes}m ${seconds}s"
+                duration_text="Duration: ${minutes}m ${seconds}s"
               else
-                duration_text="*Duration:* ${seconds}s"
+                duration_text="Duration: ${seconds}s"
               fi
             fi
 
             # Set icon and color based on status
-            local icon color title_text
+            local icon title_text
             case "$status" in
               started)
                 icon="🚀"
-                color="#36a64f"
                 title_text="Build Started - ${phase}"
                 ;;
               success)
                 icon="✅"
-                color="#36a64f"
                 title_text="Build Completed - ${phase}"
                 ;;
               failed)
                 icon="❌"
-                color="#ff0000"
                 title_text="Build Failed - ${phase}"
                 ;;
             esac
 
-            # Build optional sections
-            local duration_block=""
-            if [ -n "$duration_text" ]; then
-              duration_block=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${duration_text}\"}}"
-            fi
-
-            local context_block=""
-            if [ -n "$extra_context" ]; then
-              context_block=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${extra_context}\"}}"
-            fi
-
             local timestamp=$(date '+%Y-%m-%d %H:%M:%S %Z')
+            
+            # Sanitize commit message for JSON (remove quotes and newlines)
+            local safe_commit_msg=$(echo "$COMMIT_MSG" | tr -d '"\n\r' | cut -c1-100)
+            local safe_commit_author=$(echo "$COMMIT_AUTHOR" | tr -d '"\n\r')
 
-            # Build the Slack message with blocks for better formatting
-            local payload="{\"blocks\":[{\"type\":\"header\",\"text\":{\"type\":\"plain_text\",\"text\":\"${icon} ${title_text}\",\"emoji\":true}},{\"type\":\"section\",\"fields\":[{\"type\":\"mrkdwn\",\"text\":\"*App:*\\nFirst Love Admin Portal\"},{\"type\":\"mrkdwn\",\"text\":\"*Environment:*\\n${ENV_LABEL}\"},{\"type\":\"mrkdwn\",\"text\":\"*Branch:*\\n\\\`${AWS_BRANCH:-unknown}\\\`\"},{\"type\":\"mrkdwn\",\"text\":\"*Commit:*\\n<https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}|\\\`${COMMIT_SHORT}\\\`>\"}]},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Commit Message:* ${COMMIT_MSG}\\n*Author:* ${COMMIT_AUTHOR}\"}}${duration_block}${context_block},{\"type\":\"actions\",\"elements\":[{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View in Amplify Console\",\"emoji\":true},\"url\":\"${AMPLIFY_URL}\",\"style\":\"primary\"},{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View Commit\",\"emoji\":true},\"url\":\"https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}\"}]},{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"⏰ ${timestamp}\"}]}]}"
+            # Build JSON payload using jq for proper escaping
+            local payload
+            payload=$(jq -n \
+              --arg icon "$icon" \
+              --arg title "$title_text" \
+              --arg env_label "$ENV_LABEL" \
+              --arg branch "${AWS_BRANCH:-unknown}" \
+              --arg commit_id "${AWS_COMMIT_ID:-unknown}" \
+              --arg commit_short "$COMMIT_SHORT" \
+              --arg commit_msg "$safe_commit_msg" \
+              --arg commit_author "$safe_commit_author" \
+              --arg amplify_url "$AMPLIFY_URL" \
+              --arg timestamp "$timestamp" \
+              --arg duration "$duration_text" \
+              --arg extra "$extra_context" \
+              '{
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": "\($icon) \($title)", "emoji": true}
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {"type": "mrkdwn", "text": "*App:*\nFirst Love Admin Portal"},
+                      {"type": "mrkdwn", "text": "*Environment:*\n\($env_label)"},
+                      {"type": "mrkdwn", "text": "*Branch:*\n`\($branch)`"},
+                      {"type": "mrkdwn", "text": "*Commit:*\n<https://github.com/firstlovecenter/fl-admin-portal/commit/\($commit_id)|`\($commit_short)`>"}
+                    ]
+                  },
+                  {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "*Commit Message:* \($commit_msg)\n*Author:* \($commit_author)"}
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View in Amplify Console", "emoji": true},
+                        "url": $amplify_url,
+                        "style": "primary"
+                      },
+                      {
+                        "type": "button", 
+                        "text": {"type": "plain_text", "text": "View Commit", "emoji": true},
+                        "url": "https://github.com/firstlovecenter/fl-admin-portal/commit/\($commit_id)"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "context",
+                    "elements": [{"type": "mrkdwn", "text": "⏰ \($timestamp)"}]
+                  }
+                ]
+              }
+              | if $duration != "" then .blocks += [{"type": "section", "text": {"type": "mrkdwn", "text": "*\($duration)*"}}] else . end
+              | if $extra != "" then .blocks += [{"type": "section", "text": {"type": "mrkdwn", "text": $extra}}] else . end
+              ')
 
             echo "[SLACK] Sending to Slack..."
             local response
@@ -207,47 +254,94 @@ frontend:
               local minutes=$((duration / 60))
               local seconds=$((duration % 60))
               if [ $minutes -gt 0 ]; then
-                duration_text="*Duration:* ${minutes}m ${seconds}s"
+                duration_text="Duration: ${minutes}m ${seconds}s"
               else
-                duration_text="*Duration:* ${seconds}s"
+                duration_text="Duration: ${seconds}s"
               fi
             fi
 
-            # Set icon and color based on status
-            local icon color title_text
+            # Set icon based on status
+            local icon title_text
             case "$status" in
               started)
                 icon="🛠️"
-                color="#36a64f"
                 title_text="Build Phase Started"
                 ;;
               success)
                 icon="🎉"
-                color="#36a64f"
                 title_text="Build Phase Completed - Deployment Ready"
                 ;;
               failed)
                 icon="❌"
-                color="#ff0000"
                 title_text="Build Phase Failed"
                 ;;
             esac
 
-            # Build optional sections
-            local duration_block=""
-            if [ -n "$duration_text" ]; then
-              duration_block=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${duration_text}\"}}"
-            fi
-
-            local context_block=""
-            if [ -n "$extra_context" ]; then
-              context_block=",{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${extra_context}\"}}"
-            fi
-
             local timestamp=$(date '+%Y-%m-%d %H:%M:%S %Z')
+            
+            # Sanitize commit message for JSON (remove quotes and newlines)
+            local safe_commit_msg=$(echo "$COMMIT_MSG" | tr -d '"\n\r' | cut -c1-100)
+            local safe_commit_author=$(echo "$COMMIT_AUTHOR" | tr -d '"\n\r')
 
-            # Build the Slack message with blocks for better formatting
-            local payload="{\"blocks\":[{\"type\":\"header\",\"text\":{\"type\":\"plain_text\",\"text\":\"${icon} ${title_text}\",\"emoji\":true}},{\"type\":\"section\",\"fields\":[{\"type\":\"mrkdwn\",\"text\":\"*App:*\\nFirst Love Admin Portal\"},{\"type\":\"mrkdwn\",\"text\":\"*Environment:*\\n${ENV_LABEL}\"},{\"type\":\"mrkdwn\",\"text\":\"*Branch:*\\n\\\`${AWS_BRANCH:-unknown}\\\`\"},{\"type\":\"mrkdwn\",\"text\":\"*Commit:*\\n<https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}|\\\`${COMMIT_SHORT}\\\`>\"}]},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Commit Message:* ${COMMIT_MSG}\\n*Author:* ${COMMIT_AUTHOR}\"}}${duration_block}${context_block},{\"type\":\"actions\",\"elements\":[{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View in Amplify Console\",\"emoji\":true},\"url\":\"${AMPLIFY_URL}\",\"style\":\"primary\"},{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View Commit\",\"emoji\":true},\"url\":\"https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}\"}]},{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"⏰ ${timestamp}\"}]}]}"
+            # Build JSON payload using jq for proper escaping
+            local payload
+            payload=$(jq -n \
+              --arg icon "$icon" \
+              --arg title "$title_text" \
+              --arg env_label "$ENV_LABEL" \
+              --arg branch "${AWS_BRANCH:-unknown}" \
+              --arg commit_id "${AWS_COMMIT_ID:-unknown}" \
+              --arg commit_short "$COMMIT_SHORT" \
+              --arg commit_msg "$safe_commit_msg" \
+              --arg commit_author "$safe_commit_author" \
+              --arg amplify_url "$AMPLIFY_URL" \
+              --arg timestamp "$timestamp" \
+              --arg duration "$duration_text" \
+              --arg extra "$extra_context" \
+              '{
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": "\($icon) \($title)", "emoji": true}
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {"type": "mrkdwn", "text": "*App:*\nFirst Love Admin Portal"},
+                      {"type": "mrkdwn", "text": "*Environment:*\n\($env_label)"},
+                      {"type": "mrkdwn", "text": "*Branch:*\n`\($branch)`"},
+                      {"type": "mrkdwn", "text": "*Commit:*\n<https://github.com/firstlovecenter/fl-admin-portal/commit/\($commit_id)|`\($commit_short)`>"}
+                    ]
+                  },
+                  {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "*Commit Message:* \($commit_msg)\n*Author:* \($commit_author)"}
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View in Amplify Console", "emoji": true},
+                        "url": $amplify_url,
+                        "style": "primary"
+                      },
+                      {
+                        "type": "button", 
+                        "text": {"type": "plain_text", "text": "View Commit", "emoji": true},
+                        "url": "https://github.com/firstlovecenter/fl-admin-portal/commit/\($commit_id)"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "context",
+                    "elements": [{"type": "mrkdwn", "text": "⏰ \($timestamp)"}]
+                  }
+                ]
+              }
+              | if $duration != "" then .blocks += [{"type": "section", "text": {"type": "mrkdwn", "text": "*\($duration)*"}}] else . end
+              | if $extra != "" then .blocks += [{"type": "section", "text": {"type": "mrkdwn", "text": $extra}}] else . end
+              ')
 
             echo "[SLACK] Sending to Slack..."
             local response
