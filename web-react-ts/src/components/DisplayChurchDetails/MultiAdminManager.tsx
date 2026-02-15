@@ -92,7 +92,7 @@ const MultiAdminManager: React.FC<MultiAdminManagerProps> = ({
   const onSubmit = async (values: FormOptions, onSubmitProps: FormikHelpers<FormOptions>) => {
     // Check if admin is already in the list
     if (admins.some((admin) => admin.id === values.adminSelect)) {
-      alertMsg('This person is already an admin for this ' + churchType)
+      alertMsg(`This person is already an admin for this ${churchType}`)
       return
     }
 
@@ -112,7 +112,7 @@ const MultiAdminManager: React.FC<MultiAdminManagerProps> = ({
       onSubmitProps.resetForm()
     } catch (e: any) {
       if (e.message?.includes('already an admin')) {
-        alertMsg('This person is already an admin for this ' + churchType)
+        alertMsg(`This person is already an admin for this ${churchType}`)
       } else {
         throwToSentry('Error adding admin', e)
       }
@@ -174,9 +174,18 @@ const MultiAdminManager: React.FC<MultiAdminManagerProps> = ({
             className="d-flex align-items-center justify-content-between mb-2"
           >
             <div
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 clickCard(admin)
                 navigate('/member/displaydetails')
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  clickCard(admin)
+                  navigate('/member/displaydetails')
+                }
               }}
               style={{ cursor: 'pointer' }}
             >
