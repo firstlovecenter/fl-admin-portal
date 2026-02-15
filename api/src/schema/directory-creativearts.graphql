@@ -156,6 +156,7 @@ type CreativeArts {
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   campus: Campus @relationship(type: "HAS_MINISTRY", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
@@ -262,6 +263,7 @@ type Ministry {
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   stream: Stream @relationship(type: "HAS_MINISTRY", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
