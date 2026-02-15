@@ -1,8 +1,6 @@
 {
   "version": "8.1.2",
   "devDependencies": {
-    "@commitlint/cli": "^19.3.0",
-    "@commitlint/config-conventional": "^19.2.2",
     "@types/react-test-renderer": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.18.0",
@@ -22,7 +20,6 @@
     "execa": "^4.0.2",
     "generate-changelog": "^1.8.0",
     "gitops-secrets": "^0.0.5",
-    "husky": "^9.1.4",
     "lint-staged": "^15.2.8",
     "prettier": "^2.0.5",
     "prettier-eslint-cli": "^5.0.0",
@@ -38,14 +35,8 @@
     "release:major": "npm run clean:git && node scripts/release.js major",
     "release:minor": "npm run clean:git && node scripts/release.js minor",
     "release:patch": "npm run clean:git && node scripts/release.js patch",
-    "prepare": "husky install",
     "aggregate-bacenta": "node ./api/src/scripts/run-bacenta-aggregation.js",
     "aggregate-bacenta:help": "node ./api/src/scripts/run-bacenta-aggregation.js --help"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "*.{ts,tsx}": [
