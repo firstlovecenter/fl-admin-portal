@@ -474,6 +474,7 @@ type Denomination implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -600,6 +601,7 @@ type Oversight implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -722,6 +724,7 @@ type Campus implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -862,6 +865,7 @@ type Stream implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -974,6 +978,7 @@ type Council implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -1078,6 +1083,7 @@ type Governorship implements Church {
   council: Council @relationship(type: "HAS", direction: IN)
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -1163,6 +1169,7 @@ type Bacenta implements Church {
     )
   leader: Member @relationship(type: "LEADS", direction: IN)
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
   deputyLeader: Member @relationship(type: "DEPUTY_LEADS", direction: IN)
 
   governorship: Governorship @relationship(type: "HAS", direction: IN)

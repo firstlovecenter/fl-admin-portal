@@ -205,3 +205,128 @@ export const RemoveServant = async (
   await session.close()
   return parseForCacheRemoval(servant, church, verb, servantLower)
 }
+
+export const AddAdmin = async (
+  context: Context,
+  args: any,
+  permittedRoles: Role[],
+  churchType: ChurchLevel
+) => {
+  const terms = formatting(churchType, 'Admin')
+  const { servantLower, churchLower, memberQuery } = terms
+
+  const setUpArgs = {
+    permittedRoles,
+    context,
+    churchLower,
+    servantLower,
+    args,
+  }
+  setUp(setUpArgs)
+
+  const session = context.executionContext.session()
+
+  const churchRes = await session.run(matchChurchQuery, {
+    id: args[`${churchLower}Id`],
+  })
+
+  const church = rearrangeCypherObject(churchRes)
+  const churchNameInEmail = `${church.name} ${church.type}`
+
+  const adminRes = await session.run(memberQuery, {
+    id: args.adminId,
+  })
+
+  const admin = rearrangeCypherObject(adminRes)
+  servantValidation(admin)
+
+  // Use the new addChurchAdmin query to add without removing others
+  const servantCypher = await import('./servant-cypher')
+  await session.executeWrite((tx) =>
+    tx.run(servantCypher.default.addChurchAdmin, {
+      adminId: admin.id,
+      churchId: church.id,
+      auth_id: admin.auth_id,
+      jwt: context.jwt,
+    })
+  )
+
+  // Send notification email
+  await sendSingleEmail(
+    admin,
+    'FL Servanthood Status Update',
+    undefined,
+    `<p>Hi ${admin.firstName} ${admin.lastName},<br/><br/>You have been added as an additional <b>${churchType} Admin</b> for <b>${churchNameInEmail}</b>.<br/><br/>Please go through ${texts.html.helpdesk} to find guidelines and instructions as well as answers to questions you may have</p>${texts.html.subscription}`
+  )
+
+  await session.close()
+
+  return admin
+}
+
+export const DeleteAdmin = async (
+  context: Context,
+  args: any,
+  permittedRoles: Role[],
+  churchType: ChurchLevel
+) => {
+  const terms = formatting(churchType, 'Admin')
+  const { servantLower, churchLower, memberQuery } = terms
+
+  const setUpArgs = {
+    permittedRoles,
+    context,
+    churchLower,
+    servantLower,
+    args,
+  }
+  setUp(setUpArgs)
+
+  const session = context.executionContext.session()
+
+  const churchRes = await session.run(matchChurchQuery, {
+    id: args[`${churchLower}Id`],
+  })
+
+  const church = rearrangeCypherObject(churchRes)
+
+  const adminRes = await session.run(memberQuery, {
+    id: args.adminId,
+  })
+
+  const admin = rearrangeCypherObject(adminRes)
+  servantValidation(admin)
+
+  // Use the new deleteChurchAdmin query that checks for multiple admins
+  const servantCypher = await import('./servant-cypher')
+  const result = await session.executeWrite((tx) =>
+    tx.run(servantCypher.default.deleteChurchAdmin, {
+      adminId: admin.id,
+      churchId: church.id,
+      jwt: context.jwt,
+    })
+  )
+
+  // Check if deletion was successful (will be empty if it was the last admin)
+  if (result.records.length === 0) {
+    await session.close()
+    throw new Error('Cannot remove the last admin from this church level')
+  }
+
+  // Send removal notification
+  await sendSingleEmail(
+    admin,
+    'Admin Role Removed',
+    undefined,
+    `<p>Hi ${admin.firstName} ${
+      admin.lastName
+    },<br/><br/>You have been removed as an <b>${churchType} Admin</b> for <b>${churchInEmail(
+      church
+    )}</b>.<br/><br/>We however encourage you to continue serving the Lord faithfully.</p>${
+      texts.html.subscription
+    }`
+  )
+
+  await session.close()
+  return admin
+}
