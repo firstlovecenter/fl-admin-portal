@@ -25,7 +25,7 @@ const servantCypher = {
    WHERE church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight OR church:Denomination 
    OR church:CreativeArts OR church:Ministry
-   MATCH (church)<-[oldAdmin:IS_ADMIN_FOR]-(admin:Member)
+   MATCH (admin:Member {id: $adminId})-[oldAdmin:IS_ADMIN_FOR]->(church)
    DELETE oldAdmin
    
    
