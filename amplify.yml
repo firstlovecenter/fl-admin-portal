@@ -21,7 +21,7 @@ frontend:
 
           # Determine environment
           if [ "${AWS_BRANCH:-}" = "main" ]; then
-            ENV_LABEL="🔴 Production"
+            ENV_LABEL="🚀 Production"
             ENV_COLOR="#FF0000"
           else
             ENV_LABEL="🟡 Development"
