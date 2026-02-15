@@ -159,8 +159,6 @@ frontend:
           }
           trap on_error ERR
 
-          slack_notify "preBuild" "started"
-
           # Pick the right secret name based on branch
           # main -> prod/fl-admin-portal
           # anything else -> dev/fl-admin-portal
@@ -204,8 +202,6 @@ frontend:
           cp ../.npmrc .
           npm install
           cd ..
-
-          slack_notify "preBuild" "success"
 
     build:
       commands:
@@ -358,8 +354,6 @@ frontend:
             exit "$exit_code"
           }
           trap on_error ERR
-
-          slack_notify "build" "started"
 
           cd web-react-ts
           npm run generate-build-version
