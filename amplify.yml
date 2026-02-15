@@ -36,11 +36,15 @@ frontend:
             local status="$2"
             local extra_context="${3:-}"
             
+            echo "[SLACK] Attempting to send notification: phase=$phase, status=$status"
+            
             # If SLACK_WEBHOOK isn't set, don't fail the build
             if [ -z "${SLACK_WEBHOOK:-}" ]; then
-              echo "ERROR: SLACK_WEBHOOK is not set (Amplify App settings → Environment variables)."
+              echo "[SLACK] ERROR: SLACK_WEBHOOK is not set (Amplify App settings → Environment variables)."
               return 0
             fi
+            
+            echo "[SLACK] SLACK_WEBHOOK is set (length: ${#SLACK_WEBHOOK} chars)"
 
             # Calculate duration if this is an end notification
             local duration_text=""
@@ -92,9 +96,12 @@ frontend:
             # Build the Slack message with blocks for better formatting
             local payload="{\"blocks\":[{\"type\":\"header\",\"text\":{\"type\":\"plain_text\",\"text\":\"${icon} ${title_text}\",\"emoji\":true}},{\"type\":\"section\",\"fields\":[{\"type\":\"mrkdwn\",\"text\":\"*App:*\\nFirst Love Admin Portal\"},{\"type\":\"mrkdwn\",\"text\":\"*Environment:*\\n${ENV_LABEL}\"},{\"type\":\"mrkdwn\",\"text\":\"*Branch:*\\n\\\`${AWS_BRANCH:-unknown}\\\`\"},{\"type\":\"mrkdwn\",\"text\":\"*Commit:*\\n<https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}|\\\`${COMMIT_SHORT}\\\`>\"}]},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Commit Message:* ${COMMIT_MSG}\\n*Author:* ${COMMIT_AUTHOR}\"}}${duration_block}${context_block},{\"type\":\"actions\",\"elements\":[{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View in Amplify Console\",\"emoji\":true},\"url\":\"${AMPLIFY_URL}\",\"style\":\"primary\"},{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View Commit\",\"emoji\":true},\"url\":\"https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}\"}]},{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"⏰ ${timestamp}\"}]}]}"
 
-            curl -sS -X POST -H 'Content-type: application/json' \
+            echo "[SLACK] Sending to Slack..."
+            local response
+            response=$(curl -sS -X POST -H 'Content-type: application/json' \
               --data "$payload" \
-              "$SLACK_WEBHOOK" >/dev/null || true
+              "$SLACK_WEBHOOK" 2>&1) || true
+            echo "[SLACK] Response: $response"
           }
 
           on_error () {
@@ -183,10 +190,14 @@ frontend:
             local status="$2"
             local extra_context="${3:-}"
             
+            echo "[SLACK] Attempting to send notification: phase=$phase, status=$status"
+            
             if [ -z "${SLACK_WEBHOOK:-}" ]; then
-              echo "ERROR: SLACK_WEBHOOK is not set (Amplify App settings → Environment variables)."
+              echo "[SLACK] ERROR: SLACK_WEBHOOK is not set (Amplify App settings → Environment variables)."
               return 0
             fi
+            
+            echo "[SLACK] SLACK_WEBHOOK is set (length: ${#SLACK_WEBHOOK} chars)"
 
             # Calculate duration if this is an end notification
             local duration_text=""
@@ -238,9 +249,12 @@ frontend:
             # Build the Slack message with blocks for better formatting
             local payload="{\"blocks\":[{\"type\":\"header\",\"text\":{\"type\":\"plain_text\",\"text\":\"${icon} ${title_text}\",\"emoji\":true}},{\"type\":\"section\",\"fields\":[{\"type\":\"mrkdwn\",\"text\":\"*App:*\\nFirst Love Admin Portal\"},{\"type\":\"mrkdwn\",\"text\":\"*Environment:*\\n${ENV_LABEL}\"},{\"type\":\"mrkdwn\",\"text\":\"*Branch:*\\n\\\`${AWS_BRANCH:-unknown}\\\`\"},{\"type\":\"mrkdwn\",\"text\":\"*Commit:*\\n<https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}|\\\`${COMMIT_SHORT}\\\`>\"}]},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Commit Message:* ${COMMIT_MSG}\\n*Author:* ${COMMIT_AUTHOR}\"}}${duration_block}${context_block},{\"type\":\"actions\",\"elements\":[{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View in Amplify Console\",\"emoji\":true},\"url\":\"${AMPLIFY_URL}\",\"style\":\"primary\"},{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"View Commit\",\"emoji\":true},\"url\":\"https://github.com/firstlovecenter/fl-admin-portal/commit/${AWS_COMMIT_ID:-unknown}\"}]},{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"⏰ ${timestamp}\"}]}]}"
 
-            curl -sS -X POST -H 'Content-type: application/json' \
+            echo "[SLACK] Sending to Slack..."
+            local response
+            response=$(curl -sS -X POST -H 'Content-type: application/json' \
               --data "$payload" \
-              "$SLACK_WEBHOOK" >/dev/null || true
+              "$SLACK_WEBHOOK" 2>&1) || true
+            echo "[SLACK] Response: $response"
           }
 
           on_error () {
