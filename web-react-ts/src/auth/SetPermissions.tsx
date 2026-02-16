@@ -26,7 +26,7 @@ const SetPermissions = ({
   const { isAuthenticated, user } = useAuth()
   const { isAuthorised } = useAuthPermissions()
 
-  console.log('🔒 SetPermissions: Initialized', {
+  console.log('🔒 SetPermissions: Initialized!', {
     currentUser,
     isAuthenticated,
     user,
