@@ -11,6 +11,16 @@ import { permitMe } from 'permission-utils'
 import { useContext, useEffect } from 'react'
 import { useAuth } from 'contexts/AuthContext'
 import useAuthPermissions from './useAuth'
+import { useLocation } from 'react-router-dom'
+
+// Public routes that don't require authentication
+const PUBLIC_AUTH_ROUTES = [
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/setup-password',
+]
 
 const SetPermissions = ({
   token,
@@ -20,13 +30,14 @@ const SetPermissions = ({
   children: JSX.Element
 }) => {
   const { currentUser, setUserJobs, setCurrentUser } = useContext(MemberContext)
-
   const { doNotUse } = useContext(ChurchContext)
-
   const { isAuthenticated, user } = useAuth()
   const { isAuthorised } = useAuthPermissions()
+  const location = useLocation()
 
-  console.log('🔒 SetPermissions: Initialized!', {
+  const isPublicRoute = PUBLIC_AUTH_ROUTES.includes(location.pathname)
+
+  console.log('🔒 SetPermissions: Initialized', {
     currentUser,
     isAuthenticated,
     user,
@@ -188,12 +199,29 @@ const SetPermissions = ({
     loggedInLoading,
     loading,
     hasToken: !!token,
-    willShowLoading: loggedInLoading || !token,
+    isPublicRoute,
+    willShowLoading: (loggedInLoading || !token) && !isPublicRoute,
     hasData: !!data,
     hasLoggedInData: !!loggedInData,
   })
 
-  // Show loading while getting member data or if no token
+  // For public auth routes, skip authentication requirement and render immediately
+  if (isPublicRoute) {
+    console.log(
+      '🔓 SetPermissions: Public route detected, rendering children without auth check'
+    )
+    return (
+      <ApolloWrapper
+        data={data || loggedInData}
+        loading={loading}
+        error={error || loggedInError}
+      >
+        {children}
+      </ApolloWrapper>
+    )
+  }
+
+  // Show loading while getting member data or if no token (for protected routes)
   if (loggedInLoading || !token) {
     console.log(
       '⏳ SetPermissions: Showing InitialLoading (fetching member by email)'
