@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { getAccessToken, getStoredUser } from './lib/auth-service'
 import SimpleLogin from './pages/auth/SimpleLogin'
 
+// Public routes that don't require authentication
+const PUBLIC_AUTH_ROUTES = [
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/setup-password',
+]
+
 const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
@@ -10,10 +19,13 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // If token is expired, AuthContext will handle refresh
     const token = getAccessToken()
     const user = getStoredUser()
+    const currentPath = window.location.pathname
 
     console.log('🔍 SimpleApp: Checking stored auth', {
       hasToken: !!token,
       hasUser: !!user,
+      currentPath,
+      isPublicRoute: PUBLIC_AUTH_ROUTES.includes(currentPath),
     })
 
     // User is authenticated if they have both token and user data
@@ -42,8 +54,13 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     )
   }
 
-  if (!isAuthenticated) {
-    console.log('🔓 SimpleApp: Not authenticated, showing login')
+  // Allow access to public auth routes even if not authenticated
+  const currentPath = window.location.pathname
+  const isPublicRoute = PUBLIC_AUTH_ROUTES.includes(currentPath)
+  if (!isAuthenticated && !isPublicRoute) {
+    console.log(
+      '🔓 SimpleApp: Not authenticated and not on public route, showing login'
+    )
     return (
       <SimpleLogin
         onLoginSuccess={() => {
@@ -54,7 +71,7 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     )
   }
 
-  console.log('✅ SimpleApp: Authenticated, rendering children')
+  console.log('✅ SimpleApp: Allowing access, rendering children')
   return <>{children}</>
 }
 

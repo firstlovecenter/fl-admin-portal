@@ -205,20 +205,12 @@ const SetPermissions = ({
     hasLoggedInData: !!loggedInData,
   })
 
-  // For public auth routes, skip authentication requirement and render immediately
+  // For public auth routes, skip authentication requirement and render immediately without Apollo wrapper
   if (isPublicRoute) {
     console.log(
       '🔓 SetPermissions: Public route detected, rendering children without auth check'
     )
-    return (
-      <ApolloWrapper
-        data={data || loggedInData}
-        loading={loading}
-        error={error || loggedInError}
-      >
-        {children}
-      </ApolloWrapper>
-    )
+    return <>{children}</>
   }
 
   // Show loading while getting member data or if no token (for protected routes)
