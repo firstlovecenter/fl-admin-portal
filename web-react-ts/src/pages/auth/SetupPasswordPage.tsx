@@ -16,6 +16,8 @@ import PasswordStrengthIndicator from '../../components/auth/PasswordStrengthInd
 import './auth.css'
 import { Eye, EyeSlash, CheckCircleFill } from 'react-bootstrap-icons'
 
+const APP_VERSION = '8.1.2'
+
 // Utility function to decode JWT and extract email
 const extractEmailFromToken = (token: string): string | null => {
   try {
@@ -257,6 +259,12 @@ const SetupPasswordPage = () => {
             <Link to="/login" className="text-brand">
               Sign In
             </Link>
+          </p>
+          <p
+            className="text-center text-muted"
+            style={{ fontSize: '0.75rem', marginTop: '1rem' }}
+          >
+            v{APP_VERSION}
           </p>
         </div>
       </Container>
