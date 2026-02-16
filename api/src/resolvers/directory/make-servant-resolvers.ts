@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Context } from '../utils/neo4j-types'
 import { Member, Role } from '../utils/types'
 import { permitAdmin, permitAdminArrivals } from '../permissions'
-import { MakeServant, RemoveServant } from './make-remove-servants'
+import { MakeServant, RemoveServant, AddAdmin, DeleteAdmin } from './make-remove-servants'
 import { removeRoles } from './helper-functions'
 import { matchMemberFromAuthId } from '../cypher/resolver-cypher'
 
@@ -233,6 +233,41 @@ const MakeServantResolvers = {
       'Hub',
       'Leader'
     ),
+
+  // Multi-Admin Management Resolvers
+  AddCouncilAdmin: async (object: any, args: Member, context: Context) =>
+    AddAdmin(context, args, permitAdmin('Stream'), 'Council'),
+  AddStreamAdmin: async (object: any, args: Member, context: Context) =>
+    AddAdmin(context, args, permitAdmin('Campus'), 'Stream'),
+  AddCampusAdmin: async (object: any, args: Member, context: Context) =>
+    AddAdmin(context, args, permitAdmin('Oversight'), 'Campus'),
+  AddOversightAdmin: async (object: any, args: Member, context: Context) =>
+    AddAdmin(context, args, permitAdmin('Denomination'), 'Oversight'),
+  AddDenominationAdmin: async (object: any, args: Member, context: Context) =>
+    AddAdmin(context, args, ['fishers'], 'Denomination'),
+  AddGovernorshipAdmin: async (object: any, args: Member, context: Context) =>
+    AddAdmin(context, args, permitAdmin('Council'), 'Governorship'),
+  AddCreativeArtsAdmin: async (object: any, args: Member, context: Context) =>
+    AddAdmin(context, args, permitAdmin('Campus'), 'CreativeArts'),
+  AddMinistryAdmin: async (object: any, args: Member, context: Context) =>
+    AddAdmin(context, args, permitAdmin('CreativeArts'), 'Ministry'),
+
+  DeleteCouncilAdmin: async (object: any, args: Member, context: Context) =>
+    DeleteAdmin(context, args, permitAdmin('Stream'), 'Council'),
+  DeleteStreamAdmin: async (object: any, args: Member, context: Context) =>
+    DeleteAdmin(context, args, permitAdmin('Campus'), 'Stream'),
+  DeleteCampusAdmin: async (object: any, args: Member, context: Context) =>
+    DeleteAdmin(context, args, permitAdmin('Oversight'), 'Campus'),
+  DeleteOversightAdmin: async (object: any, args: Member, context: Context) =>
+    DeleteAdmin(context, args, permitAdmin('Denomination'), 'Oversight'),
+  DeleteDenominationAdmin: async (object: any, args: Member, context: Context) =>
+    DeleteAdmin(context, args, ['fishers'], 'Denomination'),
+  DeleteGovernorshipAdmin: async (object: any, args: Member, context: Context) =>
+    DeleteAdmin(context, args, permitAdmin('Council'), 'Governorship'),
+  DeleteCreativeArtsAdmin: async (object: any, args: Member, context: Context) =>
+    DeleteAdmin(context, args, permitAdmin('Campus'), 'CreativeArts'),
+  DeleteMinistryAdmin: async (object: any, args: Member, context: Context) =>
+    DeleteAdmin(context, args, permitAdmin('CreativeArts'), 'Ministry'),
 }
 
 export default MakeServantResolvers

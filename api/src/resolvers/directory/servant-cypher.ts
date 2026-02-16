@@ -25,8 +25,8 @@ const servantCypher = {
    WHERE church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight OR church:Denomination 
    OR church:CreativeArts OR church:Ministry
-   MATCH (church)<-[oldAdmin:IS_ADMIN_FOR]-(admin:Member)
-   DELETE oldAdmin
+   MATCH (admin:Member {id: $adminId})-[adminRelationship:IS_ADMIN_FOR]->(church)
+   DELETE adminRelationship
    
    
    RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
@@ -227,6 +227,38 @@ const servantCypher = {
    CREATE (church)-[:HAS_HISTORY]->(log)
    
    RETURN church.id AS id
+   `,
+
+  // Multi-Admin Management: Add admin without removing others
+  addChurchAdmin: `
+   MATCH (church {id:$churchId})
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
+   OR church:Campus OR church:Oversight OR church:Denomination
+   OR church:CreativeArts OR church:Ministry
+   MATCH (admin:Member {id:$adminId})
+   SET admin.auth_id = $auth_id
+   MERGE (admin)-[:IS_ADMIN_FOR]->(church)
+
+   WITH church, admin
+   OPTIONAL MATCH (church)<-[:HAS]-(higherChurch)
+   
+   RETURN church.id AS id, church.name AS name, higherChurch.id AS higherChurchId, higherChurch.name AS higherChurchName
+   `,
+
+  // Multi-Admin Management: Remove specific admin
+  deleteChurchAdmin: `
+   MATCH (church {id: $churchId}) 
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
+   OR church:Campus OR church:Oversight OR church:Denomination 
+   OR church:CreativeArts OR church:Ministry
+   MATCH (admin:Member {id: $adminId})-[r:IS_ADMIN_FOR]->(church)
+   
+   // Count existing admins to ensure we don't remove the last one
+   WITH church, admin, r, COUNT{(church)<-[:IS_ADMIN_FOR]-(:Member)} as adminCount
+   WHERE adminCount > 1
+   DELETE r
+   
+   RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
    `,
 }
 
