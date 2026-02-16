@@ -16,10 +16,24 @@ import PasswordStrengthIndicator from '../../components/auth/PasswordStrengthInd
 import './auth.css'
 import { Eye, EyeSlash, CheckCircleFill } from 'react-bootstrap-icons'
 
+// Utility function to decode JWT and extract email
+const extractEmailFromToken = (token: string): string | null => {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+
+    // Decode the payload (second part)
+    const payload = parts[1]
+    const decoded = JSON.parse(atob(payload))
+
+    return decoded.email || null
+  } catch (error) {
+    console.error('Failed to decode token:', error)
+    return null
+  }
+}
+
 const validationSchema = Yup.object({
-  email: Yup.string()
-    .email('Invalid email address')
-    .required('Email is required'),
   password: Yup.string()
     .min(8, 'Password must be at least 8 characters')
     .matches(/[a-z]/, 'Must contain at least one lowercase letter')
@@ -39,18 +53,28 @@ const SetupPasswordPage = () => {
   const [success, setSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [extractedEmail, setExtractedEmail] = useState<string | null>(null)
 
   const token = searchParams.get('token')
-  const emailFromUrl = searchParams.get('email')
 
   useEffect(() => {
     if (!token) {
       setError('Invalid or missing setup link. Please request a new one.')
+      return
     }
+
+    // Extract email from token
+    const email = extractEmailFromToken(token)
+    if (!email) {
+      setError('Invalid setup link. Could not extract email from token.')
+      return
+    }
+
+    setExtractedEmail(email)
   }, [token])
 
   const handleSubmit = async (values: any, { setSubmitting }: any) => {
-    if (!token) {
+    if (!token || !extractedEmail) {
       setError('Invalid or missing setup link. Please request a new one.')
       setSubmitting(false)
       return
@@ -61,7 +85,7 @@ const SetupPasswordPage = () => {
 
     try {
       await setupPassword({
-        email: values.email,
+        email: extractedEmail,
         token,
         password: values.password,
       })
@@ -125,7 +149,6 @@ const SetupPasswordPage = () => {
 
           <Formik
             initialValues={{
-              email: emailFromUrl || '',
               password: '',
               confirmPassword: '',
             }}
@@ -136,23 +159,9 @@ const SetupPasswordPage = () => {
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3" controlId="email">
                   <Form.Label className="text-white">Email Address</Form.Label>
-                  <Field
-                    as={Form.Control}
-                    type="email"
-                    name="email"
-                    placeholder="Enter your email"
-                    disabled={isSubmitting || success || !!emailFromUrl}
-                    className={
-                      touched.email && errors.email
-                        ? 'is-invalid'
-                        : touched.email
-                        ? 'is-valid'
-                        : ''
-                    }
-                  />
-                  <ErrorMessage name="email">
-                    {(msg) => <small className="text-danger">{msg}</small>}
-                  </ErrorMessage>
+                  <div className="p-3 bg-dark border border-secondary rounded text-white">
+                    {extractedEmail || 'Loading email...'}
+                  </div>
                 </Form.Group>
 
                 <Form.Group
@@ -226,7 +235,9 @@ const SetupPasswordPage = () => {
                   variant="brand"
                   type="submit"
                   className="w-100 mt-3"
-                  disabled={isSubmitting || success || !token}
+                  disabled={
+                    isSubmitting || success || !token || !extractedEmail
+                  }
                 >
                   {isSubmitting ? (
                     <>
