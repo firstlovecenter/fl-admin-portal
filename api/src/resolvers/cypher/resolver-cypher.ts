@@ -44,11 +44,6 @@ RETURN member {
 } AS member
   `
 
-export const updateMemberAuthId = `
-MATCH (member:Member {id:$id})
-RETURN member
-`
-
 export const matchMemberOversightQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 

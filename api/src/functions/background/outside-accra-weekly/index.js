@@ -176,7 +176,7 @@ const handler = async () => {
         'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
       },
       data: {
-        to: ['john-dag@firstlovecenter.com', 'globalfirstlove@gmail.com'],
+        to: ['john-dag@firstlovecenter.com', 'flcexpense22@gmail.com'],
         subject: `Outside Accra Weekly Report - Week ${weekNumber}, ${reportDate}`,
         html: `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
