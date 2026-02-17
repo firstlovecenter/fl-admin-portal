@@ -56,10 +56,26 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // Allow access to public auth routes even if not authenticated
   const currentPath = window.location.pathname
-  const isPublicRoute = PUBLIC_AUTH_ROUTES.includes(currentPath)
+
+  // Normalize path for comparison (remove trailing slashes for comparison)
+  const normalizedPath = currentPath.replace(/\/$/, '') || '/'
+  const isPublicRoute = PUBLIC_AUTH_ROUTES.some((route) => {
+    const normalizedRoute = route.replace(/\/$/, '') || '/'
+    return normalizedPath === normalizedRoute
+  })
+
+  console.log('🔐 SimpleApp: Route check', {
+    currentPath,
+    normalizedPath,
+    isPublicRoute,
+    isAuthenticated,
+    routesList: PUBLIC_AUTH_ROUTES,
+  })
+
   if (!isAuthenticated && !isPublicRoute) {
     console.log(
-      '🔓 SimpleApp: Not authenticated and not on public route, showing login'
+      '🔓 SimpleApp: Not authenticated and not on public route, showing login',
+      { currentPath, isPublicRoute }
     )
     return (
       <SimpleLogin
@@ -71,7 +87,10 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     )
   }
 
-  console.log('✅ SimpleApp: Allowing access, rendering children')
+  console.log('✅ SimpleApp: Allowing access, rendering children', {
+    isAuthenticated,
+    isPublicRoute,
+  })
   return <>{children}</>
 }
 

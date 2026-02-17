@@ -21,6 +21,15 @@ const PUBLIC_AUTH_ROUTES = [
   '/setup-password',
 ]
 
+const isPathPublic = (pathname: string): boolean => {
+  // Normalize path for comparison (remove trailing slashes)
+  const normalizedPath = pathname.replace(/\/$/, '') || '/'
+  return PUBLIC_AUTH_ROUTES.some((route) => {
+    const normalizedRoute = route.replace(/\/$/, '') || '/'
+    return normalizedPath === normalizedRoute
+  })
+}
+
 const SetPermissions = ({
   token,
   children,
@@ -34,7 +43,7 @@ const SetPermissions = ({
   const { isAuthorised } = useAuthPermissions()
   const location = useLocation()
 
-  const isPublicRoute = PUBLIC_AUTH_ROUTES.includes(location.pathname)
+  const isPublicRoute = isPathPublic(location.pathname)
 
   console.log('🔒 SetPermissions: Initialized', {
     currentUser,
@@ -182,14 +191,17 @@ const SetPermissions = ({
     loggedInLoading,
     hasToken: !!token,
     isPublicRoute,
+    currentPath: location.pathname,
     willShowLoading: (loggedInLoading || !token) && !isPublicRoute,
     hasLoggedInData: !!loggedInData,
+    publicRoutesList: PUBLIC_AUTH_ROUTES,
   })
 
   // For public auth routes, skip authentication requirement and render immediately without Apollo wrapper
   if (isPublicRoute) {
     console.log(
-      '🔓 SetPermissions: Public route detected, rendering children without auth check'
+      '🔓 SetPermissions: Public route detected, rendering children without auth check',
+      { location: location.pathname }
     )
     return <>{children}</>
   }
