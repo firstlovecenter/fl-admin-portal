@@ -8,9 +8,6 @@ import {
 } from '../utils/utils'
 import { ChurchLevel, Member, Role, ServantType } from '../utils/types'
 import {
- 
- ,
-
   sendServantPromotionEmail,
   sendServantRemovalEmail,
 } from '../utils/notify'
