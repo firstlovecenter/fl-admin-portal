@@ -7,7 +7,7 @@ CREATE (serviceRecord:ServiceRecord {createdAt:datetime()})
 
       MATCH (church {id: $churchId}) WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-      MATCH (leader:Member {auth_id: $jwt.sub})
+      MATCH (leader:Member {id: $jwt.userId})
       
       MERGE (serviceDate:TimeGraph {date:date($serviceDate)})
 

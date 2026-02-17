@@ -193,7 +193,7 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
-      MATCH (requester:Member {auth_id: $jwt.sub})
+      MATCH (requester:Member {id: $jwt.userId})
 
       WITH council, requester
 

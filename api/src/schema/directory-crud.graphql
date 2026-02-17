@@ -108,7 +108,7 @@ extend type Mutation {
         log.historyRecord = fellowship.name + ' Fellowship went on vacation mode'
 
       WITH log,fellowship
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -134,7 +134,7 @@ extend type Mutation {
         log.historyRecord = bacenta.name + ' Bacenta went on vacation mode'
 
       WITH log,bacenta
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (bacenta)<-[:HAS]-(governorship:Governorship)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -159,7 +159,7 @@ extend type Mutation {
         log.historyRecord = stream.name + ' Stream went on vacation mode'
 
       WITH log, stream
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (stream)<-[:HAS]-(campus:Campus)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -186,7 +186,7 @@ extend type Mutation {
         log.historyRecord = stream.name + ' Stream was made active again'
 
       WITH log,stream
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (stream)<-[:HAS]-(campus:Campus)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -211,7 +211,7 @@ extend type Mutation {
         log.historyRecord = fellowship.name + ' Fellowship was made active again'
 
       WITH log,fellowship
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -236,7 +236,7 @@ extend type Mutation {
         log.historyRecord = hub.name + ' Hub was made active again'
 
       WITH log,hub
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (hub)<-[:HAS]-(fellowship:HubCouncil)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -261,7 +261,7 @@ extend type Mutation {
         log.historyRecord = hub.name + ' Hub went on vacation mode'
 
       WITH log,hub
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (hub)<-[:HAS]-(hubCouncil:HubCouncil)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -288,7 +288,7 @@ extend type Mutation {
         log.historyRecord = fellowship.name + ' Fellowship was made an online fellowship'
 
       WITH log,fellowship
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -315,7 +315,7 @@ extend type Mutation {
         log.historyRecord = bacenta.name + ' Bacenta was made active again'
 
       WITH log,bacenta
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (bacenta)<-[:HAS]-(governorship:Governorship)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -360,7 +360,7 @@ extend type Mutation {
 
       WITH oversight
       MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
-      MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+      MATCH (currentUser:Active:Member {id:$jwt.userId})
       MATCH (denomination:Denomination {id: $denominationId})
 
 
@@ -410,7 +410,7 @@ extend type Mutation {
 
       WITH campus
       MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
-      MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+      MATCH (currentUser:Active:Member {id:$jwt.userId})
       MATCH (oversight:Oversight {id: $oversightId})
 
 
@@ -464,7 +464,7 @@ extend type Mutation {
 
        WITH log, stream
        MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
-       MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+       MATCH (currentUser:Active:Member {id:$jwt.userId})
        MATCH (campus:Campus {id: $campusId})
        MATCH (meetingDay:ServiceDay {day: $meetingDay})
 
@@ -503,7 +503,7 @@ extend type Mutation {
 
       WITH council
       MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
-      MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+      MATCH (currentUser:Active:Member {id:$jwt.userId})
       MATCH (stream:Stream {id: $streamId})
 
 
@@ -555,7 +555,7 @@ extend type Mutation {
         log.priority = 6
       WITH log, governorship
       MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
-      MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+      MATCH (currentUser:Active:Member {id:$jwt.userId})
       MATCH (council:Council {id: $councilId})
 
 
@@ -605,7 +605,7 @@ extend type Mutation {
       WITH bacenta
        MATCH (leader:Active:Member {id:$leaderId}) WHERE leader.email IS NOT NULL
        MATCH (governorship:Governorship {id:$governorshipId})
-       MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+       MATCH (currentUser:Active:Member {id:$jwt.userId})
        MATCH (meetingDay:ServiceDay {day: $meetingDay})
 
 
@@ -660,7 +660,7 @@ extend type Mutation {
 
       WITH fellowship, leader
       MATCH (bacenta:Bacenta {id: $bacentaId})
-      MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+      MATCH (currentUser:Active:Member {id:$jwt.userId})
       MATCH (meetingDay:ServiceDay {day: $meetingDay})
 
       MERGE (bacenta)-[:HAS]->(fellowship)
@@ -790,7 +790,7 @@ extend type Mutation {
         log.historyRecord = $firstName +' ' +$lastName+' Details were updated'
 
       WITH member, log
-      MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+      MATCH (currentUser:Active:Member {id:$jwt.userId})
       MATCH (gender:Gender {gender: $gender})
       OPTIONAL MATCH (member)-[gen_rel:HAS_GENDER]-> ()
       DELETE gen_rel
