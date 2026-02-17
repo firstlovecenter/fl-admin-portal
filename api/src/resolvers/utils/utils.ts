@@ -123,7 +123,14 @@ export const rearrangeCypherObject = (
 
 export const isAuth = (permittedRoles: Role[], userRoles?: Role[]) => {
   if (!permittedRoles.some((r) => userRoles?.includes(r))) {
-    throw new Error('You are not permitted to run this mutation')
+    const error = new Error('You are not permitted to run this mutation')
+    // Set extensions for GraphQL error formatting
+    // @ts-ignore - adding custom extensions for GraphQL error
+    error.extensions = {
+      code: 'FORBIDDEN',
+      severity: 'USER_ERROR',
+    }
+    throw error
   }
 }
 

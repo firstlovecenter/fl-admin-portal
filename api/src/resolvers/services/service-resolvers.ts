@@ -63,7 +63,7 @@ export const checkServantHasCurrentHistory = async (
       churchName: getServantAndChurch.records[0]?.get('churchName'),
       churchType: getServantAndChurch.records[0]?.get('churchType'),
       servantId: getServantAndChurch.records[0]?.get('servantId'),
-      
+
       firstName: getServantAndChurch.records[0]?.get('firstName'),
       lastName: getServantAndChurch.records[0]?.get('lastName'),
     }
@@ -80,7 +80,7 @@ export const checkServantHasCurrentHistory = async (
       servantType: 'Leader',
       servant: {
         id: servantAndChurch.servantId,
-        
+
         firstName: servantAndChurch.firstName,
         lastName: servantAndChurch.lastName,
       },
@@ -101,10 +101,7 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Fellowship'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -180,10 +177,7 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Fellowship'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -249,10 +243,7 @@ const serviceMutation = {
     args: RecordCancelledServiceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Bacenta'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(
@@ -273,7 +264,7 @@ const serviceMutation = {
         servantType: 'Leader',
         servant: {
           id: getServantAndChurch.servantId,
-          
+
           firstName: getServantAndChurch.firstName,
           lastName: getServantAndChurch.lastName,
         },

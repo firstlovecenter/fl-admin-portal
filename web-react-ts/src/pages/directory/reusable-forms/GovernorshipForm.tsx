@@ -32,6 +32,7 @@ import NoDataComponent from 'pages/arrivals/CompNoData'
 import { DISPLAY_GOVERNORSHIP, DISPLAY_COUNCIL } from '../display/ReadQueries'
 import BtnSubmitText from 'components/formik/BtnSubmitText'
 import SearchHub from 'components/formik/SearchHub'
+import { displayError, isPermissionError } from 'utils/errorHandler'
 
 export interface GovernorshipFormValues extends FormikInitialValues {
   council?: Council
@@ -220,10 +221,13 @@ const GovernorshipForm = ({
                       clickCard(res.data.MoveBacentaToGovernorship)
                       setBacentaModal(false)
                     } catch (error) {
-                      throwToSentry(
-                        `There was an error moving this bacenta to this governorship`,
-                        error
-                      )
+                      if (!isPermissionError(error)) {
+                        throwToSentry(
+                          `Error moving bacenta to governorship`,
+                          error
+                        )
+                      }
+                      displayError('Unable to Move Bacenta', error)
                     } finally {
                       setButtonLoading(false)
                     }
@@ -272,10 +276,10 @@ const GovernorshipForm = ({
                       clickCard(res.data.MoveHubToGovernorship)
                       setHubModal(false)
                     } catch (error) {
-                      throwToSentry(
-                        `There was an error moving this hub to this governorship`,
-                        error
-                      )
+                      if (!isPermissionError(error)) {
+                        throwToSentry(`Error moving hub to governorship`, error)
+                      }
+                      displayError('Unable to Move Hub', error)
                     } finally {
                       setButtonLoading(false)
                     }
@@ -312,16 +316,16 @@ const GovernorshipForm = ({
                         },
                       })
 
-                      setButtonLoading(false)
                       clickCard(res.data.CloseDownGovernorship)
                       setCloseDown(false)
                       navigate(`/governorship/displayall`)
                     } catch (error) {
+                      if (!isPermissionError(error)) {
+                        throwToSentry(`Error closing down governorship`, error)
+                      }
+                      displayError('Unable to Close Down Governorship', error)
+                    } finally {
                       setButtonLoading(false)
-                      throwToSentry(
-                        `There was an error closing down this governorship`,
-                        error
-                      )
                     }
                   }}
                 >

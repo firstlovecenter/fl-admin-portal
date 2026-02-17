@@ -75,7 +75,7 @@ export const checkServantHasCurrentHistory = async (
       servantType: 'Leader',
       servant: {
         id: getServantAndChurch.servantId,
-        
+
         firstName: getServantAndChurch.firstName,
         lastName: getServantAndChurch.lastName,
       },
@@ -96,10 +96,7 @@ const SontaServiceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('HubCouncil'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('HubCouncil'), context.jwt.roles)
     const session = context.executionContext.session()
 
     await checkServantHasCurrentHistory(session, context, {
@@ -160,10 +157,7 @@ const SontaServiceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Hub'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Hub'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -241,10 +235,7 @@ const SontaServiceMutation = {
     args: RecordStageAttendanceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Ministry'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Ministry'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -322,10 +313,7 @@ const SontaServiceMutation = {
     args: RecordCancelledOnstageMinistryPerformanceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Ministry'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Ministry'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     try {

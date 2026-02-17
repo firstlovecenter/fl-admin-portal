@@ -3,7 +3,7 @@ import { Role } from './types'
 
 export interface JwtPayload {
   sub: string
-  'https://flcadmin.netlify.app/roles': Role[]
+  roles: Role[]
   iss: string
   aud: string[]
   iat: number

@@ -4,7 +4,6 @@ import {
   isAuth,
   noEmptyArgsValidation,
   rearrangeCypherObject,
-  throwToSentry,
 } from '../utils/utils'
 import { ChurchLevel, Member, Role, ServantType } from '../utils/types'
 import {
@@ -14,16 +13,13 @@ import {
 import { Context } from '../utils/neo4j-types'
 import { matchChurchQuery, getChurchDataQuery } from '../cypher/resolver-cypher'
 import {
-  assignRoles,
   churchInEmail,
   directoryLock,
   MemberWithKeys,
   parseForCache,
   parseForCacheRemoval,
-  removeRoles,
 } from './helper-functions'
 import { formatting, makeServantCypher, removeServantCypher } from './utils'
-import { getAuthToken } from '../authenticate'
 
 const texts = require('../texts.json')
 
@@ -36,13 +32,10 @@ const setUp = (setUpArgs: {
 }) => {
   const { permittedRoles, context, churchLower, servantLower, args } = setUpArgs
 
-  if (
-    directoryLock(context.jwt['https://flcadmin.netlify.app/roles']) &&
-    servantLower !== 'arrivalsCounter'
-  ) {
+  if (directoryLock(context.jwt.roles) && servantLower !== 'arrivalsCounter') {
     throw new Error('Directory is locked till next Tuesday')
   }
-  isAuth(permittedRoles, context.jwt['https://flcadmin.netlify.app/roles'])
+  isAuth(permittedRoles, context.jwt.roles)
 
   noEmptyArgsValidation([
     `${churchLower}Id`,
@@ -169,14 +162,6 @@ export const RemoveServant = async (
   const servant: MemberWithKeys = rearrangeCypherObject(servantRes)
   const newServant: MemberWithKeys = rearrangeCypherObject(newServantRes)
 
-  // fetch church data
-  const churchDataRes = rearrangeCypherObject(
-    await session.executeRead((tx) =>
-      tx.run(getChurchDataQuery, {
-        id: args[`${churchLower}Id`],
-      })
-    )
-  )
   if (
     (!servantValidation(servant) || !servantValidation(newServant)) &&
     !['ArrivalsCounter', 'Teller', 'ArrivalsPayer'].includes(servantType) &&

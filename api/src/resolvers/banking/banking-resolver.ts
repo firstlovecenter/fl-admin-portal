@@ -107,10 +107,7 @@ const bankingMutation = {
     context: Context
   ) => {
     const SECRETS = await loadSecrets()
-    isAuth(
-      permitLeaderAdmin('Bacenta'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
 
     const session = context.executionContext.session()
     // This code checks if there has already been a successful transaction
@@ -257,10 +254,7 @@ const bankingMutation = {
     },
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Hub'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Hub'), context.jwt.roles)
 
     const session = context.executionContext.session()
     // This code checks if there has already been a successful transaction
@@ -410,10 +404,7 @@ const bankingMutation = {
     },
     context: Context
   ) => {
-    isAuth(
-      permitMe('Fellowship'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitMe('Fellowship'), context.jwt.roles)
 
     const session = context.executionContext.session()
 
@@ -509,10 +500,7 @@ const bankingMutation = {
     args: { serviceRecordId: string },
     context: Context
   ) => {
-    isAuth(
-      permitMe('Bacenta'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitMe('Bacenta'), context.jwt.roles)
     const session = context.executionContext.session()
 
     const transactionResponse = rearrangeCypherObject(
@@ -651,10 +639,7 @@ const bankingMutation = {
     args: { serviceRecordId: string; bankingSlip: string },
     context: Context
   ) => {
-    isAuth(
-      permitAdmin('Campus'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Campus'), context.jwt.roles)
     const session = context.executionContext.session()
 
     await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
@@ -682,10 +667,7 @@ const bankingMutation = {
     args: { serviceRecordId: string; bankingSlip: string },
     context: Context
   ) => {
-    isAuth(
-      ['fishers', ...permitTellerStream()],
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(['fishers', ...permitTellerStream()], context.jwt.roles)
     const session = context.executionContext.session()
 
     const churchRes = await session.executeRead((tx) =>
@@ -699,9 +681,7 @@ const bankingMutation = {
     const churchLabels: string[] = churchRes.records[0].get('churchLabels')
 
     if (
-      context.jwt['https://flcadmin.netlify.app/roles'].includes(
-        'tellerStream'
-      ) &&
+      context.jwt.roles.includes('tellerStream') &&
       !['Stream', 'Campus', 'Oversight', 'Denomination'].some((churchLevel) =>
         churchLabels.includes(churchLevel)
       )

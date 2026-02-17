@@ -9,10 +9,7 @@ const closeChurchCypher = require('../cypher/close-church-creativearts-cypher')
 
 const directoryCreativeArtsMutation = {
   CloseDownHub: async (object: unknown, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('Hub'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Hub'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -81,10 +78,7 @@ const directoryCreativeArtsMutation = {
   },
 
   CloseDownHubCouncil: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('HubCouncil'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('HubCouncil'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -168,10 +162,7 @@ const directoryCreativeArtsMutation = {
   },
 
   CloseDownMinistry: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('Ministry'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Ministry'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -257,10 +248,7 @@ const directoryCreativeArtsMutation = {
   },
 
   CloseDownCreativeArts: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('CreativeArts'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('CreativeArts'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()

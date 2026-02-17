@@ -29,10 +29,7 @@ export const downloadCreditsMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(
-      permitMe('Bacenta'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitMe('Bacenta'), context.jwt.roles)
 
     try {
       const { auth, subaccount } = await getCreditsFinancials()
@@ -89,10 +86,7 @@ export const downloadCreditsMutations = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(
-      permitMe('Bacenta'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitMe('Bacenta'), context.jwt.roles)
 
     try {
       const { auth } = await getCreditsFinancials()
@@ -145,10 +139,7 @@ export const downloadCreditsQueries = {
       context: Context
     ) => {
       const session = context.executionContext.session()
-      isAuth(
-        permitMe('Council'),
-        context.jwt['https://flcadmin.netlify.app/roles']
-      )
+      isAuth(permitMe('Council'), context.jwt.roles)
 
       try {
         const councilRes = await session.executeRead((tx) => {
