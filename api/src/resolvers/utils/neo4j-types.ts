@@ -2,6 +2,7 @@ import { Session } from 'neo4j-driver'
 import { Role } from './types'
 
 export interface JwtPayload {
+  userId: string
   sub: string
   roles: Role[]
   iss: string
