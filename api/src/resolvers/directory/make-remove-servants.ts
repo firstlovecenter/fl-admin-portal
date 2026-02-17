@@ -55,11 +55,13 @@ const validateArguments = (
   ])
 }
 
-const validateServant = (servant: Member): boolean => {
-  if (!servant.id) {
+const validateServant = (
+  servant: Member | Partial<Member> | undefined
+): boolean => {
+  if (!servant || !servant.id) {
     return false
   }
-  errorHandling(servant)
+  errorHandling(servant as Member)
   return true
 }
 
