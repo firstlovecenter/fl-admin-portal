@@ -186,32 +186,39 @@ const directoryMutation = {
     isAuth([...permitLeaderAdmin('Governorship')], context.jwt.roles)
     const session = context.executionContext.session()
 
-    const memberCheck = rearrangeCypherObject(
-      await session.run(cypher.checkMemberHasNoActiveRelationships, args)
-    )
-
-    if (memberCheck.relationshipCount.low > 0) {
-      throw new Error(
-        'This member has active roles in church. Please remove all active roles and try again'
+    try {
+      const memberCheck = rearrangeCypherObject(
+        await session.executeRead((tx) =>
+          tx.run(cypher.checkMemberHasNoActiveRelationships, args)
+        )
       )
+
+      if (memberCheck.relationshipCount.low > 0) {
+        throw new Error(
+          'This member has active roles in church. Please remove all active roles and try again'
+        )
+      }
+
+      let mutation = makeMemberInactive
+
+      if (args.reason.toLowerCase().includes('duplicate')) {
+        mutation = removeDuplicateMember
+      }
+
+      const member = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(mutation, {
+            id: args.id,
+            reason: args.reason,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      return member?.properties
+    } finally {
+      await session.close()
     }
-
-    let mutation = makeMemberInactive
-
-    if (args.reason.toLowerCase().includes('duplicate')) {
-      mutation = removeDuplicateMember
-    }
-
-    const member = rearrangeCypherObject(
-      await session.run(mutation, {
-        id: args.id,
-        reason: args.reason,
-        jwt: context.jwt,
-      })
-    )
-
-    await session.close()
-    return member?.properties
   },
   CloseDownFellowship: async (object: any, args: any, context: Context) => {
     isAuth(permitAdmin('Governorship'), context.jwt.roles)
@@ -221,10 +228,14 @@ const directoryMutation = {
 
     try {
       const res: any = await Promise.all([
-        session.run(closeChurchCypher.checkFellowshipHasNoMembers, args),
-        sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-          churchId: args.fellowshipId,
-        }),
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkFellowshipHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.fellowshipId,
+          })
+        ),
       ])
 
       const fellowshipCheck = rearrangeCypherObject(res[0])
@@ -264,12 +275,11 @@ const directoryMutation = {
         true
       )
 
-      const closeFellowshipResponse = await session.run(
-        closeChurchCypher.closeDownFellowship,
-        {
+      const closeFellowshipResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownFellowship, {
           jwt: context.jwt,
           fellowshipId: args.fellowshipId,
-        }
+        })
       )
 
       const fellowshipResponse = rearrangeCypherObject(closeFellowshipResponse)
@@ -289,9 +299,8 @@ const directoryMutation = {
     const session = context.executionContext.session()
 
     try {
-      const bacentaCheckResponse = await session.run(
-        closeChurchCypher.checkBacentaHasNoMembers,
-        args
+      const bacentaCheckResponse = await session.executeRead((tx) =>
+        tx.run(closeChurchCypher.checkBacentaHasNoMembers, args)
       )
       const bacentaCheck = rearrangeCypherObject(bacentaCheckResponse)
 
@@ -311,12 +320,11 @@ const directoryMutation = {
         true
       )
 
-      const closeBacentaResponse = await session.run(
-        closeChurchCypher.closeDownBacenta,
-        {
+      const closeBacentaResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownBacenta, {
           jwt: context.jwt,
           bacentaId: args.bacentaId,
-        }
+        })
       )
 
       const bacentaResponse = rearrangeCypherObject(closeBacentaResponse)
@@ -336,10 +344,14 @@ const directoryMutation = {
 
     try {
       const res: any = await Promise.all([
-        session.run(closeChurchCypher.checkGovernorshipHasNoMembers, args),
-        sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-          churchId: args.governorshipId,
-        }),
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkGovernorshipHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.governorshipId,
+          })
+        ),
       ])
 
       const governorshipCheck = rearrangeCypherObject(res[0])
@@ -395,12 +407,11 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeGovernorshipResponse = await session.run(
-        closeChurchCypher.closeDownGovernorship,
-        {
+      const closeGovernorshipResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownGovernorship, {
           jwt: context.jwt,
           governorshipId: args.governorshipId,
-        }
+        })
       )
 
       const governorshipResponse = rearrangeCypherObject(
@@ -424,10 +435,14 @@ const directoryMutation = {
 
     try {
       const res: any = await Promise.all([
-        session.run(closeChurchCypher.checkCouncilHasNoMembers, args),
-        sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-          churchId: args.councilId,
-        }),
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkCouncilHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.councilId,
+          })
+        ),
       ])
 
       const councilCheck = rearrangeCypherObject(res[0])
@@ -484,12 +499,11 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeCouncilResponse = await session.run(
-        closeChurchCypher.closeDownCouncil,
-        {
+      const closeCouncilResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownCouncil, {
           jwt: context.jwt,
           councilId: args.councilId,
-        }
+        })
       )
 
       const councilResponse = rearrangeCypherObject(closeCouncilResponse)
@@ -511,10 +525,14 @@ const directoryMutation = {
 
     try {
       const res: any = await Promise.all([
-        session.run(closeChurchCypher.checkStreamHasNoMembers, args),
-        sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-          churchId: args.streamId,
-        }),
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkStreamHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.streamId,
+          })
+        ),
       ])
 
       const streamCheck = rearrangeCypherObject(res[0])
@@ -571,12 +589,11 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeStreamResponse = await session.run(
-        closeChurchCypher.closeDownStream,
-        {
+      const closeStreamResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownStream, {
           jwt: context.jwt,
           streamId: args.streamId,
-        }
+        })
       )
 
       const streamResponse = rearrangeCypherObject(closeStreamResponse)
@@ -598,10 +615,14 @@ const directoryMutation = {
 
     try {
       const res: any = await Promise.all([
-        session.run(closeChurchCypher.checkCampusHasNoMembers, args),
-        sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-          churchId: args.campusId,
-        }),
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkCampusHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.campusId,
+          })
+        ),
       ])
 
       const campusCheck = rearrangeCypherObject(res[0])
@@ -658,12 +679,11 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeCampusResponse = await session.run(
-        closeChurchCypher.closeDownCampus,
-        {
+      const closeCampusResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownCampus, {
           jwt: context.jwt,
           campusId: args.campusId,
-        }
+        })
       )
 
       const campusResponse = rearrangeCypherObject(closeCampusResponse)
@@ -685,10 +705,14 @@ const directoryMutation = {
 
     try {
       const res: any = await Promise.all([
-        session.run(closeChurchCypher.checkOversightHasNoMembers, args),
-        sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-          churchId: args.oversightId,
-        }),
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkOversightHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.oversightId,
+          })
+        ),
       ])
 
       const oversightCheck = rearrangeCypherObject(res[0])
@@ -739,12 +763,11 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeOversightResponse = await session.run(
-        closeChurchCypher.closeDownOversight,
-        {
+      const closeOversightResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownOversight, {
           jwt: context.jwt,
           oversightId: args.oversightId,
-        }
+        })
       )
 
       const oversightResponse = rearrangeCypherObject(closeOversightResponse)

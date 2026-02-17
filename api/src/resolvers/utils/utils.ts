@@ -48,7 +48,7 @@ export const throwToSentry = (
 
   // eslint-disable-next-line no-console
   console.error(`${message} ${JSON.stringify(error)}`)
-  console.log('🚀 ~ file: utils.ts:49 ~ errorVar:', errorVar)
+  console.log('🚀 ~ file: utils.ts:51 ~ errorVar:', errorVar)
   // Sentry integration removed - error logged to console only
   console.error('Error details:', error, { message })
   throw new Error(`${message} ${errorVar}`)
@@ -122,16 +122,26 @@ export const rearrangeCypherObject = (
 }
 
 export const isAuth = (permittedRoles: Role[], userRoles?: Role[]) => {
+  console.log('🔐 isAuth check:', {
+    permittedRoles,
+    userRoles,
+    hasMatch: permittedRoles.some((r) => userRoles?.includes(r)),
+  })
+
   if (!permittedRoles.some((r) => userRoles?.includes(r))) {
+    console.error('❌ Authorization failed:', {
+      required: permittedRoles,
+      userHas: userRoles,
+    })
     const error = new Error('You are not permitted to run this mutation')
-    // Set extensions for GraphQL error formatting
-    // @ts-ignore - adding custom extensions for GraphQL error
     error.extensions = {
       code: 'FORBIDDEN',
       severity: 'USER_ERROR',
     }
     throw error
   }
+
+  console.log('✅ Authorization passed')
 }
 
 export const nextHigherChurch = (churchLevel: ChurchLevel) => {

@@ -154,46 +154,51 @@ export const removeServantCypher = async ({
   const { servantLower } = terms
   const session = context.executionContext.session()
 
-  if (!servant.id) {
-    throw new Error('There is no servant to remove')
-  }
+  try {
+    if (!servant.id) {
+      // Skip servant removal if there's no servant to remove
+      return
+    }
 
-  // Disconnect him from the Church
-  await session.executeWrite((tx) =>
-    tx.run(servantCypher[`disconnectChurch${servantType}`], {
-      [`${servantLower}Id`]: servant.id ?? '',
-      churchId: church.id,
-      auth_id: servant.auth_id,
-      jwt: context.jwt,
-    })
-  )
-
-  const historyRecordStringArgs = {
-    servant,
-    church,
-    churchType,
-    servantType,
-    removed: true,
-  }
-
-  const historyLogRes = rearrangeCypherObject(
+    // Disconnect him from the Church
     await session.executeWrite((tx) =>
-      tx.run(servantCypher.createHistoryLog, {
-        id: servant.id,
-        churchType,
-        historyRecord: historyRecordString(historyRecordStringArgs),
+      tx.run(servantCypher[`disconnectChurch${servantType}`], {
+        [`${servantLower}Id`]: servant.id ?? '',
+        churchId: church.id,
+        auth_id: servant.auth_id,
+        jwt: context.jwt,
       })
     )
-  )
 
-  await session.executeWrite((tx) =>
-    tx.run(servantCypher.connectHistoryLog, {
-      churchId: church.id,
-      servantId: servant.id,
-      logId: historyLogRes.id,
-      jwt: context.jwt,
-    })
-  )
+    const historyRecordStringArgs = {
+      servant,
+      church,
+      churchType,
+      servantType,
+      removed: true,
+    }
+
+    const historyLogRes = rearrangeCypherObject(
+      await session.executeWrite((tx) =>
+        tx.run(servantCypher.createHistoryLog, {
+          id: servant.id,
+          churchType,
+          historyRecord: historyRecordString(historyRecordStringArgs),
+        })
+      )
+    )
+
+    await session.executeWrite((tx) =>
+      tx.run(servantCypher.connectHistoryLog, {
+        churchId: church.id,
+        servantId: servant.id,
+        logId: historyLogRes.id,
+        jwt: context.jwt,
+      })
+    )
+  } finally {
+    await session.close()
+  }
 }
 
 export const makeServantCypher = async ({
@@ -209,71 +214,76 @@ export const makeServantCypher = async ({
   const { servantLower, priority } = terms
 
   const session = context.executionContext.session()
-  // Connect Leader to Church
 
-  const connectedChurchRes = rearrangeCypherObject(
-    await session
-      .run(servantCypher[`connectChurch${servantType}`], {
-        [`${servantLower}Id`]: servant.id,
-        churchId: church.id,
-        auth_id: servant.auth_id,
-        jwt: context.jwt,
-      })
-      .catch((e: any) =>
-        throwToSentry(`Error Connecting Church${servantType}`, e)
-      )
-  )
+  try {
+    // Connect Leader to Church
 
-  const historyRecordStringArgs: HistoryRecordArgs = {
-    servant,
-    servantType,
-    oldServant,
-    church,
-    churchType,
-    removed: false,
-    args,
-    higherChurch: {
-      type: nextHigherChurch(churchType),
-      name: connectedChurchRes?.higherChurchName,
-    },
-  }
+    const connectedChurchRes = rearrangeCypherObject(
+      await session
+        .run(servantCypher[`connectChurch${servantType}`], {
+          [`${servantLower}Id`]: servant.id,
+          churchId: church.id,
+          auth_id: servant.auth_id,
+          jwt: context.jwt,
+        })
+        .catch((e: any) =>
+          throwToSentry(`Error Connecting Church${servantType}`, e)
+        )
+    )
 
-  const serviceLogRes = rearrangeCypherObject(
-    await session
-      .run(servantCypher.createHistoryLog, {
-        id: servant.id,
-        churchType,
-        historyRecord: historyRecordString(historyRecordStringArgs),
-      })
-      .catch((e: any) => throwToSentry(`Error Creating History Log`, e))
-  )
-  if (servantType === 'Leader') {
-    await session
-      .run(servantCypher.makeHistoryServiceLog, {
-        logId: serviceLogRes.id,
-        priority,
-      })
-      .catch((e: any) =>
-        throwToSentry(`Error Converting History to Service Log`, e)
-      )
-    await session
-      .run(servantCypher.connectServiceLog, {
-        churchId: church.id,
-        servantId: servant.id,
-        oldServantId: oldServant?.id ?? '',
-        logId: serviceLogRes.id,
-        jwt: context.jwt,
-      })
-      .catch((e: any) => throwToSentry(`Error Connecting Service Log`, e))
-  } else {
-    await session
-      .run(servantCypher.connectHistoryLog, {
-        churchId: church.id,
-        servantId: servant.id,
-        oldServantId: oldServant?.id ?? '',
-        logId: serviceLogRes.id,
-        jwt: context.jwt,
-      })
-      .catch((e: any) => throwToSentry(`Error Connecting History Log`, e))
+    const historyRecordStringArgs: HistoryRecordArgs = {
+      servant,
+      servantType,
+      oldServant,
+      church,
+      churchType,
+      removed: false,
+      args,
+      higherChurch: {
+        type: nextHigherChurch(churchType),
+        name: connectedChurchRes?.higherChurchName,
+      },
+    }
+
+    const serviceLogRes = rearrangeCypherObject(
+      await session
+        .run(servantCypher.createHistoryLog, {
+          id: servant.id,
+          churchType,
+          historyRecord: historyRecordString(historyRecordStringArgs),
+        })
+        .catch((e: any) => throwToSentry(`Error Creating History Log`, e))
+    )
+    if (servantType === 'Leader') {
+      await session
+        .run(servantCypher.makeHistoryServiceLog, {
+          logId: serviceLogRes.id,
+          priority,
+        })
+        .catch((e: any) =>
+          throwToSentry(`Error Converting History to Service Log`, e)
+        )
+      await session
+        .run(servantCypher.connectServiceLog, {
+          churchId: church.id,
+          servantId: servant.id,
+          oldServantId: oldServant?.id ?? '',
+          logId: serviceLogRes.id,
+          jwt: context.jwt,
+        })
+        .catch((e: any) => throwToSentry(`Error Connecting Service Log`, e))
+    } else {
+      await session
+        .run(servantCypher.connectHistoryLog, {
+          churchId: church.id,
+          servantId: servant.id,
+          oldServantId: oldServant?.id ?? '',
+          logId: serviceLogRes.id,
+          jwt: context.jwt,
+        })
+        .catch((e: any) => throwToSentry(`Error Connecting History Log`, e))
+    }
+  } finally {
+    await session.close()
   }
 }

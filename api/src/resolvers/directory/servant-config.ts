@@ -22,273 +22,45 @@ export type ServantMutationConfig = {
 export const SERVANT_MUTATIONS: ServantMutationConfig[] = [
   // ADMINISTRATIVE MUTATIONS
   {
-   
-   
-   
-   
-   ,
- 
-   
     name: 'MakeOversightAdmin',
-   
-   
-   
-   ,
- 
-   
     churchType: 'Oversight',
-   
-   
-   
-   ,
- 
-   
     servantType: 'Admin',
-   
-   
-   
-   ,
- 
-   
-    requiredPermissionLevel:
-    'Denomination',
-   
-   
-   ,
- 
-   
+    requiredPermissionLevel: 'Denomination',
     action: 'make',
-   
-   
-   
-   ,
- 
-  }
-,   
-   
-   
-   
-   ,
- 
+  },
   {
-   
-   
-   
-   
-   ,
- 
-   
     name: 'RemoveOversightAdmin',
-   
-   
-   
-   ,
- 
-   
     churchType: 'Oversight',
-   
-   
-   
-   ,
- 
-   
     servantType: 'Admin',
-   
-   
-   
-   ,
- 
-   
-    requiredPermissionLevel: 'Denomi
-n   ation',
-   
-   
-   ,
- 
-   
+    requiredPermissionLevel: 'Denomination',
     action: 'remove',
-   
-   
-   
-   ,
- 
-  }
-,   
-   
-   
-   
-   ,
- 
+  },
   {
     name: 'MakeCampusAdmin',
-   
     churchType: 'Campus',
-   
-   
-   
-   ,
- 
-   
     servantType: 'Admin',
-   
-   
-   
-   ,
- 
-   
-    requiredPermissionLevel: '
-O   versight',
-   
-   
-   ,
- 
-   
+    requiredPermissionLevel: 'Oversight',
     action: 'make',
-   
-   
-   
-   ,
- 
-  }
-,   
-   
-   
-   
-   ,
- 
+  },
   {
-   
-   
-   
-   
-   ,
- 
-   
     name: 'RemoveCampusAdmin',
-   
-   
-   
-   ,
- 
-   
     churchType: 'Campus',
-   
-   
-   
-   ,
- 
-   
     servantType: 'Admin',
-   
-   
-   
-   ,
- 
-   
-    requiredPermissionLevel: 'O
-   versight',
-   
-   
-   ,
- 
-   
+    requiredPermissionLevel: 'Oversight',
     action: 'remove',
-   
-   
-   
-   ,
- 
-  }
-   ,
-   
-   
-   
-   ,
- 
+  },
   {
-   
-   
-   
-   
-   ,
- 
-   
     name: 'MakeStreamAdmin',
-   
-   
-   
-   ,
- 
-   
     churchType: 'Stream',
-   
-   
-   
-   ,
- 
-   
     servantType: 'Admin',
-   
-   
-   
-   ,
- 
-   
-    requiredPermissionLevel: 'Campu
-   s',
-   
-   
-   ,
- 
-   
+    requiredPermissionLevel: 'Campus',
     action: 'make',
-   
-   
-   
-   ,
- 
-  }
-   ,
-   
-   
-   
-   ,
- 
+  },
   {
-   
-   
-   
-   
-   ,
- 
-   
     name: 'RemoveStreamAdmin',
-   
-   
-   
-   ,
- 
-   
     churchType: 'Stream',
-   
-   
-   
-   ,
- 
-   
     servantType: 'Admin',
-   
-   
-   
-   ,
- 
-   
-    requiredPermissionLevel:
-    'Campus',
-   
-   
-   ,
- 
+    requiredPermissionLevel: 'Campus',
     action: 'remove',
   },
   {

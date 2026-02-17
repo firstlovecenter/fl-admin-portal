@@ -91,23 +91,43 @@ const validateMutation = (params: {
 
 /**
  * Query builder: Fetch church and servant data
- * Eliminates duplicated database calls pattern
+ * Each query gets its own independent session to avoid session reuse
  */
 const fetchChurchAndServant = async (
-  session: any,
+  context: Context,
   memberQuery: any,
   churchId: string,
   servantId: string
 ) => {
-  const [churchRes, servantRes] = await Promise.all([
-    session.run(matchChurchQuery, { id: churchId }),
-    session.run(memberQuery, { id: servantId }),
-  ])
+  // Separate session for church query
+  const churchSession = context.executionContext.session()
+  const churchPromise = (async () => {
+    try {
+      const result = await churchSession.executeRead((tx) =>
+        tx.run(matchChurchQuery, { id: churchId })
+      )
+      return rearrangeCypherObject(result)
+    } finally {
+      await churchSession.close()
+    }
+  })()
 
-  return {
-    church: rearrangeCypherObject(churchRes),
-    servant: rearrangeCypherObject(servantRes),
-  }
+  // Separate session for servant query
+  const servantSession = context.executionContext.session()
+  const servantPromise = (async () => {
+    try {
+      const result = await servantSession.executeRead((tx) =>
+        tx.run(memberQuery, { id: servantId })
+      )
+      return rearrangeCypherObject(result)
+    } finally {
+      await servantSession.close()
+    }
+  })()
+
+  const [church, servant] = await Promise.all([churchPromise, servantPromise])
+
+  return { church, servant }
 }
 
 /**
@@ -136,56 +156,55 @@ export const MakeServant = async (
     servantId: args[`${servantLower}Id`],
   })
 
-  const session = context.executionContext.session()
+  // Fetch primary entities with independent sessions
+  const { church, servant } = await fetchChurchAndServant(
+    context,
+    memberQuery,
+    args[`${churchLower}Id`],
+    args[`${servantLower}Id`]
+  )
 
-  try {
-    // Fetch primary entities
-    const { church, servant } = await fetchChurchAndServant(
-      session,
-      memberQuery,
-      args[`${churchLower}Id`],
-      args[`${servantLower}Id`]
-    )
+  validateServant(servant)
 
-    validateServant(servant)
-
-    // Fetch old servant if being replaced
-    const oldServant = args[`old${servantType}Id`]
-      ? rearrangeCypherObject(
-          await session.run(memberQuery, {
-            id: args[`old${servantType}Id`],
-          })
-        )
-      : undefined
-
-    const churchNameInEmail = `${church.name} ${church.type}`
-
-    // Execute promotion and notification in parallel
-    await Promise.all([
-      makeServantCypher({
-        context,
-        churchType,
-        servantType,
-        servant,
-        args,
-        church,
-        oldServant,
-      }),
-      sendServantPromotionEmail(
-        servant.email,
-        servant.firstName,
-        servant.lastName,
-        churchType,
-        servantType,
-        churchNameInEmail,
-        texts.html.helpdesk
-      ),
-    ])
-
-    return parseForCache(servant, church, verb, servantLower)
-  } finally {
-    await session.close()
+  // Fetch old servant if being replaced (independent session per query)
+  let oldServant: Member | undefined
+  if (args[`old${servantType}Id`]) {
+    const oldServantSession = context.executionContext.session()
+    try {
+      const oldServantRes = await oldServantSession.executeRead((tx) =>
+        tx.run(memberQuery, { id: args[`old${servantType}Id`] })
+      )
+      oldServant = rearrangeCypherObject(oldServantRes)
+    } finally {
+      await oldServantSession.close()
+    }
   }
+
+  const churchNameInEmail = `${church.name} ${church.type}`
+
+  // Execute promotion and notification in parallel
+  await Promise.all([
+    makeServantCypher({
+      context,
+      churchType,
+      servantType,
+      servant,
+      args,
+      church,
+      oldServant,
+    }),
+    sendServantPromotionEmail(
+      servant.email,
+      servant.firstName,
+      servant.lastName,
+      churchType,
+      servantType,
+      churchNameInEmail,
+      texts.html.helpdesk
+    ),
+  ])
+
+  return parseForCache(servant, church, verb, servantLower)
 }
 
 /**
@@ -214,45 +233,55 @@ export const RemoveServant = async (
     servantId: args[`${servantLower}Id`],
   })
 
-  const session = context.executionContext.session()
+  // Fetch primary entities with independent session
+  const { church, servant } = await fetchChurchAndServant(
+    context,
+    memberQuery,
+    args[`${churchLower}Id`],
+    args[`${servantLower}Id`]
+  )
 
-  try {
-    // Fetch primary entities
-    const { church, servant } = await fetchChurchAndServant(
-      session,
-      memberQuery,
-      args[`${churchLower}Id`],
-      args[`${servantLower}Id`]
-    )
-
-    // Fetch replacement servant if exists
-    const newServant = args[`new${servantType}Id`]
-      ? rearrangeCypherObject(
-          await session.run(memberQuery, {
-            id: args[`new${servantType}Id`],
-          })
-        )
-      : undefined
-
-    // Early exit if validation fails (except for special types)
-    const specialRemovalTypes = ['ArrivalsCounter', 'Teller', 'ArrivalsPayer']
-    if (
-      (!validateServant(servant) || !validateServant(newServant ?? {})) &&
-      !specialRemovalTypes.includes(servantType) &&
-      !removeOnly
-    ) {
-      return null
+  // Fetch replacement servant if exists (independent session)
+  let newServant: Member | undefined
+  if (args[`new${servantType}Id`]) {
+    const newServantSession = context.executionContext.session()
+    try {
+      const newServantRes = await newServantSession.executeRead((tx) =>
+        tx.run(memberQuery, { id: args[`new${servantType}Id`] })
+      )
+      newServant = rearrangeCypherObject(newServantRes)
+    } finally {
+      await newServantSession.close()
     }
+  }
 
-    // Execute removal and notification in parallel
-    await Promise.all([
+  // Early exit if validation fails (except for special types)
+  const specialRemovalTypes = ['ArrivalsCounter', 'Teller', 'ArrivalsPayer']
+  if (
+    (!validateServant(servant) || !validateServant(newServant ?? {})) &&
+    !specialRemovalTypes.includes(servantType) &&
+    !removeOnly
+  ) {
+    return null
+  }
+
+  // Execute removal operations in parallel, skipping if no valid servant
+  const operations: Promise<any>[] = []
+
+  if (servant.id) {
+    operations.push(
       removeServantCypher({
         context,
         churchType,
         servantType,
         servant,
         church,
-      }),
+      })
+    )
+  }
+
+  if (servant.email) {
+    operations.push(
       sendServantRemovalEmail(
         servant.email,
         servant.firstName,
@@ -260,11 +289,13 @@ export const RemoveServant = async (
         churchType,
         servantType,
         churchInEmail(church)
-      ),
-    ])
-
-    return parseForCacheRemoval(servant, church, verb, servantLower)
-  } finally {
-    await session.close()
+      )
+    )
   }
+
+  if (operations.length > 0) {
+    await Promise.all(operations)
+  }
+
+  return parseForCacheRemoval(servant, church, verb, servantLower)
 }
