@@ -148,7 +148,7 @@ CREATE (bussingRecord:BussingRecord {createdAt:datetime()})
     MERGE (bussingRecord)-[:BUSSED_ON]->(serviceDate)
 
 WITH bussingRecord, bacenta, serviceDate,  date($serviceDate).week AS week
-    MATCH (leader:Member {auth_id: $jwt.sub})
+    MATCH (leader:Member {id: $jwt.userId})
     MATCH (bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
     MERGE (bussingRecord)-[:LOGGED_BY]->(leader)
 
@@ -167,7 +167,7 @@ MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId})
       vehicleRecord.arrivalTime = datetime()
 
     WITH vehicleRecord
-          MATCH (admin:Member {auth_id: $jwt.sub})
+          MATCH (admin:Member {id: $jwt.userId})
           MERGE (vehicleRecord)-[:COUNTED_BY]->(admin)
 
       RETURN vehicleRecord
@@ -216,7 +216,7 @@ vehicleRecord.momoNumber = $momoNumber,
 vehicleRecord.mobileNetwork = $mobileNetwork
 
 WITH vehicleRecord, bussingRecord
-MATCH (leader:Member {auth_id: $jwt.sub})
+MATCH (leader:Member {id: $jwt.userId})
 MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
 
 WITH vehicleRecord, bussingRecord

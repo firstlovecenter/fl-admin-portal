@@ -737,7 +737,7 @@ extend type Mutation {
       WITH creativeArt
       MATCH (leader:Member:Active {id:$leaderId}) WHERE leader.email IS NOT NULL
       MATCH (campus:Campus {id:$campusId})
-      MATCH (currentUser:Active:Member {auth_id:$jwt.sub})
+      MATCH (currentUser:Active:Member {id:$jwt.userId})
 
       CREATE (log:HistoryLog:ServiceLog)
         SET log.id = apoc.create.uuid(),
@@ -782,7 +782,7 @@ extend type Mutation {
       MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
       MATCH (stream:Stream {id: $streamId})
       MATCH (creativeArt:CreativeArts {id: $creativeArtsId})
-      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
+      MATCH (currentUser:Active:Member {id: $jwt.userId})
         SET ministry.name = stream.name + ' ' +  creativeArt.name
 
       WITH ministry, stream, leader, creativeArt, currentUser
@@ -830,7 +830,7 @@ extend type Mutation {
 
       WITH hub, log
       MATCH (leader:Active:Member {id: $leaderId})  WHERE leader.email IS NOT NULL
-      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
+      MATCH (currentUser:Active:Member {id: $jwt.userId})
       MATCH (ministry:Ministry {id: $ministryId})<-[:HAS]-(creativeArts:CreativeArts)
       MATCH (council:Council {id: $councilId})
         SET hub.name = council.name + ' ' + creativeArts.name,
@@ -891,7 +891,7 @@ extend type Mutation {
 
       WITH hub, log
       MATCH (leader:Active:Member {id: $leaderId})  WHERE leader.email IS NOT NULL
-      MATCH (currentUser:Active:Member {auth_id: $jwt.sub})
+      MATCH (currentUser:Active:Member {id: $jwt.userId})
       MATCH (council:HubCouncil {id: $hubCouncilId})
       MATCH (governorship:Governorship {id: $governorshipId})
       MATCH (meetingDay:ServiceDay {day: $meetingDay})
@@ -1031,7 +1031,7 @@ extend type Mutation {
         log.historyRecord = fellowship.name + ' Fellowship was made into a hub fellowship for ' + ministry.name
 
       WITH log,fellowship, hub
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MERGE (hub)-[:HAS]->(fellowship)
       MERGE (date:TimeGraph {date:date()})
       MERGE (log)-[:LOGGED_BY]->(admin)
@@ -1068,7 +1068,7 @@ extend type Mutation {
 
       WITH log,fellowship
 
-      MATCH (admin:Active:Member {auth_id: $jwt.sub})
+      MATCH (admin:Active:Member {id: $jwt.userId})
       MATCH (fellowship)<-[r:HAS]-(hub:Hub)
       DELETE r
 

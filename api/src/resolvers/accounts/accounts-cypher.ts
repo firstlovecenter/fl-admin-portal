@@ -25,7 +25,7 @@ RETURN council, transaction, depositor
 
 export const creditBussingSocietyFromWeekday = `
  MATCH (weekdayTrans:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
- MATCH (requester:Member {auth_id: $jwt.sub})
+ MATCH (requester:Member {id: $jwt.userId})
 
  WITH council, requester, weekdayTrans
 
@@ -64,7 +64,7 @@ RETURN transaction, depositor
 
 export const debitBussingSociety = `
 MATCH  (council:Council {id: $councilId})
-MATCH (requester:Member {auth_id: $jwt.sub})
+MATCH (requester:Member {id: $jwt.userId})
 
 WITH council, requester
 
@@ -90,7 +90,7 @@ RETURN transaction, requester`
 
 export const depositIntoCouncilCurrentAccount = `
 MATCH (council:Council {id: $councilId})
-MATCH (depositor:Member {auth_id: $jwt.sub})
+MATCH (depositor:Member {id: $jwt.userId})
   SET council.weekdayBalance = council.weekdayBalance + $weekdayBalanceDepositAmount
 
 WITH council, depositor
@@ -114,7 +114,7 @@ RETURN council, transaction, depositor
 
 export const depositIntoCoucilBussingSociety = `
    MATCH (council:Council {id: $councilId})
-   MATCH (depositor:Member {auth_id: $jwt.sub})
+   MATCH (depositor:Member {id: $jwt.userId})
      SET council.bussingSocietyBalance = council.bussingSocietyBalance + $bussingSocietyDepositAmount
 
    WITH council, depositor
