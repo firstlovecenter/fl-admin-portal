@@ -27,8 +27,17 @@ yarn-error.log*
 credentials.json
 combined-schema.*
 .vscode/mcp.json
+.npmrc
 
 # Lambda deployment files
 lambda-package/
 lambda-package.zip
 temp-compiled-resolvers/
+
+# Compiled TypeScript resolvers (generated from .ts files)
+api/src/resolvers/**/*.js
+!api/src/resolvers/**/*.test.js
+
+# AWS Amplify files
+.amplify/
+amplify-artifacts.json

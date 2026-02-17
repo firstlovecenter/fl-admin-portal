@@ -74,16 +74,13 @@ const resolvers = {
     },
     ...mapsResolvers.Member,
   },
-  Fellowship: {},
-  Bacenta: {},
-  Governorship: {},
+
   Council: {
     ...downloadCreditsQueries.Council,
   },
   Stream: {
     ...arrivalsResolvers.Stream,
   },
-  Campus: {},
 
   Mutation: {
     ...MakeServantResolvers,

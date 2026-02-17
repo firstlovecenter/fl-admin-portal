@@ -1,5 +1,4 @@
 import { useQuery } from '@apollo/client'
-import { useAuth0 } from '@auth0/auth0-react'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import InitialLoading from 'components/base-component/InitialLoading'
 import { GET_LOGGED_IN_USER } from 'components/UserProfileIcon/UserQueries'
@@ -10,7 +9,8 @@ import { getUserServantRoles } from 'pages/dashboards/dashboard-utils'
 import { SERVANT_CHURCH_LIST } from 'pages/dashboards/DashboardQueries'
 import { permitMe } from 'permission-utils'
 import { useContext, useEffect } from 'react'
-import useAuth from './useAuth'
+import { useAuth } from 'contexts/AuthContext'
+import useAuthPermissions from './useAuth'
 
 const SetPermissions = ({
   token,
@@ -23,16 +23,31 @@ const SetPermissions = ({
 
   const { doNotUse } = useContext(ChurchContext)
 
-  const { isAuthenticated, user } = useAuth0()
-  const { isAuthorised } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  const { isAuthorised } = useAuthPermissions()
+
+  console.log('🔒 SetPermissions: Initialized', {
+    currentUser,
+    isAuthenticated,
+    user,
+    hasToken: !!token,
+  })
 
   const { data, loading, error } = useQuery(SERVANT_CHURCH_LIST, {
     variables: { id: currentUser.id },
     skip: !currentUser.id || !isAuthenticated,
     onCompleted: (data) => {
+      console.log('✅ SetPermissions: SERVANT_CHURCH_LIST completed', data)
       const servant = { ...data?.members[0], ...currentUser }
       setUserJobs(getUserServantRoles(servant))
     },
+  })
+
+  console.log('📋 SetPermissions: SERVANT_CHURCH_LIST query state', {
+    loading,
+    error,
+    hasData: !!data,
+    skip: !currentUser.id || !isAuthenticated,
   })
 
   const {
@@ -43,6 +58,7 @@ const SetPermissions = ({
     variables: { email: user?.email },
     skip: !user?.email || !isAuthenticated,
     onCompleted: (data) => {
+      console.log('✅ SetPermissions: GET_LOGGED_IN_USER completed', data)
       try {
         const streamName = data.memberByEmail.stream_name
 
@@ -168,14 +184,28 @@ const SetPermissions = ({
     }
   }, [isAuthenticated, currentUser, isAuthorised, doNotUse])
 
-  if (loading || !token) {
+  console.log('🎬 SetPermissions: Render decision', {
+    loggedInLoading,
+    loading,
+    hasToken: !!token,
+    willShowLoading: loggedInLoading || !token,
+    hasData: !!data,
+    hasLoggedInData: !!loggedInData,
+  })
+
+  // Show loading while getting member data or if no token
+  if (loggedInLoading || !token) {
+    console.log(
+      '⏳ SetPermissions: Showing InitialLoading (fetching member by email)'
+    )
     return <InitialLoading text={'Retrieving your church information...'} />
   }
 
+  console.log('✅ SetPermissions: Rendering children with ApolloWrapper')
   return (
     <ApolloWrapper
       data={data || loggedInData}
-      loading={loading || loggedInLoading}
+      loading={loading}
       error={error || loggedInError}
     >
       {children}

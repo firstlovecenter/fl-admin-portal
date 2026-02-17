@@ -133,7 +133,6 @@ const StageAttendanceForm = ({
 
                       <MultiImageUpload
                         name="onStagePictures"
-                        uploadPreset={import.meta.env.VITE_CLOUDINARY_SERVICES}
                         placeholder="Choose"
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="upload pictures"

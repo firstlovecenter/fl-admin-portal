@@ -54,36 +54,12 @@ const aggregates = fs
   .readFileSync(path.join(__dirname, './aggregates.graphql'))
   .toString('utf-8')
 
-const campaigns = fs
-  .readFileSync(path.join(__dirname, 'campaigns.graphql'))
-  .toString('utf-8')
-
 const quickFacts = fs
   .readFileSync(path.join(__dirname, './directory-quick-facts.graphql'))
   .toString('utf-8')
 
 const bankingAnagkazo = fs
   .readFileSync(path.join(__dirname, './banking-anagkazo.graphql'))
-  .toString('utf-8')
-
-const equipmentCampaign = fs
-  .readFileSync(path.join(__dirname, './campaigns-equipment.graphql'))
-  .toString('utf-8')
-
-const sheepSeeking = fs
-  .readFileSync(path.join(__dirname, './campaigns-sheep-seeking.graphql'))
-  .toString('utf-8')
-
-const multiplicationCampaign = fs
-  .readFileSync(path.join(__dirname, './campaigns-multiplication.graphql'))
-  .toString('utf-8')
-
-const swollenSundayCampaign = fs
-  .readFileSync(path.join(__dirname, './campaigns-swollen-sunday.graphql'))
-  .toString('utf-8')
-
-const shepherdingControlCampaign = fs
-  .readFileSync(path.join(__dirname, './campaigns-shepherding-control.graphql'))
   .toString('utf-8')
 
 const creativeartsChurches = fs
@@ -114,15 +90,9 @@ const array = [
   arrivals,
   arrivalsPayment,
   aggregates,
-  campaigns,
   quickFacts,
   servicesNoIncome,
   servicesCreativeArts,
-  equipmentCampaign,
-  sheepSeeking,
-  multiplicationCampaign,
-  swollenSundayCampaign,
-  shepherdingControlCampaign,
   creativeartsChurches,
   maps,
   accounts,
@@ -131,10 +101,8 @@ const array = [
 
 const combinedSchema = array.join(' ')
 
-if (process.env.DOPPLER_ENVIRONMENT === 'dev') {
-  // Write the combined schema to a file
-  const outputPath = path.join(__dirname, 'combined-schema.gql')
-  fs.writeFileSync(outputPath, combinedSchema, 'utf-8')
-}
+// Write the combined schema to a file
+// const outputPath = path.join(__dirname, 'combined-schema.gql')
+// fs.writeFileSync(outputPath, combinedSchema, 'utf-8')
 
 exports.typeDefs = combinedSchema

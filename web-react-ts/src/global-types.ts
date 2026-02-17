@@ -278,7 +278,6 @@ export interface MemberWithChurches extends Member {
   isArrivalsAdminForStream: Church[]
   isArrivalsAdminForCampus: Church[]
   isArrivalsAdminForOversight: Church[]
-  isSheepSeekerForStream: Church[]
 }
 
 export interface Servant {
@@ -354,7 +353,6 @@ export type Role =
   | 'arrivalsCounterStream'
   | 'arrivalsPayerCouncil'
   | 'tellerStream'
-  | 'sheepseekerStream'
   | 'fishers'
   | 'all'
 
@@ -365,14 +363,12 @@ export type VerbTypes =
   | 'arrivalsCounter'
   | 'arrivalsPayer'
   | 'teller'
-  | 'sheepseeker'
   | 'leads'
   | 'isAdminFor'
   | 'isArrivalsAdminFor'
   | 'isArrivalsCounterFor'
   | 'isArrivalsPayerFor'
   | 'isTellerFor'
-  | 'isSheepSeekerFor'
 
 export type ServiceRecord = {
   __typename: 'ServiceRecord' | 'RehearsalRecord' | 'StageAttendanceRecord'
@@ -443,5 +439,5 @@ export interface HigherChurch extends Church {
   memberCount: number
   hubCount: number
   ministryCount: number
-  target: number
+  target?: number
 }

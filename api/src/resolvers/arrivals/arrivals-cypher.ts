@@ -26,15 +26,13 @@ RETURN record, bacenta.name AS bacentaName, date.date AS date
 export const getVehicleRecordWithDate = `
 MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)<-[:LEADS]-(leader:Active:Member)
 MATCH (bussing)-[:BUSSED_ON]->(date:TimeGraph)
-SET record.target = bacenta.target,
-record.momoNumber = bacenta.momoNumber, 
+SET record.momoNumber = bacenta.momoNumber, 
 record.mobileNetwork = bacenta.mobileNetwork,
 record.momoName = bacenta.momoName,
 record.outbound = bacenta.outbound,
 record.recipientCode = bacenta.recipientCode
 
 RETURN record.id AS vehicleRecordId,
-record.target AS target,
 record.attendance AS attendance, 
 record.vehicle AS vehicle,
 record.outbound AS outbound,

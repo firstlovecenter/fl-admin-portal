@@ -26,7 +26,7 @@ WHERE church:Hub OR church:HubCouncil OR church:Ministry
 MATCH (church)<-[:LEADS]-(servant:Active:Member)
 UNWIND labels(church) AS churchType 
 WITH churchType, church, servant WHERE churchType IN ['Hub', 'HubCouncil','Ministry']
-RETURN church.id AS churchId, church.name AS churchName, servant.id AS servantId, servant.auth_id AS auth_id, servant.firstName AS firstName, servant.lastName AS lastName, churchType AS churchType
+RETURN church.id AS churchId, church.name AS churchName, servant.id AS servantId, servant.firstName AS firstName, servant.lastName AS lastName, churchType AS churchType
 `
 
 export const checkMinistryAttendanceFormFilledThisWeek = `
@@ -58,7 +58,7 @@ export const recordSundayMinistryAttendance = `
     WITH ministryAttendanceRecord
     MATCH (church {id: $churchId}) WHERE church:HubCouncil
     MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-    MATCH (leader:Member {auth_id: $jwt.sub})
+    MATCH (leader:Member {id: $jwt.sub})
 
     MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 
@@ -93,7 +93,7 @@ WITH rehearsalRecord
 
 MATCH (church {id: $churchId}) WHERE church:Hub OR church:HubCouncil OR church:Ministry
 MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (leader:Member {auth_id: $jwt.sub})
+MATCH (leader:Member {id: $jwt.sub})
 
 MERGE (serviceDate:TimeGraph {date:date($serviceDate)})
 
@@ -131,7 +131,7 @@ export const recordOnStageAttendance = `
     WITH stageAttendanceRecord
     MATCH (church {id: $churchId}) WHERE church:Ministry
     MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-    MATCH (leader:Member {auth_id: $jwt.sub})
+    MATCH (leader:Member {id: $jwt.sub})
 
     MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 
@@ -161,7 +161,7 @@ serviceRecord.noServiceReason = $noServiceReason
 WITH serviceRecord
 MATCH (church {id: $churchId}) WHERE church:Hub
 MATCH (church)-[:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (leader:Active:Member {auth_id: $jwt.sub})
+MATCH (leader:Active:Member {id: $jwt.sub})
 
 MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 MERGE (serviceRecord)-[:LOGGED_BY]->(leader)
@@ -178,7 +178,7 @@ stagePerformanceRecord.noStagePerformanceReason = $noStagePerformanceReason
 WITH stagePerformanceRecord
 MATCH (church {id: $churchId}) WHERE church:Ministry
 MATCH (church)-[:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (leader:Active:Member {auth_id: $jwt.sub})
+MATCH (leader:Active:Member {id: $jwt.sub})
 
 MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 MERGE (stagePerformanceRecord)-[:LOGGED_BY]->(leader)

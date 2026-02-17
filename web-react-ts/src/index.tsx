@@ -11,21 +11,14 @@ import {
   InMemoryCache,
 } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
-import { Auth0Provider, useAuth0 } from '@auth0/auth0-react'
 import CacheBuster from 'CacheBuster'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import SimpleApp from './SimpleApp'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './color-theme.css'
 import './index.css'
 import ReactGA from 'react-ga4'
-import * as Sentry from '@sentry/react'
-import {
-  useLocation,
-  useNavigationType,
-  createRoutesFromChildren,
-  matchRoutes,
-} from 'react-router-dom'
-import { BrowserTracing } from '@sentry/tracing'
 import {
   SnackbarKey,
   SnackbarProvider,
@@ -34,31 +27,36 @@ import {
 } from 'notistack'
 import { Button, Card } from 'react-bootstrap'
 import SplashSreen from 'pages/splash-screen/SplashSreen'
-import Login from 'components/Login'
 import AppWithContext from 'AppWithContext'
 
 const AppWithApollo = () => {
   const [accessToken, setAccessToken] = useState<string>('')
-  const { getAccessTokenSilently, isLoading, user } = useAuth0()
+  const { getAccessTokenSilently, isLoading, user } = useAuth()
 
   const getAccessToken = useCallback(async () => {
     try {
-      const token = await getAccessTokenSilently({
-        audience: 'https://flcadmin.netlify.app/graphql',
-        scope: 'read:current_user',
-      })
+      console.log('🎫 AppWithApollo: Fetching access token...')
+      const token = await getAccessTokenSilently()
 
       setAccessToken(token)
       sessionStorage.setItem('token', token)
     } catch (err) {
       // eslint-disable-next-line
-      console.error('Error Obtaining Token', err)
+      console.error('❌ Error Obtaining Token', err)
     }
   }, [getAccessTokenSilently])
 
   useEffect(() => {
-    getAccessToken()
-  }, [getAccessToken])
+    console.log(
+      '🚀 AppWithApollo: Initializing, isLoading:',
+      isLoading,
+      'user:',
+      user
+    )
+    if (!isLoading && user) {
+      getAccessToken()
+    }
+  }, [getAccessToken, isLoading, user])
 
   const httpLink = createHttpLink({
     uri:
@@ -67,8 +65,8 @@ const AppWithApollo = () => {
   })
 
   const authLink = setContext((_, { headers }) => {
-    // get the authentication token from local storage if it exists
-    const token = sessionStorage.getItem('token') || accessToken
+    // get the authentication token from memory or localStorage
+    const token = accessToken
 
     // return the headers to the context so httpLink can read them
     return {
@@ -190,13 +188,16 @@ const AppWithApollo = () => {
   // }
 
   if (isLoading) {
+    console.log('⏳ AppWithApollo: Auth still loading...')
     return <SplashSreen />
   }
 
-  if (!user) {
-    return <Login />
-  }
-
+  console.log(
+    '🎨 AppWithApollo: Rendering main app, user:',
+    user,
+    'accessToken:',
+    accessToken?.substring(0, 20)
+  )
   return (
     <ApolloProvider client={client}>
       <SnackbarProvider />
@@ -222,15 +223,9 @@ const AppWithAuth = () => (
       }
 
       return (
-        <Auth0Provider
-          domain={import.meta.env.VITE_AUTH0_DOMAIN || ''}
-          clientId={import.meta.env.VITE_AUTH0_CLIENT_ID || ''}
-          redirectUri={window.location.origin}
-          audience="https://flcadmin.netlify.app/graphql"
-          scope="true"
-        >
+        <AuthProvider>
           <AppWithApollo />
-        </Auth0Provider>
+        </AuthProvider>
       )
     }}
   </CacheBuster>
@@ -243,43 +238,10 @@ const container: HTMLElement =
   document.getElementById('root') || document.createElement('div')
 const root = createRoot(container)
 
-Sentry.init({
-  dsn: 'https://a6fccd390f7a4cdfa48da901b0e2e22f@o1423098.ingest.sentry.io/6770463',
-
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
-  // If the entire session is not sampled, use the below sample rate to sample
-  // sessions when an error occurs.
-  replaysOnErrorSampleRate: 1.0,
-  integrations: [
-    new Sentry.Replay(),
-    new BrowserTracing({
-      routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-        React.useEffect,
-        useLocation,
-        useNavigationType,
-        createRoutesFromChildren,
-        // @ts-ignore
-        matchRoutes
-      ),
-    }),
-  ],
-  beforeSend(event) {
-    if (event.exception) {
-      sessionStorage.setItem('lastEventId', event.event_id ?? '')
-    }
-    return event
-  },
-
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-})
-
 root.render(
   <React.StrictMode>
-    <AppWithAuth />
+    <SimpleApp>
+      <AppWithAuth />
+    </SimpleApp>
   </React.StrictMode>
 )

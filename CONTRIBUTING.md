@@ -84,8 +84,7 @@ $ npm run start
 Please go through existing issues and pull requests to check if somebody else is
 already working on it, we use `someone working on it` label to mark such issues.
 
-`husky` will run type checking, prettier and a linter before you are allowed to commit
-but you may run these commands seperately
+Run these commands to validate your changes:
 
 ```sh
 npm test

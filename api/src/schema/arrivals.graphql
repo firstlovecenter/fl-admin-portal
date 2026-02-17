@@ -1240,7 +1240,6 @@ extend type Mutation {
 
   UpdateBacentaBussingDetails(
     bacentaId: ID!
-    target: Int!
     sprinterTopUp: Float!
     urvanTopUp: Float!
     outbound: Boolean!

@@ -14,7 +14,6 @@ import {
   permitLeaderAdmin,
   permitLeaderAdminArrivals,
   permitMe,
-  permitSheepSeeker,
   permitTellerStream,
 } from 'permission-utils'
 
@@ -92,7 +91,6 @@ export const roles: {
     'isArrivalsAdminFor',
     'isArrivalsCounterFor',
     'isTellerFor',
-    'isSheepSeekerFor',
   ],
   Campus: ['leads', 'isAdminFor', 'isArrivalsAdminFor'],
   Oversight: ['leads', 'isAdminFor'],
@@ -117,8 +115,6 @@ export const parseRoles = (role: VerbTypes): VerbTypes => {
       return 'isArrivalsPayerFor'
     case 'teller':
       return 'isTellerFor'
-    case 'sheepseeker':
-      return 'isSheepSeekerFor'
 
     case 'leads':
       return 'leader'
@@ -132,8 +128,6 @@ export const parseRoles = (role: VerbTypes): VerbTypes => {
       return 'arrivalsPayer'
     case 'isTellerFor':
       return 'teller'
-    case 'isSheepSeekerFor':
-      return 'sheepseeker'
 
     default:
       return role
@@ -183,25 +177,6 @@ const setServantRoles = (args: ServantRolesArgs) => {
       church: servant[`${verb}`],
       number: servant[`${verb}`]?.length,
       link: authorisedLink(servant, permittedForLink, `/services`),
-    })
-
-    return
-  }
-
-  if (servantType === 'isSheepSeekerFor') {
-    const adminsOneChurch = servant[`${verb}`]?.length === 1 ?? false
-    userroles.push({
-      authRoles,
-      name: adminsOneChurch
-        ? churchType + ' ' + parseRoles(servantType)
-        : plural(churchType) + ' ' + parseRoles(servantType),
-      church: servant[`${verb}`],
-      number: servant[`${verb}`]?.length,
-      link: authorisedLink(
-        servant,
-        permittedForLink,
-        undefined
-      ),
     })
 
     return
@@ -594,20 +569,6 @@ export const getServantRoles = (servant: MemberWithChurches) => {
         servant,
         permitMe('Campus'),
         `/campus/displaydetails`
-      ),
-    })
-  }
-  if (servant?.isSheepSeekerForStream?.length) {
-    roleTitles.push('sheepseekerStream')
-    userroles.push({
-      authRoles: 'sheepseekerStream',
-      name: 'Sheep Seeker',
-      church: servant?.isSheepSeekerForStream,
-      number: servant?.isSheepSeekerForStream?.length,
-      link: authorisedLink(
-        servant,
-        permitSheepSeeker(),
-        undefined
       ),
     })
   }

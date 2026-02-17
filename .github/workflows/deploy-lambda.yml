@@ -3,10 +3,11 @@ name: Deploy GraphQL API to AWS Lambda
 on:
   push:
     branches:
-      - deploy
+      - main
+      - dev
     paths:
-      - 'api/**' # Only trigger when backend files change
-      - '!api/src/functions/background/**' # Exclude background functions
+      - "api/**" # Only trigger when backend files change
+      - "!api/src/functions/background/**" # Exclude background functions
 
 jobs:
   deploy:
@@ -20,8 +21,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Setup npm authentication
         run: |
@@ -100,10 +101,21 @@ jobs:
           cd lambda-package
           zip -r ../lambda-package.zip .
 
+      - name: Determine deployment target
+        id: target
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "function-name=arn:aws:lambda:eu-west-2:871777052000:function:fl-synago-graphql" >> $GITHUB_OUTPUT
+            echo "environment=Production" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+            echo "function-name=arn:aws:lambda:eu-west-2:871777052000:function:dev-fl-synago-graphql" >> $GITHUB_OUTPUT
+            echo "environment=Development" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
-            --function-name arn:aws:lambda:eu-west-2:871777052000:function:fl-synago-graphql \
+            --function-name ${{ steps.target.outputs.function-name }} \
             --zip-file fileb://lambda-package.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -117,5 +129,5 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: '🚀 Synago GraphQL API Lambda Deployment'
-          SLACK_MESSAGE: 'Commit: ${{ github.event.head_commit.message }} - Deploying GraphQL API to AWS Lambda ${{ job.status }}'
+          SLACK_TITLE: "🚀 Synago GraphQL API Lambda Deployment - ${{ steps.target.outputs.environment }}"
+          SLACK_MESSAGE: "Commit: ${{ github.event.head_commit.message }} - Deploying GraphQL API to AWS Lambda [${{ steps.target.outputs.environment }}] ${{ job.status }}"

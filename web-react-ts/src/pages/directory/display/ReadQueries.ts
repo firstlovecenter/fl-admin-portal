@@ -304,7 +304,6 @@ export const DISPLAY_BACENTA = gql`
         dayNumber
       }
       vacationStatus
-      target
       outbound
       sprinterTopUp
       urvanTopUp
@@ -357,7 +356,6 @@ export const DISPLAY_GOVERNORSHIP = gql`
     governorships(where: { id: $id }, options: { limit: 1 }) {
       id
       name
-      target
       stream_name
       hubCount
       bacentaCount
@@ -422,7 +420,6 @@ export const DISPLAY_COUNCIL = gql`
     councils(where: { id: $id }, options: { limit: 1 }) {
       id
       name
-      target
       stream {
         id
         name
@@ -491,7 +488,6 @@ export const DISPLAY_STREAM = gql`
       name
       vacationStatus
       bankAccount
-      target
       councilCount
       governorshipCount
       bacentaCount
@@ -561,7 +557,6 @@ export const DISPLAY_CAMPUS = gql`
       noIncomeTracking
       currency
       conversionRateToDollar
-      target
       streamCount
       councilCount
       governorshipCount

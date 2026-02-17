@@ -46,12 +46,6 @@
       "short_name": "Arrivals",
       "description": "View my arrivals page",
       "url": "/arrivals"
-    },
-    {
-      "name": "Campaigns",
-      "short_name": "Campaigns",
-      "description": "View my SSMG campaigns",
-      "url": "/campaigns/churchlist"
     }
   ],
   "start_url": "/",

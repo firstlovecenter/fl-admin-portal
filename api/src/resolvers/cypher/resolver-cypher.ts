@@ -1,5 +1,5 @@
 export const matchMemberFromAuthId = `
- MATCH (member:Member  {auth_id: $jwt.sub})
+ MATCH (member:Member  {id: $jwt.sub})
  RETURN member
 `
 
@@ -22,7 +22,6 @@ export const matchMemberQuery = `
 
 MATCH (member:Member {id: $id})
 RETURN member {
-  .id, .auth_id, .firstName, .lastName, .email, .phoneNumber, .whatsappNumber, .pictureUrl,
   
   leadsBacenta: [bacenta IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(bacenta:Bacenta) RETURN bacenta", {this: member}) | bacenta {.id, .name}],
   leadsGovernorship: [governorship IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(governorship:Governorship) RETURN governorship", {this: member}) | governorship {.id, .name}],
@@ -47,14 +46,12 @@ RETURN member {
 
 export const updateMemberAuthId = `
 MATCH (member:Member {id:$id})
-SET member.auth_id = $auth_id
 RETURN member
 `
 
 export const matchMemberOversightQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
-  .id, .auth_id, .firstName, .lastName, .email, .phoneNumber, .whatsappNumber, .pictureUrl,
   leadsOversight: [oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(oversight:Oversight) RETURN oversight", {this: member}) | oversight {.id, .name}],
   isAdminForOversight: [oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(oversight:Oversight) RETURN oversight", {this: member}) | oversight {.id, .name}]
 } AS member
@@ -63,7 +60,6 @@ RETURN member {
 export const matchMemberDenominationQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
-  .id, .auth_id, .firstName, .lastName, .email, .phoneNumber, .whatsappNumber, .pictureUrl,
   leadsDenomination: [denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(denomination:Denomination) RETURN denomination", {this: member}) | denomination {.id, .name}],
   isAdminForDenomination: [denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(denomination:Denomination) RETURN denomination", {this: member}) | denomination {.id, .name}]
 } AS member
@@ -72,19 +68,9 @@ RETURN member {
 export const matchMemberTellerQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
-  .id, .auth_id, .firstName, .lastName, .email, .phoneNumber, .whatsappNumber, .pictureUrl,
   isTellerForStream: [tellerStream IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_TELLER_FOR]->(tellerStream:Stream) RETURN tellerStream", {this: member}) | tellerStream {.id, .name}]
 } AS member 
 `
-
-export const matchMemberSheepSeekerQuery = `
-  WITH apoc.cypher.runFirstColumnMany(
-    "MATCH (member:Member {id:$id})
-    RETURN member", {offset:0, first:5, id: $id}, True) AS x UNWIND x AS member
-    RETURN member { .id,.auth_id, .firstName,.lastName,.email,.phoneNumber,.whatsappNumber,.pictureUrl,
-    isSheepSeekerForStream: [ member_SheepSeekerStreams IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_SHEEP_SEEKER_FOR]->(seekerStream:Stream)
-    RETURN seekerStream", {this: member}, true) | member_SheepSeekerStreams { .id,.name }]} AS member 
-  `
 
 export const matchChurchQuery = `
   MATCH (church {id:$id}) 
@@ -118,21 +104,12 @@ export const getChurchDataQuery = `
   COLLECT(bussing.attendance) as bussingAttendance, ROUND(AVG(bussing.attendance)) as averageBussingAttendance
 `
 
-export const setMemberAuthId = `
-MATCH (member:Member {id:$id})
-SET member.auth_id = $auth_id
-RETURN member.auth_id`
-
 export const updateMemberEmail = `
 MATCH (member:Member {id: $id})
     SET member.email = $email
-RETURN member.id AS id, member.auth_id AS auth_id, member.firstName AS firstName, member.lastName AS lastName, member.email AS email, member.pictureUrl AS pictureUrl
 `
 
-export const removeMemberAuthId = `
-MATCH (member:Member {auth_id:$auth_id})
-REMOVE member.auth_id
-
+export const createHistoryLog = `
 CREATE (log:HistoryLog)
   SET
    log.id = apoc.create.uuid(),
@@ -143,12 +120,13 @@ CREATE (log:HistoryLog)
    MERGE (date:TimeGraph {date: date()})
 
    WITH member, date
-  MATCH (currentUser:Member {auth_id:$jwt.sub})
+  MATCH (currentUser:Member {id:$jwt.sub})
   CREATE (member)-[:HAS_HISTORY]->(log)
   CREATE (log)-[:LOGGED_BY]->(currentUser)
   CREATE (log)-[:RECORDED_ON]->(date)
 
-RETURN member.id`
+RETURN member.id
+`
 
 export const checkMemberEmailExists = `
 OPTIONAL MATCH (member:Member)
@@ -180,7 +158,7 @@ log.historyRecord = $reason
 
 WITH log, node
 MATCH (node)-[:BELONGS_TO]->(church)
-MATCH (admin:Member {auth_id:$jwt.sub})
+MATCH (admin:Member {id:$jwt.sub})
 MERGE (today:TimeGraph {date: date()})
 MERGE (admin)<-[:LOGGED_BY]-(log)
 MERGE (node)-[:HAS_HISTORY]->(log)
@@ -203,7 +181,7 @@ log.historyRecord = $reason
 
 WITH log, member 
 MATCH (member)-[:BELONGS_TO]->(church)
-MATCH (admin:Member {auth_id:$jwt.sub})
+MATCH (admin:Member {id:$jwt.sub})
 MERGE (today:TimeGraph {date: date()})
 MERGE (admin)<-[:LOGGED_BY]-(log)
 MERGE (member)-[:HAS_HISTORY]->(log)

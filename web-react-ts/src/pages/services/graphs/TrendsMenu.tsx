@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router'
 import MenuButton from 'components/buttons/MenuButton'
 import Stars from 'assets/icons/Stars'
 import Charts from 'assets/icons/Charts'
-import PieChart from 'assets/icons/PieChart'
 import { Download } from 'react-bootstrap-icons'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
@@ -61,7 +60,6 @@ const TrendsMenu = () => {
               />
             </RoleView>
           )}
-
         </div>
       </Container>
     </div>

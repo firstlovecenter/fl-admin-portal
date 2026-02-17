@@ -26,7 +26,7 @@ import RoleView from 'auth/RoleView'
 import ViewAll from 'components/buttons/ViewAll'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { Member } from 'global-types'
-import { permitAdmin, permitLeader, permitSheepSeeker } from 'permission-utils'
+import { permitAdmin, permitLeader } from 'permission-utils'
 import { BarLoader } from 'react-spinners'
 import { FaPhone, FaSave, FaStickyNote } from 'react-icons/fa'
 import { Whatsapp } from 'react-bootstrap-icons'
@@ -195,7 +195,6 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
         <Col className="col-auto">
           <RoleView
             roles={[
-              ...permitSheepSeeker(),
               ...permitAdmin('Governorship'),
               ...permitAdmin('Ministry'),
               ...permitLeader('Bacenta'),
