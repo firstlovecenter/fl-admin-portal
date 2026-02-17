@@ -19,25 +19,24 @@ const startServer = async () => {
   const httpServer = http.createServer(app)
 
   const uri = SECRETS.NEO4J_URI || 'bolt://localhost:7687/'
-  const hasEncryptionInUri = uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
-  const encryptionConfig = {
-    encrypted: 'ENCRYPTION_ON',
-    trust: 'TRUST_ALL_CERTIFICATES',
+  const hasEncryptionInUri =
+    uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
+  const driverConfig = {
     connectionTimeout: 30000,
   }
 
-  console.log('[Neo4j] Connecting to:', uri.replace(/::\/\/.*@/, '://[REDACTED]@'))
-  console.log('[Neo4j] URI encryption scheme detected:', hasEncryptionInUri)
-  console.log('[Neo4j] Config encryption settings:', {
-    encrypted: encryptionConfig.encrypted,
-    trust: encryptionConfig.trust
-  })
-
-  if (hasEncryptionInUri) {
-    console.warn('[Neo4j] WARNING: Encryption configured in both URI and config - this will cause an error!')
-    console.warn('[Neo4j] URI scheme indicates encryption:', uri.split('://')[0])
-    console.warn('[Neo4j] Config has encryption settings:', encryptionConfig)
+  // Only add encryption config if not using secure URI scheme
+  if (!hasEncryptionInUri) {
+    driverConfig.encrypted = 'ENCRYPTION_ON'
+    driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
   }
+
+  console.log(
+    '[Neo4j] Connecting to:',
+    uri.replace(/::\/\/.*@/, '://[REDACTED]@')
+  )
+  console.log('[Neo4j] URI encryption scheme detected:', hasEncryptionInUri)
+  console.log('[Neo4j] Driver config:', driverConfig)
 
   const driver = neo4j.driver(
     uri,
@@ -45,7 +44,7 @@ const startServer = async () => {
       SECRETS.NEO4J_USER || 'neo4j',
       SECRETS.NEO4J_PASSWORD || 'letmein'
     ),
-    encryptionConfig
+    driverConfig
   )
 
   // Add connection verification
