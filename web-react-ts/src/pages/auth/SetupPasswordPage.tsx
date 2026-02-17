@@ -16,7 +16,7 @@ import PasswordStrengthIndicator from '../../components/auth/PasswordStrengthInd
 import './auth.css'
 import { Eye, EyeSlash, CheckCircleFill } from 'react-bootstrap-icons'
 
-const APP_VERSION = '8.1.2'
+const APP_VERSION = '8.1.3'
 
 // Utility function to decode JWT and extract email
 const extractEmailFromToken = (token: string): string | null => {

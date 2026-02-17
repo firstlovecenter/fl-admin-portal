@@ -1,25 +1,25 @@
-#### 8.1.2 (2025-09-06)
+#### 8.1.3 (2025-09-06)
 
 ##### Chores
 
-*  update frontend deployment ([d1cc34f9](https://github.com/firstlovecenter/fl-admin-portal/commit/d1cc34f9b65fc78c82ac2840a5b07c3fca85b314))
+- update frontend deployment ([d1cc34f9](https://github.com/firstlovecenter/fl-admin-portal/commit/d1cc34f9b65fc78c82ac2840a5b07c3fca85b314))
 
 ##### Documentation Changes
 
-*  update deploy workflows commit message ([fa391590](https://github.com/firstlovecenter/fl-admin-portal/commit/fa391590be25c810c16c2e08b4656248eec3531d))
+- update deploy workflows commit message ([fa391590](https://github.com/firstlovecenter/fl-admin-portal/commit/fa391590be25c810c16c2e08b4656248eec3531d))
 
 ##### New Features
 
-*  integrate CloudinaryImage component and enhance image styling ([2dda48ef](https://github.com/firstlovecenter/fl-admin-portal/commit/2dda48ef24454504e218b2a0afd35f581a1d967a))
-*  implement S3 image upload functionality with presigned URLs ([6b13a5b9](https://github.com/firstlovecenter/fl-admin-portal/commit/6b13a5b92a50b3b023250bb13b4e81fe310a66c3))
+- integrate CloudinaryImage component and enhance image styling ([2dda48ef](https://github.com/firstlovecenter/fl-admin-portal/commit/2dda48ef24454504e218b2a0afd35f581a1d967a))
+- implement S3 image upload functionality with presigned URLs ([6b13a5b9](https://github.com/firstlovecenter/fl-admin-portal/commit/6b13a5b92a50b3b023250bb13b4e81fe310a66c3))
 
 ##### Bug Fixes
 
-*  enhance S3 deployment with proper cache control for static assets and HTML files ([9f29cbe6](https://github.com/firstlovecenter/fl-admin-portal/commit/9f29cbe63580897955a943abfd22391fdcd9a954))
+- enhance S3 deployment with proper cache control for static assets and HTML files ([9f29cbe6](https://github.com/firstlovecenter/fl-admin-portal/commit/9f29cbe63580897955a943abfd22391fdcd9a954))
 
 ##### Refactors
 
-*  simplify CloudinaryImage component by removing unused ([16a7731b](https://github.com/firstlovecenter/fl-admin-portal/commit/16a7731b27afb14fdce4aaee41ebe3d68dca7f3d))
+- simplify CloudinaryImage component by removing unused ([16a7731b](https://github.com/firstlovecenter/fl-admin-portal/commit/16a7731b27afb14fdce4aaee41ebe3d68dca7f3d))
 
 #### 8.1.1 (2025-09-03)
 
@@ -27,284 +27,284 @@
 
 ##### Chores
 
-*  bump version to 8.0.2 in package.json ([df0d7533](https://github.com/firstlovecenter/fl-admin-portal/commit/df0d7533fa9b610c6ea8f5b8d1cc077f8d71ddac))
-*  comment out paths filter in frontend deployment workflow ([18056156](https://github.com/firstlovecenter/fl-admin-portal/commit/180561569afbd20cc1950f43a53e35c9d011d6a4))
-*  remove .npmrc files ([31a30b59](https://github.com/firstlovecenter/fl-admin-portal/commit/31a30b59a5a6c785e1342d1afa908131f5b4ba96))
+- bump version to 8.0.2 in package.json ([df0d7533](https://github.com/firstlovecenter/fl-admin-portal/commit/df0d7533fa9b610c6ea8f5b8d1cc077f8d71ddac))
+- comment out paths filter in frontend deployment workflow ([18056156](https://github.com/firstlovecenter/fl-admin-portal/commit/180561569afbd20cc1950f43a53e35c9d011d6a4))
+- remove .npmrc files ([31a30b59](https://github.com/firstlovecenter/fl-admin-portal/commit/31a30b59a5a6c785e1342d1afa908131f5b4ba96))
 
 ##### New Features
 
-*  implement S3 image upload functionality with presigned URLs ([27c3b4a7](https://github.com/firstlovecenter/fl-admin-portal/commit/27c3b4a771aeb3130128ff6ce9b2c62878826902))
-*  add pagination controls and refactor queries for graphs in Church Components ([4f1176e1](https://github.com/firstlovecenter/fl-admin-portal/commit/4f1176e1691d97ea1e96f2b581715b1f8a94ab3c))
-*  update navigation controls in BacentaGraphs for improved week display ([34396874](https://github.com/firstlovecenter/fl-admin-portal/commit/343968749ebc94e64a166dbe1f5ceb86f78c3d42))
-*  add pagination support for service and bussing records in GraphQL queries and components ([1b4f05b0](https://github.com/firstlovecenter/fl-admin-portal/commit/1b4f05b08a132dbc30f5117e6c3a83ffeeba76d7))
-*  update delete service record mutation and restrict role view to fishers ([0093e82e](https://github.com/firstlovecenter/fl-admin-portal/commit/0093e82e6ed9e66f60aa0fa31c78743fb313095e))
-*  button FSA-34 Added delete button for fishers ([718133ba](https://github.com/firstlovecenter/fl-admin-portal/commit/718133baa85a4286a8702ec165567ecc7239504c))
-*  update column names for member count queries to improve clarity ([906f3755](https://github.com/firstlovecenter/fl-admin-portal/commit/906f3755549d8029dfdcbfcf25e308721000d354))
-*  refine attendance and income calculations for rehearsal records to ensure consistent rounding ([44703f0d](https://github.com/firstlovecenter/fl-admin-portal/commit/44703f0dd78f37dc86d7fcf5a77a0828693e3508))
-*  refine attendance and income calculations i ([10fbe4b4](https://github.com/firstlovecenter/fl-admin-portal/commit/10fbe4b4467279d30e6cf8b5fd05f5460adf0e3f))
-*  improve income calculations for rehearsal records to ensure consistent rounding ([8e138495](https://github.com/firstlovecenter/fl-admin-portal/commit/8e13849501413343fecfd761169d873dcc5c96ad))
-*  simplify income calculations for service records to ensure consistent rounding ([1a72e88f](https://github.com/firstlovecenter/fl-admin-portal/commit/1a72e88f982934f11e24b89fa8865e8c89c7c15d))
-*  update CAMPUS_NAME constant to include 'FL' prefix ([3a6c0a0c](https://github.com/firstlovecenter/fl-admin-portal/commit/3a6c0a0ca04d51c8a5e9c02dea7e659a19abea99))
-*  remove unused higher church utilities and simplify aggregateCypher ([f2dec71c](https://github.com/firstlovecenter/fl-admin-portal/commit/f2dec71c5b303da27cc711ebf84f327ea6c0abac))
-*  add query validation for various background functions and remove unused service-utils file ([85e3bdce](https://github.com/firstlovecenter/fl-admin-portal/commit/85e3bdce8362707e3993661ac5c323c2e7309cdd))
-*  add query validation and logging for various Cypher queries in background functions ([d83538f0](https://github.com/firstlovecenter/fl-admin-portal/commit/d83538f0bbc6e890ba36285979ba7162ac2361b5))
-*  update income calculations to ensure consistent rounding for financial records ([dadad7e6](https://github.com/firstlovecenter/fl-admin-portal/commit/dadad7e6640b7cbe968dd6413cd63cd63b2b3300))
-*  update Cypher queries to include oversight relationship for campus and council ([675ba34d](https://github.com/firstlovecenter/fl-admin-portal/commit/675ba34d9a52277827c44dba6f7eaf03df9d5b9e))
-*  add isManualBanking field to servant church list queries ([afb60ce1](https://github.com/firstlovecenter/fl-admin-portal/commit/afb60ce16d5f83428ea7f6c5343f4cf917998cc7))
-*  add isManualBanking field to Stream, Council, Governorship, and Bacenta types ([0c774e45](https://github.com/firstlovecenter/fl-admin-portal/commit/0c774e454a75724d6a5a82e5563803ea698a8897))
-*  enhance AWS Secrets Manager integration and refactor Google Sheets credential handling ([4df773d3](https://github.com/firstlovecenter/fl-admin-portal/commit/4df773d324d501d23f161c16af604e2e77f9cb65))
-*  add functionality to update Google Sheets with data from Neo4j ([550012fb](https://github.com/firstlovecenter/fl-admin-portal/commit/550012fb53fda9fb4a6c8617017f259b1e2232b3))
-*  implement Accra New Members and Hillary's Monthly Report jobs ([b13353b0](https://github.com/firstlovecenter/fl-admin-portal/commit/b13353b0f555df099c72d594637d458f95e98d52))
-*  implement Bacenta Graph Aggregator with Neo4j integration ([cd433652](https://github.com/firstlovecenter/fl-admin-portal/commit/cd4336529e754c83e5753913547d5e84d2bd37d6))
-*  add Accra campus weekly functions and update notification base URL ([4e82aefa](https://github.com/firstlovecenter/fl-admin-portal/commit/4e82aefaebbe2f02c68626ae8aeab221aff35960))
-*  add getWeekNumber function to sendNotificationSMS for week calculation ([0a1d0a38](https://github.com/firstlovecenter/fl-admin-portal/commit/0a1d0a38fe8638482dea6ca84acd3088cdcad221))
-*  add services-not-banked function and remove obsolete gsheets-services-not-banked ([b85c57e3](https://github.com/firstlovecenter/fl-admin-portal/commit/b85c57e3fd4dad43281a47fe69431d7acf1ac48b))
-*  implement dynamic code selection for the day using JSON data ([0d750c78](https://github.com/firstlovecenter/fl-admin-portal/commit/0d750c788a9c9e0b82de55ccdf6a4502d6d335ff))
-*  implement Payment Webhook Lambda function and Code of the Day functionality ([5fb66aee](https://github.com/firstlovecenter/fl-admin-portal/commit/5fb66aee2da0c2431559f13f5392fa31535eaeaa))
-*  implement Payment Webhook Lambda function with Firebase and Neo4j integration ([1cdca608](https://github.com/firstlovecenter/fl-admin-portal/commit/1cdca608160355a73f7c51acd7a3b74e10a1c8cb))
-*  implement CORS headers for GraphQL function responses ([eeefbc3c](https://github.com/firstlovecenter/fl-admin-portal/commit/eeefbc3cc10910df43b9a5cd8eae5d3b584ebad7))
-*  add CORS preflight handling in GraphQL function ([a9cd720c](https://github.com/firstlovecenter/fl-admin-portal/commit/a9cd720ca7ea1e802c9130a692474c461b2e09e4))
-*  add npm authentication setup in frontend and lambda deployment workflows ([e57c8bd0](https://github.com/firstlovecenter/fl-admin-portal/commit/e57c8bd0ca3b9af7fa5850ed6ef023a2ff2fa406))
-*  integrate AWS Secrets Manager for secret management and update deployment branch to develop ([3bad185f](https://github.com/firstlovecenter/fl-admin-portal/commit/3bad185f8e54a877048b303db47b249107d31e7b))
-*  add GitHub Actions workflow for frontend deployment to S3 and CloudFront ([9401abd7](https://github.com/firstlovecenter/fl-admin-portal/commit/9401abd79b9efbc9e723a592ce0baf719df1d96f))
-*  add GitHub Actions workflow for AWS Lambda deployment and update .gitignore for deployment ([d516fd37](https://github.com/firstlovecenter/fl-admin-portal/commit/d516fd3755b67b65cfb6cdfec9f4a0d9e334a0a2))
-*  update role permissions for directory CRUD operations to include adminCouncil ([6be8353c](https://github.com/firstlovecenter/fl-admin-portal/commit/6be8353c3ddb83d83d5fae267f3003f9fee16de1))
-*  remove obsolete Cypher scripts and add TimeGraph merging functionality with uniqueness constra ([ddcd232c](https://github.com/firstlovecenter/fl-admin-portal/commit/ddcd232cdf58cbf35a1eab392e55112bbe0de99a))
-*  rename column in GraphQL schema for clarity in BussingRecord ([6803f9ce](https://github.com/firstlovecenter/fl-admin-portal/commit/6803f9ce3bc3df782b85af0606930edc95cf38ef))
-*  add pointer cursor style to interactive elements and update Cypher queries for clarity ([09080a0d](https://github.com/firstlovecenter/fl-admin-portal/commit/09080a0d743b4829229ba5130da22b792dfefa12))
-*  comment out Code of the Day submission functionality in CampusDashboard ([88f14d65](https://github.com/firstlovecenter/fl-admin-portal/commit/88f14d65174bddb8011d49e83a317f9bab4fbbc8))
-*  update GraphQL schema to enhance clarity of arrival queries ([500c28bd](https://github.com/firstlovecenter/fl-admin-portal/commit/500c28bdb4b13b9dadbb3e81366f6f06035c50c7))
-*  rename return values in GraphQL schema for clarity in arrivals queries ([3b1dc470](https://github.com/firstlovecenter/fl-admin-portal/commit/3b1dc4706849f31d55cad935986f6f3375bb1c76))
-*  include roles in JWT object for enhanced authorization handling ([cd31abb3](https://github.com/firstlovecenter/fl-admin-portal/commit/cd31abb37a929c4ce8b0ced28e9489799e37013b))
-*  update JWT handling to include roles from token and improve development script ([0fdf1423](https://github.com/firstlovecenter/fl-admin-portal/commit/0fdf142309517c5090fbe88a75fd9f60e6c10a01))
-*  enhance GraphQL schema with descriptive aliases for improved clarity in vehicle payment queri ([8b1cd654](https://github.com/firstlovecenter/fl-admin-portal/commit/8b1cd6544d60b4bbd0fc90ae7b2851401553d80a))
+- implement S3 image upload functionality with presigned URLs ([27c3b4a7](https://github.com/firstlovecenter/fl-admin-portal/commit/27c3b4a771aeb3130128ff6ce9b2c62878826902))
+- add pagination controls and refactor queries for graphs in Church Components ([4f1176e1](https://github.com/firstlovecenter/fl-admin-portal/commit/4f1176e1691d97ea1e96f2b581715b1f8a94ab3c))
+- update navigation controls in BacentaGraphs for improved week display ([34396874](https://github.com/firstlovecenter/fl-admin-portal/commit/343968749ebc94e64a166dbe1f5ceb86f78c3d42))
+- add pagination support for service and bussing records in GraphQL queries and components ([1b4f05b0](https://github.com/firstlovecenter/fl-admin-portal/commit/1b4f05b08a132dbc30f5117e6c3a83ffeeba76d7))
+- update delete service record mutation and restrict role view to fishers ([0093e82e](https://github.com/firstlovecenter/fl-admin-portal/commit/0093e82e6ed9e66f60aa0fa31c78743fb313095e))
+- button FSA-34 Added delete button for fishers ([718133ba](https://github.com/firstlovecenter/fl-admin-portal/commit/718133baa85a4286a8702ec165567ecc7239504c))
+- update column names for member count queries to improve clarity ([906f3755](https://github.com/firstlovecenter/fl-admin-portal/commit/906f3755549d8029dfdcbfcf25e308721000d354))
+- refine attendance and income calculations for rehearsal records to ensure consistent rounding ([44703f0d](https://github.com/firstlovecenter/fl-admin-portal/commit/44703f0dd78f37dc86d7fcf5a77a0828693e3508))
+- refine attendance and income calculations i ([10fbe4b4](https://github.com/firstlovecenter/fl-admin-portal/commit/10fbe4b4467279d30e6cf8b5fd05f5460adf0e3f))
+- improve income calculations for rehearsal records to ensure consistent rounding ([8e138495](https://github.com/firstlovecenter/fl-admin-portal/commit/8e13849501413343fecfd761169d873dcc5c96ad))
+- simplify income calculations for service records to ensure consistent rounding ([1a72e88f](https://github.com/firstlovecenter/fl-admin-portal/commit/1a72e88f982934f11e24b89fa8865e8c89c7c15d))
+- update CAMPUS_NAME constant to include 'FL' prefix ([3a6c0a0c](https://github.com/firstlovecenter/fl-admin-portal/commit/3a6c0a0ca04d51c8a5e9c02dea7e659a19abea99))
+- remove unused higher church utilities and simplify aggregateCypher ([f2dec71c](https://github.com/firstlovecenter/fl-admin-portal/commit/f2dec71c5b303da27cc711ebf84f327ea6c0abac))
+- add query validation for various background functions and remove unused service-utils file ([85e3bdce](https://github.com/firstlovecenter/fl-admin-portal/commit/85e3bdce8362707e3993661ac5c323c2e7309cdd))
+- add query validation and logging for various Cypher queries in background functions ([d83538f0](https://github.com/firstlovecenter/fl-admin-portal/commit/d83538f0bbc6e890ba36285979ba7162ac2361b5))
+- update income calculations to ensure consistent rounding for financial records ([dadad7e6](https://github.com/firstlovecenter/fl-admin-portal/commit/dadad7e6640b7cbe968dd6413cd63cd63b2b3300))
+- update Cypher queries to include oversight relationship for campus and council ([675ba34d](https://github.com/firstlovecenter/fl-admin-portal/commit/675ba34d9a52277827c44dba6f7eaf03df9d5b9e))
+- add isManualBanking field to servant church list queries ([afb60ce1](https://github.com/firstlovecenter/fl-admin-portal/commit/afb60ce16d5f83428ea7f6c5343f4cf917998cc7))
+- add isManualBanking field to Stream, Council, Governorship, and Bacenta types ([0c774e45](https://github.com/firstlovecenter/fl-admin-portal/commit/0c774e454a75724d6a5a82e5563803ea698a8897))
+- enhance AWS Secrets Manager integration and refactor Google Sheets credential handling ([4df773d3](https://github.com/firstlovecenter/fl-admin-portal/commit/4df773d324d501d23f161c16af604e2e77f9cb65))
+- add functionality to update Google Sheets with data from Neo4j ([550012fb](https://github.com/firstlovecenter/fl-admin-portal/commit/550012fb53fda9fb4a6c8617017f259b1e2232b3))
+- implement Accra New Members and Hillary's Monthly Report jobs ([b13353b0](https://github.com/firstlovecenter/fl-admin-portal/commit/b13353b0f555df099c72d594637d458f95e98d52))
+- implement Bacenta Graph Aggregator with Neo4j integration ([cd433652](https://github.com/firstlovecenter/fl-admin-portal/commit/cd4336529e754c83e5753913547d5e84d2bd37d6))
+- add Accra campus weekly functions and update notification base URL ([4e82aefa](https://github.com/firstlovecenter/fl-admin-portal/commit/4e82aefaebbe2f02c68626ae8aeab221aff35960))
+- add getWeekNumber function to sendNotificationSMS for week calculation ([0a1d0a38](https://github.com/firstlovecenter/fl-admin-portal/commit/0a1d0a38fe8638482dea6ca84acd3088cdcad221))
+- add services-not-banked function and remove obsolete gsheets-services-not-banked ([b85c57e3](https://github.com/firstlovecenter/fl-admin-portal/commit/b85c57e3fd4dad43281a47fe69431d7acf1ac48b))
+- implement dynamic code selection for the day using JSON data ([0d750c78](https://github.com/firstlovecenter/fl-admin-portal/commit/0d750c788a9c9e0b82de55ccdf6a4502d6d335ff))
+- implement Payment Webhook Lambda function and Code of the Day functionality ([5fb66aee](https://github.com/firstlovecenter/fl-admin-portal/commit/5fb66aee2da0c2431559f13f5392fa31535eaeaa))
+- implement Payment Webhook Lambda function with Firebase and Neo4j integration ([1cdca608](https://github.com/firstlovecenter/fl-admin-portal/commit/1cdca608160355a73f7c51acd7a3b74e10a1c8cb))
+- implement CORS headers for GraphQL function responses ([eeefbc3c](https://github.com/firstlovecenter/fl-admin-portal/commit/eeefbc3cc10910df43b9a5cd8eae5d3b584ebad7))
+- add CORS preflight handling in GraphQL function ([a9cd720c](https://github.com/firstlovecenter/fl-admin-portal/commit/a9cd720ca7ea1e802c9130a692474c461b2e09e4))
+- add npm authentication setup in frontend and lambda deployment workflows ([e57c8bd0](https://github.com/firstlovecenter/fl-admin-portal/commit/e57c8bd0ca3b9af7fa5850ed6ef023a2ff2fa406))
+- integrate AWS Secrets Manager for secret management and update deployment branch to develop ([3bad185f](https://github.com/firstlovecenter/fl-admin-portal/commit/3bad185f8e54a877048b303db47b249107d31e7b))
+- add GitHub Actions workflow for frontend deployment to S3 and CloudFront ([9401abd7](https://github.com/firstlovecenter/fl-admin-portal/commit/9401abd79b9efbc9e723a592ce0baf719df1d96f))
+- add GitHub Actions workflow for AWS Lambda deployment and update .gitignore for deployment ([d516fd37](https://github.com/firstlovecenter/fl-admin-portal/commit/d516fd3755b67b65cfb6cdfec9f4a0d9e334a0a2))
+- update role permissions for directory CRUD operations to include adminCouncil ([6be8353c](https://github.com/firstlovecenter/fl-admin-portal/commit/6be8353c3ddb83d83d5fae267f3003f9fee16de1))
+- remove obsolete Cypher scripts and add TimeGraph merging functionality with uniqueness constra ([ddcd232c](https://github.com/firstlovecenter/fl-admin-portal/commit/ddcd232cdf58cbf35a1eab392e55112bbe0de99a))
+- rename column in GraphQL schema for clarity in BussingRecord ([6803f9ce](https://github.com/firstlovecenter/fl-admin-portal/commit/6803f9ce3bc3df782b85af0606930edc95cf38ef))
+- add pointer cursor style to interactive elements and update Cypher queries for clarity ([09080a0d](https://github.com/firstlovecenter/fl-admin-portal/commit/09080a0d743b4829229ba5130da22b792dfefa12))
+- comment out Code of the Day submission functionality in CampusDashboard ([88f14d65](https://github.com/firstlovecenter/fl-admin-portal/commit/88f14d65174bddb8011d49e83a317f9bab4fbbc8))
+- update GraphQL schema to enhance clarity of arrival queries ([500c28bd](https://github.com/firstlovecenter/fl-admin-portal/commit/500c28bdb4b13b9dadbb3e81366f6f06035c50c7))
+- rename return values in GraphQL schema for clarity in arrivals queries ([3b1dc470](https://github.com/firstlovecenter/fl-admin-portal/commit/3b1dc4706849f31d55cad935986f6f3375bb1c76))
+- include roles in JWT object for enhanced authorization handling ([cd31abb3](https://github.com/firstlovecenter/fl-admin-portal/commit/cd31abb37a929c4ce8b0ced28e9489799e37013b))
+- update JWT handling to include roles from token and improve development script ([0fdf1423](https://github.com/firstlovecenter/fl-admin-portal/commit/0fdf142309517c5090fbe88a75fd9f60e6c10a01))
+- enhance GraphQL schema with descriptive aliases for improved clarity in vehicle payment queri ([8b1cd654](https://github.com/firstlovecenter/fl-admin-portal/commit/8b1cd6544d60b4bbd0fc90ae7b2851401553d80a))
 
 ##### Bug Fixes
 
-*  clarify return value by renaming stream count to streamCount ([7ed87c62](https://github.com/firstlovecenter/fl-admin-portal/commit/7ed87c62620c05daeb0dcb9b08229fb7da8ffe67))
-*  return count of streams with alias for clarity ([3b8eee8e](https://github.com/firstlovecenter/fl-admin-portal/commit/3b8eee8e175d3f9a052f046985c5b54adc979a6f))
-*  rename lambdaHandler to handler for AWS Lambda export ([8e69b133](https://github.com/firstlovecenter/fl-admin-portal/commit/8e69b1338e2409756e62aea662feead281f6bb92))
-*  update secret name environment variable to AWS_SECRET_NAME in secrets loading functions ([dcf536a0](https://github.com/firstlovecenter/fl-admin-portal/commit/dcf536a03a0fc5142884d960553355633ffb1114))
-*  update getStreamFinancials calls to use await for proper async handling ([baad5a9e](https://github.com/firstlovecenter/fl-admin-portal/commit/baad5a9e3fa46747e62053c68368da8cdade80d9))
-*  update deployment workflow to trigger on 'deploy' branch and specific paths ([a0be6d50](https://github.com/firstlovecenter/fl-admin-portal/commit/a0be6d506b3cadf77718dd84a247be9810f4be85))
-*  update GraphQL queries to return member counts with descriptive aliases ([869e42c3](https://github.com/firstlovecenter/fl-admin-portal/commit/869e42c3e4754e3d1f0d0b984f71ff1c5571f818))
-*  enhance error handling for GraphQL request body parsing ([588522c6](https://github.com/firstlovecenter/fl-admin-portal/commit/588522c6a508b100fa18317e95251e19f078b40d))
-*  update GraphQL URI to use VITE_SYNAGO_GRAPHQL_URI ([ae85d72c](https://github.com/firstlovecenter/fl-admin-portal/commit/ae85d72c9c2d01dd63fe4f568e50b8bf99c8590e))
-*  stop logging out snippets of secrets ([63388f11](https://github.com/firstlovecenter/fl-admin-portal/commit/63388f11cc8c62a512e9c2023262bbcde9272c9d))
-*  streamline secrets retrieval in frontend deployment workflow ([b82946ca](https://github.com/firstlovecenter/fl-admin-portal/commit/b82946ca0b1ef0563cfbc810426c7211bacbe18b))
-*  remove unused TEST_PHONE_NUMBER secret retrieval from frontend deployment workflow ([f691d622](https://github.com/firstlovecenter/fl-admin-portal/commit/f691d622c2a6512e8301297a6525bfe54d5a0f1f))
-*  retrieve secrets from AWS Secrets Manager in frontend deployment workflow ([08193fc2](https://github.com/firstlovecenter/fl-admin-portal/commit/08193fc27a32a861bc53ec1efc6c680c8bdbfa2f))
-*  update GitHub Actions workflow to trigger on backend file changes ([c5b9ff88](https://github.com/firstlovecenter/fl-admin-portal/commit/c5b9ff88eabccbe10b95bf4cff10d4a5491cf951))
-*  refactor GraphQL handler to improve request processing and JWT authentication ([a2eb80ae](https://github.com/firstlovecenter/fl-admin-portal/commit/a2eb80ae2d86d44ae15d8b1c2c8f1e03745de0df))
-*  refactor GraphQL server initialization to load secrets dynamically ([8323f183](https://github.com/firstlovecenter/fl-admin-portal/commit/8323f1838b21f0bd1e828f9b0578ce429d489a7b))
-*  add new dependencies for Apollo Client, AWS SDK, and utility libraries ([f959951d](https://github.com/firstlovecenter/fl-admin-portal/commit/f959951de82ff0228b38c9fc2ae4f936d9876902))
-*  add jd-date-utils package for date manipulation ([6b85fcd1](https://github.com/firstlovecenter/fl-admin-portal/commit/6b85fcd166db6fbd85996633b0d5b6d24d127fff))
-*  add dotenv package for environment variable management ([4e7f6bc6](https://github.com/firstlovecenter/fl-admin-portal/commit/4e7f6bc6923f43f619194f06f1590758a1272baa))
-*  update TypeScript configuration to target ES2022 and use NodeNext module resolution ([2872c938](https://github.com/firstlovecenter/fl-admin-portal/commit/2872c938f519184197686117a81ebfe222218cc9))
-*  remove path restriction for Lambda deployment trigger ([91b90c29](https://github.com/firstlovecenter/fl-admin-portal/commit/91b90c29afd2a22deeef276931278f8b844d220b))
-*  correct path for tsconfig.json creation in Lambda deployment workflow ([91b54c44](https://github.com/firstlovecenter/fl-admin-portal/commit/91b54c44e99f8b0ad76dab2119814bf402a85ee1))
-*  enhance transaction confirmation handling and add tsconfig.json creation in Lambda workflow ([a1ca7304](https://github.com/firstlovecenter/fl-admin-portal/commit/a1ca7304aba5245caad651a0ab5dbb9479a53cc4))
-*  update Lambda deployment workflow to trigger on backend file changes ([480afdbf](https://github.com/firstlovecenter/fl-admin-portal/commit/480afdbf45f6ebab8cee12ba1348a5a9e420eac3))
-*  update Lambda deployment workflow to use a structured directory for compiled TypeScript resolve ([66d7fff6](https://github.com/firstlovecenter/fl-admin-portal/commit/66d7fff6432ab71126605cd493dc0562b10c08f2))
-*  update deployment workflows to trigger only on specific file changes ([c682fd0f](https://github.com/firstlovecenter/fl-admin-portal/commit/c682fd0f7846587dce801b9d425056f8cfc522d7))
-*  update TypeScript installation path and enhance dep management in Lambda deployment workflow ([3f4f6388](https://github.com/firstlovecenter/fl-admin-portal/commit/3f4f638833531f7b003dc8e1557b5e1e1b189555))
-*  streamline TypeScript compilation process in Lambda deployment workflow ([cd7948bf](https://github.com/firstlovecenter/fl-admin-portal/commit/cd7948bfe307170d4ae683935f3bed76da47acc0))
-*  enhance Lambda deployment workflow by copying package.json and installing dependencies ([e956e60f](https://github.com/firstlovecenter/fl-admin-portal/commit/e956e60f6e51ac7f405d3fd36812282a0c3c044f))
-*  remove main branch trigger from Lambda deployment workflow ([0395e4d3](https://github.com/firstlovecenter/fl-admin-portal/commit/0395e4d398908257402a8fe96575e5a3268e067a))
-*  set working directory for npm authentication in Lambda deployment workflow ([5381812f](https://github.com/firstlovecenter/fl-admin-portal/commit/5381812fc694ba08ea5ce22d12b393be2984ef7b))
-*  update npm authentication token from GITHUB_TOKEN to PAT_TOKEN in deployment workflows ([df6c63f2](https://github.com/firstlovecenter/fl-admin-portal/commit/df6c63f29372686619d0e0c54c5d802f51128d23))
-*  update @jaedag/admin-portal-types to version 1.5.16 in package.json and package-lock.json ([d265bb7c](https://github.com/firstlovecenter/fl-admin-portal/commit/d265bb7c283ac90c778e1ef2bfff536bf608795d))
-*  update @jaedag/admin-portal-types to version 1.5.16 in package.json and package-lock.json ([5452cff7](https://github.com/firstlovecenter/fl-admin-portal/commit/5452cff7fbf2bb7edc4e4ae2ecc533c2a36fa169))
-*  update Lambda deployment function name to use ARN instead of secret ([48c29f9a](https://github.com/firstlovecenter/fl-admin-portal/commit/48c29f9a8e2f0b58a011a582142716b4345423aa))
-*  update deployment workflow to change directory for npm install and clarify Slack notification ([e743ef63](https://github.com/firstlovecenter/fl-admin-portal/commit/e743ef63422a3cb468fa152b58158530ac4ea7dc))
-*  return attendance and income for leaders in email ([#476](https://github.com/firstlovecenter/fl-admin-portal/pull/476)) ([6a17e325](https://github.com/firstlovecenter/fl-admin-portal/commit/6a17e3258731e3dc2e7627cef9c875a81e0191e2))
+- clarify return value by renaming stream count to streamCount ([7ed87c62](https://github.com/firstlovecenter/fl-admin-portal/commit/7ed87c62620c05daeb0dcb9b08229fb7da8ffe67))
+- return count of streams with alias for clarity ([3b8eee8e](https://github.com/firstlovecenter/fl-admin-portal/commit/3b8eee8e175d3f9a052f046985c5b54adc979a6f))
+- rename lambdaHandler to handler for AWS Lambda export ([8e69b133](https://github.com/firstlovecenter/fl-admin-portal/commit/8e69b1338e2409756e62aea662feead281f6bb92))
+- update secret name environment variable to AWS_SECRET_NAME in secrets loading functions ([dcf536a0](https://github.com/firstlovecenter/fl-admin-portal/commit/dcf536a03a0fc5142884d960553355633ffb1114))
+- update getStreamFinancials calls to use await for proper async handling ([baad5a9e](https://github.com/firstlovecenter/fl-admin-portal/commit/baad5a9e3fa46747e62053c68368da8cdade80d9))
+- update deployment workflow to trigger on 'deploy' branch and specific paths ([a0be6d50](https://github.com/firstlovecenter/fl-admin-portal/commit/a0be6d506b3cadf77718dd84a247be9810f4be85))
+- update GraphQL queries to return member counts with descriptive aliases ([869e42c3](https://github.com/firstlovecenter/fl-admin-portal/commit/869e42c3e4754e3d1f0d0b984f71ff1c5571f818))
+- enhance error handling for GraphQL request body parsing ([588522c6](https://github.com/firstlovecenter/fl-admin-portal/commit/588522c6a508b100fa18317e95251e19f078b40d))
+- update GraphQL URI to use VITE_SYNAGO_GRAPHQL_URI ([ae85d72c](https://github.com/firstlovecenter/fl-admin-portal/commit/ae85d72c9c2d01dd63fe4f568e50b8bf99c8590e))
+- stop logging out snippets of secrets ([63388f11](https://github.com/firstlovecenter/fl-admin-portal/commit/63388f11cc8c62a512e9c2023262bbcde9272c9d))
+- streamline secrets retrieval in frontend deployment workflow ([b82946ca](https://github.com/firstlovecenter/fl-admin-portal/commit/b82946ca0b1ef0563cfbc810426c7211bacbe18b))
+- remove unused TEST_PHONE_NUMBER secret retrieval from frontend deployment workflow ([f691d622](https://github.com/firstlovecenter/fl-admin-portal/commit/f691d622c2a6512e8301297a6525bfe54d5a0f1f))
+- retrieve secrets from AWS Secrets Manager in frontend deployment workflow ([08193fc2](https://github.com/firstlovecenter/fl-admin-portal/commit/08193fc27a32a861bc53ec1efc6c680c8bdbfa2f))
+- update GitHub Actions workflow to trigger on backend file changes ([c5b9ff88](https://github.com/firstlovecenter/fl-admin-portal/commit/c5b9ff88eabccbe10b95bf4cff10d4a5491cf951))
+- refactor GraphQL handler to improve request processing and JWT authentication ([a2eb80ae](https://github.com/firstlovecenter/fl-admin-portal/commit/a2eb80ae2d86d44ae15d8b1c2c8f1e03745de0df))
+- refactor GraphQL server initialization to load secrets dynamically ([8323f183](https://github.com/firstlovecenter/fl-admin-portal/commit/8323f1838b21f0bd1e828f9b0578ce429d489a7b))
+- add new dependencies for Apollo Client, AWS SDK, and utility libraries ([f959951d](https://github.com/firstlovecenter/fl-admin-portal/commit/f959951de82ff0228b38c9fc2ae4f936d9876902))
+- add jd-date-utils package for date manipulation ([6b85fcd1](https://github.com/firstlovecenter/fl-admin-portal/commit/6b85fcd166db6fbd85996633b0d5b6d24d127fff))
+- add dotenv package for environment variable management ([4e7f6bc6](https://github.com/firstlovecenter/fl-admin-portal/commit/4e7f6bc6923f43f619194f06f1590758a1272baa))
+- update TypeScript configuration to target ES2022 and use NodeNext module resolution ([2872c938](https://github.com/firstlovecenter/fl-admin-portal/commit/2872c938f519184197686117a81ebfe222218cc9))
+- remove path restriction for Lambda deployment trigger ([91b90c29](https://github.com/firstlovecenter/fl-admin-portal/commit/91b90c29afd2a22deeef276931278f8b844d220b))
+- correct path for tsconfig.json creation in Lambda deployment workflow ([91b54c44](https://github.com/firstlovecenter/fl-admin-portal/commit/91b54c44e99f8b0ad76dab2119814bf402a85ee1))
+- enhance transaction confirmation handling and add tsconfig.json creation in Lambda workflow ([a1ca7304](https://github.com/firstlovecenter/fl-admin-portal/commit/a1ca7304aba5245caad651a0ab5dbb9479a53cc4))
+- update Lambda deployment workflow to trigger on backend file changes ([480afdbf](https://github.com/firstlovecenter/fl-admin-portal/commit/480afdbf45f6ebab8cee12ba1348a5a9e420eac3))
+- update Lambda deployment workflow to use a structured directory for compiled TypeScript resolve ([66d7fff6](https://github.com/firstlovecenter/fl-admin-portal/commit/66d7fff6432ab71126605cd493dc0562b10c08f2))
+- update deployment workflows to trigger only on specific file changes ([c682fd0f](https://github.com/firstlovecenter/fl-admin-portal/commit/c682fd0f7846587dce801b9d425056f8cfc522d7))
+- update TypeScript installation path and enhance dep management in Lambda deployment workflow ([3f4f6388](https://github.com/firstlovecenter/fl-admin-portal/commit/3f4f638833531f7b003dc8e1557b5e1e1b189555))
+- streamline TypeScript compilation process in Lambda deployment workflow ([cd7948bf](https://github.com/firstlovecenter/fl-admin-portal/commit/cd7948bfe307170d4ae683935f3bed76da47acc0))
+- enhance Lambda deployment workflow by copying package.json and installing dependencies ([e956e60f](https://github.com/firstlovecenter/fl-admin-portal/commit/e956e60f6e51ac7f405d3fd36812282a0c3c044f))
+- remove main branch trigger from Lambda deployment workflow ([0395e4d3](https://github.com/firstlovecenter/fl-admin-portal/commit/0395e4d398908257402a8fe96575e5a3268e067a))
+- set working directory for npm authentication in Lambda deployment workflow ([5381812f](https://github.com/firstlovecenter/fl-admin-portal/commit/5381812fc694ba08ea5ce22d12b393be2984ef7b))
+- update npm authentication token from GITHUB_TOKEN to PAT_TOKEN in deployment workflows ([df6c63f2](https://github.com/firstlovecenter/fl-admin-portal/commit/df6c63f29372686619d0e0c54c5d802f51128d23))
+- update @jaedag/admin-portal-types to version 1.5.16 in package.json and package-lock.json ([d265bb7c](https://github.com/firstlovecenter/fl-admin-portal/commit/d265bb7c283ac90c778e1ef2bfff536bf608795d))
+- update @jaedag/admin-portal-types to version 1.5.16 in package.json and package-lock.json ([5452cff7](https://github.com/firstlovecenter/fl-admin-portal/commit/5452cff7fbf2bb7edc4e4ae2ecc533c2a36fa169))
+- update Lambda deployment function name to use ARN instead of secret ([48c29f9a](https://github.com/firstlovecenter/fl-admin-portal/commit/48c29f9a8e2f0b58a011a582142716b4345423aa))
+- update deployment workflow to change directory for npm install and clarify Slack notification ([e743ef63](https://github.com/firstlovecenter/fl-admin-portal/commit/e743ef63422a3cb468fa152b58158530ac4ea7dc))
+- return attendance and income for leaders in email ([#476](https://github.com/firstlovecenter/fl-admin-portal/pull/476)) ([6a17e325](https://github.com/firstlovecenter/fl-admin-portal/commit/6a17e3258731e3dc2e7627cef9c875a81e0191e2))
 
 ##### Refactors
 
-*  simplify Cypher queries by removing unnecessary WITH clauses ([8edf7c72](https://github.com/firstlovecenter/fl-admin-portal/commit/8edf7c7264e56078e21c6c89880c1e2df1b54187))
-*  convert ES module syntax to CommonJS for compatibility ([fe098206](https://github.com/firstlovecenter/fl-admin-portal/commit/fe098206134a10a342fb4f56cbd7ea9aa60baba6))
-*  convert exports to CommonJS module format for AWS Lambda compatibility ([e12bb819](https://github.com/firstlovecenter/fl-admin-portal/commit/e12bb8190807e9f5e2b5075c86ee3c149d37b2e7))
-*  convert exports to CommonJS module format in Accra new members queries ([aa42151d](https://github.com/firstlovecenter/fl-admin-portal/commit/aa42151deff2af0b3d51ff37c10da4b78f066b8c))
-*  add Accra New Members functionality with Google Sheets integration ([b5f1b57b](https://github.com/firstlovecenter/fl-admin-portal/commit/b5f1b57b87a112b3eb2a1c5f6b669da18035fbd5))
-*  simplify secrets loading logic and improve error handling ([f9a4b4bc](https://github.com/firstlovecenter/fl-admin-portal/commit/f9a4b4bc13835fb1758f68dadb3926cc547684f8))
-*  enhance service graph aggregator with AWS Secrets Manager integration ([ca547cbf](https://github.com/firstlovecenter/fl-admin-portal/commit/ca547cbffcb059647e6efbddb99916040f1f75d4))
-*  add service graph aggregator functionality ([5a624b96](https://github.com/firstlovecenter/fl-admin-portal/commit/5a624b9631d9f4e08848b382375b6680db6020a0))
-*  remove payment-background function and its associated package.json file ([154aa856](https://github.com/firstlovecenter/fl-admin-portal/commit/154aa8566d183ddc8a00401f41fcdfae46d4e573))
-*  remove gsheets-accra-background function files and related constants ([1a49aa25](https://github.com/firstlovecenter/fl-admin-portal/commit/1a49aa25ee38d0c4c79746323699e195271eabef))
-*  change export syntax from ES6 to CommonJS in modules ([5b143991](https://github.com/firstlovecenter/fl-admin-portal/commit/5b143991e44c39b579ceba241057544c69d053e9))
-*  change export syntax from ES6 to CommonJS in cypher and constants modules ([770d95e8](https://github.com/firstlovecenter/fl-admin-portal/commit/770d95e8273658ec4c67db10f6575670c166e104))
-*  remove package.json and package-lock.json for code-of-the-day-setter function ([d925dd05](https://github.com/firstlovecenter/fl-admin-portal/commit/d925dd05f0a1195c432d4fea481e83e626b90f0e))
-*  comment out logging of code of the day in executeQuery function ([67f40ac3](https://github.com/firstlovecenter/fl-admin-portal/commit/67f40ac314b3ed0f59db51162a4f7da70f9492cd))
-*  enhance logging in executeQuery function to include code of the day details ([b9f5a754](https://github.com/firstlovecenter/fl-admin-portal/commit/b9f5a754bae52fc9890e50c62a20f83f32feebef))
-*  remove redundant dependency installation step and streamline function packaging process ([40b8b3d5](https://github.com/firstlovecenter/fl-admin-portal/commit/40b8b3d5f1fb2dc2e2ac992caa5cf27da734cbbb))
-*  streamline background functions compilation process and enha ([b1644343](https://github.com/firstlovecenter/fl-admin-portal/commit/b16443431ed847776e52d258b8f6381521b51d32))
-*  enhance logging in code of the day function for better traceability ([958b32d6](https://github.com/firstlovecenter/fl-admin-portal/commit/958b32d69fae271a6c1ad0da5ac4a731cab005b6))
-*  remove unnecessary copying of shared resources in deployment workflow ([1b00061f](https://github.com/firstlovecenter/fl-admin-portal/commit/1b00061fd6f531efee592317c2034e153fe3a109))
-*  convert code of the day to lambda ([5d059f00](https://github.com/firstlovecenter/fl-admin-portal/commit/5d059f00f786e7e2569ec03a6b29745b75d25a9e))
-*  update Slack notification actions in deployment workflows for improved clarity and message ([f6234fab](https://github.com/firstlovecenter/fl-admin-portal/commit/f6234fab1a1a620c0b7d9315e0f79d937041135f))
-*  update secrets handling in deploy workflow for improved security and clarity ([a8ecda43](https://github.com/firstlovecenter/fl-admin-portal/commit/a8ecda43827827019d9102a79929028073e34dd4))
-*  remove onCompleted handler from CreateGovernorship for cleaner code ([767f9255](https://github.com/firstlovecenter/fl-admin-portal/commit/767f92552c961829f65807aa51b05509c9169bcf))
-*  update loadSecrets import statements for consistency and clarity ([9c4ba6e1](https://github.com/firstlovecenter/fl-admin-portal/commit/9c4ba6e1d8955aab1c53cad867ab2099d49dc6ef))
-*  update axios calls to use await for improved readability and error handling ([51fd17f7](https://github.com/firstlovecenter/fl-admin-portal/commit/51fd17f7436697b37d76ab58121bad494c7153ec))
-*  replace getSecrets module with loadSecrets for improved secret management ([97715dc9](https://github.com/firstlovecenter/fl-admin-portal/commit/97715dc9028fd7f75f88bdd51927f640b8d75997))
-*  remove unused Neo4j authentication plugin from GraphQL server ([cefba5c1](https://github.com/firstlovecenter/fl-admin-portal/commit/cefba5c1d76a6e01bf7bd5fb85c2cc8f3f5cbc17))
-*  remove commented-out encryption options from Neo4j driver initialization ([662c7bdd](https://github.com/firstlovecenter/fl-admin-portal/commit/662c7bdddebcfa87298ec87e0ff1dfca7a18a908))
-*  update GraphQL server implementation with Neo4j integration and enhanced error handling ([147ab29f](https://github.com/firstlovecenter/fl-admin-portal/commit/147ab29fdb95f104269e1afc73ba3a9d67ed21ca))
+- simplify Cypher queries by removing unnecessary WITH clauses ([8edf7c72](https://github.com/firstlovecenter/fl-admin-portal/commit/8edf7c7264e56078e21c6c89880c1e2df1b54187))
+- convert ES module syntax to CommonJS for compatibility ([fe098206](https://github.com/firstlovecenter/fl-admin-portal/commit/fe098206134a10a342fb4f56cbd7ea9aa60baba6))
+- convert exports to CommonJS module format for AWS Lambda compatibility ([e12bb819](https://github.com/firstlovecenter/fl-admin-portal/commit/e12bb8190807e9f5e2b5075c86ee3c149d37b2e7))
+- convert exports to CommonJS module format in Accra new members queries ([aa42151d](https://github.com/firstlovecenter/fl-admin-portal/commit/aa42151deff2af0b3d51ff37c10da4b78f066b8c))
+- add Accra New Members functionality with Google Sheets integration ([b5f1b57b](https://github.com/firstlovecenter/fl-admin-portal/commit/b5f1b57b87a112b3eb2a1c5f6b669da18035fbd5))
+- simplify secrets loading logic and improve error handling ([f9a4b4bc](https://github.com/firstlovecenter/fl-admin-portal/commit/f9a4b4bc13835fb1758f68dadb3926cc547684f8))
+- enhance service graph aggregator with AWS Secrets Manager integration ([ca547cbf](https://github.com/firstlovecenter/fl-admin-portal/commit/ca547cbffcb059647e6efbddb99916040f1f75d4))
+- add service graph aggregator functionality ([5a624b96](https://github.com/firstlovecenter/fl-admin-portal/commit/5a624b9631d9f4e08848b382375b6680db6020a0))
+- remove payment-background function and its associated package.json file ([154aa856](https://github.com/firstlovecenter/fl-admin-portal/commit/154aa8566d183ddc8a00401f41fcdfae46d4e573))
+- remove gsheets-accra-background function files and related constants ([1a49aa25](https://github.com/firstlovecenter/fl-admin-portal/commit/1a49aa25ee38d0c4c79746323699e195271eabef))
+- change export syntax from ES6 to CommonJS in modules ([5b143991](https://github.com/firstlovecenter/fl-admin-portal/commit/5b143991e44c39b579ceba241057544c69d053e9))
+- change export syntax from ES6 to CommonJS in cypher and constants modules ([770d95e8](https://github.com/firstlovecenter/fl-admin-portal/commit/770d95e8273658ec4c67db10f6575670c166e104))
+- remove package.json and package-lock.json for code-of-the-day-setter function ([d925dd05](https://github.com/firstlovecenter/fl-admin-portal/commit/d925dd05f0a1195c432d4fea481e83e626b90f0e))
+- comment out logging of code of the day in executeQuery function ([67f40ac3](https://github.com/firstlovecenter/fl-admin-portal/commit/67f40ac314b3ed0f59db51162a4f7da70f9492cd))
+- enhance logging in executeQuery function to include code of the day details ([b9f5a754](https://github.com/firstlovecenter/fl-admin-portal/commit/b9f5a754bae52fc9890e50c62a20f83f32feebef))
+- remove redundant dependency installation step and streamline function packaging process ([40b8b3d5](https://github.com/firstlovecenter/fl-admin-portal/commit/40b8b3d5f1fb2dc2e2ac992caa5cf27da734cbbb))
+- streamline background functions compilation process and enha ([b1644343](https://github.com/firstlovecenter/fl-admin-portal/commit/b16443431ed847776e52d258b8f6381521b51d32))
+- enhance logging in code of the day function for better traceability ([958b32d6](https://github.com/firstlovecenter/fl-admin-portal/commit/958b32d69fae271a6c1ad0da5ac4a731cab005b6))
+- remove unnecessary copying of shared resources in deployment workflow ([1b00061f](https://github.com/firstlovecenter/fl-admin-portal/commit/1b00061fd6f531efee592317c2034e153fe3a109))
+- convert code of the day to lambda ([5d059f00](https://github.com/firstlovecenter/fl-admin-portal/commit/5d059f00f786e7e2569ec03a6b29745b75d25a9e))
+- update Slack notification actions in deployment workflows for improved clarity and message ([f6234fab](https://github.com/firstlovecenter/fl-admin-portal/commit/f6234fab1a1a620c0b7d9315e0f79d937041135f))
+- update secrets handling in deploy workflow for improved security and clarity ([a8ecda43](https://github.com/firstlovecenter/fl-admin-portal/commit/a8ecda43827827019d9102a79929028073e34dd4))
+- remove onCompleted handler from CreateGovernorship for cleaner code ([767f9255](https://github.com/firstlovecenter/fl-admin-portal/commit/767f92552c961829f65807aa51b05509c9169bcf))
+- update loadSecrets import statements for consistency and clarity ([9c4ba6e1](https://github.com/firstlovecenter/fl-admin-portal/commit/9c4ba6e1d8955aab1c53cad867ab2099d49dc6ef))
+- update axios calls to use await for improved readability and error handling ([51fd17f7](https://github.com/firstlovecenter/fl-admin-portal/commit/51fd17f7436697b37d76ab58121bad494c7153ec))
+- replace getSecrets module with loadSecrets for improved secret management ([97715dc9](https://github.com/firstlovecenter/fl-admin-portal/commit/97715dc9028fd7f75f88bdd51927f640b8d75997))
+- remove unused Neo4j authentication plugin from GraphQL server ([cefba5c1](https://github.com/firstlovecenter/fl-admin-portal/commit/cefba5c1d76a6e01bf7bd5fb85c2cc8f3f5cbc17))
+- remove commented-out encryption options from Neo4j driver initialization ([662c7bdd](https://github.com/firstlovecenter/fl-admin-portal/commit/662c7bdddebcfa87298ec87e0ff1dfca7a18a908))
+- update GraphQL server implementation with Neo4j integration and enhanced error handling ([147ab29f](https://github.com/firstlovecenter/fl-admin-portal/commit/147ab29fdb95f104269e1afc73ba3a9d67ed21ca))
 
 #### 8.0.1 (2025-03-06)
 
 ##### New Features
 
-*  update GraphQL schema to enhance clarity with descriptive aliases ([93e07ad9](https://github.com/firstlovecenter/fl-admin-portal/commit/93e07ad9e6bc3864abb592648456298951aedc3f))
-*  enhance GraphQL schema with distinct service and defaulter counts for improved reporting ([ad277eeb](https://github.com/firstlovecenter/fl-admin-portal/commit/ad277eeb8fa1987c630f0d1d28a7249b9e0e2a95))
-*  add bacenta aggregation script and Neo4j constraints for performance optimization ([dcd4eec8](https://github.com/firstlovecenter/fl-admin-portal/commit/dcd4eec877f1b53fa71a4ea56b94c060687b08ba))
-*  add background aggregators for bacenta and service graphs with optimized queries ([0a3bc557](https://github.com/firstlovecenter/fl-admin-portal/commit/0a3bc5578463d2bff65185dd85af5d12bf555bc1))
+- update GraphQL schema to enhance clarity with descriptive aliases ([93e07ad9](https://github.com/firstlovecenter/fl-admin-portal/commit/93e07ad9e6bc3864abb592648456298951aedc3f))
+- enhance GraphQL schema with distinct service and defaulter counts for improved reporting ([ad277eeb](https://github.com/firstlovecenter/fl-admin-portal/commit/ad277eeb8fa1987c630f0d1d28a7249b9e0e2a95))
+- add bacenta aggregation script and Neo4j constraints for performance optimization ([dcd4eec8](https://github.com/firstlovecenter/fl-admin-portal/commit/dcd4eec877f1b53fa71a4ea56b94c060687b08ba))
+- add background aggregators for bacenta and service graphs with optimized queries ([0a3bc557](https://github.com/firstlovecenter/fl-admin-portal/commit/0a3bc5578463d2bff65185dd85af5d12bf555bc1))
 
 ##### Bug Fixes
 
-*  update service graph aggregator scheduling to run hourly ([b422c37d](https://github.com/firstlovecenter/fl-admin-portal/commit/b422c37da40908057ed4c8b8f4dca91edf13210c))
-*  update service graph aggregator scheduling to run every minute ([d5f3420f](https://github.com/firstlovecenter/fl-admin-portal/commit/d5f3420fbdd53bc29f951f37f62e3ed0ecc97b92))
-*  update scheduling for graph aggregators to run at specified intervals ([2abf8b4a](https://github.com/firstlovecenter/fl-admin-portal/commit/2abf8b4ae589efe3e8d4a827bb1f6075117f8786))
-*  update GraphQL queries to use 'result' alias for clarity in return values ([3eeba874](https://github.com/firstlovecenter/fl-admin-portal/commit/3eeba87437707e6d87127ad2f3c9936f93f3f1ff))
-*  enhance error handling in GraphQL resolvers for improved reliability ([a567ba30](https://github.com/firstlovecenter/fl-admin-portal/commit/a567ba302e01d03e216094c28fae1f736f32abd3))
-*  update GraphQL queries to include aliasing for clarity and consistency in column naming ([03945077](https://github.com/firstlovecenter/fl-admin-portal/commit/03945077442f95025aef5c95671e59d19ea0493f))
-*  update column names in GraphQL schema for consistency and clarity ([e7655a54](https://github.com/firstlovecenter/fl-admin-portal/commit/e7655a54ac1ad9e94bbb42799909b5ea16f6761c))
-*  update Cypher queries to include aliasing for clarity and correct column naming in GQL ([6e68f9eb](https://github.com/firstlovecenter/fl-admin-portal/commit/6e68f9eb5f28a0ff972a278be96b0bed974d9673))
-*  simplify Cypher queries by removing unnecessary MATCH clauses and aggregations ([43163bd9](https://github.com/firstlovecenter/fl-admin-portal/commit/43163bd91bb929774278890d61bc21490677e885))
+- update service graph aggregator scheduling to run hourly ([b422c37d](https://github.com/firstlovecenter/fl-admin-portal/commit/b422c37da40908057ed4c8b8f4dca91edf13210c))
+- update service graph aggregator scheduling to run every minute ([d5f3420f](https://github.com/firstlovecenter/fl-admin-portal/commit/d5f3420fbdd53bc29f951f37f62e3ed0ecc97b92))
+- update scheduling for graph aggregators to run at specified intervals ([2abf8b4a](https://github.com/firstlovecenter/fl-admin-portal/commit/2abf8b4ae589efe3e8d4a827bb1f6075117f8786))
+- update GraphQL queries to use 'result' alias for clarity in return values ([3eeba874](https://github.com/firstlovecenter/fl-admin-portal/commit/3eeba87437707e6d87127ad2f3c9936f93f3f1ff))
+- enhance error handling in GraphQL resolvers for improved reliability ([a567ba30](https://github.com/firstlovecenter/fl-admin-portal/commit/a567ba302e01d03e216094c28fae1f736f32abd3))
+- update GraphQL queries to include aliasing for clarity and consistency in column naming ([03945077](https://github.com/firstlovecenter/fl-admin-portal/commit/03945077442f95025aef5c95671e59d19ea0493f))
+- update column names in GraphQL schema for consistency and clarity ([e7655a54](https://github.com/firstlovecenter/fl-admin-portal/commit/e7655a54ac1ad9e94bbb42799909b5ea16f6761c))
+- update Cypher queries to include aliasing for clarity and correct column naming in GQL ([6e68f9eb](https://github.com/firstlovecenter/fl-admin-portal/commit/6e68f9eb5f28a0ff972a278be96b0bed974d9673))
+- simplify Cypher queries by removing unnecessary MATCH clauses and aggregations ([43163bd9](https://github.com/firstlovecenter/fl-admin-portal/commit/43163bd91bb929774278890d61bc21490677e885))
 
 ##### Refactors
 
-*  adjust GraphQL query to use 'bacenta' instead of 'fellowship' ([565f3fd4](https://github.com/firstlovecenter/fl-admin-portal/commit/565f3fd43397d76f8475a3bc2a4e65e77b51ca9e))
+- adjust GraphQL query to use 'bacenta' instead of 'fellowship' ([565f3fd4](https://github.com/firstlovecenter/fl-admin-portal/commit/565f3fd43397d76f8475a3bc2a4e65e77b51ca9e))
 
 ## 8.0.0 (2025-03-04)
 
 ##### Chores
 
-*  update Neo4j dependencies and refactor authorization plugin integration ([f488b21a](https://github.com/firstlovecenter/fl-admin-portal/commit/f488b21a3ab23e5ee260bb47355e462c2367a7cc))
+- update Neo4j dependencies and refactor authorization plugin integration ([f488b21a](https://github.com/firstlovecenter/fl-admin-portal/commit/f488b21a3ab23e5ee260bb47355e462c2367a7cc))
 
 ##### Bug Fixes
 
-*  change target field type from Int! to Int in campaigns-swollen-sunday GraphQL schema ([9293aa99](https://github.com/firstlovecenter/fl-admin-portal/commit/9293aa999b2dca43bf0417daeba172be19d31e2f))
-*  refactor bankingProof logic to use CASE statement for clarity in GraphQL schema ([0467358d](https://github.com/firstlovecenter/fl-admin-portal/commit/0467358dc1ea80596fc6becbc4bcb145f6243bf8))
-*  standardize return count naming to memberCount in directory CRUD mutations ([598dab68](https://github.com/firstlovecenter/fl-admin-portal/commit/598dab68af77d6f1e42fe3a6b94818ce10e01ac5))
-*  update GraphQL schema to return stream name consistently ([9cf66f95](https://github.com/firstlovecenter/fl-admin-portal/commit/9cf66f95d70472f789bce8d1cccefc1cbcfe0703))
-*  rename column references from "services" to "records" in GraphQL schema ([3d514b9a](https://github.com/firstlovecenter/fl-admin-portal/commit/3d514b9a701fdd8a8b3e83dafa583577f359f8bf))
-*  import jwtDecode from jwt-decode for JWT handling in GraphQL ([80399dce](https://github.com/firstlovecenter/fl-admin-portal/commit/80399dceaf0752d3fc2902cd3ce20381720b843f))
-*  conditionally write combined schema file based on environment ([a942d8bd](https://github.com/firstlovecenter/fl-admin-portal/commit/a942d8bd76073da3d6cf6414bcb2d84c29df0acd))
-*  add jwt-decode package and update context to handle JWT in Apollo Server ([7301fa25](https://github.com/firstlovecenter/fl-admin-portal/commit/7301fa25095ec75012d153591a476c2baa96ffc8))
-*  update JWT secret handling and improve schema error logging ([cf31a887](https://github.com/firstlovecenter/fl-admin-portal/commit/cf31a887b3a8c1bb53c012f2ec37b7706ee9e408))
-*  replace executeWrite with run for session queries in multiple aggregators ([7b82faf1](https://github.com/firstlovecenter/fl-admin-portal/commit/7b82faf1f1d4f0148dc0c0fddf7fff730845a259))
-*  update package-lock.json to reflect changes in dependencies and lockfile version ([c005797a](https://github.com/firstlovecenter/fl-admin-portal/commit/c005797ab93dded5381f6bd20322a88da8a41dec))
-*  update user roles retrieval to use JWT for consistency in campaigns resolver ([11fe45b9](https://github.com/firstlovecenter/fl-admin-portal/commit/11fe45b930544caafdecd2da8876313b8fdd97f7))
-*  update resolvers to use JWT for role and auth_id references ([2f7c3bee](https://github.com/firstlovecenter/fl-admin-portal/commit/2f7c3bee866122acd66fa18c873cb95f999d35c9))
-*  replace auth context references with jwt for consistency across resolvers ([a28c21be](https://github.com/firstlovecenter/fl-admin-portal/commit/a28c21be86108c437d4f76ba71b10a4f42607628))
-*  update auth_id references to use $jwt.sub for consistency across resolvers and schemas ([043807bb](https://github.com/firstlovecenter/fl-admin-portal/commit/043807bb8b49db1903ae1aa60e0926db833f04a5))
-*  update authentication context to use JWT roles and enhance resolver logic ([f61937e9](https://github.com/firstlovecenter/fl-admin-portal/commit/f61937e97aaf00588457dddb634fa3b033ff5dca))
-*  standardize column names in GraphQL schema for consistency ([1044ddff](https://github.com/firstlovecenter/fl-admin-portal/commit/1044ddff5c3a90a442b0e4ff8d5a45323b7d9e69))
-*  refactor Cypher queries for Member type and enhance JWT handling in context ([cf863c66](https://github.com/firstlovecenter/fl-admin-portal/commit/cf863c66eeeecc15b1a3853d90cfb14ba962f1bf))
-*  update authentication roles to use OR syntax in GraphQL mutations ([ea62b1d3](https://github.com/firstlovecenter/fl-admin-portal/commit/ea62b1d3fd146dd34a43ad4460a3a7aaa6cf65ee))
-*  enhance error logging for GraphQL schema initialization ([03812d65](https://github.com/firstlovecenter/fl-admin-portal/commit/03812d655b9c788bc548b6795f981b71a214dc30))
-*  remove unused Cypher script and update GraphQL mutation return value ([cee653b1](https://github.com/firstlovecenter/fl-admin-portal/commit/cee653b10becdf6263e4350fc125ad27d104c9dc))
-*  update dependencies for @apollo/server, @neo4j/graphql, graphql, ([ec9a7a23](https://github.com/firstlovecenter/fl-admin-portal/commit/ec9a7a233fd2cfc7ee21918f4ea0151adef6afe9))
-*  update neo4j-driver dependency to version 5.28.1 across multiple functions ([ccbe1e64](https://github.com/firstlovecenter/fl-admin-portal/commit/ccbe1e64fbc482c4527bca97b28fbe19ee32dbb3))
-*  improve performance of GraphQL queries by optimizing resolver functions ([8d85a02a](https://github.com/firstlovecenter/fl-admin-portal/commit/8d85a02af39ddc6f4e00da295677f1fe47d385a3))
-*  update authentication roles handling in GraphQL schema and remove hardcoded roles path ([257bf92c](https://github.com/firstlovecenter/fl-admin-portal/commit/257bf92cdce31478030d8cb8bc689ea7cee360fc))
-*  update .gitignore to include combined-schema wildcard and change output file extension to .gql ([5dfc7486](https://github.com/firstlovecenter/fl-admin-portal/commit/5dfc748651b751fef0906f974c09df8c0df5fa89))
-*  update .gitignore to include combined-schema.graphql ([113cfc17](https://github.com/firstlovecenter/fl-admin-portal/commit/113cfc17214fa6251932705f9e443e4bb9400137))
-*  write combined GraphQL schema to file and add columnName argument to cypher directives ([33dd7c42](https://github.com/firstlovecenter/fl-admin-portal/commit/33dd7c42f84f998f6d7d891a8a3abcfbd5cdd12b))
-*  enhance error logging and standardize relationship directives in GraphQL schema ([0c77fa84](https://github.com/firstlovecenter/fl-admin-portal/commit/0c77fa842c9b0b6cf6814105103b0df02cf82246))
-*  update GraphQL schema to ([3d76a213](https://github.com/firstlovecenter/fl-admin-portal/commit/3d76a213cf30c278f6053ad776ddc3cfa8e81b92))
-*  add columnName argument to various GraphQL types for consistency ([76ed1617](https://github.com/firstlovecenter/fl-admin-portal/commit/76ed1617cd25803a237ce4bf42ca3136ef23fc2f))
-*  add columnName argument to cypher directives for consistency in GraphQL schema ([5d487417](https://github.com/firstlovecenter/fl-admin-portal/commit/5d487417e1b89327678b7b3362bab70add82c0bc))
-*  update authentication directives to use jwt roles_INCLUDES for consistency ([dd170662](https://github.com/firstlovecenter/fl-admin-portal/commit/dd1706620c878d4afa50cba664b79294aa7e9492))
-*  remove authentication directives from various GraphQL types for consistency ([02867109](https://github.com/firstlovecenter/fl-admin-portal/commit/02867109358dc8fac83e182196f74231270ebcf2))
-*  add columnName argument to currentUser and memberByEmail queries for consistency ([f7d0e135](https://github.com/firstlovecenter/fl-admin-portal/commit/f7d0e135cf7545a7c8daa7c8358a74087a963169))
-*  rename multiplicationRecords to multiplicationStats for consistency in GraphQL schema ([af4ad5b8](https://github.com/firstlovecenter/fl-admin-portal/commit/af4ad5b8ceec0d365a18e08572d2eed1665a400b))
-*  add columnName argument to userRecords and update related GraphQL types for consistency ([12d07821](https://github.com/firstlovecenter/fl-admin-portal/commit/12d07821a3cf77388e85e41bbc0283292317936b))
-*  add columnName argument to multiplicationRecords and target fields in campaigns-multiplication ([3c3f441e](https://github.com/firstlovecenter/fl-admin-portal/commit/3c3f441e06e5e688f62aaeb1d65a4321ef627dbb))
-*  add columnName argument to downloadCredits mutation and remove unused columnName fields in campus and stream types ([b6cec651](https://github.com/firstlovecenter/fl-admin-portal/commit/b6cec65139f6f65f2adc924d7f13512af3bf41c2))
-*  add columnName arguments to various GraphQL directives for improved clarity ([8155f162](https://github.com/firstlovecenter/fl-admin-portal/commit/8155f162590da6e77aae3188efd9c5f49904cd1d))
-*  added columnName argument to @cypher directives in arrivlals.graphql ([e2e9aaf9](https://github.com/firstlovecenter/fl-admin-portal/commit/e2e9aaf92c0b78aff0cd26ffbc5816cbc82b69bf))
-*  added columnName argument to @cypher directives in arrivlals-payment.graphql ([498a958c](https://github.com/firstlovecenter/fl-admin-portal/commit/498a958c9a6d734a4ebd86cc9b98c364bb01b1b1))
-*  added columnName argument to @cypher directives in aggregates.graphql ([7f469d2b](https://github.com/firstlovecenter/fl-admin-portal/commit/7f469d2b485da5cfe4729603c81c748e72bd9909))
-*  added columnName argument to @cypher directives in accounts.graphql ([db80c1fa](https://github.com/firstlovecenter/fl-admin-portal/commit/db80c1fa2c8c02d0734f42c3eae9b555dca6d1dd))
-*  added columnName argument to @cypher directives in directory.graphql ([6039df8d](https://github.com/firstlovecenter/fl-admin-portal/commit/6039df8d5d95e6fbee0abb331256bb4dba88f35e))
-*  handle schema retrieval errors in GraphQL server startup ([45016fc2](https://github.com/firstlovecenter/fl-admin-portal/commit/45016fc24faa0d92b4e6943e3de6870e6d074689))
+- change target field type from Int! to Int in campaigns-swollen-sunday GraphQL schema ([9293aa99](https://github.com/firstlovecenter/fl-admin-portal/commit/9293aa999b2dca43bf0417daeba172be19d31e2f))
+- refactor bankingProof logic to use CASE statement for clarity in GraphQL schema ([0467358d](https://github.com/firstlovecenter/fl-admin-portal/commit/0467358dc1ea80596fc6becbc4bcb145f6243bf8))
+- standardize return count naming to memberCount in directory CRUD mutations ([598dab68](https://github.com/firstlovecenter/fl-admin-portal/commit/598dab68af77d6f1e42fe3a6b94818ce10e01ac5))
+- update GraphQL schema to return stream name consistently ([9cf66f95](https://github.com/firstlovecenter/fl-admin-portal/commit/9cf66f95d70472f789bce8d1cccefc1cbcfe0703))
+- rename column references from "services" to "records" in GraphQL schema ([3d514b9a](https://github.com/firstlovecenter/fl-admin-portal/commit/3d514b9a701fdd8a8b3e83dafa583577f359f8bf))
+- import jwtDecode from jwt-decode for JWT handling in GraphQL ([80399dce](https://github.com/firstlovecenter/fl-admin-portal/commit/80399dceaf0752d3fc2902cd3ce20381720b843f))
+- conditionally write combined schema file based on environment ([a942d8bd](https://github.com/firstlovecenter/fl-admin-portal/commit/a942d8bd76073da3d6cf6414bcb2d84c29df0acd))
+- add jwt-decode package and update context to handle JWT in Apollo Server ([7301fa25](https://github.com/firstlovecenter/fl-admin-portal/commit/7301fa25095ec75012d153591a476c2baa96ffc8))
+- update JWT secret handling and improve schema error logging ([cf31a887](https://github.com/firstlovecenter/fl-admin-portal/commit/cf31a887b3a8c1bb53c012f2ec37b7706ee9e408))
+- replace executeWrite with run for session queries in multiple aggregators ([7b82faf1](https://github.com/firstlovecenter/fl-admin-portal/commit/7b82faf1f1d4f0148dc0c0fddf7fff730845a259))
+- update package-lock.json to reflect changes in dependencies and lockfile version ([c005797a](https://github.com/firstlovecenter/fl-admin-portal/commit/c005797ab93dded5381f6bd20322a88da8a41dec))
+- update user roles retrieval to use JWT for consistency in campaigns resolver ([11fe45b9](https://github.com/firstlovecenter/fl-admin-portal/commit/11fe45b930544caafdecd2da8876313b8fdd97f7))
+- update resolvers to use JWT for role and auth_id references ([2f7c3bee](https://github.com/firstlovecenter/fl-admin-portal/commit/2f7c3bee866122acd66fa18c873cb95f999d35c9))
+- replace auth context references with jwt for consistency across resolvers ([a28c21be](https://github.com/firstlovecenter/fl-admin-portal/commit/a28c21be86108c437d4f76ba71b10a4f42607628))
+- update auth_id references to use $jwt.sub for consistency across resolvers and schemas ([043807bb](https://github.com/firstlovecenter/fl-admin-portal/commit/043807bb8b49db1903ae1aa60e0926db833f04a5))
+- update authentication context to use JWT roles and enhance resolver logic ([f61937e9](https://github.com/firstlovecenter/fl-admin-portal/commit/f61937e97aaf00588457dddb634fa3b033ff5dca))
+- standardize column names in GraphQL schema for consistency ([1044ddff](https://github.com/firstlovecenter/fl-admin-portal/commit/1044ddff5c3a90a442b0e4ff8d5a45323b7d9e69))
+- refactor Cypher queries for Member type and enhance JWT handling in context ([cf863c66](https://github.com/firstlovecenter/fl-admin-portal/commit/cf863c66eeeecc15b1a3853d90cfb14ba962f1bf))
+- update authentication roles to use OR syntax in GraphQL mutations ([ea62b1d3](https://github.com/firstlovecenter/fl-admin-portal/commit/ea62b1d3fd146dd34a43ad4460a3a7aaa6cf65ee))
+- enhance error logging for GraphQL schema initialization ([03812d65](https://github.com/firstlovecenter/fl-admin-portal/commit/03812d655b9c788bc548b6795f981b71a214dc30))
+- remove unused Cypher script and update GraphQL mutation return value ([cee653b1](https://github.com/firstlovecenter/fl-admin-portal/commit/cee653b10becdf6263e4350fc125ad27d104c9dc))
+- update dependencies for @apollo/server, @neo4j/graphql, graphql, ([ec9a7a23](https://github.com/firstlovecenter/fl-admin-portal/commit/ec9a7a233fd2cfc7ee21918f4ea0151adef6afe9))
+- update neo4j-driver dependency to version 5.28.1 across multiple functions ([ccbe1e64](https://github.com/firstlovecenter/fl-admin-portal/commit/ccbe1e64fbc482c4527bca97b28fbe19ee32dbb3))
+- improve performance of GraphQL queries by optimizing resolver functions ([8d85a02a](https://github.com/firstlovecenter/fl-admin-portal/commit/8d85a02af39ddc6f4e00da295677f1fe47d385a3))
+- update authentication roles handling in GraphQL schema and remove hardcoded roles path ([257bf92c](https://github.com/firstlovecenter/fl-admin-portal/commit/257bf92cdce31478030d8cb8bc689ea7cee360fc))
+- update .gitignore to include combined-schema wildcard and change output file extension to .gql ([5dfc7486](https://github.com/firstlovecenter/fl-admin-portal/commit/5dfc748651b751fef0906f974c09df8c0df5fa89))
+- update .gitignore to include combined-schema.graphql ([113cfc17](https://github.com/firstlovecenter/fl-admin-portal/commit/113cfc17214fa6251932705f9e443e4bb9400137))
+- write combined GraphQL schema to file and add columnName argument to cypher directives ([33dd7c42](https://github.com/firstlovecenter/fl-admin-portal/commit/33dd7c42f84f998f6d7d891a8a3abcfbd5cdd12b))
+- enhance error logging and standardize relationship directives in GraphQL schema ([0c77fa84](https://github.com/firstlovecenter/fl-admin-portal/commit/0c77fa842c9b0b6cf6814105103b0df02cf82246))
+- update GraphQL schema to ([3d76a213](https://github.com/firstlovecenter/fl-admin-portal/commit/3d76a213cf30c278f6053ad776ddc3cfa8e81b92))
+- add columnName argument to various GraphQL types for consistency ([76ed1617](https://github.com/firstlovecenter/fl-admin-portal/commit/76ed1617cd25803a237ce4bf42ca3136ef23fc2f))
+- add columnName argument to cypher directives for consistency in GraphQL schema ([5d487417](https://github.com/firstlovecenter/fl-admin-portal/commit/5d487417e1b89327678b7b3362bab70add82c0bc))
+- update authentication directives to use jwt roles_INCLUDES for consistency ([dd170662](https://github.com/firstlovecenter/fl-admin-portal/commit/dd1706620c878d4afa50cba664b79294aa7e9492))
+- remove authentication directives from various GraphQL types for consistency ([02867109](https://github.com/firstlovecenter/fl-admin-portal/commit/02867109358dc8fac83e182196f74231270ebcf2))
+- add columnName argument to currentUser and memberByEmail queries for consistency ([f7d0e135](https://github.com/firstlovecenter/fl-admin-portal/commit/f7d0e135cf7545a7c8daa7c8358a74087a963169))
+- rename multiplicationRecords to multiplicationStats for consistency in GraphQL schema ([af4ad5b8](https://github.com/firstlovecenter/fl-admin-portal/commit/af4ad5b8ceec0d365a18e08572d2eed1665a400b))
+- add columnName argument to userRecords and update related GraphQL types for consistency ([12d07821](https://github.com/firstlovecenter/fl-admin-portal/commit/12d07821a3cf77388e85e41bbc0283292317936b))
+- add columnName argument to multiplicationRecords and target fields in campaigns-multiplication ([3c3f441e](https://github.com/firstlovecenter/fl-admin-portal/commit/3c3f441e06e5e688f62aaeb1d65a4321ef627dbb))
+- add columnName argument to downloadCredits mutation and remove unused columnName fields in campus and stream types ([b6cec651](https://github.com/firstlovecenter/fl-admin-portal/commit/b6cec65139f6f65f2adc924d7f13512af3bf41c2))
+- add columnName arguments to various GraphQL directives for improved clarity ([8155f162](https://github.com/firstlovecenter/fl-admin-portal/commit/8155f162590da6e77aae3188efd9c5f49904cd1d))
+- added columnName argument to @cypher directives in arrivlals.graphql ([e2e9aaf9](https://github.com/firstlovecenter/fl-admin-portal/commit/e2e9aaf92c0b78aff0cd26ffbc5816cbc82b69bf))
+- added columnName argument to @cypher directives in arrivlals-payment.graphql ([498a958c](https://github.com/firstlovecenter/fl-admin-portal/commit/498a958c9a6d734a4ebd86cc9b98c364bb01b1b1))
+- added columnName argument to @cypher directives in aggregates.graphql ([7f469d2b](https://github.com/firstlovecenter/fl-admin-portal/commit/7f469d2b485da5cfe4729603c81c748e72bd9909))
+- added columnName argument to @cypher directives in accounts.graphql ([db80c1fa](https://github.com/firstlovecenter/fl-admin-portal/commit/db80c1fa2c8c02d0734f42c3eae9b555dca6d1dd))
+- added columnName argument to @cypher directives in directory.graphql ([6039df8d](https://github.com/firstlovecenter/fl-admin-portal/commit/6039df8d5d95e6fbee0abb331256bb4dba88f35e))
+- handle schema retrieval errors in GraphQL server startup ([45016fc2](https://github.com/firstlovecenter/fl-admin-portal/commit/45016fc24faa0d92b4e6943e3de6870e6d074689))
 
 ##### Refactors
 
-*  ensure church display pages are working effectively ([a9adbab5](https://github.com/firstlovecenter/fl-admin-portal/commit/a9adbab50fecfae1c752ab6608ba9988966086b3))
-*  update recipient identifiers with names in notification functions ([71df68e3](https://github.com/firstlovecenter/fl-admin-portal/commit/71df68e3b55bb882f6a53e459ee655ade5f3c2e2))
+- ensure church display pages are working effectively ([a9adbab5](https://github.com/firstlovecenter/fl-admin-portal/commit/a9adbab50fecfae1c752ab6608ba9988966086b3))
+- update recipient identifiers with names in notification functions ([71df68e3](https://github.com/firstlovecenter/fl-admin-portal/commit/71df68e3b55bb882f6a53e459ee655ade5f3c2e2))
 
 #### 7.18.64 (2025-02-12)
 
 ##### Chores
 
-*  remove sensitive information logging from index.js ([de19d1cf](https://github.com/firstlovecenter/fl-admin-portal/commit/de19d1cf7d214809f90db3b33e142efc235b8999))
+- remove sensitive information logging from index.js ([de19d1cf](https://github.com/firstlovecenter/fl-admin-portal/commit/de19d1cf7d214809f90db3b33e142efc235b8999))
 
 ##### New Features
 
-*  show maintenance mode message ([31fbdbee](https://github.com/firstlovecenter/fl-admin-portal/commit/31fbdbeea66800ad16227d3d553e9eb2e4a77d84))
+- show maintenance mode message ([31fbdbee](https://github.com/firstlovecenter/fl-admin-portal/commit/31fbdbeea66800ad16227d3d553e9eb2e4a77d84))
 
 ##### Bug Fixes
 
-*  enable JWT secret and roles path in GraphQL configuration ([d1ceaaf1](https://github.com/firstlovecenter/fl-admin-portal/commit/d1ceaaf1b14e1d42ee405669ab3d06a26a0a1495))
-*  restore user authentication logic and re-enable related components ([f0f1c38a](https://github.com/firstlovecenter/fl-admin-portal/commit/f0f1c38ad3d1795eb2e9d670f49a2649d07223be))
-*  add new recipient phone number to gsheets update function ([c99c5835](https://github.com/firstlovecenter/fl-admin-portal/commit/c99c5835d8ef3473c708c0cebce99909a4867394))
-*  wrong logic for retrieving anagkazo banking defaulters ([f3cdb49b](https://github.com/firstlovecenter/fl-admin-portal/commit/f3cdb49b22a0c4e0519e2dbe9da0ff910b083aa6))
-*  add Hillary's phone number to SMS recipient lists in multiple functions ([98a59652](https://github.com/firstlovecenter/fl-admin-portal/commit/98a596528986cca5cdbf08df89a7cac84f83122f))
-*  update error message in sendBulkSMS function for clarity ([afd44f64](https://github.com/firstlovecenter/fl-admin-portal/commit/afd44f641e7419e70ba0a724ef40f22a5ee46149))
-*  parameterize week value in GraphQL query for improved flexibility ([26ca4b38](https://github.com/firstlovecenter/fl-admin-portal/commit/26ca4b38968650175eb6f5b79f1586c22957316d))
-*  update GraphQL query to use fixed week value and enhance record matching logic ([84a0a3bb](https://github.com/firstlovecenter/fl-admin-portal/commit/84a0a3bb4f31ab2c338d2b5e3d1ba4343f9ee00b))
+- enable JWT secret and roles path in GraphQL configuration ([d1ceaaf1](https://github.com/firstlovecenter/fl-admin-portal/commit/d1ceaaf1b14e1d42ee405669ab3d06a26a0a1495))
+- restore user authentication logic and re-enable related components ([f0f1c38a](https://github.com/firstlovecenter/fl-admin-portal/commit/f0f1c38ad3d1795eb2e9d670f49a2649d07223be))
+- add new recipient phone number to gsheets update function ([c99c5835](https://github.com/firstlovecenter/fl-admin-portal/commit/c99c5835d8ef3473c708c0cebce99909a4867394))
+- wrong logic for retrieving anagkazo banking defaulters ([f3cdb49b](https://github.com/firstlovecenter/fl-admin-portal/commit/f3cdb49b22a0c4e0519e2dbe9da0ff910b083aa6))
+- add Hillary's phone number to SMS recipient lists in multiple functions ([98a59652](https://github.com/firstlovecenter/fl-admin-portal/commit/98a596528986cca5cdbf08df89a7cac84f83122f))
+- update error message in sendBulkSMS function for clarity ([afd44f64](https://github.com/firstlovecenter/fl-admin-portal/commit/afd44f641e7419e70ba0a724ef40f22a5ee46149))
+- parameterize week value in GraphQL query for improved flexibility ([26ca4b38](https://github.com/firstlovecenter/fl-admin-portal/commit/26ca4b38968650175eb6f5b79f1586c22957316d))
+- update GraphQL query to use fixed week value and enhance record matching logic ([84a0a3bb](https://github.com/firstlovecenter/fl-admin-portal/commit/84a0a3bb4f31ab2c338d2b5e3d1ba4343f9ee00b))
 
 ##### Refactors
 
-*  simplify Cypher queries and update Neo4j driver configuration logging ([8fe1529a](https://github.com/firstlovecenter/fl-admin-portal/commit/8fe1529a206cd6d8e0077194f2ae4104999d36b6))
+- simplify Cypher queries and update Neo4j driver configuration logging ([8fe1529a](https://github.com/firstlovecenter/fl-admin-portal/commit/8fe1529a206cd6d8e0077194f2ae4104999d36b6))
 
 #### 7.18.63 (2024-12-08)
 
 ##### Chores
 
-*  update version in meta.json and add optional chaining for ([b4caaa35](https://github.com/firstlovecenter/fl-admin-portal/commit/b4caaa35f520f8dac1c799145cb4fad0e24f28ac))
+- update version in meta.json and add optional chaining for ([b4caaa35](https://github.com/firstlovecenter/fl-admin-portal/commit/b4caaa35f520f8dac1c799145cb4fad0e24f28ac))
 
 ##### New Features
 
-*  enhance GraphQL queries and improve type handling in ConfirmAnagkazoBanking component ([39ab7450](https://github.com/firstlovecenter/fl-admin-portal/commit/39ab745049831acb330d7ec8e2c56158b194ab3b))
-*  update Cypher queries to use governorship context and improve record handling ([e59d0e79](https://github.com/firstlovecenter/fl-admin-portal/commit/e59d0e79f4519a2b647e779bc2bb658f30af0674))
+- enhance GraphQL queries and improve type handling in ConfirmAnagkazoBanking component ([39ab7450](https://github.com/firstlovecenter/fl-admin-portal/commit/39ab745049831acb330d7ec8e2c56158b194ab3b))
+- update Cypher queries to use governorship context and improve record handling ([e59d0e79](https://github.com/firstlovecenter/fl-admin-portal/commit/e59d0e79f4519a2b647e779bc2bb658f30af0674))
 
 ##### Refactors
 
-*  simplify LabelList usage and add null check for category in ChurchGraph component ([38de3ba0](https://github.com/firstlovecenter/fl-admin-portal/commit/38de3ba01c54ff002aaaca4178590661d51fb1df))
+- simplify LabelList usage and add null check for category in ChurchGraph component ([38de3ba0](https://github.com/firstlovecenter/fl-admin-portal/commit/38de3ba01c54ff002aaaca4178590661d51fb1df))
 
 #### 7.18.62 (2024-11-30)
 
 ##### New Features
 
-*  rename constituency banking defaulters to governorship banking defaulters across the app ([7cb9e3a6](https://github.com/firstlovecenter/fl-admin-portal/commit/7cb9e3a6441f9a1007b463d3a5ec83671c25c08e))
-*  rename constituency banking defaulters to governorship banking defaulters across the application ([853a8bb5](https://github.com/firstlovecenter/fl-admin-portal/commit/853a8bb5f4e858e43c89df06fa70c76e0f0c96a5))
-*  optimize Cypher queries by removing redundant MATCH clauses and improving performance ([685542c0](https://github.com/firstlovecenter/fl-admin-portal/commit/685542c0cf2e971c6d99a94e377eba45a4d1f513))
-*  add functionality to zero all null bussing records in the database ([4132371b](https://github.com/firstlovecenter/fl-admin-portal/commit/4132371b5eec2a7a8c0f78f2b55de48a6df7d0f9))
-*  simplify Cypher queries by removing unnecessary MATCH clauses ([6b5dc5e9](https://github.com/firstlovecenter/fl-admin-portal/commit/6b5dc5e9746f17776b8a8a03617eb2289ce464a0))
-*  update schedule time for gsheets services not banked handler ([8ea18fe1](https://github.com/firstlovecenter/fl-admin-portal/commit/8ea18fe193e7e86041ad55b3d7a5daca47f76e7e))
-*  add SMS notification for services not banked updates and include new recipient ([f86bcf6f](https://github.com/firstlovecenter/fl-admin-portal/commit/f86bcf6f5e8cecc0fa37316cfd3b7635c7c6a7f7))
+- rename constituency banking defaulters to governorship banking defaulters across the app ([7cb9e3a6](https://github.com/firstlovecenter/fl-admin-portal/commit/7cb9e3a6441f9a1007b463d3a5ec83671c25c08e))
+- rename constituency banking defaulters to governorship banking defaulters across the application ([853a8bb5](https://github.com/firstlovecenter/fl-admin-portal/commit/853a8bb5f4e858e43c89df06fa70c76e0f0c96a5))
+- optimize Cypher queries by removing redundant MATCH clauses and improving performance ([685542c0](https://github.com/firstlovecenter/fl-admin-portal/commit/685542c0cf2e971c6d99a94e377eba45a4d1f513))
+- add functionality to zero all null bussing records in the database ([4132371b](https://github.com/firstlovecenter/fl-admin-portal/commit/4132371b5eec2a7a8c0f78f2b55de48a6df7d0f9))
+- simplify Cypher queries by removing unnecessary MATCH clauses ([6b5dc5e9](https://github.com/firstlovecenter/fl-admin-portal/commit/6b5dc5e9746f17776b8a8a03617eb2289ce464a0))
+- update schedule time for gsheets services not banked handler ([8ea18fe1](https://github.com/firstlovecenter/fl-admin-portal/commit/8ea18fe193e7e86041ad55b3d7a5daca47f76e7e))
+- add SMS notification for services not banked updates and include new recipient ([f86bcf6f](https://github.com/firstlovecenter/fl-admin-portal/commit/f86bcf6f5e8cecc0fa37316cfd3b7635c7c6a7f7))
 
 #### 7.18.61 (2024-11-10)
 
 ##### New Features
 
-*  enhance service aggregation queries to include total attendance and income calculations ([6e3e61ed](https://github.com/firstlovecenter/fl-admin-portal/commit/6e3e61ed2a498447ceb7b71ccce0d8df820dfaca))
-*  remove unused bacenta aggregation functions from graph aggregator ([c3932d50](https://github.com/firstlovecenter/fl-admin-portal/commit/c3932d50f4d2efa62d330b1639052b3e9bd23613))
-*  add service graph aggregator and refactor graph aggregation functions ([4ca19d18](https://github.com/firstlovecenter/fl-admin-portal/commit/4ca19d189fdc8190133a08f6a262c936d2877e71))
-*  update schedule frequency for graph aggregation handler to run hourly ([783b3ed4](https://github.com/firstlovecenter/fl-admin-portal/commit/783b3ed4ffb91ae5991a09e73abeeadb18d27a2d))
-*  update busing aggregation queries to set month property and refactor function calls ([60ffe648](https://github.com/firstlovecenter/fl-admin-portal/commit/60ffe6487ebc0d5ab20e739e82ce0dddbed0abc2))
-*  add busing aggregation queries and reset attendance records ([7654bcd0](https://github.com/firstlovecenter/fl-admin-portal/commit/7654bcd001e01edbdf694a2a8c253199963eb2d8))
-*  remove service aggregation in filling service resolver ([2e4f0311](https://github.com/firstlovecenter/fl-admin-portal/commit/2e4f0311df9e565c9eb592d5922fdf1307738c4f))
-*  update schedule frequency for graph aggregation handler ([e3e3cdcd](https://github.com/firstlovecenter/fl-admin-portal/commit/e3e3cdcdde07cdf99929c6be28d37069f4f342c2))
-*  enhance logging for graph aggregation processes ([627614ea](https://github.com/firstlovecenter/fl-admin-portal/commit/627614eacaceeaf55fdc3c47b4c94ce4ae0b8e19))
-*  add path for graph-aggregate-corrector secrets in encrypt-secrets.js ([aeb38d0a](https://github.com/firstlovecenter/fl-admin-portal/commit/aeb38d0a3e20213f64925f4ec6c9431dba055d9c))
-*  update graph aggregation logic and adjust schedule frequency ([8fb0be94](https://github.com/firstlovecenter/fl-admin-portal/commit/8fb0be94f20be653dcd1bcc3873208f0107279e8))
-*  add console log for aggregation completion in graph-aggregate-corrector ([472b162b](https://github.com/firstlovecenter/fl-admin-portal/commit/472b162b7ce2661b12222a3e07d2df8278a86663))
-*  implement bg function to aggregate church graphs ([42693dad](https://github.com/firstlovecenter/fl-admin-portal/commit/42693dad43ed319c5b2cc2cc9c80a3bfe37ffd02))
+- enhance service aggregation queries to include total attendance and income calculations ([6e3e61ed](https://github.com/firstlovecenter/fl-admin-portal/commit/6e3e61ed2a498447ceb7b71ccce0d8df820dfaca))
+- remove unused bacenta aggregation functions from graph aggregator ([c3932d50](https://github.com/firstlovecenter/fl-admin-portal/commit/c3932d50f4d2efa62d330b1639052b3e9bd23613))
+- add service graph aggregator and refactor graph aggregation functions ([4ca19d18](https://github.com/firstlovecenter/fl-admin-portal/commit/4ca19d189fdc8190133a08f6a262c936d2877e71))
+- update schedule frequency for graph aggregation handler to run hourly ([783b3ed4](https://github.com/firstlovecenter/fl-admin-portal/commit/783b3ed4ffb91ae5991a09e73abeeadb18d27a2d))
+- update busing aggregation queries to set month property and refactor function calls ([60ffe648](https://github.com/firstlovecenter/fl-admin-portal/commit/60ffe6487ebc0d5ab20e739e82ce0dddbed0abc2))
+- add busing aggregation queries and reset attendance records ([7654bcd0](https://github.com/firstlovecenter/fl-admin-portal/commit/7654bcd001e01edbdf694a2a8c253199963eb2d8))
+- remove service aggregation in filling service resolver ([2e4f0311](https://github.com/firstlovecenter/fl-admin-portal/commit/2e4f0311df9e565c9eb592d5922fdf1307738c4f))
+- update schedule frequency for graph aggregation handler ([e3e3cdcd](https://github.com/firstlovecenter/fl-admin-portal/commit/e3e3cdcdde07cdf99929c6be28d37069f4f342c2))
+- enhance logging for graph aggregation processes ([627614ea](https://github.com/firstlovecenter/fl-admin-portal/commit/627614eacaceeaf55fdc3c47b4c94ce4ae0b8e19))
+- add path for graph-aggregate-corrector secrets in encrypt-secrets.js ([aeb38d0a](https://github.com/firstlovecenter/fl-admin-portal/commit/aeb38d0a3e20213f64925f4ec6c9431dba055d9c))
+- update graph aggregation logic and adjust schedule frequency ([8fb0be94](https://github.com/firstlovecenter/fl-admin-portal/commit/8fb0be94f20be653dcd1bcc3873208f0107279e8))
+- add console log for aggregation completion in graph-aggregate-corrector ([472b162b](https://github.com/firstlovecenter/fl-admin-portal/commit/472b162b7ce2661b12222a3e07d2df8278a86663))
+- implement bg function to aggregate church graphs ([42693dad](https://github.com/firstlovecenter/fl-admin-portal/commit/42693dad43ed319c5b2cc2cc9c80a3bfe37ffd02))
 
 #### 7.18.60 (2024-11-09)
 
@@ -316,41 +316,41 @@
 
 ##### Refactors
 
-*  update role permissions for closing down Bacenta to use 'Governorship' ([df0400b0](https://github.com/firstlovecenter/fl-admin-portal/commit/df0400b07294058a23ba4fbbc94bac6fdbd470de))
-*  update accounts-utils to use UTC methods and uncomment code in ExpenseForm ([7f17fe85](https://github.com/firstlovecenter/fl-admin-portal/commit/7f17fe850f445456826c06bdd9823f020e37cbbc))
+- update role permissions for closing down Bacenta to use 'Governorship' ([df0400b0](https://github.com/firstlovecenter/fl-admin-portal/commit/df0400b07294058a23ba4fbbc94bac6fdbd470de))
+- update accounts-utils to use UTC methods and uncomment code in ExpenseForm ([7f17fe85](https://github.com/firstlovecenter/fl-admin-portal/commit/7f17fe850f445456826c06bdd9823f020e37cbbc))
 
 #### 7.18.56 (2024-10-31)
 
 ##### Documentation Changes
 
-*  update CHANGELOG.md ([3f9fee4b](https://github.com/firstlovecenter/fl-admin-portal/commit/3f9fee4b88a6bf7154ea0b98f84e222f8763ec76))
-*  update CHANGELOG.md ([2d6edb45](https://github.com/firstlovecenter/fl-admin-portal/commit/2d6edb458246e7ff2c47b6295c88577faf97b355))
+- update CHANGELOG.md ([3f9fee4b](https://github.com/firstlovecenter/fl-admin-portal/commit/3f9fee4b88a6bf7154ea0b98f84e222f8763ec76))
+- update CHANGELOG.md ([2d6edb45](https://github.com/firstlovecenter/fl-admin-portal/commit/2d6edb458246e7ff2c47b6295c88577faf97b355))
 
 ##### New Features
 
-*  implement function to write the new members list for the past week ([170377eb](https://github.com/firstlovecenter/fl-admin-portal/commit/170377eb9a2200de1b49ef85f8c652d1ae8ac0ab))
+- implement function to write the new members list for the past week ([170377eb](https://github.com/firstlovecenter/fl-admin-portal/commit/170377eb9a2200de1b49ef85f8c652d1ae8ac0ab))
 
 ##### Bug Fixes
 
-*  reverse update gsheets-accra-background.js ([178cbc70](https://github.com/firstlovecenter/fl-admin-portal/commit/178cbc70aaee800d8b9420d87306776c099ebef5))
-*  update gsheets-accra-background.js ([e36eff59](https://github.com/firstlovecenter/fl-admin-portal/commit/e36eff5985a9227f61fca104f5d8b5934d8bcb35))
+- reverse update gsheets-accra-background.js ([178cbc70](https://github.com/firstlovecenter/fl-admin-portal/commit/178cbc70aaee800d8b9420d87306776c099ebef5))
+- update gsheets-accra-background.js ([e36eff59](https://github.com/firstlovecenter/fl-admin-portal/commit/e36eff5985a9227f61fca104f5d8b5934d8bcb35))
 
 ##### Other Changes
 
-*  update import statement for newMembersList query ([a21f37e9](https://github.com/firstlovecenter/fl-admin-portal/commit/a21f37e9a01318b6cd2f4b1bf96d8de9b90b36ba))
+- update import statement for newMembersList query ([a21f37e9](https://github.com/firstlovecenter/fl-admin-portal/commit/a21f37e9a01318b6cd2f4b1bf96d8de9b90b36ba))
 
 ##### Refactors
 
-*  update easy-debugging-scripts.cypher and ExpenseForm.tsx to comment out unused code ([dd89c236](https://github.com/firstlovecenter/fl-admin-portal/commit/dd89c2368410cee59f7c4700d28238a2105ebec5))
-*  update helpdesk link in texts.json ([1567e1ef](https://github.com/firstlovecenter/fl-admin-portal/commit/1567e1ef07348d3f8c672c33a338f878024c42f3))
-*  update gsheets-accra-new-members.js to correct the scheduled day for running the handler ([2f3e4011](https://github.com/firstlovecenter/fl-admin-portal/commit/2f3e4011f837f3ea4fe24e582975a4a8bcb15550))
-*  add new recipient to gsheets-accra-new-members.js ([b6383572](https://github.com/firstlovecenter/fl-admin-portal/commit/b638357299b709d8bd1631690c807e231b2abfb7))
-*  update secrets.js paths in encrypt-secrets.js ([2a312e2b](https://github.com/firstlovecenter/fl-admin-portal/commit/2a312e2be9d638e9f8b46d121a4be17a12b32938))
-*  update gsheets-accra-new-members.js to correct the scheduled day for running the handler ([43765494](https://github.com/firstlovecenter/fl-admin-portal/commit/43765494a9c24b84b636b7c4b8c6a971edd626a3))
-*  update gsheets-accra-new-members.js to write new members list to correct cell range ([c4fecee6](https://github.com/firstlovecenter/fl-admin-portal/commit/c4fecee61c7185178888f8fdd660f4fba4984eb0))
-*  update arrivals-cypher.ts to include "Car" vehicles ([667bb748](https://github.com/firstlovecenter/fl-admin-portal/commit/667bb7485e4d120964ef0effa2707cf68d2e2038))
-*  add additional recipient to gsheets-accra-background.js ([c0226650](https://github.com/firstlovecenter/fl-admin-portal/commit/c0226650bc739a1b1e280186e3e55eaaf8c9be47))
-*  update STREAM_SERVICE_DAY_OPTIONS to include Thursday ([4d4e67b4](https://github.com/firstlovecenter/fl-admin-portal/commit/4d4e67b48f9876c459e6d9f9af2c3d4b1239e9ff))
+- update easy-debugging-scripts.cypher and ExpenseForm.tsx to comment out unused code ([dd89c236](https://github.com/firstlovecenter/fl-admin-portal/commit/dd89c2368410cee59f7c4700d28238a2105ebec5))
+- update helpdesk link in texts.json ([1567e1ef](https://github.com/firstlovecenter/fl-admin-portal/commit/1567e1ef07348d3f8c672c33a338f878024c42f3))
+- update gsheets-accra-new-members.js to correct the scheduled day for running the handler ([2f3e4011](https://github.com/firstlovecenter/fl-admin-portal/commit/2f3e4011f837f3ea4fe24e582975a4a8bcb15550))
+- add new recipient to gsheets-accra-new-members.js ([b6383572](https://github.com/firstlovecenter/fl-admin-portal/commit/b638357299b709d8bd1631690c807e231b2abfb7))
+- update secrets.js paths in encrypt-secrets.js ([2a312e2b](https://github.com/firstlovecenter/fl-admin-portal/commit/2a312e2be9d638e9f8b46d121a4be17a12b32938))
+- update gsheets-accra-new-members.js to correct the scheduled day for running the handler ([43765494](https://github.com/firstlovecenter/fl-admin-portal/commit/43765494a9c24b84b636b7c4b8c6a971edd626a3))
+- update gsheets-accra-new-members.js to write new members list to correct cell range ([c4fecee6](https://github.com/firstlovecenter/fl-admin-portal/commit/c4fecee61c7185178888f8fdd660f4fba4984eb0))
+- update arrivals-cypher.ts to include "Car" vehicles ([667bb748](https://github.com/firstlovecenter/fl-admin-portal/commit/667bb7485e4d120964ef0effa2707cf68d2e2038))
+- add additional recipient to gsheets-accra-background.js ([c0226650](https://github.com/firstlovecenter/fl-admin-portal/commit/c0226650bc739a1b1e280186e3e55eaaf8c9be47))
+- update STREAM_SERVICE_DAY_OPTIONS to include Thursday ([4d4e67b4](https://github.com/firstlovecenter/fl-admin-portal/commit/4d4e67b48f9876c459e6d9f9af2c3d4b1239e9ff))
 
 #### 7.18.55 (2024-10-07)
 
@@ -358,740 +358,740 @@
 
 ##### Refactors
 
-*  update STREAM_SERVICE_DAY_OPTIONS to include Thursday ([d6e87e44](https://github.com/firstlovecenter/fl-admin-portal/commit/d6e87e44bcbaae6f07b242700a5aa391c868e76a))
+- update STREAM_SERVICE_DAY_OPTIONS to include Thursday ([d6e87e44](https://github.com/firstlovecenter/fl-admin-portal/commit/d6e87e44bcbaae6f07b242700a5aa391c868e76a))
 
 #### 7.18.53 (2024-10-01)
 
 ##### Refactors
 
-*  update STREAM_SERVICE_DAY_OPTIONS to include Thursday ([221eed76](https://github.com/firstlovecenter/fl-admin-portal/commit/221eed761d3ec3a8243fa1b51bf2eeea2b3e9e42))
+- update STREAM_SERVICE_DAY_OPTIONS to include Thursday ([221eed76](https://github.com/firstlovecenter/fl-admin-portal/commit/221eed761d3ec3a8243fa1b51bf2eeea2b3e9e42))
 
 #### 7.18.52 (2024-09-27)
 
 ##### Refactors
 
-*  update to display the correct timing for Thursdays which is 6am to 10am ([e396ffaf](https://github.com/firstlovecenter/fl-admin-portal/commit/e396ffafed244394945249c2c2a13325dd74d6d4))
-*  update leader title in DetailsGovernorship component ([5467c5ec](https://github.com/firstlovecenter/fl-admin-portal/commit/5467c5ec0d1f686ba05bb70394b8b0b247c44607))
+- update to display the correct timing for Thursdays which is 6am to 10am ([e396ffaf](https://github.com/firstlovecenter/fl-admin-portal/commit/e396ffafed244394945249c2c2a13325dd74d6d4))
+- update leader title in DetailsGovernorship component ([5467c5ec](https://github.com/firstlovecenter/fl-admin-portal/commit/5467c5ec0d1f686ba05bb70394b8b0b247c44607))
 
 #### 7.18.51 (2024-09-26)
 
 ##### Refactors
 
-*  change the word team to governorship ([74ba5a53](https://github.com/firstlovecenter/fl-admin-portal/commit/74ba5a5316d7389f083c34664be2458c843f4187))
-*  remove unused secrets.build call ([2de1a689](https://github.com/firstlovecenter/fl-admin-portal/commit/2de1a6899b7a1a428f7b5237203ea0ef392e0d5e))
-*  remove unused secrets.build call ([166b0699](https://github.com/firstlovecenter/fl-admin-portal/commit/166b0699d07a1435c8356b7534bfedd2f394fa65))
+- change the word team to governorship ([74ba5a53](https://github.com/firstlovecenter/fl-admin-portal/commit/74ba5a5316d7389f083c34664be2458c843f4187))
+- remove unused secrets.build call ([2de1a689](https://github.com/firstlovecenter/fl-admin-portal/commit/2de1a6899b7a1a428f7b5237203ea0ef392e0d5e))
+- remove unused secrets.build call ([166b0699](https://github.com/firstlovecenter/fl-admin-portal/commit/166b0699d07a1435c8356b7534bfedd2f394fa65))
 
 #### 7.18.50 (2024-09-24)
 
 ##### Bug Fixes
 
-*  remove personalContr calc from arrivals ([4d359537](https://github.com/firstlovecenter/fl-admin-portal/commit/4d35953747828443237252c94723649f32b90d22))
-*  remove bussingCost and personalContribution from bacenta form ([1b2f90a3](https://github.com/firstlovecenter/fl-admin-portal/commit/1b2f90a33e5e3135d6e3e12b3683e5c67b2e2835))
-*  car option is available on all days not just swells ([b6ee21e0](https://github.com/firstlovecenter/fl-admin-portal/commit/b6ee21e0da53df6772a511b06bb79751b5d815b8))
+- remove personalContr calc from arrivals ([4d359537](https://github.com/firstlovecenter/fl-admin-portal/commit/4d35953747828443237252c94723649f32b90d22))
+- remove bussingCost and personalContribution from bacenta form ([1b2f90a3](https://github.com/firstlovecenter/fl-admin-portal/commit/1b2f90a33e5e3135d6e3e12b3683e5c67b2e2835))
+- car option is available on all days not just swells ([b6ee21e0](https://github.com/firstlovecenter/fl-admin-portal/commit/b6ee21e0da53df6772a511b06bb79751b5d815b8))
 
 ##### Refactors
 
-*  change word constituency to word team ([156ae928](https://github.com/firstlovecenter/fl-admin-portal/commit/156ae928a2affdd93b53e89970819c8241bddfef))
-*  remove graduation status from bacenta ([8f023c56](https://github.com/firstlovecenter/fl-admin-portal/commit/8f023c569d7ad77e94c314d3e0fdd1e5272df672))
-*  comment out unused code in treasury-resolvers.ts and banking-resolver.ts ([34dab8bf](https://github.com/firstlovecenter/fl-admin-portal/commit/34dab8bf2ab6f554e14a36788295632d74803a33))
+- change word constituency to word team ([156ae928](https://github.com/firstlovecenter/fl-admin-portal/commit/156ae928a2affdd93b53e89970819c8241bddfef))
+- remove graduation status from bacenta ([8f023c56](https://github.com/firstlovecenter/fl-admin-portal/commit/8f023c569d7ad77e94c314d3e0fdd1e5272df672))
+- comment out unused code in treasury-resolvers.ts and banking-resolver.ts ([34dab8bf](https://github.com/firstlovecenter/fl-admin-portal/commit/34dab8bf2ab6f554e14a36788295632d74803a33))
 
 #### 7.18.49 (2024-09-18)
 
 ##### Documentation Changes
 
-*  update CHANGELOG.md ([2cc0d076](https://github.com/firstlovecenter/fl-admin-portal/commit/2cc0d0761754726026b4df8de8c3ffd4682d6a9a))
+- update CHANGELOG.md ([2cc0d076](https://github.com/firstlovecenter/fl-admin-portal/commit/2cc0d0761754726026b4df8de8c3ffd4682d6a9a))
 
 ##### Refactors
 
-*  remove redundant runner variable in release script ([dd19453d](https://github.com/firstlovecenter/fl-admin-portal/commit/dd19453dc406d797e6362d390808a50c7d674733))
-*  add new stream options in financial-utils and StreamForm ([1b2a2756](https://github.com/firstlovecenter/fl-admin-portal/commit/1b2a275655aaff4c44886360aa8a413d26ede93f))
+- remove redundant runner variable in release script ([dd19453d](https://github.com/firstlovecenter/fl-admin-portal/commit/dd19453dc406d797e6362d390808a50c7d674733))
+- add new stream options in financial-utils and StreamForm ([1b2a2756](https://github.com/firstlovecenter/fl-admin-portal/commit/1b2a275655aaff4c44886360aa8a413d26ede93f))
 
 #### 7.18.48 (2024-09-18)
 
 ##### Refactors
 
-*  add new stream options in financial-utils and StreamForm ([1b2a2756](https://github.com/firstlovecenter/fl-admin-portal/commit/1b2a275655aaff4c44886360aa8a413d26ede93f))
+- add new stream options in financial-utils and StreamForm ([1b2a2756](https://github.com/firstlovecenter/fl-admin-portal/commit/1b2a275655aaff4c44886360aa8a413d26ede93f))
 
 #### 7.18.47 (2024-09-03)
 
 ##### Refactors
 
-*  update bacenta member check condition in directory resolvers ([431a866e](https://github.com/firstlovecenter/fl-admin-portal/commit/431a866ee773ca68336d31ec6db7b0e3ba5cfe19))
+- update bacenta member check condition in directory resolvers ([431a866e](https://github.com/firstlovecenter/fl-admin-portal/commit/431a866ee773ca68336d31ec6db7b0e3ba5cfe19))
 
 #### 7.18.46 (2024-09-01)
 
 ##### Refactors
 
-*  update history queries to fetch 100 records instead of 10 ([4c7d931e](https://github.com/firstlovecenter/fl-admin-portal/commit/4c7d931e409740adf25d65d48728c69093edc33c))
+- update history queries to fetch 100 records instead of 10 ([4c7d931e](https://github.com/firstlovecenter/fl-admin-portal/commit/4c7d931e409740adf25d65d48728c69093edc33c))
 
 #### 7.18.45 (2024-09-01)
 
 ##### Bug Fixes
 
-*  fix checker for bacenta members before deleting ([20ff5dec](https://github.com/firstlovecenter/fl-admin-portal/commit/20ff5dec877bf43a79e47ccdcce6f2046573f4da))
-*  update the checkBacenta Has no members ([4eb9fbbe](https://github.com/firstlovecenter/fl-admin-portal/commit/4eb9fbbe0af8d9c9baf47cdd10d31da6909e78bd))
+- fix checker for bacenta members before deleting ([20ff5dec](https://github.com/firstlovecenter/fl-admin-portal/commit/20ff5dec877bf43a79e47ccdcce6f2046573f4da))
+- update the checkBacenta Has no members ([4eb9fbbe](https://github.com/firstlovecenter/fl-admin-portal/commit/4eb9fbbe0af8d9c9baf47cdd10d31da6909e78bd))
 
 ##### Refactors
 
-*  update history queries to fetch 100 records instead of 10 ([f7d56fe0](https://github.com/firstlovecenter/fl-admin-portal/commit/f7d56fe0bbeee66dfee1b82bca3d24000bf69035))
-*  update code of the day for september ([04b3c6ff](https://github.com/firstlovecenter/fl-admin-portal/commit/04b3c6ffc084201fc4601697f63e0c8583fe3948))
-*  update member search queries to use Bacenta instead of Fellowship ([c0d41250](https://github.com/firstlovecenter/fl-admin-portal/commit/c0d412505f5123444a326722d4f906fcf93795e1))
-*  update member search queries to use Bacenta instead of Fellowship ([62d35ca8](https://github.com/firstlovecenter/fl-admin-portal/commit/62d35ca87dee1e5a4900a344fa1028edadfcd7dd))
-*  update permission case for council in permitLeader ([a41888ad](https://github.com/firstlovecenter/fl-admin-portal/commit/a41888ada5fe10592a1b613ab23d171e476d8ae4))
+- update history queries to fetch 100 records instead of 10 ([f7d56fe0](https://github.com/firstlovecenter/fl-admin-portal/commit/f7d56fe0bbeee66dfee1b82bca3d24000bf69035))
+- update code of the day for september ([04b3c6ff](https://github.com/firstlovecenter/fl-admin-portal/commit/04b3c6ffc084201fc4601697f63e0c8583fe3948))
+- update member search queries to use Bacenta instead of Fellowship ([c0d41250](https://github.com/firstlovecenter/fl-admin-portal/commit/c0d412505f5123444a326722d4f906fcf93795e1))
+- update member search queries to use Bacenta instead of Fellowship ([62d35ca8](https://github.com/firstlovecenter/fl-admin-portal/commit/62d35ca87dee1e5a4900a344fa1028edadfcd7dd))
+- update permission case for council in permitLeader ([a41888ad](https://github.com/firstlovecenter/fl-admin-portal/commit/a41888ada5fe10592a1b613ab23d171e476d8ae4))
 
 #### 7.18.44 (2024-08-14)
 
 ##### Refactors
 
-*  update TrendsMenu permission to use permitLeaderAdmin instead of permitAdmin ([647356fd](https://github.com/firstlovecenter/fl-admin-portal/commit/647356fd5bfbb0ae0e060e8b455e56e8680c5076))
+- update TrendsMenu permission to use permitLeaderAdmin instead of permitAdmin ([647356fd](https://github.com/firstlovecenter/fl-admin-portal/commit/647356fd5bfbb0ae0e060e8b455e56e8680c5076))
 
 #### 7.18.43 (2024-08-10)
 
 ##### Refactors
 
-*  update link to service details page in BankingDefaulters ([94306252](https://github.com/firstlovecenter/fl-admin-portal/commit/94306252b5ad7a9f2b5826f1e5c9b1583b783cff))
-*  update link to service details page in BankingDefaulters ([a429794f](https://github.com/firstlovecenter/fl-admin-portal/commit/a429794fb19e0cc020ed37b31bd4690ea73f2688))
+- update link to service details page in BankingDefaulters ([94306252](https://github.com/firstlovecenter/fl-admin-portal/commit/94306252b5ad7a9f2b5826f1e5c9b1583b783cff))
+- update link to service details page in BankingDefaulters ([a429794f](https://github.com/firstlovecenter/fl-admin-portal/commit/a429794fb19e0cc020ed37b31bd4690ea73f2688))
 
 #### 7.18.42 (2024-08-08)
 
 ##### Bug Fixes
 
-*  download credit only is subtracted when > 0 ([6eb23efa](https://github.com/firstlovecenter/fl-admin-portal/commit/6eb23efad62b916beee8f9c52fb694b6a6e76736))
-*  bring back poimen checkers for banking ([eb175ddf](https://github.com/firstlovecenter/fl-admin-portal/commit/eb175ddfb3b549ede2ad6c87528de14e9befa64e))
+- download credit only is subtracted when > 0 ([6eb23efa](https://github.com/firstlovecenter/fl-admin-portal/commit/6eb23efad62b916beee8f9c52fb694b6a6e76736))
+- bring back poimen checkers for banking ([eb175ddf](https://github.com/firstlovecenter/fl-admin-portal/commit/eb175ddfb3b549ede2ad6c87528de14e9befa64e))
 
 ##### Refactors
 
-*  handle optional basonta name in DownloadCouncilMembership ([4431725c](https://github.com/firstlovecenter/fl-admin-portal/commit/4431725c272e8b56a9d70141e3caf6220ccbcfb5))
-*  update download credits member cypher and council download reports ([e3060d91](https://github.com/firstlovecenter/fl-admin-portal/commit/e3060d919302f27ba817412f2767685b2821b14b))
-*  update download credits member cypher and council download reports ([4a46c140](https://github.com/firstlovecenter/fl-admin-portal/commit/4a46c14018e1d5e0ef556081ce77ca97f476e51e))
-*  demote green to red and remove green label ([e67838af](https://github.com/firstlovecenter/fl-admin-portal/commit/e67838aff5108c87ef046761172c9f6a2d0e6e16))
+- handle optional basonta name in DownloadCouncilMembership ([4431725c](https://github.com/firstlovecenter/fl-admin-portal/commit/4431725c272e8b56a9d70141e3caf6220ccbcfb5))
+- update download credits member cypher and council download reports ([e3060d91](https://github.com/firstlovecenter/fl-admin-portal/commit/e3060d919302f27ba817412f2767685b2821b14b))
+- update download credits member cypher and council download reports ([4a46c140](https://github.com/firstlovecenter/fl-admin-portal/commit/4a46c14018e1d5e0ef556081ce77ca97f476e51e))
+- demote green to red and remove green label ([e67838af](https://github.com/firstlovecenter/fl-admin-portal/commit/e67838aff5108c87ef046761172c9f6a2d0e6e16))
 
 #### 7.18.41 (2024-08-05)
 
 ##### Refactors
 
-*  update ListQueries to include memberCount instead of stream_name ([7934475b](https://github.com/firstlovecenter/fl-admin-portal/commit/7934475b4490b9c7d01bd21fecc45c620349e382))
-*  update MemberTable to display bacenta name instead of fellowship name ([142f9d1b](https://github.com/firstlovecenter/fl-admin-portal/commit/142f9d1bc34857af307d410befb0f706b4bd2f30))
-*  update phone number formatting in MemberDisplay ([cdb2244e](https://github.com/firstlovecenter/fl-admin-portal/commit/cdb2244e04df4df930ffffe9488c4ffca59dd066))
+- update ListQueries to include memberCount instead of stream_name ([7934475b](https://github.com/firstlovecenter/fl-admin-portal/commit/7934475b4490b9c7d01bd21fecc45c620349e382))
+- update MemberTable to display bacenta name instead of fellowship name ([142f9d1b](https://github.com/firstlovecenter/fl-admin-portal/commit/142f9d1bc34857af307d410befb0f706b4bd2f30))
+- update phone number formatting in MemberDisplay ([cdb2244e](https://github.com/firstlovecenter/fl-admin-portal/commit/cdb2244e04df4df930ffffe9488c4ffca59dd066))
 
 #### 7.18.40 (2024-08-04)
 
 ##### Chores
 
-*  ensure npx is available for commit-msg hook ([f806c352](https://github.com/firstlovecenter/fl-admin-portal/commit/f806c35297e451e47b999330416898153315e946))
-*  update code of the day for August ([336125ed](https://github.com/firstlovecenter/fl-admin-portal/commit/336125edbcf3322b72cd1c4f650aa3094b1a75bb))
+- ensure npx is available for commit-msg hook ([f806c352](https://github.com/firstlovecenter/fl-admin-portal/commit/f806c35297e451e47b999330416898153315e946))
+- update code of the day for August ([336125ed](https://github.com/firstlovecenter/fl-admin-portal/commit/336125edbcf3322b72cd1c4f650aa3094b1a75bb))
 
 ##### New Features
 
-*  add Basonta information to council member download ([12f3b746](https://github.com/firstlovecenter/fl-admin-portal/commit/12f3b746529962c1a565db29661cda81269a814c))
+- add Basonta information to council member download ([12f3b746](https://github.com/firstlovecenter/fl-admin-portal/commit/12f3b746529962c1a565db29661cda81269a814c))
 
 ##### Refactors
 
-*  update phone number formatting in MemberDisplay ([0c3de3db](https://github.com/firstlovecenter/fl-admin-portal/commit/0c3de3db98e16459ca84df29f9da23c165fc7f50))
-*  update phone number formatting in MemberDisplay ([4c25b7ef](https://github.com/firstlovecenter/fl-admin-portal/commit/4c25b7eff5a2f8bcc56c9f0800b5785854daf6cd))
-*  the ServicesMenu component to use correct property name for church type ([3566ec18](https://github.com/firstlovecenter/fl-admin-portal/commit/3566ec18c58cfc8c21d1448c42702e0d788f5370))
+- update phone number formatting in MemberDisplay ([0c3de3db](https://github.com/firstlovecenter/fl-admin-portal/commit/0c3de3db98e16459ca84df29f9da23c165fc7f50))
+- update phone number formatting in MemberDisplay ([4c25b7ef](https://github.com/firstlovecenter/fl-admin-portal/commit/4c25b7eff5a2f8bcc56c9f0800b5785854daf6cd))
+- the ServicesMenu component to use correct property name for church type ([3566ec18](https://github.com/firstlovecenter/fl-admin-portal/commit/3566ec18c58cfc8c21d1448c42702e0d788f5370))
 
 #### 7.18.39 (2024-08-02)
 
 ##### Chores
 
-*  update @jaedag/admin-portal-api-core to version 2.2.2 ([6554450a](https://github.com/firstlovecenter/fl-admin-portal/commit/6554450aaf2617a8024de76832bca59d2ed2a5f1))
+- update @jaedag/admin-portal-api-core to version 2.2.2 ([6554450a](https://github.com/firstlovecenter/fl-admin-portal/commit/6554450aaf2617a8024de76832bca59d2ed2a5f1))
 
 #### 7.18.38 (2024-08-01)
 
 ##### Chores
 
-*  update @jaedag/admin-portal-api-core to version 2.2.1 ([0d02d0c3](https://github.com/firstlovecenter/fl-admin-portal/commit/0d02d0c307317eaefdbc56bd3d1dfe401cdaff0a))
+- update @jaedag/admin-portal-api-core to version 2.2.1 ([0d02d0c3](https://github.com/firstlovecenter/fl-admin-portal/commit/0d02d0c307317eaefdbc56bd3d1dfe401cdaff0a))
 
 ##### New Features
 
-*  update routes and components for council confirm payment delay ([a32cf98d](https://github.com/firstlovecenter/fl-admin-portal/commit/a32cf98de3216aae7ca462742c315d2fe63bdcb9))
+- update routes and components for council confirm payment delay ([a32cf98d](https://github.com/firstlovecenter/fl-admin-portal/commit/a32cf98de3216aae7ca462742c315d2fe63bdcb9))
 
 #### 7.18.37 (2024-08-01)
 
 ##### New Features
 
-*  implement deduction of credits upon download ([ac892967](https://github.com/firstlovecenter/fl-admin-portal/commit/ac8929678944bea93704f41c3cb63228faa54d16))
-*  implement payment options for council membership ([380454a5](https://github.com/firstlovecenter/fl-admin-portal/commit/380454a5f67c74859d9ef92070d0213140ae553f))
-*  implement auto credit of accounts ([dc61231e](https://github.com/firstlovecenter/fl-admin-portal/commit/dc61231e2452eec81ff000cb08915f32ea8ad6a6))
-*  implement backend resolver to pay for download credits ([e7f1d646](https://github.com/firstlovecenter/fl-admin-portal/commit/e7f1d6461ef4f1795143710f228b615f80d4ca21))
-*  implement feature to download  membership list as a report ([9ff6ca36](https://github.com/firstlovecenter/fl-admin-portal/commit/9ff6ca361bba2f676cdb84ef31e262cbb8058aae))
-*  add conditional rendering for Defaulters menu button based on church type ([d65a4519](https://github.com/firstlovecenter/fl-admin-portal/commit/d65a45193882e274e808bb9048a318e64ab26763))
+- implement deduction of credits upon download ([ac892967](https://github.com/firstlovecenter/fl-admin-portal/commit/ac8929678944bea93704f41c3cb63228faa54d16))
+- implement payment options for council membership ([380454a5](https://github.com/firstlovecenter/fl-admin-portal/commit/380454a5f67c74859d9ef92070d0213140ae553f))
+- implement auto credit of accounts ([dc61231e](https://github.com/firstlovecenter/fl-admin-portal/commit/dc61231e2452eec81ff000cb08915f32ea8ad6a6))
+- implement backend resolver to pay for download credits ([e7f1d646](https://github.com/firstlovecenter/fl-admin-portal/commit/e7f1d6461ef4f1795143710f228b615f80d4ca21))
+- implement feature to download membership list as a report ([9ff6ca36](https://github.com/firstlovecenter/fl-admin-portal/commit/9ff6ca361bba2f676cdb84ef31e262cbb8058aae))
+- add conditional rendering for Defaulters menu button based on church type ([d65a4519](https://github.com/firstlovecenter/fl-admin-portal/commit/d65a45193882e274e808bb9048a318e64ab26763))
 
 ##### Bug Fixes
 
-*  update amount calculation for initiating Paystack charge ([80c7636a](https://github.com/firstlovecenter/fl-admin-portal/commit/80c7636a3146daa1015d14984b9c608951df3b5d))
-*  fix bug where online giving was not absorbed to serviceRecord ([d470d5d4](https://github.com/firstlovecenter/fl-admin-portal/commit/d470d5d4218dc6c22a6c98f4e798414dd2d2c907))
+- update amount calculation for initiating Paystack charge ([80c7636a](https://github.com/firstlovecenter/fl-admin-portal/commit/80c7636a3146daa1015d14984b9c608951df3b5d))
+- fix bug where online giving was not absorbed to serviceRecord ([d470d5d4](https://github.com/firstlovecenter/fl-admin-portal/commit/d470d5d4218dc6c22a6c98f4e798414dd2d2c907))
 
 ##### Refactors
 
-*  update member's fellowship to bacenta in resolver-cypher.ts ([ca7a8f21](https://github.com/firstlovecenter/fl-admin-portal/commit/ca7a8f213332d91e556fcd27207e1d6c3fd5a91e))
-*  optimize GSheets query for fetching services not banked ([12dfbe48](https://github.com/firstlovecenter/fl-admin-portal/commit/12dfbe4807f3b74beed574faf6c8ec0bff71c6ca))
+- update member's fellowship to bacenta in resolver-cypher.ts ([ca7a8f21](https://github.com/firstlovecenter/fl-admin-portal/commit/ca7a8f213332d91e556fcd27207e1d6c3fd5a91e))
+- optimize GSheets query for fetching services not banked ([12dfbe48](https://github.com/firstlovecenter/fl-admin-portal/commit/12dfbe4807f3b74beed574faf6c8ec0bff71c6ca))
 
 #### 7.18.36 (2024-07-24)
 
 ##### Bug Fixes
 
-*   allow constituency admins to delete members ([9bf5051d](https://github.com/firstlovecenter/fl-admin-portal/commit/9bf5051de8d8cf96c368448e411f31977abc1760))
+- allow constituency admins to delete members ([9bf5051d](https://github.com/firstlovecenter/fl-admin-portal/commit/9bf5051de8d8cf96c368448e411f31977abc1760))
 
 #### 7.18.35 (2024-07-24)
 
 ##### Chores
 
-*  update permit roles for directory mutation ([2c333a7f](https://github.com/firstlovecenter/fl-admin-portal/commit/2c333a7f1ac9353444a7900806f3d81b36a557cf))
-*  update scheduled time for gsheets-services-not-banked function ([efb682b4](https://github.com/firstlovecenter/fl-admin-portal/commit/efb682b42aad3f3fb99ad20e33e1883b4e15230f))
+- update permit roles for directory mutation ([2c333a7f](https://github.com/firstlovecenter/fl-admin-portal/commit/2c333a7f1ac9353444a7900806f3d81b36a557cf))
+- update scheduled time for gsheets-services-not-banked function ([efb682b4](https://github.com/firstlovecenter/fl-admin-portal/commit/efb682b42aad3f3fb99ad20e33e1883b4e15230f))
 
 ##### Bug Fixes
 
-*  fix unauthorized error handling in AppWithApollo component ([7c235d16](https://github.com/firstlovecenter/fl-admin-portal/commit/7c235d16da0826cf527a1c83613baea0ce8c8260))
+- fix unauthorized error handling in AppWithApollo component ([7c235d16](https://github.com/firstlovecenter/fl-admin-portal/commit/7c235d16da0826cf527a1c83613baea0ce8c8260))
 
 ##### Refactors
 
-*  optimize GSheets query for fetching services not banked ([0bd90039](https://github.com/firstlovecenter/fl-admin-portal/commit/0bd900393aec20b1faba72eb8d61d6d6c8845af4))
+- optimize GSheets query for fetching services not banked ([0bd90039](https://github.com/firstlovecenter/fl-admin-portal/commit/0bd900393aec20b1faba72eb8d61d6d6c8845af4))
 
 #### 7.18.34 (2024-07-19)
 
 ##### New Features
 
-*  update DefaultersQueries to include council name in services list ([20ee8688](https://github.com/firstlovecenter/fl-admin-portal/commit/20ee8688adefeb63486407064f63cbb5957223c6))
+- update DefaultersQueries to include council name in services list ([20ee8688](https://github.com/firstlovecenter/fl-admin-portal/commit/20ee8688adefeb63486407064f63cbb5957223c6))
 
 #### 7.18.33 (2024-07-16)
 
 ##### New Features
 
-*  implement button to  delete member title ([c156eb3c](https://github.com/firstlovecenter/fl-admin-portal/commit/c156eb3ca026f96be689ae5b43aacd7d997c88e2))
+- implement button to delete member title ([c156eb3c](https://github.com/firstlovecenter/fl-admin-portal/commit/c156eb3ca026f96be689ae5b43aacd7d997c88e2))
 
 #### 7.18.32 (2024-07-16)
 
 ##### Bug Fixes
 
-*   fix broken bacenta banking slip submission ([5b7a95c2](https://github.com/firstlovecenter/fl-admin-portal/commit/5b7a95c2399c89a9ef1e87edbcb1a279d17106f2))
+- fix broken bacenta banking slip submission ([5b7a95c2](https://github.com/firstlovecenter/fl-admin-portal/commit/5b7a95c2399c89a9ef1e87edbcb1a279d17106f2))
 
 ##### Refactors
 
-*  handle unauthorized GraphQL errors in AppWithApollo component ([3b834ff0](https://github.com/firstlovecenter/fl-admin-portal/commit/3b834ff07240eca3e11b135af7029700e500f38c))
-*  handle network errors in AppWithApollo component ([56cb7259](https://github.com/firstlovecenter/fl-admin-portal/commit/56cb7259de026dc92cf287807915b0988f722a8c))
-*  update cypher queries to use current year in bacenta-checker-background ([f464c876](https://github.com/firstlovecenter/fl-admin-portal/commit/f464c876f3e304a0caa7d7c5f0776579084d0a82))
-*  update cypher queries to use current year in bacenta-checker-background ([aa131e2c](https://github.com/firstlovecenter/fl-admin-portal/commit/aa131e2c86cae24caea8497ad2303bbb2d77b706))
-*  update cypher queries to use current year in bacenta-checker-background ([3249e7c7](https://github.com/firstlovecenter/fl-admin-portal/commit/3249e7c76b31b62c64f28584e64b6a3a2cc2909f))
-*  update cypher queries to use current year in bacenta-checker-background ([81e82b30](https://github.com/firstlovecenter/fl-admin-portal/commit/81e82b301c953240ee3145c9b4e61c0e3a499354))
-*  update service query to use Bacenta instead of Fellowship ([1a9f0922](https://github.com/firstlovecenter/fl-admin-portal/commit/1a9f09220fc0870b5f670f1231ea0f7ff827817b))
-*  update service query to match all campuses ([838237aa](https://github.com/firstlovecenter/fl-admin-portal/commit/838237aab614204a60dea18412c200a767126966))
-*  update navigation paths for failed payments in ConfirmPayment component ([c0bb5590](https://github.com/firstlovecenter/fl-admin-portal/commit/c0bb5590b270a70f36afb4735aa5227ce57d8baa))
+- handle unauthorized GraphQL errors in AppWithApollo component ([3b834ff0](https://github.com/firstlovecenter/fl-admin-portal/commit/3b834ff07240eca3e11b135af7029700e500f38c))
+- handle network errors in AppWithApollo component ([56cb7259](https://github.com/firstlovecenter/fl-admin-portal/commit/56cb7259de026dc92cf287807915b0988f722a8c))
+- update cypher queries to use current year in bacenta-checker-background ([f464c876](https://github.com/firstlovecenter/fl-admin-portal/commit/f464c876f3e304a0caa7d7c5f0776579084d0a82))
+- update cypher queries to use current year in bacenta-checker-background ([aa131e2c](https://github.com/firstlovecenter/fl-admin-portal/commit/aa131e2c86cae24caea8497ad2303bbb2d77b706))
+- update cypher queries to use current year in bacenta-checker-background ([3249e7c7](https://github.com/firstlovecenter/fl-admin-portal/commit/3249e7c76b31b62c64f28584e64b6a3a2cc2909f))
+- update cypher queries to use current year in bacenta-checker-background ([81e82b30](https://github.com/firstlovecenter/fl-admin-portal/commit/81e82b301c953240ee3145c9b4e61c0e3a499354))
+- update service query to use Bacenta instead of Fellowship ([1a9f0922](https://github.com/firstlovecenter/fl-admin-portal/commit/1a9f09220fc0870b5f670f1231ea0f7ff827817b))
+- update service query to match all campuses ([838237aa](https://github.com/firstlovecenter/fl-admin-portal/commit/838237aab614204a60dea18412c200a767126966))
+- update navigation paths for failed payments in ConfirmPayment component ([c0bb5590](https://github.com/firstlovecenter/fl-admin-portal/commit/c0bb5590b270a70f36afb4735aa5227ce57d8baa))
 
 #### 7.18.31 (2024-07-11)
 
 ##### Refactors
 
-*  update service query to match all campuses ([35f5f04b](https://github.com/firstlovecenter/fl-admin-portal/commit/35f5f04bc877a8cbb65c8d719736f382afa6bac6))
-*  update banking-cypher to use Bacenta instead of Fellowship ([ff4a738f](https://github.com/firstlovecenter/fl-admin-portal/commit/ff4a738f7e4f3eadf11453bad40ecc3d68ee7e57))
-*  update banking-cypher to use Bacenta instead of Fellowship ([ae7c3127](https://github.com/firstlovecenter/fl-admin-portal/commit/ae7c3127493fa9ef4e2b181c6a6c3e8ee7d686ba))
-*  update banking-cypher to use Bacenta instead of Fellowship ([cca09e1e](https://github.com/firstlovecenter/fl-admin-portal/commit/cca09e1e8b338bf151ab0f7c04262a56b2a76881))
+- update service query to match all campuses ([35f5f04b](https://github.com/firstlovecenter/fl-admin-portal/commit/35f5f04bc877a8cbb65c8d719736f382afa6bac6))
+- update banking-cypher to use Bacenta instead of Fellowship ([ff4a738f](https://github.com/firstlovecenter/fl-admin-portal/commit/ff4a738f7e4f3eadf11453bad40ecc3d68ee7e57))
+- update banking-cypher to use Bacenta instead of Fellowship ([ae7c3127](https://github.com/firstlovecenter/fl-admin-portal/commit/ae7c3127493fa9ef4e2b181c6a6c3e8ee7d686ba))
+- update banking-cypher to use Bacenta instead of Fellowship ([cca09e1e](https://github.com/firstlovecenter/fl-admin-portal/commit/cca09e1e8b338bf151ab0f7c04262a56b2a76881))
 
 #### 7.18.30 (2024-07-11)
 
 ##### Bug Fixes
 
-*  bacenta service cancellationn form ([5e6b9102](https://github.com/firstlovecenter/fl-admin-portal/commit/5e6b9102aecd8fbd52fefb43a4607ebf52111ad9))
+- bacenta service cancellationn form ([5e6b9102](https://github.com/firstlovecenter/fl-admin-portal/commit/5e6b9102aecd8fbd52fefb43a4607ebf52111ad9))
 
 ##### Refactors
 
-*  update banking-cypher to use Bacenta instead of Fellowship ([66021b21](https://github.com/firstlovecenter/fl-admin-portal/commit/66021b21aabca4f6af443c3c2272cc353c1b4790))
-*  update service query to match all campuses ([869aca41](https://github.com/firstlovecenter/fl-admin-portal/commit/869aca41fa5f24b66bb36474dfd4e2784d7e551a))
+- update banking-cypher to use Bacenta instead of Fellowship ([66021b21](https://github.com/firstlovecenter/fl-admin-portal/commit/66021b21aabca4f6af443c3c2272cc353c1b4790))
+- update service query to match all campuses ([869aca41](https://github.com/firstlovecenter/fl-admin-portal/commit/869aca41fa5f24b66bb36474dfd4e2784d7e551a))
 
 #### 7.18.29 (2024-07-11)
 
 ##### Bug Fixes
 
-*  fix service defaulters and changing bacenta service day ([1e5313b5](https://github.com/firstlovecenter/fl-admin-portal/commit/1e5313b5adf9ca6c51bbf9a6647d22edb133b72f))
-*  reemove poimen checker in synago app ([af478f86](https://github.com/firstlovecenter/fl-admin-portal/commit/af478f86ad20cd4aa67b0c8e34ac9838c193618f))
+- fix service defaulters and changing bacenta service day ([1e5313b5](https://github.com/firstlovecenter/fl-admin-portal/commit/1e5313b5adf9ca6c51bbf9a6647d22edb133b72f))
+- reemove poimen checker in synago app ([af478f86](https://github.com/firstlovecenter/fl-admin-portal/commit/af478f86ad20cd4aa67b0c8e34ac9838c193618f))
 
 ##### Refactors
 
-*  update MemberDisplay component to use Bacenta instead of Fellowship ([71ed1c76](https://github.com/firstlovecenter/fl-admin-portal/commit/71ed1c7694dba8d205d6cc6c643f50f756c1410b))
-*  update service cancellation logic to use Bacenta instead of Fellowship ([72e4658f](https://github.com/firstlovecenter/fl-admin-portal/commit/72e4658fc2a6646107eba0a431e51524e62c4701))
+- update MemberDisplay component to use Bacenta instead of Fellowship ([71ed1c76](https://github.com/firstlovecenter/fl-admin-portal/commit/71ed1c7694dba8d205d6cc6c643f50f756c1410b))
+- update service cancellation logic to use Bacenta instead of Fellowship ([72e4658f](https://github.com/firstlovecenter/fl-admin-portal/commit/72e4658fc2a6646107eba0a431e51524e62c4701))
 
 #### 7.18.28 (2024-07-09)
 
 ##### Refactors
 
-*  update createMember resolver to use bacenta instead of fellowship ([92321e06](https://github.com/firstlovecenter/fl-admin-portal/commit/92321e069ebbc22b7197778208e3565fdeb90887))
+- update createMember resolver to use bacenta instead of fellowship ([92321e06](https://github.com/firstlovecenter/fl-admin-portal/commit/92321e069ebbc22b7197778208e3565fdeb90887))
 
 #### 7.18.27 (2024-07-09)
 
 ##### Bug Fixes
 
-*  fix issue updating member details ([1caaf7dc](https://github.com/firstlovecenter/fl-admin-portal/commit/1caaf7dcb3e6565e6fe199b4dbe6d813990881c3))
+- fix issue updating member details ([1caaf7dc](https://github.com/firstlovecenter/fl-admin-portal/commit/1caaf7dcb3e6565e6fe199b4dbe6d813990881c3))
 
 #### 7.18.26 (2024-07-08)
 
 ##### Chores
 
-*  remove unused code and update member details display ([88e0c558](https://github.com/firstlovecenter/fl-admin-portal/commit/88e0c558caabf76de7af3b0e6acf7701934b58a1))
+- remove unused code and update member details display ([88e0c558](https://github.com/firstlovecenter/fl-admin-portal/commit/88e0c558caabf76de7af3b0e6acf7701934b58a1))
 
 ##### Bug Fixes
 
-*  update DisplayPage to use bacenta instead of fellowship ([37a1b775](https://github.com/firstlovecenter/fl-admin-portal/commit/37a1b7754c2a7a330fb08849e4ec0177243b7aea))
-*  replace IC and Graduated with Red and Green ([126ab084](https://github.com/firstlovecenter/fl-admin-portal/commit/126ab08493f72373c84fe92832d154444277ff44))
-*  replace ic and graduated with red and green ([2d030bf4](https://github.com/firstlovecenter/fl-admin-portal/commit/2d030bf4e8e17a1944cb4491f0dfc30c8f5ae163))
-*  members list on constituency level ([d62a8822](https://github.com/firstlovecenter/fl-admin-portal/commit/d62a8822154d1c140bde02816c8915600bf0e5c2))
+- update DisplayPage to use bacenta instead of fellowship ([37a1b775](https://github.com/firstlovecenter/fl-admin-portal/commit/37a1b7754c2a7a330fb08849e4ec0177243b7aea))
+- replace IC and Graduated with Red and Green ([126ab084](https://github.com/firstlovecenter/fl-admin-portal/commit/126ab08493f72373c84fe92832d154444277ff44))
+- replace ic and graduated with red and green ([2d030bf4](https://github.com/firstlovecenter/fl-admin-portal/commit/2d030bf4e8e17a1944cb4491f0dfc30c8f5ae163))
+- members list on constituency level ([d62a8822](https://github.com/firstlovecenter/fl-admin-portal/commit/d62a8822154d1c140bde02816c8915600bf0e5c2))
 
 ##### Refactors
 
-*  implement createbacenta form ([84946cf7](https://github.com/firstlovecenter/fl-admin-portal/commit/84946cf748de2c1cee464c958841ecebeb6b9c3c))
-*  refactor DetailsBacenta, DetailsOversight, DetailsDenomination ([9b7ae4a4](https://github.com/firstlovecenter/fl-admin-portal/commit/9b7ae4a4db8e46f067ebeeb8db14105f104ac367))
+- implement createbacenta form ([84946cf7](https://github.com/firstlovecenter/fl-admin-portal/commit/84946cf748de2c1cee464c958841ecebeb6b9c3c))
+- refactor DetailsBacenta, DetailsOversight, DetailsDenomination ([9b7ae4a4](https://github.com/firstlovecenter/fl-admin-portal/commit/9b7ae4a4db8e46f067ebeeb8db14105f104ac367))
 
 #### 7.18.25 (2024-07-07)
 
 ##### New Features
 
-*  fix self banking on bacenta level, hopefully ([2494fcb0](https://github.com/firstlovecenter/fl-admin-portal/commit/2494fcb0bdcc2f94c0c2fc6a56a6eee3ab2a18bc))
+- fix self banking on bacenta level, hopefully ([2494fcb0](https://github.com/firstlovecenter/fl-admin-portal/commit/2494fcb0bdcc2f94c0c2fc6a56a6eee3ab2a18bc))
 
 #### 7.18.24 (2024-07-07)
 
 ##### Chores
 
-*  refactor account open logic and update account blocked message ([7d25d707](https://github.com/firstlovecenter/fl-admin-portal/commit/7d25d70708601db5185aa301948dc5702d3dabb7))
-*  update dependencies and secrets for hillary-monthly-background ([62d80a14](https://github.com/firstlovecenter/fl-admin-portal/commit/62d80a1429a64aae755627b78d49f23c7ba860a0))
-*  add recipient for monthly background message ([686086a2](https://github.com/firstlovecenter/fl-admin-portal/commit/686086a26184f8df6b139585cd2b696588abb60e))
-*  refactor monthly background message generation ([c8a86f7e](https://github.com/firstlovecenter/fl-admin-portal/commit/c8a86f7e05d3b753a0f405ac77af1434912866cf))
-*  update monthly data retrieval query and remove unnecessary code ([608c03e9](https://github.com/firstlovecenter/fl-admin-portal/commit/608c03e9063d745b218de554d9cc2166e34c4782))
-*  remove unnecessary code and update monthly data retrieval query ([1be5cc0f](https://github.com/firstlovecenter/fl-admin-portal/commit/1be5cc0faf07f92d6c6332408225279a72f7a4b8))
-*  update checkMemberHasNoActiveRelationships query ([f4672fe9](https://github.com/firstlovecenter/fl-admin-portal/commit/f4672fe906f2d74b0708660918f830f568fff10c))
-*  update meeting day and status in DetailsBacenta component ([243291cf](https://github.com/firstlovecenter/fl-admin-portal/commit/243291cfb70b36579026b1dce1916f72c4a611e6))
-*  update email and portal names in servant account creation and deletion messages ([54b199f5](https://github.com/firstlovecenter/fl-admin-portal/commit/54b199f52f9836269234f746f15194e7081f7b8a))
-*  exclude deprecated fields in Neo4jGraphQL configuration ([dee047fd](https://github.com/firstlovecenter/fl-admin-portal/commit/dee047fdfb4b4832fcf43f630829ccb1ced4b5cd))
+- refactor account open logic and update account blocked message ([7d25d707](https://github.com/firstlovecenter/fl-admin-portal/commit/7d25d70708601db5185aa301948dc5702d3dabb7))
+- update dependencies and secrets for hillary-monthly-background ([62d80a14](https://github.com/firstlovecenter/fl-admin-portal/commit/62d80a1429a64aae755627b78d49f23c7ba860a0))
+- add recipient for monthly background message ([686086a2](https://github.com/firstlovecenter/fl-admin-portal/commit/686086a26184f8df6b139585cd2b696588abb60e))
+- refactor monthly background message generation ([c8a86f7e](https://github.com/firstlovecenter/fl-admin-portal/commit/c8a86f7e05d3b753a0f405ac77af1434912866cf))
+- update monthly data retrieval query and remove unnecessary code ([608c03e9](https://github.com/firstlovecenter/fl-admin-portal/commit/608c03e9063d745b218de554d9cc2166e34c4782))
+- remove unnecessary code and update monthly data retrieval query ([1be5cc0f](https://github.com/firstlovecenter/fl-admin-portal/commit/1be5cc0faf07f92d6c6332408225279a72f7a4b8))
+- update checkMemberHasNoActiveRelationships query ([f4672fe9](https://github.com/firstlovecenter/fl-admin-portal/commit/f4672fe906f2d74b0708660918f830f568fff10c))
+- update meeting day and status in DetailsBacenta component ([243291cf](https://github.com/firstlovecenter/fl-admin-portal/commit/243291cfb70b36579026b1dce1916f72c4a611e6))
+- update email and portal names in servant account creation and deletion messages ([54b199f5](https://github.com/firstlovecenter/fl-admin-portal/commit/54b199f52f9836269234f746f15194e7081f7b8a))
+- exclude deprecated fields in Neo4jGraphQL configuration ([dee047fd](https://github.com/firstlovecenter/fl-admin-portal/commit/dee047fdfb4b4832fcf43f630829ccb1ced4b5cd))
 
 ##### New Features
 
-*  improve delete note button in MemberDisplay component ([984dcb8e](https://github.com/firstlovecenter/fl-admin-portal/commit/984dcb8e1a70446d2d326e832a7d01956834460a))
-*  optimize sticky note functionality and improve UI in MemberDisplay component ([98e9e4d3](https://github.com/firstlovecenter/fl-admin-portal/commit/98e9e4d3235024a4585e9a80640938027080d2e4))
-*  add functionality to leave a sticky note on member profile ([b06e583c](https://github.com/firstlovecenter/fl-admin-portal/commit/b06e583cba5d4d4f24b1dc6c4a3339d02cfe7dda))
-*  update catch phrase in Login component ([ceaee566](https://github.com/firstlovecenter/fl-admin-portal/commit/ceaee5661747301d6050a54de571ad6cd13ca8e3))
-*  implement saving contact information ([17f7bb17](https://github.com/firstlovecenter/fl-admin-portal/commit/17f7bb1750538cf58152734743e5f9815a616f7e))
-*  implement feature to save contacts on member display screen ([4348c062](https://github.com/firstlovecenter/fl-admin-portal/commit/4348c0629a896b54f1d8f7c358477d749f6fa366))
-*  implement hillary monthly background ([ef744166](https://github.com/firstlovecenter/fl-admin-portal/commit/ef744166f81f4a1236e65d457a49be9b9b9a0e26))
-*  implement bacenta services forms ([d8f10569](https://github.com/firstlovecenter/fl-admin-portal/commit/d8f10569f2fd55fa7b9995cd125425434019807a))
+- improve delete note button in MemberDisplay component ([984dcb8e](https://github.com/firstlovecenter/fl-admin-portal/commit/984dcb8e1a70446d2d326e832a7d01956834460a))
+- optimize sticky note functionality and improve UI in MemberDisplay component ([98e9e4d3](https://github.com/firstlovecenter/fl-admin-portal/commit/98e9e4d3235024a4585e9a80640938027080d2e4))
+- add functionality to leave a sticky note on member profile ([b06e583c](https://github.com/firstlovecenter/fl-admin-portal/commit/b06e583cba5d4d4f24b1dc6c4a3339d02cfe7dda))
+- update catch phrase in Login component ([ceaee566](https://github.com/firstlovecenter/fl-admin-portal/commit/ceaee5661747301d6050a54de571ad6cd13ca8e3))
+- implement saving contact information ([17f7bb17](https://github.com/firstlovecenter/fl-admin-portal/commit/17f7bb1750538cf58152734743e5f9815a616f7e))
+- implement feature to save contacts on member display screen ([4348c062](https://github.com/firstlovecenter/fl-admin-portal/commit/4348c0629a896b54f1d8f7c358477d749f6fa366))
+- implement hillary monthly background ([ef744166](https://github.com/firstlovecenter/fl-admin-portal/commit/ef744166f81f4a1236e65d457a49be9b9b9a0e26))
+- implement bacenta services forms ([d8f10569](https://github.com/firstlovecenter/fl-admin-portal/commit/d8f10569f2fd55fa7b9995cd125425434019807a))
 
 ##### Bug Fixes
 
-*  correct lastMonth calculation in hillary-monthly-background ([3d5d225c](https://github.com/firstlovecenter/fl-admin-portal/commit/3d5d225c7cf293638e691125f4746ff329681621))
-*  update lastMonth calculation in hillary-monthly-background ([4f3eb99d](https://github.com/firstlovecenter/fl-admin-portal/commit/4f3eb99d56eaa9e961b459e4c4ac8668b0a6f2cd))
-*  update lastMonth calculation in hillary-monthly-background ([90907e65](https://github.com/firstlovecenter/fl-admin-portal/commit/90907e65f571f1a1c2f4d70beb8bdf7f85c2d853))
-*  remove ability to close down bacentas ([423dead1](https://github.com/firstlovecenter/fl-admin-portal/commit/423dead1589647899ab8a4ab2a0de66ca715b2f8))
+- correct lastMonth calculation in hillary-monthly-background ([3d5d225c](https://github.com/firstlovecenter/fl-admin-portal/commit/3d5d225c7cf293638e691125f4746ff329681621))
+- update lastMonth calculation in hillary-monthly-background ([4f3eb99d](https://github.com/firstlovecenter/fl-admin-portal/commit/4f3eb99d56eaa9e961b459e4c4ac8668b0a6f2cd))
+- update lastMonth calculation in hillary-monthly-background ([90907e65](https://github.com/firstlovecenter/fl-admin-portal/commit/90907e65f571f1a1c2f4d70beb8bdf7f85c2d853))
+- remove ability to close down bacentas ([423dead1](https://github.com/firstlovecenter/fl-admin-portal/commit/423dead1589647899ab8a4ab2a0de66ca715b2f8))
 
 ##### Refactors
 
-*  update title abbreviations in resolvers.ts ([9e52d763](https://github.com/firstlovecenter/fl-admin-portal/commit/9e52d763bad9e02a51988b2c28a2f88d1000b72b))
-*  adjust attendance and vehicle logic in arrivalsMutation resolver ([f83fdfcf](https://github.com/firstlovecenter/fl-admin-portal/commit/f83fdfcfc3419384278b44f8cfb233ded9543480))
-*  update cypher queries to assign properties and relationships to bacenta ([fa2efffd](https://github.com/firstlovecenter/fl-admin-portal/commit/fa2efffd0ede1fc1df64dfe1de507e63f9ea35fa))
+- update title abbreviations in resolvers.ts ([9e52d763](https://github.com/firstlovecenter/fl-admin-portal/commit/9e52d763bad9e02a51988b2c28a2f88d1000b72b))
+- adjust attendance and vehicle logic in arrivalsMutation resolver ([f83fdfcf](https://github.com/firstlovecenter/fl-admin-portal/commit/f83fdfcfc3419384278b44f8cfb233ded9543480))
+- update cypher queries to assign properties and relationships to bacenta ([fa2efffd](https://github.com/firstlovecenter/fl-admin-portal/commit/fa2efffd0ede1fc1df64dfe1de507e63f9ea35fa))
 
 #### 7.18.23 (2024-05-26)
 
 ##### Bug Fixes
 
-*  update permissions for graph routes ([05a80d77](https://github.com/firstlovecenter/fl-admin-portal/commit/05a80d77cc13bd37c1d3785473afd802b1b7d6f5))
+- update permissions for graph routes ([05a80d77](https://github.com/firstlovecenter/fl-admin-portal/commit/05a80d77cc13bd37c1d3785473afd802b1b7d6f5))
 
 #### 7.18.22 (2024-05-12)
 
 ##### Refactors
 
-*  remove commented code in directory helper functions ([5820eb7d](https://github.com/firstlovecenter/fl-admin-portal/commit/5820eb7dbfed63e249cccd1959fcd1ddb673f96f))
+- remove commented code in directory helper functions ([5820eb7d](https://github.com/firstlovecenter/fl-admin-portal/commit/5820eb7dbfed63e249cccd1959fcd1ddb673f96f))
 
 #### 7.18.21 (2024-05-11)
 
 ##### New Features
 
-*  add admin roles for denominations and oversight in directory CRUD schema ([942230f7](https://github.com/firstlovecenter/fl-admin-portal/commit/942230f727a29341404e3a0fbf17e902022a938c))
+- add admin roles for denominations and oversight in directory CRUD schema ([942230f7](https://github.com/firstlovecenter/fl-admin-portal/commit/942230f727a29341404e3a0fbf17e902022a938c))
 
 ##### Refactors
 
-*  remove commented code in directory helper functions ([774f1633](https://github.com/firstlovecenter/fl-admin-portal/commit/774f163335ce251f9ea6b44c443c2995c5226ae0))
+- remove commented code in directory helper functions ([774f1633](https://github.com/firstlovecenter/fl-admin-portal/commit/774f163335ce251f9ea6b44c443c2995c5226ae0))
 
 #### 7.18.20 (2024-05-01)
 
 ##### Refactors
 
-*  directory-resolvers.ts and schema.graphql, and update CreateMemberAccount mutation ([6db8773d](https://github.com/firstlovecenter/fl-admin-portal/commit/6db8773ddf0c30ceed4bd926272c1aefedd2cb14))
+- directory-resolvers.ts and schema.graphql, and update CreateMemberAccount mutation ([6db8773d](https://github.com/firstlovecenter/fl-admin-portal/commit/6db8773ddf0c30ceed4bd926272c1aefedd2cb14))
 
 #### 7.18.19 (2024-05-01)
 
 ##### New Features
 
-*  update member authentication ID in resolver-cypher.ts and directory-resolvers.ts ([ab5a5d18](https://github.com/firstlovecenter/fl-admin-portal/commit/ab5a5d18b4f7f5676b57128000c7fd888a625014))
-*  implement button that makes round trip to db ([b69f6085](https://github.com/firstlovecenter/fl-admin-portal/commit/b69f60850d8e6c0a0535d96a875609af0aee028a))
-*  add debug scripts to retrieve specific service records and their associated member details ([6876837d](https://github.com/firstlovecenter/fl-admin-portal/commit/6876837dc37222f6ea17b02e6c4f606a72901b85))
-*  update email notification content in ([d7c46560](https://github.com/firstlovecenter/fl-admin-portal/commit/d7c4656070233069c94cdd0137c870e47792852d))
-*  add 'onStageAttendanceAggregate' to the list of noIncomeGraphLevels in global-utils.ts ([7b16f30a](https://github.com/firstlovecenter/fl-admin-portal/commit/7b16f30ad1a576ab2fc270c3bd9fed66a66055f7))
-*  add uniqueServiceRecordTransaction and uniqueTransactionReference constraints ([df69bd98](https://github.com/firstlovecenter/fl-admin-portal/commit/df69bd987c64777cf42b0558338e3930386a006f))
-*  update email notification content in bacenta-checker-background.js ([92ca889c](https://github.com/firstlovecenter/fl-admin-portal/commit/92ca889c0a4bd14ac25dfe029150f12e98153e77))
-*  add email notification for successful Bacenta Checker Background Job ([5016d1cb](https://github.com/firstlovecenter/fl-admin-portal/commit/5016d1cb621bf770f9b6efa4224435687a20c230))
+- update member authentication ID in resolver-cypher.ts and directory-resolvers.ts ([ab5a5d18](https://github.com/firstlovecenter/fl-admin-portal/commit/ab5a5d18b4f7f5676b57128000c7fd888a625014))
+- implement button that makes round trip to db ([b69f6085](https://github.com/firstlovecenter/fl-admin-portal/commit/b69f60850d8e6c0a0535d96a875609af0aee028a))
+- add debug scripts to retrieve specific service records and their associated member details ([6876837d](https://github.com/firstlovecenter/fl-admin-portal/commit/6876837dc37222f6ea17b02e6c4f606a72901b85))
+- update email notification content in ([d7c46560](https://github.com/firstlovecenter/fl-admin-portal/commit/d7c4656070233069c94cdd0137c870e47792852d))
+- add 'onStageAttendanceAggregate' to the list of noIncomeGraphLevels in global-utils.ts ([7b16f30a](https://github.com/firstlovecenter/fl-admin-portal/commit/7b16f30ad1a576ab2fc270c3bd9fed66a66055f7))
+- add uniqueServiceRecordTransaction and uniqueTransactionReference constraints ([df69bd98](https://github.com/firstlovecenter/fl-admin-portal/commit/df69bd987c64777cf42b0558338e3930386a006f))
+- update email notification content in bacenta-checker-background.js ([92ca889c](https://github.com/firstlovecenter/fl-admin-portal/commit/92ca889c0a4bd14ac25dfe029150f12e98153e77))
+- add email notification for successful Bacenta Checker Background Job ([5016d1cb](https://github.com/firstlovecenter/fl-admin-portal/commit/5016d1cb621bf770f9b6efa4224435687a20c230))
 
 ##### Bug Fixes
 
-*  fix typo in banking-cypher.ts and financial-utils.ts ([5371d8d7](https://github.com/firstlovecenter/fl-admin-portal/commit/5371d8d742986a6869d3d64a3a485749edbeeb9b))
-*  update imclDefaulters count for anagkazo banking ([131e194b](https://github.com/firstlovecenter/fl-admin-portal/commit/131e194bafa4e5427740c1c13b3094fcc56bd4bf))
-*  missing serviceDay check in rehearsal-resolver.ts ([d272372e](https://github.com/firstlovecenter/fl-admin-portal/commit/d272372e7e4ba3bc10c3f5c7fb3c734641e2016e))
-*  commented out code in rehearsal-resolver.ts ([61b33e53](https://github.com/firstlovecenter/fl-admin-portal/commit/61b33e53a668c5e977f8909fba7ed85b73023f9e))
+- fix typo in banking-cypher.ts and financial-utils.ts ([5371d8d7](https://github.com/firstlovecenter/fl-admin-portal/commit/5371d8d742986a6869d3d64a3a485749edbeeb9b))
+- update imclDefaulters count for anagkazo banking ([131e194b](https://github.com/firstlovecenter/fl-admin-portal/commit/131e194bafa4e5427740c1c13b3094fcc56bd4bf))
+- missing serviceDay check in rehearsal-resolver.ts ([d272372e](https://github.com/firstlovecenter/fl-admin-portal/commit/d272372e7e4ba3bc10c3f5c7fb3c734641e2016e))
+- commented out code in rehearsal-resolver.ts ([61b33e53](https://github.com/firstlovecenter/fl-admin-portal/commit/61b33e53a668c5e977f8909fba7ed85b73023f9e))
 
 ##### Refactors
 
-*  close-church-creativearts-cypher.ts to exclude closed fellowships ([8e34098f](https://github.com/firstlovecenter/fl-admin-portal/commit/8e34098fce029bfcddd7cfecf7993f6f03736ab0))
-*  recordOnStageAttendance query in rehearsal-cypher.ts ([91262dbb](https://github.com/firstlovecenter/fl-admin-portal/commit/91262dbb263a697eef1a2d3f28dab01f2a9dba56))
-*  rehearsal-cypher.ts to use ([8accc668](https://github.com/firstlovecenter/fl-admin-portal/commit/8accc6686a7db2aa0acd37c757d6e0d5a26a8bab))
-*  refactor cypher queries in before-next-update.cypher and poimen-issue-fixes.cypher ([9fb45acf](https://github.com/firstlovecenter/fl-admin-portal/commit/9fb45acf6530298ad49fb5f0bb1cf4158dc33330))
+- close-church-creativearts-cypher.ts to exclude closed fellowships ([8e34098f](https://github.com/firstlovecenter/fl-admin-portal/commit/8e34098fce029bfcddd7cfecf7993f6f03736ab0))
+- recordOnStageAttendance query in rehearsal-cypher.ts ([91262dbb](https://github.com/firstlovecenter/fl-admin-portal/commit/91262dbb263a697eef1a2d3f28dab01f2a9dba56))
+- rehearsal-cypher.ts to use ([8accc668](https://github.com/firstlovecenter/fl-admin-portal/commit/8accc6686a7db2aa0acd37c757d6e0d5a26a8bab))
+- refactor cypher queries in before-next-update.cypher and poimen-issue-fixes.cypher ([9fb45acf](https://github.com/firstlovecenter/fl-admin-portal/commit/9fb45acf6530298ad49fb5f0bb1cf4158dc33330))
 
 #### 7.18.18 (2024-04-14)
 
 ##### New Features
 
-*  add history logging for demoting and promoting Bacenta status ([054b9635](https://github.com/firstlovecenter/fl-admin-portal/commit/054b9635cfc91239a6ed61e9ce84d4492a91ae20))
-*  remove old bacenta status work ([1ede8bff](https://github.com/firstlovecenter/fl-admin-portal/commit/1ede8bff9c7797f99f58fcad062183be18c51542))
-*  implemeentation of bacenta checker background fn ([4b96e28e](https://github.com/firstlovecenter/fl-admin-portal/commit/4b96e28e5413dd9cf340c5cae82bac49ad9ea457))
-*  add Cypher query to retrieve campus, church, pastor, stream, ([d8d74d3d](https://github.com/firstlovecenter/fl-admin-portal/commit/d8d74d3dd6ffa0b733d40d316d5b9f10c0df005a))
+- add history logging for demoting and promoting Bacenta status ([054b9635](https://github.com/firstlovecenter/fl-admin-portal/commit/054b9635cfc91239a6ed61e9ce84d4492a91ae20))
+- remove old bacenta status work ([1ede8bff](https://github.com/firstlovecenter/fl-admin-portal/commit/1ede8bff9c7797f99f58fcad062183be18c51542))
+- implemeentation of bacenta checker background fn ([4b96e28e](https://github.com/firstlovecenter/fl-admin-portal/commit/4b96e28e5413dd9cf340c5cae82bac49ad9ea457))
+- add Cypher query to retrieve campus, church, pastor, stream, ([d8d74d3d](https://github.com/firstlovecenter/fl-admin-portal/commit/d8d74d3dd6ffa0b733d40d316d5b9f10c0df005a))
 
 ##### Bug Fixes
 
-*  update Bacenta count display in DetailsStream, DetailsCampus, ([a6bb92ae](https://github.com/firstlovecenter/fl-admin-portal/commit/a6bb92aed8c6fbcd31ee667bced470a471b8a305))
-*  add secrets.js for bacenta-checker-background ([519d4f1f](https://github.com/firstlovecenter/fl-admin-portal/commit/519d4f1fb9ba08d4b5bb22f2aa1f572cc99d3026))
-*  update schedule time for bacenta-checker-background.js ([b2e1b1dc](https://github.com/firstlovecenter/fl-admin-portal/commit/b2e1b1dc49edd45289b1b5f345bb4faf2ca86640))
-*  update cypher.js to include bussing date filter ([0535b36f](https://github.com/firstlovecenter/fl-admin-portal/commit/0535b36fede3c7d8de25a65e24a7b464394d49a8))
+- update Bacenta count display in DetailsStream, DetailsCampus, ([a6bb92ae](https://github.com/firstlovecenter/fl-admin-portal/commit/a6bb92aed8c6fbcd31ee667bced470a471b8a305))
+- add secrets.js for bacenta-checker-background ([519d4f1f](https://github.com/firstlovecenter/fl-admin-portal/commit/519d4f1fb9ba08d4b5bb22f2aa1f572cc99d3026))
+- update schedule time for bacenta-checker-background.js ([b2e1b1dc](https://github.com/firstlovecenter/fl-admin-portal/commit/b2e1b1dc49edd45289b1b5f345bb4faf2ca86640))
+- update cypher.js to include bussing date filter ([0535b36f](https://github.com/firstlovecenter/fl-admin-portal/commit/0535b36fede3c7d8de25a65e24a7b464394d49a8))
 
 #### 7.18.17 (2024-04-11)
 
 ##### Refactors
 
-*  update account menu roles ([3641476e](https://github.com/firstlovecenter/fl-admin-portal/commit/3641476ee0458aec3e66210866bb39326f06e6fe))
+- update account menu roles ([3641476e](https://github.com/firstlovecenter/fl-admin-portal/commit/3641476ee0458aec3e66210866bb39326f06e6fe))
 
 #### 7.18.16 (2024-04-09)
 
 ##### Bug Fixes
 
-*  add tellerConfirmationTime field to ServiceRecord and update related components ([0b11fa2a](https://github.com/firstlovecenter/fl-admin-portal/commit/0b11fa2a48891bc0a0485c5098d08b3b1c252634))
+- add tellerConfirmationTime field to ServiceRecord and update related components ([0b11fa2a](https://github.com/firstlovecenter/fl-admin-portal/commit/0b11fa2a48891bc0a0485c5098d08b3b1c252634))
 
 ##### Refactors
 
-*  code to add bank account field in ministry details ([bd4e20a9](https://github.com/firstlovecenter/fl-admin-portal/commit/bd4e20a9e76397af6116e835bc19da18a51530c6))
-*  refactor banking-cypher.ts to support multiple record types ([73be28d8](https://github.com/firstlovecenter/fl-admin-portal/commit/73be28d8c1be73de94ceb476e2a710f8da2bef46))
-*  code to update transaction status in payment-background.js ([97b2f783](https://github.com/firstlovecenter/fl-admin-portal/commit/97b2f783cf3750028c94f038ce1e506629506d52))
-*  code to update HubCouncilSundayAttendance and HubCouncilFormMenu ([712fb8b0](https://github.com/firstlovecenter/fl-admin-portal/commit/712fb8b051696a5cd4f0d11d49cb0d85979adb02))
-*  rehearsal-cypher and rehearsal-resolver files ([d90c64df](https://github.com/firstlovecenter/fl-admin-portal/commit/d90c64df61b0b4e614a159f04fc5265079cc8c5e))
-*  code to update HubCouncilSundayAttendance and HubCouncilFormMenu ([2c92e5c2](https://github.com/firstlovecenter/fl-admin-portal/commit/2c92e5c2f7697e5b5cca2b3bb2e239c1266c2587))
-*  refactor code to delete MinistryAttendanceRecord and update HubSundayMeetingDetails comp ([7aa92b8b](https://github.com/firstlovecenter/fl-admin-portal/commit/7aa92b8bf0ed9058cfd7ff3277357ce3c336e862))
+- code to add bank account field in ministry details ([bd4e20a9](https://github.com/firstlovecenter/fl-admin-portal/commit/bd4e20a9e76397af6116e835bc19da18a51530c6))
+- refactor banking-cypher.ts to support multiple record types ([73be28d8](https://github.com/firstlovecenter/fl-admin-portal/commit/73be28d8c1be73de94ceb476e2a710f8da2bef46))
+- code to update transaction status in payment-background.js ([97b2f783](https://github.com/firstlovecenter/fl-admin-portal/commit/97b2f783cf3750028c94f038ce1e506629506d52))
+- code to update HubCouncilSundayAttendance and HubCouncilFormMenu ([712fb8b0](https://github.com/firstlovecenter/fl-admin-portal/commit/712fb8b051696a5cd4f0d11d49cb0d85979adb02))
+- rehearsal-cypher and rehearsal-resolver files ([d90c64df](https://github.com/firstlovecenter/fl-admin-portal/commit/d90c64df61b0b4e614a159f04fc5265079cc8c5e))
+- code to update HubCouncilSundayAttendance and HubCouncilFormMenu ([2c92e5c2](https://github.com/firstlovecenter/fl-admin-portal/commit/2c92e5c2f7697e5b5cca2b3bb2e239c1266c2587))
+- refactor code to delete MinistryAttendanceRecord and update HubSundayMeetingDetails comp ([7aa92b8b](https://github.com/firstlovecenter/fl-admin-portal/commit/7aa92b8bf0ed9058cfd7ff3277357ce3c336e862))
 
 #### 7.18.15 (2024-04-07)
 
 ##### Bug Fixes
 
-*  fix issue with Meeting Forms button not showing ([a2541c10](https://github.com/firstlovecenter/fl-admin-portal/commit/a2541c1040964005ec2a15507c7047941ca6afff))
-*  fix error in cancelLowerChurchRehearsals ([1f7dfb20](https://github.com/firstlovecenter/fl-admin-portal/commit/1f7dfb20a008fec3b98b16abb81b9ce0e9719c1b))
+- fix issue with Meeting Forms button not showing ([a2541c10](https://github.com/firstlovecenter/fl-admin-portal/commit/a2541c1040964005ec2a15507c7047941ca6afff))
+- fix error in cancelLowerChurchRehearsals ([1f7dfb20](https://github.com/firstlovecenter/fl-admin-portal/commit/1f7dfb20a008fec3b98b16abb81b9ce0e9719c1b))
 
 #### 7.18.14 (2024-04-07)
 
 ##### New Features
 
-*  add new codes for upcoming weeks ([37ef3188](https://github.com/firstlovecenter/fl-admin-portal/commit/37ef318852eab5586613f53b30dacc038d1be4fc))
+- add new codes for upcoming weeks ([37ef3188](https://github.com/firstlovecenter/fl-admin-portal/commit/37ef318852eab5586613f53b30dacc038d1be4fc))
 
 ##### Bug Fixes
 
-*  fix typos and rename component for CancelledRehearsalsThisWeek ([5454390d](https://github.com/firstlovecenter/fl-admin-portal/commit/5454390d9e9836f1ace74097967374e55655c9db))
+- fix typos and rename component for CancelledRehearsalsThisWeek ([5454390d](https://github.com/firstlovecenter/fl-admin-portal/commit/5454390d9e9836f1ace74097967374e55655c9db))
 
 #### 7.18.13 (2024-04-04)
 
 ##### Bug Fixes
 
-*  allow creative peopele to see comparative bacenta side pages ([c3930077](https://github.com/firstlovecenter/fl-admin-portal/commit/c39300777a58d36b2a468708657854ee5876c2cd))
-*  commented out anagkazo from automated gsheet accra ([66633433](https://github.com/firstlovecenter/fl-admin-portal/commit/66633433e11e9827f531dc3f35a9521412d00822))
+- allow creative peopele to see comparative bacenta side pages ([c3930077](https://github.com/firstlovecenter/fl-admin-portal/commit/c39300777a58d36b2a468708657854ee5876c2cd))
+- commented out anagkazo from automated gsheet accra ([66633433](https://github.com/firstlovecenter/fl-admin-portal/commit/66633433e11e9827f531dc3f35a9521412d00822))
 
 #### 7.18.12 (2024-04-02)
 
 ##### New Features
 
-*  moved defaulters into the church list options ([5df298e4](https://github.com/firstlovecenter/fl-admin-portal/commit/5df298e45ac9a0f62cafc8b846132233b075caaf))
+- moved defaulters into the church list options ([5df298e4](https://github.com/firstlovecenter/fl-admin-portal/commit/5df298e45ac9a0f62cafc8b846132233b075caaf))
 
 ##### Bug Fixes
 
-*  remove unused account options ([f0d4c757](https://github.com/firstlovecenter/fl-admin-portal/commit/f0d4c757a2c3498294446d7f99f9e0ec7f8e26bf))
+- remove unused account options ([f0d4c757](https://github.com/firstlovecenter/fl-admin-portal/commit/f0d4c757a2c3498294446d7f99f9e0ec7f8e26bf))
 
 #### 7.18.11 (2024-04-01)
 
 ##### New Features
 
-*  update ministry role in AllMinistries component ([4377edf9](https://github.com/firstlovecenter/fl-admin-portal/commit/4377edf9d07da19859fe144bcb6a6102af009198))
+- update ministry role in AllMinistries component ([4377edf9](https://github.com/firstlovecenter/fl-admin-portal/commit/4377edf9d07da19859fe144bcb6a6102af009198))
 
 ##### Bug Fixes
 
-*  add isAdminForOversight field to MemberRoleList and ReadQueries ([1241ad79](https://github.com/firstlovecenter/fl-admin-portal/commit/1241ad7959120a30b8287e29370f0f32097aa688))
+- add isAdminForOversight field to MemberRoleList and ReadQueries ([1241ad79](https://github.com/firstlovecenter/fl-admin-portal/commit/1241ad7959120a30b8287e29370f0f32097aa688))
 
 #### 7.18.10 (2024-03-12)
 
 ##### New Features
 
-*  update code of the day for March ([a595f935](https://github.com/firstlovecenter/fl-admin-portal/commit/a595f9354e8904805e2e9abf90b1e203142827ef))
+- update code of the day for March ([a595f935](https://github.com/firstlovecenter/fl-admin-portal/commit/a595f9354e8904805e2e9abf90b1e203142827ef))
 
 ##### Bug Fixes
 
-*  add month field to AggregateBussingRecord and AggregateServiceRecord ([af159300](https://github.com/firstlovecenter/fl-admin-portal/commit/af15930054b28074d39d672ce344c9c730254d20))
-*  remove console.log statement in banking-resolver.ts ([7c147136](https://github.com/firstlovecenter/fl-admin-portal/commit/7c147136f3dfdcfd8edb42479a1c91bd0cdc5d7b))
-*  fix error in banking resolver ([86efa01d](https://github.com/firstlovecenter/fl-admin-portal/commit/86efa01d0df0af3689d3fce2229e0b321ddee2c1))
-*  error handling in banking resolver ([9be1733d](https://github.com/firstlovecenter/fl-admin-portal/commit/9be1733d219328692fe7d4c7ffef2ce2cf513339))
-*  refactor authentication in banking resolver ([0bf4f5bd](https://github.com/firstlovecenter/fl-admin-portal/commit/0bf4f5bdac97712f4562b67654cc8a4005cf5172))
+- add month field to AggregateBussingRecord and AggregateServiceRecord ([af159300](https://github.com/firstlovecenter/fl-admin-portal/commit/af15930054b28074d39d672ce344c9c730254d20))
+- remove console.log statement in banking-resolver.ts ([7c147136](https://github.com/firstlovecenter/fl-admin-portal/commit/7c147136f3dfdcfd8edb42479a1c91bd0cdc5d7b))
+- fix error in banking resolver ([86efa01d](https://github.com/firstlovecenter/fl-admin-portal/commit/86efa01d0df0af3689d3fce2229e0b321ddee2c1))
+- error handling in banking resolver ([9be1733d](https://github.com/firstlovecenter/fl-admin-portal/commit/9be1733d219328692fe7d4c7ffef2ce2cf513339))
+- refactor authentication in banking resolver ([0bf4f5bd](https://github.com/firstlovecenter/fl-admin-portal/commit/0bf4f5bdac97712f4562b67654cc8a4005cf5172))
 
 ##### Refactors
 
-*  displayChurchDetails component ([6497eec1](https://github.com/firstlovecenter/fl-admin-portal/commit/6497eec1a29ce272bb125dfcd7d22c1528886b1f))
+- displayChurchDetails component ([6497eec1](https://github.com/firstlovecenter/fl-admin-portal/commit/6497eec1a29ce272bb125dfcd7d22c1528886b1f))
 
 #### 7.18.9 (2024-03-07)
 
 ##### New Features
 
-*  add   gsheets-accra-background and gsheets-update-outaccra-background functions ([cc79e68e](https://github.com/firstlovecenter/fl-admin-portal/commit/cc79e68e00fa710e786ea6a99f6238d1cbc56784))
+- add gsheets-accra-background and gsheets-update-outaccra-background functions ([cc79e68e](https://github.com/firstlovecenter/fl-admin-portal/commit/cc79e68e00fa710e786ea6a99f6238d1cbc56784))
 
 ##### Bug Fixes
 
-*  update roles from 'Stream' to 'Campus' ([94da2680](https://github.com/firstlovecenter/fl-admin-portal/commit/94da2680b3b27bff08fcc08bf07346c37e2612a6))
-*  add payment background function and secrets encryption ([1bd6ab04](https://github.com/firstlovecenter/fl-admin-portal/commit/1bd6ab046a309954a703516dab808591899d1be3))
-*  update secrets.js file paths in encrypt-secrets.js ([e5f0105d](https://github.com/firstlovecenter/fl-admin-portal/commit/e5f0105dd402a86f0815b879c9dd7b982e71e68a))
-*  update error logging in banking resolver ([14751d1a](https://github.com/firstlovecenter/fl-admin-portal/commit/14751d1a17541c0f2631785fc815ed92fa4fb848))
+- update roles from 'Stream' to 'Campus' ([94da2680](https://github.com/firstlovecenter/fl-admin-portal/commit/94da2680b3b27bff08fcc08bf07346c37e2612a6))
+- add payment background function and secrets encryption ([1bd6ab04](https://github.com/firstlovecenter/fl-admin-portal/commit/1bd6ab046a309954a703516dab808591899d1be3))
+- update secrets.js file paths in encrypt-secrets.js ([e5f0105d](https://github.com/firstlovecenter/fl-admin-portal/commit/e5f0105dd402a86f0815b879c9dd7b982e71e68a))
+- update error logging in banking resolver ([14751d1a](https://github.com/firstlovecenter/fl-admin-portal/commit/14751d1a17541c0f2631785fc815ed92fa4fb848))
 
 ##### Refactors
 
-*   anagkazoAmountNotBankedQuery in cypher.js ([b307d7c9](https://github.com/firstlovecenter/fl-admin-portal/commit/b307d7c9606da2dcb8f2d6dbf542572ee6d5e2ee))
+- anagkazoAmountNotBankedQuery in cypher.js ([b307d7c9](https://github.com/firstlovecenter/fl-admin-portal/commit/b307d7c9606da2dcb8f2d6dbf542572ee6d5e2ee))
 
 #### 7.18.8 (2024-03-04)
 
 ##### Bug Fixes
 
-*  add console log for error response data ([15e3b196](https://github.com/firstlovecenter/fl-admin-portal/commit/15e3b196baf661203651ffb4d6b6679e560eb9a4))
+- add console log for error response data ([15e3b196](https://github.com/firstlovecenter/fl-admin-portal/commit/15e3b196baf661203651ffb4d6b6679e560eb9a4))
 
 #### 7.18.7 (2024-03-03)
 
 ##### New Features
 
-*   update RoleView roles to permitAdmin('Stream') ([3759e925](https://github.com/firstlovecenter/fl-admin-portal/commit/3759e925cbe0cf55fc460505e43e4507d6746f56))
-*  update gsheets-accra.js with new data positions ([b70ef0b0](https://github.com/firstlovecenter/fl-admin-portal/commit/b70ef0b0a059f602f3ba649ef7ec3b0a32e037b7))
+- update RoleView roles to permitAdmin('Stream') ([3759e925](https://github.com/firstlovecenter/fl-admin-portal/commit/3759e925cbe0cf55fc460505e43e4507d6746f56))
+- update gsheets-accra.js with new data positions ([b70ef0b0](https://github.com/firstlovecenter/fl-admin-portal/commit/b70ef0b0a059f602f3ba649ef7ec3b0a32e037b7))
 
 ##### Bug Fixes
 
-*  update roles in servicesRoutes.ts ([91c2e57e](https://github.com/firstlovecenter/fl-admin-portal/commit/91c2e57e33d68d5319ddf7a5e296758e60e64d24))
+- update roles in servicesRoutes.ts ([91c2e57e](https://github.com/firstlovecenter/fl-admin-portal/commit/91c2e57e33d68d5319ddf7a5e296758e60e64d24))
 
 #### 7.18.6 (2024-02-29)
 
 ##### New Features
 
-*  add Oversight Dashboard component and related GraphQL queries ([050190ff](https://github.com/firstlovecenter/fl-admin-portal/commit/050190ffcd24c4c9182109da32b79efa890fc8f6))
+- add Oversight Dashboard component and related GraphQL queries ([050190ff](https://github.com/firstlovecenter/fl-admin-portal/commit/050190ffcd24c4c9182109da32b79efa890fc8f6))
 
 ##### Bug Fixes
 
-*  add 'Stream' and 'Bishop' columns to councilList query ([22f3665f](https://github.com/firstlovecenter/fl-admin-portal/commit/22f3665fd3f565039d8997b54d10724e99d58be4))
+- add 'Stream' and 'Bishop' columns to councilList query ([22f3665f](https://github.com/firstlovecenter/fl-admin-portal/commit/22f3665fd3f565039d8997b54d10724e99d58be4))
 
 #### 7.18.5 (2024-02-28)
 
 ##### New Features
 
-*  update banking roles from 'Campus' to 'Stream' ([cb2b0f43](https://github.com/firstlovecenter/fl-admin-portal/commit/cb2b0f43b741991c751267d2cdbb4a4cee0ad2e6))
+- update banking roles from 'Campus' to 'Stream' ([cb2b0f43](https://github.com/firstlovecenter/fl-admin-portal/commit/cb2b0f43b741991c751267d2cdbb4a4cee0ad2e6))
 
 #### 7.18.4 (2024-02-27)
 
 ##### New Features
 
-*  add anagkazoAmountBanked query execution ([92c144e4](https://github.com/firstlovecenter/fl-admin-portal/commit/92c144e457ead203402045e18af22b38835814f0))
-*  add debugging scripts and update ServicesMenu component ([3ac116e1](https://github.com/firstlovecenter/fl-admin-portal/commit/3ac116e18d09ec14bdea61fb2f8678a82d79beb1))
+- add anagkazoAmountBanked query execution ([92c144e4](https://github.com/firstlovecenter/fl-admin-portal/commit/92c144e457ead203402045e18af22b38835814f0))
+- add debugging scripts and update ServicesMenu component ([3ac116e1](https://github.com/firstlovecenter/fl-admin-portal/commit/3ac116e18d09ec14bdea61fb2f8678a82d79beb1))
 
 ##### Bug Fixes
 
-*   update RoleView roles in ServiceDetails component ([23669504](https://github.com/firstlovecenter/fl-admin-portal/commit/2366950487354d06120e87372c9fd26e5a96c5fa))
-*  update banking resolver error handling ([841fcc4e](https://github.com/firstlovecenter/fl-admin-portal/commit/841fcc4eabfe6cf6db32032fbd38d269c781e499))
-*  remove unused import and commented code, handle transaction not found error ([40643420](https://github.com/firstlovecenter/fl-admin-portal/commit/4064342006a3988cfaf33855f967f632ce5ef08c))
-*  correctly import secrets for auto gsheets functions ([05105ad9](https://github.com/firstlovecenter/fl-admin-portal/commit/05105ad9a7108dd4ffd4ee8f6ba757fea5718bee))
+- update RoleView roles in ServiceDetails component ([23669504](https://github.com/firstlovecenter/fl-admin-portal/commit/2366950487354d06120e87372c9fd26e5a96c5fa))
+- update banking resolver error handling ([841fcc4e](https://github.com/firstlovecenter/fl-admin-portal/commit/841fcc4eabfe6cf6db32032fbd38d269c781e499))
+- remove unused import and commented code, handle transaction not found error ([40643420](https://github.com/firstlovecenter/fl-admin-portal/commit/4064342006a3988cfaf33855f967f632ce5ef08c))
+- correctly import secrets for auto gsheets functions ([05105ad9](https://github.com/firstlovecenter/fl-admin-portal/commit/05105ad9a7108dd4ffd4ee8f6ba757fea5718bee))
 
 ##### Refactors
 
-*  anagkazoAmountBankedQuery to not include Donald's attendance and income ([956553f0](https://github.com/firstlovecenter/fl-admin-portal/commit/956553f08f22b59b47ce1bef83a0c4043f5f1ede))
+- anagkazoAmountBankedQuery to not include Donald's attendance and income ([956553f0](https://github.com/firstlovecenter/fl-admin-portal/commit/956553f08f22b59b47ce1bef83a0c4043f5f1ede))
 
 #### 7.18.3 (2024-02-13)
 
 ##### New Features
 
-*   add basontaMemberSearch query to SearchMember component ([3488f40a](https://github.com/firstlovecenter/fl-admin-portal/commit/3488f40aa845de392fd8ab5079bcc6c3057821f2))
-*  add anagkazoAmountBankedData to writeToGsheet function ([c572f0a9](https://github.com/firstlovecenter/fl-admin-portal/commit/c572f0a9332bc2241b934addbb52d7b9197689a6))
+- add basontaMemberSearch query to SearchMember component ([3488f40a](https://github.com/firstlovecenter/fl-admin-portal/commit/3488f40aa845de392fd8ab5079bcc6c3057821f2))
+- add anagkazoAmountBankedData to writeToGsheet function ([c572f0a9](https://github.com/firstlovecenter/fl-admin-portal/commit/c572f0a9332bc2241b934addbb52d7b9197689a6))
 
 ##### Bug Fixes
 
-*  update schedule for gsheets-accra and gsheets-update-outaccra functions ([785885a2](https://github.com/firstlovecenter/fl-admin-portal/commit/785885a2272fa6c6fa11331e585f2a3a90325e57))
-*  update schedule for gsheets-accra and gsheets-update-outaccra ([68d7789a](https://github.com/firstlovecenter/fl-admin-portal/commit/68d7789a0262878f533e3ca42f2421b55f27b22d))
-*   update writeToGSheet function to use update instead of append ([6cbf0c59](https://github.com/firstlovecenter/fl-admin-portal/commit/6cbf0c593b6c53af65821a95d574257913efe1b5))
-*  add writeToGsheet for amountBankedData ([a8756bcb](https://github.com/firstlovecenter/fl-admin-portal/commit/a8756bcb5683151d51523f8ff5012b53e2a4f279))
+- update schedule for gsheets-accra and gsheets-update-outaccra functions ([785885a2](https://github.com/firstlovecenter/fl-admin-portal/commit/785885a2272fa6c6fa11331e585f2a3a90325e57))
+- update schedule for gsheets-accra and gsheets-update-outaccra ([68d7789a](https://github.com/firstlovecenter/fl-admin-portal/commit/68d7789a0262878f533e3ca42f2421b55f27b22d))
+- update writeToGSheet function to use update instead of append ([6cbf0c59](https://github.com/firstlovecenter/fl-admin-portal/commit/6cbf0c593b6c53af65821a95d574257913efe1b5))
+- add writeToGsheet for amountBankedData ([a8756bcb](https://github.com/firstlovecenter/fl-admin-portal/commit/a8756bcb5683151d51523f8ff5012b53e2a4f279))
 
 ##### Refactors
 
-*  service-cypher.ts to include record description in the query ([d60a59d0](https://github.com/firstlovecenter/fl-admin-portal/commit/d60a59d0f4caf06cbeb7b602ae92e0707b7a966a))
+- service-cypher.ts to include record description in the query ([d60a59d0](https://github.com/firstlovecenter/fl-admin-portal/commit/d60a59d0f4caf06cbeb7b602ae92e0707b7a966a))
 
 #### 7.18.2 (2024-02-11)
 
 ##### New Features
 
-*  add undo transaction functionality ([eff79641](https://github.com/firstlovecenter/fl-admin-portal/commit/eff7964124f39bbc7c8119cbbdc0cfd61b9f91d5))
+- add undo transaction functionality ([eff79641](https://github.com/firstlovecenter/fl-admin-portal/commit/eff7964124f39bbc7c8119cbbdc0cfd61b9f91d5))
 
 ##### Bug Fixes
 
-*  remove unused import and update import path ([723cdf1b](https://github.com/firstlovecenter/fl-admin-portal/commit/723cdf1baacd46c067b8437a0cbe1633ab5596b8))
-*  fixing bugs and adding new features ([f8a76d4e](https://github.com/firstlovecenter/fl-admin-portal/commit/f8a76d4e58b3640cff47ad7b0b4fd8ad7e8f08ef))
-*  add text-center class to transaction details div ([13b1a11a](https://github.com/firstlovecenter/fl-admin-portal/commit/13b1a11a58c96429009a949c2d39b58b0f931373))
+- remove unused import and update import path ([723cdf1b](https://github.com/firstlovecenter/fl-admin-portal/commit/723cdf1baacd46c067b8437a0cbe1633ab5596b8))
+- fixing bugs and adding new features ([f8a76d4e](https://github.com/firstlovecenter/fl-admin-portal/commit/f8a76d4e58b3640cff47ad7b0b4fd8ad7e8f08ef))
+- add text-center class to transaction details div ([13b1a11a](https://github.com/firstlovecenter/fl-admin-portal/commit/13b1a11a58c96429009a949c2d39b58b0f931373))
 
 #### 7.18.1 (2024-02-07)
 
 ##### Bug Fixes
 
-*  implement undo transaction button ([f0c123b9](https://github.com/firstlovecenter/fl-admin-portal/commit/f0c123b99db860e96c3829b9e7e6020b57294603))
-*  remove non-required exclamation marks in Council schema ([7f1d43b2](https://github.com/firstlovecenter/fl-admin-portal/commit/7f1d43b2c0c57d8fc5a92eeb2247ef71e4c2db31))
-*  add gsheets-services-not-banked function and dependencies ([19ce419a](https://github.com/firstlovecenter/fl-admin-portal/commit/19ce419ae98230a5d909a74c966bfb06879f1fe7))
-*  add gsheets-not-banked function and dependencies ([0e4aa84f](https://github.com/firstlovecenter/fl-admin-portal/commit/0e4aa84f4ba516ef5885dd6a755f7b3c1b9f18f9))
-*  update 'Council' field to display as a comma-separated string ([3721c9b6](https://github.com/firstlovecenter/fl-admin-portal/commit/3721c9b63bfb67b07426e16df3529fe0cf7c6656))
-*  recipient typo and add additional recipient numbers ([1704fa82](https://github.com/firstlovecenter/fl-admin-portal/commit/1704fa82522eb1f73935a0ff61913892ae0116fb))
-*  update councilListQuery and writeToGsheet functions ([182dbddb](https://github.com/firstlovecenter/fl-admin-portal/commit/182dbddbfa9af65410408ece5c39606140292879))
-*  update schedule for gsheets functions ([0bfd79a6](https://github.com/firstlovecenter/fl-admin-portal/commit/0bfd79a614a43a07363b019778747b0001583134))
+- implement undo transaction button ([f0c123b9](https://github.com/firstlovecenter/fl-admin-portal/commit/f0c123b99db860e96c3829b9e7e6020b57294603))
+- remove non-required exclamation marks in Council schema ([7f1d43b2](https://github.com/firstlovecenter/fl-admin-portal/commit/7f1d43b2c0c57d8fc5a92eeb2247ef71e4c2db31))
+- add gsheets-services-not-banked function and dependencies ([19ce419a](https://github.com/firstlovecenter/fl-admin-portal/commit/19ce419ae98230a5d909a74c966bfb06879f1fe7))
+- add gsheets-not-banked function and dependencies ([0e4aa84f](https://github.com/firstlovecenter/fl-admin-portal/commit/0e4aa84f4ba516ef5885dd6a755f7b3c1b9f18f9))
+- update 'Council' field to display as a comma-separated string ([3721c9b6](https://github.com/firstlovecenter/fl-admin-portal/commit/3721c9b63bfb67b07426e16df3529fe0cf7c6656))
+- recipient typo and add additional recipient numbers ([1704fa82](https://github.com/firstlovecenter/fl-admin-portal/commit/1704fa82522eb1f73935a0ff61913892ae0116fb))
+- update councilListQuery and writeToGsheet functions ([182dbddb](https://github.com/firstlovecenter/fl-admin-portal/commit/182dbddbfa9af65410408ece5c39606140292879))
+- update schedule for gsheets functions ([0bfd79a6](https://github.com/firstlovecenter/fl-admin-portal/commit/0bfd79a614a43a07363b019778747b0001583134))
 
 ##### Refactors
 
-*  cypher.js to collect distinct council names ([b4db1413](https://github.com/firstlovecenter/fl-admin-portal/commit/b4db1413b929bc97fe4f9c737fee30371d3130b9))
-*  add npmrc and package.json files for gsheets-accra and gsheets-update-outaccra functions ([afced8e7](https://github.com/firstlovecenter/fl-admin-portal/commit/afced8e7b76f7c3e54fd1ed17263221cd33cad2e))
+- cypher.js to collect distinct council names ([b4db1413](https://github.com/firstlovecenter/fl-admin-portal/commit/b4db1413b929bc97fe4f9c737fee30371d3130b9))
+- add npmrc and package.json files for gsheets-accra and gsheets-update-outaccra functions ([afced8e7](https://github.com/firstlovecenter/fl-admin-portal/commit/afced8e7b76f7c3e54fd1ed17263221cd33cad2e))
 
 ### 7.18.0 (2024-02-07)
 
 ##### Bug Fixes
 
-*  update package name to accra-gsheets ([9703482d](https://github.com/firstlovecenter/fl-admin-portal/commit/9703482d05c2f4480ca7ac544232e4d6fcbe8b9f))
-*  remove admin-portal-types from root ([3c788425](https://github.com/firstlovecenter/fl-admin-portal/commit/3c788425215f93010d6bc6a857694f91b0c21897))
-*  add secrets build for services-not-banked function ([21b7fba3](https://github.com/firstlovecenter/fl-admin-portal/commit/21b7fba3ddce0b76a4411f3fadb59f9935fd6c90))
-*  add new functions for updating Google Sheets with data from Neo4j ([5a899c95](https://github.com/firstlovecenter/fl-admin-portal/commit/5a899c955b6f9e91ca0d206023b80c13dfa9bbbe))
-*  add .npmrc files for accra-gsheets and update-outaccra-gsheets functions ([1a7a1bf8](https://github.com/firstlovecenter/fl-admin-portal/commit/1a7a1bf80a40d15ce4ad49850bfd771d858486d4))
-*  add npmrc file ([88988b15](https://github.com/firstlovecenter/fl-admin-portal/commit/88988b15cd327fa967f17214b3439fdea1d566af))
-*  update debugging scripts and payment functions ([c254a5d5](https://github.com/firstlovecenter/fl-admin-portal/commit/c254a5d5612ccdda8db6b7df796c4481ba7254d7))
-*  typo in service-cypher.ts ([84adb01c](https://github.com/firstlovecenter/fl-admin-portal/commit/84adb01cdfc5bc46009598fb2d8d5e4afacec497))
-*  update code of the day ([de6bef97](https://github.com/firstlovecenter/fl-admin-portal/commit/de6bef97f24503a31b77fd80e849ff7452d2d75c))
-*  update banking slip URL and add new admin permissions ([128ba88c](https://github.com/firstlovecenter/fl-admin-portal/commit/128ba88c5ca179f99c68d093afee318d7ebf1824))
-*  update account opening hours ([784a671c](https://github.com/firstlovecenter/fl-admin-portal/commit/784a671c3629f685b4c70f6f8d80c279bcb4ba40))
+- update package name to accra-gsheets ([9703482d](https://github.com/firstlovecenter/fl-admin-portal/commit/9703482d05c2f4480ca7ac544232e4d6fcbe8b9f))
+- remove admin-portal-types from root ([3c788425](https://github.com/firstlovecenter/fl-admin-portal/commit/3c788425215f93010d6bc6a857694f91b0c21897))
+- add secrets build for services-not-banked function ([21b7fba3](https://github.com/firstlovecenter/fl-admin-portal/commit/21b7fba3ddce0b76a4411f3fadb59f9935fd6c90))
+- add new functions for updating Google Sheets with data from Neo4j ([5a899c95](https://github.com/firstlovecenter/fl-admin-portal/commit/5a899c955b6f9e91ca0d206023b80c13dfa9bbbe))
+- add .npmrc files for accra-gsheets and update-outaccra-gsheets functions ([1a7a1bf8](https://github.com/firstlovecenter/fl-admin-portal/commit/1a7a1bf80a40d15ce4ad49850bfd771d858486d4))
+- add npmrc file ([88988b15](https://github.com/firstlovecenter/fl-admin-portal/commit/88988b15cd327fa967f17214b3439fdea1d566af))
+- update debugging scripts and payment functions ([c254a5d5](https://github.com/firstlovecenter/fl-admin-portal/commit/c254a5d5612ccdda8db6b7df796c4481ba7254d7))
+- typo in service-cypher.ts ([84adb01c](https://github.com/firstlovecenter/fl-admin-portal/commit/84adb01cdfc5bc46009598fb2d8d5e4afacec497))
+- update code of the day ([de6bef97](https://github.com/firstlovecenter/fl-admin-portal/commit/de6bef97f24503a31b77fd80e849ff7452d2d75c))
+- update banking slip URL and add new admin permissions ([128ba88c](https://github.com/firstlovecenter/fl-admin-portal/commit/128ba88c5ca179f99c68d093afee318d7ebf1824))
+- update account opening hours ([784a671c](https://github.com/firstlovecenter/fl-admin-portal/commit/784a671c3629f685b4c70f6f8d80c279bcb4ba40))
 
 #### 7.17.8 (2024-02-01)
 
 ##### Bug Fixes
 
-*  update account opening hours ([c69a13f1](https://github.com/firstlovecenter/fl-admin-portal/commit/c69a13f14173f5ac4dd66d9b8d8e13c804b48624))
+- update account opening hours ([c69a13f1](https://github.com/firstlovecenter/fl-admin-portal/commit/c69a13f14173f5ac4dd66d9b8d8e13c804b48624))
 
 #### 7.17.7 (2024-01-30)
 
 ##### Bug Fixes
 
-*  update Cypher queries and add new marital status option ([daafb339](https://github.com/firstlovecenter/fl-admin-portal/commit/daafb339d922f78c765c68e73aa631b7046b64bc))
+- update Cypher queries and add new marital status option ([daafb339](https://github.com/firstlovecenter/fl-admin-portal/commit/daafb339d922f78c765c68e73aa631b7046b64bc))
 
 ##### Refactors
 
-*  service-cypher.ts to include serviceDate in aggregate record ([2e4dfc6e](https://github.com/firstlovecenter/fl-admin-portal/commit/2e4dfc6e4476b5bde2b623ce237a008b6d6314a6))
+- service-cypher.ts to include serviceDate in aggregate record ([2e4dfc6e](https://github.com/firstlovecenter/fl-admin-portal/commit/2e4dfc6e4476b5bde2b623ce237a008b6d6314a6))
 
 #### 7.17.6 (2024-01-29)
 
 ##### New Features
 
-*  add 'oa_sunyani' stream option ([188dd4dd](https://github.com/firstlovecenter/fl-admin-portal/commit/188dd4dd49f433ce9c2ea1346cf0cbdedee8e0f5))
-*  update handler function ([a7864d72](https://github.com/firstlovecenter/fl-admin-portal/commit/a7864d72e0c4bbc6a435c1a5ca54ba6cc86a0fbb))
-*  update gsheet with neo4j data ([ada7522a](https://github.com/firstlovecenter/fl-admin-portal/commit/ada7522a61961b09a51147b2dfd694724ffc748c))
-*  add update-g-sheets function and package.json ([9fdf14db](https://github.com/firstlovecenter/fl-admin-portal/commit/9fdf14dbcbf08e35fa7c2b01ce1260d5321c5614))
-*  add personalized greeting in SMS messages ([6dc79dc0](https://github.com/firstlovecenter/fl-admin-portal/commit/6dc79dc041158131cb0fe25f6abc688f3f7d6abf))
+- add 'oa_sunyani' stream option ([188dd4dd](https://github.com/firstlovecenter/fl-admin-portal/commit/188dd4dd49f433ce9c2ea1346cf0cbdedee8e0f5))
+- update handler function ([a7864d72](https://github.com/firstlovecenter/fl-admin-portal/commit/a7864d72e0c4bbc6a435c1a5ca54ba6cc86a0fbb))
+- update gsheet with neo4j data ([ada7522a](https://github.com/firstlovecenter/fl-admin-portal/commit/ada7522a61961b09a51147b2dfd694724ffc748c))
+- add update-g-sheets function and package.json ([9fdf14db](https://github.com/firstlovecenter/fl-admin-portal/commit/9fdf14dbcbf08e35fa7c2b01ce1260d5321c5614))
+- add personalized greeting in SMS messages ([6dc79dc0](https://github.com/firstlovecenter/fl-admin-portal/commit/6dc79dc041158131cb0fe25f6abc688f3f7d6abf))
 
 ##### Bug Fixes
 
-*  update schedule for update-g-sheets.js ([aefff4b5](https://github.com/firstlovecenter/fl-admin-portal/commit/aefff4b528bf55748ff60a96803f4448accd5c6d))
-*  update console log messages and requestBody in update-g-sheets.js ([1e0d0a4a](https://github.com/firstlovecenter/fl-admin-portal/commit/1e0d0a4aeedf4e3bdfb0725f384ffab7dd6d9a0c))
-*  update gsecrets.js and update-g-sheets.js files ([cd1ad556](https://github.com/firstlovecenter/fl-admin-portal/commit/cd1ad556e968d91ec30ae832b38ba9013a6e6736))
-*  ipdate Google Sheets credentials ([9c3bc4ba](https://github.com/firstlovecenter/fl-admin-portal/commit/9c3bc4ba60fa8d3ccc7406f2a71f88991dd632b9))
-*  add console log statement to print data ([bba1b242](https://github.com/firstlovecenter/fl-admin-portal/commit/bba1b2427420e4b9117bc3a7a5b253e28c8791e2))
-*  update package.json and file paths ([4b1198e8](https://github.com/firstlovecenter/fl-admin-portal/commit/4b1198e8ec22482085ff351755d1be5f8cbae3e9))
-*  add googleapis dependency ([9753a637](https://github.com/firstlovecenter/fl-admin-portal/commit/9753a637561d746d6db4ef27f6648aa7c4dadbe0))
-*  update react-bootstrap version to 2.10.0 ([9452002c](https://github.com/firstlovecenter/fl-admin-portal/commit/9452002c2fe57ec1af6001c72bed0f16a7fea6f7))
-*  update dependencies and secrets.js path ([64360881](https://github.com/firstlovecenter/fl-admin-portal/commit/6436088143e4633f1f6f7ca3c3fd90a46eba9a8a))
-*  fix Google API import and update schedule time ([3f196856](https://github.com/firstlovecenter/fl-admin-portal/commit/3f1968562bfa568342c712bc24994e7d39710093))
-*  add debugging scripts and update banking slip URL ([4fa7c5db](https://github.com/firstlovecenter/fl-admin-portal/commit/4fa7c5db10507127f735826c6820aba31a13b6ef))
-*  update subaccount in financial-utils.ts ([24b65013](https://github.com/firstlovecenter/fl-admin-portal/commit/24b65013ca44f6ee0b43cdaeaf2330ba85a6a283))
-*  add convertNeoWeekdayToJSWeekday function to arrivals-utils.ts ([8c4c338e](https://github.com/firstlovecenter/fl-admin-portal/commit/8c4c338e00e86e7f8a44d8285db3708800467041))
-*  update subaccount names in financial-utils.ts ([0185f9bb](https://github.com/firstlovecenter/fl-admin-portal/commit/0185f9bbf92a9839610a58ea76eca76c1badc104))
-*  error handling in banking resolver ([a5dd19fa](https://github.com/firstlovecenter/fl-admin-portal/commit/a5dd19fa63432737622edfca67f26d3a91e6df54))
-*  error handling and close sessions in treasury resolvers ([9a7736fb](https://github.com/firstlovecenter/fl-admin-portal/commit/9a7736fb0b19b8717c5302ecff73b8af3ca81cf4))
-*  update sorting order for bussing records ([6397c9d8](https://github.com/firstlovecenter/fl-admin-portal/commit/6397c9d8bd9ff7c8b7f2b74214371dd334418782))
+- update schedule for update-g-sheets.js ([aefff4b5](https://github.com/firstlovecenter/fl-admin-portal/commit/aefff4b528bf55748ff60a96803f4448accd5c6d))
+- update console log messages and requestBody in update-g-sheets.js ([1e0d0a4a](https://github.com/firstlovecenter/fl-admin-portal/commit/1e0d0a4aeedf4e3bdfb0725f384ffab7dd6d9a0c))
+- update gsecrets.js and update-g-sheets.js files ([cd1ad556](https://github.com/firstlovecenter/fl-admin-portal/commit/cd1ad556e968d91ec30ae832b38ba9013a6e6736))
+- ipdate Google Sheets credentials ([9c3bc4ba](https://github.com/firstlovecenter/fl-admin-portal/commit/9c3bc4ba60fa8d3ccc7406f2a71f88991dd632b9))
+- add console log statement to print data ([bba1b242](https://github.com/firstlovecenter/fl-admin-portal/commit/bba1b2427420e4b9117bc3a7a5b253e28c8791e2))
+- update package.json and file paths ([4b1198e8](https://github.com/firstlovecenter/fl-admin-portal/commit/4b1198e8ec22482085ff351755d1be5f8cbae3e9))
+- add googleapis dependency ([9753a637](https://github.com/firstlovecenter/fl-admin-portal/commit/9753a637561d746d6db4ef27f6648aa7c4dadbe0))
+- update react-bootstrap version to 2.10.0 ([9452002c](https://github.com/firstlovecenter/fl-admin-portal/commit/9452002c2fe57ec1af6001c72bed0f16a7fea6f7))
+- update dependencies and secrets.js path ([64360881](https://github.com/firstlovecenter/fl-admin-portal/commit/6436088143e4633f1f6f7ca3c3fd90a46eba9a8a))
+- fix Google API import and update schedule time ([3f196856](https://github.com/firstlovecenter/fl-admin-portal/commit/3f1968562bfa568342c712bc24994e7d39710093))
+- add debugging scripts and update banking slip URL ([4fa7c5db](https://github.com/firstlovecenter/fl-admin-portal/commit/4fa7c5db10507127f735826c6820aba31a13b6ef))
+- update subaccount in financial-utils.ts ([24b65013](https://github.com/firstlovecenter/fl-admin-portal/commit/24b65013ca44f6ee0b43cdaeaf2330ba85a6a283))
+- add convertNeoWeekdayToJSWeekday function to arrivals-utils.ts ([8c4c338e](https://github.com/firstlovecenter/fl-admin-portal/commit/8c4c338e00e86e7f8a44d8285db3708800467041))
+- update subaccount names in financial-utils.ts ([0185f9bb](https://github.com/firstlovecenter/fl-admin-portal/commit/0185f9bbf92a9839610a58ea76eca76c1badc104))
+- error handling in banking resolver ([a5dd19fa](https://github.com/firstlovecenter/fl-admin-portal/commit/a5dd19fa63432737622edfca67f26d3a91e6df54))
+- error handling and close sessions in treasury resolvers ([9a7736fb](https://github.com/firstlovecenter/fl-admin-portal/commit/9a7736fb0b19b8717c5302ecff73b8af3ca81cf4))
+- update sorting order for bussing records ([6397c9d8](https://github.com/firstlovecenter/fl-admin-portal/commit/6397c9d8bd9ff7c8b7f2b74214371dd334418782))
 
 ##### Refactors
 
-*  data retrieval and update process ([b7781179](https://github.com/firstlovecenter/fl-admin-portal/commit/b7781179e3f29077e713e548d07ef75604c37278))
-*  fetchData function to include date filtering ([d7d16559](https://github.com/firstlovecenter/fl-admin-portal/commit/d7d165595783960e0b1a5dc946da3a2eba9de803))
-*  initializeDatabase function in update-g-sheets.js ([b5d1ae9f](https://github.com/firstlovecenter/fl-admin-portal/commit/b5d1ae9fce8df2c2f00e04902052baa58ab634da))
+- data retrieval and update process ([b7781179](https://github.com/firstlovecenter/fl-admin-portal/commit/b7781179e3f29077e713e548d07ef75604c37278))
+- fetchData function to include date filtering ([d7d16559](https://github.com/firstlovecenter/fl-admin-portal/commit/d7d165595783960e0b1a5dc946da3a2eba9de803))
+- initializeDatabase function in update-g-sheets.js ([b5d1ae9f](https://github.com/firstlovecenter/fl-admin-portal/commit/b5d1ae9fce8df2c2f00e04902052baa58ab634da))
 
 #### 7.17.5 (2024-01-19)
 
 ##### Bug Fixes
 
-*  remove unnecessary code and simplify isArrivalsToday function ([905e13fc](https://github.com/firstlovecenter/fl-admin-portal/commit/905e13fc60508ea4997164eae037a7b979dddb71))
+- remove unnecessary code and simplify isArrivalsToday function ([905e13fc](https://github.com/firstlovecenter/fl-admin-portal/commit/905e13fc60508ea4997164eae037a7b979dddb71))
 
 #### 7.17.4 (2024-01-17)
 
 ##### New Features
 
-*  update code of the day function till jann 2024 ([fa50dbc2](https://github.com/firstlovecenter/fl-admin-portal/commit/fa50dbc240ed3e8d92e685e11e82d0f7e55c06d5))
+- update code of the day function till jann 2024 ([fa50dbc2](https://github.com/firstlovecenter/fl-admin-portal/commit/fa50dbc240ed3e8d92e685e11e82d0f7e55c06d5))
 
 ##### Bug Fixes
 
-*  remove network errors from snack  bar ([1f90eb9c](https://github.com/firstlovecenter/fl-admin-portal/commit/1f90eb9c51da012ef6c947c3f27ea65edce87a4a))
-*  null description check in service-cypher.ts ([abc34199](https://github.com/firstlovecenter/fl-admin-portal/commit/abc34199693cc336efa7b31c6f9c5a94fe337c9a))
+- remove network errors from snack bar ([1f90eb9c](https://github.com/firstlovecenter/fl-admin-portal/commit/1f90eb9c51da012ef6c947c3f27ea65edce87a4a))
+- null description check in service-cypher.ts ([abc34199](https://github.com/firstlovecenter/fl-admin-portal/commit/abc34199693cc336efa7b31c6f9c5a94fe337c9a))
 
 #### 7.17.3 (2024-01-11)
 
 ##### Bug Fixes
 
-*  update import statement for ChurchLevel in AllCampusConstituencies.tsx ([430f5618](https://github.com/firstlovecenter/fl-admin-portal/commit/430f5618d0991e67e5b54e9a92ceaab4ffcd3905))
+- update import statement for ChurchLevel in AllCampusConstituencies.tsx ([430f5618](https://github.com/firstlovecenter/fl-admin-portal/commit/430f5618d0991e67e5b54e9a92ceaab4ffcd3905))
 
 #### 7.17.2 (2024-01-11)
 
 ##### Chores
 
-*  update Apollo Client and Server versions in package.json Update dependencies in web-react-ts/package.json ([7c076897](https://github.com/firstlovecenter/fl-admin-portal/commit/7c076897ecdab301187285249a914c121080904a))
+- update Apollo Client and Server versions in package.json Update dependencies in web-react-ts/package.json ([7c076897](https://github.com/firstlovecenter/fl-admin-portal/commit/7c076897ecdab301187285249a914c121080904a))
 
 ##### New Features
 
-*  implement joint rehearsal feature for hub council and ministry levels ([6eb0bd59](https://github.com/firstlovecenter/fl-admin-portal/commit/6eb0bd591e0792e1c4574a1843d737a380845b44))
-*  add Ministry Rehearsal Service and Details pages ([c3e7d64f](https://github.com/firstlovecenter/fl-admin-portal/commit/c3e7d64fcf9697b6bd49974f17cf3559b1d4c06a))
-*  update church filters and add MinistryFormMenu component ([fbae475e](https://github.com/firstlovecenter/fl-admin-portal/commit/fbae475e6480e50bfa46019c0a3cbe4a18cdd335))
-*  implement hub council joint rehearsal filling ([060877fb](https://github.com/firstlovecenter/fl-admin-portal/commit/060877fbbf4652a0559c1aade72df722b91603dc))
+- implement joint rehearsal feature for hub council and ministry levels ([6eb0bd59](https://github.com/firstlovecenter/fl-admin-portal/commit/6eb0bd591e0792e1c4574a1843d737a380845b44))
+- add Ministry Rehearsal Service and Details pages ([c3e7d64f](https://github.com/firstlovecenter/fl-admin-portal/commit/c3e7d64fcf9697b6bd49974f17cf3559b1d4c06a))
+- update church filters and add MinistryFormMenu component ([fbae475e](https://github.com/firstlovecenter/fl-admin-portal/commit/fbae475e6480e50bfa46019c0a3cbe4a18cdd335))
+- implement hub council joint rehearsal filling ([060877fb](https://github.com/firstlovecenter/fl-admin-portal/commit/060877fbbf4652a0559c1aade72df722b91603dc))
 
 ##### Bug Fixes
 
-*  fix issue with matching member and IMCL status ([99cd69a4](https://github.com/firstlovecenter/fl-admin-portal/commit/99cd69a415de6bf63af66e0f5e2ce15fd8905f52))
-*  remove unused code for displaying meeting forms ([40689171](https://github.com/firstlovecenter/fl-admin-portal/commit/406891717c37d03765c89429d5bc4df30a9123b3))
-*  add additional church types to banking checker query ([37c16ccc](https://github.com/firstlovecenter/fl-admin-portal/commit/37c16ccc19acf5cb8d8acfe44420cb852bc25143))
-*  changes for joint rehearsal ([82dacedf](https://github.com/firstlovecenter/fl-admin-portal/commit/82dacedfa6405a4bb83f1c1dd5fa72b429352c0d))
+- fix issue with matching member and IMCL status ([99cd69a4](https://github.com/firstlovecenter/fl-admin-portal/commit/99cd69a415de6bf63af66e0f5e2ce15fd8905f52))
+- remove unused code for displaying meeting forms ([40689171](https://github.com/firstlovecenter/fl-admin-portal/commit/406891717c37d03765c89429d5bc4df30a9123b3))
+- add additional church types to banking checker query ([37c16ccc](https://github.com/firstlovecenter/fl-admin-portal/commit/37c16ccc19acf5cb8d8acfe44420cb852bc25143))
+- changes for joint rehearsal ([82dacedf](https://github.com/firstlovecenter/fl-admin-portal/commit/82dacedfa6405a4bb83f1c1dd5fa72b429352c0d))
 
 #### 7.17.1 (2024-01-08)
 
 ##### Documentation Changes
 
-*  update CHANGELOG.md ([153d0a3a](https://github.com/firstlovecenter/fl-admin-portal/commit/153d0a3aadd15816ca375df6fbb8dbf7d2f680a2))
-*  update CHANGELOG.md ([ead97690](https://github.com/firstlovecenter/fl-admin-portal/commit/ead9769088b231c4d498c03f781b62ba9df639c2))
+- update CHANGELOG.md ([153d0a3a](https://github.com/firstlovecenter/fl-admin-portal/commit/153d0a3aadd15816ca375df6fbb8dbf7d2f680a2))
+- update CHANGELOG.md ([ead97690](https://github.com/firstlovecenter/fl-admin-portal/commit/ead9769088b231c4d498c03f781b62ba9df639c2))
 
 ##### New Features
 
-*  implement stream special service form ([3870f9be](https://github.com/firstlovecenter/fl-admin-portal/commit/3870f9befb9c06aab01d533043f6cc34b8a90c94))
-*  resolver for manually confirming offering payment ([f822dcf0](https://github.com/firstlovecenter/fl-admin-portal/commit/f822dcf065c0bb176dd4878d0354488075c4b795))
+- implement stream special service form ([3870f9be](https://github.com/firstlovecenter/fl-admin-portal/commit/3870f9befb9c06aab01d533043f6cc34b8a90c94))
+- resolver for manually confirming offering payment ([f822dcf0](https://github.com/firstlovecenter/fl-admin-portal/commit/f822dcf065c0bb176dd4878d0354488075c4b795))
 
 ##### Bug Fixes
 
-*  update labels for foreign currency and cheques in ServiceDetails and ServiceForm ([ce34785b](https://github.com/firstlovecenter/fl-admin-portal/commit/ce34785b35e71ae40ead485bf0e77ddaf4c2e536))
-*  properly format data in the foreign currency and cheques column ([25fe63ff](https://github.com/firstlovecenter/fl-admin-portal/commit/25fe63ffd5f719fd2d0e18b2abfa2f9934c9d5c6))
-*  allow confirming of banking status when status is not just failed, but abandon ([e43fd23f](https://github.com/firstlovecenter/fl-admin-portal/commit/e43fd23f9f7ea7dd73319e1d084522696a2588c3))
-*  implement frontend feature to manually confirm offering ([c109bf1b](https://github.com/firstlovecenter/fl-admin-portal/commit/c109bf1b8f1dbe35ceeafdaa10b4cd1b9909d060))
-*  return year of aggregate record in descending order ([f64ca6ab](https://github.com/firstlovecenter/fl-admin-portal/commit/f64ca6ab3fc41fb477717bd83d92f808ae334eaf))
+- update labels for foreign currency and cheques in ServiceDetails and ServiceForm ([ce34785b](https://github.com/firstlovecenter/fl-admin-portal/commit/ce34785b35e71ae40ead485bf0e77ddaf4c2e536))
+- properly format data in the foreign currency and cheques column ([25fe63ff](https://github.com/firstlovecenter/fl-admin-portal/commit/25fe63ffd5f719fd2d0e18b2abfa2f9934c9d5c6))
+- allow confirming of banking status when status is not just failed, but abandon ([e43fd23f](https://github.com/firstlovecenter/fl-admin-portal/commit/e43fd23f9f7ea7dd73319e1d084522696a2588c3))
+- implement frontend feature to manually confirm offering ([c109bf1b](https://github.com/firstlovecenter/fl-admin-portal/commit/c109bf1b8f1dbe35ceeafdaa10b4cd1b9909d060))
+- return year of aggregate record in descending order ([f64ca6ab](https://github.com/firstlovecenter/fl-admin-portal/commit/f64ca6ab3fc41fb477717bd83d92f808ae334eaf))
 
 ##### Refactors
 
-*  refactor sorting logic and update card border color ([fe29b37a](https://github.com/firstlovecenter/fl-admin-portal/commit/fe29b37aa361a39d7bfbe2d66b8668cd15e47acb))
-*  update title for Add Treasurers button ([425deb90](https://github.com/firstlovecenter/fl-admin-portal/commit/425deb9056762b45280625559182f6c3c07afcc3))
+- refactor sorting logic and update card border color ([fe29b37a](https://github.com/firstlovecenter/fl-admin-portal/commit/fe29b37aa361a39d7bfbe2d66b8668cd15e47acb))
+- update title for Add Treasurers button ([425deb90](https://github.com/firstlovecenter/fl-admin-portal/commit/425deb9056762b45280625559182f6c3c07afcc3))
 
 ### 7.17.0 (2024-01-07)
 
@@ -1099,32 +1099,32 @@
 
 ##### New Features
 
-*  implement stream special service form ([3870f9be](https://github.com/firstlovecenter/fl-admin-portal/commit/3870f9befb9c06aab01d533043f6cc34b8a90c94))
-*  resolver for manually confirming offering payment ([f822dcf0](https://github.com/firstlovecenter/fl-admin-portal/commit/f822dcf065c0bb176dd4878d0354488075c4b795))
+- implement stream special service form ([3870f9be](https://github.com/firstlovecenter/fl-admin-portal/commit/3870f9befb9c06aab01d533043f6cc34b8a90c94))
+- resolver for manually confirming offering payment ([f822dcf0](https://github.com/firstlovecenter/fl-admin-portal/commit/f822dcf065c0bb176dd4878d0354488075c4b795))
 
 ##### Bug Fixes
 
-*  allow confirming of banking status when status is not just failed, but abandon ([e43fd23f](https://github.com/firstlovecenter/fl-admin-portal/commit/e43fd23f9f7ea7dd73319e1d084522696a2588c3))
-*  implement frontend feature to manually confirm offering ([c109bf1b](https://github.com/firstlovecenter/fl-admin-portal/commit/c109bf1b8f1dbe35ceeafdaa10b4cd1b9909d060))
-*  return year of aggregate record in descending order ([f64ca6ab](https://github.com/firstlovecenter/fl-admin-portal/commit/f64ca6ab3fc41fb477717bd83d92f808ae334eaf))
+- allow confirming of banking status when status is not just failed, but abandon ([e43fd23f](https://github.com/firstlovecenter/fl-admin-portal/commit/e43fd23f9f7ea7dd73319e1d084522696a2588c3))
+- implement frontend feature to manually confirm offering ([c109bf1b](https://github.com/firstlovecenter/fl-admin-portal/commit/c109bf1b8f1dbe35ceeafdaa10b4cd1b9909d060))
+- return year of aggregate record in descending order ([f64ca6ab](https://github.com/firstlovecenter/fl-admin-portal/commit/f64ca6ab3fc41fb477717bd83d92f808ae334eaf))
 
 ##### Refactors
 
-*  refactor sorting logic and update card border color ([fe29b37a](https://github.com/firstlovecenter/fl-admin-portal/commit/fe29b37aa361a39d7bfbe2d66b8668cd15e47acb))
-*  update title for Add Treasurers button ([425deb90](https://github.com/firstlovecenter/fl-admin-portal/commit/425deb9056762b45280625559182f6c3c07afcc3))
+- refactor sorting logic and update card border color ([fe29b37a](https://github.com/firstlovecenter/fl-admin-portal/commit/fe29b37aa361a39d7bfbe2d66b8668cd15e47acb))
+- update title for Add Treasurers button ([425deb90](https://github.com/firstlovecenter/fl-admin-portal/commit/425deb9056762b45280625559182f6c3c07afcc3))
 
 #### 7.15.6 (2024-01-02)
 
 ##### Bug Fixes
 
-*  update year filter in GraphQL queries ([e7e7c9f5](https://github.com/firstlovecenter/fl-admin-portal/commit/e7e7c9f56c25eadb7bfc0937c3d2e271c5e84fcf))
-*  add debugging scripts and update service resolvers ([a93f3b74](https://github.com/firstlovecenter/fl-admin-portal/commit/a93f3b747f69001a834b9d3910ebcf16deb4d2ff))
-*  update service-resolvers.ts to include 'Council' label in the condition ([e46e5ea9](https://github.com/firstlovecenter/fl-admin-portal/commit/e46e5ea91126fc2b4f9def1623b2cd95ddcda469))
-*  attendance recording for Sunday bussing ([d50cf9ba](https://github.com/firstlovecenter/fl-admin-portal/commit/d50cf9baedf6e631897f3610f36d0d3a95d5b142))
+- update year filter in GraphQL queries ([e7e7c9f5](https://github.com/firstlovecenter/fl-admin-portal/commit/e7e7c9f56c25eadb7bfc0937c3d2e271c5e84fcf))
+- add debugging scripts and update service resolvers ([a93f3b74](https://github.com/firstlovecenter/fl-admin-portal/commit/a93f3b747f69001a834b9d3910ebcf16deb4d2ff))
+- update service-resolvers.ts to include 'Council' label in the condition ([e46e5ea9](https://github.com/firstlovecenter/fl-admin-portal/commit/e46e5ea91126fc2b4f9def1623b2cd95ddcda469))
+- attendance recording for Sunday bussing ([d50cf9ba](https://github.com/firstlovecenter/fl-admin-portal/commit/d50cf9baedf6e631897f3610f36d0d3a95d5b142))
 
 ##### Refactors
 
-*  refactor service label check in serviceMutation ([79834ce9](https://github.com/firstlovecenter/fl-admin-portal/commit/79834ce98f7017a8c309fbb84b6913570fbdfce4))
+- refactor service label check in serviceMutation ([79834ce9](https://github.com/firstlovecenter/fl-admin-portal/commit/79834ce98f7017a8c309fbb84b6913570fbdfce4))
 
 #### 7.15.5 (2023-12-17)
 
@@ -1134,156 +1134,156 @@
 
 ##### New Features
 
-*  arrivalDate is used to retrieve payment data and not today's date ([94e8932f](https://github.com/firstlovecenter/fl-admin-portal/commit/94e8932f598d2abe5d418c03d4719e6676b68529))
-*  update bussing data aggregation to add numberOfCars ([f5341962](https://github.com/firstlovecenter/fl-admin-portal/commit/f53419621edb352640d3ff970fbc177e3115a422))
+- arrivalDate is used to retrieve payment data and not today's date ([94e8932f](https://github.com/firstlovecenter/fl-admin-portal/commit/94e8932f598d2abe5d418c03d4719e6676b68529))
+- update bussing data aggregation to add numberOfCars ([f5341962](https://github.com/firstlovecenter/fl-admin-portal/commit/f53419621edb352640d3ff970fbc177e3115a422))
 
 ##### Bug Fixes
 
-*  service record and bussing issues ([4991bc33](https://github.com/firstlovecenter/fl-admin-portal/commit/4991bc33a067c686fb856ea416d7c6d5190bb8fe))
-*  update role check in MemberForm component ([0b1a90f3](https://github.com/firstlovecenter/fl-admin-portal/commit/0b1a90f3a0ffab340bad89c2a989add76930e63e))
-*  update transaction balance formatting ([094f5237](https://github.com/firstlovecenter/fl-admin-portal/commit/094f523710c70438aac8ddfeaafdc596b30ff74a))
-*  update balance display format in TransactionCard ([7f5403a4](https://github.com/firstlovecenter/fl-admin-portal/commit/7f5403a4b24e13e84c6304ca63aff7266ff06341))
-*  issues with service records and add debugging scripts ([78fc2e30](https://github.com/firstlovecenter/fl-admin-portal/commit/78fc2e30dd508032fad69e4618732ab7ea4e149a))
+- service record and bussing issues ([4991bc33](https://github.com/firstlovecenter/fl-admin-portal/commit/4991bc33a067c686fb856ea416d7c6d5190bb8fe))
+- update role check in MemberForm component ([0b1a90f3](https://github.com/firstlovecenter/fl-admin-portal/commit/0b1a90f3a0ffab340bad89c2a989add76930e63e))
+- update transaction balance formatting ([094f5237](https://github.com/firstlovecenter/fl-admin-portal/commit/094f523710c70438aac8ddfeaafdc596b30ff74a))
+- update balance display format in TransactionCard ([7f5403a4](https://github.com/firstlovecenter/fl-admin-portal/commit/7f5403a4b24e13e84c6304ca63aff7266ff06341))
+- issues with service records and add debugging scripts ([78fc2e30](https://github.com/firstlovecenter/fl-admin-portal/commit/78fc2e30dd508032fad69e4618732ab7ea4e149a))
 
 #### 7.15.2 (2023-12-07)
 
 ##### Documentation Changes
 
-*  add completed year to README ([8164f464](https://github.com/firstlovecenter/fl-admin-portal/commit/8164f4640525752ab379c5d28e0966d7a643a453))
+- add completed year to README ([8164f464](https://github.com/firstlovecenter/fl-admin-portal/commit/8164f4640525752ab379c5d28e0966d7a643a453))
 
 ##### New Features
 
-*  add IMCL checking and attendance recording logic ([6aab6585](https://github.com/firstlovecenter/fl-admin-portal/commit/6aab65853815774154d54c3a23929d4d38489ee7))
-*  implement number of vehicles in bussing aggregate graphs ([0a7cef5d](https://github.com/firstlovecenter/fl-admin-portal/commit/0a7cef5de8b1e05a425af9c5299ee76d8ddc428e))
+- add IMCL checking and attendance recording logic ([6aab6585](https://github.com/firstlovecenter/fl-admin-portal/commit/6aab65853815774154d54c3a23929d4d38489ee7))
+- implement number of vehicles in bussing aggregate graphs ([0a7cef5d](https://github.com/firstlovecenter/fl-admin-portal/commit/0a7cef5de8b1e05a425af9c5299ee76d8ddc428e))
 
 ##### Bug Fixes
 
-*  stream admins should delete members ([0389ac7d](https://github.com/firstlovecenter/fl-admin-portal/commit/0389ac7d5134704816d0c4ec1da57c2d6b2237f5))
-*  exclude stream services when absorbing transaction ([763b71ff](https://github.com/firstlovecenter/fl-admin-portal/commit/763b71ff245f6423c0e9ad4304e7362c4d2c85cf))
-*  fix clickCard function calls in ServiceForm ([19fee919](https://github.com/firstlovecenter/fl-admin-portal/commit/19fee9193a67dbb42b735c93021b5a9bfc03be93))
-*  fix IMCL check condition in directory mutation ([8da2def0](https://github.com/firstlovecenter/fl-admin-portal/commit/8da2def05d084b54fa75f36e0416959b25ff38d4))
+- stream admins should delete members ([0389ac7d](https://github.com/firstlovecenter/fl-admin-portal/commit/0389ac7d5134704816d0c4ec1da57c2d6b2237f5))
+- exclude stream services when absorbing transaction ([763b71ff](https://github.com/firstlovecenter/fl-admin-portal/commit/763b71ff245f6423c0e9ad4304e7362c4d2c85cf))
+- fix clickCard function calls in ServiceForm ([19fee919](https://github.com/firstlovecenter/fl-admin-portal/commit/19fee9193a67dbb42b735c93021b5a9bfc03be93))
+- fix IMCL check condition in directory mutation ([8da2def0](https://github.com/firstlovecenter/fl-admin-portal/commit/8da2def05d084b54fa75f36e0416959b25ff38d4))
 
 ##### Refactors
 
-*  service-cypher.ts to absorb all transactions and update aggregate records ([df6fe3c8](https://github.com/firstlovecenter/fl-admin-portal/commit/df6fe3c897ad6dd92a49fb07c5fd6b272b600d63))
+- service-cypher.ts to absorb all transactions and update aggregate records ([df6fe3c8](https://github.com/firstlovecenter/fl-admin-portal/commit/df6fe3c897ad6dd92a49fb07c5fd6b272b600d63))
 
 #### 7.15.1 (2023-12-04)
 
 ##### New Features
 
-*  fishers admins can now fill forms up to 7 days in the past ([f21b0579](https://github.com/firstlovecenter/fl-admin-portal/commit/f21b0579c96bc25aa633c96d7f536263ed8e6919))
+- fishers admins can now fill forms up to 7 days in the past ([f21b0579](https://github.com/firstlovecenter/fl-admin-portal/commit/f21b0579c96bc25aa633c96d7f536263ed8e6919))
 
 ### 7.15.0 (2023-12-04)
 
 ##### New Features
 
-*  correct transaction history when transferring from weekday to bussing ([95e3da23](https://github.com/firstlovecenter/fl-admin-portal/commit/95e3da23a294811a8c37b4a6da9f964f0c942bf8))
-*  implement account balances on each transaction ([d532262c](https://github.com/firstlovecenter/fl-admin-portal/commit/d532262c3ac3e77349549a6461fddea720b329b6))
+- correct transaction history when transferring from weekday to bussing ([95e3da23](https://github.com/firstlovecenter/fl-admin-portal/commit/95e3da23a294811a8c37b4a6da9f964f0c942bf8))
+- implement account balances on each transaction ([d532262c](https://github.com/firstlovecenter/fl-admin-portal/commit/d532262c3ac3e77349549a6461fddea720b329b6))
 
 #### 7.14.12 (2023-12-03)
 
 ##### Chores
 
-*  update trans.createdAt and trans.lastModified to use trans.timestamp ([9c73ea9d](https://github.com/firstlovecenter/fl-admin-portal/commit/9c73ea9d3ab04c3f1734804b400631264a924551))
-*  update package versions ([b7b11421](https://github.com/firstlovecenter/fl-admin-portal/commit/b7b11421fcfb2c4ae06db1efeca54fd03dcd616b))
+- update trans.createdAt and trans.lastModified to use trans.timestamp ([9c73ea9d](https://github.com/firstlovecenter/fl-admin-portal/commit/9c73ea9d3ab04c3f1734804b400631264a924551))
+- update package versions ([b7b11421](https://github.com/firstlovecenter/fl-admin-portal/commit/b7b11421fcfb2c4ae06db1efeca54fd03dcd616b))
 
 ##### Bug Fixes
 
-*  typo and update transaction description and type ([044b69ab](https://github.com/firstlovecenter/fl-admin-portal/commit/044b69ab27ea2d70645bcd622f19a72112363b1a))
-*  add new code of the day entries ([2fe9ae37](https://github.com/firstlovecenter/fl-admin-portal/commit/2fe9ae377602e3f7c8cd14d1cdf5628005043196))
-*  fix IMCL check in banking-cypher and add UpdateMemberFellowship mutation ([04bd2ebf](https://github.com/firstlovecenter/fl-admin-portal/commit/04bd2ebf0b79f7b0c7342d3b7de5e4db55c6c5c1))
+- typo and update transaction description and type ([044b69ab](https://github.com/firstlovecenter/fl-admin-portal/commit/044b69ab27ea2d70645bcd622f19a72112363b1a))
+- add new code of the day entries ([2fe9ae37](https://github.com/firstlovecenter/fl-admin-portal/commit/2fe9ae377602e3f7c8cd14d1cdf5628005043196))
+- fix IMCL check in banking-cypher and add UpdateMemberFellowship mutation ([04bd2ebf](https://github.com/firstlovecenter/fl-admin-portal/commit/04bd2ebf0b79f7b0c7342d3b7de5e4db55c6c5c1))
 
 #### 7.14.11 (2023-11-30)
 
 ##### New Features
 
-*  delete timestamp and add createdAt and lastModified fields ([372ddc66](https://github.com/firstlovecenter/fl-admin-portal/commit/372ddc66e02266f8c29048861dc9256a05a09498))
+- delete timestamp and add createdAt and lastModified fields ([372ddc66](https://github.com/firstlovecenter/fl-admin-portal/commit/372ddc66e02266f8c29048861dc9256a05a09498))
 
 ##### Bug Fixes
 
-*  remove  transaction timestamps ([5b4e6789](https://github.com/firstlovecenter/fl-admin-portal/commit/5b4e6789fa6d716ce6fd0d73f379522fea1e63ce))
+- remove transaction timestamps ([5b4e6789](https://github.com/firstlovecenter/fl-admin-portal/commit/5b4e6789fa6d716ce6fd0d73f379522fea1e63ce))
 
 #### 7.14.10 (2023-11-26)
 
 ##### Chores
 
-*  update CSS and UserDashboard component ([7e75699d](https://github.com/firstlovecenter/fl-admin-portal/commit/7e75699d9b6865df01fef4fd5b0c7cce89100286))
-*  merge admin 636 story/on stage attendance ([484daa50](https://github.com/firstlovecenter/fl-admin-portal/commit/484daa50a84264c907617a140950b0353f393b85))
+- update CSS and UserDashboard component ([7e75699d](https://github.com/firstlovecenter/fl-admin-portal/commit/7e75699d9b6865df01fef4fd5b0c7cce89100286))
+- merge admin 636 story/on stage attendance ([484daa50](https://github.com/firstlovecenter/fl-admin-portal/commit/484daa50a84264c907617a140950b0353f393b85))
 
 ##### New Features
 
-*  implement graphs for denomination level ([bf420ce2](https://github.com/firstlovecenter/fl-admin-portal/commit/bf420ce22b15f8c68cb6bdf947e13c243516d926))
-*  implement graphs for denomination level ([2864b3c9](https://github.com/firstlovecenter/fl-admin-portal/commit/2864b3c9de8c9e956e925edc24ba541e82c52dcb))
-*  add event prop to ServiceForm component ([25956766](https://github.com/firstlovecenter/fl-admin-portal/commit/25956766dae8c63bc8b43e69c05904858363baca))
-*  finish implementation of stage attendance form ([20693c23](https://github.com/firstlovecenter/fl-admin-portal/commit/20693c23deeed88dbc181e6b8b01f04876d806af))
-*  add vacationStatus field to SERVANT_CHURCH_LIST and DISPLAY_MINISTRY queries ([a0ede809](https://github.com/firstlovecenter/fl-admin-portal/commit/a0ede8094956a97625891e3b71dff281e39181b5))
-*  on stage attendance ([87da1f87](https://github.com/firstlovecenter/fl-admin-portal/commit/87da1f8706d4383975d750c505f7d57d178a516a))
-*  on stage attendance ([1334ffc2](https://github.com/firstlovecenter/fl-admin-portal/commit/1334ffc2ddd9b9dcb462cfb5d80584f99c6d80c3))
+- implement graphs for denomination level ([bf420ce2](https://github.com/firstlovecenter/fl-admin-portal/commit/bf420ce22b15f8c68cb6bdf947e13c243516d926))
+- implement graphs for denomination level ([2864b3c9](https://github.com/firstlovecenter/fl-admin-portal/commit/2864b3c9de8c9e956e925edc24ba541e82c52dcb))
+- add event prop to ServiceForm component ([25956766](https://github.com/firstlovecenter/fl-admin-portal/commit/25956766dae8c63bc8b43e69c05904858363baca))
+- finish implementation of stage attendance form ([20693c23](https://github.com/firstlovecenter/fl-admin-portal/commit/20693c23deeed88dbc181e6b8b01f04876d806af))
+- add vacationStatus field to SERVANT_CHURCH_LIST and DISPLAY_MINISTRY queries ([a0ede809](https://github.com/firstlovecenter/fl-admin-portal/commit/a0ede8094956a97625891e3b71dff281e39181b5))
+- on stage attendance ([87da1f87](https://github.com/firstlovecenter/fl-admin-portal/commit/87da1f8706d4383975d750c505f7d57d178a516a))
+- on stage attendance ([1334ffc2](https://github.com/firstlovecenter/fl-admin-portal/commit/1334ffc2ddd9b9dcb462cfb5d80584f99c6d80c3))
 
 ##### Bug Fixes
 
-*  customise userdashboard graphs per role ([c550b775](https://github.com/firstlovecenter/fl-admin-portal/commit/c550b775050762e90fa2428ccf99e356d5e2a171))
-*  add text-center class to Col component in banking-slip pages ([83ae46db](https://github.com/firstlovecenter/fl-admin-portal/commit/83ae46dbfa749b5cee617adf4298dec30c7ba3ea))
-*  fix relationship check and create current history record if necessary ([34bc737b](https://github.com/firstlovecenter/fl-admin-portal/commit/34bc737beb8d5b6490b7992a99a50edca04b1061))
-*  remove unused code for Creative Arts ([c9e2c3a7](https://github.com/firstlovecenter/fl-admin-portal/commit/c9e2c3a722bf2db31070f70b7c64d5c43bd89566))
-*  add MultiImageUpload component to StageAttendanceForm ([be04356f](https://github.com/firstlovecenter/fl-admin-portal/commit/be04356f6d285406afc6f3e959c3a01ed31609e4))
-*  fix ministry stage attendance record type ([a4f263b7](https://github.com/firstlovecenter/fl-admin-portal/commit/a4f263b7cb6284b2c3799d159c156d24760ba1f0))
-*  fix church type condition and add ministry on stage attendance route ([1f191c39](https://github.com/firstlovecenter/fl-admin-portal/commit/1f191c39d60be04a111d6930938fb4098ab5230d))
-*  add vacationStatus query in Ministry type ([cf29939d](https://github.com/firstlovecenter/fl-admin-portal/commit/cf29939ddeb5187f643122b6ecbee6ea961cd6f4))
+- customise userdashboard graphs per role ([c550b775](https://github.com/firstlovecenter/fl-admin-portal/commit/c550b775050762e90fa2428ccf99e356d5e2a171))
+- add text-center class to Col component in banking-slip pages ([83ae46db](https://github.com/firstlovecenter/fl-admin-portal/commit/83ae46dbfa749b5cee617adf4298dec30c7ba3ea))
+- fix relationship check and create current history record if necessary ([34bc737b](https://github.com/firstlovecenter/fl-admin-portal/commit/34bc737beb8d5b6490b7992a99a50edca04b1061))
+- remove unused code for Creative Arts ([c9e2c3a7](https://github.com/firstlovecenter/fl-admin-portal/commit/c9e2c3a722bf2db31070f70b7c64d5c43bd89566))
+- add MultiImageUpload component to StageAttendanceForm ([be04356f](https://github.com/firstlovecenter/fl-admin-portal/commit/be04356f6d285406afc6f3e959c3a01ed31609e4))
+- fix ministry stage attendance record type ([a4f263b7](https://github.com/firstlovecenter/fl-admin-portal/commit/a4f263b7cb6284b2c3799d159c156d24760ba1f0))
+- fix church type condition and add ministry on stage attendance route ([1f191c39](https://github.com/firstlovecenter/fl-admin-portal/commit/1f191c39d60be04a111d6930938fb4098ab5230d))
+- add vacationStatus query in Ministry type ([cf29939d](https://github.com/firstlovecenter/fl-admin-portal/commit/cf29939ddeb5187f643122b6ecbee6ea961cd6f4))
 
 ##### Refactors
 
-*  refactor all church graphs ([c36fb017](https://github.com/firstlovecenter/fl-admin-portal/commit/c36fb017e428d30931d21ca9a7717acf177d6690))
-*  refactor all church graphs ([592e9192](https://github.com/firstlovecenter/fl-admin-portal/commit/592e91929d00e944a8e6c193ec1c6edfc589d420))
-*  variable names in rehearsal-cypher.ts ([743a2d25](https://github.com/firstlovecenter/fl-admin-portal/commit/743a2d25b09f96574495cf4907f4296acadb4d24))
-*  create sub sections for service recording ([96938a1f](https://github.com/firstlovecenter/fl-admin-portal/commit/96938a1f4f00153327245526c1a9f4c95cd9c881))
+- refactor all church graphs ([c36fb017](https://github.com/firstlovecenter/fl-admin-portal/commit/c36fb017e428d30931d21ca9a7717acf177d6690))
+- refactor all church graphs ([592e9192](https://github.com/firstlovecenter/fl-admin-portal/commit/592e91929d00e944a8e6c193ec1c6edfc589d420))
+- variable names in rehearsal-cypher.ts ([743a2d25](https://github.com/firstlovecenter/fl-admin-portal/commit/743a2d25b09f96574495cf4907f4296acadb4d24))
+- create sub sections for service recording ([96938a1f](https://github.com/firstlovecenter/fl-admin-portal/commit/96938a1f4f00153327245526c1a9f4c95cd9c881))
 
 #### 7.14.9 (2023-11-25)
 
 ##### Bug Fixes
 
-*  limit fields that can be edited by a leader ([4adfcc9f](https://github.com/firstlovecenter/fl-admin-portal/commit/4adfcc9fe3bccdf1f25a619f9be2a9d20364eca8))
-*  only an admin can change the unique details of phoneNumber, whatsapp and email ([6756332c](https://github.com/firstlovecenter/fl-admin-portal/commit/6756332c502f37dd5dfba00f2a4fb4604a004a0a))
-*  remove roles from users who don't  actually havethem ([50f0ab82](https://github.com/firstlovecenter/fl-admin-portal/commit/50f0ab82710b129a562f594558fe5360e7452388))
-*  update manifest.json with new portal name ([11097b2f](https://github.com/firstlovecenter/fl-admin-portal/commit/11097b2fd5a7fdc3b3a74fa2883d9e3bbca38e3a))
-*  update login URL in email template ([40d9c44c](https://github.com/firstlovecenter/fl-admin-portal/commit/40d9c44cee84aa0e6ae0d7d372a4471eb17e535b))
-*  members can only be deleted by campus admins ([bcef869f](https://github.com/firstlovecenter/fl-admin-portal/commit/bcef869f2c5538df2183ccca09c3dfbbc0e31722))
-*  fix account open validation for valid days ([079bfc18](https://github.com/firstlovecenter/fl-admin-portal/commit/079bfc18b2adb52d105c86883fdeae6cb690904f))
-*   fix cypher queries and add optional matches for constituency ([5e637e56](https://github.com/firstlovecenter/fl-admin-portal/commit/5e637e562a97ebbf5124a20fb33a7dbcf435c81f))
-*  typo in repository URL ([b2e7cb4e](https://github.com/firstlovecenter/fl-admin-portal/commit/b2e7cb4ee430d055b1676b53bf141f5f0723e4ed))
-*  fix directory search query ([6aaea648](https://github.com/firstlovecenter/fl-admin-portal/commit/6aaea648cb0562a83ab70b9e0a18a9d0f3b4d5ad))
-*  update directory search queries ([0473dd23](https://github.com/firstlovecenter/fl-admin-portal/commit/0473dd232d22c98d0a5b240646cf702d913bd37d))
+- limit fields that can be edited by a leader ([4adfcc9f](https://github.com/firstlovecenter/fl-admin-portal/commit/4adfcc9fe3bccdf1f25a619f9be2a9d20364eca8))
+- only an admin can change the unique details of phoneNumber, whatsapp and email ([6756332c](https://github.com/firstlovecenter/fl-admin-portal/commit/6756332c502f37dd5dfba00f2a4fb4604a004a0a))
+- remove roles from users who don't actually havethem ([50f0ab82](https://github.com/firstlovecenter/fl-admin-portal/commit/50f0ab82710b129a562f594558fe5360e7452388))
+- update manifest.json with new portal name ([11097b2f](https://github.com/firstlovecenter/fl-admin-portal/commit/11097b2fd5a7fdc3b3a74fa2883d9e3bbca38e3a))
+- update login URL in email template ([40d9c44c](https://github.com/firstlovecenter/fl-admin-portal/commit/40d9c44cee84aa0e6ae0d7d372a4471eb17e535b))
+- members can only be deleted by campus admins ([bcef869f](https://github.com/firstlovecenter/fl-admin-portal/commit/bcef869f2c5538df2183ccca09c3dfbbc0e31722))
+- fix account open validation for valid days ([079bfc18](https://github.com/firstlovecenter/fl-admin-portal/commit/079bfc18b2adb52d105c86883fdeae6cb690904f))
+- fix cypher queries and add optional matches for constituency ([5e637e56](https://github.com/firstlovecenter/fl-admin-portal/commit/5e637e562a97ebbf5124a20fb33a7dbcf435c81f))
+- typo in repository URL ([b2e7cb4e](https://github.com/firstlovecenter/fl-admin-portal/commit/b2e7cb4ee430d055b1676b53bf141f5f0723e4ed))
+- fix directory search query ([6aaea648](https://github.com/firstlovecenter/fl-admin-portal/commit/6aaea648cb0562a83ab70b9e0a18a9d0f3b4d5ad))
+- update directory search queries ([0473dd23](https://github.com/firstlovecenter/fl-admin-portal/commit/0473dd232d22c98d0a5b240646cf702d913bd37d))
 
 ##### Refactors
 
-*  reposition Last3WeeksCard component ([c70e5216](https://github.com/firstlovecenter/fl-admin-portal/commit/c70e5216ca8b229282ced7205481b88d08cc5710))
+- reposition Last3WeeksCard component ([c70e5216](https://github.com/firstlovecenter/fl-admin-portal/commit/c70e5216ca8b229282ced7205481b88d08cc5710))
 
 #### 7.14.8 (2023-11-20)
 
 ##### Bug Fixes
 
-*  fix constituency and hub count check in close-church-cypher.ts ([6fe13103](https://github.com/firstlovecenter/fl-admin-portalgit/commit/6fe13103f307348d8605e6ffdbeea20e5c9bd37f))
-*  fix condition in setBacentaICStatus function ([884b6a6f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/884b6a6f8b4951a024e861e8a4eca453d8d97c89))
-*  return only bussing records from last 4 weeks ([99f8257e](https://github.com/firstlovecenter/fl-admin-portalgit/commit/99f8257eef041313d417b35bfe43cf4f80c32da4))
+- fix constituency and hub count check in close-church-cypher.ts ([6fe13103](https://github.com/firstlovecenter/fl-admin-portalgit/commit/6fe13103f307348d8605e6ffdbeea20e5c9bd37f))
+- fix condition in setBacentaICStatus function ([884b6a6f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/884b6a6f8b4951a024e861e8a4eca453d8d97c89))
+- return only bussing records from last 4 weeks ([99f8257e](https://github.com/firstlovecenter/fl-admin-portalgit/commit/99f8257eef041313d417b35bfe43cf4f80c32da4))
 
 ##### Refactors
 
-*  refactor directory search query and update member search query ([85f63c2d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/85f63c2d2fce18e58c0dc05a9099d6f1be50e0e2))
+- refactor directory search query and update member search query ([85f63c2d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/85f63c2d2fce18e58c0dc05a9099d6f1be50e0e2))
 
 #### 7.14.7 (2023-11-19)
 
 ##### Documentation Changes
 
-*  update CHANGELOG.md ([c8c7e843](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c8c7e84339967b7db56afba2b9a569b642aa831f))
-*  update CHANGELOG.md ([cc2214f1](https://github.com/firstlovecenter/fl-admin-portalgit/commit/cc2214f19d966560dee6f699f3e86c00daa7fe02))
-*  update CHANGELOG.md ([c1f6903a](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c1f6903ada27e3c1d7bd57583b828bb8e4ac170e))
-*  update CHANGELOG.md ([91e236e3](https://github.com/firstlovecenter/fl-admin-portalgit/commit/91e236e3529564a636b54835e8882a871d7058f0))
+- update CHANGELOG.md ([c8c7e843](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c8c7e84339967b7db56afba2b9a569b642aa831f))
+- update CHANGELOG.md ([cc2214f1](https://github.com/firstlovecenter/fl-admin-portalgit/commit/cc2214f19d966560dee6f699f3e86c00daa7fe02))
+- update CHANGELOG.md ([c1f6903a](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c1f6903ada27e3c1d7bd57583b828bb8e4ac170e))
+- update CHANGELOG.md ([91e236e3](https://github.com/firstlovecenter/fl-admin-portalgit/commit/91e236e3529564a636b54835e8882a871d7058f0))
 
 ##### Bug Fixes
 
-*  fix roleview ([a75a05e3](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a75a05e3802628a233c1c42caad3c8c004a26ab0))
-*  update roleview ([81cc9fad](https://github.com/firstlovecenter/fl-admin-portalgit/commit/81cc9fad13cfa4295221f0ba9fc051fab2e06f98))
-*  remove unused 'auth' variable ([11e89a67](https://github.com/firstlovecenter/fl-admin-portalgit/commit/11e89a672b2b83dd4af832cfc3f0d16df8f72aca))
+- fix roleview ([a75a05e3](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a75a05e3802628a233c1c42caad3c8c004a26ab0))
+- update roleview ([81cc9fad](https://github.com/firstlovecenter/fl-admin-portalgit/commit/81cc9fad13cfa4295221f0ba9fc051fab2e06f98))
+- remove unused 'auth' variable ([11e89a67](https://github.com/firstlovecenter/fl-admin-portalgit/commit/11e89a672b2b83dd4af832cfc3f0d16df8f72aca))
 
 #### 7.14.6 (2023-11-19)
 
@@ -1295,25 +1295,25 @@
 
 ##### Bug Fixes
 
-*  fix roleview ([1e42bfb4](https://github.com/firstlovecenter/fl-admin-portalgit/commit/1e42bfb45ded76f765d730f530e927886a0210e8))
-*  update roleview ([c80507d3](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c80507d3075b6e2613289358fd6d86cd5e9252ad))
+- fix roleview ([1e42bfb4](https://github.com/firstlovecenter/fl-admin-portalgit/commit/1e42bfb45ded76f765d730f530e927886a0210e8))
+- update roleview ([c80507d3](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c80507d3075b6e2613289358fd6d86cd5e9252ad))
 
 #### 7.14.2 (2023-11-17)
 
 ##### Bug Fixes
 
-*  transaction status check in ReceiptPage component ([23df391f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/23df391fd38c1d5a76879f242443835dec70f839))
-*  update expected income field to cash field in banking slip submissions ([e012adbb](https://github.com/firstlovecenter/fl-admin-portalgit/commit/e012adbb268b52018d929af717baa514902b6533))
+- transaction status check in ReceiptPage component ([23df391f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/23df391fd38c1d5a76879f242443835dec70f839))
+- update expected income field to cash field in banking slip submissions ([e012adbb](https://github.com/firstlovecenter/fl-admin-portalgit/commit/e012adbb268b52018d929af717baa514902b6533))
 
 ##### Refactors
 
-*  getLastServiceRecord query to include additional church types ([4e5c1c5d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/4e5c1c5d533beda1535ded3a29c79db7b513c0b9))
+- getLastServiceRecord query to include additional church types ([4e5c1c5d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/4e5c1c5d533beda1535ded3a29c79db7b513c0b9))
 
 #### 7.14.1 (2023-11-17)
 
 ##### Refactors
 
-*  noBankingProof condition in ServiceDetails component ([a3d0b29e](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a3d0b29ea04f5c20a3f12f009100a88221baeb1e))
+- noBankingProof condition in ServiceDetails component ([a3d0b29e](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a3d0b29ea04f5c20a3f12f009100a88221baeb1e))
 
 ### 7.14.0 (2023-11-15)
 
@@ -1325,240 +1325,240 @@
 
 ##### New Features
 
-*  implement account lock on expense form ([f0ff8df2](https://github.com/firstlovecenter/fl-admin-portalgit/commit/f0ff8df21bf4076b909ee812464b5de02218dee7))
+- implement account lock on expense form ([f0ff8df2](https://github.com/firstlovecenter/fl-admin-portalgit/commit/f0ff8df21bf4076b909ee812464b5de02218dee7))
 
 ##### Bug Fixes
 
-*  sstart account lock ([9ea9fb09](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9ea9fb094a60dc5b7cc6ac6bed0ecee103620f50))
-*  update Campus Council List heading to display campus name ([d9f1f915](https://github.com/firstlovecenter/fl-admin-portalgit/commit/d9f1f915d83f985a5631b6a15b04a8e40a32bbb6))
+- sstart account lock ([9ea9fb09](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9ea9fb094a60dc5b7cc6ac6bed0ecee103620f50))
+- update Campus Council List heading to display campus name ([d9f1f915](https://github.com/firstlovecenter/fl-admin-portalgit/commit/d9f1f915d83f985a5631b6a15b04a8e40a32bbb6))
 
 #### 7.10.41 (2023-11-15)
 
 ##### New Features
 
-*  implement self banking for stream ([687ee3ea](https://github.com/firstlovecenter/fl-admin-portalgit/commit/687ee3ead4d361f92cc692b2679e303163bafb4d))
+- implement self banking for stream ([687ee3ea](https://github.com/firstlovecenter/fl-admin-portalgit/commit/687ee3ead4d361f92cc692b2679e303163bafb4d))
 
 #### 7.10.40 (2023-11-14)
 
 ##### Bug Fixes
 
-*  remove duplicate prop ([a7546b2d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a7546b2d3bd0ba5c59c966cd1ea5ebc5124a5c27))
-*  charge calculation in account transactions and display charge in transaction history ([fcf2136e](https://github.com/firstlovecenter/fl-admin-portalgit/commit/fcf2136e08cf4bc8840d1e71f3186eab06a17753))
+- remove duplicate prop ([a7546b2d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a7546b2d3bd0ba5c59c966cd1ea5ebc5124a5c27))
+- charge calculation in account transactions and display charge in transaction history ([fcf2136e](https://github.com/firstlovecenter/fl-admin-portalgit/commit/fcf2136e08cf4bc8840d1e71f3186eab06a17753))
 
 #### 7.10.39 (2023-11-14)
 
 ##### Refactors
 
-*  searchMember component to improve performance and readability. ([72b6705b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/72b6705b04cd1f3a37b9ba4d7ce51c2b73daf944))
+- searchMember component to improve performance and readability. ([72b6705b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/72b6705b04cd1f3a37b9ba4d7ce51c2b73daf944))
 
 #### 7.10.38 (2023-11-12)
 
 ##### Bug Fixes
 
-*  fix bussing expense transaction and comment out insufficient funds check ([a951d46f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a951d46f73b406f9cb08c11b60de2d821081ec6a))
-*  add pictureUrl to member query, update accountType in ExpenseForm, and adjust transaction amounts in GraphQL schema and CouncilTransactionHistory ([0bbe8535](https://github.com/firstlovecenter/fl-admin-portalgit/commit/0bbe8535bb37f360f92603f93fb90f025ee59a3d))
-*  remove unused secrets.build call ([bc11ee20](https://github.com/firstlovecenter/fl-admin-portalgit/commit/bc11ee20b5e5e38b32b1c2b54c862889e27dc6fa))
-*  remove notify function and dependencies ([76073f84](https://github.com/firstlovecenter/fl-admin-portalgit/commit/76073f843747fd6cfcba190945272b71cb5ab2eb))
-*  update README.md with completed Phase 4 of project ([ba2a4109](https://github.com/firstlovecenter/fl-admin-portalgit/commit/ba2a4109857ce0b63a3e2018e6c952be39f7f5e2))
-*  update First Love logo and heading in README.md ([8334e137](https://github.com/firstlovecenter/fl-admin-portalgit/commit/8334e13756be2a44284b42ef1ead64da5b428309))
-*  increase number of transactions displayed in CampusTransactionHistory and CouncilTransactionHistory ([33173cf9](https://github.com/firstlovecenter/fl-admin-portalgit/commit/33173cf92a1ea6821fbf9be6be0a1b08e68fa1d3))
+- fix bussing expense transaction and comment out insufficient funds check ([a951d46f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a951d46f73b406f9cb08c11b60de2d821081ec6a))
+- add pictureUrl to member query, update accountType in ExpenseForm, and adjust transaction amounts in GraphQL schema and CouncilTransactionHistory ([0bbe8535](https://github.com/firstlovecenter/fl-admin-portalgit/commit/0bbe8535bb37f360f92603f93fb90f025ee59a3d))
+- remove unused secrets.build call ([bc11ee20](https://github.com/firstlovecenter/fl-admin-portalgit/commit/bc11ee20b5e5e38b32b1c2b54c862889e27dc6fa))
+- remove notify function and dependencies ([76073f84](https://github.com/firstlovecenter/fl-admin-portalgit/commit/76073f843747fd6cfcba190945272b71cb5ab2eb))
+- update README.md with completed Phase 4 of project ([ba2a4109](https://github.com/firstlovecenter/fl-admin-portalgit/commit/ba2a4109857ce0b63a3e2018e6c952be39f7f5e2))
+- update First Love logo and heading in README.md ([8334e137](https://github.com/firstlovecenter/fl-admin-portalgit/commit/8334e13756be2a44284b42ef1ead64da5b428309))
+- increase number of transactions displayed in CampusTransactionHistory and CouncilTransactionHistory ([33173cf9](https://github.com/firstlovecenter/fl-admin-portalgit/commit/33173cf92a1ea6821fbf9be6be0a1b08e68fa1d3))
 
 #### 7.10.37 (2023-11-10)
 
 ##### Bug Fixes
 
-*  update CSV export button text ([1ede4b01](https://github.com/firstlovecenter/fl-admin-portalgit/commit/1ede4b01f49121b202c51b91ac6cd5b0b156ac54))
-*  formatting and naming inconsistencies in transaction history components ([ae82d352](https://github.com/firstlovecenter/fl-admin-portalgit/commit/ae82d3525b877319ca009882373a5e3cef4e6893))
-*  missing recipient error in notify.js ([92ae8b1b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/92ae8b1be00310800c506cbc851aec8af3aa6027))
-*  missing message validation in send-sms endpoint ([715f304e](https://github.com/firstlovecenter/fl-admin-portalgit/commit/715f304e789365f4bf23c5f7d0e2adb1c585b696))
-*  update API endpoint path for SMS notifications ([bb4f0b18](https://github.com/firstlovecenter/fl-admin-portalgit/commit/bb4f0b1835b2a0f38497767ae3fe8a62b74b9a09))
-*  refactor notify.js to use express router ([426dbf28](https://github.com/firstlovecenter/fl-admin-portalgit/commit/426dbf282961be8e950fdd97ab0203c98340bf6b))
-*  add serverless-http package to dependencies ([7c2e0de2](https://github.com/firstlovecenter/fl-admin-portalgit/commit/7c2e0de26f85217eacb24d3a88fb9c80edc4cb45))
-*  add body-parser middleware and use serverless-http for deployment ([a5e1dc3d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a5e1dc3d0c16a6565c2566d07ba42762822ad9e9))
-*  add notification function and update secrets path ([8c3e2e80](https://github.com/firstlovecenter/fl-admin-portalgit/commit/8c3e2e80566342e70cceae397ee2c4e627df87b2))
-*  add checkmark icon to transaction history table ([b4626381](https://github.com/firstlovecenter/fl-admin-portalgit/commit/b4626381cac0e2e73c7adf3dc109283689fff6c7))
+- update CSV export button text ([1ede4b01](https://github.com/firstlovecenter/fl-admin-portalgit/commit/1ede4b01f49121b202c51b91ac6cd5b0b156ac54))
+- formatting and naming inconsistencies in transaction history components ([ae82d352](https://github.com/firstlovecenter/fl-admin-portalgit/commit/ae82d3525b877319ca009882373a5e3cef4e6893))
+- missing recipient error in notify.js ([92ae8b1b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/92ae8b1be00310800c506cbc851aec8af3aa6027))
+- missing message validation in send-sms endpoint ([715f304e](https://github.com/firstlovecenter/fl-admin-portalgit/commit/715f304e789365f4bf23c5f7d0e2adb1c585b696))
+- update API endpoint path for SMS notifications ([bb4f0b18](https://github.com/firstlovecenter/fl-admin-portalgit/commit/bb4f0b1835b2a0f38497767ae3fe8a62b74b9a09))
+- refactor notify.js to use express router ([426dbf28](https://github.com/firstlovecenter/fl-admin-portalgit/commit/426dbf282961be8e950fdd97ab0203c98340bf6b))
+- add serverless-http package to dependencies ([7c2e0de2](https://github.com/firstlovecenter/fl-admin-portalgit/commit/7c2e0de26f85217eacb24d3a88fb9c80edc4cb45))
+- add body-parser middleware and use serverless-http for deployment ([a5e1dc3d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a5e1dc3d0c16a6565c2566d07ba42762822ad9e9))
+- add notification function and update secrets path ([8c3e2e80](https://github.com/firstlovecenter/fl-admin-portalgit/commit/8c3e2e80566342e70cceae397ee2c4e627df87b2))
+- add checkmark icon to transaction history table ([b4626381](https://github.com/firstlovecenter/fl-admin-portalgit/commit/b4626381cac0e2e73c7adf3dc109283689fff6c7))
 
 ##### Refactors
 
-*  transaction history display ([c2ac9838](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c2ac9838b9aacd188a896bd6d3d0346287eb6cb8))
-*  request body parsing in notify.js ([e09716cc](https://github.com/firstlovecenter/fl-admin-portalgit/commit/e09716cc14badd80d4c0701ca380ccecbebaac37))
-*  notify.js to simplify middleware usage ([7929f1f6](https://github.com/firstlovecenter/fl-admin-portalgit/commit/7929f1f69cc9f7afcab69435741d98c5e179a659))
-*  notify.js to use middleware ([b60d6b1b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/b60d6b1b3782a2467c09d1c0387386d26a80966f))
+- transaction history display ([c2ac9838](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c2ac9838b9aacd188a896bd6d3d0346287eb6cb8))
+- request body parsing in notify.js ([e09716cc](https://github.com/firstlovecenter/fl-admin-portalgit/commit/e09716cc14badd80d4c0701ca380ccecbebaac37))
+- notify.js to simplify middleware usage ([7929f1f6](https://github.com/firstlovecenter/fl-admin-portalgit/commit/7929f1f69cc9f7afcab69435741d98c5e179a659))
+- notify.js to use middleware ([b60d6b1b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/b60d6b1b3782a2467c09d1c0387386d26a80966f))
 
 #### 7.10.36 (2023-11-09)
 
 ##### Chores
 
-*  update package versions to 7.10.35 ([4b91e6bf](https://github.com/firstlovecenter/fl-admin-portalgit/commit/4b91e6bf7f6de3cb2050e7c1ef1559af50c408dc))
+- update package versions to 7.10.35 ([4b91e6bf](https://github.com/firstlovecenter/fl-admin-portalgit/commit/4b91e6bf7f6de3cb2050e7c1ef1559af50c408dc))
 
 ##### Bug Fixes
 
-*  remove download expense report button and add transaction history button to Campus Dashboard ([dccac2be](https://github.com/firstlovecenter/fl-admin-portalgit/commit/dccac2be57c0aad444d1d089f46d1e05b9f01506))
-*  bussing society balance can go into debt ([e5fd6d8f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/e5fd6d8fe932ae99cb2f38f7ce7bc5ea24654873))
-*  servant authentication and campus arrivals admin mutation ([c0bc3f01](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c0bc3f01fcd35c9276bdd89cbc6b5dbadc7e9558))
-*  remove currentUser from sessionStorage when logging out ([b4bf1428](https://github.com/firstlovecenter/fl-admin-portalgit/commit/b4bf142832b7124b818cf5faa57abc578c76f336))
+- remove download expense report button and add transaction history button to Campus Dashboard ([dccac2be](https://github.com/firstlovecenter/fl-admin-portalgit/commit/dccac2be57c0aad444d1d089f46d1e05b9f01506))
+- bussing society balance can go into debt ([e5fd6d8f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/e5fd6d8fe932ae99cb2f38f7ce7bc5ea24654873))
+- servant authentication and campus arrivals admin mutation ([c0bc3f01](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c0bc3f01fcd35c9276bdd89cbc6b5dbadc7e9558))
+- remove currentUser from sessionStorage when logging out ([b4bf1428](https://github.com/firstlovecenter/fl-admin-portalgit/commit/b4bf142832b7124b818cf5faa57abc578c76f336))
 
 #### 7.10.35 (2023-11-08)
 
 ##### Bug Fixes
 
-*  add new filters and update member data ([2fd8c05b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/2fd8c05b4fa4db1e52cc19d3fd296d6e0413787c))
-*  update UpdateHub.tsx ([cd7f6017](https://github.com/firstlovecenter/fl-admin-portalgit/commit/cd7f60172e0d7281a0912e12bb42d13e3f4bd7af))
-*  udate SearchHubQueries.ts ([a7e08ce5](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a7e08ce592e6f73df431f20cce379ce863583cca))
-*  refactor directory search query to return full member object ([df864689](https://github.com/firstlovecenter/fl-admin-portalgit/commit/df86468993964d2dc6b0f26fe302625e5044c8f9))
-*  refactor directory search Cypher query to include creative levels ([463a8089](https://github.com/firstlovecenter/fl-admin-portalgit/commit/463a80894e2b8cccf335611341fe7ac712dcee9f))
+- add new filters and update member data ([2fd8c05b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/2fd8c05b4fa4db1e52cc19d3fd296d6e0413787c))
+- update UpdateHub.tsx ([cd7f6017](https://github.com/firstlovecenter/fl-admin-portalgit/commit/cd7f60172e0d7281a0912e12bb42d13e3f4bd7af))
+- udate SearchHubQueries.ts ([a7e08ce5](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a7e08ce592e6f73df431f20cce379ce863583cca))
+- refactor directory search query to return full member object ([df864689](https://github.com/firstlovecenter/fl-admin-portalgit/commit/df86468993964d2dc6b0f26fe302625e5044c8f9))
+- refactor directory search Cypher query to include creative levels ([463a8089](https://github.com/firstlovecenter/fl-admin-portalgit/commit/463a80894e2b8cccf335611341fe7ac712dcee9f))
 
 #### 7.10.34 (2023-11-06)
 
 ##### Chores
 
-*  Finish Sonta History Pages ([#463](https://github.com/firstlovecenter/fl-admin-portalgit/pull/463)) ([9ebf85fe](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9ebf85fe7094a3dd0dd29dc7ada04e4f6d9bcb8d))
+- Finish Sonta History Pages ([#463](https://github.com/firstlovecenter/fl-admin-portalgit/pull/463)) ([9ebf85fe](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9ebf85fe7094a3dd0dd29dc7ada04e4f6d9bcb8d))
 
 ##### Bug Fixes
 
-*  refactor reusable forms to conditionally render select options based on new form flag ([41d8f352](https://github.com/firstlovecenter/fl-admin-portalgit/commit/41d8f352c68513c72871ca7a104b1264f6c658de))
-*  add creativeArts prop to leader search component in reusable forms ([fd503630](https://github.com/firstlovecenter/fl-admin-portalgit/commit/fd5036307481097dadabb7cede4c03f3a121a772))
-*  update hub creation and search functionality ([9aeafa85](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9aeafa85670db4f85d3279f173dd3892f94586fc))
-*  add authentication check to SetPermissions component ([1b818426](https://github.com/firstlovecenter/fl-admin-portalgit/commit/1b81842636f731950652458e7c2e682af8519746))
-*  add Hub Council members grid and update Hub Council details link ([93b72cef](https://github.com/firstlovecenter/fl-admin-portalgit/commit/93b72cef9803deb03fa098fa2d22f0d510e3f778))
-*  allow constituencies to see hubs attached to them ([737bce86](https://github.com/firstlovecenter/fl-admin-portalgit/commit/737bce86330509aae27305b0db7597c88c7555a6))
-*  correct typo in constituency form 2 ([b3da3717](https://github.com/firstlovecenter/fl-admin-portalgit/commit/b3da3717943f0b85df302be44ff9458142cf5ee6))
-*  correct typo in constituency form ([a53db58f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a53db58f90fc3ba400580ca1f5a8e8307393fbf4))
-*  implement breadcrumb on hub level ([c349e7bf](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c349e7bf3166c1a223b374a80f2a5a15a0d914c0))
+- refactor reusable forms to conditionally render select options based on new form flag ([41d8f352](https://github.com/firstlovecenter/fl-admin-portalgit/commit/41d8f352c68513c72871ca7a104b1264f6c658de))
+- add creativeArts prop to leader search component in reusable forms ([fd503630](https://github.com/firstlovecenter/fl-admin-portalgit/commit/fd5036307481097dadabb7cede4c03f3a121a772))
+- update hub creation and search functionality ([9aeafa85](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9aeafa85670db4f85d3279f173dd3892f94586fc))
+- add authentication check to SetPermissions component ([1b818426](https://github.com/firstlovecenter/fl-admin-portalgit/commit/1b81842636f731950652458e7c2e682af8519746))
+- add Hub Council members grid and update Hub Council details link ([93b72cef](https://github.com/firstlovecenter/fl-admin-portalgit/commit/93b72cef9803deb03fa098fa2d22f0d510e3f778))
+- allow constituencies to see hubs attached to them ([737bce86](https://github.com/firstlovecenter/fl-admin-portalgit/commit/737bce86330509aae27305b0db7597c88c7555a6))
+- correct typo in constituency form 2 ([b3da3717](https://github.com/firstlovecenter/fl-admin-portalgit/commit/b3da3717943f0b85df302be44ff9458142cf5ee6))
+- correct typo in constituency form ([a53db58f](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a53db58f90fc3ba400580ca1f5a8e8307393fbf4))
+- implement breadcrumb on hub level ([c349e7bf](https://github.com/firstlovecenter/fl-admin-portalgit/commit/c349e7bf3166c1a223b374a80f2a5a15a0d914c0))
 
 ##### Other Changes
 
-* //github.com/firstlovecenter/fl-admin-portal into deploy ([9c9edf72](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9c9edf721f47ec6340dfd83545916eedd762d8c4))
+- //github.com/firstlovecenter/fl-admin-portal into deploy ([9c9edf72](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9c9edf721f47ec6340dfd83545916eedd762d8c4))
 
 #### 7.10.33 (2023-11-05)
 
 ##### Bug Fixes
 
-*  updated the easy debugging script ([f4b000ca](https://github.com/firstlovecenter/fl-admin-portalgit/commit/f4b000ca0a69a49a52e7ce09978ef8bafef673e1))
-*  tweak member search to show all members from the creative arts of the hub ([a87dd861](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a87dd861ceef5fedbf0646807247524c782bfcb1))
-*  implement ability to move creative arts levels across bacenta levels ([9d5c30d7](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9d5c30d7f56024fcced04a1eeadd666e8dfe56d6))
-*  enable movement of hubs across constituencies ([78953de5](https://github.com/firstlovecenter/fl-admin-portalgit/commit/78953de5670c4c7c2e1eb8c8c85ef5fdc0ee947c))
-*  update code of the day for november ([0e5d3175](https://github.com/firstlovecenter/fl-admin-portalgit/commit/0e5d31751421974858192d1f5b0fffec9e4634cc))
-*  fix issue with bankServiceOffering error display ([5eb1544b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/5eb1544b34c6cb14f63a731d163d98d8e5350bc4))
-*  add history to sonta churches ([61fcba8d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/61fcba8d122dafd43335d9529898fdb21276be62))
-*  update permissions for hubcouncil graphs pages ([ebe79c5b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/ebe79c5b46a7e7348852eee83b306a5629a81225))
+- updated the easy debugging script ([f4b000ca](https://github.com/firstlovecenter/fl-admin-portalgit/commit/f4b000ca0a69a49a52e7ce09978ef8bafef673e1))
+- tweak member search to show all members from the creative arts of the hub ([a87dd861](https://github.com/firstlovecenter/fl-admin-portalgit/commit/a87dd861ceef5fedbf0646807247524c782bfcb1))
+- implement ability to move creative arts levels across bacenta levels ([9d5c30d7](https://github.com/firstlovecenter/fl-admin-portalgit/commit/9d5c30d7f56024fcced04a1eeadd666e8dfe56d6))
+- enable movement of hubs across constituencies ([78953de5](https://github.com/firstlovecenter/fl-admin-portalgit/commit/78953de5670c4c7c2e1eb8c8c85ef5fdc0ee947c))
+- update code of the day for november ([0e5d3175](https://github.com/firstlovecenter/fl-admin-portalgit/commit/0e5d31751421974858192d1f5b0fffec9e4634cc))
+- fix issue with bankServiceOffering error display ([5eb1544b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/5eb1544b34c6cb14f63a731d163d98d8e5350bc4))
+- add history to sonta churches ([61fcba8d](https://github.com/firstlovecenter/fl-admin-portalgit/commit/61fcba8d122dafd43335d9529898fdb21276be62))
+- update permissions for hubcouncil graphs pages ([ebe79c5b](https://github.com/firstlovecenter/fl-admin-portalgit/commit/ebe79c5b46a7e7348852eee83b306a5629a81225))
 
 #### 7.10.32 (2023-10-31)
 
 ##### Bug Fixes
 
-*  allow ministry and creativearts admims to look at the bacenta directory ([93706182](https://github.com/firstlovecenter/fl-pastoral-care/commit/937061826a1665cadb8d7a32701487700d8148d2))
-*  update dismiss button on error snackbar ([f4d2d18e](https://github.com/firstlovecenter/fl-pastoral-care/commit/f4d2d18e4422e5371309d585773cea7eccd21e0f))
-*  ministry meetings  mutations ([5079f2c1](https://github.com/firstlovecenter/fl-pastoral-care/commit/5079f2c174b4c15755d556a98e73b222810a6807))
-*  enable cancelling of stream services ([5e93c48b](https://github.com/firstlovecenter/fl-pastoral-care/commit/5e93c48ba1864040e3bc37f3565d5263db3490b4))
+- allow ministry and creativearts admims to look at the bacenta directory ([93706182](https://github.com/firstlovecenter/fl-pastoral-care/commit/937061826a1665cadb8d7a32701487700d8148d2))
+- update dismiss button on error snackbar ([f4d2d18e](https://github.com/firstlovecenter/fl-pastoral-care/commit/f4d2d18e4422e5371309d585773cea7eccd21e0f))
+- ministry meetings mutations ([5079f2c1](https://github.com/firstlovecenter/fl-pastoral-care/commit/5079f2c174b4c15755d556a98e73b222810a6807))
+- enable cancelling of stream services ([5e93c48b](https://github.com/firstlovecenter/fl-pastoral-care/commit/5e93c48ba1864040e3bc37f3565d5263db3490b4))
 
 #### 7.10.31 (2023-10-29)
 
 ##### Bug Fixes
 
-*  fix gatheringStreams query ([37ef0c97](https://github.com/firstlovecenter/fl-pastoral-care/commit/37ef0c9741534b76be708b209879a88e1f45e636))
-*  implement cancelling stream service ([1db95dbf](https://github.com/firstlovecenter/fl-pastoral-care/commit/1db95dbf806602a45a84bb28b1fe8f7a49fe5f25))
-*  increase arrivals counting buffer to 15 minutes ([fd313495](https://github.com/firstlovecenter/fl-pastoral-care/commit/fd313495e124318df84f53cb275a67507160918a))
+- fix gatheringStreams query ([37ef0c97](https://github.com/firstlovecenter/fl-pastoral-care/commit/37ef0c9741534b76be708b209879a88e1f45e636))
+- implement cancelling stream service ([1db95dbf](https://github.com/firstlovecenter/fl-pastoral-care/commit/1db95dbf806602a45a84bb28b1fe8f7a49fe5f25))
+- increase arrivals counting buffer to 15 minutes ([fd313495](https://github.com/firstlovecenter/fl-pastoral-care/commit/fd313495e124318df84f53cb275a67507160918a))
 
 #### 7.10.30 (2023-10-29)
 
 ##### New Features
 
-*  implement error toast on all apollo errors ([ae5de8e1](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae5de8e1ad6cd9ac607273c23b5fb411a02ef15a))
+- implement error toast on all apollo errors ([ae5de8e1](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae5de8e1ad6cd9ac607273c23b5fb411a02ef15a))
 
 ##### Bug Fixes
 
-*  implement routes for all stream services ([9a3a1c0a](https://github.com/firstlovecenter/fl-pastoral-care/commit/9a3a1c0ae3f92b92cd700f86adaae30677dc88ca))
-*   fix currentUser.id ([a141d51b](https://github.com/firstlovecenter/fl-pastoral-care/commit/a141d51b4498b21c1d0392322183f3dca8724333))
-*  initial implementation showing toast on all apollo error ([6376c841](https://github.com/firstlovecenter/fl-pastoral-care/commit/6376c84168d584d9fdb45f98f580aba59d257166))
-*  after absorbing transactions, dollar income should reflect ([d9a55efd](https://github.com/firstlovecenter/fl-pastoral-care/commit/d9a55efd12f0065ef4fef470a5b27fb96a7ff8ca))
+- implement routes for all stream services ([9a3a1c0a](https://github.com/firstlovecenter/fl-pastoral-care/commit/9a3a1c0ae3f92b92cd700f86adaae30677dc88ca))
+- fix currentUser.id ([a141d51b](https://github.com/firstlovecenter/fl-pastoral-care/commit/a141d51b4498b21c1d0392322183f3dca8724333))
+- initial implementation showing toast on all apollo error ([6376c841](https://github.com/firstlovecenter/fl-pastoral-care/commit/6376c84168d584d9fdb45f98f580aba59d257166))
+- after absorbing transactions, dollar income should reflect ([d9a55efd](https://github.com/firstlovecenter/fl-pastoral-care/commit/d9a55efd12f0065ef4fef470a5b27fb96a7ff8ca))
 
 #### 7.10.29 (2023-10-26)
 
 ##### Bug Fixes
 
-*  implement uploading banking slip for stream services ([77412112](https://github.com/firstlovecenter/fl-pastoral-care/commit/77412112c236148fc67adc6c212a8d9f03cb6d75))
+- implement uploading banking slip for stream services ([77412112](https://github.com/firstlovecenter/fl-pastoral-care/commit/77412112c236148fc67adc6c212a8d9f03cb6d75))
 
 #### 7.10.28 (2023-10-26)
 
 ##### Bug Fixes
 
-*  remove onclick from search member avatar suggestion comp ([9af8ba0b](https://github.com/firstlovecenter/fl-pastoral-care/commit/9af8ba0b24310f959217ffdee5fc2ead04cda245))
+- remove onclick from search member avatar suggestion comp ([9af8ba0b](https://github.com/firstlovecenter/fl-pastoral-care/commit/9af8ba0b24310f959217ffdee5fc2ead04cda245))
 
 #### 7.10.27 (2023-10-26)
 
 ##### Bug Fixes
 
-*  update permissions for ministry levels ([aa394989](https://github.com/firstlovecenter/fl-pastoral-care/commit/aa3949890b0b73506c5635b0a7d2c2bef6f3d456))
-*  add picture of arrivals admin ([dcd09c85](https://github.com/firstlovecenter/fl-pastoral-care/commit/dcd09c85d64c009fee2928789a2bdd15a3093b5c))
-*  center loading placeholder on user display page ([3a65a85a](https://github.com/firstlovecenter/fl-pastoral-care/commit/3a65a85aa599eb9902fda6a795d8992326538a96))
+- update permissions for ministry levels ([aa394989](https://github.com/firstlovecenter/fl-pastoral-care/commit/aa3949890b0b73506c5635b0a7d2c2bef6f3d456))
+- add picture of arrivals admin ([dcd09c85](https://github.com/firstlovecenter/fl-pastoral-care/commit/dcd09c85d64c009fee2928789a2bdd15a3093b5c))
+- center loading placeholder on user display page ([3a65a85a](https://github.com/firstlovecenter/fl-pastoral-care/commit/3a65a85aa599eb9902fda6a795d8992326538a96))
 
 #### 7.10.26 (2023-10-23)
 
 ##### New Features
 
-*  close down creative arts churches ([ce2336ac](https://github.com/firstlovecenter/fl-pastoral-care/commit/ce2336ac9aca96a044dd99aacf145f2d6da21259))
+- close down creative arts churches ([ce2336ac](https://github.com/firstlovecenter/fl-pastoral-care/commit/ce2336ac9aca96a044dd99aacf145f2d6da21259))
 
 ##### Bug Fixes
 
-*  show name input box for  creating hub ([936e0b27](https://github.com/firstlovecenter/fl-pastoral-care/commit/936e0b27c1082dae46b762968f01025bda92f384))
-*  allow council heads to view the hubs and hubcouncils ([d63430f1](https://github.com/firstlovecenter/fl-pastoral-care/commit/d63430f12f7c5778bd9e7da4f9c4fb828597f05b))
-*  permissions for closing creative arts churches ([f38e0a05](https://github.com/firstlovecenter/fl-pastoral-care/commit/f38e0a059ba94da7b08b3a1c91660b19a1f40bd4))
-*  update permissions for closing down  creativearts ([362eecd5](https://github.com/firstlovecenter/fl-pastoral-care/commit/362eecd5970569dcf1bc995b3ae9443b208d7017))
-*  bugs preventing CloseDownMinistry from not returning correctly ([cde7bf57](https://github.com/firstlovecenter/fl-pastoral-care/commit/cde7bf57d8a022e95620de45221667a3ac8c7f00))
-*  close down creative arts ([e3914170](https://github.com/firstlovecenter/fl-pastoral-care/commit/e3914170ab6ee90866f9462ee67bcbd507bf3396))
-*  set campusId to initialValues  for  CreateCreativeArts ([4a2d3a59](https://github.com/firstlovecenter/fl-pastoral-care/commit/4a2d3a59dcfccae3249e6d7847bd01369215ca02))
-*  store adminId in initialValues  for updateforms ([5f97c96b](https://github.com/firstlovecenter/fl-pastoral-care/commit/5f97c96b1a312244d4542cc06dc60e2c6feea6a0))
-*  refactor frontend to pass leaderId and adminId ([6be2cb7c](https://github.com/firstlovecenter/fl-pastoral-care/commit/6be2cb7c9ab6976bb9da28ea24e25d629fcaad1b))
-*  type definitions ([d1b04007](https://github.com/firstlovecenter/fl-pastoral-care/commit/d1b04007d7beaf9a5c6ae478e5a85445efe9ab01))
-*  resolver for closing overight, streams, campuses and councils ([818c3a5f](https://github.com/firstlovecenter/fl-pastoral-care/commit/818c3a5f95efb51eb0f1e3e21db38b60f0f2db63))
+- show name input box for creating hub ([936e0b27](https://github.com/firstlovecenter/fl-pastoral-care/commit/936e0b27c1082dae46b762968f01025bda92f384))
+- allow council heads to view the hubs and hubcouncils ([d63430f1](https://github.com/firstlovecenter/fl-pastoral-care/commit/d63430f12f7c5778bd9e7da4f9c4fb828597f05b))
+- permissions for closing creative arts churches ([f38e0a05](https://github.com/firstlovecenter/fl-pastoral-care/commit/f38e0a059ba94da7b08b3a1c91660b19a1f40bd4))
+- update permissions for closing down creativearts ([362eecd5](https://github.com/firstlovecenter/fl-pastoral-care/commit/362eecd5970569dcf1bc995b3ae9443b208d7017))
+- bugs preventing CloseDownMinistry from not returning correctly ([cde7bf57](https://github.com/firstlovecenter/fl-pastoral-care/commit/cde7bf57d8a022e95620de45221667a3ac8c7f00))
+- close down creative arts ([e3914170](https://github.com/firstlovecenter/fl-pastoral-care/commit/e3914170ab6ee90866f9462ee67bcbd507bf3396))
+- set campusId to initialValues for CreateCreativeArts ([4a2d3a59](https://github.com/firstlovecenter/fl-pastoral-care/commit/4a2d3a59dcfccae3249e6d7847bd01369215ca02))
+- store adminId in initialValues for updateforms ([5f97c96b](https://github.com/firstlovecenter/fl-pastoral-care/commit/5f97c96b1a312244d4542cc06dc60e2c6feea6a0))
+- refactor frontend to pass leaderId and adminId ([6be2cb7c](https://github.com/firstlovecenter/fl-pastoral-care/commit/6be2cb7c9ab6976bb9da28ea24e25d629fcaad1b))
+- type definitions ([d1b04007](https://github.com/firstlovecenter/fl-pastoral-care/commit/d1b04007d7beaf9a5c6ae478e5a85445efe9ab01))
+- resolver for closing overight, streams, campuses and councils ([818c3a5f](https://github.com/firstlovecenter/fl-pastoral-care/commit/818c3a5f95efb51eb0f1e3e21db38b60f0f2db63))
 
 #### 7.10.25 (2023-10-21)
 
 ##### Bug Fixes
 
-*  bug preventing membersearch ([2129d23d](https://github.com/firstlovecenter/fl-pastoral-care/commit/2129d23dc889723a477deb02b6b3adb4cd278c3c))
+- bug preventing membersearch ([2129d23d](https://github.com/firstlovecenter/fl-pastoral-care/commit/2129d23dc889723a477deb02b6b3adb4cd278c3c))
 
 #### 7.10.24 (2023-10-21)
 
 ##### Bug Fixes
 
-*  implement a search member from hubcouncil ([f891e54e](https://github.com/firstlovecenter/fl-pastoral-care/commit/f891e54e051b0d411c6db877ef25d18d5d60f5bf))
-*  fix bug with vars for  getConstituencyBacentas ([baba446a](https://github.com/firstlovecenter/fl-pastoral-care/commit/baba446a1823bcf6accc04cb2a12e2bc39323958))
-*  fix bug with cypher to show form defaulters at constituency level ([aed4bf39](https://github.com/firstlovecenter/fl-pastoral-care/commit/aed4bf39f832ec31725399219d610bf022257232))
-*  fix bug with refetch after closing down churches ([ba162695](https://github.com/firstlovecenter/fl-pastoral-care/commit/ba1626952879ec6b828da934cc91669efd43843b))
-*  minor changes to church history heading ([a059efc9](https://github.com/firstlovecenter/fl-pastoral-care/commit/a059efc9c34d52182a9a00fbc0c72b421b06c4b6))
-*  correct resolvers incorrectly creative agg reherasal records ([86a534f4](https://github.com/firstlovecenter/fl-pastoral-care/commit/86a534f47b46055e115e22fcf6e035dd5eae49c8))
-*  implement graphs for all sonta levels ([0e0f7e96](https://github.com/firstlovecenter/fl-pastoral-care/commit/0e0f7e962de9bc5125e5725b76fbb44277436df6))
-*  allow creative arts leaders to see the corresponding bacenta level ([e0df20b4](https://github.com/firstlovecenter/fl-pastoral-care/commit/e0df20b472e5cd6cd13e3defadaf3221e125fd0c))
-*  implement fellowship defaulters lists for all sonta levels ([cf211a75](https://github.com/firstlovecenter/fl-pastoral-care/commit/cf211a752217a3159d40514e5d65264bc5961277))
-*  customise church icon in church list components ([edc49d29](https://github.com/firstlovecenter/fl-pastoral-care/commit/edc49d29bfcd3edd61414d69d6be4281f4bab8e1))
-*  implement lint staged in api package.json ([d36c43fa](https://github.com/firstlovecenter/fl-pastoral-care/commit/d36c43fa9f5f756a37ec0f81216518a25417b6e3))
-*  implement lint staged in api package.json ([06935adf](https://github.com/firstlovecenter/fl-pastoral-care/commit/06935adfbe9b327493efdae17058826f9226d45a))
-*  fix minor bugs for oversight admin view ([fd152676](https://github.com/firstlovecenter/fl-pastoral-care/commit/fd1526766cfe3486c38996e490e2ddc3817ed07a))
-*  fix errors in compilation 2 ([9f5ccce0](https://github.com/firstlovecenter/fl-pastoral-care/commit/9f5ccce0928f57d6f449e08eccabe49ad0745c4a))
-*  fix errors in compilation ([f1f6da4e](https://github.com/firstlovecenter/fl-pastoral-care/commit/f1f6da4e9d8f3aa6bca37b30594ff8667fd15313))
-*  give council admins the ability to create a hub fellowship ([56ea0acd](https://github.com/firstlovecenter/fl-pastoral-care/commit/56ea0acda803f228a221009e2edf5c435b5d2953))
-*  add padding to weeks onn display church details page ([bda17a17](https://github.com/firstlovecenter/fl-pastoral-care/commit/bda17a17239c8ea3abb822b06aa91d45179d97e8))
+- implement a search member from hubcouncil ([f891e54e](https://github.com/firstlovecenter/fl-pastoral-care/commit/f891e54e051b0d411c6db877ef25d18d5d60f5bf))
+- fix bug with vars for getConstituencyBacentas ([baba446a](https://github.com/firstlovecenter/fl-pastoral-care/commit/baba446a1823bcf6accc04cb2a12e2bc39323958))
+- fix bug with cypher to show form defaulters at constituency level ([aed4bf39](https://github.com/firstlovecenter/fl-pastoral-care/commit/aed4bf39f832ec31725399219d610bf022257232))
+- fix bug with refetch after closing down churches ([ba162695](https://github.com/firstlovecenter/fl-pastoral-care/commit/ba1626952879ec6b828da934cc91669efd43843b))
+- minor changes to church history heading ([a059efc9](https://github.com/firstlovecenter/fl-pastoral-care/commit/a059efc9c34d52182a9a00fbc0c72b421b06c4b6))
+- correct resolvers incorrectly creative agg reherasal records ([86a534f4](https://github.com/firstlovecenter/fl-pastoral-care/commit/86a534f47b46055e115e22fcf6e035dd5eae49c8))
+- implement graphs for all sonta levels ([0e0f7e96](https://github.com/firstlovecenter/fl-pastoral-care/commit/0e0f7e962de9bc5125e5725b76fbb44277436df6))
+- allow creative arts leaders to see the corresponding bacenta level ([e0df20b4](https://github.com/firstlovecenter/fl-pastoral-care/commit/e0df20b472e5cd6cd13e3defadaf3221e125fd0c))
+- implement fellowship defaulters lists for all sonta levels ([cf211a75](https://github.com/firstlovecenter/fl-pastoral-care/commit/cf211a752217a3159d40514e5d65264bc5961277))
+- customise church icon in church list components ([edc49d29](https://github.com/firstlovecenter/fl-pastoral-care/commit/edc49d29bfcd3edd61414d69d6be4281f4bab8e1))
+- implement lint staged in api package.json ([d36c43fa](https://github.com/firstlovecenter/fl-pastoral-care/commit/d36c43fa9f5f756a37ec0f81216518a25417b6e3))
+- implement lint staged in api package.json ([06935adf](https://github.com/firstlovecenter/fl-pastoral-care/commit/06935adfbe9b327493efdae17058826f9226d45a))
+- fix minor bugs for oversight admin view ([fd152676](https://github.com/firstlovecenter/fl-pastoral-care/commit/fd1526766cfe3486c38996e490e2ddc3817ed07a))
+- fix errors in compilation 2 ([9f5ccce0](https://github.com/firstlovecenter/fl-pastoral-care/commit/9f5ccce0928f57d6f449e08eccabe49ad0745c4a))
+- fix errors in compilation ([f1f6da4e](https://github.com/firstlovecenter/fl-pastoral-care/commit/f1f6da4e9d8f3aa6bca37b30594ff8667fd15313))
+- give council admins the ability to create a hub fellowship ([56ea0acd](https://github.com/firstlovecenter/fl-pastoral-care/commit/56ea0acda803f228a221009e2edf5c435b5d2953))
+- add padding to weeks onn display church details page ([bda17a17](https://github.com/firstlovecenter/fl-pastoral-care/commit/bda17a17239c8ea3abb822b06aa91d45179d97e8))
 
 #### 7.10.23 (2023-10-16)
 
 ##### Documentation Changes
 
-*  update CHANGELOG.md ([e097699f](https://github.com/firstlovecenter/fl-pastoral-care/commit/e097699f8d94288922d8f418b981a47dd5a8f288))
-*  update CHANGELOG.md ([00e9b7c2](https://github.com/firstlovecenter/fl-pastoral-care/commit/00e9b7c2a27be8ef5fbb2f37dd066313123724aa))
-*  update CHANGELOG.md ([afa0d78a](https://github.com/firstlovecenter/fl-pastoral-care/commit/afa0d78ab97b7c1aadf93d9f6827899014fcd6e0))
+- update CHANGELOG.md ([e097699f](https://github.com/firstlovecenter/fl-pastoral-care/commit/e097699f8d94288922d8f418b981a47dd5a8f288))
+- update CHANGELOG.md ([00e9b7c2](https://github.com/firstlovecenter/fl-pastoral-care/commit/00e9b7c2a27be8ef5fbb2f37dd066313123724aa))
+- update CHANGELOG.md ([afa0d78a](https://github.com/firstlovecenter/fl-pastoral-care/commit/afa0d78ab97b7c1aadf93d9f6827899014fcd6e0))
 
 ##### Bug Fixes
 
-*  remove online options from fellowship  form ([572dc9a7](https://github.com/firstlovecenter/fl-pastoral-care/commit/572dc9a7759c1f1c2c2ab68f19369e7caaec93b2))
-*  fix issue returning number of banking defaulters for rehearsal record ([4a454cc9](https://github.com/firstlovecenter/fl-pastoral-care/commit/4a454cc94810fe86248c983376d1d5c01ee6d11e))
-*  fix bug in cypher query for form defaulters ([902ad89f](https://github.com/firstlovecenter/fl-pastoral-care/commit/902ad89f50738f0ca1e8feed51c3476bca2ce858))
-*  update sonta defaulters queries ([28a29a64](https://github.com/firstlovecenter/fl-pastoral-care/commit/28a29a644cb938eaf6a519b6d6170924843c080f))
-*  rearrange member lists ([c0f43c95](https://github.com/firstlovecenter/fl-pastoral-care/commit/c0f43c95e0b8705e8f016d6929da179487f5dc63))
-*  update permissions for updating mmember emails ([9502e58e](https://github.com/firstlovecenter/fl-pastoral-care/commit/9502e58e5e6304827ce7b75d38ebf17efe68e9c2))
-*  fix query finding out hubs left to have rehearsals ([458cf21e](https://github.com/firstlovecenter/fl-pastoral-care/commit/458cf21e9d35fcbe157aad319387c8f05a723b7a))
-*  implement column wrapping in defaultters  dashboard accordion ([7c45fe9c](https://github.com/firstlovecenter/fl-pastoral-care/commit/7c45fe9c64ce527aad67d86464a793b1d94c54e6))
+- remove online options from fellowship form ([572dc9a7](https://github.com/firstlovecenter/fl-pastoral-care/commit/572dc9a7759c1f1c2c2ab68f19369e7caaec93b2))
+- fix issue returning number of banking defaulters for rehearsal record ([4a454cc9](https://github.com/firstlovecenter/fl-pastoral-care/commit/4a454cc94810fe86248c983376d1d5c01ee6d11e))
+- fix bug in cypher query for form defaulters ([902ad89f](https://github.com/firstlovecenter/fl-pastoral-care/commit/902ad89f50738f0ca1e8feed51c3476bca2ce858))
+- update sonta defaulters queries ([28a29a64](https://github.com/firstlovecenter/fl-pastoral-care/commit/28a29a644cb938eaf6a519b6d6170924843c080f))
+- rearrange member lists ([c0f43c95](https://github.com/firstlovecenter/fl-pastoral-care/commit/c0f43c95e0b8705e8f016d6929da179487f5dc63))
+- update permissions for updating mmember emails ([9502e58e](https://github.com/firstlovecenter/fl-pastoral-care/commit/9502e58e5e6304827ce7b75d38ebf17efe68e9c2))
+- fix query finding out hubs left to have rehearsals ([458cf21e](https://github.com/firstlovecenter/fl-pastoral-care/commit/458cf21e9d35fcbe157aad319387c8f05a723b7a))
+- implement column wrapping in defaultters dashboard accordion ([7c45fe9c](https://github.com/firstlovecenter/fl-pastoral-care/commit/7c45fe9c64ce527aad67d86464a793b1d94c54e6))
 
 #### 7.10.22 (2023-10-16)
 
@@ -1568,125 +1568,125 @@
 
 ##### Bug Fixes
 
-*  remove online options from fellowship  form ([369cd128](https://github.com/firstlovecenter/fl-pastoral-care/commit/369cd1286d8c22237fbb00719045484dbdd4525b))
-*  fix bug in cypher query for form defaulters ([902ad89f](https://github.com/firstlovecenter/fl-pastoral-care/commit/902ad89f50738f0ca1e8feed51c3476bca2ce858))
-*  update sonta defaulters queries ([28a29a64](https://github.com/firstlovecenter/fl-pastoral-care/commit/28a29a644cb938eaf6a519b6d6170924843c080f))
-*  rearrange member lists ([c0f43c95](https://github.com/firstlovecenter/fl-pastoral-care/commit/c0f43c95e0b8705e8f016d6929da179487f5dc63))
-*  update permissions for updating mmember emails ([9502e58e](https://github.com/firstlovecenter/fl-pastoral-care/commit/9502e58e5e6304827ce7b75d38ebf17efe68e9c2))
-*  fix query finding out hubs left to have rehearsals ([458cf21e](https://github.com/firstlovecenter/fl-pastoral-care/commit/458cf21e9d35fcbe157aad319387c8f05a723b7a))
-*  implement column wrapping in defaultters  dashboard accordion ([7c45fe9c](https://github.com/firstlovecenter/fl-pastoral-care/commit/7c45fe9c64ce527aad67d86464a793b1d94c54e6))
+- remove online options from fellowship form ([369cd128](https://github.com/firstlovecenter/fl-pastoral-care/commit/369cd1286d8c22237fbb00719045484dbdd4525b))
+- fix bug in cypher query for form defaulters ([902ad89f](https://github.com/firstlovecenter/fl-pastoral-care/commit/902ad89f50738f0ca1e8feed51c3476bca2ce858))
+- update sonta defaulters queries ([28a29a64](https://github.com/firstlovecenter/fl-pastoral-care/commit/28a29a644cb938eaf6a519b6d6170924843c080f))
+- rearrange member lists ([c0f43c95](https://github.com/firstlovecenter/fl-pastoral-care/commit/c0f43c95e0b8705e8f016d6929da179487f5dc63))
+- update permissions for updating mmember emails ([9502e58e](https://github.com/firstlovecenter/fl-pastoral-care/commit/9502e58e5e6304827ce7b75d38ebf17efe68e9c2))
+- fix query finding out hubs left to have rehearsals ([458cf21e](https://github.com/firstlovecenter/fl-pastoral-care/commit/458cf21e9d35fcbe157aad319387c8f05a723b7a))
+- implement column wrapping in defaultters dashboard accordion ([7c45fe9c](https://github.com/firstlovecenter/fl-pastoral-care/commit/7c45fe9c64ce527aad67d86464a793b1d94c54e6))
 
 #### 7.10.19 (2023-10-14)
 
 ##### New Features
 
-*  implement campus by creative arts defaulter pages ([2b4fd01d](https://github.com/firstlovecenter/fl-pastoral-care/commit/2b4fd01d922862ac086c72f9de7638d0439e70d3))
-*  sonta defaulter queries ([4f4e8a77](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f4e8a7766c5af3fa5fd3a12fb399cb4337bc95c))
+- implement campus by creative arts defaulter pages ([2b4fd01d](https://github.com/firstlovecenter/fl-pastoral-care/commit/2b4fd01d922862ac086c72f9de7638d0439e70d3))
+- sonta defaulter queries ([4f4e8a77](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f4e8a7766c5af3fa5fd3a12fb399cb4337bc95c))
 
 ##### Bug Fixes
 
-*   implement lists of defaulters on clicking  card ([6413d204](https://github.com/firstlovecenter/fl-pastoral-care/commit/6413d20421e54a086e33f9838a19512aa8402038))
-*  update joint service order on defaulters dashboard ([cecb9869](https://github.com/firstlovecenter/fl-pastoral-care/commit/cecb986988388aaa459a0ef9a964850a01033372))
-*  implement church by subchurch for creative arts defaulters ([a6005f7b](https://github.com/firstlovecenter/fl-pastoral-care/commit/a6005f7bb6616bf29256cc8b41d5d9e3b0c7d2c9))
-*  add sonta queries to campus church level ([77bc548c](https://github.com/firstlovecenter/fl-pastoral-care/commit/77bc548c37ee1cdb46dab21d367b6aef45b71bc5))
-*  implement defaulter dashboard for all sonta levels ([14e0f7ce](https://github.com/firstlovecenter/fl-pastoral-care/commit/14e0f7ce33c4838a07700d2a58b00197301f9b37))
-*  update defaulters dashboard for rehearsal queries ([6f8ee4bd](https://github.com/firstlovecenter/fl-pastoral-care/commit/6f8ee4bdf56bb714495ec3d0156429b16d0ff2ff))
-*  initial implementation of sonta  quireis ([2645898e](https://github.com/firstlovecenter/fl-pastoral-care/commit/2645898ea9a9cccd95def2102954cf7739d6dede))
-*  errors on sonta defaulters queries ([9554b2d7](https://github.com/firstlovecenter/fl-pastoral-care/commit/9554b2d7c76036490db4017ce9c6cf4a05c3818c))
-*  update church  sonta details permissions ([8992a1a0](https://github.com/firstlovecenter/fl-pastoral-care/commit/8992a1a029ab1830360b72cd1be933ffc9928435))
-*  fix bug with CloseDown CA and ministry ([c5c83d82](https://github.com/firstlovecenter/fl-pastoral-care/commit/c5c83d823aa229aa96615b27b0f9ecd9393989fc))
+- implement lists of defaulters on clicking card ([6413d204](https://github.com/firstlovecenter/fl-pastoral-care/commit/6413d20421e54a086e33f9838a19512aa8402038))
+- update joint service order on defaulters dashboard ([cecb9869](https://github.com/firstlovecenter/fl-pastoral-care/commit/cecb986988388aaa459a0ef9a964850a01033372))
+- implement church by subchurch for creative arts defaulters ([a6005f7b](https://github.com/firstlovecenter/fl-pastoral-care/commit/a6005f7bb6616bf29256cc8b41d5d9e3b0c7d2c9))
+- add sonta queries to campus church level ([77bc548c](https://github.com/firstlovecenter/fl-pastoral-care/commit/77bc548c37ee1cdb46dab21d367b6aef45b71bc5))
+- implement defaulter dashboard for all sonta levels ([14e0f7ce](https://github.com/firstlovecenter/fl-pastoral-care/commit/14e0f7ce33c4838a07700d2a58b00197301f9b37))
+- update defaulters dashboard for rehearsal queries ([6f8ee4bd](https://github.com/firstlovecenter/fl-pastoral-care/commit/6f8ee4bdf56bb714495ec3d0156429b16d0ff2ff))
+- initial implementation of sonta quireis ([2645898e](https://github.com/firstlovecenter/fl-pastoral-care/commit/2645898ea9a9cccd95def2102954cf7739d6dede))
+- errors on sonta defaulters queries ([9554b2d7](https://github.com/firstlovecenter/fl-pastoral-care/commit/9554b2d7c76036490db4017ce9c6cf4a05c3818c))
+- update church sonta details permissions ([8992a1a0](https://github.com/firstlovecenter/fl-pastoral-care/commit/8992a1a029ab1830360b72cd1be933ffc9928435))
+- fix bug with CloseDown CA and ministry ([c5c83d82](https://github.com/firstlovecenter/fl-pastoral-care/commit/c5c83d823aa229aa96615b27b0f9ecd9393989fc))
 
 #### 7.10.18 (2023-10-13)
 
 ##### Bug Fixes
 
-*  remove linkto hub page in DetailsHubCouncil ([c4babbce](https://github.com/firstlovecenter/fl-pastoral-care/commit/c4babbcedcf0bc6540eca5e9feb3d932cce92b5a))
-*  merge from admin-616 ([92389734](https://github.com/firstlovecenter/fl-pastoral-care/commit/92389734263f7ba80dd8445a427563ca33d55fb7))
-*  fix permissions for defaulters dashboard ([5b332f8e](https://github.com/firstlovecenter/fl-pastoral-care/commit/5b332f8eca8285ffbb52b4c35178f3877780a48a))
-*  rearrage order of church levels ([1d973892](https://github.com/firstlovecenter/fl-pastoral-care/commit/1d9738925b4b91b3ffde524fcc79b333d27558ac))
+- remove linkto hub page in DetailsHubCouncil ([c4babbce](https://github.com/firstlovecenter/fl-pastoral-care/commit/c4babbcedcf0bc6540eca5e9feb3d932cce92b5a))
+- merge from admin-616 ([92389734](https://github.com/firstlovecenter/fl-pastoral-care/commit/92389734263f7ba80dd8445a427563ca33d55fb7))
+- fix permissions for defaulters dashboard ([5b332f8e](https://github.com/firstlovecenter/fl-pastoral-care/commit/5b332f8eca8285ffbb52b4c35178f3877780a48a))
+- rearrage order of church levels ([1d973892](https://github.com/firstlovecenter/fl-pastoral-care/commit/1d9738925b4b91b3ffde524fcc79b333d27558ac))
 
 #### 7.10.17 (2023-10-13)
 
 ##### New Features
 
-*  implement church by subchurch from denomination to constituency ([3fdbcb68](https://github.com/firstlovecenter/fl-pastoral-care/commit/3fdbcb68fb5d729e62b3eff26061e3ae3d3258a8))
+- implement church by subchurch from denomination to constituency ([3fdbcb68](https://github.com/firstlovecenter/fl-pastoral-care/commit/3fdbcb68fb5d729e62b3eff26061e3ae3d3258a8))
 
 ##### Bug Fixes
 
-*  optioally render stream defaulters ([fc8d5265](https://github.com/firstlovecenter/fl-pastoral-care/commit/fc8d5265f4d2ba74d691ac0ba969c2c4cc8092e2))
-*  implement defaulters dashboards for oversight and denomination ([16bb5412](https://github.com/firstlovecenter/fl-pastoral-care/commit/16bb5412120b5776b3e9b7581827a186ae6e1f6f))
-*  implement pages for stream service defaulters onn campus level ([72d1e283](https://github.com/firstlovecenter/fl-pastoral-care/commit/72d1e2832b39537157dcb2c4aae350f1ebcbc089))
-*   fix error with showing services filled on detailsfellowship ([1bab61fc](https://github.com/firstlovecenter/fl-pastoral-care/commit/1bab61fc0e8f1f46d69ccb5993456c2ea6eb4972))
-*  include hub council in search results ([c46aeff8](https://github.com/firstlovecenter/fl-pastoral-care/commit/c46aeff8e95d9ccb998f8f95533b2e8be278b3d9))
+- optioally render stream defaulters ([fc8d5265](https://github.com/firstlovecenter/fl-pastoral-care/commit/fc8d5265f4d2ba74d691ac0ba969c2c4cc8092e2))
+- implement defaulters dashboards for oversight and denomination ([16bb5412](https://github.com/firstlovecenter/fl-pastoral-care/commit/16bb5412120b5776b3e9b7581827a186ae6e1f6f))
+- implement pages for stream service defaulters onn campus level ([72d1e283](https://github.com/firstlovecenter/fl-pastoral-care/commit/72d1e2832b39537157dcb2c4aae350f1ebcbc089))
+- fix error with showing services filled on detailsfellowship ([1bab61fc](https://github.com/firstlovecenter/fl-pastoral-care/commit/1bab61fc0e8f1f46d69ccb5993456c2ea6eb4972))
+- include hub council in search results ([c46aeff8](https://github.com/firstlovecenter/fl-pastoral-care/commit/c46aeff8e95d9ccb998f8f95533b2e8be278b3d9))
 
 #### 7.10.16 (2023-10-12)
 
 ##### New Features
 
-* **venues:**  add venue form and display venues ([#448](https://github.com/firstlovecenter/fl-pastoral-care/pull/448)) ([b6f734af](https://github.com/firstlovecenter/fl-pastoral-care/commit/b6f734afe0a34432190d0fbafe4407a9ccdcd5a6))
+- **venues:** add venue form and display venues ([#448](https://github.com/firstlovecenter/fl-pastoral-care/pull/448)) ([b6f734af](https://github.com/firstlovecenter/fl-pastoral-care/commit/b6f734afe0a34432190d0fbafe4407a9ccdcd5a6))
 
 ##### Bug Fixes
 
-*  add missing import of permitLeaderAdminArrivals ([58545e61](https://github.com/firstlovecenter/fl-pastoral-care/commit/58545e6113ed769b4025450a97647acd325225d4))
+- add missing import of permitLeaderAdminArrivals ([58545e61](https://github.com/firstlovecenter/fl-pastoral-care/commit/58545e6113ed769b4025450a97647acd325225d4))
 
 #### 7.10.15 (2023-10-12)
 
 ##### Bug Fixes
 
-*  update delete member category ([36e157c8](https://github.com/firstlovecenter/fl-pastoral-care/commit/36e157c80031cec55a7800375c6984a9cb312471))
-*  correct types in arrivals state pages ([5263af80](https://github.com/firstlovecenter/fl-pastoral-care/commit/5263af80341a6fb019cb6079cd5a51ada9a63961))
-*  fix types after enforcing for member places ([10a657e4](https://github.com/firstlovecenter/fl-pastoral-care/commit/10a657e4a6617f9f41a2c9efe3206e5288539c2f))
-*  fix member count on displayAll pages from bacenta side ([05cd5ebc](https://github.com/firstlovecenter/fl-pastoral-care/commit/05cd5ebc0bb96d05391b2360ef4c026d9f54f776))
-*  fix bug where allhubcouncil page links hubCouncil to hub display page ([9f31f296](https://github.com/firstlovecenter/fl-pastoral-care/commit/9f31f296cc2623f369771301432bbec08e563409))
-*  correct use of churchId variable in getting higher Churches ([45c499f0](https://github.com/firstlovecenter/fl-pastoral-care/commit/45c499f082c8bde86594d9cf43614fbd3f6a3d2b))
-*  allow clicking of admin on church details page ([2f0c42f8](https://github.com/firstlovecenter/fl-pastoral-care/commit/2f0c42f8b6f31f772204482327a2b0e23520e29f))
-*  add picture to the admin name on church details ([ead623ac](https://github.com/firstlovecenter/fl-pastoral-care/commit/ead623aca3bb8d78058531baaa5b918103e4b3d8))
+- update delete member category ([36e157c8](https://github.com/firstlovecenter/fl-pastoral-care/commit/36e157c80031cec55a7800375c6984a9cb312471))
+- correct types in arrivals state pages ([5263af80](https://github.com/firstlovecenter/fl-pastoral-care/commit/5263af80341a6fb019cb6079cd5a51ada9a63961))
+- fix types after enforcing for member places ([10a657e4](https://github.com/firstlovecenter/fl-pastoral-care/commit/10a657e4a6617f9f41a2c9efe3206e5288539c2f))
+- fix member count on displayAll pages from bacenta side ([05cd5ebc](https://github.com/firstlovecenter/fl-pastoral-care/commit/05cd5ebc0bb96d05391b2360ef4c026d9f54f776))
+- fix bug where allhubcouncil page links hubCouncil to hub display page ([9f31f296](https://github.com/firstlovecenter/fl-pastoral-care/commit/9f31f296cc2623f369771301432bbec08e563409))
+- correct use of churchId variable in getting higher Churches ([45c499f0](https://github.com/firstlovecenter/fl-pastoral-care/commit/45c499f082c8bde86594d9cf43614fbd3f6a3d2b))
+- allow clicking of admin on church details page ([2f0c42f8](https://github.com/firstlovecenter/fl-pastoral-care/commit/2f0c42f8b6f31f772204482327a2b0e23520e29f))
+- add picture to the admin name on church details ([ead623ac](https://github.com/firstlovecenter/fl-pastoral-care/commit/ead623aca3bb8d78058531baaa5b918103e4b3d8))
 
 #### 7.10.14 (2023-10-10)
 
 ##### Bug Fixes
 
-*  add member image to member search component ([19470fd1](https://github.com/firstlovecenter/fl-pastoral-care/commit/19470fd1b72e74fbb9dd98404b36eb7be879d892))
-*  fix hubFellowship counts on stream and council ([79c2409e](https://github.com/firstlovecenter/fl-pastoral-care/commit/79c2409e996f9fe2d73753937045aabaaf675837))
+- add member image to member search component ([19470fd1](https://github.com/firstlovecenter/fl-pastoral-care/commit/19470fd1b72e74fbb9dd98404b36eb7be879d892))
+- fix hubFellowship counts on stream and council ([79c2409e](https://github.com/firstlovecenter/fl-pastoral-care/commit/79c2409e996f9fe2d73753937045aabaaf675837))
 
 #### 7.10.13 (2023-10-09)
 
 ##### Bug Fixes
 
-*  fix bug preventing changing of hub leader ([2bb64d89](https://github.com/firstlovecenter/fl-pastoral-care/commit/2bb64d899f29d48d25444142ec05b7ac8910f6d7))
-*  fix little itches with creating ministries and hubcouncils ([c973e9fe](https://github.com/firstlovecenter/fl-pastoral-care/commit/c973e9fe8593c9c0a78d93f93f0e248150284b4b))
-*  implement directory lock for  creating bacentas ([d6ae1a64](https://github.com/firstlovecenter/fl-pastoral-care/commit/d6ae1a6456b27578fb362ca9fd678190caa0e6a7))
-*  improve permissions ministry admin ([8e9cb31c](https://github.com/firstlovecenter/fl-pastoral-care/commit/8e9cb31cbddb08d629817238ff360c4f1c4c97bd))
-*  change view all history button to outline success ([ed3de8e0](https://github.com/firstlovecenter/fl-pastoral-care/commit/ed3de8e0043ac5f491aa37223a5560204cb705e9))
+- fix bug preventing changing of hub leader ([2bb64d89](https://github.com/firstlovecenter/fl-pastoral-care/commit/2bb64d899f29d48d25444142ec05b7ac8910f6d7))
+- fix little itches with creating ministries and hubcouncils ([c973e9fe](https://github.com/firstlovecenter/fl-pastoral-care/commit/c973e9fe8593c9c0a78d93f93f0e248150284b4b))
+- implement directory lock for creating bacentas ([d6ae1a64](https://github.com/firstlovecenter/fl-pastoral-care/commit/d6ae1a6456b27578fb362ca9fd678190caa0e6a7))
+- improve permissions ministry admin ([8e9cb31c](https://github.com/firstlovecenter/fl-pastoral-care/commit/8e9cb31cbddb08d629817238ff360c4f1c4c97bd))
+- change view all history button to outline success ([ed3de8e0](https://github.com/firstlovecenter/fl-pastoral-care/commit/ed3de8e0043ac5f491aa37223a5560204cb705e9))
 
 #### 7.10.12 (2023-10-08)
 
 ##### Bug Fixes
 
-*  minor changes to ui ([6c3d5455](https://github.com/firstlovecenter/fl-pastoral-care/commit/6c3d5455483d3d759f7360b0420434e2e6217d5b))
-*  aggregate hub rehearsal workign properly now ([3984bb1f](https://github.com/firstlovecenter/fl-pastoral-care/commit/3984bb1fc502a8259d46e81035e811d9da9dd188))
-*  logging out now clears session storage ([36d8e169](https://github.com/firstlovecenter/fl-pastoral-care/commit/36d8e1699f162bd15a9a4449fe3302187bbcb590))
-*  permission for stream admins  to create bacentas ([a497d390](https://github.com/firstlovecenter/fl-pastoral-care/commit/a497d390f87c659b83c719fa7bc60f5dc143283c))
-*  add whitespace to readme ([4cd36b1b](https://github.com/firstlovecenter/fl-pastoral-care/commit/4cd36b1b43feaca80af53551ac94c1d56e41688c))
-*  implement hub council leader user flow ([0b7c951b](https://github.com/firstlovecenter/fl-pastoral-care/commit/0b7c951b8832c33b485768b943356be37201d41b))
-*  fix bug in code-of-the-day function ([63d651f2](https://github.com/firstlovecenter/fl-pastoral-care/commit/63d651f299a6c771f37c190565d68dc875e4214c))
-*  fixed bugs in updating denomination and hubcouncil ([2631d519](https://github.com/firstlovecenter/fl-pastoral-care/commit/2631d5194c8b52ba37f9bb4cef91789f2092f7ed))
+- minor changes to ui ([6c3d5455](https://github.com/firstlovecenter/fl-pastoral-care/commit/6c3d5455483d3d759f7360b0420434e2e6217d5b))
+- aggregate hub rehearsal workign properly now ([3984bb1f](https://github.com/firstlovecenter/fl-pastoral-care/commit/3984bb1fc502a8259d46e81035e811d9da9dd188))
+- logging out now clears session storage ([36d8e169](https://github.com/firstlovecenter/fl-pastoral-care/commit/36d8e1699f162bd15a9a4449fe3302187bbcb590))
+- permission for stream admins to create bacentas ([a497d390](https://github.com/firstlovecenter/fl-pastoral-care/commit/a497d390f87c659b83c719fa7bc60f5dc143283c))
+- add whitespace to readme ([4cd36b1b](https://github.com/firstlovecenter/fl-pastoral-care/commit/4cd36b1b43feaca80af53551ac94c1d56e41688c))
+- implement hub council leader user flow ([0b7c951b](https://github.com/firstlovecenter/fl-pastoral-care/commit/0b7c951b8832c33b485768b943356be37201d41b))
+- fix bug in code-of-the-day function ([63d651f2](https://github.com/firstlovecenter/fl-pastoral-care/commit/63d651f299a6c771f37c190565d68dc875e4214c))
+- fixed bugs in updating denomination and hubcouncil ([2631d519](https://github.com/firstlovecenter/fl-pastoral-care/commit/2631d5194c8b52ba37f9bb4cef91789f2092f7ed))
 
 #### 7.10.11 (2023-10-07)
 
 ##### Bug Fixes
 
-*  update field on hubCouncil form ([c810cffa](https://github.com/firstlovecenter/fl-pastoral-care/commit/c810cffa32be65dbd84a42614ba4cdedd5aa6613))
-*  show hub council on memberrole list ([925bc5a1](https://github.com/firstlovecenter/fl-pastoral-care/commit/925bc5a10edd27a36bae70b9322b8d88b9c62894))
-*  change label for sonta forms ([e0d35c6d](https://github.com/firstlovecenter/fl-pastoral-care/commit/e0d35c6d192fc7f3c4092e3c41365fe87ce5837d))
-*  correctly pass hubCouncilId when creating hub ([6d926be8](https://github.com/firstlovecenter/fl-pastoral-care/commit/6d926be88908999e8cb2164bb01778dd9dbd4ab8))
-*  add a conditional to check if there are no hubs for all hubs page ([a0800656](https://github.com/firstlovecenter/fl-pastoral-care/commit/a08006565871cb019c15f43e88cbdea832b35a9b))
+- update field on hubCouncil form ([c810cffa](https://github.com/firstlovecenter/fl-pastoral-care/commit/c810cffa32be65dbd84a42614ba4cdedd5aa6613))
+- show hub council on memberrole list ([925bc5a1](https://github.com/firstlovecenter/fl-pastoral-care/commit/925bc5a10edd27a36bae70b9322b8d88b9c62894))
+- change label for sonta forms ([e0d35c6d](https://github.com/firstlovecenter/fl-pastoral-care/commit/e0d35c6d192fc7f3c4092e3c41365fe87ce5837d))
+- correctly pass hubCouncilId when creating hub ([6d926be8](https://github.com/firstlovecenter/fl-pastoral-care/commit/6d926be88908999e8cb2164bb01778dd9dbd4ab8))
+- add a conditional to check if there are no hubs for all hubs page ([a0800656](https://github.com/firstlovecenter/fl-pastoral-care/commit/a08006565871cb019c15f43e88cbdea832b35a9b))
 
 #### 7.10.10 (2023-10-06)
 
 ##### Bug Fixes
 
-*  refactor allhubs page for correct display ([5d306f63](https://github.com/firstlovecenter/fl-pastoral-care/commit/5d306f63974e40aff31544aa3d410ab1fdd35a13))
+- refactor allhubs page for correct display ([5d306f63](https://github.com/firstlovecenter/fl-pastoral-care/commit/5d306f63974e40aff31544aa3d410ab1fdd35a13))
 
 #### 7.10.9 (2023-10-06)
 
@@ -1694,161 +1694,161 @@
 
 ##### Bug Fixes
 
-*  implement optional types on sonta form values ([f7415106](https://github.com/firstlovecenter/fl-pastoral-care/commit/f741510609b74e365a6e55ef5a03e4ff055819ad))
-*  fix bugs breaking the build ([70807ea9](https://github.com/firstlovecenter/fl-pastoral-care/commit/70807ea97402b6afaf687c4f6399ada4b2486108))
-*  tweak colours for role card ([42e7895e](https://github.com/firstlovecenter/fl-pastoral-care/commit/42e7895ec539ef5157c02f91aff86233ec0cfbaa))
-*  tweak permissions to allow viewing of hubcouncil details ([9ef02d41](https://github.com/firstlovecenter/fl-pastoral-care/commit/9ef02d417d4e543f421a5c15f7f8ea5240e4f2fb))
-*  fix bug breaking allhubs paages ([01ad5d15](https://github.com/firstlovecenter/fl-pastoral-care/commit/01ad5d150e0ccf854c03a89ea0955a01d77a934f))
+- implement optional types on sonta form values ([f7415106](https://github.com/firstlovecenter/fl-pastoral-care/commit/f741510609b74e365a6e55ef5a03e4ff055819ad))
+- fix bugs breaking the build ([70807ea9](https://github.com/firstlovecenter/fl-pastoral-care/commit/70807ea97402b6afaf687c4f6399ada4b2486108))
+- tweak colours for role card ([42e7895e](https://github.com/firstlovecenter/fl-pastoral-care/commit/42e7895ec539ef5157c02f91aff86233ec0cfbaa))
+- tweak permissions to allow viewing of hubcouncil details ([9ef02d41](https://github.com/firstlovecenter/fl-pastoral-care/commit/9ef02d417d4e543f421a5c15f7f8ea5240e4f2fb))
+- fix bug breaking allhubs paages ([01ad5d15](https://github.com/firstlovecenter/fl-pastoral-care/commit/01ad5d150e0ccf854c03a89ea0955a01d77a934f))
 
 #### 7.10.7 (2023-10-06)
 
 ##### Bug Fixes
 
-*  fix bug breaking allministry hubs ([93b3b0b3](https://github.com/firstlovecenter/fl-pastoral-care/commit/93b3b0b3e6427f12fbfe9d3949cce986426b09b1))
-*  fix broken expense form ([420d3aca](https://github.com/firstlovecenter/fl-pastoral-care/commit/420d3acabce7007502b38600da061e0f2c4309a6))
-*  change the word 'purse' to 'society' ([46f8b037](https://github.com/firstlovecenter/fl-pastoral-care/commit/46f8b037a69f54477487b5834fbbeeb744ed9203))
-*  update options for stream bank accounts ([9adf89fe](https://github.com/firstlovecenter/fl-pastoral-care/commit/9adf89fe988f14bb120314ee1c7a392155e650f3))
-*  change ministry to basonta for activating inactive  member ([ca0a98cc](https://github.com/firstlovecenter/fl-pastoral-care/commit/ca0a98cc3f0be7b85eb524a70e002df170e88df4))
-*  implement better loading for leader avatar component ([3e76851b](https://github.com/firstlovecenter/fl-pastoral-care/commit/3e76851b1ccb1641d920ef7b3dfcdb62fb6370d5))
-*  update service aggregate cypher to be more accurate 2 ([3385dd99](https://github.com/firstlovecenter/fl-pastoral-care/commit/3385dd990b73cf36940c08fbb6d959e3f21d1f3a))
-*  update service cypher to be the most accurate ([257a15c9](https://github.com/firstlovecenter/fl-pastoral-care/commit/257a15c9d92d704021ac5135ee56b1e91e413863))
-*  remove view of Downloading reports  to only  campus level ([b10d10b6](https://github.com/firstlovecenter/fl-pastoral-care/commit/b10d10b6d89b7f5389522e63143ae3acfbcde6fb))
-*  implement feature to download fellowship services this week ([b712677e](https://github.com/firstlovecenter/fl-pastoral-care/commit/b712677e88661fc5977dc289c1ab9d8ad3025657))
-*  add finishing  touches to accounts ([c634fb04](https://github.com/firstlovecenter/fl-pastoral-care/commit/c634fb04547cbeba35073734e4ac99b916d79128))
-*  fix bug in updatecampus cypher ([27abae5e](https://github.com/firstlovecenter/fl-pastoral-care/commit/27abae5e6dd3609e1b2618f2efd80c8fc42c67a8))
-*  code of the day now returns a random dictionary word if no code of the day ([8cf6a524](https://github.com/firstlovecenter/fl-pastoral-care/commit/8cf6a52427e95ea4ab041a412f16312669debf11))
-*  update code of the day for october ([92d87670](https://github.com/firstlovecenter/fl-pastoral-care/commit/92d876708899190789c7ec34dffa8ea4a326ed81))
-*  implement feature to click to fellowship from member details page ([381c2bc1](https://github.com/firstlovecenter/fl-pastoral-care/commit/381c2bc124a436cb2afaad54e98578a790fb99fb))
-*  implement leader avatar which redirects to member details page ([4b41d443](https://github.com/firstlovecenter/fl-pastoral-care/commit/4b41d44301c07219b26780df0e423b62e0673bdc))
-*  implement permissions on routes for hub leader ([481a7cb4](https://github.com/firstlovecenter/fl-pastoral-care/commit/481a7cb4585358248d4d70989aa84070357db203))
-*  implement ability to cancel hub rehearsals ([4c7dfd78](https://github.com/firstlovecenter/fl-pastoral-care/commit/4c7dfd789422bc9282a38377310659d1b8975dcd))
-*  implement sunday hub meeting form ([245269a6](https://github.com/firstlovecenter/fl-pastoral-care/commit/245269a6b2654c9a5541940d028e415cf2c68920))
-*  implement filling of hub rehearsal service ([f9960765](https://github.com/firstlovecenter/fl-pastoral-care/commit/f9960765e8d4f83888ea182c52985bf0861beb6e))
-*  revert aggregate cypher to previous working ([fba77a62](https://github.com/firstlovecenter/fl-pastoral-care/commit/fba77a629545aeb86c994b196bfcbd994cb74f6a))
-*  more console.logs to help ([bab360d5](https://github.com/firstlovecenter/fl-pastoral-care/commit/bab360d5ae50fc9d1a71147985fa0eed5dbdf9c1))
-*  console.log getServantandChurch for a bug where it throws  the set leader error ([f4ab9325](https://github.com/firstlovecenter/fl-pastoral-care/commit/f4ab932527cdbdaf7c5c4de73db37ff20e808448))
-*  check only service records within this week for imcl Defaulters ([48d34f58](https://github.com/firstlovecenter/fl-pastoral-care/commit/48d34f589b866aff165cc92d863dc97e61dccc79))
-*  fixed wrong syntax in imcl checker ([23f56854](https://github.com/firstlovecenter/fl-pastoral-care/commit/23f56854a3ee9d571723dae20da21b389ac37f67))
-*  fixed wrong syntax in imcl checker ([a6e3993d](https://github.com/firstlovecenter/fl-pastoral-care/commit/a6e3993d158b81395ef1ed636088d480d3cbac6d))
-*  change to checking for absent members instead of imcls ([7d494b26](https://github.com/firstlovecenter/fl-pastoral-care/commit/7d494b2601dda7ee058266d47c9f986617c1a9a9))
-*  remove lost sheep from imcl count ([874b8b6f](https://github.com/firstlovecenter/fl-pastoral-care/commit/874b8b6f92c0c7f1b0f08bd9317fd4e2b75a791e))
-*  update sms messages to show account involved in transaction ([d6e1789d](https://github.com/firstlovecenter/fl-pastoral-care/commit/d6e1789dd34bc616849ff5720e42526e341abfed))
-*  fix cypher error updating stream ([13fe12b8](https://github.com/firstlovecenter/fl-pastoral-care/commit/13fe12b8a1e1d7c0b8c02d3c0ac7ce1783571c10))
-*  change delete category from deceased to anagkazo gradutate ([0f3260c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/0f3260c0381b86229753efb6b9ebfd093dda4dd9))
-*  allow campus admin to request expense ([41686137](https://github.com/firstlovecenter/fl-pastoral-care/commit/41686137c4c1d5f5cc1407fb0ed18eacbd1a003b))
+- fix bug breaking allministry hubs ([93b3b0b3](https://github.com/firstlovecenter/fl-pastoral-care/commit/93b3b0b3e6427f12fbfe9d3949cce986426b09b1))
+- fix broken expense form ([420d3aca](https://github.com/firstlovecenter/fl-pastoral-care/commit/420d3acabce7007502b38600da061e0f2c4309a6))
+- change the word 'purse' to 'society' ([46f8b037](https://github.com/firstlovecenter/fl-pastoral-care/commit/46f8b037a69f54477487b5834fbbeeb744ed9203))
+- update options for stream bank accounts ([9adf89fe](https://github.com/firstlovecenter/fl-pastoral-care/commit/9adf89fe988f14bb120314ee1c7a392155e650f3))
+- change ministry to basonta for activating inactive member ([ca0a98cc](https://github.com/firstlovecenter/fl-pastoral-care/commit/ca0a98cc3f0be7b85eb524a70e002df170e88df4))
+- implement better loading for leader avatar component ([3e76851b](https://github.com/firstlovecenter/fl-pastoral-care/commit/3e76851b1ccb1641d920ef7b3dfcdb62fb6370d5))
+- update service aggregate cypher to be more accurate 2 ([3385dd99](https://github.com/firstlovecenter/fl-pastoral-care/commit/3385dd990b73cf36940c08fbb6d959e3f21d1f3a))
+- update service cypher to be the most accurate ([257a15c9](https://github.com/firstlovecenter/fl-pastoral-care/commit/257a15c9d92d704021ac5135ee56b1e91e413863))
+- remove view of Downloading reports to only campus level ([b10d10b6](https://github.com/firstlovecenter/fl-pastoral-care/commit/b10d10b6d89b7f5389522e63143ae3acfbcde6fb))
+- implement feature to download fellowship services this week ([b712677e](https://github.com/firstlovecenter/fl-pastoral-care/commit/b712677e88661fc5977dc289c1ab9d8ad3025657))
+- add finishing touches to accounts ([c634fb04](https://github.com/firstlovecenter/fl-pastoral-care/commit/c634fb04547cbeba35073734e4ac99b916d79128))
+- fix bug in updatecampus cypher ([27abae5e](https://github.com/firstlovecenter/fl-pastoral-care/commit/27abae5e6dd3609e1b2618f2efd80c8fc42c67a8))
+- code of the day now returns a random dictionary word if no code of the day ([8cf6a524](https://github.com/firstlovecenter/fl-pastoral-care/commit/8cf6a52427e95ea4ab041a412f16312669debf11))
+- update code of the day for october ([92d87670](https://github.com/firstlovecenter/fl-pastoral-care/commit/92d876708899190789c7ec34dffa8ea4a326ed81))
+- implement feature to click to fellowship from member details page ([381c2bc1](https://github.com/firstlovecenter/fl-pastoral-care/commit/381c2bc124a436cb2afaad54e98578a790fb99fb))
+- implement leader avatar which redirects to member details page ([4b41d443](https://github.com/firstlovecenter/fl-pastoral-care/commit/4b41d44301c07219b26780df0e423b62e0673bdc))
+- implement permissions on routes for hub leader ([481a7cb4](https://github.com/firstlovecenter/fl-pastoral-care/commit/481a7cb4585358248d4d70989aa84070357db203))
+- implement ability to cancel hub rehearsals ([4c7dfd78](https://github.com/firstlovecenter/fl-pastoral-care/commit/4c7dfd789422bc9282a38377310659d1b8975dcd))
+- implement sunday hub meeting form ([245269a6](https://github.com/firstlovecenter/fl-pastoral-care/commit/245269a6b2654c9a5541940d028e415cf2c68920))
+- implement filling of hub rehearsal service ([f9960765](https://github.com/firstlovecenter/fl-pastoral-care/commit/f9960765e8d4f83888ea182c52985bf0861beb6e))
+- revert aggregate cypher to previous working ([fba77a62](https://github.com/firstlovecenter/fl-pastoral-care/commit/fba77a629545aeb86c994b196bfcbd994cb74f6a))
+- more console.logs to help ([bab360d5](https://github.com/firstlovecenter/fl-pastoral-care/commit/bab360d5ae50fc9d1a71147985fa0eed5dbdf9c1))
+- console.log getServantandChurch for a bug where it throws the set leader error ([f4ab9325](https://github.com/firstlovecenter/fl-pastoral-care/commit/f4ab932527cdbdaf7c5c4de73db37ff20e808448))
+- check only service records within this week for imcl Defaulters ([48d34f58](https://github.com/firstlovecenter/fl-pastoral-care/commit/48d34f589b866aff165cc92d863dc97e61dccc79))
+- fixed wrong syntax in imcl checker ([23f56854](https://github.com/firstlovecenter/fl-pastoral-care/commit/23f56854a3ee9d571723dae20da21b389ac37f67))
+- fixed wrong syntax in imcl checker ([a6e3993d](https://github.com/firstlovecenter/fl-pastoral-care/commit/a6e3993d158b81395ef1ed636088d480d3cbac6d))
+- change to checking for absent members instead of imcls ([7d494b26](https://github.com/firstlovecenter/fl-pastoral-care/commit/7d494b2601dda7ee058266d47c9f986617c1a9a9))
+- remove lost sheep from imcl count ([874b8b6f](https://github.com/firstlovecenter/fl-pastoral-care/commit/874b8b6f92c0c7f1b0f08bd9317fd4e2b75a791e))
+- update sms messages to show account involved in transaction ([d6e1789d](https://github.com/firstlovecenter/fl-pastoral-care/commit/d6e1789dd34bc616849ff5720e42526e341abfed))
+- fix cypher error updating stream ([13fe12b8](https://github.com/firstlovecenter/fl-pastoral-care/commit/13fe12b8a1e1d7c0b8c02d3c0ac7ce1783571c10))
+- change delete category from deceased to anagkazo gradutate ([0f3260c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/0f3260c0381b86229753efb6b9ebfd093dda4dd9))
+- allow campus admin to request expense ([41686137](https://github.com/firstlovecenter/fl-pastoral-care/commit/41686137c4c1d5f5cc1407fb0ed18eacbd1a003b))
 
 #### 7.10.6 (2023-09-27)
 
 ##### Bug Fixes
 
-*  updated account details ([2c98ef3f](https://github.com/firstlovecenter/fl-pastoral-care/commit/2c98ef3f1e5e0c8058a7e2bac8a8d3b0cc8e3ee7))
-*  remove unnecessary fields for admin ([da10fde8](https://github.com/firstlovecenter/fl-pastoral-care/commit/da10fde8f7a94d71cff210cbf1d8ca9ec1971595))
-*  show the admin for the ministry level ([404a99fb](https://github.com/firstlovecenter/fl-pastoral-care/commit/404a99fb17a27545cfa824f42894e341feebf7d5))
-*  update change admin modal for sonnta churches ([ed5ae637](https://github.com/firstlovecenter/fl-pastoral-care/commit/ed5ae63749064197b8a2bd7bf29747a5841e0904))
-*  add a description to member deletion ([bd3e1e74](https://github.com/firstlovecenter/fl-pastoral-care/commit/bd3e1e74ecb2d7a6111c1ef0275342cf009a426f))
-*  remove duplicate CURRENT_HISTORY on some church levels ([4c70a94f](https://github.com/firstlovecenter/fl-pastoral-care/commit/4c70a94f5fa940326ad6acbec0f9ca962fba135f))
-*  minor upgrades ([9cf259a9](https://github.com/firstlovecenter/fl-pastoral-care/commit/9cf259a9a6f1c6c253c201de1f14f3fdc9b4a515))
+- updated account details ([2c98ef3f](https://github.com/firstlovecenter/fl-pastoral-care/commit/2c98ef3f1e5e0c8058a7e2bac8a8d3b0cc8e3ee7))
+- remove unnecessary fields for admin ([da10fde8](https://github.com/firstlovecenter/fl-pastoral-care/commit/da10fde8f7a94d71cff210cbf1d8ca9ec1971595))
+- show the admin for the ministry level ([404a99fb](https://github.com/firstlovecenter/fl-pastoral-care/commit/404a99fb17a27545cfa824f42894e341feebf7d5))
+- update change admin modal for sonnta churches ([ed5ae637](https://github.com/firstlovecenter/fl-pastoral-care/commit/ed5ae63749064197b8a2bd7bf29747a5841e0904))
+- add a description to member deletion ([bd3e1e74](https://github.com/firstlovecenter/fl-pastoral-care/commit/bd3e1e74ecb2d7a6111c1ef0275342cf009a426f))
+- remove duplicate CURRENT_HISTORY on some church levels ([4c70a94f](https://github.com/firstlovecenter/fl-pastoral-care/commit/4c70a94f5fa940326ad6acbec0f9ca962fba135f))
+- minor upgrades ([9cf259a9](https://github.com/firstlovecenter/fl-pastoral-care/commit/9cf259a9a6f1c6c253c201de1f14f3fdc9b4a515))
 
 #### 7.10.5 (2023-09-25)
 
 ##### Bug Fixes
 
-*  change link ([74fafe6f](https://github.com/firstlovecenter/fl-pastoral-care/commit/74fafe6f24adf575dde0e552873a5b458ee257f8))
+- change link ([74fafe6f](https://github.com/firstlovecenter/fl-pastoral-care/commit/74fafe6f24adf575dde0e552873a5b458ee257f8))
 
 #### 7.10.4 (2023-09-25)
 
 ##### Bug Fixes
 
-*  change redirection of MemberForm.tsx to fellowship details ([585e69de](https://github.com/firstlovecenter/fl-pastoral-care/commit/585e69de1360c8cf5ef4fc3525967754e83f7990))
-*  properly set ids in setPermissions component ([2728d13a](https://github.com/firstlovecenter/fl-pastoral-care/commit/2728d13a45e5294a4efb9e6ec82e670880aeb7a6))
-*  instead of adding the deposited amount, they just update the latest balance ([49942766](https://github.com/firstlovecenter/fl-pastoral-care/commit/49942766c24e13202682d0b4aff7544dab2997a3))
-*  remove console.log ([fa991b72](https://github.com/firstlovecenter/fl-pastoral-care/commit/fa991b7282bd0f27d2aa7496a0a26295ad4ea6f8))
-*  add construction as an option of category ([76feea35](https://github.com/firstlovecenter/fl-pastoral-care/commit/76feea3553e062908d7a459d37720679bf230aa3))
-*  bring balances to front of council list ([601bb13a](https://github.com/firstlovecenter/fl-pastoral-care/commit/601bb13a9bcafe8c0ca52c357f3000078d592096))
-*  change ministry to basonta on usereditpage ([ee7ad20a](https://github.com/firstlovecenter/fl-pastoral-care/commit/ee7ad20a42fc2ff9da890d6c05c990105da78d16))
+- change redirection of MemberForm.tsx to fellowship details ([585e69de](https://github.com/firstlovecenter/fl-pastoral-care/commit/585e69de1360c8cf5ef4fc3525967754e83f7990))
+- properly set ids in setPermissions component ([2728d13a](https://github.com/firstlovecenter/fl-pastoral-care/commit/2728d13a45e5294a4efb9e6ec82e670880aeb7a6))
+- instead of adding the deposited amount, they just update the latest balance ([49942766](https://github.com/firstlovecenter/fl-pastoral-care/commit/49942766c24e13202682d0b4aff7544dab2997a3))
+- remove console.log ([fa991b72](https://github.com/firstlovecenter/fl-pastoral-care/commit/fa991b7282bd0f27d2aa7496a0a26295ad4ea6f8))
+- add construction as an option of category ([76feea35](https://github.com/firstlovecenter/fl-pastoral-care/commit/76feea3553e062908d7a459d37720679bf230aa3))
+- bring balances to front of council list ([601bb13a](https://github.com/firstlovecenter/fl-pastoral-care/commit/601bb13a9bcafe8c0ca52c357f3000078d592096))
+- change ministry to basonta on usereditpage ([ee7ad20a](https://github.com/firstlovecenter/fl-pastoral-care/commit/ee7ad20a42fc2ff9da890d6c05c990105da78d16))
 
 #### 7.10.3 (2023-09-24)
 
 ##### Bug Fixes
 
-*  order council names in alphabetical order ([2252de75](https://github.com/firstlovecenter/fl-pastoral-care/commit/2252de755717fc724390c732733c4ac43d3a7c87))
-*  change mentions of basonta to ministry which were breaking the build ([a89d2492](https://github.com/firstlovecenter/fl-pastoral-care/commit/a89d24927ebcc1b60f211183e6a8ec555dd329fe))
-*  make all creativearts also have label Basonta ([66bc3b97](https://github.com/firstlovecenter/fl-pastoral-care/commit/66bc3b97d76abd8cfeb263663370db8185cc9d78))
-*  mark all creativeArts as Basonta ([cac96e14](https://github.com/firstlovecenter/fl-pastoral-care/commit/cac96e14448ee35c3ad1118feeadc141e4d935d7))
-*  hide 'Add title' button onn member form ([e132857f](https://github.com/firstlovecenter/fl-pastoral-care/commit/e132857fb1df7fd0f2a91ca75bfa6dcbc8155171))
-*  don't display  both old image and new image when uploading image ([305b354b](https://github.com/firstlovecenter/fl-pastoral-care/commit/305b354b8ccc025deee82ad7013e577808a14205))
-*  remove errant comma from createcouncil ([720ab36c](https://github.com/firstlovecenter/fl-pastoral-care/commit/720ab36c5294f939dbc61188df93cdc8396d24fa))
-*  update hubfellowships on stream deatils ([8c22dc11](https://github.com/firstlovecenter/fl-pastoral-care/commit/8c22dc115eae267bd13544a478f7158a4a6bcbaf))
-*  fix bug preventing updating weekend bussing entry ([9dd990cf](https://github.com/firstlovecenter/fl-pastoral-care/commit/9dd990cf2136dfceb6b69e7653fbccb0f87e2511))
-*  update arrivals payment sheet to have council head name ([da8f74f0](https://github.com/firstlovecenter/fl-pastoral-care/commit/da8f74f03a62046928035102d40a7bf93b755660))
-*  bug with aggregate service cypher ([2d748cb2](https://github.com/firstlovecenter/fl-pastoral-care/commit/2d748cb26d3c1f38d27ed3d52094c0ef6286eee9))
-*  add number of services to all aggregate church levels ([5e51d258](https://github.com/firstlovecenter/fl-pastoral-care/commit/5e51d258bfcdb31f0fde1573a00e9040f6fe4245))
-*  correct args for service utils ([2cb2d623](https://github.com/firstlovecenter/fl-pastoral-care/commit/2cb2d62370ce761f94c9766d75c36e4fb77968b6))
-*  prevent double form filling for council services ([1173a760](https://github.com/firstlovecenter/fl-pastoral-care/commit/1173a76081f881ed33471a1bbbc9686d3130f711))
-*  add leader names to the defaulters churchBySubchurch ([c2629ec4](https://github.com/firstlovecenter/fl-pastoral-care/commit/c2629ec4adee1bc9836097dcaaa99b03202840a1))
-*  update  sender id for notify function ([aee4e17d](https://github.com/firstlovecenter/fl-pastoral-care/commit/aee4e17d86dbf6ae74072f2204eab55c01f67f3f))
-*  implement sending sms on council deposit ([7dbdb706](https://github.com/firstlovecenter/fl-pastoral-care/commit/7dbdb706fc9510c7837b6fd81892722f34ae7efd))
-*  change accountbalancecard on campus dashboard ([1330cfd5](https://github.com/firstlovecenter/fl-pastoral-care/commit/1330cfd56a9ceb391661042c19f2091e0785b22a))
-*  add council leader names to council names ([f041eca2](https://github.com/firstlovecenter/fl-pastoral-care/commit/f041eca2c3af054cf7182964299026035ec19a59))
-*  update permissions for council dashboard ([e35aa0c9](https://github.com/firstlovecenter/fl-pastoral-care/commit/e35aa0c9922440df99e4e3716e853d1f55b2a4bb))
-*  update permissions for accountsRoutes ([0ebf0032](https://github.com/firstlovecenter/fl-pastoral-care/commit/0ebf0032c7d59e4c8423b829c68cd0fae7149962))
+- order council names in alphabetical order ([2252de75](https://github.com/firstlovecenter/fl-pastoral-care/commit/2252de755717fc724390c732733c4ac43d3a7c87))
+- change mentions of basonta to ministry which were breaking the build ([a89d2492](https://github.com/firstlovecenter/fl-pastoral-care/commit/a89d24927ebcc1b60f211183e6a8ec555dd329fe))
+- make all creativearts also have label Basonta ([66bc3b97](https://github.com/firstlovecenter/fl-pastoral-care/commit/66bc3b97d76abd8cfeb263663370db8185cc9d78))
+- mark all creativeArts as Basonta ([cac96e14](https://github.com/firstlovecenter/fl-pastoral-care/commit/cac96e14448ee35c3ad1118feeadc141e4d935d7))
+- hide 'Add title' button onn member form ([e132857f](https://github.com/firstlovecenter/fl-pastoral-care/commit/e132857fb1df7fd0f2a91ca75bfa6dcbc8155171))
+- don't display both old image and new image when uploading image ([305b354b](https://github.com/firstlovecenter/fl-pastoral-care/commit/305b354b8ccc025deee82ad7013e577808a14205))
+- remove errant comma from createcouncil ([720ab36c](https://github.com/firstlovecenter/fl-pastoral-care/commit/720ab36c5294f939dbc61188df93cdc8396d24fa))
+- update hubfellowships on stream deatils ([8c22dc11](https://github.com/firstlovecenter/fl-pastoral-care/commit/8c22dc115eae267bd13544a478f7158a4a6bcbaf))
+- fix bug preventing updating weekend bussing entry ([9dd990cf](https://github.com/firstlovecenter/fl-pastoral-care/commit/9dd990cf2136dfceb6b69e7653fbccb0f87e2511))
+- update arrivals payment sheet to have council head name ([da8f74f0](https://github.com/firstlovecenter/fl-pastoral-care/commit/da8f74f03a62046928035102d40a7bf93b755660))
+- bug with aggregate service cypher ([2d748cb2](https://github.com/firstlovecenter/fl-pastoral-care/commit/2d748cb26d3c1f38d27ed3d52094c0ef6286eee9))
+- add number of services to all aggregate church levels ([5e51d258](https://github.com/firstlovecenter/fl-pastoral-care/commit/5e51d258bfcdb31f0fde1573a00e9040f6fe4245))
+- correct args for service utils ([2cb2d623](https://github.com/firstlovecenter/fl-pastoral-care/commit/2cb2d62370ce761f94c9766d75c36e4fb77968b6))
+- prevent double form filling for council services ([1173a760](https://github.com/firstlovecenter/fl-pastoral-care/commit/1173a76081f881ed33471a1bbbc9686d3130f711))
+- add leader names to the defaulters churchBySubchurch ([c2629ec4](https://github.com/firstlovecenter/fl-pastoral-care/commit/c2629ec4adee1bc9836097dcaaa99b03202840a1))
+- update sender id for notify function ([aee4e17d](https://github.com/firstlovecenter/fl-pastoral-care/commit/aee4e17d86dbf6ae74072f2204eab55c01f67f3f))
+- implement sending sms on council deposit ([7dbdb706](https://github.com/firstlovecenter/fl-pastoral-care/commit/7dbdb706fc9510c7837b6fd81892722f34ae7efd))
+- change accountbalancecard on campus dashboard ([1330cfd5](https://github.com/firstlovecenter/fl-pastoral-care/commit/1330cfd56a9ceb391661042c19f2091e0785b22a))
+- add council leader names to council names ([f041eca2](https://github.com/firstlovecenter/fl-pastoral-care/commit/f041eca2c3af054cf7182964299026035ec19a59))
+- update permissions for council dashboard ([e35aa0c9](https://github.com/firstlovecenter/fl-pastoral-care/commit/e35aa0c9922440df99e4e3716e853d1f55b2a4bb))
+- update permissions for accountsRoutes ([0ebf0032](https://github.com/firstlovecenter/fl-pastoral-care/commit/0ebf0032c7d59e4c8423b829c68cd0fae7149962))
 
 ##### Refactors
 
-*  refactor service aggregation flow for higherChurch levels ([8697292b](https://github.com/firstlovecenter/fl-pastoral-care/commit/8697292be22078a1149f70121d984b0baed7968a))
+- refactor service aggregation flow for higherChurch levels ([8697292b](https://github.com/firstlovecenter/fl-pastoral-care/commit/8697292be22078a1149f70121d984b0baed7968a))
 
 #### 7.10.2 (2023-09-22)
 
 ##### Bug Fixes
 
-*  update permissions for nav menu accounts ([876892ef](https://github.com/firstlovecenter/fl-pastoral-care/commit/876892ef960fd0b44d21788f942a9baa9ac35622))
-*  update permissions for nav menu accounts ([2d858f74](https://github.com/firstlovecenter/fl-pastoral-care/commit/2d858f74122b03c91f8fe16b187efe8aac97f068))
+- update permissions for nav menu accounts ([876892ef](https://github.com/firstlovecenter/fl-pastoral-care/commit/876892ef960fd0b44d21788f942a9baa9ac35622))
+- update permissions for nav menu accounts ([2d858f74](https://github.com/firstlovecenter/fl-pastoral-care/commit/2d858f74122b03c91f8fe16b187efe8aac97f068))
 
 #### 7.10.1 (2023-09-22)
 
 ##### Bug Fixes
 
-*  fix permissions for defaulters ([ebf542ac](https://github.com/firstlovecenter/fl-pastoral-care/commit/ebf542ac534728fd1ab925c04cec82fdf862973e))
+- fix permissions for defaulters ([ebf542ac](https://github.com/firstlovecenter/fl-pastoral-care/commit/ebf542ac534728fd1ab925c04cec82fdf862973e))
 
 ### 7.10.0 (2023-09-21)
 
 ##### New Features
 
-* **accounts:**  implement a preset HR Amount from GS Admin ([0f0a8257](https://github.com/firstlovecenter/fl-pastoral-care/commit/0f0a8257f3369841488c3b7df71d3ad4fd7be436))
+- **accounts:** implement a preset HR Amount from GS Admin ([0f0a8257](https://github.com/firstlovecenter/fl-pastoral-care/commit/0f0a8257f3369841488c3b7df71d3ad4fd7be436))
 
 ##### Bug Fixes
 
-*  implement preset bussing amounts ([838c9121](https://github.com/firstlovecenter/fl-pastoral-care/commit/838c912111cb884e3f23734601690cefc19d50d8))
-*  rounded edges of search image picture ([8840a092](https://github.com/firstlovecenter/fl-pastoral-care/commit/8840a092fc8605b95cc27d7b1ab79d28243f7dd4))
-*  fix issue  where stream  ministries weren't appearing ([ad0b0c61](https://github.com/firstlovecenter/fl-pastoral-care/commit/ad0b0c611b8e60de7fd2059f4e19c75316af4bd0))
-*  update display of search results ([b2c8ccf8](https://github.com/firstlovecenter/fl-pastoral-care/commit/b2c8ccf80e456298d6c41fef357ccd764a5272d6))
-*  make coloring autosuggest drop down better ([baf32c3e](https://github.com/firstlovecenter/fl-pastoral-care/commit/baf32c3ee1e1c746712596e6e8b7b29e86aa43a7))
-*  update query to search for members ([4d372e90](https://github.com/firstlovecenter/fl-pastoral-care/commit/4d372e9042b179313a57c4db59ceb7147ba1c906))
-*  fix incorrect types on ServiceDetails.tsx ([fa6343b4](https://github.com/firstlovecenter/fl-pastoral-care/commit/fa6343b41e0e7e1f5c8f7a1730a9d58e3b05426b))
+- implement preset bussing amounts ([838c9121](https://github.com/firstlovecenter/fl-pastoral-care/commit/838c912111cb884e3f23734601690cefc19d50d8))
+- rounded edges of search image picture ([8840a092](https://github.com/firstlovecenter/fl-pastoral-care/commit/8840a092fc8605b95cc27d7b1ab79d28243f7dd4))
+- fix issue where stream ministries weren't appearing ([ad0b0c61](https://github.com/firstlovecenter/fl-pastoral-care/commit/ad0b0c611b8e60de7fd2059f4e19c75316af4bd0))
+- update display of search results ([b2c8ccf8](https://github.com/firstlovecenter/fl-pastoral-care/commit/b2c8ccf80e456298d6c41fef357ccd764a5272d6))
+- make coloring autosuggest drop down better ([baf32c3e](https://github.com/firstlovecenter/fl-pastoral-care/commit/baf32c3ee1e1c746712596e6e8b7b29e86aa43a7))
+- update query to search for members ([4d372e90](https://github.com/firstlovecenter/fl-pastoral-care/commit/4d372e9042b179313a57c4db59ceb7147ba1c906))
+- fix incorrect types on ServiceDetails.tsx ([fa6343b4](https://github.com/firstlovecenter/fl-pastoral-care/commit/fa6343b41e0e7e1f5c8f7a1730a9d58e3b05426b))
 
 #### 7.9.26 (2023-09-19)
 
 ##### Bug Fixes
 
-*  fix bug where navigating to sub churches still shows you your highest level churches ([f5d2782b](https://github.com/firstlovecenter/fl-pastoral-care/commit/f5d2782be3c4520fc78012de675d24970789c8bf))
-*  remove all unnecessary mentions of sonta from the app ([ae6ae351](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae6ae351f3fbe6a092055cdd63b494fc0fe40461))
-*  add middle name to search parameters ([eccca01f](https://github.com/firstlovecenter/fl-pastoral-care/commit/eccca01f79aefb545d8eed21753f429ac0dbb7ad))
+- fix bug where navigating to sub churches still shows you your highest level churches ([f5d2782b](https://github.com/firstlovecenter/fl-pastoral-care/commit/f5d2782be3c4520fc78012de675d24970789c8bf))
+- remove all unnecessary mentions of sonta from the app ([ae6ae351](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae6ae351f3fbe6a092055cdd63b494fc0fe40461))
+- add middle name to search parameters ([eccca01f](https://github.com/firstlovecenter/fl-pastoral-care/commit/eccca01f79aefb545d8eed21753f429ac0dbb7ad))
 
 #### 7.9.25 (2023-09-19)
 
 ##### Bug Fixes
 
-*  allow closing of constituencies by passing adminId ([3f08c7eb](https://github.com/firstlovecenter/fl-pastoral-care/commit/3f08c7ebd343435dea9c213dd615bc4350e922bd))
-*  update search to provide good results for creative arts and oversight ([0478cfca](https://github.com/firstlovecenter/fl-pastoral-care/commit/0478cfcab809723fe4bf4153fc8b9d28be0fc057))
+- allow closing of constituencies by passing adminId ([3f08c7eb](https://github.com/firstlovecenter/fl-pastoral-care/commit/3f08c7ebd343435dea9c213dd615bc4350e922bd))
+- update search to provide good results for creative arts and oversight ([0478cfca](https://github.com/firstlovecenter/fl-pastoral-care/commit/0478cfcab809723fe4bf4153fc8b9d28be0fc057))
 
 #### 7.9.24 (2023-09-19)
 
 ##### Bug Fixes
 
-*  add some solid color and opacity to navbar ([76fd6750](https://github.com/firstlovecenter/fl-pastoral-care/commit/76fd675006c3039994934360046179a20ff1799d))
-*  minor ui changes to autosuggest box ([6ed0467c](https://github.com/firstlovecenter/fl-pastoral-care/commit/6ed0467c57853beb698c9fa775363287971befd7))
-*  modify search to bring results of all members and churches you have access to ([dae26e53](https://github.com/firstlovecenter/fl-pastoral-care/commit/dae26e5368a5e23f28267105995e3b50563e481f))
-*  remove leaderSonta from protectedroute ([826ee475](https://github.com/firstlovecenter/fl-pastoral-care/commit/826ee47578b5bec9e2532040f0de61ee2bceddd3))
+- add some solid color and opacity to navbar ([76fd6750](https://github.com/firstlovecenter/fl-pastoral-care/commit/76fd675006c3039994934360046179a20ff1799d))
+- minor ui changes to autosuggest box ([6ed0467c](https://github.com/firstlovecenter/fl-pastoral-care/commit/6ed0467c57853beb698c9fa775363287971befd7))
+- modify search to bring results of all members and churches you have access to ([dae26e53](https://github.com/firstlovecenter/fl-pastoral-care/commit/dae26e5368a5e23f28267105995e3b50563e481f))
+- remove leaderSonta from protectedroute ([826ee475](https://github.com/firstlovecenter/fl-pastoral-care/commit/826ee47578b5bec9e2532040f0de61ee2bceddd3))
 
 #### 7.9.23 (2023-09-18)
 
@@ -1860,377 +1860,377 @@
 
 ##### Bug Fixes
 
-*  fix broken permissions on Constituency form ([83c59463](https://github.com/firstlovecenter/fl-pastoral-care/commit/83c5946381aad995a6b366793f117762c03cdb6f))
-*  update permissions for defaulters dashboard ([b3dbd39f](https://github.com/firstlovecenter/fl-pastoral-care/commit/b3dbd39f6472461ecb54768d5541514203d377ed))
-*  implement old_history log to prevent confusion ([88061bcc](https://github.com/firstlovecenter/fl-pastoral-care/commit/88061bcc73ee9eb25e135693ccee2367e0a13f03))
+- fix broken permissions on Constituency form ([83c59463](https://github.com/firstlovecenter/fl-pastoral-care/commit/83c5946381aad995a6b366793f117762c03cdb6f))
+- update permissions for defaulters dashboard ([b3dbd39f](https://github.com/firstlovecenter/fl-pastoral-care/commit/b3dbd39f6472461ecb54768d5541514203d377ed))
+- implement old_history log to prevent confusion ([88061bcc](https://github.com/firstlovecenter/fl-pastoral-care/commit/88061bcc73ee9eb25e135693ccee2367e0a13f03))
 
 #### 7.9.19 (2023-09-18)
 
 ##### Bug Fixes
 
-*  remove unused duplicate mutations ([d197cea7](https://github.com/firstlovecenter/fl-pastoral-care/commit/d197cea7dab59d7903758b10624c158542df4e8f))
-*  minor updates to data display in ui ([49448971](https://github.com/firstlovecenter/fl-pastoral-care/commit/49448971feece934fa13ec6a40bd57badaf552ca))
-*  fix bugs in directory cypher ([a6d2bd7a](https://github.com/firstlovecenter/fl-pastoral-care/commit/a6d2bd7a976123b2fa02225e94b50e75589c628c))
+- remove unused duplicate mutations ([d197cea7](https://github.com/firstlovecenter/fl-pastoral-care/commit/d197cea7dab59d7903758b10624c158542df4e8f))
+- minor updates to data display in ui ([49448971](https://github.com/firstlovecenter/fl-pastoral-care/commit/49448971feece934fa13ec6a40bd57badaf552ca))
+- fix bugs in directory cypher ([a6d2bd7a](https://github.com/firstlovecenter/fl-pastoral-care/commit/a6d2bd7a976123b2fa02225e94b50e75589c628c))
 
 #### 7.9.18 (2023-09-17)
 
 ##### Bug Fixes
 
-*  remove unused vars for update church details mutations ([9ce6ac6a](https://github.com/firstlovecenter/fl-pastoral-care/commit/9ce6ac6a39e5288c94c96e2109b2ec061b1d887d))
-*  fix some invalid types breaking the build ([16ae71b7](https://github.com/firstlovecenter/fl-pastoral-care/commit/16ae71b752f4586efa4e3ae6389b66a511e2454a))
+- remove unused vars for update church details mutations ([9ce6ac6a](https://github.com/firstlovecenter/fl-pastoral-care/commit/9ce6ac6a39e5288c94c96e2109b2ec061b1d887d))
+- fix some invalid types breaking the build ([16ae71b7](https://github.com/firstlovecenter/fl-pastoral-care/commit/16ae71b752f4586efa4e3ae6389b66a511e2454a))
 
 #### 7.9.17 (2023-09-17)
 
 ##### Bug Fixes
 
-*  fix directory pages for fellowship, bacenta, constituency, council ([a3b48e28](https://github.com/firstlovecenter/fl-pastoral-care/commit/a3b48e283d565b65cc5343157101e2796cc3193c))
-*  fix bug preventing stream admin from searching ([e5926497](https://github.com/firstlovecenter/fl-pastoral-care/commit/e59264973d85d08d4921aeb0fa956f797b907e81))
-*  make change admin modal nicer looking ([f57edf54](https://github.com/firstlovecenter/fl-pastoral-care/commit/f57edf545c0512bb1022cbb2ea14870226af608a))
-*  fix bug with anagkazo defaulters 4 ([f9ac1499](https://github.com/firstlovecenter/fl-pastoral-care/commit/f9ac1499a3333c4acb3bb208f410a1bf50c0096c))
-*  fix bug with anagkazo defaulters 3 ([09a28956](https://github.com/firstlovecenter/fl-pastoral-care/commit/09a28956fdb4cd01967fe9420802bfbb592d339e))
-*  fix bug with anagkazo defaulters 2 ([593a0ac3](https://github.com/firstlovecenter/fl-pastoral-care/commit/593a0ac36ee420a4a3a96458f7e39bfe1044578b))
-*  fix bug preventing annagkazo banking ([170a7186](https://github.com/firstlovecenter/fl-pastoral-care/commit/170a7186d04ee64eb83c8a5479519dc567b52864))
-*  implement modal for moving bacentas across constituencies ([ee15dbe7](https://github.com/firstlovecenter/fl-pastoral-care/commit/ee15dbe7d360eb5f66f0c74c5d8e6238dadd6b3d))
-*  implement modal for moving constituencies across councils ([8e0777af](https://github.com/firstlovecenter/fl-pastoral-care/commit/8e0777afd7f3166aed5108a849337c9dea1dc17c))
-*  update code-of-the-day function for sept ([1b6abe36](https://github.com/firstlovecenter/fl-pastoral-care/commit/1b6abe362607f312d9e67f930b49bed26daf6f81))
-*  make it possible for vacation fellowships to be made  into hub fellowships ([e17f79e1](https://github.com/firstlovecenter/fl-pastoral-care/commit/e17f79e127c407d6d87c990cce171f1b41479bca))
+- fix directory pages for fellowship, bacenta, constituency, council ([a3b48e28](https://github.com/firstlovecenter/fl-pastoral-care/commit/a3b48e283d565b65cc5343157101e2796cc3193c))
+- fix bug preventing stream admin from searching ([e5926497](https://github.com/firstlovecenter/fl-pastoral-care/commit/e59264973d85d08d4921aeb0fa956f797b907e81))
+- make change admin modal nicer looking ([f57edf54](https://github.com/firstlovecenter/fl-pastoral-care/commit/f57edf545c0512bb1022cbb2ea14870226af608a))
+- fix bug with anagkazo defaulters 4 ([f9ac1499](https://github.com/firstlovecenter/fl-pastoral-care/commit/f9ac1499a3333c4acb3bb208f410a1bf50c0096c))
+- fix bug with anagkazo defaulters 3 ([09a28956](https://github.com/firstlovecenter/fl-pastoral-care/commit/09a28956fdb4cd01967fe9420802bfbb592d339e))
+- fix bug with anagkazo defaulters 2 ([593a0ac3](https://github.com/firstlovecenter/fl-pastoral-care/commit/593a0ac36ee420a4a3a96458f7e39bfe1044578b))
+- fix bug preventing annagkazo banking ([170a7186](https://github.com/firstlovecenter/fl-pastoral-care/commit/170a7186d04ee64eb83c8a5479519dc567b52864))
+- implement modal for moving bacentas across constituencies ([ee15dbe7](https://github.com/firstlovecenter/fl-pastoral-care/commit/ee15dbe7d360eb5f66f0c74c5d8e6238dadd6b3d))
+- implement modal for moving constituencies across councils ([8e0777af](https://github.com/firstlovecenter/fl-pastoral-care/commit/8e0777afd7f3166aed5108a849337c9dea1dc17c))
+- update code-of-the-day function for sept ([1b6abe36](https://github.com/firstlovecenter/fl-pastoral-care/commit/1b6abe362607f312d9e67f930b49bed26daf6f81))
+- make it possible for vacation fellowships to be made into hub fellowships ([e17f79e1](https://github.com/firstlovecenter/fl-pastoral-care/commit/e17f79e127c407d6d87c990cce171f1b41479bca))
 
 ##### Refactors
 
-*  refactor all directory pages for moving lower churches ([1510002f](https://github.com/firstlovecenter/fl-pastoral-care/commit/1510002f9330a561e619ff4936a3a15f6579eea7))
+- refactor all directory pages for moving lower churches ([1510002f](https://github.com/firstlovecenter/fl-pastoral-care/commit/1510002f9330a561e619ff4936a3a15f6579eea7))
 
 #### 7.9.16 (2023-09-16)
 
 ##### New Features
 
-* **creativearts:**
-  *  implement defaulters dashboard for all creative arts levels ([f15be886](https://github.com/firstlovecenter/fl-pastoral-care/commit/f15be8869a34e6f4a91510611c881e192b902c9d))
-  *  scaffold pages for creative arts graphs ([4df2c484](https://github.com/firstlovecenter/fl-pastoral-care/commit/4df2c484f6303cff997ac843dcca2850c981d3f5))
+- **creativearts:**
+  - implement defaulters dashboard for all creative arts levels ([f15be886](https://github.com/firstlovecenter/fl-pastoral-care/commit/f15be8869a34e6f4a91510611c881e192b902c9d))
+  - scaffold pages for creative arts graphs ([4df2c484](https://github.com/firstlovecenter/fl-pastoral-care/commit/4df2c484f6303cff997ac843dcca2850c981d3f5))
 
 ##### Bug Fixes
 
-*  fix broken import of css file ([02be4e94](https://github.com/firstlovecenter/fl-pastoral-care/commit/02be4e9488dc5031d02b4f9ce139aa1727e71ad0))
-*  fix bug on member role list for creativeArtsLeaders ([7bf8a532](https://github.com/firstlovecenter/fl-pastoral-care/commit/7bf8a532fef1d015078587b20d9933c7e90bb094))
-*  finish church by subchurch queries ([f992fa0a](https://github.com/firstlovecenter/fl-pastoral-care/commit/f992fa0a3cfea1469b2b189d29019af84d7be629))
-*  fix sonta bugs ([2724d184](https://github.com/firstlovecenter/fl-pastoral-care/commit/2724d18443ebc629b33e83af4bacc79d91bc76e6))
-*  cypher bug  in connectChurch ([879b3f3f](https://github.com/firstlovecenter/fl-pastoral-care/commit/879b3f3fb7884462b1573f519c461d829391a31f))
+- fix broken import of css file ([02be4e94](https://github.com/firstlovecenter/fl-pastoral-care/commit/02be4e9488dc5031d02b4f9ce139aa1727e71ad0))
+- fix bug on member role list for creativeArtsLeaders ([7bf8a532](https://github.com/firstlovecenter/fl-pastoral-care/commit/7bf8a532fef1d015078587b20d9933c7e90bb094))
+- finish church by subchurch queries ([f992fa0a](https://github.com/firstlovecenter/fl-pastoral-care/commit/f992fa0a3cfea1469b2b189d29019af84d7be629))
+- fix sonta bugs ([2724d184](https://github.com/firstlovecenter/fl-pastoral-care/commit/2724d18443ebc629b33e83af4bacc79d91bc76e6))
+- cypher bug in connectChurch ([879b3f3f](https://github.com/firstlovecenter/fl-pastoral-care/commit/879b3f3fb7884462b1573f519c461d829391a31f))
 
 #### 7.9.15 (2023-09-15)
 
 ##### Bug Fixes
 
-*  fix  issues  with sonta and oa ([29bbf0f8](https://github.com/firstlovecenter/fl-pastoral-care/commit/29bbf0f833f2f5d07b217e80f0837ca2fe7db1e7))
-* **outside-accra:**
-  *  add cypher query to connect leaders ([a89ae84c](https://github.com/firstlovecenter/fl-pastoral-care/commit/a89ae84c95d7913684c5fd36feacddc8179b94b0))
-  *  add cypher query to match Oversight member ([b2bda326](https://github.com/firstlovecenter/fl-pastoral-care/commit/b2bda326353bd27e89034795e57621575ea13709))
+- fix issues with sonta and oa ([29bbf0f8](https://github.com/firstlovecenter/fl-pastoral-care/commit/29bbf0f833f2f5d07b217e80f0837ca2fe7db1e7))
+- **outside-accra:**
+  - add cypher query to connect leaders ([a89ae84c](https://github.com/firstlovecenter/fl-pastoral-care/commit/a89ae84c95d7913684c5fd36feacddc8179b94b0))
+  - add cypher query to match Oversight member ([b2bda326](https://github.com/firstlovecenter/fl-pastoral-care/commit/b2bda326353bd27e89034795e57621575ea13709))
 
 #### 7.9.14 (2023-09-15)
 
 ##### New Features
 
-* **creativearts:**
-  *  finalise changes to update creative arts ([349c175d](https://github.com/firstlovecenter/fl-pastoral-care/commit/349c175d963f7b4f0cc5b1c3d4df0efe6b3ef151))
-  *  implement update creative arts  page ([cd962c95](https://github.com/firstlovecenter/fl-pastoral-care/commit/cd962c956010a301ac4a446a19ceda44652fa2a4))
+- **creativearts:**
+  - finalise changes to update creative arts ([349c175d](https://github.com/firstlovecenter/fl-pastoral-care/commit/349c175d963f7b4f0cc5b1c3d4df0efe6b3ef151))
+  - implement update creative arts page ([cd962c95](https://github.com/firstlovecenter/fl-pastoral-care/commit/cd962c956010a301ac4a446a19ceda44652fa2a4))
 
 ##### Bug Fixes
 
-*  add church oversight type to resolver cypher ([fc88e32c](https://github.com/firstlovecenter/fl-pastoral-care/commit/fc88e32cc496579426397cac376f2f791e6abf7c))
-*  add denomition to permission levels ([5e926e40](https://github.com/firstlovecenter/fl-pastoral-care/commit/5e926e40feda0a7cbe8c98bb1e1cfa0305a5f218))
-*  add admins to oversight and campus levels ([35e63608](https://github.com/firstlovecenter/fl-pastoral-care/commit/35e63608c39c1da214bf85af1218f481c26ea6e4))
-*  separate useChurchLevel and useSontaLevel ([4f38ebb6](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f38ebb6c646b788a7f49636404e30b39dcd3fb2))
-* **outside-accra:**  implement resolver for oversight admin ([1b4569c1](https://github.com/firstlovecenter/fl-pastoral-care/commit/1b4569c1392438fe6803830231d6d140567ff21a))
+- add church oversight type to resolver cypher ([fc88e32c](https://github.com/firstlovecenter/fl-pastoral-care/commit/fc88e32cc496579426397cac376f2f791e6abf7c))
+- add denomition to permission levels ([5e926e40](https://github.com/firstlovecenter/fl-pastoral-care/commit/5e926e40feda0a7cbe8c98bb1e1cfa0305a5f218))
+- add admins to oversight and campus levels ([35e63608](https://github.com/firstlovecenter/fl-pastoral-care/commit/35e63608c39c1da214bf85af1218f481c26ea6e4))
+- separate useChurchLevel and useSontaLevel ([4f38ebb6](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f38ebb6c646b788a7f49636404e30b39dcd3fb2))
+- **outside-accra:** implement resolver for oversight admin ([1b4569c1](https://github.com/firstlovecenter/fl-pastoral-care/commit/1b4569c1392438fe6803830231d6d140567ff21a))
 
 #### 7.9.13 (2023-09-15)
 
 ##### New Features
 
-* **creativearts:**
-  *  initiate hub rehearsal and sunday meeting form ([b0710afb](https://github.com/firstlovecenter/fl-pastoral-care/commit/b0710afb616e67b577c755af32f94acb77f80505))
-  *  implement defaulters for hub leaders ([692d7cfd](https://github.com/firstlovecenter/fl-pastoral-care/commit/692d7cfd7560a913ba2354f1b941126dacf23cca))
+- **creativearts:**
+  - initiate hub rehearsal and sunday meeting form ([b0710afb](https://github.com/firstlovecenter/fl-pastoral-care/commit/b0710afb616e67b577c755af32f94acb77f80505))
+  - implement defaulters for hub leaders ([692d7cfd](https://github.com/firstlovecenter/fl-pastoral-care/commit/692d7cfd7560a913ba2354f1b941126dacf23cca))
 
 ##### Bug Fixes
 
-* **creativearts:**  viewing all hubs is now restricted to the select ministry ([10339e33](https://github.com/firstlovecenter/fl-pastoral-care/commit/10339e3354f464a0daed67e305916202e6a07dd1))
-* **shepherding-control:**  all YTD data is now ACTUALLY YTD ([8ed8b571](https://github.com/firstlovecenter/fl-pastoral-care/commit/8ed8b57125e6669035a7a99910c5a9c64dfe0e28))
-* **imcl:**  update error handling of imcl lists for anagkazo ([268418e6](https://github.com/firstlovecenter/fl-pastoral-care/commit/268418e608698ed635b08aaf637fe1d2f956e299))
+- **creativearts:** viewing all hubs is now restricted to the select ministry ([10339e33](https://github.com/firstlovecenter/fl-pastoral-care/commit/10339e3354f464a0daed67e305916202e6a07dd1))
+- **shepherding-control:** all YTD data is now ACTUALLY YTD ([8ed8b571](https://github.com/firstlovecenter/fl-pastoral-care/commit/8ed8b57125e6669035a7a99910c5a9c64dfe0e28))
+- **imcl:** update error handling of imcl lists for anagkazo ([268418e6](https://github.com/firstlovecenter/fl-pastoral-care/commit/268418e608698ed635b08aaf637fe1d2f956e299))
 
 #### 7.9.12 (2023-09-14)
 
 ##### New Features
 
-*  implement flows to creative arts at all church levels ([4286fcb0](https://github.com/firstlovecenter/fl-pastoral-care/commit/4286fcb0fc8e97e72c6602b4f971136813854e3c))
+- implement flows to creative arts at all church levels ([4286fcb0](https://github.com/firstlovecenter/fl-pastoral-care/commit/4286fcb0fc8e97e72c6602b4f971136813854e3c))
 
 ##### Bug Fixes
 
-*  update stylinng  of map ([29dd0847](https://github.com/firstlovecenter/fl-pastoral-care/commit/29dd0847bc3938c18d0d89a27d52b24bcdbcae2d))
-*  bug with infowindow on map colouring ([c9f13593](https://github.com/firstlovecenter/fl-pastoral-care/commit/c9f135934d73ef10762dc98b816f69ecdd5703e6))
+- update stylinng of map ([29dd0847](https://github.com/firstlovecenter/fl-pastoral-care/commit/29dd0847bc3938c18d0d89a27d52b24bcdbcae2d))
+- bug with infowindow on map colouring ([c9f13593](https://github.com/firstlovecenter/fl-pastoral-care/commit/c9f135934d73ef10762dc98b816f69ecdd5703e6))
 
 #### 7.9.11 (2023-09-12)
 
 ##### Bug Fixes
 
-*  bring back alert for throwToSentry ([c46502ff](https://github.com/firstlovecenter/fl-pastoral-care/commit/c46502ffecefe7448367fcd63672214c1ff2a910))
+- bring back alert for throwToSentry ([c46502ff](https://github.com/firstlovecenter/fl-pastoral-care/commit/c46502ffecefe7448367fcd63672214c1ff2a910))
 
 #### 7.9.10 (2023-09-11)
 
 ##### Bug Fixes
 
-*  fix bug preventing search from working ([e16794cd](https://github.com/firstlovecenter/fl-pastoral-care/commit/e16794cd19408ab8fa14cbc808588aab08b5bda6))
+- fix bug preventing search from working ([e16794cd](https://github.com/firstlovecenter/fl-pastoral-care/commit/e16794cd19408ab8fa14cbc808588aab08b5bda6))
 
 #### 7.9.9 (2023-09-11)
 
 ##### Bug Fixes
 
-*  minor improvements ([b45b8218](https://github.com/firstlovecenter/fl-pastoral-care/commit/b45b82182795faa607c18d2d5ca5c515591174a6))
+- minor improvements ([b45b8218](https://github.com/firstlovecenter/fl-pastoral-care/commit/b45b82182795faa607c18d2d5ca5c515591174a6))
 
 #### 7.9.8 (2023-09-11)
 
 ##### Bug Fixes
 
-*   refactor setPermissions to use useQuery instead of useLazyQuery ([ae113331](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae11333110a21af32312fb1bad22e29bc2d5d210))
+- refactor setPermissions to use useQuery instead of useLazyQuery ([ae113331](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae11333110a21af32312fb1bad22e29bc2d5d210))
 
 #### 7.9.7 (2023-09-11)
 
 ##### Bug Fixes
 
-*  log some vars to the console ([be387b72](https://github.com/firstlovecenter/fl-pastoral-care/commit/be387b72cb414762a56e35a8cbec89c1442c2d47))
+- log some vars to the console ([be387b72](https://github.com/firstlovecenter/fl-pastoral-care/commit/be387b72cb414762a56e35a8cbec89c1442c2d47))
 
 #### 7.9.6 (2023-09-11)
 
 ##### Bug Fixes
 
-*  fix bug in setPermissions ([741e2445](https://github.com/firstlovecenter/fl-pastoral-care/commit/741e244553f3804f7034daf9c2b7892f6f2ec293))
+- fix bug in setPermissions ([741e2445](https://github.com/firstlovecenter/fl-pastoral-care/commit/741e244553f3804f7034daf9c2b7892f6f2ec293))
 
 #### 7.9.5 (2023-09-11)
 
 ##### Bug Fixes
 
-*  update styling of popup box ([c03f09e1](https://github.com/firstlovecenter/fl-pastoral-care/commit/c03f09e179f76623375c5af6546164c30ba11b29))
+- update styling of popup box ([c03f09e1](https://github.com/firstlovecenter/fl-pastoral-care/commit/c03f09e179f76623375c5af6546164c30ba11b29))
 
 #### 7.9.4 (2023-09-11)
 
 ##### Bug Fixes
 
-*  fixed issue with arrivals backdating ([35b7cb12](https://github.com/firstlovecenter/fl-pastoral-care/commit/35b7cb12710b05daf4db18726487fdaebaa86300))
-*  fixed final bugs with creative arts search ([02d49d6c](https://github.com/firstlovecenter/fl-pastoral-care/commit/02d49d6c15ff279b34d2873b07fb3683c3883270))
-*  implement search functionality for all levels of creativearts ([fbbe9966](https://github.com/firstlovecenter/fl-pastoral-care/commit/fbbe9966e7cfbf0420a62fc1e594a915fa77a3a0))
-*  add a no data component for coucils ([322a6a96](https://github.com/firstlovecenter/fl-pastoral-care/commit/322a6a966379f604f4402162b412d354255f32a4))
-*  implement backend for searching for creative arts church groups ([10d3a17f](https://github.com/firstlovecenter/fl-pastoral-care/commit/10d3a17f83872d656c9121ed82390f3e58536994))
-*  add number of hubs to all hubs display ([8f937c33](https://github.com/firstlovecenter/fl-pastoral-care/commit/8f937c3313d6944f0d052dc20c18e87e73b36fed))
+- fixed issue with arrivals backdating ([35b7cb12](https://github.com/firstlovecenter/fl-pastoral-care/commit/35b7cb12710b05daf4db18726487fdaebaa86300))
+- fixed final bugs with creative arts search ([02d49d6c](https://github.com/firstlovecenter/fl-pastoral-care/commit/02d49d6c15ff279b34d2873b07fb3683c3883270))
+- implement search functionality for all levels of creativearts ([fbbe9966](https://github.com/firstlovecenter/fl-pastoral-care/commit/fbbe9966e7cfbf0420a62fc1e594a915fa77a3a0))
+- add a no data component for coucils ([322a6a96](https://github.com/firstlovecenter/fl-pastoral-care/commit/322a6a966379f604f4402162b412d354255f32a4))
+- implement backend for searching for creative arts church groups ([10d3a17f](https://github.com/firstlovecenter/fl-pastoral-care/commit/10d3a17f83872d656c9121ed82390f3e58536994))
+- add number of hubs to all hubs display ([8f937c33](https://github.com/firstlovecenter/fl-pastoral-care/commit/8f937c3313d6944f0d052dc20c18e87e73b36fed))
 
 #### 7.9.3 (2023-09-10)
 
 ##### Bug Fixes
 
-*  update hub view to show councils ([3638601d](https://github.com/firstlovecenter/fl-pastoral-care/commit/3638601d9d84c76a8fb40142dd4da16258a13517))
-*  update code-of-the-day function ([1c3e44dc](https://github.com/firstlovecenter/fl-pastoral-care/commit/1c3e44dc8908ed441d4d1dd69cd8acf91b7640a5))
-*  fix breaking change for memberrolelist with creativeArtsAdmins ([f89cf1e3](https://github.com/firstlovecenter/fl-pastoral-care/commit/f89cf1e364ef2282c9b68adea4d7c9c1419ded09))
-*  bring back the directory lock ([ec8dbb2c](https://github.com/firstlovecenter/fl-pastoral-care/commit/ec8dbb2ce2073c9c4e52f08ddae8ddb19c49515f))
+- update hub view to show councils ([3638601d](https://github.com/firstlovecenter/fl-pastoral-care/commit/3638601d9d84c76a8fb40142dd4da16258a13517))
+- update code-of-the-day function ([1c3e44dc](https://github.com/firstlovecenter/fl-pastoral-care/commit/1c3e44dc8908ed441d4d1dd69cd8acf91b7640a5))
+- fix breaking change for memberrolelist with creativeArtsAdmins ([f89cf1e3](https://github.com/firstlovecenter/fl-pastoral-care/commit/f89cf1e364ef2282c9b68adea4d7c9c1419ded09))
+- bring back the directory lock ([ec8dbb2c](https://github.com/firstlovecenter/fl-pastoral-care/commit/ec8dbb2ce2073c9c4e52f08ddae8ddb19c49515f))
 
 #### 7.9.2 (2023-09-09)
 
 ##### Bug Fixes
 
-*  fix botched roles on allHubs.tsx ([4c3f3a49](https://github.com/firstlovecenter/fl-pastoral-care/commit/4c3f3a499895cd963e36d76baeee4b18212b9c89))
+- fix botched roles on allHubs.tsx ([4c3f3a49](https://github.com/firstlovecenter/fl-pastoral-care/commit/4c3f3a499895cd963e36d76baeee4b18212b9c89))
 
 #### 7.9.1 (2023-09-09)
 
 ##### Bug Fixes
 
-*  remove directory lock for creattive arts admin ([01544f01](https://github.com/firstlovecenter/fl-pastoral-care/commit/01544f0163aab37595b897f5b74fe57cc000b343))
-*  change color of sonta view trends btn ([c6c06907](https://github.com/firstlovecenter/fl-pastoral-care/commit/c6c069073ec9c713bfa9fdf637473ed93d5c1776))
+- remove directory lock for creattive arts admin ([01544f01](https://github.com/firstlovecenter/fl-pastoral-care/commit/01544f0163aab37595b897f5b74fe57cc000b343))
+- change color of sonta view trends btn ([c6c06907](https://github.com/firstlovecenter/fl-pastoral-care/commit/c6c069073ec9c713bfa9fdf637473ed93d5c1776))
 
 ### 7.9.0 (2023-09-09)
 
 ##### New Features
 
-*  design the flow for the creative arts admin ([61bb36c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/61bb36c0f9818b47cfc93e9d68a0e5778ebd191e))
-*  implement functionality to assign creative arts admins and ministry admins ([b9fbd507](https://github.com/firstlovecenter/fl-pastoral-care/commit/b9fbd50710bcad9919e22befdfbce2bf3e1714a6))
-*  add better handling for loading state of member roles ([fe694a29](https://github.com/firstlovecenter/fl-pastoral-care/commit/fe694a298d204702d2338fe54de10c041562c68b))
-*  add creative arts roles to the memberrolelist ([dfb99f99](https://github.com/firstlovecenter/fl-pastoral-care/commit/dfb99f99c3f36220715be348bf3de8fae130e851))
+- design the flow for the creative arts admin ([61bb36c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/61bb36c0f9818b47cfc93e9d68a0e5778ebd191e))
+- implement functionality to assign creative arts admins and ministry admins ([b9fbd507](https://github.com/firstlovecenter/fl-pastoral-care/commit/b9fbd50710bcad9919e22befdfbce2bf3e1714a6))
+- add better handling for loading state of member roles ([fe694a29](https://github.com/firstlovecenter/fl-pastoral-care/commit/fe694a298d204702d2338fe54de10c041562c68b))
+- add creative arts roles to the memberrolelist ([dfb99f99](https://github.com/firstlovecenter/fl-pastoral-care/commit/dfb99f99c3f36220715be348bf3de8fae130e851))
 
 ##### Bug Fixes
 
-*  implement member list for all creative arts levels ([6a3248de](https://github.com/firstlovecenter/fl-pastoral-care/commit/6a3248dedc5d1b230ed42a7e3064e45064d7bd61))
-*  update gql queries to show sonta roles on member display ([cc1fe2f9](https://github.com/firstlovecenter/fl-pastoral-care/commit/cc1fe2f983a6c9bfbb073583d15c81b84e5bd03c))
-*  update easy-debuggion cypher script ([b1e6b86b](https://github.com/firstlovecenter/fl-pastoral-care/commit/b1e6b86b278bbdd7d422cd53174b3fef3c1851fe))
+- implement member list for all creative arts levels ([6a3248de](https://github.com/firstlovecenter/fl-pastoral-care/commit/6a3248dedc5d1b230ed42a7e3064e45064d7bd61))
+- update gql queries to show sonta roles on member display ([cc1fe2f9](https://github.com/firstlovecenter/fl-pastoral-care/commit/cc1fe2f983a6c9bfbb073583d15c81b84e5bd03c))
+- update easy-debuggion cypher script ([b1e6b86b](https://github.com/firstlovecenter/fl-pastoral-care/commit/b1e6b86b278bbdd7d422cd53174b3fef3c1851fe))
 
 #### 7.8.6 (2023-09-07)
 
 ##### Bug Fixes
 
-*  fix bug preventing members from not displaying ([fdefd96b](https://github.com/firstlovecenter/fl-pastoral-care/commit/fdefd96bd24b149b6007bb67c93b7c77da8fbe87))
+- fix bug preventing members from not displaying ([fdefd96b](https://github.com/firstlovecenter/fl-pastoral-care/commit/fdefd96bd24b149b6007bb67c93b7c77da8fbe87))
 
 #### 7.8.5 (2023-09-07)
 
 ##### New Features
 
-*  remove the need for churchBySubchurch page in arrivals ([76cc1e4d](https://github.com/firstlovecenter/fl-pastoral-care/commit/76cc1e4dd1776008b34ee2361c02bfecdbcab32e))
+- remove the need for churchBySubchurch page in arrivals ([76cc1e4d](https://github.com/firstlovecenter/fl-pastoral-care/commit/76cc1e4dd1776008b34ee2361c02bfecdbcab32e))
 
 ##### Bug Fixes
 
-*  fix bug preventing members from not displaying ([56da69e3](https://github.com/firstlovecenter/fl-pastoral-care/commit/56da69e367423486607fa6d721a61c1ddb9c8582))
-*  implement a button to load all unvisited members for a council ([07a17e85](https://github.com/firstlovecenter/fl-pastoral-care/commit/07a17e85e0c5e4023fe593f3b621fcb9f132b9ae))
-*  online giving is now counted during council services ([01c7b4f4](https://github.com/firstlovecenter/fl-pastoral-care/commit/01c7b4f4693255cbd4dacabd1f76a6f65048a4d9))
-*  fix ui issues with placeholder and member display page ([e0b90c49](https://github.com/firstlovecenter/fl-pastoral-care/commit/e0b90c49a782629389c7b780dfca1fdffc1282ad))
-*  correct wrong looading state on search page ([3f120846](https://github.com/firstlovecenter/fl-pastoral-care/commit/3f120846400d406644d6405c35004e8cbad9d869))
-*  update loader for search page ([6f0e66c7](https://github.com/firstlovecenter/fl-pastoral-care/commit/6f0e66c72ba0fdbe0aecacc86f83b264c1cfbc52))
-*  fix broken import statements 2 ([96f4bd69](https://github.com/firstlovecenter/fl-pastoral-care/commit/96f4bd69bc86ec84d18d236791991eceb1f9f307))
-*  fix broken import statements ([ca68bbab](https://github.com/firstlovecenter/fl-pastoral-care/commit/ca68bbabd7b5f66a8d6e1f78ca75ba18dbb8f77d))
-*  fix bug preventing back button in arrivals flow ([ae438dcb](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae438dcb048c8af9dabb341c903742c7d3cfcfe8))
-*  navbar now toggles with light mode ([5badc001](https://github.com/firstlovecenter/fl-pastoral-care/commit/5badc001f6ee16a163f0c8cd737b3c71efe640be))
+- fix bug preventing members from not displaying ([56da69e3](https://github.com/firstlovecenter/fl-pastoral-care/commit/56da69e367423486607fa6d721a61c1ddb9c8582))
+- implement a button to load all unvisited members for a council ([07a17e85](https://github.com/firstlovecenter/fl-pastoral-care/commit/07a17e85e0c5e4023fe593f3b621fcb9f132b9ae))
+- online giving is now counted during council services ([01c7b4f4](https://github.com/firstlovecenter/fl-pastoral-care/commit/01c7b4f4693255cbd4dacabd1f76a6f65048a4d9))
+- fix ui issues with placeholder and member display page ([e0b90c49](https://github.com/firstlovecenter/fl-pastoral-care/commit/e0b90c49a782629389c7b780dfca1fdffc1282ad))
+- correct wrong looading state on search page ([3f120846](https://github.com/firstlovecenter/fl-pastoral-care/commit/3f120846400d406644d6405c35004e8cbad9d869))
+- update loader for search page ([6f0e66c7](https://github.com/firstlovecenter/fl-pastoral-care/commit/6f0e66c72ba0fdbe0aecacc86f83b264c1cfbc52))
+- fix broken import statements 2 ([96f4bd69](https://github.com/firstlovecenter/fl-pastoral-care/commit/96f4bd69bc86ec84d18d236791991eceb1f9f307))
+- fix broken import statements ([ca68bbab](https://github.com/firstlovecenter/fl-pastoral-care/commit/ca68bbabd7b5f66a8d6e1f78ca75ba18dbb8f77d))
+- fix bug preventing back button in arrivals flow ([ae438dcb](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae438dcb048c8af9dabb341c903742c7d3cfcfe8))
+- navbar now toggles with light mode ([5badc001](https://github.com/firstlovecenter/fl-pastoral-care/commit/5badc001f6ee16a163f0c8cd737b3c71efe640be))
 
 #### 7.8.4 (2023-09-05)
 
 ##### Bug Fixes
 
-*  fix bug where graphs wouldn't show even after loading ([ef1bfa1d](https://github.com/firstlovecenter/fl-pastoral-care/commit/ef1bfa1d029b65878f9727331c8346255b4a723b))
-*  update colors on arrivals ([cc9c2e15](https://github.com/firstlovecenter/fl-pastoral-care/commit/cc9c2e1514b7176553f590f3cdd83a0bd15c4890))
-*  fix loading of member display trends btn ([8a1b342c](https://github.com/firstlovecenter/fl-pastoral-care/commit/8a1b342c861d61f05affa52918bb60d74e17cab5))
+- fix bug where graphs wouldn't show even after loading ([ef1bfa1d](https://github.com/firstlovecenter/fl-pastoral-care/commit/ef1bfa1d029b65878f9727331c8346255b4a723b))
+- update colors on arrivals ([cc9c2e15](https://github.com/firstlovecenter/fl-pastoral-care/commit/cc9c2e1514b7176553f590f3cdd83a0bd15c4890))
+- fix loading of member display trends btn ([8a1b342c](https://github.com/firstlovecenter/fl-pastoral-care/commit/8a1b342c861d61f05affa52918bb60d74e17cab5))
 
 #### 7.8.3 (2023-09-04)
 
 ##### Bug Fixes
 
-*  add some fun new loaders ([a210c9bd](https://github.com/firstlovecenter/fl-pastoral-care/commit/a210c9bde1655273d83ddf4250e931fd3c2ae7d7))
-*  update style in service forms ([563f3def](https://github.com/firstlovecenter/fl-pastoral-care/commit/563f3def81d8029f1b4f80acc0bd3560f33bd4ff))
-* **ui:**
-  *  fix text overflow on details card for bacenta details ([928a34b2](https://github.com/firstlovecenter/fl-pastoral-care/commit/928a34b2e9b630655a522658b03bf89f9ad9fd40))
-  *  fix colors on search page ([af7511f0](https://github.com/firstlovecenter/fl-pastoral-care/commit/af7511f0561215f3ad0ad227956e16052de5843d))
+- add some fun new loaders ([a210c9bd](https://github.com/firstlovecenter/fl-pastoral-care/commit/a210c9bde1655273d83ddf4250e931fd3c2ae7d7))
+- update style in service forms ([563f3def](https://github.com/firstlovecenter/fl-pastoral-care/commit/563f3def81d8029f1b4f80acc0bd3560f33bd4ff))
+- **ui:**
+  - fix text overflow on details card for bacenta details ([928a34b2](https://github.com/firstlovecenter/fl-pastoral-care/commit/928a34b2e9b630655a522658b03bf89f9ad9fd40))
+  - fix colors on search page ([af7511f0](https://github.com/firstlovecenter/fl-pastoral-care/commit/af7511f0561215f3ad0ad227956e16052de5843d))
 
 #### 7.8.2 (2023-09-04)
 
 ##### Bug Fixes
 
-*  fix bugs breaking the build 2 ([52067ebd](https://github.com/firstlovecenter/fl-pastoral-care/commit/52067ebd5d3013fa2c5601ab4bf9991358f9ce33))
-*  fix bugs breaking the build ([676664c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/676664c096da36782d2d6b39724ff8b3537810e0))
-*  initial implementation for hub graph page ([bb03e26e](https://github.com/firstlovecenter/fl-pastoral-care/commit/bb03e26e64b1ac54c591dd14d78d0be28ddc5ba5))
-*  implement aggregation of hub fellowships on hub ([09fc8b67](https://github.com/firstlovecenter/fl-pastoral-care/commit/09fc8b671d6ed9fd6a73cc9dd1b5dd21802609b1))
-*  implement graphs on hub level churches ([911daed1](https://github.com/firstlovecenter/fl-pastoral-care/commit/911daed1680f5c03f6b077509a67c1ebe0d24206))
-*  add a page container and some extra styling for menu buttons in light mode ([b7ffe164](https://github.com/firstlovecenter/fl-pastoral-care/commit/b7ffe164d32c50f087124787431a71e41b17dd9b))
-*  implement chakra-ui style colours for theme ([ceec3b9b](https://github.com/firstlovecenter/fl-pastoral-care/commit/ceec3b9b2126b71059fd5b87b595b04dbe995288))
-*  fix bug preventing fellowships from displaying correctly ([7445b381](https://github.com/firstlovecenter/fl-pastoral-care/commit/7445b381189b63e35b32749832b046195ae4b814))
-*  fix bug on error screen button ([fabf595d](https://github.com/firstlovecenter/fl-pastoral-care/commit/fabf595da06e4c8b2896c5baee320c12011976c0))
-*  fix bug on error screen button ([f6370d3a](https://github.com/firstlovecenter/fl-pastoral-care/commit/f6370d3a21e103588e3b490220b45db30d5a4a7f))
-*  edit text on error screen ([b2c75ede](https://github.com/firstlovecenter/fl-pastoral-care/commit/b2c75ede8dbd617c75d5b9455da15502e235336f))
-*  remove errant a ([34566f83](https://github.com/firstlovecenter/fl-pastoral-care/commit/34566f832f94e87db96140b90d53fe23c6f0d78d))
+- fix bugs breaking the build 2 ([52067ebd](https://github.com/firstlovecenter/fl-pastoral-care/commit/52067ebd5d3013fa2c5601ab4bf9991358f9ce33))
+- fix bugs breaking the build ([676664c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/676664c096da36782d2d6b39724ff8b3537810e0))
+- initial implementation for hub graph page ([bb03e26e](https://github.com/firstlovecenter/fl-pastoral-care/commit/bb03e26e64b1ac54c591dd14d78d0be28ddc5ba5))
+- implement aggregation of hub fellowships on hub ([09fc8b67](https://github.com/firstlovecenter/fl-pastoral-care/commit/09fc8b671d6ed9fd6a73cc9dd1b5dd21802609b1))
+- implement graphs on hub level churches ([911daed1](https://github.com/firstlovecenter/fl-pastoral-care/commit/911daed1680f5c03f6b077509a67c1ebe0d24206))
+- add a page container and some extra styling for menu buttons in light mode ([b7ffe164](https://github.com/firstlovecenter/fl-pastoral-care/commit/b7ffe164d32c50f087124787431a71e41b17dd9b))
+- implement chakra-ui style colours for theme ([ceec3b9b](https://github.com/firstlovecenter/fl-pastoral-care/commit/ceec3b9b2126b71059fd5b87b595b04dbe995288))
+- fix bug preventing fellowships from displaying correctly ([7445b381](https://github.com/firstlovecenter/fl-pastoral-care/commit/7445b381189b63e35b32749832b046195ae4b814))
+- fix bug on error screen button ([fabf595d](https://github.com/firstlovecenter/fl-pastoral-care/commit/fabf595da06e4c8b2896c5baee320c12011976c0))
+- fix bug on error screen button ([f6370d3a](https://github.com/firstlovecenter/fl-pastoral-care/commit/f6370d3a21e103588e3b490220b45db30d5a4a7f))
+- edit text on error screen ([b2c75ede](https://github.com/firstlovecenter/fl-pastoral-care/commit/b2c75ede8dbd617c75d5b9455da15502e235336f))
+- remove errant a ([34566f83](https://github.com/firstlovecenter/fl-pastoral-care/commit/34566f832f94e87db96140b90d53fe23c6f0d78d))
 
 ##### Refactors
 
-* **ui:**  revamped color scheme for entire frontend ([89ca0119](https://github.com/firstlovecenter/fl-pastoral-care/commit/89ca0119e623f1701ad3793824e4c4f5affcb105))
+- **ui:** revamped color scheme for entire frontend ([89ca0119](https://github.com/firstlovecenter/fl-pastoral-care/commit/89ca0119e623f1701ad3793824e4c4f5affcb105))
 
 #### 7.8.1 (2023-09-02)
 
 ##### Bug Fixes
 
-*  implement a button to send crash report ([33130688](https://github.com/firstlovecenter/fl-pastoral-care/commit/331306889f8532c80893ab9241bf3c6d54702d90))
-*  fix annoying blue link flash ([ff3d4cd4](https://github.com/firstlovecenter/fl-pastoral-care/commit/ff3d4cd4c287d98beba1d8c9fb47437c352fcd85))
+- implement a button to send crash report ([33130688](https://github.com/firstlovecenter/fl-pastoral-care/commit/331306889f8532c80893ab9241bf3c6d54702d90))
+- fix annoying blue link flash ([ff3d4cd4](https://github.com/firstlovecenter/fl-pastoral-care/commit/ff3d4cd4c287d98beba1d8c9fb47437c352fcd85))
 
 ### 7.8.0 (2023-09-02)
 
 ##### New Features
 
-*  update fellowship details screen to show creative arts breadcrumb ([ad560e12](https://github.com/firstlovecenter/fl-pastoral-care/commit/ad560e1283d599468fe6689a3b9ec4756c448229))
-*  implement feature to create hub fellowships ([90ba612e](https://github.com/firstlovecenter/fl-pastoral-care/commit/90ba612e60ed72cccbabd149cb4cef2ea7507da0))
-*  implement all create mutations ([3868c179](https://github.com/firstlovecenter/fl-pastoral-care/commit/3868c179f606d78b80db89820e77ad24d890af27))
+- update fellowship details screen to show creative arts breadcrumb ([ad560e12](https://github.com/firstlovecenter/fl-pastoral-care/commit/ad560e1283d599468fe6689a3b9ec4756c448229))
+- implement feature to create hub fellowships ([90ba612e](https://github.com/firstlovecenter/fl-pastoral-care/commit/90ba612e60ed72cccbabd149cb4cef2ea7507da0))
+- implement all create mutations ([3868c179](https://github.com/firstlovecenter/fl-pastoral-care/commit/3868c179f606d78b80db89820e77ad24d890af27))
 
 ##### Bug Fixes
 
-*  implement truncating texts after 2 lines ([3b1bdf3a](https://github.com/firstlovecenter/fl-pastoral-care/commit/3b1bdf3ac86a5aad5ca7a1b9292cfda2f10a2ab5))
-*  update code of the day to end of September ([d305e61d](https://github.com/firstlovecenter/fl-pastoral-care/commit/d305e61d18ea1aa9abd353f7dc01be486b683897))
-*  minor improvement to return councils from ministry ([868f7790](https://github.com/firstlovecenter/fl-pastoral-care/commit/868f779074a59fe67a278b8dd4f469c7da8c0d9c))
-*  change creativeArts relationship name on main churches ([fe7036de](https://github.com/firstlovecenter/fl-pastoral-care/commit/fe7036dec4bfcbf9ba65191d1372b2869ea4ec95))
-*  make fellowship.hub nullable ([a031e762](https://github.com/firstlovecenter/fl-pastoral-care/commit/a031e762f2447801faaf2ceac37309481ebb9556))
-*  prevent normal fellowship details from breaking ([3d5545b2](https://github.com/firstlovecenter/fl-pastoral-care/commit/3d5545b2ed557b3a2e3478a3344a084be84bb1a0))
-*  add roleview on hub fellowship options ([016d88a6](https://github.com/firstlovecenter/fl-pastoral-care/commit/016d88a63979c8dc260a054237a7aeb3ee4649a4))
-*  fix bugs in creating creative arts ([75c1db8b](https://github.com/firstlovecenter/fl-pastoral-care/commit/75c1db8bdd2e6bc36db8c7d935bc085e0d24c1b3))
-*  fix typo ([bb508af9](https://github.com/firstlovecenter/fl-pastoral-care/commit/bb508af962fafec150d288ad188ab4268ed2fabd))
-*  add som e spaces ([c4da2a0e](https://github.com/firstlovecenter/fl-pastoral-care/commit/c4da2a0e729ad09141b40e60777d7516245bccb8))
+- implement truncating texts after 2 lines ([3b1bdf3a](https://github.com/firstlovecenter/fl-pastoral-care/commit/3b1bdf3ac86a5aad5ca7a1b9292cfda2f10a2ab5))
+- update code of the day to end of September ([d305e61d](https://github.com/firstlovecenter/fl-pastoral-care/commit/d305e61d18ea1aa9abd353f7dc01be486b683897))
+- minor improvement to return councils from ministry ([868f7790](https://github.com/firstlovecenter/fl-pastoral-care/commit/868f779074a59fe67a278b8dd4f469c7da8c0d9c))
+- change creativeArts relationship name on main churches ([fe7036de](https://github.com/firstlovecenter/fl-pastoral-care/commit/fe7036dec4bfcbf9ba65191d1372b2869ea4ec95))
+- make fellowship.hub nullable ([a031e762](https://github.com/firstlovecenter/fl-pastoral-care/commit/a031e762f2447801faaf2ceac37309481ebb9556))
+- prevent normal fellowship details from breaking ([3d5545b2](https://github.com/firstlovecenter/fl-pastoral-care/commit/3d5545b2ed557b3a2e3478a3344a084be84bb1a0))
+- add roleview on hub fellowship options ([016d88a6](https://github.com/firstlovecenter/fl-pastoral-care/commit/016d88a63979c8dc260a054237a7aeb3ee4649a4))
+- fix bugs in creating creative arts ([75c1db8b](https://github.com/firstlovecenter/fl-pastoral-care/commit/75c1db8bdd2e6bc36db8c7d935bc085e0d24c1b3))
+- fix typo ([bb508af9](https://github.com/firstlovecenter/fl-pastoral-care/commit/bb508af962fafec150d288ad188ab4268ed2fabd))
+- add som e spaces ([c4da2a0e](https://github.com/firstlovecenter/fl-pastoral-care/commit/c4da2a0e729ad09141b40e60777d7516245bccb8))
 
 #### 7.7.10 (2023-08-18)
 
 ##### New Features
 
-*  implement an input box for admin to re enter the transaction ref from frontend ([46dc7e85](https://github.com/firstlovecenter/fl-pastoral-care/commit/46dc7e8594d3a00fe0da239ec514876497240dd5))
+- implement an input box for admin to re enter the transaction ref from frontend ([46dc7e85](https://github.com/firstlovecenter/fl-pastoral-care/commit/46dc7e8594d3a00fe0da239ec514876497240dd5))
 
 ##### Bug Fixes
 
-*  add a script to clear IMCLs for this week ([3bdfb361](https://github.com/firstlovecenter/fl-pastoral-care/commit/3bdfb3614368f397894c062f3317be91ea1dad85))
-*  fix issue where some church graphs were not showing ([61fcb351](https://github.com/firstlovecenter/fl-pastoral-care/commit/61fcb3510049367d5e851c10bac10b101de71ff7))
-*  update dependencies ([4abce29e](https://github.com/firstlovecenter/fl-pastoral-care/commit/4abce29e8c2f545dca060eda626ee82f6cc21d2f))
-*  update dependencies ([52e55950](https://github.com/firstlovecenter/fl-pastoral-care/commit/52e559505c40eff30257f07c424fe769b578ae1c))
-*  update @neo4j/graphql package ([6d11f800](https://github.com/firstlovecenter/fl-pastoral-care/commit/6d11f8001a82275262687b3d3c20fba5e809d189))
-*  update  stream account options frontend ([48e6d5af](https://github.com/firstlovecenter/fl-pastoral-care/commit/48e6d5af0a0704d6a983a5d3e3fa508ac821ccdb))
-*  update kwabenya and adenta campus paystack accounts ([0339254c](https://github.com/firstlovecenter/fl-pastoral-care/commit/0339254cfd9f55e6476a1cc78b79467b4ed93465))
-*  implement filter on banking slip lists ([4f01f17f](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f01f17f8995b1592caceff952cf450fb26b26a7))
-*  implement pagination on self banking service list ([6a21725e](https://github.com/firstlovecenter/fl-pastoral-care/commit/6a21725e6f6cbbb8a768d0d0e9742fc1e4a022a3))
-*  implement second session for anagkazo treasury resolver ([ae26d52a](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae26d52af59cc39b55c06626baeee189a0407d59))
-*  increase limit of self banked services ([ac452e07](https://github.com/firstlovecenter/fl-pastoral-care/commit/ac452e07955dab63039acc043ccaedd86361362a))
-*  fix typename bug not allowing map markers to load ([007f8c8d](https://github.com/firstlovecenter/fl-pastoral-care/commit/007f8c8d225b7615a99ff99815007ecb6d8c3827))
-*  update typo in object path ([cd08518a](https://github.com/firstlovecenter/fl-pastoral-care/commit/cd08518accb1e56beb77441b6cd83cf43161481b))
-*  minor improvements to typedefs for maps ([24079c3c](https://github.com/firstlovecenter/fl-pastoral-care/commit/24079c3cccab6cfa9bf62ea3f0010deb3212bb0e))
+- add a script to clear IMCLs for this week ([3bdfb361](https://github.com/firstlovecenter/fl-pastoral-care/commit/3bdfb3614368f397894c062f3317be91ea1dad85))
+- fix issue where some church graphs were not showing ([61fcb351](https://github.com/firstlovecenter/fl-pastoral-care/commit/61fcb3510049367d5e851c10bac10b101de71ff7))
+- update dependencies ([4abce29e](https://github.com/firstlovecenter/fl-pastoral-care/commit/4abce29e8c2f545dca060eda626ee82f6cc21d2f))
+- update dependencies ([52e55950](https://github.com/firstlovecenter/fl-pastoral-care/commit/52e559505c40eff30257f07c424fe769b578ae1c))
+- update @neo4j/graphql package ([6d11f800](https://github.com/firstlovecenter/fl-pastoral-care/commit/6d11f8001a82275262687b3d3c20fba5e809d189))
+- update stream account options frontend ([48e6d5af](https://github.com/firstlovecenter/fl-pastoral-care/commit/48e6d5af0a0704d6a983a5d3e3fa508ac821ccdb))
+- update kwabenya and adenta campus paystack accounts ([0339254c](https://github.com/firstlovecenter/fl-pastoral-care/commit/0339254cfd9f55e6476a1cc78b79467b4ed93465))
+- implement filter on banking slip lists ([4f01f17f](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f01f17f8995b1592caceff952cf450fb26b26a7))
+- implement pagination on self banking service list ([6a21725e](https://github.com/firstlovecenter/fl-pastoral-care/commit/6a21725e6f6cbbb8a768d0d0e9742fc1e4a022a3))
+- implement second session for anagkazo treasury resolver ([ae26d52a](https://github.com/firstlovecenter/fl-pastoral-care/commit/ae26d52af59cc39b55c06626baeee189a0407d59))
+- increase limit of self banked services ([ac452e07](https://github.com/firstlovecenter/fl-pastoral-care/commit/ac452e07955dab63039acc043ccaedd86361362a))
+- fix typename bug not allowing map markers to load ([007f8c8d](https://github.com/firstlovecenter/fl-pastoral-care/commit/007f8c8d225b7615a99ff99815007ecb6d8c3827))
+- update typo in object path ([cd08518a](https://github.com/firstlovecenter/fl-pastoral-care/commit/cd08518accb1e56beb77441b6cd83cf43161481b))
+- minor improvements to typedefs for maps ([24079c3c](https://github.com/firstlovecenter/fl-pastoral-care/commit/24079c3cccab6cfa9bf62ea3f0010deb3212bb0e))
 
 #### 7.7.10 (2023-07-31)
 
 ##### Bug Fixes
 
-*  update typo in object path ([cd08518a](https://github.com/firstlovecenter/fl-pastoral-care/commit/cd08518accb1e56beb77441b6cd83cf43161481b))
-*  minor improvements to typedefs for maps ([24079c3c](https://github.com/firstlovecenter/fl-pastoral-care/commit/24079c3cccab6cfa9bf62ea3f0010deb3212bb0e))
+- update typo in object path ([cd08518a](https://github.com/firstlovecenter/fl-pastoral-care/commit/cd08518accb1e56beb77441b6cd83cf43161481b))
+- minor improvements to typedefs for maps ([24079c3c](https://github.com/firstlovecenter/fl-pastoral-care/commit/24079c3cccab6cfa9bf62ea3f0010deb3212bb0e))
 
 #### 7.7.9 (2023-07-31)
 
 ##### Bug Fixes
 
-*  remove table variant for user dashboard ([501033ba](https://github.com/firstlovecenter/fl-pastoral-care/commit/501033baac14e9c1444e3f413d655c14162dab5b))
-*  update color scheme with bootstrap dark mode v5.3 ([1cf1931d](https://github.com/firstlovecenter/fl-pastoral-care/commit/1cf1931dc4f1cfd6d46b41a5f5027f8cee372b47))
+- remove table variant for user dashboard ([501033ba](https://github.com/firstlovecenter/fl-pastoral-care/commit/501033baac14e9c1444e3f413d655c14162dab5b))
+- update color scheme with bootstrap dark mode v5.3 ([1cf1931d](https://github.com/firstlovecenter/fl-pastoral-care/commit/1cf1931dc4f1cfd6d46b41a5f5027f8cee372b47))
 
 #### 7.7.8 (2023-07-30)
 
 ##### Bug Fixes
 
-*  colour the backgroup of the table on the user dashboard ([44165d5b](https://github.com/firstlovecenter/fl-pastoral-care/commit/44165d5bc65f293f185ea6f81b2f71591e04fa14))
+- colour the backgroup of the table on the user dashboard ([44165d5b](https://github.com/firstlovecenter/fl-pastoral-care/commit/44165d5bc65f293f185ea6f81b2f71591e04fa14))
 
 #### 7.7.7 (2023-07-30)
 
 ##### Chores
 
-*  update dependencies ([c91918b5](https://github.com/firstlovecenter/fl-pastoral-care/commit/c91918b5eadd38028905d2094a5da0c24989b42b))
+- update dependencies ([c91918b5](https://github.com/firstlovecenter/fl-pastoral-care/commit/c91918b5eadd38028905d2094a5da0c24989b42b))
 
 ##### Documentation Changes
 
-*  update CHANGELOG.md ([72a8c309](https://github.com/firstlovecenter/fl-pastoral-care/commit/72a8c309628f7abc4f5d880fbc6a9d5a5e786e07))
-*  update CHANGELOG.md ([d53b9b73](https://github.com/firstlovecenter/fl-pastoral-care/commit/d53b9b73041d08a0f1819ebac43714ddb047553b))
-*  update CHANGELOG.md ([4184ded4](https://github.com/firstlovecenter/fl-pastoral-care/commit/4184ded450c9d6322622afb1633c53878a8ba65a))
+- update CHANGELOG.md ([72a8c309](https://github.com/firstlovecenter/fl-pastoral-care/commit/72a8c309628f7abc4f5d880fbc6a9d5a5e786e07))
+- update CHANGELOG.md ([d53b9b73](https://github.com/firstlovecenter/fl-pastoral-care/commit/d53b9b73041d08a0f1819ebac43714ddb047553b))
+- update CHANGELOG.md ([4184ded4](https://github.com/firstlovecenter/fl-pastoral-care/commit/4184ded450c9d6322622afb1633c53878a8ba65a))
 
 ##### New Features
 
-*  prevent a person from  banking for a service if he has not filled poimen app ([9581a8ba](https://github.com/firstlovecenter/fl-pastoral-care/commit/9581a8ba299eb5579c8e75c3b81b0def292d90d6))
+- prevent a person from banking for a service if he has not filled poimen app ([9581a8ba](https://github.com/firstlovecenter/fl-pastoral-care/commit/9581a8ba299eb5579c8e75c3b81b0def292d90d6))
 
 ##### Bug Fixes
 
-*  remove loophole for anagkazo to bank without filling on poimen app ([b133ccb0](https://github.com/firstlovecenter/fl-pastoral-care/commit/b133ccb0fde20420c7cc2a335828f70c54322e56))
-*  attempt to fix serviceWorker bug 1 ([2c841885](https://github.com/firstlovecenter/fl-pastoral-care/commit/2c8418851bc236099d06e8ca1287d28a71d1b3b7))
-*  update the condition check for imclNotFilled ([4fb3ea42](https://github.com/firstlovecenter/fl-pastoral-care/commit/4fb3ea42b1fb24388d85295128d1832ed52d2b1a))
-*  add IMCL as a condition for banking ([bd038484](https://github.com/firstlovecenter/fl-pastoral-care/commit/bd0384840b8714be529dfac63af5694d9aeda1a9))
-*  remove sentry error tracking from dev backend server ([f56f8ff6](https://github.com/firstlovecenter/fl-pastoral-care/commit/f56f8ff6d83f8d8ef457cdf4f5692b8c9c1480de))
-*  increase permission level needed to make arrivals admin ([9b47ea28](https://github.com/firstlovecenter/fl-pastoral-care/commit/9b47ea28eb1d62e8171d9c28d7f2dfe27642b855))
-*  minor changes ([b8927103](https://github.com/firstlovecenter/fl-pastoral-care/commit/b89271031f6d5077723f90bb5e00cb0627638efd))
-*  console.log neoRes from payment webhook ([17b89f34](https://github.com/firstlovecenter/fl-pastoral-care/commit/17b89f340bd044831ce8438d94010ee53d8c94f9))
-*  after selecting a leader name displayed should not include last name ([2150fbfd](https://github.com/firstlovecenter/fl-pastoral-care/commit/2150fbfdf554a30bf4a662caa36cd5e2696e5096))
-*  update peacock settings ([2d13366b](https://github.com/firstlovecenter/fl-pastoral-care/commit/2d13366b1eced0a55ce3a8d0f7ca7fdf2f8d6c2b))
-*  delete a few errant files 2 ([4f43340d](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f43340da4598825e238815cacf7ea624725ee1a))
-*  delete a few errant files ([50df103e](https://github.com/firstlovecenter/fl-pastoral-care/commit/50df103e1ca18d574afb79ae46ae123020553753))
-*  bug fixes to make all creative arts aspects work ([de6f92e9](https://github.com/firstlovecenter/fl-pastoral-care/commit/de6f92e9587c28cf38ec50eee805fed6390302c7))
-*  edit all federal ministry mentions to creativeArts ([aeb0d9c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/aeb0d9c0a50bb7907b9e75b055dca675d45da7f1))
-*  remove new sonta leader ([5daeba6b](https://github.com/firstlovecenter/fl-pastoral-care/commit/5daeba6b87f9bab0146837c42648c32ee9838a00))
+- remove loophole for anagkazo to bank without filling on poimen app ([b133ccb0](https://github.com/firstlovecenter/fl-pastoral-care/commit/b133ccb0fde20420c7cc2a335828f70c54322e56))
+- attempt to fix serviceWorker bug 1 ([2c841885](https://github.com/firstlovecenter/fl-pastoral-care/commit/2c8418851bc236099d06e8ca1287d28a71d1b3b7))
+- update the condition check for imclNotFilled ([4fb3ea42](https://github.com/firstlovecenter/fl-pastoral-care/commit/4fb3ea42b1fb24388d85295128d1832ed52d2b1a))
+- add IMCL as a condition for banking ([bd038484](https://github.com/firstlovecenter/fl-pastoral-care/commit/bd0384840b8714be529dfac63af5694d9aeda1a9))
+- remove sentry error tracking from dev backend server ([f56f8ff6](https://github.com/firstlovecenter/fl-pastoral-care/commit/f56f8ff6d83f8d8ef457cdf4f5692b8c9c1480de))
+- increase permission level needed to make arrivals admin ([9b47ea28](https://github.com/firstlovecenter/fl-pastoral-care/commit/9b47ea28eb1d62e8171d9c28d7f2dfe27642b855))
+- minor changes ([b8927103](https://github.com/firstlovecenter/fl-pastoral-care/commit/b89271031f6d5077723f90bb5e00cb0627638efd))
+- console.log neoRes from payment webhook ([17b89f34](https://github.com/firstlovecenter/fl-pastoral-care/commit/17b89f340bd044831ce8438d94010ee53d8c94f9))
+- after selecting a leader name displayed should not include last name ([2150fbfd](https://github.com/firstlovecenter/fl-pastoral-care/commit/2150fbfdf554a30bf4a662caa36cd5e2696e5096))
+- update peacock settings ([2d13366b](https://github.com/firstlovecenter/fl-pastoral-care/commit/2d13366b1eced0a55ce3a8d0f7ca7fdf2f8d6c2b))
+- delete a few errant files 2 ([4f43340d](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f43340da4598825e238815cacf7ea624725ee1a))
+- delete a few errant files ([50df103e](https://github.com/firstlovecenter/fl-pastoral-care/commit/50df103e1ca18d574afb79ae46ae123020553753))
+- bug fixes to make all creative arts aspects work ([de6f92e9](https://github.com/firstlovecenter/fl-pastoral-care/commit/de6f92e9587c28cf38ec50eee805fed6390302c7))
+- edit all federal ministry mentions to creativeArts ([aeb0d9c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/aeb0d9c0a50bb7907b9e75b055dca675d45da7f1))
+- remove new sonta leader ([5daeba6b](https://github.com/firstlovecenter/fl-pastoral-care/commit/5daeba6b87f9bab0146837c42648c32ee9838a00))
 
 ##### Other Changes
 
-* //github.com/firstlovecenter/fl-admin-portal into deploy ([cf2df1bb](https://github.com/firstlovecenter/fl-pastoral-care/commit/cf2df1bb5f65555a72a1b4135cd565104a3fcaee))
+- //github.com/firstlovecenter/fl-admin-portal into deploy ([cf2df1bb](https://github.com/firstlovecenter/fl-pastoral-care/commit/cf2df1bb5f65555a72a1b4135cd565104a3fcaee))
 
 ##### Refactors
 
-*  convert PWA to vite compatible config ([1894d487](https://github.com/firstlovecenter/fl-pastoral-care/commit/1894d487b106e2d146f630a97c79392449cabbb6))
+- convert PWA to vite compatible config ([1894d487](https://github.com/firstlovecenter/fl-pastoral-care/commit/1894d487b106e2d146f630a97c79392449cabbb6))
 
 #### 7.7.6 (2023-07-30)
 
@@ -2240,173 +2240,173 @@
 
 ##### Chores
 
-*  update dependencies ([385d34c5](https://github.com/firstlovecenter/fl-pastoral-care/commit/385d34c55fa366f58e339b4648f24bc26dd992a8))
+- update dependencies ([385d34c5](https://github.com/firstlovecenter/fl-pastoral-care/commit/385d34c55fa366f58e339b4648f24bc26dd992a8))
 
 ##### New Features
 
-*  prevent a person from  banking for a service if he has not filled poimen app ([b6a43747](https://github.com/firstlovecenter/fl-pastoral-care/commit/b6a43747891c33470010ce98a0ef8ebba5930e87))
+- prevent a person from banking for a service if he has not filled poimen app ([b6a43747](https://github.com/firstlovecenter/fl-pastoral-care/commit/b6a43747891c33470010ce98a0ef8ebba5930e87))
 
 ##### Bug Fixes
 
-*  remove loophole for anagkazo to bank without filling on poimen app ([25bb6aed](https://github.com/firstlovecenter/fl-pastoral-care/commit/25bb6aed3dd9cefe57810bf95dba02a42551b178))
-*  attempt to fix serviceWorker bug 1 ([05e1ee94](https://github.com/firstlovecenter/fl-pastoral-care/commit/05e1ee94fe4237255c4032959b7db44d798a3d6d))
-*  update the condition check for imclNotFilled ([7719e9b1](https://github.com/firstlovecenter/fl-pastoral-care/commit/7719e9b1a88a0e89933a1681a7379b1db9a0c036))
-*  add IMCL as a condition for banking ([fef6d636](https://github.com/firstlovecenter/fl-pastoral-care/commit/fef6d63666eb6ea3e820c2cd6e8df6f0848279eb))
-*  remove sentry error tracking from dev backend server ([3e30a9ec](https://github.com/firstlovecenter/fl-pastoral-care/commit/3e30a9ec3ad38f00294ceabf563dc951cd2a6885))
-*  minor changes ([b8927103](https://github.com/firstlovecenter/fl-pastoral-care/commit/b89271031f6d5077723f90bb5e00cb0627638efd))
-*  console.log neoRes from payment webhook ([17b89f34](https://github.com/firstlovecenter/fl-pastoral-care/commit/17b89f340bd044831ce8438d94010ee53d8c94f9))
-*  after selecting a leader name displayed should not include last name ([2150fbfd](https://github.com/firstlovecenter/fl-pastoral-care/commit/2150fbfdf554a30bf4a662caa36cd5e2696e5096))
-*  update peacock settings ([2d13366b](https://github.com/firstlovecenter/fl-pastoral-care/commit/2d13366b1eced0a55ce3a8d0f7ca7fdf2f8d6c2b))
-*  delete a few errant files 2 ([4f43340d](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f43340da4598825e238815cacf7ea624725ee1a))
-*  delete a few errant files ([50df103e](https://github.com/firstlovecenter/fl-pastoral-care/commit/50df103e1ca18d574afb79ae46ae123020553753))
-*  bug fixes to make all creative arts aspects work ([de6f92e9](https://github.com/firstlovecenter/fl-pastoral-care/commit/de6f92e9587c28cf38ec50eee805fed6390302c7))
-*  edit all federal ministry mentions to creativeArts ([aeb0d9c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/aeb0d9c0a50bb7907b9e75b055dca675d45da7f1))
-*  remove new sonta leader ([5daeba6b](https://github.com/firstlovecenter/fl-pastoral-care/commit/5daeba6b87f9bab0146837c42648c32ee9838a00))
+- remove loophole for anagkazo to bank without filling on poimen app ([25bb6aed](https://github.com/firstlovecenter/fl-pastoral-care/commit/25bb6aed3dd9cefe57810bf95dba02a42551b178))
+- attempt to fix serviceWorker bug 1 ([05e1ee94](https://github.com/firstlovecenter/fl-pastoral-care/commit/05e1ee94fe4237255c4032959b7db44d798a3d6d))
+- update the condition check for imclNotFilled ([7719e9b1](https://github.com/firstlovecenter/fl-pastoral-care/commit/7719e9b1a88a0e89933a1681a7379b1db9a0c036))
+- add IMCL as a condition for banking ([fef6d636](https://github.com/firstlovecenter/fl-pastoral-care/commit/fef6d63666eb6ea3e820c2cd6e8df6f0848279eb))
+- remove sentry error tracking from dev backend server ([3e30a9ec](https://github.com/firstlovecenter/fl-pastoral-care/commit/3e30a9ec3ad38f00294ceabf563dc951cd2a6885))
+- minor changes ([b8927103](https://github.com/firstlovecenter/fl-pastoral-care/commit/b89271031f6d5077723f90bb5e00cb0627638efd))
+- console.log neoRes from payment webhook ([17b89f34](https://github.com/firstlovecenter/fl-pastoral-care/commit/17b89f340bd044831ce8438d94010ee53d8c94f9))
+- after selecting a leader name displayed should not include last name ([2150fbfd](https://github.com/firstlovecenter/fl-pastoral-care/commit/2150fbfdf554a30bf4a662caa36cd5e2696e5096))
+- update peacock settings ([2d13366b](https://github.com/firstlovecenter/fl-pastoral-care/commit/2d13366b1eced0a55ce3a8d0f7ca7fdf2f8d6c2b))
+- delete a few errant files 2 ([4f43340d](https://github.com/firstlovecenter/fl-pastoral-care/commit/4f43340da4598825e238815cacf7ea624725ee1a))
+- delete a few errant files ([50df103e](https://github.com/firstlovecenter/fl-pastoral-care/commit/50df103e1ca18d574afb79ae46ae123020553753))
+- bug fixes to make all creative arts aspects work ([de6f92e9](https://github.com/firstlovecenter/fl-pastoral-care/commit/de6f92e9587c28cf38ec50eee805fed6390302c7))
+- edit all federal ministry mentions to creativeArts ([aeb0d9c0](https://github.com/firstlovecenter/fl-pastoral-care/commit/aeb0d9c0a50bb7907b9e75b055dca675d45da7f1))
+- remove new sonta leader ([5daeba6b](https://github.com/firstlovecenter/fl-pastoral-care/commit/5daeba6b87f9bab0146837c42648c32ee9838a00))
 
 ##### Refactors
 
-*  convert PWA to vite compatible config ([f814a5a5](https://github.com/firstlovecenter/fl-pastoral-care/commit/f814a5a58464a2cb588870f03276949e0ce7a5fd))
+- convert PWA to vite compatible config ([f814a5a5](https://github.com/firstlovecenter/fl-pastoral-care/commit/f814a5a58464a2cb588870f03276949e0ce7a5fd))
 
 #### 7.7.3 (2023-07-05)
 
 ##### Bug Fixes
 
-*  remove all mentions of leadSonta from the app ([1588245c](https://github.com/firstlovecenter/fl-pastoral-care/commit/1588245c0dc422a0bbf91dec4dd7e56cc755c6aa))
-*  add 'denomination' to churchLevel ([ffbff662](https://github.com/firstlovecenter/fl-pastoral-care/commit/ffbff662431bb44e1ad71a7de489c5c19a807c33))
-*  reorganise sonta church groups ([#438](https://github.com/firstlovecenter/fl-pastoral-care/pull/438)) ([1631cbad](https://github.com/firstlovecenter/fl-pastoral-care/commit/1631cbad90158e29c226453223438ab1892bfd33))
-*  fix spelling mistake  campuss ([eaf5313e](https://github.com/firstlovecenter/fl-pastoral-care/commit/eaf5313e1773b78b9f41eaa89f44cd37a7cef937))
+- remove all mentions of leadSonta from the app ([1588245c](https://github.com/firstlovecenter/fl-pastoral-care/commit/1588245c0dc422a0bbf91dec4dd7e56cc755c6aa))
+- add 'denomination' to churchLevel ([ffbff662](https://github.com/firstlovecenter/fl-pastoral-care/commit/ffbff662431bb44e1ad71a7de489c5c19a807c33))
+- reorganise sonta church groups ([#438](https://github.com/firstlovecenter/fl-pastoral-care/pull/438)) ([1631cbad](https://github.com/firstlovecenter/fl-pastoral-care/commit/1631cbad90158e29c226453223438ab1892bfd33))
+- fix spelling mistake campuss ([eaf5313e](https://github.com/firstlovecenter/fl-pastoral-care/commit/eaf5313e1773b78b9f41eaa89f44cd37a7cef937))
 
 #### 7.7.2 (2023-07-04)
 
 ##### New Features
 
-*  include middle initials in member search box ([87938934](https://github.com/firstlovecenter/fl-pastoral-care/commit/87938934097d5bd28c9e8695988fe8f002288ef5))
+- include middle initials in member search box ([87938934](https://github.com/firstlovecenter/fl-pastoral-care/commit/87938934097d5bd28c9e8695988fe8f002288ef5))
 
 ##### Bug Fixes
 
-*  fix firestore update transactionStatus ([0f5dcc75](https://github.com/firstlovecenter/fl-pastoral-care/commit/0f5dcc750a8f67d3d7472edeb2686d7a2aed2b51))
-*  fix bug in bussesOnTheWayCount cypher ([fc920c8a](https://github.com/firstlovecenter/fl-pastoral-care/commit/fc920c8abca28ac7aea32fe99687c238500a0a0b))
-*  update code of the day to the end of August ([0ba15db2](https://github.com/firstlovecenter/fl-pastoral-care/commit/0ba15db27bb2d9aed505eb9138f600a0d3e258e5))
-*  increase transaction wait time to 2 mins ([428aeebb](https://github.com/firstlovecenter/fl-pastoral-care/commit/428aeebb6524116c4d9e1fe078feae1f30fa6877))
-*  set transactionRef as the first think in the banking resolver before checking OTP ([6663cd1b](https://github.com/firstlovecenter/fl-pastoral-care/commit/6663cd1bb9193c5effd34e981695df7f01a2fbf4))
-*  log out categories ([7d46875d](https://github.com/firstlovecenter/fl-pastoral-care/commit/7d46875d701c88876a07f6c8ca157d4e9a7b0d26))
-*  improve values returned in payment webhook ([9877959b](https://github.com/firstlovecenter/fl-pastoral-care/commit/9877959bc26445f7ffdcec814b8436455ba6a87b))
-*   increase wait time for confirm bankign to 90s ([02389ec2](https://github.com/firstlovecenter/fl-pastoral-care/commit/02389ec221ad30277edb3dd77cf6bb8ceca9d584))
+- fix firestore update transactionStatus ([0f5dcc75](https://github.com/firstlovecenter/fl-pastoral-care/commit/0f5dcc750a8f67d3d7472edeb2686d7a2aed2b51))
+- fix bug in bussesOnTheWayCount cypher ([fc920c8a](https://github.com/firstlovecenter/fl-pastoral-care/commit/fc920c8abca28ac7aea32fe99687c238500a0a0b))
+- update code of the day to the end of August ([0ba15db2](https://github.com/firstlovecenter/fl-pastoral-care/commit/0ba15db27bb2d9aed505eb9138f600a0d3e258e5))
+- increase transaction wait time to 2 mins ([428aeebb](https://github.com/firstlovecenter/fl-pastoral-care/commit/428aeebb6524116c4d9e1fe078feae1f30fa6877))
+- set transactionRef as the first think in the banking resolver before checking OTP ([6663cd1b](https://github.com/firstlovecenter/fl-pastoral-care/commit/6663cd1bb9193c5effd34e981695df7f01a2fbf4))
+- log out categories ([7d46875d](https://github.com/firstlovecenter/fl-pastoral-care/commit/7d46875d701c88876a07f6c8ca157d4e9a7b0d26))
+- improve values returned in payment webhook ([9877959b](https://github.com/firstlovecenter/fl-pastoral-care/commit/9877959bc26445f7ffdcec814b8436455ba6a87b))
+- increase wait time for confirm bankign to 90s ([02389ec2](https://github.com/firstlovecenter/fl-pastoral-care/commit/02389ec221ad30277edb3dd77cf6bb8ceca9d584))
 
 ##### Other Changes
 
-* //github.com/firstlovecenter/fl-admin-portal into deploy ([a8ff38fb](https://github.com/firstlovecenter/fl-pastoral-care/commit/a8ff38fbccba77fc9afc97206d2950ab0d8b544f))
+- //github.com/firstlovecenter/fl-admin-portal into deploy ([a8ff38fb](https://github.com/firstlovecenter/fl-pastoral-care/commit/a8ff38fbccba77fc9afc97206d2950ab0d8b544f))
 
 ##### Refactors
 
-*  change nomenclature at B Josh's request ([7128523d](https://github.com/firstlovecenter/fl-pastoral-care/commit/7128523d9ed07052503400c5b175557f3dd9fe7d))
-*  add the name synago to places ([7f4f87cd](https://github.com/firstlovecenter/fl-pastoral-care/commit/7f4f87cdb55f133f2efedc6e195236dc3a5d8de9))
-*  add the name synago to places ([97aac04b](https://github.com/firstlovecenter/fl-pastoral-care/commit/97aac04bf54c01b1b7a635368f596d9181360055))
+- change nomenclature at B Josh's request ([7128523d](https://github.com/firstlovecenter/fl-pastoral-care/commit/7128523d9ed07052503400c5b175557f3dd9fe7d))
+- add the name synago to places ([7f4f87cd](https://github.com/firstlovecenter/fl-pastoral-care/commit/7f4f87cdb55f133f2efedc6e195236dc3a5d8de9))
+- add the name synago to places ([97aac04b](https://github.com/firstlovecenter/fl-pastoral-care/commit/97aac04bf54c01b1b7a635368f596d9181360055))
 
 #### 7.7.1 (2023-06-26)
 
 ##### New Features
 
-*  allow other people to confirm your transaction from the self banking receipt page ([3b62069c](https://github.com/firstlovecenter/fl-pastoral-care/commit/3b62069cfbd087176b47950444b54858d68df7b4))
+- allow other people to confirm your transaction from the self banking receipt page ([3b62069c](https://github.com/firstlovecenter/fl-pastoral-care/commit/3b62069cfbd087176b47950444b54858d68df7b4))
 
 ##### Bug Fixes
 
-*  add instructions on what to check when payment fails ([fef40cb4](https://github.com/firstlovecenter/fl-pastoral-care/commit/fef40cb4f693fab9a5d3776ff40872a58c6cf10b))
-*  update error message when transaction fails ([6016b3a6](https://github.com/firstlovecenter/fl-pastoral-care/commit/6016b3a6112ec443d65e2080263c61d1637f22bd))
-*  console.log results from payment function ([39895508](https://github.com/firstlovecenter/fl-pastoral-care/commit/3989550817ee29ce527bebe6e01fecde045320d6))
-*  vehicle less than 8 should not be counted ([8c76d4bb](https://github.com/firstlovecenter/fl-pastoral-care/commit/8c76d4bbd27241fca197d7287f31e6313d76235e))
-*  modify throwToSentry error 10 ([26f7d631](https://github.com/firstlovecenter/fl-pastoral-care/commit/26f7d6311d93ba012ae7cdb27bf1142ee99a9db1))
-*  modify throwToSentry error 9 ([8428f954](https://github.com/firstlovecenter/fl-pastoral-care/commit/8428f9545cf10c3c450ed8c62e67bf65927d0eed))
-*  modify throwToSentry error 8 ([84d662c8](https://github.com/firstlovecenter/fl-pastoral-care/commit/84d662c8984d4b60adc45ee491771929b9d6b031))
-*  modify throwToSentry error 7 ([2cc3474b](https://github.com/firstlovecenter/fl-pastoral-care/commit/2cc3474bf0af4a06bcccd8cc3fb224bc51d3a7c0))
-*  modify throwToSentry error 6 ([5206f457](https://github.com/firstlovecenter/fl-pastoral-care/commit/5206f4575c47ed2e6e550752639b63b07367040c))
-*  modify throwToSentry error 5 ([d31d27e1](https://github.com/firstlovecenter/fl-pastoral-care/commit/d31d27e14d78b4a4728f587c9e55fae6c1c36974))
-*  modify throwToSentry error 4 ([47af6f02](https://github.com/firstlovecenter/fl-pastoral-care/commit/47af6f0298c018e9964e33521c5661fde4c2d7da))
-*  modify throwToSentry error 3 ([de1574fa](https://github.com/firstlovecenter/fl-pastoral-care/commit/de1574fa87b61d83033cff84c5ac60412c43145b))
-*  modify throwToSentry error 2 ([e019bf37](https://github.com/firstlovecenter/fl-pastoral-care/commit/e019bf37f2261f20ae8fb40ed593d7bf42b7b98c))
-*  modify throwToSentry error ([d7a44944](https://github.com/firstlovecenter/fl-pastoral-care/commit/d7a4494403b69dba30aa741f1e07f4ded709a7fb))
-*  update errors logged to the console ([4b1ac3e2](https://github.com/firstlovecenter/fl-pastoral-care/commit/4b1ac3e2afa66e48bcc3cab479af6b7fd8abf24d))
-*  console.log error message from try-catch ([77fb9710](https://github.com/firstlovecenter/fl-pastoral-care/commit/77fb9710513ae42f168ee531730054e23a695b4a))
-*  console.error error message ([94605e1c](https://github.com/firstlovecenter/fl-pastoral-care/commit/94605e1cb90c6c25d047c200e1d7d69141c072c8))
-*  better handle paystack error ([1a9b8d71](https://github.com/firstlovecenter/fl-pastoral-care/commit/1a9b8d71a76b4f9f9e80f4ee0f0cb403cca98d77))
-*  better handle paystack error ([0cb3220c](https://github.com/firstlovecenter/fl-pastoral-care/commit/0cb3220cc96e2f91368baba5e4652b04bd875c58))
-*  console.error paymentResponse ([cf952b92](https://github.com/firstlovecenter/fl-pastoral-care/commit/cf952b92302d899f653f505c36fa47219f19e8de))
-*  remove unneeded stream_name var from confirm banking ([f8b1fde6](https://github.com/firstlovecenter/fl-pastoral-care/commit/f8b1fde61e288badd7c2a1ba29bf819c6cb352da))
-*  enable update of firestore database on payment function ([dd5fe694](https://github.com/firstlovecenter/fl-pastoral-care/commit/dd5fe69413e046acf43b775b8ee407e404a89483))
-*  return better error when there are problems with payment ([114c0303](https://github.com/firstlovecenter/fl-pastoral-care/commit/114c03030ddee5d126d8b498814582ba1ca3afda))
-*  rearrange table of service details ([9886c599](https://github.com/firstlovecenter/fl-pastoral-care/commit/9886c5991641c9c11dcb8a88df4b52006872418b))
-*  fix bug preventign some fields from showing up in offering ([a64a9f40](https://github.com/firstlovecenter/fl-pastoral-care/commit/a64a9f40dd52f55e53c653131dc049140cb81bc2))
-*  remove the count of cars from the bussesOnTheWay and bussesHaveArrived ([eac9cbda](https://github.com/firstlovecenter/fl-pastoral-care/commit/eac9cbdad42cc4cf372d10b1af79811984e8352d))
-*  update service details page ([7809458e](https://github.com/firstlovecenter/fl-pastoral-care/commit/7809458ee470e91fa145522b8ad5716f5dae4c64))
-*  create a new type of fellowship called online fellowship ([0ff5f3e4](https://github.com/firstlovecenter/fl-pastoral-care/commit/0ff5f3e4fa989680d78224ce9f3c3d8fda32ea75))
-*  fix bug causing servieRecord not to absorb online giving transactions ([edab6b18](https://github.com/firstlovecenter/fl-pastoral-care/commit/edab6b181428c014a45924d5b967293b46ff1de8))
-*  correct import of STREAM_COUNCIL_SEARCH ([f56999ee](https://github.com/firstlovecenter/fl-pastoral-care/commit/f56999ee7facea0f8729560e563e0b9db88fa396))
+- add instructions on what to check when payment fails ([fef40cb4](https://github.com/firstlovecenter/fl-pastoral-care/commit/fef40cb4f693fab9a5d3776ff40872a58c6cf10b))
+- update error message when transaction fails ([6016b3a6](https://github.com/firstlovecenter/fl-pastoral-care/commit/6016b3a6112ec443d65e2080263c61d1637f22bd))
+- console.log results from payment function ([39895508](https://github.com/firstlovecenter/fl-pastoral-care/commit/3989550817ee29ce527bebe6e01fecde045320d6))
+- vehicle less than 8 should not be counted ([8c76d4bb](https://github.com/firstlovecenter/fl-pastoral-care/commit/8c76d4bbd27241fca197d7287f31e6313d76235e))
+- modify throwToSentry error 10 ([26f7d631](https://github.com/firstlovecenter/fl-pastoral-care/commit/26f7d6311d93ba012ae7cdb27bf1142ee99a9db1))
+- modify throwToSentry error 9 ([8428f954](https://github.com/firstlovecenter/fl-pastoral-care/commit/8428f9545cf10c3c450ed8c62e67bf65927d0eed))
+- modify throwToSentry error 8 ([84d662c8](https://github.com/firstlovecenter/fl-pastoral-care/commit/84d662c8984d4b60adc45ee491771929b9d6b031))
+- modify throwToSentry error 7 ([2cc3474b](https://github.com/firstlovecenter/fl-pastoral-care/commit/2cc3474bf0af4a06bcccd8cc3fb224bc51d3a7c0))
+- modify throwToSentry error 6 ([5206f457](https://github.com/firstlovecenter/fl-pastoral-care/commit/5206f4575c47ed2e6e550752639b63b07367040c))
+- modify throwToSentry error 5 ([d31d27e1](https://github.com/firstlovecenter/fl-pastoral-care/commit/d31d27e14d78b4a4728f587c9e55fae6c1c36974))
+- modify throwToSentry error 4 ([47af6f02](https://github.com/firstlovecenter/fl-pastoral-care/commit/47af6f0298c018e9964e33521c5661fde4c2d7da))
+- modify throwToSentry error 3 ([de1574fa](https://github.com/firstlovecenter/fl-pastoral-care/commit/de1574fa87b61d83033cff84c5ac60412c43145b))
+- modify throwToSentry error 2 ([e019bf37](https://github.com/firstlovecenter/fl-pastoral-care/commit/e019bf37f2261f20ae8fb40ed593d7bf42b7b98c))
+- modify throwToSentry error ([d7a44944](https://github.com/firstlovecenter/fl-pastoral-care/commit/d7a4494403b69dba30aa741f1e07f4ded709a7fb))
+- update errors logged to the console ([4b1ac3e2](https://github.com/firstlovecenter/fl-pastoral-care/commit/4b1ac3e2afa66e48bcc3cab479af6b7fd8abf24d))
+- console.log error message from try-catch ([77fb9710](https://github.com/firstlovecenter/fl-pastoral-care/commit/77fb9710513ae42f168ee531730054e23a695b4a))
+- console.error error message ([94605e1c](https://github.com/firstlovecenter/fl-pastoral-care/commit/94605e1cb90c6c25d047c200e1d7d69141c072c8))
+- better handle paystack error ([1a9b8d71](https://github.com/firstlovecenter/fl-pastoral-care/commit/1a9b8d71a76b4f9f9e80f4ee0f0cb403cca98d77))
+- better handle paystack error ([0cb3220c](https://github.com/firstlovecenter/fl-pastoral-care/commit/0cb3220cc96e2f91368baba5e4652b04bd875c58))
+- console.error paymentResponse ([cf952b92](https://github.com/firstlovecenter/fl-pastoral-care/commit/cf952b92302d899f653f505c36fa47219f19e8de))
+- remove unneeded stream_name var from confirm banking ([f8b1fde6](https://github.com/firstlovecenter/fl-pastoral-care/commit/f8b1fde61e288badd7c2a1ba29bf819c6cb352da))
+- enable update of firestore database on payment function ([dd5fe694](https://github.com/firstlovecenter/fl-pastoral-care/commit/dd5fe69413e046acf43b775b8ee407e404a89483))
+- return better error when there are problems with payment ([114c0303](https://github.com/firstlovecenter/fl-pastoral-care/commit/114c03030ddee5d126d8b498814582ba1ca3afda))
+- rearrange table of service details ([9886c599](https://github.com/firstlovecenter/fl-pastoral-care/commit/9886c5991641c9c11dcb8a88df4b52006872418b))
+- fix bug preventign some fields from showing up in offering ([a64a9f40](https://github.com/firstlovecenter/fl-pastoral-care/commit/a64a9f40dd52f55e53c653131dc049140cb81bc2))
+- remove the count of cars from the bussesOnTheWay and bussesHaveArrived ([eac9cbda](https://github.com/firstlovecenter/fl-pastoral-care/commit/eac9cbdad42cc4cf372d10b1af79811984e8352d))
+- update service details page ([7809458e](https://github.com/firstlovecenter/fl-pastoral-care/commit/7809458ee470e91fa145522b8ad5716f5dae4c64))
+- create a new type of fellowship called online fellowship ([0ff5f3e4](https://github.com/firstlovecenter/fl-pastoral-care/commit/0ff5f3e4fa989680d78224ce9f3c3d8fda32ea75))
+- fix bug causing servieRecord not to absorb online giving transactions ([edab6b18](https://github.com/firstlovecenter/fl-pastoral-care/commit/edab6b181428c014a45924d5b967293b46ff1de8))
+- correct import of STREAM_COUNCIL_SEARCH ([f56999ee](https://github.com/firstlovecenter/fl-pastoral-care/commit/f56999ee7facea0f8729560e563e0b9db88fa396))
 
 ##### Other Changes
 
-* //github.com/firstlovecenter/fl-admin-portal into deploy ([6b13ebde](https://github.com/firstlovecenter/fl-pastoral-care/commit/6b13ebdef88dfef9c551d3a68fd5575691fbc86e))
+- //github.com/firstlovecenter/fl-admin-portal into deploy ([6b13ebde](https://github.com/firstlovecenter/fl-pastoral-care/commit/6b13ebdef88dfef9c551d3a68fd5575691fbc86e))
 
 ##### Refactors
 
-*  rewrite SendVehicleSupport ([a3c7b3c6](https://github.com/firstlovecenter/fl-pastoral-care/commit/a3c7b3c6199fed19dc25b077afaceee816676d6c))
+- rewrite SendVehicleSupport ([a3c7b3c6](https://github.com/firstlovecenter/fl-pastoral-care/commit/a3c7b3c6199fed19dc25b077afaceee816676d6c))
 
 ### 7.7.0 (2023-06-20)
 
 ##### New Features
 
-*  implement creating of new oversights ([8258191b](https://github.com/firstlovecenter/fl-pastoral-care/commit/8258191be09cb7b1c5bf8976784aaea2ff4f0620))
-*  set priority property on serviceLog nodes ([51222f5c](https://github.com/firstlovecenter/fl-pastoral-care/commit/51222f5c10d117ad071db3b7a46ccb7a4b25fe5a))
+- implement creating of new oversights ([8258191b](https://github.com/firstlovecenter/fl-pastoral-care/commit/8258191be09cb7b1c5bf8976784aaea2ff4f0620))
+- set priority property on serviceLog nodes ([51222f5c](https://github.com/firstlovecenter/fl-pastoral-care/commit/51222f5c10d117ad071db3b7a46ccb7a4b25fe5a))
 
 ##### Bug Fixes
 
-*  implement updateOversight ([065218ad](https://github.com/firstlovecenter/fl-pastoral-care/commit/065218adf7f2bdf912f14321c273be149d993aef))
-*  update button to show Last 4 Weeks ([28144572](https://github.com/firstlovecenter/fl-pastoral-care/commit/28144572a0fbe56e00b047c7212a2167ed6999fd))
-*  implement display all oversights page ([af002dc3](https://github.com/firstlovecenter/fl-pastoral-care/commit/af002dc380e94ac7fbd61e7312ad671a77dabc7b))
-*  implement denomination display page ([6d1e7bb3](https://github.com/firstlovecenter/fl-pastoral-care/commit/6d1e7bb3533cb88010c12ac133c9b3b4bf1b8ce3))
-*  implement breadcrumb that leads to denomination ([cf0a94b8](https://github.com/firstlovecenter/fl-pastoral-care/commit/cf0a94b8c0285f9f8571ca07f336200269fc9ca8))
-*  update banking-cypher.ts ([c9d7f4e4](https://github.com/firstlovecenter/fl-pastoral-care/commit/c9d7f4e4ee044ca3b9afc55f13b8df44e2395144))
-*  fix typo in creating council ([4b076346](https://github.com/firstlovecenter/fl-pastoral-care/commit/4b076346a8c264bdbaf39f0695bcf3d25869c3a7))
-*  update directory-crud cypher for creating churches ([df4605cc](https://github.com/firstlovecenter/fl-pastoral-care/commit/df4605cccc62521f7342ce30bac71c067a6a87ca))
-*  update cypher to add priority label when creating new churches ([d7197433](https://github.com/firstlovecenter/fl-pastoral-care/commit/d719743352db96c7fe8692ec3b883034b048a787))
-*  little updates for creating a new campus ([3b66805a](https://github.com/firstlovecenter/fl-pastoral-care/commit/3b66805aefd8e522767d7db10de01be10025ea88))
-*  little updates for creating a new campus ([042052e7](https://github.com/firstlovecenter/fl-pastoral-care/commit/042052e79ad4f78add7a01f18be13134924e1371))
-*  bring back delay on confirmation to enable time for webhook ([0e846b61](https://github.com/firstlovecenter/fl-pastoral-care/commit/0e846b610bbb091de8600a0b240eda39a6ad2cbb))
-*  update before-next-update-cypher ([7bcfcded](https://github.com/firstlovecenter/fl-pastoral-care/commit/7bcfcdedd228fec305d82fe5b161a7846714fc2f))
-*  update args in servantCypher fns ([2014d4cc](https://github.com/firstlovecenter/fl-pastoral-care/commit/2014d4cc1a3d2ed3b58d794886f6f0ade118d1ba))
-*  set priority number on history log node ([3ed231d7](https://github.com/firstlovecenter/fl-pastoral-care/commit/3ed231d7f6300c3c1a72e65007c153d2f948e627))
-*  remove delay timer on confirming payments ([29057593](https://github.com/firstlovecenter/fl-pastoral-care/commit/29057593a75e0266318210037499a19c3311b222))
-*  more directly relay information from paystack servers to the client ([6406b752](https://github.com/firstlovecenter/fl-pastoral-care/commit/6406b7526854a5c3424650bfbb9c3e8873876494))
-*  remove edge case conditions for setting transaction status failed ([ec4bc0d7](https://github.com/firstlovecenter/fl-pastoral-care/commit/ec4bc0d756fb01de123ff9d5e3f3ad6ce55ee19a))
-*  correct bug making constituency banking impossible ([9257fe83](https://github.com/firstlovecenter/fl-pastoral-care/commit/9257fe83b5068097fa3e39b58b4c56ab286e8e89))
-*  send debugging email ([1a131d22](https://github.com/firstlovecenter/fl-pastoral-care/commit/1a131d22ff414b1eea812fd49bc6128912ae919b))
-*  implement an error if the subaccount is empty ([aa9e8a96](https://github.com/firstlovecenter/fl-pastoral-care/commit/aa9e8a96b31d9b92e5f392cdfa05a777fec39f8b))
-*  remove unnecessary email sent ([d2573a64](https://github.com/firstlovecenter/fl-pastoral-care/commit/d2573a647f54d0bd1643160be9e029bfe1e28dee))
-*  update email sent ([e0e8233e](https://github.com/firstlovecenter/fl-pastoral-care/commit/e0e8233e483e6eb201e65a4220e986303c1499d2))
-*  fix bug where money was being sent to the wrong account ([d57dec07](https://github.com/firstlovecenter/fl-pastoral-care/commit/d57dec07452432e3fa94c984552f8850a9d6f5fc))
-*  mail axios req body to me ([dc0c7a62](https://github.com/firstlovecenter/fl-pastoral-care/commit/dc0c7a62336fdee91531b12c56efbe4a4dfd5910))
-*  vacation churches can now bank ([1c6a6023](https://github.com/firstlovecenter/fl-pastoral-care/commit/1c6a6023f31686653c1ae23a341af341798a5a08))
-*  duplicate members are completely removed as members ([83bd144f](https://github.com/firstlovecenter/fl-pastoral-care/commit/83bd144f900644ba1b11887e91b73cb7df9cba53))
-*  minor bug improvements to getLastServiceRecord fn ([f7d77889](https://github.com/firstlovecenter/fl-pastoral-care/commit/f7d7788921ff781ff04310866d22fd77eeb02cd4))
-*  only gs arrivals admins have free reign ([40783e9b](https://github.com/firstlovecenter/fl-pastoral-care/commit/40783e9b4f79e919efefa9877a29ab7cba410cff))
-*  allow arrivals admins to have free reign on all days of the week ([3b718824](https://github.com/firstlovecenter/fl-pastoral-care/commit/3b71882496b8b0e174aea0f74425a2fce16d38e8))
-*  minor fix on bussingThisWeek query ([f0d1c1b2](https://github.com/firstlovecenter/fl-pastoral-care/commit/f0d1c1b26dda354fc0b9b404e67bf5a175ebdd33))
-*  minor fix on bussingThisWeek query ([89ac44c3](https://github.com/firstlovecenter/fl-pastoral-care/commit/89ac44c358395aff07c477d3e2eab49a031edff2))
-*  allow council joint service to be filled more than once in a week ([abfa3a3b](https://github.com/firstlovecenter/fl-pastoral-care/commit/abfa3a3bf2fec7ff1f2cbb44f17f53ea85ce2f39))
-*  minor improvements to banking resolvers ([30389570](https://github.com/firstlovecenter/fl-pastoral-care/commit/303895704b6bd58fb6d3e35512c7eb3886640a50))
-*  return correct data from mutation ([2e6d07c7](https://github.com/firstlovecenter/fl-pastoral-care/commit/2e6d07c79e23508b21176fe29add50b36479bc57))
+- implement updateOversight ([065218ad](https://github.com/firstlovecenter/fl-pastoral-care/commit/065218adf7f2bdf912f14321c273be149d993aef))
+- update button to show Last 4 Weeks ([28144572](https://github.com/firstlovecenter/fl-pastoral-care/commit/28144572a0fbe56e00b047c7212a2167ed6999fd))
+- implement display all oversights page ([af002dc3](https://github.com/firstlovecenter/fl-pastoral-care/commit/af002dc380e94ac7fbd61e7312ad671a77dabc7b))
+- implement denomination display page ([6d1e7bb3](https://github.com/firstlovecenter/fl-pastoral-care/commit/6d1e7bb3533cb88010c12ac133c9b3b4bf1b8ce3))
+- implement breadcrumb that leads to denomination ([cf0a94b8](https://github.com/firstlovecenter/fl-pastoral-care/commit/cf0a94b8c0285f9f8571ca07f336200269fc9ca8))
+- update banking-cypher.ts ([c9d7f4e4](https://github.com/firstlovecenter/fl-pastoral-care/commit/c9d7f4e4ee044ca3b9afc55f13b8df44e2395144))
+- fix typo in creating council ([4b076346](https://github.com/firstlovecenter/fl-pastoral-care/commit/4b076346a8c264bdbaf39f0695bcf3d25869c3a7))
+- update directory-crud cypher for creating churches ([df4605cc](https://github.com/firstlovecenter/fl-pastoral-care/commit/df4605cccc62521f7342ce30bac71c067a6a87ca))
+- update cypher to add priority label when creating new churches ([d7197433](https://github.com/firstlovecenter/fl-pastoral-care/commit/d719743352db96c7fe8692ec3b883034b048a787))
+- little updates for creating a new campus ([3b66805a](https://github.com/firstlovecenter/fl-pastoral-care/commit/3b66805aefd8e522767d7db10de01be10025ea88))
+- little updates for creating a new campus ([042052e7](https://github.com/firstlovecenter/fl-pastoral-care/commit/042052e79ad4f78add7a01f18be13134924e1371))
+- bring back delay on confirmation to enable time for webhook ([0e846b61](https://github.com/firstlovecenter/fl-pastoral-care/commit/0e846b610bbb091de8600a0b240eda39a6ad2cbb))
+- update before-next-update-cypher ([7bcfcded](https://github.com/firstlovecenter/fl-pastoral-care/commit/7bcfcdedd228fec305d82fe5b161a7846714fc2f))
+- update args in servantCypher fns ([2014d4cc](https://github.com/firstlovecenter/fl-pastoral-care/commit/2014d4cc1a3d2ed3b58d794886f6f0ade118d1ba))
+- set priority number on history log node ([3ed231d7](https://github.com/firstlovecenter/fl-pastoral-care/commit/3ed231d7f6300c3c1a72e65007c153d2f948e627))
+- remove delay timer on confirming payments ([29057593](https://github.com/firstlovecenter/fl-pastoral-care/commit/29057593a75e0266318210037499a19c3311b222))
+- more directly relay information from paystack servers to the client ([6406b752](https://github.com/firstlovecenter/fl-pastoral-care/commit/6406b7526854a5c3424650bfbb9c3e8873876494))
+- remove edge case conditions for setting transaction status failed ([ec4bc0d7](https://github.com/firstlovecenter/fl-pastoral-care/commit/ec4bc0d756fb01de123ff9d5e3f3ad6ce55ee19a))
+- correct bug making constituency banking impossible ([9257fe83](https://github.com/firstlovecenter/fl-pastoral-care/commit/9257fe83b5068097fa3e39b58b4c56ab286e8e89))
+- send debugging email ([1a131d22](https://github.com/firstlovecenter/fl-pastoral-care/commit/1a131d22ff414b1eea812fd49bc6128912ae919b))
+- implement an error if the subaccount is empty ([aa9e8a96](https://github.com/firstlovecenter/fl-pastoral-care/commit/aa9e8a96b31d9b92e5f392cdfa05a777fec39f8b))
+- remove unnecessary email sent ([d2573a64](https://github.com/firstlovecenter/fl-pastoral-care/commit/d2573a647f54d0bd1643160be9e029bfe1e28dee))
+- update email sent ([e0e8233e](https://github.com/firstlovecenter/fl-pastoral-care/commit/e0e8233e483e6eb201e65a4220e986303c1499d2))
+- fix bug where money was being sent to the wrong account ([d57dec07](https://github.com/firstlovecenter/fl-pastoral-care/commit/d57dec07452432e3fa94c984552f8850a9d6f5fc))
+- mail axios req body to me ([dc0c7a62](https://github.com/firstlovecenter/fl-pastoral-care/commit/dc0c7a62336fdee91531b12c56efbe4a4dfd5910))
+- vacation churches can now bank ([1c6a6023](https://github.com/firstlovecenter/fl-pastoral-care/commit/1c6a6023f31686653c1ae23a341af341798a5a08))
+- duplicate members are completely removed as members ([83bd144f](https://github.com/firstlovecenter/fl-pastoral-care/commit/83bd144f900644ba1b11887e91b73cb7df9cba53))
+- minor bug improvements to getLastServiceRecord fn ([f7d77889](https://github.com/firstlovecenter/fl-pastoral-care/commit/f7d7788921ff781ff04310866d22fd77eeb02cd4))
+- only gs arrivals admins have free reign ([40783e9b](https://github.com/firstlovecenter/fl-pastoral-care/commit/40783e9b4f79e919efefa9877a29ab7cba410cff))
+- allow arrivals admins to have free reign on all days of the week ([3b718824](https://github.com/firstlovecenter/fl-pastoral-care/commit/3b71882496b8b0e174aea0f74425a2fce16d38e8))
+- minor fix on bussingThisWeek query ([f0d1c1b2](https://github.com/firstlovecenter/fl-pastoral-care/commit/f0d1c1b26dda354fc0b9b404e67bf5a175ebdd33))
+- minor fix on bussingThisWeek query ([89ac44c3](https://github.com/firstlovecenter/fl-pastoral-care/commit/89ac44c358395aff07c477d3e2eab49a031edff2))
+- allow council joint service to be filled more than once in a week ([abfa3a3b](https://github.com/firstlovecenter/fl-pastoral-care/commit/abfa3a3bf2fec7ff1f2cbb44f17f53ea85ce2f39))
+- minor improvements to banking resolvers ([30389570](https://github.com/firstlovecenter/fl-pastoral-care/commit/303895704b6bd58fb6d3e35512c7eb3886640a50))
+- return correct data from mutation ([2e6d07c7](https://github.com/firstlovecenter/fl-pastoral-care/commit/2e6d07c79e23508b21176fe29add50b36479bc57))
 
 ##### Other Changes
 
-* //github.com/firstlovecenter/fl-admin-portal into deploy ([8ccc22b7](https://github.com/firstlovecenter/fl-pastoral-care/commit/8ccc22b7a81bc10ff3692193a9a4fd4486688b7d))
+- //github.com/firstlovecenter/fl-admin-portal into deploy ([8ccc22b7](https://github.com/firstlovecenter/fl-pastoral-care/commit/8ccc22b7a81bc10ff3692193a9a4fd4486688b7d))
 
 ##### Refactors
 
-*  change the word GATHERING_SERVICE to CAMPUS ([daf8a679](https://github.com/firstlovecenter/fl-pastoral-care/commit/daf8a679349ca3b57570edf5c5379a740a2b7f07))
-*  move computing of priority within makeServantCypher function ([161fef40](https://github.com/firstlovecenter/fl-pastoral-care/commit/161fef40cf81586eefc09a18148885c59d8c1c96))
-*  change 'gathering service' to 'campus' ([07dcab7c](https://github.com/firstlovecenter/fl-pastoral-care/commit/07dcab7c5358f8c8736fa1bd9d9f22a3fdf2d8f2))
-*  fix some spelling mistakes causing broken file imports ([5ed685b0](https://github.com/firstlovecenter/fl-pastoral-care/commit/5ed685b0fb688ac8fa19f6875b75994220be54bf))
-*  fix some spelling mistakes causing broken file imports ([ca7b010b](https://github.com/firstlovecenter/fl-pastoral-care/commit/ca7b010bb82b982b322e2907eaf4ffa061d1c530))
-*  change gatheringservice to campus ([6eb94b5a](https://github.com/firstlovecenter/fl-pastoral-care/commit/6eb94b5a5284279ff4aba8c673c84e91d85f361d))
+- change the word GATHERING_SERVICE to CAMPUS ([daf8a679](https://github.com/firstlovecenter/fl-pastoral-care/commit/daf8a679349ca3b57570edf5c5379a740a2b7f07))
+- move computing of priority within makeServantCypher function ([161fef40](https://github.com/firstlovecenter/fl-pastoral-care/commit/161fef40cf81586eefc09a18148885c59d8c1c96))
+- change 'gathering service' to 'campus' ([07dcab7c](https://github.com/firstlovecenter/fl-pastoral-care/commit/07dcab7c5358f8c8736fa1bd9d9f22a3fdf2d8f2))
+- fix some spelling mistakes causing broken file imports ([5ed685b0](https://github.com/firstlovecenter/fl-pastoral-care/commit/5ed685b0fb688ac8fa19f6875b75994220be54bf))
+- fix some spelling mistakes causing broken file imports ([ca7b010b](https://github.com/firstlovecenter/fl-pastoral-care/commit/ca7b010bb82b982b322e2907eaf4ffa061d1c530))
+- change gatheringservice to campus ([6eb94b5a](https://github.com/firstlovecenter/fl-pastoral-care/commit/6eb94b5a5284279ff4aba8c673c84e91d85f361d))
 
 #### 7.6.17 (2023-06-09)
 
