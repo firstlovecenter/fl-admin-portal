@@ -30,15 +30,30 @@ const initializeServer = async () => {
     // Load secrets
     SECRETS = await loadSecrets()
 
+    const uri = SECRETS.NEO4J_URI || 'bolt://localhost:7687/'
+    const hasEncryptionInUri = uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
+    const hasEncryptionInConfig = DEFAULT_NEO4J_CONFIG.encrypted || DEFAULT_NEO4J_CONFIG.trust
+
     console.log(
-      `[Neo4j] Connecting to ${SECRETS.NEO4J_URI.replace(
+      `[Neo4j] Connecting to ${uri.replace(
         /:\/\/.*@/,
         '://[REDACTED]@'
       )}`
     )
+    console.log('[Neo4j] URI encryption scheme detected:', hasEncryptionInUri)
+    console.log('[Neo4j] Config encryption settings:', {
+      encrypted: DEFAULT_NEO4J_CONFIG.encrypted,
+      trust: DEFAULT_NEO4J_CONFIG.trust
+    })
+
+    if (hasEncryptionInUri && hasEncryptionInConfig) {
+      console.warn('[Neo4j] WARNING: Encryption configured in both URI and config - this will cause an error!')
+      console.warn('[Neo4j] URI scheme indicates encryption:', uri.split('://')[0])
+      console.warn('[Neo4j] Config has encryption settings:', DEFAULT_NEO4J_CONFIG)
+    }
 
     driver = neo4j.driver(
-      SECRETS.NEO4J_URI || 'bolt://localhost:7687/',
+      uri,
       neo4j.auth.basic(SECRETS.NEO4J_USER, SECRETS.NEO4J_PASSWORD),
       DEFAULT_NEO4J_CONFIG
     )
