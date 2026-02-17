@@ -7,7 +7,13 @@ import {
   throwToSentry,
 } from '../utils/utils'
 import { ChurchLevel, Member, Role, ServantType } from '../utils/types'
-import { sendSingleEmail } from '../utils/notify'
+import {
+ 
+ ,
+
+  sendServantPromotionEmail,
+  sendServantRemovalEmail,
+} from '../utils/notify'
 import { Context } from '../utils/neo4j-types'
 import { matchChurchQuery, getChurchDataQuery } from '../cypher/resolver-cypher'
 import {
@@ -110,11 +116,14 @@ export const MakeServant = async (
       church,
       oldServant,
     }),
-    sendSingleEmail(
-      servant,
-      'FL Servanthood Status Update',
-      undefined,
-      `<p>Hi ${servant.firstName} ${servant.lastName},<br/><br/>Congratulations on your new position as the <b>${churchType} ${servantType}</b> for <b>${churchNameInEmail}</b>.<br/><br/>Please go through ${texts.html.helpdesk} to find guidelines and instructions as well as answers to questions you may have</p>${texts.html.subscription}`
+    sendServantPromotionEmail(
+      servant.email,
+      servant.firstName,
+      servant.lastName,
+      churchType,
+      servantType,
+      churchNameInEmail,
+      texts.html.helpdesk
     ),
   ])
 
@@ -189,17 +198,13 @@ export const RemoveServant = async (
   })
 
   // Send removal notification
-  await sendSingleEmail(
-    servant,
-    'You Have Been Removed!',
-    undefined,
-    `<p>Hi ${servant.firstName} ${
-      servant.lastName
-    },<br/><br/>We regret to inform you that you have been removed as the <b>${churchType} ${servantType}</b> for <b>${churchInEmail(
-      church
-    )}</b>.<br/><br/>We however encourage you to strive to serve the Lord faithfully. Do not be discouraged by this removal.</p>${
-      texts.html.subscription
-    }`
+  await sendServantRemovalEmail(
+    servant.email,
+    servant.firstName,
+    servant.lastName,
+    churchType,
+    servantType,
+    churchInEmail(church)
   )
 
   await session.close()
