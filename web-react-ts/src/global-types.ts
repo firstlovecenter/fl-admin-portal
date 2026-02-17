@@ -201,7 +201,6 @@ export interface MemberWithoutBioData {
   __typename: 'Member'
   id: string
   // eslint-disable-next-line camelcase
-  auth_id?: string
   firstName: string
   middleName?: string
   lastName: string
@@ -217,7 +216,6 @@ export interface Member {
   __typename: 'Member'
   id: string
   // eslint-disable-next-line camelcase
-  auth_id: string
   stickyNote?: string
   firstName: string
   middleName?: string

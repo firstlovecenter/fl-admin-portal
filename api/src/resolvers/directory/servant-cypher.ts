@@ -17,7 +17,7 @@ const servantCypher = {
    OPTIONAL MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)<-[oldLeaderHistory:CURRENT_HISTORY]-(leader)
    DELETE oldHistory, oldLeaderHistory
    
-   RETURN leader.id AS id, leader.auth_id AS auth_id, leader.firstName AS firstName, leader.lastName AS lastName
+   RETURN leader.id AS id,  leader.firstName AS firstName, leader.lastName AS lastName
    `,
 
   disconnectChurchAdmin: `
@@ -29,7 +29,7 @@ const servantCypher = {
    DELETE oldAdmin
    
    
-   RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
+   RETURN admin.id AS id,  admin.firstName AS firstName, admin.lastName AS lastName
    `,
   disconnectChurchArrivalsAdmin: `
    MATCH (church {id: $churchId}) 
@@ -41,7 +41,7 @@ const servantCypher = {
    
    WITH church, admin
    
-   RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
+   RETURN admin.id AS id,  admin.firstName AS firstName, admin.lastName AS lastName
    `,
 
   disconnectChurchArrivalsCounter: `
@@ -52,7 +52,7 @@ const servantCypher = {
    
    WITH church, admin
    
-   RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
+   RETURN admin.id AS id,  admin.firstName AS firstName, admin.lastName AS lastName
    `,
 
   disconnectChurchArrivalsPayer: `
@@ -64,7 +64,7 @@ const servantCypher = {
    WITH church, admin
    
    
-   RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
+   RETURN admin.id AS id,  admin.firstName AS firstName, admin.lastName AS lastName
    `,
 
   disconnectChurchTeller: `
@@ -74,7 +74,7 @@ const servantCypher = {
    DELETE oldTeller 
    
    WITH church, admin
-   RETURN admin.id AS id, admin.auth_id AS auth_id, admin.firstName AS firstName, admin.lastName AS lastName
+   RETURN admin.id AS id,  admin.firstName AS firstName, admin.lastName AS lastName
    `,
 
   // Create Church Leader Connection
@@ -84,7 +84,7 @@ const servantCypher = {
    OR church:Campus OR church:Oversight OR church:Denomination
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    MATCH (leader:Member {id:$leaderId})
-      SET leader.auth_id =  $auth_id
+      
    MERGE (leader)-[:LEADS]->(church)
    
    WITH church, leader
@@ -98,7 +98,6 @@ const servantCypher = {
    OR church:Campus OR church:Oversight OR church:Denomination
    OR church:CreativeArts OR church:Ministry
    MATCH (admin:Member {id:$adminId})
-   SET admin.auth_id =  $auth_id
    MERGE (admin)-[:IS_ADMIN_FOR]->(church)
 
    WITH church, admin
@@ -111,7 +110,6 @@ const servantCypher = {
    MATCH (church {id:$churchId})<-[:HAS]-(higherChurch)
    WHERE church:Governorship OR church:Council OR church:Stream OR church:Campus
    MATCH (admin:Member {id: $arrivalsAdminId})
-      SET admin.auth_id =  $auth_id
    MERGE (admin)-[:DOES_ARRIVALS_FOR]->(church)
    
    RETURN church.id AS id, church.name AS name, higherChurch.id AS higherChurchId, higherChurch.name AS higherChurchName
@@ -121,7 +119,6 @@ const servantCypher = {
    MATCH (church {id:$churchId})<-[:HAS]-(higherChurch)
    WHERE church:Stream
    MATCH (admin:Member {id: $arrivalsCounterId})
-      SET admin.auth_id =  $auth_id
    MERGE (admin)-[:COUNTS_ARRIVALS_FOR]->(church)
    
    RETURN church.id AS id, church.name AS name, higherChurch.id AS higherChurchId, higherChurch.name AS higherChurchName
@@ -131,7 +128,6 @@ const servantCypher = {
    MATCH (church {id:$churchId})<-[:HAS]-(higherChurch)
    WHERE church:Council
    MATCH (admin:Member {id: $arrivalsPayerId})
-      SET admin.auth_id =  $auth_id
    MERGE (admin)-[:IS_ARRIVALS_PAYER_FOR]->(church)
    
    RETURN church.id AS id, church.name AS name, higherChurch.id AS higherChurchId, higherChurch.name AS higherChurchName
@@ -141,7 +137,6 @@ const servantCypher = {
    MATCH (church {id:$churchId})<-[:HAS]-(higherChurch)
    WHERE church:Stream
    MATCH (admin:Member {id: $tellerId})
-      SET admin.auth_id =  $auth_id
    MERGE (admin)-[:IS_TELLER_FOR]->(church)
    
    RETURN church.id AS id, church.name AS name, higherChurch.id AS higherChurchId, higherChurch.name AS higherChurchName

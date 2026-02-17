@@ -4,7 +4,6 @@ export const DISPLAY_MEMBER_BIO = gql`
   query displayMemberBio($id: ID!) {
     members(where: { id: $id }) {
       id
-      auth_id
       firstName
       middleName
       lastName

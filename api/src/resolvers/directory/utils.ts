@@ -165,7 +165,6 @@ export const removeServantCypher = async ({
       tx.run(servantCypher[`disconnectChurch${servantType}`], {
         [`${servantLower}Id`]: servant.id ?? '',
         churchId: church.id,
-        auth_id: servant.auth_id,
         jwt: context.jwt,
       })
     )
@@ -223,7 +222,6 @@ export const makeServantCypher = async ({
         .run(servantCypher[`connectChurch${servantType}`], {
           [`${servantLower}Id`]: servant.id,
           churchId: church.id,
-          auth_id: servant.auth_id,
           jwt: context.jwt,
         })
         .catch((e: any) =>
