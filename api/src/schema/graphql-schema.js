@@ -107,7 +107,7 @@ const array = [
 const combinedSchema = array.join(' ')
 
 // Write the combined schema to a file
-const outputPath = path.join(__dirname, 'combined-schema.gql')
-fs.writeFileSync(outputPath, combinedSchema, 'utf-8')
+// const outputPath = path.join(__dirname, 'combined-schema.gql')
+// fs.writeFileSync(outputPath, combinedSchema, 'utf-8')
 
 exports.typeDefs = combinedSchema

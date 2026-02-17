@@ -24,10 +24,6 @@ import { permitMe } from 'permission-utils'
 import useClickCard from 'hooks/useClickCard'
 import { useAuth } from 'contexts/AuthContext'
 import LoadingScreen from 'components/base-component/LoadingScreen'
-import LoginPage from 'pages/auth/LoginPage'
-import ForgotPasswordPage from 'pages/auth/ForgotPasswordPage'
-import SignupPage from 'pages/auth/SignupPage'
-import ResetPasswordPage from 'pages/auth/ResetPasswordPage'
 import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
 import PageContainer from 'components/base-component/PageContainer'
@@ -182,16 +178,6 @@ const AppWithContext = (props: AppPropsType) => {
                   <Suspense fallback={<LoadingScreen />}>
                     <PageContainer>
                       <Routes>
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route
-                          path="/forgot-password"
-                          element={<ForgotPasswordPage />}
-                        />
-                        <Route path="/signup" element={<SignupPage />} />
-                        <Route
-                          path="/reset-password"
-                          element={<ResetPasswordPage />}
-                        />
                         <Route
                           path="/setup-password"
                           element={<SetupPasswordPage />}

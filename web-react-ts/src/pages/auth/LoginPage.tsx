@@ -1,12 +1,21 @@
 import React, { useState } from 'react'
 import { useAuth } from 'contexts/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
-import { Container, Form, Button, Alert, Navbar, Spinner } from 'react-bootstrap'
+import {
+  Container,
+  Form,
+  Button,
+  Alert,
+  Navbar,
+  Spinner,
+} from 'react-bootstrap'
 import { Formik, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import Logo from '../../assets/flc-logo-small.webp'
 import './auth.css'
 import { Eye, EyeSlash } from 'react-bootstrap-icons'
+
+const APP_VERSION = '8.1.2'
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -91,7 +100,10 @@ const LoginPage = () => {
                   </ErrorMessage>
                 </Form.Group>
 
-                <Form.Group className="mb-3 form-group-with-icon" controlId="password">
+                <Form.Group
+                  className="mb-3 form-group-with-icon"
+                  controlId="password"
+                >
                   <Form.Label className="text-white">Password</Form.Label>
                   <Field
                     as={Form.Control}
@@ -156,6 +168,12 @@ const LoginPage = () => {
           </p>
           <p className="text-center text-secondary mb-0">
             Need help? Contact your administrator
+          </p>
+          <p
+            className="text-center text-muted"
+            style={{ fontSize: '0.75rem', marginTop: '1rem' }}
+          >
+            v{APP_VERSION}
           </p>
         </div>
       </Container>

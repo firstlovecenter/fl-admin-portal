@@ -20,12 +20,6 @@ import './color-theme.css'
 import './index.css'
 import ReactGA from 'react-ga4'
 import {
-  useLocation,
-  useNavigationType,
-  createRoutesFromChildren,
-  matchRoutes,
-} from 'react-router-dom'
-import {
   SnackbarKey,
   SnackbarProvider,
   closeSnackbar,
@@ -33,7 +27,6 @@ import {
 } from 'notistack'
 import { Button, Card } from 'react-bootstrap'
 import SplashSreen from 'pages/splash-screen/SplashSreen'
-import Login from 'components/Login'
 import AppWithContext from 'AppWithContext'
 
 const AppWithApollo = () => {
@@ -44,10 +37,6 @@ const AppWithApollo = () => {
     try {
       console.log('🎫 AppWithApollo: Fetching access token...')
       const token = await getAccessTokenSilently()
-      console.log(
-        '✅ AppWithApollo: Got token',
-        token?.substring(0, 20) + '...'
-      )
 
       setAccessToken(token)
       sessionStorage.setItem('token', token)

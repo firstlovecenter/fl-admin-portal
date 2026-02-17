@@ -9,12 +9,9 @@ const resolvers = require('./resolvers/resolvers').default
 
 // Constants
 const DEFAULT_NEO4J_CONFIG = {
-  maxConnectionPoolSize: 50,
+  encrypted: 'ENCRYPTION_ON',
+  trust: 'TRUST_ALL_CERTIFICATES',
   connectionTimeout: 30000,
-  logging: {
-    level: 'info',
-    logger: (level, message) => console.log(`[Neo4j ${level}] ${message}`),
-  },
 }
 
 // Server state
@@ -33,18 +30,15 @@ const initializeServer = async () => {
     // Load secrets
     SECRETS = await loadSecrets()
 
-    // Configure encrypted connection if required
-    const uri =
-      SECRETS.NEO4J_ENCRYPTED === 'true'
-        ? SECRETS.NEO4J_URI.replace('bolt://', 'neo4j+s://')
-        : SECRETS.NEO4J_URI
-
     console.log(
-      `[Neo4j] Connecting to ${uri.replace(/:\/\/.*@/, '://[REDACTED]@')}`
+      `[Neo4j] Connecting to ${SECRETS.NEO4J_URI.replace(
+        /:\/\/.*@/,
+        '://[REDACTED]@'
+      )}`
     )
 
     driver = neo4j.driver(
-      uri,
+      SECRETS.NEO4J_URI || 'bolt://localhost:7687/',
       neo4j.auth.basic(SECRETS.NEO4J_USER, SECRETS.NEO4J_PASSWORD),
       DEFAULT_NEO4J_CONFIG
     )
@@ -75,15 +69,21 @@ const initializeServer = async () => {
     })
 
     console.log('[Schema] Generating GraphQL schema')
-    schema = await neoSchema.getSchema().catch((error) => {
+    try {
+      schema = await neoSchema.getSchema()
+      console.log('[Schema] ✅ Schema generated successfully')
+    } catch (error) {
       console.error('\x1b[31m[Schema] ######## 🚨SCHEMA ERROR🚨 #######\x1b[0m')
-      console.error(`${JSON.stringify(error, null, 2)}`)
+      console.error('[Schema] Error details:', error)
+      console.error('[Schema] Error message:', error.message)
+      console.error('[Schema] Error stack:', error.stack)
       console.log(
         '\x1b[31m[Schema] ########## 🚨END OF SCHEMA ERROR🚨 ##################\x1b[0m'
       )
       throw error
-    })
+    }
 
+    console.log('[Apollo] Creating Apollo Server instance')
     server = new ApolloServer({
       schema,
       status400ForVariableCoercionErrors: true,
@@ -98,9 +98,10 @@ const initializeServer = async () => {
       },
     })
 
+    console.log('[Apollo] Starting Apollo Server')
     await server.start()
     isInitialized = true
-    console.log('[Apollo] Server initialized successfully')
+    console.log('[Apollo] ✅ Server initialized successfully')
   } catch (error) {
     console.error('[Initialization] Server initialization failed:', error)
     throw error
@@ -120,6 +121,8 @@ exports.handler = async (event, context) => {
       ? 'https://dev-synago.firstlovecenter.com'
       : 'https://admin.firstlovecenter.com'
 
+  console.log('[CORS Debug] Allowed origin:', allowedOrigin)
+
   const corsHeaders = {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -127,8 +130,15 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    // Log event structure for debugging
+    console.log('[Event Debug] Event keys:', Object.keys(event))
+    console.log('[Event Debug] Event:', JSON.stringify(event, null, 2))
+
     // Handle OPTIONS preflight request
-    if (event.httpMethod === 'OPTIONS') {
+    if (
+      event.httpMethod === 'OPTIONS' ||
+      event.requestContext?.http?.method === 'OPTIONS'
+    ) {
       return {
         statusCode: 204,
         headers: {
@@ -138,8 +148,15 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Parse and validate request
-    const { body, headers, httpMethod } = event
+    // Parse and validate request (handle both API Gateway v1 and v2 formats)
+    const body = event.body || event.rawBody || event.requestBody
+    const headers = event.headers || {}
+    const httpMethod =
+      event.httpMethod || event.requestContext?.http?.method || 'POST'
+
+    console.log('[Request Debug] Body exists:', !!body)
+    console.log('[Request Debug] Body type:', typeof body)
+    console.log('[Request Debug] HTTP Method:', httpMethod)
 
     if (!body) {
       throw new SyntaxError('Request body is undefined or empty')

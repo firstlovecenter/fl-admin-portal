@@ -347,22 +347,3 @@ export const CREATE_HUB_MUTATION = gql`
     }
   }
 `
-export const CREATE_MEMBER_ACCOUNT = gql`
-  mutation CreateMemberAccount($memberId: ID!) {
-    CreateMemberAccount(memberId: $memberId) {
-      id
-      auth_id
-      firstName
-      middleName
-      lastName
-      fullName
-      nameWithTitle
-      email
-      phoneNumber
-      pictureUrl
-      visitationArea
-      whatsappNumber
-      pictureUrl
-    }
-  }
-`

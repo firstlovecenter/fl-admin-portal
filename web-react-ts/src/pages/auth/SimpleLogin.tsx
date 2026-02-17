@@ -4,6 +4,8 @@ import { login as apiLogin, storeAuth } from '../../lib/auth-service'
 import Logo from '../../assets/flc-logo-small.webp'
 import './auth.css'
 
+const APP_VERSION = '8.1.2'
+
 interface SimpleLoginProps {
   onLoginSuccess?: () => void
 }
@@ -169,6 +171,12 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
           <p className="text-center text-secondary mt-4">
             Need help? Contact your administrator
           </p>
+          <p
+            className="text-center text-muted"
+            style={{ fontSize: '0.75rem', marginTop: '1rem' }}
+          >
+            v{APP_VERSION}
+          </p>
         </div>
       </Container>
     </>
@@ -251,6 +259,12 @@ const ForgotPasswordForm = ({ onBack, onSubmit }: ForgotPasswordFormProps) => {
 
           <p className="text-center text-secondary mt-4">
             Need help? Contact your administrator
+          </p>
+          <p
+            className="text-center text-muted"
+            style={{ fontSize: '0.75rem', marginTop: '1rem' }}
+          >
+            v{APP_VERSION}
           </p>
         </div>
       </Container>
