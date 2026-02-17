@@ -178,7 +178,7 @@ exports.handler = async (event, context) => {
       headers: Object.keys(headers),
     })
 
-    // Handle JWT authentication
+    // Handle JWT authentication properly
     const token = headers.authorization || headers.Authorization
     let jwt = null
 
