@@ -23,6 +23,18 @@ export const CREATE_CHECKIN_EVENT = gql`
       createdByRole
       totalExpected
       allowedCheckInRoles
+      geoVerifyEnabled
+      geoFenceType
+      geoCenter {
+        latitude
+        longitude
+      }
+      geoRadius
+      geoPolygon {
+        latitude
+        longitude
+      }
+      selfieRequired
     }
   }
 `
@@ -49,6 +61,8 @@ export const LIST_CHECKIN_EVENTS = gql`
       attendanceType
       gracePeriod
       allowedCheckInRoles
+      geoVerifyEnabled
+      selfieRequired
     }
   }
 `
@@ -73,6 +87,10 @@ export const GET_CHECKIN_DASHBOARD = gql`
         createdById
         createdByName
         createdByRole
+        geoVerifyEnabled
+        geoFenceType
+        geoRadius
+        selfieRequired
       }
       checkedIn {
         memberId
@@ -85,6 +103,9 @@ export const GET_CHECKIN_DASHBOARD = gql`
         checkedInAt
         checkInMethod
         isLate
+        geoVerified
+        faceMatchStatus
+        selfieUrl
       }
       defaulted {
         memberId
@@ -101,6 +122,7 @@ export const GET_CHECKIN_DASHBOARD = gql`
         checkedInCount
         defaultedCount
         percentage
+        flaggedCount
       }
       scopeFilters {
         id
@@ -108,6 +130,24 @@ export const GET_CHECKIN_DASHBOARD = gql`
         level
       }
       appliedFilterId
+      flaggedRecords {
+        record {
+          id
+          eventId
+          memberId
+          memberName
+          selfieUrl
+          faceMatchScore
+          faceMatchStatus
+        }
+        attendee {
+          memberId
+          fullName
+          unitName
+          selfieUrl
+        }
+        reason
+      }
     }
   }
 `
@@ -117,8 +157,24 @@ export const CHECKIN_MEMBER = gql`
     $eventId: ID!
     $method: CheckInMethod!
     $code: String!
+    $deviceFingerprint: String!
+    $latitude: Float
+    $longitude: Float
+    $selfieBase64: String
+    $faceMatchScore: Float
+    $faceMatchStatus: FaceMatchStatus
   ) {
-    CheckInMember(eventId: $eventId, method: $method, code: $code) {
+    CheckInMember(
+      eventId: $eventId
+      method: $method
+      code: $code
+      deviceFingerprint: $deviceFingerprint
+      latitude: $latitude
+      longitude: $longitude
+      selfieBase64: $selfieBase64
+      faceMatchScore: $faceMatchScore
+      faceMatchStatus: $faceMatchStatus
+    ) {
       id
       eventId
       memberId
@@ -128,6 +184,12 @@ export const CHECKIN_MEMBER = gql`
       checkedInAt
       checkInMethod
       verifiedBy
+      geoVerified
+      distanceFromVenue
+      selfieUrl
+      faceMatchScore
+      faceMatchStatus
+      deviceFingerprint
     }
   }
 `
@@ -210,6 +272,39 @@ export const GET_ADMIN_SCOPES = gql`
       id
       name
       level
+    }
+  }
+`
+
+export const GET_FLAGGED_CHECKINS = gql`
+  query GetFlaggedCheckIns($eventId: ID!) {
+    GetFlaggedCheckIns(eventId: $eventId) {
+      record {
+        id
+        eventId
+        memberId
+        memberName
+        selfieUrl
+        faceMatchScore
+        faceMatchStatus
+      }
+      attendee {
+        memberId
+        fullName
+        unitName
+        selfieUrl
+      }
+      reason
+    }
+  }
+`
+
+export const RESOLVE_FLAGGED_CHECKIN = gql`
+  mutation ResolveFlaggedCheckIn($recordId: ID!, $resolution: String!) {
+    ResolveFlaggedCheckIn(recordId: $recordId, resolution: $resolution) {
+      id
+      faceMatchStatus
+      verifiedBy
     }
   }
 `

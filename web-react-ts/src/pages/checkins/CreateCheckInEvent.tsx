@@ -9,6 +9,7 @@ import Input from 'components/formik/Input'
 import { CREATE_CHECKIN_EVENT, GET_ADMIN_SCOPES } from './checkinsQueries'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { useMemo } from 'react'
+import GeoFencePicker, { GeoPoint } from './GeoFencePicker'
 
 const scopeLevels = [
   { value: 'OVERSIGHT', label: 'Oversight' },
@@ -68,6 +69,14 @@ const CreateCheckInEvent = () => {
     gracePeriod: 30,
     attendanceType: 'LEADERS_ONLY',
     allowedCheckInRoles: ['leaderBacenta'],
+    // Geo-verify
+    geoVerifyEnabled: false,
+    geoFenceType: 'CIRCLE' as 'CIRCLE' | 'POLYGON',
+    geoCenter: null as GeoPoint | null,
+    geoRadius: 200,
+    geoPolygon: [] as GeoPoint[],
+    // Selfie
+    selfieRequired: false,
   }
 
   return (
@@ -221,6 +230,71 @@ const CreateCheckInEvent = () => {
                     </Card>
                   </Col>
                 </Row>
+
+                {/* Geo-Verify Section */}
+                <div className="mt-3">
+                  <GeoFencePicker
+                    enabled={formik.values.geoVerifyEnabled}
+                    fenceType={formik.values.geoFenceType}
+                    center={formik.values.geoCenter}
+                    radius={formik.values.geoRadius}
+                    polygon={formik.values.geoPolygon}
+                    onToggle={(v) =>
+                      formik.setFieldValue('geoVerifyEnabled', v)
+                    }
+                    onFenceTypeChange={(v) =>
+                      formik.setFieldValue('geoFenceType', v)
+                    }
+                    onCenterChange={(v) =>
+                      formik.setFieldValue('geoCenter', v)
+                    }
+                    onRadiusChange={(v) =>
+                      formik.setFieldValue('geoRadius', v)
+                    }
+                    onPolygonChange={(v) =>
+                      formik.setFieldValue('geoPolygon', v)
+                    }
+                  />
+                </div>
+
+                {/* Selfie Requirement Section */}
+                <Card className="p-3 bg-light mt-3">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <label className="form-label fw-bold mb-0">
+                      📸 Selfie Capture (Anti-Proxy)
+                    </label>
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={formik.values.selfieRequired}
+                        onChange={(e) =>
+                          formik.setFieldValue(
+                            'selfieRequired',
+                            e.target.checked
+                          )
+                        }
+                        id="selfieToggle"
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="selfieToggle"
+                      >
+                        {formik.values.selfieRequired
+                          ? 'Required'
+                          : 'Not required'}
+                      </label>
+                    </div>
+                  </div>
+                  {formik.values.selfieRequired && (
+                    <small className="text-muted mt-2 d-block">
+                      Members will be prompted to take a selfie during check-in.
+                      If face-api.js models are available, the selfie will be
+                      automatically compared against their profile photo. Low
+                      confidence matches will be flagged for admin review.
+                    </small>
+                  )}
+                </Card>
 
                 <div className="mt-4">
                   <SubmitButton formik={formik}>

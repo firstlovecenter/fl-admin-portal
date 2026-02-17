@@ -135,6 +135,20 @@ const CheckInEventDashboard = () => {
                         .join(', ')}
                     </span>
                   </div>
+                  {/* Verification features badges */}
+                  <div className="mt-2 d-flex flex-wrap gap-1">
+                    {event.geoVerifyEnabled && (
+                      <span className="badge bg-success">
+                        📍 Geo-Verify ({event.geoFenceType || 'CIRCLE'}
+                        {event.geoRadius ? `, ${event.geoRadius}m` : ''})
+                      </span>
+                    )}
+                    {event.selfieRequired && (
+                      <span className="badge bg-warning text-dark">
+                        📸 Selfie Required
+                      </span>
+                    )}
+                  </div>
                 </Col>
                 <Col md={6} className="text-md-end">
                   <div>
@@ -242,6 +256,35 @@ const CheckInEventDashboard = () => {
               </Card>
             </Col>
           </Row>
+
+          {/* Flagged Records Section */}
+          {(dashboard?.stats?.flaggedCount ?? 0) > 0 && canManageEvent && (
+            <Card className="p-3 mb-3 border-danger">
+              <Row className="align-items-center">
+                <Col>
+                  <h5 className="mb-0">
+                    🚩 Flagged Check-Ins
+                  </h5>
+                  <div className="display-6 text-danger">
+                    {dashboard?.stats?.flaggedCount ?? 0}
+                  </div>
+                  <small className="text-muted">
+                    Records flagged by face verification that need admin review
+                  </small>
+                </Col>
+                <Col xs="auto">
+                  <Button
+                    variant="danger"
+                    onClick={() =>
+                      navigate(`/checkins/event/${eventId}/flagged`)
+                    }
+                  >
+                    Review Flagged
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
+          )}
         </Container>
 
         <ManualCheckInModal
