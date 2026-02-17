@@ -166,15 +166,15 @@ RETURN stream {
 `
 export const closeDownStream = `//cypher
 MATCH (stream:Stream {id:$streamId})<-[:HAS]-(campus:Campus)
-WITH stream, campus
+MATCH (campus)-[:HAS]->(allStreams:Stream)
+WITH stream, campus, collect(allStreams {.id, .name}) AS streamsList
 
 CREATE (log:HistoryLog {id:apoc.create.uuid()})
-  SET log.timeStamp = datetime(),
-  log.historyRecord = stream.name + ' Stream was closed down under ' + campus.name +' Campus'
+SET log.timeStamp = datetime(),
+log.historyRecord = stream.name + ' Stream was closed down under ' + campus.name +' Campus'
 
-WITH stream, campus, log
+WITH stream, campus, log, streamsList
 MATCH (admin:Member {id: $jwt.userId})
-MATCH (campus)-[:HAS]->(streams)
 OPTIONAL MATCH (stream)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
 
 MERGE (date:TimeGraph {date:date()})
@@ -182,12 +182,12 @@ MERGE (log)-[:LOGGED_BY]->(admin)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (campus)-[:HAS_HISTORY]->(log)
 
-SET  stream:ClosedStream, councils:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta, fellowships:ClosedFellowship
-REMOVE  stream:Stream, councils:Council, governorships:Governorship, bacentas:Bacenta,fellowships:Fellowship
+SET stream:ClosedStream, councils:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta, fellowships:ClosedFellowship
+REMOVE stream:Stream, councils:Council, governorships:Governorship, bacentas:Bacenta, fellowships:Fellowship
 
 RETURN campus {
   .id, .name,
-  streams: [streams {.id, .name}]
+  streams: streamsList
 }
 `
 export const closeDownCampus = `//cypher
