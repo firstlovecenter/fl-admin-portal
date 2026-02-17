@@ -122,7 +122,10 @@ const directoryMutation = {
     args: { memberId: string; bacentaId: string },
     context: Context
   ) => {
-    isAuth( nst session = con
+    isAuth([...permitMe('Bacenta'), ...permitMe('Hub')], context.jwt.roles)
+
+    const session = context.executionContext.session()
+
     const memberRes = await session.executeRead((tx) =>
       tx.run(matchMemberAndIMCLStatus, {
         id: args.memberId,
@@ -156,7 +159,10 @@ const directoryMutation = {
     isAuth([...permitMe('Fellowship'), ...permitMe('Hub')], context.jwt.roles)
 
     const session = context.executionContext.session()
-y { const updatedMemb    await session.executeWrite((tx) =>
+
+    try {
+      const updatedMember: Member = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
           tx.run(updateMemberEmail, {
             id: args.id,
             email: args.email,
@@ -183,7 +189,10 @@ y { const updatedMemb    await session.executeWrite((tx) =>
     const memberCheck = rearrangeCypherObject(
       await session.run(cypher.checkMemberHasNoActiveRelationships, args)
     )
- (memberCheck.relationshipCount.low > 0 throw new Error(    'This member has active roles in church. Please remove all active roles and try again'
+
+    if (memberCheck.relationshipCount.low > 0) {
+      throw new Error(
+        'This member has active roles in church. Please remove all active roles and try again'
       )
     }
 
@@ -214,7 +223,10 @@ y { const updatedMemb    await session.executeWrite((tx) =>
       const res: any = await Promise.all([
         session.run(closeChurchCypher.checkFellowshipHasNoMembers, args),
         sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-          c  }), ])
+          churchId: args.fellowshipId,
+        }),
+      ])
+
       const fellowshipCheck = rearrangeCypherObject(res[0])
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
@@ -284,7 +296,10 @@ y { const updatedMemb    await session.executeWrite((tx) =>
       const bacentaCheck = rearrangeCypherObject(bacentaCheckResponse)
 
       if (bacentaCheck.memberCount > 0) {
-        thr    `${bacentaCheck?.name} Bacenta h   )  }
+        throw new Error(
+          `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.memberCount} members. Please transfer all members and try again.`
+        )
+      }
 
       // Bacenta Leader must be removed since the Bacenta is being closed down
       await RemoveServant(
@@ -329,7 +344,10 @@ y { const updatedMemb    await session.executeWrite((tx) =>
 
       const governorshipCheck = rearrangeCypherObject(res[0])
       const lastServiceRecord = rearrangeCypherObject(res[1])
-if (governorshipCheck.b   throw new Error      `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
+
+      if (governorshipCheck.bacentaCount.toNumber()) {
+        throw new Error(
+          `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
         )
       }
       if (governorshipCheck.hubCount.toNumber()) {
@@ -417,7 +435,10 @@ if (governorshipCheck.b   throw new Error      `${governorshipCheck?.name} Gover
 
       if (councilCheck.governorshipCount.toNumber()) {
         throw new Error(
-          `  ) }
+          `${councilCheck?.name} Council has ${councilCheck?.governorshipCount} active governorships. Please close down all governorships and try again.`
+        )
+      }
+
       if (councilCheck.hubCouncilLeaderCount.toNumber()) {
         throw new Error(
           `${councilCheck?.name} Council has ${councilCheck?.hubCouncilCount} active hub councils. Please close down all hub councils and try again.`
@@ -504,7 +525,10 @@ if (governorshipCheck.b   throw new Error      `${governorshipCheck?.name} Gover
           `${streamCheck?.name} Stream has ${streamCheck?.councilCount} active councils. Please close down all councils and try again.`
         )
       }
-if (streamCheck.minist   throw new Error      `${streamCheck?.name} Stream has ${streamCheck?.ministryCount} active ministries. Please close down all ministries and try again.`
+
+      if (streamCheck.ministryLeaderCount > 0) {
+        throw new Error(
+          `${streamCheck?.name} Stream has ${streamCheck?.ministryCount} active ministries. Please close down all ministries and try again.`
         )
       }
 
@@ -591,7 +615,10 @@ if (streamCheck.minist   throw new Error      `${streamCheck?.name} Stream has $
 
       if (campusCheck.leaderCount > 0) {
         throw new Error(
-          `  ) }
+          `${campusCheck?.name} Campus has ${campusCheck?.creativeArtsCount} active creativeArts. Please close down all creativeArts and try again.`
+        )
+      }
+
       const record = lastServiceRecord.lastService?.properties ?? {
         bankingSlip: null,
       }
@@ -678,7 +705,10 @@ if (streamCheck.minist   throw new Error      `${streamCheck?.name} Stream has $
       }
 
       if (
-        !(    'bankingSlip' in record      record.transa      'tellerConfirmationTime' in record
+        !(
+          'bankingSlip' in record ||
+          record.transactionStatus === 'success' ||
+          'tellerConfirmationTime' in record
         )
       ) {
         throw new Error(
