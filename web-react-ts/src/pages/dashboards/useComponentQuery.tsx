@@ -34,7 +34,6 @@ import {
   SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN,
   SERVANTS_STREAM_ARRIVALS_COUNTER,
   SERVANTS_STREAM_TELLER,
-  SERVANTS_SHEEP_SEEKER_STREAM,
   SERVANTS_HUB_LEADER,
   SERVANTS_MINISTRY_LEADER,
   SERVANTS_CREATIVEARTS_LEADER,
@@ -102,7 +101,6 @@ const useComponentQuery = (props?: UseComponentQuery) => {
   )
 
   const [streamTellerQuery] = useLazyQuery(SERVANTS_STREAM_TELLER)
-  const [sheepseekerStream] = useLazyQuery(SERVANTS_SHEEP_SEEKER_STREAM)
 
   //sonta
   const [hubLeaderQuery] = useLazyQuery(SERVANTS_HUB_LEADER)
@@ -137,7 +135,6 @@ const useComponentQuery = (props?: UseComponentQuery) => {
       arrivalsAdmin: streamArrivalsAdminQuery,
       arrivalsCounter: streamArrivalsCounterQuery,
       teller: streamTellerQuery,
-      sheepseeker: sheepseekerStream,
     },
     Campus: {
       leader: campusLeaderQuery,
@@ -176,16 +173,32 @@ const useComponentQuery = (props?: UseComponentQuery) => {
       roles: Role[]
       id: string
     }) => {
-      if (!user.roles.length) return
+      console.log('📊 useComponentQuery: Starting fetch', {
+        user,
+        hasRoles: user?.roles?.length,
+      })
+
+      if (!user.roles.length) {
+        console.log('⚠️ useComponentQuery: No roles found, skipping')
+        return
+      }
+
       const { highestLevel, highestVerb } = getHighestRole(user.roles)
+      console.log('🎯 useComponentQuery: Highest role', {
+        highestLevel,
+        highestVerb,
+      })
 
       const response = await church[`${highestLevel}`][`${highestVerb}`]({
         variables: { id: user.id },
       })
 
       if (response.error) {
+        console.error('❌ useComponentQuery: Query error', response.error)
         throwToSentry(response.error)
       }
+
+      console.log('✅ useComponentQuery: Query successful', response.data)
 
       setAssessmentChurch(
         response.data.members[0][
@@ -196,8 +209,18 @@ const useComponentQuery = (props?: UseComponentQuery) => {
       return
     }
 
-    fetchAssessmentChurch(props?.servant || currentUser)
-  }, [currentUser, props?.servant.roles.length])
+    const targetUser = props?.servant || currentUser
+    console.log('🔍 useComponentQuery: Effect triggered', {
+      hasProps: !!props?.servant,
+      currentUser,
+      targetUser,
+      rolesLength: targetUser?.roles?.length,
+    })
+
+    if (targetUser && targetUser.roles?.length > 0) {
+      fetchAssessmentChurch(targetUser)
+    }
+  }, [currentUser, props?.servant, props?.servant?.roles?.length])
 
   return { assessmentChurch }
 }

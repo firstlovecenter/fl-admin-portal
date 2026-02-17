@@ -1,5 +1,5 @@
 export const initiateDownloadCreditsTransaction = `
-  MATCH (user:Member {auth_id: $jwt.sub})
+  MATCH (user:Member {id: $jwt.sub})
 
   CREATE (transaction:Transaction:CreditTransaction {id: randomUUID()})
     SET transaction.amount = $amount,
@@ -21,7 +21,7 @@ export const initiateDownloadCreditsTransaction = `
 `
 
 export const getMember = `
-    MATCH (member:Member {auth_id: $jwt.sub})
+    MATCH (member:Member {id: $jwt.sub})
     RETURN member
 `
 

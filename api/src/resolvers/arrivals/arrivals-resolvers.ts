@@ -475,7 +475,6 @@ export const arrivalsMutation = {
 
     type responseType = {
       id: string
-      target: neonumber
       attendance: number
       vehicle: 'Sprinter' | 'Urvan' | 'Car'
       vehicleCost: number

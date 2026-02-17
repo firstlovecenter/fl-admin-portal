@@ -19,6 +19,7 @@ import {
   downloadCreditsQueries,
 } from './download-credits/download-credits-resolvers'
 import uploadMutations from './uploads/upload-resolvers'
+import checkinsResolvers from './checkins/checkins-resolvers'
 
 const dotenv = require('dotenv')
 
@@ -94,6 +95,10 @@ const resolvers = {
     ...directoryCreativeArtsMutation,
     ...downloadCreditsMutations,
     ...uploadMutations,
+    ...checkinsResolvers.Mutation,
+  },
+  Query: {
+    ...checkinsResolvers.Query,
   },
 }
 

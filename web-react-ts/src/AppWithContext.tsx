@@ -22,9 +22,13 @@ import PageNotFound from 'pages/page-not-found/PageNotFound'
 import SetPermissions from 'auth/SetPermissions'
 import { permitMe } from 'permission-utils'
 import useClickCard from 'hooks/useClickCard'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from 'contexts/AuthContext'
 import LoadingScreen from 'components/base-component/LoadingScreen'
-import * as Sentry from '@sentry/react'
+import LoginPage from 'pages/auth/LoginPage'
+import ForgotPasswordPage from 'pages/auth/ForgotPasswordPage'
+import SignupPage from 'pages/auth/SignupPage'
+import ResetPasswordPage from 'pages/auth/ResetPasswordPage'
+import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
 import PageContainer from 'components/base-component/PageContainer'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
@@ -91,22 +95,29 @@ const AppWithContext = (props: AppPropsType) => {
     setCreativeArtsId,
   }
 
-  const { user } = useAuth0()
+  const { user } = useAuth()
 
   const [currentUser, setCurrentUser] = useState(
     sessionStorage.getItem('currentUser')
       ? JSON.parse(sessionStorage.getItem('currentUser') || '{}')
       : {
           __typename: 'Member',
-          id: user?.sub?.replace('auth0|', ''),
-          firstName: user?.given_name,
-          lastName: user?.family_name,
-          fullName: user?.name,
-          picture: user?.picture,
-          email: user?.email,
-          roles: user && user[`https://flcadmin.netlify.app/roles`],
+          id: user?.id || '',
+          firstName: user?.firstName || '',
+          lastName: user?.lastName || '',
+          fullName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+          picture: '',
+          email: user?.email || '',
+          roles: user?.roles || [],
         }
   )
+
+  console.log('🏠 AppWithContext: Initialized', {
+    user,
+    currentUser,
+    hasSessionUser: !!sessionStorage.getItem('currentUser'),
+    token: props.token?.substring(0, 20),
+  })
 
   const [userJobs, setUserJobs] = useState()
 
@@ -119,8 +130,6 @@ const AppWithContext = (props: AppPropsType) => {
     leaderRank: [],
     basonta: [],
   })
-
-  const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
 
   return (
     <Router>
@@ -169,10 +178,24 @@ const AppWithContext = (props: AppPropsType) => {
             >
               <SetPermissions token={props.token}>
                 <>
-                  <Navigation />
+                  {user && <Navigation />}
                   <Suspense fallback={<LoadingScreen />}>
                     <PageContainer>
-                      <SentryRoutes>
+                      <Routes>
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route
+                          path="/forgot-password"
+                          element={<ForgotPasswordPage />}
+                        />
+                        <Route path="/signup" element={<SignupPage />} />
+                        <Route
+                          path="/reset-password"
+                          element={<ResetPasswordPage />}
+                        />
+                        <Route
+                          path="/setup-password"
+                          element={<SetupPasswordPage />}
+                        />
                         {[
                           ...dashboards,
                           ...directory,
@@ -233,7 +256,7 @@ const AppWithContext = (props: AppPropsType) => {
                           }
                         />
                         <Route path="*" element={<PageNotFound />} />
-                      </SentryRoutes>
+                      </Routes>
                     </PageContainer>
                   </Suspense>
                 </>

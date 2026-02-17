@@ -19,6 +19,7 @@ const ChurchList = ({
     | 'churches'
     | 'maps'
     | 'accounts'
+    | 'checkins'
   link?: string
   includeVacation?: boolean
 }) => {
@@ -38,6 +39,19 @@ const ChurchList = ({
             })
             .map((church: Church) => {
               if (color === 'arrivals') {
+                if (
+                  ![
+                    'Bacenta',
+                    'Governorship',
+                    'Council',
+                    'Stream',
+                    'Campus',
+                  ].includes(church.__typename)
+                ) {
+                  return null
+                }
+              }
+              if (color === 'checkins') {
                 if (
                   ![
                     'Bacenta',
@@ -100,6 +114,8 @@ const ChurchList = ({
 
                     if (color === 'arrivals') {
                       navigate(`/arrivals/${church.__typename.toLowerCase()}`)
+                    } else if (color === 'checkins') {
+                      navigate(`/checkins/${church.__typename.toLowerCase()}`)
                     } else if (color === 'quick-facts') {
                       navigate(
                         `/quick-facts/this-month/${church.__typename.toLowerCase()}`

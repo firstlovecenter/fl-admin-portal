@@ -75,7 +75,7 @@ export const checkServantHasCurrentHistory = async (
       servantType: 'Leader',
       servant: {
         id: getServantAndChurch.servantId,
-        auth_id: getServantAndChurch.auth_id,
+        
         firstName: getServantAndChurch.firstName,
         lastName: getServantAndChurch.lastName,
       },

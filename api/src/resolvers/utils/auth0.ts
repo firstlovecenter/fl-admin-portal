@@ -1,176 +1,72 @@
-import { Member, Role } from './types'
-import { loadSecrets } from '../secrets'
+/**
+ * DEPRECATED: Auth0 utilities
+ *
+ * This file is kept for historical reference only.
+ * Auth0 integration has been completely removed from the application.
+ *
+ * User authentication is now handled by a custom authentication service.
+ * Roles are managed directly in the Neo4j database instead of Auth0.
+ *
+ * All functions in this file should no longer be used.
+ */
 
 export type Auth0RoleObject = {
-  // eslint-disable-next-line no-unused-vars
-  [key in Role]: { id: string }
-} & {
   id: string
   name: string
   description: string
 }
 
-export const createAuthUserConfig = async (member: Member, token: string) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  return {
-    method: 'post',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/users`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-    data: {
-      connection: `flcadmin${SECRETS.TEST_ENV ? '-test' : ''}`,
-      email: member.email,
-      given_name: member.firstName,
-      family_name: member.lastName,
-      name: `${member.firstName} ${member.lastName}`,
-      picture:
-        member.pictureUrl ||
-        'https://res.cloudinary.com/firstlovecenter/image/upload/v1627893621/user_qvwhs7.png',
-      user_id: member.id,
-      password: SECRETS.TEST_ENV ? 'password' : 'rAnd0MLetteR5',
-    },
-  }
+// Placeholder exports to prevent import errors during migration
+export const createAuthUserConfig = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Use custom auth service instead.'
+  )
 }
 
-export const updateAuthUserConfig = async (member: Member, token: string) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  return {
-    method: 'patch',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/users/${member.auth_id}`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-    data: {
-      connection: `flcadmin${SECRETS.TEST_ENV ? '-test' : ''}`,
-      email: member.email,
-      given_name: member.firstName,
-      family_name: member.lastName,
-      name: `${member.firstName} ${member.lastName}`,
-      picture:
-        member.pictureUrl ||
-        'https://res.cloudinary.com/firstlovecenter/image/upload/v1627893621/user_qvwhs7.png',
-    },
-  }
+export const updateAuthUserConfig = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Use custom auth service instead.'
+  )
 }
 
-export const changePasswordConfig = async (member: Member, token: string) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  return {
-    method: 'post',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/tickets/password-change`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-    data: {
-      connection_id: SECRETS.AUTH0_DB_CONNECTION_ID,
-      email: member.email,
-      mark_email_as_verified: true,
-    },
-  }
+export const changePasswordConfig = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Use custom auth service instead.'
+  )
 }
 
-export const deleteAuthUserConfig = async (memberId: string, token: string) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  return {
-    method: 'delete',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/users/${memberId}`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-  }
+export const deleteAuthUserConfig = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Use custom auth service instead.'
+  )
 }
 
-export const getAuthIdConfig = async (member: Member, token: string) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  const sanitizedEmail = member.email.replace(/\s+/g, '')
-  return {
-    method: 'get',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/users-by-email?email=${sanitizedEmail}`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-  }
+export const getAuthIdConfig = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Use custom auth service instead.'
+  )
 }
 
-export const getUserRoles = async (memberId: string, token: string) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  return {
-    method: 'get',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/users/${memberId}/roles`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-  }
+export const getUserRoles = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Roles are now managed in Neo4j.'
+  )
 }
 
-export const setUserRoles = async (
-  memberId: string,
-  roles: Role[],
-  token: string
-) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  return {
-    method: 'post',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/users/${memberId}/roles`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-    data: {
-      roles,
-    },
-  }
+export const setUserRoles = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Roles are now managed in Neo4j.'
+  )
 }
 
-export const deleteUserRoles = async (
-  memberId: string,
-  roles: string[],
-  token: string
-) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  return {
-    method: 'delete',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/users/${memberId}/roles`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-    data: {
-      roles,
-    },
-  }
+export const deleteUserRoles = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Roles are now managed in Neo4j.'
+  )
 }
 
-export const deleteRole = async (
-  role: Role,
-  token: string,
-  authRoles: Auth0RoleObject
-) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  const getRoleId = (roleName: Role) => authRoles[roleName].id
-
-  return {
-    method: 'delete',
-    baseURL: SECRETS.AUTH0_BASE_URL,
-    url: `/api/v2/roles/${getRoleId(role)}`,
-    headers: {
-      autho: '',
-      Authorization: `Bearer ${token}`,
-    },
-  }
+export const deleteRole = async () => {
+  throw new Error(
+    'Auth0 integration has been removed. Roles are now managed in Neo4j.'
+  )
 }

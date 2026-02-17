@@ -1,29 +1,35 @@
+# =============================================================================
+# Netlify Configuration - GraphQL API Only
+# =============================================================================
+# NOTE: Frontend has been migrated to AWS Amplify for preview deployments.
+# This configuration now only handles the GraphQL API backend deployment.
+# See AMPLIFY_README.md and docs/AWS_AMPLIFY_MIGRATION.md for frontend deployment details.
+# =============================================================================
+
 [build]
-command = "npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
-publish = "web-react-ts/dist"
-functions = "api/build/functions"
+  command = "npm i && cd api && npm i && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
+  publish = "api/build"
+  functions = "api/build/functions"
 
 [dev]
-command = "npm start"
+  command = "npm start"  # Runs API only in dev mode
 
-# with gitops
+# Backend API deployment contexts (no frontend build)
 [context.deploy-preview]
-command = "npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
+  command = "npm i && cd api && npm i && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
 
 [context.production]
-command = "npm i && cd api && npm i && cd ../web-react-ts && npm i && cd .. && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
+  command = "npm i && cd api && npm i && npm run build && cp api/src/resolvers/texts.json api/build/resolvers/. && cp -r api/build/schema api/build/functions/graphql/. && cd api/src/functions/graphql && npm i"
 
 [template.environment]
-NEO4J_URI = "Neo4j URI (ex: bolt://localhost:7687)"
-NEO4J_USER = "Neo4j User"
-NEO4J_PASSWORD = "Neo4j Password"
+  NEO4J_URI = "Neo4j URI (ex: bolt://localhost:7687)"
+  NEO4J_USER = "Neo4j User"
+  NEO4J_PASSWORD = "Neo4j Password"
 
+# GraphQL API endpoint redirect
 [[redirects]]
-from = "/graphql"
-to = "/.netlify/functions/graphql"
-status = 200
+  from = "/graphql"
+  to = "/.netlify/functions/graphql"
+  status = 200
 
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
+# Note: Frontend SPA redirects removed - now handled by AWS Amplify

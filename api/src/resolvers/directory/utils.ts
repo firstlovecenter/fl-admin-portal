@@ -16,7 +16,6 @@ import {
   matchMemberDenominationQuery,
   matchMemberOversightQuery,
   matchMemberQuery,
-  matchMemberSheepSeekerQuery,
   matchMemberTellerQuery,
 } from '../cypher/resolver-cypher'
 import {
@@ -94,11 +93,6 @@ export const formatting = (
     verb = `isTellerFor${churchType}`
     servantLower = 'teller'
     memberQuery = matchMemberTellerQuery
-  }
-  if (servantType === 'SheepSeeker') {
-    verb = `isSheepSeekerFor${churchType}`
-    servantLower = 'sheepseeker'
-    memberQuery = matchMemberSheepSeekerQuery
   }
 
   if (churchType === 'Campus') {

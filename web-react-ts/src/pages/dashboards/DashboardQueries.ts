@@ -146,14 +146,6 @@ export const SERVANT_CHURCH_LIST = gql`
         name
       }
 
-      #sheepSeeking
-      isSheepSeekerForStream {
-        id
-        name
-        bankAccount
-        isManualBanking
-      }
-
       leadsHub {
         id
         name

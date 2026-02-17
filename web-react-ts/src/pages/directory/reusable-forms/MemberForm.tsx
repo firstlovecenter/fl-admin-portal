@@ -210,7 +210,6 @@ const MemberForm = ({
                     name="pictureUrl"
                     initialValue={initialValues.pictureUrl}
                     error={formik.errors.pictureUrl}
-                    uploadPreset={import.meta.env.VITE_CLOUDINARY_MEMBERS}
                     placeholder="Upload New Picture"
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="ImageUpload"

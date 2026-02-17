@@ -37,7 +37,6 @@ import RadioButtons from 'components/formik/RadioButtons'
 
 type FormOptions = {
   name: string
-  target: string
   urvanTopUp: string
   sprinterTopUp: string
   outbound: string
@@ -87,7 +86,6 @@ const UpdateBusPayment = () => {
 
   const initialValues: FormOptions = {
     name: bacenta?.name,
-    target: bacenta?.target ?? '',
     urvanTopUp: bacenta?.urvanTopUp ?? '',
     sprinterTopUp: bacenta?.sprinterTopUp ?? '',
     outbound: convertOutboundToString(bacenta?.outbound) ?? 'In Only',
@@ -99,8 +97,6 @@ const UpdateBusPayment = () => {
   }
 
   const validationSchema = Yup.object({
-    target: Yup.string().required('Bacenta Target is a required field'),
-
     momoNumber: Yup.string().matches(
       MOMO_NUM_REGEX,
       `Enter a valid MoMo Number without spaces. eg. (02XXXXXXXX)`
@@ -130,7 +126,6 @@ const UpdateBusPayment = () => {
             sprinterTopUp: parseFloat(values.sprinterTopUp),
             urvanTopUp: parseFloat(values.urvanTopUp),
             outbound: convertOutboundToBoolean(values.outbound),
-            target: parseInt(values.target),
           },
         })
       } catch (error: any) {
@@ -177,13 +172,6 @@ const UpdateBusPayment = () => {
                     <Col className="mb-2">
                       <RoleView roles={permitAdminArrivals('Stream')}>
                         <Row className="form-row">
-                          <Col>
-                            <Input
-                              name="target"
-                              label="Attendance Target"
-                              placeholder="Enter Target"
-                            />
-                          </Col>
                           <Input
                             name="urvanTopUp"
                             label="Urvan Church Top Up (One Way)"

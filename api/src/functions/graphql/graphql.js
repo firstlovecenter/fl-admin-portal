@@ -2,17 +2,10 @@ const { Neo4jGraphQL } = require('@neo4j/graphql')
 const { ApolloServer } = require('@apollo/server')
 // Removed startServerAndCreateLambdaHandler import
 const neo4j = require('neo4j-driver')
-const Sentry = require('@sentry/node')
 const { jwtDecode } = require('jwt-decode')
 const { typeDefs } = require('./schema/graphql-schema')
 const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
-
-// Initialize Sentry
-Sentry.init({
-  dsn: 'https://cd02d9dbb24041f88bfa297993779123@o1423098.ingest.sentry.io/6770464',
-  tracesSampleRate: 1.0,
-})
 
 // Constants
 const DEFAULT_NEO4J_CONFIG = {
@@ -29,6 +22,7 @@ let isInitialized = false
 let driver
 let server
 let schema
+let SECRETS
 
 const initializeServer = async () => {
   if (isInitialized) return
@@ -37,7 +31,7 @@ const initializeServer = async () => {
 
   try {
     // Load secrets
-    const SECRETS = await loadSecrets()
+    SECRETS = await loadSecrets()
 
     // Configure encrypted connection if required
     const uri =
@@ -57,7 +51,7 @@ const initializeServer = async () => {
 
     // Verify connection
     await driver.verifyConnectivity()
-    console.log('[Neo4j] Connection established successfully')
+    console.log('[Neo4j] Connection established successfully!')
 
     const neoSchema = new Neo4jGraphQL({
       typeDefs,
@@ -109,7 +103,6 @@ const initializeServer = async () => {
     console.log('[Apollo] Server initialized successfully')
   } catch (error) {
     console.error('[Initialization] Server initialization failed:', error)
-    Sentry.captureException(error)
     throw error
   }
 }
@@ -118,8 +111,17 @@ const initializeServer = async () => {
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false
 
+  // Initialize on cold start to ensure SECRETS are loaded
+  await initializeServer()
+
+  // Determine CORS origin based on environment
+  const allowedOrigin =
+    SECRETS?.ENVIRONMENT === 'development'
+      ? 'https://dev-synago.firstlovecenter.com'
+      : 'https://admin.firstlovecenter.com'
+
   const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://admin.firstlovecenter.com',
+    'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
@@ -135,9 +137,6 @@ exports.handler = async (event, context) => {
         body: null,
       }
     }
-
-    // Initialize on cold start
-    await initializeServer()
 
     // Parse and validate request
     const { body, headers, httpMethod } = event
@@ -172,11 +171,10 @@ exports.handler = async (event, context) => {
         console.log('[Auth] Decoding JWT token')
         jwt = jwtDecode(cleanToken)
         console.log('[Auth] JWT decoded successfully', {
-          roles: jwt?.['https://flcadmin.netlify.app/roles'],
+          roles: jwt?.roles,
         })
       } catch (error) {
         console.error('[Auth] Invalid token:', error)
-        Sentry.captureException(error)
       }
     }
 
@@ -186,7 +184,6 @@ exports.handler = async (event, context) => {
       executionContext: driver,
       jwt: {
         ...jwt,
-        roles: jwt?.['https://flcadmin.netlify.app/roles'],
       },
     }
 
@@ -217,7 +214,6 @@ exports.handler = async (event, context) => {
     }
   } catch (error) {
     console.error('[Request] Processing failed:', error)
-    Sentry.captureException(error)
 
     return {
       statusCode: 500,

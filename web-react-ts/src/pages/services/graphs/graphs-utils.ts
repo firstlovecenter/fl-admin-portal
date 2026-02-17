@@ -110,7 +110,6 @@ export const getServiceGraphData = (
         week: record.week,
         attendance: record.attendance,
         income: record.income?.toFixed(2),
-        target: record?.target,
         numberOfServices: record?.numberOfServices,
         numberOfUrvans: record?.numberOfUrvans,
         numberOfSprinters: record?.numberOfSprinters,
