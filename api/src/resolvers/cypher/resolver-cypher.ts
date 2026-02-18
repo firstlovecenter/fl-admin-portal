@@ -207,7 +207,7 @@ DETACH DELETE member
 
 export const createMember = `
 MATCH (bacenta:Bacenta {id: $bacenta})
-CREATE (member:Active:Member:IDL:Deer {whatsappNumber:$whatsappNumber})
+CREATE (member:Active:Member:IDL:Deer:User {whatsappNumber:$whatsappNumber})
       SET
       	member.id = apoc.create.uuid(),
       	member.firstName = $firstName,
@@ -285,7 +285,7 @@ DELETE r1, r2, r3
 
 WITH member, bacenta
   SET
-        member:IDL, member:Active,
+        member:IDL, member:Active, member:User,
         member.firstName = $firstName,
         member.middleName = $middleName,
         member.lastName = $lastName,
