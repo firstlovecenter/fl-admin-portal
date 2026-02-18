@@ -45,13 +45,6 @@ const SetPermissions = ({
 
   const isPublicRoute = isPathPublic(location.pathname)
 
-  console.log('🔒 SetPermissions: Initialized', {
-    currentUser,
-    isAuthenticated,
-    user,
-    hasToken: !!token,
-  })
-
   const {
     data: loggedInData,
     loading: loggedInLoading,
@@ -60,7 +53,6 @@ const SetPermissions = ({
     variables: { email: user?.email },
     skip: !user?.email || !isAuthenticated,
     onCompleted: (data) => {
-      console.log('✅ SetPermissions: GET_LOGGED_IN_USER completed', data)
       try {
         const memberData = data.memberByEmail
         const streamName = memberData.stream_name
@@ -141,8 +133,7 @@ const SetPermissions = ({
 
         doNotUse.setChurch(currentUser.church)
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('🚀 ~ file: SetPermissions.tsx ~ error', error)
+        // Error setting user permissions
       } finally {
         sessionStorage.setItem(
           'currentUser',
@@ -187,34 +178,16 @@ const SetPermissions = ({
     }
   }, [isAuthenticated, currentUser, isAuthorised, doNotUse])
 
-  console.log('🎬 SetPermissions: Render decision', {
-    loggedInLoading,
-    hasToken: !!token,
-    isPublicRoute,
-    currentPath: location.pathname,
-    willShowLoading: (loggedInLoading || !token) && !isPublicRoute,
-    hasLoggedInData: !!loggedInData,
-    publicRoutesList: PUBLIC_AUTH_ROUTES,
-  })
-
   // For public auth routes, skip authentication requirement and render immediately without Apollo wrapper
   if (isPublicRoute) {
-    console.log(
-      '🔓 SetPermissions: Public route detected, rendering children without auth check',
-      { location: location.pathname }
-    )
     return <>{children}</>
   }
 
   // Show loading while getting member data or if no token (for protected routes)
   if (loggedInLoading || !token) {
-    console.log(
-      '⏳ SetPermissions: Showing InitialLoading (fetching member by email)'
-    )
     return <InitialLoading text={'Retrieving your church information...'} />
   }
 
-  console.log('✅ SetPermissions: Rendering children with ApolloWrapper')
   return (
     <ApolloWrapper
       data={loggedInData}
