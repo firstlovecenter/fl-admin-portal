@@ -20,10 +20,13 @@ import {
   removeDuplicateMember,
   matchMemberAndIMCLStatus,
   updateMemberBacenta,
+  createBacenta,
 } from '../cypher/resolver-cypher'
+import { sendServantPromotionEmail } from '../utils/notify'
 
 const cypher = require('../cypher/resolver-cypher')
 const closeChurchCypher = require('../cypher/close-church-cypher')
+const texts = require('../texts.json')
 
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
@@ -751,6 +754,66 @@ const directoryMutation = {
     } finally {
       await session.close()
       await sessionTwo.close()
+    }
+  },
+  CreateBacenta: async (
+    object: any,
+    args: {
+      name: string
+      governorshipId: string
+      leaderId: string
+      meetingDay: string
+      venueLongitude: number
+      venueLatitude: number
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [
+        ...permitAdmin('Council'),
+        ...permitAdmin('Stream'),
+        ...permitAdmin('Campus'),
+        ...permitAdminArrivals('Campus'),
+      ],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createBacenta, {
+            name: args.name,
+            governorshipId: args.governorshipId,
+            leaderId: args.leaderId,
+            meetingDay: args.meetingDay,
+            venueLongitude: args.venueLongitude,
+            venueLatitude: args.venueLatitude,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { bacenta, leader } = result
+
+      // Send notification email to the new leader
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Bacenta',
+        'Leader',
+        `${bacenta.name} Bacenta`,
+        texts.html.helpdesk
+      )
+
+      return bacenta
+    } catch (error: any) {
+      throwToSentry('Error creating bacenta', error)
+      throw error
+    } finally {
+      await session.close()
     }
   },
 }

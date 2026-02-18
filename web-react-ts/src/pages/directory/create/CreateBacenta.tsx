@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { CREATE_BACENTA_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
-import { NEW_BACENTA_LEADER } from './MakeLeaderMutations'
 import BacentaForm, { BacentaFormValues } from '../reusable-forms/BacentaForm'
 import { throwToSentry } from 'global-utils'
 import { FormikHelpers } from 'formik'
@@ -24,7 +23,6 @@ const CreateBacenta = () => {
     venueLongitude: '0.0',
   }
 
-  const [NewBacentaLeader] = useMutation(NEW_BACENTA_LEADER)
   const [CreateBacenta] = useMutation(CREATE_BACENTA_MUTATION)
 
   //onSubmit receives the form state as argument
@@ -49,13 +47,6 @@ const CreateBacenta = () => {
           meetingDay: values.meetingDay,
           venueLongitude: parseFloat(values.venueLongitude.toString()),
           venueLatitude: parseFloat(values.venueLatitude.toString()),
-        },
-      })
-
-      await NewBacentaLeader({
-        variables: {
-          leaderId: values.leaderId,
-          bacentaId: res.data.CreateBacenta.id,
         },
       })
 

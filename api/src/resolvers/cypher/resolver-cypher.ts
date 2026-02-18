@@ -349,3 +349,38 @@ WHERE member.email = $email
 OR member.whatsappNumber = $whatsappNumber
 RETURN count(member) AS count, member.id AS id
 `
+
+export const createBacenta = `
+MATCH (lastCode:LastBankingCode)
+CREATE (bacenta:Bacenta:Red:Active {name:$name, location: point({latitude:toFloat($venueLatitude), longitude:toFloat($venueLongitude), crs:'WGS-84'})})
+  SET	bacenta.id = apoc.create.uuid(),
+  bacenta.sprinterTopUp = 0,
+  bacenta.urvanTopUp = 0,
+  bacenta.outbound = false,
+  bacenta.bankingCode = lastCode.number,
+  lastCode.number = bacenta.bankingCode
+
+WITH bacenta
+ MATCH (leader:Active:Member {id:$leaderId}) WHERE leader.email IS NOT NULL
+ MATCH (governorship:Governorship {id:$governorshipId})
+ MATCH (currentUser:Active:Member {id:$jwt.userId})
+ MATCH (meetingDay:ServiceDay {day: $meetingDay})
+
+
+CREATE (log:HistoryLog:ServiceLog)
+SET log.id = apoc.create.uuid(),
+ log.timeStamp = datetime(),
+ log.historyRecord = bacenta.name +' Bacenta History Begins',
+ log.priority = 7
+
+ MERGE (governorship)-[:HAS]->(bacenta)
+ MERGE (leader)-[:LEADS]->(bacenta)
+ MERGE (bacenta)-[:MEETS_ON]->(meetingDay)
+
+ MERGE (date:TimeGraph {date: date()})
+ MERGE (log)-[:LOGGED_BY]->(currentUser)
+ MERGE (log)-[:RECORDED_ON]->(date)
+
+
+RETURN bacenta {.id, .name}, leader {.id, .firstName, .lastName, .email}, governorship {.id, .name}
+`
