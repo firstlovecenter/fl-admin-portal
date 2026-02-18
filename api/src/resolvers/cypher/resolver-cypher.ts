@@ -104,11 +104,6 @@ export const getChurchDataQuery = `
   COLLECT(bussing.attendance) as bussingAttendance, ROUND(AVG(bussing.attendance)) as averageBussingAttendance
 `
 
-export const updateMemberEmail = `
-MATCH (member:Member {id: $id})
-    SET member.email = $email
-`
-
 export const createHistoryLog = `
 CREATE (log:HistoryLog)
   SET

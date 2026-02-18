@@ -15,7 +15,6 @@ import { RemoveServant } from './make-remove-servants'
 import {
   makeMemberInactive,
   matchMemberQuery,
-  updateMemberEmail,
   createMember,
   activateInactiveMember,
   removeDuplicateMember,
@@ -148,30 +147,6 @@ const directoryMutation = {
     const updatedMember = moveRes.records[0]?.get('member').properties
 
     return updatedMember
-  },
-  UpdateMemberEmail: async (
-    object: Member,
-    args: { id: string; email: string },
-    context: Context
-  ) => {
-    isAuth([...permitMe('Fellowship'), ...permitMe('Hub')], context.jwt.roles)
-
-    const session = context.executionContext.session()
-
-    try {
-      const updatedMember: Member = rearrangeCypherObject(
-        await session.executeWrite((tx) =>
-          tx.run(updateMemberEmail, {
-            id: args.id,
-            email: args.email,
-          })
-        )
-      )
-
-      return updatedMember
-    } finally {
-      await session.close()
-    }
   },
   MakeMemberInactive: async (
     object: any,
