@@ -122,12 +122,6 @@ export const rearrangeCypherObject = (
 }
 
 export const isAuth = (permittedRoles: Role[], userRoles?: Role[]) => {
-  console.log('🔐 isAuth check:', {
-    permittedRoles,
-    userRoles,
-    hasMatch: permittedRoles.some((r) => userRoles?.includes(r)),
-  })
-
   if (!permittedRoles.some((r) => userRoles?.includes(r))) {
     console.error('❌ Authorization failed:', {
       required: permittedRoles,

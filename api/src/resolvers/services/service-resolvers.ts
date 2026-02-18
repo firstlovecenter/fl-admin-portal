@@ -148,6 +148,12 @@ const serviceMutation = {
         )
         .catch((error: any) => throwToSentry('Error Recording Service', error))
 
+      if (!cypherResponse.records || cypherResponse.records.length === 0) {
+        throw new Error(
+          'Service record could not be created. Please ensure the church is a Bacenta, Governorship, Council, or Stream.'
+        )
+      }
+
       const serviceRecordId =
         cypherResponse.records[0].get('serviceRecord').properties.id
 

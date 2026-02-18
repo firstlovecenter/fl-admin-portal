@@ -198,7 +198,7 @@
 - update user roles retrieval to use JWT for consistency in campaigns resolver ([11fe45b9](https://github.com/firstlovecenter/fl-admin-portal/commit/11fe45b930544caafdecd2da8876313b8fdd97f7))
 - update resolvers to use JWT for role and auth_id references ([2f7c3bee](https://github.com/firstlovecenter/fl-admin-portal/commit/2f7c3bee866122acd66fa18c873cb95f999d35c9))
 - replace auth context references with jwt for consistency across resolvers ([a28c21be](https://github.com/firstlovecenter/fl-admin-portal/commit/a28c21be86108c437d4f76ba71b10a4f42607628))
-- update auth_id references to use $jwt.sub for consistency across resolvers and schemas ([043807bb](https://github.com/firstlovecenter/fl-admin-portal/commit/043807bb8b49db1903ae1aa60e0926db833f04a5))
+- update auth_id references to use $jwt.userId for consistency across resolvers and schemas ([043807bb](https://github.com/firstlovecenter/fl-admin-portal/commit/043807bb8b49db1903ae1aa60e0926db833f04a5))
 - update authentication context to use JWT roles and enhance resolver logic ([f61937e9](https://github.com/firstlovecenter/fl-admin-portal/commit/f61937e97aaf00588457dddb634fa3b033ff5dca))
 - standardize column names in GraphQL schema for consistency ([1044ddff](https://github.com/firstlovecenter/fl-admin-portal/commit/1044ddff5c3a90a442b0e4ff8d5a45323b7d9e69))
 - refactor Cypher queries for Member type and enhance JWT handling in context ([cf863c66](https://github.com/firstlovecenter/fl-admin-portal/commit/cf863c66eeeecc15b1a3853d90cfb14ba962f1bf))

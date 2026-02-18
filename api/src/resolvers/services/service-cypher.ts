@@ -68,9 +68,9 @@ export const recordService = `
         serviceRecord.familyPicture = $familyPicture
       WITH serviceRecord
 
-      MATCH (church {id: $churchId}) WHERE church:Fellowship OR church:Bacenta OR church:Governorship OR church:Council OR church:Stream
+      MATCH (church {id: $churchId}) WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-      MATCH (leader:Member {id: $jwt.sub})
+      MATCH (leader:Member {id: $jwt.userId})
       
       MERGE (serviceDate:TimeGraph {date:date($serviceDate)})
 
@@ -114,7 +114,7 @@ export const recordSpecialService = `
 
       MATCH (church {id: $churchId}) WHERE church:Fellowship OR church:Bacenta OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
-      MATCH (leader:Member {id: $jwt.sub})
+      MATCH (leader:Member {id: $jwt.userId})
       
       MERGE (serviceDate:TimeGraph {date:date($serviceDate)})
 
@@ -148,7 +148,7 @@ serviceRecord.noServiceReason = $noServiceReason
 WITH serviceRecord
 MATCH (church {id: $churchId}) WHERE church:Bacenta OR church:Stream
 MATCH (church)-[:CURRENT_HISTORY]->(log:ServiceLog)
-MATCH (leader:Active:Member {id: $jwt.sub})
+MATCH (leader:Active:Member {id: $jwt.userId})
 
 MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 MERGE (serviceRecord)-[:LOGGED_BY]->(leader)

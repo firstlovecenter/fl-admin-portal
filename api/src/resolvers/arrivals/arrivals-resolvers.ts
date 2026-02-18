@@ -146,7 +146,7 @@ export const arrivalsMutation = {
     args: { arrivalsCounterId: string; streamId: string },
     context: Context
   ) => {
-    checkIfSelf(args.arrivalsCounterId, context.jwt.sub)
+    checkIfSelf(args.arrivalsCounterId, context.jwt.userId)
 
     return MakeServant(
       context,
