@@ -22,6 +22,10 @@ export const matchMemberQuery = `
 
 MATCH (member:Member {id: $id})
 RETURN member {
+  .id,
+  .firstName,
+  .lastName,
+  .email,
   
   leadsBacenta: [bacenta IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(bacenta:Bacenta) RETURN bacenta", {this: member}) | bacenta {.id, .name}],
   leadsGovernorship: [governorship IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(governorship:Governorship) RETURN governorship", {this: member}) | governorship {.id, .name}],
@@ -52,6 +56,11 @@ RETURN member
 export const matchMemberOversightQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
+  .id,
+  .firstName,
+  .lastName,
+  .email,
+  
   leadsOversight: [oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(oversight:Oversight) RETURN oversight", {this: member}) | oversight {.id, .name}],
   isAdminForOversight: [oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(oversight:Oversight) RETURN oversight", {this: member}) | oversight {.id, .name}]
 } AS member
@@ -60,6 +69,11 @@ RETURN member {
 export const matchMemberDenominationQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
+  .id,
+  .firstName,
+  .lastName,
+  .email,
+  
   leadsDenomination: [denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(denomination:Denomination) RETURN denomination", {this: member}) | denomination {.id, .name}],
   isAdminForDenomination: [denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(denomination:Denomination) RETURN denomination", {this: member}) | denomination {.id, .name}]
 } AS member
@@ -68,6 +82,11 @@ RETURN member {
 export const matchMemberTellerQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
+  .id,
+  .firstName,
+  .lastName,
+  .email,
+  
   isTellerForStream: [tellerStream IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_TELLER_FOR]->(tellerStream:Stream) RETURN tellerStream", {this: member}) | tellerStream {.id, .name}]
 } AS member 
 `
