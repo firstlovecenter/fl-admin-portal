@@ -6,6 +6,7 @@ export const UPDATE_MEMBER_MUTATION = gql`
     $firstName: String!
     $middleName: String
     $lastName: String!
+    $email: String
     $phoneNumber: String!
     $whatsappNumber: String
     $dob: String
@@ -20,6 +21,7 @@ export const UPDATE_MEMBER_MUTATION = gql`
       firstName: $firstName
       middleName: $middleName
       lastName: $lastName
+      email: $email
       phoneNumber: $phoneNumber
       whatsappNumber: $whatsappNumber
       dob: $dob
@@ -92,16 +94,6 @@ export const UPDATE_MEMBER_STICKY_NOTE = gql`
   }
 `
 
-export const UPDATE_MEMBER_EMAIL = gql`
-  mutation UpdateMemberEmail($id: ID!, $email: String!) {
-    UpdateMemberEmail(id: $id, email: $email) {
-      id
-      firstName
-      lastName
-      email
-    }
-  }
-`
 export const UPDATE_MEMBER_BASONTA = gql`
   mutation UpdateMemberBasonta($memberId: ID!, $basontaId: ID!) {
     UpdateMemberBasonta(memberId: $memberId, basontaId: $basontaId) {

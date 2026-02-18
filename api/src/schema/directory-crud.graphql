@@ -675,7 +675,6 @@ extend type Mutation {
 
 ### UPDATE OPERATIONS ###
 extend type Mutation {
-  UpdateMemberEmail(id: ID!, email: String!): Member!
   UpdateMemberAppointmentDate(id: ID!, appointmentDate: String): Member!
     @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
     @cypher(
@@ -762,6 +761,7 @@ extend type Mutation {
     firstName: String!
     middleName: String
     lastName: String!
+    email: String
     phoneNumber: String!
     whatsappNumber: String
     dob: String
@@ -779,6 +779,7 @@ extend type Mutation {
       	member.firstName = $firstName,
       	member.middleName = $middleName,
       	member.lastName = $lastName,
+      	member.email = $email,
       	member.phoneNumber = $phoneNumber,
         member.whatsappNumber = $whatsappNumber,
       	member.pictureUrl = $pictureUrl
