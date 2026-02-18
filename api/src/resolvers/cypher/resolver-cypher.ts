@@ -22,6 +22,10 @@ export const matchMemberQuery = `
 
 MATCH (member:Member {id: $id})
 RETURN member {
+  .id,
+  .firstName,
+  .lastName,
+  .email,
   
   leadsBacenta: [bacenta IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(bacenta:Bacenta) RETURN bacenta", {this: member}) | bacenta {.id, .name}],
   leadsGovernorship: [governorship IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(governorship:Governorship) RETURN governorship", {this: member}) | governorship {.id, .name}],
@@ -52,6 +56,11 @@ RETURN member
 export const matchMemberOversightQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
+  .id,
+  .firstName,
+  .lastName,
+  .email,
+  
   leadsOversight: [oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(oversight:Oversight) RETURN oversight", {this: member}) | oversight {.id, .name}],
   isAdminForOversight: [oversight IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(oversight:Oversight) RETURN oversight", {this: member}) | oversight {.id, .name}]
 } AS member
@@ -60,6 +69,11 @@ RETURN member {
 export const matchMemberDenominationQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
+  .id,
+  .firstName,
+  .lastName,
+  .email,
+  
   leadsDenomination: [denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:LEADS]->(denomination:Denomination) RETURN denomination", {this: member}) | denomination {.id, .name}],
   isAdminForDenomination: [denomination IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_ADMIN_FOR]->(denomination:Denomination) RETURN denomination", {this: member}) | denomination {.id, .name}]
 } AS member
@@ -68,6 +82,11 @@ RETURN member {
 export const matchMemberTellerQuery = `
 MATCH (member:Member {id:$id})
 RETURN member { 
+  .id,
+  .firstName,
+  .lastName,
+  .email,
+  
   isTellerForStream: [tellerStream IN apoc.cypher.runFirstColumnMany("MATCH (this)-[:IS_TELLER_FOR]->(tellerStream:Stream) RETURN tellerStream", {this: member}) | tellerStream {.id, .name}]
 } AS member 
 `
@@ -218,7 +237,7 @@ CREATE (member:Active:Member:IDL:Deer {whatsappNumber:$whatsappNumber})
       MERGE (date:TimeGraph {date: date($dob)})
 
       WITH member, log, today, date
-      MATCH (currentUser:Member {auth_id:$auth_id})
+      MATCH (currentUser:Member {id: $userId})
       MATCH (maritalStatus:MaritalStatus {status:$maritalStatus})
       MATCH (gender:Gender {gender: $gender})
       MATCH (bacenta:Bacenta {id: $bacenta})
@@ -288,7 +307,7 @@ WITH member, bacenta
       MERGE (date:TimeGraph {date: date($dob)})
 
       WITH member, log, today, date
-      MATCH (currentUser:Member {auth_id:$auth_id})
+      MATCH (currentUser:Member {id:$userId})
       MATCH (maritalStatus:MaritalStatus {status:$maritalStatus})
       MATCH (bacenta:Bacenta {id: $bacenta})
 
@@ -329,4 +348,187 @@ OPTIONAL MATCH (member:Inactive:Member)
 WHERE member.email = $email
 OR member.whatsappNumber = $whatsappNumber
 RETURN count(member) AS count, member.id AS id
+`
+
+export const createBacenta = `
+MATCH (lastCode:LastBankingCode)
+CREATE (bacenta:Bacenta:Red:Active {name:$name, location: point({latitude:toFloat($venueLatitude), longitude:toFloat($venueLongitude), crs:'WGS-84'})})
+  SET	bacenta.id = apoc.create.uuid(),
+  bacenta.sprinterTopUp = 0,
+  bacenta.urvanTopUp = 0,
+  bacenta.outbound = false,
+  bacenta.bankingCode = lastCode.number,
+  lastCode.number = bacenta.bankingCode
+
+WITH bacenta
+ MATCH (leader:Active:Member {id:$leaderId}) WHERE leader.email IS NOT NULL
+ MATCH (governorship:Governorship {id:$governorshipId})
+ MATCH (currentUser:Active:Member {id:$jwt.userId})
+ MATCH (meetingDay:ServiceDay {day: $meetingDay})
+
+
+CREATE (log:HistoryLog:ServiceLog)
+SET log.id = apoc.create.uuid(),
+ log.timeStamp = datetime(),
+ log.historyRecord = bacenta.name +' Bacenta History Begins',
+ log.priority = 7
+
+ MERGE (governorship)-[:HAS]->(bacenta)
+ MERGE (leader)-[:LEADS]->(bacenta)
+ MERGE (bacenta)-[:MEETS_ON]->(meetingDay)
+
+ MERGE (date:TimeGraph {date: date()})
+ MERGE (log)-[:LOGGED_BY]->(currentUser)
+ MERGE (log)-[:RECORDED_ON]->(date)
+
+
+RETURN bacenta {.id, .name}, leader {.id, .firstName, .lastName, .email}, governorship {.id, .name}
+`
+
+export const createGovernorship = `
+CREATE (governorship:Governorship {name: $name})
+  SET	governorship.id = apoc.create.uuid()
+
+WITH governorship
+CREATE (log:HistoryLog)
+  SET
+  log.id =  apoc.create.uuid(),
+  log.timeStamp = datetime(),
+  log.historyRecord = $name +' Governorship History Begins',
+  log.priority = 6
+
+WITH log, governorship
+MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
+MATCH (currentUser:Active:Member {id:$jwt.userId})
+MATCH (council:Council {id: $councilId})
+
+MERGE (council)-[:HAS]->(governorship)
+MERGE (leader)-[:LEADS]->(governorship)
+
+MERGE (date:TimeGraph {date: date()})
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+MERGE (log)-[:RECORDED_ON]->(date)
+MERGE (council)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:HAS_HISTORY]->(log)
+
+RETURN governorship {.id, .name}, leader {.id, .firstName, .lastName, .email}, council {.id, .name}
+`
+
+export const createCouncil = `
+CREATE (council:Council {id:apoc.create.uuid(), name:$name})
+  SET council.weekdayBalance  = 0.0,
+    council.bussingSocietyBalance = 0.0,
+    council.hrAmount = 0.0,
+    council.bussingAmount = 0.0
+
+WITH council
+MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
+MATCH (currentUser:Active:Member {id:$jwt.userId})
+MATCH (stream:Stream {id: $streamId})
+
+CREATE (log:HistoryLog:ServiceLog)
+  SET
+  log.id =  apoc.create.uuid(),
+  log.timeStamp = datetime(),
+  log.historyRecord = $name +' Council History Begins',
+  log.priority = 5
+
+MERGE (stream)-[:HAS]->(council)
+MERGE (leader)-[:LEADS]->(council)
+
+MERGE (date:TimeGraph {date: date()})
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+MERGE (log)-[:RECORDED_ON]->(date)
+MERGE (council)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:HAS_HISTORY]->(log)
+
+RETURN council {.id, .name}, leader {.id, .firstName, .lastName, .email}, stream {.id, .name}
+`
+
+export const createStream = `
+CREATE (stream:Active:Stream {id:apoc.create.uuid(), name: $name})
+  SET stream.bankAccount = $bankAccount
+
+WITH stream
+CREATE (log:HistoryLog:ServiceLog)
+  SET
+  log.id =  apoc.create.uuid(),
+  log.timeStamp = datetime(),
+  log.historyRecord =  $name +' Stream History Begins',
+  log.priority = 4
+
+WITH log, stream
+MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
+MATCH (currentUser:Active:Member {id:$jwt.userId})
+MATCH (campus:Campus {id: $campusId})
+MATCH (meetingDay:ServiceDay {day: $meetingDay})
+
+WITH log,stream,leader,currentUser, campus, meetingDay
+MERGE (campus)-[:HAS]->(stream)
+MERGE (stream)-[:MEETS_ON]->(meetingDay)
+MERGE (leader)-[:LEADS]->(stream)
+
+MERGE (date:TimeGraph {date: date()})
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+MERGE (log)-[:RECORDED_ON]->(date)
+MERGE (stream)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:HAS_HISTORY]->(log)
+
+RETURN stream {.id, .name}, leader {.id, .firstName, .lastName, .email}, campus {.id, .name}
+`
+
+export const createCampus = `
+CREATE (campus:Campus {id:apoc.create.uuid(), name:$name})
+  SET campus.noIncomeTracking = $noIncomeTracking,
+  campus.currency = $currency,
+  campus.conversionRateToDollar = $conversionRateToDollar
+
+WITH campus
+MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
+MATCH (currentUser:Active:Member {id:$jwt.userId})
+MATCH (oversight:Oversight {id: $oversightId})
+
+CREATE (log:HistoryLog:ServiceLog {priority: 3})
+  SET
+  log.id =  apoc.create.uuid(),
+  log.timeStamp = datetime(),
+  log.historyRecord =  $name +' Campus History Begins'
+
+MERGE (oversight)-[:HAS]->(campus)
+MERGE (leader)-[:LEADS]->(campus)
+
+MERGE (date:TimeGraph {date: date()})
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+MERGE (log)-[:RECORDED_ON]->(date)
+MERGE (campus)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:HAS_HISTORY]->(log)
+
+RETURN campus {.id, .name}, leader {.id, .firstName, .lastName, .email}, oversight {.id, .name}
+`
+
+export const createOversight = `
+CREATE (oversight:Oversight {id:apoc.create.uuid(), name:$name})
+
+WITH oversight
+MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL
+MATCH (currentUser:Active:Member {id:$jwt.userId})
+MATCH (denomination:Denomination {id: $denominationId})
+
+CREATE (log:HistoryLog:ServiceLog)
+  SET
+  log.id =  apoc.create.uuid(),
+  log.timeStamp = datetime(),
+  log.historyRecord =  $name +' Oversight History Begins',
+  log.priority = 2
+
+MERGE (denomination)-[:HAS]->(oversight)
+MERGE (leader)-[:LEADS]->(oversight)
+
+MERGE (date:TimeGraph {date: date()})
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+MERGE (log)-[:RECORDED_ON]->(date)
+MERGE (oversight)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:HAS_HISTORY]->(log)
+
+RETURN oversight {.id, .name}, leader {.id, .firstName, .lastName, .email}, denomination {.id, .name}
 `

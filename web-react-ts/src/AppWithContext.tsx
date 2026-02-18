@@ -108,13 +108,6 @@ const AppWithContext = (props: AppPropsType) => {
         }
   )
 
-  console.log('🏠 AppWithContext: Initialized', {
-    user,
-    currentUser,
-    hasSessionUser: !!sessionStorage.getItem('currentUser'),
-    token: props.token?.substring(0, 20),
-  })
-
   const [userJobs, setUserJobs] = useState()
 
   const [searchKey, setSearchKey] = useState('')

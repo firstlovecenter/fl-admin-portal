@@ -14,16 +14,23 @@ import { RemoveServant } from './make-remove-servants'
 
 import {
   makeMemberInactive,
-  matchMemberQuery,
   createMember,
   activateInactiveMember,
   removeDuplicateMember,
   matchMemberAndIMCLStatus,
   updateMemberBacenta,
+  createBacenta,
+  createGovernorship,
+  createCouncil,
+  createStream,
+  createCampus,
+  createOversight,
 } from '../cypher/resolver-cypher'
+import { sendServantPromotionEmail } from '../utils/notify'
 
 const cypher = require('../cypher/resolver-cypher')
 const closeChurchCypher = require('../cypher/close-church-cypher')
+const texts = require('../texts.json')
 
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
@@ -56,6 +63,7 @@ const directoryMutation = {
           basonta: args?.basonta ?? '',
           visitationArea: args?.visitationArea ?? '',
           pictureUrl: args?.pictureUrl ?? '',
+          userId: context.jwt.userId,
         })
       )
 
@@ -106,6 +114,7 @@ const directoryMutation = {
         basonta: args?.basonta ?? '',
         visitationArea: args?.visitationArea ?? '',
         pictureUrl: args?.pictureUrl ?? '',
+        userId: context.jwt.userId,
       })
     )
 
@@ -751,6 +760,318 @@ const directoryMutation = {
     } finally {
       await session.close()
       await sessionTwo.close()
+    }
+  },
+  CreateBacenta: async (
+    object: any,
+    args: {
+      name: string
+      governorshipId: string
+      leaderId: string
+      meetingDay: string
+      venueLongitude: number
+      venueLatitude: number
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [
+        ...permitAdmin('Council'),
+        ...permitAdmin('Stream'),
+        ...permitAdmin('Campus'),
+        ...permitAdminArrivals('Campus'),
+      ],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createBacenta, {
+            name: args.name,
+            governorshipId: args.governorshipId,
+            leaderId: args.leaderId,
+            meetingDay: args.meetingDay,
+            venueLongitude: args.venueLongitude,
+            venueLatitude: args.venueLatitude,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { bacenta, leader } = result
+
+      // Send notification email to the new leader
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Bacenta',
+        'Leader',
+        `${bacenta.name} Bacenta`,
+        texts.html.helpdesk
+      )
+
+      return bacenta
+    } catch (error: any) {
+      throwToSentry('Error creating bacenta', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateGovernorship: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      councilId: string
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [
+        ...permitAdmin('Campus'),
+        ...permitAdmin('Stream'),
+        ...permitAdmin('Council'),
+      ],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createGovernorship, {
+            name: args.name,
+            leaderId: args.leaderId,
+            councilId: args.councilId,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { governorship, leader } = result
+
+      // Send notification email to the new leader
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Governorship',
+        'Leader',
+        `${governorship.name} Governorship`,
+        texts.html.helpdesk
+      )
+
+      return governorship
+    } catch (error: any) {
+      throwToSentry('Error creating governorship', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateCouncil: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      streamId: string
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [...permitAdmin('Campus'), ...permitAdmin('Stream')],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createCouncil, {
+            name: args.name,
+            leaderId: args.leaderId,
+            streamId: args.streamId,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { council, leader } = result
+
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Council',
+        'Leader',
+        `${council.name} Council`,
+        texts.html.helpdesk
+      )
+
+      return council
+    } catch (error: any) {
+      throwToSentry('Error creating council', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateStream: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      campusId: string
+      meetingDay: string
+      bankAccount: string
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [...permitAdmin('Campus'), ...permitAdmin('Oversight')],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createStream, {
+            name: args.name,
+            leaderId: args.leaderId,
+            campusId: args.campusId,
+            meetingDay: args.meetingDay,
+            bankAccount: args.bankAccount,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { stream, leader } = result
+
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Stream',
+        'Leader',
+        `${stream.name} Stream`,
+        texts.html.helpdesk
+      )
+
+      return stream
+    } catch (error: any) {
+      throwToSentry('Error creating stream', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateCampus: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      oversightId: string
+      noIncomeTracking: boolean
+      currency: string
+      conversionRateToDollar: number
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [...permitAdmin('Oversight'), ...permitAdmin('Denomination')],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createCampus, {
+            name: args.name,
+            leaderId: args.leaderId,
+            oversightId: args.oversightId,
+            noIncomeTracking: args.noIncomeTracking,
+            currency: args.currency,
+            conversionRateToDollar: args.conversionRateToDollar,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { campus, leader } = result
+
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Campus',
+        'Leader',
+        `${campus.name} Campus`,
+        texts.html.helpdesk
+      )
+
+      return campus
+    } catch (error: any) {
+      throwToSentry('Error creating campus', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateOversight: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      denominationId: string
+    },
+    context: Context
+  ) => {
+    isAuth([...permitAdmin('Denomination')], context.jwt.roles)
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createOversight, {
+            name: args.name,
+            leaderId: args.leaderId,
+            denominationId: args.denominationId,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { oversight, leader } = result
+
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Oversight',
+        'Leader',
+        `${oversight.name} Oversight`,
+        texts.html.helpdesk
+      )
+
+      return oversight
+    } catch (error: any) {
+      throwToSentry('Error creating oversight', error)
+      throw error
+    } finally {
+      await session.close()
     }
   },
 }

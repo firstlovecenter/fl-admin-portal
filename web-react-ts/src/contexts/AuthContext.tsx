@@ -58,15 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = getStoredUser()
 
     if (!currentRefreshToken) {
-      console.warn('❌ No refresh token available for refresh')
       return null
     }
 
-    console.log('🔄 Attempting to refresh access token...')
-
     try {
       const response = await apiRefreshToken(currentRefreshToken)
-      console.log('✅ Token refresh successful')
 
       storeAuth({
         accessToken: response.accessToken,
@@ -76,23 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return response.accessToken
     } catch (error: any) {
-      console.error('❌ Failed to refresh token:', {
-        message: error.message,
-        statusCode: error.statusCode,
-        requestId: error.requestId,
-        error,
-      })
-
       // Only clear auth if refresh token is actually expired or invalid (401)
       // If it's a network error (5xx) or other issue, keep the current session
       if (error.statusCode === 401 || isTokenExpired(currentRefreshToken)) {
-        console.warn('🔒 Refresh token expired or invalid, clearing auth')
         clearAuth()
         setUser(null)
-      } else {
-        console.warn(
-          '⚠️ Network or server error during refresh, keeping session'
-        )
       }
 
       return null
@@ -128,44 +112,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     const initAuth = async () => {
-      console.log('🔐 AuthContext: Initializing auth...')
       setIsLoading(true)
 
       const token = getAccessToken()
       const storedUser = getStoredUser()
 
-      console.log('🔐 AuthContext: Found stored data', {
-        hasToken: !!token,
-        hasUser: !!storedUser,
-        user: storedUser,
-      })
-
       if (token && storedUser) {
         // Verify token is still valid
         if (isTokenExpired(token)) {
-          console.log('⏰ AuthContext: Token expired, refreshing...')
           // Try to refresh
           const newToken = await refreshAccessToken()
 
           if (newToken) {
-            console.log('✅ AuthContext: Token refreshed successfully')
             setUser(storedUser)
           } else {
-            console.log('❌ AuthContext: Token refresh failed, clearing auth')
             clearAuth()
             setUser(null)
           }
         } else {
           // Token is not expired, trust the stored user
           // Only verify with backend if needed in the future
-          console.log('✅ AuthContext: Token still valid, using stored user')
           setUser(storedUser)
         }
-      } else {
-        console.log('❌ AuthContext: No stored auth data found')
       }
 
-      console.log('🏁 AuthContext: Auth initialization complete')
       setIsLoading(false)
     }
 
