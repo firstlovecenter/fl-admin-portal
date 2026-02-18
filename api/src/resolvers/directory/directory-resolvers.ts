@@ -63,6 +63,7 @@ const directoryMutation = {
           basonta: args?.basonta ?? '',
           visitationArea: args?.visitationArea ?? '',
           pictureUrl: args?.pictureUrl ?? '',
+          userId: context.jwt.userId,
         })
       )
 
@@ -113,6 +114,7 @@ const directoryMutation = {
         basonta: args?.basonta ?? '',
         visitationArea: args?.visitationArea ?? '',
         pictureUrl: args?.pictureUrl ?? '',
+        userId: context.jwt.userId,
       })
     )
 

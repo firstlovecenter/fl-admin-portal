@@ -237,7 +237,7 @@ CREATE (member:Active:Member:IDL:Deer {whatsappNumber:$whatsappNumber})
       MERGE (date:TimeGraph {date: date($dob)})
 
       WITH member, log, today, date
-      MATCH (currentUser:Member {auth_id:$auth_id})
+      MATCH (currentUser:Member {id: $userId})
       MATCH (maritalStatus:MaritalStatus {status:$maritalStatus})
       MATCH (gender:Gender {gender: $gender})
       MATCH (bacenta:Bacenta {id: $bacenta})
@@ -307,7 +307,7 @@ WITH member, bacenta
       MERGE (date:TimeGraph {date: date($dob)})
 
       WITH member, log, today, date
-      MATCH (currentUser:Member {auth_id:$auth_id})
+      MATCH (currentUser:Member {id:$userId})
       MATCH (maritalStatus:MaritalStatus {status:$maritalStatus})
       MATCH (bacenta:Bacenta {id: $bacenta})
 
