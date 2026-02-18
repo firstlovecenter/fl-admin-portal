@@ -4,7 +4,6 @@ import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_CAMPUS_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
-import { NEW_CAMPUS_LEADER } from './MakeLeaderMutations'
 import CampusForm, {
   CampusFormValues,
 } from 'pages/directory/reusable-forms/CampusForm'
@@ -26,7 +25,6 @@ const CreateCampus = () => {
     oversight: oversightId,
   }
 
-  const [NewCampusLeader] = useMutation(NEW_CAMPUS_LEADER)
   const [CreateCampus] = useMutation(CREATE_CAMPUS_MUTATION)
 
   //onSubmit receives the form state as argument
@@ -52,13 +50,6 @@ const CreateCampus = () => {
           conversionRateToDollar: parseFloat(
             values.conversionRateToDollar.toString()
           ),
-        },
-      })
-
-      await NewCampusLeader({
-        variables: {
-          leaderId: values.leaderId,
-          campusId: res.data.CreateCampus.id,
         },
       })
 
