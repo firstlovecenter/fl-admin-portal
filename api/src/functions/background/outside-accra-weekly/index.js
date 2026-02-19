@@ -9,7 +9,7 @@ const campusNotBankedIncome = require('./query-exec/campusNotBankedIncome.js')
 const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceIncome.js')
 const weekdayBankedIncome = require('./query-exec/weekdayBankedIncome.js')
 const weekdayNotBankedIncome = require('./query-exec/weekdayNotBankedIncome.js')
-const { notifyBaseURL } = require('./utils/constants.js')
+const { notifyBaseURL, getLastSunday } = require('./utils/constants.js')
 const { generateCSV } = require('./utils/generateCSV.js')
 
 /**
@@ -42,9 +42,38 @@ const getWeekNumber = (date = new Date()) => {
 /**
  * Main handler for the Outside Accra Weekly data update
  * Compatible with AWS Lambda
+ *
+ * Accepts query parameters:
+ * - date: ISO date string (YYYY-MM-DD) to generate report for (defaults to today)
+ * - week: ISO week number override (if provided, date parameter is ignored)
  */
-const handler = async () => {
-  console.log('Running function on date', new Date().toISOString())
+const handler = async (event = {}, targetDate = null) => {
+  // Parse date from query parameters or use provided targetDate
+  let reportDate = targetDate
+
+  // Extract parameters from Lambda event
+  const queryParams = event.queryStringParameters || {}
+  const bodyParams =
+    (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) || {}
+  const params = { ...queryParams, ...bodyParams }
+
+  if (!reportDate && params.date) {
+    // Parse the provided date string
+    const parsedDate = new Date(params.date)
+    if (!isNaN(parsedDate.getTime())) {
+      reportDate = parsedDate
+    }
+  }
+
+  // Default to today if no date provided
+  if (!reportDate) {
+    reportDate = new Date()
+  }
+
+  // Calculate lastSunday from the reportDate
+  const lastSunday = getLastSunday(reportDate)
+  console.log('Running function for date', reportDate.toISOString())
+  console.log('Using lastSunday:', lastSunday)
 
   try {
     // Load secrets using AWS Secrets Manager
@@ -71,12 +100,12 @@ const handler = async () => {
 
     const response = await Promise.all([
       campusList(driver),
-      campusAttendanceIncome(driver),
-      campusBankedIncome(driver),
-      campusNotBankedIncome(driver),
-      fellowshipAttendanceIncome(driver),
-      weekdayBankedIncome(driver),
-      weekdayNotBankedIncome(driver),
+      campusAttendanceIncome(driver, lastSunday),
+      campusBankedIncome(driver, lastSunday),
+      campusNotBankedIncome(driver, lastSunday),
+      fellowshipAttendanceIncome(driver, lastSunday),
+      weekdayBankedIncome(driver, lastSunday),
+      weekdayNotBankedIncome(driver, lastSunday),
     ]).catch((error) => {
       console.error('Database query failed to complete\n', error.message)
       throw error
@@ -108,8 +137,8 @@ const handler = async () => {
     // Convert CSV to base64 for email attachment
     const csvBase64 = Buffer.from(csvContent).toString('base64')
 
-    const weekNumber = getWeekNumber() - 1
-    const reportDate = new Date()
+    const weekNumber = getWeekNumber(reportDate) - 1
+    const reportDateString = reportDate
       .toLocaleString('en-GB', {
         year: 'numeric',
         month: 'short',
@@ -149,7 +178,7 @@ const handler = async () => {
           '233263995059', // Abigail Tay
         ],
         sender: 'FLC Admin',
-        message: `WEEK ${weekNumber} UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${reportDate}`,
+        message: `WEEK ${weekNumber} UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${reportDateString}`,
       },
     }).catch((error) => {
       console.error(
@@ -177,7 +206,7 @@ const handler = async () => {
       },
       data: {
         to: ['john-dag@firstlovecenter.com', 'globalfirstlove@gmail.com'],
-        subject: `Outside Accra Weekly Report - Week ${weekNumber}, ${reportDate}`,
+        subject: `Outside Accra Weekly Report - Week ${weekNumber}, ${reportDateString}`,
         html: `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" lang="en">
@@ -228,7 +257,7 @@ const handler = async () => {
                     </div>
                     <p
                       style="color:rgb(153,27,27);font-size:18px;font-weight:600;margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
-                      Week ${weekNumber} - ${reportDate}
+                      Week ${weekNumber} - ${reportDateString}
                     </p>
                     <p
                       style="color:rgb(75,85,99);font-size:14px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
@@ -428,7 +457,7 @@ const handler = async () => {
           `,
         attachments: [
           {
-            filename: `outside-accra-week-${weekNumber}-${reportDate}.csv`,
+            filename: `outside-accra-week-${weekNumber}-${reportDateString}.csv`,
             content: csvBase64,
             encoding: 'base64',
           },
@@ -474,5 +503,5 @@ const handler = async () => {
 // Export for AWS Lambda
 exports.handler = async (event) => {
   console.log('AWS Lambda handler invoked', { event })
-  return handler()
+  return handler(event)
 }
