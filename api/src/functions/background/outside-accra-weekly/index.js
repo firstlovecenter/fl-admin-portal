@@ -51,11 +51,11 @@ const handler = async (event = {}, targetDate = null) => {
   // Parse date from query parameters or use provided targetDate
   let reportDate = targetDate
 
-  // Extract parameters from Lambda event
+  // Extract parameters from Lambda event - check multiple sources
   const queryParams = event.queryStringParameters || {}
   const bodyParams =
     (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) || {}
-  const params = { ...queryParams, ...bodyParams }
+  const params = { ...queryParams, ...bodyParams, ...event }
 
   if (!reportDate && params.date) {
     // Parse the provided date string
