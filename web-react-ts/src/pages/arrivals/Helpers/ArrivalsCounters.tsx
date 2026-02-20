@@ -134,7 +134,7 @@ const ArrivalsCounters = () => {
               disabled={submitting}
               onClick={async () => {
                 const confirmBox = window.confirm(
-                  `Do you want to delete ${counter.fullName} as a counter`
+                  `Do you want to remove ${counter.fullName} as a counter`
                 )
 
                 if (confirmBox === true) {
@@ -147,7 +147,7 @@ const ArrivalsCounters = () => {
                       },
                     })
                     setSubmitting(false)
-                    alertMsg(`${counter.fullName} Deleted Successfully`)
+                    alertMsg(`${counter.fullName} Removed Successfully`)
                   } catch (error: any) {
                     throwToSentry(error)
                   }
@@ -160,7 +160,7 @@ const ArrivalsCounters = () => {
                   <span> Submitting</span>
                 </>
               ) : (
-                'Delete'
+                'Remove'
               )}
             </Button>
           </div>
