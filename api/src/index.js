@@ -51,12 +51,6 @@ const startServer = async () => {
   try {
     await driver.verifyConnectivity()
     console.log('✅ Neo4j connection verified successfully')
-
-    // Test a simple query
-    const session = driver.session()
-    const result = await session.run('RETURN 1 as test')
-    console.log('✅ Test query successful:', result.records[0].get('test'))
-    await session.close()
   } catch (error) {
     console.error('❌ Neo4j connection failed:', error.message)
     console.error('Full error:', error)
@@ -101,7 +95,7 @@ const startServer = async () => {
       if (token) {
         try {
           jwt = jwtDecode(token.replace(/^Bearer\s+/i, ''))
-          console.log('🚀 ~ index.js:88 ~ jwt:', jwt)
+          console.log('🚀 ~ index.js:98 ~ jwt:', jwt)
         } catch (error) {
           console.error('Invalid token:', error)
         }
