@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { Auth0RoleObject } from './utils/auth0'
-import { throwToSentry } from './utils/utils'
 import { loadSecrets } from './secrets'
+import { throwToSentry } from './utils/utils'
+import { Auth0RoleObject } from './utils/auth0'
 
 export const getAuthToken = async () => {
   try {

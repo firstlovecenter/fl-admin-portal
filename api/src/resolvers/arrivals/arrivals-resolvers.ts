@@ -146,7 +146,7 @@ export const arrivalsMutation = {
     args: { arrivalsCounterId: string; streamId: string },
     context: Context
   ) => {
-    checkIfSelf(args.arrivalsCounterId, context.jwt.sub)
+    checkIfSelf(args.arrivalsCounterId, context.jwt.userId)
 
     return MakeServant(
       context,
@@ -203,7 +203,7 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(['leaderBacenta'], context.jwt['https://flcadmin.netlify.app/roles'])
+    isAuth(['leaderBacenta'], context.jwt.roles)
 
     const recordResponse = rearrangeCypherObject(
       await session.run(checkArrivalTimes, args)
@@ -290,7 +290,7 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(['leaderBacenta'], context.jwt['https://flcadmin.netlify.app/roles'])
+    isAuth(['leaderBacenta'], context.jwt.roles)
     const session = context.executionContext.session()
 
     const recordResponse = rearrangeCypherObject(
@@ -367,10 +367,7 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(
-      permitArrivalsCounter(),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitArrivalsCounter(), context.jwt.roles)
     const session = context.executionContext.session()
 
     const recordResponse = rearrangeCypherObject(
@@ -475,7 +472,6 @@ export const arrivalsMutation = {
 
     type responseType = {
       id: string
-      target: neonumber
       attendance: number
       vehicle: 'Sprinter' | 'Urvan' | 'Car'
       vehicleCost: number
@@ -613,10 +609,7 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(
-      permitArrivalsHelpers('Stream'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitArrivalsHelpers('Stream'), context.jwt.roles)
     const session = context.executionContext.session()
 
     try {
@@ -745,10 +738,7 @@ export const arrivalsMutation = {
     return null
   },
   SetSwellDate: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdminArrivals('Campus'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdminArrivals('Campus'), context.jwt.roles)
 
     const session = context.executionContext.session()
 
@@ -763,7 +753,7 @@ export const arrivalsMutation = {
     args: { firstName: string; phoneNumber: string; otp: string },
     context: Context
   ) => {
-    isAuth(['leaderBacenta'], context.jwt['https://flcadmin.netlify.app/roles'])
+    isAuth(['leaderBacenta'], context.jwt.roles)
 
     const response = await sendBulkSMS(
       [args.phoneNumber],
@@ -780,10 +770,7 @@ const getArrivalsPaymentData = async (
   args: { arrivalsDate: string },
   context: Context
 ) => {
-  isAuth(
-    permitAdminArrivals('Stream'),
-    context.jwt['https://flcadmin.netlify.app/roles']
-  )
+  isAuth(permitAdminArrivals('Stream'), context.jwt.roles)
 
   const session = context.executionContext.session()
 

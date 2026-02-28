@@ -1,0 +1,373 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - |
+          set -eo pipefail
+
+          # Ensure jq exists (required for parsing SECRET_JSON)
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo yum -y install jq
+          fi
+
+          # Track start time for duration calculation
+          BUILD_START_TIME=$(date +%s)
+
+          # Get git commit details
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s" "${AWS_COMMIT_ID:-HEAD}" 2>/dev/null || echo "Unknown commit message")
+          COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an" "${AWS_COMMIT_ID:-HEAD}" 2>/dev/null || echo "Unknown author")
+          COMMIT_SHORT="${AWS_COMMIT_ID:0:7}"
+
+          # Determine environment
+          if [ "${AWS_BRANCH:-}" = "main" ]; then
+            ENV_LABEL="🚀 Production"
+            ENV_COLOR="#FF0000"
+          else
+            ENV_LABEL="🟡 Development"
+            ENV_COLOR="#FFA500"
+          fi
+
+          # Build Amplify console URL
+          AMPLIFY_URL="https://console.aws.amazon.com/amplify/home?region=${AWS_REGION:-eu-west-2}#/${AWS_APP_ID:-unknown}/${AWS_BRANCH:-unknown}"
+
+          slack_notify () {
+            local phase="$1"
+            local status="$2"
+            local extra_context="${3:-}"
+            
+            echo "[SLACK] Attempting to send notification: phase=$phase, status=$status"
+            
+            # If SLACK_WEBHOOK isn't set, don't fail the build
+            if [ -z "${SLACK_WEBHOOK:-}" ]; then
+              echo "[SLACK] ERROR: SLACK_WEBHOOK is not set (Amplify App settings → Environment variables)."
+              return 0
+            fi
+            
+            echo "[SLACK] SLACK_WEBHOOK is set (length: ${#SLACK_WEBHOOK} chars)"
+
+            # Calculate duration if this is an end notification
+            local duration_text=""
+            if [ "$status" != "started" ]; then
+              local end_time=$(date +%s)
+              local duration=$((end_time - BUILD_START_TIME))
+              local minutes=$((duration / 60))
+              local seconds=$((duration % 60))
+              if [ $minutes -gt 0 ]; then
+                duration_text="Duration: ${minutes}m ${seconds}s"
+              else
+                duration_text="Duration: ${seconds}s"
+              fi
+            fi
+
+            # Set icon and color based on status
+            local icon title_text
+            case "$status" in
+              started)
+                icon="🚀"
+                title_text="Build Started - ${phase}"
+                ;;
+              success)
+                icon="✅"
+                title_text="Build Completed - ${phase}"
+                ;;
+              failed)
+                icon="❌"
+                title_text="Build Failed - ${phase}"
+                ;;
+            esac
+
+            local timestamp=$(date '+%Y-%m-%d %H:%M:%S %Z')
+            
+            # Sanitize commit message for JSON (remove quotes and newlines)
+            local safe_commit_msg=$(echo "$COMMIT_MSG" | tr -d '"\n\r' | cut -c1-100)
+            local safe_commit_author=$(echo "$COMMIT_AUTHOR" | tr -d '"\n\r')
+
+            # Build JSON payload using jq for proper escaping
+            local payload
+            payload=$(jq -n \
+              --arg icon "$icon" \
+              --arg title "$title_text" \
+              --arg env_label "$ENV_LABEL" \
+              --arg branch "${AWS_BRANCH:-unknown}" \
+              --arg commit_id "${AWS_COMMIT_ID:-unknown}" \
+              --arg commit_short "$COMMIT_SHORT" \
+              --arg commit_msg "$safe_commit_msg" \
+              --arg commit_author "$safe_commit_author" \
+              --arg amplify_url "$AMPLIFY_URL" \
+              --arg timestamp "$timestamp" \
+              --arg duration "$duration_text" \
+              --arg extra "$extra_context" \
+              '{
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": "\($icon) \($title)", "emoji": true}
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {"type": "mrkdwn", "text": "*App:*\nFirst Love Admin Portal"},
+                      {"type": "mrkdwn", "text": "*Environment:*\n\($env_label)"},
+                      {"type": "mrkdwn", "text": "*Branch:*\n`\($branch)`"},
+                      {"type": "mrkdwn", "text": "*Commit:*\n<https://github.com/firstlovecenter/fl-admin-portal/commit/\($commit_id)|`\($commit_short)`>"}
+                    ]
+                  },
+                  {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "*Commit Message:* \($commit_msg)\n*Author:* \($commit_author)"}
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View in Amplify Console", "emoji": true},
+                        "url": $amplify_url,
+                        "style": "primary"
+                      },
+                      {
+                        "type": "button", 
+                        "text": {"type": "plain_text", "text": "View Commit", "emoji": true},
+                        "url": "https://github.com/firstlovecenter/fl-admin-portal/commit/\($commit_id)"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "context",
+                    "elements": [{"type": "mrkdwn", "text": "⏰ \($timestamp)"}]
+                  }
+                ]
+              }
+              | if $duration != "" then .blocks += [{"type": "section", "text": {"type": "mrkdwn", "text": "*\($duration)*"}}] else . end
+              | if $extra != "" then .blocks += [{"type": "section", "text": {"type": "mrkdwn", "text": $extra}}] else . end
+              ')
+
+            echo "[SLACK] Sending to Slack..."
+            local response
+            response=$(curl -sS -X POST -H 'Content-type: application/json' \
+              --data "$payload" \
+              "$SLACK_WEBHOOK" 2>&1) || true
+            echo "[SLACK] Response: $response"
+          }
+
+          on_error () {
+            local exit_code="$?"
+            local error_details="*Exit Code:* ${exit_code}\n*Phase:* preBuild\n*Possible Issues:*\n• Dependencies installation failed\n• AWS Secrets Manager access issue\n• GitHub Packages authentication problem"
+            slack_notify "preBuild" "failed" "$error_details"
+            exit "$exit_code"
+          }
+          trap on_error ERR
+
+          # Pick the right secret name based on branch
+          # main -> prod/fl-admin-portal
+          # anything else -> dev/fl-admin-portal
+          if [ "${AWS_BRANCH:-}" = "main" ]; then
+            SECRET_ID="prod/fl-admin-portal"
+          else
+            SECRET_ID="dev/fl-admin-portal"
+          fi
+          echo "Using Secrets Manager secret: $SECRET_ID (branch: ${AWS_BRANCH:-unknown})"
+
+          # Fetch secrets from AWS Secrets Manager
+          export SECRET_JSON="$(aws secretsmanager get-secret-value --secret-id "$SECRET_ID" --query SecretString --output text)"
+
+          # Export secrets as environment variables safely (handles spaces/newlines)
+          while IFS=$'\t' read -r k v; do
+            # Only export valid shell identifiers (skip weird keys)
+            if [[ "$k" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+              export "$k=$v"
+            else
+              echo "Skipping invalid env key: $k"
+            fi
+          done < <(echo "$SECRET_JSON" | jq -r 'to_entries[] | "\(.key)\t\(.value|tostring)"')
+
+          # Create .env file for Vite with all VITE_ prefixed variables
+          echo "$SECRET_JSON" | jq -r '
+            to_entries
+            | map(select(.key | startswith("VITE_")))
+            | map("\(.key)=\(.value|tostring)")
+            | .[]
+          ' > web-react-ts/.env
+
+          # Configure GitHub Packages authentication for @jaedag scope
+          echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
+
+          # Install root dependencies
+          npm install
+
+          # Install frontend dependencies with GitHub token
+          cd web-react-ts
+          cp ../.npmrc .
+          npm install
+          cd ..
+
+    build:
+      commands:
+        - |
+          set -eo pipefail
+
+          # Track start time for duration calculation
+          BUILD_START_TIME=$(date +%s)
+
+          # Get git commit details
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s" "${AWS_COMMIT_ID:-HEAD}" 2>/dev/null || echo "Unknown commit message")
+          COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an" "${AWS_COMMIT_ID:-HEAD}" 2>/dev/null || echo "Unknown author")
+          COMMIT_SHORT="${AWS_COMMIT_ID:0:7}"
+
+          # Determine environment
+          if [ "${AWS_BRANCH:-}" = "main" ]; then
+            ENV_LABEL="🔴 Production"
+            ENV_COLOR="#FF0000"
+          else
+            ENV_LABEL="🟡 Development"
+            ENV_COLOR="#FFA500"
+          fi
+
+          # Build Amplify console URL
+          AMPLIFY_URL="https://console.aws.amazon.com/amplify/home?region=${AWS_REGION:-eu-west-2}#/${AWS_APP_ID:-unknown}/${AWS_BRANCH:-unknown}"
+
+          slack_notify () {
+            local phase="$1"
+            local status="$2"
+            local extra_context="${3:-}"
+            
+            echo "[SLACK] Attempting to send notification: phase=$phase, status=$status"
+            
+            if [ -z "${SLACK_WEBHOOK:-}" ]; then
+              echo "[SLACK] ERROR: SLACK_WEBHOOK is not set (Amplify App settings → Environment variables)."
+              return 0
+            fi
+            
+            echo "[SLACK] SLACK_WEBHOOK is set (length: ${#SLACK_WEBHOOK} chars)"
+
+            # Calculate duration if this is an end notification
+            local duration_text=""
+            if [ "$status" != "started" ]; then
+              local end_time=$(date +%s)
+              local duration=$((end_time - BUILD_START_TIME))
+              local minutes=$((duration / 60))
+              local seconds=$((duration % 60))
+              if [ $minutes -gt 0 ]; then
+                duration_text="Duration: ${minutes}m ${seconds}s"
+              else
+                duration_text="Duration: ${seconds}s"
+              fi
+            fi
+
+            # Set icon based on status
+            local icon title_text
+            case "$status" in
+              started)
+                icon="🛠️"
+                title_text="Build Phase Started"
+                ;;
+              success)
+                icon="🎉"
+                title_text="Build Phase Completed - Deployment Ready"
+                ;;
+              failed)
+                icon="❌"
+                title_text="Build Phase Failed"
+                ;;
+            esac
+
+            local timestamp=$(date '+%Y-%m-%d %H:%M:%S %Z')
+            
+            # Sanitize commit message for JSON (remove quotes and newlines)
+            local safe_commit_msg=$(echo "$COMMIT_MSG" | tr -d '"\n\r' | cut -c1-100)
+            local safe_commit_author=$(echo "$COMMIT_AUTHOR" | tr -d '"\n\r')
+
+            # Build JSON payload using jq for proper escaping
+            local payload
+            payload=$(jq -n \
+              --arg icon "$icon" \
+              --arg title "$title_text" \
+              --arg env_label "$ENV_LABEL" \
+              --arg branch "${AWS_BRANCH:-unknown}" \
+              --arg commit_id "${AWS_COMMIT_ID:-unknown}" \
+              --arg commit_short "$COMMIT_SHORT" \
+              --arg commit_msg "$safe_commit_msg" \
+              --arg commit_author "$safe_commit_author" \
+              --arg amplify_url "$AMPLIFY_URL" \
+              --arg timestamp "$timestamp" \
+              --arg duration "$duration_text" \
+              --arg extra "$extra_context" \
+              '{
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {"type": "plain_text", "text": "\($icon) \($title)", "emoji": true}
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {"type": "mrkdwn", "text": "*App:*\nFirst Love Admin Portal"},
+                      {"type": "mrkdwn", "text": "*Environment:*\n\($env_label)"},
+                      {"type": "mrkdwn", "text": "*Branch:*\n`\($branch)`"},
+                      {"type": "mrkdwn", "text": "*Commit:*\n<https://github.com/firstlovecenter/fl-admin-portal/commit/\($commit_id)|`\($commit_short)`>"}
+                    ]
+                  },
+                  {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "*Commit Message:* \($commit_msg)\n*Author:* \($commit_author)"}
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View in Amplify Console", "emoji": true},
+                        "url": $amplify_url,
+                        "style": "primary"
+                      },
+                      {
+                        "type": "button", 
+                        "text": {"type": "plain_text", "text": "View Commit", "emoji": true},
+                        "url": "https://github.com/firstlovecenter/fl-admin-portal/commit/\($commit_id)"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "context",
+                    "elements": [{"type": "mrkdwn", "text": "⏰ \($timestamp)"}]
+                  }
+                ]
+              }
+              | if $duration != "" then .blocks += [{"type": "section", "text": {"type": "mrkdwn", "text": "*\($duration)*"}}] else . end
+              | if $extra != "" then .blocks += [{"type": "section", "text": {"type": "mrkdwn", "text": $extra}}] else . end
+              ')
+
+            echo "[SLACK] Sending to Slack..."
+            local response
+            response=$(curl -sS -X POST -H 'Content-type: application/json' \
+              --data "$payload" \
+              "$SLACK_WEBHOOK" 2>&1) || true
+            echo "[SLACK] Response: $response"
+          }
+
+          on_error () {
+            local exit_code="$?"
+            local error_details="*Exit Code:* ${exit_code}\n*Phase:* build\n*Possible Issues:*\n• TypeScript compilation errors\n• Vite build configuration issues\n• Missing environment variables\n• Build artifacts generation failed"
+            slack_notify "build" "failed" "$error_details"
+            exit "$exit_code"
+          }
+          trap on_error ERR
+
+          cd web-react-ts
+          npm run generate-build-version
+          npm run build
+          cd ..
+
+          slack_notify "build" "success"
+
+  artifacts:
+    baseDirectory: web-react-ts/dist
+    files:
+      - '**/*'
+
+  cache:
+    paths:
+      - node_modules/**/*
+      - web-react-ts/node_modules/**/*

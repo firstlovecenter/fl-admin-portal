@@ -454,27 +454,6 @@ export const SERVANTS_STREAM_TELLER = gql`
   }
 `
 
-export const SERVANTS_SHEEP_SEEKER_STREAM = gql`
-  query sheepSheepSeekerStream($id: ID!) {
-    members(where: { id: $id }) {
-      id
-
-      isSheepSeekerForStream {
-        id
-        name
-        stream_name
-
-        leader {
-          id
-          firstName
-          lastName
-          fullName
-        }
-      }
-    }
-  }
-`
-
 export const SERVANTS_HUB_LEADER = gql`
   query hubLeader($id: ID!) {
     members(where: { id: $id }) {

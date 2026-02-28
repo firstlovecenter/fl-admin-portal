@@ -35,7 +35,6 @@ export const GET_GOVERNORSHIP_BACENTAS = gql`
         name
         memberCount
         vacationStatus
-        target
         council {
           id
         }
@@ -73,7 +72,6 @@ export const GET_GOVERNORSHIP_ICBACENTAS = gql`
         name
         memberCount
         vacationStatus
-        target
         council {
           id
         }
@@ -112,7 +110,7 @@ export const GET_COUNCIL_GOVERNORSHIPS = gql`
         stream_name
         memberCount
         bacentaCount
-        target
+
         leader {
           id
           firstName
@@ -163,7 +161,6 @@ export const GET_CAMPUS_GOVERNORSHIPS = gql`
         stream_name
         memberCount
         bacentaCount
-        target
         leader {
           id
           firstName
@@ -206,7 +203,6 @@ export const GET_STREAM_COUNCILS = gql`
         id
         stream_name
         memberCount
-        target
         governorshipCount
         governorships {
           id
@@ -259,7 +255,6 @@ export const GET_CAMPUS_STREAMS = gql`
         memberCount
         councilCount
         vacationStatus
-        target
         leader {
           id
           firstName
@@ -303,7 +298,6 @@ export const GET_DENOMINATION_OVERSIGHTS = gql`
 
         memberCount
         councilCount
-        target
         leader {
           id
           firstName
@@ -347,7 +341,6 @@ export const GET_OVERSIGHT_CAMPUSES = gql`
         noIncomeTracking
         memberCount
         councilCount
-        target
         leader {
           id
           firstName
@@ -390,7 +383,6 @@ export const GET_STREAM_GOVERNORSHIPS = gql`
         stream_name
         memberCount
         bacentaCount
-        target
         leader {
           id
           firstName

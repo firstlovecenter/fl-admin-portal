@@ -118,7 +118,6 @@ const MembersGrid = (props) => {
             <Col className="my-auto">
               <RoleView
                 roles={[
-                  'sheepseekerStream',
                   ...permitLeaderAdmin('Bacenta'),
                   ...permitLeaderAdmin('Hub'),
                 ]}

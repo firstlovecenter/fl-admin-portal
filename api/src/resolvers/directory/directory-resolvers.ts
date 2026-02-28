@@ -4,7 +4,6 @@ import { Context } from '../utils/neo4j-types'
 import { Member } from '../utils/types'
 import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'
 import {
-  permitSheepSeeker,
   permitAdmin,
   permitLeaderAdmin,
   permitAdminArrivals,
@@ -14,42 +13,32 @@ import {
 import { RemoveServant } from './make-remove-servants'
 
 import {
-  changePasswordConfig,
-  createAuthUserConfig,
-  getAuthIdConfig,
-  updateAuthUserConfig,
-} from '../utils/auth0'
-import {
   makeMemberInactive,
-  matchMemberQuery,
-  updateMemberEmail,
   createMember,
   activateInactiveMember,
   removeDuplicateMember,
   matchMemberAndIMCLStatus,
-  updateMemberAuthId,
   updateMemberBacenta,
+  createBacenta,
+  createGovernorship,
+  createCouncil,
+  createStream,
+  createCampus,
+  createOversight,
 } from '../cypher/resolver-cypher'
-import { getAuthToken } from '../authenticate'
-import { sendSingleEmail } from '../utils/notify'
+import { sendServantPromotionEmail } from '../utils/notify'
 
 const cypher = require('../cypher/resolver-cypher')
-const texts = require('../texts.json')
 const closeChurchCypher = require('../cypher/close-church-cypher')
+const texts = require('../texts.json')
 
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
     isAuth(
-      [
-        ...permitSheepSeeker(),
-        ...permitLeaderAdmin('Fellowship'),
-        ...permitLeader('Hub'),
-      ],
-      context?.jwt['https://flcadmin.netlify.app/roles']
+      [...permitLeaderAdmin('Fellowship'), ...permitLeader('Hub')],
+      context?.jwt.roles
     )
-
     const session = context.executionContext.session()
-
     const inactiveMemberResponse = rearrangeCypherObject(
       await session.executeRead((tx) =>
         tx.run(cypher.checkInactiveMember, {
@@ -74,7 +63,7 @@ const directoryMutation = {
           basonta: args?.basonta ?? '',
           visitationArea: args?.visitationArea ?? '',
           pictureUrl: args?.pictureUrl ?? '',
-          auth_id: context.jwt.sub ?? '',
+          userId: context.jwt.userId,
         })
       )
 
@@ -125,7 +114,7 @@ const directoryMutation = {
         basonta: args?.basonta ?? '',
         visitationArea: args?.visitationArea ?? '',
         pictureUrl: args?.pictureUrl ?? '',
-        auth_id: context.jwt.sub ?? '',
+        userId: context.jwt.userId,
       })
     )
 
@@ -139,10 +128,7 @@ const directoryMutation = {
     args: { memberId: string; bacentaId: string },
     context: Context
   ) => {
-    isAuth(
-      [...permitMe('Bacenta'), ...permitMe('Hub'), ...permitSheepSeeker()],
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth([...permitMe('Bacenta'), ...permitMe('Hub')], context.jwt.roles)
 
     const session = context.executionContext.session()
 
@@ -171,46 +157,6 @@ const directoryMutation = {
 
     return updatedMember
   },
-  UpdateMemberEmail: async (
-    object: Member,
-    args: { id: string; email: string },
-    context: Context
-  ) => {
-    isAuth(
-      [...permitMe('Fellowship'), ...permitMe('Hub'), ...permitSheepSeeker()],
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
-
-    const authToken: string = await getAuthToken()
-    const session = context.executionContext.session()
-
-    const member = rearrangeCypherObject(
-      await session.executeRead((tx) =>
-        tx.run(matchMemberQuery, {
-          id: args.id,
-        })
-      )
-    )
-
-    const updatedMember: Member = rearrangeCypherObject(
-      await session.executeWrite((tx) =>
-        tx.run(updateMemberEmail, {
-          id: args.id,
-          email: args.email,
-        })
-      )
-    )
-
-    if (member.auth_id) {
-      // Update a user's Auth Profile with Picture and Name Details
-      const config = await updateAuthUserConfig(updatedMember, authToken)
-      await axios(config)
-    }
-
-    await session.close()
-
-    return updatedMember
-  },
   MakeMemberInactive: async (
     object: any,
     args: {
@@ -219,88 +165,88 @@ const directoryMutation = {
     },
     context: Context
   ) => {
-    isAuth(
-      [...permitLeaderAdmin('Governorship'), ...permitSheepSeeker()],
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth([...permitLeaderAdmin('Governorship')], context.jwt.roles)
     const session = context.executionContext.session()
 
-    const memberCheck = rearrangeCypherObject(
-      await session.run(cypher.checkMemberHasNoActiveRelationships, args)
-    )
-
-    if (memberCheck.relationshipCount.low > 0) {
-      throw new Error(
-        'This member has active roles in church. Please remove all active roles and try again'
+    try {
+      const memberCheck = rearrangeCypherObject(
+        await session.executeRead((tx) =>
+          tx.run(cypher.checkMemberHasNoActiveRelationships, args)
+        )
       )
+
+      if (memberCheck.relationshipCount.low > 0) {
+        throw new Error(
+          'This member has active roles in church. Please remove all active roles and try again'
+        )
+      }
+
+      let mutation = makeMemberInactive
+
+      if (args.reason.toLowerCase().includes('duplicate')) {
+        mutation = removeDuplicateMember
+      }
+
+      const member = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(mutation, {
+            id: args.id,
+            reason: args.reason,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      return member?.properties
+    } finally {
+      await session.close()
     }
-
-    let mutation = makeMemberInactive
-
-    if (args.reason.toLowerCase().includes('duplicate')) {
-      mutation = removeDuplicateMember
-    }
-
-    const member = rearrangeCypherObject(
-      await session.run(mutation, {
-        id: args.id,
-        reason: args.reason,
-        jwt: context.jwt,
-      })
-    )
-
-    await session.close()
-    return member?.properties
   },
   CloseDownFellowship: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('Governorship'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Governorship'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
 
-    const res: any = await Promise.all([
-      session.run(closeChurchCypher.checkFellowshipHasNoMembers, args),
-      sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-        churchId: args.fellowshipId,
-      }),
-    ]).catch((error: any) => {
-      throwToSentry(
-        'There was an error running checkFellowshipHasNoMembers',
-        error
-      )
-    })
-
-    const fellowshipCheck = rearrangeCypherObject(res[0])
-    const lastServiceRecord = rearrangeCypherObject(res[1])
-
-    if (fellowshipCheck.memberCount > 0) {
-      throw new Error(
-        `${fellowshipCheck?.name} Fellowship has ${fellowshipCheck?.memberCount} members. Please transfer all members and try again.`
-      )
-    }
-
-    const record = lastServiceRecord.lastService?.properties ?? {
-      bankingSlip: null,
-    }
-
-    if (
-      !(
-        'bankingSlip' in record ||
-        record.transactionStatus === 'success' ||
-        'tellerConfirmationTime' in record
-      )
-    ) {
-      throw new Error(
-        `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
-          record.createdAt
-        )} before attempting to bank this week's offering`
-      )
-    }
-
     try {
+      const res: any = await Promise.all([
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkFellowshipHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.fellowshipId,
+          })
+        ),
+      ])
+
+      const fellowshipCheck = rearrangeCypherObject(res[0])
+      const lastServiceRecord = rearrangeCypherObject(res[1])
+
+      if (fellowshipCheck.memberCount > 0) {
+        throw new Error(
+          `${fellowshipCheck?.name} Fellowship has ${fellowshipCheck?.memberCount} members. Please transfer all members and try again.`
+        )
+      }
+
+      const record = lastServiceRecord.lastService?.properties ?? {
+        bankingSlip: null,
+      }
+
+      if (
+        !(
+          'bankingSlip' in record ||
+          record.transactionStatus === 'success' ||
+          'tellerConfirmationTime' in record
+        )
+      ) {
+        throw new Error(
+          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
+            record.createdAt
+          )} before attempting to close down this fellowship`
+        )
+      }
+
       // Fellowship Leader must be removed since the fellowship is being closed down
       await RemoveServant(
         context,
@@ -311,38 +257,32 @@ const directoryMutation = {
         true
       )
 
-      const closeFellowshipResponse = await session.run(
-        closeChurchCypher.closeDownFellowship,
-        {
+      const closeFellowshipResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownFellowship, {
           jwt: context.jwt,
           fellowshipId: args.fellowshipId,
-        }
+        })
       )
 
-      const fellowshipResponse = rearrangeCypherObject(closeFellowshipResponse) // Returns a Bacenta
-
+      const fellowshipResponse = rearrangeCypherObject(closeFellowshipResponse)
       return fellowshipResponse.bacenta
     } catch (error: any) {
-      throwToSentry('', error)
+      throwToSentry('Error closing down fellowship', error)
+      throw error
     } finally {
       await session.close()
       await sessionTwo.close()
     }
-    return null
   },
 
   CloseDownBacenta: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdminArrivals('Governorship'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdminArrivals('Governorship'), context.jwt.roles)
 
     const session = context.executionContext.session()
 
     try {
-      const bacentaCheckResponse = await session.run(
-        closeChurchCypher.checkBacentaHasNoMembers,
-        args
+      const bacentaCheckResponse = await session.executeRead((tx) =>
+        tx.run(closeChurchCypher.checkBacentaHasNoMembers, args)
       )
       const bacentaCheck = rearrangeCypherObject(bacentaCheckResponse)
 
@@ -362,78 +302,73 @@ const directoryMutation = {
         true
       )
 
-      const closeBacentaResponse = await session.run(
-        closeChurchCypher.closeDownBacenta,
-        {
+      const closeBacentaResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownBacenta, {
           jwt: context.jwt,
           bacentaId: args.bacentaId,
-        }
+        })
       )
 
       const bacentaResponse = rearrangeCypherObject(closeBacentaResponse)
       return bacentaResponse.governorship
     } catch (error: any) {
-      throwToSentry('a', error)
+      throwToSentry('Error closing down bacenta', error)
+      throw error
     } finally {
       await session.close()
     }
-    return null
   },
   CloseDownGovernorship: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('Council'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Council'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
 
-    const res: any = await Promise.all([
-      session.run(closeChurchCypher.checkGovernorshipHasNoMembers, args),
-      sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-        churchId: args.governorshipId,
-      }),
-    ]).catch((error: any) => {
-      throwToSentry(
-        'There was an error running checkGovernorshipHasNoMembers',
-        error
-      )
-    })
-
-    const governorshipCheck = rearrangeCypherObject(res[0])
-    const lastServiceRecord = rearrangeCypherObject(res[1])
-
-    if (governorshipCheck.bacentaCount.toNumber()) {
-      throw new Error(
-        `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
-      )
-    }
-    if (governorshipCheck.hubCount.toNumber()) {
-      throw new Error(
-        `${governorshipCheck?.name} Governorship has ${governorshipCheck?.hubCount} active hubs. Please close down all hubs and try again.`
-      )
-    }
-
-    const record = lastServiceRecord.lastService?.properties ?? {
-      bankingSlip: null,
-    }
-
-    if (
-      !(
-        'bankingSlip' in record ||
-        record.transactionStatus === 'success' ||
-        'tellerConfirmationTime' in record
-      )
-    ) {
-      throw new Error(
-        `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
-          record.createdAt
-        )} before attempting to close down this governorship`
-      )
-    }
-
     try {
-      // Bacenta Leader must be removed since the Bacenta is being closed down
+      const res: any = await Promise.all([
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkGovernorshipHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.governorshipId,
+          })
+        ),
+      ])
+
+      const governorshipCheck = rearrangeCypherObject(res[0])
+      const lastServiceRecord = rearrangeCypherObject(res[1])
+
+      if (governorshipCheck.bacentaCount.toNumber()) {
+        throw new Error(
+          `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
+        )
+      }
+      if (governorshipCheck.hubCount.toNumber()) {
+        throw new Error(
+          `${governorshipCheck?.name} Governorship has ${governorshipCheck?.hubCount} active hubs. Please close down all hubs and try again.`
+        )
+      }
+
+      const record = lastServiceRecord.lastService?.properties ?? {
+        bankingSlip: null,
+      }
+
+      if (
+        !(
+          'bankingSlip' in record ||
+          record.transactionStatus === 'success' ||
+          'tellerConfirmationTime' in record
+        )
+      ) {
+        throw new Error(
+          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
+            record.createdAt
+          )} before attempting to close down this governorship`
+        )
+      }
+
+      // Remove Governorship Leader and Admin
       await Promise.all([
         RemoveServant(
           context,
@@ -454,12 +389,11 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeGovernorshipResponse = await session.run(
-        closeChurchCypher.closeDownGovernorship,
-        {
+      const closeGovernorshipResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownGovernorship, {
           jwt: context.jwt,
           governorshipId: args.governorshipId,
-        }
+        })
       )
 
       const governorshipResponse = rearrangeCypherObject(
@@ -467,70 +401,66 @@ const directoryMutation = {
       )
       return governorshipResponse.council
     } catch (error: any) {
-      throwToSentry('There was an error closing down this governorship', error)
+      throwToSentry('Error closing down governorship', error)
+      throw error
     } finally {
       await session.close()
       await sessionTwo.close()
     }
-    return null
   },
 
   CloseDownCouncil: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('Stream'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Stream'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
 
-    const res: any = await Promise.all([
-      session.run(closeChurchCypher.checkCouncilHasNoMembers, args),
-      sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-        churchId: args.councilId,
-      }),
-    ]).catch((error: any) => {
-      throwToSentry(
-        'There was an error running checkCouncilHasNoMembers',
-        error
-      )
-    })
-
-    const councilCheck = rearrangeCypherObject(res[0])
-    const lastServiceRecord = rearrangeCypherObject(res[1])
-
-    if (councilCheck.governorshipCount.toNumber()) {
-      throw new Error(
-        `${councilCheck?.name} Council has ${councilCheck?.governorshipCount} active governorships. Please close down all governorships and try again.`
-      )
-    }
-
-    if (councilCheck.hubCouncilLeaderCount.toNumber()) {
-      throw new Error(
-        `${councilCheck?.name} Council has ${councilCheck?.hubCouncilCount} active hub councils. Please close down all hub councils and try again.`
-      )
-    }
-
-    const record = lastServiceRecord.lastService?.properties ?? {
-      bankingSlip: null,
-    }
-
-    if (
-      !(
-        'bankingSlip' in record ||
-        record.transactionStatus === 'success' ||
-        'tellerConfirmationTime' in record
-      )
-    ) {
-      throw new Error(
-        `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
-          record.createdAt
-        )} before attempting to close down this council`
-      )
-    }
-
     try {
-      // Council Leader must be removed since the Council is being closed down
+      const res: any = await Promise.all([
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkCouncilHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.councilId,
+          })
+        ),
+      ])
+
+      const councilCheck = rearrangeCypherObject(res[0])
+      const lastServiceRecord = rearrangeCypherObject(res[1])
+
+      if (councilCheck.governorshipCount.toNumber()) {
+        throw new Error(
+          `${councilCheck?.name} Council has ${councilCheck?.governorshipCount} active governorships. Please close down all governorships and try again.`
+        )
+      }
+
+      if (councilCheck.hubCouncilLeaderCount.toNumber()) {
+        throw new Error(
+          `${councilCheck?.name} Council has ${councilCheck?.hubCouncilCount} active hub councils. Please close down all hub councils and try again.`
+        )
+      }
+
+      const record = lastServiceRecord.lastService?.properties ?? {
+        bankingSlip: null,
+      }
+
+      if (
+        !(
+          'bankingSlip' in record ||
+          record.transactionStatus === 'success' ||
+          'tellerConfirmationTime' in record
+        )
+      ) {
+        throw new Error(
+          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
+            record.createdAt
+          )} before attempting to close down this council`
+        )
+      }
+
+      // Remove Council Leader and Admin
       await Promise.all([
         RemoveServant(
           context,
@@ -551,78 +481,76 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeCouncilResponse = await session.run(
-        closeChurchCypher.closeDownCouncil,
-        {
+      const closeCouncilResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownCouncil, {
           jwt: context.jwt,
           councilId: args.councilId,
-        }
+        })
       )
 
       const councilResponse = rearrangeCypherObject(closeCouncilResponse)
       return councilResponse.stream
     } catch (error: any) {
-      throwToSentry('There was an error closing down this council', error)
+      throwToSentry('Error closing down council', error)
+      throw error
     } finally {
       await session.close()
       await sessionTwo.close()
     }
-    return null
   },
 
   CloseDownStream: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('Campus'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Campus'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
 
-    const res: any = await Promise.all([
-      session.run(closeChurchCypher.checkStreamHasNoMembers, args),
-      sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-        churchId: args.streamId,
-      }),
-    ]).catch((error: any) => {
-      throwToSentry('There was an error running checkStreamHasNoMembers', error)
-    })
-
-    const streamCheck = rearrangeCypherObject(res[0])
-    const lastServiceRecord = rearrangeCypherObject(res[1])
-
-    if (streamCheck.memberCount > 0) {
-      throw new Error(
-        `${streamCheck?.name} Stream has ${streamCheck?.councilCount} active councils. Please close down all councils and try again.`
-      )
-    }
-
-    if (streamCheck.ministryLeaderCount > 0) {
-      throw new Error(
-        `${streamCheck?.name} Stream has ${streamCheck?.ministryCount} active ministries. Please close down all ministries and try again.`
-      )
-    }
-
-    const record = lastServiceRecord.lastService?.properties ?? {
-      bankingSlip: null,
-    }
-
-    if (
-      !(
-        'bankingSlip' in record ||
-        record.transactionStatus === 'success' ||
-        'tellerConfirmationTime' in record
-      )
-    ) {
-      throw new Error(
-        `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
-          record.createdAt
-        )} before attempting to close down this stream`
-      )
-    }
-
     try {
-      // Stream Leader must be removed since the Stream is being closed down
+      const res: any = await Promise.all([
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkStreamHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.streamId,
+          })
+        ),
+      ])
+
+      const streamCheck = rearrangeCypherObject(res[0])
+      const lastServiceRecord = rearrangeCypherObject(res[1])
+
+      if (streamCheck.memberCount > 0) {
+        throw new Error(
+          `${streamCheck?.name} Stream has ${streamCheck?.councilCount} active councils. Please close down all councils and try again.`
+        )
+      }
+
+      if (streamCheck.ministryLeaderCount > 0) {
+        throw new Error(
+          `${streamCheck?.name} Stream has ${streamCheck?.ministryCount} active ministries. Please close down all ministries and try again.`
+        )
+      }
+
+      const record = lastServiceRecord.lastService?.properties ?? {
+        bankingSlip: null,
+      }
+
+      if (
+        !(
+          'bankingSlip' in record ||
+          record.transactionStatus === 'success' ||
+          'tellerConfirmationTime' in record
+        )
+      ) {
+        throw new Error(
+          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
+            record.createdAt
+          )} before attempting to close down this stream`
+        )
+      }
+
+      // Remove Stream Leader and Admin
       await Promise.all([
         RemoveServant(
           context,
@@ -643,78 +571,76 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeStreamResponse = await session.run(
-        closeChurchCypher.closeDownStream,
-        {
+      const closeStreamResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownStream, {
           jwt: context.jwt,
           streamId: args.streamId,
-        }
+        })
       )
 
       const streamResponse = rearrangeCypherObject(closeStreamResponse)
       return streamResponse.campus
     } catch (error: any) {
-      throwToSentry('There was an error closing down this stream', error)
+      throwToSentry('Error closing down stream', error)
+      throw error
     } finally {
       await session.close()
       await sessionTwo.close()
     }
-    return null
   },
 
   CloseDownCampus: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('Oversight'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Oversight'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
 
-    const res: any = await Promise.all([
-      session.run(closeChurchCypher.checkCampusHasNoMembers, args),
-      sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-        churchId: args.campusId,
-      }),
-    ]).catch((error: any) => {
-      throwToSentry('There was an error running checkCampusHasNoMembers', error)
-    })
-
-    const campusCheck = rearrangeCypherObject(res[0])
-    const lastServiceRecord = rearrangeCypherObject(res[1])
-
-    if (campusCheck.memberCount > 0) {
-      throw new Error(
-        `${campusCheck?.name} Campus has ${campusCheck?.streamCount} active streams. Please close down all streams and try again.`
-      )
-    }
-
-    if (campusCheck.leaderCount > 0) {
-      throw new Error(
-        `${campusCheck?.name} Campus has ${campusCheck?.creativeArtsCount} active creativeArts. Please close down all creativeArts and try again.`
-      )
-    }
-
-    const record = lastServiceRecord.lastService?.properties ?? {
-      bankingSlip: null,
-    }
-
-    if (
-      !(
-        'bankingSlip' in record ||
-        record.transactionStatus === 'success' ||
-        'tellerConfirmationTime' in record
-      )
-    ) {
-      throw new Error(
-        `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
-          record.createdAt
-        )} before attempting to close down this campus`
-      )
-    }
-
     try {
-      // Stream Leader must be removed since the Stream is being closed down
+      const res: any = await Promise.all([
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkCampusHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.campusId,
+          })
+        ),
+      ])
+
+      const campusCheck = rearrangeCypherObject(res[0])
+      const lastServiceRecord = rearrangeCypherObject(res[1])
+
+      if (campusCheck.memberCount > 0) {
+        throw new Error(
+          `${campusCheck?.name} Campus has ${campusCheck?.streamCount} active streams. Please close down all streams and try again.`
+        )
+      }
+
+      if (campusCheck.leaderCount > 0) {
+        throw new Error(
+          `${campusCheck?.name} Campus has ${campusCheck?.creativeArtsCount} active creativeArts. Please close down all creativeArts and try again.`
+        )
+      }
+
+      const record = lastServiceRecord.lastService?.properties ?? {
+        bankingSlip: null,
+      }
+
+      if (
+        !(
+          'bankingSlip' in record ||
+          record.transactionStatus === 'success' ||
+          'tellerConfirmationTime' in record
+        )
+      ) {
+        throw new Error(
+          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
+            record.createdAt
+          )} before attempting to close down this campus`
+        )
+      }
+
+      // Remove Campus Leader and Admin
       await Promise.all([
         RemoveServant(
           context,
@@ -735,75 +661,70 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeCampusResponse = await session.run(
-        closeChurchCypher.closeDownCampus,
-        {
+      const closeCampusResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownCampus, {
           jwt: context.jwt,
           campusId: args.campusId,
-        }
+        })
       )
 
       const campusResponse = rearrangeCypherObject(closeCampusResponse)
       return campusResponse.oversight
     } catch (error: any) {
-      throwToSentry('There was an error closing down this campus', error)
+      throwToSentry('Error closing down campus', error)
+      throw error
     } finally {
       await session.close()
       await sessionTwo.close()
     }
-    return null
   },
 
   CloseDownOversight: async (object: any, args: any, context: Context) => {
-    isAuth(
-      permitAdmin('Denomination'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitAdmin('Denomination'), context.jwt.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
 
-    const res: any = await Promise.all([
-      session.run(closeChurchCypher.checkOversightHasNoMembers, args),
-      sessionTwo.run(closeChurchCypher.getLastServiceRecord, {
-        churchId: args.oversightId,
-      }),
-    ]).catch((error: any) => {
-      throwToSentry(
-        'There was an error running checkOversightHasNoMembers',
-        error
-      )
-    })
-
-    const oversightCheck = rearrangeCypherObject(res[0])
-    const lastServiceRecord = rearrangeCypherObject(res[1])
-
-    if (oversightCheck.memberCount) {
-      throw new Error(
-        `${oversightCheck?.name} Oversight has ${oversightCheck?.campusCount} active campuses. Please close down all campuses and try again.`
-      )
-    }
-
-    const record = lastServiceRecord.lastService?.properties ?? {
-      bankingSlip: null,
-    }
-
-    if (
-      !(
-        'bankingSlip' in record ||
-        record.transactionStatus === 'success' ||
-        'tellerConfirmationTime' in record
-      )
-    ) {
-      throw new Error(
-        `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
-          record.createdAt
-        )} before attempting to close down this campus`
-      )
-    }
-
     try {
-      // Stream Leader must be removed since the Stream is being closed down
+      const res: any = await Promise.all([
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkOversightHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.oversightId,
+          })
+        ),
+      ])
+
+      const oversightCheck = rearrangeCypherObject(res[0])
+      const lastServiceRecord = rearrangeCypherObject(res[1])
+
+      if (oversightCheck.memberCount) {
+        throw new Error(
+          `${oversightCheck?.name} Oversight has ${oversightCheck?.campusCount} active campuses. Please close down all campuses and try again.`
+        )
+      }
+
+      const record = lastServiceRecord.lastService?.properties ?? {
+        bankingSlip: null,
+      }
+
+      if (
+        !(
+          'bankingSlip' in record ||
+          record.transactionStatus === 'success' ||
+          'tellerConfirmationTime' in record
+        )
+      ) {
+        throw new Error(
+          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
+            record.createdAt
+          )} before attempting to close down this oversight`
+        )
+      }
+
+      // Remove Oversight Leader and Admin
       await Promise.all([
         RemoveServant(
           context,
@@ -824,75 +745,334 @@ const directoryMutation = {
           : null,
       ])
 
-      const closeOversightResponse = await session.run(
-        closeChurchCypher.closeDownOversight,
-        {
+      const closeOversightResponse = await session.executeWrite((tx) =>
+        tx.run(closeChurchCypher.closeDownOversight, {
           jwt: context.jwt,
           oversightId: args.oversightId,
-        }
+        })
       )
 
       const oversightResponse = rearrangeCypherObject(closeOversightResponse)
       return oversightResponse.denomination
     } catch (error: any) {
-      throwToSentry('There was an error closing down this Oversight', error)
+      throwToSentry('Error closing down oversight', error)
+      throw error
     } finally {
       await session.close()
       await sessionTwo.close()
     }
-    return null
   },
-  CreateMemberAccount: async (object: any, args: any, context: Context) => {
-    const authToken = await getAuthToken()
-    const session = context.executionContext.session()
-
-    const memberRes = await session.executeRead((tx) =>
-      tx.run(matchMemberQuery, {
-        id: args.memberId,
-      })
+  CreateBacenta: async (
+    object: any,
+    args: {
+      name: string
+      governorshipId: string
+      leaderId: string
+      meetingDay: string
+      venueLongitude: number
+      venueLatitude: number
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [
+        ...permitAdmin('Council'),
+        ...permitAdmin('Stream'),
+        ...permitAdmin('Campus'),
+        ...permitAdminArrivals('Campus'),
+      ],
+      context.jwt.roles
     )
 
-    const member = memberRes.records[0]?.get('member')
-    const authIdConfig = await getAuthIdConfig(member, authToken)
-    const authIdResponse = await axios(authIdConfig)
+    const session = context.executionContext.session()
 
-    if (!authIdResponse.data[0]?.user_id) {
-      const authUserConfig = await createAuthUserConfig(member, authToken)
-      const authProfileResponse = await axios(authUserConfig)
-
-      const changePassConfig = await changePasswordConfig(member, authToken)
-      const passwordTicketResponse = await axios(changePassConfig)
-
-      const res = await Promise.all([
-        session.executeWrite((tx) =>
-          tx.run(updateMemberAuthId, {
-            id: args.memberId,
-            auth_id: authProfileResponse.data.user_id,
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createBacenta, {
+            name: args.name,
+            governorshipId: args.governorshipId,
+            leaderId: args.leaderId,
+            meetingDay: args.meetingDay,
+            venueLongitude: args.venueLongitude,
+            venueLatitude: args.venueLatitude,
+            jwt: context.jwt,
           })
-        ),
-        sendSingleEmail(
-          member,
-          'Welcome to the My First Love Portal',
-          undefined,
-          `<p>Hi ${member.firstName} ${member.lastName},<br/><br/>Welcome to your First Love Membership Portal</b>.<br/><br/>Your account has just been created. Please set up your password by clicking <b><a href=${passwordTicketResponse.data.ticket}>this link</a></b>. After setting up your password, you can log in by clicking <b>https://my.firstlovecenter.com/</b><br/><br/>${texts.html.subscription}`
-        ),
-      ])
-
-      return res[0].records[0]?.get('member').properties
-    }
-
-    if (!member.auth_id && authIdResponse.data[0]?.user_id) {
-      const res = await session.executeWrite((tx) =>
-        tx.run(updateMemberAuthId, {
-          id: args.memberId,
-          auth_id: authIdResponse.data[0]?.user_id,
-        })
+        )
       )
 
-      return res.records[0]?.get('member').properties
-    }
+      const { bacenta, leader } = result
 
-    return member
+      // Send notification email to the new leader
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Bacenta',
+        'Leader',
+        `${bacenta.name} Bacenta`,
+        texts.html.helpdesk
+      )
+
+      return bacenta
+    } catch (error: any) {
+      throwToSentry('Error creating bacenta', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateGovernorship: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      councilId: string
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [
+        ...permitAdmin('Campus'),
+        ...permitAdmin('Stream'),
+        ...permitAdmin('Council'),
+      ],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createGovernorship, {
+            name: args.name,
+            leaderId: args.leaderId,
+            councilId: args.councilId,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { governorship, leader } = result
+
+      // Send notification email to the new leader
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Governorship',
+        'Leader',
+        `${governorship.name} Governorship`,
+        texts.html.helpdesk
+      )
+
+      return governorship
+    } catch (error: any) {
+      throwToSentry('Error creating governorship', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateCouncil: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      streamId: string
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [...permitAdmin('Campus'), ...permitAdmin('Stream')],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createCouncil, {
+            name: args.name,
+            leaderId: args.leaderId,
+            streamId: args.streamId,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { council, leader } = result
+
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Council',
+        'Leader',
+        `${council.name} Council`,
+        texts.html.helpdesk
+      )
+
+      return council
+    } catch (error: any) {
+      throwToSentry('Error creating council', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateStream: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      campusId: string
+      meetingDay: string
+      bankAccount: string
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [...permitAdmin('Campus'), ...permitAdmin('Oversight')],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createStream, {
+            name: args.name,
+            leaderId: args.leaderId,
+            campusId: args.campusId,
+            meetingDay: args.meetingDay,
+            bankAccount: args.bankAccount,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { stream, leader } = result
+
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Stream',
+        'Leader',
+        `${stream.name} Stream`,
+        texts.html.helpdesk
+      )
+
+      return stream
+    } catch (error: any) {
+      throwToSentry('Error creating stream', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateCampus: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      oversightId: string
+      noIncomeTracking: boolean
+      currency: string
+      conversionRateToDollar: number
+    },
+    context: Context
+  ) => {
+    isAuth(
+      [...permitAdmin('Oversight'), ...permitAdmin('Denomination')],
+      context.jwt.roles
+    )
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createCampus, {
+            name: args.name,
+            leaderId: args.leaderId,
+            oversightId: args.oversightId,
+            noIncomeTracking: args.noIncomeTracking,
+            currency: args.currency,
+            conversionRateToDollar: args.conversionRateToDollar,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { campus, leader } = result
+
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Campus',
+        'Leader',
+        `${campus.name} Campus`,
+        texts.html.helpdesk
+      )
+
+      return campus
+    } catch (error: any) {
+      throwToSentry('Error creating campus', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  CreateOversight: async (
+    object: any,
+    args: {
+      name: string
+      leaderId: string
+      denominationId: string
+    },
+    context: Context
+  ) => {
+    isAuth([...permitAdmin('Denomination')], context.jwt.roles)
+
+    const session = context.executionContext.session()
+
+    try {
+      const result = rearrangeCypherObject(
+        await session.executeWrite((tx) =>
+          tx.run(createOversight, {
+            name: args.name,
+            leaderId: args.leaderId,
+            denominationId: args.denominationId,
+            jwt: context.jwt,
+          })
+        )
+      )
+
+      const { oversight, leader } = result
+
+      await sendServantPromotionEmail(
+        leader.email,
+        leader.firstName,
+        leader.lastName,
+        'Oversight',
+        'Leader',
+        `${oversight.name} Oversight`,
+        texts.html.helpdesk
+      )
+
+      return oversight
+    } catch (error: any) {
+      throwToSentry('Error creating oversight', error)
+      throw error
+    } finally {
+      await session.close()
+    }
   },
 }
 

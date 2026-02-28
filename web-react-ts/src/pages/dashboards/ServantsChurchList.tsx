@@ -94,9 +94,6 @@ const ServantsChurchList = () => {
     if (servant?.isArrivalsAdminForOversight?.length) {
       pushIntoChurch(servant?.isArrivalsAdminForOversight)
     }
-    if (servant?.isSheepSeekerForStream?.length) {
-      pushIntoChurch(servant?.isSheepSeekerForStream)
-    }
 
     if (servant?.isAdminForCouncil?.length) {
       pushIntoChurch(servant?.isAdminForCouncil)

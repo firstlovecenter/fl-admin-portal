@@ -63,7 +63,7 @@ export const checkServantHasCurrentHistory = async (
       churchName: getServantAndChurch.records[0]?.get('churchName'),
       churchType: getServantAndChurch.records[0]?.get('churchType'),
       servantId: getServantAndChurch.records[0]?.get('servantId'),
-      auth_id: getServantAndChurch.records[0]?.get('auth_id'),
+
       firstName: getServantAndChurch.records[0]?.get('firstName'),
       lastName: getServantAndChurch.records[0]?.get('lastName'),
     }
@@ -80,7 +80,7 @@ export const checkServantHasCurrentHistory = async (
       servantType: 'Leader',
       servant: {
         id: servantAndChurch.servantId,
-        auth_id: servantAndChurch.auth_id,
+
         firstName: servantAndChurch.firstName,
         lastName: servantAndChurch.lastName,
       },
@@ -101,10 +101,7 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Fellowship'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -151,6 +148,12 @@ const serviceMutation = {
         )
         .catch((error: any) => throwToSentry('Error Recording Service', error))
 
+      if (!cypherResponse.records || cypherResponse.records.length === 0) {
+        throw new Error(
+          'Service record could not be created. Please ensure the church is a Bacenta, Governorship, Council, or Stream.'
+        )
+      }
+
       const serviceRecordId =
         cypherResponse.records[0].get('serviceRecord').properties.id
 
@@ -180,10 +183,7 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Fellowship'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -249,10 +249,7 @@ const serviceMutation = {
     args: RecordCancelledServiceArgs,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Bacenta'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(
@@ -273,7 +270,7 @@ const serviceMutation = {
         servantType: 'Leader',
         servant: {
           id: getServantAndChurch.servantId,
-          auth_id: getServantAndChurch.auth_id,
+
           firstName: getServantAndChurch.firstName,
           lastName: getServantAndChurch.lastName,
         },

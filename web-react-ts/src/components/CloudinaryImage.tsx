@@ -1,19 +1,14 @@
 /* eslint-disable jsx-a11y/alt-text */
 import React from 'react'
 
-export type CloudinaryImageProps = {
+export type LazyImageProps = {
   src: string
   size?: 'small' | 'large' | 'respond' | 'fullWidth'
   className?: string
   [key: string]: any
 }
 
-const CloudinaryImage = ({
-  src,
-  size,
-  className,
-  ...rest
-}: CloudinaryImageProps) => {
+const LazyImage = ({ src, size, className, ...rest }: LazyImageProps) => {
   const getImageSrc = (url: string) => {
     if (!url) {
       // Default placeholder image
@@ -44,4 +39,8 @@ const CloudinaryImage = ({
   )
 }
 
-export default CloudinaryImage
+export default LazyImage
+
+// Legacy export for backwards compatibility during migration
+export { LazyImage as CloudinaryImage }
+export type { LazyImageProps as CloudinaryImageProps }

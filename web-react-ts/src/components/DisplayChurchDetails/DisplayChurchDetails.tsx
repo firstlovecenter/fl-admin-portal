@@ -49,6 +49,7 @@ import Last3WeeksCard, {
   shouldFill,
 } from 'components/Last3WeeksCard'
 import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
+import { displayError, isPermissionError } from 'utils/errorHandler'
 
 type DisplayChurchDetailsProps = {
   details: DetailsArray
@@ -218,7 +219,10 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         alertMsg('Governorship Admin has been changed successfully')
       }
     } catch (e) {
-      throwToSentry('', e)
+      if (!isPermissionError(e)) {
+        throwToSentry('Error changing admin', e)
+      }
+      displayError('Unable to Change Admin', e)
     } finally {
       handleClose()
     }

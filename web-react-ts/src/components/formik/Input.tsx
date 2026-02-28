@@ -4,7 +4,7 @@ import TextError from './TextError/TextError'
 import './Input.css'
 import './Formik.css'
 import PlaceholderCustom from 'components/Placeholder'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from 'contexts/AuthContext'
 import { FormikComponentProps } from './formik-types'
 
 interface InputProps extends FormikComponentProps {
@@ -13,7 +13,7 @@ interface InputProps extends FormikComponentProps {
 
 function Input(props: InputProps) {
   const { label, name, ...rest } = props
-  const { isAuthenticated } = useAuth0()
+  const { isAuthenticated } = useAuth()
 
   return (
     <div>

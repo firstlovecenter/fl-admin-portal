@@ -3,9 +3,9 @@ name: Deploy Background Functions to AWS Lambda
 on:
   push:
     branches:
-      - deploy
+      - main
     paths:
-      - 'api/src/functions/background/**' # Only trigger when background function files change
+      - "api/src/functions/background/**" # Only trigger when background function files change
 
 jobs:
   deploy:
@@ -19,8 +19,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Setup npm authentication
         run: |
@@ -138,5 +138,5 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: '🚀 Synago Background Functions Deployment'
-          SLACK_MESSAGE: 'Commit: ${{ github.event.head_commit.message }} - Deploying Background Functions to AWS Lambda ${{ job.status }}'
+          SLACK_TITLE: "🚀 Synago Background Functions Deployment"
+          SLACK_MESSAGE: "Commit: ${{ github.event.head_commit.message }} - Deploying Background Functions to AWS Lambda ${{ job.status }}"

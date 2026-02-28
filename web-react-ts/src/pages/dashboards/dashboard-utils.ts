@@ -91,7 +91,6 @@ export const roles: {
     'isArrivalsAdminFor',
     'isArrivalsCounterFor',
     'isTellerFor',
-    'isSheepSeekerFor',
   ],
   Campus: ['leads', 'isAdminFor', 'isArrivalsAdminFor'],
   Oversight: ['leads', 'isAdminFor'],
@@ -116,8 +115,6 @@ export const parseRoles = (role: VerbTypes): VerbTypes => {
       return 'isArrivalsPayerFor'
     case 'teller':
       return 'isTellerFor'
-    case 'sheepseeker':
-      return 'isSheepSeekerFor'
 
     case 'leads':
       return 'leader'
@@ -131,8 +128,6 @@ export const parseRoles = (role: VerbTypes): VerbTypes => {
       return 'arrivalsPayer'
     case 'isTellerFor':
       return 'teller'
-    case 'isSheepSeekerFor':
-      return 'sheepseeker'
 
     default:
       return role

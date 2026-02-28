@@ -252,10 +252,6 @@ const SpecialServiceForm = ({
                       <small>Upload Treasurer Selfie*</small>
                       <ImageUpload
                         name="treasurerSelfie"
-                        uploadPreset={
-                          import.meta.env.VITE_CLOUDINARY_TREASURERS
-                        }
-                        tags="facial-recognition"
                         placeholder="Choose"
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="ImageUpload"
@@ -267,7 +263,6 @@ const SpecialServiceForm = ({
                       </small>
                       <ImageUpload
                         name="familyPicture"
-                        uploadPreset={import.meta.env.VITE_CLOUDINARY_SERVICES}
                         placeholder="Choose"
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="UploadfamilyPicture"

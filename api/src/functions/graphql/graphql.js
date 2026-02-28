@@ -2,33 +2,17 @@ const { Neo4jGraphQL } = require('@neo4j/graphql')
 const { ApolloServer } = require('@apollo/server')
 // Removed startServerAndCreateLambdaHandler import
 const neo4j = require('neo4j-driver')
-const Sentry = require('@sentry/node')
 const { jwtDecode } = require('jwt-decode')
 const { typeDefs } = require('./schema/graphql-schema')
 const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
-
-// Initialize Sentry
-Sentry.init({
-  dsn: 'https://cd02d9dbb24041f88bfa297993779123@o1423098.ingest.sentry.io/6770464',
-  tracesSampleRate: 1.0,
-})
-
-// Constants
-const DEFAULT_NEO4J_CONFIG = {
-  maxConnectionPoolSize: 50,
-  connectionTimeout: 30000,
-  logging: {
-    level: 'info',
-    logger: (level, message) => console.log(`[Neo4j ${level}] ${message}`),
-  },
-}
 
 // Server state
 let isInitialized = false
 let driver
 let server
 let schema
+let SECRETS
 
 const initializeServer = async () => {
   if (isInitialized) return
@@ -37,27 +21,36 @@ const initializeServer = async () => {
 
   try {
     // Load secrets
-    const SECRETS = await loadSecrets()
+    SECRETS = await loadSecrets()
 
-    // Configure encrypted connection if required
-    const uri =
-      SECRETS.NEO4J_ENCRYPTED === 'true'
-        ? SECRETS.NEO4J_URI.replace('bolt://', 'neo4j+s://')
-        : SECRETS.NEO4J_URI
+    const uri = SECRETS.NEO4J_URI || 'bolt://localhost:7687/'
+    const hasEncryptionInUri =
+      uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
+    const driverConfig = {
+      connectionTimeout: 30000,
+    }
+
+    // Only add encryption config if not using secure URI scheme
+    if (!hasEncryptionInUri) {
+      driverConfig.encrypted = 'ENCRYPTION_ON'
+      driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
+    }
 
     console.log(
       `[Neo4j] Connecting to ${uri.replace(/:\/\/.*@/, '://[REDACTED]@')}`
     )
+    console.log('[Neo4j] URI encryption scheme detected:', hasEncryptionInUri)
+    console.log('[Neo4j] Driver config:', driverConfig)
 
     driver = neo4j.driver(
       uri,
       neo4j.auth.basic(SECRETS.NEO4J_USER, SECRETS.NEO4J_PASSWORD),
-      DEFAULT_NEO4J_CONFIG
+      driverConfig
     )
 
     // Verify connection
     await driver.verifyConnectivity()
-    console.log('[Neo4j] Connection established successfully')
+    console.log('[Neo4j] Connection established successfully!')
 
     const neoSchema = new Neo4jGraphQL({
       typeDefs,
@@ -81,15 +74,21 @@ const initializeServer = async () => {
     })
 
     console.log('[Schema] Generating GraphQL schema')
-    schema = await neoSchema.getSchema().catch((error) => {
+    try {
+      schema = await neoSchema.getSchema()
+      console.log('[Schema] ✅ Schema generated successfully')
+    } catch (error) {
       console.error('\x1b[31m[Schema] ######## 🚨SCHEMA ERROR🚨 #######\x1b[0m')
-      console.error(`${JSON.stringify(error, null, 2)}`)
+      console.error('[Schema] Error details:', error)
+      console.error('[Schema] Error message:', error.message)
+      console.error('[Schema] Error stack:', error.stack)
       console.log(
         '\x1b[31m[Schema] ########## 🚨END OF SCHEMA ERROR🚨 ##################\x1b[0m'
       )
       throw error
-    })
+    }
 
+    console.log('[Apollo] Creating Apollo Server instance')
     server = new ApolloServer({
       schema,
       status400ForVariableCoercionErrors: true,
@@ -104,12 +103,12 @@ const initializeServer = async () => {
       },
     })
 
+    console.log('[Apollo] Starting Apollo Server')
     await server.start()
     isInitialized = true
-    console.log('[Apollo] Server initialized successfully')
+    console.log('[Apollo] ✅ Server initialized successfully')
   } catch (error) {
     console.error('[Initialization] Server initialization failed:', error)
-    Sentry.captureException(error)
     throw error
   }
 }
@@ -118,15 +117,33 @@ const initializeServer = async () => {
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false
 
+  // Initialize on cold start to ensure SECRETS are loaded
+  await initializeServer()
+
+  // Determine CORS origin based on environment
+  const allowedOrigin =
+    SECRETS?.ENVIRONMENT === 'development'
+      ? 'https://dev-synago.firstlovecenter.com'
+      : 'https://admin.firstlovecenter.com'
+
+  console.log('[CORS Debug] Allowed origin:', allowedOrigin)
+
   const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://admin.firstlovecenter.com',
+    'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 
   try {
+    // Log event structure for debugging
+    console.log('[Event Debug] Event keys:', Object.keys(event))
+    console.log('[Event Debug] Event:', JSON.stringify(event, null, 2))
+
     // Handle OPTIONS preflight request
-    if (event.httpMethod === 'OPTIONS') {
+    if (
+      event.httpMethod === 'OPTIONS' ||
+      event.requestContext?.http?.method === 'OPTIONS'
+    ) {
       return {
         statusCode: 204,
         headers: {
@@ -136,11 +153,15 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Initialize on cold start
-    await initializeServer()
+    // Parse and validate request (handle both API Gateway v1 and v2 formats)
+    const body = event.body || event.rawBody || event.requestBody
+    const headers = event.headers || {}
+    const httpMethod =
+      event.httpMethod || event.requestContext?.http?.method || 'POST'
 
-    // Parse and validate request
-    const { body, headers, httpMethod } = event
+    console.log('[Request Debug] Body exists:', !!body)
+    console.log('[Request Debug] Body type:', typeof body)
+    console.log('[Request Debug] HTTP Method:', httpMethod)
 
     if (!body) {
       throw new SyntaxError('Request body is undefined or empty')
@@ -162,7 +183,7 @@ exports.handler = async (event, context) => {
       headers: Object.keys(headers),
     })
 
-    // Handle JWT authentication
+    // Handle JWT authentication properly
     const token = headers.authorization || headers.Authorization
     let jwt = null
 
@@ -172,11 +193,10 @@ exports.handler = async (event, context) => {
         console.log('[Auth] Decoding JWT token')
         jwt = jwtDecode(cleanToken)
         console.log('[Auth] JWT decoded successfully', {
-          roles: jwt?.['https://flcadmin.netlify.app/roles'],
+          roles: jwt?.roles,
         })
       } catch (error) {
         console.error('[Auth] Invalid token:', error)
-        Sentry.captureException(error)
       }
     }
 
@@ -186,7 +206,6 @@ exports.handler = async (event, context) => {
       executionContext: driver,
       jwt: {
         ...jwt,
-        roles: jwt?.['https://flcadmin.netlify.app/roles'],
       },
     }
 
@@ -217,7 +236,6 @@ exports.handler = async (event, context) => {
     }
   } catch (error) {
     console.error('[Request] Processing failed:', error)
-    Sentry.captureException(error)
 
     return {
       statusCode: 500,

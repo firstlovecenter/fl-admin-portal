@@ -18,29 +18,39 @@ const startServer = async () => {
   const app = express()
   const httpServer = http.createServer(app)
 
+  const uri = SECRETS.NEO4J_URI || 'bolt://localhost:7687/'
+  const hasEncryptionInUri =
+    uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
+  const driverConfig = {
+    connectionTimeout: 30000,
+  }
+
+  // Only add encryption config if not using secure URI scheme
+  if (!hasEncryptionInUri) {
+    driverConfig.encrypted = 'ENCRYPTION_ON'
+    driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
+  }
+
+  console.log(
+    '[Neo4j] Connecting to:',
+    uri.replace(/::\/\/.*@/, '://[REDACTED]@')
+  )
+  console.log('[Neo4j] URI encryption scheme detected:', hasEncryptionInUri)
+  console.log('[Neo4j] Driver config:', driverConfig)
+
   const driver = neo4j.driver(
-    SECRETS.NEO4J_URI || 'bolt://localhost:7687/',
+    uri,
     neo4j.auth.basic(
       SECRETS.NEO4J_USER || 'neo4j',
       SECRETS.NEO4J_PASSWORD || 'letmein'
-    )
-    // {
-    //   encrypted: 'ENCRYPTION_ON',
-    //   trust: 'TRUST_ALL_CERTIFICATES',
-    //   connectionTimeout: 30000,
-    // }
+    ),
+    driverConfig
   )
 
   // Add connection verification
   try {
     await driver.verifyConnectivity()
     console.log('✅ Neo4j connection verified successfully')
-
-    // Test a simple query
-    const session = driver.session()
-    const result = await session.run('RETURN 1 as test')
-    console.log('✅ Test query successful:', result.records[0].get('test'))
-    await session.close()
   } catch (error) {
     console.error('❌ Neo4j connection failed:', error.message)
     console.error('Full error:', error)
@@ -84,8 +94,8 @@ const startServer = async () => {
 
       if (token) {
         try {
-          jwt = jwtDecode(token)
-          console.log('🚀 ~ index.js:88 ~ jwt:', jwt)
+          jwt = jwtDecode(token.replace(/^Bearer\s+/i, ''))
+          console.log('🚀 ~ index.js:98 ~ jwt:', jwt)
         } catch (error) {
           console.error('Invalid token:', error)
         }
@@ -96,7 +106,6 @@ const startServer = async () => {
         executionContext: driver,
         jwt: {
           ...jwt,
-          roles: jwt?.['https://flcadmin.netlify.app/roles'],
         },
       }
     },
@@ -118,7 +127,7 @@ const startServer = async () => {
 
         if (token) {
           try {
-            jwt = jwtDecode(token)
+            jwt = jwtDecode(token.replace(/^Bearer\s+/i, ''))
           } catch (error) {
             console.error('Invalid token:', error)
           }
@@ -127,10 +136,7 @@ const startServer = async () => {
         return {
           req,
           executionContext: driver,
-          jwt: {
-            ...jwt,
-            roles: jwt?.['https://flcadmin.netlify.app/roles'],
-          },
+          jwt,
         }
       },
     })

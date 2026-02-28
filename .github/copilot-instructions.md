@@ -140,7 +140,6 @@ Oversight → Campus → Stream → Council (weekday fellowships)
 ## Testing & Validation
 
 - **ESLint**: Configured with prettier, no relative imports; run `npm run format` to auto-fix
-- **Commit Hooks**: Commitlint enforces conventional commits via Husky
 - **TypeScript**: Used in resolvers, React frontend; check `tsconfig.json` in each service
 
 ## When Debugging Queries

@@ -131,7 +131,6 @@ const ServiceForm = ({
                       </small>
                       <ImageUpload
                         name="familyPicture"
-                        uploadPreset={import.meta.env.VITE_CLOUDINARY_SERVICES}
                         placeholder="Choose"
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="UploadfamilyPicture"

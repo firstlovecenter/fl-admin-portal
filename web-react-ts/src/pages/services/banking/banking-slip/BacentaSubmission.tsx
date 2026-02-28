@@ -99,7 +99,6 @@ const BacentaBankingSlipSubmission = () => {
                     <ImageUpload
                       label="Upload a Picture of Your Banking Slip"
                       name="bankingSlip"
-                      uploadPreset={import.meta.env.VITE_CLOUDINARY_BANKING}
                       placeholder="Choose"
                       setFieldValue={formik.setFieldValue}
                       aria-describedby="UploadBankingSlip"

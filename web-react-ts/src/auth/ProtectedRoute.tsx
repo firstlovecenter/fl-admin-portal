@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from 'contexts/AuthContext'
 import { MemberContext } from '../contexts/MemberContext'
 import { ChurchContext } from '../contexts/ChurchContext'
 import { isAuthorised } from '../global-utils'
@@ -20,7 +20,7 @@ type ProtectedRouteProps = {
 const ProtectedRoute: (props: ProtectedRouteProps) => JSX.Element = (props) => {
   const { children, roles, roleBased, placeholder } = props
   const { currentUser } = useContext(MemberContext)
-  const { isAuthenticated, isLoading } = useAuth0()
+  const { isAuthenticated, isLoading } = useAuth()
   const church = useContext(ChurchContext)
 
   const location = useLocation()

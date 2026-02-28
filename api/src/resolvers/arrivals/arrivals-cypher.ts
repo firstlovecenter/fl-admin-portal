@@ -26,15 +26,13 @@ RETURN record, bacenta.name AS bacentaName, date.date AS date
 export const getVehicleRecordWithDate = `
 MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)<-[:LEADS]-(leader:Active:Member)
 MATCH (bussing)-[:BUSSED_ON]->(date:TimeGraph)
-SET record.target = bacenta.target,
-record.momoNumber = bacenta.momoNumber, 
+SET record.momoNumber = bacenta.momoNumber, 
 record.mobileNetwork = bacenta.mobileNetwork,
 record.momoName = bacenta.momoName,
 record.outbound = bacenta.outbound,
 record.recipientCode = bacenta.recipientCode
 
 RETURN record.id AS vehicleRecordId,
-record.target AS target,
 record.attendance AS attendance, 
 record.vehicle AS vehicle,
 record.outbound AS outbound,
@@ -150,7 +148,7 @@ CREATE (bussingRecord:BussingRecord {createdAt:datetime()})
     MERGE (bussingRecord)-[:BUSSED_ON]->(serviceDate)
 
 WITH bussingRecord, bacenta, serviceDate,  date($serviceDate).week AS week
-    MATCH (leader:Member {auth_id: $jwt.sub})
+    MATCH (leader:Member {id: $jwt.userId})
     MATCH (bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
     MERGE (bussingRecord)-[:LOGGED_BY]->(leader)
 
@@ -169,7 +167,7 @@ MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId})
       vehicleRecord.arrivalTime = datetime()
 
     WITH vehicleRecord
-          MATCH (admin:Member {auth_id: $jwt.sub})
+          MATCH (admin:Member {id: $jwt.userId})
           MERGE (vehicleRecord)-[:COUNTED_BY]->(admin)
 
       RETURN vehicleRecord
@@ -218,7 +216,7 @@ vehicleRecord.momoNumber = $momoNumber,
 vehicleRecord.mobileNetwork = $mobileNetwork
 
 WITH vehicleRecord, bussingRecord
-MATCH (leader:Member {auth_id: $jwt.sub})
+MATCH (leader:Member {id: $jwt.userId})
 MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
 
 WITH vehicleRecord, bussingRecord

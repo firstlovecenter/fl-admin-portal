@@ -1,78 +1,64 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { ErrorMessage } from 'formik'
+import { useMutation } from '@apollo/client'
 import TextError from './TextError/TextError'
 import { Container } from 'react-bootstrap'
-import { MemberContext } from 'contexts/MemberContext'
 import './Formik.css'
 import { FormikComponentProps } from './formik-types'
 import { MoonLoader } from 'react-spinners'
+import { uploadToS3 } from 'utils/s3Upload'
+import { GENERATE_PRESIGNED_URL } from './ImageUploadGQL'
 
 interface ImageUploadProps extends FormikComponentProps {
-  uploadPreset?: string
-  tags?: 'facial-recognition'
   initialValue?: string
   setFieldValue: (field: string, value: any) => void
 }
 
 const MultiImageUpload = (props: ImageUploadProps) => {
-  const {
-    label,
-    name,
-    initialValue,
-    setFieldValue,
-    uploadPreset,
-    placeholder,
-    tags,
-    ...rest
-  } = props
-  const { currentUser } = useContext(MemberContext)
+  const { label, name, initialValue, setFieldValue, placeholder, ...rest } =
+    props
   const [loading, setLoading] = useState(false)
-
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
+  const [uploadError, setUploadError] = useState('')
+
+  const [generatePresignedUrl] = useMutation(GENERATE_PRESIGNED_URL)
 
   const uploadImage = async (e: any) => {
     const chosenImages = Array.prototype.slice.call(e.target.files)
     handleUploadImages(chosenImages)
   }
 
-  const handleUploadImages = async (files: any[]) => {
-    const uploaded: string[] = [...uploadedImages]
-    let iterationCount = 0
-    files.forEach(async (file: any) => {
+  const handleUploadImages = async (files: File[]) => {
+    if (!files || files.length === 0) return
+
+    try {
       setLoading(true)
+      setUploadError('') // Clear any previous errors
 
-      const date = new Date().toISOString().slice(0, 10)
-      const username = `${currentUser.firstName.toLowerCase()}-${currentUser.lastName.toLowerCase()}`
-      let filename = `${username}-${currentUser.id}/${date}_${file.name}`
-      filename = filename.replace(/\s/g, '-')
-      filename = filename.replace(/~/g, '-')
-      const data = new FormData()
-      data.append('file', file)
-      data.append('upload_preset', uploadPreset || '')
-      data.append('public_id', filename)
+      const uploaded: string[] = [...uploadedImages]
 
-      data.append('tags', tags || '')
-
-      const res = await fetch(
-        'https://api.cloudinary.com/v1_1/firstlovecenter/image/upload',
-        {
-          method: 'POST',
-          body: data,
-        }
-      )
-      if (res) {
-        iterationCount++
-        const image = await res.json()
-
-        uploaded.push(image.secure_url)
-        setUploadedImages([...uploaded])
-        setFieldValue(`${name}`, uploaded)
-
-        if (iterationCount >= files.length) {
-          setLoading(false)
-        }
+      // Upload all files to S3
+      for (const file of files) {
+        const imageUrl = await uploadToS3({
+          file,
+          generatePresignedUrl,
+        })
+        uploaded.push(imageUrl)
       }
-    })
+
+      setUploadedImages(uploaded)
+      setFieldValue(`${name}`, uploaded)
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Upload failed:', error)
+
+      // Set user-friendly error message
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to upload images'
+      setUploadError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -125,8 +111,13 @@ const MultiImageUpload = (props: ImageUploadProps) => {
 
         <p className={`btn btn-primary image px-5`}>{placeholder}</p>
       </label>
-      {props.error && <TextError>{props.error}</TextError>}
-      {!props.error ?? <ErrorMessage name={name} component={TextError} />}
+      {uploadError && <TextError>{uploadError}</TextError>}
+      {!uploadError &&
+        (props.error ? (
+          <TextError>{props.error}</TextError>
+        ) : (
+          <ErrorMessage name={name} component={TextError} />
+        ))}
     </>
   )
 }

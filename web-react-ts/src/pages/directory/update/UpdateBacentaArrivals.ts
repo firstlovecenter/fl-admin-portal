@@ -10,7 +10,6 @@ export const DISPLAY_BACENTA_BUSSING_DETAILS = gql`
         id
         firstName
       }
-      target
       sprinterTopUp
       urvanTopUp
       outbound
@@ -26,21 +25,18 @@ export const DISPLAY_BACENTA_BUSSING_DETAILS = gql`
 export const UPDATE_BACENTA_BUSSING_DETAILS = gql`
   mutation UpdateBacentaBussingDetails(
     $bacentaId: ID!
-    $target: Int!
     $sprinterTopUp: Float!
     $urvanTopUp: Float!
     $outbound: Boolean!
   ) {
     UpdateBacentaBussingDetails(
       bacentaId: $bacentaId
-      target: $target
       sprinterTopUp: $sprinterTopUp
       urvanTopUp: $urvanTopUp
       outbound: $outbound
     ) {
       id
       name
-      target
 
       outbound
       sprinterTopUp

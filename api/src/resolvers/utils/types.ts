@@ -52,7 +52,6 @@ export type Role =
   | 'arrivalsCounterStream'
   | 'arrivalsPayerCouncil'
   | 'tellerStream'
-  | 'sheepseekerStream'
   | 'fishers'
   | 'all'
 
@@ -74,7 +73,6 @@ export type ServantType =
   | 'ArrivalsAdmin'
   | 'ArrivalsCounter'
   | 'Teller'
-  | 'SheepSeeker'
   | 'ArrivalsPayer'
 export type ServantTypeLowerCase =
   | 'leader'
@@ -82,7 +80,6 @@ export type ServantTypeLowerCase =
   | 'arrivalsAdmin'
   | 'arrivalsCounter'
   | 'teller'
-  | 'sheepseeker'
   | 'arrivalsPayer'
 
 export type StreamOptions =
@@ -96,7 +93,6 @@ type TitleOptions = 'Pastor' | 'Reverend' | 'Bishop'
 export interface Member {
   id: string
   // eslint-disable-next-line camelcase
-  auth_id: string
   firstName: string
   middleName?: string
   lastName: string
@@ -120,7 +116,6 @@ export interface Member {
 export interface MemberWithoutBioData {
   id: string
   // eslint-disable-next-line camelcase
-  auth_id?: string
   firstName: string
   lastName: string
 }

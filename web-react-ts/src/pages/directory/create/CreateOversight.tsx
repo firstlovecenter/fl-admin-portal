@@ -4,7 +4,6 @@ import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_OVERSIGHT_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
-import { NEW_OVERSIGHT_LEADER } from './MakeLeaderMutations'
 import OversightForm, {
   OversightFormValues,
 } from 'pages/directory/reusable-forms/OversightForm'
@@ -23,7 +22,6 @@ const CreateOversight = () => {
     denomination: denominationId,
   }
 
-  const [NewOversightLeader] = useMutation(NEW_OVERSIGHT_LEADER)
   const [CreateOversight] = useMutation(CREATE_OVERSIGHT_MUTATION)
 
   //onSubmit receives the form state as argument
@@ -45,13 +43,6 @@ const CreateOversight = () => {
           name: values.name,
           leaderId: values.leaderId,
           denominationId: values.denomination,
-        },
-      })
-
-      await NewOversightLeader({
-        variables: {
-          leaderId: values.leaderId,
-          oversightId: res.data.CreateOversight.id,
         },
       })
 

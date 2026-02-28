@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 /* eslint-disable no-relative-import-paths/no-relative-import-paths */
-import { captureException } from '@sentry/node'
 import { QueryResult } from 'neo4j-driver'
 import { ChurchLevel, Member, neonumber, Role } from './types'
 
@@ -49,12 +48,9 @@ export const throwToSentry = (
 
   // eslint-disable-next-line no-console
   console.error(`${message} ${JSON.stringify(error)}`)
-  console.log('🚀 ~ file: utils.ts:49 ~ errorVar:', errorVar)
-  captureException(error, {
-    tags: {
-      message,
-    },
-  })
+  console.log('🚀 ~ file: utils.ts:51 ~ errorVar:', errorVar)
+  // Sentry integration removed - error logged to console only
+  console.error('Error details:', error, { message })
   throw new Error(`${message} ${errorVar}`)
 }
 
@@ -127,8 +123,19 @@ export const rearrangeCypherObject = (
 
 export const isAuth = (permittedRoles: Role[], userRoles?: Role[]) => {
   if (!permittedRoles.some((r) => userRoles?.includes(r))) {
-    throw new Error('You are not permitted to run this mutation')
+    console.error('❌ Authorization failed:', {
+      required: permittedRoles,
+      userHas: userRoles,
+    })
+    const error = new Error('You are not permitted to run this mutation')
+    error.extensions = {
+      code: 'FORBIDDEN',
+      severity: 'USER_ERROR',
+    }
+    throw error
   }
+
+  console.log('✅ Authorization passed')
 }
 
 export const nextHigherChurch = (churchLevel: ChurchLevel) => {

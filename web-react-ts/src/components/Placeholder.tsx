@@ -1,4 +1,4 @@
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from 'contexts/AuthContext'
 import { HTMLElement } from 'global-types'
 import React from 'react'
 import { Placeholder } from 'react-bootstrap'
@@ -29,7 +29,7 @@ type PlaceholderCustomProps = {
 }
 
 const PlaceholderCustom = (props: PlaceholderCustomProps) => {
-  const { isAuthenticated } = useAuth0()
+  const { isAuthenticated } = useAuth()
   const { loading, children, as, size, xs, ...rest } = props
 
   if (loading || !isAuthenticated) {

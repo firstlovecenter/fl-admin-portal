@@ -26,13 +26,12 @@ import RoleView from 'auth/RoleView'
 import ViewAll from 'components/buttons/ViewAll'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { Member } from 'global-types'
-import { permitAdmin, permitLeader, permitSheepSeeker } from 'permission-utils'
+import { permitAdmin, permitLeader } from 'permission-utils'
 import { BarLoader } from 'react-spinners'
 import { FaPhone, FaSave, FaStickyNote } from 'react-icons/fa'
 import { Whatsapp } from 'react-bootstrap-icons'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
-import { CREATE_MEMBER_ACCOUNT } from '../create/CreateMutations'
 import useModal from 'hooks/useModal'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
@@ -128,9 +127,6 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
     }
   )
   const loading = bioLoading || churchLoading || leaderLoading || adminLoading
-  const [CreateMemberAccount, { loading: createLoading }] = useMutation(
-    CREATE_MEMBER_ACCOUNT
-  )
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
   const errorToThrow: any = error
@@ -195,7 +191,6 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
         <Col className="col-auto">
           <RoleView
             roles={[
-              ...permitSheepSeeker(),
               ...permitAdmin('Governorship'),
               ...permitAdmin('Ministry'),
               ...permitLeader('Bacenta'),
@@ -305,24 +300,6 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
             memberAdmin={memberAdmin}
           />
         </PlaceholderCustom>
-        {!member?.auth_id && !loading && (
-          <Button
-            className="mb-3"
-            disabled={createLoading}
-            onClick={async () => {
-              try {
-                await CreateMemberAccount({
-                  variables: { memberId: memberId },
-                })
-                alert('Account Created Successfully')
-              } catch (error: any) {
-                throwToSentry(error)
-              }
-            }}
-          >
-            {createLoading ? 'Loading' : 'Create Member Account'}
-          </Button>
-        )}
       </div>
       {member?.stickyNote && member?.stickyNote?.trim() !== '' ? (
         <div className="my-1">
