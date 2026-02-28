@@ -1,61 +1,71 @@
 import { LazyRouteTypes } from 'global-types'
 import { permitMe } from 'permission-utils'
 import { lazy } from 'react'
-const CampusDownloadReports = lazy(() => import('./CampusDownloadReports'))
-const CouncilDownloadReports = lazy(() => import('./CouncilDownloadReports'))
+
+const DownloadFellowshipMembership = lazy(
+  () => import('./membership-list/DownloadFellowshipMembership')
+)
+const DownloadBacentaMembership = lazy(
+  () => import('./membership-list/DownloadBacentaMembership')
+)
+const DownloadGovernorshipMembership = lazy(
+  () => import('./membership-list/DownloadGovernorshipMembership')
+)
+const DownloadCouncilMembership = lazy(
+  () => import('./membership-list/DownloadCouncilMembership')
+)
+const DownloadStreamMembership = lazy(
+  () => import('./membership-list/DownloadStreamMembership')
+)
+const DownloadCampusMembership = lazy(
+  () => import('./membership-list/DownloadCampusMembership')
+)
+const DownloadOversightMembership = lazy(
+  () => import('./membership-list/DownloadOversightMembership')
+)
 const CampusFellowshipServicesThisWeek = lazy(
   () => import('./services-this-week/CampusBacentaServicesThisWeek')
 )
 
-const DownloadCouncilMembership = lazy(
-  () => import('./membership-list/DownloadCouncilMembership')
-)
-
-const PurchaseCouncilCredits = lazy(
-  () => import('./purchase-credits/CouncilPurchaseCredits')
-)
-const CouncilPurchaseHistoy = lazy(
-  () => import('./purchase-credits/CouncilPurchaseHistory')
-)
-
-const CouncilConfirmPaymentDelay = lazy(
-  () => import('./purchase-credits/CouncilConfirmPaymentDelay')
-)
-
 export const downloadReports: LazyRouteTypes[] = [
   {
-    path: '/download-reports/campus',
-    element: CampusDownloadReports,
-    roles: permitMe('Campus'),
+    path: '/download-reports/fellowship/membership',
+    element: DownloadFellowshipMembership,
+    roles: permitMe('Bacenta'),
   },
   {
-    path: '/download-reports/council',
-    element: CouncilDownloadReports,
-    roles: permitMe('Council'),
+    path: '/download-reports/bacenta/membership',
+    element: DownloadBacentaMembership,
+    roles: permitMe('Bacenta'),
   },
   {
-    path: '/dowload-reports/council/membership',
+    path: '/download-reports/governorship/membership',
+    element: DownloadGovernorshipMembership,
+    roles: permitMe('Governorship'),
+  },
+  {
+    path: '/download-reports/council/membership',
     element: DownloadCouncilMembership,
     roles: permitMe('Council'),
   },
   {
-    path: '/download-reports/council/purchase-credits',
-    element: PurchaseCouncilCredits,
-    roles: permitMe('Council'),
+    path: '/download-reports/stream/membership',
+    element: DownloadStreamMembership,
+    roles: permitMe('Stream'),
   },
   {
-    path: '/download-reports/council/purchase-history',
-    element: CouncilPurchaseHistoy,
-    roles: permitMe('Council'),
+    path: '/download-reports/campus/membership',
+    element: DownloadCampusMembership,
+    roles: permitMe('Campus'),
+  },
+  {
+    path: '/download-reports/oversight/membership',
+    element: DownloadOversightMembership,
+    roles: permitMe('Oversight'),
   },
   {
     path: '/campus/download-fellowship-services',
     element: CampusFellowshipServicesThisWeek,
     roles: permitMe('Campus'),
-  },
-  {
-    path: '/download-reports/council/confirm-payment-delay',
-    element: CouncilConfirmPaymentDelay,
-    roles: permitMe('Bacenta'),
   },
 ]

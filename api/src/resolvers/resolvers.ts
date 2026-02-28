@@ -15,8 +15,7 @@ import SontaServiceMutation from './services/rehearsal-resolver'
 import { Context } from './utils/neo4j-types'
 import MakeServantResolvers from './directory/make-servant-resolvers'
 import {
-  downloadCreditsMutations,
-  downloadCreditsQueries,
+  downloadMembershipResolvers,
 } from './download-credits/download-credits-resolvers'
 import uploadMutations from './uploads/upload-resolvers'
 
@@ -74,11 +73,27 @@ const resolvers = {
     ...mapsResolvers.Member,
   },
 
+  Fellowship: {
+    ...downloadMembershipResolvers.Fellowship,
+  },
+  Bacenta: {
+    ...downloadMembershipResolvers.Bacenta,
+  },
+  Governorship: {
+    ...downloadMembershipResolvers.Governorship,
+  },
   Council: {
-    ...downloadCreditsQueries.Council,
+    ...downloadMembershipResolvers.Council,
   },
   Stream: {
     ...arrivalsResolvers.Stream,
+    ...downloadMembershipResolvers.Stream,
+  },
+  Campus: {
+    ...downloadMembershipResolvers.Campus,
+  },
+  Oversight: {
+    ...downloadMembershipResolvers.Oversight,
   },
 
   Mutation: {
@@ -92,7 +107,6 @@ const resolvers = {
     ...SontaServiceMutation,
     ...accountsMutations,
     ...directoryCreativeArtsMutation,
-    ...downloadCreditsMutations,
     ...uploadMutations,
   },
 }

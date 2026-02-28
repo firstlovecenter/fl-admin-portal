@@ -45,18 +45,26 @@ const TrendsMenu = () => {
             }
             caption={'Quick facts about your church'}
           />
-          {['Council'].includes(churchType) && (
-            <RoleView roles={permitLeaderAdmin('Council')}>
+          {[
+            'Fellowship',
+            'Bacenta',
+            'Governorship',
+            'Council',
+            'Stream',
+            'Campus',
+            'Oversight',
+          ].includes(churchType) && (
+            <RoleView roles={permitLeaderAdmin('Bacenta')}>
               <MenuButton
-                title="Download Reports"
+                title="Download Membership"
                 color="green"
                 iconComponent={<Download />}
                 onClick={() =>
                   navigate(
-                    `/download-reports/${church.__typename.toLowerCase()}`
+                    `/download-reports/${church.__typename.toLowerCase()}/membership`
                   )
                 }
-                caption={'Download reports of your church'}
+                caption={'Download membership list as CSV'}
               />
             </RoleView>
           )}
