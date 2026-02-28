@@ -152,7 +152,7 @@ const sendNotificationSMS = async (secrets) => {
 /**
  * AWS Lambda handler for updating services not banked data
  * This function is designed to be triggered by CloudWatch Events/EventBridge
- * Schedule: Runs weekly on Monday at 23:30 UTC
+ * Schedule: Runs weekly on Tuesday at 23:30 UTC
  */
 exports.handler = async (event, context) => {
   console.log('Services not banked Lambda function invoked', { event })

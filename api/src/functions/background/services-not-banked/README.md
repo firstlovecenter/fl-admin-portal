@@ -4,7 +4,7 @@ This AWS Lambda function automatically updates the "Services Not Banked" data in
 
 ## Function Overview
 
-- **Schedule**: Runs weekly on Monday at 23:30 UTC
+- **Schedule**: Runs weekly on Tuesday at 23:30 UTC
 - **Functionality**: 
   - Connects to Neo4j database
   - Retrieves services that haven't been banked
