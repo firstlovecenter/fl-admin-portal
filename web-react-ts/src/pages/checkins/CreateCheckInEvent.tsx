@@ -20,16 +20,17 @@ const scopeLevels = [
   { value: 'BACENTA', label: 'Bacenta' },
 ]
 
-const attendanceTypes = [
-  { value: 'LEADERS_ONLY', label: 'Leaders Only' },
-  { value: 'ALL', label: 'Leaders + All Members' },
-]
-
 const allowedRoles = [
   { value: 'leaderBacenta', label: 'Bacenta Leaders' },
   { value: 'leaderCouncil', label: 'Council Leaders' },
   { value: 'leaderStream', label: 'Stream Leaders' },
   { value: 'leaderGovernorship', label: 'Governorship Leaders' },
+]
+
+const checkInMethods = [
+  { value: 'QR', label: 'QR Code Scan' },
+  { value: 'PIN', label: 'PIN Code Entry' },
+  { value: 'FACE_ID', label: 'Face ID Recognition' },
 ]
 
 const validationSchema = Yup.object({
@@ -39,10 +40,13 @@ const validationSchema = Yup.object({
   scopeId: Yup.string().required('Please select a scope'),
   startsAt: Yup.string().required('Start time is required'),
   endsAt: Yup.string().required('End time is required'),
-  attendanceType: Yup.string().required('Attendance type is required'),
   allowedCheckInRoles: Yup.array()
     .of(Yup.string())
     .min(1, 'Select at least one role for check-in'),
+  allowedCheckInMethods: Yup.array()
+    .of(Yup.string())
+    .min(1, 'Select at least one check-in method'),
+  geoFenceType: Yup.string().required('Geofence type is required'),
 })
 
 const CreateCheckInEvent = () => {
@@ -67,16 +71,16 @@ const CreateCheckInEvent = () => {
     startsAt: '',
     endsAt: '',
     gracePeriod: 30,
-    attendanceType: 'LEADERS_ONLY',
+    attendanceType: 'LEADERS_ONLY' as const,
     allowedCheckInRoles: ['leaderBacenta'],
-    // Geo-verify
-    geoVerifyEnabled: false,
+    allowedCheckInMethods: ['QR'] as string[],
+    // Geo-fence (required)
     geoFenceType: 'CIRCLE' as 'CIRCLE' | 'POLYGON',
     geoCenter: null as GeoPoint | null,
     geoRadius: 200,
     geoPolygon: [] as GeoPoint[],
-    // Selfie
-    selfieRequired: false,
+    // Auto-checkout
+    autoCheckoutMinutes: 30,
   }
 
   return (
@@ -93,6 +97,14 @@ const CreateCheckInEvent = () => {
           </Card>
         )}
 
+        <Card className="p-3 bg-info bg-opacity-10 mb-3">
+          <p className="mb-0">
+            <strong>Leaders Only:</strong> Check-in is exclusively for leaders.
+            Members must be within the geofence and within the event time window
+            before they can check in.
+          </p>
+        </Card>
+
         <Card className="p-3">
           <Formik
             initialValues={initialValues}
@@ -103,6 +115,7 @@ const CreateCheckInEvent = () => {
                   input: {
                     ...values,
                     gracePeriod: Number(values.gracePeriod),
+                    autoCheckoutMinutes: Number(values.autoCheckoutMinutes),
                   },
                 },
               }).then((res) => {
@@ -176,7 +189,7 @@ const CreateCheckInEvent = () => {
                       className="form-control"
                     />
                   </Col>
-                  <Col md={6}>
+                  <Col md={4}>
                     <label className="form-label">Grace Period (minutes)</label>
                     <Field
                       name="gracePeriod"
@@ -184,19 +197,17 @@ const CreateCheckInEvent = () => {
                       className="form-control"
                     />
                   </Col>
-                  <Col md={6}>
-                    <label className="form-label">Attendance Type</label>
+                  <Col md={4}>
+                    <label className="form-label">Auto-Checkout (minutes outside geofence)</label>
                     <Field
-                      as="select"
-                      name="attendanceType"
-                      className="form-select"
-                    >
-                      {attendanceTypes.map((type) => (
-                        <option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </Field>
+                      name="autoCheckoutMinutes"
+                      type="number"
+                      className="form-control"
+                      min={5}
+                    />
+                    <small className="text-muted">
+                      Leaders will be auto-checked out after this many minutes outside the geofence
+                    </small>
                   </Col>
                   <Col md={12}>
                     <Card className="p-3 bg-light">
@@ -229,72 +240,83 @@ const CreateCheckInEvent = () => {
                       )}
                     </Card>
                   </Col>
+
+                  {/* Check-In Methods Selection */}
+                  <Col md={12}>
+                    <Card className="p-3 bg-light">
+                      <label className="form-label fw-bold mb-2">
+                        Check-In Methods *
+                      </label>
+                      <small className="text-muted d-block mb-3">
+                        Select which verification method(s) leaders must use to check in.
+                        At least one is required.
+                      </small>
+                      <div className="d-flex flex-wrap gap-3">
+                        {checkInMethods.map((method) => (
+                          <div key={method.value} className="form-check">
+                            <Field
+                              type="checkbox"
+                              id={`method-${method.value}`}
+                              name="allowedCheckInMethods"
+                              value={method.value}
+                              className="form-check-input"
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor={`method-${method.value}`}
+                            >
+                              {method.value === 'QR' && '📷 '}
+                              {method.value === 'PIN' && '🔢 '}
+                              {method.value === 'FACE_ID' && '🧑 '}
+                              {method.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      {formik.errors.allowedCheckInMethods && (
+                        <div className="invalid-feedback d-block mt-2">
+                          {formik.errors.allowedCheckInMethods as string}
+                        </div>
+                      )}
+                    </Card>
+                  </Col>
                 </Row>
 
-                {/* Geo-Verify Section */}
+                {/* Geo-Fence Section (Required) */}
                 <div className="mt-3">
-                  <GeoFencePicker
-                    enabled={formik.values.geoVerifyEnabled}
-                    fenceType={formik.values.geoFenceType}
-                    center={formik.values.geoCenter}
-                    radius={formik.values.geoRadius}
-                    polygon={formik.values.geoPolygon}
-                    onToggle={(v) =>
-                      formik.setFieldValue('geoVerifyEnabled', v)
-                    }
-                    onFenceTypeChange={(v) =>
-                      formik.setFieldValue('geoFenceType', v)
-                    }
-                    onCenterChange={(v) =>
-                      formik.setFieldValue('geoCenter', v)
-                    }
-                    onRadiusChange={(v) =>
-                      formik.setFieldValue('geoRadius', v)
-                    }
-                    onPolygonChange={(v) =>
-                      formik.setFieldValue('geoPolygon', v)
-                    }
-                  />
-                </div>
-
-                {/* Selfie Requirement Section */}
-                <Card className="p-3 bg-light mt-3">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="form-label fw-bold mb-0">
-                      📸 Selfie Capture (Anti-Proxy)
+                  <Card className="p-3 border-primary">
+                    <label className="form-label fw-bold mb-2">
+                      📍 Geofence Configuration (Required)
                     </label>
-                    <div className="form-check form-switch">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={formik.values.selfieRequired}
-                        onChange={(e) =>
-                          formik.setFieldValue(
-                            'selfieRequired',
-                            e.target.checked
-                          )
-                        }
-                        id="selfieToggle"
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor="selfieToggle"
-                      >
-                        {formik.values.selfieRequired
-                          ? 'Required'
-                          : 'Not required'}
-                      </label>
-                    </div>
-                  </div>
-                  {formik.values.selfieRequired && (
-                    <small className="text-muted mt-2 d-block">
-                      Members will be prompted to take a selfie during check-in.
-                      If face-api.js models are available, the selfie will be
-                      automatically compared against their profile photo. Low
-                      confidence matches will be flagged for admin review.
+                    <small className="text-muted d-block mb-3">
+                      Leaders must be within this geofence to check in. They will be
+                      auto-checked out if they leave the geofence for more than{' '}
+                      {formik.values.autoCheckoutMinutes} minutes.
                     </small>
-                  )}
-                </Card>
+                    <GeoFencePicker
+                      enabled={true}
+                      fenceType={formik.values.geoFenceType}
+                      center={formik.values.geoCenter}
+                      radius={formik.values.geoRadius}
+                      polygon={formik.values.geoPolygon}
+                      onToggle={() => {
+                        /* always enabled */
+                      }}
+                      onFenceTypeChange={(v) =>
+                        formik.setFieldValue('geoFenceType', v)
+                      }
+                      onCenterChange={(v) =>
+                        formik.setFieldValue('geoCenter', v)
+                      }
+                      onRadiusChange={(v) =>
+                        formik.setFieldValue('geoRadius', v)
+                      }
+                      onPolygonChange={(v) =>
+                        formik.setFieldValue('geoPolygon', v)
+                      }
+                    />
+                  </Card>
+                </div>
 
                 <div className="mt-4">
                   <SubmitButton formik={formik}>

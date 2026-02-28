@@ -23,7 +23,7 @@ export const CREATE_CHECKIN_EVENT = gql`
       createdByRole
       totalExpected
       allowedCheckInRoles
-      geoVerifyEnabled
+      allowedCheckInMethods
       geoFenceType
       geoCenter {
         latitude
@@ -34,7 +34,7 @@ export const CREATE_CHECKIN_EVENT = gql`
         latitude
         longitude
       }
-      selfieRequired
+      autoCheckoutMinutes
     }
   }
 `
@@ -61,8 +61,9 @@ export const LIST_CHECKIN_EVENTS = gql`
       attendanceType
       gracePeriod
       allowedCheckInRoles
-      geoVerifyEnabled
-      selfieRequired
+      allowedCheckInMethods
+      geoFenceType
+      autoCheckoutMinutes
     }
   }
 `
@@ -84,13 +85,13 @@ export const GET_CHECKIN_DASHBOARD = gql`
         pinCode
         qrToken
         allowedCheckInRoles
+        allowedCheckInMethods
         createdById
         createdByName
         createdByRole
-        geoVerifyEnabled
         geoFenceType
         geoRadius
-        selfieRequired
+        autoCheckoutMinutes
       }
       checkedIn {
         memberId
@@ -117,10 +118,23 @@ export const GET_CHECKIN_DASHBOARD = gql`
         unitType
         isLate
       }
+      checkedOut {
+        memberId
+        firstName
+        lastName
+        fullName
+        roleLabel
+        unitName
+        unitType
+        checkedInAt
+        checkedOutAt
+        autoCheckedOut
+      }
       stats {
         totalExpected
         checkedInCount
         defaultedCount
+        checkedOutCount
         percentage
         flaggedCount
       }
@@ -156,10 +170,10 @@ export const CHECKIN_MEMBER = gql`
   mutation CheckInMember(
     $eventId: ID!
     $method: CheckInMethod!
-    $code: String!
+    $code: String
     $deviceFingerprint: String!
-    $latitude: Float
-    $longitude: Float
+    $latitude: Float!
+    $longitude: Float!
     $selfieBase64: String
     $faceMatchScore: Float
     $faceMatchStatus: FaceMatchStatus
@@ -190,6 +204,32 @@ export const CHECKIN_MEMBER = gql`
       faceMatchScore
       faceMatchStatus
       deviceFingerprint
+      checkedOutAt
+      autoCheckedOut
+    }
+  }
+`
+
+export const CHECKOUT_MEMBER = gql`
+  mutation CheckOutMember(
+    $eventId: ID!
+    $latitude: Float!
+    $longitude: Float!
+    $deviceFingerprint: String!
+  ) {
+    CheckOutMember(
+      eventId: $eventId
+      latitude: $latitude
+      longitude: $longitude
+      deviceFingerprint: $deviceFingerprint
+    ) {
+      id
+      eventId
+      memberId
+      memberName
+      checkedInAt
+      checkedOutAt
+      autoCheckedOut
     }
   }
 `

@@ -44,12 +44,11 @@ const CheckInEventDashboard = () => {
   // User can manage this event if they are an admin and created it
   const canManageEvent = isAdmin && event?.createdById === currentUser?.id
 
+  const allowedMethods: string[] = event?.allowedCheckInMethods ?? []
   const qrPayload =
-    event?.id && event?.qrToken ? `${event.id}:${event.qrToken}` : ''
-  const attendanceLabel =
-    event?.attendanceType === 'LEADERS_ONLY'
-      ? 'Leaders Only'
-      : 'Leaders + Members'
+    event?.id && event?.qrToken && allowedMethods.includes('QR')
+      ? `${event.id}:${event.qrToken}`
+      : ''
   const statusLabel = event?.status ?? ''
 
   const filters = useMemo(() => dashboard?.scopeFilters ?? [], [dashboard])
@@ -110,7 +109,7 @@ const CheckInEventDashboard = () => {
                     <strong>Scope:</strong> {event.scopeLevel}
                   </div>
                   <div>
-                    <strong>Attendance:</strong> {attendanceLabel}
+                    <strong>Attendance:</strong> Leaders Only
                   </div>
                   <div>
                     <strong>Status:</strong> {statusLabel}
@@ -135,25 +134,38 @@ const CheckInEventDashboard = () => {
                         .join(', ')}
                     </span>
                   </div>
-                  {/* Verification features badges */}
+                  {/* Allowed check-in methods */}
                   <div className="mt-2 d-flex flex-wrap gap-1">
-                    {event.geoVerifyEnabled && (
-                      <span className="badge bg-success">
-                        📍 Geo-Verify ({event.geoFenceType || 'CIRCLE'}
-                        {event.geoRadius ? `, ${event.geoRadius}m` : ''})
-                      </span>
+                    <strong className="me-1">Methods:</strong>
+                    {allowedMethods.includes('QR') && (
+                      <span className="badge bg-primary">QR Code</span>
                     )}
-                    {event.selfieRequired && (
+                    {allowedMethods.includes('PIN') && (
                       <span className="badge bg-warning text-dark">
-                        📸 Selfie Required
+                        PIN Code
                       </span>
                     )}
+                    {allowedMethods.includes('FACE_ID') && (
+                      <span className="badge bg-success">Face ID</span>
+                    )}
+                  </div>
+                  {/* Geofence info */}
+                  <div className="mt-2">
+                    <span className="badge bg-success">
+                      Geofence: {event.geoFenceType || 'CIRCLE'}
+                      {event.geoRadius ? ` (${event.geoRadius}m)` : ''}
+                    </span>
+                    <span className="badge bg-secondary ms-1">
+                      Auto-checkout: {event.autoCheckoutMinutes ?? 30} min
+                    </span>
                   </div>
                 </Col>
                 <Col md={6} className="text-md-end">
-                  <div>
-                    <strong>PIN:</strong> {event.pinCode}
-                  </div>
+                  {allowedMethods.includes('PIN') && event.pinCode && (
+                    <div>
+                      <strong>PIN:</strong> {event.pinCode}
+                    </div>
+                  )}
                   {qrPayload && (
                     <div className="d-flex justify-content-md-end mt-2">
                       <QRCodeCanvas value={qrPayload} size={140} />
@@ -200,7 +212,7 @@ const CheckInEventDashboard = () => {
               <Card className="p-3 h-100 border-success">
                 <Row className="align-items-center">
                   <Col>
-                    <h5 className="mb-0">✅ Checked In</h5>
+                    <h5 className="mb-0">Checked In</h5>
                     <div className="display-6 text-success">
                       {dashboard?.stats?.checkedInCount ?? 0}
                     </div>
@@ -225,7 +237,7 @@ const CheckInEventDashboard = () => {
               <Card className="p-3 h-100 border-warning">
                 <Row className="align-items-center">
                   <Col>
-                    <h5 className="mb-0">⏳ Defaulted</h5>
+                    <h5 className="mb-0">Defaulted</h5>
                     <div className="display-6 text-warning">
                       {dashboard?.stats?.defaultedCount ?? 0}
                     </div>
@@ -243,6 +255,31 @@ const CheckInEventDashboard = () => {
                 </Row>
               </Card>
             </Col>
+            <Col md={6}>
+              <Card className="p-3 h-100 border-secondary">
+                <Row className="align-items-center">
+                  <Col>
+                    <h5 className="mb-0">Checked Out</h5>
+                    <div className="display-6 text-secondary">
+                      {dashboard?.stats?.checkedOutCount ?? 0}
+                    </div>
+                  </Col>
+                  <Col xs="auto">
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        navigate(`/checkins/event/${eventId}/checked-out`)
+                      }
+                    >
+                      View List
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row className="g-3 mb-3">
             <Col md={6}>
               <Card className="p-3 h-100 border-info">
                 <Row className="align-items-center">
@@ -263,7 +300,7 @@ const CheckInEventDashboard = () => {
               <Row className="align-items-center">
                 <Col>
                   <h5 className="mb-0">
-                    🚩 Flagged Check-Ins
+                    Flagged Check-Ins
                   </h5>
                   <div className="display-6 text-danger">
                     {dashboard?.stats?.flaggedCount ?? 0}

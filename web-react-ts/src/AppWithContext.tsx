@@ -18,6 +18,7 @@ import {
 import { graphs, services } from 'pages/services/servicesRoutes'
 import { arrivals } from 'pages/arrivals/arrivalsRoutes'
 import { reconciliation } from 'pages/reconciliation/reconRoutes'
+import { checkinsRoutes } from 'pages/checkins/checkinsRoutes'
 import PageNotFound from 'pages/page-not-found/PageNotFound'
 import SetPermissions from 'auth/SetPermissions'
 import { permitMe } from 'permission-utils'
@@ -191,6 +192,7 @@ const AppWithContext = (props: AppPropsType) => {
                           ...graphs,
                           ...maps,
                           ...accountsRoutes,
+                          ...checkinsRoutes,
                         ].map((route, i) => (
                           <Route
                             key={i}

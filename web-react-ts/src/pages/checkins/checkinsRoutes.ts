@@ -28,6 +28,9 @@ const CheckInReports = lazy(() => import('pages/checkins/CheckInReports'))
 const CheckInFlaggedReview = lazy(
   () => import('pages/checkins/CheckInFlaggedReview')
 )
+const CheckInEventHistory = lazy(
+  () => import('pages/checkins/CheckInEventHistory')
+)
 
 const leaderRoles: Role[] = [
   'leaderBacenta',
@@ -102,6 +105,12 @@ export const checkinsRoutes: LazyRouteTypes[] = [
     element: MemberCheckInForm,
     placeholder: true,
     roles: ['all' as Role],
+  },
+  {
+    path: '/checkins/history',
+    element: CheckInEventHistory,
+    placeholder: true,
+    roles: [...leaderRoles, ...adminRoles],
   },
   {
     path: '/checkins/:churchType',

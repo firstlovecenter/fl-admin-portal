@@ -9,7 +9,6 @@ enum CheckInScopeLevel {
 
 enum CheckInAttendanceType {
   LEADERS_ONLY
-  ALL
 }
 
 enum CheckInStatus {
@@ -21,6 +20,7 @@ enum CheckInStatus {
 enum CheckInMethod {
   QR
   PIN
+  FACE_ID
   MANUAL
 }
 
@@ -60,12 +60,14 @@ input CreateCheckInEventInput {
   gracePeriod: Int
   attendanceType: CheckInAttendanceType!
   allowedCheckInRoles: [CheckInRoleType!]!
-  geoVerifyEnabled: Boolean
-  geoFenceType: GeoFenceType
+  """Methods available for check-in: QR, PIN, FACE_ID (at least one required)"""
+  allowedCheckInMethods: [CheckInMethod!]!
+  geoFenceType: GeoFenceType!
   geoCenter: GeoPointInput
   geoRadius: Int
   geoPolygon: [GeoPointInput!]
-  selfieRequired: Boolean
+  """Minutes outside geofence before auto-checkout (default 30)"""
+  autoCheckoutMinutes: Int
 }
 
 type GeoPoint {
@@ -86,20 +88,22 @@ type CheckInEvent {
   gracePeriod: Int!
   attendanceType: CheckInAttendanceType!
   status: CheckInStatus!
-  pinCode: String!
-  qrToken: String!
+  pinCode: String
+  qrToken: String
   createdAt: DateTime!
   createdById: ID!
   createdByName: String!
   createdByRole: String!
   totalExpected: Int!
   allowedCheckInRoles: [CheckInRoleType!]!
-  geoVerifyEnabled: Boolean!
-  geoFenceType: GeoFenceType
+  """Methods available for check-in (QR, PIN, FACE_ID)"""
+  allowedCheckInMethods: [CheckInMethod!]!
+  geoFenceType: GeoFenceType!
   geoCenter: GeoPoint
   geoRadius: Int
   geoPolygon: [GeoPoint!]
-  selfieRequired: Boolean!
+  """Minutes outside geofence before auto-checkout"""
+  autoCheckoutMinutes: Int!
 }
 
 type CheckInRecord {
@@ -118,6 +122,10 @@ type CheckInRecord {
   faceMatchScore: Float
   faceMatchStatus: FaceMatchStatus
   deviceFingerprint: String
+  """Timestamp when the member was checked out (null if still checked in)"""
+  checkedOutAt: DateTime
+  """Whether the checkout was triggered automatically by geofence monitoring"""
+  autoCheckedOut: Boolean
 }
 
 type CheckInAttendee {
@@ -134,12 +142,15 @@ type CheckInAttendee {
   geoVerified: Boolean
   faceMatchStatus: FaceMatchStatus
   selfieUrl: String
+  checkedOutAt: DateTime
+  autoCheckedOut: Boolean
 }
 
 type CheckInStats {
   totalExpected: Int!
   checkedInCount: Int!
   defaultedCount: Int!
+  checkedOutCount: Int!
   percentage: Float!
   flaggedCount: Int!
 }
@@ -160,6 +171,7 @@ type CheckInDashboard {
   event: CheckInEvent!
   checkedIn: [CheckInAttendee!]!
   defaulted: [CheckInAttendee!]!
+  checkedOut: [CheckInAttendee!]!
   stats: CheckInStats!
   scopeFilters: [CheckInScopeFilter!]!
   appliedFilterId: ID
@@ -183,15 +195,22 @@ extend type Mutation {
   CheckInMember(
     eventId: ID!
     method: CheckInMethod!
-    code: String!
+    code: String
     deviceFingerprint: String!
-    latitude: Float
-    longitude: Float
+    latitude: Float!
+    longitude: Float!
     selfieBase64: String
     faceMatchScore: Float
     faceMatchStatus: FaceMatchStatus
   ): CheckInRecord!
   ManualCheckIn(eventId: ID!, memberId: ID!, reason: String): CheckInRecord!
+  """Auto-checkout a member who has left the geofence for too long"""
+  CheckOutMember(
+    eventId: ID!
+    latitude: Float!
+    longitude: Float!
+    deviceFingerprint: String!
+  ): CheckInRecord!
   UpdateCheckInEventDuration(eventId: ID!, endsAt: DateTime!): CheckInEvent!
   PauseCheckInEvent(eventId: ID!): CheckInEvent!
   ResumeCheckInEvent(eventId: ID!): CheckInEvent!
