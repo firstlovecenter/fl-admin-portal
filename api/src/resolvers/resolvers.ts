@@ -24,6 +24,127 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
+type StreamParent = {
+  id?: string
+  meetingDay?: {
+    day: string
+    dayNumber: number
+  }
+  campus?: {
+    id: string
+    name?: string
+    streams?: Array<{
+      id: string
+      name: string
+    }>
+  }
+}
+
+type CampusParent = {
+  id?: string
+  streams?: Array<{
+    id: string
+    name: string
+  }>
+}
+
+const loadStreamMeetingDay = async (
+  source: StreamParent,
+  args: unknown,
+  context: Context
+) => {
+  if (source.meetingDay) {
+    return source.meetingDay
+  }
+
+  if (!source.id) {
+    return null
+  }
+
+  const session = context.executionContext.session()
+
+  try {
+    const result = await session.executeRead((tx) =>
+      tx.run(
+        `
+        MATCH (:Stream {id: $id})-[:MEETS_ON]->(meetingDay:ServiceDay)
+        RETURN meetingDay {.day, .dayNumber} AS meetingDay
+        `,
+        { id: source.id }
+      )
+    )
+
+    return result.records[0]?.get('meetingDay') ?? null
+  } finally {
+    await session.close()
+  }
+}
+
+const loadStreamCampus = async (
+  source: StreamParent,
+  args: unknown,
+  context: Context
+) => {
+  if (source.campus) {
+    return source.campus
+  }
+
+  if (!source.id) {
+    return null
+  }
+
+  const session = context.executionContext.session()
+
+  try {
+    const result = await session.executeRead((tx) =>
+      tx.run(
+        `
+        MATCH (campus:Campus)-[:HAS]->(:Stream {id: $id})
+        RETURN campus {.id, .name} AS campus
+        `,
+        { id: source.id }
+      )
+    )
+
+    return result.records[0]?.get('campus') ?? null
+  } finally {
+    await session.close()
+  }
+}
+
+const loadCampusStreams = async (
+  source: CampusParent,
+  args: unknown,
+  context: Context
+) => {
+  if (source.streams) {
+    return source.streams
+  }
+
+  if (!source.id) {
+    return []
+  }
+
+  const session = context.executionContext.session()
+
+  try {
+    const result = await session.executeRead((tx) =>
+      tx.run(
+        `
+        MATCH (:Campus {id: $id})-[:HAS]->(stream:Stream)
+        RETURN stream {.id, .name} AS stream
+        ORDER BY stream.name
+        `,
+        { id: source.id }
+      )
+    )
+
+    return result.records.map((record) => record.get('stream'))
+  } finally {
+    await session.close()
+  }
+}
+
 const resolvers = {
   // Resolver Parameters
   // Object: the parent result of a previous resolver
@@ -77,7 +198,12 @@ const resolvers = {
   Council: {
     ...downloadCreditsQueries.Council,
   },
+  Campus: {
+    streams: loadCampusStreams,
+  },
   Stream: {
+    meetingDay: loadStreamMeetingDay,
+    campus: loadStreamCampus,
     ...arrivalsResolvers.Stream,
   },
 
