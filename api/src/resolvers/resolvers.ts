@@ -14,9 +14,7 @@ import { mapsResolvers } from './maps/maps-resolvers'
 import SontaServiceMutation from './services/rehearsal-resolver'
 import { Context } from './utils/neo4j-types'
 import MakeServantResolvers from './directory/make-servant-resolvers'
-import {
-  downloadMembershipResolvers,
-} from './download-credits/download-credits-resolvers'
+import { downloadMembershipResolvers } from './download-credits/download-credits-resolvers'
 import uploadMutations from './uploads/upload-resolvers'
 
 const dotenv = require('dotenv')
@@ -207,6 +205,7 @@ const resolvers = {
     ...downloadMembershipResolvers.Council,
   },
   Campus: {
+    ...downloadMembershipResolvers.Campus,
     streams: loadCampusStreams,
   },
   Stream: {
@@ -214,9 +213,6 @@ const resolvers = {
     campus: loadStreamCampus,
     ...arrivalsResolvers.Stream,
     ...downloadMembershipResolvers.Stream,
-  },
-  Campus: {
-    ...downloadMembershipResolvers.Campus,
   },
   Oversight: {
     ...downloadMembershipResolvers.Oversight,
