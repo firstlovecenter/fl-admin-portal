@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { getHumanReadableDate } from 'jd-date-utils'
 import { Context } from '../utils/neo4j-types'
 import { Member } from '../utils/types'
@@ -17,7 +16,6 @@ import {
   createMember,
   activateInactiveMember,
   removeDuplicateMember,
-  matchMemberAndIMCLStatus,
   updateMemberBacenta,
   createBacenta,
   createGovernorship,
@@ -131,20 +129,6 @@ const directoryMutation = {
     isAuth([...permitMe('Bacenta'), ...permitMe('Hub')], context.jwt.roles)
 
     const session = context.executionContext.session()
-
-    const memberRes = await session.executeRead((tx) =>
-      tx.run(matchMemberAndIMCLStatus, {
-        id: args.memberId,
-      })
-    )
-
-    const member = memberRes.records[0]?.get('member').properties
-
-    if (member?.imclChecked === false) {
-      throw new Error(
-        'You cannot move this member without filling IMCL details for them'
-      )
-    }
 
     const moveRes = await session.executeWrite((tx) =>
       tx.run(updateMemberBacenta, {

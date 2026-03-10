@@ -2,11 +2,6 @@ export const matchMemberFromAuthId = `
  MATCH (member:Member  {id: $jwt.userId})
  RETURN member
 `
-
-export const matchMemberAndIMCLStatus = `
-MATCH (member:Member {id: $id}) WHERE NOT member:Lost 
-RETURN member
-`
 export const updateMemberBacenta = `
   MATCH (member:Active:Member {id: $id}) 
   MATCH (bacenta:Bacenta {id: $bacentaId})
