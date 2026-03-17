@@ -7,8 +7,7 @@ import { USER_PLACEHOLDER } from 'global-utils'
 import PlaceholderCustom from 'components/Placeholder'
 import './MemberTable.css'
 import { MemberContext } from 'contexts/MemberContext'
-import { Container } from 'react-bootstrap'
-import CloudinaryImage from 'components/CloudinaryImage'
+
 
 const MemberTable = (props) => {
   const { data, error, loading, offset, numberOfRecords } = props
@@ -25,7 +24,7 @@ const MemberTable = (props) => {
         <div className="member-grid">
           {[0, 1, 2, 3, 4, 5].map((_, index) => {
             return (
-              <Container key={index}>
+              <div key={index}>
                 <div
                   className={`d-flex align-items-center card-border ${theme}`}
                 >
@@ -49,7 +48,7 @@ const MemberTable = (props) => {
                     />
                   </div>
                 </div>
-              </Container>
+              </div>
             )
           })}
         </div>
@@ -100,7 +99,7 @@ const MemberTable = (props) => {
         <div className="member-grid">
           {data.map((soul, index) => {
             return (
-              <Container key={index}>
+              <div key={index}>
                 <div
                   className={`d-flex align-items-center card-border ${theme}`}
                   onClick={() => {
@@ -132,7 +131,7 @@ const MemberTable = (props) => {
                     )}
                   </div>
                 </div>
-              </Container>
+              </div>
             )
           })}
         </div>

@@ -5,14 +5,7 @@ import { memberFilter } from './member-filter-utils'
 import { debounce } from '../../global-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import PlaceholderCustom from 'components/Placeholder'
-import {
-  Accordion,
-  Col,
-  Container,
-  Row,
-  useAccordionButton,
-} from 'react-bootstrap'
-import { CaretDownFill } from 'react-bootstrap-icons'
+import { ChevronDown } from 'lucide-react'
 import './MembersGrid.css'
 import Filters from './Filters'
 import { Form, Formik } from 'formik'
@@ -23,6 +16,7 @@ import { permitLeaderAdmin } from 'permission-utils'
 const MembersGrid = (props) => {
   const { data, error, loading, title } = props
   const { filters } = useContext(ChurchContext)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [dimensions, setDimensions] = useState({
     height: window.innerHeight,
     width: window.innerWidth,
@@ -56,16 +50,6 @@ const MembersGrid = (props) => {
     }
   })
 
-  function CustomToggle({ children, eventKey, ...rest }) {
-    const decoratedOnClick = useAccordionButton(eventKey)
-
-    return (
-      <span {...rest} onClick={decoratedOnClick}>
-        {children}
-      </span>
-    )
-  }
-
   const initialValues = {
     memberSearch: '',
   }
@@ -87,9 +71,9 @@ const MembersGrid = (props) => {
     <>
       <div className="col col-md-9 p-0 text-center">
         <PlaceholderCustom loading={!data || loading} xs={10}>
-          <Container>
+          <div className="container mx-auto px-4">
             <h3 className="page-header">{title}</h3>
-          </Container>
+          </div>
         </PlaceholderCustom>
         <div className="justify-content-center flex-wrap flex-md-nowrap align-items-center">
           <PlaceholderCustom loading={!data || loading} element="h5">
@@ -113,9 +97,9 @@ const MembersGrid = (props) => {
           )}
         </Formik>
 
-        <Accordion>
-          <Row className="justify-content-between py-2">
-            <Col className="my-auto">
+        <div>
+          <div className="flex justify-between py-2">
+            <div className="my-auto">
               <RoleView
                 roles={[
                   ...permitLeaderAdmin('Bacenta'),
@@ -126,20 +110,23 @@ const MembersGrid = (props) => {
                   ADD NEW
                 </Link>
               </RoleView>
-            </Col>
-            <Col></Col>
-            <Col className="my-auto">
-              <CustomToggle className="just-text-btn" eventKey="0">
-                FILTERS <CaretDownFill />
-              </CustomToggle>
-            </Col>
-          </Row>
-          <Accordion.Item eventKey="0">
-            <Accordion.Body>
-              <Filters ToggleAccordion={CustomToggle} />
-            </Accordion.Body>
-          </Accordion.Item>
-        </Accordion>
+            </div>
+            <div></div>
+            <div className="my-auto">
+              <span
+                className="just-text-btn cursor-pointer flex items-center gap-1"
+                onClick={() => setFiltersOpen((prev) => !prev)}
+              >
+                FILTERS <ChevronDown className={`h-4 w-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+              </span>
+            </div>
+          </div>
+          {filtersOpen && (
+            <div className="py-2">
+              <Filters ToggleAccordion={() => setFiltersOpen(false)} />
+            </div>
+          )}
+        </div>
       </div>
       <MemberTable
         data={memberData}

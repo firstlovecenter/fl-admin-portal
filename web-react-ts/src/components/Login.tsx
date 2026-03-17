@@ -2,7 +2,6 @@ import React from 'react'
 import AuthButton from './buttons/AuthButton'
 import MobileView from './responsive-design/MobileView'
 import TabletDesktopView from './responsive-design/TabletDesktopView'
-import { Container, Navbar } from 'react-bootstrap'
 import './Login.css'
 import Slider from 'react-slick'
 import 'slick-carousel/slick/slick.css'
@@ -30,16 +29,16 @@ const Login = () => {
     <>
       <TabletDesktopView>
         <>
-          <Navbar bg="dark">
-            <Container>
+          <nav className="bg-zinc-900 py-3">
+            <div className="container mx-auto px-4">
               <img
                 src={Logo}
                 height="30"
                 className="d-inline-block align-top"
                 alt="FirstLove Logo"
               />
-            </Container>
-          </Navbar>
+            </div>
+          </nav>
           <div className="container text-center mt-5 desktop-card login-page">
             <div className="row align-self-center">
               <Slider {...settings} className="mb-5 mt-5">
@@ -76,17 +75,17 @@ const Login = () => {
       {/* <!--Mobile--> */}
       <MobileView>
         <div className="bg-wrapper">
-          <Navbar bg="dark">
-            <Container>
+          <nav className="bg-zinc-900 py-3">
+            <div className="container mx-auto px-4">
               <img
                 src={Logo}
                 height="30"
                 className="d-inline-block align-top"
                 alt="FirstLove Logo"
               />
-            </Container>
-          </Navbar>
-          <Container className="text-center mt-5 bg-content login-page">
+            </div>
+          </nav>
+          <div className="text-center mt-5 bg-content login-page">
             <Slider {...settings} className="mb-5">
               <div>
                 <Silhouette className="img-fluid mx-auto d-block logo" />
@@ -114,7 +113,7 @@ const Login = () => {
             <div className="mx-auto mt-5 ">
               <AuthButton mobileFullSize />
             </div>
-          </Container>
+          </div>
         </div>
       </MobileView>
     </>
