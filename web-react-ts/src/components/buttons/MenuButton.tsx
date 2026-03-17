@@ -2,7 +2,7 @@ import CloudinaryImage from 'components/CloudinaryImage'
 import PlaceholderCustom from 'components/Placeholder'
 import { capitalise } from 'global-utils'
 import React from 'react'
-import { Button, Col, Row } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
 import './MenuButton.css'
 
 type MenuButtonProps = {
@@ -30,10 +30,10 @@ const MenuButton = (props: MenuButtonProps) => {
       variant="secondary"
       className={`${props.color} menu-buttons`}
     >
-      <Row>
+      <div className="flex items-center w-full">
         {icon && (
-          <Col xs="auto" className="btn-left-col my-auto">
-            <PlaceholderCustom className="rounded-circle menu" as="div">
+          <div className="flex-none my-auto mr-3">
+            <PlaceholderCustom className="rounded-full menu" as="div">
               <div
                 className={
                   props.iconBg ? ` menu gradient-bg ${props.color}` : ''
@@ -52,28 +52,28 @@ const MenuButton = (props: MenuButtonProps) => {
                 {props.iconComponent && (
                   <div className={`${props.color}`}>{props.iconComponent}</div>
                 )}
-                {props.number && <div className="fw-bold">{props.number}</div>}
+                {props.number && <div className="font-bold">{props.number}</div>}
               </div>
               {props.iconCaption && (
-                <small className={`icon-caption`}>{props.iconCaption}</small>
+                <small className="icon-caption">{props.iconCaption}</small>
               )}
             </PlaceholderCustom>
-          </Col>
+          </div>
         )}
 
-        <Col className="btn-right-col">
+        <div className="flex-1 text-left">
           <PlaceholderCustom loading={!props.title} as="div" xs={10}>
             <span>{capitalise(props?.title ?? '')}</span>
           </PlaceholderCustom>
           {!props.noCaption && (
             <PlaceholderCustom loading={!props.caption} as="div" xs={10}>
-              <small className="text-secondary dark menu-caption">
+              <small className="text-muted-foreground dark menu-caption">
                 {props.caption}
               </small>
             </PlaceholderCustom>
           )}
-        </Col>
-      </Row>
+        </div>
+      </div>
     </Button>
   )
 }

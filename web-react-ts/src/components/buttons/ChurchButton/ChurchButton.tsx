@@ -4,7 +4,7 @@ import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import './ChurchButton.css'
 import useSetUserChurch from 'hooks/useSetUserChurch'
-import { Button } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
 
 type ChurchButtonProps = {
   church: {
@@ -26,7 +26,7 @@ const ChurchButton = (props: ChurchButtonProps) => {
     >
       <Link to={`/${church.__typename.toLowerCase()}/displaydetails`}>
         <Button
-          variant="gray"
+          variant="secondary"
           className="card-buttons py-2 px-3 text-center text-nowrap"
           onClick={() => {
             clickCard(church)

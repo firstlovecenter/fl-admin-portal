@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Container } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
 import Popup from './Popup'
 import { useNavigate } from 'react-router'
 
@@ -18,7 +18,7 @@ const ErrorPopup = (props: ErrorDialogProps) => {
 
   return (
     <Popup handleClose={togglePopup}>
-      <Container>
+      <div>
         {!isPoimenError && (
           <p>
             Please make sure that you have enough funds in your mobile wallet,
@@ -28,10 +28,10 @@ const ErrorPopup = (props: ErrorDialogProps) => {
 
         <code className="text-white">{errorMessage}</code>
         <Button
-          variant="danger"
+          variant="destructive"
           type="submit"
           size="lg"
-          className={`w-100 mt-2`}
+          className="w-full mt-2"
           onClick={() => {
             togglePopup()
             if (link) navigate(link)
@@ -39,7 +39,7 @@ const ErrorPopup = (props: ErrorDialogProps) => {
         >
           Okay
         </Button>
-      </Container>
+      </div>
     </Popup>
   )
 }

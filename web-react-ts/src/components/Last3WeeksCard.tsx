@@ -1,7 +1,6 @@
 import { getWeekNumber } from '@jaedag/admin-portal-types'
 import { VacationStatusOptions } from 'global-types'
 import React from 'react'
-import { Container } from 'react-bootstrap'
 
 export type Last3WeeksCardProps = {
   last3Weeks: {
@@ -44,15 +43,15 @@ const Last3WeeksCard = ({ last3Weeks }: Last3WeeksCardProps) => {
         {last3Weeks.map((week, i) => {
           if (week.banked === 'No Service')
             return (
-              <Container key={i} className="mt-4">
-                <div className="text-secondary">{`WEEK ${week.number}`}</div>
-                <p className="fw-bold">No Service</p>
-              </Container>
+              <div key={i} className="mt-4 px-4">
+                <div className="text-muted-foreground">{`WEEK ${week.number}`}</div>
+                <p className="font-bold">No Service</p>
+              </div>
             )
 
           return (
-            <Container key={i} className="mt-4">
-              <div className="text-secondary">{`WEEK ${week.number}`}</div>
+            <div key={i} className="mt-4 px-4">
+              <div className="text-muted-foreground">{`WEEK ${week.number}`}</div>
               <p className="mb-0">
                 Income Form -{' '}
                 <span
@@ -69,7 +68,7 @@ const Last3WeeksCard = ({ last3Weeks }: Last3WeeksCardProps) => {
                     >{`${week.banked ? 'Submitted' : 'Not Submitted'}`}</span>
                   </p>
                 )}
-            </Container>
+            </div>
           )
         })}
       </>

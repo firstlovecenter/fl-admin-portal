@@ -1,4 +1,5 @@
-import { Button, Spinner } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
 type SubmitButtonProps = {
   formik: any
   children?: JSX.Element
@@ -18,8 +19,8 @@ const SubmitButton = (props: SubmitButtonProps) => {
     >
       {formik.isSubmitting ? (
         <>
-          <Spinner animation="grow" size="sm" />
-          <span> Submitting</span>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <span>Submitting</span>
         </>
       ) : (
         props.children || 'Submit'

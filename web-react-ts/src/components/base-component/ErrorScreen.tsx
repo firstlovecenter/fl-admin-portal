@@ -1,7 +1,14 @@
 import { showUserReportDialog } from 'global-utils'
 import useModal from 'hooks/useModal'
 import React from 'react'
-import { Button, Card, Container, Modal } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
+import { Card, CardHeader, CardContent, CardFooter } from 'components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+} from 'components/ui/dialog'
 import './ErrorScreen.css'
 
 export interface ApolloError {
@@ -75,24 +82,24 @@ const ErrorPage = ({ error }: ErrorScreenProps) => {
 
   return (
     <>
-      <Container className="100vh text-center mt-5">
+      <div className="min-h-screen text-center mt-5">
         <p className="my-5">There seems to be an error loading data</p>
         <Card className="text-center">
-          <Card.Header className="p3-4">
+          <CardHeader>
             <h4>{error?.name}</h4>
-          </Card.Header>
-          <Card.Body className="py-4">
+          </CardHeader>
+          <CardContent className="py-4">
             {graphQLErrors?.length > 0 && (
               <>
                 {graphQLErrors.map(
                   ({ message, locations, path, extensions }) => (
                     <>
-                      <p className="fw-bold text-danger">{`code: ${extensions.code}`}</p>
+                      <p className="font-bold text-destructive">{`code: ${extensions.code}`}</p>
                       <p>{`Location: ${JSON.stringify(locations)}`}</p>
                       <p className="mb-3">{`Path: ${JSON.stringify(path)}`}</p>
-                      <Card.Text className="text-truncate truncate-2-lines">
+                      <p className="truncate">
                         {`[GraphQL error]: Message: ${message}`}
-                      </Card.Text>
+                      </p>
                     </>
                   )
                 )}
@@ -103,62 +110,64 @@ const ErrorPage = ({ error }: ErrorScreenProps) => {
               <>
                 {networkError.result?.errors?.map((error) => (
                   <>
-                    <Card.Text className="fw-bold text-danger">{`code: ${error.extensions.code}`}</Card.Text>
-                    <Card.Text className="text-truncate">
+                    <p className="font-bold text-destructive">{`code: ${error.extensions.code}`}</p>
+                    <p className="truncate">
                       {`[Network error]: ${error?.message}`}
-                    </Card.Text>
+                    </p>
                   </>
                 ))}
                 {!networkError.result?.errors?.length && (
                   <>
-                    <Card.Text className="fw-bold text-danger">{`code: ${networkError?.statusCode}`}</Card.Text>
-                    <Card.Text className="text-truncate">
+                    <p className="font-bold text-destructive">{`code: ${networkError?.statusCode}`}</p>
+                    <p className="truncate">
                       {`[Network error]: ${networkError?.result?.errorMessage}`}
-                    </Card.Text>
+                    </p>
                   </>
                 )}
               </>
             )}
-            <Modal show={show} onHide={handleClose} centered scrollable>
-              <Modal.Header closeButton>{error?.name}</Modal.Header>
-              <Modal.Body>
-                <p className="text-info">{JSON.stringify(error)}</p>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="primary" onClick={handleClose}>
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </Card.Body>
+            <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
+              <DialogContent>
+                <DialogHeader>
+                  <h2 className="text-lg font-semibold">{error?.name}</h2>
+                </DialogHeader>
+                <p className="text-blue-400 text-sm">{JSON.stringify(error)}</p>
+                <DialogFooter>
+                  <Button variant="default" onClick={handleClose}>
+                    Close
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
 
-          <Card.Footer>
-            <Container>
-              <p className="fw-bold pb-2">
-                Click the <span className="text-danger">Show Details</span>{' '}
+          <CardFooter className="flex-col">
+            <div className="w-full">
+              <p className="font-bold pb-2">
+                Click the <span className="text-destructive">Show Details</span>{' '}
                 Button and take a screenshot to provide more details to the
                 support team
               </p>
-              <Button variant="danger" onClick={handleShow}>
+              <Button variant="destructive" onClick={handleShow}>
                 Show Details
               </Button>
               <div>
                 <Button
-                  variant="outline-warning"
-                  className="my-2"
+                  variant="outline"
+                  className="my-2 text-yellow-500 border-yellow-500"
                   onClick={showUserReportDialog}
                 >
                   Send Crash Report
                 </Button>
               </div>
-            </Container>
-          </Card.Footer>
+            </div>
+          </CardFooter>
         </Card>
 
         <Button className="mt-5" onClick={() => window.location.reload()}>
           Reload Page
         </Button>
-      </Container>
+      </div>
     </>
   )
 }
