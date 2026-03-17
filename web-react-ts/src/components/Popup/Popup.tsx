@@ -1,5 +1,8 @@
 import React from 'react'
-import './Popup.css'
+import {
+  Dialog,
+  DialogContent,
+} from 'components/ui/dialog'
 
 type PopupProps = {
   children: React.ReactNode
@@ -8,14 +11,11 @@ type PopupProps = {
 
 const Popup = (props: PopupProps) => {
   return (
-    <div className="popup-box">
-      <div className="box">
-        <span className="close-icon" onClick={props.handleClose}>
-          x
-        </span>
+    <Dialog open onOpenChange={(open) => { if (!open) props.handleClose() }}>
+      <DialogContent>
         {props.children}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 

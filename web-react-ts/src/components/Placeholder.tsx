@@ -1,7 +1,7 @@
 import { useAuth } from 'contexts/AuthContext'
 import { HTMLElement } from 'global-types'
 import React from 'react'
-import { Placeholder } from 'react-bootstrap'
+import { Skeleton } from 'components/ui/skeleton'
 import '../pages/services/graphs/Graphs.css'
 
 type PlaceholderCustomProps = {
@@ -30,27 +30,13 @@ type PlaceholderCustomProps = {
 
 const PlaceholderCustom = (props: PlaceholderCustomProps) => {
   const { isAuthenticated } = useAuth()
-  const { loading, children, as, size, xs, ...rest } = props
+  const { loading, children, className } = props
 
   if (loading || !isAuthenticated) {
-    if (props.button) {
-      return (
-        <Placeholder.Button
-          aria-hidden="true"
-          className={props.className}
-          variant={props.variant}
-          animation="glow"
-          {...rest}
-        />
-      )
-    }
-
     return (
-      <>
-        <Placeholder as={as ?? 'div'} animation="glow" {...rest}>
-          <Placeholder xs={xs ?? 8} size={size ?? 'lg'} bg="dark" />
-        </Placeholder>
-      </>
+      <Skeleton
+        className={`h-6 w-full rounded ${className ?? ''}`}
+      />
     )
   }
 

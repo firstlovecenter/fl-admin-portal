@@ -6,6 +6,7 @@ import './Formik.css'
 import PlaceholderCustom from 'components/Placeholder'
 import { useAuth } from 'contexts/AuthContext'
 import { FormikComponentProps } from './formik-types'
+import { Label } from 'components/ui/label'
 
 interface InputProps extends FormikComponentProps {
   type?: 'date' | 'time'
@@ -19,9 +20,9 @@ function Input(props: InputProps) {
     <div>
       {label ? (
         <PlaceholderCustom loading={!isAuthenticated}>
-          <label className="label" htmlFor={name}>
+          <Label htmlFor={name} className="label">
             {label}
-          </label>
+          </Label>
         </PlaceholderCustom>
       ) : null}
       <Field id={name} name={name} className="form-control" {...rest} />

@@ -1,7 +1,6 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 import './ViewAll.css'
-import { Button } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
 
 const ViewAll = ({ to }: { to: string }) => {
   return (

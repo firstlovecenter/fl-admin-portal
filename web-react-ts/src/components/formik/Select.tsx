@@ -4,6 +4,7 @@ import TextError from './TextError/TextError'
 import PlaceholderCustom from 'components/Placeholder'
 import { useAuth } from 'contexts/AuthContext'
 import { FormikSelectProps } from './formik-types'
+import { Label } from 'components/ui/label'
 
 function Select(props: FormikSelectProps) {
   const { label, name, options, defaultOption, ...rest } = props
@@ -13,7 +14,9 @@ function Select(props: FormikSelectProps) {
     <div>
       {label ? (
         <PlaceholderCustom loading={!isAuthenticated}>
-          <label className="label">{label}</label>
+          <Label htmlFor={name} className="label">
+            {label}
+          </Label>
         </PlaceholderCustom>
       ) : null}
       <Field

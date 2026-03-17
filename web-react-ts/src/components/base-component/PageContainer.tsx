@@ -1,8 +1,5 @@
-import React from 'react'
-import { Container } from 'react-bootstrap'
-
 const PageContainer = ({ children }: { children: JSX.Element }) => {
-  return <Container className="page-container">{children}</Container>
+  return <div className="page-container container mx-auto">{children}</div>
 }
 
 export default PageContainer
