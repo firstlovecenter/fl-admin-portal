@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Formik, Form, FormikHelpers } from 'formik'
 import ChurchList from './DisplayChurchList'
 import './ChurchSearch.css'
-import { Container } from 'react-bootstrap'
 import Input from './formik/Input'
 import { Church, ChurchLevel, HigherChurch } from 'global-types'
 
@@ -48,7 +47,7 @@ const ChurchSearch = (props: ChurchSearchProps) => {
 
   return (
     <div>
-      <Container className="mt-3">
+      <div className="mt-3 px-4">
         <Formik initialValues={initialValues} onSubmit={onSubmit}>
           {() => (
             <Form>
@@ -63,7 +62,7 @@ const ChurchSearch = (props: ChurchSearchProps) => {
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
 
       <ChurchList
         data={churchData as unknown as HigherChurch[]}

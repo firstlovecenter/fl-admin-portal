@@ -7,10 +7,12 @@ import BacentaIcon from 'assets/icons/BacentaIcon'
 import GovernorshipIcon from 'assets/icons/GovernorshipIcon'
 import CouncilIcon from 'assets/icons/CouncilIcon'
 import StreamIcon from 'assets/icons/StreamIcon'
-import { Badge, Button, Card } from 'react-bootstrap'
+import { Badge } from 'components/ui/badge'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardFooter, CardTitle } from 'components/ui/card'
 import '../../components/members-grids/MemberTable.css'
 import './MemberDisplayCard.css'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { USER_PLACEHOLDER } from 'global-utils'
 import { ChurchLevel, Member, MemberWithoutBioData } from 'global-types'
@@ -67,7 +69,6 @@ export const Icons = ({
           className={`img-search rounded`}
         />
         <Badge
-          pill
           className={`position-absolute ${
             contact ? 'search-badge-top' : 'search-badge'
           } ${member.__typename.toLowerCase()}`}
@@ -145,7 +146,7 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
 
   return (
     <Card className="mobile-search-card">
-      <Card.Body {...rest} onClick={props.onClick || clickFunction}>
+      <CardContent {...rest} onClick={props.onClick || clickFunction}>
         <div className="d-flex align-items-center">
           <div className="flex-shrink-0">
             <Icons
@@ -156,7 +157,7 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
             />
           </div>
           <div className="flex-grow-1 ms-3">
-            <Card.Title>{name}</Card.Title>
+            <CardTitle>{name}</CardTitle>
             <div className={`text-secondary mb-0 `}>
               {details?.length &&
                 details.map((detail, i) => (
@@ -169,13 +170,13 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
             <div>{children}</div>
           </div>
         </div>
-      </Card.Body>
+      </CardContent>
       {props.contact && (
-        <Card.Footer>
+        <CardFooter>
           <div className="d-flex align-items-center">
             <a href={`tel:${leader?.phoneNumber}`}>
-              <Button variant="primary">
-                <TelephoneFill /> Call
+              <Button variant="default">
+                <Phone /> Call
               </Button>
             </a>
             <a
@@ -183,11 +184,11 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
               className="ms-3"
             >
               <Button variant="success">
-                <Whatsapp /> WhatsApp
+                <MessageCircle /> WhatsApp
               </Button>
             </a>
           </div>
-        </Card.Footer>
+        </CardFooter>
       )}
     </Card>
   )

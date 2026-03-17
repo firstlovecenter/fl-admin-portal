@@ -8,7 +8,7 @@ import React, { useContext } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Formik, Form, FormikHelpers } from 'formik'
 import { GET_CAMPUS_BASONTAS } from 'queries/ListQueries'
-import { Col, Row, Button } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
 import './Filters.css'
 import CheckboxGroup from 'components/formik/CheckboxGroup'
 import CheckboxWithQuery from 'components/formik/CheckboxWithQuery'
@@ -69,24 +69,24 @@ const Filters = ({
       {(formik) => (
         <Form>
           <div className="form-group ">
-            <Row xs={1} md={2}>
+            <div className="flex flex-wrap gap-4">
               {/* <!-- Basic Info Div --> */}
-              <Col className="filter-col">
+              <div className="filter-col">
                 <CheckboxGroup
                   label="Gender"
                   name="gender"
                   options={GENDER_OPTIONS}
                 />
-              </Col>
-              <Col className="filter-col">
+              </div>
+              <div className="filter-col">
                 <CheckboxGroup
                   label="Marital Status"
                   name="maritalStatus"
                   options={MARITAL_STATUS_OPTIONS}
                 />
-              </Col>
+              </div>
 
-              <Col className="filter-col">
+              <div className="filter-col">
                 <CheckboxWithQuery
                   name="basonta"
                   modifier="filter"
@@ -98,25 +98,25 @@ const Filters = ({
                   nestedDataset={['campuses', 'basontas']}
                   label="Select a Ministry"
                 />
-              </Col>
+              </div>
 
-              <Col className="filter-col">
+              <div className="filter-col">
                 <CheckboxGroup
                   label="Leader Rank"
                   name="leaderRank"
                   options={LEADER_OPTIONS}
                 />
-              </Col>
-              <Col className="filter-col">
+              </div>
+              <div className="filter-col">
                 <CheckboxGroup
                   label="Leader Title"
                   name="leaderTitle"
                   options={TITLE_OPTIONS}
                 />
-              </Col>
-            </Row>
+              </div>
+            </div>
             <Button
-              variant="primary"
+              variant="default"
               type="reset"
               className={`btn-secondary px-5`}
               onClick={() => {

@@ -25,9 +25,10 @@ import {
   throwToSentry,
 } from '../../global-utils'
 import Breadcrumb from './Breadcrumb'
-import { Button, Col, Container, Modal, Row } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from 'components/ui/dialog'
 import PlaceholderCustom from 'components/Placeholder'
-import { Geo, PencilSquare } from 'react-bootstrap-icons'
+import { MapPin, Pencil } from 'lucide-react'
 import ViewAll from 'components/buttons/ViewAll'
 import { permitAdmin } from 'permission-utils'
 import useSetUserChurch from 'hooks/useSetUserChurch'
@@ -236,7 +237,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
       <div className="py-2 top-heading title-bar">
         <Breadcrumb breadcrumb={props.breadcrumb} />
         <hr />
-        <Container>
+        <div>
           <PlaceholderCustom as="h3" loading={!props.name} xs={12}>
             <h3 className="mt-3 font-weight-bold">
               {`${props.name} ${props.churchType}`}
@@ -251,8 +252,8 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
 
           {needsAdmin && (
             <RoleView roles={roles}>
-              <Row className="g-0 d-flex align-items-center">
-                <Col className="col-auto">
+              <div className="g-0 d-flex align-items-center">
+                <div className="col-auto">
                   {!!props.admin && (
                     <MemberAvatarWithName
                       member={props.admin}
@@ -262,17 +263,17 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                       }}
                     />
                   )}
-                </Col>
-                <Col>
+                </div>
+                <div>
                   <Button className="p-1 small ms-2" onClick={handleShow}>
-                    <PencilSquare /> Change Admin
+                    <Pencil /> Change Admin
                   </Button>
-                </Col>
-              </Row>
+                </div>
+              </div>
             </RoleView>
           )}
-        </Container>
-        <Modal show={show} onHide={handleClose} centered>
+        </div>
+        <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }}>
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
@@ -280,12 +281,12 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           >
             {(formik) => (
               <Form>
-                <Modal.Header closeButton>
+                <DialogHeader>
                   Change {`${props.churchType}`} Admin
-                </Modal.Header>
-                <Modal.Body>
-                  <Row className="form-row">
-                    <Col>
+                </DialogHeader>
+                <DialogContent>
+                  <div className="form-row">
+                    <div>
                       <SearchMember
                         name="adminSelect"
                         initialValue={initialValues?.adminName}
@@ -294,21 +295,21 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                         aria-describedby="Member Search"
                         error={formik.errors.adminSelect}
                       />
-                    </Col>
-                  </Row>
-                </Modal.Body>
-                <Modal.Footer>
+                    </div>
+                  </div>
+                </DialogContent>
+                <DialogFooter>
                   <SubmitButton formik={formik} />
-                  <Button variant="primary" onClick={handleClose}>
+                  <Button variant="default" onClick={handleClose}>
                     Close
                   </Button>
-                </Modal.Footer>
+                </DialogFooter>
               </Form>
             )}
           </Formik>
-        </Modal>
+        </Dialog>
       </div>
-      <Container>
+      <div>
         <LeaderAvatar leader={props.leader} leaderTitle={props.leaderTitle} />
         {/* Bacenta Admin and Deputy Leader display */}
         {props.churchType === 'Bacenta' && (
@@ -334,9 +335,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           </div>
         )}
         {props.details?.length && (
-          <Row>
+          <div>
             {props.details.map((detail, i) => (
-              <Col key={i} xs={detail.width ?? 6}>
+              <div key={i}>
                 <DetailsCard
                   onClick={() => navigate(detail.link)}
                   heading={detail.title}
@@ -355,9 +356,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                       : ''
                   }
                 />
-              </Col>
+              </div>
             ))}
-          </Row>
+          </div>
         )}
 
         {props.churchType === 'Bacenta' &&
@@ -395,7 +396,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             button="button"
           >
             <Button
-              variant="brand"
+              variant="default"
               size="lg"
               onClick={() => {
                 setUserChurch({
@@ -421,7 +422,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               button="button"
             >
               <Button
-                variant="brand"
+                variant="default"
                 size="lg"
                 onClick={() => {
                   setUserChurch({
@@ -439,26 +440,26 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           )}
         </div>
         {props?.location && props.location?.latitude !== 0 && (
-          <Container className="mt-4 text-center">
+          <div className="mt-4 text-center">
             <h3>LOCATION</h3>
             <p>Click here for directions</p>
             <a
               className="btn p-3"
               href={`https://www.google.com/maps/search/?api=1&query=${props?.location?.latitude}%2C${props?.location?.longitude}`}
             >
-              <Geo size="75" />
+              <MapPin size={75} />
             </a>
-          </Container>
+          </div>
         )}
 
         {props.last3Weeks && props.details[2].number === 'Active' && (
           <Last3WeeksCard last3Weeks={props.last3Weeks} />
         )}
-      </Container>
+      </div>
 
       {props.subChurch && props.buttons?.length ? (
         <>
-          <Container>
+          <div>
             <hr className="hr-line" />
 
             <div className="row justify-content-between">
@@ -474,7 +475,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 </Link>
               </div>
             </div>
-          </Container>
+          </div>
 
           <div className="container mb-4 card-button-row">
             <table>
@@ -497,7 +498,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         </>
       ) : null}
       {props.subChurch && !props.buttons?.length ? (
-        <Container className="d-grid gap-2 mt-2">
+        <div className="d-grid gap-2 mt-2">
           <RoleView roles={props.editPermitted}>
             <PlaceholderCustom
               loading={props.loading}
@@ -507,7 +508,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             >
               <Button
                 className="btn-graphs"
-                variant={currentTheme as 'dark' | 'light'}
+                variant="default"
                 onClick={() =>
                   navigate(
                     `/${props.subChurch?.toLowerCase()}/add${props.subChurch?.toLowerCase()}`
@@ -518,22 +519,22 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               </Button>
             </PlaceholderCustom>
           </RoleView>
-        </Container>
+        </div>
       ) : null}
 
       {props.history?.length && (
-        <Container className="mt-5">
-          <Row>
-            <Col>
+        <div className="mt-5">
+          <div>
+            <div>
               <h3 className="mb-0">CHURCH HISTORY</h3>
-            </Col>
-            <Col className="col-auto">
+            </div>
+            <div className="col-auto">
               <ViewAll to={`/${props.churchType.toLowerCase()}/history`} />
-            </Col>
-          </Row>
+            </div>
+          </div>
 
           <Timeline record={props.history} modifier="church" limit={5} />
-        </Container>
+        </div>
       )}
     </>
   )

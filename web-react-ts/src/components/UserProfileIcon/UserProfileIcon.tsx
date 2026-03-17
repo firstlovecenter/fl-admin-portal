@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import { useAuth } from 'contexts/AuthContext'
 import './UserProfileIcon.css'
 import { MemberContext } from '../../contexts/MemberContext.js'
-import { Spinner } from 'react-bootstrap'
+import { Loader2 } from 'lucide-react'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { USER_PLACEHOLDER } from 'global-utils'
 import useClickCard from 'hooks/useClickCard'
@@ -33,7 +33,7 @@ function UserProfileIcon() {
       )}
       {isAuthenticated && !currentUser.email && (
         <div className="text-secondary text-center">
-          <Spinner animation="grow" />
+          <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       )}
     </>

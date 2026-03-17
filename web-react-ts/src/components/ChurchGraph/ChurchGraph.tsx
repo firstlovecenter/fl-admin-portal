@@ -3,7 +3,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { ChurchLevelLower } from 'global-types'
 import React, { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { Container } from 'react-bootstrap'
 import {
   ResponsiveContainer,
   XAxis,
@@ -166,9 +165,9 @@ const ChurchGraph = (props: ChurchGraphProps) => {
           </PlaceholderCustom>
         )}
         {loading && (
-          <Container className="chart-loader d-flex align-items-center justify-content-center">
+          <div className="chart-loader d-flex align-items-center justify-content-center">
             <ScaleLoader color="gray" className="mt-5" />
-          </Container>
+          </div>
         )}
         {!loading && (
           <ResponsiveContainer width="100%" height={330}>
