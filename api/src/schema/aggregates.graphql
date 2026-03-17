@@ -56,7 +56,11 @@ extend type Governorship {
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
+      RETURN aggregate
+      UNION
+      MATCH (this)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
+      WHERE aggregate.year = date().year OR aggregate.year = date().year -1
+      RETURN aggregate
       """
       columnName: "aggregate"
     )
@@ -68,7 +72,11 @@ extend type Governorship {
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
+      RETURN aggregate
+      UNION
+      MATCH (this)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
+      WHERE aggregate.year = date().year OR aggregate.year = date().year -1
+      RETURN aggregate
       """
       columnName: "aggregate"
     )
