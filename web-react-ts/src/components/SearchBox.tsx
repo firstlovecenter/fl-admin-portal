@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { Button, InputGroup, Form as bsForm } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
 import { SearchContext } from 'contexts/MemberContext'
 import './SearchBox.css'
 import { useNavigate } from 'react-router-dom'
@@ -27,10 +27,10 @@ const SearchBox = ({ handleShow }: { handleShow: () => void }) => {
     <Formik initialValues={initialValues} onSubmit={onSubmit}>
       {(formik) => (
         <Form>
-          <InputGroup className="mt-4">
-            <bsForm.Control
+          <div className="flex mt-4">
+            <input
               name="searchKeyVal"
-              className="nav-search-box"
+              className="nav-search-box flex-1 rounded-l-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               placeholder="Search for anything..."
               aria-label="Search for anything..."
               aria-describedby="submit-search"
@@ -38,10 +38,10 @@ const SearchBox = ({ handleShow }: { handleShow: () => void }) => {
                 formik.setFieldValue('searchKeyVal', e.target.value)
               }
             />
-            <Button id="submit-search" variant="success" type="submit">
+            <Button id="submit-search" variant="success" type="submit" className="rounded-l-none">
               Search
             </Button>
-          </InputGroup>
+          </div>
         </Form>
       )}
     </Formik>

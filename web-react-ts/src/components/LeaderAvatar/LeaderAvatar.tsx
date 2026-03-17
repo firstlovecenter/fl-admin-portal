@@ -3,7 +3,6 @@ import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberWithoutBioData } from 'global-types'
 import React, { useContext } from 'react'
-import { Col, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
 const LeaderAvatar = ({
@@ -25,8 +24,8 @@ const LeaderAvatar = ({
         clickCard(leader)
       }}
     >
-      <Row className="my-2">
-        <Col xs="auto">
+      <div className="flex items-center my-2 gap-2">
+        <div className="flex-none">
           <PlaceholderCustom
             className="img-search-placeholder"
             as="div"
@@ -38,20 +37,20 @@ const LeaderAvatar = ({
               className="img-search-placeholder"
             />
           </PlaceholderCustom>
-        </Col>
-        <Col>
+        </div>
+        <div className="flex-1">
           <PlaceholderCustom loading={isLoading} as="span" xs={12}>
-            <span className={`card-heading text-secondary text-truncate`}>
+            <span className="card-heading text-muted-foreground truncate">
               {leaderTitle}
             </span>
           </PlaceholderCustom>
           <PlaceholderCustom loading={isLoading} as="h2" xs={12}>
-            <div className="d-flex justify-content-between">
-              <h2 className={`card-detail`}>{leader?.nameWithTitle}</h2>
+            <div className="flex justify-between">
+              <h2 className="card-detail">{leader?.nameWithTitle}</h2>
             </div>
           </PlaceholderCustom>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </Link>
   )
 }

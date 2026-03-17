@@ -1,7 +1,7 @@
 import { Church, ChurchLevel } from 'global-types'
 import { plural } from 'global-utils'
 import React from 'react'
-import { Container, Card, Row, Col } from 'react-bootstrap'
+import { Card, CardContent } from 'components/ui/card'
 import { Link } from 'react-router-dom'
 import './AllChurchesSummary.css'
 
@@ -17,40 +17,40 @@ const AllChurchesSummary = (props: AllChurchesSummaryProps) => {
   const { church, churchType, numberOfChurchesBelow, route } = props
 
   return (
-    <Container className="mt-4">
-      <Row>
-        <Col>
+    <div className="mt-4 px-4">
+      <div className="flex gap-2">
+        <div className="flex-1">
           <Card className="mb-2 card-border">
-            <Card.Body className="summary-padding">
-              <Row className="text-muted text-small">{plural(churchType)}</Row>
-              <Row className="number">{numberOfChurchesBelow}</Row>
-            </Card.Body>
+            <CardContent className="summary-padding">
+              <div className="text-muted-foreground text-sm">{plural(churchType)}</div>
+              <div className="number">{numberOfChurchesBelow}</div>
+            </CardContent>
           </Card>
-        </Col>
-        <Col>
+        </div>
+        <div className="flex-1">
           <Card className="mb-2 card-border">
             <Link to={`/${route}/members`}>
-              <Card.Body className="summary-padding">
-                <Row className="text-muted text-small">Members</Row>
-                <Row className="number">{props?.memberCount}</Row>
-              </Card.Body>
+              <CardContent className="summary-padding">
+                <div className="text-muted-foreground text-sm">Members</div>
+                <div className="number">{props?.memberCount}</div>
+              </CardContent>
             </Link>
           </Card>
-        </Col>
+        </div>
         {churchType === 'Bacenta' || churchType === 'IC Bacenta' ? (
-          <Col>
+          <div className="flex-1">
             <Card className="mb-2 card-border">
               <Link to="/hub/displayall">
-                <Card.Body className="summary-padding">
-                  <Row className="text-muted text-small">Hubs</Row>
-                  <Row className="number">{church?.hubs?.length}</Row>
-                </Card.Body>
+                <CardContent className="summary-padding">
+                  <div className="text-muted-foreground text-sm">Hubs</div>
+                  <div className="number">{church?.hubs?.length}</div>
+                </CardContent>
               </Link>
             </Card>
-          </Col>
+          </div>
         ) : null}
-      </Row>
-    </Container>
+      </div>
+    </div>
   )
 }
 

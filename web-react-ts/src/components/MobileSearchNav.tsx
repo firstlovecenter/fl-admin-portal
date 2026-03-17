@@ -2,7 +2,8 @@ import React, { useContext, useState } from 'react'
 import { Formik, Form, FormikHelpers } from 'formik'
 import { SearchContext } from '../contexts/MemberContext'
 import './SearchBox.css'
-import { Button, InputGroup, Spinner, Form as bsForm } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
 
 const MobileSearchNav = () => {
   const { searchKey, setSearchKey } = useContext(SearchContext)
@@ -25,10 +26,10 @@ const MobileSearchNav = () => {
     <Formik initialValues={initialValues} onSubmit={onSubmit}>
       {(formik) => (
         <Form>
-          <InputGroup className="mt-4">
-            <bsForm.Control
+          <div className="flex mt-4">
+            <input
               name="ghostKey"
-              className="nav-search-box"
+              className="nav-search-box flex-1 rounded-l-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               placeholder="Search for anything..."
               aria-label="Search for anything..."
               aria-describedby="submit-search"
@@ -40,10 +41,11 @@ const MobileSearchNav = () => {
               variant="success"
               type="submit"
               disabled={formik.isSubmitting}
+              className="rounded-l-none"
             >
-              {formik.isSubmitting ? <Spinner /> : 'Search'}
+              {formik.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Search'}
             </Button>
-          </InputGroup>
+          </div>
         </Form>
       )}
     </Formik>

@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { Button } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
 import { useNavigate } from 'react-router'
 import { ChurchContext } from '../contexts/ChurchContext'
 import { capitalise } from '../global-utils'
@@ -125,7 +125,7 @@ const MemberRoleList = ({
       <small className="mb-5">
         <Button
           onClick={() => navigate('/dashboard/servants')}
-          variant="brand"
+        variant="default"
           className="mb-3 px-5"
         >
           View Graphs

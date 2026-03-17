@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { ErrorMessage } from 'formik'
 import { useMutation } from '@apollo/client'
 import TextError from './TextError/TextError'
-import { Container } from 'react-bootstrap'
 import './Formik.css'
 import { FormikComponentProps } from './formik-types'
 import { MoonLoader } from 'react-spinners'
@@ -63,20 +62,20 @@ const ImageUpload = (props: ImageUploadProps) => {
         </label>
       ) : null}
       {loading && (
-        <Container className="my-3 img-container d-flex justify-content-center align-items-center border">
+        <div className="my-3 img-container d-flex justify-content-center align-items-center border">
           <MoonLoader color="gray" />
-        </Container>
+        </div>
       )}
       {(image || initialValue) && !loading && (
-        <Container className="text-center img-container pb-2">
+        <div className="text-center img-container pb-2">
           <CloudinaryImage
             src={image || initialValue || ''}
             style={{ borderRadius: '8px' }}
           />
-        </Container>
+        </div>
       )}
       {!image && !initialValue && !loading && (
-        <Container className="text-center img-container border my-3"></Container>
+        <div className="text-center img-container border my-3"></div>
       )}
       <label className="w-100 text-center">
         <input

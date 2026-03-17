@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { ErrorMessage } from 'formik'
 import { useMutation } from '@apollo/client'
 import TextError from './TextError/TextError'
-import { Container } from 'react-bootstrap'
 import './Formik.css'
 import { FormikComponentProps } from './formik-types'
 import { MoonLoader } from 'react-spinners'
@@ -69,9 +68,9 @@ const MultiImageUpload = (props: ImageUploadProps) => {
         </label>
       ) : null}
       {loading && (
-        <Container className="my-3 img-container d-flex justify-content-center align-items-center border">
+        <div className="my-3 img-container d-flex justify-content-center align-items-center border">
           <MoonLoader color="gray" />
-        </Container>
+        </div>
       )}
 
       <div className="container mb-4 card-button-row vw-75">
@@ -84,13 +83,13 @@ const MultiImageUpload = (props: ImageUploadProps) => {
               {uploadedImages?.map((image, index) => (
                 <td className="col-auto" key={index}>
                   {(image || initialValue) && !loading && (
-                    <Container className="d-flex align-items-center justify-content-center text-center img-container">
+                    <div className="d-flex align-items-center justify-content-center text-center img-container">
                       <img
                         src={image || initialValue}
                         className="img-preview"
                         alt="on stage attendance"
                       />
-                    </Container>
+                    </div>
                   )}
                 </td>
               ))}

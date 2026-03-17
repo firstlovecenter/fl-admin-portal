@@ -6,7 +6,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberWithoutBioData } from 'global-types'
 import { getFirstLetterInEveryWord } from 'global-utils'
 import { useContext } from 'react'
-import { Col, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 
 const MemberAvatarWithName = ({
@@ -28,8 +27,8 @@ const MemberAvatarWithName = ({
   }
 
   return (
-    <Row className="g-0" onClick={onClick ?? defaultNav}>
-      <Col xs="auto" className="pe-2">
+    <div className="flex items-center gap-2 cursor-pointer" onClick={onClick ?? defaultNav}>
+      <div className="flex-none pr-2">
         <PlaceholderCustom
           className="img-search-placeholder"
           as="div"
@@ -42,8 +41,8 @@ const MemberAvatarWithName = ({
             src={member?.pictureUrl}
           />
         </PlaceholderCustom>
-      </Col>
-      <Col>
+      </div>
+      <div className="flex-1">
         <PlaceholderCustom loading={isLoading} as="h2" xs={12}>
           <div>
             {member?.firstName +
@@ -53,8 +52,8 @@ const MemberAvatarWithName = ({
               member?.lastName}
           </div>
         </PlaceholderCustom>
-      </Col>
-    </Row>
+      </div>
+    </div>
   )
 }
 

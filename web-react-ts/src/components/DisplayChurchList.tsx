@@ -1,7 +1,7 @@
 import { ChurchLevel, HigherChurch } from 'global-types'
 import { capitalise } from 'global-utils'
 import React, { useContext } from 'react'
-import { Card, Col, Container, Row } from 'react-bootstrap'
+import { Card, CardContent } from 'components/ui/card'
 import { Link } from 'react-router-dom'
 import { ChurchContext } from '../contexts/ChurchContext'
 import CloudinaryImage from './CloudinaryImage'
@@ -16,11 +16,11 @@ const DisplayChurchList = (props: {
   const { setUserFinancials } = useSetUserChurch()
 
   return (
-    <Container className="mt-3">
-      <Row>
+    <div className="mt-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {data?.map((church, index: number) => {
           return (
-            <Col key={index} sm={6} lg={4}>
+            <div key={index}>
               <Link to={`/${church.__typename.toLowerCase()}/displaydetails`}>
                 <Card
                   className="mb-2"
@@ -31,25 +31,22 @@ const DisplayChurchList = (props: {
                     }
                   }}
                 >
-                  <Card.Body>
-                    <Row className="px-3">
-                      <Col
-                        xs={3}
-                        className="d-flex justify-content-center align-items-center"
-                      >
+                  <CardContent>
+                    <div className="flex items-center px-3">
+                      <div className="flex-none flex justify-center items-center">
                         <div className="flex-shrink-0">
                           <CloudinaryImage
                             className="rounded-circle img-search"
                             src={church?.leader?.pictureUrl}
                           />
                         </div>
-                      </Col>
-                      <Col>
-                        <Card.Title className="mt-0 church-title">
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="mt-0 church-title">
                           {church.name}
-                        </Card.Title>
-                        <Card.Body className="pt-1 text-small card-padding">
-                          <Row className="d-block text-title border-bottom border-secondary">
+                        </h3>
+                        <div className="pt-1 text-small card-padding">
+                          <div className="d-block text-title border-bottom border-secondary">
                             {church.leader
                               ? `${church.leader.firstName} ${church.leader.lastName}`
                               : null}
@@ -57,8 +54,8 @@ const DisplayChurchList = (props: {
                               {church.admin &&
                                 `| Admin: ${church.admin.firstName} ${church.admin.lastName}`}
                             </span>
-                          </Row>
-                          <Row className="text-muted d-block">
+                          </div>
+                          <div className="text-muted d-block">
                             {church.fellowshipCount
                               ? `| ${church?.fellowshipCount} Fellowships`
                               : null}{' '}
@@ -94,18 +91,18 @@ const DisplayChurchList = (props: {
                             {churchType === 'Campus'
                               ? `${capitalise(church?.stream_name)}`
                               : null}
-                          </Row>
-                        </Card.Body>
-                      </Col>
-                    </Row>
-                  </Card.Body>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
                 </Card>
               </Link>
-            </Col>
+            </div>
           )
         })}
-      </Row>
-    </Container>
+      </div>
+    </div>
   )
 }
 
