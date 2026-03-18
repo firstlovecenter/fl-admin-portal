@@ -4,7 +4,6 @@ import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_COUNCIL_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
-import { NEW_COUNCIL_LEADER } from './MakeLeaderMutations'
 import CouncilForm, {
   CouncilFormValues,
 } from 'pages/directory/reusable-forms/CouncilForm'
@@ -23,7 +22,6 @@ const CreateCouncil = () => {
     stream: streamId,
   }
 
-  const [NewCouncilLeader] = useMutation(NEW_COUNCIL_LEADER)
   const [CreateCouncil] = useMutation(CREATE_COUNCIL_MUTATION)
 
   //onSubmit receives the form state as argument
@@ -44,13 +42,6 @@ const CreateCouncil = () => {
           name: values.name,
           leaderId: values.leaderId,
           streamId: values.stream,
-        },
-      })
-
-      await NewCouncilLeader({
-        variables: {
-          leaderId: values.leaderId,
-          councilId: res.data.CreateCouncil.id,
         },
       })
 

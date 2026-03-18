@@ -26,10 +26,7 @@ const treasuryMutations = {
     args: { governorshipId: string },
     context: Context
   ): Promise<any> => {
-    isAuth(
-      permitTellerStream(),
-      context?.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitTellerStream(), context?.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     noEmptyArgsValidation(['governorshipId'])

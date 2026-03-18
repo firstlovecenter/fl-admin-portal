@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { getAccessToken, getStoredUser } from './lib/auth-service'
 import SimpleLogin from './pages/auth/SimpleLogin'
 
+// Public routes that don't require authentication
+const PUBLIC_AUTH_ROUTES = [
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/setup-password',
+]
+
 const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
@@ -10,11 +19,7 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // If token is expired, AuthContext will handle refresh
     const token = getAccessToken()
     const user = getStoredUser()
-
-    console.log('🔍 SimpleApp: Checking stored auth', {
-      hasToken: !!token,
-      hasUser: !!user,
-    })
+    const currentPath = window.location.pathname
 
     // User is authenticated if they have both token and user data
     // AuthContext will handle token refresh if needed
@@ -25,7 +30,6 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   if (isAuthenticated === null) {
     // Loading
-    console.log('⏳ SimpleApp: Still in loading state')
     return (
       <div
         style={{
@@ -42,8 +46,17 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     )
   }
 
-  if (!isAuthenticated) {
-    console.log('🔓 SimpleApp: Not authenticated, showing login')
+  // Allow access to public auth routes even if not authenticated
+  const currentPath = window.location.pathname
+
+  // Normalize path for comparison (remove trailing slashes for comparison)
+  const normalizedPath = currentPath.replace(/\/$/, '') || '/'
+  const isPublicRoute = PUBLIC_AUTH_ROUTES.some((route) => {
+    const normalizedRoute = route.replace(/\/$/, '') || '/'
+    return normalizedPath === normalizedRoute
+  })
+
+  if (!isAuthenticated && !isPublicRoute) {
     return (
       <SimpleLogin
         onLoginSuccess={() => {
@@ -54,7 +67,6 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     )
   }
 
-  console.log('✅ SimpleApp: Authenticated, rendering children')
   return <>{children}</>
 }
 

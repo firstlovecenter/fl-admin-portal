@@ -35,24 +35,16 @@ const AppWithApollo = () => {
 
   const getAccessToken = useCallback(async () => {
     try {
-      console.log('🎫 AppWithApollo: Fetching access token...')
       const token = await getAccessTokenSilently()
 
       setAccessToken(token)
       sessionStorage.setItem('token', token)
     } catch (err) {
-      // eslint-disable-next-line
-      console.error('❌ Error Obtaining Token', err)
+      // Error obtaining token silently
     }
   }, [getAccessTokenSilently])
 
   useEffect(() => {
-    console.log(
-      '🚀 AppWithApollo: Initializing, isLoading:',
-      isLoading,
-      'user:',
-      user
-    )
     if (!isLoading && user) {
       getAccessToken()
     }
@@ -188,16 +180,9 @@ const AppWithApollo = () => {
   // }
 
   if (isLoading) {
-    console.log('⏳ AppWithApollo: Auth still loading...')
     return <SplashSreen />
   }
 
-  console.log(
-    '🎨 AppWithApollo: Rendering main app, user:',
-    user,
-    'accessToken:',
-    accessToken?.substring(0, 20)
-  )
   return (
     <ApolloProvider client={client}>
       <SnackbarProvider />

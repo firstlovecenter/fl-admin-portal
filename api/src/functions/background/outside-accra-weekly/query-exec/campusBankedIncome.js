@@ -1,7 +1,7 @@
 const { campusBankedIncomeQuery } = require('../cypher')
-const { OVERSIGHT_NAME, lastSunday } = require('../utils/constants')
+const { OVERSIGHT_NAME } = require('../utils/constants')
 
-const campusBankedIncome = async (neoDriver) => {
+const campusBankedIncome = async (neoDriver, lastSunday) => {
   const session = neoDriver.session()
 
   try {

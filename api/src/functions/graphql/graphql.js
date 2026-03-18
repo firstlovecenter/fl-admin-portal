@@ -7,13 +7,6 @@ const { typeDefs } = require('./schema/graphql-schema')
 const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
 
-// Constants
-const DEFAULT_NEO4J_CONFIG = {
-  encrypted: 'ENCRYPTION_ON',
-  trust: 'TRUST_ALL_CERTIFICATES',
-  connectionTimeout: 30000,
-}
-
 // Server state
 let isInitialized = false
 let driver
@@ -30,17 +23,29 @@ const initializeServer = async () => {
     // Load secrets
     SECRETS = await loadSecrets()
 
+    const uri = SECRETS.NEO4J_URI || 'bolt://localhost:7687/'
+    const hasEncryptionInUri =
+      uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
+    const driverConfig = {
+      connectionTimeout: 30000,
+    }
+
+    // Only add encryption config if not using secure URI scheme
+    if (!hasEncryptionInUri) {
+      driverConfig.encrypted = 'ENCRYPTION_ON'
+      driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
+    }
+
     console.log(
-      `[Neo4j] Connecting to ${SECRETS.NEO4J_URI.replace(
-        /:\/\/.*@/,
-        '://[REDACTED]@'
-      )}`
+      `[Neo4j] Connecting to ${uri.replace(/:\/\/.*@/, '://[REDACTED]@')}`
     )
+    console.log('[Neo4j] URI encryption scheme detected:', hasEncryptionInUri)
+    console.log('[Neo4j] Driver config:', driverConfig)
 
     driver = neo4j.driver(
-      SECRETS.NEO4J_URI || 'bolt://localhost:7687/',
+      uri,
       neo4j.auth.basic(SECRETS.NEO4J_USER, SECRETS.NEO4J_PASSWORD),
-      DEFAULT_NEO4J_CONFIG
+      driverConfig
     )
 
     // Verify connection
@@ -178,7 +183,7 @@ exports.handler = async (event, context) => {
       headers: Object.keys(headers),
     })
 
-    // Handle JWT authentication
+    // Handle JWT authentication properly
     const token = headers.authorization || headers.Authorization
     let jwt = null
 

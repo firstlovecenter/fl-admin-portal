@@ -2,8 +2,9 @@ import { Session } from 'neo4j-driver'
 import { Role } from './types'
 
 export interface JwtPayload {
+  userId: string
   sub: string
-  'https://flcadmin.netlify.app/roles': Role[]
+  roles: Role[]
   iss: string
   aud: string[]
   iat: number
