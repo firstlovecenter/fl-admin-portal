@@ -19,6 +19,7 @@ import {
   getEligibleMembers,
   getScopeFilters,
   resolveViewerScope,
+  getViewerScopeIds,
   getCheckInRecords,
   getCheckInRecordForMember,
   isMemberInScope,
@@ -117,40 +118,49 @@ export const checkinsResolvers = {
       const db = await getCheckinsDb()
       if (!db) return []
 
-      // Build Firestore query with server-side filters where possible
-      let query: FirebaseFirestore.Query = db.collection(EVENTS_COLLECTION)
-      if (args.scopeLevel) {
-        query = query.where('scopeLevel', '==', args.scopeLevel)
-      }
-      if (args.scopeId) {
-        query = query.where('scopeId', '==', args.scopeId)
-      }
-      if (args.status) {
-        query = query.where('status', '==', args.status)
-      }
-
-      const snapshot = await query.get()
-      const events = snapshot.docs.map(
-        (doc) => doc.data() as CheckInEvent
-      )
-
-      const filtered: CheckInEvent[] = []
       const userRoles =
         context.jwt?.['https://flcadmin.netlify.app/roles'] || []
       const authId = getCurrentAuthId(context)
 
-      for (const event of events) {
+      let query: FirebaseFirestore.Query = db.collection(EVENTS_COLLECTION)
+      if (args.scopeLevel) query = query.where('scopeLevel', '==', args.scopeLevel)
+      if (args.status) query = query.where('status', '==', args.status)
+
+      if (args.scopeId) {
+        // Caller requested a specific scope — filter directly, then do a
+        // single access check rather than one check per event.
+        query = query.where('scopeId', '==', args.scopeId)
+        const snapshot = await query.get()
+        if (snapshot.empty) return []
+
+        const events = snapshot.docs.map((doc) => doc.data() as CheckInEvent)
+        const firstEvent = events[0]
         const viewerScope = await resolveViewerScope(
           context,
           authId,
-          event.scopeLevel,
-          event.scopeId,
+          firstEvent.scopeLevel,
+          firstEvent.scopeId,
           userRoles
         )
-        if (viewerScope) filtered.push(event)
+        return viewerScope ? events.map(mapEventToResponse) : []
       }
 
-      return filtered.map(mapEventToResponse)
+      // No specific scope requested — pre-filter Firestore to only the scopes
+      // the viewer can see. This avoids a Neo4j round-trip per event.
+      const viewerScopeIds = await getViewerScopeIds(context, authId, userRoles)
+
+      if (viewerScopeIds !== null) {
+        // Non-global viewer: restrict to their own scope IDs
+        if (viewerScopeIds.length === 0) return []
+        // Firestore 'in' supports up to 30 items; leaders/local-admins have far fewer
+        query = query.where('scopeId', 'in', viewerScopeIds.slice(0, 30))
+      }
+      // viewerScopeIds === null → denomination/oversight admin, no extra filter
+
+      const snapshot = await query.get()
+      return snapshot.docs.map((doc) =>
+        mapEventToResponse(doc.data() as CheckInEvent)
+      )
     },
 
     GetCheckInDashboard: async (

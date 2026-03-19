@@ -9,6 +9,7 @@ const PUBLIC_AUTH_ROUTES = [
   '/forgot-password',
   '/reset-password',
   '/setup-password',
+  '/checkins/qr',
 ]
 
 const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {

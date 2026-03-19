@@ -98,6 +98,41 @@ export const getAdminScopes = async (
   }
 }
 
+/**
+ * Returns the set of scopeIds the caller can see, combining both admin and
+ * leader relationships in a single Neo4j round-trip.
+ *
+ * Returns null for denomination/oversight admins (no filter needed — they see
+ * everything). Returns an empty array if the viewer has no scopes at all.
+ */
+export const getViewerScopeIds = async (
+  context: Context,
+  authId: string,
+  userRoles: string[]
+): Promise<string[] | null> => {
+  if (
+    userRoles.includes('adminDenomination') ||
+    userRoles.includes('adminOversight')
+  ) {
+    return null
+  }
+
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `MATCH (m:Member {auth_id: $authId})
+       OPTIONAL MATCH (m)-[:IS_ADMIN_FOR]->(adminChurch)
+       OPTIONAL MATCH (m)-[:LEADS]->(leadChurch)
+       WITH collect(DISTINCT adminChurch.id) + collect(DISTINCT leadChurch.id) AS ids
+       RETURN [id IN ids WHERE id IS NOT NULL] AS ids`,
+      { authId }
+    )
+    return (res.records[0]?.get('ids') as string[]) ?? []
+  } finally {
+    await session.close()
+  }
+}
+
 export const resolveScopeLevelFromLabels = (
   labels: string[]
 ): CheckInScopeLevel => {
