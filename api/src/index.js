@@ -22,12 +22,14 @@ const startServer = async () => {
   const uri = SECRETS.NEO4J_URI || 'bolt://localhost:7687/'
   const hasEncryptionInUri =
     uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
+  const isLocalUri =
+    uri.includes('localhost') || uri.includes('127.0.0.1')
   const driverConfig = {
     connectionTimeout: 30000,
   }
 
-  // Only add encryption config if not using secure URI scheme
-  if (!hasEncryptionInUri) {
+  // Only add encryption config if not using secure URI scheme and not local
+  if (!hasEncryptionInUri && !isLocalUri) {
     driverConfig.encrypted = 'ENCRYPTION_ON'
     driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
   }

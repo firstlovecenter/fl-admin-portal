@@ -100,9 +100,8 @@ const array = [
   creativeartsChurches,
   maps,
   accounts,
-  downloadCredits,
-  checkins,
   downloadMembership,
+  checkins,
 ]
 
 const combinedSchema = array.join(' ')
