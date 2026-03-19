@@ -5,7 +5,6 @@ import { useQuery, useMutation } from '@apollo/client'
 import { parsePhoneNum, throwToSentry } from 'global-utils'
 import {
   LOG_MEMBER_HISTORY,
-  UPDATE_MEMBER_EMAIL,
   UPDATE_MEMBER_BASONTA,
   UPDATE_MEMBER_MUTATION,
   UPDATE_MEMBER_BACENTA,
@@ -62,7 +61,6 @@ const UpdateMember = () => {
       { query: DISPLAY_MEMBER_CHURCH, variables: { id: memberId } },
     ],
   })
-  const [UpdateMemberEmail] = useMutation(UPDATE_MEMBER_EMAIL)
   const [UpdateMemberBacenta] = useMutation(UPDATE_MEMBER_BACENTA)
   const [UpdateMemberBasonta] = useMutation(UPDATE_MEMBER_BASONTA)
   const [LogMemberHistory] = useMutation(LOG_MEMBER_HISTORY)
@@ -80,6 +78,7 @@ const UpdateMember = () => {
           firstName: values.firstName.trim(),
           middleName: values.middleName.trim(),
           lastName: values.lastName.trim(),
+          email: values.email?.trim().toLowerCase(),
           gender: values.gender,
           phoneNumber: parsePhoneNum(values.phoneNumber),
           whatsappNumber: parsePhoneNum(values.whatsappNumber),
@@ -91,15 +90,6 @@ const UpdateMember = () => {
           bacenta: values.bacenta?.id,
         },
       })
-
-      if (initialValues.email !== values.email) {
-        await UpdateMemberEmail({
-          variables: {
-            id: memberId,
-            email: values.email?.trim().toLowerCase(),
-          },
-        })
-      }
 
       if (memberChurch?.basonta?.id !== values.basonta) {
         const res = await UpdateMemberBasonta({

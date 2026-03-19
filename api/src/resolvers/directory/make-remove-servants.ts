@@ -4,59 +4,138 @@ import {
   isAuth,
   noEmptyArgsValidation,
   rearrangeCypherObject,
-  throwToSentry,
 } from '../utils/utils'
 import { ChurchLevel, Member, Role, ServantType } from '../utils/types'
-import { sendSingleEmail } from '../utils/notify'
-import { Context } from '../utils/neo4j-types'
-import { matchChurchQuery, getChurchDataQuery } from '../cypher/resolver-cypher'
 import {
-  assignRoles,
+  sendServantPromotionEmail,
+  sendServantRemovalEmail,
+} from '../utils/notify'
+import { Context } from '../utils/neo4j-types'
+import { matchChurchQuery } from '../cypher/resolver-cypher'
+import {
   churchInEmail,
   directoryLock,
-  MemberWithKeys,
   parseForCache,
   parseForCacheRemoval,
-  removeRoles,
 } from './helper-functions'
 import { formatting, makeServantCypher, removeServantCypher } from './utils'
-import { getAuthToken } from '../authenticate'
 
 const texts = require('../texts.json')
 
-const setUp = (setUpArgs: {
+/**
+ * Composable validation - separates concerns into focused functions
+ */
+const validateAuthAndPermissions = (
+  permittedRoles: Role[],
+  userRoles: string[]
+): void => {
+  isAuth(permittedRoles, userRoles as Role[])
+}
+
+const validateDirectoryLock = (
+  userRoles: string[],
+  servantType: string
+): void => {
+  if (directoryLock(userRoles) && servantType !== 'arrivalsCounter') {
+    throw new Error('Directory is locked till next Tuesday')
+  }
+}
+
+const validateArguments = (
+  churchLower: string,
+  churchId: any,
+  servantLower: string,
+  servantId: any
+): void => {
+  noEmptyArgsValidation([
+    `${churchLower}Id`,
+    churchId,
+    `${servantLower}Id`,
+    servantId,
+  ])
+}
+
+const validateServant = (
+  servant: Member | Partial<Member> | undefined
+): boolean => {
+  if (!servant || !servant.id) {
+    return false
+  }
+  errorHandling(servant as Member)
+  return true
+}
+
+/**
+ * Pre-flight checks: Authorization, locks, and argument validation
+ * Composed from smaller, testable validation functions
+ */
+const validateMutation = (params: {
   permittedRoles: Role[]
   context: Context
   churchLower: string
   servantLower: string
-  args: any
-}) => {
-  const { permittedRoles, context, churchLower, servantLower, args } = setUpArgs
+  servantId: any
+  churchId: any
+}): void => {
+  const {
+    permittedRoles,
+    context,
+    churchLower,
+    servantLower,
+    servantId,
+    churchId,
+  } = params
 
-  if (
-    directoryLock(context.jwt['https://flcadmin.netlify.app/roles']) &&
-    servantLower !== 'arrivalsCounter'
-  ) {
-    throw new Error('Directory is locked till next Tuesday')
-  }
-  isAuth(permittedRoles, context.jwt['https://flcadmin.netlify.app/roles'])
-
-  noEmptyArgsValidation([
-    `${churchLower}Id`,
-    args[`${churchLower}Id`],
-    `${servantLower}Id`,
-    args[`${servantLower}Id`],
-  ])
+  validateDirectoryLock(context.jwt.roles, servantLower)
+  validateAuthAndPermissions(permittedRoles, context.jwt.roles)
+  validateArguments(churchLower, churchId, servantLower, servantId)
 }
 
-const servantValidation = (servant: Member) => {
-  if (!servant.id) {
-    return false
-  }
-  errorHandling(servant)
-  return true
+/**
+ * Query builder: Fetch church and servant data
+ * Each query gets its own independent session to avoid session reuse
+ */
+const fetchChurchAndServant = async (
+  context: Context,
+  memberQuery: any,
+  churchId: string,
+  servantId: string
+) => {
+  // Separate session for church query
+  const churchSession = context.executionContext.session()
+  const churchPromise = (async () => {
+    try {
+      const result = await churchSession.executeRead((tx) =>
+        tx.run(matchChurchQuery, { id: churchId })
+      )
+      return rearrangeCypherObject(result)
+    } finally {
+      await churchSession.close()
+    }
+  })()
+
+  // Separate session for servant query
+  const servantSession = context.executionContext.session()
+  const servantPromise = (async () => {
+    try {
+      const result = await servantSession.executeRead((tx) =>
+        tx.run(memberQuery, { id: servantId })
+      )
+      return rearrangeCypherObject(result)
+    } finally {
+      await servantSession.close()
+    }
+  })()
+
+  const [church, servant] = await Promise.all([churchPromise, servantPromise])
+
+  return { church, servant }
 }
 
+/**
+ * MakeServant: Promote a member to a leadership/admin role
+ * DRY principle: Shared validation logic composed from smaller functions
+ */
 export const MakeServant = async (
   context: Context,
   args: any,
@@ -64,42 +143,48 @@ export const MakeServant = async (
   churchType: ChurchLevel,
   servantType: ServantType
 ) => {
-  // Auth0 integration removed - roles are now managed in Neo4j
-  const terms = formatting(churchType, servantType)
-  const { verb, servantLower, churchLower, memberQuery } = terms
+  const { verb, servantLower, churchLower, memberQuery } = formatting(
+    churchType,
+    servantType
+  )
 
-  const setUpArgs = {
+  // Validate early and fail fast
+  validateMutation({
     permittedRoles,
     context,
     churchLower,
     servantLower,
-    args,
+    churchId: args[`${churchLower}Id`],
+    servantId: args[`${servantLower}Id`],
+  })
+
+  // Fetch primary entities with independent sessions
+  const { church, servant } = await fetchChurchAndServant(
+    context,
+    memberQuery,
+    args[`${churchLower}Id`],
+    args[`${servantLower}Id`]
+  )
+
+  validateServant(servant)
+
+  // Fetch old servant if being replaced (independent session per query)
+  let oldServant: Member | undefined
+  if (args[`old${servantType}Id`]) {
+    const oldServantSession = context.executionContext.session()
+    try {
+      const oldServantRes = await oldServantSession.executeRead((tx) =>
+        tx.run(memberQuery, { id: args[`old${servantType}Id`] })
+      )
+      oldServant = rearrangeCypherObject(oldServantRes)
+    } finally {
+      await oldServantSession.close()
+    }
   }
 
-  setUp(setUpArgs)
-
-  const session = context.executionContext.session()
-
-  const churchRes = await session.run(matchChurchQuery, {
-    id: args[`${churchLower}Id`],
-  })
-
-  const church = rearrangeCypherObject(churchRes)
   const churchNameInEmail = `${church.name} ${church.type}`
 
-  const servantRes = await session.run(memberQuery, {
-    id: args[`${servantLower}Id`],
-  })
-
-  const oldServantRes = await session.run(memberQuery, {
-    id: args[`old${servantType}Id`] ?? '',
-  })
-
-  const servant = rearrangeCypherObject(servantRes)
-  const oldServant = rearrangeCypherObject(oldServantRes)
-  servantValidation(servant)
-
-  // Auth0 integration removed - roles managed in Neo4j only
+  // Execute promotion and notification in parallel
   await Promise.all([
     makeServantCypher({
       context,
@@ -110,19 +195,24 @@ export const MakeServant = async (
       church,
       oldServant,
     }),
-    sendSingleEmail(
-      servant,
-      'FL Servanthood Status Update',
-      undefined,
-      `<p>Hi ${servant.firstName} ${servant.lastName},<br/><br/>Congratulations on your new position as the <b>${churchType} ${servantType}</b> for <b>${churchNameInEmail}</b>.<br/><br/>Please go through ${texts.html.helpdesk} to find guidelines and instructions as well as answers to questions you may have</p>${texts.html.subscription}`
+    sendServantPromotionEmail(
+      servant.email,
+      servant.firstName,
+      servant.lastName,
+      churchType,
+      servantType,
+      churchNameInEmail,
+      texts.html.helpdesk
     ),
   ])
-
-  await session.close()
 
   return parseForCache(servant, church, verb, servantLower)
 }
 
+/**
+ * RemoveServant: Demote a member from a leadership/admin role
+ * Same validation strategy as MakeServant
+ */
 export const RemoveServant = async (
   context: Context,
   args: any,
@@ -131,77 +221,83 @@ export const RemoveServant = async (
   servantType: ServantType,
   removeOnly?: boolean
 ) => {
-  // Auth0 integration removed - roles are now managed in Neo4j
-  const terms = formatting(churchType, servantType)
-  const { verb, servantLower, churchLower, memberQuery } = terms
+  const { verb, servantLower, churchLower, memberQuery } = formatting(
+    churchType,
+    servantType
+  )
 
-  const setUpArgs = {
+  validateMutation({
     permittedRoles,
     context,
     churchLower,
     servantLower,
-    args,
-  }
-  setUp(setUpArgs)
-
-  const session = context.executionContext.session()
-
-  const churchRes = await session.run(matchChurchQuery, {
-    id: args[`${churchLower}Id`],
+    churchId: args[`${churchLower}Id`],
+    servantId: args[`${servantLower}Id`],
   })
 
-  const church = rearrangeCypherObject(churchRes)
-
-  const servantRes = await session.run(memberQuery, {
-    id: args[`${servantLower}Id`],
-  })
-
-  const newServantRes = await session.run(memberQuery, {
-    id: args[`new${servantType}Id`] ?? '',
-  })
-
-  const servant: MemberWithKeys = rearrangeCypherObject(servantRes)
-  const newServant: MemberWithKeys = rearrangeCypherObject(newServantRes)
-
-  // fetch church data
-  const churchDataRes = rearrangeCypherObject(
-    await session.executeRead((tx) =>
-      tx.run(getChurchDataQuery, {
-        id: args[`${churchLower}Id`],
-      })
-    )
+  // Fetch primary entities with independent session
+  const { church, servant } = await fetchChurchAndServant(
+    context,
+    memberQuery,
+    args[`${churchLower}Id`],
+    args[`${servantLower}Id`]
   )
+
+  // Fetch replacement servant if exists (independent session)
+  let newServant: Member | undefined
+  if (args[`new${servantType}Id`]) {
+    const newServantSession = context.executionContext.session()
+    try {
+      const newServantRes = await newServantSession.executeRead((tx) =>
+        tx.run(memberQuery, { id: args[`new${servantType}Id`] })
+      )
+      newServant = rearrangeCypherObject(newServantRes)
+    } finally {
+      await newServantSession.close()
+    }
+  }
+
+  // Early exit if validation fails (except for special types)
+  const specialRemovalTypes = ['ArrivalsCounter', 'Teller', 'ArrivalsPayer']
   if (
-    (!servantValidation(servant) || !servantValidation(newServant)) &&
-    !['ArrivalsCounter', 'Teller', 'ArrivalsPayer'].includes(servantType) &&
+    (!validateServant(servant) || !validateServant(newServant ?? {})) &&
+    !specialRemovalTypes.includes(servantType) &&
     !removeOnly
   ) {
     return null
   }
 
-  // Auth0 integration removed - all role management now in Neo4j
-  await removeServantCypher({
-    context,
-    churchType,
-    servantType,
-    servant,
-    church,
-  })
+  // Execute removal operations in parallel, skipping if no valid servant
+  const operations: Promise<any>[] = []
 
-  // Send removal notification
-  await sendSingleEmail(
-    servant,
-    'You Have Been Removed!',
-    undefined,
-    `<p>Hi ${servant.firstName} ${
-      servant.lastName
-    },<br/><br/>We regret to inform you that you have been removed as the <b>${churchType} ${servantType}</b> for <b>${churchInEmail(
-      church
-    )}</b>.<br/><br/>We however encourage you to strive to serve the Lord faithfully. Do not be discouraged by this removal.</p>${
-      texts.html.subscription
-    }`
-  )
+  if (servant.id) {
+    operations.push(
+      removeServantCypher({
+        context,
+        churchType,
+        servantType,
+        servant,
+        church,
+      })
+    )
+  }
 
-  await session.close()
+  if (servant.email) {
+    operations.push(
+      sendServantRemovalEmail(
+        servant.email,
+        servant.firstName,
+        servant.lastName,
+        churchType,
+        servantType,
+        churchInEmail(church)
+      )
+    )
+  }
+
+  if (operations.length > 0) {
+    await Promise.all(operations)
+  }
+
   return parseForCacheRemoval(servant, church, verb, servantLower)
 }

@@ -18,10 +18,7 @@ const serviceNoIncomeMutations = {
     args: Member,
     context: Context
   ) => {
-    isAuth(
-      permitLeaderAdmin('Fellowship'),
-      context.jwt['https://flcadmin.netlify.app/roles']
-    )
+    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(
@@ -42,7 +39,6 @@ const serviceNoIncomeMutations = {
         servantType: 'Leader',
         servant: {
           id: getServantAndChurch.servantId,
-          auth_id: getServantAndChurch.auth_id,
           firstName: getServantAndChurch.firstName,
           lastName: getServantAndChurch.lastName,
         },

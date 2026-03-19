@@ -15,7 +15,7 @@ import Logo from '../../assets/flc-logo-small.webp'
 import './auth.css'
 import { Eye, EyeSlash } from 'react-bootstrap-icons'
 
-const APP_VERSION = '8.1.2'
+const APP_VERSION = '8.1.3'
 
 const validationSchema = Yup.object({
   email: Yup.string()

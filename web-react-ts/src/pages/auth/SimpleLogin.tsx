@@ -4,7 +4,7 @@ import { login as apiLogin, storeAuth } from '../../lib/auth-service'
 import Logo from '../../assets/flc-logo-small.webp'
 import './auth.css'
 
-const APP_VERSION = '8.1.2'
+const APP_VERSION = '8.1.3'
 
 interface SimpleLoginProps {
   onLoginSuccess?: () => void

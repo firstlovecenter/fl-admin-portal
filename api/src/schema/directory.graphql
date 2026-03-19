@@ -1,6 +1,5 @@
 type Member {
   id: ID! @id
-  auth_id: String
   firstName: String #@search
   middleName: String
   lastName: String

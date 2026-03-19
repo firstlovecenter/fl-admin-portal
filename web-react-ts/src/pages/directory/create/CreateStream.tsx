@@ -4,7 +4,6 @@ import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_STREAM_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
-import { NEW_STREAM_LEADER } from './MakeLeaderMutations'
 import StreamForm, {
   StreamFormValues,
 } from 'pages/directory/reusable-forms/StreamForm'
@@ -26,7 +25,6 @@ const CreateStream = () => {
     campus: campusId,
   }
 
-  const [NewStreamLeader] = useMutation(NEW_STREAM_LEADER)
   const [CreateStream] = useMutation(CREATE_STREAM_MUTATION)
 
   //onSubmit receives the form state as argument
@@ -50,13 +48,6 @@ const CreateStream = () => {
           bankAccount: values.bankAccount,
           campusId: values.campus,
           meetingDay: values.meetingDay,
-        },
-      })
-
-      await NewStreamLeader({
-        variables: {
-          leaderId: values.leaderId,
-          streamId: res.data.CreateStream.id,
         },
       })
 

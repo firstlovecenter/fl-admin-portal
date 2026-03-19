@@ -6,7 +6,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { capitalise } from 'global-utils'
 import { getUserServantRoles } from 'pages/dashboards/dashboard-utils'
-import { SERVANT_CHURCH_LIST } from 'pages/dashboards/DashboardQueries'
 import { permitMe } from 'permission-utils'
 import { useContext, useEffect } from 'react'
 import { useAuth } from 'contexts/AuthContext'
@@ -22,6 +21,15 @@ const PUBLIC_AUTH_ROUTES = [
   '/setup-password',
 ]
 
+const isPathPublic = (pathname: string): boolean => {
+  // Normalize path for comparison (remove trailing slashes)
+  const normalizedPath = pathname.replace(/\/$/, '') || '/'
+  return PUBLIC_AUTH_ROUTES.some((route) => {
+    const normalizedRoute = route.replace(/\/$/, '') || '/'
+    return normalizedPath === normalizedRoute
+  })
+}
+
 const SetPermissions = ({
   token,
   children,
@@ -35,31 +43,7 @@ const SetPermissions = ({
   const { isAuthorised } = useAuthPermissions()
   const location = useLocation()
 
-  const isPublicRoute = PUBLIC_AUTH_ROUTES.includes(location.pathname)
-
-  console.log('🔒 SetPermissions: Initialized', {
-    currentUser,
-    isAuthenticated,
-    user,
-    hasToken: !!token,
-  })
-
-  const { data, loading, error } = useQuery(SERVANT_CHURCH_LIST, {
-    variables: { id: currentUser.id },
-    skip: !currentUser.id || !isAuthenticated,
-    onCompleted: (data) => {
-      console.log('✅ SetPermissions: SERVANT_CHURCH_LIST completed', data)
-      const servant = { ...data?.members[0], ...currentUser }
-      setUserJobs(getUserServantRoles(servant))
-    },
-  })
-
-  console.log('📋 SetPermissions: SERVANT_CHURCH_LIST query state', {
-    loading,
-    error,
-    hasData: !!data,
-    skip: !currentUser.id || !isAuthenticated,
-  })
+  const isPublicRoute = isPathPublic(location.pathname)
 
   const {
     data: loggedInData,
@@ -69,33 +53,29 @@ const SetPermissions = ({
     variables: { email: user?.email },
     skip: !user?.email || !isAuthenticated,
     onCompleted: (data) => {
-      console.log('✅ SetPermissions: GET_LOGGED_IN_USER completed', data)
       try {
-        const streamName = data.memberByEmail.stream_name
+        const memberData = data.memberByEmail
+        const streamName = memberData.stream_name
 
         const denominationId =
-          data.memberByEmail?.bacenta.governorship?.council.stream.campus
-            ?.oversight?.denomination.id
+          memberData?.bacenta.governorship?.council.stream.campus?.oversight
+            ?.denomination.id
 
         const oversightId =
-          data.memberByEmail?.bacenta.governorship?.council.stream.campus
-            ?.oversight.id
+          memberData?.bacenta.governorship?.council.stream.campus?.oversight.id
         const campusId =
-          data.memberByEmail?.bacenta.governorship?.council.stream.campus?.id
-        const campus =
-          data.memberByEmail?.bacenta.governorship?.council?.stream.campus
-        const streamId =
-          data.memberByEmail?.bacenta.governorship?.council.stream.id
-        const councilId = data.memberByEmail?.bacenta.governorship?.council.id
-        const governorshipId = data.memberByEmail?.bacenta.governorship?.id
-        const hubId = data.memberByEmail?.fellowship?.hub?.id
+          memberData?.bacenta.governorship?.council.stream.campus?.id
+        const campus = memberData?.bacenta.governorship?.council?.stream.campus
+        const streamId = memberData?.bacenta.governorship?.council.stream.id
+        const councilId = memberData?.bacenta.governorship?.council.id
+        const governorshipId = memberData?.bacenta.governorship?.id
+        const hubId = memberData?.fellowship?.hub?.id
 
-        const hubCouncilId = data.memberByEmail?.fellowship?.hub?.hubCouncil.id
-        const ministryId =
-          data.memberByEmail?.fellowship?.hub?.hubCouncil?.ministry.id
+        const hubCouncilId = memberData?.fellowship?.hub?.hubCouncil.id
+        const ministryId = memberData?.fellowship?.hub?.hubCouncil?.ministry.id
         const creativeArtsId =
-          data.memberByEmail?.fellowship?.hub?.hubCouncil?.ministry
-            ?.creativeArts.id
+          memberData?.fellowship?.hub?.hubCouncil?.ministry?.creativeArts.id
+
         doNotUse.setDenominationId(
           sessionStorage.getItem('denominationId') ?? denominationId
         )
@@ -121,11 +101,11 @@ const SetPermissions = ({
 
         setCurrentUser({
           ...currentUser,
-          id: data.memberByEmail.id,
-          nameWithTitle: data.memberByEmail.nameWithTitle,
+          id: memberData.id,
+          nameWithTitle: memberData.nameWithTitle,
 
           // Bacenta Levels
-          bacenta: data.memberByEmail?.bacenta.id,
+          bacenta: memberData?.bacenta.id,
           governorship: governorshipId,
           council: councilId,
           stream: streamId,
@@ -141,16 +121,19 @@ const SetPermissions = ({
 
           // Other Details
           doNotUse: { doNotUse: streamName, subdoNotUse: 'bacenta' },
-          stream_name: capitalise(data?.memberByEmail?.stream_name),
+          stream_name: capitalise(memberData?.stream_name),
           noIncomeTracking: campus?.noIncomeTracking,
           currency: campus?.currency,
           conversionRateToDollar: campus?.conversionRateToDollar,
         })
 
+        // Set user jobs using servant role data from memberByEmail
+        const servant = { ...memberData, ...currentUser }
+        setUserJobs(getUserServantRoles(servant))
+
         doNotUse.setChurch(currentUser.church)
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('🚀 ~ file: SetPermissions.tsx ~ error', error)
+        // Error setting user permissions
       } finally {
         sessionStorage.setItem(
           'currentUser',
@@ -195,38 +178,21 @@ const SetPermissions = ({
     }
   }, [isAuthenticated, currentUser, isAuthorised, doNotUse])
 
-  console.log('🎬 SetPermissions: Render decision', {
-    loggedInLoading,
-    loading,
-    hasToken: !!token,
-    isPublicRoute,
-    willShowLoading: (loggedInLoading || !token) && !isPublicRoute,
-    hasData: !!data,
-    hasLoggedInData: !!loggedInData,
-  })
-
   // For public auth routes, skip authentication requirement and render immediately without Apollo wrapper
   if (isPublicRoute) {
-    console.log(
-      '🔓 SetPermissions: Public route detected, rendering children without auth check'
-    )
     return <>{children}</>
   }
 
   // Show loading while getting member data or if no token (for protected routes)
   if (loggedInLoading || !token) {
-    console.log(
-      '⏳ SetPermissions: Showing InitialLoading (fetching member by email)'
-    )
     return <InitialLoading text={'Retrieving your church information...'} />
   }
 
-  console.log('✅ SetPermissions: Rendering children with ApolloWrapper')
   return (
     <ApolloWrapper
-      data={data || loggedInData}
-      loading={loading}
-      error={error || loggedInError}
+      data={loggedInData}
+      loading={loggedInLoading}
+      error={loggedInError}
     >
       {children}
     </ApolloWrapper>

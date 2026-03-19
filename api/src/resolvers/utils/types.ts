@@ -93,7 +93,6 @@ type TitleOptions = 'Pastor' | 'Reverend' | 'Bishop'
 export interface Member {
   id: string
   // eslint-disable-next-line camelcase
-  auth_id: string
   firstName: string
   middleName?: string
   lastName: string
@@ -117,7 +116,6 @@ export interface Member {
 export interface MemberWithoutBioData {
   id: string
   // eslint-disable-next-line camelcase
-  auth_id?: string
   firstName: string
   lastName: string
 }

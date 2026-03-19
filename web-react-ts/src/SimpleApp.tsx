@@ -21,13 +21,6 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const user = getStoredUser()
     const currentPath = window.location.pathname
 
-    console.log('🔍 SimpleApp: Checking stored auth', {
-      hasToken: !!token,
-      hasUser: !!user,
-      currentPath,
-      isPublicRoute: PUBLIC_AUTH_ROUTES.includes(currentPath),
-    })
-
     // User is authenticated if they have both token and user data
     // AuthContext will handle token refresh if needed
     const authenticated = !!token && !!user
@@ -37,7 +30,6 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   if (isAuthenticated === null) {
     // Loading
-    console.log('⏳ SimpleApp: Still in loading state')
     return (
       <div
         style={{
@@ -56,11 +48,15 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // Allow access to public auth routes even if not authenticated
   const currentPath = window.location.pathname
-  const isPublicRoute = PUBLIC_AUTH_ROUTES.includes(currentPath)
+
+  // Normalize path for comparison (remove trailing slashes for comparison)
+  const normalizedPath = currentPath.replace(/\/$/, '') || '/'
+  const isPublicRoute = PUBLIC_AUTH_ROUTES.some((route) => {
+    const normalizedRoute = route.replace(/\/$/, '') || '/'
+    return normalizedPath === normalizedRoute
+  })
+
   if (!isAuthenticated && !isPublicRoute) {
-    console.log(
-      '🔓 SimpleApp: Not authenticated and not on public route, showing login'
-    )
     return (
       <SimpleLogin
         onLoginSuccess={() => {
@@ -71,7 +67,6 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     )
   }
 
-  console.log('✅ SimpleApp: Allowing access, rendering children')
   return <>{children}</>
 }
 

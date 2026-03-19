@@ -91,43 +91,6 @@ const executeQuery = async (neoDriver, paymentResponse) => {
 }
 
 /**
- * Executes the query to credit churches with download credits
- * @param {Object} neoDriver - Neo4j driver
- * @param {Object} paymentResponse - Payment response data
- * @returns {Object} - Neo4j result
- */
-const executeCreditChurchesQuery = async (neoDriver, paymentResponse) => {
-  const session = neoDriver.session()
-  let response = ''
-
-  try {
-    const neoRes = await session.executeWrite(async (tx) => {
-      const { reference } = paymentResponse
-      const query = `
-        MATCH (record:Transaction {transactionReference: $reference})
-        MATCH (record)<-[r:MADE_TRANSACTION]-(church)
-          SET church.downloadCredits = church.downloadCredits + record.amount
-          SET record.credited = true
-
-        RETURN church
-      `
-      response = `Successfully updated transaction status to success ${reference}`
-
-      return tx.run(query, { reference })
-    })
-    console.log('Credit churches response:', response)
-
-    return neoRes
-  } catch (error) {
-    console.error('There was an error crediting churches', error)
-  } finally {
-    await session.close()
-  }
-
-  return null
-}
-
-/**
  * Handles the Paystack webhook request
  * @param {Object} event - Lambda event
  * @param {Object} neoDriver - Neo4j driver
@@ -149,9 +112,6 @@ const handlePaystackReq = async (event, neoDriver) => {
 
   console.log('Categories:', categories)
 
-  if (categories?.includes('CreditTransaction')) {
-    await executeCreditChurchesQuery(neoDriver, { reference })
-  }
   if (categories?.includes('Offering')) {
     await db
       .collection('offerings')

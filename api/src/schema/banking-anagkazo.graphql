@@ -86,29 +86,32 @@ extend type Governorship {
   aggregateServiceRecordForWeek(week: Int!): AggregateServiceRecord!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
-      MATCH (agg) WHERE agg.week = $week AND agg.year = date().year
+      WITH this, date() AS today
+      WITH this, [day IN range(0, 5) | date(today) - duration({days: (today.weekDay - 2)}) + duration({days: day})] AS dates
 
-      WITH agg, this
-      WITH date() as today, this, agg
-      WITH  today.weekDay as theDay, today, this, agg
-      WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this, agg
-      WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this, agg
+      OPTIONAL MATCH (dateNode:TimeGraph)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY|HAS*1..2]-(this)
+      WHERE dateNode.date IN dates
+        AND record.noServiceReason IS NULL
+        AND record.bankingSlip IS NULL
+        AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+        AND record.tellerConfirmationTime IS NULL
 
-      MATCH (date:TimeGraph)
-      USING INDEX date:TimeGraph(date)
-      WHERE date.date IN dates
-      MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY|HAS*1..2]-(this)
+      WITH this,
+      [currency IN collect(record.foreignCurrency) WHERE currency IS NOT NULL] AS list,
+      round(coalesce(sum(coalesce(record.income, record.cash, 0)), 0), 2) AS income,
+      toInteger(coalesce(sum(coalesce(record.attendance, 0)), 0)) AS attendance
 
-      WITH DISTINCT record, agg
-      WITH collect(record.foreignCurrency) as list, SUM(record.income) AS income, SUM(record.attendance) AS attendance, agg
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
+      WHERE agg.week = $week AND agg.year = date().year
+
+      WITH this, list, income, attendance, head(collect(agg)) AS agg
 
       RETURN {
-        id: agg.id,
+        id: coalesce(agg.id, toString($week) + '-' + toString(date().year) + '-' + this.id),
         attendance: attendance,
         income: income,
-        week: agg.week,
-        year: agg.year,
+        week: $week,
+        year: date().year,
         foreignCurrency: list
       } AS aggregateServiceRecordForWeek
       """
