@@ -21,6 +21,7 @@ export type CheckInRoleType =
   | 'leaderCouncil'
   | 'leaderStream'
   | 'leaderGovernorship'
+  | 'leaderCampus'
 
 export interface GeoPoint {
   latitude: number

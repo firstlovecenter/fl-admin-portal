@@ -1,6 +1,7 @@
 import { useMutation } from '@apollo/client'
 import { useState } from 'react'
 import {
+  Alert,
   Button,
   ListGroup,
   ListGroupItem,
@@ -9,7 +10,9 @@ import {
   ModalFooter,
   ModalHeader,
   ModalTitle,
+  Spinner,
 } from 'react-bootstrap'
+import { GeoAlt } from 'react-bootstrap-icons'
 import { MANUAL_CHECKIN } from './checkinsQueries'
 
 interface ManualCheckInModalProps {
@@ -36,12 +39,15 @@ export const ManualCheckInModal = ({
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
   const [reason, setReason] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [geoLoading, setGeoLoading] = useState(false)
+  const [geoError, setGeoError] = useState<string | null>(null)
 
   const [manualCheckIn, { loading }] = useMutation(MANUAL_CHECKIN, {
     onCompleted: () => {
       setSelectedMemberId(null)
       setReason('')
       setSearchTerm('')
+      setGeoError(null)
       onMutationComplete?.()
     },
   })
@@ -54,13 +60,30 @@ export const ManualCheckInModal = ({
 
   const handleCheckIn = async () => {
     if (!selectedMemberId) return
-    await manualCheckIn({
-      variables: {
-        eventId,
-        memberId: selectedMemberId,
-        reason: reason || null,
+    setGeoError(null)
+    setGeoLoading(true)
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setGeoLoading(false)
+        await manualCheckIn({
+          variables: {
+            eventId,
+            memberId: selectedMemberId,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            reason: reason || null,
+          },
+        })
       },
-    })
+      () => {
+        setGeoLoading(false)
+        setGeoError(
+          'Could not get your location. Enable GPS and try again — geofence is required even for manual check-ins.'
+        )
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
   }
 
   const selectedAttendee = filteredAttendees.find(
@@ -147,6 +170,14 @@ export const ManualCheckInModal = ({
           </div>
         )}
       </ModalBody>
+      {geoError && (
+        <ModalBody className="pt-0">
+          <Alert variant="warning" className="mb-0 d-flex align-items-center gap-2">
+            <GeoAlt size={16} className="flex-shrink-0" />
+            <span className="small">{geoError}</span>
+          </Alert>
+        </ModalBody>
+      )}
       <ModalFooter>
         <Button variant="secondary" onClick={onHide}>
           Close
@@ -155,10 +186,22 @@ export const ManualCheckInModal = ({
           variant="primary"
           onClick={handleCheckIn}
           disabled={
-            !selectedMemberId || loading || defaultedAttendees.length === 0
+            !selectedMemberId ||
+            loading ||
+            geoLoading ||
+            defaultedAttendees.length === 0
           }
         >
-          {loading ? 'Checking In...' : 'Check In'}
+          {geoLoading ? (
+            <>
+              <Spinner size="sm" className="me-2" />
+              Getting location…
+            </>
+          ) : loading ? (
+            'Checking In…'
+          ) : (
+            'Check In'
+          )}
         </Button>
       </ModalFooter>
     </Modal>

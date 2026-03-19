@@ -90,7 +90,15 @@ export const GET_CHECKIN_DASHBOARD = gql`
         createdByName
         createdByRole
         geoFenceType
+        geoCenter {
+          latitude
+          longitude
+        }
         geoRadius
+        geoPolygon {
+          latitude
+          longitude
+        }
         autoCheckoutMinutes
       }
       checkedIn {
@@ -107,6 +115,8 @@ export const GET_CHECKIN_DASHBOARD = gql`
         geoVerified
         faceMatchStatus
         selfieUrl
+        checkedOutAt
+        autoCheckedOut
       }
       defaulted {
         memberId
@@ -279,8 +289,20 @@ export const RESET_CHECKIN_EVENT_PIN = gql`
 `
 
 export const MANUAL_CHECKIN = gql`
-  mutation ManualCheckIn($eventId: ID!, $memberId: ID!, $reason: String) {
-    ManualCheckIn(eventId: $eventId, memberId: $memberId, reason: $reason) {
+  mutation ManualCheckIn(
+    $eventId: ID!
+    $memberId: ID!
+    $latitude: Float!
+    $longitude: Float!
+    $reason: String
+  ) {
+    ManualCheckIn(
+      eventId: $eventId
+      memberId: $memberId
+      latitude: $latitude
+      longitude: $longitude
+      reason: $reason
+    ) {
       id
       eventId
       memberId
@@ -335,6 +357,43 @@ export const GET_FLAGGED_CHECKINS = gql`
         selfieUrl
       }
       reason
+    }
+  }
+`
+
+export const REPORT_MEMBER_LOCATION = gql`
+  mutation ReportMemberLocation(
+    $eventId: ID!
+    $latitude: Float!
+    $longitude: Float!
+  ) {
+    ReportMemberLocation(
+      eventId: $eventId
+      latitude: $latitude
+      longitude: $longitude
+    ) {
+      id
+      eventId
+      memberId
+      checkedInAt
+      checkedOutAt
+      autoCheckedOut
+    }
+  }
+`
+
+export const GET_EVENTS_IN_RANGE = gql`
+  query GetEventsInRange($latitude: Float!, $longitude: Float!) {
+    GetEventsInRange(latitude: $latitude, longitude: $longitude) {
+      id
+      name
+      type
+      scopeLevel
+      startsAt
+      endsAt
+      status
+      qrToken
+      allowedCheckInMethods
     }
   }
 `

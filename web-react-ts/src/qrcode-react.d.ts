@@ -1,12 +1,31 @@
 declare module 'qrcode.react' {
-  import * as React from 'react'
+  import { CSSProperties, SVGProps, CanvasHTMLAttributes } from 'react'
 
-  export type QRCodeCanvasProps = {
+  interface QRProps {
     value: string
     size?: number
     level?: 'L' | 'M' | 'Q' | 'H'
+    bgColor?: string
+    fgColor?: string
     includeMargin?: boolean
+    imageSettings?: {
+      src: string
+      height?: number
+      width?: number
+      excavate?: boolean
+      x?: number
+      y?: number
+    }
+    style?: CSSProperties
   }
 
-  export const QRCodeCanvas: React.FC<QRCodeCanvasProps>
+  interface QRCodeCanvasProps extends QRProps, CanvasHTMLAttributes<HTMLCanvasElement> {}
+  interface QRCodeSVGProps extends QRProps, SVGProps<SVGSVGElement> {}
+  interface QRCodeProps extends QRProps {
+    renderAs?: 'canvas' | 'svg'
+  }
+
+  export function QRCodeCanvas(props: QRCodeCanvasProps): JSX.Element
+  export function QRCodeSVG(props: QRCodeSVGProps): JSX.Element
+  export default function QRCode(props: QRCodeProps): JSX.Element
 }

@@ -42,6 +42,42 @@ import { Context } from '../utils/neo4j-types'
 
 export const checkinsResolvers = {
   Query: {
+    GetEventsInRange: async (
+      object: unknown,
+      args: { latitude: number; longitude: number },
+      context: Context
+    ) => {
+      const db = await getCheckinsDb()
+      if (!db) return []
+
+      const snapshot = await db
+        .collection(EVENTS_COLLECTION)
+        .where('status', '==', 'ACTIVE')
+        .get()
+
+      if (snapshot.empty) return []
+
+      const now = new Date()
+      const results: ReturnType<typeof mapEventToResponse>[] = []
+
+      for (const doc of snapshot.docs) {
+        const event = doc.data() as CheckInEvent
+
+        // Skip events outside their time window
+        if (new Date(event.startsAt) > now || new Date(event.endsAt) < now) {
+          continue
+        }
+
+        // Only include events whose geofence contains the caller's position
+        const geoResult = validateGeoFence(event, args.latitude, args.longitude)
+        if (geoResult.verified) {
+          results.push(mapEventToResponse(event))
+        }
+      }
+
+      return results
+    },
+
     GetCheckInEvent: async (
       object: unknown,
       args: { eventId: string },
@@ -586,7 +622,13 @@ export const checkinsResolvers = {
 
     ManualCheckIn: async (
       object: unknown,
-      args: { eventId: string; memberId: string; reason?: string },
+      args: {
+        eventId: string
+        memberId: string
+        latitude: number
+        longitude: number
+        reason?: string
+      },
       context: Context
     ) => {
       const eventDoc = await getEventDoc(args.eventId)
@@ -612,6 +654,14 @@ export const checkinsResolvers = {
       if (event.status !== 'ACTIVE') throw new Error('Event is not active')
       if (!isWithinEventWindow(event.startsAt, event.endsAt)) {
         throw new Error('Event is not accepting check-ins at this time')
+      }
+
+      // ── Geofence is always enforced, even for manual admin check-ins ──
+      const geoResult = validateGeoFence(event, args.latitude, args.longitude)
+      if (!geoResult.verified) {
+        throw new Error(
+          `You must be within the event geofence to manually check in a member. Distance: ${geoResult.distance ?? '?'}m`
+        )
       }
 
       const session = context.executionContext.session()
@@ -867,6 +917,44 @@ export const checkinsResolvers = {
         autoCheckedOut: true,
       })
       return updatedRecord
+    },
+
+    ReportMemberLocation: async (
+      object: unknown,
+      args: { eventId: string; latitude: number; longitude: number },
+      context: Context
+    ) => {
+      const eventDoc = await getEventDoc(args.eventId)
+      if (!eventDoc) return null
+      const eventSnapshot = await eventDoc.get()
+      if (!eventSnapshot.exists) return null
+      const event = eventSnapshot.data() as CheckInEvent
+
+      if (event.status !== 'ACTIVE') return null
+
+      const authId = getCurrentAuthId(context)
+      const member = await getMemberByAuthId(context, authId)
+      if (!member) return null
+
+      const existing = await getCheckInRecordForMember(event.id, member.id)
+      if (!existing || existing.checkedOutAt) return existing ?? null
+
+      // Check if member is now outside the geofence
+      const geoResult = validateGeoFence(event, args.latitude, args.longitude)
+      if (geoResult.verified) {
+        // Still inside — nothing to do
+        return existing
+      }
+
+      // Outside the geofence — auto-checkout immediately
+      const db = await getCheckinsDb()
+      if (!db) return existing
+
+      const checkedOutAt = new Date().toISOString()
+      const recordDoc = db.collection(CHECKINS_COLLECTION).doc(existing.id)
+      await recordDoc.update({ checkedOutAt, autoCheckedOut: true })
+
+      return { ...existing, checkedOutAt, autoCheckedOut: true }
     },
 
     ResolveFlaggedCheckIn: async (

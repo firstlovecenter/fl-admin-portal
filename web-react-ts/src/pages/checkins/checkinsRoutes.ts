@@ -31,6 +31,7 @@ const CheckInFlaggedReview = lazy(
 const CheckInEventHistory = lazy(
   () => import('pages/checkins/CheckInEventHistory')
 )
+const CheckInQRPage = lazy(() => import('pages/checkins/CheckInQRPage'))
 
 const leaderRoles: Role[] = [
   'leaderBacenta',
@@ -111,6 +112,12 @@ export const checkinsRoutes: LazyRouteTypes[] = [
     element: CheckInEventHistory,
     placeholder: true,
     roles: [...leaderRoles, ...adminRoles],
+  },
+  {
+    path: '/checkins/qr',
+    element: CheckInQRPage,
+    placeholder: true,
+    roles: ['all' as Role],
   },
   {
     path: '/checkins/:churchType',

@@ -11,6 +11,7 @@ import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
+import { startAutoCheckoutScheduler } from './resolvers/checkins/checkins-scheduler'
 
 const startServer = async () => {
   const SECRETS = await loadSecrets()
@@ -145,6 +146,8 @@ const startServer = async () => {
   await new Promise((resolve) =>
     httpServer.listen({ port: SECRETS.GRAPHQL_SERVER_PORT || 4001 }, resolve)
   )
+  startAutoCheckoutScheduler()
+
   console.log(
     `🚀 GraphQL Server ready at http://${
       SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'

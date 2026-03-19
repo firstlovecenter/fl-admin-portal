@@ -29,6 +29,7 @@ enum CheckInRoleType {
   leaderCouncil
   leaderStream
   leaderGovernorship
+  leaderCampus
 }
 
 enum GeoFenceType {
@@ -180,6 +181,12 @@ type CheckInDashboard {
 
 extend type Query {
   GetCheckInEvent(eventId: ID!): CheckInEvent!
+  """
+  Returns all ACTIVE events whose geofence contains the given coordinates.
+  Used by the public /qr page so leaders can find and scan a QR without
+  needing access to the admin dashboard.
+  """
+  GetEventsInRange(latitude: Float!, longitude: Float!): [CheckInEvent!]!
   ListCheckInEvents(
     scopeLevel: CheckInScopeLevel
     scopeId: ID
@@ -203,7 +210,13 @@ extend type Mutation {
     faceMatchScore: Float
     faceMatchStatus: FaceMatchStatus
   ): CheckInRecord!
-  ManualCheckIn(eventId: ID!, memberId: ID!, reason: String): CheckInRecord!
+  ManualCheckIn(
+    eventId: ID!
+    memberId: ID!
+    latitude: Float!
+    longitude: Float!
+    reason: String
+  ): CheckInRecord!
   """Auto-checkout a member who has left the geofence for too long"""
   CheckOutMember(
     eventId: ID!
@@ -217,4 +230,14 @@ extend type Mutation {
   ResetCheckInEventPin(eventId: ID!): CheckInEvent!
   EndCheckInEvent(eventId: ID!): CheckInEvent!
   ResolveFlaggedCheckIn(recordId: ID!, resolution: String!): CheckInRecord!
+  """
+  Report a member's current location during an event.
+  If they are outside the geofence, they are immediately auto-checked out.
+  Returns the updated CheckInRecord, or null if the member has not checked in.
+  """
+  ReportMemberLocation(
+    eventId: ID!
+    latitude: Float!
+    longitude: Float!
+  ): CheckInRecord
 }

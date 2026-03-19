@@ -1,5 +1,6 @@
 import { useMutation, useLazyQuery } from '@apollo/client'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useContext, useEffect, useState, useCallback, useRef } from 'react'
+import { MemberContext } from 'contexts/MemberContext'
 import {
   Container,
   Card,
@@ -66,6 +67,7 @@ const isInsidePolygon = (
 type Phase = 'loading' | 'prerequisites' | 'ready' | 'checked-in'
 
 const MemberCheckInForm = () => {
+  const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const eventIdFromUrl = searchParams.get('eventId') || ''
@@ -358,8 +360,7 @@ const MemberCheckInForm = () => {
     async (base64: string) => {
       setShowSelfieModal(false)
       setProcessingMessage('Running face verification...')
-      // Compare against empty for now — in production, pass profile photo URL
-      const faceResult = await compareFaces(base64, '')
+      const faceResult = await compareFaces(base64, currentUser?.picture || '')
       setFaceMatch(faceResult)
       setProcessingMessage(null)
 

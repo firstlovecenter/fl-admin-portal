@@ -34,14 +34,20 @@ const CheckInReports = () => {
       const checkedIn = dashboard.checkedIn || []
       const defaulted = dashboard.defaulted || []
 
+      const checkedOut = dashboard.checkedOut || []
+
       const headers = [
         'Name',
         'Role',
         'Unit',
         'Status',
         'Checked In At',
+        'Checked Out At',
+        'Auto Checked Out',
         'Method',
         'Is Late',
+        'Geo Verified',
+        'Face Match Status',
       ]
 
       const rows = [
@@ -51,8 +57,25 @@ const CheckInReports = () => {
           a.unitName,
           'Checked In',
           a.checkedInAt ? new Date(a.checkedInAt).toLocaleString() : '',
+          '',
+          '',
           a.checkInMethod || '',
           a.isLate ? 'Yes' : 'No',
+          a.geoVerified != null ? (a.geoVerified ? 'Yes' : 'No') : '',
+          a.faceMatchStatus || '',
+        ]),
+        ...checkedOut.map((a: any) => [
+          a.fullName,
+          a.roleLabel,
+          a.unitName,
+          'Checked Out',
+          a.checkedInAt ? new Date(a.checkedInAt).toLocaleString() : '',
+          a.checkedOutAt ? new Date(a.checkedOutAt).toLocaleString() : '',
+          a.autoCheckedOut ? 'Yes' : 'No',
+          a.checkInMethod || '',
+          a.isLate ? 'Yes' : 'No',
+          a.geoVerified != null ? (a.geoVerified ? 'Yes' : 'No') : '',
+          a.faceMatchStatus || '',
         ]),
         ...defaulted.map((a: any) => [
           a.fullName,
@@ -61,7 +84,11 @@ const CheckInReports = () => {
           'Defaulted',
           '',
           '',
+          '',
+          '',
           a.isLate ? 'Yes' : 'No',
+          '',
+          '',
         ]),
       ]
 
