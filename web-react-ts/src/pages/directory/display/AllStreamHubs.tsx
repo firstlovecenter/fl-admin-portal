@@ -44,16 +44,16 @@ const DisplayAllStreamHubs = () => {
                 {stream?.leader ? ` ${stream.leader.fullName}` : null}
               </h6>
             </Link>
-            {stream?.admin ? (
+            {stream?.admins?.[0] ? (
               <Link
                 className="pb-4 text-white text-small"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(stream?.admin)
+                  clickCard(stream?.admins?.[0])
                 }}
               >
                 <span className="text-muted">Admin :</span>{' '}
-                {`${stream?.admin?.fullName}`}
+                {`${stream?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>

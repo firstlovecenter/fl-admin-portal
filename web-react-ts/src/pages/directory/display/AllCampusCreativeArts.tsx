@@ -50,16 +50,16 @@ const DisplayAllCampusCreativeArts = () => {
                 {campus?.leader ? ` ${campus.leader.fullName}` : null}
               </h6>
             </Link>
-            {campus?.admin ? (
+            {campus?.admins?.[0] ? (
               <Link
                 className="pb-4 text-white text-small"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(campus?.admin)
+                  clickCard(campus?.admins?.[0])
                 }}
               >
                 <span className="text-muted">Admin :</span>{' '}
-                {`${campus?.admin?.fullName}`}
+                {`${campus?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>

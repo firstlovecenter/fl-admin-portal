@@ -46,16 +46,16 @@ const DisplayAllHubs = () => {
                 {hubCouncil?.leader ? ` ${hubCouncil?.leader.fullName}` : null}
               </h6>
             </Link>
-            {hubCouncil?.admin ? (
+            {hubCouncil?.admins?.[0] ? (
               <Link
                 className="pb-4 text-white text-small"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(hubCouncil?.admin)
+                  clickCard(hubCouncil?.admins?.[0])
                 }}
               >
                 <span className="text-muted">Admin :</span>{' '}
-                {`${hubCouncil?.admin?.fullName}`}
+                {`${hubCouncil?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>

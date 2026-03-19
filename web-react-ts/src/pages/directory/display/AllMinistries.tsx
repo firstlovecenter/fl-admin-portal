@@ -46,16 +46,16 @@ const DisplayAllMinistries = () => {
                   : null}
               </h6>
             </Link>
-            {creativeArts?.admin ? (
+            {creativeArts?.admins?.[0] ? (
               <Link
                 className="pb-4 text-white text-small"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(creativeArts?.admin)
+                  clickCard(creativeArts?.admins?.[0])
                 }}
               >
                 <span className="text-muted">Admin :</span>{' '}
-                {`${creativeArts?.admin?.fullName}`}
+                {`${creativeArts?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>

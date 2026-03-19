@@ -44,16 +44,16 @@ const DisplayAllMinistryHubs = () => {
                 {ministry?.leader ? ` ${ministry.leader.fullName}` : null}
               </h6>
             </Link>
-            {ministry?.admin ? (
+            {ministry?.admins?.[0] ? (
               <Link
                 className="pb-4 text-white text-small"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(ministry?.admin)
+                  clickCard(ministry?.admins?.[0])
                 }}
               >
                 <span className="text-muted">Admin :</span>{' '}
-                {`${ministry?.admin?.fullName}`}
+                {`${ministry?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>

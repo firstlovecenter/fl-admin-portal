@@ -17,20 +17,24 @@ import { Church, ChurchLevel, MemberWithoutBioData, Role } from 'global-types'
 import { directoryLock, plural, throwToSentry } from 'global-utils'
 import { useMutation } from '@apollo/client'
 import {
-  MAKE_CREATIVEARTS_ADMIN,
-  MAKE_MINISTRY_ADMIN,
+  ADD_CREATIVEARTS_ADMIN,
+  REMOVE_CREATIVEARTS_ADMIN,
+  ADD_MINISTRY_ADMIN,
+  REMOVE_MINISTRY_ADMIN,
 } from './CAAdminMutations'
 import * as Yup from 'yup'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { permitAdmin } from 'permission-utils'
 import { MemberContext } from 'contexts/MemberContext'
-import { Geo, PencilSquare } from 'react-bootstrap-icons'
+import { Geo } from 'react-bootstrap-icons'
 import useModal from 'hooks/useModal'
 import SearchMember from 'components/formik/SearchMember'
 import SubmitButton from 'components/formik/SubmitButton'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { ChurchContext } from 'contexts/ChurchContext'
+import { alertMsg } from 'global-utils'
+import { displayError, isPermissionError } from 'utils/errorHandler'
 import Last3WeeksCard, {
   Last3WeeksCardProps,
   shouldFill,
@@ -44,7 +48,7 @@ type DisplayChurchDetailsProps = {
   name: string
   leaderTitle: string
   leader: MemberWithoutBioData
-  admin?: MemberWithoutBioData
+  admins?: MemberWithoutBioData[]
   churchId: string
   churchType: ChurchLevel
   subLevel?: ChurchLevel
@@ -97,49 +101,65 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
   const { currentUser } = useContext(MemberContext)
   const { show, handleShow, handleClose } = useModal()
 
-  //Change Admin Initialised
-  const [MakeMinistryAdmin] = useMutation(MAKE_MINISTRY_ADMIN)
-  const [MakeCreativeArtsAdmin] = useMutation(MAKE_CREATIVEARTS_ADMIN)
+  const [AddMinistryAdmin] = useMutation(ADD_MINISTRY_ADMIN)
+  const [RemoveMinistryAdmin] = useMutation(REMOVE_MINISTRY_ADMIN)
+  const [AddCreativeArtsAdmin] = useMutation(ADD_CREATIVEARTS_ADMIN)
+  const [RemoveCreativeArtsAdmin] = useMutation(REMOVE_CREATIVEARTS_ADMIN)
 
-  const initialValues = {
-    adminName: props.admin
-      ? `${props.admin?.firstName} ${props.admin?.lastName}`
-      : '',
-    adminSelect: props.admin?.id ?? '',
-  }
+  const initialValues = { adminSelect: '' }
   const validationSchema = Yup.object({
     adminSelect: Yup.string().required(
       'Please select an Admin from the dropdown'
     ),
   })
 
-  const onSubmit = async (
+  const addAdmin = async (
     values: typeof initialValues,
     onSubmitProps: FormikHelpers<typeof initialValues>
   ) => {
-    onSubmitProps.setSubmitting(true)
     try {
       if (props.churchType === 'Ministry') {
-        await MakeMinistryAdmin({
-          variables: {
-            ministryId: props.church.id,
-            newAdminId: values.adminSelect,
-            oldAdminId: initialValues.adminSelect || 'no-old-admin',
-          },
+        await AddMinistryAdmin({
+          variables: { ministryId: props.churchId, adminId: values.adminSelect },
         })
       } else if (props.churchType === 'CreativeArts') {
-        await MakeCreativeArtsAdmin({
+        await AddCreativeArtsAdmin({
           variables: {
-            creativeArtsId: props.church.id,
-            newAdminId: values.adminSelect,
-            oldAdminId: initialValues.adminSelect || 'no-old-admin',
+            creativeArtsId: props.churchId,
+            adminId: values.adminSelect,
           },
         })
       }
+      alertMsg(`Admin added successfully to ${props.churchType}`)
+      onSubmitProps.resetForm()
+      handleClose()
+      window.location.reload()
     } catch (error) {
-      throwToSentry('', error)
+      throwToSentry('Error adding admin', error)
+      alertMsg('Failed to add admin. Please try again.')
+    }
+  }
+
+  const removeAdmin = async (adminId: string) => {
+    if (!window.confirm('Are you sure you want to remove this admin?')) return
+    try {
+      if (props.churchType === 'Ministry') {
+        await RemoveMinistryAdmin({
+          variables: { ministryId: props.churchId, adminId },
+        })
+      } else if (props.churchType === 'CreativeArts') {
+        await RemoveCreativeArtsAdmin({
+          variables: { creativeArtsId: props.churchId, adminId },
+        })
+      }
+      alertMsg('Admin removed successfully')
+      window.location.reload()
+    } catch (e) {
+      if (!isPermissionError(e)) {
+        throwToSentry('Error removing admin', e)
+      }
+      displayError('Unable to Remove Admin', e)
     } finally {
-      onSubmitProps.setSubmitting(false)
       handleClose()
     }
   }
@@ -165,24 +185,48 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
 
             {needsAdmin && (
               <RoleView roles={roles}>
-                <Row className="g-0 d-flex align-items-center">
-                  <Col className="col-auto">
-                    {!!props.admin && (
-                      <MemberAvatarWithName
-                        member={props.admin}
-                        onClick={() => {
-                          clickCard(props.admin)
-                          navigate('/member/displaydetails')
-                        }}
-                      />
-                    )}
-                  </Col>
-                  <Col>
-                    <Button className="p-1 small ms-2" onClick={handleShow}>
-                      <PencilSquare /> Change Admin
-                    </Button>
-                  </Col>
-                </Row>
+                <div className="mb-3">
+                  <h6>Administrators ({props.admins?.length || 0})</h6>
+                  {props.admins && props.admins.length > 0 ? (
+                    <div className="d-flex flex-column gap-2">
+                      {props.admins.map((admin) => (
+                        <Row
+                          key={admin.id}
+                          className="g-0 d-flex align-items-center"
+                        >
+                          <Col className="col-auto">
+                            <MemberAvatarWithName
+                              member={admin}
+                              onClick={() => {
+                                clickCard(admin)
+                                navigate('/member/displaydetails')
+                              }}
+                            />
+                          </Col>
+                          <Col>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              className="ms-2"
+                              onClick={() => removeAdmin(admin.id)}
+                            >
+                              Remove
+                            </Button>
+                          </Col>
+                        </Row>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted">No admins assigned</p>
+                  )}
+                  <Button
+                    className="btn-secondary mt-2"
+                    size="sm"
+                    onClick={handleShow}
+                  >
+                    + Add Admin
+                  </Button>
+                </div>
               </RoleView>
             )}
           </Container>
@@ -190,19 +234,19 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
             <Formik
               initialValues={initialValues}
               validationSchema={validationSchema}
-              onSubmit={onSubmit}
+              onSubmit={addAdmin}
             >
               {(formik) => (
                 <Form>
                   <Modal.Header closeButton>
-                    Change {`${props.churchType}`} Admin
+                    Add {`${props.churchType}`} Admin
                   </Modal.Header>
                   <Modal.Body>
                     <Row className="form-row">
                       <Col>
                         <SearchMember
                           name="adminSelect"
-                          initialValue={initialValues?.adminName}
+                          initialValue=""
                           placeholder="Select an Admin"
                           setFieldValue={formik.setFieldValue}
                           aria-describedby="Member Search"

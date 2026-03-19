@@ -46,15 +46,15 @@ const DisplayAllReds = () => {
                 {governorship?.leader && ` ${governorship?.leader.fullName}`}
               </h6>
             </Link>
-            {governorship?.admin ? (
+            {governorship?.admins?.[0] ? (
               <Link
                 className="pb-4"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(governorship?.admin)
+                  clickCard(governorship?.admins?.[0])
                 }}
               >
-                {`Admin: ${governorship?.admin?.fullName}`}
+                {`Admin: ${governorship?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>

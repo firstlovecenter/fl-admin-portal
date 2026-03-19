@@ -22,6 +22,8 @@ import {
   REMOVE_CAMPUS_ADMIN,
   ADD_OVERSIGHT_ADMIN,
   REMOVE_OVERSIGHT_ADMIN,
+  ADD_DENOMINATION_ADMIN,
+  REMOVE_DENOMINATION_ADMIN,
   ADD_BACENTA_ADMIN,
   REMOVE_BACENTA_ADMIN,
 } from './AdminMutations'
@@ -150,6 +152,8 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   const [RemoveCampusAdmin] = useMutation(REMOVE_CAMPUS_ADMIN)
   const [AddOversightAdmin] = useMutation(ADD_OVERSIGHT_ADMIN)
   const [RemoveOversightAdmin] = useMutation(REMOVE_OVERSIGHT_ADMIN)
+  const [AddDenominationAdmin] = useMutation(ADD_DENOMINATION_ADMIN)
+  const [RemoveDenominationAdmin] = useMutation(REMOVE_DENOMINATION_ADMIN)
   const [AddBacentaAdmin] = useMutation(ADD_BACENTA_ADMIN)
   const [RemoveBacentaAdmin] = useMutation(REMOVE_BACENTA_ADMIN)
 
@@ -169,6 +173,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     try {
       const variables = {
         adminId: values.adminSelect,
+        ...(props.churchType === 'Denomination' && {
+          denominationId: props.churchId,
+        }),
         ...(props.churchType === 'Oversight' && { oversightId: props.churchId }),
         ...(props.churchType === 'Campus' && { campusId }),
         ...(props.churchType === 'Stream' && { streamId }),
@@ -177,7 +184,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         ...(props.churchType === 'Bacenta' && { bacentaId: props.churchId }),
       }
 
-      if (props.churchType === 'Oversight') {
+      if (props.churchType === 'Denomination') {
+        await AddDenominationAdmin({ variables })
+      } else if (props.churchType === 'Oversight') {
         await AddOversightAdmin({ variables })
       } else if (props.churchType === 'Campus') {
         await AddCampusAdmin({ variables })
@@ -209,6 +218,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     try {
       const variables = {
         adminId,
+        ...(props.churchType === 'Denomination' && {
+          denominationId: props.churchId,
+        }),
         ...(props.churchType === 'Oversight' && { oversightId: props.churchId }),
         ...(props.churchType === 'Campus' && { campusId }),
         ...(props.churchType === 'Stream' && { streamId }),
@@ -217,7 +229,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         ...(props.churchType === 'Bacenta' && { bacentaId: props.churchId }),
       }
 
-      if (props.churchType === 'Oversight') {
+      if (props.churchType === 'Denomination') {
+        await RemoveDenominationAdmin({ variables })
+      } else if (props.churchType === 'Oversight') {
         await RemoveOversightAdmin({ variables })
       } else if (props.churchType === 'Campus') {
         await RemoveCampusAdmin({ variables })

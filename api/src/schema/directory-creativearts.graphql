@@ -1131,8 +1131,12 @@ extend type Mutation {
     creativeArtsId: ID!
     newAdminId: ID!
   ): Member
+  AddCreativeArtsAdmin(adminId: ID!, creativeArtsId: ID!): Member!
+  RemoveCreativeArtsAdminOnly(adminId: ID!, creativeArtsId: ID!): Member
   MakeMinistryAdmin(adminId: ID!, ministryId: ID!, oldAdminId: ID): Member!
   RemoveMinistryAdmin(adminId: ID!, ministryId: ID!, newAdminId: ID!): Member
+  AddMinistryAdmin(adminId: ID!, ministryId: ID!): Member!
+  RemoveMinistryAdminOnly(adminId: ID!, ministryId: ID!): Member
 }
 
 type MinistryAttendanceRecord implements Record {

@@ -46,16 +46,16 @@ const DisplayAllOversights = () => {
                   : null}
               </h6>
             </Link>
-            {denomination?.admin ? (
+            {denomination?.admins?.[0] ? (
               <Link
                 className="pb-4 text-white text-small"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(denomination?.admin)
+                  clickCard(denomination?.admins?.[0])
                 }}
               >
                 <span className="text-muted">Admin :</span>{' '}
-                {`${denomination?.admin?.fullName}`}
+                {`${denomination?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>

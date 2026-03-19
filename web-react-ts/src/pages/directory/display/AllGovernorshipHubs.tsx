@@ -49,16 +49,16 @@ const DisplayAllGovernorshipHubs = () => {
                   : null}
               </h6>
             </Link>
-            {governorship?.admin ? (
+            {governorship?.admins?.[0] ? (
               <Link
                 className="pb-4 text-white text-small"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(governorship?.admin)
+                  clickCard(governorship?.admins?.[0])
                 }}
               >
                 <span className="text-muted">Admin :</span>{' '}
-                {`${governorship?.admin?.fullName}`}
+                {`${governorship?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>

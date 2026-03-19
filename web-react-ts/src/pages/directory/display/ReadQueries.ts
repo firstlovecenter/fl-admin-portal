@@ -376,7 +376,7 @@ export const DISPLAY_GOVERNORSHIP = gql`
         }
       }
 
-      admin {
+      admins {
         id
         firstName
         lastName
@@ -448,7 +448,7 @@ export const DISPLAY_COUNCIL = gql`
         name
       }
 
-      admin {
+      admins {
         id
         firstName
         lastName
@@ -516,7 +516,7 @@ export const DISPLAY_STREAM = gql`
         name
       }
 
-      admin {
+      admins {
         id
         firstName
         lastName
@@ -580,7 +580,7 @@ export const DISPLAY_CAMPUS = gql`
         name
       }
 
-      admin {
+      admins {
         id
         firstName
         lastName
@@ -639,7 +639,7 @@ export const DISPLAY_OVERSIGHT = gql`
         currency
         conversionRateToDollar
       }
-      admin {
+      admins {
         id
         firstName
         lastName
@@ -686,7 +686,7 @@ export const DISPLAY_CREATIVEARTS = gql`
         nameWithTitle
         pictureUrl
       }
-      admin {
+      admins {
         id
         firstName
         lastName
@@ -742,7 +742,7 @@ export const DISPLAY_DENOMINATION = gql`
         id
         name
       }
-      admin {
+      admins {
         id
         firstName
         lastName
@@ -795,7 +795,7 @@ export const DISPLAY_MINISTRY = gql`
         nameWithTitle
         pictureUrl
       }
-      admin {
+      admins {
         id
         firstName
         lastName

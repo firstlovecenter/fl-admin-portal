@@ -13,10 +13,6 @@ interface RemoveAdminArgs {
   [key: string]: string // Allow dynamic church ID properties
 }
 
-const getChurchIdParam = (churchType: ChurchLevel): string => {
-  return `${churchType.toLowerCase()}Id`
-}
-
 const getPermittedRoles = (churchType: ChurchLevel): Role[] => {
   // Map church types to their parent level for permissions
   const permissionMap: Partial<Record<ChurchLevel, ChurchLevel>> = {
@@ -45,10 +41,8 @@ export const AddChurchAdmin = async (
 ) => {
   const session = context.executionContext.session()
   const permittedRoles = getPermittedRoles(churchType)
-  
-  isAuth(permittedRoles, context.jwt['https://flcadmin.netlify.app/roles'])
 
-  const churchIdParam = getChurchIdParam(churchType)
+  isAuth(permittedRoles, context.jwt['https://flcadmin.netlify.app/roles'])
 
   const cypher = `
     MATCH (church:${churchType} {id: $churchId})
@@ -78,13 +72,13 @@ export const AddChurchAdmin = async (
 
   try {
     const result = await session.run(cypher, {
-      churchId: args[churchIdParam],
+      churchId: args.churchId,
       adminId: args.adminId,
       auth: context.jwt.sub,
     })
 
     const admin = rearrangeCypherObject(result)
-    
+
     if (!admin.id) {
       throw new Error(`Admin already assigned or not found`)
     }
@@ -105,10 +99,8 @@ export const RemoveChurchAdminOnly = async (
 ) => {
   const session = context.executionContext.session()
   const permittedRoles = getPermittedRoles(churchType)
-  
-  isAuth(permittedRoles, context.jwt['https://flcadmin.netlify.app/roles'])
 
-  const churchIdParam = getChurchIdParam(churchType)
+  isAuth(permittedRoles, context.jwt['https://flcadmin.netlify.app/roles'])
 
   const cypher = `
     MATCH (church:${churchType} {id: $churchId})
@@ -136,13 +128,13 @@ export const RemoveChurchAdminOnly = async (
 
   try {
     const result = await session.run(cypher, {
-      churchId: args[churchIdParam],
+      churchId: args.churchId,
       adminId: args.adminId,
       auth: context.jwt.sub,
     })
 
     const admin = rearrangeCypherObject(result)
-    
+
     if (!admin.id) {
       throw new Error('Admin relationship not found')
     }
@@ -199,4 +191,16 @@ export const adminManagementResolvers = {
     AddChurchAdmin(context, { adminId: args.adminId, churchId: args.bacentaId }, 'Bacenta'),
   RemoveBacentaAdminOnly: (object: any, args: any, context: Context) =>
     RemoveChurchAdminOnly(context, { adminId: args.adminId, churchId: args.bacentaId }, 'Bacenta'),
+
+  // CreativeArts
+  AddCreativeArtsAdmin: (object: any, args: any, context: Context) =>
+    AddChurchAdmin(context, { adminId: args.adminId, churchId: args.creativeArtsId }, 'CreativeArts'),
+  RemoveCreativeArtsAdminOnly: (object: any, args: any, context: Context) =>
+    RemoveChurchAdminOnly(context, { adminId: args.adminId, churchId: args.creativeArtsId }, 'CreativeArts'),
+
+  // Ministry
+  AddMinistryAdmin: (object: any, args: any, context: Context) =>
+    AddChurchAdmin(context, { adminId: args.adminId, churchId: args.ministryId }, 'Ministry'),
+  RemoveMinistryAdminOnly: (object: any, args: any, context: Context) =>
+    RemoveChurchAdminOnly(context, { adminId: args.adminId, churchId: args.ministryId }, 'Ministry'),
 }

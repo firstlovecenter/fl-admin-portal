@@ -44,16 +44,16 @@ const DisplayAllCampuses = () => {
                 {oversight?.leader ? ` ${oversight.leader.fullName}` : null}
               </h6>
             </Link>
-            {oversight?.admin ? (
+            {oversight?.admins?.[0] ? (
               <Link
                 className="pb-4 text-white text-small"
                 to="/member/displaydetails"
                 onClick={() => {
-                  clickCard(oversight?.admin)
+                  clickCard(oversight?.admins?.[0])
                 }}
               >
                 <span className="text-muted">Admin :</span>{' '}
-                {`${oversight?.admin?.fullName}`}
+                {`${oversight?.admins?.[0]?.fullName}`}
               </Link>
             ) : null}
           </Col>
