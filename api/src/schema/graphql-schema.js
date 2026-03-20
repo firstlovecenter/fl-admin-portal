@@ -74,8 +74,12 @@ const accounts = fs
   .readFileSync(path.join(__dirname, './accounts.graphql'))
   .toString('utf-8')
 
-const downloadCredits = fs
+const downloadMembership = fs
   .readFileSync(path.join(__dirname, './download-credits.graphql'))
+  .toString('utf-8')
+
+const checkins = fs
+  .readFileSync(path.join(__dirname, './checkins.graphql'))
   .toString('utf-8')
 
 const array = [
@@ -96,7 +100,8 @@ const array = [
   creativeartsChurches,
   maps,
   accounts,
-  downloadCredits,
+  downloadMembership,
+  checkins,
 ]
 
 const combinedSchema = array.join(' ')

@@ -11,6 +11,7 @@ import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
+import { startAutoCheckoutScheduler } from './resolvers/checkins/checkins-scheduler'
 
 const startServer = async () => {
   const SECRETS = await loadSecrets()
@@ -21,12 +22,14 @@ const startServer = async () => {
   const uri = SECRETS.NEO4J_URI || 'bolt://localhost:7687/'
   const hasEncryptionInUri =
     uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
+  const isLocalUri =
+    uri.includes('localhost') || uri.includes('127.0.0.1')
   const driverConfig = {
     connectionTimeout: 30000,
   }
 
-  // Only add encryption config if not using secure URI scheme
-  if (!hasEncryptionInUri) {
+  // Only add encryption config if not using secure URI scheme and not local
+  if (!hasEncryptionInUri && !isLocalUri) {
     driverConfig.encrypted = 'ENCRYPTION_ON'
     driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
   }
@@ -145,6 +148,8 @@ const startServer = async () => {
   await new Promise((resolve) =>
     httpServer.listen({ port: SECRETS.GRAPHQL_SERVER_PORT || 4001 }, resolve)
   )
+  startAutoCheckoutScheduler()
+
   console.log(
     `🚀 GraphQL Server ready at http://${
       SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'

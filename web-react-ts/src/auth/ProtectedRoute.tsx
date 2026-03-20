@@ -26,12 +26,7 @@ const ProtectedRoute: (props: ProtectedRouteProps) => JSX.Element = (props) => {
   const location = useLocation()
   const atHome = location?.pathname === '/'
 
-  if (
-    isLoading ||
-    //Not Authenticated means that Authentication is still happening
-    !isAuthenticated ||
-    !currentUser.roles.length
-  ) {
+  if (isLoading) {
     return <LoadingScreen />
   }
   if (atHome && !isAuthenticated) {

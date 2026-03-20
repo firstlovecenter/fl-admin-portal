@@ -41,3 +41,4 @@ api/src/resolvers/**/*.js
 # AWS Amplify files
 .amplify/
 amplify-artifacts.json
+nul

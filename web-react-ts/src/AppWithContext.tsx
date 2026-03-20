@@ -28,6 +28,7 @@ import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
 import PageContainer from 'components/base-component/PageContainer'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
+import { checkinsRoutes } from 'pages/checkins/checkinsRoutes'
 
 type AppPropsType = {
   token: string
@@ -184,6 +185,7 @@ const AppWithContext = (props: AppPropsType) => {
                           ...graphs,
                           ...maps,
                           ...accountsRoutes,
+                          ...checkinsRoutes,
                         ].map((route, i) => (
                           <Route
                             key={i}

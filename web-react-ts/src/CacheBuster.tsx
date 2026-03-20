@@ -1,6 +1,6 @@
 /* eslint-disable no-console*/
 // @ts-nocheck
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import packageJson from '../package.json'
 
 const appVersion = packageJson.version

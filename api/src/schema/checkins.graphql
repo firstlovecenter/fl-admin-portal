@@ -1,0 +1,243 @@
+enum CheckInScopeLevel {
+  OVERSIGHT
+  CAMPUS
+  STREAM
+  COUNCIL
+  GOVERNORSHIP
+  BACENTA
+}
+
+enum CheckInAttendanceType {
+  LEADERS_ONLY
+}
+
+enum CheckInStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum CheckInMethod {
+  QR
+  PIN
+  FACE_ID
+  MANUAL
+}
+
+enum CheckInRoleType {
+  leaderBacenta
+  leaderCouncil
+  leaderStream
+  leaderGovernorship
+  leaderCampus
+}
+
+enum GeoFenceType {
+  CIRCLE
+  POLYGON
+}
+
+enum FaceMatchStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+  SKIPPED
+}
+
+input GeoPointInput {
+  latitude: Float!
+  longitude: Float!
+}
+
+input CreateCheckInEventInput {
+  name: String!
+  type: String!
+  description: String
+  location: String
+  scopeLevel: CheckInScopeLevel!
+  scopeId: ID!
+  startsAt: DateTime!
+  endsAt: DateTime!
+  gracePeriod: Int
+  attendanceType: CheckInAttendanceType!
+  allowedCheckInRoles: [CheckInRoleType!]!
+  """Methods available for check-in: QR, PIN, FACE_ID (at least one required)"""
+  allowedCheckInMethods: [CheckInMethod!]!
+  geoFenceType: GeoFenceType!
+  geoCenter: GeoPointInput
+  geoRadius: Int
+  geoPolygon: [GeoPointInput!]
+  """Minutes outside geofence before auto-checkout (default 30)"""
+  autoCheckoutMinutes: Int
+}
+
+type GeoPoint {
+  latitude: Float!
+  longitude: Float!
+}
+
+type CheckInEvent {
+  id: ID!
+  name: String!
+  type: String!
+  description: String
+  location: String
+  scopeLevel: CheckInScopeLevel!
+  scopeId: ID!
+  startsAt: DateTime!
+  endsAt: DateTime!
+  gracePeriod: Int!
+  attendanceType: CheckInAttendanceType!
+  status: CheckInStatus!
+  pinCode: String
+  qrToken: String
+  createdAt: DateTime!
+  createdById: ID!
+  createdByName: String!
+  createdByRole: String!
+  totalExpected: Int!
+  allowedCheckInRoles: [CheckInRoleType!]!
+  """Methods available for check-in (QR, PIN, FACE_ID)"""
+  allowedCheckInMethods: [CheckInMethod!]!
+  geoFenceType: GeoFenceType!
+  geoCenter: GeoPoint
+  geoRadius: Int
+  geoPolygon: [GeoPoint!]
+  """Minutes outside geofence before auto-checkout"""
+  autoCheckoutMinutes: Int!
+}
+
+type CheckInRecord {
+  id: ID!
+  eventId: ID!
+  memberId: ID!
+  memberName: String!
+  memberRole: String!
+  memberUnit: String!
+  checkedInAt: DateTime!
+  checkInMethod: CheckInMethod!
+  verifiedBy: String!
+  geoVerified: Boolean
+  distanceFromVenue: Float
+  selfieUrl: String
+  faceMatchScore: Float
+  faceMatchStatus: FaceMatchStatus
+  deviceFingerprint: String
+  """Timestamp when the member was checked out (null if still checked in)"""
+  checkedOutAt: DateTime
+  """Whether the checkout was triggered automatically by geofence monitoring"""
+  autoCheckedOut: Boolean
+}
+
+type CheckInAttendee {
+  memberId: ID!
+  firstName: String!
+  lastName: String!
+  fullName: String!
+  roleLabel: String!
+  unitName: String!
+  unitType: String!
+  checkedInAt: DateTime
+  checkInMethod: CheckInMethod
+  isLate: Boolean!
+  geoVerified: Boolean
+  faceMatchStatus: FaceMatchStatus
+  selfieUrl: String
+  checkedOutAt: DateTime
+  autoCheckedOut: Boolean
+}
+
+type CheckInStats {
+  totalExpected: Int!
+  checkedInCount: Int!
+  defaultedCount: Int!
+  checkedOutCount: Int!
+  percentage: Float!
+  flaggedCount: Int!
+}
+
+type CheckInScopeFilter {
+  id: ID!
+  name: String!
+  level: CheckInScopeLevel!
+}
+
+type FlaggedCheckIn {
+  record: CheckInRecord!
+  attendee: CheckInAttendee!
+  reason: String!
+}
+
+type CheckInDashboard {
+  event: CheckInEvent!
+  checkedIn: [CheckInAttendee!]!
+  defaulted: [CheckInAttendee!]!
+  checkedOut: [CheckInAttendee!]!
+  stats: CheckInStats!
+  scopeFilters: [CheckInScopeFilter!]!
+  appliedFilterId: ID
+  flaggedRecords: [FlaggedCheckIn!]!
+}
+
+extend type Query {
+  GetCheckInEvent(eventId: ID!): CheckInEvent!
+  """
+  Returns all ACTIVE events whose geofence contains the given coordinates.
+  Used by the public /qr page so leaders can find and scan a QR without
+  needing access to the admin dashboard.
+  """
+  GetEventsInRange(latitude: Float!, longitude: Float!): [CheckInEvent!]!
+  ListCheckInEvents(
+    scopeLevel: CheckInScopeLevel
+    scopeId: ID
+    status: CheckInStatus
+  ): [CheckInEvent!]!
+  GetCheckInDashboard(eventId: ID!, filterScopeId: ID): CheckInDashboard!
+  GetAdminScopes: [CheckInScopeFilter!]!
+  GetFlaggedCheckIns(eventId: ID!): [FlaggedCheckIn!]!
+}
+
+extend type Mutation {
+  CreateCheckInEvent(input: CreateCheckInEventInput!): CheckInEvent!
+  CheckInMember(
+    eventId: ID!
+    method: CheckInMethod!
+    code: String
+    deviceFingerprint: String!
+    latitude: Float!
+    longitude: Float!
+    selfieBase64: String
+    faceMatchScore: Float
+    faceMatchStatus: FaceMatchStatus
+  ): CheckInRecord!
+  ManualCheckIn(
+    eventId: ID!
+    memberId: ID!
+    latitude: Float!
+    longitude: Float!
+    reason: String
+  ): CheckInRecord!
+  """Auto-checkout a member who has left the geofence for too long"""
+  CheckOutMember(
+    eventId: ID!
+    latitude: Float!
+    longitude: Float!
+    deviceFingerprint: String!
+  ): CheckInRecord!
+  UpdateCheckInEventDuration(eventId: ID!, endsAt: DateTime!): CheckInEvent!
+  PauseCheckInEvent(eventId: ID!): CheckInEvent!
+  ResumeCheckInEvent(eventId: ID!): CheckInEvent!
+  ResetCheckInEventPin(eventId: ID!): CheckInEvent!
+  EndCheckInEvent(eventId: ID!): CheckInEvent!
+  ResolveFlaggedCheckIn(recordId: ID!, resolution: String!): CheckInRecord!
+  """
+  Report a member's current location during an event.
+  If they are outside the geofence, they are immediately auto-checked out.
+  Returns the updated CheckInRecord, or null if the member has not checked in.
+  """
+  ReportMemberLocation(
+    eventId: ID!
+    latitude: Float!
+    longitude: Float!
+  ): CheckInRecord
+}

@@ -11,6 +11,7 @@ import { churchLevels } from 'pages/directory/update/directory-utils'
 import {
   permitArrivals,
   permitArrivalsHelpers,
+  permitAdmin,
   permitLeaderAdmin,
   permitLeaderAdminArrivals,
   permitMe,
@@ -75,6 +76,20 @@ export const menuItems: MenuItem[] = [
     roles: [
       ...permitLeaderAdminArrivals('Bacenta'),
       ...permitLeaderAdmin('Hub'),
+    ],
+  },
+  {
+    name: 'Check-Ins',
+    to: '/checkins',
+    roles: [
+      'leaderBacenta',
+      'leaderGovernorship',
+      ...permitAdmin('Governorship'),
+      ...permitLeaderAdmin('Council'),
+      ...permitLeaderAdmin('Stream'),
+      ...permitLeaderAdmin('Campus'),
+      ...permitLeaderAdmin('Oversight'),
+      ...permitLeaderAdmin('Denomination'),
     ],
   },
 ]
