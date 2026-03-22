@@ -1,19 +1,16 @@
 import { useQuery } from '@apollo/client'
-import { useContext, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Container, Form } from 'react-bootstrap'
+import { Card, Container, Form } from 'react-bootstrap'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { GET_CHECKIN_DASHBOARD } from './checkinsQueries'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
-import { ChurchContext } from 'contexts/ChurchContext'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import MemberDisplayCard from 'components/card/MemberDisplayCard'
 
 const DefaultedMembersList = () => {
   const { eventId } = useParams()
-  const { clickedChurch } = useContext(ChurchContext)
   const [searchTerm, setSearchTerm] = useState('')
 
   const { data, loading, error, refetch } = useQuery(GET_CHECKIN_DASHBOARD, {
@@ -47,7 +44,6 @@ const DefaultedMembersList = () => {
           <HeadingPrimary loading={loading}>Defaulted Members</HeadingPrimary>
           <HeadingSecondary loading={!event?.name}>
             {event?.name}
-            {clickedChurch?.name && ` • ${clickedChurch.name}`}
           </HeadingSecondary>
 
           {/* Search Input */}
@@ -64,27 +60,29 @@ const DefaultedMembersList = () => {
           <div className="d-grid gap-2">
             {filteredMembers.length ? (
               filteredMembers.map((member: any) => (
-                <MemberDisplayCard
-                  key={member.memberId}
-                  member={member}
-                  contact={true}
-                >
-                  <div className="small">
-                    <span className="badge bg-warning me-2">⏳ Pending</span>
-                    {member.isLate && (
-                      <span className="badge bg-danger me-2">Late</span>
-                    )}
-                    <div className="mt-1 text-muted">
-                      {member.unitType}: {member.unitName}
+                <Card key={member.memberId} className="p-3">
+                  <div className="d-flex justify-content-between align-items-start">
+                    <div>
+                      <div className="fw-bold">{member.fullName}</div>
+                      <div className="text-muted small">{member.roleLabel}</div>
+                      <div className="text-muted small">
+                        {member.unitType}: {member.unitName}
+                      </div>
+                    </div>
+                    <div className="d-flex flex-column align-items-end gap-1">
+                      <span className="badge bg-warning">Pending</span>
+                      {member.isLate && (
+                        <span className="badge bg-danger">Late</span>
+                      )}
                     </div>
                   </div>
-                </MemberDisplayCard>
+                </Card>
               ))
             ) : (
               <div className="alert alert-success">
                 {searchTerm
                   ? 'No members match your search.'
-                  : 'All members have checked in! 🎉'}
+                  : 'All members have checked in!'}
               </div>
             )}
           </div>

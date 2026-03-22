@@ -1,16 +1,19 @@
 import { v4 as uuidv4 } from 'uuid'
 import { isAuth } from '../utils/utils'
-import { permitAdmin } from '../permissions'
-import { getCheckinsDb } from './firebase'
 import {
-  getScopeLabel,
   generatePinCode,
   generateQrSecret,
   isWithinEventWindow,
   validateQrToken,
 } from './checkins-utils'
 import {
-  getEventDoc,
+  getEvent,
+  createEvent,
+  updateEvent,
+  queryEvents,
+  createCheckInRecord,
+  updateCheckInRecord,
+  getCheckInRecordById,
   mapEventToResponse,
   getMemberByAuthId,
   getAdminScopes,
@@ -18,6 +21,7 @@ import {
   assertAdminForScope,
   getEligibleMembers,
   getScopeFilters,
+  getDirectChildren,
   resolveViewerScope,
   getViewerScopeIds,
   getCheckInRecords,
@@ -35,10 +39,11 @@ import {
   enforceOneDevicePerEvent,
   validateGeoFence,
   getFlaggedCheckIns,
-  EVENTS_COLLECTION,
-  CHECKINS_COLLECTION,
+  getCheckInAggregateByScope,
+  logCheckInHistory,
+  getCheckInEventHistory,
 } from './checkins-service'
-import { CheckInEvent, CheckInMethod, FaceMatchStatus } from './checkins-types'
+import { CheckInEvent, CheckInMethod, CheckInAttendanceType, FaceMatchStatus } from './checkins-types'
 import { Context } from '../utils/neo4j-types'
 
 export const checkinsResolvers = {
@@ -48,22 +53,13 @@ export const checkinsResolvers = {
       args: { latitude: number; longitude: number },
       context: Context
     ) => {
-      const db = await getCheckinsDb()
-      if (!db) return []
-
-      const snapshot = await db
-        .collection(EVENTS_COLLECTION)
-        .where('status', '==', 'ACTIVE')
-        .get()
-
-      if (snapshot.empty) return []
+      const events = await queryEvents(context, { status: 'ACTIVE' })
+      if (events.length === 0) return []
 
       const now = new Date()
       const results: ReturnType<typeof mapEventToResponse>[] = []
 
-      for (const doc of snapshot.docs) {
-        const event = doc.data() as CheckInEvent
-
+      for (const event of events) {
         // Skip events outside their time window
         if (new Date(event.startsAt) > now || new Date(event.endsAt) < now) {
           continue
@@ -84,15 +80,12 @@ export const checkinsResolvers = {
       args: { eventId: string },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
       // Authorization check - user must be within the event scope
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
+        context.jwt?.roles || []
       const authId = getCurrentAuthId(context)
       const viewerScope = await resolveViewerScope(
         context,
@@ -115,25 +108,20 @@ export const checkinsResolvers = {
       },
       context: Context
     ) => {
-      const db = await getCheckinsDb()
-      if (!db) return []
-
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
+        context.jwt?.roles || []
       const authId = getCurrentAuthId(context)
-
-      let query: FirebaseFirestore.Query = db.collection(EVENTS_COLLECTION)
-      if (args.scopeLevel) query = query.where('scopeLevel', '==', args.scopeLevel)
-      if (args.status) query = query.where('status', '==', args.status)
 
       if (args.scopeId) {
         // Caller requested a specific scope — filter directly, then do a
         // single access check rather than one check per event.
-        query = query.where('scopeId', '==', args.scopeId)
-        const snapshot = await query.get()
-        if (snapshot.empty) return []
+        const events = await queryEvents(context, {
+          scopeLevel: args.scopeLevel,
+          status: args.status,
+          scopeId: args.scopeId,
+        })
+        if (events.length === 0) return []
 
-        const events = snapshot.docs.map((doc) => doc.data() as CheckInEvent)
         const firstEvent = events[0]
         const viewerScope = await resolveViewerScope(
           context,
@@ -145,22 +133,27 @@ export const checkinsResolvers = {
         return viewerScope ? events.map(mapEventToResponse) : []
       }
 
-      // No specific scope requested — pre-filter Firestore to only the scopes
-      // the viewer can see. This avoids a Neo4j round-trip per event.
+      // No specific scope requested — pre-filter to only the scopes
+      // the viewer can see.
       const viewerScopeIds = await getViewerScopeIds(context, authId, userRoles)
 
       if (viewerScopeIds !== null) {
         // Non-global viewer: restrict to their own scope IDs
         if (viewerScopeIds.length === 0) return []
-        // Firestore 'in' supports up to 30 items; leaders/local-admins have far fewer
-        query = query.where('scopeId', 'in', viewerScopeIds.slice(0, 30))
+        const events = await queryEvents(context, {
+          scopeLevel: args.scopeLevel,
+          status: args.status,
+          scopeIds: viewerScopeIds,
+        })
+        return events.map(mapEventToResponse)
       }
       // viewerScopeIds === null → denomination/oversight admin, no extra filter
 
-      const snapshot = await query.get()
-      return snapshot.docs.map((doc) =>
-        mapEventToResponse(doc.data() as CheckInEvent)
-      )
+      const events = await queryEvents(context, {
+        scopeLevel: args.scopeLevel,
+        status: args.status,
+      })
+      return events.map(mapEventToResponse)
     },
 
     GetCheckInDashboard: async (
@@ -168,14 +161,11 @@ export const checkinsResolvers = {
       args: { eventId: string; filterScopeId?: string },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
+        context.jwt?.roles || []
       const authId = getCurrentAuthId(context)
       const viewerScope = await resolveViewerScope(
         context,
@@ -210,7 +200,7 @@ export const checkinsResolvers = {
         event.attendanceType
       )
 
-      const checkins = await getCheckInRecords(event.id)
+      const checkins = await getCheckInRecords(context, event.id)
       const checkinsMap = new Map(
         checkins.map((record) => [record.memberId, record])
       )
@@ -318,6 +308,8 @@ export const checkinsResolvers = {
         },
         scopeFilters,
         appliedFilterId: filterScopeId,
+        appliedFilterName: selectedFilter?.name ?? null,
+        childScopeFilters: await getDirectChildren(context, filterScopeId),
         flaggedRecords,
       }
     },
@@ -341,14 +333,11 @@ export const checkinsResolvers = {
       args: { eventId: string },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
+        context.jwt?.roles || []
       const authId = getCurrentAuthId(context)
       const viewerScope = await resolveViewerScope(
         context,
@@ -359,7 +348,7 @@ export const checkinsResolvers = {
       )
       if (!viewerScope) throw new Error('You do not have access to this event')
 
-      const flaggedRecords = await getFlaggedCheckIns(args.eventId)
+      const flaggedRecords = await getFlaggedCheckIns(context, args.eventId)
       return flaggedRecords.map((record) => ({
         record,
         attendee: {
@@ -384,6 +373,75 @@ export const checkinsResolvers = {
             : 'Low confidence face match',
       }))
     },
+
+    GetMyCheckInStatus: async (
+      object: unknown,
+      args: { eventId: string },
+      context: Context
+    ) => {
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
+
+      const authId = getCurrentAuthId(context)
+      const member = await getMemberByAuthId(context, authId)
+      if (!member) return null
+
+      const record = await getCheckInRecordForMember(
+        context,
+        event.id,
+        member.id
+      )
+      return record ?? null
+    },
+
+    GetCheckInAggregateByScope: async (
+      object: unknown,
+      args: { scopeLevel: string; scopeId: string },
+      context: Context
+    ) => {
+      const userRoles =
+        context.jwt?.roles || []
+      const authId = getCurrentAuthId(context)
+
+      // Verify viewer has access to this scope
+      const viewerScope = await resolveViewerScope(
+        context,
+        authId,
+        args.scopeLevel as any,
+        args.scopeId,
+        userRoles
+      )
+      if (!viewerScope) throw new Error('You do not have access to this scope')
+
+      return getCheckInAggregateByScope(
+        context,
+        args.scopeLevel as any,
+        args.scopeId
+      )
+    },
+
+    GetCheckInEventHistory: async (
+      object: unknown,
+      args: { eventId: string; limit?: number },
+      context: Context
+    ) => {
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
+
+      const userRoles =
+        context.jwt?.roles || []
+      const authId = getCurrentAuthId(context)
+      const viewerScope = await resolveViewerScope(
+        context,
+        authId,
+        event.scopeLevel,
+        event.scopeId,
+        userRoles
+      )
+      if (!viewerScope) throw new Error('You do not have access to this event')
+
+      return getCheckInEventHistory(context, args.eventId, args.limit ?? 50)
+    },
   },
 
   Mutation: {
@@ -392,10 +450,21 @@ export const checkinsResolvers = {
       args: { input: any },
       context: Context
     ) => {
-      const scopeLabel = getScopeLabel(args.input.scopeLevel)
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
-      isAuth(permitAdmin(scopeLabel), userRoles)
+        context.jwt?.roles || []
+      // Any admin role can attempt to create events — assertAdminForScope
+      // below verifies the caller actually admins the target scope via the graph
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
 
       const authId = getCurrentAuthId(context)
       await assertAdminForScope(
@@ -415,8 +484,8 @@ export const checkinsResolvers = {
       const qrRotationSeconds = 60
       const gracePeriod = args.input.gracePeriod ?? 30
 
-      // Leaders-only is the only attendance type allowed
-      const attendanceType = 'LEADERS_ONLY' as const
+      // Use the attendanceType from input (not hardcoded)
+      const attendanceType = (args.input.attendanceType ?? 'LEADERS_ONLY') as CheckInAttendanceType
 
       const eligibleMembers = await getEligibleMembers(
         context,
@@ -437,8 +506,6 @@ export const checkinsResolvers = {
       const record: CheckInEvent = {
         id: eventId,
         name: args.input.name,
-        type: args.input.type,
-        description: args.input.description,
         location: args.input.location,
         scopeLevel: args.input.scopeLevel,
         scopeId: args.input.scopeId,
@@ -454,7 +521,7 @@ export const checkinsResolvers = {
         createdById: member.id,
         createdByName: `${member.firstName} ${member.lastName}`,
         createdByRole:
-          context.jwt['https://flcadmin.netlify.app/roles'][0] ?? '',
+          context.jwt?.roles?.[0] ?? '',
         totalExpected: eligibleMembers.length,
         allowedCheckInRoles:
           args.input.allowedCheckInRoles || ['leaderBacenta'],
@@ -468,11 +535,18 @@ export const checkinsResolvers = {
         autoCheckoutMinutes: args.input.autoCheckoutMinutes ?? 30,
       }
 
-      const db = await getCheckinsDb()
-      if (!db) {
-        throw new Error('Check-ins service is not available')
-      }
-      await db.collection(EVENTS_COLLECTION).doc(eventId).set(record)
+      await createEvent(context, record)
+
+      // Audit log: event created
+      await logCheckInHistory(
+        context,
+        record.id,
+        'EVENT_CREATED',
+        `Check-in event '${record.name}' created for ${record.scopeLevel} scope`,
+        member.id,
+        `${member.firstName} ${member.lastName}`
+      ).catch(() => {}) // Non-blocking
+
       return mapEventToResponse(record)
     },
 
@@ -491,11 +565,8 @@ export const checkinsResolvers = {
       },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
       // ── Prerequisite 1: Event must be active ──
       if (event.status !== 'ACTIVE') throw new Error('Event is not active')
@@ -537,7 +608,7 @@ export const checkinsResolvers = {
 
       // Check if user's role is allowed to perform check-ins
       const userRoles =
-        context.jwt['https://flcadmin.netlify.app/roles'] || []
+        context.jwt?.roles || []
       if (!isUserAllowedToCheckIn(userRoles, event.allowedCheckInRoles)) {
         throw new Error(
           `Your role is not allowed to check in for this event. Allowed roles: ${event.allowedCheckInRoles.join(', ')}`
@@ -552,7 +623,7 @@ export const checkinsResolvers = {
         )
       }
 
-      const existing = await getCheckInRecordForMember(event.id, member.id)
+      const existing = await getCheckInRecordForMember(context, event.id, member.id)
       if (existing && !existing.checkedOutAt) {
         return existing
       }
@@ -560,6 +631,7 @@ export const checkinsResolvers = {
       // ── One-device-per-event rule ──
       if (args.deviceFingerprint) {
         await enforceOneDevicePerEvent(
+          context,
           event.id,
           member.id,
           args.deviceFingerprint
@@ -569,12 +641,12 @@ export const checkinsResolvers = {
       // ── Method-specific validation ──
       if (args.method === 'PIN') {
         if (!args.code) throw new Error('PIN code is required')
-        await enforcePinAttemptPolicy(event.id, authId)
+        await enforcePinAttemptPolicy(context, event.id, authId)
         if (args.code !== event.pinCode) {
-          await recordFailedPinAttempt(event.id, authId)
+          await recordFailedPinAttempt(context, event.id, authId)
           throw new Error('Invalid PIN')
         }
-        await clearPinAttempts(event.id, authId)
+        await clearPinAttempts(context, event.id, authId)
       }
 
       if (args.method === 'QR') {
@@ -622,11 +694,18 @@ export const checkinsResolvers = {
         autoCheckedOut: false,
       }
 
-      const db = await getCheckinsDb()
-      if (!db) {
-        throw new Error('Check-ins service is not available')
-      }
-      await db.collection(CHECKINS_COLLECTION).doc(record.id).set(record)
+      await createCheckInRecord(context, record)
+
+      // Audit log: member checked in
+      await logCheckInHistory(
+        context,
+        event.id,
+        'MEMBER_CHECKED_IN',
+        `${member.firstName} ${member.lastName} checked in via ${args.method}`,
+        member.id,
+        `${member.firstName} ${member.lastName}`
+      ).catch(() => {}) // Non-blocking
+
       return record
     },
 
@@ -641,16 +720,22 @@ export const checkinsResolvers = {
       },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
-      const scopeLabel = getScopeLabel(event.scopeLevel)
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
-      isAuth(permitAdmin(scopeLabel), userRoles)
+        context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
 
       const authId = getCurrentAuthId(context)
       await assertAdminForScope(
@@ -701,6 +786,7 @@ export const checkinsResolvers = {
           throw new Error('Check-in is only available for leaders')
 
         const existing = await getCheckInRecordForMember(
+          context,
           event.id,
           args.memberId
         )
@@ -721,14 +807,22 @@ export const checkinsResolvers = {
           verifiedBy: args.reason || 'admin',
         }
 
-        const db = await getCheckinsDb()
-        if (!db) {
-          throw new Error('Check-ins service is not available')
-        }
-        await db
-          .collection(CHECKINS_COLLECTION)
-          .doc(record.id)
-          .set(record)
+        await createCheckInRecord(context, record)
+
+        // Audit log: manual check-in
+        const adminMember = await getMemberByAuthId(context, authId)
+        const adminName = adminMember
+          ? `${adminMember.firstName} ${adminMember.lastName}`
+          : 'Admin'
+        await logCheckInHistory(
+          context,
+          event.id,
+          'MANUAL_CHECKIN',
+          `${adminName} manually checked in ${record.memberName}`,
+          adminMember?.id ?? authId,
+          adminName
+        ).catch(() => {}) // Non-blocking
+
         return record
       } finally {
         await session.close()
@@ -740,16 +834,22 @@ export const checkinsResolvers = {
       args: { eventId: string; endsAt: string },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
-      const scopeLabel = getScopeLabel(event.scopeLevel)
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
-      isAuth(permitAdmin(scopeLabel), userRoles)
+        context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
 
       const authId = getCurrentAuthId(context)
       await assertAdminForScope(
@@ -760,8 +860,63 @@ export const checkinsResolvers = {
         userRoles
       )
 
-      await eventDoc.update({ endsAt: args.endsAt })
+      await updateEvent(context, args.eventId, { endsAt: args.endsAt })
       const updated = { ...event, endsAt: args.endsAt }
+      return mapEventToResponse(updated)
+    },
+
+    UpdateCheckInEvent: async (
+      object: unknown,
+      args: { eventId: string; input: any },
+      context: Context
+    ) => {
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
+
+      const userRoles = context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
+
+      const authId = getCurrentAuthId(context)
+      // Must be creator OR a higher-scope admin over the event's scope
+      const isCreator = event.createdById === (await getMemberByAuthId(context, authId))?.id
+      if (!isCreator) {
+        await assertAdminForScope(
+          context,
+          authId,
+          event.scopeLevel,
+          event.scopeId,
+          userRoles
+        )
+      }
+
+      const updateFields: Partial<CheckInEvent> = {}
+      const i = args.input
+      if (i.name != null) updateFields.name = i.name
+      if (i.location != null) updateFields.location = i.location
+      if (i.startsAt != null) updateFields.startsAt = i.startsAt
+      if (i.endsAt != null) updateFields.endsAt = i.endsAt
+      if (i.gracePeriod != null) updateFields.gracePeriod = i.gracePeriod
+      if (i.attendanceType != null) updateFields.attendanceType = i.attendanceType
+      if (i.allowedCheckInRoles != null) updateFields.allowedCheckInRoles = i.allowedCheckInRoles
+      if (i.allowedCheckInMethods != null) updateFields.allowedCheckInMethods = i.allowedCheckInMethods
+      if (i.geoFenceType != null) updateFields.geoFenceType = i.geoFenceType
+      if (i.geoCenter != null) updateFields.geoCenter = i.geoCenter
+      if (i.geoRadius != null) updateFields.geoRadius = i.geoRadius
+      if (i.geoPolygon != null) updateFields.geoPolygon = i.geoPolygon
+      if (i.autoCheckoutMinutes != null) updateFields.autoCheckoutMinutes = i.autoCheckoutMinutes
+
+      await updateEvent(context, args.eventId, updateFields)
+      const updated = { ...event, ...updateFields }
       return mapEventToResponse(updated)
     },
 
@@ -770,16 +925,22 @@ export const checkinsResolvers = {
       args: { eventId: string },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
-      const scopeLabel = getScopeLabel(event.scopeLevel)
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
-      isAuth(permitAdmin(scopeLabel), userRoles)
+        context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
 
       const authId = getCurrentAuthId(context)
       await assertAdminForScope(
@@ -790,7 +951,22 @@ export const checkinsResolvers = {
         userRoles
       )
 
-      await eventDoc.update({ status: 'PAUSED' })
+      await updateEvent(context, args.eventId, { status: 'PAUSED' })
+
+      // Audit log: event paused
+      const pauseMember = await getMemberByAuthId(context, authId)
+      const pauseName = pauseMember
+        ? `${pauseMember.firstName} ${pauseMember.lastName}`
+        : 'Admin'
+      await logCheckInHistory(
+        context,
+        args.eventId,
+        'EVENT_PAUSED',
+        `Check-in event '${event.name}' paused by ${pauseName}`,
+        pauseMember?.id ?? authId,
+        pauseName
+      ).catch(() => {}) // Non-blocking
+
       return mapEventToResponse({ ...event, status: 'PAUSED' })
     },
 
@@ -799,16 +975,22 @@ export const checkinsResolvers = {
       args: { eventId: string },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
-      const scopeLabel = getScopeLabel(event.scopeLevel)
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
-      isAuth(permitAdmin(scopeLabel), userRoles)
+        context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
 
       const authId = getCurrentAuthId(context)
       await assertAdminForScope(
@@ -819,7 +1001,22 @@ export const checkinsResolvers = {
         userRoles
       )
 
-      await eventDoc.update({ status: 'ACTIVE' })
+      await updateEvent(context, args.eventId, { status: 'ACTIVE' })
+
+      // Audit log: event resumed
+      const resumeMember = await getMemberByAuthId(context, authId)
+      const resumeName = resumeMember
+        ? `${resumeMember.firstName} ${resumeMember.lastName}`
+        : 'Admin'
+      await logCheckInHistory(
+        context,
+        args.eventId,
+        'EVENT_RESUMED',
+        `Check-in event '${event.name}' resumed by ${resumeName}`,
+        resumeMember?.id ?? authId,
+        resumeName
+      ).catch(() => {}) // Non-blocking
+
       return mapEventToResponse({ ...event, status: 'ACTIVE' })
     },
 
@@ -828,16 +1025,22 @@ export const checkinsResolvers = {
       args: { eventId: string },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
-      const scopeLabel = getScopeLabel(event.scopeLevel)
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
-      isAuth(permitAdmin(scopeLabel), userRoles)
+        context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
 
       const authId = getCurrentAuthId(context)
       await assertAdminForScope(
@@ -849,7 +1052,7 @@ export const checkinsResolvers = {
       )
 
       const pinCode = generatePinCode()
-      await eventDoc.update({ pinCode })
+      await updateEvent(context, args.eventId, { pinCode })
       return mapEventToResponse({ ...event, pinCode })
     },
 
@@ -858,16 +1061,22 @@ export const checkinsResolvers = {
       args: { eventId: string },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
-      const scopeLabel = getScopeLabel(event.scopeLevel)
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
-      isAuth(permitAdmin(scopeLabel), userRoles)
+        context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
 
       const authId = getCurrentAuthId(context)
       await assertAdminForScope(
@@ -878,7 +1087,22 @@ export const checkinsResolvers = {
         userRoles
       )
 
-      await eventDoc.update({ status: 'ENDED' })
+      await updateEvent(context, args.eventId, { status: 'ENDED' })
+
+      // Audit log: event ended
+      const endMember = await getMemberByAuthId(context, authId)
+      const endName = endMember
+        ? `${endMember.firstName} ${endMember.lastName}`
+        : 'Admin'
+      await logCheckInHistory(
+        context,
+        args.eventId,
+        'EVENT_ENDED',
+        `Check-in event '${event.name}' ended by ${endName}`,
+        endMember?.id ?? authId,
+        endName
+      ).catch(() => {}) // Non-blocking
+
       return mapEventToResponse({ ...event, status: 'ENDED' })
     },
 
@@ -892,17 +1116,14 @@ export const checkinsResolvers = {
       },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
 
       const authId = getCurrentAuthId(context)
       const member = await getMemberByAuthId(context, authId)
       if (!member) throw new Error('Member not found')
 
-      const existing = await getCheckInRecordForMember(event.id, member.id)
+      const existing = await getCheckInRecordForMember(context, event.id, member.id)
       if (!existing) {
         throw new Error('No active check-in record found')
       }
@@ -913,16 +1134,12 @@ export const checkinsResolvers = {
       // Verify the member is actually outside the geofence
       const geoResult = validateGeoFence(event, args.latitude, args.longitude)
 
-      const db = await getCheckinsDb()
-      if (!db) throw new Error('Check-ins service is not available')
-      const recordDoc = db.collection(CHECKINS_COLLECTION).doc(existing.id)
-
       const updatedRecord = {
         ...existing,
         checkedOutAt: new Date().toISOString(),
         autoCheckedOut: true,
       }
-      await recordDoc.update({
+      await updateCheckInRecord(context, existing.id, {
         checkedOutAt: updatedRecord.checkedOutAt,
         autoCheckedOut: true,
       })
@@ -934,11 +1151,8 @@ export const checkinsResolvers = {
       args: { eventId: string; latitude: number; longitude: number },
       context: Context
     ) => {
-      const eventDoc = await getEventDoc(args.eventId)
-      if (!eventDoc) return null
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) return null
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, args.eventId)
+      if (!event) return null
 
       if (event.status !== 'ACTIVE') return null
 
@@ -946,7 +1160,7 @@ export const checkinsResolvers = {
       const member = await getMemberByAuthId(context, authId)
       if (!member) return null
 
-      const existing = await getCheckInRecordForMember(event.id, member.id)
+      const existing = await getCheckInRecordForMember(context, event.id, member.id)
       if (!existing || existing.checkedOutAt) return existing ?? null
 
       // Check if member is now outside the geofence
@@ -957,12 +1171,8 @@ export const checkinsResolvers = {
       }
 
       // Outside the geofence — auto-checkout immediately
-      const db = await getCheckinsDb()
-      if (!db) return existing
-
       const checkedOutAt = new Date().toISOString()
-      const recordDoc = db.collection(CHECKINS_COLLECTION).doc(existing.id)
-      await recordDoc.update({ checkedOutAt, autoCheckedOut: true })
+      await updateCheckInRecord(context, existing.id, { checkedOutAt, autoCheckedOut: true })
 
       return { ...existing, checkedOutAt, autoCheckedOut: true }
     },
@@ -972,26 +1182,26 @@ export const checkinsResolvers = {
       args: { recordId: string; resolution: string },
       context: Context
     ) => {
-      const db = await getCheckinsDb()
-      if (!db) throw new Error('Check-ins service is not available')
-
-      const recordDoc = db.collection(CHECKINS_COLLECTION).doc(args.recordId)
-      const recordSnapshot = await recordDoc.get()
-      if (!recordSnapshot.exists)
-        throw new Error('Check-in record not found')
-      const record = recordSnapshot.data()!
+      const record = await getCheckInRecordById(context, args.recordId)
+      if (!record) throw new Error('Check-in record not found')
 
       // Verify caller is admin for the event
-      const eventDoc = await getEventDoc(record.eventId)
-      if (!eventDoc) throw new Error('Check-ins service is not available')
-      const eventSnapshot = await eventDoc.get()
-      if (!eventSnapshot.exists) throw new Error('Event not found')
-      const event = eventSnapshot.data() as CheckInEvent
+      const event = await getEvent(context, record.eventId)
+      if (!event) throw new Error('Event not found')
 
-      const scopeLabel = getScopeLabel(event.scopeLevel)
       const userRoles =
-        context.jwt?.['https://flcadmin.netlify.app/roles'] || []
-      isAuth(permitAdmin(scopeLabel), userRoles)
+        context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
 
       const authId = getCurrentAuthId(context)
       await assertAdminForScope(
@@ -1004,7 +1214,7 @@ export const checkinsResolvers = {
 
       const newStatus =
         args.resolution === 'VERIFY' ? 'VERIFIED' : 'FLAGGED'
-      await recordDoc.update({
+      await updateCheckInRecord(context, args.recordId, {
         faceMatchStatus: newStatus,
         verifiedBy: `admin:${authId}`,
       })
@@ -1013,6 +1223,52 @@ export const checkinsResolvers = {
         faceMatchStatus: newStatus,
         verifiedBy: `admin:${authId}`,
       }
+    },
+
+    LogCheckInHistory: async (
+      object: unknown,
+      args: { eventId: string; action: string; description: string },
+      context: Context
+    ) => {
+      const event = await getEvent(context, args.eventId)
+      if (!event) throw new Error('Event not found')
+
+      const userRoles =
+        context.jwt?.roles || []
+      isAuth(
+        [
+          'adminDenomination',
+          'adminOversight',
+          'adminCampus',
+          'adminStream',
+          'adminCouncil',
+          'adminGovernorship',
+        ],
+        userRoles
+      )
+
+      const authId = getCurrentAuthId(context)
+      await assertAdminForScope(
+        context,
+        authId,
+        event.scopeLevel,
+        event.scopeId,
+        userRoles
+      )
+
+      const member = await getMemberByAuthId(context, authId)
+      const memberName = member
+        ? `${member.firstName} ${member.lastName}`
+        : 'Admin'
+
+      return logCheckInHistory(
+        context,
+        args.eventId,
+        args.action,
+        args.description,
+        member?.id ?? authId,
+        memberName
+      )
     },
   },
 }

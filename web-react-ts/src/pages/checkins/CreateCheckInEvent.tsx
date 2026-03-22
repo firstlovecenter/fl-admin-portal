@@ -20,12 +20,22 @@ const scopeLevels = [
   { value: 'BACENTA', label: 'Bacenta' },
 ]
 
-const allowedRoles = [
-  { value: 'leaderBacenta', label: 'Bacenta Leaders' },
-  { value: 'leaderCouncil', label: 'Council Leaders' },
-  { value: 'leaderStream', label: 'Stream Leaders' },
-  { value: 'leaderGovernorship', label: 'Governorship Leaders' },
+const allRoles = [
+  { value: 'leaderCampus', label: 'Campus Leaders', depth: 4 },
+  { value: 'leaderStream', label: 'Stream Leaders', depth: 3 },
+  { value: 'leaderCouncil', label: 'Council Leaders', depth: 2 },
+  { value: 'leaderGovernorship', label: 'Governorship Leaders', depth: 1 },
+  { value: 'leaderBacenta', label: 'Bacenta Leaders', depth: 0 },
 ]
+
+const scopeDepthMap: Record<string, number> = {
+  OVERSIGHT: 5,
+  CAMPUS: 4,
+  STREAM: 3,
+  COUNCIL: 2,
+  GOVERNORSHIP: 1,
+  BACENTA: 0,
+}
 
 const checkInMethods = [
   { value: 'QR', label: 'QR Code Scan' },
@@ -35,7 +45,6 @@ const checkInMethods = [
 
 const validationSchema = Yup.object({
   name: Yup.string().required('Event name is required'),
-  type: Yup.string().required('Event type is required'),
   scopeLevel: Yup.string().required('Scope level is required'),
   scopeId: Yup.string().required('Please select a scope'),
   startsAt: Yup.string().required('Start time is required'),
@@ -51,9 +60,9 @@ const validationSchema = Yup.object({
 
 const CreateCheckInEvent = () => {
   const navigate = useNavigate()
-  const { data: scopesData, loading: scopesLoading } =
+  const { data: scopesData, loading: scopesLoading, error: scopesError } =
     useQuery(GET_ADMIN_SCOPES)
-  const [createEvent, { loading, error, data }] =
+  const [createEvent, { loading }] =
     useMutation(CREATE_CHECKIN_EVENT)
 
   const adminScopes = useMemo(
@@ -63,15 +72,13 @@ const CreateCheckInEvent = () => {
 
   const initialValues = {
     name: '',
-    type: '',
-    description: '',
     location: '',
     scopeLevel: 'CAMPUS',
     scopeId: '',
     startsAt: '',
     endsAt: '',
     gracePeriod: 30,
-    attendanceType: 'LEADERS_ONLY' as const,
+    attendanceType: 'LEADERS_ONLY' as 'LEADERS_ONLY' | 'ALL_MEMBERS',
     allowedCheckInRoles: ['leaderBacenta'],
     allowedCheckInMethods: ['QR'] as string[],
     // Geo-fence (required)
@@ -84,7 +91,7 @@ const CreateCheckInEvent = () => {
   }
 
   return (
-    <ApolloWrapper loading={loading || scopesLoading} error={error} data={data}>
+    <ApolloWrapper loading={scopesLoading} error={scopesError} data={scopesData}>
       <Container>
         <HeadingPrimary className="mb-3">Create Check-In Event</HeadingPrimary>
 
@@ -96,14 +103,6 @@ const CreateCheckInEvent = () => {
             </p>
           </Card>
         )}
-
-        <Card className="p-3 bg-info bg-opacity-10 mb-3">
-          <p className="mb-0">
-            <strong>Leaders Only:</strong> Check-in is exclusively for leaders.
-            Members must be within the geofence and within the event time window
-            before they can check in.
-          </p>
-        </Card>
 
         <Card className="p-3">
           <Formik
@@ -126,15 +125,40 @@ const CreateCheckInEvent = () => {
           >
             {(formik) => (
               <Form>
+                <Card className="p-3 mb-3">
+                  <label className="form-label fw-bold mb-2">Attendance Type</label>
+                  <div className="d-flex flex-column gap-2">
+                    <div className="form-check">
+                      <Field
+                        type="radio"
+                        id="leadersOnly"
+                        name="attendanceType"
+                        value="LEADERS_ONLY"
+                        className="form-check-input"
+                      />
+                      <label className="form-check-label" htmlFor="leadersOnly">
+                        <strong>Leaders Only</strong> — only leaders & admins in the
+                        scope are expected to check in
+                      </label>
+                    </div>
+                    <div className="form-check">
+                      <Field
+                        type="radio"
+                        id="allMembers"
+                        name="attendanceType"
+                        value="ALL_MEMBERS"
+                        className="form-check-input"
+                      />
+                      <label className="form-check-label" htmlFor="allMembers">
+                        <strong>All Members</strong> — every member in the scope is
+                        expected to check in
+                      </label>
+                    </div>
+                  </div>
+                </Card>
                 <Row className="g-3">
-                  <Col md={6}>
-                    <Input name="name" label="Event Name" />
-                  </Col>
-                  <Col md={6}>
-                    <Input name="type" label="Event Type" />
-                  </Col>
                   <Col md={12}>
-                    <Input name="description" label="Description" />
+                    <Input name="name" label="Event Name" />
                   </Col>
                   <Col md={12}>
                     <Input name="location" label="Location" />
@@ -154,6 +178,19 @@ const CreateCheckInEvent = () => {
                           formik.setFieldValue(
                             'scopeLevel',
                             selectedScope.level
+                          )
+                          // Reset roles to only include valid ones for this scope
+                          const maxDepth =
+                            scopeDepthMap[selectedScope.level] ?? 5
+                          const validRoles = formik.values.allowedCheckInRoles.filter(
+                            (r: string) => {
+                              const role = allRoles.find((ar) => ar.value === r)
+                              return role && role.depth <= maxDepth
+                            }
+                          )
+                          formik.setFieldValue(
+                            'allowedCheckInRoles',
+                            validRoles.length > 0 ? validRoles : ['leaderBacenta']
                           )
                         }
                       }}
@@ -210,28 +247,34 @@ const CreateCheckInEvent = () => {
                     </small>
                   </Col>
                   <Col md={12}>
-                    <Card className="p-3 bg-light">
+                    <Card className="p-3">
                       <label className="form-label fw-bold mb-3">
                         Who Can Perform Check-Ins?
                       </label>
                       <div className="d-flex flex-wrap gap-3">
-                        {allowedRoles.map((role) => (
-                          <div key={role.value} className="form-check">
-                            <Field
-                              type="checkbox"
-                              id={role.value}
-                              name="allowedCheckInRoles"
-                              value={role.value}
-                              className="form-check-input"
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor={role.value}
-                            >
-                              {role.label}
-                            </label>
-                          </div>
-                        ))}
+                        {allRoles
+                          .filter(
+                            (role) =>
+                              role.depth <=
+                              (scopeDepthMap[formik.values.scopeLevel] ?? 5)
+                          )
+                          .map((role) => (
+                            <div key={role.value} className="form-check">
+                              <Field
+                                type="checkbox"
+                                id={role.value}
+                                name="allowedCheckInRoles"
+                                value={role.value}
+                                className="form-check-input"
+                              />
+                              <label
+                                className="form-check-label"
+                                htmlFor={role.value}
+                              >
+                                {role.label}
+                              </label>
+                            </div>
+                          ))}
                       </div>
                       {formik.errors.allowedCheckInRoles && (
                         <div className="invalid-feedback d-block mt-2">
@@ -243,7 +286,7 @@ const CreateCheckInEvent = () => {
 
                   {/* Check-In Methods Selection */}
                   <Col md={12}>
-                    <Card className="p-3 bg-light">
+                    <Card className="p-3">
                       <label className="form-label fw-bold mb-2">
                         Check-In Methods *
                       </label>
@@ -265,9 +308,9 @@ const CreateCheckInEvent = () => {
                               className="form-check-label"
                               htmlFor={`method-${method.value}`}
                             >
-                              {method.value === 'QR' && '📷 '}
-                              {method.value === 'PIN' && '🔢 '}
-                              {method.value === 'FACE_ID' && '🧑 '}
+                              {method.value === 'QR' && ''}
+                              {method.value === 'PIN' && ''}
+                              {method.value === 'FACE_ID' && ''}
                               {method.label}
                             </label>
                           </div>
@@ -284,9 +327,9 @@ const CreateCheckInEvent = () => {
 
                 {/* Geo-Fence Section (Required) */}
                 <div className="mt-3">
-                  <Card className="p-3 border-primary">
+                  <Card className="p-3">
                     <label className="form-label fw-bold mb-2">
-                      📍 Geofence Configuration (Required)
+                      Geofence Configuration (Required)
                     </label>
                     <small className="text-muted d-block mb-3">
                       Leaders must be within this geofence to check in. They will be

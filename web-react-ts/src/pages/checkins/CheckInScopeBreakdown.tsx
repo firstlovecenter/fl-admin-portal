@@ -1,79 +1,79 @@
 import { useQuery } from '@apollo/client'
-import { useContext, useMemo } from 'react'
-import { Card, Col, Container, Row } from 'react-bootstrap'
+import { Col, Container, Row } from 'react-bootstrap'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import PlaceholderCustom from 'components/Placeholder'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
+import { Card } from 'react-bootstrap'
 import { GET_CHECKIN_DASHBOARD } from './checkinsQueries'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
-import { ChurchContext } from 'contexts/ChurchContext'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import { useParams, useNavigate } from 'react-router-dom'
-import useSetUserChurch from 'hooks/useSetUserChurch'
+import { useParams, useSearchParams } from 'react-router-dom'
+import ScopeBreakdownCard from './ScopeBreakdownCard'
 
 const CheckInScopeBreakdown = () => {
   const { eventId } = useParams()
-  const navigate = useNavigate()
-  const { clickCard, clickedChurch } = useContext(ChurchContext)
-  const { setUserChurch } = useSetUserChurch()
+  const [searchParams] = useSearchParams()
+  // If parentScopeId is set, fetch the dashboard scoped to that parent
+  // so childScopeFilters returns its direct children
+  const parentScopeId = searchParams.get('parentScopeId') ?? undefined
 
   const { data, loading, error, refetch } = useQuery(GET_CHECKIN_DASHBOARD, {
     pollInterval: SHORT_POLL_INTERVAL,
-    variables: { eventId },
+    variables: { eventId, filterScopeId: parentScopeId },
     skip: !eventId,
     fetchPolicy: 'cache-and-network',
   })
 
   const dashboard = data?.GetCheckInDashboard
   const event = dashboard?.event
-  const scopeFilters = useMemo(() => dashboard?.scopeFilters ?? [], [dashboard])
+  // When parentScopeId is set, use childScopeFilters (children of that parent)
+  // Otherwise use all non-event-scope scopeFilters (top-level children of event scope)
+  const scopesToShow = parentScopeId
+    ? (dashboard?.childScopeFilters ?? [])
+    : (dashboard?.scopeFilters ?? []).filter(
+        (f: any) => f.level !== event?.scopeLevel
+      )
 
-  const handleScopeClick = (scope: any) => {
-    clickCard(scope)
-    setUserChurch(scope)
-    // Navigate back to dashboard but with the filterScopeId param
-    // This would require passing filterScopeId through the dashboard query
-    navigate(`/checkins/event/${eventId}?scopeId=${scope.id}`)
-  }
+  const heading = parentScopeId
+    ? (dashboard?.appliedFilterName ?? event?.name)
+    : event?.name
 
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper loading={loading} error={error} data={data}>
-        <Container className="py-4">
+        <Container>
           <HeadingPrimary loading={loading}>
-            {event?.name} - {event?.scopeLevel}s
+            {heading}
           </HeadingPrimary>
 
-          <Row className="g-3">
-            {scopeFilters.map((scope: any) => (
-              <Col key={scope.id} md={6} lg={4}>
-                <Card
-                  className="h-100 cursor-pointer"
-                  onClick={() => handleScopeClick(scope)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <Card.Header className="fw-bold">
-                    {scope.name}
-                    <br />
-                    <small className="text-muted">{scope.level}</small>
-                  </Card.Header>
-                  <Card.Body>
-                    <div className="mb-2">
-                      <strong>Event:</strong> {event?.name}
-                    </div>
-                    <div>
-                      <strong>Scope:</strong> {scope.level}
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
+          <Row>
+            {scopesToShow.map((scope: any) => (
+              <ScopeBreakdownCard
+                key={scope.id}
+                eventId={eventId!}
+                scopeId={scope.id}
+                scopeName={scope.name}
+                scopeLevel={scope.level}
+              />
             ))}
-          </Row>
 
-          {scopeFilters.length === 0 && (
-            <Card className="p-4 text-center text-muted">
-              <p>No sub-scopes available for this event.</p>
-            </Card>
-          )}
+            {(loading || !data) &&
+              [1, 2, 3].map((_, i) => (
+                <Col key={i} xs={12} className="mb-3">
+                  <Card>
+                    <Card.Header className="fw-bold">
+                      <PlaceholderCustom loading className="fw-bold" />
+                    </Card.Header>
+                    <Card.Body>
+                      <PlaceholderCustom loading as="div" />
+                      <PlaceholderCustom loading as="div" />
+                      <PlaceholderCustom loading as="div" />
+                      <PlaceholderCustom loading as="div" />
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+          </Row>
         </Container>
       </ApolloWrapper>
     </PullToRefresh>

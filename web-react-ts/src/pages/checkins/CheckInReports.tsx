@@ -207,7 +207,7 @@ const CheckInReports = () => {
                         onClick={() => exportToCSV(event)}
                         disabled={loadingExport === event.id}
                       >
-                        {loadingExport === event.id ? '⏳' : '📥 CSV'}
+                        {loadingExport === event.id ? 'Exporting...' : 'CSV'}
                       </Button>
                     </td>
                   </tr>

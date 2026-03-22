@@ -70,7 +70,7 @@ const CheckInFlaggedReview = () => {
     <ApolloWrapper loading={loading} error={error} data={data}>
       <Container className="py-4">
         <HeadingPrimary className="mb-3">
-          🚩 Flagged Check-Ins Review
+          Flagged Check-Ins Review
         </HeadingPrimary>
 
         <Button
@@ -84,7 +84,7 @@ const CheckInFlaggedReview = () => {
 
         {flagged.length === 0 && (
           <Alert variant="success">
-            No flagged check-ins for this event. All clear! ✅
+            No flagged check-ins for this event. All clear!
           </Alert>
         )}
 
@@ -206,7 +206,7 @@ const CheckInFlaggedReview = () => {
                             handleResolve(item.record.id, 'VERIFY')
                           }
                         >
-                          ✅ Verify
+                          Verify
                         </Button>
                         <Button
                           variant="outline-danger"
@@ -217,13 +217,13 @@ const CheckInFlaggedReview = () => {
                             handleResolve(item.record.id, 'REJECT')
                           }
                         >
-                          ❌ Keep Flagged
+                          Keep Flagged
                         </Button>
                       </div>
                     )}
                     {isResolved && (
                       <div className="text-center text-success">
-                        ✅ Resolved by admin
+                        Resolved by admin
                       </div>
                     )}
                   </Card.Body>

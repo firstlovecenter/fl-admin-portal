@@ -86,7 +86,7 @@ const SelfieCaptureModal = ({
   return (
     <Modal show={show} onHide={onHide} centered size="sm">
       <Modal.Header closeButton>
-        <Modal.Title>📸 Take a Selfie</Modal.Title>
+        <Modal.Title>Take a Selfie</Modal.Title>
       </Modal.Header>
       <Modal.Body className="text-center">
         {cameraError && (
@@ -150,15 +150,15 @@ const SelfieCaptureModal = ({
             onClick={takeSelfie}
             disabled={!!cameraError}
           >
-            📸 Capture
+            Capture
           </Button>
         ) : (
           <>
             <Button variant="outline-secondary" onClick={retake}>
-              🔄 Retake
+              Retake
             </Button>
             <Button variant="success" onClick={confirmSelfie}>
-              ✅ Use This Photo
+              Use This Photo
             </Button>
           </>
         )}

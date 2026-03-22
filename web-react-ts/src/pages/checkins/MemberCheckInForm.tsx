@@ -563,7 +563,7 @@ const MemberCheckInForm = () => {
             {allowedMethods.includes('QR') && (
               <Col md={allowedMethods.length === 1 ? 12 : 6}>
                 <Card className="p-3 h-100">
-                  <h5 className="mb-3">📷 Scan QR Code</h5>
+                  <h5 className="mb-3">Scan QR Code</h5>
                   {showScanner ? (
                     <>
                       <QrReader
@@ -600,7 +600,7 @@ const MemberCheckInForm = () => {
             {allowedMethods.includes('PIN') && (
               <Col md={allowedMethods.length === 1 ? 12 : 6}>
                 <Card className="p-3 h-100">
-                  <h5 className="mb-3">🔢 Enter PIN Code</h5>
+                  <h5 className="mb-3">Enter PIN Code</h5>
                   <div className="mb-3">
                     <label className="form-label">PIN Code</label>
                     <input
@@ -629,7 +629,7 @@ const MemberCheckInForm = () => {
             {allowedMethods.includes('FACE_ID') && (
               <Col md={allowedMethods.length === 1 ? 12 : 6}>
                 <Card className="p-3 h-100">
-                  <h5 className="mb-3">🧑 Face ID Recognition</h5>
+                  <h5 className="mb-3">Face ID Recognition</h5>
                   <p className="text-muted small mb-3">
                     Take a selfie to verify your identity. Your face will be
                     compared against your profile photo.

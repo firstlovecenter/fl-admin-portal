@@ -21,7 +21,7 @@ const CheckInEventList = () => {
               onClick={() => navigate('/checkins/reports')}
               variant="outline-secondary"
             >
-              📊 Reports
+              Reports
             </Button>
             <Button
               onClick={() => navigate('/checkins/create')}
@@ -40,7 +40,7 @@ const CheckInEventList = () => {
                   <Card.Body>
                     <Card.Title>{event.name}</Card.Title>
                     <Card.Subtitle className="mb-2 text-muted">
-                      {event.type}
+                      {event.scopeLevel}
                     </Card.Subtitle>
                     <Card.Text>
                       Scope: {event.scopeLevel}

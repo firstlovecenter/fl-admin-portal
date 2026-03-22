@@ -200,11 +200,13 @@ const useComponentQuery = (props?: UseComponentQuery) => {
 
       console.log('✅ useComponentQuery: Query successful', response.data)
 
-      setAssessmentChurch(
-        response.data.members[0][
-          parseRoles(highestVerb || '') + highestLevel
-        ][0]
-      )
+      const member = response.data?.members?.[0]
+      const churchData =
+        member?.[parseRoles(highestVerb || '') + highestLevel]?.[0]
+
+      if (churchData) {
+        setAssessmentChurch(churchData)
+      }
 
       return
     }

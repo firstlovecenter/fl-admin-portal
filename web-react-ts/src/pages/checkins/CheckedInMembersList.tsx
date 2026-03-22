@@ -13,7 +13,7 @@ import MemberDisplayCard from 'components/card/MemberDisplayCard'
 
 const CheckedInMembersList = () => {
   const { eventId } = useParams()
-  const { clickedChurch } = useContext(ChurchContext)
+  const { church } = useContext(ChurchContext)
   const [searchTerm, setSearchTerm] = useState('')
 
   const { data, loading, error, refetch } = useQuery(GET_CHECKIN_DASHBOARD, {
@@ -47,7 +47,7 @@ const CheckedInMembersList = () => {
           <HeadingPrimary loading={loading}>Checked In Members</HeadingPrimary>
           <HeadingSecondary loading={!event?.name}>
             {event?.name}
-            {clickedChurch?.name && ` • ${clickedChurch.name}`}
+            {church?.name && ` • ${church.name}`}
           </HeadingSecondary>
 
           {/* Search Input */}
@@ -70,7 +70,7 @@ const CheckedInMembersList = () => {
                   contact={true}
                 >
                   <div className="small">
-                    <span className="badge bg-success me-2">✅ Checked In</span>
+                    <span className="badge bg-success me-2">Checked In</span>
                     {member.isLate && (
                       <span className="badge bg-warning me-2">Late</span>
                     )}

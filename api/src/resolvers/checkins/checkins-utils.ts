@@ -22,8 +22,7 @@ export const scopeDepthMap: Record<CheckInScopeLevel, number> = {
 }
 
 export const resolveAuthId = (context: Context): string => {
-  const sub = context.jwt?.sub || ''
-  return sub.replace('auth0|', '')
+  return context.jwt?.userId || ''
 }
 
 export const generatePinCode = (): string => {

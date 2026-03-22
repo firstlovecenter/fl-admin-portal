@@ -90,13 +90,13 @@ const CheckInEventHistory = () => {
             >
               <Link to="/checkins/create" className="me-2">
                 <Button variant="primary" size="sm">
-                  ➕ Create Event
+                  Create Event
                 </Button>
               </Link>
             </RoleView>
             <Link to="/checkins/reports">
               <Button variant="info" size="sm">
-                📊 View Reports
+                View Reports
               </Button>
             </Link>
           </Col>

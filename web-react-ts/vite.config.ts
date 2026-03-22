@@ -20,6 +20,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       open: true,
       port: 3000,
+      strictPort: true,
     },
     build: {
       sourcemap: true, // Source map generation must be turned on

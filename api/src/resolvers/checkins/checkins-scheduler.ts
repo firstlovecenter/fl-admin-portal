@@ -1,80 +1,44 @@
-import { getCheckinsDb } from './firebase'
-import { EVENTS_COLLECTION, CHECKINS_COLLECTION } from './checkins-service'
-import { CheckInEvent } from './checkins-types'
+import { getCheckinsDriver } from './firebase'
 
 const SCHEDULER_INTERVAL_MS = 60 * 1000 // Run every minute
-const BATCH_CHUNK_SIZE = 490 // Firestore batch limit is 500
 
 /**
  * Auto-checkouts all checked-in members for events whose end time has passed,
  * then marks those events as ENDED.
  */
 async function runAutoCheckoutJob(): Promise<void> {
-  const db = await getCheckinsDb()
-  if (!db) return
+  const driver = getCheckinsDriver()
+  if (!driver) return
 
-  const now = new Date()
+  const session = driver.session()
+  try {
+    const nowIso = new Date().toISOString()
 
-  // Fetch all ACTIVE events and filter by endsAt in memory
-  // (Firestore doesn't support DateTime comparisons on ISO strings without Timestamp type)
-  const snapshot = await db
-    .collection(EVENTS_COLLECTION)
-    .where('status', '==', 'ACTIVE')
-    .get()
+    // Find expired active events, auto-checkout unchecked-out members, and end events
+    const result = await session.run(
+      `MATCH (e:CheckInEvent {status: 'ACTIVE'})
+       WHERE e.endsAt <= $nowIso
+       OPTIONAL MATCH (r:CheckInRecord {eventId: e.id})
+       WHERE r.checkedOutAt IS NULL
+       WITH e, collect(r) AS records
+       FOREACH (r IN records | SET r.checkedOutAt = $nowIso, r.autoCheckedOut = true)
+       SET e.status = 'ENDED'
+       RETURN e.id AS eventId, e.name AS eventName, size(records) AS checkedOut`,
+      { nowIso }
+    )
 
-  if (snapshot.empty) return
-
-  const expiredEvents = snapshot.docs.filter((doc) => {
-    const event = doc.data() as CheckInEvent
-    return new Date(event.endsAt) <= now
-  })
-
-  if (expiredEvents.length === 0) return
-
-  console.log(
-    `[CheckIn Scheduler] Found ${expiredEvents.length} expired event(s) — processing auto-checkout`
-  )
-
-  const nowIso = now.toISOString()
-
-  for (const eventDoc of expiredEvents) {
-    const event = eventDoc.data() as CheckInEvent
-    try {
-      // Fetch all check-in records for this event
-      const recordsSnapshot = await db
-        .collection(CHECKINS_COLLECTION)
-        .where('eventId', '==', event.id)
-        .get()
-
-      const uncheckedOut = recordsSnapshot.docs.filter(
-        (doc) => !doc.data().checkedOutAt
-      )
-
-      // Write in chunks to respect Firestore's 500 ops/batch limit
-      for (let i = 0; i < uncheckedOut.length; i += BATCH_CHUNK_SIZE) {
-        const chunk = uncheckedOut.slice(i, i + BATCH_CHUNK_SIZE)
-        const batch = db.batch()
-        for (const recordDoc of chunk) {
-          batch.update(recordDoc.ref, {
-            checkedOutAt: nowIso,
-            autoCheckedOut: true,
-          })
-        }
-        await batch.commit()
-      }
-
-      // Mark the event as ENDED
-      await eventDoc.ref.update({ status: 'ENDED' })
-
+    for (const record of result.records) {
+      const name = record.get('eventName')
+      const id = record.get('eventId')
+      const count = record.get('checkedOut')?.toNumber?.() ?? 0
       console.log(
-        `[CheckIn Scheduler] Event "${event.name}" (${event.id}) ended — auto-checked out ${uncheckedOut.length} member(s)`
-      )
-    } catch (err) {
-      console.error(
-        `[CheckIn Scheduler] Error processing event ${event.id}:`,
-        err
+        `[CheckIn Scheduler] Event "${name}" (${id}) ended — auto-checked out ${count} member(s)`
       )
     }
+  } catch (err) {
+    console.error('[CheckIn Scheduler] Error:', err)
+  } finally {
+    await session.close()
   }
 }
 

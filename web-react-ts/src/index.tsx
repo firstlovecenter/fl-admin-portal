@@ -14,6 +14,7 @@ import { setContext } from '@apollo/client/link/context'
 import CacheBuster from 'CacheBuster'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import SimpleApp from './SimpleApp'
+import CheckInQRPage from 'pages/checkins/CheckInQRPage'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './color-theme.css'
@@ -223,10 +224,20 @@ const container: HTMLElement =
   document.getElementById('root') || document.createElement('div')
 const root = createRoot(container)
 
+// Fully public routes — rendered without any auth or Apollo context
+const PUBLIC_BYPASS_ROUTES = ['/checkins/qr']
+const isPublicBypass = PUBLIC_BYPASS_ROUTES.includes(
+  window.location.pathname.replace(/\/$/, '') || '/'
+)
+
 root.render(
   <React.StrictMode>
-    <SimpleApp>
-      <AppWithAuth />
-    </SimpleApp>
+    {isPublicBypass ? (
+      <CheckInQRPage />
+    ) : (
+      <SimpleApp>
+        <AppWithAuth />
+      </SimpleApp>
+    )}
   </React.StrictMode>
 )

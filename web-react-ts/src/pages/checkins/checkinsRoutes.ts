@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { LazyRouteTypes, Role } from 'global-types'
-import { permitAdmin } from 'permission-utils'
+import { permitAdmin, permitLeaderAdmin } from 'permission-utils'
 
 const CheckInsChurchSelect = lazy(
   () => import('pages/checkins/CheckInsChurchSelect')
@@ -32,6 +32,34 @@ const CheckInEventHistory = lazy(
   () => import('pages/checkins/CheckInEventHistory')
 )
 const CheckInQRPage = lazy(() => import('pages/checkins/CheckInQRPage'))
+
+// Per-level dashboard pages
+const CheckInBacenta = lazy(
+  () => import('pages/checkins/dashboards/CheckInBacenta')
+)
+const CheckInDashboardGovernorship = lazy(
+  () => import('pages/checkins/dashboards/CheckInDashboardGovernorship')
+)
+const CheckInDashboardCouncil = lazy(
+  () => import('pages/checkins/dashboards/CheckInDashboardCouncil')
+)
+const CheckInDashboardStream = lazy(
+  () => import('pages/checkins/dashboards/CheckInDashboardStream')
+)
+const CheckInDashboardCampus = lazy(
+  () => import('pages/checkins/dashboards/CheckInDashboardCampus')
+)
+
+// Breakdown pages
+const CheckInCampusByStream = lazy(
+  () => import('pages/checkins/breakdowns/CampusByStream')
+)
+const CheckInStreamByCouncil = lazy(
+  () => import('pages/checkins/breakdowns/StreamByCouncil')
+)
+const CheckInCouncilByGovernorship = lazy(
+  () => import('pages/checkins/breakdowns/CouncilByGovernorship')
+)
 
 const leaderRoles: Role[] = [
   'leaderBacenta',
@@ -119,6 +147,59 @@ export const checkinsRoutes: LazyRouteTypes[] = [
     placeholder: true,
     roles: ['all' as Role],
   },
+
+  // Per-level dashboard pages (like arrivals)
+  {
+    path: '/checkins/bacenta',
+    element: CheckInBacenta,
+    placeholder: true,
+    roles: permitLeaderAdmin('Bacenta'),
+  },
+  {
+    path: '/checkins/governorship',
+    element: CheckInDashboardGovernorship,
+    placeholder: true,
+    roles: permitLeaderAdmin('Governorship'),
+  },
+  {
+    path: '/checkins/council',
+    element: CheckInDashboardCouncil,
+    placeholder: true,
+    roles: permitLeaderAdmin('Council'),
+  },
+  {
+    path: '/checkins/stream',
+    element: CheckInDashboardStream,
+    placeholder: true,
+    roles: permitLeaderAdmin('Stream'),
+  },
+  {
+    path: '/checkins/campus',
+    element: CheckInDashboardCampus,
+    placeholder: true,
+    roles: permitLeaderAdmin('Campus'),
+  },
+
+  // Breakdown / drill-down pages
+  {
+    path: '/checkins/campus-by-stream',
+    element: CheckInCampusByStream,
+    placeholder: true,
+    roles: permitLeaderAdmin('Campus'),
+  },
+  {
+    path: '/checkins/stream-by-council',
+    element: CheckInStreamByCouncil,
+    placeholder: true,
+    roles: permitLeaderAdmin('Stream'),
+  },
+  {
+    path: '/checkins/council-by-governorship',
+    element: CheckInCouncilByGovernorship,
+    placeholder: true,
+    roles: permitLeaderAdmin('Council'),
+  },
+
   {
     path: '/checkins/:churchType',
     element: CheckInEventsByChurch,

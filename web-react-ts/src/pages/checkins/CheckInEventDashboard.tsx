@@ -1,17 +1,17 @@
 import { useQuery } from '@apollo/client'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useContext, useMemo, useState } from 'react'
-import { Button, Card, Col, Container, Row } from 'react-bootstrap'
+import { Accordion, Button, Card, Container } from 'react-bootstrap'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { GET_CHECKIN_DASHBOARD } from './checkinsQueries'
+import { GET_CHECKIN_DASHBOARD, GET_CHECKIN_EVENT_HISTORY } from './checkinsQueries'
 import { CheckInAdminControls } from './CheckInAdminControls'
 import { ManualCheckInModal } from './ManualCheckInModal'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
-import { QRCodeCanvas } from 'qrcode.react'
 import { MemberContext } from 'contexts/MemberContext'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import MenuButton from 'components/buttons/MenuButton'
+import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
 
 const CheckInEventDashboard = () => {
   const { eventId } = useParams()
@@ -31,297 +31,310 @@ const CheckInEventDashboard = () => {
     ].includes(role)
   )
 
+  const [searchParams] = useSearchParams()
+  const filterScopeId = searchParams.get('filterScopeId') ?? undefined
+
   const { data, loading, error, refetch } = useQuery(GET_CHECKIN_DASHBOARD, {
     pollInterval: SHORT_POLL_INTERVAL,
-    variables: { eventId },
+    variables: { eventId, filterScopeId },
+    skip: !eventId,
+    fetchPolicy: 'cache-and-network',
+  })
+
+  const { data: historyData } = useQuery(GET_CHECKIN_EVENT_HISTORY, {
+    variables: { eventId, limit: 5 },
     skip: !eventId,
     fetchPolicy: 'cache-and-network',
   })
 
   const dashboard = data?.GetCheckInDashboard
   const event = dashboard?.event
+  const historyEntries = historyData?.GetCheckInEventHistory ?? []
 
   // User can manage this event if they are an admin and created it
   const canManageEvent = isAdmin && event?.createdById === currentUser?.id
 
-  const allowedMethods: string[] = event?.allowedCheckInMethods ?? []
-  const qrPayload =
-    event?.id && event?.qrToken && allowedMethods.includes('QR')
-      ? `${event.id}:${event.qrToken}`
-      : ''
-  const statusLabel = event?.status ?? ''
+  // childScopeFilters = direct children of the applied filter scope (from API)
+  const childFilters: any[] = useMemo(
+    () => dashboard?.childScopeFilters ?? [],
+    [dashboard]
+  )
+  const childLevel = childFilters[0]?.level
 
-  const filters = useMemo(() => dashboard?.scopeFilters ?? [], [dashboard])
+  // When a scope filter is active, show that scope's name in the heading
+  const appliedFilterName = dashboard?.appliedFilterName
+  const isFiltered =
+    dashboard?.appliedFilterId &&
+    dashboard.appliedFilterId !== event?.scopeId
+
+  // Check if current user has already checked in
+  const userCheckIn = useMemo(() => {
+    if (!dashboard || !currentUser?.id) return null
+    return (
+      dashboard.checkedIn?.find(
+        (m: any) => m.memberId === currentUser.id
+      ) ?? null
+    )
+  }, [dashboard, currentUser])
+
+  const isEligibleToCheckIn =
+    event?.status === 'ACTIVE' &&
+    !userCheckIn &&
+    event?.allowedCheckInRoles?.some((role: string) =>
+      currentUser?.roles?.includes(role)
+    )
 
   const handleMutationComplete = () => {
     refetch()
   }
 
+  const stats = dashboard?.stats
+
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper loading={loading} error={error} data={data}>
-        <div>
-          <Container>
-          <HeadingPrimary className="mb-3" loading={loading}>
-            {event?.name ?? 'Check-In Dashboard'}
+        <>
+        <Container>
+          <HeadingPrimary loading={loading}>
+            {isFiltered && appliedFilterName
+              ? `${appliedFilterName}`
+              : (event?.name ?? 'Check-In Dashboard')}
           </HeadingPrimary>
+          {isFiltered && (
+            <p className="text-muted small text-center mb-1">{event?.name}</p>
+          )}
 
           {event?.createdByName && (
             <>
               <hr className="m-2" />
-              <div className="ps-4">
-                <div className="text-warning">Check-In Admin</div>
+              <div className="d-flex justify-content-between align-items-center ps-4 pe-2">
                 <div>
-                  {event.createdByName}
-                  {event.createdByRole ? ` (${event.createdByRole})` : ''}
+                  <div className="text-warning">Check-In Admin</div>
+                  <div>
+                    {event.createdByName}
+                    {event.createdByRole ? ` (${event.createdByRole})` : ''}
+                  </div>
                 </div>
+                {canManageEvent && (
+                  <CheckInAdminControls
+                    eventId={event.id}
+                    eventStatus={event.status}
+                    eventEndsAt={event.endsAt}
+                    event={event}
+                    canEdit={canManageEvent}
+                    onMutationComplete={handleMutationComplete}
+                  />
+                )}
               </div>
               <hr className="m-2" />
             </>
           )}
 
-          <div className="d-grid gap-2">
-            {event && canManageEvent && (
-              <CheckInAdminControls
-                eventId={event.id}
-                eventStatus={event.status}
-                eventEndsAt={event.endsAt}
-                onMutationComplete={handleMutationComplete}
-              />
-            )}
-
-            {event && !canManageEvent && (
-              <Card className="p-3 mb-3 bg-light">
-                <p className="text-muted mb-0">
-                  📖 <strong>Read-Only Mode:</strong> You are viewing check-in
-                  data for your scope.
-                  {event.createdByName && ` Created by ${event.createdByName}.`}
-                </p>
-              </Card>
-            )}
-          </div>
-
-          {event && (
-            <Card className="p-3 mb-3">
-              <Row className="g-3">
-                <Col md={6}>
-                  <div>
-                    <strong>Scope:</strong> {event.scopeLevel}
-                  </div>
-                  <div>
-                    <strong>Attendance:</strong> Leaders Only
-                  </div>
-                  <div>
-                    <strong>Status:</strong> {statusLabel}
-                  </div>
-                  <div>
-                    <strong>Starts:</strong>{' '}
-                    {new Date(event.startsAt).toLocaleString()}
-                  </div>
-                  <div>
-                    <strong>Ends:</strong>{' '}
-                    {new Date(event.endsAt).toLocaleString()}
-                  </div>
-                  <div className="mt-2">
-                    <strong>Can Check In:</strong>{' '}
-                    <span className="badge bg-info">
-                      {event.allowedCheckInRoles
-                        ?.map(
-                          (role: string) =>
-                            role.replace('leader', '').charAt(0).toUpperCase() +
-                            role.replace('leader', '').slice(1)
-                        )
-                        .join(', ')}
-                    </span>
-                  </div>
-                  {/* Allowed check-in methods */}
-                  <div className="mt-2 d-flex flex-wrap gap-1">
-                    <strong className="me-1">Methods:</strong>
-                    {allowedMethods.includes('QR') && (
-                      <span className="badge bg-primary">QR Code</span>
-                    )}
-                    {allowedMethods.includes('PIN') && (
-                      <span className="badge bg-warning text-dark">
-                        PIN Code
-                      </span>
-                    )}
-                    {allowedMethods.includes('FACE_ID') && (
-                      <span className="badge bg-success">Face ID</span>
-                    )}
-                  </div>
-                  {/* Geofence info */}
-                  <div className="mt-2">
-                    <span className="badge bg-success">
-                      Geofence: {event.geoFenceType || 'CIRCLE'}
-                      {event.geoRadius ? ` (${event.geoRadius}m)` : ''}
-                    </span>
-                    <span className="badge bg-secondary ms-1">
-                      Auto-checkout: {event.autoCheckoutMinutes ?? 30} min
-                    </span>
-                  </div>
-                </Col>
-                <Col md={6} className="text-md-end">
-                  {allowedMethods.includes('PIN') && event.pinCode && (
-                    <div>
-                      <strong>PIN:</strong> {event.pinCode}
-                    </div>
-                  )}
-                  {qrPayload && (
-                    <div className="d-flex justify-content-md-end mt-2">
-                      <QRCodeCanvas value={qrPayload} size={140} />
-                    </div>
-                  )}
-                </Col>
-              </Row>
-            </Card>
-          )}
-
-          {/* Scope Hierarchy - Show clickable lower scopes */}
-          {filters.length > 0 && (
-            <div className="mb-3">
-              <h6 className="mb-2">
-                Available {filters[0]?.level}s ({filters.length})
-              </h6>
-              <div className="d-grid gap-2">
-                <MenuButton
-                  title={`View by ${filters[0]?.level}`}
-                  onClick={() => navigate(`/checkins/event/${eventId}/scopes`)}
-                  number={filters.length.toString()}
-                  color="info"
-                  iconBg
-                  noCaption
-                />
-              </div>
+          {/* Bold Check-In button for eligible users */}
+          {isEligibleToCheckIn && (
+            <div className="d-grid my-3">
+              <Button
+                variant="success"
+                size="lg"
+                className="fw-bold py-3"
+                onClick={() => navigate(`/checkins/checkin?eventId=${event.id}`)}
+              >
+                Check In Now
+              </Button>
             </div>
           )}
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
-              <Card className="p-3 h-100 border-primary">
-                <Row className="align-items-center">
-                  <Col>
-                    <h5 className="mb-0">Attendance</h5>
-                    <div className="display-6 text-primary">
-                      {dashboard?.stats?.percentage ?? 0}%
-                    </div>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-            <Col md={6}>
-              <Card className="p-3 h-100 border-success">
-                <Row className="align-items-center">
-                  <Col>
-                    <h5 className="mb-0">Checked In</h5>
-                    <div className="display-6 text-success">
-                      {dashboard?.stats?.checkedInCount ?? 0}
-                    </div>
-                  </Col>
-                  <Col xs="auto">
-                    <Button
-                      variant="success"
+          {/* Already checked in banner */}
+          {userCheckIn && (
+            <Card className="p-3 mb-3 border-success bg-light">
+              <div className="d-flex align-items-center">
+                <span className="badge bg-success me-2 fs-6">Checked In</span>
+                <div>
+                  <small className="text-muted">
+                    via {userCheckIn.checkInMethod} •{' '}
+                    {new Date(userCheckIn.checkedInAt).toLocaleString()}
+                    {userCheckIn.isLate && (
+                      <span className="badge bg-warning ms-2">Late</span>
+                    )}
+                  </small>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          <div className="d-grid gap-2">
+            {/* Scope filter — drill down to child scopes */}
+            {childFilters.length > 0 && (
+              <DefaulterInfoCard
+                defaulter={{
+                  title: childLevel
+                    ? childLevel.charAt(0) +
+                      childLevel.slice(1).toLowerCase() +
+                      's'
+                    : 'Governorships',
+                  data: childFilters.length,
+                  link: isFiltered
+                    ? `/checkins/event/${eventId}/scopes?parentScopeId=${dashboard?.appliedFilterId}`
+                    : `/checkins/event/${eventId}/scopes`,
+                }}
+              />
+            )}
+
+            {stats && (
+              <p
+                className="text-center fw-bold mb-0"
+                style={{
+                  color:
+                    stats.percentage >= 75
+                      ? '#28a745'
+                      : stats.percentage >= 50
+                      ? '#ffc107'
+                      : '#dc3545',
+                }}
+              >
+                Attendance: {stats.percentage}%
+              </p>
+            )}
+
+            <Accordion defaultActiveKey="0">
+              <Accordion.Item eventKey="0">
+                <Accordion.Header>Check-In Monitoring</Accordion.Header>
+                <Accordion.Body>
+                  <div className="d-grid gap-2">
+                    <MenuButton
+                      title="Checked In"
                       onClick={() =>
                         navigate(`/checkins/event/${eventId}/checked-in`)
                       }
-                    >
-                      View List
-                    </Button>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
-
-          <Row className="g-3 mb-3">
-            <Col md={6}>
-              <Card className="p-3 h-100 border-warning">
-                <Row className="align-items-center">
-                  <Col>
-                    <h5 className="mb-0">Defaulted</h5>
-                    <div className="display-6 text-warning">
-                      {dashboard?.stats?.defaultedCount ?? 0}
-                    </div>
-                  </Col>
-                  <Col xs="auto">
-                    <Button
-                      variant="warning"
+                      number={(stats?.checkedInCount ?? 0).toString()}
+                      color="green"
+                      iconBg
+                      noCaption
+                    />
+                    <MenuButton
+                      title="Defaulted"
                       onClick={() =>
                         navigate(`/checkins/event/${eventId}/defaulted`)
                       }
-                    >
-                      View List
-                    </Button>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-            <Col md={6}>
-              <Card className="p-3 h-100 border-secondary">
-                <Row className="align-items-center">
-                  <Col>
-                    <h5 className="mb-0">Checked Out</h5>
-                    <div className="display-6 text-secondary">
-                      {dashboard?.stats?.checkedOutCount ?? 0}
-                    </div>
-                  </Col>
-                  <Col xs="auto">
-                    <Button
-                      variant="secondary"
+                      number={(stats?.defaultedCount ?? 0).toString()}
+                      color="red"
+                      iconBg
+                      noCaption
+                    />
+                    <MenuButton
+                      title="Checked Out"
                       onClick={() =>
                         navigate(`/checkins/event/${eventId}/checked-out`)
                       }
-                    >
-                      View List
-                    </Button>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
-
-          <Row className="g-3 mb-3">
-            <Col md={6}>
-              <Card className="p-3 h-100 border-info">
-                <Row className="align-items-center">
-                  <Col>
-                    <h5 className="mb-0">Total Expected</h5>
-                    <div className="display-6 text-info">
-                      {dashboard?.stats?.totalExpected ?? 0}
-                    </div>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Flagged Records Section */}
-          {(dashboard?.stats?.flaggedCount ?? 0) > 0 && canManageEvent && (
-            <Card className="p-3 mb-3 border-danger">
-              <Row className="align-items-center">
-                <Col>
-                  <h5 className="mb-0">
-                    Flagged Check-Ins
-                  </h5>
-                  <div className="display-6 text-danger">
-                    {dashboard?.stats?.flaggedCount ?? 0}
+                      number={(stats?.checkedOutCount ?? 0).toString()}
+                      color="yellow"
+                      iconBg
+                      noCaption
+                    />
+                    <MenuButton
+                      title="Total Expected"
+                      number={stats?.totalExpected?.toString() ?? '-'}
+                      color="info"
+                      iconBg
+                      noCaption
+                    />
+                    {(stats?.flaggedCount ?? 0) > 0 && canManageEvent && (
+                      <MenuButton
+                        title="Flagged Check-Ins"
+                        onClick={() =>
+                          navigate(`/checkins/event/${eventId}/flagged`)
+                        }
+                        number={stats!.flaggedCount.toString()}
+                        color="red"
+                        iconBg
+                        noCaption
+                      />
+                    )}
                   </div>
-                  <small className="text-muted">
-                    Records flagged by face verification that need admin review
-                  </small>
-                </Col>
-                <Col xs="auto">
-                  <Button
-                    variant="danger"
-                    onClick={() =>
-                      navigate(`/checkins/event/${eventId}/flagged`)
-                    }
-                  >
-                    Review Flagged
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
-          )}
+                </Accordion.Body>
+              </Accordion.Item>
+
+              {(historyEntries.length > 0 ||
+                (dashboard?.checkedIn?.length ?? 0) > 0) && (
+                <Accordion.Item eventKey="1">
+                  <Accordion.Header>Recent Activity</Accordion.Header>
+                  <Accordion.Body>
+                    <div className="d-flex justify-content-end mb-2">
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() =>
+                          navigate(`/checkins/event/${eventId}/checked-in`)
+                        }
+                      >
+                        View All
+                      </Button>
+                    </div>
+                    {historyEntries.length > 0 ? (
+                      <ul className="list-unstyled mb-0">
+                        {historyEntries.map((entry: any) => (
+                          <li
+                            key={entry.id}
+                            className="d-flex align-items-start mb-2 pb-2 border-bottom"
+                          >
+                            <span className="me-2 text-primary">●</span>
+                            <div>
+                              <strong>{entry.performedByName}</strong>{' '}
+                              <span className="text-muted">
+                                {entry.description}
+                              </span>
+                              <br />
+                              <small className="text-muted">
+                                {new Date(entry.timestamp).toLocaleString()}
+                              </small>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <ul className="list-unstyled mb-0">
+                        {[...dashboard.checkedIn]
+                          .sort(
+                            (a: any, b: any) =>
+                              new Date(b.checkedInAt).getTime() -
+                              new Date(a.checkedInAt).getTime()
+                          )
+                          .slice(0, 5)
+                          .map((record: any) => (
+                            <li
+                              key={record.memberId}
+                              className="d-flex align-items-start mb-2 pb-2 border-bottom"
+                            >
+                              <span className="me-2 text-success">●</span>
+                              <div>
+                                <strong>
+                                  {record.firstName} {record.lastName}
+                                </strong>{' '}
+                                checked in via{' '}
+                                <span className="badge bg-info">
+                                  {record.checkInMethod}
+                                </span>
+                                {record.isLate && (
+                                  <span className="badge bg-warning ms-1">
+                                    Late
+                                  </span>
+                                )}
+                                <br />
+                                <small className="text-muted">
+                                  {new Date(
+                                    record.checkedInAt
+                                  ).toLocaleString()}
+                                </small>
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                  </Accordion.Body>
+                </Accordion.Item>
+              )}
+            </Accordion>
+          </div>
         </Container>
 
         <ManualCheckInModal
@@ -331,7 +344,7 @@ const CheckInEventDashboard = () => {
           eventId={eventId || ''}
           onMutationComplete={handleMutationComplete}
         />
-        </div>
+        </>
       </ApolloWrapper>
     </PullToRefresh>
   )

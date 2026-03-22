@@ -13,15 +13,15 @@ import { Link } from 'react-router-dom'
 const CheckInEventsByChurch = () => {
   const { churchType } = useParams<{ churchType: string }>()
   const navigate = useNavigate()
-  const { clickedChurch } = useContext(ChurchContext)
+  const { church } = useContext(ChurchContext)
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
 
   const { data, loading, error } = useQuery(LIST_CHECKIN_EVENTS, {
     variables: {
       scopeLevel: churchType?.toUpperCase(),
-      scopeId: clickedChurch?.id,
+      scopeId: church?.id,
     },
-    skip: !churchType || !clickedChurch?.id,
+    skip: !churchType || !church?.id,
   })
 
   const events = useMemo(() => {
@@ -47,7 +47,7 @@ const CheckInEventsByChurch = () => {
     return type === 'LEADERS_ONLY' ? 'Leaders Only' : 'Leaders + Members'
   }
 
-  if (!clickedChurch) {
+  if (!church) {
     return (
       <Container className="py-4">
         <p className="text-muted">Please select a church first.</p>
@@ -61,7 +61,7 @@ const CheckInEventsByChurch = () => {
   return (
     <ApolloWrapper loading={loading} error={error} data={data}>
       <Container className="py-4">
-        <HeadingPrimary>{clickedChurch.name}</HeadingPrimary>
+        <HeadingPrimary>{church.name}</HeadingPrimary>
         <HeadingSecondary>Check-In Events</HeadingSecondary>
 
         <Row className="g-3 mb-4">
@@ -114,13 +114,13 @@ const CheckInEventsByChurch = () => {
             >
               <Link to="/checkins/create" className="me-2">
                 <Button variant="primary" size="sm">
-                  ➕ Create Event
+                  Create Event
                 </Button>
               </Link>
             </RoleView>
             <Link to="/checkins/reports">
               <Button variant="info" size="sm">
-                📊 View Reports
+                View Reports
               </Button>
             </Link>
           </Col>
@@ -129,7 +129,7 @@ const CheckInEventsByChurch = () => {
         <div className="d-grid gap-3">
           {events.length === 0 ? (
             <Card className="p-4 text-center text-muted">
-              <p>No events found for {clickedChurch.name}.</p>
+              <p>No events found for {church.name}.</p>
             </Card>
           ) : (
             events.map((event: any) => (

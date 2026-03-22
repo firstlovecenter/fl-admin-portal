@@ -30,7 +30,7 @@ const ChurchList = ({
 
   return (
     <div className="d-grid gap-2 text-left">
-      {userJobs.length ? (
+      {userJobs?.length ? (
         userJobs.map((role: UserRole) =>
           role.church
             .filter((church: Church) => {

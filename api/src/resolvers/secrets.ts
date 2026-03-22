@@ -35,20 +35,27 @@ const fetchAwsSecret = async () => {
     throw new Error('Secret string is empty')
   } catch (error) {
     console.error('Error fetching secrets from AWS:', error)
-    // Fallback to default values if AWS secret fetch fails
-    console.log('Using fallback secrets')
-    return {
-      JWT_SECRET: 'fallback_secret_key_for_development',
-      NEO4J_URI: 'bolt://localhost:7687',
-      NEO4J_USER: 'neo4j',
-      NEO4J_PASSWORD: 'password',
-    }
+    console.log('Falling back to environment variables from .env')
+    return {}
   }
 }
 
 export const loadSecrets = async (): Promise<Record<string, string>> => {
   const secrets = await fetchAwsSecret()
-  return secrets
+
+  // Environment variables from .env override AWS secrets as fallback
+  const envFallback: Record<string, string> = {
+    JWT_SECRET:
+      process.env.JWT_SECRET || process.env.JWT_SECRET_HS256 || '',
+    NEO4J_URI: process.env.NEO4J_URI || 'bolt://localhost:7687',
+    NEO4J_USER: process.env.NEO4J_USER || 'neo4j',
+    NEO4J_PASSWORD: process.env.NEO4J_PASSWORD || 'password',
+    GRAPHQL_SERVER_PORT: process.env.PORT || '4001',
+    GRAPHQL_SERVER_PATH: process.env.GRAPHQL_SERVER_PATH || '/graphql',
+    GRAPHQL_SERVER_HOST: process.env.GRAPHQL_SERVER_HOST || '0.0.0.0',
+  }
+
+  return { ...envFallback, ...secrets }
 }
 
 module.exports = { loadSecrets }

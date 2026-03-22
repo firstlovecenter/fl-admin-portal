@@ -6,7 +6,7 @@ export type CheckInScopeLevel =
   | 'GOVERNORSHIP'
   | 'BACENTA'
 
-export type CheckInAttendanceType = 'LEADERS_ONLY'
+export type CheckInAttendanceType = 'LEADERS_ONLY' | 'ALL_MEMBERS'
 
 export type CheckInStatus = 'ACTIVE' | 'PAUSED' | 'ENDED'
 
@@ -31,8 +31,6 @@ export interface GeoPoint {
 export interface CheckInEvent {
   id: string
   name: string
-  type: string
-  description?: string
   location?: string
   scopeLevel: CheckInScopeLevel
   scopeId: string
@@ -116,8 +114,6 @@ export interface GeoValidationResult {
 
 export interface CreateCheckInEventInput {
   name: string
-  type: string
-  description?: string
   location?: string
   scopeLevel: CheckInScopeLevel
   scopeId: string
@@ -132,4 +128,24 @@ export interface CreateCheckInEventInput {
   geoRadius?: number
   geoPolygon?: GeoPoint[]
   autoCheckoutMinutes?: number
+}
+
+export interface CheckInScopeAggregate {
+  scopeId: string
+  scopeName: string
+  scopeLevel: CheckInScopeLevel
+  totalEvents: number
+  totalExpected: number
+  checkedInCount: number
+  defaultedCount: number
+  attendancePercentage: number
+}
+
+export interface CheckInHistoryEntry {
+  id: string
+  timestamp: string
+  action: string
+  description: string
+  performedById: string
+  performedByName: string
 }

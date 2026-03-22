@@ -1,4 +1,3 @@
-import { getCheckinsDb } from './firebase'
 import {
   getScopeLabel,
   getScopeDepth,
@@ -17,28 +16,209 @@ import {
   ViewerScope,
   GeoValidationResult,
   CheckInRoleType,
+  CheckInScopeAggregate,
+  CheckInHistoryEntry,
 } from './checkins-types'
 import { Context } from '../utils/neo4j-types'
-
-export const EVENTS_COLLECTION = 'checkinEvents'
-export const CHECKINS_COLLECTION = 'checkinRecords'
-export const CHECKIN_ATTEMPTS_COLLECTION = 'checkinAttempts'
-export const DEVICE_CHECKINS_COLLECTION = 'checkinDevices'
+import neo4j from 'neo4j-driver'
 
 const PIN_ATTEMPT_WINDOW_MS = 10 * 60 * 1000
 const PIN_ATTEMPT_MAX = 5
 const PIN_LOCK_MS = 15 * 60 * 1000
 
-export const getEventDoc = async (eventId: string) => {
-  const db = await getCheckinsDb()
-  if (!db) return null
-  return db.collection(EVENTS_COLLECTION).doc(eventId)
+// ── Serialization helpers ──
+
+const toJsNumber = (val: any): number => {
+  if (val == null) return 0
+  if (typeof val === 'number') return val
+  if (typeof val?.toNumber === 'function') return val.toNumber()
+  return Number(val)
 }
 
-export const getCheckinsQuery = async (eventId: string) => {
-  const db = await getCheckinsDb()
-  if (!db) return null
-  return db.collection(CHECKINS_COLLECTION).where('eventId', '==', eventId)
+const serializeEvent = (event: CheckInEvent): Record<string, any> => {
+  const { geoCenter, geoPolygon, allowedCheckInRoles, allowedCheckInMethods, ...rest } = event
+  return {
+    ...rest,
+    geoCenterLatitude: geoCenter?.latitude ?? null,
+    geoCenterLongitude: geoCenter?.longitude ?? null,
+    geoPolygon: geoPolygon ? JSON.stringify(geoPolygon) : null,
+    allowedCheckInRoles: JSON.stringify(allowedCheckInRoles),
+    allowedCheckInMethods: JSON.stringify(allowedCheckInMethods),
+  }
+}
+
+const toIsoString = (v: any): string | null => {
+  if (v == null) return null
+  if (typeof v === 'string') return v
+  // Neo4j DateTime objects have a toString() that returns an ISO-like string
+  // e.g. "2026-03-22T14:00:00.000000000Z"
+  return v.toString()
+}
+
+const deserializeEvent = (props: Record<string, any>): CheckInEvent => {
+  const { geoCenterLatitude, geoCenterLongitude, geoPolygon, allowedCheckInRoles, allowedCheckInMethods, ...rest } = props
+  return {
+    ...rest,
+    startsAt: toIsoString(rest.startsAt) as string,
+    endsAt: toIsoString(rest.endsAt) as string,
+    gracePeriod: toJsNumber(rest.gracePeriod),
+    qrRotationSeconds: toJsNumber(rest.qrRotationSeconds),
+    totalExpected: toJsNumber(rest.totalExpected),
+    autoCheckoutMinutes: toJsNumber(rest.autoCheckoutMinutes),
+    geoRadius: rest.geoRadius != null ? toJsNumber(rest.geoRadius) : null,
+    geoCenter:
+      geoCenterLatitude != null && geoCenterLongitude != null
+        ? { latitude: toJsNumber(geoCenterLatitude), longitude: toJsNumber(geoCenterLongitude) }
+        : null,
+    geoPolygon: geoPolygon ? JSON.parse(geoPolygon) : null,
+    allowedCheckInRoles: typeof allowedCheckInRoles === 'string' ? JSON.parse(allowedCheckInRoles) : allowedCheckInRoles || [],
+    allowedCheckInMethods: typeof allowedCheckInMethods === 'string' ? JSON.parse(allowedCheckInMethods) : allowedCheckInMethods || ['QR'],
+  } as CheckInEvent
+}
+
+const deserializeRecord = (props: Record<string, any>): CheckInRecord => ({
+  ...props,
+  distanceFromVenue: props.distanceFromVenue != null ? toJsNumber(props.distanceFromVenue) : null,
+  faceMatchScore: props.faceMatchScore != null ? toJsNumber(props.faceMatchScore) : null,
+  autoCheckedOut: props.autoCheckedOut ?? false,
+} as CheckInRecord)
+
+// ── Event CRUD ──
+
+export const getEvent = async (
+  context: Context,
+  eventId: string
+): Promise<CheckInEvent | null> => {
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `MATCH (e:CheckInEvent {id: $eventId}) RETURN e`,
+      { eventId }
+    )
+    if (!res.records[0]) return null
+    return deserializeEvent(res.records[0].get('e').properties)
+  } finally {
+    await session.close()
+  }
+}
+
+export const createEvent = async (
+  context: Context,
+  event: CheckInEvent
+): Promise<void> => {
+  const session = context.executionContext.session()
+  try {
+    const props = serializeEvent(event)
+    await session.run(`CREATE (e:CheckInEvent) SET e = $props`, { props })
+  } finally {
+    await session.close()
+  }
+}
+
+export const updateEvent = async (
+  context: Context,
+  eventId: string,
+  updates: Record<string, any>
+): Promise<void> => {
+  const session = context.executionContext.session()
+  try {
+    await session.run(
+      `MATCH (e:CheckInEvent {id: $eventId}) SET e += $updates`,
+      { eventId, updates }
+    )
+  } finally {
+    await session.close()
+  }
+}
+
+export const queryEvents = async (
+  context: Context,
+  filters: {
+    scopeLevel?: string
+    status?: string
+    scopeId?: string
+    scopeIds?: string[]
+  }
+): Promise<CheckInEvent[]> => {
+  const session = context.executionContext.session()
+  try {
+    const where: string[] = []
+    const params: Record<string, any> = {}
+    if (filters.scopeLevel) {
+      where.push('e.scopeLevel = $scopeLevel')
+      params.scopeLevel = filters.scopeLevel
+    }
+    if (filters.status) {
+      where.push('e.status = $status')
+      params.status = filters.status
+    }
+    if (filters.scopeId) {
+      where.push('e.scopeId = $scopeId')
+      params.scopeId = filters.scopeId
+    }
+    if (filters.scopeIds) {
+      where.push('e.scopeId IN $scopeIds')
+      params.scopeIds = filters.scopeIds
+    }
+    const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
+    const res = await session.run(
+      `MATCH (e:CheckInEvent) ${whereClause} RETURN e`,
+      params
+    )
+    return res.records.map((r) => deserializeEvent(r.get('e').properties))
+  } finally {
+    await session.close()
+  }
+}
+
+// ── Record CRUD ──
+
+export const createCheckInRecord = async (
+  context: Context,
+  record: Record<string, any>
+): Promise<void> => {
+  const session = context.executionContext.session()
+  try {
+    const props = Object.fromEntries(
+      Object.entries(record).filter(([_, v]) => v !== undefined)
+    )
+    await session.run(`CREATE (r:CheckInRecord) SET r = $props`, { props })
+  } finally {
+    await session.close()
+  }
+}
+
+export const updateCheckInRecord = async (
+  context: Context,
+  recordId: string,
+  updates: Record<string, any>
+): Promise<void> => {
+  const session = context.executionContext.session()
+  try {
+    await session.run(
+      `MATCH (r:CheckInRecord {id: $recordId}) SET r += $updates`,
+      { recordId, updates }
+    )
+  } finally {
+    await session.close()
+  }
+}
+
+export const getCheckInRecordById = async (
+  context: Context,
+  recordId: string
+): Promise<CheckInRecord | undefined> => {
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `MATCH (r:CheckInRecord {id: $recordId}) RETURN r`,
+      { recordId }
+    )
+    if (!res.records[0]) return undefined
+    return deserializeRecord(res.records[0].get('r').properties)
+  } finally {
+    await session.close()
+  }
 }
 
 export const mapEventToResponse = (event: CheckInEvent) => {
@@ -61,7 +241,7 @@ export const getMemberByAuthId = async (
   const session = context.executionContext.session()
   try {
     const res = await session.run(
-      `MATCH (member:Member {auth_id: $authId})
+      `MATCH (member:Member {id: $authId})
        RETURN member.id AS id, member.firstName AS firstName, member.lastName AS lastName`,
       { authId }
     )
@@ -84,7 +264,13 @@ export const getAdminScopes = async (
   const session = context.executionContext.session()
   try {
     const res = await session.run(
-      `MATCH (member:Member {auth_id: $authId})-[:IS_ADMIN_FOR]->(church)
+      `MATCH (member:Member {id: $authId})
+       OPTIONAL MATCH (member)-[:IS_ADMIN_FOR]->(adminChurch)
+       OPTIONAL MATCH (member)-[:LEADS]->(leadChurch)
+       WITH collect(DISTINCT adminChurch) + collect(DISTINCT leadChurch) AS churches
+       UNWIND churches AS church
+       WITH DISTINCT church
+       WHERE church IS NOT NULL
        RETURN church.id AS id, church.name AS name, labels(church) AS labels`,
       { authId }
     )
@@ -120,7 +306,7 @@ export const getViewerScopeIds = async (
   const session = context.executionContext.session()
   try {
     const res = await session.run(
-      `MATCH (m:Member {auth_id: $authId})
+      `MATCH (m:Member {id: $authId})
        OPTIONAL MATCH (m)-[:IS_ADMIN_FOR]->(adminChurch)
        OPTIONAL MATCH (m)-[:LEADS]->(leadChurch)
        WITH collect(DISTINCT adminChurch.id) + collect(DISTINCT leadChurch.id) AS ids
@@ -191,16 +377,16 @@ export const getEligibleMembers = async (
     const scopeLabel = getScopeLabel(scopeLevel)
     const depth = getScopeDepth(scopeLevel)
     const leadersOnly = attendanceType === 'LEADERS_ONLY'
+    const unitAlias = depth === 0 ? 'scope' : 'bacenta'
+    const memberMatch =
+      depth === 0
+        ? `MATCH (scope)<-[:BELONGS_TO]-(member:Member)`
+        : `MATCH (scope)-[:HAS*${depth}]->(bacenta:Bacenta)\n             MATCH (bacenta)<-[:BELONGS_TO]-(member:Member)`
     const query = `
       MATCH (scope:${scopeLabel} {id: $scopeId})
-      ${
-        depth === 0
-          ? `MATCH (scope)<-[:BELONGS_TO]-(member:Member)`
-          : `MATCH (scope)-[:HAS*${depth}]->(bacenta:Bacenta)
-             MATCH (bacenta)<-[:BELONGS_TO]-(member:Member)`
-      }
-      OPTIONAL MATCH (member)-[leadRel:LEADS|IS_ADMIN_FOR]->(:Church)
-      WITH member, ${depth === 0 ? 'scope' : 'bacenta'} AS unit, COUNT(leadRel) AS leaderCount
+      ${memberMatch}
+      OPTIONAL MATCH (member)-[leadRel:LEADS|IS_ADMIN_FOR]->()
+      WITH member, ${unitAlias} AS unit, COUNT(leadRel) AS leaderCount
       WHERE $leadersOnly = false OR leaderCount > 0
       RETURN DISTINCT member.id AS id,
         member.firstName AS firstName,
@@ -281,6 +467,28 @@ export const getScopeFilters = async (
   }
 }
 
+export const getDirectChildren = async (
+  context: Context,
+  parentScopeId: string
+): Promise<ScopeFilter[]> => {
+  const session = context.executionContext.session()
+  try {
+    const query = `
+      MATCH ({id: $parentScopeId})-[:HAS]->(child)
+      WHERE child:Campus OR child:Stream OR child:Council OR child:Governorship OR child:Bacenta
+      RETURN child.id AS id, child.name AS name, labels(child) AS labels
+    `
+    const res = await session.run(query, { parentScopeId })
+    return res.records.map((record) => ({
+      id: record.get('id'),
+      name: record.get('name'),
+      level: resolveScopeLevelFromLabels(record.get('labels')),
+    }))
+  } finally {
+    await session.close()
+  }
+}
+
 export const resolveViewerScope = async (
   context: Context,
   authId: string,
@@ -288,6 +496,7 @@ export const resolveViewerScope = async (
   eventScopeId: string,
   userRoles: string[]
 ): Promise<ViewerScope | null> => {
+  // Global admins can see everything
   if (
     userRoles.includes('adminDenomination') ||
     userRoles.includes('adminOversight')
@@ -295,6 +504,46 @@ export const resolveViewerScope = async (
     return { id: eventScopeId, level: eventScopeLevel }
   }
 
+  // Check if the user has a matching admin role for this scope level or above
+  const roleScopeMap: Record<string, CheckInScopeLevel> = {
+    adminCampus: 'CAMPUS',
+    adminStream: 'STREAM',
+    adminCouncil: 'COUNCIL',
+    adminGovernorship: 'GOVERNORSHIP',
+  }
+
+  const eventDepth = getScopeDepth(eventScopeLevel)
+
+  for (const role of userRoles) {
+    const roleLevel = roleScopeMap[role]
+    if (roleLevel && getScopeDepth(roleLevel) >= eventDepth) {
+      // User has an admin role at or above the event scope level
+      // Verify they actually admin a church that contains the event scope
+      const session = context.executionContext.session()
+      try {
+        const roleLabel = getScopeLabel(roleLevel)
+        const scopeLabel = getScopeLabel(eventScopeLevel)
+        const res = await session.run(
+          `MATCH (member:Member {id: $authId})-[:IS_ADMIN_FOR]->(adminChurch:${roleLabel})
+           MATCH (eventScope:${scopeLabel} {id: $eventScopeId})
+           WHERE adminChurch.id = eventScope.id
+             OR EXISTS((adminChurch)-[:HAS*1..6]->(eventScope))
+           RETURN adminChurch.id AS id`,
+          { authId, eventScopeId }
+        )
+        if (res.records.length > 0) {
+          return {
+            id: res.records[0].get('id'),
+            level: roleLevel,
+          }
+        }
+      } finally {
+        await session.close()
+      }
+    }
+  }
+
+  // Fallback: check all admin and leader scopes from graph relationships
   const adminScopes = await getAdminScopes(context, authId)
   const session = context.executionContext.session()
   try {
@@ -322,7 +571,7 @@ export const resolveViewerScope = async (
 
     // Also check if the user is a leader within the event scope
     const leaderRes = await session.run(
-      `MATCH (member:Member {auth_id: $authId})-[:LEADS]->(church)
+      `MATCH (member:Member {id: $authId})-[:LEADS]->(church)
        RETURN church.id AS id, labels(church) AS labels`,
       { authId }
     )
@@ -358,25 +607,37 @@ export const resolveViewerScope = async (
 }
 
 export const getCheckInRecords = async (
+  context: Context,
   eventId: string
 ): Promise<CheckInRecord[]> => {
-  const checkinsQuery = await getCheckinsQuery(eventId)
-  if (!checkinsQuery) return []
-  const checkinsSnapshot = await checkinsQuery.get()
-  return checkinsSnapshot.docs.map((doc) => doc.data() as CheckInRecord)
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `MATCH (r:CheckInRecord {eventId: $eventId}) RETURN r`,
+      { eventId }
+    )
+    return res.records.map((r) => deserializeRecord(r.get('r').properties))
+  } finally {
+    await session.close()
+  }
 }
 
 export const getCheckInRecordForMember = async (
+  context: Context,
   eventId: string,
   memberId: string
 ): Promise<CheckInRecord | undefined> => {
-  const checkinsQuery = await getCheckinsQuery(eventId)
-  if (!checkinsQuery) return undefined
-  const checkinsSnapshot = await checkinsQuery
-    .where('memberId', '==', memberId)
-    .limit(1)
-    .get()
-  return checkinsSnapshot.docs[0]?.data() as CheckInRecord | undefined
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `MATCH (r:CheckInRecord {eventId: $eventId, memberId: $memberId}) RETURN r LIMIT 1`,
+      { eventId, memberId }
+    )
+    if (!res.records[0]) return undefined
+    return deserializeRecord(res.records[0].get('r').properties)
+  } finally {
+    await session.close()
+  }
 }
 
 export const isMemberInScope = async (
@@ -390,7 +651,7 @@ export const isMemberInScope = async (
     const scopeLabel = getScopeLabel(scopeLevel)
     const depth = getScopeDepth(scopeLevel)
     const query = `
-      MATCH (member:Member {auth_id: $authId})-[:BELONGS_TO]->(bacenta:Bacenta)
+      MATCH (member:Member {id: $authId})-[:BELONGS_TO]->(bacenta:Bacenta)
       MATCH (scope:${scopeLabel} {id: $scopeId})
       ${
         depth === 0
@@ -442,7 +703,7 @@ export const isLeaderOrAdmin = async (
   const session = context.executionContext.session()
   try {
     const leaderRes = await session.run(
-      `MATCH (member:Member {auth_id: $authId})-[:LEADS|IS_ADMIN_FOR]->(:Church)
+      `MATCH (member:Member {id: $authId})-[:LEADS|IS_ADMIN_FOR]->(:Church)
        RETURN COUNT(member) AS count`,
       { authId }
     )
@@ -489,81 +750,81 @@ export const getMemberUnitName = async (
 }
 
 export const enforcePinAttemptPolicy = async (
+  context: Context,
   eventId: string,
   authId: string
 ): Promise<void> => {
-  const db = await getCheckinsDb()
-  if (!db) return
-  const docRef = db
-    .collection(CHECKIN_ATTEMPTS_COLLECTION)
-    .doc(`${eventId}_${authId}`)
-  const snapshot = await docRef.get()
-  if (!snapshot.exists) return
-  const data = snapshot.data()
-  const lockedUntil = data?.lockedUntil
-    ? new Date(data.lockedUntil).getTime()
-    : 0
-  if (lockedUntil && Date.now() < lockedUntil) {
-    throw new Error('Too many failed PIN attempts. Please try again later.')
+  const session = context.executionContext.session()
+  try {
+    const docId = `${eventId}_${authId}`
+    const res = await session.run(
+      `MATCH (a:CheckInAttempt {id: $docId}) RETURN a.lockedUntil AS lockedUntil`,
+      { docId }
+    )
+    if (!res.records[0]) return
+    const lockedUntil = res.records[0].get('lockedUntil')
+    if (lockedUntil && Date.now() < new Date(lockedUntil).getTime()) {
+      throw new Error('Too many failed PIN attempts. Please try again later.')
+    }
+  } finally {
+    await session.close()
   }
 }
 
 export const recordFailedPinAttempt = async (
+  context: Context,
   eventId: string,
   authId: string
 ): Promise<void> => {
-  const db = await getCheckinsDb()
-  if (!db) return
-  const docRef = db
-    .collection(CHECKIN_ATTEMPTS_COLLECTION)
-    .doc(`${eventId}_${authId}`)
-  const snapshot = await docRef.get()
-  const now = Date.now()
-  let count = 0
-  let firstAttemptAt = now
-  let lockedUntil: string | null = null
+  const session = context.executionContext.session()
+  try {
+    const docId = `${eventId}_${authId}`
+    const now = Date.now()
+    const res = await session.run(
+      `MERGE (a:CheckInAttempt {id: $docId})
+       ON CREATE SET a.count = 0, a.firstAttemptAt = $nowIso, a.lockedUntil = null
+       RETURN a.count AS count, a.firstAttemptAt AS firstAttemptAt`,
+      { docId, nowIso: new Date(now).toISOString() }
+    )
+    let count = res.records[0]?.get('count')
+    count = typeof count?.toNumber === 'function' ? count.toNumber() : (count ?? 0)
+    const firstAttemptAt = res.records[0]?.get('firstAttemptAt')
+    let firstTime = firstAttemptAt ? new Date(firstAttemptAt).getTime() : now
 
-  if (snapshot.exists) {
-    const data = snapshot.data()!
-    const existingFirst = data.firstAttemptAt
-      ? new Date(data.firstAttemptAt).getTime()
-      : now
-    if (now - existingFirst <= PIN_ATTEMPT_WINDOW_MS) {
-      count = data.count ?? 0
-      firstAttemptAt = existingFirst
+    if (now - firstTime > PIN_ATTEMPT_WINDOW_MS) {
+      count = 0
+      firstTime = now
     }
+    count += 1
+    let lockedUntil: string | null = null
+    if (count >= PIN_ATTEMPT_MAX) {
+      lockedUntil = new Date(now + PIN_LOCK_MS).toISOString()
+      count = 0
+      firstTime = now
+    }
+    await session.run(
+      `MATCH (a:CheckInAttempt {id: $docId})
+       SET a.count = $count, a.firstAttemptAt = $firstAttemptAt, a.lockedUntil = $lockedUntil`,
+      { docId, count, firstAttemptAt: new Date(firstTime).toISOString(), lockedUntil }
+    )
+  } finally {
+    await session.close()
   }
-
-  count += 1
-  if (count >= PIN_ATTEMPT_MAX) {
-    lockedUntil = new Date(now + PIN_LOCK_MS).toISOString()
-    count = 0
-    firstAttemptAt = now
-  }
-
-  await docRef.set(
-    {
-      count,
-      firstAttemptAt: new Date(firstAttemptAt).toISOString(),
-      lockedUntil,
-    },
-    { merge: true }
-  )
 }
 
 export const clearPinAttempts = async (
+  context: Context,
   eventId: string,
   authId: string
 ): Promise<void> => {
-  const db = await getCheckinsDb()
-  if (!db) return
-  const docRef = db
-    .collection(CHECKIN_ATTEMPTS_COLLECTION)
-    .doc(`${eventId}_${authId}`)
+  const session = context.executionContext.session()
   try {
-    await docRef.delete()
+    await session.run(
+      `MATCH (a:CheckInAttempt {id: $id}) DELETE a`,
+      { id: `${eventId}_${authId}` }
+    )
   } catch {
-    // Ignore delete failures for missing docs
+    // Ignore delete failures for missing nodes
   }
 }
 
@@ -584,33 +845,31 @@ export const isUserAllowedToCheckIn = (
  * If another member has already checked in on the same device for this event, block.
  */
 export const enforceOneDevicePerEvent = async (
+  context: Context,
   eventId: string,
   memberId: string,
   deviceFingerprint: string
 ): Promise<void> => {
   if (!deviceFingerprint) return
-  const db = await getCheckinsDb()
-  if (!db) return
-  const docId = `${eventId}_${deviceFingerprint}`
-  const docRef = db.collection(DEVICE_CHECKINS_COLLECTION).doc(docId)
-  const snapshot = await docRef.get()
-  if (snapshot.exists) {
-    const data = snapshot.data()
-    if (data?.memberId && data.memberId !== memberId) {
+  const session = context.executionContext.session()
+  try {
+    const docId = `${eventId}_${deviceFingerprint}`
+    const res = await session.run(
+      `MERGE (d:CheckInDevice {id: $docId})
+       ON CREATE SET d.eventId = $eventId, d.memberId = $memberId,
+                     d.deviceFingerprint = $deviceFingerprint, d.createdAt = $now
+       RETURN d.memberId AS existingMemberId`,
+      { docId, eventId, memberId, deviceFingerprint, now: new Date().toISOString() }
+    )
+    const existingMemberId = res.records[0]?.get('existingMemberId')
+    if (existingMemberId && existingMemberId !== memberId) {
       throw new Error(
         'This device has already been used for check-in by another member. One device per person per event.'
       )
     }
-    // Same member, same device — allow (idempotent)
-    return
+  } finally {
+    await session.close()
   }
-  // Record this device ↔ member mapping
-  await docRef.set({
-    eventId,
-    memberId,
-    deviceFingerprint,
-    createdAt: new Date().toISOString(),
-  })
 }
 
 /**
@@ -654,14 +913,201 @@ export const validateGeoFence = (
  * Get flagged check-in records for an event (faceMatchStatus === 'FLAGGED').
  */
 export const getFlaggedCheckIns = async (
+  context: Context,
   eventId: string
 ): Promise<CheckInRecord[]> => {
-  const db = await getCheckinsDb()
-  if (!db) return []
-  const snapshot = await db
-    .collection(CHECKINS_COLLECTION)
-    .where('eventId', '==', eventId)
-    .where('faceMatchStatus', '==', 'FLAGGED')
-    .get()
-  return snapshot.docs.map((doc) => doc.data() as CheckInRecord)
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `MATCH (r:CheckInRecord {eventId: $eventId, faceMatchStatus: 'FLAGGED'}) RETURN r`,
+      { eventId }
+    )
+    return res.records.map((r) => deserializeRecord(r.get('r').properties))
+  } finally {
+    await session.close()
+  }
+}
+
+// ── Aggregate Queries ──
+
+/**
+ * Get check-in aggregate stats per sub-church for breakdown pages.
+ * For a given scope (e.g., Campus), returns stats for each direct child (e.g., Streams).
+ */
+export const getCheckInAggregateByScope = async (
+  context: Context,
+  scopeLevel: CheckInScopeLevel,
+  scopeId: string
+): Promise<CheckInScopeAggregate[]> => {
+  const session = context.executionContext.session()
+  try {
+    const scopeLabel = getScopeLabel(scopeLevel)
+    // Get direct children of this scope
+    const childRes = await session.run(
+      `MATCH (scope:${scopeLabel} {id: $scopeId})-[:HAS]->(child)
+       RETURN child.id AS id, child.name AS name, labels(child) AS labels`,
+      { scopeId }
+    )
+    if (childRes.records.length === 0) return []
+
+    const aggregates: CheckInScopeAggregate[] = []
+
+    for (const record of childRes.records) {
+      const childId = record.get('id')
+      const childName = record.get('name')
+      const childLabels = record.get('labels') as string[]
+      const childLevel = resolveScopeLevelFromLabels(childLabels)
+
+      // Count events scoped at or below this child
+      const childLabel = getScopeLabel(childLevel)
+      const childDepth = getScopeDepth(childLevel)
+      const eventsRes = await session.run(
+        `MATCH (child:${childLabel} {id: $childId})
+         OPTIONAL MATCH (child)-[:HAS*0..${childDepth}]->(descendant)
+         WITH collect(DISTINCT child.id) + collect(DISTINCT descendant.id) AS scopeIds
+         MATCH (e:CheckInEvent) WHERE e.scopeId IN scopeIds
+         RETURN count(e) AS totalEvents, sum(e.totalExpected) AS totalExpected`,
+        { childId }
+      )
+      const totalEvents = eventsRes.records[0]?.get('totalEvents')?.toNumber?.() ?? 0
+      const totalExpected = eventsRes.records[0]?.get('totalExpected')?.toNumber?.() ?? 0
+
+      // Count check-in records for events under this child
+      const recordsRes = await session.run(
+        `MATCH (child:${childLabel} {id: $childId})
+         OPTIONAL MATCH (child)-[:HAS*0..${childDepth}]->(descendant)
+         WITH collect(DISTINCT child.id) + collect(DISTINCT descendant.id) AS scopeIds
+         MATCH (e:CheckInEvent) WHERE e.scopeId IN scopeIds
+         OPTIONAL MATCH (r:CheckInRecord {eventId: e.id})
+         RETURN count(r) AS checkedInCount`,
+        { childId }
+      )
+      const checkedInCount = recordsRes.records[0]?.get('checkedInCount')?.toNumber?.() ?? 0
+      const defaultedCount = Math.max(0, totalExpected - checkedInCount)
+      const attendancePercentage = totalExpected > 0
+        ? Number(((checkedInCount / totalExpected) * 100).toFixed(1))
+        : 0
+
+      aggregates.push({
+        scopeId: childId,
+        scopeName: childName,
+        scopeLevel: childLevel,
+        totalEvents,
+        totalExpected,
+        checkedInCount,
+        defaultedCount,
+        attendancePercentage,
+      })
+    }
+
+    return aggregates
+  } finally {
+    await session.close()
+  }
+}
+
+// ── Audit History ──
+
+/**
+ * Create a history entry for a check-in event.
+ */
+export const createCheckInHistoryEntry = async (
+  context: Context,
+  entry: CheckInHistoryEntry
+): Promise<void> => {
+  const session = context.executionContext.session()
+  try {
+    await session.run(
+      `MATCH (e:CheckInEvent {id: $eventId})
+       CREATE (h:CheckInHistory {
+         id: $id,
+         timestamp: $timestamp,
+         action: $action,
+         description: $description,
+         performedById: $performedById,
+         performedByName: $performedByName,
+         eventId: $eventId
+       })
+       CREATE (e)-[:HAS_HISTORY]->(h)`,
+      {
+        eventId: entry.id.split('_')[0] || entry.id, // placeholder — actual eventId passed separately
+        id: entry.id,
+        timestamp: entry.timestamp,
+        action: entry.action,
+        description: entry.description,
+        performedById: entry.performedById,
+        performedByName: entry.performedByName,
+      }
+    )
+  } finally {
+    await session.close()
+  }
+}
+
+/**
+ * Log a check-in history entry (creates node and links to event).
+ */
+export const logCheckInHistory = async (
+  context: Context,
+  eventId: string,
+  action: string,
+  description: string,
+  performedById: string,
+  performedByName: string
+): Promise<CheckInHistoryEntry> => {
+  const session = context.executionContext.session()
+  const id = `${eventId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  const timestamp = new Date().toISOString()
+  try {
+    await session.run(
+      `MATCH (e:CheckInEvent {id: $eventId})
+       CREATE (h:CheckInHistory {
+         id: $id,
+         timestamp: $timestamp,
+         action: $action,
+         description: $description,
+         performedById: $performedById,
+         performedByName: $performedByName,
+         eventId: $eventId
+       })
+       CREATE (e)-[:HAS_HISTORY]->(h)`,
+      { eventId, id, timestamp, action, description, performedById, performedByName }
+    )
+    return { id, timestamp, action, description, performedById, performedByName }
+  } finally {
+    await session.close()
+  }
+}
+
+/**
+ * Get audit history entries for a check-in event, ordered newest first.
+ */
+export const getCheckInEventHistory = async (
+  context: Context,
+  eventId: string,
+  limit: number = 50
+): Promise<CheckInHistoryEntry[]> => {
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `MATCH (e:CheckInEvent {id: $eventId})-[:HAS_HISTORY]->(h:CheckInHistory)
+       RETURN h
+       ORDER BY h.timestamp DESC
+       LIMIT $limit`,
+      { eventId, limit: neo4j.int(Math.trunc(typeof limit === 'number' ? limit : 50)) }
+    )
+    return res.records.map((r) => {
+      const props = r.get('h').properties
+      return {
+        id: props.id,
+        timestamp: props.timestamp,
+        action: props.action,
+        description: props.description,
+        performedById: props.performedById,
+        performedByName: props.performedByName,
+      }
+    })
+  } finally {
+    await session.close()
+  }
 }

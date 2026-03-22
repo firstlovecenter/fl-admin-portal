@@ -5,8 +5,6 @@ export const CREATE_CHECKIN_EVENT = gql`
     CreateCheckInEvent(input: $input) {
       id
       name
-      type
-      description
       location
       scopeLevel
       scopeId
@@ -52,7 +50,6 @@ export const LIST_CHECKIN_EVENTS = gql`
     ) {
       id
       name
-      type
       scopeLevel
       scopeId
       startsAt
@@ -74,7 +71,6 @@ export const GET_CHECKIN_DASHBOARD = gql`
       event {
         id
         name
-        type
         scopeLevel
         scopeId
         startsAt
@@ -154,6 +150,12 @@ export const GET_CHECKIN_DASHBOARD = gql`
         level
       }
       appliedFilterId
+      appliedFilterName
+      childScopeFilters {
+        id
+        name
+        level
+      }
       flaggedRecords {
         record {
           id
@@ -328,6 +330,24 @@ export const END_CHECKIN_EVENT = gql`
   }
 `
 
+export const EDIT_CHECKIN_EVENT = gql`
+  mutation UpdateCheckInEvent($eventId: ID!, $input: UpdateCheckInEventInput!) {
+    UpdateCheckInEvent(eventId: $eventId, input: $input) {
+      id
+      name
+      location
+      startsAt
+      endsAt
+      gracePeriod
+      attendanceType
+      allowedCheckInRoles
+      allowedCheckInMethods
+      autoCheckoutMinutes
+      status
+    }
+  }
+`
+
 export const GET_ADMIN_SCOPES = gql`
   query GetAdminScopes {
     GetAdminScopes {
@@ -387,7 +407,6 @@ export const GET_EVENTS_IN_RANGE = gql`
     GetEventsInRange(latitude: $latitude, longitude: $longitude) {
       id
       name
-      type
       scopeLevel
       startsAt
       endsAt
@@ -404,6 +423,126 @@ export const RESOLVE_FLAGGED_CHECKIN = gql`
       id
       faceMatchStatus
       verifiedBy
+    }
+  }
+`
+
+// Sub-church hierarchy queries for breakdown pages
+export const GET_CAMPUS_STREAMS = gql`
+  query GetCampusStreams($id: ID!) {
+    campuses(where: { id: $id }) {
+      id
+      name
+      streamCount
+      streams {
+        id
+        name
+        __typename
+        leader {
+          id
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+`
+
+export const GET_STREAM_COUNCILS = gql`
+  query GetStreamCouncils($id: ID!) {
+    streams(where: { id: $id }) {
+      id
+      name
+      councilCount
+      councils {
+        id
+        name
+        __typename
+        leader {
+          id
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+`
+
+export const GET_COUNCIL_GOVERNORSHIPS = gql`
+  query GetCouncilGovernorships($id: ID!) {
+    councils(where: { id: $id }) {
+      id
+      name
+      governorshipCount
+      governorships {
+        id
+        name
+        __typename
+        leader {
+          id
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+`
+
+export const GET_GOVERNORSHIP = gql`
+  query GetGovernorship($id: ID!) {
+    governorships(where: { id: $id }) {
+      id
+      name
+      bacentaCount
+    }
+  }
+`
+
+export const GET_MY_CHECKIN_STATUS = gql`
+  query GetMyCheckInStatus($eventId: ID!) {
+    GetMyCheckInStatus(eventId: $eventId) {
+      id
+      eventId
+      memberId
+      memberName
+      checkedInAt
+      checkInMethod
+      geoVerified
+      distanceFromVenue
+      faceMatchStatus
+      checkedOutAt
+      autoCheckedOut
+    }
+  }
+`
+
+export const GET_CHECKIN_AGGREGATE_BY_SCOPE = gql`
+  query GetCheckInAggregateByScope(
+    $scopeLevel: CheckInScopeLevel!
+    $scopeId: ID!
+  ) {
+    GetCheckInAggregateByScope(scopeLevel: $scopeLevel, scopeId: $scopeId) {
+      scopeId
+      scopeName
+      scopeLevel
+      totalEvents
+      totalExpected
+      checkedInCount
+      defaultedCount
+      attendancePercentage
+    }
+  }
+`
+
+export const GET_CHECKIN_EVENT_HISTORY = gql`
+  query GetCheckInEventHistory($eventId: ID!, $limit: Int) {
+    GetCheckInEventHistory(eventId: $eventId, limit: $limit) {
+      id
+      timestamp
+      action
+      description
+      performedById
+      performedByName
     }
   }
 `

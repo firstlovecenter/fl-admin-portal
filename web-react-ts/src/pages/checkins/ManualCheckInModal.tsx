@@ -104,7 +104,7 @@ export const ManualCheckInModal = ({
               <input
                 type="text"
                 className="form-control"
-                placeholder="🔍 Search by name..."
+                placeholder="Search by name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
