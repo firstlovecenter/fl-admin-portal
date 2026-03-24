@@ -26,6 +26,29 @@ const clearGSheet = async (sheetName) => {
   }
 }
 
+const clearGSheetRange = async (sheetName, range) => {
+  // Get credentials using AWS Secrets Manager compatible helper
+  const credentials = await getGoogleCredentials()
+
+  const googleAuth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+
+  const auth = await googleAuth.getClient()
+  const sheets = google.sheets({ version: 'v4', auth })
+
+  try {
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${sheetName}!${range}`,
+    })
+  } catch (error) {
+    console.error('Error clearing google sheet range:', error)
+    throw error
+  }
+}
+
 const writeToGsheet = async (data, sheetName, writeRange) => {
   // Get credentials using AWS Secrets Manager compatible helper
   const credentials = await getGoogleCredentials()
@@ -56,5 +79,6 @@ const writeToGsheet = async (data, sheetName, writeRange) => {
 // Use CommonJS exports for AWS Lambda compatibility
 module.exports = {
   clearGSheet,
+  clearGSheetRange,
   writeToGsheet,
 }
