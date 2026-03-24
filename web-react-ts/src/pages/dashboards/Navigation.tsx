@@ -1,18 +1,8 @@
 import RoleView from 'auth/RoleView'
 import UserProfileIcon from 'components/UserProfileIcon/UserProfileIcon'
-import {
-  Container,
-  Nav,
-  Navbar,
-  Offcanvas,
-  Row,
-  Col,
-  Button,
-  Card,
-} from 'react-bootstrap'
 import { menuItems } from './dashboard-utils'
 import SearchBox from 'components/SearchBox'
-import { ArrowClockwise, ChevronLeft, Moon, Sun } from 'react-bootstrap-icons'
+import { RefreshCw, ChevronLeft, Moon, Sun } from 'lucide-react'
 import './Navigation.css'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
@@ -38,22 +28,16 @@ const Navigator = () => {
   }
 
   return (
-    <Navbar
-      collapseOnSelect
-      expand={false}
-      sticky="top"
-      bg={currentTheme ?? 'dark'}
-      className="nav-opacity"
-    >
-      <Container fluid>
-        <Navbar.Toggle aria-controls="offcanvasNavbar" onClick={handleShow} />
+    <nav>
+      <div fluid>
+        <nav>
         {isRunningStandalone() && (
-          <Navbar.Brand>
+          <nav>
             <Button variant="transparent-outline">
               <ChevronLeft size={24} onClick={() => navigate(-1)} />
             </Button>
             <Button variant="transparent-outline">
-              <ArrowClockwise
+              <RefreshCw
                 size={24}
                 onClick={() => window.location.reload()}
               />
@@ -61,13 +45,7 @@ const Navigator = () => {
           </Navbar.Brand>
         )}
 
-        <Navbar.Offcanvas
-          id="offcanvasNavbar"
-          aria-labelledby="offcanvasNavbarLabel"
-          placement="start"
-          show={show}
-          onHide={handleShow}
-        >
+        <nav>
           <Offcanvas.Header closeButton>
             <Offcanvas.Title id="offcanvasNavbarLabel"></Offcanvas.Title>
           </Offcanvas.Header>
@@ -91,9 +69,9 @@ const Navigator = () => {
             <SearchBox handleShow={handleShow} />
           </Offcanvas.Body>
           <Card>
-            <Container className="footer p-3">
-              <Row>
-                <Col>
+            <div className="footer p-3">
+              <div>
+                <div>
                   <div
                     onClick={() => {
                       handleShow()
@@ -102,8 +80,8 @@ const Navigator = () => {
                   >
                     <UserProfileIcon />
                   </div>
-                </Col>
-                <Col className="col-auto">
+                </div>
+                <div className="col-auto">
                   <div className="d-flex justify-content-center align-items-center h-100">
                     <Button variant="gray">
                       {!isDarkMode ? (
@@ -113,13 +91,13 @@ const Navigator = () => {
                       )}
                     </Button>
                   </div>
-                </Col>
-              </Row>
-            </Container>
+                </div>
+              </div>
+            </div>
           </Card>
         </Navbar.Offcanvas>
-      </Container>
-    </Navbar>
+      </div>
+    </nav>
   )
 }
 

@@ -9,13 +9,13 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
 import PlaceholderDefaulterList from 'pages/services/defaulters/PlaceholderDefaulterList'
 import { useContext, useEffect, useState } from 'react'
-import { Button, ButtonGroup, Container } from 'react-bootstrap'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { BacentaWithArrivals } from '../arrivals-types'
 import { COUNCIL_VEHICLES_TO_BE_PAID } from '../bussingStatusQueries'
 import NoData from '../CompNoData'
 import VehicleButtonPayment from '../components/VehiclePaymentButton'
 import { useNavigate } from 'react-router'
+import { Button } from 'components/ui/button'
 
 type FormOptions = {
   bacentaSearch: string
@@ -75,7 +75,7 @@ const StateBacentasToBePaid = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>
             Bacentas {seePaid ? 'To Be Paid' : 'Yet To Be Paid'}
           </HeadingPrimary>
@@ -98,7 +98,7 @@ const StateBacentasToBePaid = () => {
           </Formik>
           {church && bacentaData?.length ? (
             <div className="d-grid gap-2">
-              <ButtonGroup className="mt-2">
+              <div className="mt-2">
                 <Button
                   variant={'warning'}
                   disabled={!seePaid}
@@ -113,7 +113,7 @@ const StateBacentasToBePaid = () => {
                 >
                   Paid
                 </Button>
-              </ButtonGroup>
+              </div>
             </div>
           ) : null}
 
@@ -172,7 +172,7 @@ const StateBacentasToBePaid = () => {
           {!bacentaData?.length && (
             <NoData text="There are no bacentas to be paid" />
           )}
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

@@ -7,7 +7,6 @@ import { MAKE_CAMPUSARRIVALS_ADMIN, SET_SWELL_DATE } from '../arrivalsMutation'
 import { CAMPUS_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
 import { alertMsg, SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Accordion, Col, Container, Row } from 'react-bootstrap'
 import Popup from 'components/Popup/Popup'
 import { Form, Formik, FormikHelpers } from 'formik'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -150,7 +149,7 @@ const CampusDashboard = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error}>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>
             {campus?.name} Campus Arrivals Real Time Dashboard
           </HeadingPrimary>
@@ -175,9 +174,9 @@ const CampusDashboard = () => {
                 onSubmit={onSubmit}
               >
                 {(formik) => (
-                  <Form>
-                    <Row className="form-row">
-                      <Col>
+                  <form>
+                    <div className="form-row">
+                      <div>
                         <SearchMember
                           name="adminSelect"
                           initialValue={initialValues?.adminName}
@@ -186,11 +185,11 @@ const CampusDashboard = () => {
                           aria-describedby="Member Search"
                           error={formik.errors.adminSelect}
                         />
-                      </Col>
-                    </Row>
+                      </div>
+                    </div>
 
                     <SubmitButton formik={formik} />
-                  </Form>
+                  </form>
                 )}
               </Formik>
             </Popup>
@@ -209,34 +208,34 @@ const CampusDashboard = () => {
               validateOnMount
             >
               {(formik) => (
-                <Form>
-                  <Row className="align-items-center gx-0 justify-content-between">
-                    <Col className="d-inline-block" xs={5}>
+                <form>
+                  <div className="align-items-center gx-0 justify-content-between">
+                    <div className="d-inline-block" xs={5}>
                       <Input
                         name="arrivalDate"
                         type="date"
                         placeholder="dd/mm/yyyy"
                         aria-describedby="date"
                       />
-                    </Col>
-                    <Col xs={2}>
+                    </div>
+                    <div xs={2}>
                       <ArrivalsDateSubmitBtn formik={formik} />
-                    </Col>
-                    <Col>
+                    </div>
+                    <div>
                       <RoleView roles={permitAdmin('Campus')}>
                         <ArrivalsMenuDropdown menuItems={ArrivalsMenu} />
                       </RoleView>
-                    </Col>
-                  </Row>
-                </Form>
+                    </div>
+                  </div>
+                </form>
               )}
             </Formik>
 
             <DefaulterInfoCard defaulter={aggregates} />
-            <Accordion defaultActiveKey="0">
-              <Accordion.Item eventKey="0">
-                <Accordion.Header>Bacenta Monitoring</Accordion.Header>
-                <Accordion.Body>
+            <div className="accordion">
+              <div className="accordion-item border-b">
+                <div className="accordion-header py-2 font-medium cursor-pointer">Bacenta Monitoring</div>
+                <div className="accordion-body">
                   <div className="d-grid gap-2">
                     <MenuButton
                       title="Bacentas With No Activity"
@@ -283,8 +282,8 @@ const CampusDashboard = () => {
                       noCaption
                     />
                   </div>
-                </Accordion.Body>
-              </Accordion.Item>
+                </div>
+              </div>
 
               <RoleView
                 roles={[
@@ -292,9 +291,9 @@ const CampusDashboard = () => {
                   ...permitLeaderAdmin('Campus'),
                 ]}
               >
-                <Accordion.Item eventKey="1">
-                  <Accordion.Header>Financial Data</Accordion.Header>
-                  <Accordion.Body>
+                <div className="accordion-item border-b">
+                  <div className="accordion-header py-2 font-medium cursor-pointer">Financial Data</div>
+                  <div className="accordion-body">
                     <div className="d-grid gap-2">
                       <MenuButton
                         title="Vehicles That Have Been Paid"
@@ -330,12 +329,12 @@ const CampusDashboard = () => {
                         iconBg
                       />
                     </div>
-                  </Accordion.Body>
-                </Accordion.Item>
+                  </div>
+                </div>
               </RoleView>
-              <Accordion.Item eventKey="2">
-                <Accordion.Header>Bussing Data</Accordion.Header>
-                <Accordion.Body>
+              <div className="accordion-item border-b">
+                <div className="accordion-header py-2 font-medium cursor-pointer">Bussing Data</div>
+                <div className="accordion-body">
                   <div className="d-grid gap-2">
                     <MenuButton
                       title="Members On The Way"
@@ -366,11 +365,11 @@ const CampusDashboard = () => {
                       noCaption
                     />
                   </div>
-                </Accordion.Body>
-              </Accordion.Item>
-            </Accordion>
+                </div>
+              </div>
+            </div>
           </div>
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

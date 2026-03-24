@@ -6,7 +6,6 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { STREAM_HISTORY } from './HistoryQueries'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 
 function StreamHistory() {
   const { streamId } = useContext(ChurchContext)
@@ -22,9 +21,9 @@ function StreamHistory() {
           <HeadingPrimary>{`${stream?.name} ${stream?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>Stream History</HeadingSecondary>
         </div>
-        <Container>
+        <div>
           <Timeline record={stream?.history} limit={100} />
-        </Container>
+        </div>
       </>
     </ApolloWrapper>
   )

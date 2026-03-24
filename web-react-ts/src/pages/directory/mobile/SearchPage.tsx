@@ -4,7 +4,6 @@ import MobileSearchNav from 'components/MobileSearchNav'
 import { MEMBER_SEARCH } from './SearchQuery'
 import { MemberContext, SearchContext } from 'contexts/MemberContext'
 import MemberDisplayCard from 'components/card/MemberDisplayCard'
-import { Container } from 'react-bootstrap'
 import { ScaleLoader } from 'react-spinners'
 import { SearchResult } from './search-types'
 import NoDataComponent from 'pages/arrivals/CompNoData'
@@ -47,7 +46,7 @@ const SearchPageMobile = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-      <Container>
+      <div>
         <MobileSearchNav />
         {loading && (
           <div className="mt-5 pt-5 d-flex align-items-center justify-content-center">
@@ -69,7 +68,7 @@ const SearchPageMobile = () => {
               />
             )
           })}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -1,21 +1,21 @@
 import React from 'react'
-import { Button, Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import MenAtWork from 'assets/men-at-work-shivendu-shukla.webp'
 import './UnauthMsg.css'
+import { Button } from 'components/ui/button'
 
 export const UnauthMsg = () => {
   const navigate = useNavigate()
 
   return (
     <div className="bg-img" style={{ backgroundImage: `url(${MenAtWork})` }}>
-      <Container className="message text-center">
+      <div className="message text-center">
         {/* <!--Web Logo and text--> */}
 
         {`Sorry! There was an error trying to view this page, but we are working on it!`}
         <div className="pt-3">
           <Button
-            variant="dark"
+            variant="default"
             size="lg"
             onClick={() => {
               navigate('/')
@@ -24,7 +24,7 @@ export const UnauthMsg = () => {
             Click Here To Go Home
           </Button>
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

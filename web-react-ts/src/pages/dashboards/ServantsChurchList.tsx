@@ -7,7 +7,6 @@ import {
   getServiceGraphData,
 } from 'pages/services/graphs/graphs-utils'
 import MenuButton from 'components/buttons/MenuButton'
-import { Container } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { SERVANT_CHURCH_LIST } from './DashboardQueries'
@@ -139,7 +138,7 @@ const ServantsChurchList = () => {
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
-      <Container className="mt-4">
+      <div className="mt-4">
         <HeadingPrimary
           loading={!servant}
         >{`${servant?.fullName}'s Churches`}</HeadingPrimary>
@@ -162,7 +161,7 @@ const ServantsChurchList = () => {
             />
           ))}
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

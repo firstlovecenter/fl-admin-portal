@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { useContext } from 'react'
-import { Button, Container } from 'react-bootstrap'
 import { COUNCIL_ACCOUNT_DASHBOARD } from './accountsGQL'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -10,6 +9,7 @@ import './accounts-colors.css'
 import { useNavigate } from 'react-router'
 import AccountBalanceCard from './components/AccountBalanceCard'
 import RoleView from 'auth/RoleView'
+import { Button } from 'components/ui/button'
 
 const CouncilDashboard = () => {
   const { councilId } = useContext(ChurchContext)
@@ -25,7 +25,7 @@ const CouncilDashboard = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{`${council?.name} ${council?.__typename}`}</HeadingPrimary>
         <HeadingSecondary>{council?.leader.fullName}</HeadingSecondary>
 
@@ -52,7 +52,7 @@ const CouncilDashboard = () => {
             Transaction History
           </Button>
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

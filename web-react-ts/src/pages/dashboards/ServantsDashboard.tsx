@@ -15,11 +15,11 @@ import StatDisplay from 'pages/services/graphs/CompStatDisplay'
 import { isAuthorised } from 'global-utils'
 import { permitMe } from 'permission-utils'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Col, Row, Table, Container } from 'react-bootstrap'
 import Placeholder from '../../components/Placeholder'
 import useComponentQuery from './useComponentQuery'
 import { getServantRoles } from './dashboard-utils'
 import { Role } from 'global-types'
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from 'components/ui/table'
 
 const ServantsDashboard = () => {
   const { memberId, currentUser } = useContext(MemberContext)
@@ -47,7 +47,7 @@ const ServantsDashboard = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <Placeholder loading={!servant?.fullName} as="p">
           <p className="mb-0">{`Welcome to`}</p>
         </Placeholder>
@@ -96,8 +96,8 @@ const ServantsDashboard = () => {
         </div>
 
         <>
-          <Row className="mt-3">
-            <Col>
+          <div className="mt-3">
+            <div>
               <StatDisplay
                 title="Avg Weekly Attendance"
                 loading={!assessmentChurchData}
@@ -106,9 +106,9 @@ const ServantsDashboard = () => {
                   'attendance'
                 )}
               />
-            </Col>
+            </div>
 
-            <Col>
+            <div>
               <StatDisplay
                 title="Avg Weekly Income (GH₵)"
                 loading={!assessmentChurchData}
@@ -117,8 +117,8 @@ const ServantsDashboard = () => {
                   'income'
                 )}
               />
-            </Col>
-          </Row>
+            </div>
+          </div>
           <ChurchGraph
             loading={!assessmentChurchData}
             stat1="attendance"
@@ -130,7 +130,7 @@ const ServantsDashboard = () => {
             secondaryTitle={`${assessmentChurch?.name} ${assessmentChurch?.__typename}`}
           />
         </>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

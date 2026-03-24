@@ -2,7 +2,6 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useQuery } from '@apollo/client'
 import Timeline from 'components/Timeline/Timeline'
@@ -22,9 +21,9 @@ function CampusHistory() {
           <HeadingPrimary>{`${campus?.name} ${campus?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>Campus History</HeadingSecondary>
         </div>
-        <Container>
+        <div>
           <Timeline record={campus?.history} limit={100} />
-        </Container>
+        </div>
       </>
     </ApolloWrapper>
   )

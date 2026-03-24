@@ -5,11 +5,11 @@ import Popup from 'components/Popup/Popup'
 import { ServiceContext } from 'contexts/ServiceContext'
 import usePopup from 'hooks/usePopup'
 import React, { useContext, useEffect, useState } from 'react'
-import { Col, Container, Row, Spinner } from 'react-bootstrap'
 import { SELF_BANKING_RECEIPT } from './bankingQueries'
 import ButtonConfirmPayment from './components/button/ConfirmPayment'
 import './ConfirmPayment.css'
 import ManualApprovalSteps from './ManualApprovalSteps'
+import { Loader2 } from 'lucide-react'
 
 const ConfirmPayment = () => {
   const { togglePopup, isOpen } = usePopup()
@@ -26,10 +26,10 @@ const ConfirmPayment = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container className="vertically-center d-flex align-items-center px-3 text-center">
-        <Row>
-          <Col>
-            <Spinner animation="border" className="big-spinner" />
+      <div className="vertically-center d-flex align-items-center px-3 text-center">
+        <div>
+          <div>
+            <Loader2 className="h-6 w-6 animate-spin" />
             <HeadingPrimary className="mt-3">Processing!</HeadingPrimary>
             <div className="mt-2">
               Your transaction is currently being processed. Please wait for the
@@ -58,9 +58,9 @@ const ConfirmPayment = () => {
                 </Popup>
               )}
             </div>
-          </Col>
-        </Row>
-      </Container>
+          </div>
+        </div>
+      </div>
     </ApolloWrapper>
   )
 }

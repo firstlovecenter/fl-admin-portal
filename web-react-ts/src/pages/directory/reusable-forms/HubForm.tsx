@@ -14,15 +14,6 @@ import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_HUB_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-  Spinner,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
 import SearchMember from 'components/formik/SearchMember'
@@ -121,10 +112,10 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{title}</HeadingPrimary>
         <HeadingSecondary>{initialValues.name + ' Hub'}</HeadingSecondary>
-        <ButtonGroup className="mt-3">
+        <div className="mt-3">
           {!newHub && (
             <>
               <Button variant="success" onClick={() => setCloseDown(true)}>
@@ -132,7 +123,7 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
               </Button>
             </>
           )}
-        </ButtonGroup>
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -141,23 +132,23 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
           validateOnMount
         >
           {(formik) => (
-            <Container className="py-4">
+            <div className="py-4">
               <Form>
                 <div className="form-group">
-                  <Row className="row-cols-1 row-cols-md-2">
+                  <div className="row-cols-1 row-cols-md-2">
                     {/* <!-- Basic Info Div --> */}
 
-                    <Col className="mb-2">
-                      <Row className="form-row">
+                    <div className="mb-2">
+                      <div className="form-row">
                         {newHub && (
-                          <Col sm={12}>
+                          <div sm={12}>
                             <Select
                               name="governorship"
                               label="Select a Governorship"
                               options={governorshipOptions}
                               defaultOption="Select a Governorship"
                             />
-                          </Col>
+                          </div>
                         )}
 
                         <RoleView
@@ -168,31 +159,31 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
                         >
                           <VerifyNotMe leaderId={initialValues.leaderId}>
                             <>
-                              <Col sm={12}>
+                              <div sm={12}>
                                 <Input
                                   name="name"
                                   label="Name of Hub"
                                   placeholder="Name of Hub"
                                 />
-                              </Col>
+                              </div>
 
-                              <Col sm={12}>
+                              <div sm={12}>
                                 <Select
                                   label="Meeting Day"
                                   name="meetingDay"
                                   options={SERVICE_DAY_OPTIONS}
                                   defaultOption="Pick a Service Day"
                                 />
-                              </Col>
+                              </div>
 
-                              <Col sm={12}>
+                              <div sm={12}>
                                 <Select
                                   label="Vacation Status"
                                   name="vacationStatus"
                                   options={vacationOptions}
                                   defaultOption="Select Vacation Status"
                                 />
-                              </Col>
+                              </div>
                             </>
                           </VerifyNotMe>
                         </RoleView>
@@ -203,7 +194,7 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
                           ]}
                         >
                           <VerifyNotMe leaderId={initialValues.leaderId}>
-                            <Col sm={12}>
+                            <div sm={12}>
                               <SearchMember
                                 name="leaderId"
                                 label="Hub Leader"
@@ -214,27 +205,27 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
                                 error={formik.errors.leaderId}
                                 creativeArts={true}
                               />
-                            </Col>
+                            </div>
                           </VerifyNotMe>
                         </RoleView>
-                      </Row>
+                      </div>
                       <small className="text-muted">
                         Enter The Coordinates for the Service Venue
                       </small>
 
-                      <Row className="row-cols-2 d-flex align-items-center">
-                        <Col>
+                      <div className="row-cols-2 d-flex align-items-center">
+                        <div>
                           <Input name="venueLatitude" placeholder="Latitude" />
-                        </Col>
-                        <Col>
+                        </div>
+                        <div>
                           <Input
                             name="venueLongitude"
                             placeholder="Longitude"
                           />
-                        </Col>
-                        <Col className="my-2">
+                        </div>
+                        <div className="my-2">
                           <Button
-                            variant="primary"
+                            variant="default"
                             className="btn-loading"
                             disabled={positionLoading}
                             onClick={() => {
@@ -266,21 +257,21 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
                           >
                             {positionLoading ? (
                               <>
-                                <Spinner animation="grow" size="sm" />
+                                <Loader2 className="h-6 w-6 animate-spin" />
                                 <span> Loading</span>
                               </>
                             ) : (
                               'Locate Me Now'
                             )}
                           </Button>
-                        </Col>
-                      </Row>
+                        </div>
+                      </div>
                       <small className="text-muted">
                         Click this button if you are currently at your
                         fellowship service venue
                       </small>
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="text-center">
@@ -288,18 +279,16 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
                 </div>
               </Form>
 
-              <Modal
-                show={closeDown}
-                onHide={() => setCloseDown(false)}
+              <Dialog open={closeDown} onOpenChange={(open) => { if (!open) () => setCloseDown(false)() }}
                 centered
-              >
-                <Modal.Header closeButton>Close Down Hub</Modal.Header>
-                <Modal.Body>
+              ><DialogContent>
+                <DialogHeader>Close Down Hub</DialogHeader>
+                
                   <p className="text-info">
                     Are you sure you want to close down this hub?
                   </p>
-                </Modal.Body>
-                <Modal.Footer>
+                
+                <DialogFooter>
                   <Button
                     variant="success"
                     type="submit"
@@ -329,15 +318,15 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
                   >
                     <BtnSubmitText loading={buttonLoading} />
                   </Button>
-                  <Button variant="primary" onClick={() => setCloseDown(false)}>
+                  <Button variant="default" onClick={() => setCloseDown(false)}>
                     No, take me back
                   </Button>
-                </Modal.Footer>
-              </Modal>
-            </Container>
+                </DialogFooter>
+              </DialogContent></Dialog>
+            </div>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

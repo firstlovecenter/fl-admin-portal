@@ -5,11 +5,11 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import { MemberContext } from 'contexts/MemberContext'
 import { getHumanReadableDate } from 'jd-date-utils'
 import React, { useContext } from 'react'
-import { Container, Button } from 'react-bootstrap'
 import { CSVLink } from 'react-csv'
 import { DISPLAY_ARRIVALS_PAYMENT_DATA } from '../arrivalsQueries'
 import NoDataComponent from '../CompNoData'
 import { ChurchContext } from 'contexts/ChurchContext'
+import { Button } from 'components/ui/button'
 
 interface ArrivalPaymentData {
   stream: string
@@ -71,7 +71,7 @@ const ArrivalsPaymentData = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <div className="text-center">
           <HeadingPrimary>Arrival's Payment Data</HeadingPrimary>
           <HeadingSecondary>{`${church?.name} ${church?.__typename}`}</HeadingSecondary>
@@ -154,7 +154,7 @@ const ArrivalsPaymentData = () => {
             </div>
           </div>
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

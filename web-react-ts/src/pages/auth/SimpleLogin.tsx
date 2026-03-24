@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { Container, Form, Button, Alert, Navbar } from 'react-bootstrap'
 import { login as apiLogin, storeAuth } from '../../lib/auth-service'
 import Logo from '../../assets/flc-logo-small.webp'
 import './auth.css'
+import { Button } from 'components/ui/button'
 
 const APP_VERSION = '8.1.3'
 
@@ -92,57 +92,39 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
 
   return (
     <>
-      <Navbar bg="dark">
-        <Container>
+      <nav className="bg-zinc-900 py-3">
+        <div>
           <img
             src={Logo}
             height="30"
             className="d-inline-block align-top"
             alt="FirstLove Logo"
           />
-        </Container>
-      </Navbar>
+        </div>
+      </nav>
 
-      <Container className="auth-container">
+      <div className="auth-container">
         <div className="auth-card">
           <h2 className="text-center mb-4 text-white">Sign In</h2>
           <p className="text-center text-secondary mb-4">
             Welcome back to FLC State of the Flock
           </p>
 
-          {error && <Alert variant="danger">{error}</Alert>}
+          {error && <Alert variant="destructive">{error}</Alert>}
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="email">
-              <Form.Label className="text-white">Email Address</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </Form.Group>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label className="text-white">Email Address</label>
+              <input className="form-control" />
+            </div>
 
-            <Form.Group className="mb-3" controlId="password">
-              <Form.Label className="text-white">Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </Form.Group>
+            <div className="mb-3">
+              <label className="text-white">Password</label>
+              <input className="form-control" />
+            </div>
 
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <Form.Check
-                type="checkbox"
-                label="Remember me"
-                className="text-secondary"
-              />
+              <input type="checkbox" className="form-check-input" />
               <button
                 type="button"
                 className="btn-link text-brand"
@@ -159,14 +141,14 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
             </div>
 
             <Button
-              variant="brand"
+              variant="default"
               type="submit"
               className="w-100"
               disabled={loading}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-          </Form>
+          </form>
 
           <p className="text-center text-secondary mt-4">
             Need help? Contact your administrator
@@ -178,7 +160,7 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
             v{APP_VERSION}
           </p>
         </div>
-      </Container>
+      </div>
     </>
   )
 }
@@ -200,39 +182,32 @@ const ForgotPasswordForm = ({ onBack, onSubmit }: ForgotPasswordFormProps) => {
 
   return (
     <>
-      <Navbar bg="dark">
-        <Container>
+      <nav className="bg-zinc-900 py-3">
+        <div>
           <img
             src={Logo}
             height="30"
             className="d-inline-block align-top"
             alt="FirstLove Logo"
           />
-        </Container>
-      </Navbar>
+        </div>
+      </nav>
 
-      <Container className="auth-container">
+      <div className="auth-container">
         <div className="auth-card">
           <h2 className="text-center mb-4 text-white">Reset Password</h2>
           <p className="text-center text-secondary mb-4">
             Enter your email and we&apos;ll send reset instructions
           </p>
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="email">
-              <Form.Label className="text-white">Email Address</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </Form.Group>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label className="text-white">Email Address</label>
+              <input className="form-control" />
+            </div>
 
             <Button
-              variant="brand"
+              variant="default"
               type="submit"
               className="w-100 mb-3"
               disabled={loading}
@@ -255,7 +230,7 @@ const ForgotPasswordForm = ({ onBack, onSubmit }: ForgotPasswordFormProps) => {
                 Back to Sign In
               </button>
             </div>
-          </Form>
+          </form>
 
           <p className="text-center text-secondary mt-4">
             Need help? Contact your administrator
@@ -267,7 +242,7 @@ const ForgotPasswordForm = ({ onBack, onSubmit }: ForgotPasswordFormProps) => {
             v{APP_VERSION}
           </p>
         </div>
-      </Container>
+      </div>
     </>
   )
 }

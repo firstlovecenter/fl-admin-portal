@@ -12,12 +12,13 @@ import { GOVERNORSHIP_GRAPHS } from './GraphsQueries'
 import MembershipCard from './CompMembershipCard'
 import StatDisplay from './CompStatDisplay'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Col, Container, Row, Button, Spinner } from 'react-bootstrap'
 import GraphDropdown from './GraphDropdown'
 import { MemberContext } from 'contexts/MemberContext'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import { isIncomeGraph } from 'global-utils'
-import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
 
 export const GovernorshipGraphs = () => {
   const { governorshipId } = useContext(ChurchContext)
@@ -65,49 +66,49 @@ export const GovernorshipGraphs = () => {
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data}>
-      <Container>
+      <div>
         <LeaderAvatar
           leader={data?.governorships[0].leader}
           leaderTitle="Governorship Leader"
         />
 
-        <Row className="row-cols-2">
-          <Col>
+        <div className="row-cols-2">
+          <div>
             <MembershipCard
               link="/governorship/members"
               title="Membership"
               count={data?.governorships[0].memberCount}
             />
-          </Col>
+          </div>
 
-          <Col>
+          <div>
             <GraphDropdown
               graphs={graphs}
               setGraphs={setGraphs}
               setChurchData={setChurchData}
               data={data?.governorships[0]}
             />
-          </Col>
-        </Row>
-        <Row className="mt-3">
-          <Col>
+          </div>
+        </div>
+        <div className="mt-3">
+          <div>
             <StatDisplay
               title={`Avg Weekly ${
                 graphs === 'bussing' ? 'Bussing' : 'Attendance'
               }`}
               statistic={getMonthlyStatAverage(churchData, 'attendance')}
             />
-          </Col>
+          </div>
 
-          <Col>
+          <div>
             {isIncomeGraph(graphs, currentUser) && (
               <StatDisplay
                 title="Avg Weekly Income"
                 statistic={getMonthlyStatAverage(churchData, 'income')}
               />
             )}
-          </Col>
-        </Row>
+          </div>
+        </div>
 
         {!currentUser.noIncomeTracking ? (
           <ChurchGraph
@@ -130,8 +131,8 @@ export const GovernorshipGraphs = () => {
         )}
 
         {/* Navigation Controls */}
-        <Row className="mt-3 justify-content-center">
-          <Col xs="auto">
+        <div className="mt-3 justify-content-center">
+          <div xs="auto">
             <div className="d-flex align-items-center gap-3">
               <Button
                 variant="outline-secondary"
@@ -141,7 +142,7 @@ export const GovernorshipGraphs = () => {
                 className="d-flex align-items-center"
               >
                 {isNavigating ? (
-                  <Spinner size="sm" className="me-1" />
+                  <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <ChevronLeft size={16} className="me-1" />
                 )}
@@ -164,16 +165,16 @@ export const GovernorshipGraphs = () => {
                 className="d-flex align-items-center"
               >
                 {isNavigating ? (
-                  <Spinner size="sm" className="ms-1" />
+                  <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <ChevronRight size={16} className="ms-1" />
                 )}
                 Next
               </Button>
             </div>
-          </Col>
-        </Row>
-      </Container>
+          </div>
+        </div>
+      </div>
     </ApolloWrapper>
   )
 }

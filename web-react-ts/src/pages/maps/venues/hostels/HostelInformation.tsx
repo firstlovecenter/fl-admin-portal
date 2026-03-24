@@ -8,10 +8,11 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import Select from 'components/formik/Select'
 import Input from 'components/formik/Input'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { Button, Container, Row, Card, ButtonGroup } from 'react-bootstrap'
 import { AiOutlinePlusCircle } from 'react-icons/ai'
 import { FiUsers } from 'react-icons/fi'
 import '../Venues.css'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
 
 interface FormOptions {
   hostelSearch: string
@@ -78,7 +79,7 @@ const HostelInformation = () => {
   }, [hostels, searchQuery])
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary className="d-flex justify-content-center mb-5">
         Hostels
       </HeadingPrimary>
@@ -86,7 +87,7 @@ const HostelInformation = () => {
         {({ values }) => {
           return (
             <Form className="mb-2">
-              <Row>
+              <div>
                 <div className="col">
                   <Input
                     name="venueSearch"
@@ -105,14 +106,14 @@ const HostelInformation = () => {
                     }}
                   />
                 </div>
-              </Row>
+              </div>
             </Form>
           )
         }}
       </Formik>
 
       <Button
-        variant="primary"
+        variant="default"
         className="p-2 d-flex justify-content-center align-items-center text-center gap-2 w-100"
         onClick={() => {
           navigate(`/maps/hostel-information/add`)
@@ -127,7 +128,7 @@ const HostelInformation = () => {
         <div>
           {filteredHostels?.map((hostel: HostelOptions, index: number) => (
             <Card className="mb-2" key={index}>
-              <Card.Body className="venue-font">
+              <CardContent className="venue-font">
                 <div className="mb-1">
                   <span>{hostel?.name}</span>
                 </div>
@@ -135,15 +136,15 @@ const HostelInformation = () => {
                   <FiUsers color="grey" className="fs-6 me-2" />
                   <span>{hostel?.capacity}</span>
                 </div>
-              </Card.Body>
+              </CardContent>
             </Card>
           ))}
         </div>
       </ApolloWrapper>
 
-      <ButtonGroup className="d-flex justify-content-center px-5 mt-4">
+      <div className="d-flex justify-content-center px-5 mt-4">
         <Button
-          variant="primary"
+          variant="default"
           onClick={() => setOffset((prev) => prev - 1)}
           disabled={offset === 0}
         >
@@ -151,14 +152,14 @@ const HostelInformation = () => {
         </Button>
         <Button
           className="px-4"
-          variant="primary"
+          variant="default"
           disabled={!(hostels && hostels.length >= limit)}
           onClick={() => setOffset((prev) => prev + 1)}
         >
           Next
         </Button>
-      </ButtonGroup>
-    </Container>
+      </div>
+    </div>
   )
 }
 

@@ -1,12 +1,11 @@
 import React, { useContext } from 'react'
 import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
-import { Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import MenuButton from 'components/buttons/MenuButton'
 import Stars from 'assets/icons/Stars'
 import Charts from 'assets/icons/Charts'
-import { Download } from 'react-bootstrap-icons'
+import { Download } from 'lucide-react'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
 
@@ -19,7 +18,7 @@ const TrendsMenu = () => {
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+      <div>
         <PlaceholderCustom xs={12} as="h1">
           <div className="text-center">
             <h1 className="mb-0  page-header">{`${church?.name} ${churchType}`}</h1>
@@ -69,7 +68,7 @@ const TrendsMenu = () => {
             </RoleView>
           )}
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

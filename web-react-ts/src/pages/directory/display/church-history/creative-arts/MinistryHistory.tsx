@@ -6,7 +6,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext } from 'react'
 import { MINISTRY_HISTORY } from '../HistoryQueries'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Container } from 'react-bootstrap'
 
 function MinistryHistory() {
   const { ministryId } = useContext(ChurchContext)
@@ -23,9 +22,9 @@ function MinistryHistory() {
           <HeadingPrimary>{`${ministry?.name} ${ministry?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>Ministry History</HeadingSecondary>
         </div>
-        <Container>
+        <div>
           <Timeline record={ministry?.history} limit={10} />
-        </Container>
+        </div>
       </>
     </ApolloWrapper>
   )

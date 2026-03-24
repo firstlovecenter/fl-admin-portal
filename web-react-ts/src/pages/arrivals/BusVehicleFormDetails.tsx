@@ -18,13 +18,14 @@ import {
   permitArrivalsPayer,
 } from 'permission-utils'
 import { useContext, useState } from 'react'
-import { Accordion, Button, Col, Container, Row, Table } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import { BacentaWithArrivals, VehicleRecord } from './arrivals-types'
 import { beforeCountingDeadline } from './arrivals-utils'
 import { DISPLAY_VEHICLE_RECORDS } from './arrivalsQueries'
 import './Arrivals.css'
 import { capitalise } from 'global-utils'
+import { Button } from 'components/ui/button'
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from 'components/ui/table'
 
 const BusVehicleFormDetails = () => {
   const { bacentaId } = useContext(ChurchContext)
@@ -41,7 +42,7 @@ const BusVehicleFormDetails = () => {
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
-      <Container>
+      <div>
         <PlaceholderCustom as="h3" loading={loading}>
           <HeadingPrimary>{`${church?.__typename} Vehicle Details`}</HeadingPrimary>
         </PlaceholderCustom>
@@ -59,10 +60,10 @@ const BusVehicleFormDetails = () => {
           ) : null}
         </PlaceholderCustom>
 
-        <Row>
-          <Col>
-            <Row className="d-flex justify-content-center mt-3">
-              <Table variant={theme} striped bordered>
+        <div>
+          <div>
+            <div className="d-flex justify-content-center mt-3">
+              <Table>
                 <tbody>
                   <tr>
                     <td>Date of Service</td>
@@ -160,11 +161,11 @@ const BusVehicleFormDetails = () => {
               </Table>
 
               {vehicle?.transactionStatus && (
-                <Accordion flush>
-                  <Accordion.Item eventKey="0">
-                    <Accordion.Header>Financial Details</Accordion.Header>
-                    <Accordion.Body className="p-0">
-                      <Table variant={theme} striped bordered>
+                <div className="accordion">
+                  <div className="accordion-item border-b">
+                    <div className="accordion-header py-2 font-medium cursor-pointer">Financial Details</div>
+                    <div className="accordion-body">
+                      <Table>
                         <tbody>
                           <tr>
                             <td>Transaction Reference</td>
@@ -214,11 +215,11 @@ const BusVehicleFormDetails = () => {
                           </tr>
                         </tbody>
                       </Table>
-                    </Accordion.Body>
-                  </Accordion.Item>
-                </Accordion>
+                    </div>
+                  </div>
+                </div>
               )}
-              <Row className="text-center">
+              <div className="text-center">
                 {isOpen && (
                   <Popup handleClose={togglePopup}>
                     <CloudinaryImage
@@ -254,10 +255,10 @@ const BusVehicleFormDetails = () => {
                     </div>
                   </div>
                 ) : null}
-              </Row>
-            </Row>
-          </Col>
-        </Row>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="d-grid gap-2 mt-5">
           {!beforeCountingDeadline(vehicle, church) && (
             <RoleView roles={permitArrivalsPayer()}>
@@ -288,21 +289,21 @@ const BusVehicleFormDetails = () => {
               </>
             )}
             <Button
-              variant="outline-danger"
+              variant="outline"
               onClick={() => navigate('/arrivals/bacentas-to-count')}
             >
               Continue Counting
             </Button>
           </RoleView>
           <Button
-            variant="outline-primary"
+            variant="outline"
             size="lg"
             onClick={() => navigate('/arrivals')}
           >
             Back to Arrivals Home
           </Button>
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -8,7 +8,6 @@ import { LONG_POLL_INTERVAL } from 'global-utils'
 import useChurchLevel from 'hooks/useChurchLevel'
 import PlaceholderDefaulterList from 'pages/services/defaulters/PlaceholderDefaulterList'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { ArrivalsUseChurchType } from '../arrivals-types'
@@ -63,7 +62,7 @@ const BacentasOnTheWay = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>Bacentas On The Way</HeadingPrimary>
           <HeadingSecondary loading={!church?.name}>
             {church?.name} {church?.__typename}
@@ -90,7 +89,7 @@ const BacentasOnTheWay = () => {
           {!church?.bacentasOnTheWay.length && loading && (
             <PlaceholderDefaulterList />
           )}
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

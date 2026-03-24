@@ -1,8 +1,8 @@
-import { Button } from 'react-bootstrap'
-import { CheckCircleFill } from 'react-bootstrap-icons'
+import { CheckCircle2 } from 'lucide-react'
 import { VehicleRecord } from '../arrivals-types'
 import ButtonIcons from './ButtonIcons'
 import CurrencySpan from 'components/CurrencySpan'
+import { Button } from 'components/ui/button'
 
 const VehicleButtonPayment = ({
   record,
@@ -27,7 +27,7 @@ const VehicleButtonPayment = ({
       {record?.vehicle} (
       <CurrencySpan number={record?.vehicleTopUp} />)
       {record?.transactionStatus === 'success' ? (
-        <CheckCircleFill className="ms-2" color="white" size={20} />
+        <CheckCircle2 className="ms-2" color="white" size={20} />
       ) : null}
     </Button>
   )

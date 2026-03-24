@@ -4,7 +4,6 @@ import { useQuery } from '@apollo/client'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import RoleView from '../../../auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Container, Row, Col } from 'react-bootstrap'
 import { permitAdmin } from 'permission-utils'
 import AllChurchesSummary from 'components/AllChurchesSummary'
 import DisplayChurchList from 'components/DisplayChurchList'
@@ -30,9 +29,9 @@ const DisplayAllHubCouncils = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
-        <Row className="mb-2">
-          <Col>
+      <div>
+        <div className="mb-2">
+          <div>
             <Link
               to="/ministry/displaydetails"
               onClick={() => {
@@ -64,15 +63,15 @@ const DisplayAllHubCouncils = () => {
                 {`${ministry?.admin?.fullName}`}
               </Link>
             ) : null}
-          </Col>
+          </div>
           <RoleView roles={permitAdmin('Ministry')} directoryLock>
-            <Col className="col-auto">
+            <div className="col-auto">
               <Link to="/hubcouncil/addhubcouncil" className="btn btn-danger">
                 Add HubCouncil
               </Link>
-            </Col>
+            </div>
           </RoleView>
-        </Row>
+        </div>
 
         <AllChurchesSummary
           church={{ ...ministry, lowerChurch: hubCouncils }}
@@ -89,7 +88,7 @@ const DisplayAllHubCouncils = () => {
         {ministry?.councils.map((council: any) => {
           return (
             <>
-              <Container>
+              <div>
                 <p className="mb-0 fw-bold fs-5">
                   {council.name} Council:{' '}
                   {council.hubCouncilsFromMinistry.length} HubCouncils
@@ -97,7 +96,7 @@ const DisplayAllHubCouncils = () => {
                 {council.hubCouncilsFromMinistry.length === 0 && (
                   <NoDataComponent text="This Council has no hubcouncils" />
                 )}
-              </Container>
+              </div>
               <DisplayChurchList
                 data={council.hubCouncilsFromMinistry}
                 churchType="Ministry"
@@ -105,7 +104,7 @@ const DisplayAllHubCouncils = () => {
             </>
           )
         })}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

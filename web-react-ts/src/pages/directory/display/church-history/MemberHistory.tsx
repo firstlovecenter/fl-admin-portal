@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 
 import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -23,9 +22,9 @@ function MemberHistory() {
           <HeadingSecondary>History</HeadingSecondary>
         </div>
 
-        <Container className="mt-5">
+        <div className="mt-5">
           <Timeline record={member?.history} limit={100} />
-        </Container>
+        </div>
       </>
     </ApolloWrapper>
   )

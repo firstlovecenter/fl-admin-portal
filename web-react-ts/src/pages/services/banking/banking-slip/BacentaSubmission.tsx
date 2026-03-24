@@ -3,7 +3,6 @@ import { ServiceContext } from 'contexts/ServiceContext'
 import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import React, { useContext, useState } from 'react'
-import { Col, Container, Row } from 'react-bootstrap'
 import {
   BANKING_SLIP_SUBMISSION,
   BACENTA_SERVICE_RECORDS,
@@ -82,7 +81,7 @@ const BacentaBankingSlipSubmission = () => {
           validateOnMount={true}
         >
           {(formik) => (
-            <Container>
+            <div>
               <HeadingPrimary>Banking Slip Submission</HeadingPrimary>
               <HeadingSecondary>{bacenta?.name}</HeadingSecondary>
               <p>
@@ -94,8 +93,8 @@ const BacentaBankingSlipSubmission = () => {
               </p>
               <p>Expected Income: {data.serviceRecords[0].cash}</p>
               <Form>
-                <Row className="row-cols-1 row-cols-md-2 mt-5">
-                  <Col className="mb-2">
+                <div className="row-cols-1 row-cols-md-2 mt-5">
+                  <div className="mb-2">
                     <ImageUpload
                       label="Upload a Picture of Your Banking Slip"
                       name="bankingSlip"
@@ -103,13 +102,13 @@ const BacentaBankingSlipSubmission = () => {
                       setFieldValue={formik.setFieldValue}
                       aria-describedby="UploadBankingSlip"
                     />
-                  </Col>
-                  <Col className="mb-2 text-center">
+                  </div>
+                  <div className="mb-2 text-center">
                     <SubmitButton formik={formik} />
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </Form>
-            </Container>
+            </div>
           )}
         </Formik>
       </ApolloWrapper>

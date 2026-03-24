@@ -1,7 +1,8 @@
 import { FormikProps } from 'formik'
 import { FunctionReturnsVoid } from 'global-types'
 import React from 'react'
-import { Button, Spinner } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
 
 type SubmitButtonProps = {
   formik: FormikProps<any>
@@ -21,7 +22,7 @@ const ModalSubmitButton = (props: SubmitButtonProps) => {
     >
       {formik.isSubmitting ? (
         <>
-          <Spinner animation="grow" size="sm" />
+          <Loader2 className="h-6 w-6 animate-spin" />
           <span> Submitting</span>
         </>
       ) : (

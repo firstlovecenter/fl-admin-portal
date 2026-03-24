@@ -3,7 +3,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext, useEffect, useState } from 'react'
 import { CAMPUS_BY_COUNCIL_ACCOUNTS } from './accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { CouncilForAccounts, StreamForAccounts } from './accounts-types'
 import HeadingSecondary from 'components/HeadingSecondary'
@@ -12,6 +11,7 @@ import CurrencySpan from 'components/CurrencySpan'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { Form, Formik } from 'formik'
 import Input from 'components/formik/Input'
+import { Button } from 'components/ui/button'
 
 const CampusCouncilList = ({
   link,
@@ -73,7 +73,7 @@ const CampusCouncilList = ({
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{campus?.name} Campus Councils</HeadingPrimary>
         <HeadingSecondary>{`${campus?.name} ${campus?.__typename}`}</HeadingSecondary>
 
@@ -149,7 +149,7 @@ const CampusCouncilList = ({
             </div>
           )
         })}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

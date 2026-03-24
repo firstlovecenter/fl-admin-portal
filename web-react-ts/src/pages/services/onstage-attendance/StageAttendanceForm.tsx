@@ -2,7 +2,6 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
 import { getMondayThisWeek } from 'jd-date-utils'
@@ -96,18 +95,18 @@ const StageAttendanceForm = ({
       validateOnMount
     >
       {(formik) => (
-        <Container>
+        <div>
           <HeadingPrimary>
             Record Your {event || 'Service'} Details
           </HeadingPrimary>
           <h5 className="text-secondary">{`${church?.name} ${church?.__typename}`}</h5>
 
           <Form className="form-group">
-            <Row className="row-cols-1 row-cols-md-2">
+            <div className="row-cols-1 row-cols-md-2">
               {/* <!-- Service Form--> */}
-              <Col className="mb-2">
+              <div className="mb-2">
                 <div className="form-row d-flex justify-content-center">
-                  <Col>
+                  <div>
                     <small className="form-text label">
                       Date of Service*
                       <i className="text-secondary">(Day/Month/Year)</i>
@@ -120,7 +119,7 @@ const StageAttendanceForm = ({
                     />
                     <Input name="attendance" label="Attendance*" />
 
-                    <Col>
+                    <div>
                       <small className="mb-3 ">
                         Upload Your Stage Pictures*
                       </small>
@@ -138,17 +137,17 @@ const StageAttendanceForm = ({
                         aria-describedby="upload pictures"
                         error={formik.errors.onStagePictures}
                       />
-                    </Col>
+                    </div>
 
                     <div className="d-flex justify-content-center mt-5">
                       <SubmitButton formik={formik} />
                     </div>
-                  </Col>
+                  </div>
                 </div>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </Form>
-        </Container>
+        </div>
       )}
     </Formik>
   )

@@ -3,8 +3,7 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
-import { PencilSquare, X } from 'react-bootstrap-icons'
+import { Pencil, X } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 const HubFormMenu = () => {
@@ -13,7 +12,7 @@ const HubFormMenu = () => {
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+      <div>
         <PlaceholderCustom xs={12} as="h1">
           <div className="text-center">
             <h1 className="mb-0  page-header">{`${currentUser.currentChurch?.name} ${currentUser.currentChurch?.__typename}`}</h1>
@@ -24,7 +23,7 @@ const HubFormMenu = () => {
         <div className="d-grid gap-2 mt-5 text-left">
           <HeadingSecondary>Rehearsals</HeadingSecondary>
           <MenuButton
-            iconComponent={<PencilSquare />}
+            iconComponent={<Pencil />}
             title="Fill Rehearsals Form"
             color="members"
             onClick={() => navigate(`/hub/record-rehearsal`)}
@@ -38,7 +37,7 @@ const HubFormMenu = () => {
             noCaption
           />
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

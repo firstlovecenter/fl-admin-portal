@@ -5,7 +5,6 @@ import Timeline from 'components/Timeline/Timeline'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { FELLOWSHIP_HISTORY } from './HistoryQueries'
 
 function FellowshipHistory() {
@@ -21,9 +20,9 @@ function FellowshipHistory() {
           <HeadingPrimary>{`${fellowship?.name} ${fellowship?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>Fellowship History</HeadingSecondary>
         </div>
-        <Container>
+        <div>
           <Timeline record={fellowship?.history} limit={100} />
-        </Container>
+        </div>
       </>
     </ApolloWrapper>
   )

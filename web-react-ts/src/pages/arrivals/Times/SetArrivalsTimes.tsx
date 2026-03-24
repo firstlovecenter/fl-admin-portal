@@ -5,7 +5,6 @@ import * as Yup from 'yup'
 import React, { useContext } from 'react'
 import { useMutation, useQuery } from '@apollo/client'
 import { GET_ARRIVAL_TIMES, SET_STREAM_ARRIVAL_TIMES } from './time-gql'
-import { Col, Container, Row } from 'react-bootstrap'
 import SubmitButton from 'components/formik/SubmitButton'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 
@@ -69,7 +68,7 @@ const SetArrivalsTime = () => {
 
   return (
     <ApolloWrapper data={church && stream} loading={loading} error={error}>
-      <Container>
+      <div>
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -82,47 +81,47 @@ const SetArrivalsTime = () => {
               <h5 className="text-secondary">{`${church?.name} ${church?.__typename}`}</h5>
 
               <Form className="form-group">
-                <Row>
-                  <Col xs={12} md={6}>
+                <div>
+                  <div xs={12} md={6}>
                     <Input
                       type="time"
                       name="mobilisationStartTime"
                       label="Mobilisation Start Time"
                       placeholder="Pick a Time"
                     />
-                  </Col>
-                  <Col xs={12} md={6}>
+                  </div>
+                  <div xs={12} md={6}>
                     <Input
                       type="time"
                       name="mobilisationEndTime"
                       label="Mobilisation End Time"
                       placeholder="Pick a Time"
                     />
-                  </Col>
-                  <Col xs={12} md={6}>
+                  </div>
+                  <div xs={12} md={6}>
                     <Input
                       type="time"
                       name="arrivalStartTime"
                       label="Arrival Start Time"
                       placeholder="Pick a Time"
                     />
-                  </Col>
-                  <Col xs={12} md={6}>
+                  </div>
+                  <div xs={12} md={6}>
                     <Input
                       type="time"
                       name="arrivalEndTime"
                       label="Arrival End Time"
                       placeholder="Pick a Time"
                     />
-                  </Col>
-                </Row>
+                  </div>
+                </div>
 
                 <SubmitButton formik={formik} />
               </Form>
             </>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

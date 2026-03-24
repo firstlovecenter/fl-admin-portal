@@ -1,12 +1,13 @@
 import { getHumanReadableDateTime } from '@jaedag/admin-portal-types'
 import React, { useContext } from 'react'
-import { Badge, Card, Col, Row } from 'react-bootstrap'
 import { AccountTransaction } from './transaction-history/transaction-types'
 import CurrencySpan from 'components/CurrencySpan'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
 import './accounts-colors.css'
 import { Color } from 'react-bootstrap/esm/types'
+import { Badge } from 'components/ui/badge'
+import { Card, CardContent } from 'components/ui/card'
 
 const TransactionCard = ({
   transaction,
@@ -25,58 +26,58 @@ const TransactionCard = ({
         navigate('/accounts/transaction-details/')
       }}
     >
-      <Card.Body>
-        <Row className="mb-3 d-flex align-items-center">
-          <Col className="text-secondary col-4">Created At</Col>
-          <Col>{getHumanReadableDateTime(transaction?.createdAt)}</Col>
-        </Row>
+      <CardContent>
+        <div className="mb-3 d-flex align-items-center">
+          <div className="text-secondary col-4">Created At</div>
+          <div>{getHumanReadableDateTime(transaction?.createdAt)}</div>
+        </div>
         {transaction?.createdAt !== transaction?.lastModified && (
-          <Row className="mb-3 d-flex align-items-center">
-            <Col className="text-secondary col-4">Last Modified</Col>
-            <Col>{getHumanReadableDateTime(transaction?.lastModified)}</Col>
-          </Row>
+          <div className="mb-3 d-flex align-items-center">
+            <div className="text-secondary col-4">Last Modified</div>
+            <div>{getHumanReadableDateTime(transaction?.lastModified)}</div>
+          </div>
         )}
-        <Row className="mb-3 d-flex align-items-center">
-          <Col className="text-secondary col-4">Created By</Col>
-          <Col>{transaction?.loggedBy.fullName}</Col>
-        </Row>
-        <Row className="mb-3 d-flex align-items-center">
-          <Col className="text-secondary col-4">Account Involved</Col>
-          <Col>{transaction?.account}</Col>
-        </Row>
-        <Row className="mb-3 d-flex align-items-center">
-          <Col className="text-secondary col-4">Amount</Col>
-          <Col>
+        <div className="mb-3 d-flex align-items-center">
+          <div className="text-secondary col-4">Created By</div>
+          <div>{transaction?.loggedBy.fullName}</div>
+        </div>
+        <div className="mb-3 d-flex align-items-center">
+          <div className="text-secondary col-4">Account Involved</div>
+          <div>{transaction?.account}</div>
+        </div>
+        <div className="mb-3 d-flex align-items-center">
+          <div className="text-secondary col-4">Amount</div>
+          <div>
             <CurrencySpan
               number={transaction?.amount}
               className="text-primary"
               negative
             />
-          </Col>
-        </Row>
+          </div>
+        </div>
         {!!transaction?.charge && (
-          <Row className="mb-3 d-flex align-items-center">
-            <Col className="text-secondary col-4">Charge</Col>
-            <Col>
+          <div className="mb-3 d-flex align-items-center">
+            <div className="text-secondary col-4">Charge</div>
+            <div>
               <CurrencySpan
                 number={transaction?.charge}
                 negative
                 className="text-primary"
               />
-            </Col>
-          </Row>
+            </div>
+          </div>
         )}
-        <Row className="mb-3 d-flex align-items-center">
-          <Col className="text-secondary col-4">Category</Col>
-          <Col>{transaction?.category}</Col>
-        </Row>
-        <Row className="mb-3 d-flex align-items-center">
-          <Col className="text-secondary col-4">Description</Col>
-          <Col>{transaction?.description}</Col>
-        </Row>
-        <Row className="mb-3 d-flex align-items-center">
-          <Col className="text-secondary col-4">Status</Col>
-          <Col>
+        <div className="mb-3 d-flex align-items-center">
+          <div className="text-secondary col-4">Category</div>
+          <div>{transaction?.category}</div>
+        </div>
+        <div className="mb-3 d-flex align-items-center">
+          <div className="text-secondary col-4">Description</div>
+          <div>{transaction?.description}</div>
+        </div>
+        <div className="mb-3 d-flex align-items-center">
+          <div className="text-secondary col-4">Status</div>
+          <div>
             <Badge
               className="text-uppercase"
               text={currentTheme as Color}
@@ -90,30 +91,30 @@ const TransactionCard = ({
             >
               {transaction?.status}
             </Badge>
-          </Col>
-        </Row>
+          </div>
+        </div>
         {transaction?.weekdayBalance && transaction?.bussingSocietyBalance && (
           <hr />
         )}
         {!!transaction?.weekdayBalance && (
-          <Row className="mb-3 d-flex align-items-center">
-            <Col className="text-secondary col-4">Weekday Balance</Col>
-            <Col>
+          <div className="mb-3 d-flex align-items-center">
+            <div className="text-secondary col-4">Weekday Balance</div>
+            <div>
               {(transaction?.weekdayBalance || 0.0).toLocaleString('en-US')}
-            </Col>
-          </Row>
+            </div>
+          </div>
         )}
         {!!transaction?.bussingSocietyBalance && (
-          <Row className="mb-3 d-flex align-items-center">
-            <Col className="text-secondary col-4">Bussing Society Balance</Col>
-            <Col>
+          <div className="mb-3 d-flex align-items-center">
+            <div className="text-secondary col-4">Bussing Society Balance</div>
+            <div>
               {(transaction?.bussingSocietyBalance || 0.0).toLocaleString(
                 'en-US'
               )}
-            </Col>
-          </Row>
+            </div>
+          </div>
         )}
-      </Card.Body>
+      </CardContent>
     </Card>
   )
 }

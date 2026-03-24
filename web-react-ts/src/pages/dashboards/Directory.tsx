@@ -1,7 +1,6 @@
 import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { useQuery } from '@apollo/client'
 import { SERVANT_CHURCHES_COUNT } from './DashboardQueries'
 import MenuButton from 'components/buttons/MenuButton'
@@ -20,7 +19,7 @@ const Directory = () => {
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+      <div>
         <PlaceholderCustom loading={!currentUser.fullName} xs={12} as="h1">
           <div className="text-center">
             <h1 className="mb-0 page-header">{`${currentUser.fullName}'s`}</h1>
@@ -51,7 +50,7 @@ const Directory = () => {
             onClick={() => navigate(`/directory/quick-facts/church-list`)}
           />
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

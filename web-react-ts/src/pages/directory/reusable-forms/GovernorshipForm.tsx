@@ -7,14 +7,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_GOVERNORSHIP_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -92,13 +84,13 @@ const GovernorshipForm = ({
   })
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary>{title}</HeadingPrimary>
       <HeadingSecondary>
         {initialValues.name + ' Governorship'}
       </HeadingSecondary>
 
-      <ButtonGroup className="mt-3">
+      <div className="mt-3">
         {!newGovernorship && (
           <>
             <Button onClick={() => setBacentaModal(true)}>Add Bacenta</Button>
@@ -110,7 +102,7 @@ const GovernorshipForm = ({
             </Button>
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <Formik
         initialValues={initialValues}
@@ -119,21 +111,21 @@ const GovernorshipForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
+                <div className="row-cols-1 row-cols-md-2">
                   {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
+                  <div className="mb-2">
                     <Input
                       name="name"
                       label={`Name of Governorship`}
                       placeholder={`Name of Governorship`}
                     />
 
-                    <Row className="d-flex align-items-center mb-3">
+                    <div className="d-flex align-items-center mb-3">
                       <RoleView roles={permitAdmin('Council')}>
-                        <Col>
+                        <div>
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -143,9 +135,9 @@ const GovernorshipForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
+                    </div>
                     <div className="d-grid gap-2">
                       {initialValues.bacentas?.length && (
                         <p className="fw-bold fs-5">Bacentas</p>
@@ -175,8 +167,8 @@ const GovernorshipForm = ({
                         )
                       })}
                     </div>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
               <div className="text-center mt-5">
@@ -184,13 +176,11 @@ const GovernorshipForm = ({
               </div>
             </Form>
 
-            <Modal
-              show={bacentaModal}
-              onHide={() => setBacentaModal(false)}
+            <Dialog open={bacentaModal} onOpenChange={(open) => { if (!open) () => setBacentaModal(false)() }}
               centered
-            >
-              <Modal.Header closeButton>Add A Bacenta</Modal.Header>
-              <Modal.Body>
+            ><DialogContent>
+              <DialogHeader>Add A Bacenta</DialogHeader>
+              
                 <p>Choose a bacenta to move to this governorship</p>
                 <SearchBacenta
                   name={`bacenta`}
@@ -199,8 +189,8 @@ const GovernorshipForm = ({
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Bacenta Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -236,17 +226,17 @@ const GovernorshipForm = ({
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={() => setBacentaModal(false)}
                 >
                   Close
                 </Button>
-              </Modal.Footer>
-            </Modal>
+              </DialogFooter>
+            </DialogContent></Dialog>
 
-            <Modal show={hubModal} onHide={() => setHubModal(false)} centered>
-              <Modal.Header closeButton>Add A Hub</Modal.Header>
-              <Modal.Body>
+            <Dialog open={hubModal} onOpenChange={(open) => { if (!open) () => setHubModal(false)() }} centered><DialogContent>
+              <DialogHeader>Add A Hub</DialogHeader>
+              
                 <p>Choose a hub to move to this governorship</p>
                 <SearchHub
                   name={`hub`}
@@ -255,8 +245,8 @@ const GovernorshipForm = ({
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Hub Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -287,20 +277,20 @@ const GovernorshipForm = ({
                 >
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
-                <Button variant="primary" onClick={() => setHubModal(false)}>
+                <Button variant="default" onClick={() => setHubModal(false)}>
                   Close
                 </Button>
-              </Modal.Footer>
-            </Modal>
+              </DialogFooter>
+            </DialogContent></Dialog>
 
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Governorship</Modal.Header>
-              <Modal.Body>
+            <Dialog open={closeDown} onOpenChange={(open) => { if (!open) () => setCloseDown(false)() }} centered><DialogContent>
+              <DialogHeader>Close Down Governorship</DialogHeader>
+              
                 <p className="text-info">
                   Are you sure you want to close down this governorship?
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -331,15 +321,15 @@ const GovernorshipForm = ({
                 >
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
+                <Button variant="default" onClick={() => setCloseDown(false)}>
                   No, take me back
                 </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
+              </DialogFooter>
+            </DialogContent></Dialog>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

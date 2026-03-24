@@ -6,9 +6,9 @@ import TableFromArrays from 'components/TableFromArrays/TableFromArrays'
 import { MemberContext } from 'contexts/MemberContext'
 import { parseNeoTime } from 'jd-date-utils'
 import React, { useContext } from 'react'
-import { Container, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import { GET_ARRIVAL_TIMES } from './time-gql'
+import { Button } from 'components/ui/button'
 
 const ArrivalTimes = () => {
   const { currentUser } = useContext(MemberContext)
@@ -28,7 +28,7 @@ const ArrivalTimes = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>Arrival Times</HeadingPrimary>
         <HeadingSecondary>{`${church?.name} ${church?.__typename}`}</HeadingSecondary>
 
@@ -39,7 +39,7 @@ const ArrivalTimes = () => {
           Edit Times
         </Button>
         <TableFromArrays tableArray={table} loading={loading} />
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

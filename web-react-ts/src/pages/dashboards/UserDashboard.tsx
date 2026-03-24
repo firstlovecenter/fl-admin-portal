@@ -10,12 +10,12 @@ import {
   getServiceGraphData,
 } from '../services/graphs/graphs-utils'
 import StatDisplay from 'pages/services/graphs/CompStatDisplay'
-import { Col, Row, Table, Container } from 'react-bootstrap'
 import Placeholder from '../../components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import useComponentQuery from './useComponentQuery'
 import { Role, UserJobs } from 'global-types'
 import useSetUserChurch from 'hooks/useSetUserChurch'
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from 'components/ui/table'
 
 const UserDashboard = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
@@ -45,7 +45,7 @@ const UserDashboard = () => {
 
   return (
     <>
-      <Container>
+      <div>
         <Placeholder loading={!currentUser?.fullName} as="p">
           <p className="mb-0">{`Welcome to`}</p>
         </Placeholder>
@@ -91,22 +91,22 @@ const UserDashboard = () => {
           </Table>
         </div>
         <>
-          <Row className="mt-3">
-            <Col>
+          <div className="mt-3">
+            <div>
               <StatDisplay
                 title="Avg Weekly Attendance"
                 loading={!assessmentData[0]}
                 statistic={getMonthlyStatAverage(assessmentData, 'attendance')}
               />
-            </Col>
-            <Col>
+            </div>
+            <div>
               <StatDisplay
                 title="Avg Weekly Income (GH₵)"
                 loading={!assessmentData[0]}
                 statistic={getMonthlyStatAverage(assessmentData, 'income')}
               />
-            </Col>
-          </Row>
+            </div>
+          </div>
           {!currentUser.noIncomeTracking ? (
             <ChurchGraph
               loading={!assessmentChurch}
@@ -131,7 +131,7 @@ const UserDashboard = () => {
             />
           )}
         </>
-      </Container>
+      </div>
     </>
   )
 }

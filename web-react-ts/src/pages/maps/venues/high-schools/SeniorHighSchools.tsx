@@ -8,10 +8,11 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import Select from 'components/formik/Select'
 import Input from 'components/formik/Input'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { Button, Container, Row, Card, ButtonGroup } from 'react-bootstrap'
 import { AiOutlinePlusCircle } from 'react-icons/ai'
 import { FiUsers } from 'react-icons/fi'
 import '../Venues.css'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
 
 interface FormOptions {
   schoolSearch: string
@@ -80,7 +81,7 @@ const SeniorHighSchools = () => {
     )
   }, [schools, searchQuery])
   return (
-    <Container>
+    <div>
       <HeadingPrimary className="d-flex justify-content-center mb-5">
         Senior High Schools
       </HeadingPrimary>
@@ -89,7 +90,7 @@ const SeniorHighSchools = () => {
         {({ values }) => {
           return (
             <Form className="mb-2">
-              <Row>
+              <div>
                 <div className="col">
                   <Input
                     name="schoolSearch"
@@ -108,14 +109,14 @@ const SeniorHighSchools = () => {
                     }}
                   />
                 </div>
-              </Row>
+              </div>
             </Form>
           )
         }}
       </Formik>
 
       <Button
-        variant="primary"
+        variant="default"
         className="p-2 d-flex justify-content-center align-items-center text-center gap-2 w-100"
         onClick={() => {
           navigate(`/maps/senior-high-schools/add`)
@@ -129,7 +130,7 @@ const SeniorHighSchools = () => {
         <div>
           {filteredSchools?.map((school: SchoolOptions, index: number) => (
             <Card className="mb-2" key={index}>
-              <Card.Body className="venue-font">
+              <CardContent className="venue-font">
                 <div className="mb-1">
                   <span>{school?.name}</span>
                 </div>
@@ -137,15 +138,15 @@ const SeniorHighSchools = () => {
                   <FiUsers color="grey" className="fs-6 me-2" />
                   <span>{school?.capacity}</span>
                 </div>
-              </Card.Body>
+              </CardContent>
             </Card>
           ))}
         </div>
       </ApolloWrapper>
 
-      <ButtonGroup className="d-flex justify-content-center px-5 mt-4">
+      <div className="d-flex justify-content-center px-5 mt-4">
         <Button
-          variant="primary"
+          variant="default"
           onClick={() => setOffset((prev) => prev - 1)}
           disabled={offset === 0}
         >
@@ -153,14 +154,14 @@ const SeniorHighSchools = () => {
         </Button>
         <Button
           className="px-4"
-          variant="primary"
+          variant="default"
           disabled={!(schools && schools.length >= limit)}
           onClick={() => setOffset((prev) => prev + 1)}
         >
           Next
         </Button>
-      </ButtonGroup>
-    </Container>
+      </div>
+    </div>
   )
 }
 

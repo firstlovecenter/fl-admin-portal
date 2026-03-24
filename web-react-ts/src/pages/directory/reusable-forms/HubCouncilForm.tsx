@@ -6,14 +6,6 @@ import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_HUBCOUNCIL_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
 import SearchMember from 'components/formik/SearchMember'
@@ -93,12 +85,12 @@ const HubCouncilForm = ({
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{title}</HeadingPrimary>
         <HeadingSecondary>
           {initialValues.name + ' Hub Council'}
         </HeadingSecondary>
-        <ButtonGroup className="mt-3">
+        <div className="mt-3">
           {!newHubCouncil && (
             <>
               <Button onClick={() => setHubModal(true)}>Add Hub</Button>
@@ -107,7 +99,7 @@ const HubCouncilForm = ({
               </Button>
             </>
           )}
-        </ButtonGroup>
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -116,12 +108,12 @@ const HubCouncilForm = ({
           validateOnMount
         >
           {(formik) => (
-            <Container className="py-4">
+            <div className="py-4">
               <Form>
                 <div className="form-group">
-                  <Row className="row-cols-1 row-cols-md-2">
+                  <div className="row-cols-1 row-cols-md-2">
                     {/* <!-- Basic Info Div --> */}
-                    <Col className="mb-2">
+                    <div className="mb-2">
                       {newHubCouncil && (
                         <Select
                           name="council"
@@ -137,8 +129,8 @@ const HubCouncilForm = ({
                         placeholder={`Name of Hub Council`}
                       />
 
-                      <Row className="d-flex align-items-center mb-3">
-                        <Col>
+                      <div className="d-flex align-items-center mb-3">
+                        <div>
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -149,8 +141,8 @@ const HubCouncilForm = ({
                             error={formik.errors.leaderId}
                             creativeArts={true}
                           />
-                        </Col>
-                      </Row>
+                        </div>
+                      </div>
                       <div className="d-grid gap-2">
                         {initialValues.hubs?.length === 0 ? (
                           <NoDataComponent text="No Hubs" />
@@ -164,8 +156,8 @@ const HubCouncilForm = ({
                           </Button>
                         ))}
                       </div>
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="text-center mt-5">
@@ -173,9 +165,9 @@ const HubCouncilForm = ({
                 </div>
               </Form>
 
-              <Modal show={hubModal} onHide={() => setHubModal(false)} centered>
-                <Modal.Header closeButton>Add A Hub</Modal.Header>
-                <Modal.Body>
+              <Dialog open={hubModal} onOpenChange={(open) => { if (!open) () => setHubModal(false)() }} centered><DialogContent>
+                <DialogHeader>Add A Hub</DialogHeader>
+                
                   <p>Choose a hub to move to this hubCouncil</p>
                   <SearchHub
                     name={`hub`}
@@ -184,8 +176,8 @@ const HubCouncilForm = ({
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="Hub Name"
                   />
-                </Modal.Body>
-                <Modal.Footer>
+                
+                <DialogFooter>
                   <Button
                     variant="success"
                     type="submit"
@@ -216,24 +208,22 @@ const HubCouncilForm = ({
                   >
                     <BtnSubmitText loading={buttonLoading} />
                   </Button>
-                  <Button variant="primary" onClick={() => setHubModal(false)}>
+                  <Button variant="default" onClick={() => setHubModal(false)}>
                     Close
                   </Button>
-                </Modal.Footer>
-              </Modal>
+                </DialogFooter>
+              </DialogContent></Dialog>
 
-              <Modal
-                show={closeDown}
-                onHide={() => setCloseDown(false)}
+              <Dialog open={closeDown} onOpenChange={(open) => { if (!open) () => setCloseDown(false)() }}
                 centered
-              >
-                <Modal.Header closeButton>Close Down HubCouncil</Modal.Header>
-                <Modal.Body>
+              ><DialogContent>
+                <DialogHeader>Close Down HubCouncil</DialogHeader>
+                
                   <p className="text-info">
                     Are you sure you want to close down this hubCouncil?
                   </p>
-                </Modal.Body>
-                <Modal.Footer>
+                
+                <DialogFooter>
                   <Button
                     variant="success"
                     type="submit"
@@ -263,15 +253,15 @@ const HubCouncilForm = ({
                   >
                     <BtnSubmitText loading={buttonLoading} />
                   </Button>
-                  <Button variant="primary" onClick={() => setCloseDown(false)}>
+                  <Button variant="default" onClick={() => setCloseDown(false)}>
                     No, take me back
                   </Button>
-                </Modal.Footer>
-              </Modal>
-            </Container>
+                </DialogFooter>
+              </DialogContent></Dialog>
+            </div>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -4,8 +4,7 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import useSetUserChurch from 'hooks/useSetUserChurch'
 import React, { useContext } from 'react'
-import { Card, Col, Row, Button, Container } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
@@ -13,6 +12,8 @@ import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import { COUNCIL_BY_GOVERNORSHIP } from '../DefaultersQueries'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import '../Defaulters.css'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader, CardFooter } from 'components/ui/card'
 
 const CouncilByGovernorship = () => {
   const { councilId, clickCard } = useContext(ChurchContext)
@@ -27,23 +28,23 @@ const CouncilByGovernorship = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary
             loading={!data}
           >{`${data?.councils[0].name} Council By Governorship`}</HeadingPrimary>
-          <Row>
+          <div>
             {data ? (
               data?.councils[0].governorships.map(
                 (governorship: HigherChurchWithDefaulters, i: number) => (
-                  <Col key={i} xs={12} className="mb-3">
+                  <div key={i} xs={12} className="mb-3">
                     <Card>
-                      <Card.Header className="fw-bold">
+                      <CardHeader className="fw-bold">
                         <div>{`${governorship.name} Governorship`}</div>
                         <div className="text-secondary">
                           {governorship.leader.fullName}
                         </div>
-                      </Card.Header>
-                      <Card.Body
+                      </CardHeader>
+                      <CardContent
                         onClick={() => {
                           clickCard(governorship)
                           setUserChurch(governorship)
@@ -101,8 +102,8 @@ const CouncilByGovernorship = () => {
                           Cancelled Services This Week{' '}
                           {governorship.cancelledServicesThisWeekCount}
                         </div>
-                      </Card.Body>
-                      <Card.Footer>
+                      </CardContent>
+                      <CardFooter>
                         {governorship?.bankedBy && (
                           <div className="text-warning">
                             Offering Received By:{' '}
@@ -113,8 +114,8 @@ const CouncilByGovernorship = () => {
                           Contact Admin: {governorship?.admin?.fullName}
                         </div>
                         <a href={`tel:${governorship?.admin?.phoneNumber}`}>
-                          <Button variant="primary">
-                            <TelephoneFill /> Call
+                          <Button variant="default">
+                            <Phone /> Call
                           </Button>
                         </a>
                         <a
@@ -124,19 +125,19 @@ const CouncilByGovernorship = () => {
                           className="ms-3"
                         >
                           <Button variant="success">
-                            <Whatsapp /> WhatsApp
+                            <MessageCircle /> WhatsApp
                           </Button>
                         </a>
-                      </Card.Footer>
+                      </CardFooter>
                     </Card>
-                  </Col>
+                  </div>
                 )
               )
             ) : (
               <PlaceholderDefaulterList />
             )}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

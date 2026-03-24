@@ -7,14 +7,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_COUNCIL_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -90,10 +82,10 @@ const CouncilForm = ({
   })
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary>{title}</HeadingPrimary>
       <HeadingSecondary>{initialValues.name + ' Council'}</HeadingSecondary>
-      <ButtonGroup className="mt-3">
+      <div className="mt-3">
         {!newCouncil && (
           <>
             <Button onClick={() => setGovernorshipModal(true)}>
@@ -107,7 +99,7 @@ const CouncilForm = ({
             </Button>
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <Formik
         initialValues={initialValues}
@@ -116,21 +108,21 @@ const CouncilForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
+                <div className="row-cols-1 row-cols-md-2">
                   {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
+                  <div className="mb-2">
                     <Input
                       name="name"
                       label={`Name of Council`}
                       placeholder={`Name of Council`}
                     />
 
-                    <Row className="d-flex align-items-center mb-3">
+                    <div className="d-flex align-items-center mb-3">
                       <RoleView roles={permitAdmin('Stream')}>
-                        <Col>
+                        <div>
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -140,9 +132,9 @@ const CouncilForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
+                    </div>
                     <div className="d-grid gap-2">
                       {initialValues.governorships?.length && (
                         <p className="fw-bold fs-5">Governorships</p>
@@ -176,8 +168,8 @@ const CouncilForm = ({
                         )
                       })}
                     </div>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
               <div className="text-center mt-5">
@@ -185,13 +177,11 @@ const CouncilForm = ({
               </div>
             </Form>
 
-            <Modal
-              show={governorshipModal}
-              onHide={() => setGovernorshipModal(false)}
+            <Dialog open={governorshipModal} onOpenChange={(open) => { if (!open) () => setGovernorshipModal(false)() }}
               centered
-            >
-              <Modal.Header closeButton>Add A Governorship</Modal.Header>
-              <Modal.Body>
+            ><DialogContent>
+              <DialogHeader>Add A Governorship</DialogHeader>
+              
                 <p>Choose a governorship to move to this council</p>
                 <SearchGovernorship
                   name={`governorship`}
@@ -200,8 +190,8 @@ const CouncilForm = ({
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Governorship Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -233,21 +223,19 @@ const CouncilForm = ({
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={() => setGovernorshipModal(false)}
                 >
                   Close
                 </Button>
-              </Modal.Footer>
-            </Modal>
+              </DialogFooter>
+            </DialogContent></Dialog>
 
-            <Modal
-              show={hubCouncilModal}
-              onHide={() => setHubCouncilModal(false)}
+            <Dialog open={hubCouncilModal} onOpenChange={(open) => { if (!open) () => setHubCouncilModal(false)() }}
               centered
-            >
-              <Modal.Header closeButton>Add A Hub Council</Modal.Header>
-              <Modal.Body>
+            ><DialogContent>
+              <DialogHeader>Add A Hub Council</DialogHeader>
+              
                 <p>Choose a hub council to move to this council</p>
                 <SearchHubCouncil
                   name={`hubCouncil`}
@@ -256,8 +244,8 @@ const CouncilForm = ({
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Hub Council Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -289,22 +277,22 @@ const CouncilForm = ({
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={() => setHubCouncilModal(false)}
                 >
                   Close
                 </Button>
-              </Modal.Footer>
-            </Modal>
+              </DialogFooter>
+            </DialogContent></Dialog>
 
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Council</Modal.Header>
-              <Modal.Body>
+            <Dialog open={closeDown} onOpenChange={(open) => { if (!open) () => setCloseDown(false)() }} centered><DialogContent>
+              <DialogHeader>Close Down Council</DialogHeader>
+              
                 <p className="text-info">
                   Are you sure you want to close down this council?
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -335,15 +323,15 @@ const CouncilForm = ({
                 >
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
+                <Button variant="default" onClick={() => setCloseDown(false)}>
                   No, take me back
                 </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
+              </DialogFooter>
+            </DialogContent></Dialog>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

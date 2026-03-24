@@ -1,7 +1,7 @@
 import React from 'react'
-import { Badge } from 'react-bootstrap'
 import '../QuickFacts.css'
 import { getPercentageChange } from './quick-fact-utils'
+import { Badge } from 'components/ui/badge'
 
 export interface BussingDetailsInterface {
   churchType: string

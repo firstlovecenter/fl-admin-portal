@@ -7,7 +7,6 @@ import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container, Modal } from 'react-bootstrap'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import Input from 'components/formik/Input'
@@ -15,6 +14,8 @@ import SubmitButton from 'components/formik/SubmitButton'
 import { throwToSentry } from 'global-utils'
 import { DEBIT_BUSSING_SOCIETY } from '../request-expense/expenseGQL'
 import { CouncilForAccounts } from '../accounts-types'
+import { Button } from 'components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from 'components/ui/dialog'
 
 const BussingExpenseEntry = () => {
   const { councilId, clickCard } = useContext(ChurchContext)
@@ -69,7 +70,7 @@ const BussingExpenseEntry = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{`${council?.name} ${council?.__typename} Expense Form`}</HeadingPrimary>
         <HeadingSecondary>
           Pls input the amount that was spent on bussing
@@ -81,7 +82,7 @@ const BussingExpenseEntry = () => {
         >
           {(formik) => (
             <Form>
-              <Container className="mb-4">
+              <div className="mb-4">
                 <div className="my-4">
                   <Input
                     name="amountSpent"
@@ -90,11 +91,11 @@ const BussingExpenseEntry = () => {
                   />
                 </div>
 
-                <Modal show={show} onHide={handleClose} centered scrollable>
-                  <Modal.Header closeButton>
+                <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }} centered scrollable><DialogContent>
+                  <DialogHeader>
                     Please confirm the amount spent
-                  </Modal.Header>
-                  <Modal.Body>
+                  </DialogHeader>
+                  
                     <p>
                       Amount Spent:{' '}
                       <span className="text-info">
@@ -128,29 +129,29 @@ const BussingExpenseEntry = () => {
                         GHS
                       </span>
                     )}
-                  </Modal.Body>
+                  
 
-                  <Modal.Footer>
+                  <DialogFooter>
                     <SubmitButton
                       onClick={formik.handleSubmit}
                       formik={formik}
                     />
-                    <Button variant="primary" onClick={handleClose}>
+                    <Button variant="default" onClick={handleClose}>
                       Close
                     </Button>
-                  </Modal.Footer>
-                </Modal>
+                  </DialogFooter>
+                </DialogContent></Dialog>
 
                 <div className="text-center mt-5">
                   <Button onClick={handleShow} className="px-5">
                     Submit
                   </Button>
                 </div>
-              </Container>
+              </div>
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

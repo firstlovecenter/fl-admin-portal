@@ -2,8 +2,7 @@ import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Card, Col, Row, Button, Container } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -13,6 +12,8 @@ import PullToRefresh from 'react-simple-pull-to-refresh'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import { MINISTRY_BY_HUBCOUNCIL } from './SontaDefaultersQueries'
 import useSetUserChurch from 'hooks/useSetUserChurch'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader, CardFooter } from 'components/ui/card'
 
 const MinistryByHubCouncil = () => {
   const { ministryId, clickCard } = useContext(ChurchContext)
@@ -28,18 +29,18 @@ const MinistryByHubCouncil = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading || !data?.ministries[0]?.name}>
             {`${data?.ministries[0].name} Ministry By Hub Council`}
           </HeadingPrimary>
-          <Row>
+          <div>
             {data?.ministries.length ? (
               data?.ministries[0].hubCouncils.map(
                 (hub: HigherSontaChurchWithDefaulters, i: number) => (
-                  <Col key={i} xs={12} className="mb-3">
+                  <div key={i} xs={12} className="mb-3">
                     <Card>
-                      <Card.Header className="fw-bold">{`${hub.name} Hub Council`}</Card.Header>
-                      <Card.Body
+                      <CardHeader className="fw-bold">{`${hub.name} Hub Council`}</CardHeader>
+                      <CardContent
                         onClick={() => {
                           clickCard(hub)
                           setUserChurch(hub)
@@ -136,14 +137,14 @@ const MinistryByHubCouncil = () => {
                           Cancelled Services This Week{' '}
                           {hub.cancelledServicesThisWeekCount}
                         </div>
-                      </Card.Body>
-                      <Card.Footer>
+                      </CardContent>
+                      <CardFooter>
                         <div className="mb-2">
                           Contact Leader: {hub?.leader?.fullName}
                         </div>
                         <a href={`tel:${hub?.leader?.phoneNumber}`}>
-                          <Button variant="primary">
-                            <TelephoneFill /> Call
+                          <Button variant="default">
+                            <Phone /> Call
                           </Button>
                         </a>
                         <a
@@ -153,19 +154,19 @@ const MinistryByHubCouncil = () => {
                           className="ms-3"
                         >
                           <Button variant="success">
-                            <Whatsapp /> WhatsApp
+                            <MessageCircle /> WhatsApp
                           </Button>
                         </a>
-                      </Card.Footer>
+                      </CardFooter>
                     </Card>
-                  </Col>
+                  </div>
                 )
               )
             ) : (
               <PlaceholderDefaulterList />
             )}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

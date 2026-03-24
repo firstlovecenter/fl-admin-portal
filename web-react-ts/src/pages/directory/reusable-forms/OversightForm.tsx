@@ -7,14 +7,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_OVERSIGHT_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -79,10 +71,10 @@ const OversightForm = ({
   })
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary>{title}</HeadingPrimary>
       <HeadingSecondary>{initialValues.name + ' Oversight'}</HeadingSecondary>
-      <ButtonGroup className="mt-3">
+      <div className="mt-3">
         {!newOversight && (
           <>
             <Button onClick={() => setCampusModal(true)}>Add Campus</Button>
@@ -91,7 +83,7 @@ const OversightForm = ({
             </Button>
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <Formik
         initialValues={initialValues}
@@ -100,21 +92,21 @@ const OversightForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
+                <div className="row-cols-1 row-cols-md-2">
                   {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
+                  <div className="mb-2">
                     <Input
                       name="name"
                       label={`Name of Oversight`}
                       placeholder={`Name of Oversight`}
                     />
 
-                    <Row className="d-flex align-items-center mb-3">
+                    <div className="d-flex align-items-center mb-3">
                       <RoleView roles={permitAdmin('Denomination')}>
-                        <Col>
+                        <div>
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -124,9 +116,9 @@ const OversightForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
+                    </div>
                     <div className="d-grid gap-2">
                       <p className="fw-bold fs-5">Campuses</p>
                       {initialValues.campuses?.map((campus, index) => {
@@ -139,8 +131,8 @@ const OversightForm = ({
                         )
                       })}
                     </div>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
               <div className="text-center mt-5">
@@ -148,13 +140,11 @@ const OversightForm = ({
               </div>
             </Form>
 
-            <Modal
-              show={campusModal}
-              onHide={() => setCampusModal(false)}
+            <Dialog open={campusModal} onOpenChange={(open) => { if (!open) () => setCampusModal(false)() }}
               centered
-            >
-              <Modal.Header closeButton>Add A Campus</Modal.Header>
-              <Modal.Body>
+            ><DialogContent>
+              <DialogHeader>Add A Campus</DialogHeader>
+              
                 <p>Choose a campus to move to this oversight</p>
                 <SearchCampus
                   name={`campus`}
@@ -163,8 +153,8 @@ const OversightForm = ({
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Campus Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -195,20 +185,20 @@ const OversightForm = ({
                 >
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
-                <Button variant="primary" onClick={() => setCampusModal(false)}>
+                <Button variant="default" onClick={() => setCampusModal(false)}>
                   Close
                 </Button>
-              </Modal.Footer>
-            </Modal>
+              </DialogFooter>
+            </DialogContent></Dialog>
 
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Oversight</Modal.Header>
-              <Modal.Body>
+            <Dialog open={closeDown} onOpenChange={(open) => { if (!open) () => setCloseDown(false)() }} centered><DialogContent>
+              <DialogHeader>Close Down Oversight</DialogHeader>
+              
                 <p className="text-info">
                   Are you sure you want to close down this oversight?
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -239,15 +229,15 @@ const OversightForm = ({
                 >
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
+                <Button variant="default" onClick={() => setCloseDown(false)}>
                   No, take me back
                 </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
+              </DialogFooter>
+            </DialogContent></Dialog>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

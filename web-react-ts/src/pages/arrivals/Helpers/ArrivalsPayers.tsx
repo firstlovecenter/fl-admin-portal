@@ -6,7 +6,6 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { FunctionReturnsVoid, Member, Council } from 'global-types'
 import React, { useContext, useState } from 'react'
-import { Button, Col, Container, Modal, Row, Spinner } from 'react-bootstrap'
 import {
   MAKE_COUNCIL_ARRIVALSPAYER,
   REMOVE_COUNCIL_ARRIVALSPAYER,
@@ -19,6 +18,9 @@ import { alertMsg, throwToSentry } from 'global-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import SearchMember from 'components/formik/SearchMember'
 import ModalSubmitButton from 'pages/services/banking/anagkazo/ModalSubmitButton'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from 'components/ui/dialog'
 
 interface CouncilWithArrivalsPayers extends Council {
   arrivalsPayers: Member[]
@@ -100,24 +102,20 @@ const ArrivalsPayerSelect = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{`Select ${council?.name} Council Arrivals Payment Governorship Members`}</HeadingPrimary>
         <HeadingSecondary>
           Use the buttons below to choose Arrivals Payment Governorship Members
         </HeadingSecondary>
         <div>{`Number of Active Bacentas: ${council?.activeBacentaCount}`}</div>
 
-        <Modal
-          contentClassName="dark"
-          show={show}
-          onHide={handleClose}
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>
+        <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }}>
+          <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
               Choose an Arrivals Payment Governorship Member
-            </Modal.Title>
-          </Modal.Header>
+            </DialogTitle>
+          </DialogHeader>
 
           <Formik
             initialValues={initialValues}
@@ -126,9 +124,9 @@ const ArrivalsPayerSelect = () => {
           >
             {(formik) => (
               <Form>
-                <Modal.Body>
-                  <Row className="form-row">
-                    <Col>
+                
+                  <div className="form-row">
+                    <div>
                       <SearchMember
                         name="arrivalsPayerSelect"
                         initialValue={initialValues?.arrivalsPayerName}
@@ -137,19 +135,19 @@ const ArrivalsPayerSelect = () => {
                         aria-describedby="Member Search"
                         error={formik.errors.arrivalsPayerSelect}
                       />
-                    </Col>
-                  </Row>
-                </Modal.Body>
-                <Modal.Footer>
+                    </div>
+                  </div>
+                
+                <DialogFooter>
                   <Button variant="secondary" onClick={handleClose}>
                     Close
                   </Button>
                   <ModalSubmitButton formik={formik} onClick={handleClose} />
-                </Modal.Footer>
+                </DialogFooter>
               </Form>
             )}
           </Formik>
-        </Modal>
+        </DialogContent></Dialog>
 
         <div className="d-grid gap-2 mt-5">
           <Button variant="success" onClick={handleOpen}>
@@ -163,7 +161,7 @@ const ArrivalsPayerSelect = () => {
             <div className="d-grid gap-2">
               <Button
                 disabled={submitting}
-                variant="danger"
+                variant="destructive"
                 onClick={async () => {
                   const confirmBox = window.confirm(
                     `Do you want to delete ${arrivalsPayer.fullName} as a arrivalsPayer`
@@ -188,7 +186,7 @@ const ArrivalsPayerSelect = () => {
               >
                 {submitting ? (
                   <>
-                    <Spinner animation="grow" size="sm" />
+                    <Loader2 className="h-6 w-6 animate-spin" />
                     <span> Submitting</span>
                   </>
                 ) : (
@@ -202,7 +200,7 @@ const ArrivalsPayerSelect = () => {
         {!council?.arrivalsPayers?.length && (
           <NoDataComponent text="You have no Arrivals Payment Governorship Members at this time" />
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

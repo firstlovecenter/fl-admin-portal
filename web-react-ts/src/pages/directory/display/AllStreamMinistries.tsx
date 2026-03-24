@@ -5,7 +5,6 @@ import { GET_STREAM_MINISTRIES } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import RoleView from '../../../auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Container, Row, Col } from 'react-bootstrap'
 import { permitAdmin } from 'permission-utils'
 import AllChurchesSummary from 'components/AllChurchesSummary'
 import ChurchSearch from 'components/ChurchSearch'
@@ -28,9 +27,9 @@ const DisplayAllStreamMinistries = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
-        <Row className="mb-2">
-          <Col>
+      <div>
+        <div className="mb-2">
+          <div>
             <Link
               to="/stream/displaydetails"
               onClick={() => {
@@ -62,15 +61,15 @@ const DisplayAllStreamMinistries = () => {
                 {`${stream?.admin?.fullName}`}
               </Link>
             ) : null}
-          </Col>
+          </div>
           <RoleView roles={permitAdmin('Campus')} directoryLock>
-            <Col className="col-auto">
+            <div className="col-auto">
               <Link to="/ministry/addministry" className="btn btn-danger">
                 Add Ministry
               </Link>
-            </Col>
+            </div>
           </RoleView>
-        </Row>
+        </div>
 
         <AllChurchesSummary
           church={ministries && ministries[0]}
@@ -80,7 +79,7 @@ const DisplayAllStreamMinistries = () => {
           route="stream"
         />
         <ChurchSearch data={ministries} churchType="Ministry" />
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

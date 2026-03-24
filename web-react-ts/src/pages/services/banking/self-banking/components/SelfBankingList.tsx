@@ -8,9 +8,11 @@ import { capitalise, throwToSentry } from 'global-utils'
 import { parseDate } from 'jd-date-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import { useContext } from 'react'
-import { Button, ButtonGroup, Card, Col, Modal, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import ConfirmPaymentButton, {
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader } from 'components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'components/ui/dialog'
   ConfirmPaymentServiceType,
 } from './button/ConfirmPayment'
 
@@ -76,11 +78,11 @@ const SelfBankingList = ({
         Please click to bank any of these services
       </HeadingSecondary>
 
-      <Modal show={show} onHide={handleClose} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Payment</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+      <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }} centered><DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm Payment</DialogTitle>
+        </DialogHeader>
+        
           <div>
             Your transaction status is pending please press this button to
             confirm the status
@@ -92,10 +94,10 @@ const SelfBankingList = ({
               handleClose={handleClose}
             />
           </div>
-        </Modal.Body>
-      </Modal>
+        
+      </DialogContent></Dialog>
 
-      <ButtonGroup className="mb-3">
+      <div className="mb-3">
         <Button
           disabled={skip - skipValue < 0}
           onClick={() => {
@@ -114,7 +116,7 @@ const SelfBankingList = ({
         >
           Next
         </Button>
-      </ButtonGroup>
+      </div>
 
       {church?.services?.map((service: ServiceRecord, index: number) => {
         if (
@@ -155,12 +157,12 @@ const SelfBankingList = ({
               )
             }}
           >
-            <Card.Header>
+            <CardHeader>
               <b>{parseDate(service.serviceDate.date)}</b>
-            </Card.Header>
-            <Card.Body>
-              <Row>
-                <Col>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <div>
                   <span>Offering: {service.cash}</span>
                   <div
                     className={`${
@@ -176,9 +178,9 @@ const SelfBankingList = ({
                         service?.transactionStatus
                       )}`}
                   </div>
-                </Col>
-              </Row>
-            </Card.Body>
+                </div>
+              </div>
+            </CardContent>
           </Card>
         )
       })}
@@ -186,19 +188,19 @@ const SelfBankingList = ({
       {loading &&
         placeholder.map((service, index) => (
           <Card key={index} className="mb-2">
-            <Card.Header>
+            <CardHeader>
               <PlaceholderCustom as="p" loading={loading}></PlaceholderCustom>
-            </Card.Header>
-            <Card.Body>
-              <Row>
-                <Col>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <div>
                   <PlaceholderCustom
                     as="span"
                     loading={loading}
                   ></PlaceholderCustom>
-                </Col>
-              </Row>
-            </Card.Body>
+                </div>
+              </div>
+            </CardContent>
           </Card>
         ))}
     </>

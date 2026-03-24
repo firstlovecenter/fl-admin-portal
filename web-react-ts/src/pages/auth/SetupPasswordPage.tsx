@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from 'contexts/AuthContext'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import {
-  Container,
-  Form,
-  Button,
-  Alert,
-  Navbar,
-  Spinner,
-} from 'react-bootstrap'
 import { Formik, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import Logo from '../../assets/flc-logo-small.webp'
 import PasswordStrengthIndicator from '../../components/auth/PasswordStrengthIndicator'
 import './auth.css'
-import { Eye, EyeSlash, CheckCircleFill } from 'react-bootstrap-icons'
+import { Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 
 const APP_VERSION = '8.1.3'
 
@@ -119,28 +111,28 @@ const SetupPasswordPage = () => {
 
   return (
     <>
-      <Navbar bg="dark">
-        <Container>
+      <nav className="bg-zinc-900 py-3">
+        <div>
           <img
             src={Logo}
             height="30"
             className="d-inline-block align-top"
             alt="FirstLove Logo"
           />
-        </Container>
-      </Navbar>
+        </div>
+      </nav>
 
-      <Container className="auth-container">
+      <div className="auth-container">
         <div className="auth-card">
           <h2 className="text-center mb-4 text-white">Set Up Your Password</h2>
           <p className="text-center text-secondary mb-4">
             Complete your account setup by creating a password
           </p>
 
-          {error && <Alert variant="danger">{error}</Alert>}
+          {error && <Alert variant="destructive">{error}</Alert>}
           {success && (
             <Alert variant="success" className="d-flex align-items-center">
-              <CheckCircleFill className="success-icon me-3" size={24} />
+              <CheckCircle2 className="success-icon me-3" size={24} />
               <div>
                 <strong>Password set up successfully!</strong>
                 <br />
@@ -158,19 +150,16 @@ const SetupPasswordPage = () => {
             onSubmit={handleSubmit}
           >
             {({ values, handleSubmit, isSubmitting, errors, touched }) => (
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="email">
-                  <Form.Label className="text-white">Email Address</Form.Label>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label className="text-white">Email Address</label>
                   <div className="p-3 bg-dark border border-secondary rounded text-white">
                     {extractedEmail || 'Loading email...'}
                   </div>
-                </Form.Group>
+                </div>
 
-                <Form.Group
-                  className="mb-3 form-group-with-icon"
-                  controlId="password"
-                >
-                  <Form.Label className="text-white">Password</Form.Label>
+                <div className="mb-3">
+                  <label className="text-white">Password</label>
                   <Field
                     as={Form.Control}
                     type={showPassword ? 'text' : 'password'}
@@ -189,21 +178,18 @@ const SetupPasswordPage = () => {
                     className="password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </span>
                   <ErrorMessage name="password">
                     {(msg) => <small className="text-danger">{msg}</small>}
                   </ErrorMessage>
                   <PasswordStrengthIndicator password={values.password} />
-                </Form.Group>
+                </div>
 
-                <Form.Group
-                  className="mb-3 form-group-with-icon"
-                  controlId="confirmPassword"
-                >
-                  <Form.Label className="text-white">
+                <div className="mb-3">
+                  <label className="text-white">
                     Confirm Password
-                  </Form.Label>
+                  </label>
                   <Field
                     as={Form.Control}
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -223,7 +209,7 @@ const SetupPasswordPage = () => {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <EyeSlash size={20} />
+                      <EyeOff size={20} />
                     ) : (
                       <Eye size={20} />
                     )}
@@ -231,10 +217,10 @@ const SetupPasswordPage = () => {
                   <ErrorMessage name="confirmPassword">
                     {(msg) => <small className="text-danger">{msg}</small>}
                   </ErrorMessage>
-                </Form.Group>
+                </div>
 
                 <Button
-                  variant="brand"
+                  variant="default"
                   type="submit"
                   className="w-100 mt-3"
                   disabled={
@@ -243,14 +229,14 @@ const SetupPasswordPage = () => {
                 >
                   {isSubmitting ? (
                     <>
-                      <Spinner animation="border" size="sm" className="me-2" />
+                      <Loader2 className="h-6 w-6 animate-spin" />
                       Setting up password...
                     </>
                   ) : (
                     'Set Up Password'
                   )}
                 </Button>
-              </Form>
+              </form>
             )}
           </Formik>
 
@@ -267,7 +253,7 @@ const SetupPasswordPage = () => {
             v{APP_VERSION}
           </p>
         </div>
-      </Container>
+      </div>
     </>
   )
 }

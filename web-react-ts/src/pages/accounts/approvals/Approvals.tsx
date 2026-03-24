@@ -9,16 +9,16 @@ import {
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
-import { Button, Container } from 'react-bootstrap'
 import { CouncilForAccounts } from '../accounts-types'
 import TransactionCard from '../TransactionCard'
-import { CheckCircleFill, XCircleFill } from 'react-bootstrap-icons'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { throwToSentry } from 'global-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
+import { Button } from 'components/ui/button'
 
 const Approvals = () => {
   const { campusId } = useContext(ChurchContext)
@@ -44,7 +44,7 @@ const Approvals = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>Pending Approvals</HeadingPrimary>
         <HeadingSecondary>{campus?.name}</HeadingSecondary>
 
@@ -98,7 +98,7 @@ const Approvals = () => {
                             onSubmit={onSubmit}
                           >
                             {(formik) => (
-                              <Form>
+                              <form>
                                 <Input
                                   name="charge"
                                   label="Charge"
@@ -106,12 +106,12 @@ const Approvals = () => {
                                 />
                                 <SubmitButton formik={formik}>
                                   <div>
-                                    Approve <CheckCircleFill />
+                                    Approve <CheckCircle2 />
                                   </div>
                                 </SubmitButton>
                                 <Button
                                   className="px-3 ms-2"
-                                  variant="danger"
+                                  variant="destructive"
                                   disabled={submitting}
                                   onClick={async () => {
                                     try {
@@ -136,11 +136,11 @@ const Approvals = () => {
                                     'Loading'
                                   ) : (
                                     <>
-                                      Decline <XCircleFill />
+                                      Decline <XCircle />
                                     </>
                                   )}
                                 </Button>
-                              </Form>
+                              </form>
                             )}
                           </Formik>
                         </div>
@@ -153,7 +153,7 @@ const Approvals = () => {
             )
           )}
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

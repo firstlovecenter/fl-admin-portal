@@ -2,13 +2,13 @@ import { ApolloQueryResult, useMutation } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { alertMsg } from 'global-utils'
 import { useContext, useState } from 'react'
-import { Button } from 'react-bootstrap'
 import { useLocation, useNavigate } from 'react-router'
 import {
   CONFIRM_OFFERING_PAYMENT,
   SELF_BANKING_RECEIPT,
 } from '../../bankingQueries'
 import { DotLoader } from 'react-spinners'
+import { Button } from 'components/ui/button'
 
 export type ConfirmPaymentServiceType = {
   id: string

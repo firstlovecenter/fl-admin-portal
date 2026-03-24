@@ -1,8 +1,8 @@
 import React, { useContext } from 'react'
-import { Badge } from 'react-bootstrap'
 import '../QuickFacts.css'
 import { getPercentageChange } from './quick-fact-utils'
 import { MemberContext } from 'contexts/MemberContext'
+import { Badge } from 'components/ui/badge'
 
 export interface IncomeDetailsInterface {
   churchType: string

@@ -1,6 +1,6 @@
-import { Card, Col, Row } from 'react-bootstrap'
 import { CouncilForAccounts } from '../accounts-types'
 import '../accounts-colors.css'
+import { Card, CardContent } from 'components/ui/card'
 
 const AccountBalanceCard = ({
   church,
@@ -11,28 +11,28 @@ const AccountBalanceCard = ({
 }) => {
   return (
     <Card className={`${variant} mb-2`}>
-      <Card.Body>
+      <CardContent>
         {variant === 'current-balance' && (
-          <Row className="d-flex align-items-center text-light">
-            <Col>Weekday Account Balance</Col>
-            <Col>
+          <div className="d-flex align-items-center text-light">
+            <div>Weekday Account Balance</div>
+            <div>
               <p className="text-end mb-0 ">
                 {(church?.weekdayBalance || 0.0).toLocaleString('en-US')}
               </p>
-            </Col>
-          </Row>
+            </div>
+          </div>
         )}
         {variant === 'bussing-society' && (
-          <Row className="d-flex align-items-center text-light">
-            <Col>Bussing Society Balance</Col>
-            <Col>
+          <div className="d-flex align-items-center text-light">
+            <div>Bussing Society Balance</div>
+            <div>
               <p className="text-end mb-0">
                 {(church?.bussingSocietyBalance || 0.0).toLocaleString('en-US')}
               </p>
-            </Col>
-          </Row>
+            </div>
+          </div>
         )}
-      </Card.Body>
+      </CardContent>
     </Card>
   )
 }

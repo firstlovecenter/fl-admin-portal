@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import { Row, Col, Accordion, Stack, Button, Container } from 'react-bootstrap'
 import { useQuery } from '@apollo/client'
 import { MemberContext } from 'contexts/MemberContext'
 import { getMemberDob } from 'jd-date-utils'
@@ -15,6 +14,7 @@ import AuthButton from 'components/buttons/AuthButton'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { USER_PLACEHOLDER } from 'global-utils'
 import { useNavigate } from 'react-router'
+import { Button } from 'components/ui/button'
 
 const DisplayPage = () => {
   const { currentUser, theme } = useContext(MemberContext)
@@ -40,8 +40,8 @@ const DisplayPage = () => {
       <ApolloWrapper loading={loading} error={error} data={bioData} placeholder>
         <div className="py-5">
           <div className="pt-5 text-center">
-            <Row className="d-flex justify-content-center">
-              <Col
+            <div className="d-flex justify-content-center">
+              <div
                 className="d-flex justify-content-center"
                 xs={6}
                 md={6}
@@ -57,8 +57,8 @@ const DisplayPage = () => {
                     size="large"
                   />
                 </PlaceholderCustom>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </div>
 
           <>
@@ -69,15 +69,15 @@ const DisplayPage = () => {
             >
               <h1 className="text-center">{`${member?.nameWithTitle}`}</h1>
             </PlaceholderCustom>
-            <Container className="px-5 mb-2 text-center">
+            <div className="px-5 mb-2 text-center">
               <Button
-                variant="brand"
+                variant="default"
                 className="px-5"
                 onClick={() => navigate('/user-profile/edit')}
               >
                 Edit Your Profile
               </Button>
-            </Container>
+            </div>
 
             <PlaceholderCustom as="h6" className="text-center">
               <h6 className="text-center text-secondary">
@@ -86,112 +86,112 @@ const DisplayPage = () => {
             </PlaceholderCustom>
           </>
           <div className="py-5">
-            <Row className="d-flex justify-content-center">
-              <Col lg={8}>
-                <Accordion className={theme}>
-                  <Stack gap={4}>
+            <div className="d-flex justify-content-center">
+              <div lg={8}>
+                <div className="accordion">
+                  <div gap={4}>
                     <div className="px-4">
-                      <Accordion.Item eventKey="0">
-                        <Accordion.Header>Bio</Accordion.Header>
-                        <Accordion.Body>
+                      <div className="accordion-item border-b">
+                        <div className="accordion-header py-2 font-medium cursor-pointer">Bio</div>
+                        <div className="accordion-body">
                           <div>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 First Name
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {member?.firstName}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Middle Name
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {member?.middleName}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Last Name
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {member?.lastName}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Email Address
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {member?.email}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Date Of Birth
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {memberBirthday && memberBirthday}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Gender
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {member?.gender ? member?.gender.gender : null}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Marital Status
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {member?.maritalStatus
                                   ? member?.maritalStatus.status
                                   : null}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Occupation
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {member?.occupation
                                   ? member?.occupation.occupation
                                   : '-'}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Phone Number
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {member?.phoneNumber}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 WhatsApp No.
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 <a
                                   className="font-weight-bold"
                                   href={`https://wa.me/${member?.whatsappNumber}`}
                                 >
                                   {member?.whatsappNumber}
                                 </a>
-                              </Col>
-                            </Row>
+                              </div>
+                            </div>
                           </div>
-                        </Accordion.Body>
-                      </Accordion.Item>
+                        </div>
+                      </div>
                     </div>
                     <div className="px-4">
-                      <Accordion.Item eventKey="1">
-                        <Accordion.Header>History</Accordion.Header>
-                        <Accordion.Body>
+                      <div className="accordion-item border-b">
+                        <div className="accordion-header py-2 font-medium cursor-pointer">History</div>
+                        <div className="accordion-body">
                           <div>
                             {memberChurch?.history?.length ? (
                               <Timeline
@@ -200,51 +200,51 @@ const DisplayPage = () => {
                               />
                             ) : null}
                           </div>
-                        </Accordion.Body>
-                      </Accordion.Item>
+                        </div>
+                      </div>
                     </div>
                     <div className="px-4">
-                      <Accordion.Item eventKey="2">
-                        <Accordion.Header>Church Groups</Accordion.Header>
-                        <Accordion.Body>
+                      <div className="accordion-item border-b">
+                        <div className="accordion-header py-2 font-medium cursor-pointer">Church Groups</div>
+                        <div className="accordion-body">
                           <div className="col-mt-2">
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Overseeing Pastor
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {memberChurch?.bacenta.council.leader.fullName}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Bacenta
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {memberChurch?.bacenta?.name}
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col className="text-secondary placeholder-display">
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-secondary placeholder-display">
                                 Ministry
-                              </Col>
-                              <Col className="placeholder-display">
+                              </div>
+                              <div className="placeholder-display">
                                 {memberChurch?.ministry
                                   ? `${memberChurch?.ministry.name}`
                                   : null}
-                              </Col>
-                            </Row>
+                              </div>
+                            </div>
                           </div>
-                        </Accordion.Body>
-                      </Accordion.Item>
+                        </div>
+                      </div>
                     </div>
-                  </Stack>
-                </Accordion>
+                  </div>
+                </div>
                 <div className="mt-3 text-center">
                   <AuthButton mobileFullSize />
                 </div>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </div>
         </div>
       </ApolloWrapper>

@@ -10,15 +10,6 @@ import {
   DISPLAY_MEMBER_CHURCH,
   DISPLAY_MEMBER_LEADERSHIP,
 } from 'pages/directory/display/ReadQueries'
-import {
-  Button,
-  Card,
-  Col,
-  Container,
-  Modal,
-  Row,
-  Spinner,
-} from 'react-bootstrap'
 import PlaceholderCustom from 'components/Placeholder'
 import DetailsCard from 'components/card/DetailsCard'
 import EditButton from 'components/buttons/EditButton'
@@ -29,7 +20,7 @@ import { Member } from 'global-types'
 import { permitAdmin, permitLeader } from 'permission-utils'
 import { BarLoader } from 'react-spinners'
 import { FaPhone, FaSave, FaStickyNote } from 'react-icons/fa'
-import { Whatsapp } from 'react-bootstrap-icons'
+import { MessageCircle } from 'lucide-react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
 import useModal from 'hooks/useModal'
@@ -186,9 +177,9 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
   }
 
   return (
-    <Container>
-      <Row className="justify-content-between">
-        <Col className="col-auto">
+    <div>
+      <div className="justify-content-between">
+        <div className="col-auto">
           <RoleView
             roles={[
               ...permitAdmin('Governorship'),
@@ -198,28 +189,28 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
           >
             <EditButton link="/member/editmember" />
           </RoleView>
-        </Col>
+        </div>
 
         <RoleView roles={['all']} verifyNotId={member?.id}>
-          <Col className="col-auto">
+          <div className="col-auto">
             <Button size="sm" variant="warning" onClick={handleShow}>
               Add Sticky Note
             </Button>
-          </Col>
+          </div>
         </RoleView>
 
-        <Modal show={show} onHide={handleClose} centered>
+        <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }} centered><DialogContent>
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={onSubmit}
           >
             {(formik) => (
-              <Form>
-                <Modal.Header closeButton>
+              <form>
+                <DialogHeader>
                   Add or Update Sticky Note
-                </Modal.Header>
-                <Modal.Body>
+                </DialogHeader>
+                
                   <p className="text-info">
                     This note will be visible to all Admins and Leaders
                   </p>
@@ -227,11 +218,11 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                     You can put Room Number, Special Instructions etc
                   </small>
                   <Textarea name="note" label="Note" />
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button variant="primary" onClick={onDelete}>
+                
+                <DialogFooter>
+                  <Button variant="default" onClick={onDelete}>
                     {!formik.isSubmitting && noteLoading ? (
-                      <Spinner size="sm" />
+                      <Loader2 className="h-6 w-6 animate-spin" />
                     ) : (
                       'Delete Note'
                     )}
@@ -241,14 +232,14 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                     type="submit"
                     disabled={formik.isSubmitting}
                   >
-                    {formik.isSubmitting ? <Spinner size="sm" /> : 'Save Note'}
+                    {formik.isSubmitting ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Save Note'}
                   </Button>
-                </Modal.Footer>
-              </Form>
+                </DialogFooter>
+              </form>
             )}
           </Formik>
-        </Modal>
-      </Row>
+        </DialogContent></Dialog>
+      </div>
       <div className="d-flex justify-content-center pb-4">
         <PlaceholderCustom
           as="div"
@@ -290,9 +281,9 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
         </PlaceholderCustom>
 
         {(adminLoading || leaderLoading) && (
-          <Container className="d-flex flex-column justify-content-center align-items-center">
+          <div className="d-flex flex-column justify-content-center align-items-center">
             <BarLoader color="gray" />
-          </Container>
+          </div>
         )}
         <PlaceholderCustom as="h5" loading={adminLoading || leaderLoading}>
           <MemberRoleList
@@ -304,49 +295,49 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
       {member?.stickyNote && member?.stickyNote?.trim() !== '' ? (
         <div className="my-1">
           <Card border="warning">
-            <Card.Header>
+            <CardHeader>
               <FaStickyNote /> Sticky Note
-            </Card.Header>
-            <Card.Body>
+            </CardHeader>
+            <CardContent>
               <p>{member?.stickyNote}</p>
-            </Card.Body>
+            </CardContent>
           </Card>
         </div>
       ) : (
         <></>
       )}
-      <Row>
-        <Col>
+      <div>
+        <div>
           <DetailsCard heading="First Name" detail={member?.firstName} />
-        </Col>
-        <Col>
+        </div>
+        <div>
           <DetailsCard heading="Last Name" detail={member?.lastName || ''} />
-        </Col>
+        </div>
         {member?.middleName && (
-          <Col sm={12}>
+          <div sm={12}>
             <DetailsCard
               heading="Middle Name"
               detail={member?.middleName || ' '}
             />
-          </Col>
+          </div>
         )}
-      </Row>
-      <Row>
-        <Col>
+      </div>
+      <div>
+        <div>
           <DetailsCard heading="Gender" detail={member?.gender?.gender} />
-        </Col>
-        <Col>
+        </div>
+        <div>
           <DetailsCard
             heading="Marital Status"
             detail={member?.maritalStatus?.status}
           />
-        </Col>
-      </Row>
-      <Row>
-        <Col sm={12}>
+        </div>
+      </div>
+      <div>
+        <div sm={12}>
           <DetailsCard heading="Date of Birth" detail={memberBirthday || ''} />
-        </Col>
-        <Col>
+        </div>
+        <div>
           <a href={`tel:${member?.phoneNumber}`}>
             <DetailsCard
               heading="Phone Number"
@@ -359,9 +350,9 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               }
             />
           </a>
-        </Col>
+        </div>
 
-        <Col>
+        <div>
           <a href={`https://wa.me/${member?.whatsappNumber}`}>
             <DetailsCard
               heading="Whatsapp Number"
@@ -369,37 +360,37 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               detail={'+' + member?.whatsappNumber}
               trailing={
                 <Button size="sm" variant="success" className="rounded-btn">
-                  <Whatsapp />
+                  <MessageCircle />
                 </Button>
               }
             />
           </a>
-        </Col>
-      </Row>
-      <Row>
+        </div>
+      </div>
+      <div>
         {member?.occupation?.occupation && (
-          <Col sm={12}>
+          <div sm={12}>
             <DetailsCard
               heading="Occupation"
               detail={member?.occupation?.occupation || ''}
             />
-          </Col>
+          </div>
         )}
         {member?.email && (
-          <Col sm={12}>
+          <div sm={12}>
             <DetailsCard heading="Email Address" detail={member?.email} />
-          </Col>
+          </div>
         )}
         {member?.visitationArea && (
-          <Col sm={12}>
+          <div sm={12}>
             <DetailsCard
               heading="Location for IDL"
               detail={member?.visitationArea.toString()}
             />
-          </Col>
+          </div>
         )}
 
-        <Col sm={12}>
+        <div sm={12}>
           <div
             onClick={() => {
               clickCard(memberChurch?.bacenta)
@@ -411,35 +402,35 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               detail={memberChurch?.bacenta?.name}
             />
           </div>
-        </Col>
+        </div>
         {memberChurch?.basonta && (
-          <Col>
+          <div>
             <DetailsCard
               heading="Basonta"
               detail={memberChurch?.basonta?.name}
             />
-          </Col>
+          </div>
         )}
 
         {member?.titleConnection?.edges[0]?.node.title && (
-          <Col sm={12}>
+          <div sm={12}>
             <DetailsCard heading="Pastoral Rank" detail={member.currentTitle} />
-          </Col>
+          </div>
         )}
 
-        <Row className="mt-5">
-          <Col>
+        <div className="mt-5">
+          <div>
             <PlaceholderCustom>
               <h3 className="mb-0">CHURCH HISTORY</h3>
             </PlaceholderCustom>
-          </Col>
-          <Col className="col-auto">
+          </div>
+          <div className="col-auto">
             <ViewAll to={`/member/history`} />
-          </Col>
-        </Row>
+          </div>
+        </div>
         <Timeline record={memberChurch?.history} limit={3} />
-      </Row>
-    </Container>
+      </div>
+    </div>
   )
 }
 

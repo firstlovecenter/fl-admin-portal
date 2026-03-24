@@ -1,8 +1,8 @@
 import PlaceholderCustom from 'components/Placeholder'
 import React from 'react'
-import { Card } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import './Defaulters.css'
+import { Card, CardContent, CardHeader } from 'components/ui/card'
 
 const DefaulterInfoCard = ({
   defaulter,
@@ -18,16 +18,16 @@ const DefaulterInfoCard = ({
 
   return (
     <Card className="text-center" onClick={() => navigate(defaulter.link)}>
-      <Card.Header>
+      <CardHeader>
         <div className="text-nowrap text-truncate">{defaulter.title}</div>
-      </Card.Header>
+      </CardHeader>
       <PlaceholderCustom
         loading={defaulter.data === undefined || defaulter.data === null}
         className={`fw-bold large-number pb-3 ${defaulter.color}`}
       >
-        <Card.Body className={`fw-bold large-number ${defaulter.color}`}>
+        <CardContent className={`fw-bold large-number ${defaulter.color}`}>
           {defaulter.data}
-        </Card.Body>
+        </CardContent>
       </PlaceholderCustom>
     </Card>
   )

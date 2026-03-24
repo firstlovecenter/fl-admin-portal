@@ -6,14 +6,6 @@ import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_CREATIVEARTS_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
 import SearchMember from 'components/formik/SearchMember'
@@ -86,12 +78,12 @@ const CreativeArtsForm = ({
 
   return (
     <>
-      <Container>
+      <div>
         <HeadingPrimary>{title}</HeadingPrimary>
         <HeadingSecondary>
           {initialValues.name + ' Creative Arts'}
         </HeadingSecondary>
-        <ButtonGroup className="mt-3">
+        <div className="mt-3">
           {!newCreativeArts && (
             <>
               <Button onClick={() => setMinistryModal(true)}>
@@ -102,7 +94,7 @@ const CreativeArtsForm = ({
               </Button>
             </>
           )}
-        </ButtonGroup>
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -111,20 +103,20 @@ const CreativeArtsForm = ({
           validateOnMount
         >
           {(formik) => (
-            <Container className="py-4">
+            <div className="py-4">
               <Form>
                 <div className="form-group">
-                  <Row className="row-cols-1 row-cols-md-2">
+                  <div className="row-cols-1 row-cols-md-2">
                     {/* <!-- Basic Info Div --> */}
-                    <Col className="mb-2">
+                    <div className="mb-2">
                       <Input
                         name="name"
                         label={`Name of Creative Arts`}
                         placeholder={`Name of Creative Arts`}
                       />
 
-                      <Row className="d-flex align-items-center mb-3">
-                        <Col>
+                      <div className="d-flex align-items-center mb-3">
+                        <div>
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -134,8 +126,8 @@ const CreativeArtsForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
-                      </Row>
+                        </div>
+                      </div>
                       <div className="d-grid gap-2">
                         {initialValues.ministries?.length === 0 ? (
                           <NoDataComponent text="No ministries" />
@@ -149,8 +141,8 @@ const CreativeArtsForm = ({
                           </Button>
                         ))}
                       </div>
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="text-center mt-5">
@@ -158,13 +150,11 @@ const CreativeArtsForm = ({
                 </div>
               </Form>
 
-              <Modal
-                show={ministryModal}
-                onHide={() => setMinistryModal(false)}
+              <Dialog open={ministryModal} onOpenChange={(open) => { if (!open) () => setMinistryModal(false)() }}
                 centered
-              >
-                <Modal.Header closeButton>Add A Ministry</Modal.Header>
-                <Modal.Body>
+              ><DialogContent>
+                <DialogHeader>Add A Ministry</DialogHeader>
+                
                   <p>Choose a ministry to move to this creativearts</p>
                   <SearchMinistry
                     name={`ministry`}
@@ -173,8 +163,8 @@ const CreativeArtsForm = ({
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="Ministry Name"
                   />
-                </Modal.Body>
-                <Modal.Footer>
+                
+                <DialogFooter>
                   <Button
                     variant="success"
                     type="submit"
@@ -207,26 +197,24 @@ const CreativeArtsForm = ({
                     <BtnSubmitText loading={buttonLoading} />
                   </Button>
                   <Button
-                    variant="primary"
+                    variant="default"
                     onClick={() => setMinistryModal(false)}
                   >
                     Close
                   </Button>
-                </Modal.Footer>
-              </Modal>
+                </DialogFooter>
+              </DialogContent></Dialog>
 
-              <Modal
-                show={closeDown}
-                onHide={() => setCloseDown(false)}
+              <Dialog open={closeDown} onOpenChange={(open) => { if (!open) () => setCloseDown(false)() }}
                 centered
-              >
-                <Modal.Header closeButton>Close Down CreativeArts</Modal.Header>
-                <Modal.Body>
+              ><DialogContent>
+                <DialogHeader>Close Down CreativeArts</DialogHeader>
+                
                   <p className="text-info">
                     Are you sure you want to close down this creativearts?
                   </p>
-                </Modal.Body>
-                <Modal.Footer>
+                
+                <DialogFooter>
                   <Button
                     variant="success"
                     type="submit"
@@ -257,15 +245,15 @@ const CreativeArtsForm = ({
                   >
                     <BtnSubmitText loading={buttonLoading} />
                   </Button>
-                  <Button variant="primary" onClick={() => setCloseDown(false)}>
+                  <Button variant="default" onClick={() => setCloseDown(false)}>
                     No, take me back
                   </Button>
-                </Modal.Footer>
-              </Modal>
-            </Container>
+                </DialogFooter>
+              </DialogContent></Dialog>
+            </div>
           )}
         </Formik>
-      </Container>
+      </div>
     </>
   )
 }

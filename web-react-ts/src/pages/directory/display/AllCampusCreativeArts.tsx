@@ -5,7 +5,6 @@ import { GET_CAMPUS_CREATIVEARTS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import RoleView from '../../../auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Container, Row, Col } from 'react-bootstrap'
 import { permitAdmin } from 'permission-utils'
 import AllChurchesSummary from 'components/AllChurchesSummary'
 import ChurchSearch from 'components/ChurchSearch'
@@ -28,9 +27,9 @@ const DisplayAllCampusCreativeArts = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
-        <Row className="mb-2">
-          <Col>
+      <div>
+        <div className="mb-2">
+          <div>
             <Link
               to="/campus/displaydetails"
               onClick={() => {
@@ -62,18 +61,18 @@ const DisplayAllCampusCreativeArts = () => {
                 {`${campus?.admin?.fullName}`}
               </Link>
             ) : null}
-          </Col>
+          </div>
           <RoleView roles={permitAdmin('Campus')} directoryLock>
-            <Col className="col-auto">
+            <div className="col-auto">
               <Link
                 to="/creativearts/addcreativearts"
                 className="btn btn-danger"
               >
                 Add Creative Arts
               </Link>
-            </Col>
+            </div>
           </RoleView>
-        </Row>
+        </div>
 
         <AllChurchesSummary
           church={creativeArts && creativeArts[0]}
@@ -83,7 +82,7 @@ const DisplayAllCampusCreativeArts = () => {
           route="campus"
         />
         <ChurchSearch data={creativeArts} churchType="CreativeArts" />
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

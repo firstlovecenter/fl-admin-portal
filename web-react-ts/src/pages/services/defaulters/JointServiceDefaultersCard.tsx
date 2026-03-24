@@ -1,8 +1,7 @@
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Card, Button } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import {
   GovernorshipWithDefaulters,
@@ -10,6 +9,8 @@ import {
 } from './defaulters-types'
 import './Defaulters.css'
 import { MemberContext } from 'contexts/MemberContext'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader } from 'components/ui/card'
 
 type DefaulterCardProps = {
   defaulter: GovernorshipWithDefaulters | CouncilWithDefaulters
@@ -31,7 +32,7 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
         loading={!defaulter?.name}
         className={`fw-bold large-number pb-3`}
       >
-        <Card.Header
+        <CardHeader
           onClick={() => {
             clickCard(defaulter)
             navigate(`/${defaulter?.__typename.toLowerCase()}/displaydetails`)
@@ -47,8 +48,8 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
           {defaulter?.stream
             ? `${defaulter?.stream?.name} ${defaulter?.stream?.__typename}`
             : null}
-        </Card.Header>
-        <Card.Body>
+        </CardHeader>
+        <CardContent>
           <div
             className="card-text"
             onClick={() => {
@@ -82,8 +83,8 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             )}
           </div>
           <a href={`tel:${defaulter?.leader?.phoneNumber}`}>
-            <Button variant="primary">
-              <TelephoneFill /> Call
+            <Button variant="default">
+              <Phone /> Call
             </Button>
           </a>
           <a
@@ -91,10 +92,10 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             className="ms-3"
           >
             <Button variant="success">
-              <Whatsapp /> WhatsApp
+              <MessageCircle /> WhatsApp
             </Button>
           </a>
-        </Card.Body>
+        </CardContent>
       </PlaceholderCustom>
     </Card>
   )

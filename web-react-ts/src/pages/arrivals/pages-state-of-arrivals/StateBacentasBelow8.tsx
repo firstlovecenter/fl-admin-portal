@@ -4,7 +4,6 @@ import MemberDisplayCard from 'components/card/MemberDisplayCard'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import {
   GOVERNORSHIP_BACENTAS_BELOW_8,
   COUNCIL_BACENTAS_BELOW_8,
@@ -61,7 +60,7 @@ const BacentasBelow8 = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>
             Bacentas That Didn't Bus
           </HeadingPrimary>
@@ -94,7 +93,7 @@ const BacentasBelow8 = () => {
           {!church?.bacentasBelow8.length && loading && (
             <PlaceholderDefaulterList />
           )}
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

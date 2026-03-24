@@ -1,11 +1,11 @@
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { Button, Container } from 'react-bootstrap'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { useNavigate } from 'react-router'
 import { BiMap } from 'react-icons/bi'
 import { IoIosArrowForward } from 'react-icons/io'
 import RoleView from 'auth/RoleView'
 import { permitAdmin } from 'permission-utils'
+import { Button } from 'components/ui/button'
 
 const Maps = () => {
   const navigate = useNavigate()
@@ -33,7 +33,7 @@ const Maps = () => {
   ]
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary>Maps</HeadingPrimary>
       <HeadingSecondary>Click on one of churches below</HeadingSecondary>
       <div className="py-3" />
@@ -41,7 +41,7 @@ const Maps = () => {
         <Button
           size="lg"
           className="text-start py-4 mb-4 fs-6"
-          variant="outline-primary"
+          variant="outline"
           onClick={() => {
             navigate(`/maps/view-maps`)
           }}
@@ -69,7 +69,7 @@ const Maps = () => {
           </div>
         ))}
       </RoleView>
-    </Container>
+    </div>
   )
 }
 

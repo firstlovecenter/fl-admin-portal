@@ -1,7 +1,6 @@
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import RoleView from 'auth/RoleView'
-import { Button, Container, Row, Col } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -10,6 +9,7 @@ import SearchMember from 'components/formik/SearchMember'
 import { FormikInitialValues } from 'components/formik/formik-types'
 import { Oversight } from 'global-types'
 import NoDataComponent from 'pages/arrivals/CompNoData'
+import { Button } from 'components/ui/button'
 
 export interface DenominationFormValues extends FormikInitialValues {
   oversights?: Oversight[]
@@ -40,7 +40,7 @@ const DenominationForm = ({
   })
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary>{title}</HeadingPrimary>
       <HeadingSecondary>
         {initialValues.name + ' Denomination'}
@@ -53,21 +53,21 @@ const DenominationForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
+                <div className="row-cols-1 row-cols-md-2">
                   {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
+                  <div className="mb-2">
                     <Input
                       name="name"
                       label={`Name of Denomination`}
                       placeholder={`Name of Denomination`}
                     />
 
-                    <Row className="d-flex align-items-center mb-3">
+                    <div className="d-flex align-items-center mb-3">
                       <RoleView roles={['fishers']}>
-                        <Col>
+                        <div>
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -77,9 +77,9 @@ const DenominationForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
+                    </div>
                     <div className="d-grid gap-2">
                       <p className="fw-bold fs-5">Oversights</p>
                       {initialValues.oversights?.map((oversight, index) => {
@@ -92,18 +92,18 @@ const DenominationForm = ({
                         )
                       })}
                     </div>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
               <div className="text-center mt-5">
                 <SubmitButton formik={formik} />
               </div>
             </Form>
-          </Container>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

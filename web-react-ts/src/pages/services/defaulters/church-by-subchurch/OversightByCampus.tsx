@@ -2,8 +2,7 @@ import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Card, Col, Row, Button, Container } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -12,6 +11,8 @@ import { HigherChurchWithDefaulters } from '../defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import { OVERSIGHT_BY_CAMPUS } from '../stream-services/StreamDefaultersQueries'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader, CardFooter } from 'components/ui/card'
 
 const OversightByCampus = () => {
   const { oversightId, clickCard } = useContext(ChurchContext)
@@ -25,24 +26,24 @@ const OversightByCampus = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary
             loading={loading || !data?.oversights[0]?.name}
           >{`${data?.oversights[0]?.name} Oversight By Campus`}</HeadingPrimary>
 
-          <Row>
+          <div>
             {data?.oversights.length ? (
               data?.oversights[0]?.campuses.map(
                 (campus: HigherChurchWithDefaulters, i: number) => (
-                  <Col key={i} xs={12} className="mb-3">
+                  <div key={i} xs={12} className="mb-3">
                     <Card>
-                      <Card.Header className="fw-bold">
+                      <CardHeader className="fw-bold">
                         <div>{`${campus.name} Campus`}</div>
                         <div className="text-secondary">
                           {campus.leader.fullName}
                         </div>
-                      </Card.Header>
-                      <Card.Body
+                      </CardHeader>
+                      <CardContent
                         onClick={() => {
                           clickCard(campus)
                           navigate('/services/campus-by-stream')
@@ -145,14 +146,14 @@ const OversightByCampus = () => {
                           Cancelled Services This Week{' '}
                           {campus.cancelledServicesThisWeekCount}
                         </div>
-                      </Card.Body>
-                      <Card.Footer>
+                      </CardContent>
+                      <CardFooter>
                         <div className="mb-2">
                           Contact Admin: {campus?.admin?.fullName}
                         </div>
                         <a href={`tel:${campus?.admin?.phoneNumber}`}>
-                          <Button variant="primary">
-                            <TelephoneFill /> Call
+                          <Button variant="default">
+                            <Phone /> Call
                           </Button>
                         </a>
                         <a
@@ -162,19 +163,19 @@ const OversightByCampus = () => {
                           className="ms-3"
                         >
                           <Button variant="success">
-                            <Whatsapp /> WhatsApp
+                            <MessageCircle /> WhatsApp
                           </Button>
                         </a>
-                      </Card.Footer>
+                      </CardFooter>
                     </Card>
-                  </Col>
+                  </div>
                 )
               )
             ) : (
               <PlaceholderDefaulterList />
             )}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

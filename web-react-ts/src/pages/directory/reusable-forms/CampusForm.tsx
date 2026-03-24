@@ -7,14 +7,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_CAMPUS_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -91,10 +83,10 @@ const CampusForm = ({
   })
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary>{title}</HeadingPrimary>
       <HeadingSecondary>{initialValues.name + ' Campus'}</HeadingSecondary>
-      <ButtonGroup className="mt-3">
+      <div className="mt-3">
         {!newCampus && (
           <>
             <Button onClick={() => setStreamModal(true)}>Add Stream</Button>
@@ -106,7 +98,7 @@ const CampusForm = ({
             </Button>
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <Formik
         initialValues={initialValues}
@@ -115,12 +107,12 @@ const CampusForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
+                <div className="row-cols-1 row-cols-md-2">
                   {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
+                  <div className="mb-2">
                     <Input
                       name="name"
                       label={`Name of Campus`}
@@ -147,9 +139,9 @@ const CampusForm = ({
                       placeholder={`Dollar Conversion Rate`}
                     />
 
-                    <Row className="d-flex align-items-center mb-3">
+                    <div className="d-flex align-items-center mb-3">
                       <RoleView roles={permitAdmin('Oversight')}>
-                        <Col>
+                        <div>
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -159,9 +151,9 @@ const CampusForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
+                    </div>
                     <div className="d-grid gap-2">
                       {initialValues.streams?.length && (
                         <p className="fw-bold fs-5">Streams</p>
@@ -194,8 +186,8 @@ const CampusForm = ({
                         }
                       )}
                     </div>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
               <div className="text-center mt-5">
@@ -203,13 +195,11 @@ const CampusForm = ({
               </div>
             </Form>
 
-            <Modal
-              show={streamModal}
-              onHide={() => setStreamModal(false)}
+            <Dialog open={streamModal} onOpenChange={(open) => { if (!open) () => setStreamModal(false)() }}
               centered
-            >
-              <Modal.Header closeButton>Add A Stream</Modal.Header>
-              <Modal.Body>
+            ><DialogContent>
+              <DialogHeader>Add A Stream</DialogHeader>
+              
                 <p>Choose a stream to move to this campus</p>
                 <SearchStream
                   name={`stream`}
@@ -218,8 +208,8 @@ const CampusForm = ({
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Stream Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -250,19 +240,17 @@ const CampusForm = ({
                 >
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
-                <Button variant="primary" onClick={() => setStreamModal(false)}>
+                <Button variant="default" onClick={() => setStreamModal(false)}>
                   Close
                 </Button>
-              </Modal.Footer>
-            </Modal>
+              </DialogFooter>
+            </DialogContent></Dialog>
 
-            <Modal
-              show={creativeArtModal}
-              onHide={() => setCreativeArtModal(false)}
+            <Dialog open={creativeArtModal} onOpenChange={(open) => { if (!open) () => setCreativeArtModal(false)() }}
               centered
-            >
-              <Modal.Header closeButton>Add A Creative Arts</Modal.Header>
-              <Modal.Body>
+            ><DialogContent>
+              <DialogHeader>Add A Creative Arts</DialogHeader>
+              
                 <p>Choose a creative arts to move to this campus</p>
                 <SearchCreativeArts
                   name={`creativeArt`}
@@ -271,8 +259,8 @@ const CampusForm = ({
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Creative Arts Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -304,22 +292,22 @@ const CampusForm = ({
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={() => setCreativeArtModal(false)}
                 >
                   Close
                 </Button>
-              </Modal.Footer>
-            </Modal>
+              </DialogFooter>
+            </DialogContent></Dialog>
 
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Campus</Modal.Header>
-              <Modal.Body>
+            <Dialog open={closeDown} onOpenChange={(open) => { if (!open) () => setCloseDown(false)() }} centered><DialogContent>
+              <DialogHeader>Close Down Campus</DialogHeader>
+              
                 <p className="text-info">
                   Are you sure you want to close down this campus?
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -350,15 +338,15 @@ const CampusForm = ({
                 >
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
+                <Button variant="default" onClick={() => setCloseDown(false)}>
                   No, take me back
                 </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
+              </DialogFooter>
+            </DialogContent></Dialog>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

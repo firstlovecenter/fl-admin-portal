@@ -4,7 +4,6 @@ import MemberDisplayCard from 'components/card/MemberDisplayCard'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import React from 'react'
-import { Container } from 'react-bootstrap'
 import {
   GOVERNORSHIP_BACENTAS_NO_ACTIVITY,
   COUNCIL_BACENTAS_NO_ACTIVITY,
@@ -57,7 +56,7 @@ const BacentasNoActiviity = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>
             Bacentas With No Activity
           </HeadingPrimary>
@@ -81,7 +80,7 @@ const BacentasNoActiviity = () => {
           {!church?.bacentasNoActivity.length && loading && (
             <PlaceholderDefaulterList />
           )}
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

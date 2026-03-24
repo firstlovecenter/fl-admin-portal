@@ -8,15 +8,6 @@ import {
 } from '@react-google-maps/api'
 import { useState } from 'react'
 import '../Map.css'
-import {
-  Button,
-  Card,
-  Col,
-  Container,
-  Offcanvas,
-  Row,
-  Toast,
-} from 'react-bootstrap'
 import { IoChevronUp } from 'react-icons/io5'
 import { GooglePlaces, MemberPlaces } from '../Places'
 import {
@@ -35,7 +26,7 @@ import {
 } from './map-utils'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { FaChurch, FaDirections, FaLocationArrow } from 'react-icons/fa'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import { ChurchIdAndName } from 'global-types'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
@@ -297,24 +288,24 @@ const MapComponent = (props: MapComponentProps) => {
           <span className="fw-bold">Pastor:</span> {pastor.firstName}{' '}
           {pastor.lastName}
         </p>
-        <Row className="mb-2">
-          <Col className="col-auto p-0">
+        <div className="mb-2">
+          <div className="col-auto p-0">
             <a href={`tel:${phoneNumber}`}>
-              <Button size="sm" variant="primary">
-                <TelephoneFill /> Call
+              <Button size="sm" variant="default">
+                <Phone /> Call
               </Button>
             </a>
-          </Col>
+          </div>
 
-          <Col className="col-auto">
+          <div className="col-auto">
             <a href={`https://wa.me/${whatsappNumber}`}>
               <Button size="sm" variant="success">
-                <Whatsapp /> WhatsApp
+                <MessageCircle /> WhatsApp
               </Button>
             </a>
-          </Col>
-        </Row>
-        <Card.Footer>
+          </div>
+        </div>
+        <CardFooter>
           <Button
             size="sm"
             variant="secondary"
@@ -338,7 +329,7 @@ const MapComponent = (props: MapComponentProps) => {
           >
             Get Directions <FaDirections />
           </Button>
-        </Card.Footer>
+        </CardFooter>
       </>
     )
   }
@@ -401,23 +392,23 @@ const MapComponent = (props: MapComponentProps) => {
           <span className="fw-bold">Council Leader:</span>{' '}
           {councilLeader.firstName} {councilLeader.lastName}
         </p>
-        <Row className="mb-2">
-          <Col className="col-auto">
+        <div className="mb-2">
+          <div className="col-auto">
             <a href={`tel:${fellowshipLeader.phoneNumber}`}>
-              <Button size="sm" variant="primary">
-                <TelephoneFill /> Call
+              <Button size="sm" variant="default">
+                <Phone /> Call
               </Button>
             </a>
-          </Col>
-          <Col className="col-auto">
+          </div>
+          <div className="col-auto">
             <a href={`https://wa.me/${fellowshipLeader.whatsappNumber}`}>
               <Button size="sm" variant="success">
-                <Whatsapp /> WhatsApp
+                <MessageCircle /> WhatsApp
               </Button>
             </a>
-          </Col>
-        </Row>
-        <Card.Footer>
+          </div>
+        </div>
+        <CardFooter>
           <Button
             size="sm"
             variant="secondary"
@@ -441,7 +432,7 @@ const MapComponent = (props: MapComponentProps) => {
           >
             Get Directions <FaDirections />
           </Button>
-        </Card.Footer>
+        </CardFooter>
       </>
     )
   }
@@ -513,26 +504,26 @@ const MapComponent = (props: MapComponentProps) => {
                 onCloseClick={() => setClickedMarker(undefined)}
               >
                 <Card>
-                  <Card.Body>
-                    <Row>
+                  <CardContent>
+                    <div>
                       {clickedMarker.picture && (
-                        <Col>
+                        <div>
                           <CloudinaryImage
                             src={clickedMarker.picture}
                             className="rounded"
                           />
-                        </Col>
+                        </div>
                       )}
-                      <Col>
+                      <div>
                         <p className="fw-bold info-window-header">{`${getTypename(
                           clickedMarker
                         )} ${clickedMarker.name}`}</p>
                         <div className="info-window-text">
                           {chooseParsingFunction(clickedMarker ?? '')}
                         </div>
-                      </Col>
-                    </Row>
-                  </Card.Body>
+                      </div>
+                    </div>
+                  </CardContent>
                 </Card>
               </InfoWindow>
             )}
@@ -585,49 +576,49 @@ const MapComponent = (props: MapComponentProps) => {
             setCentre={handleSetCentre}
             {...props}
           />
-          <Row className="mt-4">
-            <Col>
+          <div className="mt-4">
+            <div>
               <div>Go to your location</div>
               <Button
                 onClick={handleMyLocationClick}
-                variant="dark"
+                variant="default"
                 className="map-btn"
               >
                 My location <FaLocationArrow />
               </Button>
-            </Col>
-            <Col>
+            </div>
+            <div>
               <div>Go to First Love Center</div>
               <Button
                 onClick={handleFlcClick}
-                variant="dark"
+                variant="default"
                 className="map-btn"
               >
                 First Love Center <FaChurch />
               </Button>
-            </Col>
-          </Row>
-          <Row className="mt-4">
-            <Col>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div>
               <div>Load All My Unvisited Members</div>
               <Button
                 onClick={loadAllMembers}
-                variant="dark"
+                variant="default"
                 className="map-btn"
               >
                 <BiGroup className="me-2" />
                 Load Members
               </Button>
-            </Col>
-          </Row>
+            </div>
+          </div>
 
           {loading && (
-            <Container className="mt-5 d-flex flex-column justify-content-center align-items-center">
+            <div className="mt-5 d-flex flex-column justify-content-center align-items-center">
               <ScaleLoader color="gray" />
-            </Container>
+            </div>
           )}
         </Offcanvas.Body>
-        <Container className="footer p-3">
+        <div className="footer p-3">
           <Toast
             show={showError}
             onClose={() => setShowError(false)}
@@ -643,11 +634,11 @@ const MapComponent = (props: MapComponentProps) => {
             </Toast.Header>
             <Toast.Body>{toastError}</Toast.Body>
           </Toast>
-        </Container>
+        </div>
       </Offcanvas>
       <div className="floating-action">
         <Button
-          variant="primary"
+          variant="default"
           onClick={handleShow}
           className="rounded-circle"
         >

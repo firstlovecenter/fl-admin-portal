@@ -4,7 +4,6 @@ import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import { Form, Formik, FormikHelpers } from 'formik'
 import React, { useContext, useState } from 'react'
-import { Button, Col, Container, Row, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import * as Yup from 'yup'
 import {
@@ -18,6 +17,8 @@ import { MemberContext } from 'contexts/MemberContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { useMutation, useQuery } from '@apollo/client'
 import { throwToSentry } from 'global-utils'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
 interface MemberTitleRelationship {
   date: string
   node: {
@@ -161,7 +162,7 @@ const MemberTitleForm = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>Member Title Form</HeadingPrimary>
         <HeadingSecondary>{member?.fullName}</HeadingSecondary>
         <Formik
@@ -172,10 +173,10 @@ const MemberTitleForm = () => {
           {(formik) => (
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
+                <div className="row-cols-1 row-cols-md-2">
                   <div>
                     <Button
-                      variant="danger"
+                      variant="destructive"
                       disabled={deleting}
                       onClick={async () => {
                         setDeleting(true)
@@ -193,32 +194,32 @@ const MemberTitleForm = () => {
                         }
                       }}
                     >
-                      {deleting ? <Spinner /> : 'Delete Title'}
+                      {deleting ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Delete Title'}
                     </Button>
                   </div>
 
-                  <Col>
+                  <div>
                     <Input
                       name="appointmentDate"
                       label="Pastoral Appointment Date"
                       type="date"
                     />
-                  </Col>
-                  <Col>
+                  </div>
+                  <div>
                     <Input
                       name="ordinationDate"
                       label="Ordination Date"
                       type="date"
                     />
-                  </Col>
-                  <Col>
+                  </div>
+                  <div>
                     <Input
                       name="consecrationDate"
                       label="Consecration Date"
                       type="date"
                     />
-                  </Col>
-                </Row>
+                  </div>
+                </div>
                 <div className="mt-5">
                   <SubmitButton formik={formik} />
                 </div>
@@ -226,7 +227,7 @@ const MemberTitleForm = () => {
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

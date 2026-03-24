@@ -1,6 +1,5 @@
 import React from 'react'
-import { Dropdown } from 'react-bootstrap'
-import { GearFill } from 'react-bootstrap-icons'
+import { Settings } from 'lucide-react'
 import './Arrivals.css'
 
 export type MenuItemsProps = {
@@ -14,23 +13,23 @@ export type ArrivalsMenuDropdownProps = {
 
 const ArrivalsMenuDropdown = ({ menuItems }: ArrivalsMenuDropdownProps) => {
   return (
-    <Dropdown className="border-none text-end py-1 arrivals-menu-dropdown">
-      <Dropdown.Toggle variant="danger">
-        <GearFill /> Settings
-      </Dropdown.Toggle>
+    <div className="dropdown relative">
+      <button className="dropdown-toggle">
+        <Settings /> Settings
+      </button>
 
-      <Dropdown.Menu variant="dark">
+      <div className="dropdown-menu">
         {menuItems.map((item, i) => (
-          <Dropdown.Item
+          <div
             key={i}
             onClick={item.onClick}
             className="py-2 px-5 rounded"
           >
             {item.title}
-          </Dropdown.Item>
+          </div>
         ))}
-      </Dropdown.Menu>
-    </Dropdown>
+      </div>
+    </div>
   )
 }
 

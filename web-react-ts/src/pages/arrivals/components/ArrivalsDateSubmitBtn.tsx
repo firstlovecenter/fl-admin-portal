@@ -1,7 +1,7 @@
 import React from 'react'
-import { Button } from 'react-bootstrap'
 import { AiOutlineSend } from 'react-icons/ai'
 import { DotLoader } from 'react-spinners'
+import { Button } from 'components/ui/button'
 
 type SubmitButtonProps = {
   formik: any

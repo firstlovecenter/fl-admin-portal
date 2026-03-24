@@ -2,12 +2,11 @@ import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { useEffect } from 'react'
 import { useContext } from 'react'
-import { Button, Card, Container, Modal } from 'react-bootstrap'
 import { BACENTA_ARRIVALS } from './arrivalsQueries'
 import { useNavigate } from 'react-router'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { ArrowDownSquare } from 'react-bootstrap-icons'
+import { ArrowDown } from 'lucide-react'
 import {
   beforeArrivalDeadline,
   beforeMobilisationDeadline,
@@ -22,6 +21,9 @@ import CountdownTimer from './countdown-component/CountdownTimer'
 import VehicleButton from './components/VehicleButton'
 import ErrorText from 'components/ErrorText'
 import PullToRefresh from 'react-simple-pull-to-refresh'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardFooter } from 'components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from 'components/ui/dialog'
 
 const BacentaArrivals = () => {
   const { clickCard, bacentaId } = useContext(ChurchContext)
@@ -81,7 +83,7 @@ const BacentaArrivals = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error}>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>
             {bacenta?.name} Arrivals
           </HeadingPrimary>
@@ -130,14 +132,14 @@ const BacentaArrivals = () => {
             )}
           {bussing?.leaderDeclaration && (
             <Card className="text-center">
-              <Card.Body>You have filled your forms today</Card.Body>
-              <Card.Footer>
+              <CardContent>You have filled your forms today</CardContent>
+              <CardFooter>
                 Click <span className="good">{`Today's Bussing`}</span> below to
                 view your bussing data{' '}
                 <div className="p-2">
-                  <ArrowDownSquare size={50} />
+                  <ArrowDown size={50} />
                 </div>
-              </Card.Footer>
+              </CardFooter>
             </Card>
           )}
 
@@ -145,7 +147,7 @@ const BacentaArrivals = () => {
             {!isMomoCleared(bacenta) && (
               <>
                 <Button
-                  variant="danger"
+                  variant="destructive"
                   size="lg"
                   onClick={() => navigate('/bacenta/editbussing')}
                 >
@@ -162,29 +164,25 @@ const BacentaArrivals = () => {
             >
               View Last 4 Weeks
             </Button>
-            <Modal
-              className="arrivals-end"
-              show={show}
-              onHide={handleClose}
-              centered
-            >
-              <Modal.Header>
-                <Modal.Title>You Are Too Late! 😞 </Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
+            <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }}>
+          <DialogContent>
+              <DialogHeader>
+                <DialogTitle>You Are Too Late! 😞 </DialogTitle>
+              </DialogHeader>
+              
                 To everything there is a time and a season, and your time is up!{' '}
                 <div className="fw-bold text-center display-6 mt-2">
                   It is too late to fill your forms.
                 </div>
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button variant="secondary" onClick={handleClose}>
                   Close
                 </Button>
-              </Modal.Footer>
-            </Modal>
+              </DialogFooter>
+            </DialogContent></Dialog>
             <Button
-              variant="primary"
+              variant="default"
               size="lg"
               disabled={
                 !beforeMobilisationDeadline(bacenta, bussing) ||
@@ -219,7 +217,7 @@ const BacentaArrivals = () => {
               You must fill one form for each vehicle
             </small>
             <Button
-              variant="danger"
+              variant="destructive"
               size="lg"
               disabled={!canFillOnTheWayValue}
               onClick={() => {
@@ -233,7 +231,7 @@ const BacentaArrivals = () => {
             </Button>
             {bussing && (
               <Button
-                variant="primary"
+                variant="default"
                 size="lg"
                 onClick={() => {
                   clickCard(bacenta)
@@ -245,7 +243,7 @@ const BacentaArrivals = () => {
               </Button>
             )}
           </div>
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

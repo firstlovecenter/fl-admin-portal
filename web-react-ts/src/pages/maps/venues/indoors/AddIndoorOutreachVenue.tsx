@@ -7,10 +7,10 @@ import { GET_INDOOR_VENUES } from '../venuesQueries'
 import { throwToSentry } from 'global-utils'
 import * as Yup from 'yup'
 import { Formik, FormikHelpers, Form } from 'formik'
-import { Button, Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
+import { Button } from 'components/ui/button'
 
 export interface FormOptions {
   venueName: string
@@ -79,7 +79,7 @@ const AddIndoorVenue = () => {
   }
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary className="d-flex justify-content-center mb-5">
         Add Indoor Outreach Venue
       </HeadingPrimary>
@@ -90,51 +90,51 @@ const AddIndoorVenue = () => {
       >
         {(formik) => (
           <Form className="form-group">
-            <Row>
-              <Col className="mb-3">
+            <div>
+              <div className="mb-3">
                 <small className="form-text label">Venue Name</small>
                 <Input
                   name="venueName"
                   className="form-control"
                   placeholder="Enter name of venue"
                 />
-              </Col>
-            </Row>
-            <Row>
-              <Col className="mb-3">
+              </div>
+            </div>
+            <div>
+              <div className="mb-3">
                 <label className="form-text label">Capacity</label>
                 <Input
                   name="capacity"
                   className="form-control"
                   placeholder="Enter number of seats"
                 />
-              </Col>
-            </Row>
-            <Row>
-              <Col>
+              </div>
+            </div>
+            <div>
+              <div>
                 <label className="form-label">Location</label>
                 <Input
                   name="latitude"
                   className="form-control"
                   placeholder="Latitude"
                 />
-              </Col>
-            </Row>
-            <Row className="mb-4">
-              <Col>
+              </div>
+            </div>
+            <div className="mb-4">
+              <div>
                 <Input
                   name="longitude"
                   className="form-control"
                   placeholder="Longitude"
                 />
-              </Col>
-            </Row>
+              </div>
+            </div>
             <div className="d-grid gap-2">
               <SubmitButton formik={formik}>
                 <span>Save</span>
               </SubmitButton>
               <Button
-                variant="danger"
+                variant="destructive"
                 className="w-100 fs-5"
                 onClick={() => {
                   navigate(`/maps/indoor-outreach-venues`)
@@ -146,7 +146,7 @@ const AddIndoorVenue = () => {
           </Form>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

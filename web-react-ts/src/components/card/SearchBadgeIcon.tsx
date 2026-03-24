@@ -1,5 +1,5 @@
 import { ChurchLevel } from 'global-types'
-import { BuildingsFill, MusicNoteBeamed } from 'react-bootstrap-icons'
+import { Building2, Music } from 'lucide-react'
 import { BiBuildingHouse } from 'react-icons/bi'
 import { BsBusFront, BsEyeFill } from 'react-icons/bs'
 import { FaCogs, FaHubspot, FaTrophy } from 'react-icons/fa'
@@ -42,11 +42,11 @@ const SearchBadgeIcon = ({
   }
 
   if (category === 'CreativeArts') {
-    return <MusicNoteBeamed {...rest} />
+    return <Music {...rest} />
   }
 
   if (category === 'Ministry') {
-    return <BuildingsFill {...rest} />
+    return <Building2 {...rest} />
   }
   if (category === 'HubCouncil') {
     return <FaCogs {...rest} />

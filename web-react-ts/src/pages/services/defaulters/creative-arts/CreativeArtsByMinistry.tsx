@@ -2,8 +2,7 @@ import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Card, Col, Row, Button, Container } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -12,6 +11,8 @@ import { HigherSontaChurchWithDefaulters } from '../defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import { CREATIVEARTS_BY_MINISTRY } from './SontaDefaultersQueries'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader, CardFooter } from 'components/ui/card'
 
 const CreativeArtsByMinistry = () => {
   const { creativeArtsId, clickCard } = useContext(ChurchContext)
@@ -26,18 +27,18 @@ const CreativeArtsByMinistry = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading || !data?.creativeArts[0]?.name}>
             {`${data?.creativeArts[0].name} CreativeArts By Ministry`}
           </HeadingPrimary>
-          <Row>
+          <div>
             {data?.creativeArts.length ? (
               data?.creativeArts[0].ministries.map(
                 (ministry: HigherSontaChurchWithDefaulters, i: number) => (
-                  <Col key={i} xs={12} className="mb-3">
+                  <div key={i} xs={12} className="mb-3">
                     <Card>
-                      <Card.Header className="fw-bold">{`${ministry.name} Ministry`}</Card.Header>
-                      <Card.Body
+                      <CardHeader className="fw-bold">{`${ministry.name} Ministry`}</CardHeader>
+                      <CardContent
                         onClick={() => {
                           clickCard(ministry)
                           navigate('/services/ministry-by-hubcouncil')
@@ -141,14 +142,14 @@ const CreativeArtsByMinistry = () => {
                           Cancelled Services This Week{' '}
                           {ministry.cancelledServicesThisWeekCount}
                         </div>
-                      </Card.Body>
-                      <Card.Footer>
+                      </CardContent>
+                      <CardFooter>
                         <div className="mb-2">
                           Contact Admin: {ministry?.admin?.fullName}
                         </div>
                         <a href={`tel:${ministry?.admin?.phoneNumber}`}>
-                          <Button variant="primary">
-                            <TelephoneFill /> Call
+                          <Button variant="default">
+                            <Phone /> Call
                           </Button>
                         </a>
                         <a
@@ -158,19 +159,19 @@ const CreativeArtsByMinistry = () => {
                           className="ms-3"
                         >
                           <Button variant="success">
-                            <Whatsapp /> WhatsApp
+                            <MessageCircle /> WhatsApp
                           </Button>
                         </a>
-                      </Card.Footer>
+                      </CardFooter>
                     </Card>
-                  </Col>
+                  </div>
                 )
               )
             ) : (
               <PlaceholderDefaulterList />
             )}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

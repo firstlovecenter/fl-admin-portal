@@ -8,7 +8,6 @@ import { parseDate } from 'jd-date-utils'
 import { getHumanReadableDate } from 'jd-date-utils'
 import { capitalise, throwToSentry } from 'global-utils'
 import React, { useContext } from 'react'
-import { Button, Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import {
   CONFIRM_OFFERING_PAYMENT,
@@ -22,6 +21,7 @@ import SubmitButton from 'components/formik/SubmitButton'
 import RoleView from 'auth/RoleView'
 import { permitAdmin } from 'permission-utils'
 import { MemberContext } from 'contexts/MemberContext'
+import { Button } from 'components/ui/button'
 
 const ReceiptPage = () => {
   const { serviceRecordId } = useContext(ServiceContext)
@@ -84,7 +84,7 @@ const ReceiptPage = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>Self Banking Receipt</HeadingPrimary>
 
         <TableFromArrays tableArray={tablevalues} loading={false} />
@@ -123,7 +123,7 @@ const ReceiptPage = () => {
             Go Home
           </Button>
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

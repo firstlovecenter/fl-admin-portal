@@ -1,6 +1,5 @@
 import { useMutation, useQuery } from '@apollo/client'
 import React, { useContext } from 'react'
-import { Button, Container, Spinner } from 'react-bootstrap'
 import {
   SET_FELLOWSHIP_TO_HUB_FELLOWSHIP,
   SET_HUB_FELLOWSHIP_TO_REGULAR_FELLOWSHIP,
@@ -16,6 +15,8 @@ import { throwToSentry } from 'global-utils'
 import SubmitButton from 'components/formik/SubmitButton'
 import SearchHub from 'components/formik/SearchHub'
 import { Church } from '@jaedag/admin-portal-types'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
 
 const MakeHubFellowship = () => {
   const { clickCard, fellowshipId } = useContext(ChurchContext)
@@ -80,12 +81,12 @@ const MakeHubFellowship = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>Change Hub Fellowship Status</HeadingPrimary>
         <HeadingSecondary>{`${fellowship?.name} ${fellowship?.__typename}`}</HeadingSecondary>
 
         {fellowship?.hubStatus && (
-          <Container>
+          <div>
             <div>Remove Hub Fellowship Status</div>
             <Button
               className="my-4"
@@ -93,12 +94,12 @@ const MakeHubFellowship = () => {
               onClick={handleRemoveHubFellowship}
             >
               {btnLoading ? (
-                <Spinner size="sm" />
+                <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
                 `Remove Hub Fellowship Status`
               )}
             </Button>
-          </Container>
+          </div>
         )}
         {!fellowship?.hubStatus && (
           <Formik
@@ -118,7 +119,7 @@ const MakeHubFellowship = () => {
             )}
           </Formik>
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -3,10 +3,11 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import React, { useContext } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container, Table } from 'react-bootstrap'
 import { CAMPUS_BACENTA_SERVICES_THIS_WEEK } from './reportsServicesThisWeek'
 import { Bacenta, ServiceRecord } from 'global-types'
 import { CSVLink } from 'react-csv'
+import { Button } from 'components/ui/button'
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from 'components/ui/table'
 
 const CampusBacentaServicesThisWeek = () => {
   const { campusId } = useContext(ChurchContext)
@@ -35,10 +36,10 @@ const CampusBacentaServicesThisWeek = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{campus?.name} Campus Download Reports</HeadingPrimary>
 
-        <Button variant="outline-primary">
+        <Button variant="outline">
           <CSVLink
             filename="Bacenta Services This Week"
             headers={csvHeaders}
@@ -48,7 +49,7 @@ const CampusBacentaServicesThisWeek = () => {
           </CSVLink>
         </Button>
 
-        <Table variant="dark" striped bordered hover>
+        <Table variant="default" striped bordered hover>
           <thead>
             <tr>
               <th>Date</th>
@@ -70,7 +71,7 @@ const CampusBacentaServicesThisWeek = () => {
             )}
           </tbody>
         </Table>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

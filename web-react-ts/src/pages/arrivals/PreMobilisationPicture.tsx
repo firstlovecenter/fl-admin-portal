@@ -5,11 +5,11 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import React, { useContext } from 'react'
-import { Button, Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import { BussingRecord } from './arrivals-types'
 import { DISPLAY_BUSSING_RECORDS } from './arrivalsQueries'
 import './Arrivals.css'
+import { Button } from 'components/ui/button'
 
 const PreMobilisationPicture = () => {
   const { bacentaId } = useContext(ChurchContext)
@@ -22,7 +22,7 @@ const PreMobilisationPicture = () => {
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
-      <Container className="text-center">
+      <div className="text-center">
         <HeadingPrimary>Mobilisation Picture</HeadingPrimary>
         <CloudinaryImage
           className="report-picture"
@@ -34,7 +34,7 @@ const PreMobilisationPicture = () => {
             Go Back
           </Button>
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

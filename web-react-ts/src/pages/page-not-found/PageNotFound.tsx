@@ -1,17 +1,17 @@
 import FourOhFour from 'assets/FourOhFour'
 import React from 'react'
-import { Button, Col, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import { Button } from 'components/ui/button'
 
 const PageNotFound = () => {
   return (
     <div className="scroll-bottom">
       <div className="py-5">
-        <Row className="d-flex justify-content-center ">
-          <Col xs={6} md={6} lg={2}>
+        <div className="d-flex justify-content-center ">
+          <div xs={6} md={6} lg={2}>
             <FourOhFour className="img-fluid rounded" />
-          </Col>
-        </Row>
+          </div>
+        </div>
       </div>
       <div>
         <h1 className="text-center text-secondary fw-bolder">404</h1>

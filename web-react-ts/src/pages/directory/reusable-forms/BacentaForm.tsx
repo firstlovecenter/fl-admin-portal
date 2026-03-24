@@ -15,15 +15,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
 import { MAKE_BACENTA_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import RoleView from 'auth/RoleView'
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  ButtonGroup,
-  Modal,
-  Spinner,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -102,18 +93,18 @@ const BacentaForm = ({
   })
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary>{title}</HeadingPrimary>
       <HeadingSecondary>{initialValues.name}</HeadingSecondary>
-      <ButtonGroup className="mt-3">
+      <div className="mt-3">
         {!newBacenta && (
           <>
-            <Button variant="danger" onClick={() => setCloseDown(true)}>
+            <Button variant="destructive" onClick={() => setCloseDown(true)}>
               {`Close Down Bacenta`}
             </Button>
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <RoleView roles={permitAdminArrivals('Governorship')}>
         <Button
@@ -132,14 +123,14 @@ const BacentaForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
+                <div className="row-cols-1 row-cols-md-2">
                   {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
-                    <Row className="form-row">
-                      <Col>
+                  <div className="mb-2">
+                    <div className="form-row">
+                      <div>
                         <Input
                           name="name"
                           label="Name of Bacenta"
@@ -151,11 +142,11 @@ const BacentaForm = ({
                           defaultOption="Choose Vacation Status"
                           label="Status"
                         />
-                      </Col>
-                    </Row>
-                    <Row className="d-flex align-items-center mb-3">
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center mb-3">
                       <RoleView roles={permitAdminArrivals('Governorship')}>
-                        <Col>
+                        <div>
                           <SearchMember
                             name="leaderId"
                             initialValue={initialValues?.leaderName}
@@ -165,12 +156,12 @@ const BacentaForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
-                    <Row className="d-flex align-items-center mb-3">
+                    </div>
+                    <div className="d-flex align-items-center mb-3">
                       <RoleView roles={permitAdminArrivals('Governorship')}>
-                        <Col>
+                        <div>
                           <SearchMember
                             name="adminId"
                             initialValue={initialValues?.adminName}
@@ -180,12 +171,12 @@ const BacentaForm = ({
                             aria-describedby="Admin Search Box"
                             error={formik.errors.adminId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
-                    <Row className="d-flex align-items-center mb-3">
+                    </div>
+                    <div className="d-flex align-items-center mb-3">
                       <RoleView roles={permitAdminArrivals('Governorship')}>
-                        <Col>
+                        <div>
                           <SearchMember
                             name="deputyLeaderId"
                             initialValue={initialValues?.deputyLeaderName}
@@ -195,31 +186,31 @@ const BacentaForm = ({
                             aria-describedby="Deputy Leader Search Box"
                             error={formik.errors.deputyLeaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
-                    <Col sm={12}>
+                    </div>
+                    <div sm={12}>
                       <Select
                         label="Meeting Day"
                         name="meetingDay"
                         options={SERVICE_DAY_OPTIONS}
                         defaultOption="Pick a Service Day"
                       />
-                    </Col>
+                    </div>
 
                     <small className="text-muted">
                       Enter The Coordinates for the Service Venue
                     </small>
-                    <Row className="row-cols-2 d-flex align-items-center">
-                      <Col>
+                    <div className="row-cols-2 d-flex align-items-center">
+                      <div>
                         <Input name="venueLatitude" placeholder="Latitude" />
-                      </Col>
-                      <Col>
+                      </div>
+                      <div>
                         <Input name="venueLongitude" placeholder="Longitude" />
-                      </Col>
-                      <Col className="my-2">
+                      </div>
+                      <div className="my-2">
                         <Button
-                          variant="primary"
+                          variant="default"
                           className="btn-loading"
                           disabled={positionLoading}
                           onClick={() => {
@@ -249,21 +240,21 @@ const BacentaForm = ({
                         >
                           {positionLoading ? (
                             <>
-                              <Spinner animation="grow" size="sm" />
+                              <Loader2 className="h-6 w-6 animate-spin" />
                               <span> Loading</span>
                             </>
                           ) : (
                             'Locate Me Now'
                           )}
                         </Button>
-                      </Col>
-                    </Row>
+                      </div>
+                    </div>
                     <small className="text-muted">
                       Click this button if you are currently at your bacenta
                       service venue
                     </small>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
               <div className="text-center mt-5">
@@ -271,14 +262,14 @@ const BacentaForm = ({
               </div>
             </Form>
 
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Bacenta</Modal.Header>
-              <Modal.Body>
+            <Dialog open={closeDown} onOpenChange={(open) => { if (!open) () => setCloseDown(false)() }} centered><DialogContent>
+              <DialogHeader>Close Down Bacenta</DialogHeader>
+              
                 <p className="text-info">
                   Are you sure you want to close down this bacenta?
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
+              
+              <DialogFooter>
                 <Button
                   variant="success"
                   type="submit"
@@ -308,15 +299,15 @@ const BacentaForm = ({
                 >
                   <BtnSubmitText loading={buttonLoading} />
                 </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
+                <Button variant="default" onClick={() => setCloseDown(false)}>
                   No, take me back
                 </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
+              </DialogFooter>
+            </DialogContent></Dialog>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

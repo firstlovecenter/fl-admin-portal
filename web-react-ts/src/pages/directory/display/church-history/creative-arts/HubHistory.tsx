@@ -4,7 +4,6 @@ import Timeline from 'components/Timeline/Timeline'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { HUB_HISTORY } from '../HistoryQueries'
 import { useQuery } from '@apollo/client'
 
@@ -23,9 +22,9 @@ function HubHistory() {
           <HeadingPrimary>{`${hub?.name} ${hub?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>Hub History</HeadingSecondary>
         </div>
-        <Container>
+        <div>
           <Timeline record={hub?.history} limit={10} />
-        </Container>
+        </div>
       </>
     </ApolloWrapper>
   )

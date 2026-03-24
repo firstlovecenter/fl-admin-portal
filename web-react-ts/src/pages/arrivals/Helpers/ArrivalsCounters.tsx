@@ -4,7 +4,6 @@ import MemberDisplayCard from 'components/card/MemberDisplayCard'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext, useState } from 'react'
-import { Button, Col, Container, Row, Spinner } from 'react-bootstrap'
 import * as Yup from 'yup'
 import { Form, Formik, FormikHelpers } from 'formik'
 import {
@@ -19,6 +18,8 @@ import NoData from '../CompNoData'
 import usePopup from 'hooks/usePopup'
 import { StreamWithArrivals } from '../arrivals-types'
 import SearchMember from 'components/formik/SearchMember'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
 
 type FormOptions = {
   helperName: string
@@ -91,7 +92,7 @@ const ArrivalsCounters = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{`${stream?.name} Arrivals Counters`}</HeadingPrimary>
         {isOpen && (
           <Popup handleClose={togglePopup}>
@@ -105,8 +106,8 @@ const ArrivalsCounters = () => {
             >
               {(formik) => (
                 <Form>
-                  <Row className="form-row">
-                    <Col>
+                  <div className="form-row">
+                    <div>
                       <SearchMember
                         name="helperSelect"
                         initialValue={initialValues?.helperName}
@@ -115,8 +116,8 @@ const ArrivalsCounters = () => {
                         aria-describedby="Member Search"
                         error={formik.errors.helperSelect}
                       />
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
 
                   <SubmitButton formik={formik} />
                 </Form>
@@ -156,7 +157,7 @@ const ArrivalsCounters = () => {
             >
               {submitting ? (
                 <>
-                  <Spinner animation="grow" size="sm" />
+                  <Loader2 className="h-6 w-6 animate-spin" />
                   <span> Submitting</span>
                 </>
               ) : (
@@ -169,7 +170,7 @@ const ArrivalsCounters = () => {
         {!stream?.arrivalsCounters.length && (
           <NoData text="There are no arrivals helpers" />
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -8,7 +8,6 @@ import { ServiceContext } from 'contexts/ServiceContext'
 import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext } from 'react'
-import { Card, Container } from 'react-bootstrap'
 import { DISPLAY_VEHICLE_RECORDS } from '../arrivalsQueries'
 import {
   CONFIRM_VEHICLE_BY_ADMIN,
@@ -24,6 +23,7 @@ import CloudinaryImage from 'components/CloudinaryImage'
 import Select from 'components/formik/Select'
 import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import '../Arrivals.css'
+import { Card, CardContent, CardFooter } from 'components/ui/card'
 
 type FormOptions = {
   attendance: string
@@ -114,7 +114,7 @@ const FormAttendanceConfirmation = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <>
-        <Container>
+        <div>
           <PlaceholderCustom as="h3" loading={loading}>
             <HeadingPrimary>{`Vehicle Attendance Form`}</HeadingPrimary>
           </PlaceholderCustom>
@@ -122,11 +122,11 @@ const FormAttendanceConfirmation = () => {
             <HeadingSecondary>{`${bacenta?.name} ${bacenta?.__typename}`}</HeadingSecondary>
             <p>{`Picture Submitted by ${vehicle?.created_by.fullName}`}</p>
           </PlaceholderCustom>
-        </Container>
+        </div>
 
-        <Container className="mb-2">
+        <div className="mb-2">
           <Card>
-            <Card.Body>
+            <CardContent>
               <CloudinaryImage
                 className="confirmation-picture"
                 src={vehicle?.picture}
@@ -138,9 +138,9 @@ const FormAttendanceConfirmation = () => {
                   {vehicle?.leaderDeclaration || 0}
                 </span>
               </div>
-            </Card.Body>
+            </CardContent>
           </Card>
-        </Container>
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -148,7 +148,7 @@ const FormAttendanceConfirmation = () => {
           onSubmit={onSubmit}
         >
           {(formik) => (
-            <Container>
+            <div>
               <Form>
                 <Input
                   name="attendance"
@@ -164,16 +164,16 @@ const FormAttendanceConfirmation = () => {
 
                 <Textarea name="comments" label="Comments" />
                 <Card className="text-center">
-                  <Card.Body>
+                  <CardContent>
                     I can confirm that the above data is correct and I approve
                     the vehicle top up for this bacenta
-                  </Card.Body>
-                  <Card.Footer>
+                  </CardContent>
+                  <CardFooter>
                     <SubmitButton formik={formik} />
-                  </Card.Footer>
+                  </CardFooter>
                 </Card>
               </Form>
-            </Container>
+            </div>
           )}
         </Formik>
       </>

@@ -8,11 +8,12 @@ import TableFromArrays, {
 import { Church, ServiceRecord } from 'global-types'
 import { parseNeoTime } from 'jd-date-utils'
 import { useEffect } from 'react'
-import { Col, Container, Row, Button, Card } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import './ServiceDetails.css'
 import CurrencySpan from 'components/CurrencySpan'
 import CloudinaryImage from 'components/CloudinaryImage'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
 
 type ServiceDetailsProps = {
   service: ServiceRecord
@@ -34,7 +35,7 @@ const ServiceDetailsNoIncome = ({
   }, [service, navigate])
 
   if (loading) {
-    return <SpinnerPage />
+    return <Loader2 className="h-6 w-6 animate-spin" />
   }
 
   let table: TableArray = [
@@ -62,7 +63,7 @@ const ServiceDetailsNoIncome = ({
   }
 
   return (
-    <Container>
+    <div>
       <PlaceholderCustom as="h3" loading={loading}>
         <HeadingPrimary>{`${church?.__typename} Service Details`}</HeadingPrimary>
       </PlaceholderCustom>
@@ -72,10 +73,10 @@ const ServiceDetailsNoIncome = ({
           <p>{`Recorded by ${service?.created_by?.fullName}`}</p>
         )}
       </PlaceholderCustom>
-      <Row>
-        <Col>
+      <div>
+        <div>
           {service?.attendance && (
-            <Row className="d-flex justify-content-center">
+            <div className="d-flex justify-content-center">
               <TableFromArrays tableArray={table} loading={loading} />
               <div className="text-center">
                 {service?.familyPicture && (
@@ -105,13 +106,13 @@ const ServiceDetailsNoIncome = ({
                           {service?.onStagePictures?.map((image) => (
                             <td className="img-container" key={image}>
                               {image && (
-                                <Container className="">
+                                <div className="">
                                   <CloudinaryImage
                                     src={image}
                                     size="large"
                                     alt="on stage attendance"
                                   />
-                                </Container>
+                                </div>
                               )}
                             </td>
                           ))}
@@ -132,21 +133,21 @@ const ServiceDetailsNoIncome = ({
                   </Button>
                 </div>
               </div>
-            </Row>
+            </div>
           )}
           {service?.noServiceReason && (
             <Card>
-              <Card.Body>
+              <CardContent>
                 <div>{`Service Cancelled on ${new Date(
                   service?.serviceDate.date
                 ).toDateString()}`}</div>
                 <div>{`Reason: ${service?.noServiceReason}`}</div>
-              </Card.Body>
+              </CardContent>
             </Card>
           )}
-        </Col>
-      </Row>
-    </Container>
+        </div>
+      </div>
+    </div>
   )
 }
 

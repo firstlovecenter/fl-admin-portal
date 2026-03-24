@@ -8,7 +8,6 @@ import { MemberContext } from 'contexts/MemberContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import { useState } from 'react'
 import { useContext } from 'react'
-import { Container, Row, Col, Table, Button } from 'react-bootstrap'
 import { DISPLAY_BUSSING_RECORDS } from './arrivalsQueries'
 import '../services/record-service/ServiceDetails.css'
 import { useNavigate } from 'react-router'
@@ -24,6 +23,8 @@ import CurrencySpan from 'components/CurrencySpan'
 import VehicleButton from './components/VehicleButton'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import './Arrivals.css'
+import { Button } from 'components/ui/button'
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from 'components/ui/table'
 
 const BusFormDetails = () => {
   const { bacentaId } = useContext(ChurchContext)
@@ -42,7 +43,7 @@ const BusFormDetails = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper loading={loading} error={error} data={data} placeholder>
-        <Container>
+        <div>
           <PlaceholderCustom as="h3" loading={loading}>
             <HeadingPrimary>{`${church?.__typename} Bussing Details`}</HeadingPrimary>
           </PlaceholderCustom>
@@ -65,10 +66,10 @@ const BusFormDetails = () => {
             ) : null}
           </PlaceholderCustom>
 
-          <Row>
-            <Col>
-              <Row className="d-flex justify-content-center mt-3">
-                <Table variant={theme} striped bordered>
+          <div>
+            <div>
+              <div className="d-flex justify-content-center mt-3">
+                <Table>
                   <tbody>
                     <tr>
                       <td>Date of Service</td>
@@ -222,7 +223,7 @@ const BusFormDetails = () => {
                     )}
                   </tbody>
                 </Table>
-                <Row className="text-center">
+                <div className="text-center">
                   {isOpen && (
                     <Popup handleClose={togglePopup}>
                       <CloudinaryImage
@@ -262,10 +263,10 @@ const BusFormDetails = () => {
                       </div>
                     </>
                   )}
-                </Row>
-              </Row>
-            </Col>
-          </Row>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {bussing?.vehicleRecords.map((record, index) => (
             <span key={index}>
@@ -278,14 +279,14 @@ const BusFormDetails = () => {
           ))}
           <div className="d-grid gap-2 mb-2">
             <Button
-              variant="outline-primary"
+              variant="outline"
               size="lg"
               onClick={() => navigate('/arrivals')}
             >
               Back to Arrivals Home
             </Button>
           </div>
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

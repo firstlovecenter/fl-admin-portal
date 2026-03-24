@@ -5,12 +5,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { alertMsg } from 'global-utils'
 import { permitLeaderAdmin } from 'permission-utils'
 import { useContext } from 'react'
-import { Card, Button } from 'react-bootstrap'
-import {
-  ArrowCounterclockwise,
-  TelephoneFill,
-  Whatsapp,
-} from 'react-bootstrap-icons'
+import { ArrowCounterclockwise, Phone, MessageCircle,  } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
@@ -20,6 +15,8 @@ import {
 } from './defaulters-types'
 import './Defaulters.css'
 import { MemberContext } from 'contexts/MemberContext'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader, CardFooter } from 'components/ui/card'
 
 type DefaulterCardProps = {
   defaulter: BacentaWithDefaulters | StreamWithDefaulters | HubWithDefaulters
@@ -46,7 +43,7 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
         loading={!defaulter?.name}
         className={`fw-bold large-number pb-3`}
       >
-        <Card.Header
+        <CardHeader
           onClick={() => {
             clickCard(defaulter)
             navigate(`/${defaulter?.__typename.toLowerCase()}/displaydetails`)
@@ -70,9 +67,9 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
               </span>
             </>
           )}
-        </Card.Header>
-        <Card.Body>
-          <Card.Text
+        </CardHeader>
+        <CardContent>
+          <p
             onClick={() => {
               clickCard(defaulter)
               clickCard(serviceDetails)
@@ -102,10 +99,10 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
                 {serviceDetails?.noServiceReason}
               </div>
             )}
-          </Card.Text>
+          </p>
           <a href={`tel:${defaulter?.leader?.phoneNumber}`}>
-            <Button variant="primary">
-              <TelephoneFill /> Call
+            <Button variant="default">
+              <Phone /> Call
             </Button>
           </a>
           <a
@@ -113,7 +110,7 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             className="ms-3"
           >
             <Button variant="success">
-              <Whatsapp /> WhatsApp
+              <MessageCircle /> WhatsApp
             </Button>
           </a>
           {serviceDetails?.noServiceReason && (
@@ -143,8 +140,8 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
               </Button>
             </RoleView>
           )}
-        </Card.Body>
-        <Card.Footer className="text-muted">{`Meeting Day: ${defaulter?.meetingDay?.day}`}</Card.Footer>
+        </CardContent>
+        <CardFooter className="text-muted">{`Meeting Day: ${defaulter?.meetingDay?.day}`}</CardFooter>
       </PlaceholderCustom>
     </Card>
   )

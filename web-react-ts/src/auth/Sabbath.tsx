@@ -1,8 +1,7 @@
-import { Container } from 'react-bootstrap'
 
 const Sabbath = () => {
   return (
-    <Container className="mt-5 font-primary">
+    <div className="mt-5 font-primary">
       <h2 className="mb-5">Today is the Sabbath!</h2>
       <div className="font-primary">
         <p className="mb-2">Exodus 20:8-10</p>
@@ -18,7 +17,7 @@ const Sabbath = () => {
         honouring the Sabbath day.
         <p className="mt-2 text-end fw-bold">- Dag Heward-Mills</p>
       </div>
-    </Container>
+    </div>
   )
 }
 

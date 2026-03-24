@@ -3,7 +3,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext, useEffect, useState } from 'react'
 import { OVERSIGHT_BY_CAMPUS_ACCOUNT } from './accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { CampusForAccounts, StreamForAccounts } from './accounts-types'
 import HeadingSecondary from 'components/HeadingSecondary'
@@ -12,6 +11,7 @@ import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { Form, Formik } from 'formik'
 import Input from 'components/formik/Input'
 import { useNavigate } from 'react-router'
+import { Button } from 'components/ui/button'
 
 const CampusCouncilList = () => {
   const { oversightId, clickCard } = useContext(ChurchContext)
@@ -66,7 +66,7 @@ const CampusCouncilList = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{oversight?.name} Oversight Campuses</HeadingPrimary>
         <HeadingSecondary>{`${oversight?.name} ${oversight?.__typename}`}</HeadingSecondary>
 
@@ -142,7 +142,7 @@ const CampusCouncilList = () => {
             </div>
           )
         })}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

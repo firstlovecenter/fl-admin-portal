@@ -9,7 +9,6 @@ import MembershipCard from './CompMembershipCard'
 import StatDisplay from './CompStatDisplay'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { MemberContext } from 'contexts/MemberContext'
-import { Container } from 'react-bootstrap'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 
 export const FellowshipReport = () => {
@@ -24,7 +23,7 @@ export const FellowshipReport = () => {
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data}>
-      <Container>
+      <div>
         <LeaderAvatar
           leader={data?.fellowships[0].leader}
           leaderTitle="Fellowship Leader"
@@ -76,7 +75,7 @@ export const FellowshipReport = () => {
             church="fellowship"
           />
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

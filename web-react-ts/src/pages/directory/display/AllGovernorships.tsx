@@ -4,7 +4,6 @@ import { useQuery } from '@apollo/client'
 import { GET_COUNCIL_GOVERNORSHIPS } from 'queries/ListQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Container, Row, Col } from 'react-bootstrap'
 import RoleView from 'auth/RoleView'
 import { permitAdmin } from 'permission-utils'
 import AllChurchesSummary from 'components/AllChurchesSummary'
@@ -22,9 +21,9 @@ const DisplayAllGovernorships = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
-        <Row className="mb-2">
-          <Col>
+      <div>
+        <div className="mb-2">
+          <div>
             <Link
               to="/council/displaydetails"
               onClick={() => {
@@ -45,18 +44,18 @@ const DisplayAllGovernorships = () => {
                 {`${council?.admin?.firstName} ${council?.admin?.lastName}`}
               </Link>
             ) : null}
-          </Col>
+          </div>
           <RoleView roles={permitAdmin('Council')} directoryLock>
-            <Col className="col-auto">
+            <div className="col-auto">
               <Link
                 to="/governorship/addgovernorship"
                 className="btn btn-danger"
               >
                 Add Governorship
               </Link>
-            </Col>
+            </div>
           </RoleView>
-        </Row>
+        </div>
 
         <AllChurchesSummary
           church={governorships}
@@ -66,7 +65,7 @@ const DisplayAllGovernorships = () => {
           route="council"
         />
         <ChurchSearch data={governorships} churchType="Governorship" />
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

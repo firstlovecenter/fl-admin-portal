@@ -3,16 +3,17 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext } from 'react'
 import { GET_CAMPUS_TRANSACTION_HISTORY } from './transactionHistory'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Card, Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import CurrencySpan from 'components/CurrencySpan'
 import { CSVLink } from 'react-csv'
 import { useNavigate } from 'react-router'
 import { AccountTransaction } from './transaction-types'
-import { QuestionCircleFill } from 'react-bootstrap-icons'
+import { HelpCircle } from 'lucide-react'
 import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs'
 import { BiCheckDouble } from 'react-icons/bi'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader } from 'components/ui/card'
 
 const CampusTransactionHistory = () => {
   const { campusId, clickCard } = useContext(ChurchContext)
@@ -60,7 +61,7 @@ const CampusTransactionHistory = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>Transaction History</HeadingPrimary>
         <HeadingSecondary>
           {campus?.name} {campus?.__typename}
@@ -80,17 +81,17 @@ const CampusTransactionHistory = () => {
         <hr />
 
         <Card className="mb-1 fw-bold">
-          <Card.Header>
-            <Row>
-              <Col xs={2}>Last Modified</Col>
-              <Col className="text-truncate">Council</Col>
-              <Col>Category</Col>
-              <Col xs={3}>Amount</Col>
-              <Col xs={1}>
+          <CardHeader>
+            <div>
+              <div xs={2}>Last Modified</div>
+              <div className="text-truncate">Council</div>
+              <div>Category</div>
+              <div xs={3}>Amount</div>
+              <div xs={1}>
                 <BiCheckDouble />
-              </Col>
-            </Row>
-          </Card.Header>
+              </div>
+            </div>
+          </CardHeader>
         </Card>
 
         {campus?.transactions
@@ -104,22 +105,22 @@ const CampusTransactionHistory = () => {
                   navigate('/accounts/transaction-details')
                 }}
               >
-                <Card.Body className="py-1">
-                  <Row className="row-cols-4">
-                    <Col xs={2}>
+                <CardContent className="py-1">
+                  <div className="row-cols-4">
+                    <div xs={2}>
                       {new Date(transaction.lastModified).toLocaleDateString(
                         'en-US',
                         { day: 'numeric', month: 'short' }
                       )}
-                    </Col>
+                    </div>
 
-                    <Col className="text-truncate">
+                    <div className="text-truncate">
                       {transaction.council.name}
-                    </Col>
-                    <Col>
+                    </div>
+                    <div>
                       <span>{transaction.category}</span>
-                    </Col>
-                    <Col xs={3}>
+                    </div>
+                    <div xs={3}>
                       <CurrencySpan
                         number={transaction.amount + (transaction.charge ?? 0)}
                         className={
@@ -127,26 +128,26 @@ const CampusTransactionHistory = () => {
                         }
                         negative
                       />
-                    </Col>
-                    <Col xs={1}>
+                    </div>
+                    <div xs={1}>
                       {transaction?.status === 'success' && (
                         <BsCheckCircleFill color="green" />
                       )}
 
                       {transaction?.status === 'pending approval' && (
-                        <QuestionCircleFill color="yellow" />
+                        <HelpCircle color="yellow" />
                       )}
 
                       {transaction?.status === 'declined' && (
                         <BsXCircleFill color="red" />
                       )}
-                    </Col>
-                  </Row>
-                </Card.Body>
+                    </div>
+                  </div>
+                </CardContent>
               </Card>
             </div>
           ))}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -3,7 +3,6 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
 import { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { BsSpeakerFill } from 'react-icons/bs'
 import { FaHubspot } from 'react-icons/fa'
 import { GiNotebook } from 'react-icons/gi'
@@ -15,7 +14,7 @@ const MinistryFormMenu = () => {
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+      <div>
         <PlaceholderCustom xs={12} as="h1">
           <div className="text-center">
             <h1 className="mb-0  page-header">{`${currentUser.currentChurch?.name} ${currentUser.currentChurch?.__typename}`}</h1>
@@ -51,7 +50,7 @@ const MinistryFormMenu = () => {
             onClick={() => navigate(`/ministry/record-sundayservice`)}
           />
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

@@ -3,7 +3,6 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { getWeekNumber } from 'jd-date-utils'
-import { Col, Container, Row } from 'react-bootstrap'
 import {
   CAMPUS_SERVICES_GOVERNORSHIP_JOINT_DEFAULTERS_LIST,
   COUNCIL_GOVERNORSHIP_JOINT_DEFAULTERS_LIST,
@@ -38,7 +37,7 @@ const GovernorshipNotBankedThisWeek = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
@@ -51,18 +50,18 @@ const GovernorshipNotBankedThisWeek = () => {
             <h6>{`Forms Filled This Week: ${church?.governorshipBankingDefaultersThisWeek.length}`}</h6>
           </PlaceholderCustom>
 
-          <Row>
+          <div>
             {church?.governorshipBankingDefaultersThisWeek.map((service, i) => (
-              <Col key={i} xs={12} className="mb-3">
+              <div key={i} xs={12} className="mb-3">
                 <JointServiceDefaulterCard
                   defaulter={service}
                   link="/governorship/service-details"
                 />
-              </Col>
+              </div>
             ))}
             {!church && <PlaceholderDefaulterList />}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

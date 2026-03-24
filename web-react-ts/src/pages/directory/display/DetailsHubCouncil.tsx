@@ -6,7 +6,6 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Church } from 'global-types'
 import DisplaySontaDetails from 'components/DisplayChurchDetails/DisplaySontaDetails'
 import { permitAdmin } from 'permission-utils'
-import { Container } from 'react-bootstrap'
 import Breadcrumb from 'components/DisplayChurchDetails/Breadcrumb'
 import { DetailsArray } from './DetailsBacenta'
 
@@ -54,9 +53,9 @@ const DetailsHubCouncil = () => {
   return (
     <ApolloWrapper loading={hubLoading} error={hubError} data={hubData}>
       <>
-        <Container className="green">
+        <div className="green">
           {hubCouncil?.council && <Breadcrumb breadcrumb={churchCrumb} />}
-        </Container>
+        </div>
         <DisplaySontaDetails
           details={details}
           church={hubCouncil}

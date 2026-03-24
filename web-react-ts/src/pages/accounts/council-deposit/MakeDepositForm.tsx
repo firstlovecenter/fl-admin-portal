@@ -6,7 +6,6 @@ import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
-import { Button, Container, Modal } from 'react-bootstrap'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import Input from 'components/formik/Input'
@@ -20,6 +19,8 @@ import {
 import { throwToSentry } from 'global-utils'
 import RoleView from 'auth/RoleView'
 import { CouncilForAccounts } from '../accounts-types'
+import { Button } from 'components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from 'components/ui/dialog'
 
 const MakeDepositForm = () => {
   const { councilId, clickCard } = useContext(ChurchContext)
@@ -153,7 +154,7 @@ const MakeDepositForm = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{`${council?.name} ${council?.__typename}`}</HeadingPrimary>
         <HeadingSecondary>{council?.leader.fullName}</HeadingSecondary>
 
@@ -164,7 +165,7 @@ const MakeDepositForm = () => {
         >
           {(formik) => (
             <Form>
-              <Container className="mb-4">
+              <div className="mb-4">
                 <RoleView roles={['adminCampus']}>
                   <Input
                     name="weekdayBalanceDepositAmount"
@@ -184,11 +185,11 @@ const MakeDepositForm = () => {
                     placeholder="Enter an amount"
                   />
                 </RoleView>
-                <Modal show={show} onHide={handleClose} centered scrollable>
-                  <Modal.Header closeButton>
+                <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }} centered scrollable><DialogContent>
+                  <DialogHeader>
                     Please confirm the amounts to deposit
-                  </Modal.Header>
-                  <Modal.Body>
+                  </DialogHeader>
+                  
                     <p>
                       Weekday Income Amount:{' '}
                       <span className="text-info">
@@ -218,18 +219,18 @@ const MakeDepositForm = () => {
                         ).toLocaleString('en-US')}
                       </span>
                     </p>
-                  </Modal.Body>
+                  
 
-                  <Modal.Footer>
+                  <DialogFooter>
                     <SubmitButton
                       onClick={formik.handleSubmit}
                       formik={formik}
                     />
-                    <Button variant="primary" onClick={handleClose}>
+                    <Button variant="default" onClick={handleClose}>
                       Close
                     </Button>
-                  </Modal.Footer>
-                </Modal>
+                  </DialogFooter>
+                </DialogContent></Dialog>
 
                 <div className="text-center mt-5">
                   <Button
@@ -247,11 +248,11 @@ const MakeDepositForm = () => {
                     Submit
                   </Button>
                 </div>
-              </Container>
+              </div>
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

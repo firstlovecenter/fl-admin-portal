@@ -2,8 +2,7 @@ import MenuButton from 'components/buttons/MenuButton'
 import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
-import { PencilSquare } from 'react-bootstrap-icons'
+import { Pencil } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 const CouncilJoint = () => {
@@ -12,7 +11,7 @@ const CouncilJoint = () => {
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+      <div>
         <PlaceholderCustom xs={12} as="h1">
           <div className="text-center">
             <h1 className="mb-0  page-header">{`${currentUser.currentChurch?.name} ${currentUser.currentChurch?.__typename}`}</h1>
@@ -22,14 +21,14 @@ const CouncilJoint = () => {
 
         <div className="d-grid gap-2 mt-5 text-left">
           <MenuButton
-            iconComponent={<PencilSquare />}
+            iconComponent={<Pencil />}
             title="Fill Joint Service Form"
             color="members"
             noCaption
             onClick={() => navigate(`/council/record-service`)}
           />
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

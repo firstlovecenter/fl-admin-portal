@@ -1,19 +1,11 @@
 import React, { useState } from 'react'
 import { useAuth } from 'contexts/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
-import {
-  Container,
-  Form,
-  Button,
-  Alert,
-  Navbar,
-  Spinner,
-} from 'react-bootstrap'
 import { Formik, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import Logo from '../../assets/flc-logo-small.webp'
 import './auth.css'
-import { Eye, EyeSlash } from 'react-bootstrap-icons'
+import { Eye, EyeOff } from 'lucide-react'
 
 const APP_VERSION = '8.1.3'
 
@@ -52,25 +44,25 @@ const LoginPage = () => {
 
   return (
     <>
-      <Navbar bg="dark">
-        <Container>
+      <nav className="bg-zinc-900 py-3">
+        <div>
           <img
             src={Logo}
             height="30"
             className="d-inline-block align-top"
             alt="FirstLove Logo"
           />
-        </Container>
-      </Navbar>
+        </div>
+      </nav>
 
-      <Container className="auth-container">
+      <div className="auth-container">
         <div className="auth-card">
           <h2 className="text-center mb-4 text-white">Sign In</h2>
           <p className="text-center text-secondary mb-4">
             Welcome back to FLC State of the Flock
           </p>
 
-          {error && <Alert variant="danger">{error}</Alert>}
+          {error && <Alert variant="destructive">{error}</Alert>}
 
           <Formik
             initialValues={{ email: '', password: '' }}
@@ -78,9 +70,9 @@ const LoginPage = () => {
             onSubmit={handleSubmit}
           >
             {({ handleSubmit, isSubmitting, touched, errors }) => (
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="email">
-                  <Form.Label className="text-white">Email Address</Form.Label>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label className="text-white">Email Address</label>
                   <Field
                     as={Form.Control}
                     type="email"
@@ -98,13 +90,10 @@ const LoginPage = () => {
                   <ErrorMessage name="email">
                     {(msg) => <small className="text-danger">{msg}</small>}
                   </ErrorMessage>
-                </Form.Group>
+                </div>
 
-                <Form.Group
-                  className="mb-3 form-group-with-icon"
-                  controlId="password"
-                >
-                  <Form.Label className="text-white">Password</Form.Label>
+                <div className="mb-3">
+                  <label className="text-white">Password</label>
                   <Field
                     as={Form.Control}
                     type={showPassword ? 'text' : 'password'}
@@ -123,40 +112,36 @@ const LoginPage = () => {
                     className="password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </span>
                   <ErrorMessage name="password">
                     {(msg) => <small className="text-danger">{msg}</small>}
                   </ErrorMessage>
-                </Form.Group>
+                </div>
 
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                  <Form.Check
-                    type="checkbox"
-                    label="Remember me"
-                    className="text-secondary"
-                  />
+                  <input type="checkbox" className="form-check-input" />
                   <Link to="/forgot-password" className="text-brand">
                     Forgot Password?
                   </Link>
                 </div>
 
                 <Button
-                  variant="brand"
+                  variant="default"
                   type="submit"
                   className="w-100"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
-                      <Spinner animation="border" size="sm" className="me-2" />
+                      <Loader2 className="h-6 w-6 animate-spin" />
                       Signing in...
                     </>
                   ) : (
                     'Sign In'
                   )}
                 </Button>
-              </Form>
+              </form>
             )}
           </Formik>
 
@@ -176,7 +161,7 @@ const LoginPage = () => {
             v{APP_VERSION}
           </p>
         </div>
-      </Container>
+      </div>
     </>
   )
 }

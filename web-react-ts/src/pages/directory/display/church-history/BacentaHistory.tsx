@@ -5,7 +5,6 @@ import Timeline from 'components/Timeline/Timeline'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { BACENTA_HISTORY } from './HistoryQueries'
 
 function BacentaHistory() {
@@ -22,9 +21,9 @@ function BacentaHistory() {
           <HeadingPrimary>{`${bacenta?.name} ${bacenta?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>Bacenta History</HeadingSecondary>
         </div>
-        <Container>
+        <div>
           <Timeline record={bacenta?.history} limit={100} />
-        </Container>
+        </div>
       </>
     </ApolloWrapper>
   )

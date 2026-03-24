@@ -4,7 +4,6 @@ import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import { RECORD_CANCELLED_SERVICE } from './RecordServiceMutations'
 import { useMutation } from '@apollo/client'
-import { Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -75,16 +74,16 @@ const CancelledServiceForm = ({
       onSubmit={onSubmit}
     >
       {(formik) => (
-        <Container>
+        <div>
           <HeadingPrimary>I Cancelled My Service</HeadingPrimary>
           <HeadingSecondary>{`${church?.name} ${church?.__typename}`}</HeadingSecondary>
 
           <Form className="form-group mt-5">
-            <Row className="row-cols-1 row-cols-md-2">
+            <div className="row-cols-1 row-cols-md-2">
               {/* <!-- Service Form--> */}
-              <Col className="mb-2">
+              <div className="mb-2">
                 <div className="form-row d-flex justify-content-center">
-                  <Col>
+                  <div>
                     <small className="form-text label">
                       Date of Service*
                       <i className="text-secondary">(Day/Month/Year)</i>
@@ -100,12 +99,12 @@ const CancelledServiceForm = ({
                     <div className="d-flex justify-content-center mt-5">
                       <SubmitButton formik={formik} />
                     </div>
-                  </Col>
+                  </div>
                 </div>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </Form>
-        </Container>
+        </div>
       )}
     </Formik>
   )

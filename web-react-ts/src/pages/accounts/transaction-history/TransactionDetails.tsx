@@ -7,13 +7,13 @@ import {
   UNDO_WEEKDAY_TRANSACTION,
 } from './transactionHistory'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container } from 'react-bootstrap'
 import { AccountTransaction } from './transaction-types'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { useNavigate } from 'react-router'
 import TransactionCard from '../TransactionCard'
 import RoleView from 'auth/RoleView'
 import { permitAdmin, permitArrivals, permitLeader } from 'permission-utils'
+import { Button } from 'components/ui/button'
 
 const TransactionDetails = () => {
   const { transactionId } = useContext(ChurchContext)
@@ -29,14 +29,14 @@ const TransactionDetails = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>Transaction Details</HeadingPrimary>
         <hr />
         <TransactionCard transaction={transaction} />
 
         <div className="text-center mt-5">
           <Button
-            variant="danger"
+            variant="destructive"
             onClick={async () => {
               if (transaction.category === 'Bussing')
                 await UndoBussingTransaction({ variables: { transactionId } })
@@ -82,7 +82,7 @@ const TransactionDetails = () => {
             </Button>
           </RoleView>
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -3,10 +3,10 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { Church, Member } from 'global-types'
 import NoDataComponent from 'pages/arrivals/CompNoData'
-import { Button, Container } from 'react-bootstrap'
 import { CSVLink } from 'react-csv'
 import { getHumanReadableDate } from '@jaedag/admin-portal-types'
-import { ArrowDownCircle } from 'react-bootstrap-icons'
+import { ArrowDownCircle } from 'lucide-react'
+import { Button } from 'components/ui/button'
 
 const formatDate = (dateString: string) => {
   if (!dateString) return ''
@@ -80,7 +80,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
 
   return (
     <ApolloWrapper data={church} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>
           Download {church?.name} {churchType} Membership
         </HeadingPrimary>
@@ -152,7 +152,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
             </div>
           </>
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

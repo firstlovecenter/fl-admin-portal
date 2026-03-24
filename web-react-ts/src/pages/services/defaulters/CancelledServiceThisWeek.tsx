@@ -4,7 +4,6 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { getWeekNumber } from 'jd-date-utils'
 import React from 'react'
-import { Col, Container, Row } from 'react-bootstrap'
 import {
   GOVERNORSHIP_CANCELLED_SERVICES_LIST,
   COUNCIL_CANCELLED_SERVICES_LIST,
@@ -70,7 +69,7 @@ const CancelledServicesThisWeek = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
@@ -83,15 +82,15 @@ const CancelledServicesThisWeek = () => {
             <h6>{`Number of Cancelled Services: ${church?.cancelledServicesThisWeek.length}`}</h6>
           </PlaceholderCustom>
 
-          <Row>
+          <div>
             {church?.cancelledServicesThisWeek.map((service, i) => (
-              <Col key={i} xs={12} className="mb-3">
+              <div key={i} xs={12} className="mb-3">
                 <DefaulterCard defaulter={service} />
-              </Col>
+              </div>
             ))}
             {!church && <PlaceholderDefaulterList />}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

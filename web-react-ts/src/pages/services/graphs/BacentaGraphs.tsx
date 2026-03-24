@@ -12,12 +12,13 @@ import { BACENTA_GRAPHS } from './GraphsQueries'
 import MembershipCard from './CompMembershipCard'
 import StatDisplay from './CompStatDisplay'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Col, Container, Row, Button, Spinner } from 'react-bootstrap'
 import GraphDropdown from './GraphDropdown'
 import { MemberContext } from 'contexts/MemberContext'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import { isIncomeGraph } from 'global-utils'
-import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
 
 export const BacentaGraphs = () => {
   const { bacentaId } = useContext(ChurchContext)
@@ -65,48 +66,48 @@ export const BacentaGraphs = () => {
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data}>
-      <Container>
+      <div>
         <LeaderAvatar
           leader={data?.bacentas[0].leader}
           leaderTitle="Bacenta Leader"
         />
 
-        <Row className="row-cols-2">
-          <Col>
+        <div className="row-cols-2">
+          <div>
             <MembershipCard
               link="/bacenta/members"
               title="Membership"
               count={data?.bacentas[0].memberCount}
             />
-          </Col>
-          <Col>
+          </div>
+          <div>
             <GraphDropdown
               graphs={graphs}
               setGraphs={setGraphs}
               setChurchData={setChurchData}
               data={data?.bacentas[0]}
             />
-          </Col>
-        </Row>
+          </div>
+        </div>
 
-        <Row className="mt-3">
-          <Col>
+        <div className="mt-3">
+          <div>
             <StatDisplay
               title={`Avg Weekly ${
                 graphs === 'bussing' ? 'Bussing' : 'Attendance'
               }`}
               statistic={getMonthlyStatAverage(churchData, 'attendance')}
             />
-          </Col>
-          <Col>
+          </div>
+          <div>
             {isIncomeGraph(graphs, currentUser) && (
               <StatDisplay
                 title="Avg Weekly Income"
                 statistic={getMonthlyStatAverage(churchData, 'income')}
               />
             )}
-          </Col>
-        </Row>
+          </div>
+        </div>
 
         {!currentUser.noIncomeTracking ? (
           <ChurchGraph
@@ -129,8 +130,8 @@ export const BacentaGraphs = () => {
         )}
 
         {/* Navigation Controls */}
-        <Row className="mt-3 justify-content-center">
-          <Col xs="auto">
+        <div className="mt-3 justify-content-center">
+          <div xs="auto">
             <div className="d-flex align-items-center gap-3">
               <Button
                 variant="outline-secondary"
@@ -140,7 +141,7 @@ export const BacentaGraphs = () => {
                 className="d-flex align-items-center"
               >
                 {isNavigating ? (
-                  <Spinner size="sm" className="me-1" />
+                  <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <ChevronLeft size={16} className="me-1" />
                 )}
@@ -163,16 +164,16 @@ export const BacentaGraphs = () => {
                 className="d-flex align-items-center"
               >
                 {isNavigating ? (
-                  <Spinner size="sm" className="ms-1" />
+                  <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <ChevronRight size={16} className="ms-1" />
                 )}
                 Next
               </Button>
             </div>
-          </Col>
-        </Row>
-      </Container>
+          </div>
+        </div>
+      </div>
     </ApolloWrapper>
   )
 }

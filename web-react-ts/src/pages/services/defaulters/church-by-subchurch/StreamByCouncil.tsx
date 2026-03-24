@@ -2,8 +2,7 @@ import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Card, Col, Row, Button, Container } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { STREAM_BY_COUNCIL } from '../DefaultersQueries'
 import '../Defaulters.css'
@@ -12,6 +11,8 @@ import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader, CardFooter } from 'components/ui/card'
 
 const StreamByCouncil = () => {
   const { streamId, clickCard } = useContext(ChurchContext)
@@ -26,23 +27,23 @@ const StreamByCouncil = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading || !data?.streams[0]?.name}>
             {`${data?.streams[0].name} Stream By Council`}
           </HeadingPrimary>
-          <Row>
+          <div>
             {data?.streams.length ? (
               data?.streams[0].councils.map(
                 (council: HigherChurchWithDefaulters, i: number) => (
-                  <Col key={i} xs={12} className="mb-3">
+                  <div key={i} xs={12} className="mb-3">
                     <Card>
-                      <Card.Header className="fw-bold">
+                      <CardHeader className="fw-bold">
                         <div>{`${council.name} Council`}</div>
                         <div className="text-secondary">
                           {council.leader.fullName}
                         </div>
-                      </Card.Header>
-                      <Card.Body
+                      </CardHeader>
+                      <CardContent
                         onClick={() => {
                           clickCard(council)
                           navigate('/services/council-by-governorship')
@@ -94,14 +95,14 @@ const StreamByCouncil = () => {
                           Cancelled Services This Week{' '}
                           {council.cancelledServicesThisWeekCount}
                         </div>
-                      </Card.Body>
-                      <Card.Footer>
+                      </CardContent>
+                      <CardFooter>
                         <div className="mb-2">
                           Contact Admin: {council?.admin?.fullName}
                         </div>
                         <a href={`tel:${council?.admin?.phoneNumber}`}>
-                          <Button variant="primary">
-                            <TelephoneFill /> Call
+                          <Button variant="default">
+                            <Phone /> Call
                           </Button>
                         </a>
                         <a
@@ -111,19 +112,19 @@ const StreamByCouncil = () => {
                           className="ms-3"
                         >
                           <Button variant="success">
-                            <Whatsapp /> WhatsApp
+                            <MessageCircle /> WhatsApp
                           </Button>
                         </a>
-                      </Card.Footer>
+                      </CardFooter>
                     </Card>
-                  </Col>
+                  </div>
                 )
               )
             ) : (
               <PlaceholderDefaulterList />
             )}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

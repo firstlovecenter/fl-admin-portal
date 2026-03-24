@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo } from 'react'
-import { Dropdown } from 'react-bootstrap'
 import { GraphTypes, getServiceGraphData } from './graphs-utils'
 import './GraphDropdown.css'
 import { ChurchLevel } from 'global-types'
@@ -32,12 +31,12 @@ const GraphDropdown = ({
   }, [churchData])
 
   return (
-    <Dropdown className="border-none">
-      <Dropdown.Toggle variant="danger">{selected}</Dropdown.Toggle>
+    <div className="dropdown relative">
+      <button className="dropdown-toggle">{selected}</button>
 
-      <Dropdown.Menu variant="dark">
+      <div className="dropdown-menu">
         {churchLevel === 'Bacenta' && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('Bussing')
@@ -45,11 +44,11 @@ const GraphDropdown = ({
             }}
           >
             Bussing
-          </Dropdown.Item>
+          </div>
         )}
 
         {![...sontaLevels].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('Services')
@@ -57,10 +56,10 @@ const GraphDropdown = ({
             }}
           >
             {`${churchLevel} Services`}
-          </Dropdown.Item>
+          </div>
         )}
         {['CreativeArts'].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('OnStage Attendance')
@@ -68,10 +67,10 @@ const GraphDropdown = ({
             }}
           >
             {`On Stage Attendance Total`}
-          </Dropdown.Item>
+          </div>
         )}
         {['Ministry'].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('OnStage Attendance')
@@ -79,11 +78,11 @@ const GraphDropdown = ({
             }}
           >
             {`On Stage Attendance`}
-          </Dropdown.Item>
+          </div>
         )}
 
         {!['Bacenta', ...sontaLevels].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('Bussing Total')
@@ -91,10 +90,10 @@ const GraphDropdown = ({
             }}
           >
             Bussing Total
-          </Dropdown.Item>
+          </div>
         )}
         {!['Bacenta', 'Oversight', 'Denomination'].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('Bacenta Total')
@@ -102,10 +101,10 @@ const GraphDropdown = ({
             }}
           >
             Weekday Total
-          </Dropdown.Item>
+          </div>
         )}
         {['Campus', 'Oversight', 'Denomination'].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('Services Total (USD)')
@@ -113,11 +112,11 @@ const GraphDropdown = ({
             }}
           >
             Weekday Total (USD)
-          </Dropdown.Item>
+          </div>
         )}
 
         {['Hub', 'HubCouncil'].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('Rehearsals')
@@ -125,11 +124,11 @@ const GraphDropdown = ({
             }}
           >
             {`${churchLevel} Rehearsals`}
-          </Dropdown.Item>
+          </div>
         )}
 
         {['Ministry', 'CreativeArts', 'HubCouncil'].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('Rehearsals Total')
@@ -137,10 +136,10 @@ const GraphDropdown = ({
             }}
           >
             {`${churchLevel} Rehearsals Total`}
-          </Dropdown.Item>
+          </div>
         )}
         {['Ministry', 'CreativeArts'].includes(churchLevel) && (
-          <Dropdown.Item
+          <div
             className="py-3"
             onClick={() => {
               setSelected('Rehearsals')
@@ -148,10 +147,10 @@ const GraphDropdown = ({
             }}
           >
             {`${churchLevel} Weekend Meeting Total`}
-          </Dropdown.Item>
+          </div>
         )}
-      </Dropdown.Menu>
-    </Dropdown>
+      </div>
+    </div>
   )
 }
 

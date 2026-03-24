@@ -3,8 +3,7 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
 import { useContext } from 'react'
-import { Container } from 'react-bootstrap'
-import { PencilSquare } from 'react-bootstrap-icons'
+import { Pencil } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 const HubCouncilFormMenu = () => {
@@ -13,7 +12,7 @@ const HubCouncilFormMenu = () => {
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+      <div>
         <PlaceholderCustom xs={12} as="h1">
           <div className="text-center">
             <h1 className="mb-0  page-header">{`${currentUser.currentChurch?.name} ${currentUser.currentChurch?.__typename}`}</h1>
@@ -24,7 +23,7 @@ const HubCouncilFormMenu = () => {
         <div className="d-grid gap-2 mt-5 text-left">
           <HeadingSecondary>Rehearsals</HeadingSecondary>
           <MenuButton
-            iconComponent={<PencilSquare />}
+            iconComponent={<Pencil />}
             title="Fill Joint Rehearsals Form"
             color="members"
             onClick={() => navigate(`/hubCouncil/record-rehearsal`)}
@@ -34,14 +33,14 @@ const HubCouncilFormMenu = () => {
           <hr />
           <HeadingSecondary>Weekend Ministry Meeting</HeadingSecondary>
           <MenuButton
-            iconComponent={<PencilSquare />}
+            iconComponent={<Pencil />}
             title="Fill Sunday Meeting Form"
             caption="Maturity Classes"
             color="green"
             onClick={() => navigate(`/hubCouncil/record-sundayservice`)}
           />
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

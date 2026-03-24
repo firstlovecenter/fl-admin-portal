@@ -1,29 +1,29 @@
 import PlaceholderCustom from 'components/Placeholder'
 import React from 'react'
-import { Card, Col } from 'react-bootstrap'
 import './Defaulters.css'
+import { Card, CardContent, CardHeader, CardFooter } from 'components/ui/card'
 
 const PlaceholderDefaulterList = () => {
   return (
     <>
       {[1, 2, 3].map((placeholder, i) => (
-        <Col key={i} xs={12} className="mb-3">
+        <div key={i} xs={12} className="mb-3">
           <Card>
-            <Card.Header className="fw-bold">
+            <CardHeader className="fw-bold">
               <PlaceholderCustom
                 loading={true}
                 className="fw-bold"
               ></PlaceholderCustom>
-            </Card.Header>
-            <Card.Body>
+            </CardHeader>
+            <CardContent>
               <PlaceholderCustom loading={true} as="div" />
               <PlaceholderCustom loading={true} as="div" />
               <PlaceholderCustom loading={true} as="div" />
               <PlaceholderCustom loading={true} as="div" />
-            </Card.Body>
-            <Card.Footer>
+            </CardContent>
+            <CardFooter>
               <PlaceholderCustom
-                variant="primary"
+                variant="default"
                 loading={true}
                 className="btn-call"
                 button="true"
@@ -34,9 +34,9 @@ const PlaceholderDefaulterList = () => {
                 loading={true}
                 button="true"
               />
-            </Card.Footer>
+            </CardFooter>
           </Card>
-        </Col>
+        </div>
       ))}
     </>
   )

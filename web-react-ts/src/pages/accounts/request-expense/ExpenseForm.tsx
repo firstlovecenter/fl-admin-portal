@@ -7,7 +7,6 @@ import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container, Modal } from 'react-bootstrap'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import Input from 'components/formik/Input'
@@ -20,6 +19,8 @@ import { CouncilForAccounts } from '../accounts-types'
 import { isAccountOpen } from '../accounts-utils'
 import AccountBlockedMsg from './AccountBlockedMsg'
 import { MemberContext } from 'contexts/MemberContext'
+import { Button } from 'components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from 'components/ui/dialog'
 
 const ExpenseForm = () => {
   const { councilId, clickCard } = useContext(ChurchContext)
@@ -85,7 +86,7 @@ const ExpenseForm = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{`${council?.name} ${council?.__typename} Expense Form`}</HeadingPrimary>
         <HeadingSecondary>
           Fill Out This Form For Any Expense You Need
@@ -97,7 +98,7 @@ const ExpenseForm = () => {
         >
           {(formik) => (
             <Form>
-              <Container className="mb-4">
+              <div className="mb-4">
                 <div className="my-4">
                   <Input
                     name="requestedAmount"
@@ -138,11 +139,11 @@ const ExpenseForm = () => {
                     placeholder="Enter a description"
                   />
                 </div>
-                <Modal show={show} onHide={handleClose} centered scrollable>
-                  <Modal.Header closeButton>
+                <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }} centered scrollable><DialogContent>
+                  <DialogHeader>
                     Please confirm the amounts to deposit
-                  </Modal.Header>
-                  <Modal.Body>
+                  </DialogHeader>
+                  
                     <p>
                       Requested Amount:{' '}
                       <span className="text-info">
@@ -167,29 +168,29 @@ const ExpenseForm = () => {
                         {formik.values.description}
                       </span>
                     </p>
-                  </Modal.Body>
+                  
 
-                  <Modal.Footer>
+                  <DialogFooter>
                     <SubmitButton
                       onClick={formik.handleSubmit}
                       formik={formik}
                     />
-                    <Button variant="primary" onClick={handleClose}>
+                    <Button variant="default" onClick={handleClose}>
                       Close
                     </Button>
-                  </Modal.Footer>
-                </Modal>
+                  </DialogFooter>
+                </DialogContent></Dialog>
 
                 <div className="text-center mt-5">
                   <Button onClick={handleShow} className="px-5">
                     Submit
                   </Button>
                 </div>
-              </Container>
+              </div>
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

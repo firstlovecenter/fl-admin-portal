@@ -8,10 +8,11 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import Input from 'components/formik/Input'
 import Select from 'components/formik/Select'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { Button, Container, Row, Card, ButtonGroup } from 'react-bootstrap'
 import { AiOutlinePlusCircle } from 'react-icons/ai'
 import { FiUsers } from 'react-icons/fi'
 import '../Venues.css'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
 
 interface FormOptions {
   venueSearch: string
@@ -81,14 +82,14 @@ const IndoorOutreachVenues = () => {
   }, [venues, searchQuery])
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary className="d-flex justify-content-center mb-5">
         Indoor Outreach Venues
       </HeadingPrimary>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ values }) => (
           <Form className="mb-2">
-            <Row>
+            <div>
               <div className="col">
                 <Input
                   name="venueSearch"
@@ -107,13 +108,13 @@ const IndoorOutreachVenues = () => {
                   }}
                 />
               </div>
-            </Row>
+            </div>
           </Form>
         )}
       </Formik>
 
       <Button
-        variant="primary"
+        variant="default"
         className="p-2 d-flex justify-content-center align-items-center text-center gap-2 w-100"
         onClick={() => {
           navigate(`/maps/indoor-outreach-venues/add`)
@@ -128,7 +129,7 @@ const IndoorOutreachVenues = () => {
         <div>
           {filteredVenues?.map((venue: VenueOptions, index: number) => (
             <Card className="mb-2" key={index}>
-              <Card.Body className="venue-font">
+              <CardContent className="venue-font">
                 <div className="mb-1">
                   <span>{venue?.name}</span>
                 </div>
@@ -136,15 +137,15 @@ const IndoorOutreachVenues = () => {
                   <FiUsers color="grey" className="fs-6 me-2" />
                   <span>{venue?.capacity}</span>
                 </div>
-              </Card.Body>
+              </CardContent>
             </Card>
           ))}
         </div>
       </ApolloWrapper>
 
-      <ButtonGroup className="d-flex justify-content-center px-5 mt-4">
+      <div className="d-flex justify-content-center px-5 mt-4">
         <Button
-          variant="primary"
+          variant="default"
           onClick={() => setOffset((prev) => prev - 1)}
           disabled={offset === 0}
         >
@@ -152,14 +153,14 @@ const IndoorOutreachVenues = () => {
         </Button>
         <Button
           className="px-4"
-          variant="primary"
+          variant="default"
           disabled={!(venues && venues.length >= limit)}
           onClick={() => setOffset((prev) => prev + 1)}
         >
           Next
         </Button>
-      </ButtonGroup>
-    </Container>
+      </div>
+    </div>
   )
 }
 

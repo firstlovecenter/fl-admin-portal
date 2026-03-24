@@ -7,7 +7,6 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import React from 'react'
 import { useContext } from 'react'
-import { Col, Container, Row } from 'react-bootstrap'
 import { GOVERNORSHIP_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
 import { useNavigate } from 'react-router'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -117,7 +116,7 @@ const GovernorshipDashboard = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error}>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>
             {governorship?.name} Governorship Arrivals Real Time Dashboard
           </HeadingPrimary>
@@ -143,8 +142,8 @@ const GovernorshipDashboard = () => {
               >
                 {(formik) => (
                   <Form>
-                    <Row className="form-row">
-                      <Col>
+                    <div className="form-row">
+                      <div>
                         <SearchMember
                           name="adminSelect"
                           initialValue={initialValues?.adminName}
@@ -153,8 +152,8 @@ const GovernorshipDashboard = () => {
                           aria-describedby="Member Search"
                           error={formik.errors.adminSelect}
                         />
-                      </Col>
-                    </Row>
+                      </div>
+                    </div>
 
                     <SubmitButton formik={formik} />
                   </Form>
@@ -172,19 +171,19 @@ const GovernorshipDashboard = () => {
             >
               {(formik) => (
                 <Form>
-                  <Row className="align-items-center gx-0 justify-content-between">
-                    <Col className="d-inline-block" xs={5}>
+                  <div className="align-items-center gx-0 justify-content-between">
+                    <div className="d-inline-block" xs={5}>
                       <Input
                         name="arrivalDate"
                         type="date"
                         placeholder="dd/mm/yyyy"
                         aria-describedby="date"
                       />
-                    </Col>
-                    <Col xs={2}>
+                    </div>
+                    <div xs={2}>
                       <ArrivalsDateSubmitBtn formik={formik} />
-                    </Col>
-                    <Col>
+                    </div>
+                    <div>
                       <RoleView
                         roles={[
                           ...permitAdmin('Governorship'),
@@ -193,8 +192,8 @@ const GovernorshipDashboard = () => {
                       >
                         <ArrivalsMenuDropdown menuItems={ArrivalsMenu} />
                       </RoleView>
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
                 </Form>
               )}
             </Formik>
@@ -270,7 +269,7 @@ const GovernorshipDashboard = () => {
               </>
             </ApolloWrapper>
           </div>
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

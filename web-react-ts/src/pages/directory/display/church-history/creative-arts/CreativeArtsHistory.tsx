@@ -5,7 +5,6 @@ import Timeline from 'components/Timeline/Timeline'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { CREATIVE_ARTS_HISTORY } from '../HistoryQueries'
 
 function CreativeArtsHistory() {
@@ -23,9 +22,9 @@ function CreativeArtsHistory() {
           <HeadingPrimary>{`${creativeArt?.name} ${creativeArt?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>Creative Art History</HeadingSecondary>
         </div>
-        <Container>
+        <div>
           <Timeline record={creativeArt?.history} limit={10} />
-        </Container>
+        </div>
       </>
     </ApolloWrapper>
   )

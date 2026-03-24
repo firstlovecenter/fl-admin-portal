@@ -5,7 +5,6 @@ import { GET_GOVERNORSHIP_BACENTAS } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import RoleView from '../../../auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Col, Container, Row } from 'react-bootstrap'
 import { permitAdminArrivals } from 'permission-utils'
 import AllChurchesSummary from 'components/AllChurchesSummary'
 import 'components/AllChurchesSummary.css'
@@ -23,9 +22,9 @@ const DisplayAllBacentas = () => {
 
   return (
     <ApolloWrapper loading={loading} data={data} error={error}>
-      <Container>
-        <Row className="mb-2">
-          <Col>
+      <div>
+        <div className="mb-2">
+          <div>
             <Link
               to={`/governorship/displaydetails`}
               onClick={() => {
@@ -57,18 +56,18 @@ const DisplayAllBacentas = () => {
                 {`Admin: ${governorship?.admin?.fullName}`}
               </Link>
             ) : null}
-          </Col>
+          </div>
           <RoleView roles={permitAdminArrivals('Council')} directoryLock>
-            <Col className="col-auto">
+            <div className="col-auto">
               <Link
                 to="/bacenta/addbacenta"
                 className="btn btn-danger text-nowrap"
               >
                 Add Bacenta
               </Link>
-            </Col>
+            </div>
           </RoleView>
-        </Row>
+        </div>
         <AllChurchesSummary
           church={governorship}
           memberCount={governorship?.memberCount}
@@ -78,7 +77,7 @@ const DisplayAllBacentas = () => {
         />
 
         <ChurchSearch data={governorship?.bacentas} churchType="Bacenta" />
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

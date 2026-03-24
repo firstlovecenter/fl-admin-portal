@@ -4,7 +4,6 @@ import MemberDisplayCard from 'components/card/MemberDisplayCard'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import {
   GOVERNORSHIP_BACENTAS_MOBILISING,
   COUNCIL_BACENTAS_MOBILISING,
@@ -61,7 +60,7 @@ const BacentasMobilising = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>Bacentas Mobilising</HeadingPrimary>
           <HeadingSecondary loading={!church?.name}>
             {church?.name} {church?.__typename}
@@ -90,7 +89,7 @@ const BacentasMobilising = () => {
           {!church?.bacentasMobilising.length && loading && (
             <PlaceholderDefaulterList />
           )}
-        </Container>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

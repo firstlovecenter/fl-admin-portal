@@ -2,7 +2,7 @@ import BusIcon from 'assets/icons/BusIcon'
 import CarFrontFill from 'assets/icons/Car'
 import UrvanFront from 'assets/icons/Urvan'
 import React from 'react'
-import { StopCircle } from 'react-bootstrap-icons'
+import { StopCircle } from 'lucide-react'
 
 const ButtonIcons = ({ type }: { type?: 'Sprinter' | 'Urvan' | 'Car' }) => {
   if (type === 'Sprinter') {

@@ -5,7 +5,6 @@ import { GET_OVERSIGHT_CAMPUSES } from '../../../queries/ListQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import RoleView from '../../../auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Container, Row, Col } from 'react-bootstrap'
 import { permitAdmin } from 'permission-utils'
 import AllChurchesSummary from 'components/AllChurchesSummary'
 import ChurchSearch from 'components/ChurchSearch'
@@ -22,9 +21,9 @@ const DisplayAllCampuses = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
-        <Row className="mb-2">
-          <Col>
+      <div>
+        <div className="mb-2">
+          <div>
             <Link
               to="/oversight/displaydetails"
               onClick={() => {
@@ -56,15 +55,15 @@ const DisplayAllCampuses = () => {
                 {`${oversight?.admin?.fullName}`}
               </Link>
             ) : null}
-          </Col>
+          </div>
           <RoleView roles={permitAdmin('Oversight')} directoryLock>
-            <Col className="col-auto">
+            <div className="col-auto">
               <Link to="/campus/addcampus" className="btn btn-danger">
                 Add Campus
               </Link>
-            </Col>
+            </div>
           </RoleView>
-        </Row>
+        </div>
 
         <AllChurchesSummary
           church={campuses}
@@ -74,7 +73,7 @@ const DisplayAllCampuses = () => {
           route="oversight"
         />
         <ChurchSearch data={campuses} churchType="Campus" />
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

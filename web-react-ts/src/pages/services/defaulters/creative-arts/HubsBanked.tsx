@@ -4,7 +4,6 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { getWeekNumber } from 'jd-date-utils'
-import { Container, Row, Col } from 'react-bootstrap'
 import DefaulterCard from '../DefaulterCard'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import {
@@ -49,7 +48,7 @@ const Banked = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
@@ -64,20 +63,20 @@ const Banked = () => {
             <h6>{`Number Who Have Banked: ${church?.hubsBankedThisWeek.length}`}</h6>
           </PlaceholderCustom>
 
-          <Row>
+          <div>
             {church?.hubsBankedThisWeek.map(
               (defaulter: BacentaWithDefaulters, i: number) => (
-                <Col key={i} xs={12} className="mb-3">
+                <div key={i} xs={12} className="mb-3">
                   <DefaulterCard
                     defaulter={defaulter}
                     link="/hub/service-details"
                   />
-                </Col>
+                </div>
               )
             )}
             {!church && <PlaceholderDefaulterList />}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

@@ -15,7 +15,6 @@ import {
 import { GET_CAMPUS_BASONTAS } from 'queries/ListQueries'
 import ErrorScreen from 'components/base-component/ErrorScreen'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { Button, ButtonGroup, Col, Container, Row } from 'react-bootstrap'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import { permitAdmin, permitLeaderAdmin } from 'permission-utils'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -32,6 +31,7 @@ import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
 import RadioButtons from 'components/formik/RadioButtons'
 import SearchBacenta from 'components/formik/SearchBacenta'
+import { Button } from 'components/ui/button'
 
 type MemberFormProps = {
   initialValues: CreateMemberFormOptions
@@ -170,7 +170,7 @@ const MemberForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container>
+          <div>
             {isOpen && (
               <Popup handleClose={togglePopup}>
                 <b>Deleting A Member</b>
@@ -185,16 +185,16 @@ const MemberForm = ({
                 >
                   {(formik) => (
                     <Form>
-                      <Row className="form-row">
-                        <Col>
+                      <div className="form-row">
+                        <div>
                           <RadioButtons
                             name="reasonCategory"
                             options={DELETE_MEMBER_CATEGORY_OPTIONS}
                           />
                           <Input name="reason" placeholder="Reason" />
                           <SubmitButton formik={formik} />
-                        </Col>
-                      </Row>
+                        </div>
+                      </div>
                     </Form>
                   )}
                 </Formik>
@@ -202,10 +202,10 @@ const MemberForm = ({
             )}
             <h3 className="my-3 text-center">{title}</h3>
             <Form className="form-group">
-              <Row className="row-cols-1">
+              <div className="row-cols-1">
                 {/* <!-- Basic Info Div --> */}
                 {/* Photo Upload with Cloudinary */}
-                <Col className="my-3">
+                <div className="my-3">
                   <ImageUpload
                     name="pictureUrl"
                     initialValue={initialValues.pictureUrl}
@@ -222,7 +222,7 @@ const MemberForm = ({
 
                   <div className="form-row row-cols-1 row-cols-md-2 justify-content-center">
                     <HeadingPrimary>Basic Info</HeadingPrimary>
-                    <ButtonGroup className="my-2 mb-4">
+                    <div className="my-2 mb-4">
                       {update && (
                         <>
                           {' '}
@@ -237,41 +237,41 @@ const MemberForm = ({
                           <RoleView roles={permitLeaderAdmin('Governorship')}>
                             <Button
                               onClick={() => togglePopup()}
-                              variant="danger"
+                              variant="destructive"
                             >
                               Delete Member
                             </Button>
                           </RoleView>
                         </>
                       )}
-                    </ButtonGroup>
+                    </div>
                     {canChangeUniques() && (
                       <>
-                        <Col sm={10}>
+                        <div sm={10}>
                           <Input
                             label="First Name*"
                             name="firstName"
                             placeholder="First Name"
                             aria-describedby="firstNameHelp"
                           />
-                        </Col>
-                        <Col sm={10}>
+                        </div>
+                        <div sm={10}>
                           <Input
                             label="Middle Name"
                             name="middleName"
                             placeholder="Other Names"
                             aria-describedby="middleNameHelp"
                           />
-                        </Col>
-                        <Col sm={10}>
+                        </div>
+                        <div sm={10}>
                           <Input
                             label="Last Name*"
                             name="lastName"
                             placeholder="Last Name"
                             aria-describedby="lastNameHelp"
                           />
-                        </Col>
-                        <Col sm={10}>
+                        </div>
+                        <div sm={10}>
                           <Select
                             label="Gender*"
                             name="gender"
@@ -279,27 +279,27 @@ const MemberForm = ({
                             options={GENDER_OPTIONS}
                             defaultOption="Gender"
                           />
-                        </Col>{' '}
-                        <Col sm={10}>
+                        </div>{' '}
+                        <div sm={10}>
                           <Input
                             label="Phone Number*"
                             placeholder="Eg. +233 241 23 456"
                             name="phoneNumber"
                           />
-                        </Col>
-                        <Col sm={10}>
+                        </div>
+                        <div sm={10}>
                           <Input
                             label="WhatsApp Number*"
                             placeholder="Eg. +233 241 23 456"
                             name="whatsappNumber"
                           />
-                        </Col>
+                        </div>
                       </>
                     )}
                   </div>
 
                   <div className="form-row row-cols-1 row-cols-md-2 justify-content-center">
-                    <Col sm={10}>
+                    <div sm={10}>
                       <Select
                         label="Marital Status*"
                         name="maritalStatus"
@@ -307,21 +307,21 @@ const MemberForm = ({
                         options={MARITAL_STATUS_OPTIONS}
                         defaultOption="Marital Status"
                       />
-                    </Col>
-                    <Col sm={10}>
+                    </div>
+                    <div sm={10}>
                       <Input
                         label="Occupation"
                         name="occupation"
                         placeholder="Occupation"
                         aria-describedby="occupationHelp"
                       />
-                    </Col>
+                    </div>
                   </div>
 
                   <div className="form-row justify-content-center">
                     {canChangeUniques() && (
                       <>
-                        <Col sm={10}>
+                        <div sm={10}>
                           <Input
                             label={`Email Address ${
                               !update ? '(Optional)' : '*'
@@ -330,8 +330,8 @@ const MemberForm = ({
                             placeholder="Enter Email Address"
                             aria-describedby="emailHelp"
                           />
-                        </Col>
-                        <Col sm={10}>
+                        </div>
+                        <div sm={10}>
                           <small className="form-text ">
                             Date of Birth*{' '}
                             <i className="text-secondary">(Day/Month/Year)</i>
@@ -342,11 +342,11 @@ const MemberForm = ({
                             placeholder="dd/mm/yyyy"
                             aria-describedby="dateofbirth"
                           />
-                        </Col>{' '}
+                        </div>{' '}
                       </>
                     )}
                   </div>
-                </Col>
+                </div>
                 {/* <!--End of Basic Info Section--> */}
 
                 {/* <!-- Beginning of Church Info Section--> */}
@@ -354,17 +354,17 @@ const MemberForm = ({
                   <HeadingPrimary>Church Info</HeadingPrimary>
                   <div className="form-row row-cols-1 row-cols-md-2 justify-content-center">
                     {!update && (
-                      <Col sm={10}>
+                      <div sm={10}>
                         <Input
                           label="Home/Campus Location * (for IDL)"
                           name="visitationArea"
                           placeholder="Enter the location for IDL Visitaion"
                           aria-describedby="visitationArea"
                         />
-                      </Col>
+                      </div>
                     )}
 
-                    <Col sm={10}>
+                    <div sm={10}>
                       <SearchBacenta
                         name="bacenta"
                         label="Bacenta*"
@@ -374,25 +374,25 @@ const MemberForm = ({
                         initialValue={initialValues?.bacenta?.name || null}
                         error={formik.errors.bacenta && formik.errors.bacenta}
                       />
-                    </Col>
-                    <Col sm={10}>
+                    </div>
+                    <div sm={10}>
                       <Select
                         label="Basonta"
                         name="basonta"
                         options={basontaOptions}
                         defaultOption="Basonta"
                       />
-                    </Col>
+                    </div>
                   </div>
                 </div>
-                <Col>
+                <div>
                   <div className="text-center">
                     <SubmitButton formik={formik} />
                   </div>
-                </Col>
-              </Row>
+                </div>
+              </div>
             </Form>
-          </Container>
+          </div>
         )}
       </Formik>
     )

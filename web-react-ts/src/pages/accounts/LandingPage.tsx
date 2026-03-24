@@ -1,16 +1,15 @@
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { Container } from 'react-bootstrap'
 import HeadingSecondary from 'components/HeadingSecondary'
 import ChurchList from 'pages/services/ChurchList'
 
 const AccountsLandingPage = () => {
   return (
-    <Container>
+    <div>
       <HeadingPrimary>Council Accounts</HeadingPrimary>
       <HeadingSecondary>Click on one of churches below</HeadingSecondary>
 
       <ChurchList color="accounts" />
-    </Container>
+    </div>
   )
 }
 

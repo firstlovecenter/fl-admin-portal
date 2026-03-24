@@ -5,7 +5,6 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { useMutation, useQuery } from '@apollo/client'
 import { useContext } from 'react'
 import * as Yup from 'yup'
-import { Card, Col, Container, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import { BACENTA_ARRIVALS } from '../arrivalsQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -19,6 +18,7 @@ import Select from 'components/formik/Select'
 import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import ImageUpload from 'components/formik/ImageUpload'
 import { BacentaWithArrivals } from '../arrivals-types'
+import { Card, CardContent, CardFooter } from 'components/ui/card'
 
 type FormOptions = {
   leaderDeclaration: string
@@ -87,7 +87,7 @@ const FormAddVehicleRecord = () => {
         onSubmit={onSubmit}
       >
         {(formik) => (
-          <Container>
+          <div>
             <HeadingPrimary loading={loading}>
               Record Bussing Data
             </HeadingPrimary>
@@ -102,8 +102,8 @@ const FormAddVehicleRecord = () => {
             </HeadingPrimary>
 
             <Form>
-              <Row className="row-cols-1 row-cols-md-2 mt-2">
-                <Col className="mb-2">
+              <div className="row-cols-1 row-cols-md-2 mt-2">
+                <div className="mb-2">
                   <small className="form-text label">Date of Service</small>
                   <HeadingPrimary>
                     {parseDate(bacenta?.bussing[0].serviceDate.date.toString())}
@@ -116,7 +116,7 @@ const FormAddVehicleRecord = () => {
                     options={VEHICLE_OPTIONS_WITH_CAR}
                     defaultOption="Select a vehicle type"
                   />
-                </Col>
+                </div>
 
                 <ImageUpload
                   label="Upload A Bussing Picture"
@@ -125,23 +125,23 @@ const FormAddVehicleRecord = () => {
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="UploadBussingPicture"
                 />
-              </Row>
+              </div>
 
-              <Row>
-                <Container>
+              <div>
+                <div>
                   <Card className="text-center mt-3 p-2">
-                    <Card.Body>
+                    <CardContent>
                       I can confirm that the above data is correct and I am
                       cursed if I do the work of the Lord deceitfully
-                    </Card.Body>
-                    <Card.Footer>
+                    </CardContent>
+                    <CardFooter>
                       <SubmitButton formik={formik} />
-                    </Card.Footer>
+                    </CardFooter>
                   </Card>
-                </Container>
-              </Row>
+                </div>
+              </div>
             </Form>
-          </Container>
+          </div>
         )}
       </Formik>
     </ApolloWrapper>

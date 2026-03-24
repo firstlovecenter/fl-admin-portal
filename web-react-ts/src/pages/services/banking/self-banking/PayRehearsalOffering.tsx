@@ -14,7 +14,6 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { MOMO_NUM_REGEX, throwToSentry } from 'global-utils'
 import { MOBILE_NETWORK_OPTIONS } from 'pages/arrivals/arrivals-utils'
 import SubmitButton from 'components/formik/SubmitButton'
-import { Button, Col, Container, Modal, Row, Spinner } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { parseDate } from 'jd-date-utils'
@@ -26,6 +25,9 @@ import Select from 'components/formik/Select'
 import useModal from 'hooks/useModal'
 import './ConfirmPayment.css'
 import { MemberContext } from 'contexts/MemberContext'
+import { Button } from 'components/ui/button'
+import { Loader2 } from 'lucide-react'
+import { Dialog, DialogContent } from 'components/ui/dialog'
 
 type PayOfferingProps = {
   church: Hub
@@ -140,7 +142,7 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
       )}
 
       <ApolloWrapper data={data} loading={loading} error={error}>
-        <Container>
+        <div>
           <HeadingPrimary loading={loading}>
             Offering Self-Banking
           </HeadingPrimary>
@@ -155,8 +157,8 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
           >
             {(formik) => (
               <Form>
-                <Modal show={show} onHide={handleClose}>
-                  <Modal.Body>
+                <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }}><DialogContent>
+                  
                     <div className="p-4">
                       A registration token has just been sent to your phone via
                       text message. Please enter it here 👇🏾
@@ -184,7 +186,7 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
                         {otpSent ? (
                           <>
                             <span className="me-2">Sending</span>
-                            <Spinner animation="border" size="sm" />
+                            <Loader2 className="h-6 w-6 animate-spin" />
                           </>
                         ) : (
                           'Submit OTP'
@@ -217,44 +219,44 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
                         Didn't receive a token? Click <u>here</u> to resend
                       </p>
                     </div>
-                  </Modal.Body>
-                </Modal>
-                <Row className="row-cols-1 row-cols-md-2 mt-2">
-                  <Col className="mb-2">
+                  
+                </DialogContent></Dialog>
+                <div className="row-cols-1 row-cols-md-2 mt-2">
+                  <div className="mb-2">
                     <small className="form-text label">Date of Service</small>
                     <HeadingPrimary>
                       {parseDate(service?.serviceDate.date)}
                     </HeadingPrimary>
 
-                    <Row className="row-cols-2 mb-2">
-                      <Col>
+                    <div className="row-cols-2 mb-2">
+                      <div>
                         <small className="form-text label">Cash</small>
                         <div className="fw-bold">
                           {service?.cash} {currentUser.currency}
                         </div>
-                      </Col>
-                      <Col>
+                      </div>
+                      <div>
                         <small className="form-text label ">Charges</small>
                         <div className="fw-bold yellow">
                           {(cashAndCharges - service?.cash).toFixed(2)}{' '}
                           {currentUser.currency}
                         </div>
-                      </Col>
-                    </Row>
+                      </div>
+                    </div>
                     <small>
                       The charge represents a small fee for using the self
                       banking feature
                     </small>
-                    <Row className="my-4">
-                      <Col>
+                    <div className="my-4">
+                      <div>
                         <small className="form-text label">
                           Cash + Charges
                         </small>
                         <div className="fw-bold">
                           {cashAndCharges} {currentUser.currency}
                         </div>
-                      </Col>
-                    </Row>
+                      </div>
+                    </div>
 
                     <Select
                       name="mobileNetwork"
@@ -263,8 +265,8 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
                     />
                     <Input name="mobileNumber" label="MoMo Number" />
                     <Input name="momoName" label="MoMo Name" />
-                  </Col>
-                </Row>
+                  </div>
+                </div>
                 <div className="d-flex justify-content-center">
                   <SubmitButton formik={formik}>
                     <>Make Payment</>
@@ -273,7 +275,7 @@ const PayRehearsalOffering = (props: PayOfferingProps) => {
               </Form>
             )}
           </Formik>
-        </Container>
+        </div>
       </ApolloWrapper>
     </div>
   )

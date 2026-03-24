@@ -5,7 +5,6 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { useMutation, useQuery } from '@apollo/client'
 import React, { useContext, useEffect } from 'react'
 import * as Yup from 'yup'
-import { Col, Container, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import { BACENTA_ARRIVALS } from '../arrivalsQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -88,7 +87,7 @@ const FormMobilisationSubmission = () => {
         validateOnMount={true}
       >
         {(formik) => (
-          <Container>
+          <div>
             <HeadingPrimary loading={loading}>
               Upload Pre-Mobilisation Picture
             </HeadingPrimary>
@@ -103,8 +102,8 @@ const FormMobilisationSubmission = () => {
             </HeadingPrimary>
 
             <Form>
-              <Row className="row-cols-1 mt-2">
-                <Col className="mb-2">
+              <div className="row-cols-1 mt-2">
+                <div className="mb-2">
                   <small className="form-text label">
                     Date of Service*
                     <i className="text-secondary">(Day/Month/Year)</i>
@@ -122,13 +121,13 @@ const FormMobilisationSubmission = () => {
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="ImageUpload"
                   />
-                </Col>
-                <Col className="text-center">
+                </div>
+                <div className="text-center">
                   <SubmitButton formik={formik} />
-                </Col>
-              </Row>
+                </div>
+              </div>
             </Form>
-          </Container>
+          </div>
         )}
       </Formik>
     </ApolloWrapper>

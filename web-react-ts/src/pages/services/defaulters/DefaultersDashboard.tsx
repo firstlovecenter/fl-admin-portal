@@ -3,7 +3,6 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { capitalise, plural } from 'global-utils'
 import React, { useContext } from 'react'
-import { Accordion, Col, Container, Row } from 'react-bootstrap'
 import {
   GOVERNORSHIP_DEFAULTERS,
   COUNCIL_DEFAULTERS,
@@ -308,7 +307,7 @@ const DefaultersDashboard = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error}>
-        <Container>
+        <div>
           <HeadingPrimary
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
@@ -319,70 +318,66 @@ const DefaultersDashboard = () => {
               ...permitLeaderAdmin('HubCouncil'),
             ]}
           >
-            <Col xs={12} className="mb-3">
+            <div xs={12} className="mb-3">
               {aggregates?.title && (
                 <DefaulterInfoCard defaulter={aggregates} />
               )}
-            </Col>
+            </div>
           </RoleView>
-          <Accordion
-            defaultActiveKey={getDefaultActiveKey(
-              church as HigherChurchWithDefaulters
-            )}
-          >
-            <Accordion.Item eventKey="0">
+          <div className="accordion">
+            <div className="accordion-item border-b">
               {['Campus', 'Oversight', 'Denomination'].includes(
                 church?.__typename ?? ''
               ) && (
                 <>
-                  <Accordion.Header>
+                  <div className="accordion-header py-2 font-medium cursor-pointer">
                     <div>
                       <HeadingSecondary>Stream Services</HeadingSecondary>
                       <PlaceholderCustom as="h6" loading={!church}>
                         <h6>{`Active Streams: ${church?.activeStreamCount}`}</h6>
                       </PlaceholderCustom>
                     </div>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
+                  </div>
+                  <div className="accordion-body">
+                    <div>
                       {streamDefaultersArray.map((defaulter, i) => (
-                        <Col key={i} xs={6} className="mb-3">
+                        <div key={i} xs={6} className="mb-3">
                           <DefaulterInfoCard defaulter={defaulter} />
-                        </Col>
+                        </div>
                       ))}
-                    </Row>
-                  </Accordion.Body>
+                    </div>
+                  </div>
                 </>
               )}
-            </Accordion.Item>
+            </div>
 
-            <Accordion.Item eventKey="1">
+            <div className="accordion-item border-b">
               {['CreativeArts', 'Ministry', 'HubCouncil'].includes(
                 church?.__typename ?? ''
               ) && (
                 <>
-                  <Accordion.Header>
-                    <Col xs={12}>
+                  <div className="accordion-header py-2 font-medium cursor-pointer">
+                    <div xs={12}>
                       <HeadingSecondary>Rehearsals</HeadingSecondary>
                       <PlaceholderCustom as="h6" loading={!church}>
                         <h6>{`Active Hubs: ${church?.activeHubCount}`}</h6>
                       </PlaceholderCustom>
-                    </Col>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
+                    </div>
+                  </div>
+                  <div className="accordion-body">
+                    <div>
                       {rehearsalDefaulters.map((defaulter, i) => (
-                        <Col key={i} xs={6} className="mb-3">
+                        <div key={i} xs={6} className="mb-3">
                           <DefaulterInfoCard defaulter={defaulter} />
-                        </Col>
+                        </div>
                       ))}
-                    </Row>
-                  </Accordion.Body>
+                    </div>
+                  </div>
                 </>
               )}
-            </Accordion.Item>
+            </div>
 
-            <Accordion.Item eventKey="2">
+            <div className="accordion-item border-b">
               {[
                 'Campus',
                 'Stream',
@@ -394,65 +389,65 @@ const DefaultersDashboard = () => {
                 'CreativeArts',
               ].includes(church?.__typename ?? '') && (
                 <>
-                  <Accordion.Header>
+                  <div className="accordion-header py-2 font-medium cursor-pointer">
                     <div>
                       <HeadingSecondary>Bacenta Services</HeadingSecondary>
                       <PlaceholderCustom as="h6" loading={!church}>
                         <h6>{`Active Bacentas: ${church?.activeBacentaCount}`}</h6>
                       </PlaceholderCustom>
                     </div>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
+                  </div>
+                  <div className="accordion-body">
+                    <div>
                       {bacentaDefaulters.map((defaulter, i) => (
-                        <Col key={i} xs={6} className="mb-3">
+                        <div key={i} xs={6} className="mb-3">
                           <DefaulterInfoCard defaulter={defaulter} />
-                        </Col>
+                        </div>
                       ))}
-                    </Row>
-                  </Accordion.Body>
+                    </div>
+                  </div>
                 </>
               )}
-            </Accordion.Item>
-            <Accordion.Item eventKey="3">
+            </div>
+            <div className="accordion-item border-b">
               {['Campus', 'Stream', 'Council'].includes(
                 church?.__typename ?? ''
               ) && (
                 <>
-                  <Accordion.Header>Joint Services</Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
+                  <div className="accordion-header py-2 font-medium cursor-pointer">Joint Services</div>
+                  <div className="accordion-body">
+                    <div>
                       {jointServiceDefaulters.map((defaulter, i) => {
                         if (!defaulter.data) return null
 
                         return (
-                          <Col key={i} xs={6} className="mb-3">
+                          <div key={i} xs={6} className="mb-3">
                             <DefaulterInfoCard defaulter={defaulter} />
                             <hr />
-                          </Col>
+                          </div>
                         )
                       })}
-                    </Row>
-                  </Accordion.Body>
+                    </div>
+                  </div>
                 </>
               )}
-            </Accordion.Item>
+            </div>
 
-            <Accordion.Item eventKey="4">
+            <div className="accordion-item border-b">
               {['Campus'].includes(church?.__typename ?? '') && (
                 <>
-                  <Accordion.Header>
+                  <div className="accordion-header py-2 font-medium cursor-pointer">
                     <div>
                       <HeadingSecondary>Rehearsals</HeadingSecondary>
                       <PlaceholderCustom as="h6" loading={!church}>
                         <h6>{`Active Hubs: ${church?.activeHubCount}`}</h6>
                       </PlaceholderCustom>
                     </div>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
+                  </div>
+                  <div className="accordion-body">
+                    <div>
                       <RoleView roles={['leaderCampus', 'adminCampus']}>
-                        <Col xs={12} className="mb-3">
+                        <div xs={12} className="mb-3">
                           {aggregates?.title && (
                             <DefaulterInfoCard
                               defaulter={{
@@ -462,34 +457,34 @@ const DefaultersDashboard = () => {
                               }}
                             />
                           )}
-                        </Col>
+                        </div>
                       </RoleView>
 
                       {rehearsalDefaulters.map((defaulter, i) => (
-                        <Col key={i} xs={6} className="mb-3">
+                        <div key={i} xs={6} className="mb-3">
                           <DefaulterInfoCard defaulter={defaulter} />
-                        </Col>
+                        </div>
                       ))}
-                    </Row>
-                  </Accordion.Body>
+                    </div>
+                  </div>
                 </>
               )}
-            </Accordion.Item>
-          </Accordion>
-          <Row>
+            </div>
+          </div>
+          <div>
             {loading && (
-              <Row>
+              <div>
                 {[1, 2, 3, 4, 5].map((number: number) => (
-                  <Col key={number} xs={6} className="mb-3">
+                  <div key={number} xs={6} className="mb-3">
                     <DefaulterInfoCard
                       defaulter={{ title: '-', data: undefined, link: '#' }}
                     />
-                  </Col>
+                  </div>
                 ))}
-              </Row>
+              </div>
             )}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

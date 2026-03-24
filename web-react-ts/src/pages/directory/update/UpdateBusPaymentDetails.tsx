@@ -10,7 +10,6 @@ import {
 import * as Yup from 'yup'
 import { useNavigate } from 'react-router'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Card, Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { Form, Formik, FormikHelpers } from 'formik'
@@ -34,6 +33,8 @@ import { MemberContext } from 'contexts/MemberContext'
 import Select from 'components/formik/Select'
 import Input from 'components/formik/Input'
 import RadioButtons from 'components/formik/RadioButtons'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
 
 type FormOptions = {
   name: string
@@ -154,7 +155,7 @@ const UpdateBusPayment = () => {
       loading={bacentaLoading}
       error={bacentaError}
     >
-      <Container>
+      <div>
         <HeadingPrimary>Bacenta Bussing Details Update</HeadingPrimary>
         <HeadingSecondary>{initialValues.name}</HeadingSecondary>
 
@@ -168,10 +169,10 @@ const UpdateBusPayment = () => {
             <div className="py-4">
               <Form>
                 <div className="form-group">
-                  <Row className="row-cols-1 row-cols-md-2">
-                    <Col className="mb-2">
+                  <div className="row-cols-1 row-cols-md-2">
+                    <div className="mb-2">
                       <RoleView roles={permitAdminArrivals('Stream')}>
-                        <Row className="form-row">
+                        <div className="form-row">
                           <Input
                             name="urvanTopUp"
                             label="Urvan Church Top Up (One Way)"
@@ -182,18 +183,18 @@ const UpdateBusPayment = () => {
                             label="Sprinter Church Top Up (One Way)"
                             placeholder={`Enter Amount in ${currentUser.currency}`}
                           />
-                          <Container className="my-2">
+                          <div className="my-2">
                             <Card border="warning">
-                              <Card.Body>
+                              <CardContent>
                                 <RadioButtons
                                   name="outbound"
                                   label="Are They Bussing Back?"
                                   options={OUTBOUND_OPTIONS}
                                 />
-                              </Card.Body>
+                              </CardContent>
                             </Card>
-                          </Container>
-                        </Row>
+                          </div>
+                        </div>
                       </RoleView>
                       <RoleView
                         roles={['leaderBacenta']}
@@ -258,8 +259,8 @@ const UpdateBusPayment = () => {
                             </div>
                           </Popup>
                         )}
-                        <Row>
-                          <Col>
+                        <div>
+                          <div>
                             <Select
                               name="mobileNetwork"
                               label="Mobile Network"
@@ -272,18 +273,18 @@ const UpdateBusPayment = () => {
                             />
 
                             <Input name="momoName" label="MoMo Name" />
-                          </Col>
-                        </Row>
+                          </div>
+                        </div>
                       </RoleView>
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
                 </div>
                 <SubmitButton formik={formik} />
               </Form>
             </div>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

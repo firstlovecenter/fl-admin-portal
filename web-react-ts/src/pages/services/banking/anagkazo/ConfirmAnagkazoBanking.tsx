@@ -1,5 +1,4 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { Button, Card, Container, Spinner, Table } from 'react-bootstrap'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
 import PlaceholderCustom from 'components/Placeholder'
@@ -19,6 +18,10 @@ import Input from 'components/formik/Input'
 import './TellerSelect.css'
 import { getWeekNumber } from '@jaedag/admin-portal-types'
 import { Church } from 'global-types'
+import { Button } from 'components/ui/button'
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from 'components/ui/table'
+import { Loader2 } from 'lucide-react'
+import { Card, CardFooter } from 'components/ui/card'
 
 type FormOptions = {
   defaulterSearch: string
@@ -90,7 +93,7 @@ const ConfirmAnagkazoBanking = () => {
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+      <div>
         <PlaceholderCustom xs={12} as="h1">
           <div className="text-center">
             <h1 className="mb-0  page-header">{`${church?.name} ${churchType}`}</h1>
@@ -115,13 +118,13 @@ const ConfirmAnagkazoBanking = () => {
               )}
             </Formik>
             <div className="text-center mt-2 mb-3">Week {getWeekNumber()}</div>
-            <Container>
+            <div>
               <div className="d-grid ">
                 {isOpen && (
                   <Popup handleClose={togglePopup}>
                     {governorshipServiceLoading ? (
                       <div className="center-spinner">
-                        <Spinner animation="border" variant="secondary" />
+                        <Loader2 className="h-6 w-6 animate-spin" />
                       </div>
                     ) : (
                       <>
@@ -129,7 +132,7 @@ const ConfirmAnagkazoBanking = () => {
                           {selected?.name} {selected?.__typename}
                         </h3>
                         <h6 className="text-center">Confirm Offering?</h6>
-                        <Table striped bordered hover variant="dark">
+                        <Table>
                           <tbody>
                             <tr>
                               <td>Income</td>
@@ -152,7 +155,7 @@ const ConfirmAnagkazoBanking = () => {
                         </i>
                         <div className="text-end mt-3">
                           <Button
-                            variant="primary"
+                            variant="default"
                             type="submit"
                             disabled={isSubmitting}
                             onClick={async () => {
@@ -178,7 +181,7 @@ const ConfirmAnagkazoBanking = () => {
                           >
                             {isSubmitting ? (
                               <>
-                                <Spinner animation="grow" size="sm" />
+                                <Loader2 className="h-6 w-6 animate-spin" />
                                 <span> Submitting</span>
                               </>
                             ) : (
@@ -211,7 +214,7 @@ const ConfirmAnagkazoBanking = () => {
                         </p>
                       </div>
                     </div>
-                    <Card.Footer className="text-center">
+                    <CardFooter className="text-center">
                       <Button
                         disabled={governorshipServiceLoading}
                         onClick={async () => {
@@ -230,14 +233,14 @@ const ConfirmAnagkazoBanking = () => {
                         {governorshipServiceLoading &&
                         index === defaulterIndex ? (
                           <>
-                            <Spinner animation="border" size="sm" />{' '}
+                            <Loader2 className="h-6 w-6 animate-spin" />{' '}
                             <span>Loading...</span>
                           </>
                         ) : (
                           'Confirm Offering'
                         )}
                       </Button>
-                    </Card.Footer>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>
@@ -245,10 +248,10 @@ const ConfirmAnagkazoBanking = () => {
               {!bankingDefaultersList?.length && !loading && (
                 <NoDataComponent text="There are no services to be confirmed" />
               )}
-            </Container>
+            </div>
           </div>
         </ApolloWrapper>
-      </Container>
+      </div>
     </div>
   )
 }

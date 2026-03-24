@@ -7,10 +7,10 @@ import { throwToSentry } from 'global-utils'
 import { parseDate } from 'jd-date-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import React, { useContext } from 'react'
-import { Card, Col, Container, Row } from 'react-bootstrap'
-import { CheckCircleFill, XCircleFill } from 'react-bootstrap-icons'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BACENTA_BANKING_SLIP_QUERIES } from '../../ServicesQueries'
+import { Card, CardContent, CardHeader } from 'components/ui/card'
 
 const BacentaBankingSlipView = () => {
   const { bacentaId, clickCard } = useContext(ChurchContext)
@@ -23,7 +23,7 @@ const BacentaBankingSlipView = () => {
   throwToSentry('', error)
 
   return (
-    <Container>
+    <div>
       <HeadingPrimary loading={loading}>{bacenta?.name}</HeadingPrimary>
 
       {data?.bacentas[0].services.map(
@@ -50,27 +50,27 @@ const BacentaBankingSlipView = () => {
                 navigate('/bacenta/service-details')
               }}
             >
-              <Card.Header>
+              <CardHeader>
                 <b>{parseDate(service.serviceDate.date)}</b>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <div>
                     <span>Offering: {service.income}</span>
-                  </Col>
-                  <Col className="col-auto">
+                  </div>
+                  <div className="col-auto">
                     {service.bankingSlip ? (
                       <span className="text-success fw-bold">
-                        <CheckCircleFill color="green" size={35} /> Filled
+                        <CheckCircle2 color="green" size={35} /> Filled
                       </span>
                     ) : (
                       <span className="text-danger fw-bold">
-                        <XCircleFill color="red" size={35} /> Not Filled
+                        <XCircle color="red" size={35} /> Not Filled
                       </span>
                     )}
-                  </Col>
-                </Row>
-              </Card.Body>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
           )
         }
@@ -80,23 +80,23 @@ const BacentaBankingSlipView = () => {
         placeholder.map((service, index) => {
           return (
             <Card key={index} className="mb-2">
-              <Card.Header>
+              <CardHeader>
                 <PlaceholderCustom as="p" loading={loading}></PlaceholderCustom>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <div>
                     <PlaceholderCustom
                       as="span"
                       loading={loading}
                     ></PlaceholderCustom>
-                  </Col>
-                </Row>
-              </Card.Body>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
           )
         })}
-    </Container>
+    </div>
   )
 }
 

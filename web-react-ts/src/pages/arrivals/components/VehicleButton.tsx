@@ -1,10 +1,10 @@
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Button } from 'react-bootstrap'
-import { CheckCircleFill } from 'react-bootstrap-icons'
+import { CheckCircle2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { VehicleRecord } from '../arrivals-types'
 import ButtonIcons from './ButtonIcons'
+import { Button } from 'components/ui/button'
 
 const VehicleButton = ({
   record,
@@ -35,7 +35,7 @@ const VehicleButton = ({
       <ButtonIcons type={record?.vehicle} />
       {record?.vehicle} ({record?.attendance || '0'}){'  '}
       {record?.arrivalTime ? (
-        <CheckCircleFill className="ms-3" color="white" size={20} />
+        <CheckCircle2 className="ms-3" color="white" size={20} />
       ) : null}
     </Button>
   )

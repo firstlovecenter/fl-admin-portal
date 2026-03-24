@@ -12,7 +12,6 @@ import { HUBCOUNCIL_GRAPHS } from './GraphsQueries'
 import MembershipCard from './CompMembershipCard'
 import StatDisplay from './CompStatDisplay'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Col, Container, Row } from 'react-bootstrap'
 import GraphDropdown from './GraphDropdown'
 import { MemberContext } from 'contexts/MemberContext'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
@@ -34,45 +33,45 @@ export const HubCouncilGraphs = () => {
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data}>
-      <Container>
+      <div>
         <LeaderAvatar
           leader={data?.hubCouncils[0].leader}
           leaderTitle="Hub Leader"
         />
 
-        <Row className="row-cols-2">
-          <Col>
+        <div className="row-cols-2">
+          <div>
             <MembershipCard
               link="/hub/members"
               title="Membership"
               count={data?.hubCouncils[0].memberCount}
             />
-          </Col>
-          <Col>
+          </div>
+          <div>
             <GraphDropdown
               graphs={graphs}
               setGraphs={setGraphs}
               setChurchData={setChurchData}
               data={data?.hubCouncils[0]}
             />
-          </Col>
-        </Row>
-        <Row className="mt-3">
-          <Col>
+          </div>
+        </div>
+        <div className="mt-3">
+          <div>
             <StatDisplay
               title="Avg Weekly Attendance"
               statistic={getMonthlyStatAverage(churchData, 'attendance')}
             />
-          </Col>
+          </div>
           {isIncomeGraph(graphs, currentUser) && (
-            <Col>
+            <div>
               <StatDisplay
                 title="Avg Weekly Income"
                 statistic={getMonthlyStatAverage(churchData, 'income')}
               />
-            </Col>
+            </div>
           )}
-        </Row>
+        </div>
 
         {!currentUser.noIncomeTracking ? (
           <ChurchGraph
@@ -93,7 +92,7 @@ export const HubCouncilGraphs = () => {
             income={false}
           />
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

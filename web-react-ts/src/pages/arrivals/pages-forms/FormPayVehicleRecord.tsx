@@ -7,7 +7,6 @@ import { ServiceContext } from 'contexts/ServiceContext'
 import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext } from 'react'
-import { Button, Card, Col, Container, Modal, Row } from 'react-bootstrap'
 import { DISPLAY_VEHICLE_PAYMENT_RECORDS } from '../arrivalsQueries'
 import { SEND_VEHICLE_SUPPORT } from '../arrivalsMutation'
 import { useNavigate } from 'react-router'
@@ -26,6 +25,9 @@ import TableFromArrays from 'components/TableFromArrays/TableFromArrays'
 import useModal from 'hooks/useModal'
 import RadioButtons from 'components/formik/RadioButtons'
 import { OUTBOUND_OPTIONS } from '../arrivals-utils'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardFooter } from 'components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from 'components/ui/dialog'
 
 type FormOptions = {
   momoNumber: string
@@ -126,46 +128,47 @@ const FormPayVehicleRecord = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <>
-        <Container>
+        <div>
           <PlaceholderCustom as="h3" loading={loading}>
             <HeadingPrimary>{`Vehicle Attendance Form`}</HeadingPrimary>
           </PlaceholderCustom>
-        </Container>
+        </div>
 
-        <Container className="my-4">
-          <Row>
-            <Col className="col-auto">
+        <div className="my-4">
+          <div>
+            <div className="col-auto">
               <CloudinaryImage
                 src={bacenta?.leader.pictureUrl}
                 className="avatar"
               />
-            </Col>
-            <Col>
+            </div>
+            <div>
               <div>{`${bacenta?.name} Bacenta`}</div>
               <div className="text-secondary">{`Leader: ${bacenta?.leader.fullName}`}</div>
-            </Col>
-          </Row>
-          <Modal className="dark" show={show} onHide={handleClose} centered>
-            <Modal.Header>
-              <Modal.Title>{bacenta?.name} Bacenta Picture</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
+            </div>
+          </div>
+          <Dialog open={show} onOpenChange={(open) => { if (!open) handleClose() }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{bacenta?.name} Bacenta Picture</DialogTitle>
+            </DialogHeader>
+            
               <CloudinaryImage
                 className="bus-picture"
                 src={vehicle?.picture}
                 size="respond"
               />
-            </Modal.Body>
-            <Modal.Footer>
+            
+            <DialogFooter>
               <Button variant="secondary" onClick={handleClose}>
                 Close
               </Button>
-            </Modal.Footer>
-          </Modal>
-          <Row className="mt-4">
+            </DialogFooter>
+          </DialogContent></Dialog>
+          <div className="mt-4">
             <TableFromArrays tableArray={detailRows} loading={loading} />
-          </Row>
-        </Container>
+          </div>
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -173,7 +176,7 @@ const FormPayVehicleRecord = () => {
           onSubmit={onSubmit}
         >
           {(formik) => (
-            <Container>
+            <div>
               <Form>
                 <Input
                   name="vehicleTopUp"
@@ -181,13 +184,13 @@ const FormPayVehicleRecord = () => {
                   placeholder={vehicle?.vehicleTopUp.toString()}
                 />
                 <Card border="warning" className="my-3">
-                  <Card.Body>
+                  <CardContent>
                     <RadioButtons
                       name="outbound"
                       label="Are They Bussing Back?"
                       options={OUTBOUND_OPTIONS}
                     />
-                  </Card.Body>
+                  </CardContent>
                 </Card>
                 <Input
                   name="momoNumber"
@@ -201,16 +204,16 @@ const FormPayVehicleRecord = () => {
                 />
 
                 <Card className="text-center mt-4">
-                  <Card.Body>
+                  <CardContent>
                     I can confirm that the above data is correct and I approve
                     the vehicle top up for this bacenta
-                  </Card.Body>
-                  <Card.Footer>
+                  </CardContent>
+                  <CardFooter>
                     <SubmitButton formik={formik} />
-                  </Card.Footer>
+                  </CardFooter>
                 </Card>
               </Form>
-            </Container>
+            </div>
           )}
         </Formik>
       </>

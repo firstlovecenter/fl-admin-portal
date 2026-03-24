@@ -3,16 +3,7 @@ import PlaceholderCustom from 'components/Placeholder'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
-import {
-  BarChartFill,
-  Book,
-  CashCoin,
-  PersonPlus,
-  Coin,
-  FileEarmarkArrowUpFill,
-  EmojiFrown,
-} from 'react-bootstrap-icons'
+import { BarChartFill, Book, CashCoin, PersonPlus, Coin, FileEarmarkArrowUpFill, EmojiFrown,  } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { ChurchLevel } from 'global-types'
 import RoleView from 'auth/RoleView'
@@ -32,7 +23,7 @@ const Services = () => {
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+      <div>
         <PlaceholderCustom xs={12} as="h1">
           <div className="text-center">
             <h1 className="mb-0  page-header">{`${church?.name} ${churchType}`}</h1>
@@ -166,7 +157,7 @@ const Services = () => {
             </RoleView>
           ) : null}
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

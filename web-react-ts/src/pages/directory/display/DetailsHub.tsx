@@ -7,7 +7,6 @@ import { Church, Hub } from 'global-types'
 import DisplaySontaDetails from 'components/DisplayChurchDetails/DisplaySontaDetails'
 import { permitAdmin } from 'permission-utils'
 import { check } from 'global-utils'
-import { Container } from 'react-bootstrap'
 import Breadcrumb from 'components/DisplayChurchDetails/Breadcrumb'
 import { DetailsArray } from './DetailsBacenta'
 
@@ -66,9 +65,9 @@ const DetailsHub = () => {
   return (
     <ApolloWrapper loading={hubLoading} error={hubError} data={hubData}>
       <>
-        <Container className="green">
+        <div className="green">
           {hub?.governorship && <Breadcrumb breadcrumb={churchCrumb} />}
-        </Container>
+        </div>
         <DisplaySontaDetails
           details={details}
           church={hub}

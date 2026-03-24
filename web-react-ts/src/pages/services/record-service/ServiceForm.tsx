@@ -10,7 +10,6 @@ import {
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
 import {
@@ -160,18 +159,18 @@ const ServiceForm = ({
       validateOnMount
     >
       {(formik) => (
-        <Container>
+        <div>
           <HeadingPrimary>
             Record Your {event || 'Service'} Details
           </HeadingPrimary>
           <h5 className="text-secondary">{`${church?.name} ${church?.__typename}`}</h5>
 
           <Form className="form-group">
-            <Row className="row-cols-1 row-cols-md-2">
+            <div className="row-cols-1 row-cols-md-2">
               {/* <!-- Service Form--> */}
-              <Col className="mb-2">
+              <div className="mb-2">
                 <div className="form-row d-flex justify-content-center">
-                  <Col>
+                  <div>
                     <small className="form-text label">
                       Date of Service*
                       <i className="text-secondary">(Day/Month/Year)</i>
@@ -206,8 +205,8 @@ const ServiceForm = ({
                         return (
                           <>
                             {treasurers.map((treasurer, index) => (
-                              <Row key={index} className="form-row">
-                                <Col>
+                              <div key={index} className="form-row">
+                                <div>
                                   <SearchMember
                                     name={`treasurers[${index}]`}
                                     placeholder="Start typing"
@@ -226,21 +225,21 @@ const ServiceForm = ({
                                           formik.errors.treasurers[index]
                                     }
                                   />
-                                </Col>
+                                </div>
 
-                                <Col className="col-auto d-flex">
+                                <div className="col-auto d-flex">
                                   <PlusSign onClick={() => push('')} />
                                   {index > 0 && (
                                     <MinusSign onClick={() => remove(index)} />
                                   )}
-                                </Col>
-                              </Row>
+                                </div>
+                              </div>
                             ))}
                           </>
                         )
                       }}
                     </FieldArray>
-                    <Col className="my-2 mt-2">
+                    <div className="my-2 mt-2">
                       <small>Upload Treasurer Selfie*</small>
                       <ImageUpload
                         name="treasurerSelfie"
@@ -248,8 +247,8 @@ const ServiceForm = ({
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="ImageUpload"
                       />
-                    </Col>
-                    <Col className="my-2">
+                    </div>
+                    <div className="my-2">
                       <small className="mb-3">
                         Upload Your Family Picture*
                       </small>
@@ -259,16 +258,16 @@ const ServiceForm = ({
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="UploadfamilyPicture"
                       />
-                    </Col>
+                    </div>
                     <div className="d-flex justify-content-center mt-3">
                       <SubmitButton formik={formik} />
                     </div>
-                  </Col>
+                  </div>
                 </div>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </Form>
-        </Container>
+        </div>
       )}
     </Formik>
   )

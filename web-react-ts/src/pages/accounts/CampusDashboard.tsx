@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { useContext } from 'react'
-import { Button, Container } from 'react-bootstrap'
 import { CAMPUS_ACCOUNT_DASHBOARD } from './accountsGQL'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -11,6 +10,7 @@ import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
 import { permitArrivals, permitLeaderAdmin } from 'permission-utils'
 import AccountBalanceCard from './components/AccountBalanceCard'
+import { Button } from 'components/ui/button'
 
 const CampusDashboard = () => {
   const { campusId } = useContext(ChurchContext)
@@ -26,7 +26,7 @@ const CampusDashboard = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div>
         <HeadingPrimary>{`${campus?.name} ${campus?.__typename}`}</HeadingPrimary>
         <HeadingSecondary>{campus?.leader.fullName}</HeadingSecondary>
 
@@ -81,7 +81,7 @@ const CampusDashboard = () => {
             </Button>
           </RoleView>
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

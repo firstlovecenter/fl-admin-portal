@@ -4,7 +4,6 @@ import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
 import { useContext } from 'react'
-import { Card, Col, Container, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import '../Arrivals.css'
@@ -13,6 +12,7 @@ import { HigherChurchWithArrivals } from '../arrivals-types'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import useSetUserChurch from 'hooks/useSetUserChurch'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
+import { Card, CardContent, CardHeader } from 'components/ui/card'
 
 const StreamByCouncil = () => {
   const { clickCard, streamId, arrivalDate } = useContext(ChurchContext)
@@ -32,11 +32,11 @@ const StreamByCouncil = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary
             loading={!stream}
           >{`${stream?.name} Stream By Council`}</HeadingPrimary>
-          <Row>
+          <div>
             {stream?.councils?.map(
               (council: HigherChurchWithArrivals, i: number) => {
                 const array = [
@@ -90,15 +90,15 @@ const StreamByCouncil = () => {
                 ]
 
                 return (
-                  <Col key={i} xs={12} className="mb-3">
+                  <div key={i} xs={12} className="mb-3">
                     <Card>
-                      <Card.Header>
+                      <CardHeader>
                         <div className="fw-bold">{`${council.name} ${council.__typename}`}</div>
                         <div className="text-secondary">
                           <MemberAvatarWithName member={council.leader} />
                         </div>
-                      </Card.Header>
-                      <Card.Body
+                      </CardHeader>
+                      <CardContent
                         onClick={() => {
                           clickCard(council)
                           setUserChurch(council)
@@ -120,34 +120,34 @@ const StreamByCouncil = () => {
                             </div>
                           ))}
                         </div>
-                      </Card.Body>
+                      </CardContent>
                     </Card>
-                  </Col>
+                  </div>
                 )
               }
             )}
 
             {(loading || !data) &&
               [1, 2, 3].map((placeholder, i) => (
-                <Col key={i} xs={12} className="mb-3">
+                <div key={i} xs={12} className="mb-3">
                   <Card>
-                    <Card.Header className="fw-bold">
+                    <CardHeader className="fw-bold">
                       <PlaceholderCustom
                         loading={loading}
                         className="fw-bold"
                       ></PlaceholderCustom>
-                    </Card.Header>
-                    <Card.Body>
+                    </CardHeader>
+                    <CardContent>
                       <PlaceholderCustom loading={loading} as="div" />
                       <PlaceholderCustom loading={loading} as="div" />
                       <PlaceholderCustom loading={loading} as="div" />
                       <PlaceholderCustom loading={loading} as="div" />
-                    </Card.Body>
+                    </CardContent>
                   </Card>
-                </Col>
+                </div>
               ))}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

@@ -13,12 +13,7 @@ import { alertMsg, throwToSentry } from 'global-utils'
 import { parseNeoTime } from 'jd-date-utils'
 import { permitAdmin, permitTellerStream } from 'permission-utils'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { Col, Container, Row, Button, Card } from 'react-bootstrap'
-import {
-  CheckCircleFill,
-  FileEarmarkArrowUpFill,
-  Trash,
-} from 'react-bootstrap-icons'
+import { CheckCircle2, FileEarmarkArrowUpFill, Trash,  } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import {
   MANUALLY_CONFIRM_OFFERING_PAYMENT,
@@ -26,6 +21,8 @@ import {
 } from './RecordServiceMutations'
 import './ServiceDetails.css'
 import CurrencySpan from 'components/CurrencySpan'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader } from 'components/ui/card'
 
 type ServiceDetailsProps = {
   service: ServiceRecord
@@ -75,7 +72,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   }, [service, navigate])
 
   if (loading) {
-    return <SpinnerPage />
+    return <Loader2 className="h-6 w-6 animate-spin" />
   }
 
   let table: TableArray = [
@@ -131,7 +128,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
     service?.cash && !service?.bankingProof && !service?.bankingSlip
 
   return (
-    <Container>
+    <div>
       <PlaceholderCustom as="h3" loading={loading}>
         <HeadingPrimary>{`${church?.__typename} Meeting Details`}</HeadingPrimary>
       </PlaceholderCustom>
@@ -156,19 +153,19 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
 
       {service?.name && service?.description && (
         <Card border="info" className="mb-3">
-          <Card.Header>
+          <CardHeader>
             <div className="fw-bold">{service.name}</div>
-          </Card.Header>
-          <Card.Body>
+          </CardHeader>
+          <CardContent>
             <div>{service.description}</div>
-          </Card.Body>
+          </CardContent>
         </Card>
       )}
 
-      <Row>
-        <Col>
+      <div>
+        <div>
           {service?.attendance && (
-            <Row className="d-flex justify-content-center">
+            <div className="d-flex justify-content-center">
               <TableFromArrays tableArray={table} loading={loading} />
               <div className="text-center">
                 {!currentUser.noIncomeTracking && service?.treasurerSelfie && (
@@ -281,14 +278,14 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                           }
                         }}
                       >
-                        <CheckCircleFill />
+                        <CheckCircle2 />
                         {submitting ? 'Confirming...' : 'Confirm Offering'}
                       </Button>
                     </RoleView>
                     <RoleView roles={permitAdmin('Stream')}>
                       <Button
                         className="mb-3"
-                        variant="danger"
+                        variant="destructive"
                         onClick={() => {
                           navigate(
                             `/${church?.__typename.toLowerCase()}/banking-slip/submission`
@@ -312,7 +309,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                   </Button>
                   <RoleView roles={['fishers']}>
                     <Button
-                      variant="danger"
+                      variant="destructive"
                       disabled={deleting}
                       onClick={handleDeleteService}
                       className="d-flex align-items-center justify-content-center gap-2"
@@ -323,21 +320,21 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                   </RoleView>
                 </div>
               </div>
-            </Row>
+            </div>
           )}
           {service?.noServiceReason && (
             <Card>
-              <Card.Body>
+              <CardContent>
                 <div>{`Service Cancelled on ${new Date(
                   service?.serviceDate.date
                 ).toDateString()}`}</div>
                 <div>{`Reason: ${service?.noServiceReason}`}</div>
-              </Card.Body>
+              </CardContent>
             </Card>
           )}
-        </Col>
-      </Row>
-    </Container>
+        </div>
+      </div>
+    </div>
   )
 }
 

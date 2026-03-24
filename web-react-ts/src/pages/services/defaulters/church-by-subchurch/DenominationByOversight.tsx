@@ -2,8 +2,7 @@ import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Card, Col, Row, Button, Container } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -12,6 +11,8 @@ import { HigherChurchWithDefaulters } from '../defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import { DENOMINATION_BY_OVERSIGHT } from '../stream-services/StreamDefaultersQueries'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader, CardFooter } from 'components/ui/card'
 
 const DenominationByOversight = () => {
   const { denominationId, clickCard } = useContext(ChurchContext)
@@ -28,24 +29,24 @@ const DenominationByOversight = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
+        <div>
           <HeadingPrimary
             loading={loading || !data?.denominations[0]?.name}
           >{`${data?.denominations[0]?.name} Denomination By Oversights`}</HeadingPrimary>
 
-          <Row>
+          <div>
             {data?.denominations.length ? (
               data?.denominations[0]?.oversights.map(
                 (oversight: HigherChurchWithDefaulters, i: number) => (
-                  <Col key={i} xs={12} className="mb-3">
+                  <div key={i} xs={12} className="mb-3">
                     <Card>
-                      <Card.Header className="fw-bold">
+                      <CardHeader className="fw-bold">
                         <div>{`${oversight.name} Oversight`}</div>
                         <div className="text-secondary">
                           {oversight.leader.fullName}
                         </div>
-                      </Card.Header>
-                      <Card.Body
+                      </CardHeader>
+                      <CardContent
                         onClick={() => {
                           clickCard(oversight)
                           navigate('/services/oversight-by-campus')
@@ -101,14 +102,14 @@ const DenominationByOversight = () => {
                           Cancelled Services This Week{' '}
                           {oversight.streamCancelledServicesThisWeekCount}
                         </div>
-                      </Card.Body>
-                      <Card.Footer>
+                      </CardContent>
+                      <CardFooter>
                         <div className="mb-2">
                           Contact Admin: {oversight?.admin?.fullName}
                         </div>
                         <a href={`tel:${oversight?.admin?.phoneNumber}`}>
-                          <Button variant="primary">
-                            <TelephoneFill /> Call
+                          <Button variant="default">
+                            <Phone /> Call
                           </Button>
                         </a>
                         <a
@@ -118,19 +119,19 @@ const DenominationByOversight = () => {
                           className="ms-3"
                         >
                           <Button variant="success">
-                            <Whatsapp /> WhatsApp
+                            <MessageCircle /> WhatsApp
                           </Button>
                         </a>
-                      </Card.Footer>
+                      </CardFooter>
                     </Card>
-                  </Col>
+                  </div>
                 )
               )
             ) : (
               <PlaceholderDefaulterList />
             )}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

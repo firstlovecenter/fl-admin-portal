@@ -6,7 +6,6 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Church } from 'global-types'
 import DisplaySontaDetails from 'components/DisplayChurchDetails/DisplaySontaDetails'
 import { permitAdmin } from 'permission-utils'
-import { Container } from 'react-bootstrap'
 import Breadcrumb from 'components/DisplayChurchDetails/Breadcrumb'
 import { DetailsArray } from './DetailsBacenta'
 
@@ -73,9 +72,9 @@ const DetailsMinistry = () => {
       data={ministryData}
     >
       <>
-        <Container className="green">
+        <div className="green">
           {ministry?.stream && <Breadcrumb breadcrumb={churchCrumb} />}
-        </Container>
+        </div>
         <DisplaySontaDetails
           details={details}
           church={ministry}
