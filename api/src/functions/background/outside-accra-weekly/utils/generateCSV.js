@@ -84,7 +84,55 @@ const generateCSV = (...dataArrays) => {
   return csvRows.join('\n')
 }
 
+const generateCombinedCSV = (
+  campusListData,
+  campusAttendanceIncomeData,
+  campusBankedIncomeData,
+  campusNotBankedIncomeData,
+  fellowshipAttendanceIncomeData,
+  weekdayBankedIncomeData,
+  weekdayNotBankedIncomeData
+) =>
+  generateCSV(
+    campusListData,
+    campusAttendanceIncomeData,
+    campusBankedIncomeData,
+    campusNotBankedIncomeData,
+    fellowshipAttendanceIncomeData,
+    weekdayBankedIncomeData,
+    weekdayNotBankedIncomeData
+  )
+
+const generateSundayServicesCSV = (
+  campusListData,
+  campusAttendanceIncomeData,
+  campusBankedIncomeData,
+  campusNotBankedIncomeData
+) =>
+  generateCSV(
+    campusListData,
+    campusAttendanceIncomeData,
+    campusBankedIncomeData,
+    campusNotBankedIncomeData
+  )
+
+const generateFellowshipCSV = (
+  campusListData,
+  fellowshipAttendanceIncomeData,
+  weekdayBankedIncomeData,
+  weekdayNotBankedIncomeData
+) =>
+  generateCSV(
+    campusListData,
+    fellowshipAttendanceIncomeData,
+    weekdayBankedIncomeData,
+    weekdayNotBankedIncomeData
+  )
+
 // Use CommonJS exports for AWS Lambda compatibility
 module.exports = {
   generateCSV,
+  generateCombinedCSV,
+  generateSundayServicesCSV,
+  generateFellowshipCSV,
 }
