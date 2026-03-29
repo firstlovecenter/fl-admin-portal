@@ -639,7 +639,7 @@ const bankingMutation = {
     args: { serviceRecordId: string; bankingSlip: string },
     context: Context
   ) => {
-    isAuth(permitAdmin('Campus'), context.jwt.roles)
+    isAuth(permitAdmin('Stream'), context.jwt.roles)
     const session = context.executionContext.session()
 
     await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
@@ -682,9 +682,19 @@ const bankingMutation = {
 
     if (
       context.jwt.roles.includes('tellerStream') &&
-      !['Stream', 'Campus', 'Oversight', 'Denomination'].some((churchLevel) =>
-        churchLabels.includes(churchLevel)
-      )
+      ![
+        'Bacenta',
+        'Governorship',
+        'Council',
+        'Stream',
+        'Campus',
+        'Oversight',
+        'Denomination',
+        'Hub',
+        'HubCouncil',
+        'Ministry',
+        'CreativeArts',
+      ].some((churchLevel) => churchLabels.includes(churchLevel))
     ) {
       throw new Error(
         'You are not allowed to manually confirm offering payment for this church'
