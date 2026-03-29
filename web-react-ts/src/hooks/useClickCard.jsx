@@ -476,6 +476,7 @@ const useClickCard = () => {
     setStreamId,
     setCouncilId,
     setGovernorshipId,
+    setBacentaId,
     setHubFellowshipId,
     setHubId,
     setHubCouncilId,

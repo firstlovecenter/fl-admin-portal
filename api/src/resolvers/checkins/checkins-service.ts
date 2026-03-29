@@ -18,6 +18,7 @@ import {
   CheckInRoleType,
   CheckInScopeAggregate,
   CheckInHistoryEntry,
+  CheckInEventSummary,
 } from './checkins-types'
 import { Context } from '../utils/neo4j-types'
 import neo4j from 'neo4j-driver'
@@ -142,6 +143,16 @@ export const queryEvents = async (
 ): Promise<CheckInEvent[]> => {
   const session = context.executionContext.session()
   try {
+    // Auto-end any events whose endsAt has passed — handles serverless environments
+    // where the background scheduler cannot run.
+    const nowIso = new Date().toISOString()
+    await session.run(
+      `MATCH (e:CheckInEvent)
+       WHERE e.status IN ['ACTIVE', 'PAUSED'] AND e.endsAt <= $nowIso
+       SET e.status = 'ENDED'`,
+      { nowIso }
+    )
+
     const where: string[] = []
     const params: Record<string, any> = {}
     if (filters.scopeLevel) {
@@ -285,8 +296,33 @@ export const getAdminScopes = async (
 }
 
 /**
+ * Expands a single scopeId to include all ancestor scope IDs in the church
+ * hierarchy (via the :HAS relationship). This allows a Bacenta leader to see
+ * events scoped at their parent Campus, Stream, etc.
+ */
+export const expandScopeToAncestors = async (
+  context: Context,
+  scopeId: string
+): Promise<string[]> => {
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `MATCH (church {id: $scopeId})
+       OPTIONAL MATCH (ancestor)-[:HAS*1..6]->(church)
+       WITH church.id AS churchId, collect(DISTINCT ancestor.id) AS ancestorIds
+       RETURN [churchId] + ancestorIds AS ids`,
+      { scopeId }
+    )
+    return (res.records[0]?.get('ids') as string[]) ?? [scopeId]
+  } finally {
+    await session.close()
+  }
+}
+
+/**
  * Returns the set of scopeIds the caller can see, combining both admin and
- * leader relationships in a single Neo4j round-trip.
+ * leader relationships in a single Neo4j round-trip. Includes ancestor scope
+ * IDs so a Bacenta leader can see events created at their Campus, Stream, etc.
  *
  * Returns null for denomination/oversight admins (no filter needed — they see
  * everything). Returns an empty array if the viewer has no scopes at all.
@@ -309,7 +345,11 @@ export const getViewerScopeIds = async (
       `MATCH (m:Member {id: $authId})
        OPTIONAL MATCH (m)-[:IS_ADMIN_FOR]->(adminChurch)
        OPTIONAL MATCH (m)-[:LEADS]->(leadChurch)
-       WITH collect(DISTINCT adminChurch.id) + collect(DISTINCT leadChurch.id) AS ids
+       WITH collect(DISTINCT adminChurch) + collect(DISTINCT leadChurch) AS churches
+       UNWIND churches AS church
+       WITH DISTINCT church WHERE church IS NOT NULL
+       OPTIONAL MATCH (ancestor)-[:HAS*1..6]->(church)
+       WITH collect(DISTINCT church.id) + collect(DISTINCT ancestor.id) AS ids
        RETURN [id IN ids WHERE id IS NOT NULL] AS ids`,
       { authId }
     )
@@ -376,26 +416,80 @@ export const getEligibleMembers = async (
   try {
     const scopeLabel = getScopeLabel(scopeLevel)
     const depth = getScopeDepth(scopeLevel)
-    const leadersOnly = attendanceType === 'LEADERS_ONLY'
-    const unitAlias = depth === 0 ? 'scope' : 'bacenta'
-    const memberMatch =
-      depth === 0
-        ? `MATCH (scope)<-[:BELONGS_TO]-(member:Member)`
-        : `MATCH (scope)-[:HAS*${depth}]->(bacenta:Bacenta)\n             MATCH (bacenta)<-[:BELONGS_TO]-(member:Member)`
-    const query = `
-      MATCH (scope:${scopeLabel} {id: $scopeId})
-      ${memberMatch}
-      OPTIONAL MATCH (member)-[leadRel:LEADS|IS_ADMIN_FOR]->()
-      WITH member, ${unitAlias} AS unit, COUNT(leadRel) AS leaderCount
-      WHERE $leadersOnly = false OR leaderCount > 0
-      RETURN DISTINCT member.id AS id,
-        member.firstName AS firstName,
-        member.lastName AS lastName,
-        unit.name AS unitName,
-        labels(unit) AS unitLabels,
-        CASE WHEN leaderCount > 0 THEN 'Leader/Admin' ELSE 'Member' END AS roleLabel
-    `
-    const res = await session.run(query, { scopeId, leadersOnly })
+
+    let query: string
+    if (attendanceType === 'LEADERS_ONLY') {
+      // Find members who LEAD a church that IS the scope or is a descendant of it.
+      // Excludes closed churches. Deduplicates members by picking their lowest-level
+      // (most specific) primary church within the scope.
+      if (depth === 0) {
+        // Bacenta scope: only the bacenta leader(s)
+        query = `
+          MATCH (scope:${scopeLabel} {id: $scopeId})
+          MATCH (member:Member)-[:LEADS|IS_ADMIN_FOR]->(scope)
+          RETURN DISTINCT member.id AS id,
+            member.firstName AS firstName,
+            member.lastName AS lastName,
+            scope.name AS unitName,
+            labels(scope) AS unitLabels,
+            'Leader/Admin' AS roleLabel
+        `
+      } else {
+        // Higher scope: include the scope itself and all active descendant churches.
+        // Closed churches (labels starting with "Closed") are excluded so their
+        // former leaders are not expected to check in.
+        query = `
+          MATCH (scope:${scopeLabel} {id: $scopeId})
+          OPTIONAL MATCH (scope)-[:HAS*1..${depth}]->(descendant)
+          WITH scope,
+            [d IN collect(DISTINCT descendant)
+             WHERE NOT ANY(l IN labels(d) WHERE l STARTS WITH 'Closed')] AS activeDescendants
+          UNWIND [scope] + activeDescendants AS church
+          MATCH (member:Member)-[:LEADS|IS_ADMIN_FOR]->(church)
+          WITH DISTINCT member.id AS memberId,
+            member.firstName AS firstName,
+            member.lastName AS lastName,
+            church,
+            CASE
+              WHEN church:Bacenta    THEN 0
+              WHEN church:Governorship OR church:Constituency THEN 1
+              WHEN church:Council    THEN 2
+              WHEN church:Stream     THEN 3
+              WHEN church:Campus     THEN 4
+              ELSE 5
+            END AS churchDepth
+          ORDER BY memberId, churchDepth ASC
+          WITH memberId, firstName, lastName, COLLECT(church)[0] AS primaryChurch
+          RETURN memberId AS id,
+            firstName,
+            lastName,
+            primaryChurch.name AS unitName,
+            labels(primaryChurch) AS unitLabels,
+            'Leader/Admin' AS roleLabel
+        `
+      }
+    } else {
+      // ALL_MEMBERS: everyone who belongs to a Bacenta under this scope
+      const memberMatch =
+        depth === 0
+          ? `MATCH (scope)<-[:BELONGS_TO]-(member:Member)`
+          : `MATCH (scope)-[:HAS*${depth}]->(bacenta:Bacenta)\n             MATCH (bacenta)<-[:BELONGS_TO]-(member:Member)`
+      const unitAlias = depth === 0 ? 'scope' : 'bacenta'
+      query = `
+        MATCH (scope:${scopeLabel} {id: $scopeId})
+        ${memberMatch}
+        OPTIONAL MATCH (member)-[leadRel:LEADS|IS_ADMIN_FOR]->()
+        WITH member, ${unitAlias} AS unit, COUNT(leadRel) AS leaderCount
+        RETURN DISTINCT member.id AS id,
+          member.firstName AS firstName,
+          member.lastName AS lastName,
+          unit.name AS unitName,
+          labels(unit) AS unitLabels,
+          CASE WHEN leaderCount > 0 THEN 'Leader/Admin' ELSE 'Member' END AS roleLabel
+      `
+    }
+
+    const res = await session.run(query, { scopeId })
     return res.records.map((record) => ({
       memberId: record.get('id'),
       firstName: record.get('firstName'),
@@ -721,11 +815,44 @@ export const isMemberLeaderOrAdminById = async (
   const session = context.executionContext.session()
   try {
     const leaderRes = await session.run(
-      `MATCH (member:Member {id: $memberId})-[:LEADS|IS_ADMIN_FOR]->(:Church)
+      `MATCH (member:Member {id: $memberId})-[:LEADS|IS_ADMIN_FOR]->()
        RETURN COUNT(member) AS count`,
       { memberId }
     )
     const count = leaderRes.records[0]?.get('count')?.toNumber?.() ?? 0
+    return count > 0
+  } finally {
+    await session.close()
+  }
+}
+
+/**
+ * Returns true if the member leads or admins any active church that IS the
+ * event scope or is a descendant of it. Mirrors the LEADERS_ONLY eligibility
+ * logic in getEligibleMembers.
+ */
+export const isMemberLeaderInScope = async (
+  context: Context,
+  scopeLevel: CheckInScopeLevel,
+  scopeId: string,
+  memberId: string
+): Promise<boolean> => {
+  const session = context.executionContext.session()
+  try {
+    const scopeLabel = getScopeLabel(scopeLevel)
+    const depth = getScopeDepth(scopeLevel)
+    const res = await session.run(
+      `MATCH (scope:${scopeLabel} {id: $scopeId})
+       OPTIONAL MATCH (scope)-[:HAS*1..${depth}]->(descendant)
+       WITH scope,
+         [d IN collect(DISTINCT descendant)
+          WHERE NOT ANY(l IN labels(d) WHERE l STARTS WITH 'Closed')] AS activeDescendants
+       UNWIND [scope] + activeDescendants AS church
+       MATCH (member:Member {id: $memberId})-[:LEADS|IS_ADMIN_FOR]->(church)
+       RETURN COUNT(DISTINCT church) AS count`,
+      { scopeId, memberId }
+    )
+    const count = res.records[0]?.get('count')?.toNumber?.() ?? 0
     return count > 0
   } finally {
     await session.close()
@@ -1105,6 +1232,51 @@ export const getCheckInEventHistory = async (
         description: props.description,
         performedById: props.performedById,
         performedByName: props.performedByName,
+      }
+    })
+  } finally {
+    await session.close()
+  }
+}
+
+/**
+ * Batch-fetch lightweight attendance stats for multiple events.
+ * Uses stored totalExpected (no eligible-member recalculation) — fast for report pages.
+ */
+export const getCheckInEventStatsBatch = async (
+  context: Context,
+  eventIds: string[]
+): Promise<CheckInEventSummary[]> => {
+  if (!eventIds.length) return []
+  const session = context.executionContext.session()
+  try {
+    const res = await session.run(
+      `UNWIND $eventIds AS eid
+       MATCH (e:CheckInEvent {id: eid})
+       OPTIONAL MATCH (r:CheckInRecord {eventId: eid})
+       RETURN e.id AS eventId,
+         e.totalExpected AS totalExpected,
+         COUNT(r) AS totalRecords,
+         SUM(CASE WHEN r IS NOT NULL AND r.checkedOutAt IS NOT NULL THEN 1 ELSE 0 END) AS checkedOutCount`,
+      { eventIds }
+    )
+    return res.records.map((rec) => {
+      const totalExpected = rec.get('totalExpected')?.toNumber?.() ?? 0
+      const totalRecords = rec.get('totalRecords')?.toNumber?.() ?? 0
+      const checkedOutCount = rec.get('checkedOutCount')?.toNumber?.() ?? 0
+      const checkedInCount = Math.max(0, totalRecords - checkedOutCount)
+      const defaultedCount = Math.max(0, totalExpected - totalRecords)
+      const percentage =
+        totalExpected > 0
+          ? Number(((checkedInCount / totalExpected) * 100).toFixed(1))
+          : 0
+      return {
+        eventId: rec.get('eventId'),
+        totalExpected,
+        checkedInCount,
+        checkedOutCount,
+        defaultedCount,
+        percentage,
       }
     })
   } finally {

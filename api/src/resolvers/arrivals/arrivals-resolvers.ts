@@ -46,7 +46,7 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 const checkIfSelf = (servantId: string, auth: string) => {
-  if (servantId === auth.replace('auth0|', '')) {
+  if (servantId === auth) {
     throw new Error('Sorry! You cannot make yourself an arrivals counter')
   }
 }

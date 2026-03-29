@@ -25,6 +25,10 @@ const DefaultedMembersList = lazy(
 )
 const MemberCheckInForm = lazy(() => import('pages/checkins/MemberCheckInForm'))
 const CheckInReports = lazy(() => import('pages/checkins/CheckInReports'))
+const CheckInEventReport = lazy(() => import('pages/checkins/CheckInEventReport'))
+const CheckInEventAuditLog = lazy(
+  () => import('pages/checkins/CheckInEventAuditLog')
+)
 const CheckInFlaggedReview = lazy(
   () => import('pages/checkins/CheckInFlaggedReview')
 )
@@ -49,6 +53,9 @@ const CheckInDashboardStream = lazy(
 const CheckInDashboardCampus = lazy(
   () => import('pages/checkins/dashboards/CheckInDashboardCampus')
 )
+const CheckInDashboardOversight = lazy(
+  () => import('pages/checkins/dashboards/CheckInDashboardOversight')
+)
 
 // Breakdown pages
 const CheckInCampusByStream = lazy(
@@ -59,6 +66,9 @@ const CheckInStreamByCouncil = lazy(
 )
 const CheckInCouncilByGovernorship = lazy(
   () => import('pages/checkins/breakdowns/CouncilByGovernorship')
+)
+const CheckInOversightByCampus = lazy(
+  () => import('pages/checkins/breakdowns/OversightByCampus')
 )
 
 const leaderRoles: Role[] = [
@@ -98,6 +108,18 @@ export const checkinsRoutes: LazyRouteTypes[] = [
     element: CheckInEventDashboard,
     placeholder: true,
     roles: [...leaderRoles, ...adminRoles, 'all'],
+  },
+  {
+    path: '/checkins/event/:eventId/report',
+    element: CheckInEventReport,
+    placeholder: true,
+    roles: [...leaderRoles, ...adminRoles],
+  },
+  {
+    path: '/checkins/event/:eventId/history',
+    element: CheckInEventAuditLog,
+    placeholder: true,
+    roles: [...leaderRoles, ...adminRoles],
   },
   {
     path: '/checkins/event/:eventId/scopes',
@@ -179,6 +201,12 @@ export const checkinsRoutes: LazyRouteTypes[] = [
     placeholder: true,
     roles: permitLeaderAdmin('Campus'),
   },
+  {
+    path: '/checkins/oversight',
+    element: CheckInDashboardOversight,
+    placeholder: true,
+    roles: permitLeaderAdmin('Oversight'),
+  },
 
   // Breakdown / drill-down pages
   {
@@ -198,6 +226,12 @@ export const checkinsRoutes: LazyRouteTypes[] = [
     element: CheckInCouncilByGovernorship,
     placeholder: true,
     roles: permitLeaderAdmin('Council'),
+  },
+  {
+    path: '/checkins/oversight-by-campus',
+    element: CheckInOversightByCampus,
+    placeholder: true,
+    roles: permitLeaderAdmin('Oversight'),
   },
 
   {

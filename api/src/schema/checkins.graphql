@@ -206,6 +206,16 @@ type CheckInScopeAggregate {
   attendancePercentage: Float!
 }
 
+"""Lightweight attendance summary for a single check-in event"""
+type CheckInEventSummary {
+  eventId: ID!
+  totalExpected: Int!
+  checkedInCount: Int!
+  checkedOutCount: Int!
+  defaultedCount: Int!
+  percentage: Float!
+}
+
 """Audit trail entry for a check-in event"""
 type CheckInHistoryEntry {
   id: ID!
@@ -241,6 +251,8 @@ extend type Query {
   ): [CheckInScopeAggregate!]!
   """Get audit history for a check-in event"""
   GetCheckInEventHistory(eventId: ID!, limit: Int): [CheckInHistoryEntry!]!
+  """Batch-fetch lightweight attendance stats for multiple events (no eligible-member recalculation)"""
+  GetCheckInEventStatsBatch(eventIds: [ID!]!): [CheckInEventSummary!]!
 }
 
 extend type Mutation {

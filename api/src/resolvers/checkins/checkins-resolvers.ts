@@ -24,12 +24,14 @@ import {
   getDirectChildren,
   resolveViewerScope,
   getViewerScopeIds,
+  expandScopeToAncestors,
   getCheckInRecords,
   getCheckInRecordForMember,
   isMemberInScope,
   isMemberIdInScope,
   isLeaderOrAdmin,
   isMemberLeaderOrAdminById,
+  isMemberLeaderInScope,
   getMemberUnitName,
   enforcePinAttemptPolicy,
   recordFailedPinAttempt,
@@ -42,8 +44,9 @@ import {
   getCheckInAggregateByScope,
   logCheckInHistory,
   getCheckInEventHistory,
+  getCheckInEventStatsBatch,
 } from './checkins-service'
-import { CheckInEvent, CheckInMethod, CheckInAttendanceType, FaceMatchStatus } from './checkins-types'
+import { CheckInEvent, CheckInMethod, CheckInAttendanceType, FaceMatchStatus, CheckInEventSummary } from './checkins-types'
 import { Context } from '../utils/neo4j-types'
 
 export const checkinsResolvers = {
@@ -113,24 +116,18 @@ export const checkinsResolvers = {
       const authId = getCurrentAuthId(context)
 
       if (args.scopeId) {
-        // Caller requested a specific scope — filter directly, then do a
-        // single access check rather than one check per event.
+        // Expand the given scopeId to include ancestor scopes so that
+        // a leader at a lower level (e.g. Bacenta) can see events scoped
+        // at their parent Campus, Stream, etc.
+        // The fact that an event is found via this ancestor-ID list already
+        // proves the viewer's church is within the event scope — no second
+        // resolveViewerScope gate needed here.
+        const ancestorIds = await expandScopeToAncestors(context, args.scopeId)
         const events = await queryEvents(context, {
-          scopeLevel: args.scopeLevel,
           status: args.status,
-          scopeId: args.scopeId,
+          scopeIds: ancestorIds,
         })
-        if (events.length === 0) return []
-
-        const firstEvent = events[0]
-        const viewerScope = await resolveViewerScope(
-          context,
-          authId,
-          firstEvent.scopeLevel,
-          firstEvent.scopeId,
-          userRoles
-        )
-        return viewerScope ? events.map(mapEventToResponse) : []
+        return events.map(mapEventToResponse)
       }
 
       // No specific scope requested — pre-filter to only the scopes
@@ -442,6 +439,16 @@ export const checkinsResolvers = {
 
       return getCheckInEventHistory(context, args.eventId, args.limit ?? 50)
     },
+
+    GetCheckInEventStatsBatch: async (
+      object: unknown,
+      args: { eventIds: string[] },
+      context: Context
+    ) => {
+      const authId = getCurrentAuthId(context)
+      if (!authId) throw new Error('Not authenticated')
+      return getCheckInEventStatsBatch(context, args.eventIds)
+    },
   },
 
   Mutation: {
@@ -592,19 +599,53 @@ export const checkinsResolvers = {
       const member = await getMemberByAuthId(context, authId)
       if (!member) throw new Error('Member not found')
 
-      // ── Leaders-only enforcement ──
-      const isLeader = await isLeaderOrAdmin(context, authId)
-      if (!isLeader) {
-        throw new Error('Check-in is only available for leaders')
+      // ── Scope & leaders-only enforcement ──
+      if (event.attendanceType === 'LEADERS_ONLY') {
+        // For leaders-only events, verify the member leads/admins a church
+        // within the event scope (LEADS or IS_ADMIN_FOR any church at or below it).
+        // We intentionally do NOT check BELONGS_TO here because leaders often
+        // live in a different campus/scope than the one they lead.
+        const isLeaderInScope = await isMemberLeaderInScope(
+          context,
+          event.scopeLevel,
+          event.scopeId,
+          member.id
+        )
+        if (!isLeaderInScope) {
+          const userRolesForLeaderCheck: string[] = context.jwt?.roles || []
+          const leaderRoles = [
+            'leaderBacenta',
+            'leaderGovernorship',
+            'leaderCouncil',
+            'leaderStream',
+            'leaderCampus',
+            'leaderOversight',
+            'leaderDenomination',
+            'adminGovernorship',
+            'adminCouncil',
+            'adminStream',
+            'adminCampus',
+            'adminOversight',
+            'adminDenomination',
+          ]
+          if (!userRolesForLeaderCheck.some((r) => leaderRoles.includes(r))) {
+            throw new Error(
+              `Check-in is only available for leaders. Your roles: [${userRolesForLeaderCheck.join(', ')}]`
+            )
+          }
+          throw new Error('You do not lead a church within this event\'s scope')
+        }
+      } else {
+        // For ALL_MEMBERS events, the member just needs to belong to a bacenta
+        // within the event scope.
+        const inScope = await isMemberInScope(
+          context,
+          event.scopeLevel,
+          event.scopeId,
+          authId
+        )
+        if (!inScope) throw new Error('You are not in this event scope')
       }
-
-      const inScope = await isMemberInScope(
-        context,
-        event.scopeLevel,
-        event.scopeId,
-        authId
-      )
-      if (!inScope) throw new Error('You are not in this event scope')
 
       // Check if user's role is allowed to perform check-ins
       const userRoles =
@@ -625,7 +666,18 @@ export const checkinsResolvers = {
 
       const existing = await getCheckInRecordForMember(context, event.id, member.id)
       if (existing && !existing.checkedOutAt) {
-        return existing
+        // Same device re-tapping — idempotent, return the existing record
+        if (
+          !args.deviceFingerprint ||
+          !existing.deviceFingerprint ||
+          existing.deviceFingerprint === args.deviceFingerprint
+        ) {
+          return existing
+        }
+        // Different device — block with a clear error
+        throw new Error(
+          'You have already checked in on another device. Only one device per person per event is allowed.'
+        )
       }
 
       // ── One-device-per-event rule ──
@@ -768,22 +820,27 @@ export const checkinsResolvers = {
         )
         if (!memberRes.records[0]) throw new Error('Member not found')
 
-        const inScope = await isMemberIdInScope(
-          context,
-          event.scopeLevel,
-          event.scopeId,
-          args.memberId
-        )
-        if (!inScope)
-          throw new Error('Member is not in this event scope')
-
-        // Leaders-only enforcement
-        const memberIsLeader = await isMemberLeaderOrAdminById(
-          context,
-          args.memberId
-        )
-        if (!memberIsLeader)
-          throw new Error('Check-in is only available for leaders')
+        const inScope =
+          event.attendanceType === 'LEADERS_ONLY'
+            ? await isMemberLeaderInScope(
+                context,
+                event.scopeLevel,
+                event.scopeId,
+                args.memberId
+              )
+            : await isMemberIdInScope(
+                context,
+                event.scopeLevel,
+                event.scopeId,
+                args.memberId
+              )
+        if (!inScope) {
+          const msg =
+            event.attendanceType === 'LEADERS_ONLY'
+              ? "This member does not lead a church within this event's scope"
+              : 'Member is not in this event scope'
+          throw new Error(msg)
+        }
 
         const existing = await getCheckInRecordForMember(
           context,

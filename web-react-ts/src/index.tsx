@@ -13,6 +13,7 @@ import {
 import { setContext } from '@apollo/client/link/context'
 import CacheBuster from 'CacheBuster'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { getAccessToken as getStoredAccessToken } from './lib/auth-service'
 import SimpleApp from './SimpleApp'
 import CheckInQRPage from 'pages/checkins/CheckInQRPage'
 
@@ -58,10 +59,10 @@ const AppWithApollo = () => {
   })
 
   const authLink = setContext((_, { headers }) => {
-    // get the authentication token from memory or localStorage
-    const token = accessToken
+    // Read token directly from localStorage to avoid React state timing issues
+    const token = getStoredAccessToken() || accessToken
+    if (!token) return { headers }
 
-    // return the headers to the context so httpLink can read them
     return {
       headers: {
         ...headers,

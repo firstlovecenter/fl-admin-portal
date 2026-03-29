@@ -16,16 +16,39 @@ export default defineConfig(({ command, mode }) => {
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '')
 
+  // LOCAL_HTTPS: set VITE_LOCAL_HTTPS=true in .env.local (gitignored) to enable
+  // HTTPS + auth proxy forwarding for phone testing on the local network.
+  const localHttps = env.VITE_LOCAL_HTTPS === 'true'
+
   return {
     server: {
       open: true,
       port: 3000,
       strictPort: true,
+      host: true,
+      ...(localHttps ? { https: {} } : {}),
+      proxy: {
+        '/graphql': 'http://localhost:4001',
+        '/public': 'http://localhost:4001',
+        ...(localHttps
+          ? {
+              '/auth-proxy': {
+                target:
+                  'https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/auth-proxy/, ''),
+              },
+            }
+          : {}),
+      },
     },
     build: {
       sourcemap: true, // Source map generation must be turned on
     },
     plugins: [
+      ...(localHttps
+        ? [require('@vitejs/plugin-basic-ssl').default()]
+        : []),
       react(),
       viteTsconfigPaths(),
       svgrPlugin(),

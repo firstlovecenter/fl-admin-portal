@@ -141,6 +141,15 @@ export interface CheckInScopeAggregate {
   attendancePercentage: number
 }
 
+export interface CheckInEventSummary {
+  eventId: string
+  totalExpected: number
+  checkedInCount: number
+  checkedOutCount: number
+  defaultedCount: number
+  percentage: number
+}
+
 export interface CheckInHistoryEntry {
   id: string
   timestamp: string

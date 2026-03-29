@@ -71,6 +71,7 @@ const AppWithContext = (props: AppPropsType) => {
     setStreamId,
     setCouncilId,
     setGovernorshipId,
+    setBacentaId,
     setHubId,
     setHubCouncilId,
     setMinistryId,
@@ -86,6 +87,7 @@ const AppWithContext = (props: AppPropsType) => {
     setStreamId,
     setCouncilId,
     setGovernorshipId,
+    setBacentaId,
     setHubId,
     setHubCouncilId,
     setMinistryId,
@@ -122,7 +124,7 @@ const AppWithContext = (props: AppPropsType) => {
   })
 
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ChurchContext.Provider
         value={{
           clickCard,

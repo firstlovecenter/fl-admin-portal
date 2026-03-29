@@ -88,6 +88,9 @@ const SetPermissions = ({
         doNotUse.setGovernorshipId(
           sessionStorage.getItem('governorshipId') ?? governorshipId
         )
+        doNotUse.setBacentaId(
+          sessionStorage.getItem('bacentaId') ?? memberData?.bacenta.id
+        )
         doNotUse.setHubId(sessionStorage.getItem('hubId') ?? hubId)
         doNotUse.setHubCouncilId(
           sessionStorage.getItem('hubCouncilId') ?? hubCouncilId
@@ -165,11 +168,7 @@ const SetPermissions = ({
               if (!isAuthorised(permitMe('Governorship'))) {
                 //User is not a Governorship Admin the he can only be looking at his bacenta membership
                 doNotUse.setGovernorshipId(currentUser.governorship)
-                // doNotUse.setBacentaId(currentUser.bacenta)
-                // if (!isAuthorised(['leaderBacenta'])) {
-                //   //User is not a Bacenta Leader and he can only be looking at his fellowship membership
-                // doNotUse.setFellowshipId(currentUser.fellowship?.id)
-                // }
+                doNotUse.setBacentaId(currentUser.bacenta)
               }
             }
           }

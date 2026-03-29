@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client'
 import { useContext, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Container, Form } from 'react-bootstrap'
+import { Button, Container, Form, Modal } from 'react-bootstrap'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
@@ -9,12 +9,12 @@ import { GET_CHECKIN_DASHBOARD } from './checkinsQueries'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import MemberDisplayCard from 'components/card/MemberDisplayCard'
 
 const CheckedInMembersList = () => {
   const { eventId } = useParams()
   const { church } = useContext(ChurchContext)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedMember, setSelectedMember] = useState<any>(null)
 
   const { data, loading, error, refetch } = useQuery(GET_CHECKIN_DASHBOARD, {
     pollInterval: SHORT_POLL_INTERVAL,
@@ -41,6 +41,7 @@ const CheckedInMembersList = () => {
   }, [checkedIn, searchTerm])
 
   return (
+    <>
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper loading={loading} error={error} data={data}>
         <Container className="py-4">
@@ -64,31 +65,20 @@ const CheckedInMembersList = () => {
           <div className="d-grid gap-2">
             {filteredMembers.length ? (
               filteredMembers.map((member: any) => (
-                <MemberDisplayCard
+                <Button
                   key={member.memberId}
-                  member={member}
-                  contact={true}
+                  variant={member.isLate ? 'outline-warning' : 'outline-success'}
+                  size="lg"
+                  className="fw-semibold py-3 text-start"
+                  onClick={() => setSelectedMember(member)}
                 >
-                  <div className="small">
-                    <span className="badge bg-success me-2">Checked In</span>
-                    {member.isLate && (
-                      <span className="badge bg-warning me-2">Late</span>
-                    )}
-                    {member.checkInMethod && (
-                      <span className="text-muted">
-                        via {member.checkInMethod}
-                      </span>
-                    )}
-                    <div className="mt-1 text-muted">
-                      {member.unitType}: {member.unitName}
-                    </div>
-                    {member.checkedInAt && (
-                      <div className="mt-1 text-muted small">
-                        {new Date(member.checkedInAt).toLocaleString()}
-                      </div>
-                    )}
-                  </div>
-                </MemberDisplayCard>
+                  {member.firstName} {member.lastName}
+                  {member.isLate && (
+                    <span className="ms-2 badge bg-warning text-dark fw-normal" style={{ fontSize: '0.7rem' }}>
+                      Late
+                    </span>
+                  )}
+                </Button>
               ))
             ) : (
               <div className="alert alert-info">
@@ -101,6 +91,57 @@ const CheckedInMembersList = () => {
         </Container>
       </ApolloWrapper>
     </PullToRefresh>
+
+    {/* Member detail modal */}
+    <Modal show={!!selectedMember} onHide={() => setSelectedMember(null)} centered>
+      {selectedMember && (
+        <>
+          <Modal.Header closeButton>
+            <Modal.Title>
+              {selectedMember.firstName} {selectedMember.lastName}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div className="d-flex flex-wrap gap-2 mb-3">
+              <span className="badge bg-success fs-6">Checked In</span>
+              {selectedMember.isLate && (
+                <span className="badge bg-warning text-dark fs-6">Late</span>
+              )}
+            </div>
+            {selectedMember.checkInMethod && (
+              <p className="mb-2">
+                <span className="text-muted">Method: </span>
+                <span className="badge bg-info">{selectedMember.checkInMethod}</span>
+              </p>
+            )}
+            {selectedMember.unitType && selectedMember.unitName && (
+              <p className="mb-2">
+                <span className="text-muted">{selectedMember.unitType}: </span>
+                <strong>{selectedMember.unitName}</strong>
+              </p>
+            )}
+            {selectedMember.roleLabel && (
+              <p className="mb-2">
+                <span className="text-muted">Role: </span>
+                {selectedMember.roleLabel}
+              </p>
+            )}
+            {selectedMember.checkedInAt && (
+              <p className="mb-0">
+                <span className="text-muted">Time: </span>
+                {new Date(selectedMember.checkedInAt).toLocaleString()}
+              </p>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setSelectedMember(null)}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </>
+      )}
+    </Modal>
+    </>
   )
 }
 

@@ -1,40 +1,128 @@
 import { useQuery, useLazyQuery } from '@apollo/client'
 import { useMemo, useState } from 'react'
-import { Button, Card, Col, Container, Row, Table } from 'react-bootstrap'
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  ProgressBar,
+  Row,
+  Spinner,
+} from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { LIST_CHECKIN_EVENTS, GET_CHECKIN_DASHBOARD } from './checkinsQueries'
+import PullToRefresh from 'react-simple-pull-to-refresh'
+import {
+  LIST_CHECKIN_EVENTS,
+  GET_CHECKIN_DASHBOARD,
+  GET_CHECKIN_EVENT_STATS_BATCH,
+} from './checkinsQueries'
+
+const STATUS_COLOURS: Record<string, string> = {
+  ACTIVE: 'success',
+  PAUSED: 'warning',
+  ENDED: 'secondary',
+}
+
+const SCOPE_LABELS: Record<string, string> = {
+  BACENTA: 'Bacenta',
+  GOVERNORSHIP: 'Governorship',
+  COUNCIL: 'Council',
+  STREAM: 'Stream',
+  CAMPUS: 'Campus',
+  OVERSIGHT: 'Oversight',
+}
+
+const formatDate = (iso: string) => {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+const getProgressVariant = (pct: number) => {
+  if (pct >= 80) return 'success'
+  if (pct >= 50) return 'warning'
+  return 'danger'
+}
 
 const CheckInReports = () => {
-  const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
-  const [loadingExport, setLoadingExport] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const [statusFilter, setStatusFilter] = useState<string>('ALL')
+  const [scopeFilter, setScopeFilter] = useState<string>('ALL')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [exportingId, setExportingId] = useState<string | null>(null)
 
-  const { data, loading, error } = useQuery(LIST_CHECKIN_EVENTS)
+  const { data, loading, error, refetch } = useQuery(LIST_CHECKIN_EVENTS)
   const [getDashboard] = useLazyQuery(GET_CHECKIN_DASHBOARD)
 
-  const events = useMemo(() => data?.ListCheckInEvents ?? [], [data])
+  const allEvents = useMemo(() => data?.ListCheckInEvents ?? [], [data])
 
-  const getAttendanceLabel = (type: string) => {
-    return type === 'LEADERS_ONLY' ? 'Leaders Only' : 'Leaders + Members'
-  }
+  const filteredEvents = useMemo(() => {
+    return allEvents.filter((e: any) => {
+      if (statusFilter !== 'ALL' && e.status !== statusFilter) return false
+      if (scopeFilter !== 'ALL' && e.scopeLevel !== scopeFilter) return false
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase()
+        if (
+          !e.name?.toLowerCase().includes(term) &&
+          !e.location?.toLowerCase().includes(term) &&
+          !e.createdByName?.toLowerCase().includes(term)
+        )
+          return false
+      }
+      return true
+    })
+  }, [allEvents, statusFilter, scopeFilter, searchTerm])
+
+  const eventIds = useMemo(
+    () => filteredEvents.map((e: any) => e.id),
+    [filteredEvents]
+  )
+
+  const { data: statsData } = useQuery(GET_CHECKIN_EVENT_STATS_BATCH, {
+    variables: { eventIds },
+    skip: eventIds.length === 0,
+  })
+
+  const statsMap = useMemo(() => {
+    const map: Record<string, any> = {}
+    for (const s of statsData?.GetCheckInEventStatsBatch ?? []) {
+      map[s.eventId] = s
+    }
+    return map
+  }, [statsData])
+
+  // Summary totals across ALL events (unfiltered)
+  const summary = useMemo(() => {
+    const total = allEvents.length
+    const active = allEvents.filter((e: any) => e.status === 'ACTIVE').length
+    const ended = allEvents.filter((e: any) => e.status === 'ENDED').length
+    const totalExpected = allEvents.reduce(
+      (sum: number, e: any) => sum + (e.totalExpected ?? 0),
+      0
+    )
+    return { total, active, ended, totalExpected }
+  }, [allEvents])
 
   const exportToCSV = async (event: any) => {
-    setLoadingExport(event.id)
+    setExportingId(event.id)
     try {
       const { data: dashboardData } = await getDashboard({
         variables: { eventId: event.id },
       })
-
       if (!dashboardData?.GetCheckInDashboard) {
-        alert('Failed to load event data for export')
+        alert('Failed to load event data')
         return
       }
-
-      const dashboard = dashboardData.GetCheckInDashboard
-      const checkedIn = dashboard.checkedIn || []
-      const defaulted = dashboard.defaulted || []
-
-      const checkedOut = dashboard.checkedOut || []
+      const { checkedIn, defaulted, checkedOut } =
+        dashboardData.GetCheckInDashboard
 
       const headers = [
         'Name',
@@ -47,9 +135,8 @@ const CheckInReports = () => {
         'Method',
         'Is Late',
         'Geo Verified',
-        'Face Match Status',
+        'Face Match',
       ]
-
       const rows = [
         ...checkedIn.map((a: any) => [
           a.fullName,
@@ -59,10 +146,10 @@ const CheckInReports = () => {
           a.checkedInAt ? new Date(a.checkedInAt).toLocaleString() : '',
           '',
           '',
-          a.checkInMethod || '',
+          a.checkInMethod ?? '',
           a.isLate ? 'Yes' : 'No',
           a.geoVerified != null ? (a.geoVerified ? 'Yes' : 'No') : '',
-          a.faceMatchStatus || '',
+          a.faceMatchStatus ?? '',
         ]),
         ...checkedOut.map((a: any) => [
           a.fullName,
@@ -72,10 +159,10 @@ const CheckInReports = () => {
           a.checkedInAt ? new Date(a.checkedInAt).toLocaleString() : '',
           a.checkedOutAt ? new Date(a.checkedOutAt).toLocaleString() : '',
           a.autoCheckedOut ? 'Yes' : 'No',
-          a.checkInMethod || '',
+          a.checkInMethod ?? '',
           a.isLate ? 'Yes' : 'No',
           a.geoVerified != null ? (a.geoVerified ? 'Yes' : 'No') : '',
-          a.faceMatchStatus || '',
+          a.faceMatchStatus ?? '',
         ]),
         ...defaulted.map((a: any) => [
           a.fullName,
@@ -86,190 +173,231 @@ const CheckInReports = () => {
           '',
           '',
           '',
-          a.isLate ? 'Yes' : 'No',
+          '',
           '',
           '',
         ]),
       ]
 
       const csv = [headers, ...rows]
-        .map((row) => row.map((cell: string | number) => `"${cell}"`).join(','))
+        .map((row) => row.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
         .join('\n')
 
-      const blob = new Blob([csv], { type: 'text/csv' })
-      const url = window.URL.createObjectURL(blob)
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `checkin-report-${event.name
-        .replace(/[^a-z0-9]/gi, '-')
-        .toLowerCase()}-${Date.now()}.csv`
+      a.download = `checkin-${event.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
+      URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } finally {
-      setLoadingExport(null)
+      setExportingId(null)
     }
   }
 
   return (
-    <ApolloWrapper loading={loading} error={error} data={data}>
-      <Container className="py-4">
-        <HeadingPrimary className="mb-3">
-          Check-In Reports & Analytics
-        </HeadingPrimary>
+    <PullToRefresh onRefresh={refetch}>
+      <ApolloWrapper loading={loading} error={error} data={data}>
+        <Container className="py-4">
+          <HeadingPrimary className="mb-3">
+            Check-In Reports
+          </HeadingPrimary>
 
-        <Card className="p-4 mb-4 bg-light">
-          <Row className="g-3">
-            <Col md={4}>
-              <div className="text-center">
-                <div className="display-6">{events.length}</div>
-                <small className="text-muted">Total Events</small>
-              </div>
+          {/* Summary cards */}
+          <Row className="g-2 mb-4">
+            {[
+              { label: 'Total Events', value: summary.total, colour: 'primary' },
+              { label: 'Active', value: summary.active, colour: 'success' },
+              { label: 'Ended', value: summary.ended, colour: 'secondary' },
+              { label: 'Total Expected', value: summary.totalExpected, colour: 'info' },
+            ].map(({ label, value, colour }) => (
+              <Col xs={6} md={3} key={label}>
+                <Card className={`text-center border-0 bg-${colour} bg-opacity-10`}>
+                  <Card.Body className="py-3">
+                    <div className={`display-6 fw-bold text-${colour}`}>{value}</div>
+                    <div className="small text-muted">{label}</div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+
+          {/* Filters */}
+          <Row className="g-2 mb-3">
+            <Col xs={12} md={4}>
+              <Form.Control
+                placeholder="Search by name, location or creator…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </Col>
-            <Col md={4}>
-              <div className="text-center">
-                <div className="display-6">
-                  {events.filter((e: any) => e.status === 'ACTIVE').length}
-                </div>
-                <small className="text-muted">Active Events</small>
-              </div>
+            <Col xs={6} md={4}>
+              <Form.Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="PAUSED">Paused</option>
+                <option value="ENDED">Ended</option>
+              </Form.Select>
             </Col>
-            <Col md={4}>
-              <div className="text-center">
-                <div className="display-6">
-                  {events.filter((e: any) => e.status === 'ENDED').length}
-                </div>
-                <small className="text-muted">Completed Events</small>
-              </div>
+            <Col xs={6} md={4}>
+              <Form.Select
+                value={scopeFilter}
+                onChange={(e) => setScopeFilter(e.target.value)}
+              >
+                <option value="ALL">All Scopes</option>
+                {Object.entries(SCOPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
+                ))}
+              </Form.Select>
             </Col>
           </Row>
-        </Card>
 
-        <h5 className="mb-3">Events Breakdown</h5>
-        <div className="table-responsive">
-          <Table striped bordered hover className="mb-0">
-            <thead>
-              <tr>
-                <th>Event Name</th>
-                <th>Scope</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Started</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center text-muted py-4">
-                    No events found.
-                  </td>
-                </tr>
-              ) : (
-                events.map((event: any) => (
-                  <tr key={event.id}>
-                    <td>
-                      <strong>{event.name}</strong>
-                    </td>
-                    <td>{event.scopeLevel}</td>
-                    <td>{getAttendanceLabel(event.attendanceType)}</td>
-                    <td>
-                      <span
-                        className={`badge bg-${
-                          event.status === 'ACTIVE'
-                            ? 'success'
-                            : event.status === 'PAUSED'
-                            ? 'warning'
-                            : 'danger'
-                        }`}
-                      >
-                        {event.status}
-                      </span>
-                    </td>
-                    <td>{new Date(event.startsAt).toLocaleDateString()}</td>
-                    <td>
+          {/* Count */}
+          <p className="text-muted small mb-3">
+            Showing {filteredEvents.length} of {allEvents.length} events
+          </p>
+
+          {/* Event cards */}
+          <div className="d-grid gap-3">
+            {filteredEvents.length === 0 && (
+              <p className="text-center text-muted mt-3">No events match your filters.</p>
+            )}
+            {filteredEvents.map((event: any) => {
+              const stats = statsMap[event.id]
+              const pct = stats?.percentage ?? 0
+              const checkedIn = stats?.checkedInCount ?? 0
+              const checkedOut = stats?.checkedOutCount ?? 0
+              const defaulted = stats?.defaultedCount ?? 0
+              const expected = stats?.totalExpected ?? event.totalExpected ?? 0
+
+              return (
+                <Card key={event.id}>
+                  <Card.Body>
+                    {/* Header row */}
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <div className="fw-bold">{event.name}</div>
+                        <div className="text-muted small">
+                          {event.location ? `${event.location} · ` : ''}
+                          {formatDate(event.startsAt)}
+                        </div>
+                        {event.createdByName && (
+                          <div className="text-muted small">
+                            Created by {event.createdByName}
+                          </div>
+                        )}
+                      </div>
+                      <div className="d-flex flex-column align-items-end gap-1">
+                        <Badge bg={STATUS_COLOURS[event.status] ?? 'secondary'}>
+                          {event.status}
+                        </Badge>
+                        <Badge bg="dark" className="fw-normal">
+                          {SCOPE_LABELS[event.scopeLevel] ?? event.scopeLevel}
+                        </Badge>
+                        <Badge bg="light" text="dark" className="fw-normal">
+                          {event.attendanceType === 'LEADERS_ONLY'
+                            ? 'Leaders Only'
+                            : 'All Members'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Attendance progress */}
+                    {stats ? (
+                      <>
+                        <div className="d-flex justify-content-between small mb-1">
+                          <span>
+                            <span className="text-success fw-bold">{checkedIn}</span>
+                            {checkedOut > 0 && (
+                              <span className="text-muted"> (+{checkedOut} out)</span>
+                            )}{' '}
+                            / {expected} expected
+                          </span>
+                          <span className={`fw-bold text-${getProgressVariant(pct)}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <ProgressBar
+                          variant={getProgressVariant(pct)}
+                          now={pct}
+                          className="mb-2"
+                          style={{ height: 8 }}
+                        />
+                        <Row className="g-2 text-center mb-3">
+                          <Col>
+                            <div className="text-success fw-bold">{checkedIn}</div>
+                            <div className="text-muted" style={{ fontSize: '0.7rem' }}>
+                              Checked In
+                            </div>
+                          </Col>
+                          <Col>
+                            <div className="text-secondary fw-bold">{checkedOut}</div>
+                            <div className="text-muted" style={{ fontSize: '0.7rem' }}>
+                              Checked Out
+                            </div>
+                          </Col>
+                          <Col>
+                            <div className="text-danger fw-bold">{defaulted}</div>
+                            <div className="text-muted" style={{ fontSize: '0.7rem' }}>
+                              Defaulted
+                            </div>
+                          </Col>
+                          <Col>
+                            <div className="fw-bold">{expected}</div>
+                            <div className="text-muted" style={{ fontSize: '0.7rem' }}>
+                              Expected
+                            </div>
+                          </Col>
+                        </Row>
+                      </>
+                    ) : (
+                      <div className="text-center py-2">
+                        <Spinner size="sm" animation="border" className="text-muted" />
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="d-flex gap-2">
                       <Button
                         size="sm"
                         variant="outline-primary"
+                        className="flex-grow-1"
                         onClick={() =>
-                          setExpandedEventId(
-                            expandedEventId === event.id ? null : event.id
-                          )
+                          navigate(`/checkins/event/${event.id}`)
                         }
-                        className="me-2"
                       >
-                        {expandedEventId === event.id ? '−' : '+'}
+                        View Dashboard
                       </Button>
                       <Button
                         size="sm"
                         variant="outline-success"
                         onClick={() => exportToCSV(event)}
-                        disabled={loadingExport === event.id}
+                        disabled={exportingId === event.id}
                       >
-                        {loadingExport === event.id ? 'Exporting...' : 'CSV'}
+                        {exportingId === event.id ? (
+                          <Spinner size="sm" animation="border" />
+                        ) : (
+                          'CSV'
+                        )}
                       </Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-        </div>
-
-        {expandedEventId && (
-          <Card className="mt-4 p-3 bg-light">
-            <h6 className="mb-3">
-              Detailed Summary:{' '}
-              {events.find((e: any) => e.id === expandedEventId)?.name}
-            </h6>
-            <Row className="g-3">
-              <Col md={3}>
-                <div className="text-center p-3 bg-white rounded border">
-                  <div className="small text-muted mb-2">Status</div>
-                  <div className="fw-bold">
-                    {events.find((e: any) => e.id === expandedEventId)?.status}
-                  </div>
-                </div>
-              </Col>
-              <Col md={3}>
-                <div className="text-center p-3 bg-white rounded border">
-                  <div className="small text-muted mb-2">Attendance Type</div>
-                  <div className="fw-bold text-truncate">
-                    {getAttendanceLabel(
-                      events.find((e: any) => e.id === expandedEventId)
-                        ?.attendanceType
-                    )}
-                  </div>
-                </div>
-              </Col>
-              <Col md={3}>
-                <div className="text-center p-3 bg-white rounded border">
-                  <div className="small text-muted mb-2">Scope</div>
-                  <div className="fw-bold">
-                    {
-                      events.find((e: any) => e.id === expandedEventId)
-                        ?.scopeLevel
-                    }
-                  </div>
-                </div>
-              </Col>
-              <Col md={3}>
-                <div className="text-center p-3 bg-white rounded border">
-                  <div className="small text-muted mb-2">Grace Period</div>
-                  <div className="fw-bold">
-                    {events.find((e: any) => e.id === expandedEventId)
-                      ?.gracePeriod ?? 0}{' '}
-                    min
-                  </div>
-                </div>
-              </Col>
-            </Row>
-          </Card>
-        )}
-      </Container>
-    </ApolloWrapper>
+                    </div>
+                  </Card.Body>
+                </Card>
+              )
+            })}
+          </div>
+        </Container>
+      </ApolloWrapper>
+    </PullToRefresh>
   )
 }
 
 export default CheckInReports
+

@@ -50,6 +50,7 @@ export const LIST_CHECKIN_EVENTS = gql`
     ) {
       id
       name
+      location
       scopeLevel
       scopeId
       startsAt
@@ -57,6 +58,9 @@ export const LIST_CHECKIN_EVENTS = gql`
       status
       attendanceType
       gracePeriod
+      totalExpected
+      createdByName
+      createdAt
       allowedCheckInRoles
       allowedCheckInMethods
       geoFenceType
@@ -222,6 +226,34 @@ export const CHECKIN_MEMBER = gql`
   }
 `
 
+export const MANUAL_CHECKIN = gql`
+  mutation ManualCheckIn(
+    $eventId: ID!
+    $memberId: ID!
+    $latitude: Float!
+    $longitude: Float!
+    $reason: String
+  ) {
+    ManualCheckIn(
+      eventId: $eventId
+      memberId: $memberId
+      latitude: $latitude
+      longitude: $longitude
+      reason: $reason
+    ) {
+      id
+      eventId
+      memberId
+      memberName
+      memberRole
+      memberUnit
+      checkedInAt
+      checkInMethod
+      verifiedBy
+    }
+  }
+`
+
 export const CHECKOUT_MEMBER = gql`
   mutation CheckOutMember(
     $eventId: ID!
@@ -286,34 +318,6 @@ export const RESET_CHECKIN_EVENT_PIN = gql`
       id
       pinCode
       status
-    }
-  }
-`
-
-export const MANUAL_CHECKIN = gql`
-  mutation ManualCheckIn(
-    $eventId: ID!
-    $memberId: ID!
-    $latitude: Float!
-    $longitude: Float!
-    $reason: String
-  ) {
-    ManualCheckIn(
-      eventId: $eventId
-      memberId: $memberId
-      latitude: $latitude
-      longitude: $longitude
-      reason: $reason
-    ) {
-      id
-      eventId
-      memberId
-      memberName
-      memberRole
-      memberUnit
-      checkedInAt
-      checkInMethod
-      verifiedBy
     }
   }
 `
@@ -498,6 +502,26 @@ export const GET_GOVERNORSHIP = gql`
   }
 `
 
+export const GET_OVERSIGHT_CAMPUSES = gql`
+  query GetOversightCampuses($id: ID!) {
+    oversights(where: { id: $id }) {
+      id
+      name
+      campusCount
+      campuses {
+        id
+        name
+        __typename
+        leader {
+          id
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+`
+
 export const GET_MY_CHECKIN_STATUS = gql`
   query GetMyCheckInStatus($eventId: ID!) {
     GetMyCheckInStatus(eventId: $eventId) {
@@ -543,6 +567,19 @@ export const GET_CHECKIN_EVENT_HISTORY = gql`
       description
       performedById
       performedByName
+    }
+  }
+`
+
+export const GET_CHECKIN_EVENT_STATS_BATCH = gql`
+  query GetCheckInEventStatsBatch($eventIds: [ID!]!) {
+    GetCheckInEventStatsBatch(eventIds: $eventIds) {
+      eventId
+      totalExpected
+      checkedInCount
+      checkedOutCount
+      defaultedCount
+      percentage
     }
   }
 `

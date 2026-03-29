@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Col, Container, Row, Badge } from 'react-bootstrap'
+import { Button, Container, Badge } from 'react-bootstrap'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
@@ -16,8 +16,6 @@ import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
 const CheckInDashboardCouncil = () => {
   const navigate = useNavigate()
   const { councilId } = useContext(ChurchContext)
-  const [statusFilter, setStatusFilter] = useState<string | null>(null)
-
   const { data, loading, error, refetch } = useQuery(LIST_CHECKIN_EVENTS, {
     variables: {
       scopeLevel: 'COUNCIL',
@@ -34,11 +32,13 @@ const CheckInDashboardCouncil = () => {
 
   const council = councilData?.councils?.[0]
 
-  const events = useMemo(() => {
+  const { activeEvents, pastEvents } = useMemo(() => {
     const allEvents = data?.ListCheckInEvents ?? []
-    if (!statusFilter) return allEvents
-    return allEvents.filter((e: any) => e.status === statusFilter)
-  }, [data, statusFilter])
+    return {
+      activeEvents: allEvents.filter((e: any) => e.status === 'ACTIVE' || e.status === 'PAUSED'),
+      pastEvents: allEvents.filter((e: any) => e.status !== 'ACTIVE' && e.status !== 'PAUSED'),
+    }
+  }, [data])
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
@@ -51,6 +51,13 @@ const CheckInDashboardCouncil = () => {
         {status}
       </Badge>
     )
+  }
+
+  const formatEventMeta = (event: any) => {
+    const start = new Date(event.startsAt)
+    const date = start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+    const startTime = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    return `${event.location ? event.location + ' · ' : ''}${date} · ${startTime}`
   }
 
   const aggregates = {
@@ -71,37 +78,7 @@ const CheckInDashboardCouncil = () => {
             <DefaulterInfoCard defaulter={aggregates} />
           </div>
 
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <div className="d-flex gap-2 flex-wrap">
-              <Button
-                variant={statusFilter === null ? 'secondary' : 'outline-secondary'}
-                size="sm"
-                onClick={() => setStatusFilter(null)}
-              >
-                All
-              </Button>
-              <Button
-                variant={statusFilter === 'ACTIVE' ? 'secondary' : 'outline-secondary'}
-                size="sm"
-                onClick={() => setStatusFilter('ACTIVE')}
-              >
-                Active
-              </Button>
-              <Button
-                variant={statusFilter === 'PAUSED' ? 'secondary' : 'outline-secondary'}
-                size="sm"
-                onClick={() => setStatusFilter('PAUSED')}
-              >
-                Paused
-              </Button>
-              <Button
-                variant={statusFilter === 'ENDED' ? 'secondary' : 'outline-secondary'}
-                size="sm"
-                onClick={() => setStatusFilter('ENDED')}
-              >
-                Ended
-              </Button>
-            </div>
+          <div className="d-flex justify-content-end mb-3">
             <RoleView
               roles={[
                 'adminCouncil',
@@ -119,41 +96,57 @@ const CheckInDashboardCouncil = () => {
             </RoleView>
           </div>
 
-          <HeadingSecondary>Check-In Events</HeadingSecondary>
+          {activeEvents.length === 0 && pastEvents.length === 0 && (
+            <p className="text-center text-muted mt-3">No events found.</p>
+          )}
 
-          <div className="d-grid gap-3">
-            {events.length === 0 ? (
-              <Card className="p-4 text-center text-muted">
-                <p>No events found.</p>
-              </Card>
-            ) : (
-              events.map((event: any) => (
-                <Card key={event.id} className="p-3">
-                  <Row className="align-items-center">
-                    <Col>
-                      <h6 className="mb-1">
-                        {event.name}
-                        {getStatusBadge(event.status)}
-                      </h6>
-                      <small className="text-muted">
-                        {event.scopeLevel} •{' '}
-                        {new Date(event.startsAt).toLocaleString()}
-                      </small>
-                    </Col>
-                    <Col xs="auto">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => navigate(`/checkins/event/${event.id}`)}
-                      >
-                        View
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card>
-              ))
-            )}
-          </div>
+          <p className="text-uppercase fw-semibold text-muted small mb-2" style={{ letterSpacing: '0.08em' }}>
+            Upcoming / Current Events
+          </p>
+          {activeEvents.length > 0 ? (
+            <div className="d-grid gap-2">
+              {activeEvents.map((event: any) => (
+                <Button
+                  key={event.id}
+                  variant="success"
+                  size="lg"
+                  className="fw-bold py-3 text-start"
+                  onClick={() => navigate(`/checkins/event/${event.id}`)}
+                >
+                  <div>{event.name} {getStatusBadge(event.status)}</div>
+                  <div className="fw-normal small mt-1" style={{ opacity: 0.85 }}>{formatEventMeta(event)}</div>
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted fst-italic small mb-0">No active events right now.</p>
+          )}
+
+          {pastEvents.length > 0 && (
+            <>
+              <hr className="my-3" />
+              <p className="text-uppercase fw-semibold text-muted small mb-2" style={{ letterSpacing: '0.08em' }}>
+                Past Events
+              </p>
+              <div className="d-grid gap-2" style={{ opacity: 0.5 }}>
+                {pastEvents.map((event: any) => (
+                  <Button
+                    key={event.id}
+                    variant="outline-secondary"
+                    size="lg"
+                    className="fw-semibold py-3 text-start"
+                    onClick={() => navigate(`/checkins/event/${event.id}`)}
+                  >
+                    <div>
+                      {event.name}
+                      <span className="ms-2 badge bg-secondary fw-normal" style={{ fontSize: '0.7rem' }}>ENDED</span>
+                    </div>
+                    <div className="fw-normal small mt-1" style={{ opacity: 0.85 }}>{formatEventMeta(event)}</div>
+                  </Button>
+                ))}
+              </div>
+            </>
+          )}
         </Container>
       </ApolloWrapper>
     </PullToRefresh>

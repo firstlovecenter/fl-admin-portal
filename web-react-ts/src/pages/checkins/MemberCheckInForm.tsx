@@ -71,6 +71,7 @@ const MemberCheckInForm = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const eventIdFromUrl = searchParams.get('eventId') || ''
+  const qrTokenFromUrl = searchParams.get('qr_token') || ''
 
   // Phase state
   const [phase, setPhase] = useState<Phase>('loading')
@@ -324,7 +325,30 @@ const MemberCheckInForm = () => {
       })
         .then(() => {
           setProcessingMessage(null)
-          setPhase('checked-in')
+          const leaderAdminRoles = [
+            'leaderBacenta',
+            'leaderGovernorship',
+            'leaderCouncil',
+            'leaderStream',
+            'leaderCampus',
+            'leaderOversight',
+            'leaderDenomination',
+            'adminGovernorship',
+            'adminCouncil',
+            'adminStream',
+            'adminCampus',
+            'adminOversight',
+            'adminDenomination',
+          ]
+          const isLeaderOrAdmin = currentUser?.roles?.some((r: string) =>
+            leaderAdminRoles.includes(r)
+          )
+          const targetEventId = eventData?.id || eventIdInput
+          if (isLeaderOrAdmin) {
+            navigate(`/checkins/event/${targetEventId}`)
+          } else {
+            setPhase('checked-in')
+          }
         })
         .catch(() => {
           setProcessingMessage(null)
@@ -338,6 +362,20 @@ const MemberCheckInForm = () => {
     (result: any) => {
       if (result?.getText) {
         const text = result.getText()
+
+        // Handle URL format (QR encodes a full check-in URL)
+        try {
+          const url = new URL(text)
+          if (url.searchParams.has('qr_token')) {
+            setShowScanner(false)
+            navigate(url.pathname + url.search)
+            return
+          }
+        } catch {
+          // Not a URL — fall through to legacy format
+        }
+
+        // Legacy prefix format: "prefix:token"
         const parts = text.split(':')
         if (parts.length >= 2) {
           const code = parts.slice(1).join(':')
@@ -346,8 +384,15 @@ const MemberCheckInForm = () => {
         }
       }
     },
-    [executeCheckIn]
+    [executeCheckIn, navigate]
   )
+
+  // Auto-trigger QR check-in when navigated to via a scanned QR URL
+  useEffect(() => {
+    if (phase === 'ready' && qrTokenFromUrl) {
+      executeCheckIn('QR', qrTokenFromUrl)
+    }
+  }, [phase, qrTokenFromUrl, executeCheckIn])
 
   // ─── PIN submit handler ───
   const handlePinSubmit = useCallback(() => {
@@ -423,7 +468,7 @@ const MemberCheckInForm = () => {
             <div className="d-flex align-items-center mb-2">
               <span
                 className={`badge me-2 ${
-                  gpsCoords ? 'bg-success' : 'bg-warning text-dark'
+                  gpsCoords ? 'bg-success' : 'bg-warning'
                 }`}
               >
                 {gpsCoords ? 'READY' : 'PENDING'}
@@ -438,7 +483,7 @@ const MemberCheckInForm = () => {
                     ? 'bg-success'
                     : timeStatus === 'outside'
                       ? 'bg-danger'
-                      : 'bg-warning text-dark'
+                      : 'bg-warning'
                 }`}
               >
                 {timeStatus === 'within'
@@ -464,7 +509,7 @@ const MemberCheckInForm = () => {
                     ? 'bg-success'
                     : geoStatus === 'outside'
                       ? 'bg-danger'
-                      : 'bg-warning text-dark'
+                      : 'bg-warning'
                 }`}
               >
                 {geoStatus === 'inside'
@@ -485,7 +530,7 @@ const MemberCheckInForm = () => {
 
             <div className="d-flex align-items-center">
               <span
-                className={`badge me-2 ${deviceFingerprint ? 'bg-success' : 'bg-warning text-dark'}`}
+                className={`badge me-2 ${deviceFingerprint ? 'bg-success' : 'bg-warning'}`}
               >
                 {deviceFingerprint ? 'READY' : 'PENDING'}
               </span>
@@ -551,12 +596,10 @@ const MemberCheckInForm = () => {
             </Alert>
           )}
 
-          <Card className="p-3 mb-3 bg-success bg-opacity-10">
-            <p className="mb-0 text-success">
-              <strong>Prerequisites passed.</strong> You are within the geofence
-              and time window. Choose your check-in method below.
-            </p>
-          </Card>
+          <Alert variant="success" className="mb-3">
+            <strong>Prerequisites passed.</strong> You are within the geofence
+            and time window. Choose your check-in method below.
+          </Alert>
 
           <Row className="g-3">
             {/* QR Code Method */}
@@ -719,20 +762,13 @@ const MemberCheckInForm = () => {
             </Alert>
           )}
 
-          <Card className="p-3 bg-light">
-            <p className="text-muted mb-2">
-              Your location is being monitored. Stay within the geofence to
-              remain checked in. If you leave for more than{' '}
-              {eventData?.autoCheckoutMinutes ?? 30} minutes, you will be
-              automatically checked out.
-            </p>
+          <Card className="p-3">
             <Button
-              variant="outline-primary"
-              onClick={() =>
-                navigate(`/checkins/event/${eventData?.id || eventIdInput}`)
-              }
+              variant="primary"
+              className="w-100"
+              onClick={() => navigate(-1)}
             >
-              View Event Dashboard
+              Done
             </Button>
           </Card>
         </>

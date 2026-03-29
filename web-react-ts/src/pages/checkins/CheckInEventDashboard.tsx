@@ -31,6 +31,21 @@ const CheckInEventDashboard = () => {
     ].includes(role)
   )
 
+  // Pure bacenta leaders see only their personal check-in view, not the live dashboard
+  const isBacentaLeaderOnly =
+    !isAdmin &&
+    currentUser?.roles?.includes('leaderBacenta') &&
+    !currentUser?.roles?.some((role: string) =>
+      [
+        'leaderGovernorship',
+        'leaderCouncil',
+        'leaderStream',
+        'leaderCampus',
+        'leaderOversight',
+        'leaderDenomination',
+      ].includes(role)
+    )
+
   const [searchParams] = useSearchParams()
   const filterScopeId = searchParams.get('filterScopeId') ?? undefined
 
@@ -110,10 +125,7 @@ const CheckInEventDashboard = () => {
               <div className="d-flex justify-content-between align-items-center ps-4 pe-2">
                 <div>
                   <div className="text-warning">Check-In Admin</div>
-                  <div>
-                    {event.createdByName}
-                    {event.createdByRole ? ` (${event.createdByRole})` : ''}
-                  </div>
+                  <div>{event.createdByName}</div>
                 </div>
                 {canManageEvent && (
                   <CheckInAdminControls
@@ -163,6 +175,9 @@ const CheckInEventDashboard = () => {
           )}
 
           <div className="d-grid gap-2">
+            {/* Live dashboard — admins and higher-level leaders only */}
+            {!isBacentaLeaderOnly && (
+            <>
             {/* Scope filter — drill down to child scopes */}
             {childFilters.length > 0 && (
               <DefaulterInfoCard
@@ -250,6 +265,13 @@ const CheckInEventDashboard = () => {
                         noCaption
                       />
                     )}
+                    <Button
+                      variant="outline-info"
+                      className="mt-2"
+                      onClick={() => navigate(`/checkins/event/${eventId}/report`)}
+                    >
+                      View Full Report
+                    </Button>
                   </div>
                 </Accordion.Body>
               </Accordion.Item>
@@ -259,7 +281,7 @@ const CheckInEventDashboard = () => {
                 <Accordion.Item eventKey="1">
                   <Accordion.Header>Recent Activity</Accordion.Header>
                   <Accordion.Body>
-                    <div className="d-flex justify-content-end mb-2">
+                    <div className="d-flex justify-content-end gap-2 mb-2">
                       <Button
                         variant="outline-secondary"
                         size="sm"
@@ -267,7 +289,16 @@ const CheckInEventDashboard = () => {
                           navigate(`/checkins/event/${eventId}/checked-in`)
                         }
                       >
-                        View All
+                        View Check-Ins
+                      </Button>
+                      <Button
+                        variant="outline-info"
+                        size="sm"
+                        onClick={() =>
+                          navigate(`/checkins/event/${eventId}/history`)
+                        }
+                      >
+                        View All History
                       </Button>
                     </div>
                     {historyEntries.length > 0 ? (
@@ -334,6 +365,8 @@ const CheckInEventDashboard = () => {
                 </Accordion.Item>
               )}
             </Accordion>
+            </>
+            )}
           </div>
         </Container>
 

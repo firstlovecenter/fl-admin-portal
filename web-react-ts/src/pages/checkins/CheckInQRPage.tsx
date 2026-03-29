@@ -4,10 +4,11 @@ import { Container, Spinner, Alert, Badge, Button } from 'react-bootstrap'
 import { GeoAlt, ArrowClockwise, ChevronLeft } from 'react-bootstrap-icons'
 import MenuButton from 'components/buttons/MenuButton'
 
-// Base URL of the API — same host, just replace /graphql with the REST path
-const API_BASE =
-  import.meta.env.VITE_SYNAGO_GRAPHQL_URI?.replace('/graphql', '') ||
-  'http://localhost:4001'
+// Base URL for public REST endpoints — proxied through Vite in dev, absolute in prod
+const GRAPHQL_URI = import.meta.env.VITE_SYNAGO_GRAPHQL_URI || '/graphql'
+const API_BASE = GRAPHQL_URI.startsWith('http')
+  ? GRAPHQL_URI.replace('/graphql', '')
+  : ''
 
 // QR tokens rotate every 60 seconds — re-query every 30s to stay fresh
 const REFRESH_INTERVAL_MS = 30 * 1000
@@ -45,6 +46,14 @@ export default function CheckInQRPage() {
 
   // Request GPS on mount
   useEffect(() => {
+    // Geolocation requires a secure context (HTTPS or localhost)
+    if (!window.isSecureContext) {
+      setGeoError(
+        'This page must be opened over HTTPS to access your location. Ask the event organiser for the correct link.'
+      )
+      setGeoLoading(false)
+      return
+    }
     if (!navigator.geolocation) {
       setGeoError('Geolocation is not supported by your browser.')
       setGeoLoading(false)
@@ -55,10 +64,16 @@ export default function CheckInQRPage() {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setGeoLoading(false)
       },
-      () => {
-        setGeoError(
-          'Location access denied. Please enable GPS and refresh the page.'
-        )
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoError(
+            'Location permission denied. Please allow location access in your browser settings and refresh.'
+          )
+        } else {
+          setGeoError(
+            'Could not get your location. Ensure GPS is enabled and try again.'
+          )
+        }
         setGeoLoading(false)
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -196,7 +211,7 @@ export default function CheckInQRPage() {
               }}
             >
               <QRCode
-                value={selectedEvent.qrToken}
+                value={`${window.location.origin}/checkins/checkin?eventId=${selectedEvent.id}&qr_token=${selectedEvent.qrToken}`}
                 size={1000}
                 level="M"
                 includeMargin={false}
