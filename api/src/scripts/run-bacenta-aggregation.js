@@ -27,6 +27,11 @@ const dotenv = require('dotenv')
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') })
 
+// Import secrets loader
+const {
+  loadSecrets,
+} = require('../functions/background/bacenta-graph-aggregator/secrets')
+
 // Import the aggregation queries
 const {
   aggregateBussingOnGovernorshipQuery,
@@ -36,7 +41,7 @@ const {
   aggregateBussingOnOversightQuery,
   aggregateBussingOnDenominationQuery,
   zeroAllNullBussingRecordsCypher,
-} = require('../functions/bacenta-graph-aggregator-background/bacenta-cypher')
+} = require('../functions/background/bacenta-graph-aggregator/bacenta-cypher')
 
 // Parse command line arguments
 const args = process.argv.slice(2)
@@ -92,9 +97,14 @@ if (options.help) {
 async function runAggregations() {
   console.log('Starting bacenta aggregation...')
 
-  const uri = process.env.NEO4J_URI || 'bolt://localhost:7687'
-  const user = process.env.NEO4J_USER || 'neo4j'
-  const password = process.env.NEO4J_PASSWORD || 'neo4j'
+  const SECRETS = await loadSecrets()
+
+  const uri =
+    SECRETS.NEO4J_ENCRYPTED === 'true'
+      ? SECRETS.NEO4J_URI?.replace('bolt://', 'neo4j+s://')
+      : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
+  const user = SECRETS.NEO4J_USER || 'neo4j'
+  const password = SECRETS.NEO4J_PASSWORD || 'neo4j'
 
   const driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
 
