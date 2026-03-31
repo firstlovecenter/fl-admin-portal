@@ -13,9 +13,25 @@ const getLastSunday = (date = new Date()) => {
   return targetDate.toISOString().split('T')[0]
 }
 
+/**
+ * Returns the Monday after a given Sunday date string.
+ * ISO weeks start on Monday, so fellowship services (Mon–Sat) fall in a
+ * different ISO week than the Sunday that opened the church week. Using this
+ * date as the Neo4j week filter correctly targets the current church week's
+ * weekday records.
+ * @param {string} lastSunday - ISO date string of the preceding Sunday (YYYY-MM-DD)
+ * @returns {string} - ISO date string of the following Monday (YYYY-MM-DD)
+ */
+const getWeekdayDate = (lastSunday) => {
+  const date = new Date(lastSunday)
+  date.setDate(date.getDate() + 1)
+  return date.toISOString().split('T')[0]
+}
+
 // Use CommonJS exports for AWS Lambda compatibility
 module.exports = {
   OVERSIGHT_NAME,
   notifyBaseURL,
   getLastSunday,
+  getWeekdayDate,
 }
