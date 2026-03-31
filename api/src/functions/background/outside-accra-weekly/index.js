@@ -13,7 +13,15 @@ const campusNotBankedIncome = require('./query-exec/campusNotBankedIncome.js')
 const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceIncome.js')
 const weekdayBankedIncome = require('./query-exec/weekdayBankedIncome.js')
 const weekdayNotBankedIncome = require('./query-exec/weekdayNotBankedIncome.js')
-const { notifyBaseURL, getLastSunday } = require('./utils/constants.js')
+const {
+ 
+ 
+ ,
+
+  notifyBaseURL,
+  getLastSunday,
+  getWeekdayDate,
+} = require('./utils/constants.js')
 const {
   generateCombinedCSV,
   generateSundayServicesCSV,
@@ -301,10 +309,12 @@ const handler = async (event = {}, targetDate = null) => {
     params.mode || params.reportMode || params.serviceType
   )
   const lastSunday = getLastSunday(reportDate)
+  const weekdayDate = getWeekdayDate(lastSunday)
   const outsideAccraSheet = 'OA Campus'
 
   console.log('Running function for date', reportDate.toISOString())
-  console.log('Using lastSunday:', lastSunday)
+  console.log('Using lastSunday (Sunday services):', lastSunday)
+  console.log('Using weekdayDate (fellowship/weekday services):', weekdayDate)
   console.log('Report mode:', mode)
 
   let driver
@@ -355,9 +365,9 @@ const handler = async (event = {}, targetDate = null) => {
         weekdayBankedIncomeData,
         weekdayNotBankedIncomeData,
       ] = await Promise.all([
-        fellowshipAttendanceIncome(driver, lastSunday),
-        weekdayBankedIncome(driver, lastSunday),
-        weekdayNotBankedIncome(driver, lastSunday),
+        fellowshipAttendanceIncome(driver, weekdayDate),
+        weekdayBankedIncome(driver, weekdayDate),
+        weekdayNotBankedIncome(driver, weekdayDate),
       ])
     }
 
