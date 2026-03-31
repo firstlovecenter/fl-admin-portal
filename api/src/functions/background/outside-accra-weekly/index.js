@@ -20,7 +20,6 @@ const {
 
   notifyBaseURL,
   getLastSunday,
-  getWeekdayDate,
 } = require('./utils/constants.js')
 const {
   generateCombinedCSV,
@@ -309,12 +308,14 @@ const handler = async (event = {}, targetDate = null) => {
     params.mode || params.reportMode || params.serviceType
   )
   const lastSunday = getLastSunday(reportDate)
-  const weekdayDate = getWeekdayDate(lastSunday)
+  // Fellowship mode uses the current week; combined uses the same week as lastSunday
+  const fellowshipQueryDate =
+    mode === REPORT_MODES.FELLOWSHIP ? reportDate : lastSunday
   const outsideAccraSheet = 'OA Campus'
 
   console.log('Running function for date', reportDate.toISOString())
   console.log('Using lastSunday (Sunday services):', lastSunday)
-  console.log('Using weekdayDate (fellowship/weekday services):', weekdayDate)
+  console.log('Using fellowshipQueryDate (fellowship/weekday services):', fellowshipQueryDate)
   console.log('Report mode:', mode)
 
   let driver
@@ -365,9 +366,9 @@ const handler = async (event = {}, targetDate = null) => {
         weekdayBankedIncomeData,
         weekdayNotBankedIncomeData,
       ] = await Promise.all([
-        fellowshipAttendanceIncome(driver, weekdayDate),
-        weekdayBankedIncome(driver, weekdayDate),
-        weekdayNotBankedIncome(driver, weekdayDate),
+        fellowshipAttendanceIncome(driver, fellowshipQueryDate),
+        weekdayBankedIncome(driver, fellowshipQueryDate),
+        weekdayNotBankedIncome(driver, fellowshipQueryDate),
       ])
     }
 
