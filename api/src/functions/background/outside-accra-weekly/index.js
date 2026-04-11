@@ -13,14 +13,7 @@ const campusNotBankedIncome = require('./query-exec/campusNotBankedIncome.js')
 const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceIncome.js')
 const weekdayBankedIncome = require('./query-exec/weekdayBankedIncome.js')
 const weekdayNotBankedIncome = require('./query-exec/weekdayNotBankedIncome.js')
-const {
- 
- 
- ,
-
-  notifyBaseURL,
-  getLastSunday,
-} = require('./utils/constants.js')
+const { notifyBaseURL, getLastSunday } = require('./utils/constants.js')
 const {
   generateCombinedCSV,
   generateSundayServicesCSV,
@@ -315,7 +308,10 @@ const handler = async (event = {}, targetDate = null) => {
 
   console.log('Running function for date', reportDate.toISOString())
   console.log('Using lastSunday (Sunday services):', lastSunday)
-  console.log('Using fellowshipQueryDate (fellowship/weekday services):', fellowshipQueryDate)
+  console.log(
+    'Using fellowshipQueryDate (fellowship/weekday services):',
+    fellowshipQueryDate
+  )
   console.log('Report mode:', mode)
 
   let driver
