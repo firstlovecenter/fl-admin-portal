@@ -33,6 +33,25 @@ fl-admin-portal/
 └── package.json            # Monorepo root (orchestration scripts + lint-staged)
 ```
 
+### Root-Level File Purpose Map
+
+| File                              | Purpose                                                     |
+| --------------------------------- | ----------------------------------------------------------- |
+| `README.md`                       | Main project documentation and onboarding                   |
+| `AMPLIFY_README.md`               | AWS Amplify deployment-specific notes                       |
+| `MIGRATION_SUMMARY.md`            | Historical migration notes and outcomes                     |
+| `REFACTORING_SUMMARY.md`          | Refactor history and architectural cleanup notes            |
+| `CHANGELOG.md`                    | Version-by-version release notes                            |
+| `CONTRIBUTING.md`                 | Contribution guidelines for collaborators                   |
+| `CODE_OF_CONDUCT.md`              | Community conduct rules                                     |
+| `LICENSE.txt`                     | Project license terms                                       |
+| `package.json`                    | Root scripts for monorepo orchestration (dev/build/release) |
+| `docker-compose.yml`              | Local Docker stack (Neo4j + API + UI)                       |
+| `amplify.yml`                     | CI/CD build pipeline for Amplify frontend deployment        |
+| `apollo.config.js`                | Apollo IDE/introspection configuration                      |
+| `QUICK_REFERENCE_NEW_MUTATION.sh` | Utility script reference for adding GraphQL mutations       |
+| `CLAUDE.md`                       | Persistent AI project memory and working conventions        |
+
 ---
 
 ## Frontend (`web-react-ts/src/`)
@@ -252,6 +271,10 @@ ui:     port 3000 (proxies /graphql → api)
 - No emojis unless explicitly requested
 - Uses GitHub-flavored markdown for formatting
 - Wants CLAUDE.md as the persistent memory file across sessions
+- Prompt-writing preference: include this exact phrase in AI prompts:
+  `Can you remove the forced negatives throughout here. Instead of saying "I'm this not this, not this.." Never use such language because that is not how I talk. Speak clearly and simply succinctly.`
+  `No jargon, no buzz words, just clear understanding for the lay man`
+- UI preference: prefers shadcn-style confirmation dialogs over native browser `confirm()` prompts
 
 ---
 

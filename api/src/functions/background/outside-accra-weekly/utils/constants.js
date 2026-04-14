@@ -2,6 +2,15 @@
 const OVERSIGHT_NAME = 'Outside Accra'
 const notifyBaseURL = 'https://api-notify.firstlovecenter.com'
 
+const toLocalIsoDateString = (date = new Date()) => {
+  const targetDate = new Date(date)
+  const year = targetDate.getFullYear()
+  const month = String(targetDate.getMonth() + 1).padStart(2, '0')
+  const day = String(targetDate.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
 /**
  * Calculate the last Sunday (start of current week) from a given date
  * @param {Date} date - The date to calculate from (defaults to today)
@@ -10,7 +19,7 @@ const notifyBaseURL = 'https://api-notify.firstlovecenter.com'
 const getLastSunday = (date = new Date()) => {
   const targetDate = new Date(date)
   targetDate.setDate(targetDate.getDate() - targetDate.getDay())
-  return targetDate.toISOString().split('T')[0]
+  return toLocalIsoDateString(targetDate)
 }
 
 /**
@@ -25,7 +34,7 @@ const getLastSunday = (date = new Date()) => {
 const getWeekdayDate = (lastSunday) => {
   const date = new Date(lastSunday)
   date.setDate(date.getDate() + 1)
-  return date.toISOString().split('T')[0]
+  return toLocalIsoDateString(date)
 }
 
 // Use CommonJS exports for AWS Lambda compatibility

@@ -44,6 +44,35 @@ const getWeekNumber = (date = new Date()) => {
   return weekNumber
 }
 
+const toLocalIsoDateString = (date = new Date()) => {
+  const targetDate = new Date(date.getTime())
+  const year = targetDate.getFullYear()
+  const month = String(targetDate.getMonth() + 1).padStart(2, '0')
+  const day = String(targetDate.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+const parseIsoDateString = (isoDateString) => {
+  const [year, month, day] = String(isoDateString)
+    .split('-')
+    .map((value) => Number(value))
+
+  return new Date(year, month - 1, day)
+}
+
+const normalizeInputDate = (value) => {
+  if (value instanceof Date) {
+    return new Date(value.getTime())
+  }
+
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return parseIsoDateString(value)
+  }
+
+  return new Date(value)
+}
+
 const parseBodyParams = (event = {}) => {
   if (!event.body) return {}
 
@@ -61,7 +90,7 @@ const parseBodyParams = (event = {}) => {
   return event.body
 }
 
-const normalizeReportMode = (mode) => {
+const normalizeReportMode = (mode, reportDate) => {
   const requestedMode = String(mode || '')
     .trim()
     .toLowerCase()
@@ -80,6 +109,16 @@ const normalizeReportMode = (mode) => {
     requestedMode === 'sunday-only'
   ) {
     return REPORT_MODES.SUNDAY
+  }
+
+  if (requestedMode) {
+    return REPORT_MODES.COMBINED
+  }
+
+  // No mode specified — auto-detect from day of week.
+  // Saturday runs report fellowship data; other days report the full combined set.
+  if (reportDate && reportDate.getDay() === 6) {
+    return REPORT_MODES.FELLOWSHIP
   }
 
   return REPORT_MODES.COMBINED
@@ -280,14 +319,14 @@ const generateCsvForMode = (mode, datasets) => {
  * - mode: combined | fellowship | sunday
  */
 const handler = async (event = {}, targetDate = null) => {
-  let reportDate = targetDate
+  let reportDate = targetDate ? normalizeInputDate(targetDate) : null
 
   const queryParams = event.queryStringParameters || {}
   const bodyParams = parseBodyParams(event)
   const params = { ...queryParams, ...bodyParams, ...event }
 
   if (!reportDate && params.date) {
-    const parsedDate = new Date(params.date)
+    const parsedDate = normalizeInputDate(params.date)
     if (!isNaN(parsedDate.getTime())) {
       reportDate = parsedDate
     }
@@ -298,20 +337,27 @@ const handler = async (event = {}, targetDate = null) => {
   }
 
   const mode = normalizeReportMode(
-    params.mode || params.reportMode || params.serviceType
+    params.mode || params.reportMode || params.serviceType,
+    reportDate
   )
   const lastSunday = getLastSunday(reportDate)
+  const reportDateQueryString = toLocalIsoDateString(reportDate)
   // Fellowship mode uses the current week; combined uses the same week as lastSunday
   const fellowshipQueryDate =
-    mode === REPORT_MODES.FELLOWSHIP ? reportDate : lastSunday
+    mode === REPORT_MODES.FELLOWSHIP ? reportDateQueryString : lastSunday
+  const labelQueryDate =
+    mode === REPORT_MODES.FELLOWSHIP ? fellowshipQueryDate : lastSunday
+  const labelDate = parseIsoDateString(labelQueryDate)
   const outsideAccraSheet = 'OA Campus'
 
   console.log('Running function for date', reportDate.toISOString())
+  console.log('Day of week:', reportDate.getDay(), '(0=Sun, 6=Sat)')
   console.log('Using lastSunday (Sunday services):', lastSunday)
   console.log(
     'Using fellowshipQueryDate (fellowship/weekday services):',
     fellowshipQueryDate
   )
+  console.log('Label source date:', labelQueryDate)
   console.log('Report mode:', mode)
 
   let driver
@@ -378,8 +424,8 @@ const handler = async (event = {}, targetDate = null) => {
       weekdayNotBankedIncomeData,
     }
 
-    const weekNumber = getWeekNumber(reportDate) - 1
-    const reportDateString = reportDate.toLocaleString('en-GB', {
+    const weekNumber = getWeekNumber(labelDate)
+    const reportDateString = labelDate.toLocaleString('en-GB', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
