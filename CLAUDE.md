@@ -1,265 +1,307 @@
 # CLAUDE.md — FL Admin Portal
 
-# This is your memory file. Read it first every new session.
+This is the contract between Claude and this repo. Read it first every new
+session. The mandatory rules below are non-negotiable.
 
 ---
 
-## Project Overview
+## What this is
 
-**First Love Center Admin Portal** — a GRANDstack church management system for First Love Center, Accra, Ghana.
-Manages: membership directory, service attendance/income, bussing arrivals, banking/offerings, geolocation, campaigns, financial accounts.
+Internal church-management software for **First Love Center**, a Pentecostal
+church headquartered in Accra, Ghana. The portal is used by pastors, admins,
+and church leaders (not end-members) to manage the membership directory, weekly
+service attendance and offerings, Sunday bussing arrivals, banking, financial
+accounts, and weekly/monthly reports. The product spans a React/TypeScript
+admin web app, a Node + Apollo GraphQL API on top of Neo4j, and a set of AWS
+Lambda background jobs for aggregation, reporting, and webhooks.
 
-- **Version:** 8.1.3
-- **GitHub:** `github.com/firstlovecenter/fl-admin-portal`
-- **Stack:** React 18 + TypeScript (Vite), Apollo Client 3, Node/Express + Apollo Server 4, Neo4j 5, `@neo4j/graphql` v6
-- **Deployment:** Frontend on AWS Amplify; backend runs separately (Docker or Lambda)
+This repo is the entire product. Frontend is deployed on AWS Amplify; backend
+runs as Docker (locally) and Lambda (in cloud). Stack version: `8.1.3`.
 
 ---
 
-## Folder Structure
+## Project structure
 
 ```
 fl-admin-portal/
-├── api/                    # Node.js/Express Apollo GraphQL backend
-├── web-react-ts/           # React + TypeScript frontend (Vite)
-├── lib/                    # Shared secrets, GraphQL utilities
-├── lambda-package/         # AWS Lambda deployment package
-├── scripts/                # Monorepo build/release/dev scripts
-├── docs/                   # Amplify deployment docs
-├── img/                    # Logo assets
-├── docker-compose.yml      # Local dev: neo4j + api + ui
-├── amplify.yml             # AWS Amplify CI/CD pipeline (frontend only)
-├── apollo.config.js        # Apollo tooling config → localhost:4001/graphql
-└── package.json            # Monorepo root (orchestration scripts + lint-staged)
+├── api/                            # Node + Apollo Server 4 + @neo4j/graphql v6 + Neo4j 5
+│   ├── kb/                         # Backend-specific knowledge base
+│   ├── src/
+│   │   ├── index.js                # Express + Apollo bootstrap
+│   │   ├── schema/                 # 16 .graphql SDL files; assembled by graphql-schema.js
+│   │   ├── resolvers/
+│   │   │   ├── resolvers.ts        # Root resolver (aggregates all domains)
+│   │   │   ├── permissions.ts      # Server-side role helpers (parallels web-react-ts/src/permission-utils.ts)
+│   │   │   ├── secrets.ts          # AWS Secrets Manager loader
+│   │   │   ├── utils/              # isAuth, neo4j-types, throwToSentry
+│   │   │   ├── accounts/, anagkazo/, arrivals/, banking/, directory/,
+│   │   │   ├── download-credits/, maps/, no-income/, services/, uploads/
+│   │   ├── functions/
+│   │   │   ├── graphql/            # Lambda GraphQL handler
+│   │   │   └── background/         # 9 scheduled jobs (also CLI-runnable)
+│   │   └── scripts/                # CLI runners for the background jobs
+├── web-react-ts/                   # React 18 + TypeScript + Vite + Apollo Client 3
+│   ├── kb/                         # Frontend-specific knowledge base
+│   ├── src/
+│   │   ├── index.tsx               # Apollo + Auth bootstrap
+│   │   ├── AppWithContext.tsx      # Router + every context provider + every route array
+│   │   ├── auth/                   # ProtectedRoute, RoleView, SetPermissions, Sabbath, Maintenance
+│   │   ├── contexts/               # AuthContext (TS) + ChurchContext / MemberContext / ServiceContext (JS)
+│   │   ├── hooks/                  # useClickCard, useChurchLevel, useModal, usePopup
+│   │   ├── pages/                  # accounts, arrivals, auth, dashboards, directory,
+│   │   │                           # maps, page-not-found, reconciliation, services, splash-screen
+│   │   ├── components/             # base-component, buttons, formik (heavy), card, ...
+│   │   ├── color-theme.css         # Full design system (Bootstrap 5 + CSS vars)
+│   │   ├── global-types.ts         # Shared TS types
+│   │   ├── permission-utils.ts     # Frontend role helpers (parallels api/src/resolvers/permissions.ts)
+│   │   └── lib/auth-service.ts     # Custom JWT auth client (NOT Auth0)
+├── kb/                             # Cross-package knowledge base (project-wide)
+├── lib/                            # Shared secrets / GraphQL utilities
+├── lambda-package/                 # AWS Lambda artifact for the API
+├── scripts/                        # Monorepo orchestration (Node)
+├── .claude/                        # Claude Code harness (commands, agents, settings)
+├── .github/, .vscode/, .netlify/
+├── docker-compose.yml              # Local dev: neo4j (7474/7687) + api (4001) + ui (3000)
+├── amplify.yml                     # AWS Amplify CI/CD (frontend only)
+├── apollo.config.js                # Apollo IDE introspection (NOT runtime)
+└── package.json                    # Monorepo root (orchestration + lint-staged)
 ```
 
 ---
 
-## Frontend (`web-react-ts/src/`)
+## Tech stack
 
-**Entry:** `index.tsx` (Apollo + Auth bootstrap)
-**Router:** `AppWithContext.tsx` (BrowserRouter + all route arrays + Context Providers)
-**Auth gate:** `SimpleApp.tsx`
-**Build:** Vite 4, TypeScript strict, absolute imports via `baseUrl: "src"`
-
-### Key Directories
-
-| Path                  | Purpose                                                                                          |
-| --------------------- | ------------------------------------------------------------------------------------------------ |
-| `auth/`               | Route guards, `ProtectedRoute`, `RoleView`, `MaintenanceMode`, `Sabbath`                         |
-| `contexts/`           | `AuthContext.tsx` (custom JWT auth), `ChurchContext.js`, `MemberContext.js`, `ServiceContext.js` |
-| `hooks/`              | `useClickCard` (manages all church-level ID state), `useChurchLevel`, `useModal`, `usePopup`     |
-| `pages/`              | All page-level components, grouped by domain                                                     |
-| `components/`         | Shared reusable components (cards, buttons, formik wrappers, charts, etc.)                       |
-| `queries/`            | `ListQueries.ts` — shared GraphQL query definitions                                              |
-| `lib/auth-service.ts` | REST client for custom auth microservice (`VITE_AUTH_API_URL`)                                   |
-| `global-types.ts`     | All shared TypeScript types (church hierarchy, Member, Role, Routes, ServiceRecord)              |
-| `global-utils.ts`     | Shared utility functions                                                                         |
-| `permission-utils.ts` | Role-based permission helpers (`permitMe`, `permitLeader`, `permitAdmin`, `permitArrivals`)      |
-| `color-theme.css`     | **Full design system** — CSS vars, dark/light themes (see Design section)                        |
-| `index.css`           | Global utility classes (`.page-container`, `.bg`, `.profile-img`, etc.)                          |
-
-### Pages / Sections
-
-| Section        | Path Prefix                                                                                                           | Description                                                                |
-| -------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Dashboard      | `/`                                                                                                                   | `UserDashboard`, `ServantsDashboard`, `ServantsChurchList`                 |
-| Directory      | `/directory`, `/member`, `/bacenta`, `/governorship`, `/council`, `/stream`, `/campus`, `/oversight`, `/denomination` | Full church directory: display, create, update, history, grids, quickfacts |
-| Services       | `/services`, `/{level}/record-service`                                                                                | Service records, banking, defaulters, graphs, rehearsals, anagkazo         |
-| Arrivals       | `/arrivals`                                                                                                           | Bussing arrivals tracking, bus forms, countdown                            |
-| Accounts       | `/accounts`                                                                                                           | Financial accounts: deposits, expenses, approvals, transaction history     |
-| Maps           | `/maps`                                                                                                               | Google Maps views for fellowships/venues                                   |
-| Reconciliation | `/reconciliation`                                                                                                     | Reconciliation module                                                      |
-| Auth           | `/setup-password`                                                                                                     | Password setup page                                                        |
-| 404            | `*`                                                                                                                   | `PageNotFound`                                                             |
-
-Route convention: `/{entity}/displaydetails`, `/{entity}/add{entity}`, `/{entity}/edit{entity}`, `/{entity}/displayall`
-
-All routes defined as `LazyRouteTypes[]` arrays in `*Routes.ts` files, spread into `AppWithContext.tsx`.
-Each route: `{ path, element, roles, placeholder? }`.
+| Layer | Technology |
+| --- | --- |
+| Frontend framework | React 18 + TypeScript 4.7 |
+| Build tool (FE) | Vite 4 (PWA, Sentry, SVG, TS paths) |
+| Styling | Bootstrap 5 + react-bootstrap + CSS variables in `color-theme.css` (Inter font, light/dark via `data-bs-theme`) |
+| Forms | Formik + Yup (in-house wrappers in `components/formik/`) |
+| Routing | `react-router-dom` v6 (lazy-loaded, declared in `*Routes.ts` arrays) |
+| GraphQL client | Apollo Client 3 (retry + error links, snackbar surface via `notistack`) |
+| State | Apollo cache + React Context (`Auth`, `Church`, `Member`, `Service`) |
+| Auth | Custom JWT (`lib/auth-service.ts` + `contexts/AuthContext.tsx`) — NOT Auth0 |
+| Backend framework | Node + Express + Apollo Server 4 |
+| GraphQL schema | `@neo4j/graphql` v6 over 16 `.graphql` SDL files |
+| Database | Neo4j 5 (`neo4j-driver` 5.28) |
+| Background jobs | AWS Lambda (also CLI-runnable from `api/src/scripts/`) |
+| Cloud | AWS Amplify (FE), AWS Lambda + Secrets Manager + S3 (BE), Cloudinary (images) |
+| Tests | None (ADR-010) |
+| Linter / formatter | ESLint (Airbnb + react-app + Prettier + import) + Prettier + lint-staged |
+| Type checker | `tsc --noEmit` per package (run via lint-staged) |
+| Deployment | AWS Amplify pulls secrets from `prod/fl-admin-portal` (main) or `dev/fl-admin-portal` (other branches); Slack notifications on build status |
+| Private packages | `@jaedag/admin-portal-types`, `@jaedag/admin-portal-api-core` (GitHub Packages, scope `@jaedag`) |
 
 ---
 
-## Backend (`api/src/`)
+## PWA
 
-**Entry:** `index.js` — Express + Apollo Server 4 + `@neo4j/graphql` v6
-**Schema assembly:** `schema/graphql-schema.js` reads all ~16 `.graphql` SDL files
+The frontend is deployed and **primarily used as an installed PWA** on Android and iOS devices by church leaders and pastors. This is not a "PWA as a bonus" — it is the primary delivery surface. Treat every UI change as a mobile-first, installable-app change.
 
-### Resolver Pattern
+### How it is built
 
-Each domain has:
+| Aspect | Detail |
+| --- | --- |
+| Plugin | `vite-plugin-pwa` with `registerType: 'autoUpdate'` |
+| Service worker | Workbox (auto-generated). Precaches all Vite build artifacts (JS, CSS, assets). Activates immediately on new deploy without user action. |
+| Manifest | `web-react-ts/public/manifest.json` — `display: standalone`, theme `#000000`, splash `#ff2c5e` |
+| App name | "FLC Servants Synago Portal" (short: "FLC State of the Flock") |
+| Shortcuts | `/directory`, `/services/church-list`, `/arrivals` — appear in long-press app icon menu |
 
-- `*-cypher.ts` — raw Cypher query strings
-- `*-resolvers.ts` — resolver functions (use Neo4j driver session directly)
+### Mandatory PWA rules
 
-Domains: `accounts`, `anagkazo`, `arrivals`, `banking`, `directory`, `download-credits`, `maps`, `no-income`, `services`, `uploads`
+- ❌ **No `target="_blank"` links for in-app navigation.** Standalone mode has no browser chrome — new-tab links leave users stranded. Use `react-router-dom` `<Link>` or `useNavigate`.
+- ❌ **No "back to browser" assumptions.** There is no address bar, no browser back button (unless the device OS provides one). Every page needs a clear in-app back/close path.
+- ❌ **No touch targets under 44 × 44 px.** Use Bootstrap spacing / button sizing. Small tap targets are unusable on mobile.
+- ❌ **No `hover`-only interactions.** Touch devices have no hover state. Interactive elements must work on tap.
+- ✅ **Use `type="tel"` / `type="number"` / `type="email"` on inputs.** Triggers the correct mobile keyboard.
+- ✅ **Respect safe areas.** Use `env(safe-area-inset-*)` in CSS where content risks being clipped by notches or home bars.
+- ✅ **Apollo cache is the offline buffer.** API calls require network. Cached data displays stale; fresh data requires connectivity. Design loading and error states accordingly — users may open the app offline.
 
-Special: `directory/servant-resolver-factory.ts` — factory for generating servant-related resolvers.
+### Service worker cache behaviour
 
-### Background Lambda Jobs (`api/src/functions/background/`)
+Workbox precaches all hashed build assets. When a new build is deployed:
+1. The new SW installs in the background.
+2. `autoUpdate` activates it immediately (no "reload to update" prompt).
+3. The user gets the new version on next navigation or app foreground.
 
-| Job                         | Description                                     |
-| --------------------------- | ----------------------------------------------- |
-| `bacenta-graph-aggregator`  | Aggregates bussing data up the church hierarchy |
-| `service-graph-aggregator`  | Aggregates service data up the church hierarchy |
-| `accra-campus-weekly`       | Weekly report for Accra campus                  |
-| `outside-accra-weekly`      | Weekly report for outside Accra                 |
-| `den-office-monthly-report` | Monthly PDF report                              |
-| `payment-webhook`           | Payment processing callback                     |
-| `services-not-banked`       | Defaulter notifications                         |
-| `code-of-the-day`           | Daily code pusher                               |
+**Implication:** Asset changes take effect on next SW activation, not immediately. Do not rely on hard-refreshes in production testing — test the full install-and-open cycle on mobile or via Chrome DevTools → Application → Service Workers → "Update on reload".
 
-These are also runnable as CLI scripts: `api/src/scripts/run-bacenta-aggregation.js`, `run-service-aggregation.js`.
+### Testing PWA changes
 
----
-
-## Domain Model: Church Hierarchy
-
-```
-Denomination → Oversight → Campus → Stream → Council → Governorship → Bacenta → Fellowship
-                                           ↘ CreativeArts → Ministry → HubCouncil → Hub
-```
-
-Types defined in `global-types.ts`, node labels in the GraphQL SDL files.
-
----
-
-## Design System
-
-**No Tailwind.** Uses **Bootstrap 5** + custom CSS variables (Chakra UI–compatible naming).
-
-### Files
-
-- `web-react-ts/src/color-theme.css` — Main theme file
-- `web-react-ts/src/index.css` — Global utility classes
-
-### Typography
-
-- Font: **Inter, sans-serif** for both heading and body (`--chakra-fonts-heading/body`)
-
-### Color Scheme
-
-- Full Chakra-style CSS variable palette on `:root` (gray, red, orange, yellow, green, teal, blue, cyan, purple, pink)
-- **Brand accent:** `--custom-color-accent-*` shades (50–900) — a pink/red scale (e.g. `--custom-color-accent-500: #ff4d6b`)
-- Dark mode accent: `--accent-color: #690c13`
-
-### Dark / Light Mode
-
-Toggled via Bootstrap's `data-bs-theme` attribute on `<html>` (`'dark'` or `'light'`).
-Semantic tokens defined per theme:
-
-- `--icon`, `--bg-card`, `--text-primary`, `--accent-color`
-- Feature accents: `--members-accent: #68e0d7`, `--churches-accent`, `--arrivals-accent`, `--defaulters-accent`, `--banking-accent`, `--campaigns-accent`, `--maps-accent`
-- Campaign-specific: `--equipment`, `--antibrutish`, `--multiplication`, `--swollensunday`, `--shepherdingcontrol`, `--sheepseeking`
-
-### Bootstrap Button Overrides
-
-Both themes define custom button variants: `btn-success`, `btn-danger`, `btn-primary`, `btn-warning`, `btn-secondary`, `btn-gray`, `btn-brand`, `btn-purple`, `btn-outline-*`.
+Manual smoke test checklist for any UI change:
+- [ ] Open the feature in standalone mode (Chrome DevTools → Application → Manifest → "Add to homescreen", or test on a real Android/iOS device)
+- [ ] Verify touch targets are tappable without zooming
+- [ ] Verify back navigation works without using a browser back button
+- [ ] Verify the feature is usable on a 375 px wide screen (iPhone SE baseline)
+- [ ] Verify no horizontal scroll is introduced
 
 ---
 
-## Apollo / GraphQL
+## Shared knowledge base
 
-### Frontend (`index.tsx`)
+The KB is the source of truth for terminology, roles, workflows, and rules.
+Read the relevant file before working on a related area — do not guess.
 
-- `httpLink` → `VITE_SYNAGO_GRAPHQL_URI` || `http://localhost:4001/graphql`
-- `authLink` → adds `Authorization: Bearer <token>` from in-memory access token
-- `retryLink` → 5 attempts, jitter, 300–2000ms delay
-- `errorLink` → shows notistack snackbars for errors
-- `InMemoryCache`, `errorPolicy: 'all'`
+### Root `kb/` (cross-package)
 
-### Auth Flow
+| File | Contents |
+| --- | --- |
+| [`kb/01-glossary.md`](kb/01-glossary.md) | Project-specific terms (church hierarchy, money/banking, arrivals, accounts, code patterns) |
+| [`kb/02-user-roles.md`](kb/02-user-roles.md) | Every `Role`, every permission helper, what each role can / cannot do, auth flow |
+| [`kb/03-workflows.md`](kb/03-workflows.md) | W1–W8 — record service, rehearsals, servant changes, arrivals, accounts, reports, login, cache busting |
+| [`kb/04-state-machines.md`](kb/04-state-machines.md) | SM1–SM8 — `transactionStatus`, banking proof, vacation, servant slots, vehicles, expenses, auth, app modal |
+| [`kb/05-data-entities.md`](kb/05-data-entities.md) | Church hierarchy, Member, ServiceRecord, BussingRecord, HistoryLog, Equipment, accounts; constants |
+| [`kb/06-adr.md`](kb/06-adr.md) | ADR-001…012 — duplicated permissions, custom JWT, Bootstrap, route arrays, financial truth, servant factory, useClickCard, idempotent aggregation, absolute imports, no tests, @jaedag, parameterised Cypher |
 
-Custom JWT auth (NOT Auth0 despite `@auth0/auth0-react` being in `package.json` — unused).
+### `web-react-ts/kb/` (frontend)
 
-- `AuthContext.tsx` + `auth-service.ts` → REST calls to `VITE_AUTH_API_URL`
-- Token stored in-memory + `sessionStorage`
+| File | Contents |
+| --- | --- |
+| [`web-react-ts/kb/01-frontend-conventions.md`](web-react-ts/kb/01-frontend-conventions.md) | TS / Apollo / forms / imports / state / logging rules; what not to introduce |
+| [`web-react-ts/kb/02-design-system.md`](web-react-ts/kb/02-design-system.md) | Theme tokens, feature accents, button variants, components-to-reuse table |
+| [`web-react-ts/kb/03-routing-and-permissions.md`](web-react-ts/kb/03-routing-and-permissions.md) | `LazyRouteTypes`, adding pages, URL conventions, `ProtectedRoute` behaviour |
 
-### Backend (`api/src/index.js`)
+### `api/kb/` (backend)
 
-- `Neo4jGraphQL({ typeDefs, resolvers, driver })` auto-generates Cypher from SDL
-- JWT authorization via `features.authorization.key`
-- Context: decoded JWT + `executionContext: driver`
-
----
-
-## Key Absolute File Paths
-
-| File                                        | Purpose                                           |
-| ------------------------------------------- | ------------------------------------------------- |
-| `web-react-ts/src/index.tsx`                | Apollo + Auth client bootstrap                    |
-| `web-react-ts/src/AppWithContext.tsx`       | Router + all context providers + all routes       |
-| `web-react-ts/src/color-theme.css`          | Full design system (CSS vars, themes)             |
-| `web-react-ts/src/global-types.ts`          | All shared TypeScript types                       |
-| `web-react-ts/src/permission-utils.ts`      | Role permission helpers                           |
-| `web-react-ts/src/contexts/AuthContext.tsx` | Custom JWT auth context                           |
-| `api/src/index.js`                          | API server entry point                            |
-| `api/src/resolvers/resolvers.ts`            | Root resolver (aggregates all domains)            |
-| `api/src/schema/graphql-schema.js`          | Schema assembly (concatenates all .graphql files) |
-| `amplify.yml`                               | AWS Amplify CI/CD (frontend only)                 |
-| `docker-compose.yml`                        | Local dev (neo4j + api + ui)                      |
-| `web-react-ts/vite.config.ts`               | Vite config (PWA, Sentry, SVG, TS paths)          |
+| File | Contents |
+| --- | --- |
+| [`api/kb/01-backend-conventions.md`](api/kb/01-backend-conventions.md) | Folder layout, resolver shape, SDL rules, sessions, what not to do |
+| [`api/kb/02-graphql-and-cypher.md`](api/kb/02-graphql-and-cypher.md) | Adding fields / relationships / `@cypher` blocks / mutations; Cypher style; validation flow |
+| [`api/kb/03-resolver-patterns.md`](api/kb/03-resolver-patterns.md) | P1–P8 reusable resolver patterns; anti-patterns |
 
 ---
 
-## Naming Conventions
+## Claude Code tools
 
-- **React components:** PascalCase `.tsx` files
-- **Utilities/helpers:** kebab-case or camelCase
-- **Cypher files:** `*-cypher.ts`
-- **Resolver files:** `*-resolvers.ts`
-- **Route arrays:** `*Routes.ts`
-- **Hooks:** `use` prefix, camelCase (e.g. `useClickCard`, `useChurchLevel`)
-- **Permissions:** `permitMe`, `permitLeader`, `permitAdmin`, `permitArrivals` — all take `ChurchLevel` string
-
----
-
-## Deployment
-
-### AWS Amplify (Frontend)
-
-- `main` branch → Production (fetches secrets from `prod/fl-admin-portal` in AWS Secrets Manager)
-- Other branches → Development (fetches from `dev/fl-admin-portal`)
-- Writes secrets to `web-react-ts/.env` at build time
-- Configures `@jaedag` npm scope for private GitHub Packages
-- Sends Slack notifications on build start/end/failure
-
-### Docker (Local Dev)
-
-```
-neo4j:  bolt://7687, HTTP 7474
-api:    port 4001
-ui:     port 3000 (proxies /graphql → api)
-```
-
-### Private Packages
-
-- `@jaedag/admin-portal-types` — TypeScript type definitions (GitHub Packages)
-- `@jaedag/admin-portal-api-core` — Shared API utilities (GitHub Packages)
+| Tool | Type | Purpose |
+| --- | --- | --- |
+| `/fix` | Command | Diagnose and fix a bug end-to-end. Blocks at any phase if information is missing |
+| `/implement` | Command | Implement a feature end-to-end. Blocks if requirements are unclear |
+| `/new-component` | Command | Scaffold a reusable React component under `web-react-ts/src/components/` |
+| `/new-module` | Command | Scaffold a feature module — page + queries + types + route + (optional) resolver |
+| `/commit` | Command | Stage changes and create a Conventional Commits commit |
+| `code-reviewer` | Agent (blue) | Reviews a diff for code quality, conventions, framework correctness, TS, architecture, domain. Severity-grouped output |
+| `security-reviewer` | Agent (red) | Audits a diff for auth, authorisation, financial, injection, exposure issues. Critical/High/Medium/Low |
+| `cypher-reviewer` | Agent (green) | Reviews Cypher (in `*-cypher.ts` and SDL `@cypher` blocks) for correctness, performance, parameter safety |
 
 ---
 
-## Git Branch Convention
+## Mandatory rules
 
-- `deploy` — main/production branch (use for PRs)
-- `dev` — active development branch (current)
+These rules override any default behaviour. They are not suggestions.
+
+### KB reading — if working on X, you MUST read Y
+
+| If you are working on… | You MUST read |
+| --- | --- |
+| Anything new (start of any task) | `CLAUDE.md` (this file) |
+| New domain term, name, or church level | `kb/01-glossary.md` |
+| Permission gate, role check, or auth route | `kb/02-user-roles.md` and both `web-react-ts/src/permission-utils.ts` and `api/src/resolvers/permissions.ts` |
+| Workflow that touches services, arrivals, banking, or accounts | `kb/03-workflows.md` |
+| Anything stateful (banking, vacation, servant slots, vehicles, expenses, auth) | `kb/04-state-machines.md` |
+| Reading or writing any entity (Member, Church, ServiceRecord, BussingRecord, HistoryLog) | `kb/05-data-entities.md` |
+| Architectural decision or anything that "feels structural" | `kb/06-adr.md` |
+| Frontend component, page, or styling | `web-react-ts/kb/01-frontend-conventions.md` and `web-react-ts/kb/02-design-system.md` |
+| New page or route | `web-react-ts/kb/03-routing-and-permissions.md` |
+| Resolver or `*-cypher.ts` change | `api/kb/01-backend-conventions.md` and `api/kb/03-resolver-patterns.md` |
+| GraphQL SDL change or new `@cypher` block | `api/kb/02-graphql-and-cypher.md` |
+
+### Command usage — if asked to do X, you MUST use /command
+
+| If asked to… | Use |
+| --- | --- |
+| Diagnose / fix a bug | `/fix` |
+| Build a new feature | `/implement` |
+| Add a reusable UI component | `/new-component` |
+| Add a new page or feature module | `/new-module` |
+| Commit changes | `/commit` |
+
+Do not improvise these workflows; they encode the multi-phase blocking pattern
+that prevents shallow work.
+
+### Agent dispatch — if doing X, you MUST dispatch agent
+
+| If you just… | Dispatch |
+| --- | --- |
+| Wrote or modified any code | `code-reviewer` |
+| Touched anything under `api/src/resolvers/`, `api/src/schema/`, `api/src/functions/`, `lib/auth-service.ts`, `permission-utils.ts`, or any money / banking / arrivals / accounts code | `security-reviewer` |
+| Wrote or modified Cypher (in `*-cypher.ts` or SDL `@cypher` blocks) or aggregation logic | `cypher-reviewer` |
+
+Reviewers run **after** implementation, **before** the user is asked to verify
+or before `/commit`.
+
+### Must not
+
+- ❌ **Auth0.** Do not import `@auth0/auth0-react`. Auth is custom (ADR-002).
+- ❌ **Tailwind / Chakra / styled-components / MUI.** Bootstrap 5 + CSS
+  variables only (ADR-003).
+- ❌ **Inline `<Route>` JSX.** Routes go through `LazyRouteTypes[]` arrays in
+  `*Routes.ts` files (ADR-004).
+- ❌ **Drift between FE and BE permission helpers.** Any change to
+  `web-react-ts/src/permission-utils.ts` MUST be mirrored in
+  `api/src/resolvers/permissions.ts` (ADR-001).
+- ❌ **String-interpolated Cypher.** All variable inputs go through `$param`
+  bindings (ADR-012).
+- ❌ **Hand-rolled `MakeXLeader` / `RemoveXLeader` resolvers.** Add a single
+  line to `api/src/resolvers/directory/servant-config.ts` (ADR-006).
+- ❌ **Skipping `isAuth(...)` in a resolver.** It must be the first line of
+  the function body. The `@neo4j/graphql` authorization directive does not
+  cover custom resolvers.
+- ❌ **Trusting client-supplied roles.** Use `context.jwt.roles`, never
+  `currentUser.roles` from the React state.
+- ❌ **Mutating money / `transactionStatus` without idempotency.** ADR-005,
+  SM1.
+- ❌ **Marking vacation Bacentas as defaulters.** `vacationStatus = 'Vacation'`
+  is a valid reason for no service record (SM3).
+- ❌ **`../../../` import chains.** Absolute imports from `src/` (ADR-009).
+- ❌ **Editing lock files** (`package-lock.json`, etc.) directly. Use the
+  package manager. (Pre-tool hook blocks this.)
+- ❌ **Editing `.env` / `secrets.json` / `credentials.json`.** Update AWS
+  Secrets Manager. (Pre-tool hook blocks this.)
+- ❌ **Force pushing.** Especially to `main` or `deploy`. (Deny-listed.)
+- ❌ **`npm run release:*`.** Releases are human-gated. (Deny-listed.)
+- ❌ **Claiming "tests pass".** There is no test suite (ADR-010). Verification
+  is `tsc --noEmit` + `eslint` + manual smoke test.
+- ❌ **Logging the JWT, momo numbers, or email/PII.** `index.js` already logs
+  the decoded JWT — do not expand it; ideally trim it.
+- ❌ **Pushing to a remote without explicit user request.** PRs are user-
+  initiated.
 
 ---
 
-## User Preferences
+## Operational context
 
-- Prefers concise, direct responses (no filler)
-- No emojis unless explicitly requested
-- Uses GitHub-flavored markdown for formatting
-- Wants CLAUDE.md as the persistent memory file across sessions
+- **Team size:** Small. Releases are coordinated; do not surprise the team
+  with structural changes.
+- **Branches:** `deploy` is production (PR target). `dev` is active development.
+  `main` is the AWS Amplify production trigger (Amplify pipeline pulls prod
+  secrets when the build is on `main`); other branches use `dev` secrets.
+- **Region:** Ghana. Phone numbers use `MOMO_NUM_REGEX` (Ghanaian mobile
+  money). Currency is cedis (GHS) with foreign-currency overrides on
+  ServiceRecords.
+- **Compliance:** No formal compliance regime, but financial flows
+  (banking, account expenses, arrivals payments) carry real money — server-
+  side validation and idempotency are required (ADR-005).
+- **Secrets:** AWS Secrets Manager (`prod/fl-admin-portal`,
+  `dev/fl-admin-portal`). Loaded by `loadSecrets()` in
+  `api/src/resolvers/secrets.ts`. Never committed to the repo.
+- **Audit trail:** `HistoryLog` nodes are append-only. Every leadership change,
+  banking confirmation, and major state transition appends one. Do not skip.
+- **MCP servers** (`.mcp.json`):
 
----
+  | Server | Target | When to use |
+  | --- | --- | --- |
+  | `neo4j` | `dev-neo4j.firstlovecenter.com` (dev, plain bolt) | Query the live dev database — schema verification, data shape, Cypher prototype testing. **Read-only by preference.** |
+  | `neo4j-prod` | `neo4j.firstlovecenter.com` (prod, TLS bolt) | ⚠️ **Production data.** Only use when the user explicitly asks to inspect prod. Never mutate without explicit user approval. |
+  | `context7` | Upstash Context7 | Up-to-date library docs (Apollo, `@neo4j/graphql`, React Router, etc.). Use when you need current API signatures rather than training-data guesses. |
+  | `shadcn` | shadcn CLI | Component API reference only. Do NOT introduce shadcn components — Bootstrap 5 is the design system (ADR-003). |
+  | `chrome-devtools` | Local Chrome instance | Browser DevTools automation — DOM inspection, console, network tab. Useful for PWA debugging and verifying service-worker state. |
 
-## Notes & Gotchas
-
-- `@auth0/auth0-react` is in `package.json` but NOT used — auth is fully custom via `AuthContext.tsx`
-- Dockerfiles reference `node:12` (outdated, not representative of actual runtime)
-- `ChurchContext.js`, `MemberContext.js`, `ServiceContext.js` are plain JS (not TypeScript) — only `AuthContext.tsx` is fully typed
-- The `servant-resolver-factory.ts` generates resolvers dynamically — check it when adding new servant types
-- Apollo config (`apollo.config.js`) points to localhost — not used at runtime, only for IDE introspection
-- Background Lambda jobs can also be run as CLI scripts in `api/src/scripts/`
+  Never mutate production data via MCP. Dev mutations require explicit user approval.
+- **Pre-tool / post-tool hooks** (configured in `.claude/settings.json`):
+  - PreToolUse: blocks edits to lock files and env / secret files.
+  - PostToolUse: runs `tsc --noEmit` for the touched package and `eslint` for
+    the touched file. Output is capped to last 20 lines, 20s timeout.
+- **No automated tests** — manual smoke tests are the verification gate.
+  Document the manual checklist in any change proposal.
