@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@sentry/vite-plugin": "^0.7.2",
-    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^14.2.5",
     "@types/jest": "^24.0.0",
@@ -59,17 +59,26 @@
     "@types/react-slick": "^0.23.10",
     "@types/react-test-renderer": "^18.0.0",
     "@types/recharts": "^1.8.14",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
     "http-proxy-middleware": "^2.0.1",
+    "jsdom": "^27.0.1",
+    "msw": "^2.14.2",
     "react-test-renderer": "^18.2.0",
     "typescript": "^4.7.2",
-    "vite-plugin-pwa": "^0.16.7"
+    "vite-plugin-pwa": "^0.16.7",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview",
     "generate-build-version": "node generate-build-version",
-    "prebuild": "npm run generate-build-version"
+    "prebuild": "npm run generate-build-version",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "eslintConfig": {
     "extends": "react-app",

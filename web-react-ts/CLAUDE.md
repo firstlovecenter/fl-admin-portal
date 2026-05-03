@@ -79,5 +79,9 @@ npm start              # vite dev server on :3000
 
 - `npx tsc -p tsconfig.json --noEmit`
 - `npx eslint <files> --max-warnings=0`
+- `npm run test:run` (Vitest — full suite) or `npm run test:run -- <pattern>`
+  for the touched file. Tests are written as code is refactored or extended,
+  per **ADR-013**. Refactors require tests on the target before they begin
+  (use `/refactor`).
 - Click through the actual flow in the browser as the gating role.
-- There is **no test suite** (ADR-010). Don't claim "tests pass".
+- Don't claim "tests pass" without running them — quote the runner output.
