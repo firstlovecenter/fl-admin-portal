@@ -64,7 +64,7 @@ jobs:
               "skipLibCheck": true
             },
             "include": ["./**/*"],
-            "exclude": ["node_modules"]
+            "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts"]
           }' > api/temp-compiled-resolvers/tsconfig.json
 
           # Install TypeScript if not already available
@@ -129,5 +129,8 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: "🚀 Synago GraphQL API Lambda Deployment - ${{ steps.target.outputs.environment }}"
-          SLACK_MESSAGE: "Commit: ${{ github.event.head_commit.message }} - Deploying GraphQL API to AWS Lambda [${{ steps.target.outputs.environment }}] ${{ job.status }}"
+          SLACK_TITLE: "🚀 Synago GraphQL API Lambda Deployment - ${{
+            steps.target.outputs.environment }}"
+          SLACK_MESSAGE: "Commit: ${{ github.event.head_commit.message }} - Deploying
+            GraphQL API to AWS Lambda [${{ steps.target.outputs.environment }}]
+            ${{ job.status }}"
