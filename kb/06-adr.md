@@ -191,23 +191,22 @@ on (warn at root, off in `api`). Imports use absolute paths from `src/`.
 
 ## ADR-010 — No automated test suite; verification = type-check + lint + manual
 
-**Status:** Accepted (debt — desired but not present)
+**Status:** Superseded by ADR-013 (2026-05-02)
 
 **Context:** `web-react-ts` ships with `@testing-library/*` deps but no `npm test`
 script and no test files of consequence. `api` has `"test": "echo 'no test
 specified' && exit 1"`.
 
-**Decision:** Until tests exist, verification of a change means:
+**Decision (historical):** Until tests exist, verification of a change means:
 1. `tsc --noEmit` passes for both packages.
 2. `eslint --max-warnings=0` passes.
 3. Manual smoke-test of the affected UI flow / GraphQL mutation.
 
-Claude Code commands and agents must not claim "tests pass" — they don't exist.
-
-**Consequences:**
-- Refactors carry more risk; favour smaller, more frequent PRs.
-- Adding tests anywhere should accompany the feature being changed; do not write
-  a parallel test suite that nothing else uses.
+**Why superseded:** A staged refactor of the codebase is now in flight. Behavior-
+preserving refactors without tests are unsafe at this scale. ADR-013 establishes
+the test stack and the test-first refactor loop. Existing code without tests is
+not retroactively required to add them — tests are added as the surrounding code
+is refactored or extended.
 
 ---
 
@@ -244,3 +243,99 @@ field name from the client and inject it.
 - `@neo4j/graphql` auto-generated resolvers are already safe.
 - New `*-cypher.ts` strings should declare params at the top and reference them
   with `$name`.
+
+---
+
+## ADR-013 — Test stack and the test-first refactor loop
+
+**Status:** Accepted (2026-05-02). Supersedes ADR-010.
+
+**Context:** The codebase is entering a phased refactor. ADR-010 forbade tests
+on the basis that none existed and a parallel suite would rot. That trade-off
+flips once we are deliberately changing internals — behavior-preserving
+refactors at this scale need an executable safety net, not just `tsc` + manual
+QA. We also need a uniform place to capture the invariants that today live only
+in `kb/04-state-machines.md` (transaction status idempotency, vacation
+handling, banking proof, etc.).
+
+**Decision:**
+
+1. **Frontend (`web-react-ts`) uses Vitest + React Testing Library + MSW.**
+   - Vitest is chosen over Jest because the build is Vite-native:
+     `vite-tsconfig-paths`, ESM module graph, and the existing `vite.config.ts`
+     resolve identically in tests with zero extra config. Jest on Vite
+     requires `babel-jest` / `ts-jest` shims that fight the build. The Vitest
+     API is Jest-compatible (`describe` / `it` / `expect` / `vi.mock`), so
+     muscle memory and AI tooling carry over.
+   - DOM tests run under `jsdom`. Apollo Client mocking via
+     `@apollo/client/testing` (`MockedProvider`) for shallow tests; MSW for
+     anything that exercises the network layer (retry link, error link,
+     auth header).
+
+2. **Backend (`api`) uses Jest + ts-jest.**
+   - Jest is chosen for the API because the runtime is plain Node + CommonJS,
+     ts-jest is well-trodden, and there is no Vite to align with.
+   - Cypher resolvers use a thin in-memory neo4j-driver mock for unit tests
+     (assert the query string and params your resolver issued, plus the
+     mapped response). Resolvers that exercise multi-step Cypher use the dev
+     Neo4j instance via the `neo4j` MCP server for characterization tests
+     gated under `npm run test:integration`. Production data is never
+     touched.
+
+3. **The test-first refactor loop is mandatory.** A refactor change MUST
+   follow this order:
+   1. **Characterize** — write tests against the *current* behavior of the
+      target. The tests pass on the current code, even if the current code
+      is ugly or has minor bugs (capture the bug as a `TODO` in the test, do
+      not fix it in the same change).
+   2. **Refactor** — change the implementation, leave the tests untouched
+      (renaming a public symbol is the only edit allowed to the test file
+      during a refactor).
+   3. **Verify** — tests still green, `tsc --noEmit` green, ESLint green.
+   4. **Review** — `code-reviewer` on the refactor diff. `cypher-reviewer`
+      and `security-reviewer` if their triggers fire.
+
+4. **What MUST be tested first.** Tests are written as the surrounding code
+   is touched, but the highest-priority surfaces — to be covered before
+   any refactor in their area — are:
+   - `web-react-ts/src/permission-utils.ts` and
+     `api/src/resolvers/permissions.ts` (ADR-001 mirroring; one suite of
+     scenarios driven against both).
+   - `kb/04-state-machines.md` invariants: `transactionStatus` idempotency
+     (SM1, ADR-005), banking proof transitions (SM2), vacation handling
+     (SM3), servant slot transitions (SM4).
+   - Money math: anything that adds, settles, or reconciles cedis or
+     foreign-currency amounts on `ServiceRecord`, accounts expenses, or
+     arrivals payments.
+
+5. **What we do NOT test.** Trivial getters / DTO mappers. Pure
+   presentational components. Auto-generated `@neo4j/graphql` resolvers
+   (their behavior is the library's contract, not ours). Snapshot tests of
+   rendered Bootstrap markup — too brittle to be useful.
+
+6. **File layout and naming.** Tests live next to the source as
+   `*.test.ts` / `*.test.tsx`. No `__tests__/` folders. A test file imports
+   only from its sibling and from test utilities under
+   `web-react-ts/src/test-utils/` or `api/src/test-utils/`.
+
+7. **Coverage is a signal, not a gate.** No coverage threshold blocks CI.
+   Coverage is reported on PRs touching tested code so reviewers can see
+   what was actually exercised. A "100% covered" file with assertion-free
+   tests is worse than 60% with sharp assertions.
+
+**Consequences:**
+- Two new agents and one slash command formalise the loop:
+  `test-author` writes the characterization / unit tests, `refactor`
+  performs the behavior-preserving change (and refuses to run unless tests
+  exist for the target), `/refactor` orchestrates the full loop.
+- `web-react-ts/package.json` gains `vitest`, `@vitest/ui`, `jsdom`,
+  `@testing-library/jest-dom`, `msw`, `@apollo/client/testing`. Test scripts:
+  `test`, `test:run`, `test:coverage`, `test:ui`.
+- `api/package.json` replaces the placeholder `test` script with `jest`,
+  adds `jest`, `ts-jest`, `@types/jest`. New scripts: `test`,
+  `test:integration` (gated), `test:coverage`.
+- Test infrastructure setup is its own PR per package, kept narrow: install
+  deps, add config files, add one canary test that actually runs. No
+  parallel work mixed in.
+- Old code without tests stays untested until it is refactored or extended.
+  We do not write a backfill suite for unchanged code.

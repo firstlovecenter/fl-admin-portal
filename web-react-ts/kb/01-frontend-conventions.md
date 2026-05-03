@@ -97,4 +97,8 @@ file. If a refactor opportunity comes up, migrate to TS.
   arrays.
 - Do not re-implement church-id state outside `useClickCard` /
   `ChurchContext`.
-- Do not use Tailwind / Chakra / styled-components. Bootstrap + CSS vars only.
+- Do not write new Bootstrap — the design system is Shadcn/UI + Tailwind CSS.
+  Do not use Chakra / styled-components / MUI either.
+- Do not mix Bootstrap and Tailwind on the same page.
+- Do not use `@apply` in CSS files — write Tailwind utilities in JSX.
+- Do not replace `notistack` — it is wired into the Apollo error link.

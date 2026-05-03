@@ -109,7 +109,7 @@ Implement in this order so you can validate as you go:
 
 Conventions:
 - Absolute imports (ADR-009).
-- Bootstrap + CSS variables only (ADR-003).
+- **Shadcn/UI + Tailwind CSS** for all UI work. No Bootstrap on new pages. Run `/design` if the feature has significant UI. Do not mix Bootstrap and Tailwind on the same page.
 - No `any` in new TypeScript.
 - Resolver shape: auth-first (`isAuth(...)` is line 1), session in try/finally,
   parameterised Cypher (ADR-012).

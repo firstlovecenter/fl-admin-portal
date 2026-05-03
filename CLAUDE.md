@@ -75,7 +75,7 @@ fl-admin-portal/
 | --- | --- |
 | Frontend framework | React 18 + TypeScript 4.7 |
 | Build tool (FE) | Vite 4 (PWA, Sentry, SVG, TS paths) |
-| Styling | Bootstrap 5 + react-bootstrap + CSS variables in `color-theme.css` (Inter font, light/dark via `data-bs-theme`) |
+| Styling | **Shadcn/UI + Tailwind CSS** (migration in progress from Bootstrap 5). New and touched pages use Shadcn + Tailwind; legacy untouched pages retain Bootstrap. Design tokens in `src/index.css`. |
 | Forms | Formik + Yup (in-house wrappers in `components/formik/`) |
 | Routing | `react-router-dom` v6 (lazy-loaded, declared in `*Routes.ts` arrays) |
 | GraphQL client | Apollo Client 3 (retry + error links, snackbar surface via `notistack`) |
@@ -178,12 +178,16 @@ Read the relevant file before working on a related area — do not guess.
 | --- | --- | --- |
 | `/fix` | Command | Diagnose and fix a bug end-to-end. Blocks at any phase if information is missing |
 | `/implement` | Command | Implement a feature end-to-end. Blocks if requirements are unclear |
+| `/refactor` | Command | Behavior-preserving refactor of a specified target. Enforces the test-first loop from ADR-013 (characterize → refactor → verify → review) |
+| `/design` | Command | Redesign a page or component using Shadcn/UI + Tailwind. Use for all new UI work and Bootstrap migrations |
 | `/new-component` | Command | Scaffold a reusable React component under `web-react-ts/src/components/` |
 | `/new-module` | Command | Scaffold a feature module — page + queries + types + route + (optional) resolver |
 | `/commit` | Command | Stage changes and create a Conventional Commits commit |
 | `code-reviewer` | Agent (blue) | Reviews a diff for code quality, conventions, framework correctness, TS, architecture, domain. Severity-grouped output |
 | `security-reviewer` | Agent (red) | Audits a diff for auth, authorisation, financial, injection, exposure issues. Critical/High/Medium/Low |
 | `cypher-reviewer` | Agent (green) | Reviews Cypher (in `*-cypher.ts` and SDL `@cypher` blocks) for correctness, performance, parameter safety |
+| `test-author` | Agent (yellow) | Writes characterization or unit tests for a target. Vitest+RTL+MSW (FE), Jest+ts-jest (BE). Refuses to write tests it cannot run |
+| `refactor` | Agent (purple) | Performs one behavior-preserving move on a target. Refuses without passing tests on the baseline. Always reverts on red |
 
 ---
 
@@ -202,10 +206,12 @@ These rules override any default behaviour. They are not suggestions.
 | Anything stateful (banking, vacation, servant slots, vehicles, expenses, auth) | `kb/04-state-machines.md` |
 | Reading or writing any entity (Member, Church, ServiceRecord, BussingRecord, HistoryLog) | `kb/05-data-entities.md` |
 | Architectural decision or anything that "feels structural" | `kb/06-adr.md` |
-| Frontend component, page, or styling | `web-react-ts/kb/01-frontend-conventions.md` and `web-react-ts/kb/02-design-system.md` |
+| Frontend component, page, or styling | `web-react-ts/kb/01-frontend-conventions.md` and `web-react-ts/kb/02-design-system.md`. Run `/design` for any UI work |
 | New page or route | `web-react-ts/kb/03-routing-and-permissions.md` |
 | Resolver or `*-cypher.ts` change | `api/kb/01-backend-conventions.md` and `api/kb/03-resolver-patterns.md` |
 | GraphQL SDL change or new `@cypher` block | `api/kb/02-graphql-and-cypher.md` |
+| Refactoring any code | `kb/06-adr.md` (ADR-013) and `kb/04-state-machines.md`. Run `/refactor` — never refactor outside the test-first loop |
+| Writing or modifying tests | `kb/06-adr.md` (ADR-013) for stack and conventions. Vitest on FE, Jest on BE |
 
 ### Command usage — if asked to do X, you MUST use /command
 
@@ -213,6 +219,8 @@ These rules override any default behaviour. They are not suggestions.
 | --- | --- |
 | Diagnose / fix a bug | `/fix` |
 | Build a new feature | `/implement` |
+| Refactor existing code (rename, extract, dedupe, tighten types, …) | `/refactor` |
+| Redesign a page or UI component | `/design` |
 | Add a reusable UI component | `/new-component` |
 | Add a new page or feature module | `/new-module` |
 | Commit changes | `/commit` |
@@ -227,6 +235,8 @@ that prevents shallow work.
 | **Wrote or modified any code — MANDATORY, no exceptions** | `code-reviewer` |
 | Touched anything under `api/src/resolvers/`, `api/src/schema/`, `api/src/functions/`, `lib/auth-service.ts`, `permission-utils.ts`, or any money / banking / arrivals / accounts code | `security-reviewer` |
 | Wrote or modified Cypher (in `*-cypher.ts` or SDL `@cypher` blocks) or aggregation logic | `cypher-reviewer` |
+| Are about to refactor a target that has no tests yet | `test-author` (write characterization tests **before** the refactor — ADR-013) |
+| Are performing a behavior-preserving refactor on a target with passing tests | `refactor` (one move per dispatch; reverts on red) |
 
 `code-reviewer` is **not optional**. Every code change, no matter how small,
 must go through it before the user is asked to verify or before `/commit`.
@@ -237,8 +247,10 @@ or before `/commit`.
 ### Must not
 
 - ❌ **Auth0.** Do not import `@auth0/auth0-react`. Auth is custom (ADR-002).
-- ❌ **Tailwind / Chakra / styled-components / MUI.** Bootstrap 5 + CSS
-  variables only (ADR-003).
+- ❌ **Chakra / styled-components / MUI.** The design system is Shadcn/UI +
+  Tailwind CSS. Bootstrap is being phased out — do not write new Bootstrap.
+  Do not mix Bootstrap and Tailwind on the same page (ADR-003 superseded by
+  `/design` skill).
 - ❌ **Inline `<Route>` JSX.** Routes go through `LazyRouteTypes[]` arrays in
   `*Routes.ts` files (ADR-004).
 - ❌ **Drift between FE and BE permission helpers.** Any change to
@@ -264,8 +276,15 @@ or before `/commit`.
   Secrets Manager. (Pre-tool hook blocks this.)
 - ❌ **Force pushing.** Especially to `main` or `deploy`. (Deny-listed.)
 - ❌ **`npm run release:*`.** Releases are human-gated. (Deny-listed.)
-- ❌ **Claiming "tests pass".** There is no test suite (ADR-010). Verification
-  is `tsc --noEmit` + `eslint` + manual smoke test.
+- ❌ **Refactoring code without tests on the target.** ADR-013 supersedes
+  ADR-010 — refactors must follow the test-first loop (characterize → refactor
+  → verify → review). Use `/refactor`. Bug fixes and feature work do not
+  require tests unless the user opts in or the surrounding code is being
+  refactored.
+- ❌ **Claiming "tests pass" when no tests exist for the change.** Run them
+  and quote the output. If a package's test runner is not yet configured, say
+  so — do not improvise a config inline (test infra is its own PR per
+  ADR-013).
 - ❌ **Logging the JWT, momo numbers, or email/PII.** `index.js` already logs
   the decoded JWT — do not expand it; ideally trim it.
 - ❌ **Pushing to a remote without explicit user request.** PRs are user-
@@ -298,7 +317,7 @@ or before `/commit`.
   | `neo4j` | `dev-neo4j.firstlovecenter.com` (dev, plain bolt) | Query the live dev database — schema verification, data shape, Cypher prototype testing. **Read-only by preference.** |
   | `neo4j-prod` | `neo4j.firstlovecenter.com` (prod, TLS bolt) | ⚠️ **Production data.** Only use when the user explicitly asks to inspect prod. Never mutate without explicit user approval. |
   | `context7` | Upstash Context7 | Up-to-date library docs (Apollo, `@neo4j/graphql`, React Router, etc.). Use when you need current API signatures rather than training-data guesses. |
-  | `shadcn` | shadcn CLI | Component API reference only. Do NOT introduce shadcn components — Bootstrap 5 is the design system (ADR-003). |
+  | `shadcn` | shadcn CLI | Look up Shadcn component APIs and available components. Use `npx shadcn@latest add <name>` to scaffold components into `src/components/ui/`. |
   | `chrome-devtools` | Local Chrome instance | Browser DevTools automation — DOM inspection, console, network tab. Useful for PWA debugging and verifying service-worker state. |
 
   Never mutate production data via MCP. Dev mutations require explicit user approval.
@@ -306,5 +325,10 @@ or before `/commit`.
   - PreToolUse: blocks edits to lock files and env / secret files.
   - PostToolUse: runs `tsc --noEmit` for the touched package and `eslint` for
     the touched file. Output is capped to last 20 lines, 20s timeout.
-- **No automated tests** — manual smoke tests are the verification gate.
-  Document the manual checklist in any change proposal.
+- **Test stack (ADR-013):** Vitest + RTL + MSW on `web-react-ts`, Jest +
+  ts-jest on `api`. Tests are written as code is refactored or extended —
+  there is no backfill for unchanged code. A refactor without tests on the
+  target is forbidden. Bug fixes and feature work do not require tests
+  unless the user opts in. Manual smoke tests still backstop UI flows that
+  tests cannot reasonably cover (PWA install, Sabbath gating, Apollo offline
+  cache).

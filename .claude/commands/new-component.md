@@ -17,8 +17,9 @@ Before writing anything:
 - Search `web-react-ts/src/components/` for a matching name or purpose.
 - Cross-check the "components to reuse" table in
   `web-react-ts/kb/02-design-system.md`.
-- Check `react-bootstrap` and `react-bootstrap-icons` — many "components" are
-  one line away from a stock primitive.
+- Check `src/components/ui/` (Shadcn components) — many "components" are one
+  line away from a stock Shadcn primitive. Use the shadcn MCP to look up what
+  is available (`npx shadcn@latest add <name>` to scaffold missing ones).
 - If something close exists, prefer extending or composing it rather than
   duplicating.
 
@@ -56,9 +57,10 @@ Conventions:
 - Type the props explicitly: `type FooProps = { ... }`. Do not use `any`.
 - Reuse types from `global-types.ts` — never redeclare `Member`,
   `ChurchLevel`, `Role`, `ServiceRecord`, etc.
-- Styling: Bootstrap classes + CSS variables from `color-theme.css` (ADR-003).
-  Use `--bg-card`, `--text-primary`, feature accents (`--members-accent`,
-  etc.). No Tailwind, no styled-components.
+- Styling: **Shadcn/UI + Tailwind CSS** for new components. Use design tokens
+  from `src/index.css` (`--brand`, `--members`, `--banking`, etc.) via
+  Tailwind's `bg-members`, `text-brand`, etc. Read `.claude/commands/design.md`
+  for the full token list and component catalogue. Do not write Bootstrap.
 - Imports: absolute from `src/` (ADR-009). Same-folder relative imports
   allowed.
 - Keep the component **under 400 lines**. If it's growing past that, split.
