@@ -95,7 +95,6 @@ const startServer = async () => {
       if (token) {
         try {
           jwt = jwtDecode(token.replace(/^Bearer\s+/i, ''))
-          console.log('🚀 ~ index.js:98 ~ jwt:', jwt)
         } catch (error) {
           console.error('Invalid token:', error)
         }
