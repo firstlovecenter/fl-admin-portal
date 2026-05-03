@@ -72,15 +72,6 @@ const anagkazo = {
 
        RETURN COUNT(DISTINCT defaulters) as defaulters, collect(defaulters.name) AS defaultersNames
       `,
-  imclDefaultersCount: `
-    MATCH (this:Governorship {id: $governorshipId})-[:HAS]->(defaulters:Bacenta)
-    MATCH (defaulters)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-    WHERE date.date.week = date().week
-    AND record.markedAttendance = false
-    
-    WITH defaulters, this, COUNT(defaulters) > 0 AS imclNotFilled
-    RETURN COUNT(DISTINCT defaulters) as defaulters, imclNotFilled, collect(defaulters.name) AS defaultersNames
-       `,
   bankingDefaulersCount: `
     MATCH (this:Governorship {id: $governorshipId})
     WITH date() as today, this

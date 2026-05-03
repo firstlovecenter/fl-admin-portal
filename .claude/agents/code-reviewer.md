@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Reviews changed code for quality, conventions, framework correctness, TypeScript, architecture, and domain correctness in the FL Admin Portal. Use after writing or modifying code in either web-react-ts/ or api/.
+description: "MANDATORY — dispatch after every code change, no exceptions. Reviews changed code for quality, conventions, framework correctness, TypeScript, architecture, and domain correctness in the FL Admin Portal. Use after writing or modifying any file in web-react-ts/ or api/."
 color: blue
 tools: Read, Grep, Glob, Bash
 ---

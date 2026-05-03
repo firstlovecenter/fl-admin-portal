@@ -224,9 +224,12 @@ that prevents shallow work.
 
 | If you just… | Dispatch |
 | --- | --- |
-| Wrote or modified any code | `code-reviewer` |
+| **Wrote or modified any code — MANDATORY, no exceptions** | `code-reviewer` |
 | Touched anything under `api/src/resolvers/`, `api/src/schema/`, `api/src/functions/`, `lib/auth-service.ts`, `permission-utils.ts`, or any money / banking / arrivals / accounts code | `security-reviewer` |
 | Wrote or modified Cypher (in `*-cypher.ts` or SDL `@cypher` blocks) or aggregation logic | `cypher-reviewer` |
+
+`code-reviewer` is **not optional**. Every code change, no matter how small,
+must go through it before the user is asked to verify or before `/commit`.
 
 Reviewers run **after** implementation, **before** the user is asked to verify
 or before `/commit`.

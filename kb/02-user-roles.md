@@ -53,7 +53,7 @@ Narrow-scope roles for specific operational flows.
 | `arrivalsCounterStream` | Counts arrived members at the Stream | `permitArrivalsCounter` |
 | `arrivalsPayerCouncil` | Pays drivers via momo for arrivals at the Council | `permitArrivalsPayer` |
 | `tellerStream` | Confirms manual bank deposits for offerings at the Stream | `permitTellerStream` |
-| `fishers` | Soul-winning campaign role | rarely used in code |
+| `fishers` | Broad-access role — "a little bit of everything". Acts as the Denomination-level leader for servant make/remove, can edit Denomination details, bypass account-open checks in expense forms, confirm banking (alongside `tellerStream`), and access service details/special-service forms at elevated scope. Assigned to a small set of trusted users who need cross-domain access without holding a specific leader or admin seat. | `servant-resolver-factory.ts`, `ExpenseForm.tsx`, `ServiceForm.tsx`, `DetailsDenomination.tsx` |
 | `all` | Sentinel meaning "any authenticated user" | Used as default when a route declares no roles |
 
 ## Permission helpers

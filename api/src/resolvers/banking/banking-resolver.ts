@@ -23,7 +23,6 @@ import {
   setRecordTransactionReference,
   setRecordTransactionReferenceWithOTP,
   submitBankingSlip,
-  checkIfIMCLNotFilled,
   manuallyConfirmOfferingPayment,
   checkRehearsalTransactionReference,
 } from './banking-cypher'
@@ -39,24 +38,17 @@ export const checkIfLastServiceBanked = async (
   context: Context
 ) => {
   const session = context.executionContext.session()
-  const sessionTwo = context.executionContext.session()
 
   // this checks if the person has banked their last offering
-  const lastServiceResponse = await Promise.all([
-    session.run(getLastServiceRecord, {
+  const lastServiceResponse = await session
+    .run(getLastServiceRecord, {
       serviceRecordId,
       jwt: context.jwt,
-    }),
-    sessionTwo.run(checkIfIMCLNotFilled, {
-      serviceRecordId,
-      jwt: context.jwt,
-    }),
-  ]).catch((error: any) =>
-    throwToSentry('There was a problem checking the lastService', error)
-  )
-  const lastServiceRecord: any = rearrangeCypherObject(lastServiceResponse[0])
-  // const imclNotFilled: boolean =
-  //   lastServiceResponse[1].records[0]?.get('imclNotFilled')
+    })
+    .catch((error: any) =>
+      throwToSentry('There was a problem checking the lastService', error)
+    )
+  const lastServiceRecord: any = rearrangeCypherObject(lastServiceResponse)
 
   if (!('lastService' in lastServiceRecord)) return true
 
@@ -82,12 +74,6 @@ export const checkIfLastServiceBanked = async (
   // if (!currentService.markedAttendance && church.labels.includes('Bacenta')) {
   //   throw new Error(
   //     'Please tick the present members on the Poimen App before you will be allowed to bank your offering'
-  //   )
-  // }
-
-  // if (imclNotFilled) {
-  //   throw new Error(
-  //     'Please fill the IMCL form on the Poimen App before you will be allowed to bank your offering'
   //   )
   // }
 

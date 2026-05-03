@@ -142,14 +142,6 @@ OR church:Hub OR church:HubCouncil OR church:Ministry OR church:CreativeArts
 RETURN lastService, lastDate, record, church
 `
 
-export const checkIfIMCLNotFilled = `
-    MATCH (record:ServiceRecord {id: $serviceRecordId})
-    OPTIONAL MATCH (record)<-[:ABSENT_FROM_SERVICE]-(absent:Active:IMCL) WHERE NOT absent:Lost
-    AND absent.imclChecked = false
-
-    RETURN COUNT(absent) > 0 AS imclNotFilled
-`
-
 export const submitBankingSlip = `
 MATCH (record:ServiceRecord {id: $serviceRecordId})
 WHERE record.transactionStatus IS NULL

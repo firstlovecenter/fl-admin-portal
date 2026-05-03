@@ -28,7 +28,6 @@ const treasuryMutations = {
   ): Promise<any> => {
     isAuth(permitTellerStream(), context?.jwt.roles)
     const session = context.executionContext.session()
-    const sessionTwo = context.executionContext.session()
     noEmptyArgsValidation(['governorshipId'])
 
     // const today = new Date()
@@ -46,26 +45,6 @@ const treasuryMutations = {
         )
     )
 
-    // const checks = await Promise.all([
-    //   session.executeRead((tx) =>
-    //     tx.run(anagkazo.membershipAttendanceDefaultersCount, args)
-    //   ),
-    //   sessionTwo.executeRead((tx) =>
-    //     tx.run(anagkazo.imclDefaultersCount, args)
-    //   ),
-    // ])
-
-    // const membershipAttendanceDefaultersCount = parseNeoNumber(
-    //   checks[0].records[0]?.get('defaulters')
-    // )
-    // const membershipAttendanceDefaultersList =
-    //   checks[0].records[0]?.get('defaultersNames')
-
-    // const imclDefaultersCount = parseNeoNumber(
-    //   checks[1].records[0]?.get('defaulters')
-    // )
-    // const imcleDefaultersList = checks[1].records[0]?.get('defaultersNames')
-
     const formDefaultersCount = formDefaultersResponse.defaulters.low
     const formDefaultersList = formDefaultersResponse.defaultersNames
 
@@ -76,22 +55,6 @@ const treasuryMutations = {
         )}`
       )
     }
-
-    // if (membershipAttendanceDefaultersCount > 0) {
-    //   throw new Error(
-    //     `You cannot confirm this governorship until all the active fellowships have marked their attendance on the Poimen App. Outstanding fellowships are: ${membershipAttendanceDefaultersList.join(
-    //       ', '
-    //     )}`
-    //   )
-    // }
-
-    // if (imclDefaultersCount > 0) {
-    //   throw new Error(
-    //     `You cannot confirm this governorship until all the active fellowships have filled their IMCL forms on the Poimen App. Oustanding fellowships are: ${imcleDefaultersList.join(
-    //       ', '
-    //     )}`
-    //   )
-    // }
 
     const checkAlreadyConfirmedResponse = rearrangeCypherObject(
       await session
@@ -129,7 +92,7 @@ const treasuryMutations = {
     } catch (error: any) {
       throw new Error(`There was a problem confirming the banking ${error}`)
     } finally {
-      await Promise.all([session.close(), sessionTwo.close()])
+      await session.close()
     }
   },
 }
