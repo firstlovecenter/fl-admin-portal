@@ -89,7 +89,16 @@ Bearer <token>` from the running FE app's `sessionStorage.token`.
 
 - `cd src/resolvers && npx tsc -p tsconfig.json --noEmit`
 - `npx eslint <files> --max-warnings=0`
+- `npm test` (Jest — full suite) or `npm test -- <pattern>` for the
+  touched file. Tests are written as code is refactored or extended,
+  per **ADR-013**. Refactors require tests on the target before they
+  begin (use `/refactor`). The Jest stack uses `babel-jest` and reuses
+  the existing `babel.config.js` — same transformer as the production
+  build.
+- `npm run test:integration` is gated and runs only when explicitly
+  invoked. Integration tests target the dev Neo4j instance via the
+  `neo4j` MCP server. **Never** target production data.
 - Run the new mutation in Apollo Sandbox; check Cypher in server console
   (`features.config.debug = true`).
 - Verify in Neo4j Browser (`http://localhost:7474`) that data wrote correctly.
-- There is **no test suite** (ADR-010). Don't claim "tests pass".
+- Don't claim "tests pass" without running them — quote the runner output.

@@ -1,6 +1,6 @@
 ---
 name: test-author
-description: "Writes characterization and unit tests for a specified file or module in the FL Admin Portal. Use BEFORE a refactor (to lock in current behavior) and alongside new code. Frontend = Vitest + RTL + MSW. Backend = Jest + ts-jest with a mocked neo4j-driver. Refuses to write tests it cannot run, and refuses to invent behavior the code does not exhibit."
+description: "Writes characterization and unit tests for a specified file or module in the FL Admin Portal. Use BEFORE a refactor (to lock in current behavior) and alongside new code. Frontend = Vitest + RTL + MSW. Backend = Jest + babel-jest (reusing the existing babel.config.js) with a mocked neo4j-driver. Refuses to write tests it cannot run, and refuses to invent behavior the code does not exhibit."
 color: yellow
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
@@ -63,7 +63,16 @@ KB wins — write the test against the KB, mark the code as the bug.
 
 ### Backend — `api`
 
-- Test runner: **Jest** with `ts-jest`. Config at `api/jest.config.js`.
+- Test runner: **Jest** with `babel-jest` (reusing `api/babel.config.js`).
+  Config at `api/jest.config.js`. No separate ts-jest pipeline — tests
+  use the same transformer as the production build.
+  - The Jest config's `transformIgnorePatterns` is set to
+    `/node_modules/(?!@jaedag/)` so `@jaedag/admin-portal-types` and
+    `@jaedag/admin-portal-api-core` get transpiled by Babel even though
+    they live under `node_modules`. If you write a test that imports
+    from a different scoped package that ships untranspiled ESM and you
+    hit "unexpected token export", widen the negation rather than
+    inlining `transform` overrides per-test.
 - Resolver unit tests:
   - Mock the `neo4j-driver` session per test. Assert (a) the Cypher string
     issued, (b) the params passed, (c) the resolver's return value given a

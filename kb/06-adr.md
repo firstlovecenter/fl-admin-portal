@@ -272,9 +272,20 @@ handling, banking proof, etc.).
      anything that exercises the network layer (retry link, error link,
      auth header).
 
-2. **Backend (`api`) uses Jest + ts-jest.**
-   - Jest is chosen for the API because the runtime is plain Node + CommonJS,
-     ts-jest is well-trodden, and there is no Vite to align with.
+2. **Backend (`api`) uses Jest + babel-jest.**
+   - Jest is chosen for the API because the runtime is plain Node, and
+     there is no Vite to align with.
+   - **babel-jest, not ts-jest.** The api already ships a complete
+     `babel.config.js` with `@babel/preset-typescript`,
+     `babel-plugin-module-resolver` for the `src/` alias, and
+     `@babel/preset-env` targeting Node. Using babel-jest means tests use
+     the **same transformer as the production build** — tests cannot pass
+     while the build breaks. ts-jest would be a parallel TypeScript
+     transformer competing with Babel, would need its own tsconfig
+     (the api currently only has `src/resolvers/tsconfig.json`), and
+     would not exercise the same module-resolution path as runtime.
+     Type-checking happens separately via the existing
+     `cd src/resolvers && tsc -p tsconfig.json --noEmit` in lint-staged.
    - Cypher resolvers use a thin in-memory neo4j-driver mock for unit tests
      (assert the query string and params your resolver issued, plus the
      mapped response). Resolvers that exercise multi-step Cypher use the dev
@@ -332,7 +343,7 @@ handling, banking proof, etc.).
   `@testing-library/jest-dom`, `msw`, `@apollo/client/testing`. Test scripts:
   `test`, `test:run`, `test:coverage`, `test:ui`.
 - `api/package.json` replaces the placeholder `test` script with `jest`,
-  adds `jest`, `ts-jest`, `@types/jest`. New scripts: `test`,
+  adds `jest`, `babel-jest`, `@types/jest`. New scripts: `test`,
   `test:integration` (gated), `test:coverage`.
 - Test infrastructure setup is its own PR per package, kept narrow: install
   deps, add config files, add one canary test that actually runs. No

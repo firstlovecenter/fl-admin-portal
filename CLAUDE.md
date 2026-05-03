@@ -186,7 +186,7 @@ Read the relevant file before working on a related area — do not guess.
 | `code-reviewer` | Agent (blue) | Reviews a diff for code quality, conventions, framework correctness, TS, architecture, domain. Severity-grouped output |
 | `security-reviewer` | Agent (red) | Audits a diff for auth, authorisation, financial, injection, exposure issues. Critical/High/Medium/Low |
 | `cypher-reviewer` | Agent (green) | Reviews Cypher (in `*-cypher.ts` and SDL `@cypher` blocks) for correctness, performance, parameter safety |
-| `test-author` | Agent (yellow) | Writes characterization or unit tests for a target. Vitest+RTL+MSW (FE), Jest+ts-jest (BE). Refuses to write tests it cannot run |
+| `test-author` | Agent (yellow) | Writes characterization or unit tests for a target. Vitest+RTL+MSW (FE), Jest+babel-jest (BE). Refuses to write tests it cannot run |
 | `refactor` | Agent (purple) | Performs one behavior-preserving move on a target. Refuses without passing tests on the baseline. Always reverts on red |
 
 ---
@@ -326,7 +326,8 @@ or before `/commit`.
   - PostToolUse: runs `tsc --noEmit` for the touched package and `eslint` for
     the touched file. Output is capped to last 20 lines, 20s timeout.
 - **Test stack (ADR-013):** Vitest + RTL + MSW on `web-react-ts`, Jest +
-  ts-jest on `api`. Tests are written as code is refactored or extended —
+  babel-jest on `api` (reusing the existing `babel.config.js`). Tests are
+  written as code is refactored or extended —
   there is no backfill for unchanged code. A refactor without tests on the
   target is forbidden. Bug fixes and feature work do not require tests
   unless the user opts in. Manual smoke tests still backstop UI flows that
