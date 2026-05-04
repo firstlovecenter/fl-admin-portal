@@ -1,153 +1,159 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MemberTable from './MemberTable'
 import { memberFilter } from './member-filter-utils'
-import { debounce } from '../../global-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
-import PlaceholderCustom from 'components/Placeholder'
+import { Button } from 'components/ui/button'
 import {
-  Accordion,
-  Col,
-  Container,
-  Row,
-  useAccordionButton,
-} from 'react-bootstrap'
-import { CaretDownFill } from 'react-bootstrap-icons'
-import './MembersGrid.css'
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from 'components/ui/sheet'
+import { Skeleton } from 'components/ui/skeleton'
 import Filters from './Filters'
-import { Form, Formik } from 'formik'
-import Input from 'components/formik/Input'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
+import { Search, SlidersHorizontal, UserPlus } from 'lucide-react'
+import { cn } from 'components/lib/utils'
 
-const MembersGrid = (props) => {
-  const { data, error, loading, title } = props
+const MembersGrid = ({ data, error, loading, title }) => {
   const { filters } = useContext(ChurchContext)
-  const [dimensions, setDimensions] = useState({
-    height: window.innerHeight,
-    width: window.innerWidth,
-  })
-
-  let numberOfRecords = Math.round(
-    ((dimensions.height - 96 - 30) * (0.75 * dimensions.width - 46)) /
-      (160 * 126)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(min-width: 768px)').matches
   )
-  const memberDataLoaded = data ? memberFilter(data, filters) : null
-  const [memberData, setMemberData] = useState([])
 
   useEffect(() => {
-    setMemberData(memberDataLoaded)
-  }, [data, filters])
+    const mq = window.matchMedia('(min-width: 768px)')
+    const handler = (e) => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
-  //NavBar takes 70px of the height and side bar takes 25% of the width
-
-  useEffect(() => {
-    const debouncedHandleResize = debounce(function handleResize() {
-      setDimensions({
-        height: window.innerHeight,
-        width: window.innerWidth,
-      })
-    }, 500)
-
-    window.addEventListener('resize', debouncedHandleResize)
-
-    return () => {
-      window.removeEventListener('resize', debouncedHandleResize)
-    }
-  })
-
-  function CustomToggle({ children, eventKey, ...rest }) {
-    const decoratedOnClick = useAccordionButton(eventKey)
-
-    return (
-      <span {...rest} onClick={decoratedOnClick}>
-        {children}
-      </span>
+  const memberData = useMemo(() => {
+    const base = data ? (memberFilter(data, filters) ?? []) : []
+    if (!searchTerm.trim()) return base
+    return base.filter((member) =>
+      `${member.firstName} ${member.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
     )
-  }
+  }, [data, filters, searchTerm])
 
-  const initialValues = {
-    memberSearch: '',
-  }
-
-  const onSubmit = (values, onSubmitProps) => {
-    onSubmitProps.setSubmitting(true)
-    setMemberData(
-      memberDataLoaded.filter((member) =>
-        (member.firstName + member.lastName)
-          .toLowerCase()
-          .includes(values.memberSearch.toLowerCase())
-      )
-    )
-
-    onSubmitProps.setSubmitting(false)
-  }
+  const hasActiveFilters =
+    filters.gender?.length > 0 ||
+    filters.maritalStatus?.length > 0 ||
+    filters.leaderTitle?.length > 0 ||
+    filters.leaderRank?.length > 0 ||
+    filters.basonta?.length > 0
 
   return (
-    <>
-      <div className="col col-md-9 p-0 text-center">
-        <PlaceholderCustom loading={!data || loading} xs={10}>
-          <Container>
-            <h3 className="page-header">{title}</h3>
-          </Container>
-        </PlaceholderCustom>
-        <div className="justify-content-center flex-wrap flex-md-nowrap align-items-center">
-          <PlaceholderCustom loading={!data || loading} element="h5">
-            <h5 className="data-number">{`${
-              memberData?.length || 0
-            } Members`}</h5>
-          </PlaceholderCustom>
-        </div>
-        <Formik initialValues={initialValues} onSubmit={onSubmit}>
-          {() => (
-            <Form>
-              <div className="align-middle">
-                <Input
-                  className="form-control member-search"
-                  name="memberSearch"
-                  placeholder="Search Members"
-                  aria-describedby="Member Search"
-                />
-              </div>
-            </Form>
-          )}
-        </Formik>
+    <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="px-4 pt-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
+          {/* Title + count */}
+          <div className="flex items-center justify-between mb-3">
+            {loading || !data ? (
+              <Skeleton className="h-6 w-40 rounded" />
+            ) : (
+              <h1 className="text-lg font-semibold text-foreground leading-tight truncate">
+                {title || 'Members'}
+              </h1>
+            )}
+            {!loading && data && (
+              <span className="text-sm tabular-nums shrink-0 ml-2">
+                <span className="font-semibold text-members">
+                  {memberData.length}
+                </span>
+                <span className="text-muted-foreground"> members</span>
+              </span>
+            )}
+          </div>
 
-        <Accordion>
-          <Row className="justify-content-between py-2">
-            <Col className="my-auto">
-              <RoleView
-                roles={[
-                  ...permitLeaderAdmin('Bacenta'),
-                  ...permitLeaderAdmin('Hub'),
-                ]}
+          {/* Search input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+            <input
+              type="search"
+              placeholder="Search members…"
+              className="h-11 w-full rounded-lg border border-input bg-muted/40 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Actions row */}
+        <div className="flex items-center justify-between px-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
+          <RoleView
+            roles={[
+              ...permitLeaderAdmin('Bacenta'),
+              ...permitLeaderAdmin('Hub'),
+            ]}
+          >
+            <Link to="/member/addmember">
+              <Button
+                variant="outline"
+                size="default"
+                className="h-11 gap-1.5 text-sm text-foreground"
               >
-                <Link to="/member/addmember" className="just-text-btn">
-                  ADD NEW
-                </Link>
-              </RoleView>
-            </Col>
-            <Col></Col>
-            <Col className="my-auto">
-              <CustomToggle className="just-text-btn" eventKey="0">
-                FILTERS <CaretDownFill />
-              </CustomToggle>
-            </Col>
-          </Row>
-          <Accordion.Item eventKey="0">
-            <Accordion.Body>
-              <Filters ToggleAccordion={CustomToggle} />
-            </Accordion.Body>
-          </Accordion.Item>
-        </Accordion>
+                <UserPlus className="size-4" />
+                Add member
+              </Button>
+            </Link>
+          </RoleView>
+          <Button
+            variant="ghost"
+            size="default"
+            className={cn(
+              'h-11 gap-1.5 text-sm text-foreground',
+              hasActiveFilters && 'text-members'
+            )}
+            onClick={() => setFilterOpen(true)}
+          >
+            <SlidersHorizontal className="size-4" />
+            Filters
+            {hasActiveFilters && (
+              <span className="size-1.5 rounded-full bg-members inline-block" />
+            )}
+          </Button>
+        </div>
       </div>
-      <MemberTable
-        data={memberData}
-        error={error}
-        loading={!data || loading}
-        numberOfRecords={numberOfRecords}
-      />
-    </>
+
+      {/* Member list */}
+      <div className="max-w-2xl md:max-w-7xl mx-auto">
+        <MemberTable
+          data={memberData}
+          error={error}
+          loading={!data || loading}
+        />
+      </div>
+
+      {/* Filter sheet — right side on desktop, bottom on mobile */}
+      <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+        <SheetContent
+          side={isDesktop ? 'right' : 'bottom'}
+          className={cn(
+            'overflow-y-auto',
+            isDesktop
+              ? 'w-full sm:max-w-md'
+              : 'max-h-[85vh] rounded-t-2xl'
+          )}
+        >
+          <SheetHeader>
+            <SheetTitle>Filter Members</SheetTitle>
+          </SheetHeader>
+          <div className="px-4 pb-8">
+            <Filters onClose={() => setFilterOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
   )
 }
 

@@ -189,6 +189,7 @@ Read the relevant file before working on a related area — do not guess.
 | `cypher-reviewer` | Agent (green) | Reviews Cypher (in `*-cypher.ts` and SDL `@cypher` blocks) for correctness, performance, parameter safety |
 | `test-author` | Agent (yellow) | Writes characterization or unit tests for a target. Vitest+RTL+MSW (FE), Jest+babel-jest (BE). Refuses to write tests it cannot run |
 | `refactor` | Agent (purple) | Performs one behavior-preserving move on a target. Refuses without passing tests on the baseline. Always reverts on red |
+| `e2e-tester` | Agent (cyan) | Drives Chrome DevTools against the local dev server to verify UI features end-to-end. Always logs in with the role-appropriate test account from `kb/07-test-accounts.md`. Reports pass/fail with screenshot and network evidence |
 
 ---
 
@@ -238,6 +239,7 @@ that prevents shallow work.
 | Wrote or modified Cypher (in `*-cypher.ts` or SDL `@cypher` blocks) or aggregation logic | `cypher-reviewer` |
 | Are about to refactor a target that has no tests yet | `test-author` (write characterization tests **before** the refactor — ADR-013) |
 | Are performing a behavior-preserving refactor on a target with passing tests | `refactor` (one move per dispatch; reverts on red) |
+| Need to verify a UI feature works in the browser (after implementation, after a bug fix, or when the user asks to test something) | `e2e-tester` (logs in as the correct role, exercises the feature, reports with evidence) |
 
 `code-reviewer` is **not optional**. Every code change, no matter how small,
 must go through it before the user is asked to verify or before `/commit`.

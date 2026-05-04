@@ -19,7 +19,6 @@ import { getWeekNumber } from '@jaedag/admin-portal-types'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
-import { AppShell } from 'components/shell/AppShell'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
@@ -394,13 +393,7 @@ const UserDashboard = () => {
   }
 
   return (
-    <AppShell
-      title=""
-      subtitle=""
-      userName={currentUser?.fullName}
-      userImageUrl={currentUser?.picture}
-    >
-      <div className="min-h-full bg-background">
+    <div className="min-h-full bg-background">
         <motion.div
           variants={sectionStagger}
           initial="hidden"
@@ -689,8 +682,7 @@ const UserDashboard = () => {
             </motion.aside>
           </motion.div>
         </motion.div>
-      </div>
-    </AppShell>
+    </div>
   )
 }
 

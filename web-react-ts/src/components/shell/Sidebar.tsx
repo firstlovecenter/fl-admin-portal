@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useContext, useState } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
+  Building2,
   ChevronDown,
   LogOut,
   Moon,
@@ -24,11 +25,87 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'components/ui/dropdown-menu'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
+import { ChurchContext } from 'contexts/ChurchContext'
 
 const SIDEBAR_COLLAPSED_W = 60
 const SIDEBAR_EXPANDED_W = 240
 const SIDEBAR_TOGGLE_GUTTER_W = 28
 const TRANSITION = { duration: 0.2, ease: 'easeInOut' } as const
+
+const formatChurchType = (t: string) => t.replace(/([a-z])([A-Z])/g, '$1 $2')
+
+// Only church types that have a /displaydetails route registered in directoryRoutes.ts
+const DISPLAYDETAILS_CHURCH_TYPES = new Set([
+  'Bacenta',
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+  'Oversight',
+  'Denomination',
+  'Hub',
+  'HubCouncil',
+  'Ministry',
+  'CreativeArts',
+])
+
+const ChurchScopeNavItem = ({ open }: { open: boolean }) => {
+  const { selectedScope } = useChurchRoleScope()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { clickCard } = useContext(ChurchContext) as any
+  const navigate = useNavigate()
+
+  if (!selectedScope || !DISPLAYDETAILS_CHURCH_TYPES.has(selectedScope.churchType))
+    return null
+
+  const typeLabel = formatChurchType(selectedScope.churchType)
+
+  const handleClick = () => {
+    clickCard({
+      id: selectedScope.churchId,
+      name: selectedScope.churchName,
+      __typename: selectedScope.churchType,
+    })
+    navigate(`/${selectedScope.churchType.toLowerCase()}/displaydetails`)
+  }
+
+  return (
+    <>
+      <div className="my-2 h-px bg-sidebar-border" />
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-label={`View ${selectedScope.churchName} ${typeLabel} details`}
+        title={`${selectedScope.churchName} ${typeLabel}`}
+        className={cn(
+          'flex h-10 w-full items-center gap-3 rounded-lg px-2.5 text-sm font-medium transition-colors',
+          'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground active:scale-[0.98]'
+        )}
+      >
+        <Building2 className="size-5 shrink-0 text-churches" />
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 'auto' }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.12 }}
+              className="flex min-w-0 flex-1 items-baseline gap-1.5 overflow-hidden"
+            >
+              <span className="truncate whitespace-nowrap font-medium">
+                {selectedScope.churchName}
+              </span>
+              <span className="shrink-0 whitespace-nowrap rounded bg-sidebar-accent px-1 py-px text-[10px] text-sidebar-foreground/55">
+                {typeLabel}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </button>
+    </>
+  )
+}
 
 const DesktopNavItem = ({ item, open }: { item: NavItem; open: boolean }) => {
   const Icon = item.icon
@@ -169,12 +246,9 @@ export const Sidebar = ({
             <DesktopNavItem key={item.to} item={item} open={open} />
           ))}
 
-          {open && (
-            <>
-              <div className="my-2 h-px bg-sidebar-border" />
-              <ChurchRoleScopePicker />
-            </>
-          )}
+          <ChurchScopeNavItem open={open} />
+
+          {open && <ChurchRoleScopePicker />}
         </div>
 
         {/* Footer */}

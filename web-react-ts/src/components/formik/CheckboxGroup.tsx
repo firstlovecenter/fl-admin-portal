@@ -1,55 +1,54 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { Field, ErrorMessage } from 'formik'
 import TextError from './TextError/TextError'
-import { MemberContext } from 'contexts/MemberContext'
-import './CheckboxGroup.css'
-import './Formik.css'
+import { cn } from 'components/lib/utils'
 import { FormikComponentProps } from './formik-types'
 
 interface CheckboxGroupProps extends FormikComponentProps {}
 
 function CheckboxGroup(props: CheckboxGroupProps) {
   const { label, name, options, ...rest } = props
-  const { theme } = useContext(MemberContext)
 
   return (
-    <div>
-      {label ? (
-        <>
-          <label className="label checkbox-label" htmlFor={name}>
-            {label}
-          </label>
-          <br />
-        </>
-      ) : null}
+    <div className="space-y-2">
+      {label && (
+        <label
+          className="block text-sm font-semibold text-foreground"
+          htmlFor={name}
+        >
+          {label}
+        </label>
+      )}
       <Field name={name} {...rest}>
-        {({ field }: any) => {
-          return options?.map((option, index) => {
-            return (
-              <button
-                type="button"
-                key={index}
-                className={`filter-chips ${theme} ${
-                  field.value.includes(option.value) && 'active'
-                }`}
-              >
-                <div key={option.key} className="ml-2">
+        {({ field }: any) => (
+          <div className="flex flex-wrap gap-2">
+            {options?.map((option) => {
+              const checked = field.value.includes(option.value)
+              return (
+                <label
+                  key={option.key}
+                  htmlFor={option.value}
+                  className={cn(
+                    'inline-flex cursor-pointer items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                    checked
+                      ? 'border-members bg-members/20 text-members'
+                      : 'border-border bg-transparent text-foreground hover:bg-muted'
+                  )}
+                >
                   <input
-                    className="d-none"
+                    className="sr-only"
                     type="checkbox"
                     id={option.value}
                     {...field}
                     value={option.value}
-                    checked={field.value.includes(option.value)}
+                    checked={checked}
                   />
-                  <label className="pl-4" htmlFor={option.value}>
-                    {option.key}
-                  </label>
-                </div>
-              </button>
-            )
-          })
-        }}
+                  {option.key}
+                </label>
+              )
+            })}
+          </div>
+        )}
       </Field>
       <ErrorMessage name={name} component={TextError} />
     </div>

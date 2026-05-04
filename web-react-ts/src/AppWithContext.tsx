@@ -1,6 +1,12 @@
-import React, { Suspense, useState } from 'react'
-import { Routes, BrowserRouter as Router, Route } from 'react-router-dom'
+import React, { Suspense, useContext, useState } from 'react'
+import {
+  Routes,
+  BrowserRouter as Router,
+  Route,
+  Outlet,
+} from 'react-router-dom'
 import { MemberContext, SearchContext } from './contexts/MemberContext'
+import { AppShell } from 'components/shell/AppShell'
 import { ChurchContext } from './contexts/ChurchContext'
 import ProtectedRoute from './auth/ProtectedRoute'
 import ProtectedRouteHome from './auth/ProtectedRouteHome'
@@ -25,7 +31,6 @@ import { useAuth } from 'contexts/AuthContext'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
-import PageContainer from 'components/base-component/PageContainer'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
 import { ThemeProvider } from 'components/shell/ThemeProvider'
 import { ChurchRoleScopeProvider } from 'contexts/ChurchRoleScopeContext'
@@ -37,6 +42,22 @@ type AppPropsType = {
 const ServantsDashboard = React.lazy(
   () => import('pages/dashboards/ServantsDashboard')
 )
+
+const ShellLayout = () => {
+  const { currentUser } = useContext(MemberContext)
+  return (
+    <AppShell
+      userName={currentUser?.fullName}
+      userImageUrl={currentUser?.picture || currentUser?.pictureUrl}
+    >
+      {/* Suspense lives INSIDE the shell so lazy route transitions
+          don't unmount the sidebar — only the page content swaps. */}
+      <Suspense fallback={<LoadingScreen />}>
+        <Outlet />
+      </Suspense>
+    </AppShell>
+  )
+}
 
 const getInitialCurrentUser = (
   user?: {
@@ -192,78 +213,74 @@ const AppWithContext = (props: AppPropsType) => {
                   }}
                 >
                   <SetPermissions token={props.token}>
-                    <>
-                      <Suspense fallback={<LoadingScreen />}>
-                        <PageContainer>
-                          <Routes>
-                            <Route
-                              path="/setup-password"
-                              element={<SetupPasswordPage />}
-                            />
-                            {[
-                              ...dashboards,
-                              ...directory,
-                              ...services,
-                              ...arrivals,
-                              ...reconciliation,
-                              ...graphs,
-                              ...maps,
-                              ...accountsRoutes,
-                            ].map((route, i) => (
-                              <Route
-                                key={i}
-                                path={route.path}
-                                element={
-                                  <ProtectedRoute
-                                    roles={route.roles ?? ['all']}
-                                    placeholder={route.placeholder}
-                                  >
-                                    <route.element />
-                                  </ProtectedRoute>
-                                }
-                              />
-                            ))}
-                            {[
-                              ...memberDirectory,
-                              ...memberGrids,
-                              ...quickFacts,
-                            ].map((route, i) => (
-                              <Route
-                                key={i}
-                                path={route.path}
-                                element={
-                                  <MembersDirectoryRoute roles={route.roles}>
-                                    <route.element />
-                                  </MembersDirectoryRoute>
-                                }
-                              />
-                            ))}
+                    <Routes>
+                      <Route
+                        path="/setup-password"
+                        element={<SetupPasswordPage />}
+                      />
+                      <Route element={<ShellLayout />}>
+                        {[
+                          ...dashboards,
+                          ...directory,
+                          ...services,
+                          ...arrivals,
+                          ...reconciliation,
+                          ...graphs,
+                          ...maps,
+                          ...accountsRoutes,
+                        ].map((route, i) => (
+                          <Route
+                            key={i}
+                            path={route.path}
+                            element={
+                              <ProtectedRoute
+                                roles={route.roles ?? ['all']}
+                                placeholder={route.placeholder}
+                              >
+                                <route.element />
+                              </ProtectedRoute>
+                            }
+                          />
+                        ))}
+                        {[
+                          ...memberDirectory,
+                          ...memberGrids,
+                          ...quickFacts,
+                        ].map((route, i) => (
+                          <Route
+                            key={i}
+                            path={route.path}
+                            element={
+                              <MembersDirectoryRoute roles={route.roles}>
+                                <route.element />
+                              </MembersDirectoryRoute>
+                            }
+                          />
+                        ))}
 
-                            <Route
-                              path="/dashboard/servants"
-                              element={
-                                <ProtectedRouteHome
-                                  roles={permitMe('Bacenta')}
-                                  component={<ServantsDashboard />}
-                                />
-                              }
+                        <Route
+                          path="/dashboard/servants"
+                          element={
+                            <ProtectedRouteHome
+                              roles={permitMe('Bacenta')}
+                              component={<ServantsDashboard />}
                             />
-                            <Route
-                              path="/servants/church-list"
-                              element={
-                                <ProtectedRoute
-                                  roles={permitMe('Bacenta')}
-                                  placeholder
-                                >
-                                  <ServantsChurchList />
-                                </ProtectedRoute>
-                              }
-                            />
-                            <Route path="*" element={<PageNotFound />} />
-                          </Routes>
-                        </PageContainer>
-                      </Suspense>
-                    </>
+                          }
+                        />
+                        <Route
+                          path="/servants/church-list"
+                          element={
+                            <ProtectedRoute
+                              roles={permitMe('Bacenta')}
+                              placeholder
+                            >
+                              <ServantsChurchList />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route path="*" element={<PageNotFound />} />
+                      </Route>
+                    </Routes>
                   </SetPermissions>
                 </ServiceContext.Provider>
               </SearchContext.Provider>
