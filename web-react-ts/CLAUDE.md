@@ -16,7 +16,11 @@ Authenticates via the custom auth microservice at `VITE_AUTH_API_URL`
 - Vite 4 + `vite-plugin-pwa` + Sentry (when `SENTRY_AUTH_TOKEN` set).
 - Apollo Client 3 (retry + error link, `errorPolicy: 'all'`, `notistack`
   snackbars).
-- Bootstrap 5 + react-bootstrap + CSS variables in `src/color-theme.css`.
+- **Shadcn/UI + Tailwind CSS v4** (`@tailwindcss/vite`). Design tokens in
+  `src/design-tokens.css`; Tailwind entry in `src/app.css`. Shadcn components
+  in `src/components/ui/`. Use `cn` from `lib/utils`.
+- Bootstrap 5 + react-bootstrap remain for legacy (untouched) pages only.
+  Do not write new Bootstrap. Do not mix Bootstrap and Tailwind on the same page.
 - Formik + Yup; in-house wrappers in `src/components/formik/`.
 - Custom JWT auth in `src/contexts/AuthContext.tsx`. **Not Auth0.**
 - `react-router-dom` v6, lazy-loaded routes in `*Routes.ts` arrays.
@@ -33,7 +37,9 @@ Cross-package KB lives in `../kb/`.
 
 ## Mandatory rules (frontend-specific)
 
-- **Bootstrap + CSS vars only.** No Tailwind, Chakra, MUI, styled-components.
+- **Shadcn/UI + Tailwind for all new and touched pages.** No Chakra, MUI,
+  styled-components. Bootstrap is legacy-only (untouched pages). Run `/design`
+  for any UI work.
 - **No `@auth0/auth0-react` imports** — dead dep (ADR-002).
 - **Routes** go through `*Routes.ts` arrays as `LazyRouteTypes` and are spread
   into `AppWithContext.tsx`. No inline `<Route>` JSX (ADR-004).
@@ -63,9 +69,13 @@ Cross-package KB lives in `../kb/`.
 | `src/global-types.ts` | Shared TypeScript types — reuse, do not duplicate |
 | `src/global-utils.ts` | Constants, regexes, Formik option lists |
 | `src/permission-utils.ts` | Permission helpers (mirror to backend) |
-| `src/color-theme.css` | Full design system |
-| `src/index.css` | Global utility classes |
-| `vite.config.ts` | Vite + PWA + Sentry + tsconfig paths |
+| `src/app.css` | Tailwind v4 entry point (`@import "tailwindcss"` + `@theme inline`) |
+| `src/design-tokens.css` | All HSL design tokens (light + dark). Single source of truth |
+| `src/color-theme.css` | Legacy Bootstrap theme (untouched pages only — do not edit) |
+| `src/index.css` | Global utility classes (Bootstrap-era — do not add Tailwind here) |
+| `src/lib/utils.ts` | `cn` helper (clsx + tailwind-merge) |
+| `src/components/ui/` | Shadcn component library |
+| `vite.config.mts` | Vite + Tailwind + PWA + Sentry + tsconfig paths |
 
 ## Local dev
 

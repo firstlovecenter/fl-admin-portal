@@ -28,6 +28,7 @@ import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
 import PageContainer from 'components/base-component/PageContainer'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
+import { ThemeProvider } from 'components/shell/ThemeProvider'
 
 type AppPropsType = {
   token: string
@@ -121,8 +122,9 @@ const AppWithContext = (props: AppPropsType) => {
   })
 
   return (
-    <Router>
-      <ChurchContext.Provider
+    <ThemeProvider>
+      <Router>
+        <ChurchContext.Provider
         value={{
           clickCard,
           filters,
@@ -244,7 +246,8 @@ const AppWithContext = (props: AppPropsType) => {
           </SearchContext.Provider>
         </MemberContext.Provider>
       </ChurchContext.Provider>
-    </Router>
+      </Router>
+    </ThemeProvider>
   )
 }
 

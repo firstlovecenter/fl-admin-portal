@@ -15,9 +15,13 @@ import CacheBuster from 'CacheBuster'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import SimpleApp from './SimpleApp'
 
-import 'bootstrap/dist/css/bootstrap.min.css'
-import './color-theme.css'
-import './index.css'
+// Custom CSS imports temporarily disabled to evaluate the dashboard with
+// only Tailwind + Shadcn driving the visuals. Keep `app.css` because it
+// is the Tailwind v4 entry point (and pulls in design tokens).
+// import 'bootstrap/dist/css/bootstrap.min.css'
+import './app.css'
+// import './color-theme.css'
+// import './index.css'
 import ReactGA from 'react-ga4'
 import {
   SnackbarKey,

@@ -153,6 +153,7 @@ Read the relevant file before working on a related area — do not guess.
 | [`kb/04-state-machines.md`](kb/04-state-machines.md) | SM1–SM8 — `transactionStatus`, banking proof, vacation, servant slots, vehicles, expenses, auth, app modal |
 | [`kb/05-data-entities.md`](kb/05-data-entities.md) | Church hierarchy, Member, ServiceRecord, BussingRecord, HistoryLog, Equipment, accounts; constants |
 | [`kb/06-adr.md`](kb/06-adr.md) | ADR-001…012 — duplicated permissions, custom JWT, Bootstrap, route arrays, financial truth, servant factory, useClickCard, idempotent aggregation, absolute imports, no tests, @jaedag, parameterised Cypher |
+| [`kb/07-test-accounts.md`](kb/07-test-accounts.md) | Test login credentials for all roles (Bacenta, Creative Arts, Arrivals, Banking). Password: `password`. Use for Chrome DevTools e2e testing. |
 
 ### `web-react-ts/kb/` (frontend)
 

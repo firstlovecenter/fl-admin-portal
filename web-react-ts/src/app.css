@@ -1,0 +1,101 @@
+/* Tailwind v4 entry point. The @tailwindcss/vite plugin reads this file. */
+
+@import 'tailwindcss';
+@import './design-tokens.css';
+
+/* Dark mode is driven by data-theme="dark" on <html>, set by ThemeProvider.
+ * Tailwind v4 needs an explicit variant declaration when not using the
+ * default media-query strategy. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Map design-token CSS variables to Tailwind's @theme so utilities like
+ * bg-background, text-foreground, border-border, etc. resolve correctly.
+ * Tailwind v4 auto-generates utilities for every entry under --color-*. */
+@theme inline {
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Feature accents */
+  --color-members: hsl(var(--members));
+  --color-churches: hsl(var(--churches));
+  --color-arrivals: hsl(var(--arrivals));
+  --color-defaulters: hsl(var(--defaulters));
+  --color-banking: hsl(var(--banking));
+  --color-campaigns: hsl(var(--campaigns));
+  --color-maps: hsl(var(--maps));
+
+  /* Sidebar */
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Charts */
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Font family */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Make interactive controls consistently feel clickable across the app. */
+:where(
+  button,
+  [role='button'],
+  a[href],
+  summary,
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset']
+):where(:not(:disabled)):where(:not([aria-disabled='true'])) {
+  cursor: pointer;
+}
+
+:where(button, [role='button'], input[type='button'], input[type='submit'], input[type='reset']):where(:disabled),
+:where([aria-disabled='true']) {
+  cursor: not-allowed;
+}

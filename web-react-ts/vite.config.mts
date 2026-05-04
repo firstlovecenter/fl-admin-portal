@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
 import svgrPlugin from 'vite-plugin-svgr'
@@ -25,6 +26,7 @@ export default defineConfig(({ command, mode }) => {
       sourcemap: true, // Source map generation must be turned on
     },
     plugins: [
+      tailwindcss(),
       react(),
       viteTsconfigPaths(),
       svgrPlugin(),

@@ -1,0 +1,136 @@
+/* FL Admin Portal — Design Tokens
+ *
+ * Single source of truth for the new Shadcn/UI + Tailwind design system.
+ * All values in HSL channel format (H S% L%) for Tailwind opacity utilities.
+ *
+ * Light mode is the default at :root. Dark mode activates on
+ * [data-theme="dark"]. During the Bootstrap migration period, both
+ * data-theme and data-bs-theme are kept in sync by ThemeProvider.
+ *
+ * The legacy color-theme.css file remains untouched — it serves all
+ * existing Bootstrap pages until they are migrated individually.
+ */
+
+:root {
+  /* ---- Brand ---- */
+  --brand: 349 100% 63%;
+  --brand-foreground: 0 0% 100%;
+
+  /* ---- Shadcn semantic scale (light) ---- */
+  --background: 215 20% 95%;
+  --foreground: 220 14% 10%;
+
+  --card: 210 20% 99%;
+  --card-foreground: 220 14% 10%;
+
+  --popover: 210 20% 99%;
+  --popover-foreground: 220 14% 10%;
+
+  --primary: 349 100% 63%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 214 14% 94%;
+  --secondary-foreground: 220 14% 10%;
+
+  --muted: 214 14% 94%;
+  --muted-foreground: 215 12% 47%;
+
+  --accent: 214 14% 94%;
+  --accent-foreground: 220 14% 10%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --success: 142 71% 45%;
+  --warning: 38 92% 50%;
+
+  --border: 214 14% 89%;
+  --input: 214 14% 89%;
+  --ring: 349 100% 63%;
+
+  --radius: 0.625rem;
+
+  /* ---- Feature accents (light) ---- */
+  --members: 174 63% 40%;
+  --churches: 262 52% 50%;
+  --arrivals: 231 48% 50%;
+  --defaulters: 25 95% 48%;
+  --banking: 142 71% 38%;
+  --campaigns: 270 67% 50%;
+  --maps: 199 89% 42%;
+
+  /* ---- Sidebar (light) ---- */
+  --sidebar-background: 210 20% 99%;
+  --sidebar-foreground: 220 14% 10%;
+  --sidebar-primary: 349 100% 63%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 214 14% 94%;
+  --sidebar-accent-foreground: 220 14% 10%;
+  --sidebar-border: 214 14% 89%;
+  --sidebar-ring: 349 100% 63%;
+
+  /* ---- Chart palette (5 colors) ---- */
+  --chart-1: 349 100% 63%;
+  --chart-2: 174 63% 40%;
+  --chart-3: 262 52% 50%;
+  --chart-4: 142 71% 38%;
+  --chart-5: 25 95% 48%;
+}
+
+[data-theme='dark'] {
+  --background: 222 14% 7%;
+  --foreground: 210 20% 96%;
+
+  --card: 220 13% 10%;
+  --card-foreground: 210 20% 96%;
+
+  --popover: 220 13% 10%;
+  --popover-foreground: 210 20% 96%;
+
+  --primary: 349 100% 63%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 217 10% 16%;
+  --secondary-foreground: 210 20% 96%;
+
+  --muted: 217 10% 16%;
+  --muted-foreground: 215 12% 60%;
+
+  --accent: 217 10% 16%;
+  --accent-foreground: 210 20% 96%;
+
+  --destructive: 0 63% 54%;
+  --destructive-foreground: 0 0% 98%;
+
+  --success: 142 71% 50%;
+  --warning: 38 92% 55%;
+
+  --border: 217 10% 18%;
+  --input: 217 10% 18%;
+  --ring: 349 100% 63%;
+
+  /* Feature accents (dark — slightly brighter for contrast) */
+  --members: 174 63% 65%;
+  --churches: 262 52% 62%;
+  --arrivals: 231 48% 61%;
+  --defaulters: 25 95% 58%;
+  --banking: 142 71% 50%;
+  --campaigns: 270 67% 60%;
+  --maps: 199 89% 53%;
+
+  /* Sidebar (dark) */
+  --sidebar-background: 222 14% 8%;
+  --sidebar-foreground: 210 20% 96%;
+  --sidebar-primary: 349 100% 63%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 217 10% 14%;
+  --sidebar-accent-foreground: 210 20% 96%;
+  --sidebar-border: 217 10% 16%;
+  --sidebar-ring: 349 100% 63%;
+
+  --chart-1: 349 100% 63%;
+  --chart-2: 174 63% 65%;
+  --chart-3: 262 52% 62%;
+  --chart-4: 142 71% 50%;
+  --chart-5: 25 95% 58%;
+}

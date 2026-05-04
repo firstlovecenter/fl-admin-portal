@@ -49,6 +49,12 @@ export const SERVANT_BACENTA_LEADER = gql`
           income
           week
         }
+
+        aggregateBussingRecords(limit: 4) {
+          id
+          attendance
+          week
+        }
       }
     }
   }
