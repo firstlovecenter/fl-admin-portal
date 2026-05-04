@@ -76,7 +76,7 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
   const { setUserFinancials } = useSetUserChurch()
   const navigate = useNavigate()
 
-  let name: string = member.name + ' ' + member.__typename
+  let name: string = (member.name ?? '') + ' ' + member.__typename
   let details: string[] = [(member as CardMember)?.leader?.nameWithTitle || '']
 
   const hasPicture =
@@ -179,7 +179,7 @@ const MemberDisplayCard = (props: MemberDisplayCardProps) => {
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-1.5 text-[hsl(var(--banking))] border-[hsl(var(--banking)/0.3)]"
+              className="w-full gap-1.5 text-[hsl(var(--success))] border-[hsl(var(--success)/0.3)]"
             >
               <svg
                 viewBox="0 0 24 24"

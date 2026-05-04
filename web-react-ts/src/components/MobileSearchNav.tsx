@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 import { Formik, Form, FormikHelpers } from 'formik'
-import { SearchContext } from '../contexts/MemberContext'
+import { SearchContext } from 'contexts/MemberContext'
 import { Button } from 'components/ui/button'
 import { Input } from 'components/ui/input'
 import { Loader2, Search } from 'lucide-react'

@@ -4,9 +4,9 @@ import { authorisedLink } from 'global-utils'
 import { permitMe } from 'permission-utils'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { ChurchContext } from '../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
 
-interface BreadcrumbType extends Church {
+export interface BreadcrumbType extends Church {
   __typename: ChurchLevel
   name: string
   governorship?: {
@@ -32,7 +32,7 @@ const Breadcrumb = ({ breadcrumb }: { breadcrumb: BreadcrumbType[] }) => {
           <span key={i} className="flex items-center gap-1">
             <button
               type="button"
-              className="hover:text-foreground transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs"
+              className="hover:text-foreground active:text-foreground transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs"
               onClick={() => {
                 clickCard(bread)
                 navigate(

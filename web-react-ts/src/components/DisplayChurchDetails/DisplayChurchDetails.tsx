@@ -36,7 +36,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import SearchMember from 'components/formik/SearchMember'
 import SubmitButton from 'components/formik/SubmitButton'
 import * as Yup from 'yup'
-import Breadcrumb from './Breadcrumb'
+import Breadcrumb, { BreadcrumbType } from './Breadcrumb'
 import {
   MAKE_CAMPUS_ADMIN,
   MAKE_COUNCIL_ADMIN,
@@ -72,7 +72,7 @@ type DisplayChurchDetailsProps = {
   editlink: string
   editPermitted: Role[]
   history: TimelineElement[]
-  breadcrumb: Church[]
+  breadcrumb: BreadcrumbType[]
   buttons: Church[]
   vacation?: VacationStatusOptions
   vacationCount?: number
@@ -219,17 +219,17 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
       }
       displayError('Unable to Change Admin', e)
     } finally {
+      onSubmitProps.setSubmitting(false)
+      onSubmitProps.resetForm()
       handleClose()
     }
-
-    onSubmitProps.resetForm()
   }
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border px-4 py-3">
-        <Breadcrumb breadcrumb={props.breadcrumb as any} />
+        <Breadcrumb breadcrumb={props.breadcrumb} />
         <div className="flex items-center justify-between mt-1">
           <h1 className="text-xl font-semibold text-foreground">
             {props.name ? `${props.name} ${props.churchType}` : ''}
@@ -387,7 +387,6 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         <div className="space-y-3">
           <Button
             className="w-full"
-            style={{ backgroundColor: 'hsl(var(--brand))', color: 'hsl(var(--brand-foreground))' }}
             size="lg"
             onClick={() => {
               setUserChurch({
@@ -407,7 +406,6 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           }) && (
             <Button
               className="w-full"
-              style={{ backgroundColor: 'hsl(var(--brand))', color: 'hsl(var(--brand-foreground))' }}
               size="lg"
               onClick={() => {
                 setUserChurch({
@@ -434,7 +432,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             </p>
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${props?.location?.latitude}%2C${props?.location?.longitude}`}
-              className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+              className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-muted hover:bg-muted/80 active:bg-muted/80 transition-colors"
             >
               <MapPin className="h-8 w-8 text-[hsl(var(--maps))]" />
             </a>

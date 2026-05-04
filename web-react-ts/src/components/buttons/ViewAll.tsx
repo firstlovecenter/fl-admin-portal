@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 const ViewAll = ({ to }: { to: string }) => {
   return (
     <Link to={to}>
-      <Button variant="outline" size="sm">
+      <Button variant="outline" className="min-h-[44px]">
         View All
       </Button>
     </Link>

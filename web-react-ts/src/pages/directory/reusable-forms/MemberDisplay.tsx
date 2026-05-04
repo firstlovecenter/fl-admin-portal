@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { useMutation, useQuery } from '@apollo/client'
 import Timeline from 'components/Timeline/Timeline'
 import MemberRoleList, { getRank } from 'components/MemberRoleList'
@@ -26,7 +26,8 @@ import useModal from 'hooks/useModal'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import Textarea from 'components/formik/Textarea'
-import { UPDATE_MEMBER_STICKY_NOTE } from '../update/UpdateMutations'
+import { UPDATE_MEMBER_STICKY_NOTE } from 'pages/directory/update/UpdateMutations'
+import { displayError, isPermissionError } from 'utils/errorHandler'
 import RoleView from 'auth/RoleView'
 import EditButton from 'components/buttons/EditButton'
 import ViewAll from 'components/buttons/ViewAll'
@@ -152,8 +153,10 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
   const loading = bioLoading || churchLoading || leaderLoading || adminLoading
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
-  const errorToThrow: any = error
-  throwToSentry(errorToThrow)
+
+  useEffect(() => {
+    if (error) throwToSentry('Error loading member', error)
+  }, [error])
 
   const member: Member = bioData?.members[0]
   const memberChurch = churchData?.members[0]
@@ -186,6 +189,10 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
         },
       })
     } catch (e) {
+      if (!isPermissionError(e)) {
+        throwToSentry('Error saving sticky note', e)
+      }
+      displayError('Could not save note', e)
     } finally {
       onSubmitProps.setSubmitting(false)
       handleClose()
@@ -203,6 +210,10 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
         },
       })
     } catch (e) {
+      if (!isPermissionError(e)) {
+        throwToSentry('Error deleting sticky note', e)
+      }
+      displayError('Could not delete note', e)
     } finally {
       handleClose()
     }
@@ -314,7 +325,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-11 w-11"
                   onClick={async () => {
                     const vCard = await generateVCard(
                       { ...member, ...memberChurch },
