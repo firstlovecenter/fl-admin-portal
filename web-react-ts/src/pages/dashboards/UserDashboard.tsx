@@ -142,8 +142,8 @@ const UserDashboard = () => {
   const activeTrendMode = shouldForceBussingMode
     ? 'bussing'
     : canToggleTrendMode
-      ? trendMode
-      : 'weekday'
+    ? trendMode
+    : 'weekday'
   const trendData = activeTrendMode === 'bussing' ? bussingData : weekdayData
 
   const avgBussingAttendance = getMonthlyStatAverage(bussingData, 'attendance')
@@ -293,7 +293,9 @@ const UserDashboard = () => {
                   assessmentChurch as unknown as {
                     governorship?: {
                       council?: {
-                        stream?: { meetingDay?: { day?: string; dayNumber?: number } }
+                        stream?: {
+                          meetingDay?: { day?: string; dayNumber?: number }
+                        }
                       }
                     }
                   }
@@ -519,7 +521,11 @@ const BacentaWeeklyTasks = ({
           <p className="mt-1 text-xs text-muted-foreground">
             {onVacation
               ? 'Bacenta is on vacation. No records required this week.'
-              : `Week ${currentWeek} · Service follows ${serviceMeetingDay?.day || 'Bacenta meeting day'}, bussing follows ${bussingMeetingDay?.day || 'Stream meeting day'}.`}
+              : `Week ${currentWeek} · Service follows ${
+                  serviceMeetingDay?.day || 'Bacenta meeting day'
+                }, bussing follows ${
+                  bussingMeetingDay?.day || 'Stream meeting day'
+                }.`}
           </p>
         </div>
         {onVacation && (
@@ -573,7 +579,13 @@ const WeeklyTaskCard = ({
   actionLabel,
   onAction,
 }: WeeklyTaskCardProps) => {
-  const status = waived ? 'Waived' : done ? 'Done' : upcoming ? 'Upcoming' : 'Due'
+  const status = waived
+    ? 'Waived'
+    : done
+    ? 'Done'
+    : upcoming
+    ? 'Upcoming'
+    : 'Due'
   const statusClass = waived
     ? 'bg-muted text-muted-foreground'
     : done

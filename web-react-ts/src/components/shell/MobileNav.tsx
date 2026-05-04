@@ -121,7 +121,9 @@ export const MobileNav = ({
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                  <p className="text-xs text-sidebar-foreground/60">Signed in as</p>
+                  <p className="text-xs text-sidebar-foreground/60">
+                    Signed in as
+                  </p>
                   <p className="truncate text-sm font-medium text-sidebar-foreground">
                     {accountName}
                   </p>
@@ -130,10 +132,16 @@ export const MobileNav = ({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start" className="w-56">
-              <DropdownMenuLabel className="truncate">{accountName}</DropdownMenuLabel>
+              <DropdownMenuLabel className="truncate">
+                {accountName}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={toggleTheme}>
-                {isDarkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                {isDarkMode ? (
+                  <Sun className="size-4" />
+                ) : (
+                  <Moon className="size-4" />
+                )}
                 {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               </DropdownMenuItem>
               <DropdownMenuItem

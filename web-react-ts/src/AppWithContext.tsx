@@ -38,13 +38,15 @@ const ServantsDashboard = React.lazy(
   () => import('pages/dashboards/ServantsDashboard')
 )
 
-const getInitialCurrentUser = (user?: {
-  id?: string
-  firstName?: string
-  lastName?: string
-  email?: string
-  roles?: string[]
-} | null) => {
+const getInitialCurrentUser = (
+  user?: {
+    id?: string
+    firstName?: string
+    lastName?: string
+    email?: string
+    roles?: string[]
+  } | null
+) => {
   const fallbackUser = {
     __typename: 'Member',
     id: user?.id || '',
@@ -126,7 +128,9 @@ const AppWithContext = (props: AppPropsType) => {
 
   const { user } = useAuth()
 
-  const [currentUser, setCurrentUser] = useState(() => getInitialCurrentUser(user))
+  const [currentUser, setCurrentUser] = useState(() =>
+    getInitialCurrentUser(user)
+  )
 
   const [userJobs, setUserJobs] = useState()
 
@@ -144,128 +148,128 @@ const AppWithContext = (props: AppPropsType) => {
     <ThemeProvider>
       <Router>
         <ChurchContext.Provider
-        value={{
-          clickCard,
-          filters,
-          setFilters,
-          church,
-          memberId,
-          campusId,
-          streamId,
-          councilId,
-          governorshipId,
-          bacentaId,
-          fellowshipId,
-          hubId,
-          hubCouncilId,
-          ministryId,
-          creativeArtsId,
-          oversightId,
-          denominationId,
-          doNotUse,
-          arrivalDate,
-          setArrivalDate,
-          transactionId,
-        }}
-      >
-        <MemberContext.Provider
           value={{
+            clickCard,
+            filters,
+            setFilters,
+            church,
             memberId,
-            currentUser,
-            setCurrentUser,
-            userJobs,
-            setUserJobs,
+            campusId,
+            streamId,
+            councilId,
+            governorshipId,
+            bacentaId,
+            fellowshipId,
+            hubId,
+            hubCouncilId,
+            ministryId,
+            creativeArtsId,
+            oversightId,
+            denominationId,
+            doNotUse,
+            arrivalDate,
+            setArrivalDate,
+            transactionId,
           }}
         >
-          <ChurchRoleScopeProvider>
-            <SearchContext.Provider value={{ searchKey, setSearchKey }}>
-              <ServiceContext.Provider
-                value={{
-                  serviceRecordId,
-                  bussingRecordId,
-                  vehicleRecordId,
-                  multiplicationRecordId,
-                }}
-              >
-                <SetPermissions token={props.token}>
-                  <>
-                    <Suspense fallback={<LoadingScreen />}>
-                      <PageContainer>
-                        <Routes>
-                        <Route
-                          path="/setup-password"
-                          element={<SetupPasswordPage />}
-                        />
-                        {[
-                          ...dashboards,
-                          ...directory,
-                          ...services,
-                          ...arrivals,
-                          ...reconciliation,
-                          ...graphs,
-                          ...maps,
-                          ...accountsRoutes,
-                        ].map((route, i) => (
-                          <Route
-                            key={i}
-                            path={route.path}
-                            element={
-                              <ProtectedRoute
-                                roles={route.roles ?? ['all']}
-                                placeholder={route.placeholder}
-                              >
-                                <route.element />
-                              </ProtectedRoute>
-                            }
-                          />
-                        ))}
-                        {[
-                          ...memberDirectory,
-                          ...memberGrids,
-                          ...quickFacts,
-                        ].map((route, i) => (
-                          <Route
-                            key={i}
-                            path={route.path}
-                            element={
-                              <MembersDirectoryRoute roles={route.roles}>
-                                <route.element />
-                              </MembersDirectoryRoute>
-                            }
-                          />
-                        ))}
-
-                        <Route
-                          path="/dashboard/servants"
-                          element={
-                            <ProtectedRouteHome
-                              roles={permitMe('Bacenta')}
-                              component={<ServantsDashboard />}
+          <MemberContext.Provider
+            value={{
+              memberId,
+              currentUser,
+              setCurrentUser,
+              userJobs,
+              setUserJobs,
+            }}
+          >
+            <ChurchRoleScopeProvider>
+              <SearchContext.Provider value={{ searchKey, setSearchKey }}>
+                <ServiceContext.Provider
+                  value={{
+                    serviceRecordId,
+                    bussingRecordId,
+                    vehicleRecordId,
+                    multiplicationRecordId,
+                  }}
+                >
+                  <SetPermissions token={props.token}>
+                    <>
+                      <Suspense fallback={<LoadingScreen />}>
+                        <PageContainer>
+                          <Routes>
+                            <Route
+                              path="/setup-password"
+                              element={<SetupPasswordPage />}
                             />
-                          }
-                        />
-                        <Route
-                          path="/servants/church-list"
-                          element={
-                            <ProtectedRoute
-                              roles={permitMe('Bacenta')}
-                              placeholder
-                            >
-                              <ServantsChurchList />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route path="*" element={<PageNotFound />} />
-                        </Routes>
-                      </PageContainer>
-                    </Suspense>
-                  </>
-                </SetPermissions>
-              </ServiceContext.Provider>
-            </SearchContext.Provider>
-          </ChurchRoleScopeProvider>
-        </MemberContext.Provider>
-      </ChurchContext.Provider>
+                            {[
+                              ...dashboards,
+                              ...directory,
+                              ...services,
+                              ...arrivals,
+                              ...reconciliation,
+                              ...graphs,
+                              ...maps,
+                              ...accountsRoutes,
+                            ].map((route, i) => (
+                              <Route
+                                key={i}
+                                path={route.path}
+                                element={
+                                  <ProtectedRoute
+                                    roles={route.roles ?? ['all']}
+                                    placeholder={route.placeholder}
+                                  >
+                                    <route.element />
+                                  </ProtectedRoute>
+                                }
+                              />
+                            ))}
+                            {[
+                              ...memberDirectory,
+                              ...memberGrids,
+                              ...quickFacts,
+                            ].map((route, i) => (
+                              <Route
+                                key={i}
+                                path={route.path}
+                                element={
+                                  <MembersDirectoryRoute roles={route.roles}>
+                                    <route.element />
+                                  </MembersDirectoryRoute>
+                                }
+                              />
+                            ))}
+
+                            <Route
+                              path="/dashboard/servants"
+                              element={
+                                <ProtectedRouteHome
+                                  roles={permitMe('Bacenta')}
+                                  component={<ServantsDashboard />}
+                                />
+                              }
+                            />
+                            <Route
+                              path="/servants/church-list"
+                              element={
+                                <ProtectedRoute
+                                  roles={permitMe('Bacenta')}
+                                  placeholder
+                                >
+                                  <ServantsChurchList />
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route path="*" element={<PageNotFound />} />
+                          </Routes>
+                        </PageContainer>
+                      </Suspense>
+                    </>
+                  </SetPermissions>
+                </ServiceContext.Provider>
+              </SearchContext.Provider>
+            </ChurchRoleScopeProvider>
+          </MemberContext.Provider>
+        </ChurchContext.Provider>
       </Router>
     </ThemeProvider>
   )

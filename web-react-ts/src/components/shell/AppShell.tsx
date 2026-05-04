@@ -19,7 +19,11 @@ interface AppShellProps {
  * SidebarProvider / SidebarInset removed — they were adding CSS variable offsets
  * that caused layout jank. Simple `flex h-screen` is the ground truth now.
  */
-export const AppShell = ({ children, userName, userImageUrl }: AppShellProps) => {
+export const AppShell = ({
+  children,
+  userName,
+  userImageUrl,
+}: AppShellProps) => {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (

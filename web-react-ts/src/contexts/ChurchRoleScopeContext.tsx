@@ -98,8 +98,14 @@ type MemberContextShape = {
   userJobs?: UserJobs[]
 }
 
-export const ChurchRoleScopeProvider = ({ children }: { children: ReactNode }) => {
-  const { currentUser, userJobs } = useContext(MemberContext) as MemberContextShape
+export const ChurchRoleScopeProvider = ({
+  children,
+}: {
+  children: ReactNode
+}) => {
+  const { currentUser, userJobs } = useContext(
+    MemberContext
+  ) as MemberContextShape
   const [selectedScopeKey, setSelectedScopeKey] = useState('')
 
   const roleChurchOptions = useMemo(
@@ -139,7 +145,9 @@ export const ChurchRoleScopeProvider = ({ children }: { children: ReactNode }) =
     )
 
     if (!selectedScopeKey || !currentSelectionExists) {
-      const { highestLevel, highestVerb } = getHighestRole(currentUser?.roles ?? [])
+      const { highestLevel, highestVerb } = getHighestRole(
+        currentUser?.roles ?? []
+      )
       const highestRole = `${highestVerb}${highestLevel}` as Role
 
       const highestRoleOption = roleChurchOptions.find(
@@ -179,7 +187,9 @@ export const useChurchRoleScope = () => {
   const context = useContext(ChurchRoleScopeContext)
 
   if (!context) {
-    throw new Error('useChurchRoleScope must be used within ChurchRoleScopeProvider')
+    throw new Error(
+      'useChurchRoleScope must be used within ChurchRoleScopeProvider'
+    )
   }
 
   return context

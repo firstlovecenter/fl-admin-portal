@@ -114,7 +114,11 @@ export const Sidebar = ({
         onClick={() => setOpen((v) => !v)}
         className="absolute right-0 top-2 z-30 size-11 rounded-full border border-sidebar-border bg-background text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground"
       >
-        {open ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
+        {open ? (
+          <PanelLeftClose className="size-4" />
+        ) : (
+          <PanelLeftOpen className="size-4" />
+        )}
       </Button>
 
       <motion.nav
@@ -123,105 +127,110 @@ export const Sidebar = ({
         animate={{ width: open ? SIDEBAR_EXPANDED_W : SIDEBAR_COLLAPSED_W }}
         transition={TRANSITION}
       >
-
-      {/* Brand */}
-      <div className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border px-3.5">
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-foreground">
-          <span className="text-xs font-bold">FL</span>
+        {/* Brand */}
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border px-3.5">
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-foreground">
+            <span className="text-xs font-bold">FL</span>
+          </div>
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.12 }}
+                className="overflow-hidden"
+              >
+                <p className="whitespace-nowrap text-sm font-semibold leading-tight text-sidebar-foreground">
+                  First Love
+                </p>
+                <p className="whitespace-nowrap text-xs text-sidebar-foreground/60">
+                  Servants Portal
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        <AnimatePresence>
+
+        {/* Primary nav */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-0.5">
+          {primaryNav.map((item) => (
+            <DesktopNavItem key={item.to} item={item} open={open} />
+          ))}
+
+          <div className="my-2 h-px bg-sidebar-border" />
+
+          {secondaryNav.map((item) => (
+            <DesktopNavItem key={item.to} item={item} open={open} />
+          ))}
+
           {open && (
-            <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.12 }}
-              className="overflow-hidden"
-            >
-              <p className="whitespace-nowrap text-sm font-semibold leading-tight text-sidebar-foreground">
-                First Love
-              </p>
-              <p className="whitespace-nowrap text-xs text-sidebar-foreground/60">
-                Servants Portal
-              </p>
-            </motion.div>
+            <>
+              <div className="my-2 h-px bg-sidebar-border" />
+              <ChurchRoleScopePicker />
+            </>
           )}
-        </AnimatePresence>
-      </div>
+        </div>
 
-      {/* Primary nav */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-0.5">
-        {primaryNav.map((item) => (
-          <DesktopNavItem key={item.to} item={item} open={open} />
-        ))}
-
-        <div className="my-2 h-px bg-sidebar-border" />
-
-        {secondaryNav.map((item) => (
-          <DesktopNavItem key={item.to} item={item} open={open} />
-        ))}
-
-        {open && (
-          <>
-            <div className="my-2 h-px bg-sidebar-border" />
-            <ChurchRoleScopePicker />
-          </>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="shrink-0 border-t border-sidebar-border px-2 py-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="mb-2 flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-1 text-left hover:bg-sidebar-accent/70"
-              aria-label="Open profile menu"
-            >
-              <Avatar className="size-7 shrink-0 border border-sidebar-border/60">
-                {userImageUrl ? (
-                  <AvatarImage src={userImageUrl} alt={accountName} />
-                ) : null}
-                <AvatarFallback className="bg-sidebar-accent text-[11px] font-semibold text-sidebar-foreground">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <AnimatePresence>
+        {/* Footer */}
+        <div className="shrink-0 border-t border-sidebar-border px-2 py-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="mb-2 flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-1 text-left hover:bg-sidebar-accent/70"
+                aria-label="Open profile menu"
+              >
+                <Avatar className="size-7 shrink-0 border border-sidebar-border/60">
+                  {userImageUrl ? (
+                    <AvatarImage src={userImageUrl} alt={accountName} />
+                  ) : null}
+                  <AvatarFallback className="bg-sidebar-accent text-[11px] font-semibold text-sidebar-foreground">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <AnimatePresence>
+                  {open && (
+                    <motion.p
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.12 }}
+                      className="overflow-hidden whitespace-nowrap text-sm font-medium text-sidebar-foreground"
+                    >
+                      {accountName}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
                 {open && (
-                  <motion.p
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.12 }}
-                    className="overflow-hidden whitespace-nowrap text-sm font-medium text-sidebar-foreground"
-                  >
-                    {accountName}
-                  </motion.p>
+                  <ChevronDown className="ml-auto size-4 shrink-0 text-sidebar-foreground/60" />
                 )}
-              </AnimatePresence>
-              {open && (
-                <ChevronDown className="ml-auto size-4 shrink-0 text-sidebar-foreground/60" />
-              )}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="top"
-            align={open ? 'start' : 'end'}
-            className="w-56"
-          >
-            <DropdownMenuLabel className="truncate">{accountName}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={toggleTheme}>
-              {isDarkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
-              {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive" onSelect={logout}>
-              <LogOut className="size-4" />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="top"
+              align={open ? 'start' : 'end'}
+              className="w-56"
+            >
+              <DropdownMenuLabel className="truncate">
+                {accountName}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={toggleTheme}>
+                {isDarkMode ? (
+                  <Sun className="size-4" />
+                ) : (
+                  <Moon className="size-4" />
+                )}
+                {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onSelect={logout}>
+                <LogOut className="size-4" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </motion.nav>
     </motion.div>
   )

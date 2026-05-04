@@ -92,9 +92,7 @@ export const StatCard = ({
               {value}
             </p>
           )}
-          {hint && (
-            <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-          )}
+          {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
         </div>
       </CardContent>
     </Card>

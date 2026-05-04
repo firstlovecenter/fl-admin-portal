@@ -202,7 +202,8 @@ const useComponentQuery = (props?: UseComponentQuery) => {
       const scopedChurchId = props?.scope?.churchId
       const parsedScopeRole = scopedRole && parseAuthRole(scopedRole)
 
-      const { highestLevel, highestVerb } = parsedScopeRole || getHighestRole(user.roles)
+      const { highestLevel, highestVerb } =
+        parsedScopeRole || getHighestRole(user.roles)
 
       if (!highestLevel || !highestVerb) {
         return
@@ -229,7 +230,9 @@ const useComponentQuery = (props?: UseComponentQuery) => {
         ] || []
 
       const selectedChurch = scopedChurchId
-        ? matchingChurches.find((church: { id: string }) => church.id === scopedChurchId)
+        ? matchingChurches.find(
+            (church: { id: string }) => church.id === scopedChurchId
+          )
         : matchingChurches[0]
 
       setAssessmentChurch(selectedChurch)

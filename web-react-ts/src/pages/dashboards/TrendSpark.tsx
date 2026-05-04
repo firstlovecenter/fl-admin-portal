@@ -2,6 +2,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  LabelList,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -33,6 +34,45 @@ interface ChartTooltipProps {
   label?: string
 }
 
+interface ChartBarLabelProps {
+  x?: number
+  y?: number
+  width?: number
+  value?: number | string
+}
+
+const compactNumberFormatter = new Intl.NumberFormat('en', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+})
+
+const renderBarLabel = ({ x, y, width, value }: ChartBarLabelProps) => {
+  const numericValue = typeof value === 'number' ? value : Number(value)
+
+  if (
+    !Number.isFinite(numericValue) ||
+    numericValue <= 0 ||
+    x == null ||
+    y == null ||
+    width == null
+  ) {
+    return null
+  }
+
+  return (
+    <text
+      x={x + width / 2}
+      y={y - 8}
+      textAnchor="middle"
+      fill="hsl(var(--muted-foreground))"
+      fontSize={11}
+      fontWeight={600}
+    >
+      {compactNumberFormatter.format(numericValue)}
+    </text>
+  )
+}
+
 const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   if (!active || !payload?.length) return null
 
@@ -44,7 +84,10 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
 
       <div className="mt-2 space-y-1.5">
         {payload.map((entry) => (
-          <div key={entry.name} className="flex items-center justify-between gap-4 text-sm">
+          <div
+            key={entry.name}
+            className="flex items-center justify-between gap-4 text-sm"
+          >
             <span className="flex items-center gap-2 text-foreground">
               <span
                 className="size-2 rounded-full"
@@ -170,7 +213,13 @@ const TrendSpark = ({
             fill={attendanceColor}
             radius={[6, 6, 0, 0]}
             maxBarSize={48}
-          />
+          >
+            <LabelList
+              dataKey="attendance"
+              position="top"
+              content={renderBarLabel}
+            />
+          </Bar>
 
           {showIncome && (
             <Bar
@@ -179,7 +228,13 @@ const TrendSpark = ({
               fill={incomeColor}
               radius={[6, 6, 0, 0]}
               maxBarSize={48}
-            />
+            >
+              <LabelList
+                dataKey="income"
+                position="top"
+                content={renderBarLabel}
+              />
+            </Bar>
           )}
         </BarChart>
       </ResponsiveContainer>
