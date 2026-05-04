@@ -124,8 +124,13 @@ export const Sidebar = ({
       <motion.nav
         id="desktop-sidebar-nav"
         className="absolute inset-y-0 left-0 hidden border-r border-sidebar-border bg-sidebar md:flex md:flex-col overflow-y-hidden overflow-x-visible"
-        animate={{ width: open ? SIDEBAR_EXPANDED_W : SIDEBAR_COLLAPSED_W }}
-        transition={TRANSITION}
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1, width: open ? SIDEBAR_EXPANDED_W : SIDEBAR_COLLAPSED_W }}
+        transition={{
+          width: TRANSITION,
+          x: { duration: 0.35, ease: 'easeOut' },
+          opacity: { duration: 0.35, ease: 'easeOut' as const },
+        }}
       >
         {/* Brand */}
         <div className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border px-3.5">

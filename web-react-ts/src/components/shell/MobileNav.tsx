@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { ChevronDown, LogOut, Moon, Sun } from 'lucide-react'
 import {
   Sheet,
@@ -21,6 +22,18 @@ import {
 import { ChurchRoleScopePicker } from './ChurchRoleScopePicker'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.2, ease: 'easeOut' as const } },
+}
+
 const MobileNavItem = ({
   item,
   onClose,
@@ -30,22 +43,24 @@ const MobileNavItem = ({
 }) => {
   const Icon = item.icon
   return (
-    <NavLink
-      to={item.to}
-      end={item.to === '/'}
-      onClick={onClose}
-      className={({ isActive }) =>
-        cn(
-          'flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors',
-          isActive
-            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
-        )
-      }
-    >
-      <Icon className={cn('size-5 shrink-0')} />
-      {item.name}
-    </NavLink>
+    <motion.div variants={itemVariants}>
+      <NavLink
+        to={item.to}
+        end={item.to === '/'}
+        onClick={onClose}
+        className={({ isActive }) =>
+          cn(
+            'flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors',
+            isActive
+              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
+          )
+        }
+      >
+        <Icon className={cn('size-5 shrink-0')} />
+        {item.name}
+      </NavLink>
+    </motion.div>
   )
 }
 
@@ -91,18 +106,32 @@ export const MobileNav = ({
           </SheetTitle>
         </SheetHeader>
 
-        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4 pb-4">
+        {/* Stagger relies on Radix Sheet unmounting content when closed.
+            If forceMount is ever added to SheetPortal/SheetContent, add
+            key={String(open)} here to guarantee remount on each open. */}
+        <motion.nav
+          className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
           {primaryNav.map((item) => (
             <MobileNavItem key={item.to} item={item} onClose={onClose} />
           ))}
-          <div className="my-2 h-px bg-sidebar-border" />
+          <motion.div
+            variants={itemVariants}
+            className="my-2 h-px bg-sidebar-border"
+          />
           {secondaryNav.map((item) => (
             <MobileNavItem key={item.to} item={item} onClose={onClose} />
           ))}
 
-          <div className="my-2 h-px bg-sidebar-border" />
+          <motion.div
+            variants={itemVariants}
+            className="my-2 h-px bg-sidebar-border"
+          />
           <ChurchRoleScopePicker />
-        </nav>
+        </motion.nav>
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border px-4 py-3">
           <DropdownMenu>
