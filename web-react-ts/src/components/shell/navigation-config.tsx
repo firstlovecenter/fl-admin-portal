@@ -4,6 +4,7 @@ import {
   Home,
   type LucideIcon,
   Map,
+  UserCheck,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -45,7 +46,13 @@ export const primaryNav: NavItem[] = [
   },
 ]
 
-/** Secondary nav (sidebar only) */
+/** Secondary nav (sidebar + mobile drawer only — not bottom bar) */
 export const secondaryNav: NavItem[] = [
+  {
+    name: 'Members',
+    to: '/directory/members',
+    icon: UserCheck,
+    accentClass: 'text-members',
+  },
   { name: 'Maps', to: '/maps', icon: Map, accentClass: 'text-maps' },
 ]

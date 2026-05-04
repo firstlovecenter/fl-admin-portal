@@ -57,8 +57,17 @@ const MobileNavItem = ({
           )
         }
       >
-        <Icon className={cn('size-5 shrink-0')} />
-        {item.name}
+        {({ isActive }) => (
+          <>
+            <Icon
+              className={cn(
+                'size-5 shrink-0',
+                isActive && item.accentClass ? item.accentClass : ''
+              )}
+            />
+            {item.name}
+          </>
+        )}
       </NavLink>
     </motion.div>
   )
