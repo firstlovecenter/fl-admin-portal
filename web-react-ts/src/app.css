@@ -79,7 +79,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   /* Font family */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Make interactive controls consistently feel clickable across the app. */
