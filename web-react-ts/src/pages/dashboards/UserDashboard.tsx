@@ -45,12 +45,25 @@ const quickActions: QuickAction[] = [
   { label: 'Bank Recent Service', icon: Banknote, to: '/self-banking' },
 ]
 
-const formatGhs = (n: number) =>
-  new Intl.NumberFormat('en-GH', {
-    style: 'currency',
-    currency: 'GHS',
-    maximumFractionDigits: 0,
-  }).format(n)
+const formatCurrency = (amount: number, currencyCode?: unknown) => {
+  const normalizedCurrency =
+    typeof currencyCode === 'string' ? currencyCode.trim().toUpperCase() : ''
+  const currency = normalizedCurrency || 'GHS'
+
+  try {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  } catch {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency: 'GHS',
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+}
 
 const getNeoWeekdayToday = () => {
   const weekday = new Intl.DateTimeFormat('en-US', {
@@ -195,6 +208,15 @@ const UserDashboard = () => {
   const avgIncome = getMonthlyStatAverage(weekdayData, 'income')
 
   const activeRoles = userJobs?.length ?? 0
+  const selectedScopeCurrency =
+    typeof selectedScope?.currency === 'string'
+      ? selectedScope.currency.trim().toUpperCase()
+      : ''
+  const currentUserCurrency =
+    typeof currentUser?.currency === 'string'
+      ? currentUser.currency.trim().toUpperCase()
+      : ''
+  const dashboardCurrency = selectedScopeCurrency || currentUserCurrency
   const selectedScopeSummary = selectedScope
     ? `${selectedScope.churchName} · ${formatChurchLevel(
         selectedScope.churchType
@@ -206,7 +228,12 @@ const UserDashboard = () => {
 
   const isLoading = !currentUser?.fullName
   const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
-  const incomeTracked = !currentUser?.noIncomeTracking
+  const selectedScopeIncomeTracked =
+    typeof selectedScope?.noIncomeTracking === 'boolean'
+      ? !selectedScope.noIncomeTracking
+      : undefined
+  const incomeTracked =
+    selectedScopeIncomeTracked ?? !currentUser?.noIncomeTracking
   const trendIncomeTracked =
     activeTrendMode === 'weekday' ? incomeTracked : false
 
@@ -224,7 +251,9 @@ const UserDashboard = () => {
         maximumFractionDigits: 0,
       })
     : '—'
-  const fmtIncome = hasIncome ? formatGhs(Number(avgIncome)) : '—'
+  const fmtIncome = hasIncome
+    ? formatCurrency(Number(avgIncome), dashboardCurrency)
+    : '—'
 
   const currentWeek = getWeekNumber()
   const recentServices =

@@ -99,7 +99,7 @@ const CampusReport = () => {
           {isIncomeGraph(graphs, currentUser) && (
             <Col>
               <StatDisplay
-                title="Avg Weekly Income"
+                title={`Avg Weekly Income (${currentUser?.currency || 'GHS'})`}
                 statistic={getMonthlyStatAverage(churchData, 'income')}
               />
             </Col>

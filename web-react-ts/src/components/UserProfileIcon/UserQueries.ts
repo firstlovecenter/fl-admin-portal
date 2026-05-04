@@ -158,6 +158,9 @@ export const GET_LOGGED_IN_USER = gql`
       isArrivalsAdminForCampus {
         id
         name
+        currency
+        conversionRateToDollar
+        noIncomeTracking
       }
 
       # Arrivals counter and payer relationships

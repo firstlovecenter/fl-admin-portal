@@ -18,6 +18,8 @@ export interface RoleChurchScopeOption {
   churchType: string
   roleName: string
   roleDisplayName: string
+  currency?: string
+  noIncomeTracking?: boolean
 }
 
 interface ChurchRoleScopeContextValue {
@@ -98,6 +100,14 @@ type MemberContextShape = {
   userJobs?: UserJobs[]
 }
 
+type ScopeChurch = {
+  id: string
+  name: string
+  __typename: string
+  currency?: string
+  noIncomeTracking?: boolean
+}
+
 export const ChurchRoleScopeProvider = ({
   children,
 }: {
@@ -117,13 +127,19 @@ export const ChurchRoleScopeProvider = ({
           return []
         }
 
-        return (role.church ?? []).map((church) => ({
+        return (role.church ?? []).map((church: ScopeChurch) => ({
           key: `${authRole}:${church.id}`,
           authRole,
           churchId: church.id,
           churchName: church.name,
           churchType: church.__typename,
           roleName: role.name,
+          currency:
+            typeof church.currency === 'string' ? church.currency : undefined,
+          noIncomeTracking:
+            typeof church.noIncomeTracking === 'boolean'
+              ? church.noIncomeTracking
+              : undefined,
           roleDisplayName: buildRoleDisplayName(
             authRole,
             church.__typename,

@@ -285,6 +285,27 @@ export type ServantTypeLowerCase =
 export type CurrentUser = {
   id: string
   roles: Role[]
+  firstName?: string
+  lastName?: string
+  fullName?: string
+  picture?: string
+  pictureUrl?: string
+  nameWithTitle?: string
+  bacenta?: string
+  governorship?: string
+  council?: string
+  stream?: string
+  campus?: string
+  oversight?: string
+  denomination?: string
+  hub?: string
+  hubCouncil?: string
+  ministry?: string
+  creativeArts?: string
+  stream_name?: string
+  noIncomeTracking?: boolean
+  currency?: string
+  conversionRateToDollar?: number
 }
 
 export type UserRole = {

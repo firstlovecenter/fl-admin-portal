@@ -197,6 +197,9 @@ export const SERVANT_CAMPUS_LEADER = gql`
       leadsCampus {
         id
         name
+        currency
+        noIncomeTracking
+        conversionRateToDollar
 
         aggregateServiceRecords(limit: 24) {
           id
@@ -391,6 +394,9 @@ export const SERVANTS_CAMPUS_ADMIN = gql`
       isAdminForCampus {
         id
         name
+        currency
+        noIncomeTracking
+        conversionRateToDollar
 
         aggregateServiceRecords(limit: 24) {
           id
@@ -560,6 +566,9 @@ export const SERVANTS_CAMPUS_ARRIVALS_ADMIN = gql`
       isArrivalsAdminForCampus {
         id
         name
+        currency
+        noIncomeTracking
+        conversionRateToDollar
 
         aggregateBussingRecords(limit: 24) {
           id
