@@ -11,10 +11,14 @@ export const SERVANT_FELLOWSHIP_LEADER = gql`
         memberCount
         vacationStatus
 
-        services(limit: 4) {
+        services(limit: 24) {
+          id
           createdAt
           attendance
           income
+          noServiceReason
+          bankingProof
+          transactionStatus
           week
           serviceDate {
             date
@@ -54,17 +58,43 @@ export const SERVANT_BACENTA_LEADER = gql`
           }
         }
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
         }
 
-        aggregateBussingRecords(limit: 4) {
+        services(limit: 24) {
+          id
+          createdAt
+          attendance
+          income
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
+          serviceDate {
+            date
+          }
+        }
+
+        bussing(limit: 24) {
+          id
+          createdAt
+          attendance
+          week
+          serviceDate {
+            date
+          }
+        }
+
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -83,11 +113,20 @@ export const SERVANT_GOVERNORSHIP_LEADER = gql`
         council {
           id
         }
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -103,11 +142,20 @@ export const SERVANT_COUNCIL_LEADER = gql`
         name
         stream_name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -122,11 +170,20 @@ export const SERVANT_STREAM_LEADER = gql`
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -141,11 +198,20 @@ export const SERVANT_CAMPUS_LEADER = gql`
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -160,11 +226,20 @@ export const SERVANT_OVERSIGHT_LEADER = gql`
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -179,11 +254,20 @@ export const SERVANT_DENOMINATION_LEADER = gql`
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -208,11 +292,20 @@ export const SERVANT_GOVERNORSHIP_ADMIN = gql`
         council {
           id
         }
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -235,11 +328,20 @@ export const SERVANT_COUNCIL_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -261,11 +363,20 @@ export const SERVANTS_STREAM_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -281,12 +392,21 @@ export const SERVANTS_CAMPUS_ADMIN = gql`
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           dollarIncome
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -302,12 +422,21 @@ export const SERVANTS_OVERSIGHT_ADMIN = gql`
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           dollarIncome
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -323,12 +452,21 @@ export const SERVANTS_DENOMINATION_ADMIN = gql`
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           dollarIncome
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -350,10 +488,11 @@ export const SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateBussingRecords(limit: 4) {
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -376,10 +515,11 @@ export const SERVANTS_COUNCIL_ARRIVALS_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateBussingRecords(limit: 4) {
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -401,10 +541,11 @@ export const SERVANTS_STREAM_ARRIVALS_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateBussingRecords(limit: 4) {
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -420,10 +561,11 @@ export const SERVANTS_CAMPUS_ARRIVALS_ADMIN = gql`
         id
         name
 
-        aggregateBussingRecords(limit: 4) {
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -479,7 +621,7 @@ export const SERVANTS_HUB_LEADER = gql`
         id
         name
 
-        rehearsals(limit: 4) {
+        rehearsals(limit: 24) {
           id
           createdAt
           attendance
@@ -502,11 +644,12 @@ export const SERVANTS_HUBCOUNCIL_LEADER = gql`
         id
         name
 
-        aggregateRehearsalRecords(limit: 4) {
+        aggregateRehearsalRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
         }
       }
     }
@@ -521,11 +664,12 @@ export const SERVANTS_MINISTRY_LEADER = gql`
         id
         name
 
-        aggregateRehearsalRecords(limit: 4) {
+        aggregateRehearsalRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
         }
       }
     }
@@ -540,11 +684,12 @@ export const SERVANTS_CREATIVEARTS_LEADER = gql`
         id
         name
 
-        aggregateRehearsalRecords(limit: 4) {
+        aggregateRehearsalRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
         }
       }
     }
@@ -559,11 +704,12 @@ export const SERVANTS_MINISTRY_ADMIN = gql`
         id
         name
 
-        aggregateRehearsalRecords(limit: 4) {
+        aggregateRehearsalRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
         }
       }
     }
@@ -579,11 +725,12 @@ export const SERVANTS_CREATIVEARTS_ADMIN = gql`
         id
         name
 
-        aggregateRehearsalRecords(limit: 4) {
+        aggregateRehearsalRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
         }
       }
     }

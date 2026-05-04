@@ -4,10 +4,14 @@ const numberOfWeeks = 4
 
 export const getMonthlyStatAverage = (
   data?: {
+    id?: string
     attendance: string
     income: string
     gatheringAttendance: string
     rehearsalAttendance: string
+    week?: number | string
+    year?: number | string
+    date?: string
   }[],
   stat?: 'attendance' | 'income' | 'gatheringAttendance' | 'rehearsalAttendance'
 ) => {
@@ -15,17 +19,61 @@ export const getMonthlyStatAverage = (
     return
   }
 
-  const statArray = data.map((service) =>
-    parseFloat(service[`${stat || 'attendance'}`])
-  )
+  const sortedData = [...data]
+    .map((service, index) => ({ service, index }))
+    .sort((aItem, bItem) => {
+      const a = aItem.service
+      const b = bItem.service
+      const aYear = Number(a.year ?? 0)
+      const bYear = Number(b.year ?? 0)
+      const aWeek = Number(a.week ?? 0)
+      const bWeek = Number(b.week ?? 0)
 
-  //filter and remove all zeros
-  const nonZeroArray = statArray.filter((value) => {
+      if (
+        Number.isFinite(aYear) &&
+        Number.isFinite(bYear) &&
+        (aYear !== 0 || bYear !== 0)
+      ) {
+        if (bYear !== aYear) {
+          return bYear - aYear
+        }
+        return bWeek - aWeek
+      }
+
+      const aDate = a.date ? Date.parse(a.date) : NaN
+      const bDate = b.date ? Date.parse(b.date) : NaN
+
+      if (Number.isFinite(aDate) && Number.isFinite(bDate)) {
+        return bDate - aDate
+      }
+
+      if (Number.isFinite(aWeek) && Number.isFinite(bWeek)) {
+        return bWeek - aWeek
+      }
+
+      if (a.id && b.id && a.id !== b.id) {
+        return String(b.id).localeCompare(String(a.id))
+      }
+
+      return aItem.index - bItem.index
+    })
+    .map(({ service }) => service)
+
+  const latestFourServices = sortedData.slice(0, numberOfWeeks)
+
+  const statArray = latestFourServices
+    .map((service) => Number(service[stat]))
+    .filter((value) => Number.isFinite(value))
+
+  // Use only the latest four services first.
+  const latestFourValues = statArray.slice(0, numberOfWeeks)
+
+  // Ignore zero values within the latest-four window.
+  const nonZeroArray = latestFourValues.filter((value) => {
     return value > 0
   })
 
-  //Calculate average of the last four weeks of service
-  return average(nonZeroArray.slice(-numberOfWeeks))?.toFixed(2)
+  return average(nonZeroArray)?.toFixed(2)
 }
 
 export const sortingFunction = (key: string, order = 'asc') => {
@@ -54,12 +102,24 @@ export const sortingFunction = (key: string, order = 'asc') => {
 }
 
 const extractServiceDataWithDollars = (arr: any[]) =>
-  arr.map(({ id, attendance, dollarIncome: income, week }) => ({
-    id,
-    attendance,
-    income,
-    week,
-  }))
+  arr.map(
+    ({
+      id,
+      attendance,
+      dollarIncome: income,
+      week,
+      year,
+      date,
+      serviceDate,
+    }) => ({
+      id,
+      attendance,
+      income,
+      week,
+      year,
+      date: serviceDate?.date || date,
+    })
+  )
 
 export type GraphTypes =
   | 'bussing'
@@ -90,7 +150,8 @@ export const getServiceGraphData = (
         swellBussingRecords: any[]
       }
     | undefined,
-  category: GraphTypes
+  category: GraphTypes,
+  windowSize = numberOfWeeks
 ) => {
   if (!church) {
     return
@@ -108,6 +169,7 @@ export const getServiceGraphData = (
         category,
         date: record?.serviceDate?.date || record.date,
         week: record.week,
+        year: record.year,
         attendance: record.attendance,
         income: record.income?.toFixed(2),
         numberOfServices: record?.numberOfServices,
@@ -170,9 +232,9 @@ export const getServiceGraphData = (
     ]
   }
 
-  if (data.length <= 3) {
+  if (data.length <= windowSize) {
     return data
   }
 
-  return data.slice(data.length - numberOfWeeks, data.length)
+  return data.slice(data.length - windowSize, data.length)
 }

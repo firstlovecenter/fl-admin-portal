@@ -1,7 +1,6 @@
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  ArrowUpRight,
   Banknote,
   Bus,
   Check,
@@ -14,8 +13,6 @@ import { getWeekNumber } from '@jaedag/admin-portal-types'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
-import useSetUserChurch from 'hooks/useSetUserChurch'
-import { UserJobs } from 'global-types'
 import { AppShell } from 'components/shell/AppShell'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
 import { Button } from 'components/ui/button'
@@ -29,6 +26,8 @@ import {
 import useComponentQuery from './useComponentQuery'
 import TrendSpark from './TrendSpark'
 
+const TREND_HISTORY_WEEKS = 24
+
 interface QuickAction {
   label: string
   icon: LucideIcon
@@ -37,13 +36,13 @@ interface QuickAction {
 
 const quickActions: QuickAction[] = [
   {
-    label: 'Record service',
+    label: 'Record Service',
     icon: ClipboardCheck,
     to: '/services/church-list',
   },
-  { label: 'Mark arrivals', icon: Bus, to: '/arrivals' },
-  { label: 'Add member', icon: Users, to: '/directory/members/addmember' },
-  { label: 'Banking', icon: Banknote, to: '/self-banking' },
+  { label: 'Fill Bussing', icon: Bus, to: '/arrivals' },
+  { label: 'Add Member', icon: Users, to: '/directory/members/addmember' },
+  { label: 'Bank Recent Service', icon: Banknote, to: '/self-banking' },
 ]
 
 const formatGhs = (n: number) =>
@@ -115,11 +114,10 @@ const getRoleRelationLabel = (authRole?: string, fallback = '') => {
 
 const UserDashboard = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
-  const { selectedScope } = useChurchRoleScope()
   const { clickCard } = useContext(ChurchContext)
-  const { setUserChurch } = useSetUserChurch()
+  const { selectedScope } = useChurchRoleScope()
   const navigate = useNavigate()
-  const [trendMode, setTrendMode] = useState<'weekday' | 'bussing'>('weekday')
+  const [trendMode, setTrendMode] = useState<'weekday' | 'bussing'>('bussing')
 
   const { assessmentChurch } = useComponentQuery(
     selectedScope
@@ -159,9 +157,24 @@ const UserDashboard = () => {
     graphType = 'bussingAggregate'
   }
 
-  const weekdayData = getServiceGraphData(assessmentChurch, graphType) || []
+  const isBacentaScope = assessmentChurch?.__typename === 'Bacenta'
+  const weekdayGraphType: GraphTypes = isBacentaScope ? 'services' : graphType
+  const bussingGraphType: GraphTypes = isBacentaScope
+    ? 'bussing'
+    : 'bussingAggregate'
+
+  const weekdayData =
+    getServiceGraphData(
+      assessmentChurch,
+      weekdayGraphType,
+      TREND_HISTORY_WEEKS
+    ) || []
   const bussingData = hasBussingAggregateField
-    ? getServiceGraphData(assessmentChurch, 'bussingAggregate') || []
+    ? getServiceGraphData(
+        assessmentChurch,
+        bussingGraphType,
+        TREND_HISTORY_WEEKS
+      ) || []
     : []
   const hasBussingDataField = hasBussingAggregateField
   const hasWeekdayDataField =
@@ -191,14 +204,6 @@ const UserDashboard = () => {
       )}`
     : null
 
-  const goToRole = (role: UserJobs) => {
-    if (!role.church?.length) return
-    clickCard(currentUser)
-    setUserChurch(role.church[0])
-    clickCard(role.church[0])
-    navigate(role.link)
-  }
-
   const isLoading = !currentUser?.fullName
   const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
   const incomeTracked = !currentUser?.noIncomeTracking
@@ -220,6 +225,107 @@ const UserDashboard = () => {
       })
     : '—'
   const fmtIncome = hasIncome ? formatGhs(Number(avgIncome)) : '—'
+
+  const currentWeek = getWeekNumber()
+  const recentServices =
+    assessmentChurch && 'services' in assessmentChurch
+      ? (
+          assessmentChurch as unknown as {
+            services?: Array<{
+              id?: string
+              createdAt?: string
+              week?: string | number
+              noServiceReason?: string
+              bankingProof?: boolean
+              transactionStatus?: string
+            }>
+          }
+        ).services ?? []
+      : []
+  const thisWeekServices = recentServices.filter(
+    (service) =>
+      service.week !== undefined &&
+      Number(service.week) === currentWeek &&
+      !service.noServiceReason
+  )
+  const thisWeekServiceForNavigation = [...thisWeekServices].sort((a, b) => {
+    const aDate = a.createdAt ? Date.parse(a.createdAt) : NaN
+    const bDate = b.createdAt ? Date.parse(b.createdAt) : NaN
+
+    if (Number.isFinite(aDate) && Number.isFinite(bDate)) {
+      return bDate - aDate
+    }
+
+    return 0
+  })[0]
+  const hasFilledServiceForWeek = thisWeekServices.length > 0
+  const hasUnbankedServiceForWeek = thisWeekServices.some(
+    (service) =>
+      !(service.bankingProof || service.transactionStatus === 'success')
+  )
+  const serviceAwaitingBanking =
+    hasFilledServiceForWeek && hasUnbankedServiceForWeek
+  const canViewCurrentWeekService = !!thisWeekServiceForNavigation?.id
+
+  const handleViewCurrentWeekService = () => {
+    if (!assessmentChurch || !thisWeekServiceForNavigation?.id) {
+      return
+    }
+
+    clickCard(assessmentChurch)
+    clickCard({
+      id: thisWeekServiceForNavigation.id,
+      __typename: 'ServiceRecord',
+    })
+    navigate('/bacenta/service-details')
+  }
+
+  const handleTrendBarClick = (point: {
+    id?: string
+    category?: string
+    week: number | null
+    year: number | null
+  }) => {
+    if (!point?.id || !selectedScope || !point.category) {
+      return
+    }
+
+    const isBussingPoint = point.category.includes('bussing')
+    const serviceDetailRoutes: Record<string, string> = {
+      Fellowship: '/fellowship/service-details',
+      Bacenta: '/bacenta/service-details',
+      Governorship: '/governorship/service-details',
+      Council: '/council/service-details',
+      Stream: '/stream/service-details',
+      Campus: '/campus/service-details',
+      Hub: '/hub/service-details',
+    }
+
+    const targetRoute = isBussingPoint
+      ? selectedScope.churchType === 'Bacenta'
+        ? '/bacenta/bussing-details'
+        : undefined
+      : serviceDetailRoutes[selectedScope.churchType]
+
+    if (!targetRoute) {
+      return
+    }
+
+    clickCard({
+      id: selectedScope.churchId,
+      __typename: selectedScope.churchType,
+      name: selectedScope.churchName,
+    })
+
+    clickCard({
+      id: point.id,
+      week: point.week,
+      year: point.year,
+      __typename: isBussingPoint ? 'BussingRecord' : 'ServiceRecord',
+    })
+
+    navigate(targetRoute)
+  }
 
   return (
     <AppShell
@@ -267,17 +373,17 @@ const UserDashboard = () => {
           <section className="mt-8 rounded-xl border border-border bg-card p-6">
             <div className="grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-3">
               <Metric
-                label="Bussing attendance"
+                label="Average Weekly Bussing Attendance"
                 value={fmtBussingAttendance}
                 loading={isLoading}
               />
               <Metric
-                label="Weekday attendance"
+                label="Average Weekly Attendance"
                 value={fmtAttendance}
                 loading={isLoading}
               />
               <Metric
-                label="Weekly income"
+                label="Average Weekly Income"
                 value={incomeTracked ? fmtIncome : 'Not tracked'}
                 loading={isLoading}
                 dim={!incomeTracked}
@@ -327,7 +433,10 @@ const UserDashboard = () => {
                 ).governorship?.council?.stream?.meetingDay
               }
               onRecordService={() => navigate('/services/church-list')}
+              onViewService={handleViewCurrentWeekService}
+              canViewService={canViewCurrentWeekService}
               onRecordBussing={() => navigate('/arrivals')}
+              serviceAwaitingBanking={serviceAwaitingBanking}
             />
           )}
 
@@ -410,6 +519,7 @@ const UserDashboard = () => {
                 data={trendData}
                 incomeTracked={trendIncomeTracked}
                 mode={activeTrendMode}
+                onBarClick={handleTrendBarClick}
               />
             </div>
           </section>
@@ -436,62 +546,6 @@ const UserDashboard = () => {
               })}
             </div>
           </section>
-
-          {/* ── Roles list — card surface ── */}
-          <section className="mt-6">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Your roles
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                {activeRoles} active
-              </span>
-            </div>
-
-            <div className="rounded-xl border border-border bg-card divide-y divide-border">
-              {isLoading &&
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="px-4 py-4">
-                    <Skeleton className="h-12 w-full" />
-                  </div>
-                ))}
-
-              {!isLoading &&
-                userJobs?.map((role: UserJobs) => {
-                  const churches =
-                    typeof role.number === 'number' ? role.number : 0
-                  return (
-                    <button
-                      key={role.authRoles + role.name}
-                      type="button"
-                      onClick={() => goToRole(role)}
-                      className="group flex w-full items-center gap-5 px-4 py-5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:bg-accent first:rounded-t-xl last:rounded-b-xl"
-                    >
-                      <span className="flex size-12 shrink-0 items-center justify-center text-2xl font-medium tabular-nums text-muted-foreground/60 group-hover:text-foreground">
-                        {churches}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">
-                          {role.name}
-                        </p>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {churches === 1 ? '1 church' : `${churches} churches`}
-                        </p>
-                      </div>
-                      <ArrowUpRight className="size-4 shrink-0 text-border transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
-                    </button>
-                  )
-                })}
-
-              {!isLoading && (!userJobs || userJobs.length === 0) && (
-                <div className="px-4 py-12 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    No roles assigned yet.
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
         </div>
       </div>
     </AppShell>
@@ -505,7 +559,10 @@ interface BacentaWeeklyTasksProps {
   serviceMeetingDay?: { day?: string; dayNumber?: number }
   bussingMeetingDay?: { day?: string; dayNumber?: number }
   onRecordService: () => void
+  onViewService?: () => void
+  canViewService?: boolean
   onRecordBussing: () => void
+  serviceAwaitingBanking?: boolean
 }
 
 /** Weekly task panel for Bacenta leaders.
@@ -522,7 +579,10 @@ const BacentaWeeklyTasks = ({
   serviceMeetingDay,
   bussingMeetingDay,
   onRecordService,
+  onViewService,
+  canViewService = false,
   onRecordBussing,
+  serviceAwaitingBanking = false,
 }: BacentaWeeklyTasksProps) => {
   const currentWeek = getWeekNumber()
   const onVacation = vacationStatus === 'Vacation'
@@ -535,6 +595,12 @@ const BacentaWeeklyTasks = ({
 
   const serviceUpcoming = !onVacation && !serviceDone && !serviceDueNow
   const bussingUpcoming = !onVacation && !bussingDone && !bussingDueNow
+  const serviceAction = serviceDone
+    ? canViewService
+      ? onViewService || onRecordService
+      : onRecordService
+    : onRecordService
+  const serviceActionDisabled = serviceDone && !canViewService
 
   return (
     <section className="mt-6">
@@ -566,10 +632,18 @@ const BacentaWeeklyTasks = ({
           icon={ClipboardCheck}
           label="Record service"
           done={serviceDone}
+          awaitingBanking={serviceAwaitingBanking}
           upcoming={serviceUpcoming}
           waived={onVacation}
-          actionLabel={serviceDone ? 'View service' : 'Record now'}
-          onAction={onRecordService}
+          actionLabel={
+            serviceDone
+              ? canViewService
+                ? 'View service'
+                : 'Recorded'
+              : 'Record now'
+          }
+          onAction={serviceAction}
+          actionDisabled={serviceActionDisabled}
         />
         <WeeklyTaskCard
           icon={Bus}
@@ -589,23 +663,29 @@ interface WeeklyTaskCardProps {
   icon: LucideIcon
   label: string
   done: boolean
+  awaitingBanking?: boolean
   upcoming: boolean
   waived: boolean
   actionLabel: string
   onAction: () => void
+  actionDisabled?: boolean
 }
 
 const WeeklyTaskCard = ({
   icon: Icon,
   label,
   done,
+  awaitingBanking = false,
   upcoming,
   waived,
   actionLabel,
   onAction,
+  actionDisabled = false,
 }: WeeklyTaskCardProps) => {
   const status = waived
     ? 'Waived'
+    : awaitingBanking
+    ? 'Bank Pending'
     : done
     ? 'Done'
     : upcoming
@@ -613,6 +693,8 @@ const WeeklyTaskCard = ({
     : 'Due'
   const statusClass = waived
     ? 'bg-muted text-muted-foreground'
+    : awaitingBanking
+    ? 'bg-warning/22 text-foreground ring-1 ring-warning/45'
     : done
     ? 'bg-success/15 text-success dark:bg-success/20'
     : upcoming
@@ -625,6 +707,8 @@ const WeeklyTaskCard = ({
         'flex items-center gap-4 rounded-xl border p-4 transition-colors',
         waived
           ? 'border-border bg-muted/40'
+          : awaitingBanking
+          ? 'border-warning/45 bg-warning/12'
           : done
           ? 'border-success/30 bg-success/5'
           : upcoming
@@ -635,12 +719,14 @@ const WeeklyTaskCard = ({
       <div
         className={cn(
           'flex size-10 shrink-0 items-center justify-center rounded-lg',
-          done && !waived
+          awaitingBanking
+            ? 'border border-warning/45 bg-warning/22 text-foreground'
+            : done && !waived
             ? 'bg-success text-white'
             : 'bg-muted text-muted-foreground'
         )}
       >
-        {done && !waived ? (
+        {done && !waived && !awaitingBanking ? (
           <Check className="size-5" />
         ) : (
           <Icon className="size-5" />
@@ -660,7 +746,7 @@ const WeeklyTaskCard = ({
       {!waived && (
         <Button
           size="sm"
-          disabled={upcoming}
+          disabled={upcoming || actionDisabled}
           variant={done ? 'outline' : 'default'}
           onClick={onAction}
           className={cn(
