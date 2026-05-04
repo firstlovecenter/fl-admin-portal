@@ -6,7 +6,7 @@ import {
 } from 'global-utils'
 import React, { useContext } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Formik, Form, FormikHelpers } from 'formik'
+import { Formik, Form, FormikHelpers, FormikState } from 'formik'
 import { GET_CAMPUS_BASONTAS } from 'queries/ListQueries'
 import { Button } from 'components/ui/button'
 import { Separator } from 'components/ui/separator'
@@ -50,22 +50,26 @@ const Filters = ({ onClose }: { onClose?: () => void }) => {
 
   const onSubmit = (
     values: FormOptions,
-    _onSubmitProps: FormikHelpers<FormOptions>
+    onSubmitProps: FormikHelpers<FormOptions>
   ) => {
     setFilters(values)
+    onSubmitProps.setSubmitting(false)
     onClose?.()
   }
 
-  const handleReset = (resetForm: () => void) => {
-    setFilters({
+  const handleReset = (
+    resetForm: (nextState?: Partial<FormikState<FormOptions>>) => void
+  ) => {
+    const emptyValues: FormOptions = {
       gender: [],
       maritalStatus: [],
       occupation: '',
       leaderTitle: [],
       leaderRank: [],
       basonta: [],
-    })
-    resetForm()
+    }
+    setFilters(emptyValues)
+    resetForm({ values: emptyValues })
   }
 
   return (
