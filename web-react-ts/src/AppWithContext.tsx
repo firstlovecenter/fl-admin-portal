@@ -7,7 +7,6 @@ import ProtectedRouteHome from './auth/ProtectedRouteHome'
 import ServantsChurchList from 'pages/dashboards/ServantsChurchList'
 import { ServiceContext } from 'contexts/ServiceContext'
 import MembersDirectoryRoute from './pages/directory/MembersDirectoryRoute'
-import Navigation from 'pages/dashboards/Navigation'
 import { dashboards } from 'pages/dashboards/dashboardRoutes'
 import {
   directory,
@@ -29,6 +28,7 @@ import { maps } from 'pages/maps/mapsRoutes'
 import PageContainer from 'components/base-component/PageContainer'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
 import { ThemeProvider } from 'components/shell/ThemeProvider'
+import { ChurchRoleScopeProvider } from 'contexts/ChurchRoleScopeContext'
 
 type AppPropsType = {
   token: string
@@ -37,6 +37,38 @@ type AppPropsType = {
 const ServantsDashboard = React.lazy(
   () => import('pages/dashboards/ServantsDashboard')
 )
+
+const getInitialCurrentUser = (user?: {
+  id?: string
+  firstName?: string
+  lastName?: string
+  email?: string
+  roles?: string[]
+} | null) => {
+  const fallbackUser = {
+    __typename: 'Member',
+    id: user?.id || '',
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    fullName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+    picture: '',
+    pictureUrl: '',
+    email: user?.email || '',
+    roles: user?.roles || [],
+  }
+
+  const storedCurrentUser = sessionStorage.getItem('currentUser')
+
+  if (!storedCurrentUser) {
+    return fallbackUser
+  }
+
+  try {
+    return JSON.parse(storedCurrentUser)
+  } catch {
+    return fallbackUser
+  }
+}
 
 const AppWithContext = (props: AppPropsType) => {
   const {
@@ -94,20 +126,7 @@ const AppWithContext = (props: AppPropsType) => {
 
   const { user } = useAuth()
 
-  const [currentUser, setCurrentUser] = useState(
-    sessionStorage.getItem('currentUser')
-      ? JSON.parse(sessionStorage.getItem('currentUser') || '{}')
-      : {
-          __typename: 'Member',
-          id: user?.id || '',
-          firstName: user?.firstName || '',
-          lastName: user?.lastName || '',
-          fullName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
-          picture: '',
-          email: user?.email || '',
-          roles: user?.roles || [],
-        }
-  )
+  const [currentUser, setCurrentUser] = useState(() => getInitialCurrentUser(user))
 
   const [userJobs, setUserJobs] = useState()
 
@@ -158,21 +177,21 @@ const AppWithContext = (props: AppPropsType) => {
             setUserJobs,
           }}
         >
-          <SearchContext.Provider value={{ searchKey, setSearchKey }}>
-            <ServiceContext.Provider
-              value={{
-                serviceRecordId,
-                bussingRecordId,
-                vehicleRecordId,
-                multiplicationRecordId,
-              }}
-            >
-              <SetPermissions token={props.token}>
-                <>
-                  {user && <Navigation />}
-                  <Suspense fallback={<LoadingScreen />}>
-                    <PageContainer>
-                      <Routes>
+          <ChurchRoleScopeProvider>
+            <SearchContext.Provider value={{ searchKey, setSearchKey }}>
+              <ServiceContext.Provider
+                value={{
+                  serviceRecordId,
+                  bussingRecordId,
+                  vehicleRecordId,
+                  multiplicationRecordId,
+                }}
+              >
+                <SetPermissions token={props.token}>
+                  <>
+                    <Suspense fallback={<LoadingScreen />}>
+                      <PageContainer>
+                        <Routes>
                         <Route
                           path="/setup-password"
                           element={<SetupPasswordPage />}
@@ -237,13 +256,14 @@ const AppWithContext = (props: AppPropsType) => {
                           }
                         />
                         <Route path="*" element={<PageNotFound />} />
-                      </Routes>
-                    </PageContainer>
-                  </Suspense>
-                </>
-              </SetPermissions>
-            </ServiceContext.Provider>
-          </SearchContext.Provider>
+                        </Routes>
+                      </PageContainer>
+                    </Suspense>
+                  </>
+                </SetPermissions>
+              </ServiceContext.Provider>
+            </SearchContext.Provider>
+          </ChurchRoleScopeProvider>
         </MemberContext.Provider>
       </ChurchContext.Provider>
       </Router>

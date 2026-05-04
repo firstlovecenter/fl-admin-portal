@@ -56,6 +56,7 @@ const SetPermissions = ({
       try {
         const memberData = data.memberByEmail
         const streamName = memberData.stream_name
+        const memberPicture = memberData?.pictureUrl || ''
 
         const denominationId =
           memberData?.bacenta.governorship?.council.stream.campus?.oversight
@@ -99,9 +100,14 @@ const SetPermissions = ({
           sessionStorage.getItem('creativeArtsId') ?? creativeArtsId
         )
 
-        setCurrentUser({
+        const nextCurrentUser = {
           ...currentUser,
           id: memberData.id,
+          firstName: memberData.firstName,
+          lastName: memberData.lastName,
+          fullName: memberData.fullName,
+          picture: memberPicture,
+          pictureUrl: memberPicture,
           nameWithTitle: memberData.nameWithTitle,
 
           // Bacenta Levels
@@ -125,20 +131,19 @@ const SetPermissions = ({
           noIncomeTracking: campus?.noIncomeTracking,
           currency: campus?.currency,
           conversionRateToDollar: campus?.conversionRateToDollar,
-        })
+        }
+
+        setCurrentUser(nextCurrentUser)
 
         // Set user jobs using servant role data from memberByEmail
-        const servant = { ...memberData, ...currentUser }
+        const servant = { ...memberData, ...nextCurrentUser }
         setUserJobs(getUserServantRoles(servant))
 
-        doNotUse.setChurch(currentUser.church)
+        doNotUse.setChurch(nextCurrentUser.church)
+
+        sessionStorage.setItem('currentUser', JSON.stringify(nextCurrentUser))
       } catch (error) {
         // Error setting user permissions
-      } finally {
-        sessionStorage.setItem(
-          'currentUser',
-          JSON.stringify({ ...currentUser })
-        )
       }
     },
   })

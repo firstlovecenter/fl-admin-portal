@@ -5,6 +5,7 @@ import {
   ChurchLevel,
   Role,
   ServiceRecord,
+  VerbTypes,
 } from 'global-types'
 import { throwToSentry } from 'global-utils'
 import {
@@ -61,8 +62,28 @@ type DashboardChurchType = {
 }
 
 type UseComponentQuery = {
-  servant: any
+  servant?: any
+  scope?: {
+    authRole: Role
+    churchId: string
+  }
 }
+
+const parseAuthRole = (authRole: Role) => {
+  const parsedRole = authRole.match(
+    /^(leader|admin|arrivalsAdmin|arrivalsCounter|arrivalsPayer|teller)(.+)$/
+  )
+
+  if (!parsedRole) return null
+
+  const [, highestVerb, highestLevel] = parsedRole
+
+  return {
+    highestVerb: highestVerb as VerbTypes,
+    highestLevel: highestLevel as ChurchLevel,
+  }
+}
+
 const useComponentQuery = (props?: UseComponentQuery) => {
   const { currentUser } = useContext(MemberContext)
   const [assessmentChurch, setAssessmentChurch] =
@@ -173,54 +194,61 @@ const useComponentQuery = (props?: UseComponentQuery) => {
       roles: Role[]
       id: string
     }) => {
-      console.log('📊 useComponentQuery: Starting fetch', {
-        user,
-        hasRoles: user?.roles?.length,
-      })
-
       if (!user.roles.length) {
-        console.log('⚠️ useComponentQuery: No roles found, skipping')
         return
       }
 
-      const { highestLevel, highestVerb } = getHighestRole(user.roles)
-      console.log('🎯 useComponentQuery: Highest role', {
-        highestLevel,
-        highestVerb,
-      })
+      const scopedRole = props?.scope?.authRole
+      const scopedChurchId = props?.scope?.churchId
+      const parsedScopeRole = scopedRole && parseAuthRole(scopedRole)
 
-      const response = await church[`${highestLevel}`][`${highestVerb}`]({
+      const { highestLevel, highestVerb } = parsedScopeRole || getHighestRole(user.roles)
+
+      if (!highestLevel || !highestVerb) {
+        return
+      }
+
+      const roleQuery = church?.[`${highestLevel}`]?.[`${highestVerb}`]
+
+      if (typeof roleQuery !== 'function') {
+        setAssessmentChurch(undefined)
+        return
+      }
+
+      const response = await roleQuery({
         variables: { id: user.id },
       })
 
       if (response.error) {
-        console.error('❌ useComponentQuery: Query error', response.error)
         throwToSentry(response.error)
       }
 
-      console.log('✅ useComponentQuery: Query successful', response.data)
-
-      setAssessmentChurch(
-        response.data.members[0][
+      const matchingChurches =
+        response.data.members?.[0]?.[
           parseRoles(highestVerb || '') + highestLevel
-        ][0]
-      )
+        ] || []
+
+      const selectedChurch = scopedChurchId
+        ? matchingChurches.find((church: { id: string }) => church.id === scopedChurchId)
+        : matchingChurches[0]
+
+      setAssessmentChurch(selectedChurch)
 
       return
     }
 
     const targetUser = props?.servant || currentUser
-    console.log('🔍 useComponentQuery: Effect triggered', {
-      hasProps: !!props?.servant,
-      currentUser,
-      targetUser,
-      rolesLength: targetUser?.roles?.length,
-    })
 
     if (targetUser && targetUser.roles?.length > 0) {
       fetchAssessmentChurch(targetUser)
     }
-  }, [currentUser, props?.servant, props?.servant?.roles?.length])
+  }, [
+    currentUser,
+    props?.scope?.authRole,
+    props?.scope?.churchId,
+    props?.servant,
+    props?.servant?.roles?.length,
+  ])
 
   return { assessmentChurch }
 }

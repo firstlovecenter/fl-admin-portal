@@ -11,7 +11,6 @@ import { lazy } from 'react'
 import { downloadReports } from './download-reports/downloadReportsRoutes'
 import { streamServicesRoutes } from './defaulters/stream-services/streamDefaultersRoutes'
 import { onStageRoutes } from './onstage-attendance/onStageRoutes'
-import { rehearsalRoutes } from './rehearsalRoutes'
 
 const BacentaService = lazy(
   () => import('pages/services/record-service/BacentaService')
@@ -215,7 +214,6 @@ export const services: LazyRouteTypes[] = [
   ...anagkazoRoutes,
   ...banking,
   ...onStageRoutes,
-  ...rehearsalRoutes,
   {
     path: '/services',
     element: ServicesMenu,

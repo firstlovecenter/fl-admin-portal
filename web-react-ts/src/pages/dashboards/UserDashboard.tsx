@@ -1,5 +1,5 @@
-import { useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useContext, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight,
   Banknote,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { getWeekNumber } from '@jaedag/admin-portal-types'
 import { ChurchContext } from 'contexts/ChurchContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
 import useSetUserChurch from 'hooks/useSetUserChurch'
 import { UserJobs } from 'global-types'
@@ -52,24 +53,102 @@ const formatGhs = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n)
 
+const getNeoWeekdayToday = () => {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Accra',
+    weekday: 'short',
+  }).format(new Date())
+
+  const accraWeekdayMap: Record<string, number> = {
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+    Sun: 7,
+  }
+
+  if (accraWeekdayMap[weekday]) {
+    return accraWeekdayMap[weekday]
+  }
+
+  const jsDay = new Date().getDay()
+  return jsDay === 0 ? 7 : jsDay
+}
+
+const hasMeetingDayStarted = (dayNumber?: number) => {
+  if (!dayNumber) return true
+  return getNeoWeekdayToday() >= dayNumber
+}
+
 const UserDashboard = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
+  const { selectedScope } = useChurchRoleScope()
   const { clickCard } = useContext(ChurchContext)
   const { setUserChurch } = useSetUserChurch()
   const navigate = useNavigate()
-  const { assessmentChurch } = useComponentQuery()
+  const [trendMode, setTrendMode] = useState<'weekday' | 'bussing'>('weekday')
+
+  const { assessmentChurch } = useComponentQuery(
+    selectedScope
+      ? {
+          servant: undefined,
+          scope: {
+            authRole: selectedScope.authRole,
+            churchId: selectedScope.churchId,
+          },
+        }
+      : undefined
+  )
 
   let graphType: GraphTypes = 'serviceAggregate'
-  if (assessmentChurch?.__typename === 'Bacenta') graphType = 'services'
-  if (assessmentChurch?.__typename === 'Hub') graphType = 'rehearsals'
-  if (assessmentChurch && 'aggregateBussingRecords' in assessmentChurch)
-    graphType = 'bussingAggregate'
-  if (assessmentChurch && 'aggregateRehearsalRecords' in assessmentChurch)
-    graphType = 'rehearsalAggregate'
 
-  const assessmentData = getServiceGraphData(assessmentChurch, graphType) || []
-  const avgAttendance = getMonthlyStatAverage(assessmentData, 'attendance')
-  const avgIncome = getMonthlyStatAverage(assessmentData, 'income')
+  // bacentaLeader returns aggregateServiceRecords, not services.
+  if (assessmentChurch?.__typename === 'Bacenta') {
+    graphType = 'serviceAggregate'
+  }
+
+  if (assessmentChurch?.__typename === 'Hub') {
+    graphType = 'rehearsals'
+  }
+
+  const hasRehearsalAggregateField =
+    !!assessmentChurch && 'aggregateRehearsalRecords' in assessmentChurch
+
+  const hasServiceAggregateField =
+    !!assessmentChurch && 'aggregateServiceRecords' in assessmentChurch
+
+  const hasBussingAggregateField =
+    !!assessmentChurch && 'aggregateBussingRecords' in assessmentChurch
+
+  if (hasRehearsalAggregateField) {
+    graphType = 'rehearsalAggregate'
+  } else if (hasBussingAggregateField && !hasServiceAggregateField) {
+    graphType = 'bussingAggregate'
+  }
+
+  const weekdayData = getServiceGraphData(assessmentChurch, graphType) || []
+  const bussingData = hasBussingAggregateField
+    ? getServiceGraphData(assessmentChurch, 'bussingAggregate') || []
+    : []
+  const hasBussingDataField = hasBussingAggregateField
+  const hasWeekdayDataField =
+    hasServiceAggregateField ||
+    hasRehearsalAggregateField ||
+    graphType === 'rehearsals'
+  const canToggleTrendMode = assessmentChurch?.__typename === 'Bacenta'
+  const shouldForceBussingMode = hasBussingDataField && !hasWeekdayDataField
+  const activeTrendMode = shouldForceBussingMode
+    ? 'bussing'
+    : canToggleTrendMode
+      ? trendMode
+      : 'weekday'
+  const trendData = activeTrendMode === 'bussing' ? bussingData : weekdayData
+
+  const avgBussingAttendance = getMonthlyStatAverage(bussingData, 'attendance')
+  const avgAttendance = getMonthlyStatAverage(weekdayData, 'attendance')
+  const avgIncome = getMonthlyStatAverage(weekdayData, 'income')
 
   const totalChurches = useMemo(
     () =>
@@ -93,9 +172,18 @@ const UserDashboard = () => {
   const isLoading = !currentUser?.fullName
   const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
   const incomeTracked = !currentUser?.noIncomeTracking
+  const trendIncomeTracked =
+    activeTrendMode === 'weekday' ? incomeTracked : false
 
   const hasAttendance = !!avgAttendance && avgAttendance !== 'NaN'
+  const hasBussingAttendance =
+    !!avgBussingAttendance && avgBussingAttendance !== 'NaN'
   const hasIncome = incomeTracked && !!avgIncome && avgIncome !== 'NaN'
+  const fmtBussingAttendance = hasBussingAttendance
+    ? Number(avgBussingAttendance).toLocaleString('en-GH', {
+        maximumFractionDigits: 0,
+      })
+    : '—'
   const fmtAttendance = hasAttendance
     ? Number(avgAttendance).toLocaleString('en-GH', {
         maximumFractionDigits: 0,
@@ -104,12 +192,17 @@ const UserDashboard = () => {
   const fmtIncome = hasIncome ? formatGhs(Number(avgIncome)) : '—'
 
   return (
-    <AppShell title="" subtitle="" userName={currentUser?.fullName}>
+    <AppShell
+      title=""
+      subtitle=""
+      userName={currentUser?.fullName}
+      userImageUrl={currentUser?.picture}
+    >
       {/* Page background uses the slate-gray --background token */}
       <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
+        <div className="mx-auto max-w-5xl px-4 pt-4 pb-8 sm:px-6 md:pt-8 lg:px-10 lg:pt-12 lg:pb-12">
           {/* ── Header (on background, no card) ── */}
-          <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm text-muted-foreground">
                 {new Date().toLocaleDateString('en-GB', {
@@ -118,14 +211,14 @@ const UserDashboard = () => {
                   month: 'long',
                 })}
               </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                 {isLoading ? (
                   <Skeleton className="h-10 w-64" />
                 ) : (
                   <>Hello, {firstName}.</>
                 )}
               </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {activeRoles
                   ? `Serving ${activeRoles} role${
                       activeRoles === 1 ? '' : 's'
@@ -149,21 +242,20 @@ const UserDashboard = () => {
           <section className="mt-8 rounded-xl border border-border bg-card p-6">
             <div className="grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-3">
               <Metric
-                label="Avg weekly attendance"
+                label="Bussing attendance"
+                value={fmtBussingAttendance}
+                loading={isLoading}
+              />
+              <Metric
+                label="Weekday attendance"
                 value={fmtAttendance}
                 loading={isLoading}
               />
               <Metric
-                label={incomeTracked ? 'Avg weekly income' : 'Income'}
+                label="Weekly income"
                 value={incomeTracked ? fmtIncome : 'Not tracked'}
                 loading={isLoading}
                 dim={!incomeTracked}
-              />
-              <Metric
-                label="Active focus"
-                value={assessmentChurch?.name ?? '—'}
-                sub={assessmentChurch?.__typename}
-                loading={isLoading}
               />
             </div>
           </section>
@@ -189,6 +281,24 @@ const UserDashboard = () => {
                   }
                 ).aggregateBussingRecords ?? []
               }
+              serviceMeetingDay={
+                (
+                  assessmentChurch as unknown as {
+                    meetingDay?: { day?: string; dayNumber?: number }
+                  }
+                ).meetingDay
+              }
+              bussingMeetingDay={
+                (
+                  assessmentChurch as unknown as {
+                    governorship?: {
+                      council?: {
+                        stream?: { meetingDay?: { day?: string; dayNumber?: number } }
+                      }
+                    }
+                  }
+                ).governorship?.council?.stream?.meetingDay
+              }
               onRecordService={() => navigate('/services/church-list')}
               onRecordBussing={() => navigate('/arrivals')}
             />
@@ -196,8 +306,8 @@ const UserDashboard = () => {
 
           {/* ── Trend chart — card surface ── */}
           <section className="mt-6 rounded-xl border border-border bg-card p-6">
-            <div className="flex items-end justify-between">
-              <div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="min-w-0">
                 <h2 className="text-base font-medium text-foreground">
                   Weekly trend
                 </h2>
@@ -206,22 +316,74 @@ const UserDashboard = () => {
                     ? `${assessmentChurch.name} · ${assessmentChurch.__typename}`
                     : 'Across your churches'}
                 </p>
+
+                {canToggleTrendMode && (
+                  <div
+                    className="mt-3 inline-flex w-full max-w-sm rounded-lg border border-border p-1 sm:w-auto"
+                    role="group"
+                    aria-label="Trend data mode"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setTrendMode('weekday')}
+                      aria-pressed={activeTrendMode === 'weekday'}
+                      className={cn(
+                        'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:flex-none sm:py-1.5 sm:text-xs',
+                        activeTrendMode === 'weekday'
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      Weekday service
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTrendMode('bussing')}
+                      aria-pressed={activeTrendMode === 'bussing'}
+                      className={cn(
+                        'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:flex-none sm:py-1.5 sm:text-xs',
+                        activeTrendMode === 'bussing'
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      Sunday bussing
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="flex gap-4 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:justify-end">
                 <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-brand" />
-                  Attendance
+                  <span
+                    className="size-1.5 rounded-full"
+                    style={{
+                      backgroundColor:
+                        activeTrendMode === 'bussing'
+                          ? 'hsl(var(--destructive))'
+                          : 'hsl(var(--arrivals))',
+                    }}
+                  />
+                  {activeTrendMode === 'bussing'
+                    ? 'Bussing'
+                    : 'Weekday attendance'}
                 </span>
-                {incomeTracked && (
+                {trendIncomeTracked && (
                   <span className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+                    <span
+                      className="size-1.5 rounded-full"
+                      style={{ backgroundColor: 'hsl(var(--success))' }}
+                    />
                     Income
                   </span>
                 )}
               </div>
             </div>
             <div className="mt-6">
-              <TrendSpark data={assessmentData} incomeTracked={incomeTracked} />
+              <TrendSpark
+                data={trendData}
+                incomeTracked={trendIncomeTracked}
+                mode={activeTrendMode}
+              />
             </div>
           </section>
 
@@ -279,7 +441,7 @@ const UserDashboard = () => {
                       className="group flex w-full items-center gap-5 px-4 py-5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:bg-accent first:rounded-t-xl last:rounded-b-xl"
                     >
                       <span className="flex size-12 shrink-0 items-center justify-center text-2xl font-medium tabular-nums text-muted-foreground/60 group-hover:text-foreground">
-                        {role.number}
+                        {churches}
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-foreground">
@@ -313,6 +475,8 @@ interface BacentaWeeklyTasksProps {
   vacationStatus?: string
   services: Array<{ week?: number | string }>
   bussing: Array<{ week?: number | string }>
+  serviceMeetingDay?: { day?: string; dayNumber?: number }
+  bussingMeetingDay?: { day?: string; dayNumber?: number }
   onRecordService: () => void
   onRecordBussing: () => void
 }
@@ -328,6 +492,8 @@ const BacentaWeeklyTasks = ({
   vacationStatus,
   services,
   bussing,
+  serviceMeetingDay,
+  bussingMeetingDay,
   onRecordService,
   onRecordBussing,
 }: BacentaWeeklyTasksProps) => {
@@ -337,6 +503,11 @@ const BacentaWeeklyTasks = ({
     w !== undefined && w !== null && Number(w) === currentWeek
   const serviceDone = services.some((s) => matchesCurrentWeek(s.week))
   const bussingDone = bussing.some((b) => matchesCurrentWeek(b.week))
+  const serviceDueNow = hasMeetingDayStarted(serviceMeetingDay?.dayNumber)
+  const bussingDueNow = hasMeetingDayStarted(bussingMeetingDay?.dayNumber)
+
+  const serviceUpcoming = !onVacation && !serviceDone && !serviceDueNow
+  const bussingUpcoming = !onVacation && !bussingDone && !bussingDueNow
 
   return (
     <section className="mt-6">
@@ -348,7 +519,7 @@ const BacentaWeeklyTasks = ({
           <p className="mt-1 text-xs text-muted-foreground">
             {onVacation
               ? 'Bacenta is on vacation. No records required this week.'
-              : `Week ${currentWeek} · Record one service and one bussing before Sunday.`}
+              : `Week ${currentWeek} · Service follows ${serviceMeetingDay?.day || 'Bacenta meeting day'}, bussing follows ${bussingMeetingDay?.day || 'Stream meeting day'}.`}
           </p>
         </div>
         {onVacation && (
@@ -364,6 +535,7 @@ const BacentaWeeklyTasks = ({
           icon={ClipboardCheck}
           label="Record service"
           done={serviceDone}
+          upcoming={serviceUpcoming}
           waived={onVacation}
           actionLabel={serviceDone ? 'View service' : 'Record now'}
           onAction={onRecordService}
@@ -372,6 +544,7 @@ const BacentaWeeklyTasks = ({
           icon={Bus}
           label="Record bussing"
           done={bussingDone}
+          upcoming={bussingUpcoming}
           waived={onVacation}
           actionLabel={bussingDone ? 'View bussing' : 'Record now'}
           onAction={onRecordBussing}
@@ -385,6 +558,7 @@ interface WeeklyTaskCardProps {
   icon: LucideIcon
   label: string
   done: boolean
+  upcoming: boolean
   waived: boolean
   actionLabel: string
   onAction: () => void
@@ -394,15 +568,18 @@ const WeeklyTaskCard = ({
   icon: Icon,
   label,
   done,
+  upcoming,
   waived,
   actionLabel,
   onAction,
 }: WeeklyTaskCardProps) => {
-  const status = waived ? 'Waived' : done ? 'Done' : 'Due'
+  const status = waived ? 'Waived' : done ? 'Done' : upcoming ? 'Upcoming' : 'Due'
   const statusClass = waived
     ? 'bg-muted text-muted-foreground'
     : done
     ? 'bg-success/15 text-success dark:bg-success/20'
+    : upcoming
+    ? 'bg-muted text-muted-foreground'
     : 'bg-destructive/10 text-destructive dark:bg-destructive/20'
 
   return (
@@ -413,6 +590,8 @@ const WeeklyTaskCard = ({
           ? 'border-border bg-muted/40'
           : done
           ? 'border-success/30 bg-success/5'
+          : upcoming
+          ? 'border-border bg-muted/30'
           : 'border-border bg-card'
       )}
     >
@@ -444,11 +623,17 @@ const WeeklyTaskCard = ({
       {!waived && (
         <Button
           size="sm"
+          disabled={upcoming}
           variant={done ? 'outline' : 'default'}
           onClick={onAction}
-          className="shrink-0"
+          className={cn(
+            'shrink-0',
+            done
+              ? 'border-border bg-background text-foreground hover:bg-accent'
+              : 'bg-brand text-brand-foreground hover:bg-brand/90'
+          )}
         >
-          {actionLabel}
+          {upcoming ? 'Not due yet' : actionLabel}
         </Button>
       )}
     </div>

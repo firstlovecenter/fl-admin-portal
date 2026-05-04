@@ -1,47 +1,51 @@
 import { useState, type ReactNode } from 'react'
-import { Menu } from 'lucide-react'
+import { PanelLeftOpen, PanelLeftClose } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
-import { BottomNav } from './BottomNav'
 
 interface AppShellProps {
   children: ReactNode
   title?: string
   subtitle?: string
   userName?: string
+  userImageUrl?: string
 }
 
 /**
  * Responsive shell:
- * - Desktop (md+): Aceternity-style hover sidebar (icon → full-width) + main content area
- * - Mobile (<md): hamburger → Sheet drawer + fixed bottom nav
+ * - Desktop (md+): Aceternity-style sidebar (open by default, manual toggle) + main content area
+ * - Mobile (<md): floating PanelLeft toggle → Sheet drawer
  *
  * SidebarProvider / SidebarInset removed — they were adding CSS variable offsets
  * that caused layout jank. Simple `flex h-screen` is the ground truth now.
  */
-export const AppShell = ({ children, userName }: AppShellProps) => {
+export const AppShell = ({ children, userName, userImageUrl }: AppShellProps) => {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Desktop sidebar — hover to expand */}
-      <Sidebar userName={userName} />
+      {/* Desktop sidebar */}
+      <div className="hidden shrink-0 md:block">
+        <Sidebar userName={userName} userImageUrl={userImageUrl} />
+      </div>
 
       {/* Content column */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
-        {/* Mobile top bar */}
-        <div className="flex h-12 shrink-0 items-center border-b border-border bg-background px-4 md:hidden">
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Open navigation"
-          >
-            <Menu className="size-5" />
-          </button>
-        </div>
+        {/* Floating mobile sidebar toggle */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen((v) => !v)}
+          className="absolute right-3 top-3 z-20 flex size-9 items-center justify-center rounded-full border border-sidebar-border bg-background text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
+        >
+          {mobileOpen ? (
+            <PanelLeftClose className="size-4" />
+          ) : (
+            <PanelLeftOpen className="size-4" />
+          )}
+        </button>
 
-        <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
 
       {/* Mobile sheet nav */}
@@ -49,12 +53,8 @@ export const AppShell = ({ children, userName }: AppShellProps) => {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         userName={userName}
+        userImageUrl={userImageUrl}
       />
-
-      {/* Mobile bottom nav */}
-      <div className="md:hidden">
-        <BottomNav />
-      </div>
     </div>
   )
 }

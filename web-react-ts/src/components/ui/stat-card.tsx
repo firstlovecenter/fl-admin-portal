@@ -10,7 +10,6 @@ type Accent =
   | 'arrivals'
   | 'defaulters'
   | 'banking'
-  | 'campaigns'
   | 'maps'
 
 const accentBg: Record<Accent, string> = {
@@ -20,7 +19,6 @@ const accentBg: Record<Accent, string> = {
   arrivals: 'bg-arrivals/10',
   defaulters: 'bg-defaulters/10',
   banking: 'bg-banking/10',
-  campaigns: 'bg-campaigns/10',
   maps: 'bg-maps/10',
 }
 
@@ -31,7 +29,6 @@ const accentText: Record<Accent, string> = {
   arrivals: 'text-arrivals',
   defaulters: 'text-defaulters',
   banking: 'text-banking',
-  campaigns: 'text-campaigns',
   maps: 'text-maps',
 }
 

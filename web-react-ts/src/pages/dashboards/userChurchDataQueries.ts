@@ -33,6 +33,10 @@ export const SERVANT_BACENTA_LEADER = gql`
         id
         name
         stream_name
+        meetingDay {
+          day
+          dayNumber
+        }
 
         vacationStatus
 
@@ -40,6 +44,13 @@ export const SERVANT_BACENTA_LEADER = gql`
           id
           council {
             id
+            stream {
+              id
+              meetingDay {
+                day
+                dayNumber
+              }
+            }
           }
         }
 
