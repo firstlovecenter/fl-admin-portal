@@ -1,7 +1,6 @@
 import { getWeekNumber } from '@jaedag/admin-portal-types'
+import { cn } from 'components/lib/utils'
 import { VacationStatusOptions } from 'global-types'
-import React from 'react'
-import { Container } from 'react-bootstrap'
 
 export type Last3WeeksCardProps = {
   last3Weeks: {
@@ -10,6 +9,7 @@ export type Last3WeeksCardProps = {
     banked: boolean | 'No Service'
   }[]
 }
+
 export const shouldFill = ({
   last3Weeks,
   vacation,
@@ -17,62 +17,80 @@ export const shouldFill = ({
   last3Weeks: Last3WeeksCardProps['last3Weeks']
   vacation: VacationStatusOptions
 }) => {
-  let shouldFill = true
+  let result = true
 
-  // If the have filled their form this week, they shouldn't fill again
   const filledThisWeek = last3Weeks?.filter(
     (week) => week.number === getWeekNumber()
   )
   if (filledThisWeek?.length && filledThisWeek[0].filled === true) {
-    shouldFill = false
+    result = false
   }
 
   if (vacation === 'Vacation') {
-    shouldFill = false
+    result = false
   }
 
-  return shouldFill
+  return result
 }
 
 const Last3WeeksCard = ({ last3Weeks }: Last3WeeksCardProps) => {
   if (last3Weeks.every((week) => week.banked === 'No Service')) return <></>
 
   return (
-    <div>
-      <>
-        <h3 className="mt-4">FORMS</h3>
+    <div className="mt-4">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+        Forms
+      </h3>
+      <div className="space-y-3">
         {last3Weeks.map((week, i) => {
-          if (week.banked === 'No Service')
+          if (week.banked === 'No Service') {
             return (
-              <Container key={i} className="mt-4">
-                <div className="text-secondary">{`WEEK ${week.number}`}</div>
-                <p className="fw-bold">No Service</p>
-              </Container>
+              <div key={i} className="rounded-lg border border-border bg-card p-3">
+                <p className="text-xs text-muted-foreground mb-1">
+                  Week {week.number}
+                </p>
+                <p className="text-sm font-medium text-foreground">No Service</p>
+              </div>
             )
+          }
 
           return (
-            <Container key={i} className="mt-4">
-              <div className="text-secondary">{`WEEK ${week.number}`}</div>
-              <p className="mb-0">
-                Income Form -{' '}
+            <div key={i} className="rounded-lg border border-border bg-card p-3 space-y-1.5">
+              <p className="text-xs text-muted-foreground">Week {week.number}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Income Form</span>
                 <span
-                  className={`${week.filled ? 'filled' : 'not-filled'}`}
-                >{`${week.filled ? 'Filled' : 'Not Filled'}`}</span>
-              </p>
+                  className={cn(
+                    'text-sm font-medium',
+                    week.filled
+                      ? 'text-[hsl(var(--banking))]'
+                      : 'text-destructive'
+                  )}
+                >
+                  {week.filled ? 'Filled' : 'Not Filled'}
+                </span>
+              </div>
               {week.filled &&
                 (typeof week.banked === 'boolean' ||
                   week.banked === 'No Service') && (
-                  <p>
-                    Banking Slip -{' '}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-foreground">Banking Slip</span>
                     <span
-                      className={`${week.banked ? 'filled' : 'not-filled'}`}
-                    >{`${week.banked ? 'Submitted' : 'Not Submitted'}`}</span>
-                  </p>
+                      className={cn(
+                        'text-sm font-medium',
+                        week.banked
+                          ? 'text-[hsl(var(--banking))]'
+                          : 'text-destructive'
+                      )}
+                    >
+                      {week.banked ? 'Submitted' : 'Not Submitted'}
+                    </span>
+                  </div>
                 )}
-            </Container>
+            </div>
           )
         })}
-      </>
+      </div>
     </div>
   )
 }

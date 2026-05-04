@@ -4,7 +4,6 @@ import MobileSearchNav from 'components/MobileSearchNav'
 import { MEMBER_SEARCH } from './SearchQuery'
 import { MemberContext, SearchContext } from 'contexts/MemberContext'
 import MemberDisplayCard from 'components/card/MemberDisplayCard'
-import { Container } from 'react-bootstrap'
 import { ScaleLoader } from 'react-spinners'
 import { SearchResult } from './search-types'
 import NoDataComponent from 'pages/arrivals/CompNoData'
@@ -41,35 +40,41 @@ const SearchPageMobile = () => {
         ...member.hubCouncilSearch,
         ...member.hubSearch,
       ])
-      return
     },
   })
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-      <Container>
-        <MobileSearchNav />
-        {loading && (
-          <div className="mt-5 pt-5 d-flex align-items-center justify-content-center">
-            <ScaleLoader color="gray" className="mt-5" />
-          </div>
-        )}
+      <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <div className="px-4 py-3 sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
+          <MobileSearchNav />
+        </div>
 
-        {combinedData.length === 0 && !loading && (
-          <div className="text-center py-5">
-            <NoDataComponent text="No Results Found" />
-          </div>
-        )}
-        {!loading &&
-          combinedData.map((searchResult, index) => {
-            return (
-              <MemberDisplayCard
-                key={index}
-                member={searchResult as MemberWithoutBioData}
-              />
-            )
-          })}
-      </Container>
+        <div className="px-4 py-3">
+          {loading && (
+            <div className="flex items-center justify-center py-16">
+              <ScaleLoader color="gray" />
+            </div>
+          )}
+
+          {combinedData.length === 0 && !loading && (
+            <div className="text-center py-16">
+              <NoDataComponent text="No Results Found" />
+            </div>
+          )}
+
+          {!loading && (
+            <div className="space-y-2">
+              {combinedData.map((searchResult, index) => (
+                <MemberDisplayCard
+                  key={index}
+                  member={searchResult as MemberWithoutBioData}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </ApolloWrapper>
   )
 }
