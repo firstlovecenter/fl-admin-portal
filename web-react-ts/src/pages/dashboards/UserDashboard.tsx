@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowUpRight,
@@ -7,7 +7,6 @@ import {
   Check,
   ClipboardCheck,
   Palmtree,
-  Plus,
   Users,
   type LucideIcon,
 } from 'lucide-react'
@@ -18,6 +17,7 @@ import { MemberContext } from 'contexts/MemberContext'
 import useSetUserChurch from 'hooks/useSetUserChurch'
 import { UserJobs } from 'global-types'
 import { AppShell } from 'components/shell/AppShell'
+import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
 import { cn } from 'components/lib/utils'
@@ -80,6 +80,37 @@ const getNeoWeekdayToday = () => {
 const hasMeetingDayStarted = (dayNumber?: number) => {
   if (!dayNumber) return true
   return getNeoWeekdayToday() >= dayNumber
+}
+
+const formatChurchLevel = (churchType?: string) => {
+  if (!churchType) return ''
+  return churchType.replace(/([a-z])([A-Z])/g, '$1 $2')
+}
+
+const getRoleRelationLabel = (authRole?: string, fallback = '') => {
+  if (!authRole) return fallback
+
+  if (authRole.startsWith('leader')) {
+    return 'Leader'
+  }
+
+  if (authRole.startsWith('admin')) {
+    return 'Admin'
+  }
+
+  if (authRole.startsWith('arrivalsAdmin')) {
+    return 'Arrivals Admin'
+  }
+
+  if (authRole.startsWith('arrivalsCounter')) {
+    return 'Arrivals Counter'
+  }
+
+  if (authRole.startsWith('teller')) {
+    return 'Teller'
+  }
+
+  return fallback
 }
 
 const UserDashboard = () => {
@@ -150,16 +181,15 @@ const UserDashboard = () => {
   const avgAttendance = getMonthlyStatAverage(weekdayData, 'attendance')
   const avgIncome = getMonthlyStatAverage(weekdayData, 'income')
 
-  const totalChurches = useMemo(
-    () =>
-      userJobs?.reduce(
-        (acc: number, role: UserJobs) =>
-          acc + (typeof role.number === 'number' ? role.number : 0),
-        0
-      ) ?? 0,
-    [userJobs]
-  )
   const activeRoles = userJobs?.length ?? 0
+  const selectedScopeSummary = selectedScope
+    ? `${selectedScope.churchName} · ${formatChurchLevel(
+        selectedScope.churchType
+      )} · ${getRoleRelationLabel(
+        selectedScope.authRole,
+        selectedScope.roleName
+      )}`
+    : null
 
   const goToRole = (role: UserJobs) => {
     if (!role.church?.length) return
@@ -219,23 +249,18 @@ const UserDashboard = () => {
                 )}
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {activeRoles
-                  ? `Serving ${activeRoles} role${
-                      activeRoles === 1 ? '' : 's'
-                    } across ${totalChurches} church${
-                      totalChurches === 1 ? '' : 'es'
-                    }.`
-                  : 'Welcome to your portal.'}
+                {selectedScopeSummary
+                  ? selectedScopeSummary
+                  : activeRoles
+                  ? 'Select a church in focus to view role context.'
+                  : 'No roles assigned yet.'}
               </p>
             </div>
-            <Button
-              size="lg"
-              className="gap-2 self-start rounded-full bg-foreground text-background hover:bg-foreground/90"
-              onClick={() => navigate('/services/church-list')}
-            >
-              <Plus className="size-4" />
-              Record service
-            </Button>
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:min-w-88 sm:items-end">
+              <div className="w-full sm:max-w-88">
+                <ChurchRoleScopePicker />
+              </div>
+            </div>
           </header>
 
           {/* ── Metrics row — card surface ── */}
