@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { getAccessToken, getStoredUser } from './lib/auth-service'
-import SimpleLogin from './pages/auth/SimpleLogin'
+import { getAccessToken, getStoredUser } from 'lib/auth-service'
+import SimpleLogin from 'pages/auth/SimpleLogin'
 
 // Public routes that don't require authentication
 const PUBLIC_AUTH_ROUTES = [
@@ -19,7 +19,6 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // If token is expired, AuthContext will handle refresh
     const token = getAccessToken()
     const user = getStoredUser()
-    const currentPath = window.location.pathname
 
     // User is authenticated if they have both token and user data
     // AuthContext will handle token refresh if needed
@@ -29,19 +28,9 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [])
 
   if (isAuthenticated === null) {
-    // Loading
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          backgroundColor: '#1a1a1a',
-          color: 'white',
-        }}
-      >
-        <p>Loading...</p>
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <div className="h-7 w-7 animate-spin rounded-full border-2 border-brand border-t-transparent" />
       </div>
     )
   }

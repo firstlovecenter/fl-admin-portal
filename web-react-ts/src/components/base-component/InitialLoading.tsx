@@ -1,21 +1,15 @@
-import { Container } from 'react-bootstrap'
-import { PropagateLoader } from 'react-spinners'
+import { Loader2 } from 'lucide-react'
+import logo from 'assets/flc-logo-small.webp'
 
 const InitialLoading = ({ text }: { text?: string }) => {
-  const htmlElement = document.querySelector('html')
-  const currentTheme = htmlElement?.getAttribute('data-bs-theme')
-
   return (
-    <Container className="100vh center-page d-flex flex-column justify-content-center align-items-center">
-      <PropagateLoader
-        speedMultiplier={0.8}
-        color={currentTheme === 'dark' ? 'grey' : '#000000'}
-      />
-
-      <Container className="text-center mt-5">
-        <p>{text || 'Please wait while we log you in'}</p>
-      </Container>
-    </Container>
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background px-4">
+      <img src={logo} alt="FLC Logo" className="h-12 w-auto object-contain" />
+      <Loader2 className="h-7 w-7 animate-spin text-brand" />
+      <p className="max-w-xs text-center text-sm text-muted-foreground">
+        {text ?? 'Please wait while we log you in'}
+      </p>
+    </div>
   )
 }
 
