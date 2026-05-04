@@ -182,7 +182,7 @@ const TrendSpark = ({
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
-          margin={{ top: 20, right: 12, left: 0, bottom: 10 }}
+          margin={{ top: 24, right: 12, left: 0, bottom: 10 }}
           barCategoryGap={chartData.length <= 2 ? '28%' : '20%'}
         >
           <CartesianGrid
@@ -198,6 +198,7 @@ const TrendSpark = ({
             axisLine={false}
             tick={{ fill: axisColor, fontSize: 11, fontWeight: 500 }}
             interval={0}
+            tickFormatter={(value) => value.replace('Week ', 'W')}
           />
 
           <YAxis hide />
