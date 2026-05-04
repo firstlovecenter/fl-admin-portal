@@ -173,7 +173,7 @@ const fadeUp = {
 const UserDashboard = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
-  const { selectedScope } = useChurchRoleScope()
+  const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
   const [trendMode, setTrendMode] = useState<'weekday' | 'bussing'>('bussing')
 
@@ -405,14 +405,14 @@ const UserDashboard = () => {
           variants={sectionStagger}
           initial="hidden"
           animate="show"
-          className="mx-auto max-w-5xl px-4 pt-4 pb-10 sm:px-6 md:pt-8 lg:px-10 lg:pt-12 lg:pb-14"
+          className="mx-auto max-w-6xl px-4 pt-4 pb-10 sm:px-6 md:pt-8 lg:px-10 lg:pt-12 lg:pb-14"
         >
           {/* ── Header ── */}
           <motion.header
             variants={fadeUp}
-            className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+            className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
           >
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-muted-foreground">
                 {new Date().toLocaleDateString('en-GB', {
                   weekday: 'long',
@@ -422,7 +422,7 @@ const UserDashboard = () => {
               </p>
               <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                 {isLoading ? (
-                  <Skeleton className="h-10 w-64" />
+                  <Skeleton className="h-10 w-40 max-w-full" />
                 ) : (
                   <>{greeting}</>
                 )}
@@ -435,17 +435,22 @@ const UserDashboard = () => {
                   : 'No roles assigned yet.'}
               </p>
             </div>
-            <div className="flex w-full flex-col gap-3 sm:w-auto sm:min-w-88 sm:items-end">
-              <div className="w-full sm:max-w-88">
+            {roleChurchOptions.length > 0 && (
+              <div className="w-full shrink-0 sm:w-56">
                 <ChurchRoleScopePicker />
               </div>
-            </div>
+            )}
           </motion.header>
 
+          {/* ── Two-column layout on lg+: main content (left) + sticky quick-actions (right) ── */}
+          <motion.div
+            variants={sectionStagger}
+            className="mt-8 lg:flex lg:items-start lg:gap-6"
+          >
+            <motion.div variants={fadeUp} className="space-y-6 lg:flex-1 lg:min-w-0">
           {/* ── Metrics — asymmetric: primary stat + divider + two secondaries ── */}
-          <motion.section
-            variants={fadeUp}
-            className="mt-8 rounded-2xl border border-border bg-card overflow-hidden"
+          <section
+            className="rounded-2xl border border-border bg-card overflow-hidden"
           >
             {/* Primary metric — full width with left accent bar */}
             <div className="flex items-stretch gap-0">
@@ -503,11 +508,11 @@ const UserDashboard = () => {
                 </div>
               </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* ── Bacenta weekly tasks ── */}
           {assessmentChurch?.__typename === 'Bacenta' && (
-            <motion.div variants={fadeUp}>
+            <div>
               <BacentaWeeklyTasks
                 vacationStatus={
                   (assessmentChurch as unknown as { vacationStatus?: string })
@@ -557,13 +562,12 @@ const UserDashboard = () => {
                 onRecordBussing={() => navigate('/arrivals')}
                 serviceAwaitingBanking={serviceAwaitingBanking}
               />
-            </motion.div>
+            </div>
           )}
 
           {/* ── Trend chart ── */}
-          <motion.section
-            variants={fadeUp}
-            className="mt-6 rounded-2xl border border-border bg-card p-6"
+          <section
+            className="rounded-2xl border border-border bg-card p-6"
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
@@ -645,37 +649,45 @@ const UserDashboard = () => {
                 onBarClick={handleTrendBarClick}
               />
             </div>
-          </motion.section>
+          </section>
+            </motion.div>
 
-          {/* ── Quick actions — 2×2 icon-forward grid ── */}
-          <motion.section variants={fadeUp} className="mt-6">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {quickActions.map((action) => {
-                const Icon = action.icon
-                return (
-                  <button
-                    key={action.label}
-                    type="button"
-                    onClick={() => navigate(action.to)}
-                    className="group flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-4 text-left [transition:background-color_0.15s_ease,transform_0.1s_ease] hover:bg-accent active:scale-[0.97] active:translate-y-px"
-                  >
-                    <div
-                      className="flex size-9 items-center justify-center rounded-xl"
-                      style={{
-                        background: `color-mix(in srgb, ${action.accent} 12%, transparent)`,
-                        color: action.accent,
-                      }}
+            {/* ── Quick actions: right pane on lg+, full-width below trend on smaller screens ── */}
+            <motion.aside
+              variants={fadeUp}
+              className="mt-6 lg:mt-0 lg:w-60 lg:shrink-0 lg:sticky lg:top-6"
+            >
+              <h3 className="hidden lg:mb-3 lg:block text-xs font-medium text-muted-foreground tracking-wide">
+                Quick actions
+              </h3>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-1">
+                {quickActions.map((action) => {
+                  const Icon = action.icon
+                  return (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => navigate(action.to)}
+                      className="group flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-4 text-left [transition:background-color_0.15s_ease,transform_0.1s_ease] hover:bg-accent active:scale-[0.97] active:translate-y-px lg:flex-row lg:items-center"
                     >
-                      <Icon className="size-4" stroke={2} />
-                    </div>
-                    <span className="text-sm font-medium text-foreground leading-tight">
-                      {action.label}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </motion.section>
+                      <div
+                        className="flex size-9 shrink-0 items-center justify-center rounded-xl"
+                        style={{
+                          background: `color-mix(in srgb, ${action.accent} 12%, transparent)`,
+                          color: action.accent,
+                        }}
+                      >
+                        <Icon className="size-4" stroke={2} />
+                      </div>
+                      <span className="text-sm font-medium text-foreground leading-tight">
+                        {action.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </motion.aside>
+          </motion.div>
         </motion.div>
       </div>
     </AppShell>

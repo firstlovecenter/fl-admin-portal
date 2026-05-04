@@ -49,7 +49,7 @@ export const ChurchRoleScopePicker = () => {
       </p>
       <Select value={selectedScopeKey} onValueChange={setSelectedScopeKey}>
         <SelectTrigger
-          className="h-10 w-full border-sidebar-border bg-sidebar-accent/50 text-left text-sidebar-foreground data-placeholder:text-sidebar-foreground/60"
+          className="h-11 w-full border-sidebar-border bg-sidebar-accent/50 text-left text-sidebar-foreground data-placeholder:text-sidebar-foreground/60"
           aria-label="Select church in focus"
         >
           <SelectValue placeholder="Select church in focus" />
