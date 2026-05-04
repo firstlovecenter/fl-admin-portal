@@ -35,7 +35,11 @@ interface QuickAction {
 }
 
 const quickActions: QuickAction[] = [
-  { label: 'Record service', icon: ClipboardCheck, to: '/services/church-list' },
+  {
+    label: 'Record service',
+    icon: ClipboardCheck,
+    to: '/services/church-list',
+  },
   { label: 'Mark arrivals', icon: Bus, to: '/arrivals' },
   { label: 'Add member', icon: Users, to: '/directory/members/addmember' },
   { label: 'Banking', icon: Banknote, to: '/self-banking' },
@@ -93,20 +97,17 @@ const UserDashboard = () => {
   const hasAttendance = !!avgAttendance && avgAttendance !== 'NaN'
   const hasIncome = incomeTracked && !!avgIncome && avgIncome !== 'NaN'
   const fmtAttendance = hasAttendance
-    ? Number(avgAttendance).toLocaleString('en-GH', { maximumFractionDigits: 0 })
+    ? Number(avgAttendance).toLocaleString('en-GH', {
+        maximumFractionDigits: 0,
+      })
     : '—'
   const fmtIncome = hasIncome ? formatGhs(Number(avgIncome)) : '—'
 
   return (
-    <AppShell
-      title=""
-      subtitle=""
-      userName={currentUser?.fullName}
-    >
+    <AppShell title="" subtitle="" userName={currentUser?.fullName}>
       {/* Page background uses the slate-gray --background token */}
       <div className="min-h-full bg-background">
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
-
           {/* ── Header (on background, no card) ── */}
           <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -126,7 +127,11 @@ const UserDashboard = () => {
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 {activeRoles
-                  ? `Serving ${activeRoles} role${activeRoles === 1 ? '' : 's'} across ${totalChurches} church${totalChurches === 1 ? '' : 'es'}.`
+                  ? `Serving ${activeRoles} role${
+                      activeRoles === 1 ? '' : 's'
+                    } across ${totalChurches} church${
+                      totalChurches === 1 ? '' : 'es'
+                    }.`
                   : 'Welcome to your portal.'}
               </p>
             </div>
@@ -166,15 +171,23 @@ const UserDashboard = () => {
           {/* ── Bacenta weekly tasks ── */}
           {assessmentChurch?.__typename === 'Bacenta' && (
             <BacentaWeeklyTasks
-              vacationStatus={(assessmentChurch as unknown as { vacationStatus?: string })
-                .vacationStatus}
+              vacationStatus={
+                (assessmentChurch as unknown as { vacationStatus?: string })
+                  .vacationStatus
+              }
               services={
-                (assessmentChurch as unknown as { aggregateServiceRecords?: Array<{ week?: number | string }> })
-                  .aggregateServiceRecords ?? []
+                (
+                  assessmentChurch as unknown as {
+                    aggregateServiceRecords?: Array<{ week?: number | string }>
+                  }
+                ).aggregateServiceRecords ?? []
               }
               bussing={
-                (assessmentChurch as unknown as { aggregateBussingRecords?: Array<{ week?: number | string }> })
-                  .aggregateBussingRecords ?? []
+                (
+                  assessmentChurch as unknown as {
+                    aggregateBussingRecords?: Array<{ week?: number | string }>
+                  }
+                ).aggregateBussingRecords ?? []
               }
               onRecordService={() => navigate('/services/church-list')}
               onRecordBussing={() => navigate('/arrivals')}
@@ -256,7 +269,8 @@ const UserDashboard = () => {
 
               {!isLoading &&
                 userJobs?.map((role: UserJobs) => {
-                  const churches = typeof role.number === 'number' ? role.number : 0
+                  const churches =
+                    typeof role.number === 'number' ? role.number : 0
                   return (
                     <button
                       key={role.authRoles + role.name}
@@ -275,9 +289,7 @@ const UserDashboard = () => {
                           {churches === 1 ? '1 church' : `${churches} churches`}
                         </p>
                       </div>
-                      <ArrowUpRight
-                        className="size-4 shrink-0 text-border transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground"
-                      />
+                      <ArrowUpRight className="size-4 shrink-0 text-border transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
                     </button>
                   )
                 })}
@@ -291,7 +303,6 @@ const UserDashboard = () => {
               )}
             </div>
           </section>
-
         </div>
       </div>
     </AppShell>
@@ -391,8 +402,8 @@ const WeeklyTaskCard = ({
   const statusClass = waived
     ? 'bg-muted text-muted-foreground'
     : done
-      ? 'bg-success/15 text-success dark:bg-success/20'
-      : 'bg-destructive/10 text-destructive dark:bg-destructive/20'
+    ? 'bg-success/15 text-success dark:bg-success/20'
+    : 'bg-destructive/10 text-destructive dark:bg-destructive/20'
 
   return (
     <div
@@ -401,8 +412,8 @@ const WeeklyTaskCard = ({
         waived
           ? 'border-border bg-muted/40'
           : done
-            ? 'border-success/30 bg-success/5'
-            : 'border-border bg-card'
+          ? 'border-success/30 bg-success/5'
+          : 'border-border bg-card'
       )}
     >
       <div
@@ -413,12 +424,14 @@ const WeeklyTaskCard = ({
             : 'bg-muted text-muted-foreground'
         )}
       >
-        {done && !waived ? <Check className="size-5" /> : <Icon className="size-5" />}
+        {done && !waived ? (
+          <Check className="size-5" />
+        ) : (
+          <Icon className="size-5" />
+        )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-foreground">
-          {label}
-        </p>
+        <p className="text-sm font-medium text-foreground">{label}</p>
         <span
           className={cn(
             'mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider',
@@ -467,9 +480,7 @@ const Metric = ({ label, value, sub, loading, dim }: MetricProps) => (
         {value}
       </p>
     )}
-    {sub && (
-      <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
-    )}
+    {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
   </div>
 )
 

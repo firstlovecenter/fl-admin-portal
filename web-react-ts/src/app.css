@@ -84,18 +84,24 @@
 
 /* Make interactive controls consistently feel clickable across the app. */
 :where(
-  button,
-  [role='button'],
-  a[href],
-  summary,
-  input[type='button'],
-  input[type='submit'],
-  input[type='reset']
-):where(:not(:disabled)):where(:not([aria-disabled='true'])) {
+    button,
+    [role='button'],
+    a[href],
+    summary,
+    input[type='button'],
+    input[type='submit'],
+    input[type='reset']
+  ):where(:not(:disabled)):where(:not([aria-disabled='true'])) {
   cursor: pointer;
 }
 
-:where(button, [role='button'], input[type='button'], input[type='submit'], input[type='reset']):where(:disabled),
+:where(
+    button,
+    [role='button'],
+    input[type='button'],
+    input[type='submit'],
+    input[type='reset']
+  ):where(:disabled),
 :where([aria-disabled='true']) {
   cursor: not-allowed;
 }

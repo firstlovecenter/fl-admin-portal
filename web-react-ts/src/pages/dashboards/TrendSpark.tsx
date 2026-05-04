@@ -77,7 +77,9 @@ const TrendSpark = ({ data, incomeTracked }: TrendSparkProps) => {
           const groupX = padX + i * groupW
           const attendanceH = (p.attendance / maxAttendance) * usableH
           const incomeH = showIncome ? (p.income / maxIncome) * usableH : 0
-          const attendanceX = showIncome ? groupX + barGap : groupX + (groupW - barW) / 2
+          const attendanceX = showIncome
+            ? groupX + barGap
+            : groupX + (groupW - barW) / 2
           const incomeX = groupX + barGap * 2 + barW
 
           return (
@@ -91,7 +93,9 @@ const TrendSpark = ({ data, incomeTracked }: TrendSparkProps) => {
                 rx={2}
                 fill="hsl(var(--brand))"
               >
-                <title>{`Week ${p.week ?? i + 1} · Attendance: ${p.attendance}`}</title>
+                <title>{`Week ${p.week ?? i + 1} · Attendance: ${
+                  p.attendance
+                }`}</title>
               </rect>
 
               {/* Income bar (muted) */}
@@ -104,7 +108,9 @@ const TrendSpark = ({ data, incomeTracked }: TrendSparkProps) => {
                   rx={2}
                   className="fill-zinc-300 dark:fill-zinc-600"
                 >
-                  <title>{`Week ${p.week ?? i + 1} · Income: ${p.income}`}</title>
+                  <title>{`Week ${p.week ?? i + 1} · Income: ${
+                    p.income
+                  }`}</title>
                 </rect>
               )}
 

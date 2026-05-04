@@ -1,6 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import { X } from 'lucide-react'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from 'components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from 'components/ui/sheet'
 import { cn } from 'components/lib/utils'
 import { primaryNav, secondaryNav, type NavItem } from './navigation-config'
 
@@ -26,11 +31,7 @@ const MobileNavItem = ({
         )
       }
     >
-      <Icon
-        className={cn(
-          'size-5 shrink-0',
-        )}
-      />
+      <Icon className={cn('size-5 shrink-0')} />
       {item.name}
     </NavLink>
   )
@@ -82,7 +83,9 @@ export const MobileNav = ({ open, onClose, userName }: MobileNavProps) => {
         {userName && (
           <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border px-4 py-3">
             <p className="text-xs text-sidebar-foreground/60">Signed in as</p>
-            <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">
+              {userName}
+            </p>
           </div>
         )}
       </SheetContent>
