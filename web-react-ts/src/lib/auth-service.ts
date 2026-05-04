@@ -86,6 +86,29 @@ export const STORAGE_KEYS = {
 } as const
 
 /**
+ * Routes that render without authentication (login, password setup, etc.)
+ */
+export const PUBLIC_AUTH_ROUTES = [
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/setup-password',
+] as const
+
+/**
+ * Whether a given pathname is a public auth route. Trailing slashes are
+ * normalised; query strings and hashes should be stripped before calling.
+ */
+export function isPublicAuthRoute(pathname: string): boolean {
+  const normalised = pathname.replace(/\/$/, '') || '/'
+  return PUBLIC_AUTH_ROUTES.some((route) => {
+    const normalisedRoute = route.replace(/\/$/, '') || '/'
+    return normalised === normalisedRoute
+  })
+}
+
+/**
  * Get stored access token
  */
 export function getAccessToken(): string | null {
@@ -124,13 +147,6 @@ export function getStoredUser(): AuthUser | null {
  */
 export function storeAuth(data: AuthTokens): void {
   if (typeof window === 'undefined') return
-
-  // eslint-disable-next-line no-console
-  console.log('🔐 Storing auth tokens', {
-    hasAccessToken: !!data.accessToken,
-    hasRefreshToken: !!data.refreshToken,
-    user: data.user,
-  })
 
   localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken)
   localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken)
@@ -235,26 +251,35 @@ export async function login(data: LoginData): Promise<AuthTokens> {
 }
 
 /**
- * Verify if a token is valid
+ * Verify if a token is valid. Throws AuthServiceError on rejection (401) so
+ * callers can distinguish explicit revocation from transient failures.
  */
-export async function verifyToken(token: string): Promise<AuthUser | null> {
-  try {
-    const response = await fetch(`${AUTH_API_URL}/auth/verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    })
+export async function verifyToken(token: string): Promise<AuthUser> {
+  const response = await fetch(`${AUTH_API_URL}/auth/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  })
 
-    if (!response.ok) {
-      return null
+  // Branch on response.ok before parsing JSON so a non-JSON error body
+  // (gateway 401 HTML page, empty 504, etc.) still surfaces as an
+  // AuthServiceError with the real status code rather than a SyntaxError
+  // that callers would mistake for a transient failure.
+  if (!response.ok) {
+    let errorMessage = 'Token verification failed'
+    let requestId: string | undefined
+    try {
+      const errorBody = await response.json()
+      errorMessage = errorBody.error || errorMessage
+      requestId = errorBody.requestId
+    } catch {
+      // Non-JSON error body — fall through with status code only.
     }
-
-    const result = await response.json()
-    return result.user
-  } catch (error) {
-    console.error('Token verification failed:', error)
-    return null
+    throw new AuthServiceError(errorMessage, response.status, requestId)
   }
+
+  const result = await response.json()
+  return result.user
 }
 
 /**

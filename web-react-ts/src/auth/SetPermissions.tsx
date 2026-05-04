@@ -11,24 +11,7 @@ import { useContext, useEffect } from 'react'
 import { useAuth } from 'contexts/AuthContext'
 import useAuthPermissions from './useAuth'
 import { useLocation } from 'react-router-dom'
-
-// Public routes that don't require authentication
-const PUBLIC_AUTH_ROUTES = [
-  '/login',
-  '/signup',
-  '/forgot-password',
-  '/reset-password',
-  '/setup-password',
-]
-
-const isPathPublic = (pathname: string): boolean => {
-  // Normalize path for comparison (remove trailing slashes)
-  const normalizedPath = pathname.replace(/\/$/, '') || '/'
-  return PUBLIC_AUTH_ROUTES.some((route) => {
-    const normalizedRoute = route.replace(/\/$/, '') || '/'
-    return normalizedPath === normalizedRoute
-  })
-}
+import { isPublicAuthRoute } from 'lib/auth-service'
 
 const SetPermissions = ({
   token,
@@ -43,7 +26,7 @@ const SetPermissions = ({
   const { isAuthorised } = useAuthPermissions()
   const location = useLocation()
 
-  const isPublicRoute = isPathPublic(location.pathname)
+  const isPublicRoute = isPublicAuthRoute(location.pathname)
 
   const {
     data: loggedInData,

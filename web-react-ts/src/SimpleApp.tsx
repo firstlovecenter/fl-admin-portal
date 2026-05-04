@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { getAccessToken, getStoredUser } from 'lib/auth-service'
+import {
+  getAccessToken,
+  getStoredUser,
+  isPublicAuthRoute,
+} from 'lib/auth-service'
 import SimpleLogin from 'pages/auth/SimpleLogin'
-
-// Public routes that don't require authentication
-const PUBLIC_AUTH_ROUTES = [
-  '/login',
-  '/signup',
-  '/forgot-password',
-  '/reset-password',
-  '/setup-password',
-]
 
 const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
@@ -35,15 +30,7 @@ const SimpleApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     )
   }
 
-  // Allow access to public auth routes even if not authenticated
-  const currentPath = window.location.pathname
-
-  // Normalize path for comparison (remove trailing slashes for comparison)
-  const normalizedPath = currentPath.replace(/\/$/, '') || '/'
-  const isPublicRoute = PUBLIC_AUTH_ROUTES.some((route) => {
-    const normalizedRoute = route.replace(/\/$/, '') || '/'
-    return normalizedPath === normalizedRoute
-  })
+  const isPublicRoute = isPublicAuthRoute(window.location.pathname)
 
   if (!isAuthenticated && !isPublicRoute) {
     return (

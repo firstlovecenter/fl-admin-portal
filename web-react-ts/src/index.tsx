@@ -42,7 +42,6 @@ const AppWithApollo = () => {
       const token = await getAccessTokenSilently()
 
       setAccessToken(token)
-      sessionStorage.setItem('token', token)
     } catch (err) {
       // Error obtaining token silently
     }
