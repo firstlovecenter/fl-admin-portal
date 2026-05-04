@@ -1,12 +1,12 @@
-import React from 'react'
+import { Button } from 'components/ui/button'
 import { Link } from 'react-router-dom'
-import './ViewAll.css'
-import { Button } from 'react-bootstrap'
 
 const ViewAll = ({ to }: { to: string }) => {
   return (
-    <Link className="view-all" to={to}>
-      <Button variant="outline-success">VIEW ALL</Button>
+    <Link to={to}>
+      <Button variant="outline" size="sm">
+        View All
+      </Button>
     </Link>
   )
 }

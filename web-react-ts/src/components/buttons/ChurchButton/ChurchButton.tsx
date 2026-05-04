@@ -1,10 +1,8 @@
-import PlaceholderCustom from 'components/Placeholder'
+import { Button } from 'components/ui/button'
 import { ChurchContext } from 'contexts/ChurchContext'
-import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
-import './ChurchButton.css'
 import useSetUserChurch from 'hooks/useSetUserChurch'
-import { Button } from 'react-bootstrap'
+import { useContext } from 'react'
+import { Link } from 'react-router-dom'
 
 type ChurchButtonProps = {
   church: {
@@ -14,31 +12,26 @@ type ChurchButtonProps = {
   }
 }
 
-const ChurchButton = (props: ChurchButtonProps) => {
-  const { church } = props
+const ChurchButton = ({ church }: ChurchButtonProps) => {
   const { clickCard } = useContext(ChurchContext)
   const { setUserFinancials } = useSetUserChurch()
 
   return (
-    <PlaceholderCustom
-      as="div"
-      className="card-buttons py-2 px-3 text-center text-nowrap"
-    >
-      <Link to={`/${church.__typename.toLowerCase()}/displaydetails`}>
-        <Button
-          variant="gray"
-          className="card-buttons py-2 px-3 text-center text-nowrap"
-          onClick={() => {
-            clickCard(church)
-            if (church.__typename === 'Campus') {
-              setUserFinancials(church)
-            }
-          }}
-        >
-          {church.name}
-        </Button>
-      </Link>
-    </PlaceholderCustom>
+    <Link to={`/${church.__typename.toLowerCase()}/displaydetails`}>
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-nowrap"
+        onClick={() => {
+          clickCard(church)
+          if (church.__typename === 'Campus') {
+            setUserFinancials(church)
+          }
+        }}
+      >
+        {church.name}
+      </Button>
+    </Link>
   )
 }
 

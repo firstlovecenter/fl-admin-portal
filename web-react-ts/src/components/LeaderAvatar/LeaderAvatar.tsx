@@ -1,9 +1,8 @@
-import CloudinaryImage from 'components/CloudinaryImage'
-import PlaceholderCustom from 'components/Placeholder'
+import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
+import { Skeleton } from 'components/ui/skeleton'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberWithoutBioData } from 'global-types'
-import React, { useContext } from 'react'
-import { Col, Row } from 'react-bootstrap'
+import { useContext } from 'react'
 import { Link } from 'react-router-dom'
 
 const LeaderAvatar = ({
@@ -18,40 +17,38 @@ const LeaderAvatar = ({
   const { clickCard } = useContext(ChurchContext)
   const isLoading = loading || !leader
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-3 py-3">
+        <Skeleton className="h-12 w-12 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-5 w-32" />
+        </div>
+      </div>
+    )
+  }
+
+  const initials = `${leader?.firstName?.[0] ?? ''}${leader?.lastName?.[0] ?? ''}`
+
   return (
     <Link
       to="/member/displaydetails"
-      onClick={() => {
-        clickCard(leader)
-      }}
+      onClick={() => clickCard(leader)}
+      className="flex items-center gap-3 py-3 no-underline"
     >
-      <Row className="my-2">
-        <Col xs="auto">
-          <PlaceholderCustom
-            className="img-search-placeholder"
-            as="div"
-            xs={12}
-            loading={isLoading}
-          >
-            <CloudinaryImage
-              src={leader?.pictureUrl}
-              className="img-search-placeholder"
-            />
-          </PlaceholderCustom>
-        </Col>
-        <Col>
-          <PlaceholderCustom loading={isLoading} as="span" xs={12}>
-            <span className={`card-heading text-secondary text-truncate`}>
-              {leaderTitle}
-            </span>
-          </PlaceholderCustom>
-          <PlaceholderCustom loading={isLoading} as="h2" xs={12}>
-            <div className="d-flex justify-content-between">
-              <h2 className={`card-detail`}>{leader?.nameWithTitle}</h2>
-            </div>
-          </PlaceholderCustom>
-        </Col>
-      </Row>
+      <Avatar className="h-12 w-12 shrink-0">
+        <AvatarImage src={leader?.pictureUrl} alt={leader?.nameWithTitle} />
+        <AvatarFallback className="bg-muted text-muted-foreground text-sm font-medium">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <p className="text-xs text-muted-foreground">{leaderTitle}</p>
+        <p className="text-sm font-semibold text-foreground truncate">
+          {leader?.nameWithTitle}
+        </p>
+      </div>
     </Link>
   )
 }
