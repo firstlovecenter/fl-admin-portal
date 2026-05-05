@@ -184,6 +184,10 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
   const memberAdmin = adminData?.members[0]
   const memberBirthday = getMemberDob(member)
   const roles = returnStringMemberRoles(memberLeader, memberAdmin)
+  const hasRoles =
+    memberLeader && memberAdmin
+      ? Object.values(getRank(memberLeader, memberAdmin)).flat().length > 0
+      : false
 
   const [UpdateMemberStickyNote, { loading: noteLoading }] = useMutation(
     UPDATE_MEMBER_STICKY_NOTE
@@ -628,7 +632,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               </div>
             </div>
 
-            {/* Leadership Roles — below personal info so left card height doesn't dictate right */}
+            {/* Leadership Roles — only rendered when member actually holds a role */}
             {adminLoading || leaderLoading ? (
               <div className="rounded-xl border border-border bg-card overflow-hidden">
                 <div className="px-4 py-2.5 border-b border-border bg-muted/30">
@@ -643,37 +647,37 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                   ))}
                 </div>
               </div>
-            ) : (
-              (memberLeader || memberAdmin) && (
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-border bg-muted/30">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Leadership Roles
-                    </p>
-                  </div>
-                  <div className="px-2 py-2">
-                    <MemberRoleList
-                      memberLeader={memberLeader}
-                      memberAdmin={memberAdmin}
-                    />
-                  </div>
+            ) : hasRoles ? (
+              <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <div className="px-4 py-2.5 border-b border-border bg-muted/30">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Leadership Roles
+                  </p>
                 </div>
-              )
-            )}
+                <div className="px-2 py-2">
+                  <MemberRoleList
+                    memberLeader={memberLeader}
+                    memberAdmin={memberAdmin}
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        {/* ── Church history — full width below the 2-column grid ── */}
-        <div className="mt-8">
-          <Separator className="mb-6" />
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Church History
-            </h3>
-            <ViewAll to="/member/history" />
+        {/* ── Church history — only shown when history entries exist ── */}
+        {memberChurch?.history?.length > 0 && (
+          <div className="mt-8">
+            <Separator className="mb-6" />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Church History
+              </h3>
+              <ViewAll to="/member/history" />
+            </div>
+            <Timeline record={memberChurch.history} limit={3} />
           </div>
-          <Timeline record={memberChurch?.history} limit={3} />
-        </div>
+        )}
       </div>
     </div>
   )
