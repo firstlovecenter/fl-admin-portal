@@ -494,7 +494,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               </h3>
               <ViewAll to={`/${props.churchType.toLowerCase()}/history`} />
             </div>
-            <Timeline record={props.history} modifier="church" limit={5} />
+            <Timeline record={props.history} limit={5} />
           </div>
         )}
       </div>

@@ -389,7 +389,7 @@ const DisplaySontaDetails = (props: DisplayChurchDetailsProps) => {
             </Col>
           </Row>
 
-          <Timeline record={props.history} modifier="church" limit={5} />
+          <Timeline record={props.history} limit={5} />
         </Container>
       )}
     </>
