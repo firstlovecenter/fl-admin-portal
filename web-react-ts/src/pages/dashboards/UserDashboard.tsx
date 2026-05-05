@@ -232,6 +232,21 @@ const UserDashboard = () => {
         TREND_HISTORY_WEEKS
       ) || []
     : []
+  // Drop stale records: Bacenta.bussing SDL has no recency filter,
+  // so dormant Bacentas would otherwise leak years-old data into the average.
+  const currentYear = new Date().getFullYear()
+  const recentBussingData = bussingData.filter(
+    (record: { year?: number | null; date?: string | null }) => {
+      if (typeof record?.year === 'number' && Number.isFinite(record.year)) {
+        return record.year >= currentYear - 1
+      }
+      if (record?.date) {
+        const recordYear = new Date(record.date).getFullYear()
+        if (Number.isFinite(recordYear)) return recordYear >= currentYear - 1
+      }
+      return false
+    }
+  )
   const hasBussingDataField = hasBussingAggregateField
   const hasWeekdayDataField =
     hasServiceAggregateField ||
@@ -244,9 +259,13 @@ const UserDashboard = () => {
     : canToggleTrendMode
     ? trendMode
     : 'weekday'
-  const trendData = activeTrendMode === 'bussing' ? bussingData : weekdayData
+  const trendData =
+    activeTrendMode === 'bussing' ? recentBussingData : weekdayData
 
-  const avgBussingAttendance = getMonthlyStatAverage(bussingData, 'attendance')
+  const avgBussingAttendance = getMonthlyStatAverage(
+    recentBussingData,
+    'attendance'
+  )
   const avgAttendance = getMonthlyStatAverage(weekdayData, 'attendance')
   const avgIncome = getMonthlyStatAverage(weekdayData, 'income')
 
@@ -458,8 +477,17 @@ const UserDashboard = () => {
                 {isLoading ? (
                   <Skeleton className="mt-3 h-10 w-32" />
                 ) : (
-                  <p className="mt-1.5 text-5xl font-semibold tracking-tighter tabular-nums text-foreground">
-                    {fmtBussingAttendance}
+                  <p
+                    className={cn(
+                      'mt-1.5 font-semibold tracking-tight',
+                      hasBussingAttendance
+                        ? 'text-5xl tracking-tighter tabular-nums text-foreground'
+                        : 'text-2xl text-muted-foreground/40'
+                    )}
+                  >
+                    {hasBussingAttendance
+                      ? fmtBussingAttendance
+                      : 'No recent bussing'}
                   </p>
                 )}
               </div>

@@ -1,11 +1,11 @@
 import {
+  Bot,
   Bus,
   ClipboardList,
   Home,
   type LucideIcon,
-  Map,
+  TrendingUp,
   UserCheck,
-  Users,
   Wallet,
 } from 'lucide-react'
 
@@ -21,9 +21,9 @@ export interface NavItem {
 export const primaryNav: NavItem[] = [
   { name: 'Home', to: '/', icon: Home },
   {
-    name: 'Directory',
-    to: '/directory',
-    icon: Users,
+    name: 'Members',
+    to: '/directory/members',
+    icon: UserCheck,
     accentClass: 'text-members',
   },
   {
@@ -46,13 +46,17 @@ export const primaryNav: NavItem[] = [
   },
 ]
 
-/** Secondary nav (sidebar + mobile drawer only — not bottom bar) */
+/** Secondary nav — Church in Focus section items (sidebar + mobile drawer) */
 export const secondaryNav: NavItem[] = [
   {
-    name: 'Members',
-    to: '/directory/members',
-    icon: UserCheck,
-    accentClass: 'text-members',
+    name: 'Trends',
+    to: '/trends',
+    icon: TrendingUp,
+    accentClass: 'text-churches',
   },
-  { name: 'Maps', to: '/maps', icon: Map, accentClass: 'text-maps' },
+  {
+    name: 'AI Assistant',
+    to: '/ai-assistant',
+    icon: Bot,
+  },
 ]

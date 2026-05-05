@@ -72,7 +72,6 @@ const ChurchScopeNavItem = ({ open }: { open: boolean }) => {
 
   return (
     <>
-      <div className="my-2 h-px bg-sidebar-border" />
       <button
         type="button"
         onClick={handleClick}
@@ -242,13 +241,13 @@ export const Sidebar = ({
 
           <div className="my-2 h-px bg-sidebar-border" />
 
-          {secondaryNav.map((item) => (
-            <DesktopNavItem key={item.to} item={item} open={open} />
-          ))}
+          {open && <ChurchRoleScopePicker />}
 
           <ChurchScopeNavItem open={open} />
 
-          {open && <ChurchRoleScopePicker />}
+          {secondaryNav.map((item) => (
+            <DesktopNavItem key={item.to} item={item} open={open} />
+          ))}
         </div>
 
         {/* Footer */}

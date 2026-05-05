@@ -44,6 +44,7 @@ export interface BussingRecord {
 export type AggregateBussingRecords = {
   id: string
   week: number
+  year: number
   attendance: number
   leaderDeclaration: number
   numberOfSprinters: number

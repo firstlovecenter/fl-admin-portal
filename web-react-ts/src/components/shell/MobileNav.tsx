@@ -131,15 +131,10 @@ export const MobileNav = ({
             variants={itemVariants}
             className="my-2 h-px bg-sidebar-border"
           />
+          <ChurchRoleScopePicker />
           {secondaryNav.map((item) => (
             <MobileNavItem key={item.to} item={item} onClose={onClose} />
           ))}
-
-          <motion.div
-            variants={itemVariants}
-            className="my-2 h-px bg-sidebar-border"
-          />
-          <ChurchRoleScopePicker />
         </motion.nav>
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border px-4 py-3">

@@ -9,13 +9,13 @@ export const DISPLAY_MEMBER_BIO = gql`
       lastName
       fullName
       nameWithTitle
+      currentTitle
       email
       phoneNumber
       stickyNote
       pictureUrl
       visitationArea
       whatsappNumber
-      pictureUrl
       dob {
         date
       }
@@ -27,9 +27,6 @@ export const DISPLAY_MEMBER_BIO = gql`
       }
       occupation {
         occupation
-      }
-      title {
-        name
       }
     }
   }

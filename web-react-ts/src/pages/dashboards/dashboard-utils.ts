@@ -153,7 +153,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
     servantType === 'isArrivalsPayerFor' ||
     servantType === 'isArrivalsCounterFor'
   ) {
-    const adminsOneChurch = servant[`${verb}`]?.length === 1 ?? false
+    const adminsOneChurch = servant[`${verb}`]?.length === 1
     userroles.push({
       name: adminsOneChurch
         ? churchType + ' ' + parseRoles(servantType)
@@ -168,7 +168,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
   }
 
   if (servantType === 'isTellerFor') {
-    const adminsOneChurch = servant[`${verb}`]?.length === 1 ?? false
+    const adminsOneChurch = servant[`${verb}`]?.length === 1
     userroles.push({
       authRoles,
       name: adminsOneChurch
@@ -183,7 +183,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
   }
 
   if (servantType === 'isAdminFor' || servantType === 'isArrivalsAdminFor') {
-    const adminsOneChurch = servant[`${verb}`]?.length === 1 ?? false
+    const adminsOneChurch = servant[`${verb}`]?.length === 1
     userroles.push({
       authRoles,
       name: adminsOneChurch
@@ -204,7 +204,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
     return
   }
 
-  const leadsOneChurch = servant[`${verb}`]?.length === 1 ?? false
+  const leadsOneChurch = servant[`${verb}`]?.length === 1
 
   userroles.push({
     authRoles,

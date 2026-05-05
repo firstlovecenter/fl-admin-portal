@@ -292,6 +292,127 @@ Rendered structure:
 </div>
 ```
 
+### Profile / detail page layout (3-column on desktop)
+
+**Mandatory for all entity detail pages** (member, church, leader, etc.) on `lg`
+screens. Mobile remains a single stacked column.
+
+The three columns are:
+
+| Column | Width | Contents |
+| --- | --- | --- |
+| Left (identity) | `280px` | Avatar, name, primary badges, key action button (save contact, etc.), role/stat summary |
+| Center (main data) | `1fr` | The primary data card — form fields, bio info, stats |
+| Right (supporting) | `280px` | Contextual cards — alerts/notes, contact links, membership, quick navigation |
+
+Full-width section below the grid: history, timeline, related lists.
+
+```tsx
+{/* ── Top action bar — full width, sticky ── */}
+<div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
+  <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 flex items-center justify-between">
+    <EditButton ... />
+    <SecondaryActionButton ... />
+  </div>
+</div>
+
+{/* ── Page body ── */}
+<div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-8">
+
+  {/* 3-column grid on lg+, single column on mobile */}
+  <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[280px_1fr_280px] lg:items-start">
+
+    {/* LEFT — identity panel, sticky */}
+    <aside className="lg:sticky lg:top-[73px] flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-6">
+      <Avatar className="h-32 w-32 ring-2 ring-border ring-offset-2 ring-offset-card">
+        ...
+      </Avatar>
+      <div className="text-center space-y-1 w-full">
+        <h2 className="text-lg font-semibold text-foreground">{name}</h2>
+        <Badge variant="outline">{subtitle}</Badge>
+      </div>
+      <Button variant="outline" className="w-full gap-2">
+        <SaveIcon className="h-4 w-4" /> Save Contact
+      </Button>
+      <Separator className="w-full" />
+      {/* Role list / stats / quick links */}
+    </aside>
+
+    {/* CENTER — primary data */}
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-4 lg:px-5 py-3 border-b border-border">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Section Title
+          </h3>
+        </div>
+        <div className="px-4 lg:px-5">
+          {/* field rows */}
+        </div>
+      </div>
+    </div>
+
+    {/* RIGHT — supporting cards */}
+    <div className="space-y-4">
+      {/* Alert / sticky note */}
+      {hasStickyNote && (
+        <div className="rounded-xl border border-warning/40 bg-warning/5 p-4">
+          ...
+        </div>
+      )}
+
+      {/* Contact links — use divide-y, not gap, for rows */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Contact
+          </h3>
+        </div>
+        <div className="divide-y divide-border">
+          <a href="tel:..." className="flex items-center gap-3 p-4 hover:bg-muted/50 active:bg-muted transition-colors">
+            <div className="h-9 w-9 rounded-full bg-arrivals/10 flex items-center justify-center shrink-0">
+              <Phone className="h-4 w-4 text-arrivals" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground">Phone</p>
+              <p className="text-sm font-mono font-medium truncate">+233...</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </a>
+        </div>
+      </div>
+
+      {/* Membership / affiliation */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        ...
+      </div>
+    </div>
+
+  </div>
+
+  {/* ── Full-width below: history / timeline ── */}
+  <div className="mt-8">
+    <Separator className="mb-6" />
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        History
+      </h3>
+      <ViewAll to="..." />
+    </div>
+    <Timeline record={history} limit={3} />
+  </div>
+
+</div>
+```
+
+**Rules:**
+- `max-w-6xl` on the outer container (1152 px cap — keeps columns readable on ultrawide).
+- Left sidebar: `lg:sticky lg:top-[73px]` (73 px = height of the sticky action bar).
+- Cards in Center and Right: `rounded-xl` with a `px-4 py-3 border-b` section header row and a `text-xs font-semibold uppercase tracking-wider text-muted-foreground` label.
+- Right column rows: `divide-y divide-border` inside the card, `p-4` per row — never use `gap` for list rows inside a card.
+- History / timeline always goes full-width **below** the 3-column grid, not inside any column.
+- On mobile: `flex flex-col gap-6` collapses the grid to a single column in DOM order (left → center → right → history).
+
 ### Dashboard layout (with sidebar on md+)
 
 ```tsx
@@ -448,6 +569,7 @@ like, referencing the visual language above. Confirm:
 - Is this primarily a form? → Use `<Card>` + `<CardContent>` form layout.
 - Is this a list / directory? → Use list item pattern.
 - Is this a dashboard? → Use stat card grid + chart cards.
+- Is this an entity detail page (member, church, leader)? → **Use the 3-column desktop layout** (`lg:grid-cols-[280px_1fr_280px]`): left = identity panel, center = primary data, right = contact/membership. History spans full width below the grid.
 
 **Wait for user approval** of the design intent before writing code, unless
 the page is trivial (< 80 lines, no layout change).

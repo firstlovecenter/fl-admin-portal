@@ -32,6 +32,7 @@ import LoadingScreen from 'components/base-component/LoadingScreen'
 import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
+import { aiAssistant } from 'pages/ai-assistant/aiAssistantRoutes'
 import { ThemeProvider } from 'components/shell/ThemeProvider'
 import { ChurchRoleScopeProvider } from 'contexts/ChurchRoleScopeContext'
 
@@ -228,6 +229,7 @@ const AppWithContext = (props: AppPropsType) => {
                           ...graphs,
                           ...maps,
                           ...accountsRoutes,
+                          ...aiAssistant,
                         ].map((route, i) => (
                           <Route
                             key={i}
