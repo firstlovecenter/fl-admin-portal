@@ -1,22 +1,19 @@
-import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ChurchLevelLower } from 'global-types'
-import React, { useState, useEffect, useContext } from 'react'
+import { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { Container } from 'react-bootstrap'
 import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  BarChart,
-  Bar,
-  LabelList,
-  Legend,
 } from 'recharts'
 import { capitalise } from '../../global-utils'
-import './ChurchGraph.css'
-import { ScaleLoader } from 'react-spinners'
+import { Skeleton } from 'components/ui/skeleton'
 import { GraphTypes } from 'pages/services/graphs/graphs-utils'
 
 type ChurchGraphProps = {
@@ -31,6 +28,135 @@ type ChurchGraphProps = {
   swollenSunday?: boolean
 }
 
+const compactNumberFormatter = new Intl.NumberFormat('en', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+})
+
+const PRIMARY_COLOR_BY_TYPE: Record<GraphTypes, string> = {
+  bussing: 'hsl(var(--destructive))',
+  bussingAggregate: 'hsl(var(--destructive))',
+  swellBussing: 'hsl(var(--destructive))',
+
+  services: 'hsl(var(--arrivals))',
+  serviceAggregate: 'hsl(var(--arrivals))',
+  serviceAggregateWithDollar: 'hsl(var(--arrivals))',
+  multiplicationAggregate: 'hsl(var(--arrivals))',
+
+  rehearsals: 'hsl(var(--churches))',
+  rehearsalAggregate: 'hsl(var(--churches))',
+  ministryMeeting: 'hsl(var(--churches))',
+
+  onStageAttendance: 'hsl(var(--campaigns))',
+  onStageAttendanceAggregate: 'hsl(var(--campaigns))',
+}
+
+const SECONDARY_COLOR = 'hsl(var(--success))'
+
+type LabelProps = {
+  x?: number
+  y?: number
+  width?: number
+  value?: number | string
+}
+
+const renderBarLabel = ({ x, y, width, value }: LabelProps) => {
+  const numeric = typeof value === 'number' ? value : Number(value)
+  if (
+    !Number.isFinite(numeric) ||
+    numeric <= 0 ||
+    x == null ||
+    y == null ||
+    width == null
+  ) {
+    return null
+  }
+  return (
+    <text
+      x={x + width / 2}
+      y={y - 8}
+      textAnchor="middle"
+      fill="hsl(var(--muted-foreground))"
+      fontSize={11}
+      fontWeight={600}
+    >
+      {compactNumberFormatter.format(numeric)}
+    </text>
+  )
+}
+
+type TooltipEntry = {
+  value?: number | string
+  name?: string
+  color?: string
+  payload?: {
+    numberOfServices?: number
+    numberOfUrvans?: number
+    numberOfSprinters?: number
+    numberOfCars?: number
+  }
+}
+
+type ChartTooltipProps = {
+  active?: boolean
+  payload?: TooltipEntry[]
+  label?: string
+}
+
+const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
+  if (!active || !payload?.length) return null
+  const meta = payload[0]?.payload ?? {}
+
+  return (
+    <div className="min-w-44 rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label ? `Week ${label}` : ''}
+      </p>
+      <div className="mt-2 space-y-1.5">
+        {payload.map((entry) => (
+          <div
+            key={entry.name}
+            className="flex items-center justify-between gap-4 text-sm"
+          >
+            <span className="flex items-center gap-2 text-foreground">
+              <span
+                className="size-2 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+              {entry.name}
+            </span>
+            <span className="font-semibold tabular-nums text-foreground">
+              {typeof entry.value === 'number'
+                ? entry.value.toLocaleString('en-GH')
+                : entry.value}
+            </span>
+          </div>
+        ))}
+        {!!meta.numberOfServices && (
+          <p className="pt-1 text-xs text-muted-foreground">
+            Services: {meta.numberOfServices}
+          </p>
+        )}
+        {!!meta.numberOfUrvans && (
+          <p className="text-xs text-muted-foreground">
+            Urvans: {meta.numberOfUrvans}
+          </p>
+        )}
+        {!!meta.numberOfSprinters && (
+          <p className="text-xs text-muted-foreground">
+            Sprinters: {meta.numberOfSprinters}
+          </p>
+        )}
+        {!!meta.numberOfCars && (
+          <p className="text-xs text-muted-foreground">
+            Cars: {meta.numberOfCars}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 const ChurchGraph = (props: ChurchGraphProps) => {
   const {
     loading,
@@ -43,273 +169,153 @@ const ChurchGraph = (props: ChurchGraphProps) => {
   } = props
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
-  const [sortedData, setSortedData] = useState<any[]>([])
-  const [dataMax, setDataMax] = useState<{
-    attendance: number
-    income: number
-    target: number
-  }>({ attendance: 0, income: 0, target: 0 })
 
-  useEffect(() => {
-    setSortedData(churchData.reverse())
+  const sortedData = useMemo(
+    () => [...(churchData ?? [])].reverse(),
+    [churchData]
+  )
 
-    setDataMax({
-      attendance:
-        Math.max.apply(
-          Math,
-          churchData?.map((max: any) => {
-            return max.attendance
-          })
-        ) * 1.2,
-      income:
-        Math.max.apply(
-          Math,
-          churchData?.map((max: any) => {
-            return max.income
-          })
-        ) + 1.2,
-      target:
-        Math.max.apply(
-          Math,
-          churchData?.map((max: any) => {
-            return max.target
-          })
-        ) + 1.2,
-    })
+  const dataMax = useMemo(() => {
+    const safeMax = (key: string) => {
+      const values = (churchData ?? [])
+        .map((row: any) => Number(row?.[key]))
+        .filter((n) => Number.isFinite(n) && n > 0)
+      return values.length ? Math.max(...values) * 1.2 : 0
+    }
+    return {
+      attendance: safeMax('attendance'),
+      income: safeMax('income'),
+      target: safeMax('target'),
+    }
   }, [churchData])
 
-  type CustomToolTipProps = {
-    payload?: any
-    label?: string
-    active?: boolean
-  }
-  const CustomTooltip = ({ active, payload, label }: CustomToolTipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="custom-tooltip p-2">
-          <p className="label">{`Week ${label}`}</p>
-          <p className="intro">{`${payload[0].name}: ${payload[0].value}`}</p>
-          {!!payload[1] && (
-            <p className="intro">{`${payload[1].name}: ${payload[1].value}`}</p>
-          )}
+  const primaryColor = PRIMARY_COLOR_BY_TYPE[graphType]
 
-          {!!payload[0] && !!payload[0].payload.numberOfServices && (
-            <p className="intro">{`Number of Services: ${payload[0].payload.numberOfServices}`}</p>
-          )}
+  const graphTitle = stat2
+    ? `${capitalise(graphType)} ${capitalise(stat1)} and ${capitalise(stat2)}`
+    : income
+    ? `${graphType} ${capitalise(stat1)} Graph`
+    : capitalise(stat1)
 
-          {!!payload[0] && !!payload[0].payload.numberOfUrvans && (
-            <p className="intro">{`Number of Urvans: ${payload[0].payload.numberOfUrvans}`}</p>
-          )}
-          {!!payload[0] && !!payload[0].payload.numberOfSprinters && (
-            <p className="intro">{`Number of Sprinters: ${payload[0].payload.numberOfSprinters}`}</p>
-          )}
-          {!!payload[0] && !!payload[0].payload.numberOfCars && (
-            <p className="intro">{`Number of Cars: ${payload[0].payload.numberOfCars}`}</p>
-          )}
-        </div>
-      )
+  const handleBarClick = (data: any, statKey: string) => {
+    if (!data?.id || data?.category?.includes('Aggregate')) return
+
+    const routes: Record<string, { typename: string; route: string }> = {
+      bussing: { typename: 'BussingRecord', route: 'bussing-details' },
+      onStageAttendance: {
+        typename: 'StageAttendanceRecord',
+        route: 'onstage-attendance-details',
+      },
     }
+    const fallback = { typename: 'ServiceRecord', route: 'service-details' }
+    const action =
+      statKey === 'income' && graphType === 'bussing'
+        ? fallback
+        : routes[graphType] ?? fallback
 
-    return null
-  }
-
-  const primaryColor: { [key in GraphTypes]: string } = {
-    bussing: 'var(--chart-primary-color)',
-    bussingAggregate: 'var(--chart-primary-color)',
-    services: 'var(--chart-primary-color)',
-    serviceAggregate: 'var(--chart-primary-color)',
-    serviceAggregateWithDollar: 'var(--chart-primary-color)',
-
-    swellBussing: 'var(--chart-swollen-bussing-attendance-color)',
-    rehearsals: 'var(--chart-hub-attendance-color)',
-    rehearsalAggregate: 'var(--chart-hub-attendance-color)',
-    ministryMeeting: 'var(--chart-hub-attendance-color)',
-    onStageAttendance: 'var(--chart-onstage-attendance-color)',
-    onStageAttendanceAggregate: 'var(--chart-onstage-attendance-color)',
-
-    multiplicationAggregate: 'var(--chart-primary-color)',
-  }
-
-  const secondaryColor: { [key in GraphTypes]: string } = {
-    bussing: 'var(--chart-secondary-color)',
-    bussingAggregate: 'var(--chart-secondary-color)',
-    services: 'var(--chart-secondary-color)',
-    serviceAggregate: 'var(--chart-secondary-color)',
-    serviceAggregateWithDollar: 'var(--chart-secondary-color)',
-
-    swellBussing: 'var(--chart-swollen-bussing-attendance-color)',
-    rehearsals: 'var(--chart-hub-income-color)',
-    rehearsalAggregate: 'var(--chart-hub-income-color)',
-    ministryMeeting: 'var(--chart-hub-income-color)',
-    onStageAttendance: 'var(--chart-onstage-attendance-color)',
-    onStageAttendanceAggregate: 'var(--chart-onstage-attendance-color)',
-
-    multiplicationAggregate: 'var(--chart-secondary-color)',
+    clickCard({ ...data, __typename: action.typename })
+    navigate(`/${props.church}/${action.route}`)
   }
 
   return (
-    <div className="row mt-2">
-      <div className="col">
-        <PlaceholderCustom loading={loading} as="p">
-          <p className="chart-title font-weight-bold m-0">
-            {stat2 &&
-              `${capitalise(graphType)} ${capitalise(stat1)} and ${capitalise(
-                stat2
-              )}`}
-            {!stat2 && income && `${graphType} ${capitalise(stat1)} Graph`}
-            {!income && `${capitalise(stat1)}`}
-          </p>
-        </PlaceholderCustom>
+    <div className="w-full">
+      <div className="flex items-baseline justify-between gap-3">
+        {loading ? (
+          <Skeleton className="h-5 w-40" />
+        ) : (
+          <p className="text-sm font-medium text-foreground">{graphTitle}</p>
+        )}
         {secondaryTitle && (
-          <PlaceholderCustom loading={loading} as="p">
-            <p className="chart-title church-name">{`${secondaryTitle}`}</p>
-          </PlaceholderCustom>
+          <p className="truncate text-xs text-muted-foreground">
+            {secondaryTitle}
+          </p>
         )}
-        {loading && (
-          <Container className="chart-loader d-flex align-items-center justify-content-center">
-            <ScaleLoader color="gray" className="mt-5" />
-          </Container>
-        )}
-        {!loading && (
-          <ResponsiveContainer width="100%" height={330}>
-            <BarChart data={sortedData} margin={{ top: 20 }}>
-              <defs>
-                <linearGradient
-                  id="colorPrimary"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="100%"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor={primaryColor[graphType]}
-                    stopOpacity="1"
-                  />
-                  <stop
-                    offset="90%"
-                    stopColor={primaryColor[graphType]}
-                    stopOpacity="0.1"
-                  />
-                </linearGradient>
-                <linearGradient
-                  id="colorSecondary"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="100%"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor={secondaryColor[graphType]}
-                    stopOpacity="1"
-                  />
-                  <stop
-                    offset="80%"
-                    stopColor={secondaryColor[graphType]}
-                    stopOpacity="0.1"
-                  />
-                </linearGradient>
-              </defs>
+      </div>
 
-              <Bar
-                name={capitalise(stat1)}
-                dataKey={`${stat1}`}
-                barSize={30}
-                yAxisId="left"
-                fill="url(#colorPrimary)"
-                onClick={(data: any) => {
-                  const graphTypeActions: {
-                    [key in string]: { typename: string; route: string }
-                  } = {
-                    bussing: {
-                      typename: 'BussingRecord',
-                      route: 'bussing-details',
-                    },
-                    onStageAttendance: {
-                      typename: 'StageAttendanceRecord',
-                      route: 'onstage-attendance-details',
-                    },
-                    default: {
-                      typename: 'ServiceRecord',
-                      route: 'service-details',
-                    },
-                  }
-
-                  if (data.category?.includes('Aggregate') || !data.id) {
-                    return
-                  }
-
-                  const action =
-                    graphTypeActions[graphType] || graphTypeActions['default']
-                  clickCard({ ...data, __typename: action.typename })
-                  navigate(`/${props.church}/${action.route}`)
-                }}
-              >
-                <LabelList dataKey={`${stat1}`} position="top" />
-              </Bar>
-              {stat2 && (
-                <Bar
-                  name={capitalise(stat2)}
-                  dataKey={`${stat2}`}
-                  barSize={35}
-                  yAxisId="right"
-                  fill="url(#colorSecondary)"
-                  onClick={(data: any) => {
-                    if (data.category.includes('Aggregate')) {
-                      return
-                    }
-
-                    if (data.id && graphType === 'bussing') {
-                      clickCard({ ...data, __typename: 'BussingRecord' })
-                      navigate(`/${props.church}/bussing-details`)
-                    } else if (data.id) {
-                      clickCard({ ...data, __typename: 'ServiceRecord' })
-                      navigate(`/${props.church}/service-details`)
-                    }
-                  }}
-                >
-                  <LabelList dataKey={`${stat2}`} position="top" />
-                </Bar>
-              )}
+      <div className="mt-3 h-72 w-full">
+        {loading ? (
+          <Skeleton className="h-full w-full rounded-lg" />
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={sortedData}
+              margin={{ top: 24, right: 12, left: 0, bottom: 10 }}
+              barCategoryGap={sortedData.length <= 2 ? '28%' : '20%'}
+            >
+              <CartesianGrid
+                stroke="hsl(var(--border))"
+                strokeDasharray="4 6"
+                vertical={false}
+                opacity={0.55}
+              />
 
               <XAxis
                 dataKey="week"
                 tickLine={false}
-                tickFormatter={(week) => {
-                  if (!week) {
-                    return 'No Data Found'
-                  }
-                  return 'Week ' + week
+                axisLine={false}
+                tick={{
+                  fill: 'hsl(var(--muted-foreground))',
+                  fontSize: 11,
+                  fontWeight: 500,
                 }}
+                interval={0}
+                tickFormatter={(week) => (week ? `W${week}` : '—')}
               />
               <YAxis
-                hide={true}
+                hide
                 type="number"
-                domain={[0, dataMax[`${stat1}`]]}
+                domain={[0, dataMax[stat1] || 'auto']}
                 yAxisId="left"
                 orientation="left"
               />
               <YAxis
-                hide={true}
+                hide
                 type="number"
-                domain={[0, stat2 ? dataMax[`${stat2}`] : '']}
+                domain={[0, stat2 ? dataMax[stat2] || 'auto' : 'auto']}
                 yAxisId="right"
                 orientation="right"
               />
 
               <Tooltip
-                wrapperStyle={{
-                  background: 'rgba(24, 24, 24, 0.3)',
-                }}
-                content={<CustomTooltip />}
-                contentStyle={{
-                  backgroundColor: 'rgba(24, 24, 24, 0.2)',
-                  color: '#FFFFFF',
-                }}
-                cursor={{ stroke: 'grey', strokeWidth: 1, fillOpacity: 0 }}
+                cursor={{ fill: 'hsl(var(--accent) / 0.24)' }}
+                content={<ChartTooltip />}
               />
-              <Legend />
+
+              <Bar
+                name={capitalise(stat1)}
+                dataKey={stat1}
+                yAxisId="left"
+                fill={primaryColor}
+                radius={[6, 6, 0, 0]}
+                maxBarSize={48}
+                cursor="pointer"
+                onClick={(data: any) => handleBarClick(data, stat1)}
+              >
+                <LabelList
+                  dataKey={stat1}
+                  position="top"
+                  content={renderBarLabel}
+                />
+              </Bar>
+
+              {stat2 && (
+                <Bar
+                  name={capitalise(stat2)}
+                  dataKey={stat2}
+                  yAxisId="right"
+                  fill={SECONDARY_COLOR}
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={48}
+                  cursor="pointer"
+                  onClick={(data: any) => handleBarClick(data, stat2)}
+                >
+                  <LabelList
+                    dataKey={stat2}
+                    position="top"
+                    content={renderBarLabel}
+                  />
+                </Bar>
+              )}
             </BarChart>
           </ResponsiveContainer>
         )}

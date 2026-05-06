@@ -231,7 +231,7 @@ wrappers by replacing the inner rendered element. Keep the Formik `Field` /
 | --- | --- | --- |
 | Table | `<Table>` from `ui/table` | Responsive; add horizontal scroll wrapper on mobile |
 | Avatar | `<Avatar>` from `ui/avatar` | Replaces `<UserProfileIcon>` and `<LeaderAvatar>` |
-| Chart | Keep `recharts` (`<ChurchGraph>`) | Restyle container only |
+| Trend chart (services / bussing / income) | **`pages/dashboards/TrendSpark`** — see "Trend / graph pages" section below. **Never use `<ChurchGraph>` on a redesigned page** — it is legacy. |
 | Pie chart | Keep `<PieChart>` | Restyle container |
 | Timeline | Restyle existing `<Timeline>` | Keep logic; swap class names |
 
@@ -412,6 +412,79 @@ Full-width section below the grid: history, timeline, related lists.
 - Right column rows: `divide-y divide-border` inside the card, `p-4` per row — never use `gap` for list rows inside a card.
 - History / timeline always goes full-width **below** the 3-column grid, not inside any column.
 - On mobile: `flex flex-col gap-6` collapses the grid to a single column in DOM order (left → center → right → history).
+
+### Per-level graph pages (`/{level}/graphs`)
+
+Two distinct chart components live in this codebase. **Use the right one
+for the surface.**
+
+| Surface | Chart |
+| --- | --- |
+| `pages/dashboards/UserDashboard.tsx` | `pages/dashboards/TrendSpark` (dashboard-internal — do not import elsewhere) |
+| Per-level graph pages — `pages/services/graphs/*Graphs.tsx` (Bacenta, Council, Stream, Campus, Fellowship, Hub, etc.) | **`components/ChurchGraph`** (the canonical chart for graph pages) |
+
+`ChurchGraph` was modernized in 2026-Q2 to match the dashboard's visual
+language: token colours via `hsl(var(--token))`, dashed gridlines, rounded
+bar caps `radius={[6, 6, 0, 0]}`, compact-number `LabelList`, themed
+tooltip with `rounded-xl border border-border bg-card shadow-lg`, and a
+`<Skeleton>` loading state. The legacy `--chart-*-color` CSS variables in
+`ChurchGraph.css` are deprecated. **Keep `ChurchGraph` and `TrendSpark`
+visually aligned** — when you change one, port the change into the other in
+the same PR.
+
+**Page structure (in order):**
+
+1. Page header — eyebrow caption + bold church name.
+2. Leader avatar in a Shadcn `<Card>` (uses `<LeaderAvatar>` — already on Tailwind).
+3. **Stat header — always 4 cards, regardless of which chart tab is active:** `Membership` (clickable Link to `/{level}/members`), `Avg Weekly Bussing`, `Avg Weekly Attendance`, `Avg Weekly Income`. Layout: `grid grid-cols-2 gap-4 lg:grid-cols-4`. Income card shows `Not tracked` when `currentUser.noIncomeTracking`, never hidden.
+4. Shadcn `<Tabs>` to switch the **chart** between graph types (Bussing / Services for Bacenta; level-appropriate options elsewhere). The tabs do **not** scope the stat header above.
+5. `<Card>` containing `<ChurchGraph>` plus a footer row with `<ChevronLeft/>` Older — week-range label — Newer `<ChevronRight/>` buttons (`min-h-[44px]`).
+
+**Pagination is client-side over a fetched 24-week window.** Fetch the
+graph query once (`limit: 24, skip: 0` — no refetch on Older/Newer), keep
+a `windowEnd` state, and slice `[windowEnd - 4, windowEnd]` of the active
+dataset for the chart. **Server-side `skip` pagination is forbidden** —
+refetching the whole query would flash the membership / leader / averages.
+
+**The header averages must remain stable across pagination.** Compute them
+from the full 24-week dataset (`getMonthlyStatAverage` already takes the
+latest 4) — never derive them from the windowed slice.
+
+**Bussing recency filter** — `Bacenta.bussing` SDL has no recency cap, so
+dormant Bacentas leak years-old bussing into the average. Always drop
+records older than `currentYear - 1` before charting / averaging bussing
+data:
+
+```ts
+const recentBussingData = bussingData.filter((r) => {
+  if (typeof r?.year === 'number' && Number.isFinite(r.year))
+    return r.year >= currentYear - 1
+  if (r?.date) {
+    const y = new Date(r.date).getFullYear()
+    if (Number.isFinite(y)) return y >= currentYear - 1
+  }
+  return false
+})
+```
+
+**Number formatting** —
+`Number(avg).toLocaleString('en-GH', { maximumFractionDigits: 0 })` for
+counts; `Intl.NumberFormat('en-GH', { style: 'currency', currency, maximumFractionDigits: 0 })`
+for money (with a try/catch fallback to `'GHS'`). Empty values render as
+`'—'`, not `0`. `tabular-nums` everywhere.
+
+**What NOT to do:**
+
+- ❌ Replace `<ChurchGraph>` with `<TrendSpark>` on graph pages. They are
+  not interchangeable; `TrendSpark` is dashboard-internal.
+- ❌ Refetch the graph query on Older/Newer. The membership / leader /
+  averages would flash on every click.
+- ❌ Hide the income / bussing / attendance card when its tab isn't active.
+  All three averages are header content, not tab content.
+- ❌ Hard-code chart colours. Always `hsl(var(--token))`.
+
+Full reference and rationale: `web-react-ts/kb/02-design-system.md` →
+"Trend / graph pages".
 
 ### Dashboard layout (with sidebar on md+)
 
