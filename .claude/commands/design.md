@@ -276,6 +276,40 @@ Rendered structure:
 └──────────────────────────────────────┘
 ```
 
+### Desktop layout rule — MANDATORY
+
+**Every page MUST use at least a 2-column layout on `lg` screens.** A single
+full-width column is only acceptable on mobile. On desktop (`lg+`), split the
+content into a primary column and a secondary/supporting column at minimum.
+
+| Page type | Desktop grid | Mobile |
+| --- | --- | --- |
+| Entity detail (member, church, leader) | 3-column: `lg:grid-cols-[280px_1fr_280px]` | Single column (see profile layout below) |
+| Detail / summary page (service, bussing, record) | 2-column: `lg:grid-cols-[1fr_360px]` — main content left, summary/actions right | Single column |
+| Form page | 2-column: `lg:grid-cols-[1fr_320px]` — form left, help/context right | Single column |
+| List / directory page | 2-column: `lg:grid-cols-[1fr_280px]` — list left, filters/actions right | Single column |
+| Dashboard | Stat grid `grid-cols-2 lg:grid-cols-4` + chart, then optional sidebar | 2-col stat grid |
+
+For a 2-column layout, the canonical split is:
+
+```tsx
+{/* 2-column on lg+, stacked on mobile */}
+<div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+  {/* Primary column */}
+  <div className="space-y-4">
+    {/* Main content — stats, data, form */}
+  </div>
+
+  {/* Secondary column — sticky summary, actions, related info */}
+  <div className="space-y-4 lg:sticky lg:top-[73px]">
+    {/* Supporting cards — totals, quick actions, links */}
+  </div>
+</div>
+```
+
+Adjust column widths to fit the content — `360px` is a guide, not a hard rule.
+`280px` for narrower supporting columns; `400px` for wider ones.
+
 ### Page layout (mobile-first)
 
 ```tsx
@@ -286,8 +320,19 @@ Rendered structure:
     <h1 className="text-lg font-semibold text-foreground">Page Title</h1>
   </header>
 
-  <main className="px-4 py-5 space-y-6 max-w-2xl mx-auto">
-    {/* content */}
+  {/* max-w-6xl on desktop to give the 2-column grid room */}
+  <main className="max-w-6xl mx-auto px-4 lg:px-6 py-5 space-y-6">
+
+    {/* 2-column grid on lg+, single column on mobile — MANDATORY */}
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+      <div className="space-y-4">
+        {/* Primary content */}
+      </div>
+      <div className="space-y-4 lg:sticky lg:top-[73px]">
+        {/* Summary / supporting cards */}
+      </div>
+    </div>
+
   </main>
 </div>
 ```
@@ -643,6 +688,7 @@ like, referencing the visual language above. Confirm:
 - Is this a list / directory? → Use list item pattern.
 - Is this a dashboard? → Use stat card grid + chart cards.
 - Is this an entity detail page (member, church, leader)? → **Use the 3-column desktop layout** (`lg:grid-cols-[280px_1fr_280px]`): left = identity panel, center = primary data, right = contact/membership. History spans full width below the grid.
+- **Desktop layout (MANDATORY):** State explicitly which 2-column (or 3-column) grid you will use on `lg`. A single full-width column on desktop is never acceptable. Pick the appropriate split from the "Desktop layout rule" table above and call it out here.
 
 **Wait for user approval** of the design intent before writing code, unless
 the page is trivial (< 80 lines, no layout change).
@@ -689,3 +735,7 @@ the page is trivial (< 80 lines, no layout change).
       element.
 - ❌ Skip `isAuth(...)` in any resolver (backend rule, unrelated to this skill).
 - ❌ Import `@auth0/auth0-react` — dead dep.
+- ❌ **Single-column desktop layout.** Every page MUST have at least a 2-column
+      grid on `lg` screens. A `max-w-2xl mx-auto` single column is mobile-only.
+      On desktop, split primary content and a supporting/summary column at
+      minimum — see the "Desktop layout rule" table above.
