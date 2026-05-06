@@ -2,7 +2,6 @@ import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChurchContext } from 'contexts/ChurchContext'
 import BusIcon from 'assets/icons/BusIcon'
-import FellowshipIcon from 'assets/icons/FellowshipIcon'
 import BacentaIcon from 'assets/icons/BacentaIcon'
 import GovernorshipIcon from 'assets/icons/GovernorshipIcon'
 import CouncilIcon from 'assets/icons/CouncilIcon'
@@ -49,8 +48,6 @@ type MemberDisplayCardProps = {
 
 const ChurchTypeIcon = ({ typename }: { typename: string }) => {
   switch (typename) {
-    case 'Fellowship':
-      return <FellowshipIcon />
     case 'Bacenta':
       return <BacentaIcon />
     case 'Governorship':

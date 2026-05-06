@@ -390,7 +390,7 @@ const bankingMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitMe('Fellowship'), context.jwt.roles)
+    isAuth(permitMe('Bacenta'), context.jwt.roles)
 
     const session = context.executionContext.session()
 

@@ -1,31 +1,5 @@
 import { gql } from '@apollo/client'
 
-export const FELLOWSHIP_AVG_WEEKDAY_STATS = gql`
-  query fellowshipAvgWeekdayStats($fellowshipId: ID, $days: Int!) {
-    fellowships(where: { id: $fellowshipId }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-      }
-      avgWeekdayStats(days: $days) {
-        income
-        attendance
-      }
-      council {
-        id
-        name
-        avgFellowshipWeekdayStats(days: $days) {
-          income
-          attendance
-        }
-      }
-    }
-  }
-`
-
 export const BACENTA_AVG_WEEKDAY_STATS = gql`
   query bacentaAvgWeekdayStats($bacentaId: ID, $days: Int!) {
     bacentas(where: { id: $bacentaId }) {

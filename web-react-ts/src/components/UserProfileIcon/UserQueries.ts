@@ -38,10 +38,6 @@ export const GET_LOGGED_IN_USER = gql`
       }
 
       # Servant leadership relationships
-      leadsFellowship {
-        id
-        name
-      }
       leadsBacenta {
         id
         name

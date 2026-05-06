@@ -4,7 +4,6 @@ import {
   DISPLAY_BACENTA_MEMBERSHIP,
   DISPLAY_CAMPUS_MEMBERSHIP,
   DISPLAY_COUNCIL_MEMBERSHIP,
-  DISPLAY_FELLOWSHIP_MEMBERSHIP,
   DISPLAY_GOVERNORSHIP_MEMBERSHIP,
   DISPLAY_OVERSIGHT_MEMBERSHIP,
   DISPLAY_STREAM_MEMBERSHIP,
@@ -44,7 +43,6 @@ import {
 } from './download-csv-helpers'
 
 export type DownloadableLevel =
-  | 'Fellowship'
   | 'Bacenta'
   | 'Governorship'
   | 'Council'
@@ -53,7 +51,6 @@ export type DownloadableLevel =
   | 'Oversight'
 
 const QUERY_BY_LEVEL: Record<DownloadableLevel, DocumentNode> = {
-  Fellowship: DISPLAY_FELLOWSHIP_MEMBERSHIP,
   Bacenta: DISPLAY_BACENTA_MEMBERSHIP,
   Governorship: DISPLAY_GOVERNORSHIP_MEMBERSHIP,
   Council: DISPLAY_COUNCIL_MEMBERSHIP,
@@ -63,7 +60,6 @@ const QUERY_BY_LEVEL: Record<DownloadableLevel, DocumentNode> = {
 }
 
 const DATA_KEY_BY_LEVEL: Record<DownloadableLevel, string> = {
-  Fellowship: 'fellowships',
   Bacenta: 'bacentas',
   Governorship: 'governorships',
   Council: 'councils',

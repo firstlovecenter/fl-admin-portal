@@ -80,15 +80,6 @@ type Member {
     )
   loggedHistory: [HistoryLog!]! @relationship(type: "LOGGED_BY", direction: IN)
   bacenta: Bacenta @relationship(type: "BELONGS_TO", direction: OUT)
-  leadsFellowship: [Fellowship!]! @relationship(type: "LEADS", direction: OUT)
-  leadsFellowshipCount: Int
-    @cypher(
-      statement: """
-      MATCH (this)-[:LEADS]->(fellowships:Fellowship)
-      RETURN COUNT(fellowships) AS leadsFellowshipCount
-      """
-      columnName: "leadsFellowshipCount"
-    )
   leadsBacenta: [Bacenta!]! @relationship(type: "LEADS", direction: OUT)
   leadsBacentaCount: Int
     @cypher(
@@ -336,7 +327,6 @@ type HistoryLog {
   createdAt: TimeGraph @relationship(type: "RECORDED_ON", direction: OUT)
   loggedBy: Member @relationship(type: "LOGGED_BY", direction: OUT)
   leaders: [Member!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  fellowship: [Fellowship!]! @relationship(type: "HAS_HISTORY", direction: IN)
   bacenta: [Bacenta!]! @relationship(type: "HAS_HISTORY", direction: IN)
   governorship: [Governorship!]!
     @relationship(type: "HAS_HISTORY", direction: IN)
@@ -394,7 +384,7 @@ type Denomination implements Church {
   members: [Member!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*7]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
       """
       columnName: "members"
@@ -1203,148 +1193,4 @@ type Bacenta implements Church {
       """
       columnName: "hubs"
     )
-}
-
-# Shared Units: Fellowship, Fellowship
-type Fellowship implements Church {
-  id: ID @id
-  bankingCode: Int
-  name: String!
-  location: Point
-  stream_name: String
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*4]-(stream:Stream)
-      RETURN DISTINCT toLower(stream.name) AS stream_name
-      """
-      columnName: "stream_name"
-    )
-  vacationStatus: String!
-    @cypher(
-      statement: """
-      MATCH (this)
-      UNWIND labels(this) AS status
-      WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
-      RETURN status
-      """
-      columnName: "status"
-    )
-  hubStatus: Boolean!
-    @cypher(
-      statement: "MATCH (this) RETURN EXISTS((this)<-[:HAS]-(:Hub)) AS hubStatus"
-      columnName: "hubStatus"
-    )
-  bacenta: Bacenta @relationship(type: "HAS", direction: IN)
-  leader: Member @relationship(type: "LEADS", direction: IN)
-  members: [Member!]!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
-      """
-      columnName: "members"
-    )
-  memberCount: Int!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
-      """
-      columnName: "memberCount"
-    )
-  ministryMemberCount: Int
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)-[:BELONGS_TO]->(:Ministry)
-      RETURN COUNT(DISTINCT members) AS ministryMemberCount
-      """
-      columnName: "ministryMemberCount"
-    )
-  pastorCount: Int
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
-      """
-      columnName: "pastorCount"
-    )
-  meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC LIMIT $limit"
-      columnName: "history"
-    )
-  serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
-  services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      WITH DISTINCT records,date
-      RETURN records AS services ORDER BY date.date DESC SKIP $skip LIMIT $limit
-      """
-      columnName: "services"
-    )
-  labels: [String]
-    @cypher(
-      statement: """
-      MATCH (this)
-      RETURN labels(this) AS labels
-      """
-      columnName: "labels"
-    )
-
-  council: Council
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*3]-(council:Council)
-      RETURN council AS council
-      """
-      columnName: "council"
-    )
-}
-type ClosedFellowship {
-  id: ID @id
-  bankingCode: Int
-  name: String
-  location: Point
-  stream_name: String
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*4]-(stream:Stream)
-      RETURN DISTINCT toLower(stream.name) AS stream_name
-      """
-      columnName: "stream_name"
-    )
-  bacenta: Bacenta @relationship(type: "HAS", direction: IN)
-  leader: Member @relationship(type: "LEADS", direction: IN)
-  members: [Member!]! @relationship(type: "BELONGS_TO", direction: IN)
-  meetingDay: ServiceDay @relationship(type: "MEETS_ON", direction: OUT)
-  history: [HistoryLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
-  serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
-  services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      WITH DISTINCT records, date
-      RETURN records AS services ORDER BY date.date DESC SKIP $skip LIMIT $limit
-      """
-      columnName: "services"
-    )
-  labels: [String]
-    @cypher(
-      statement: """
-      MATCH (this)
-      RETURN labels(this) AS labels
-      """
-      columnName: "labels"
-    )
-  council: Council
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*3]-(council:Council)
-      RETURN council AS council
-      """
-      columnName: "council"
-    )
-  hub: Hub! @relationship(type: "HAS", direction: IN)
 }

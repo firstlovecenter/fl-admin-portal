@@ -34,7 +34,6 @@ interface ChurchRoleScopeContextValue {
 }
 
 const dashboardScopeSupportedRoles: Role[] = [
-  'leaderFellowship',
   'leaderBacenta',
   'leaderGovernorship',
   'leaderCouncil',

@@ -277,7 +277,7 @@ const HubForm = ({ initialValues, onSubmit, title, newHub }: HubFormProps) => {
                       </Row>
                       <small className="text-muted">
                         Click this button if you are currently at your
-                        fellowship service venue
+                        hub service venue
                       </small>
                     </Col>
                   </Row>

@@ -94,15 +94,15 @@ export const matchChurchQuery = `
 
   WITH church, labels(church) as labels 
   UNWIND labels AS label 
-  WITH church, label WHERE label IN ['Fellowship','Bacenta', 'Governorship', 'Council', 
-  'Stream', 'Campus', 'Oversight', 'Denomination', 'ClosedFellowship', 'ClosedBacenta', 'CreativeArts', 'Ministry', 'HubCouncil', 'Hub']
+  WITH church, label WHERE label IN ['Bacenta', 'Governorship', 'Council',
+  'Stream', 'Campus', 'Oversight', 'Denomination', 'ClosedBacenta', 'CreativeArts', 'Ministry', 'HubCouncil', 'Hub']
 
   RETURN church.id AS id, church.name AS name, church.firstName AS firstName, church.lastName AS lastName, label AS type
   `
 
 export const getChurchDataQuery = `
   MATCH (church {id:$id}) 
-  WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream 
+  WHERE church:Bacenta OR church:Constituency OR church:Council OR church:Stream
   OR church:Campus OR church:Oversight OR church:Denomination
   OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
 
@@ -146,7 +146,7 @@ RETURN member IS NOT NULL AS predicate, member AS member
 
 export const checkMemberHasNoActiveRelationships = `
 MATCH p=(member:Member {id:$id})-[:LEADS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|COUNTS_ARRIVALS_FOR|IS_TELLER_FOR]->(church)
-WHERE NOT church:ClosedFellowship AND NOT church:ClosedBacenta AND NOT church:ClosedGovernorship AND NOT church:ClosedCouncil AND NOT church:ClosedStream AND NOT church:ClosedCampus AND NOT church:ClosedOversight AND NOT church:ClosedDenomination 
+WHERE NOT church:ClosedBacenta AND NOT church:ClosedGovernorship AND NOT church:ClosedCouncil AND NOT church:ClosedStream AND NOT church:ClosedCampus AND NOT church:ClosedOversight AND NOT church:ClosedDenomination 
 AND NOT church:ClosedCreativeArts AND NOT church:ClosedMinistry AND NOT church:ClosedHubCouncil AND NOT church:ClosedHub
 RETURN COUNT(p) as relationshipCount
 `

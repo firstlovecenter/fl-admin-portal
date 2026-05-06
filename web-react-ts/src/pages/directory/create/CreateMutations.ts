@@ -84,36 +84,6 @@ export const ADD_MEMBER_TITLE_MUTATION = gql`
   }
 `
 
-export const CREATE_FELLOWSHIP_MUTATION = gql`
-  mutation CreateFellowship(
-    $name: String!
-    $bacentaId: ID!
-    $leaderId: ID!
-    $meetingDay: String!
-    $venueLongitude: Float
-    $venueLatitude: Float
-  ) {
-    CreateFellowship(
-      name: $name
-      bacentaId: $bacentaId
-      leaderId: $leaderId
-      meetingDay: $meetingDay
-      venueLongitude: $venueLongitude
-      venueLatitude: $venueLatitude
-    ) {
-      id
-      name
-      stream_name
-      council {
-        id
-      }
-      bacenta {
-        id
-      }
-    }
-  }
-`
-
 export const CREATE_BACENTA_MUTATION = gql`
   mutation CreateBacenta(
     $name: String!

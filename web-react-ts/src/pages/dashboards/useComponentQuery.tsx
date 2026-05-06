@@ -17,7 +17,6 @@ import { useState } from 'react'
 import { useContext, useEffect } from 'react'
 import { parseRoles } from './dashboard-utils'
 import {
-  SERVANT_FELLOWSHIP_LEADER,
   SERVANT_BACENTA_LEADER,
   SERVANT_GOVERNORSHIP_LEADER,
   SERVANT_COUNCIL_LEADER,
@@ -88,7 +87,6 @@ const useComponentQuery = (props?: UseComponentQuery) => {
   const { currentUser } = useContext(MemberContext)
   const [assessmentChurch, setAssessmentChurch] =
     useState<DashboardChurchType>()
-  const [fellowshipLeaderQuery] = useLazyQuery(SERVANT_FELLOWSHIP_LEADER)
   const [bacentaLeaderQuery] = useLazyQuery(SERVANT_BACENTA_LEADER)
   const [governorshipLeaderQuery] = useLazyQuery(SERVANT_GOVERNORSHIP_LEADER)
   const [councilLeaderQuery] = useLazyQuery(SERVANT_COUNCIL_LEADER)
@@ -134,9 +132,6 @@ const useComponentQuery = (props?: UseComponentQuery) => {
   const church: {
     [key: string]: any
   } = {
-    Fellowship: {
-      leader: fellowshipLeaderQuery,
-    },
     Bacenta: {
       leader: bacentaLeaderQuery,
     },

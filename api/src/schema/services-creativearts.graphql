@@ -1,5 +1,5 @@
 extend type Hub {
-  servicesThisWeek: [Fellowship!]!
+  servicesThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -49,7 +49,7 @@ extend type Hub {
       """
       columnName: "result"
     )
-  cancelledServicesThisWeek: [Fellowship!]!
+  cancelledServicesThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -99,7 +99,7 @@ extend type Hub {
       """
       columnName: "result"
     )
-  formDefaultersThisWeek: [Fellowship!]!
+  formDefaultersThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -153,7 +153,7 @@ extend type Hub {
       """
       columnName: "result"
     )
-  bankingDefaultersThisWeek: [Fellowship!]!
+  bankingDefaultersThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -209,7 +209,7 @@ extend type Hub {
       """
       columnName: "result"
     )
-  bankedThisWeek: [Fellowship!]!
+  bankedThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -272,7 +272,7 @@ extend type HubCouncil {
       columnName: "result"
     )
 
-  servicesThisWeek: [Fellowship!]!
+  servicesThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -322,7 +322,7 @@ extend type HubCouncil {
       """
       columnName: "result"
     )
-  cancelledServicesThisWeek: [Fellowship!]!
+  cancelledServicesThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -372,7 +372,7 @@ extend type HubCouncil {
       """
       columnName: "result"
     )
-  formDefaultersThisWeek: [Fellowship!]!
+  formDefaultersThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -426,7 +426,7 @@ extend type HubCouncil {
       """
       columnName: "result"
     )
-  bankingDefaultersThisWeek: [Fellowship!]!
+  bankingDefaultersThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -482,7 +482,7 @@ extend type HubCouncil {
       """
       columnName: "result"
     )
-  bankedThisWeek: [Fellowship!]!
+  bankedThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -803,7 +803,7 @@ extend type HubCouncil {
 }
 
 extend type Ministry {
-  servicesThisWeek: [Fellowship!]!
+  servicesThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -853,7 +853,7 @@ extend type Ministry {
       """
       columnName: "result"
     )
-  cancelledServicesThisWeek: [Fellowship!]!
+  cancelledServicesThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -903,7 +903,7 @@ extend type Ministry {
       """
       columnName: "result"
     )
-  formDefaultersThisWeek: [Fellowship!]!
+  formDefaultersThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -957,7 +957,7 @@ extend type Ministry {
       """
       columnName: "result"
     )
-  bankingDefaultersThisWeek: [Fellowship!]!
+  bankingDefaultersThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1013,7 +1013,7 @@ extend type Ministry {
       """
       columnName: "result"
     )
-  bankedThisWeek: [Fellowship!]!
+  bankedThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1391,7 +1391,7 @@ extend type Ministry {
 }
 
 extend type CreativeArts {
-  servicesThisWeek: [Fellowship!]!
+  servicesThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1441,7 +1441,7 @@ extend type CreativeArts {
       """
       columnName: "result"
     )
-  cancelledServicesThisWeek: [Fellowship!]!
+  cancelledServicesThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1491,7 +1491,7 @@ extend type CreativeArts {
       """
       columnName: "result"
     )
-  formDefaultersThisWeek: [Fellowship!]!
+  formDefaultersThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1545,7 +1545,7 @@ extend type CreativeArts {
       """
       columnName: "result"
     )
-  bankingDefaultersThisWeek: [Fellowship!]!
+  bankingDefaultersThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1601,7 +1601,7 @@ extend type CreativeArts {
       """
       columnName: "result"
     )
-  bankedThisWeek: [Fellowship!]!
+  bankedThisWeek: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)

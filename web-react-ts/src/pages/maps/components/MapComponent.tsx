@@ -29,7 +29,6 @@ import LoadingScreen from 'components/base-component/LoadingScreen'
 import './MapComponent.css'
 import {
   MemberMapData,
-  Neo4jLocation,
   getMapIcon,
   getMapIconClass,
 } from './map-utils'
@@ -63,7 +62,7 @@ export type PlaceType = {
   typename:
     | 'GooglePlace'
     | 'Member'
-    | 'Fellowship'
+    | 'Bacenta'
     | 'IndoorVenue'
     | 'OutdoorVenue'
     | 'HighSchool'
@@ -121,8 +120,6 @@ const MapComponent = (props: MapComponentProps) => {
         return 'Google Place'
       case 'Member':
         return ''
-      case 'Fellowship':
-        return 'Fellowship'
       case 'IndoorVenue':
         return 'Indoor Venue'
       case 'OutdoorVenue':
@@ -178,8 +175,8 @@ const MapComponent = (props: MapComponentProps) => {
           lng: position.coords.longitude,
         },
         name: 'Your Location',
-        typename: 'Fellowship',
-        id: 'fellowship',
+        typename: 'Member',
+        id: 'center',
       })
       mapRef.current?.panTo({
         lat: position.coords.latitude,
@@ -195,8 +192,8 @@ const MapComponent = (props: MapComponentProps) => {
     setCentre({
       position: position,
       name: 'First Love Center',
-      typename: 'Fellowship',
-      id: 'fellowship',
+      typename: 'Member',
+      id: 'center',
     })
     setPlaces(await searchByLocation(position))
     mapRef.current?.panTo(position)
@@ -222,8 +219,8 @@ const MapComponent = (props: MapComponentProps) => {
         setCentre({
           position: position,
           name: 'First Love Center',
-          typename: 'Fellowship',
-          id: 'fellowship',
+          typename: 'Member',
+          id: 'center',
         })
 
         setPlaces(
@@ -258,38 +255,16 @@ const MapComponent = (props: MapComponentProps) => {
   const parseMemberDesc = (description: string) => {
     const parsedDesc: {
       member: MemberMapData
-      fellowship: {
-        id: string
-        name: string
-        location: { x: number; y: number }
-      }
       council: ChurchIdAndName
       pastor: MemberMapData
       phoneNumber: string
       whatsappNumber: string
     } = JSON.parse(description)
 
-    const { member, fellowship, council, pastor, phoneNumber, whatsappNumber } =
-      parsedDesc
+    const { member, council, pastor, phoneNumber, whatsappNumber } = parsedDesc
 
     return (
       <>
-        <p
-          className="mb-2"
-          onClick={() => {
-            handleSetCentre({
-              id: fellowship.id,
-              name: fellowship.name,
-              typename: 'Fellowship',
-              position: {
-                lat: fellowship.location.y,
-                lng: fellowship.location.x,
-              },
-            })
-          }}
-        >
-          <span className="fw-bold">Fellowship:</span> {fellowship.name}
-        </p>
         <p className="mb-2">
           <span className="fw-bold">Council:</span> {council.name}
         </p>
@@ -343,109 +318,6 @@ const MapComponent = (props: MapComponentProps) => {
     )
   }
 
-  const parseFellowshipDesc = (description: string) => {
-    const parsedDesc: {
-      fellowship: {
-        id: string
-        name: string
-        location: Neo4jLocation
-      }
-      council: ChurchIdAndName
-      fellowshipLeader: MemberMapData
-      councilLeader: MemberMapData
-    } = JSON.parse(description)
-
-    const { fellowship, council, fellowshipLeader, councilLeader } = parsedDesc
-
-    return (
-      <>
-        <p
-          className="mb-2"
-          onClick={() => {
-            handleSetCentre({
-              id: fellowshipLeader.id,
-              name:
-                fellowshipLeader.firstName + ' ' + fellowshipLeader.lastName,
-              typename: 'Fellowship',
-              position: {
-                lat: fellowshipLeader.location?.y,
-                lng: fellowshipLeader.location?.x,
-              },
-            })
-          }}
-        >
-          <span className="fw-bold">Fellowship Leader:</span>{' '}
-          {fellowshipLeader.firstName} {fellowshipLeader.lastName}
-        </p>
-        <p
-          className="mb-2"
-          onClick={() => {
-            handleSetCentre({
-              id: fellowshipLeader.id,
-              name:
-                fellowshipLeader.firstName + ' ' + fellowshipLeader.lastName,
-              typename: 'Member',
-              position: {
-                lat: fellowshipLeader.location?.y,
-                lng: fellowshipLeader.location?.x,
-              },
-            })
-          }}
-        >
-          <span className="fw-bold">Fellowship:</span> {fellowship.name}
-        </p>
-        <p className="mb-2">
-          <span className="fw-bold">Council:</span> {council.name}
-        </p>
-        <p className="mb-2">
-          <span className="fw-bold">Council Leader:</span>{' '}
-          {councilLeader.firstName} {councilLeader.lastName}
-        </p>
-        <Row className="mb-2">
-          <Col className="col-auto">
-            <a href={`tel:${fellowshipLeader.phoneNumber}`}>
-              <Button size="sm" variant="primary">
-                <TelephoneFill /> Call
-              </Button>
-            </a>
-          </Col>
-          <Col className="col-auto">
-            <a href={`https://wa.me/${fellowshipLeader.whatsappNumber}`}>
-              <Button size="sm" variant="success">
-                <Whatsapp /> WhatsApp
-              </Button>
-            </a>
-          </Col>
-        </Row>
-        <Card.Footer>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => {
-              clickCard({ id: fellowship.id, __typename: 'Fellowship' })
-              navigate('/fellowship/displaydetails')
-            }}
-          >
-            View Fellowship Profile
-          </Button>
-
-          <Button
-            size="sm"
-            className="mt-2"
-            variant="outline-info"
-            onClick={() =>
-              window.open(
-                `https://www.google.com/maps/search/?api=1&query=${fellowship.location.y}%2C${fellowship.location.x}`
-              )
-            }
-          >
-            Get Directions <FaDirections />
-          </Button>
-        </Card.Footer>
-      </>
-    )
-  }
-
   const parseVenueDesc = (description: string) => {
     const parsedDesc: {
       venue: {
@@ -478,8 +350,6 @@ const MapComponent = (props: MapComponentProps) => {
     switch (place.typename) {
       case 'Member':
         return parseMemberDesc(place.description ?? '')
-      case 'Fellowship':
-        return parseFellowshipDesc(place.description ?? '')
       case 'IndoorVenue':
       case 'OutdoorVenue':
         return parseVenueDesc(place.description ?? '')

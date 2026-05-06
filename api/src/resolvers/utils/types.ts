@@ -9,7 +9,6 @@ export type RearragedCypherResponse = {
   }
 }
 export type ChurchLevel =
-  | 'Fellowship'
   | 'Bacenta'
   | 'Governorship'
   | 'Council'
@@ -22,10 +21,9 @@ export type ChurchLevel =
   | 'Ministry'
   | 'CreativeArts'
 
-export type ChurchLevelWithClosed = 'ClosedFellowship' | 'ClosedBacenta'
+export type ChurchLevelWithClosed = 'ClosedBacenta'
 
 export type Role =
-  | 'leaderFellowship'
   | 'leaderBacenta'
   | 'leaderGovernorship'
   | 'leaderCouncil'

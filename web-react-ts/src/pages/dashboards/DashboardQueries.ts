@@ -6,31 +6,6 @@ export const REMOVE_USER_ROLE = gql`
   }
 `
 
-export const FELLOWSHIP_LEADER_DASHBOARD = gql`
-  query fellowshipLeaderDashboard($fellowshipId: ID!) {
-    fellowships(where: { id: $fellowshipId }) {
-      id
-      name
-      leader {
-        id
-        fullName
-      }
-      serviceLogs {
-        id
-        historyRecord
-        serviceRecords {
-          createdAt
-          attendance
-          income
-          serviceDate {
-            date
-          }
-        }
-      }
-    }
-  }
-`
-
 export const SERVANT_CHURCH_LIST = gql`
   query churchList($id: ID!) {
     members(where: { id: $id }) {
@@ -186,7 +161,6 @@ export const SERVANT_CHURCHES_COUNT = gql`
       id
       memberCount
       basontaMembershipCount
-      leadsFellowshipCount
       leadsBacentaCount
       leadsAdminsGovernorshipCount
       leadsAdminsCouncilCount

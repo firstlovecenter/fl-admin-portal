@@ -75,7 +75,7 @@ const BankingDefaulters = () => {
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>
-            {`Fellowships That Have Not Banked This Week Despite Having Service (Week ${getWeekNumber()})`}
+            {`Bacentas That Have Not Banked This Week Despite Having Service (Week ${getWeekNumber()})`}
           </HeadingSecondary>
 
           <PlaceholderCustom

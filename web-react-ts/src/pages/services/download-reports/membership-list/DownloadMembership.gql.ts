@@ -3,7 +3,6 @@
 // file re-exports them for the legacy `/download-reports/<level>/membership`
 // pages (still wired up via TrendsMenu) until those routes are retired.
 export {
-  DISPLAY_FELLOWSHIP_MEMBERSHIP,
   DISPLAY_BACENTA_MEMBERSHIP,
   DISPLAY_GOVERNORSHIP_MEMBERSHIP,
   DISPLAY_COUNCIL_MEMBERSHIP,

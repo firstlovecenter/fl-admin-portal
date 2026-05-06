@@ -353,10 +353,6 @@ export const plural = (church: ChurchLevel | string) => {
       return 'Ministries'
     case 'CreativeArts':
       return 'Creative Arts'
-    case 'fellowship':
-      return 'fellowships'
-    case 'Fellowship':
-      return 'Fellowships'
     default:
       return church
   }
@@ -435,7 +431,6 @@ export const parseMemberCount = (number: number) => {
 interface MemberWithChurchCount extends Member {
   memberCount: number
   basontaMembershipCount: number
-  leadsFellowshipCount: number
   leadsBacentaCount: number
   leadsAdminsCouncilCount: number
   leadsAdminsGovernorshipCount: number
@@ -524,22 +519,6 @@ export const getChurchCount = (servant: MemberWithChurchCount) => {
       churchesCount = `${servant.leadsBacentaCount} Bacenta`
     } else {
       churchesCount = `${servant.leadsBacentaCount} Bacentas`
-    }
-  }
-
-  if (servant?.leadsFellowshipCount) {
-    if (churchesCount) {
-      churchesCount += ','
-
-      if (servant.leadsFellowshipCount === 1) {
-        churchesCount = `${churchesCount} ${servant.leadsFellowshipCount} Fellowship`
-      } else {
-        churchesCount = `${churchesCount} ${servant.leadsFellowshipCount} Fellowships`
-      }
-    } else if (servant.leadsFellowshipCount === 1) {
-      churchesCount = `${servant.leadsFellowshipCount} Fellowship`
-    } else {
-      churchesCount = `${servant.leadsFellowshipCount} Fellowships`
     }
   }
 

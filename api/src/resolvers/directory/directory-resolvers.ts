@@ -33,7 +33,7 @@ const texts = require('../texts.json')
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
     isAuth(
-      [...permitLeaderAdmin('Fellowship'), ...permitLeader('Hub')],
+      [...permitLeaderAdmin('Bacenta'), ...permitLeader('Hub')],
       context?.jwt.roles
     )
     const session = context.executionContext.session()
@@ -186,79 +186,6 @@ const directoryMutation = {
       await session.close()
     }
   },
-  CloseDownFellowship: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Governorship'), context.jwt.roles)
-
-    const session = context.executionContext.session()
-    const sessionTwo = context.executionContext.session()
-
-    try {
-      const res: any = await Promise.all([
-        session.executeRead((tx) =>
-          tx.run(closeChurchCypher.checkFellowshipHasNoMembers, args)
-        ),
-        sessionTwo.executeRead((tx) =>
-          tx.run(closeChurchCypher.getLastServiceRecord, {
-            churchId: args.fellowshipId,
-          })
-        ),
-      ])
-
-      const fellowshipCheck = rearrangeCypherObject(res[0])
-      const lastServiceRecord = rearrangeCypherObject(res[1])
-
-      if (fellowshipCheck.memberCount > 0) {
-        throw new Error(
-          `${fellowshipCheck?.name} Fellowship has ${fellowshipCheck?.memberCount} members. Please transfer all members and try again.`
-        )
-      }
-
-      const record = lastServiceRecord.lastService?.properties ?? {
-        bankingSlip: null,
-      }
-
-      if (
-        !(
-          'bankingSlip' in record ||
-          record.transactionStatus === 'success' ||
-          'tellerConfirmationTime' in record
-        )
-      ) {
-        throw new Error(
-          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
-            record.createdAt
-          )} before attempting to close down this fellowship`
-        )
-      }
-
-      // Fellowship Leader must be removed since the fellowship is being closed down
-      await RemoveServant(
-        context,
-        args,
-        ['adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'],
-        'Fellowship',
-        'Leader',
-        true
-      )
-
-      const closeFellowshipResponse = await session.executeWrite((tx) =>
-        tx.run(closeChurchCypher.closeDownFellowship, {
-          jwt: context.jwt,
-          fellowshipId: args.fellowshipId,
-        })
-      )
-
-      const fellowshipResponse = rearrangeCypherObject(closeFellowshipResponse)
-      return fellowshipResponse.bacenta
-    } catch (error: any) {
-      throwToSentry('Error closing down fellowship', error)
-      throw error
-    } finally {
-      await session.close()
-      await sessionTwo.close()
-    }
-  },
-
   CloseDownBacenta: async (object: any, args: any, context: Context) => {
     isAuth(permitAdminArrivals('Governorship'), context.jwt.roles)
 

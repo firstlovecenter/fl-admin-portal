@@ -35,7 +35,7 @@ const treasuryMutations = {
     //   throw new Error('You cannot receive offerings today! Thank you')
     // }
 
-    //  implement checks to make sure that all the fellowships have filled their offering
+    //  implement checks to make sure that all the bacentas have filled their offering
 
     const formDefaultersResponse = rearrangeCypherObject(
       await session
@@ -50,7 +50,7 @@ const treasuryMutations = {
 
     if (formDefaultersCount > 0) {
       throw new Error(
-        `You cannot confirm this governorship until all the active fellowships have filled their forms. Outstanding fellowships are: ${formDefaultersList.join(
+        `You cannot confirm this governorship until all the active bacentas have filled their forms. Outstanding bacentas are: ${formDefaultersList.join(
           ', '
         )}`
       )

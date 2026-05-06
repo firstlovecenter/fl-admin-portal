@@ -34,7 +34,6 @@ const SearchPageMobile = () => {
         ...member.councilSearch,
         ...member.governorshipSearch,
         ...member.bacentaSearch,
-        ...member.fellowshipSearch,
         ...member.creativeArtsSearch,
         ...member.ministrySearch,
         ...member.hubCouncilSearch,

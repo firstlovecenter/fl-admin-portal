@@ -76,7 +76,7 @@ const FormDefaulters = () => {
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>
-            {`Fellowships That Have Not Filled The Form This Week (Week ${getWeekNumber()})`}
+            {`Bacentas That Have Not Filled The Form This Week (Week ${getWeekNumber()})`}
           </HeadingSecondary>
 
           <PlaceholderCustom

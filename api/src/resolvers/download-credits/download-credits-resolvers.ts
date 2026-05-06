@@ -3,7 +3,6 @@ import { Context } from '../utils/neo4j-types'
 import { ChurchLevel } from '../utils/types'
 import { isAuth, throwToSentry } from '../utils/utils'
 import {
-  fellowshipDownloadMembers,
   bacentaDownloadMembers,
   governorshipDownloadMembers,
   councilDownloadMembers,
@@ -44,12 +43,6 @@ const createDownloadMembershipResolver = (
 }
 
 export const downloadMembershipResolvers = {
-  Fellowship: {
-    downloadMembership: createDownloadMembershipResolver(
-      fellowshipDownloadMembers,
-      'Fellowship'
-    ),
-  },
   Bacenta: {
     downloadMembership: createDownloadMembershipResolver(
       bacentaDownloadMembers,

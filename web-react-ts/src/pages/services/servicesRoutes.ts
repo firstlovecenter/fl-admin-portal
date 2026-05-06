@@ -31,9 +31,6 @@ const BacentaServiceCancelled = lazy(
 const StreamServiceCancelled = lazy(
   () => import('pages/services/record-service/StreamServiceCancelled')
 )
-const FellowshipServiceDetails = lazy(
-  () => import('pages/services/record-service/FellowshipServiceDetails')
-)
 const HubRehearsalCancelled = lazy(
   () =>
     import('pages/services/record-service/creative-arts/HubRehearsalCancelled')
@@ -70,10 +67,6 @@ const GovernorshipReport = lazy(
   () => import('pages/services/graphs/GovernorshipGraphs')
 )
 const CouncilReport = lazy(() => import('pages/services/graphs/CouncilGraphs'))
-const FellowshipReport = lazy(
-  () => import('pages/services/graphs/FellowshipGraphs')
-)
-
 const GovernorshipJoint = lazy(() => import('pages/services/GovernorshipJoint'))
 const Banked = lazy(() => import('pages/services/defaulters/Banked'))
 const BankingDefaulters = lazy(
@@ -106,7 +99,6 @@ const GovernorshipJointBanked = lazy(
 const CouncilJointBanked = lazy(
   () => import('pages/services/defaulters/CouncilBankedThisWeek')
 )
-const Fellowship = lazy(() => import('pages/services/Fellowship'))
 const ServicesChurchList = lazy(
   () => import('pages/services/ServicesChurchList')
 )
@@ -241,18 +233,6 @@ export const services: LazyRouteTypes[] = [
   //   placeholder: true,
   // },
   {
-    path: '/services/fellowship',
-    element: Fellowship,
-    roles: permitLeaderAdmin('Bacenta'),
-    placeholder: true,
-  },
-  {
-    path: '/services/bacenta',
-    element: Fellowship,
-    roles: permitLeaderAdmin('Bacenta'),
-    placeholder: true,
-  },
-  {
     path: '/services/governorship',
     element: GovernorshipJoint,
     roles: permitLeaderAdmin('Governorship'),
@@ -347,16 +327,6 @@ export const graphs: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
-    path: '/fellowship/graphs',
-    element: FellowshipReport,
-    roles: [
-      ...permitLeaderAdminArrivals('Bacenta'),
-      ...permitTellerStream(),
-      ...permitLeaderAdmin('Hub'),
-    ],
-    placeholder: true,
-  },
-  {
     path: '/bacenta/graphs',
     element: BacentaReport,
     roles: [...permitLeaderAdminArrivals('Bacenta'), ...permitTellerStream()],
@@ -424,13 +394,6 @@ export const graphs: LazyRouteTypes[] = [
     roles: permitLeaderAdminArrivals('CreativeArts'),
   },
 
-  //Fellowship Services
-  {
-    path: '/fellowship/service-details',
-    element: FellowshipServiceDetails,
-    roles: [...permitLeaderAdmin('Bacenta'), ...permitTellerStream()],
-    placeholder: true,
-  },
   {
     path: '/services/bacenta/no-service',
     element: BacentaServiceCancelled,
@@ -653,7 +616,7 @@ export const graphs: LazyRouteTypes[] = [
   {
     path: '/services/stream-by-council',
     element: StreamByCouncil,
-    roles: ['leaderFellowship'],
+    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
   {

@@ -95,7 +95,7 @@ export const recordSpecialService = `
         serviceRecord.description = $serviceDescription
       WITH serviceRecord
 
-      MATCH (church {id: $churchId}) WHERE church:Fellowship OR church:Bacenta OR church:Governorship OR church:Council OR church:Stream
+      MATCH (church {id: $churchId}) WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
       MATCH (leader:Member {id: $jwt.userId})
 
@@ -288,7 +288,7 @@ WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream O
 OR church:Ministry OR church:CreativeArts
 MATCH (church)<-[:LEADS]-(servant:Active:Member)
 UNWIND labels(church) AS churchType 
-WITH churchType, church, servant WHERE churchType IN ['Fellowship', 'Bacenta', 'Governorship', 'Council', 'Stream','Hub', 'HubCouncil', 'Ministry']
+WITH churchType, church, servant WHERE churchType IN ['Bacenta', 'Governorship', 'Council', 'Stream','Hub', 'HubCouncil', 'Ministry']
 
 RETURN church.id AS churchId, church.name AS churchName, servant.id AS servantId, servant.firstName AS firstName, servant.lastName AS lastName, churchType AS churchType
 `

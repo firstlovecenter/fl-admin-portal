@@ -122,31 +122,17 @@ export const SERVANT_MUTATIONS: ServantMutationConfig[] = [
 
   // PASTORAL MUTATIONS
   {
-    name: 'MakeFellowshipLeader',
-    churchType: 'Fellowship',
-    servantType: 'Leader',
-    requiredPermissionLevel: 'Bacenta',
-    action: 'make',
-  },
-  {
-    name: 'RemoveFellowshipLeader',
-    churchType: 'Fellowship',
-    servantType: 'Leader',
-    requiredPermissionLevel: 'Bacenta',
-    action: 'remove',
-  },
-  {
     name: 'MakeBacentaLeader',
     churchType: 'Bacenta',
     servantType: 'Leader',
-    requiredPermissionLevel: 'Fellowship',
+    requiredPermissionLevel: 'Governorship',
     action: 'make',
   },
   {
     name: 'RemoveBacentaLeader',
     churchType: 'Bacenta',
     servantType: 'Leader',
-    requiredPermissionLevel: 'Fellowship',
+    requiredPermissionLevel: 'Governorship',
     action: 'remove',
   },
   {

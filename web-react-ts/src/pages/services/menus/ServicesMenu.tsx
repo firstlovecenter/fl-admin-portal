@@ -1,4 +1,4 @@
-import { ReactNode, useContext, useMemo } from 'react'
+import { ReactNode, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
 import {
@@ -10,7 +10,9 @@ import {
   FileUp,
   Frown,
   HandCoins,
+  PencilLine,
   UserPlus,
+  XCircle,
 } from 'lucide-react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
@@ -24,6 +26,13 @@ import { ChurchLevel } from 'global-types'
 import { cn } from 'components/lib/utils'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Skeleton } from 'components/ui/skeleton'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
 import {
   LATEST_SERVICE_FOR_BACENTA,
   LATEST_SERVICE_FOR_CAMPUS,
@@ -42,12 +51,14 @@ const isServiceLevel = (t?: string): t is ServiceLevel =>
   !!t && (SERVICE_LEVELS as readonly string[]).includes(t)
 
 const RECORD_SERVICE_PATHS: Record<ServiceLevel, string> = {
-  Bacenta: '/services/bacenta',
+  Bacenta: '/bacenta/record-service',
   Stream: '/stream/record-service',
   Governorship: '/governorship/record-service',
   Council: '/council/record-service',
   Campus: '/campus/record-service',
 }
+
+const BACENTA_NO_SERVICE_PATH = '/services/bacenta/no-service'
 
 const QUERY_BY_LEVEL: Record<
   ServiceLevel,
@@ -105,6 +116,7 @@ const ServicesMenu = () => {
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope } = useChurchRoleScope()
   const navigate = useNavigate()
+  const [recordDialogOpen, setRecordDialogOpen] = useState(false)
 
   // Prefer the church-in-focus selector (populated at login via ChurchRoleScopeProvider).
   // Fall back to currentUser.currentChurch (populated after visiting church details).
@@ -177,6 +189,10 @@ const ServicesMenu = () => {
 
   const handleRecordService = () => {
     if (!isServiceLevelChurch) return
+    if (churchType === 'Bacenta') {
+      setRecordDialogOpen(true)
+      return
+    }
     navigate(RECORD_SERVICE_PATHS[churchType])
   }
 
@@ -304,6 +320,61 @@ const ServicesMenu = () => {
           )}
         </div>
       </main>
+
+      <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Record this week&apos;s service</DialogTitle>
+            <DialogDescription>
+              Did the service take place this week?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setRecordDialogOpen(false)
+                navigate(RECORD_SERVICE_PATHS.Bacenta)
+              }}
+              className="group flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99] min-h-[64px]"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-members/10 text-members">
+                <PencilLine className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  Record Service
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  We met this week — fill the service form
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRecordDialogOpen(false)
+                navigate(BACENTA_NO_SERVICE_PATH)
+              }}
+              className="group flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99] min-h-[64px]"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                <XCircle className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  I Cancelled My Service
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  No service this week — give a reason
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

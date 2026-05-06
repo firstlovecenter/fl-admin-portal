@@ -192,9 +192,6 @@ const resolvers = {
     ...mapsResolvers.Member,
   },
 
-  Fellowship: {
-    ...downloadMembershipResolvers.Fellowship,
-  },
   Bacenta: {
     ...downloadMembershipResolvers.Bacenta,
   },

@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle,
   ArrowDown,
-  BarChart3,
   Camera,
   CheckCircle2,
   Clock,
@@ -39,13 +38,7 @@ import { BacentaWithArrivals, VehicleRecord } from './arrivals-types'
 import CountdownTimer from './countdown-component/CountdownTimer'
 import ButtonIcons from './components/ButtonIcons'
 
-const VehicleRow = ({
-  record,
-  disabled,
-}: {
-  record: VehicleRecord
-  disabled: boolean
-}) => {
+const VehicleRow = ({ record }: { record: VehicleRecord }) => {
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
   const arrived = !!record?.arrivalTime
@@ -53,14 +46,13 @@ const VehicleRow = ({
   return (
     <button
       type="button"
-      disabled={disabled}
       onClick={() => {
         clickCard(record)
         navigate('/bacenta/vehicle-details')
       }}
       className={cn(
         'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors',
-        'min-h-14 disabled:cursor-not-allowed disabled:opacity-60',
+        'min-h-14',
         arrived
           ? 'border-success/30 bg-success/10 hover:bg-success/15'
           : 'border-warning/40 bg-warning/10 hover:bg-warning/15'
@@ -119,11 +111,11 @@ const BacentaArrivals = () => {
     ? beforeArrivalDeadline(bussing, bacenta)
     : false
 
-  const canFillOnTheWay =
-    !!bussing &&
-    isBeforeArrivalEnd &&
-    !!bussing.mobilisationPicture &&
-    !bussing.leaderDeclaration
+  // Vehicles can be added until the arrival deadline closes — there is no
+  // one-vehicle-per-bussing cap. The mobilisation picture remains a
+  // prerequisite (you must have started bussing).
+  const canAddVehicle =
+    !!bussing && isBeforeArrivalEnd && !!bussing.mobilisationPicture
 
   const mobilisationDisabled =
     !beforeMobilisationDeadline(bacenta, bussing) || !isMomoCleared(bacenta)
@@ -229,26 +221,34 @@ const BacentaArrivals = () => {
                         You have filled your forms today
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Click{' '}
+                        Tap{' '}
                         <span className="font-semibold text-success">
                           Today&apos;s Bussing Summary
                         </span>{' '}
                         below to view your bussing data
                       </p>
-                      <ArrowDown className="mx-auto size-5 text-muted-foreground" />
+                      <ArrowDown
+                        className="mx-auto size-5 text-muted-foreground"
+                        aria-hidden="true"
+                      />
                     </CardContent>
                   </Card>
                 )}
 
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full justify-center gap-2"
-                  onClick={() => navigate('/bacenta/graphs')}
-                >
-                  <BarChart3 className="size-4" />
-                  View Last 4 Weeks
-                </Button>
+                {bussing && (
+                  <Button
+                    size="lg"
+                    className="w-full gap-2"
+                    onClick={() => {
+                      clickCard(bacenta)
+                      clickCard(bussing)
+                      navigate('/bacenta/bussing-details')
+                    }}
+                  >
+                    <ReceiptText className="size-4" />
+                    Today&apos;s Bussing Summary
+                  </Button>
+                )}
               </section>
 
               {/* RIGHT — actions */}
@@ -335,7 +335,6 @@ const BacentaArrivals = () => {
                           <VehicleRow
                             key={record.id ?? index}
                             record={record}
-                            disabled={!canFillOnTheWay}
                           />
                         ))}
                       </div>
@@ -349,7 +348,7 @@ const BacentaArrivals = () => {
                       variant="destructive"
                       size="lg"
                       className="w-full gap-2"
-                      disabled={!canFillOnTheWay}
+                      disabled={!canAddVehicle}
                       onClick={() => {
                         clickCard(bacenta)
                         clickCard(bussing)
@@ -362,20 +361,6 @@ const BacentaArrivals = () => {
                   </CardContent>
                 </Card>
 
-                {bussing && (
-                  <Button
-                    size="lg"
-                    className="w-full gap-2"
-                    onClick={() => {
-                      clickCard(bacenta)
-                      clickCard(bussing)
-                      navigate('/bacenta/bussing-details')
-                    }}
-                  >
-                    <ReceiptText className="size-4" />
-                    Today&apos;s Bussing Summary
-                  </Button>
-                )}
               </section>
             </div>
 

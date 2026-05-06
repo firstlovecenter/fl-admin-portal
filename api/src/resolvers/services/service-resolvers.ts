@@ -102,7 +102,7 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -198,7 +198,7 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -235,7 +235,7 @@ const serviceMutation = {
 
           if (!createRes.records || createRes.records.length === 0) {
             throw new Error(
-              'Special service record could not be created. Please ensure the church is a Fellowship, Bacenta, Governorship, Council, or Stream.'
+              'Special service record could not be created. Please ensure the church is a Bacenta, Governorship, Council, or Stream.'
             )
           }
 

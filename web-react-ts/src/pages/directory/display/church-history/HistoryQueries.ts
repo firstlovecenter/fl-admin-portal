@@ -202,28 +202,6 @@ export const CREATIVE_ARTS_HISTORY = gql`
     }
   }
 `
-export const FELLOWSHIP_HISTORY = gql`
-  query FellowshipsHistory($id: ID!) {
-    fellowships(where: { id: $id }) {
-      id
-      name
-      history(limit: 100) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-    }
-  }
-`
 export const CAMPUS_HISTORY = gql`
   query CampusHistory($id: ID!) {
     campuses(where: { id: $id }) {

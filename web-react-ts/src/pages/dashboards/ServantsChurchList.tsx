@@ -55,9 +55,6 @@ const ServantsChurchList = () => {
       })
     }
 
-    if (servant?.leadsFellowship?.length) {
-      pushIntoChurch(servant?.leadsFellowship)
-    }
     if (servant.leadsBacenta) {
       pushIntoChurch(servant?.leadsBacenta)
     }

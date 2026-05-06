@@ -541,61 +541,6 @@ export const UPDATE_BACENTA_MUTATION = gql`
   }
 `
 
-export const UPDATE_FELLOWSHIP = gql`
-  mutation UpdateFellowship(
-    $id: ID!
-    $name: String!
-    $meetingDay: String
-    $venueLatitude: Float
-    $venueLongitude: Float
-  ) {
-    UpdateFellowshipDetails(
-      id: $id
-      name: $name
-      meetingDay: $meetingDay
-      venueLatitude: $venueLatitude
-      venueLongitude: $venueLongitude
-    ) {
-      id
-      labels
-      stream_name
-      bankingCode
-      name
-      memberCount
-      location {
-        longitude
-        latitude
-      }
-      meetingDay {
-        day
-        dayNumber
-      }
-
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        pictureUrl
-      }
-
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
 export const MAKE_MEMBER_INACTIVE = gql`
   mutation MakeMemberInactive($memberId: ID!, $reason: String!) {
     MakeMemberInactive(id: $memberId, reason: $reason) {

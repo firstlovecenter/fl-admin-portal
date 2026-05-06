@@ -1,9 +1,3 @@
-export const checkFellowshipHasNoMembers = `//cypher
-MATCH (fellowship:Fellowship {id: $fellowshipId})
-OPTIONAL MATCH (fellowship)<-[:BELONGS_TO]-(member:Active:Member)
-RETURN fellowship.name AS name, COUNT(member) AS memberCount
-`
-
 export const getLastServiceRecord = `//cypher
 MATCH (church {id: $churchId}) WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
 MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(otherRecords:ServiceRecord)-[:SERVICE_HELD_ON]->(otherDate:TimeGraph)
@@ -51,46 +45,17 @@ MATCH (oversight)-[:HAS]->(campuses:Campus)<-[:LEADS]-(member:Active:Member)
 RETURN oversight.name AS name, COUNT(member) AS memberCount, COUNT(campuses) AS campusCount
 `
 
-export const closeDownFellowship = `//cypher
-MATCH (fellowship:Fellowship {id: $fellowshipId})<-[:HAS]-(bacenta:Bacenta)
-
-CREATE (log:HistoryLog {id: apoc.create.uuid()})
-SET log.timeStamp = datetime(),
-log.historyRecord = fellowship.name + ' Fellowship was closed down under ' + bacenta.name +' Bacenta'
-
-WITH fellowship, bacenta, log
-MATCH (admin:Member {id: $jwt.userId})
-MERGE (date:TimeGraph {date:date()})
-MERGE (log)-[:LOGGED_BY]->(admin)
-MERGE (log)-[:RECORDED_ON]->(date)
-MERGE (fellowship)-[:HAS_HISTORY]->(log)
-MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-SET fellowship:ClosedFellowship
-REMOVE fellowship:Fellowship, fellowship:Active
-
-WITH bacenta
-
-MATCH (bacenta)-[:HAS]->(fellowships:Fellowship)
-
-RETURN bacenta {
-  .id, .name, 
-  fellowships:[fellowships {.id,.name}]
-    }
-`
-
 export const closeDownBacenta = `//cypher
 MATCH (bacenta:Bacenta {id:$bacentaId})<-[:HAS]-(governorship:Governorship)
 
 WITH bacenta, governorship
 CREATE (log:HistoryLog {id:apoc.create.uuid()})
   SET log.timeStamp = datetime(),
-  log.historyRecord = bacenta.name + ' Bacenta was closed down under ' + governorship.name +' Governorship with all its fellowships'
+  log.historyRecord = bacenta.name + ' Bacenta was closed down under ' + governorship.name +' Governorship'
 
 WITH bacenta, governorship, log
-MATCH (governorship)-[:HAS]->(bacentas:Bacenta)   
+MATCH (governorship)-[:HAS]->(bacentas:Bacenta)
 MATCH (admin:Member {id: $jwt.userId})
-OPTIONAL MATCH (bacenta)-[:HAS]->(fellowships:Fellowship)
 UNWIND labels(governorship) AS stream
 
 
@@ -100,8 +65,8 @@ MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (bacenta)-[:HAS_HISTORY]->(log)
 MERGE (governorship)-[:HAS_HISTORY]->(log)
 
-SET bacenta:ClosedBacenta, fellowships:ClosedFellowship
-REMOVE bacenta:Bacenta,  fellowships:Fellowship:Active
+SET bacenta:ClosedBacenta
+REMOVE bacenta:Bacenta
 
 RETURN governorship {
   .id, .name, 
@@ -120,7 +85,7 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
 WITH governorship, council, log
 MATCH (admin:Member {id: $jwt.userId})
 MATCH (council)-[:HAS]->(governorships)
-OPTIONAL MATCH (governorship)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
+OPTIONAL MATCH (governorship)-[:HAS]->(bacentas)
 
 
 
@@ -129,8 +94,8 @@ MERGE (log)-[:LOGGED_BY]->(admin)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (council)-[:HAS_HISTORY]->(log)
 
-SET governorship:ClosedGovernorship, bacentas:ClosedBacenta, fellowships:ClosedFellowship
-REMOVE governorship:Governorship,bacentas:Bacenta,fellowships:Fellowship
+SET governorship:ClosedGovernorship, bacentas:ClosedBacenta
+REMOVE governorship:Governorship,bacentas:Bacenta
 
 RETURN council {
   .id, .name,
@@ -149,15 +114,15 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
 WITH council, stream, log
 MATCH (admin:Member {id: $jwt.userId})
 MATCH (stream)-[:HAS]->(councils)
-OPTIONAL MATCH (council)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
+OPTIONAL MATCH (council)-[:HAS]->(governorships)-[:HAS]->(bacentas)
 
 MERGE (date:TimeGraph {date:date()})
 MERGE (log)-[:LOGGED_BY]->(admin)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (stream)-[:HAS_HISTORY]->(log)
 
-SET council:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta, fellowships:ClosedFellowship
-REMOVE council:Council, governorships:Governorship,bacentas:Bacenta,fellowships:Fellowship
+SET council:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta
+REMOVE council:Council, governorships:Governorship,bacentas:Bacenta
 
 RETURN stream {
   .id, .name,
@@ -175,15 +140,15 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
 WITH stream, campus, log
 MATCH (admin:Member {id: $jwt.userId})
 MATCH (campus)-[:HAS]->(streams)
-OPTIONAL MATCH (stream)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
+OPTIONAL MATCH (stream)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)
 
 MERGE (date:TimeGraph {date:date()})
 MERGE (log)-[:LOGGED_BY]->(admin)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (campus)-[:HAS_HISTORY]->(log)
 
-SET  stream:ClosedStream, councils:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta, fellowships:ClosedFellowship
-REMOVE  stream:Stream, councils:Council, governorships:Governorship, bacentas:Bacenta,fellowships:Fellowship
+SET  stream:ClosedStream, councils:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta
+REMOVE  stream:Stream, councils:Council, governorships:Governorship, bacentas:Bacenta
 
 RETURN campus {
   .id, .name,
@@ -201,15 +166,15 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
 WITH campus, oversight, log
 MATCH (admin:Member {id: $jwt.userId})
 MATCH (oversight)-[:HAS]->(campuses)
-OPTIONAL MATCH (campus)-[:HAS]->(streams)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
+OPTIONAL MATCH (campus)-[:HAS]->(streams)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)
 
 MERGE (date:TimeGraph {date:date()})
 MERGE (log)-[:LOGGED_BY]->(admin)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (oversight)-[:HAS_HISTORY]->(log)
 
-SET  campus:ClosedCampus, streams:ClosedStream, councils:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta, fellowships:ClosedFellowship
-REMOVE campus:Campus, streams:Stream, councils:Council, governorships:Governorship, bacentas:Bacenta, fellowships:Fellowship
+SET  campus:ClosedCampus, streams:ClosedStream, councils:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta
+REMOVE campus:Campus, streams:Stream, councils:Council, governorships:Governorship, bacentas:Bacenta
 
 RETURN oversight {
   .id, .name,
@@ -228,15 +193,15 @@ CREATE (log:HistoryLog {id:apoc.create.uuid()})
 WITH oversight, denomination, log
 MATCH (admin:Member {id: $jwt.userId})
 MATCH (denomination)-[:HAS]->(oversights)
-OPTIONAL MATCH (oversight)-[:HAS]->(campuses)-[:HAS]->(streams)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)-[:HAS]->(fellowships)
+OPTIONAL MATCH (oversight)-[:HAS]->(campuses)-[:HAS]->(streams)-[:HAS]->(councils)-[:HAS]->(governorships)-[:HAS]->(bacentas)
 
 MERGE (date:TimeGraph {date:date()})
 MERGE (log)-[:LOGGED_BY]->(admin)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (denomination)-[:HAS_HISTORY]->(log)
 
-SET  oversight:ClosedOversight, campuses:ClosedCampus streams:ClosedStream, councils:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta, fellowships:ClosedFellowship
-REMOVE oversight:Oversight, campus:Campus, streams:Stream, councils:Council, governorships:Governorship, bacentas:Bacenta,fellowships:Fellowship
+SET  oversight:ClosedOversight, campuses:ClosedCampus, streams:ClosedStream, councils:ClosedCouncil, governorships:ClosedGovernorship, bacentas:ClosedBacenta
+REMOVE oversight:Oversight, campuses:Campus, streams:Stream, councils:Council, governorships:Governorship, bacentas:Bacenta
 
 RETURN denomination {
   .id, .name,

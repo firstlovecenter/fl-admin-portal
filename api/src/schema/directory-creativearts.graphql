@@ -89,8 +89,7 @@ type CreativeArts {
   members: [Member!]!
     @cypher(
       statement: """
-      MATCH (this)<-[:HAS_MINISTRY]-(campus:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
-      MATCH (members)-[:BELONGS_TO]->(this)
+      MATCH (this)<-[:HAS_MINISTRY]-(campus:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
       columnName: "members"
@@ -98,8 +97,7 @@ type CreativeArts {
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)<-[:HAS_MINISTRY]-(campus:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
-      MATCH (members)-[:BELONGS_TO]->(this)
+      MATCH (this)<-[:HAS_MINISTRY]-(campus:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members) AS memberCount
       """
       columnName: "memberCount"
@@ -201,9 +199,7 @@ type Ministry {
   members: [Member!]!
     @cypher(
       statement: """
-      MATCH (this)<-[:HAS]-(creativeArts:CreativeArts)
-      MATCH (this)<-[:HAS_MINISTRY]-(stream:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
-      MATCH (members)-[:BELONGS_TO]->(creativeArts)
+      MATCH (this)<-[:HAS_MINISTRY]-(stream:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
       columnName: "members"
@@ -211,9 +207,7 @@ type Ministry {
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)<-[:HAS]-(creativeArts:CreativeArts)
-      MATCH (this)<-[:HAS_MINISTRY]-(stream:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
-      MATCH (members)-[:BELONGS_TO]->(creativeArts)
+      MATCH (this)<-[:HAS_MINISTRY]-(stream:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       RETURN COUNT(DISTINCT members) AS memberCount
       """
       columnName: "memberCount"
@@ -279,10 +273,10 @@ type Ministry {
       """
       columnName: "result"
     )
-  hubFellowships: [Fellowship!]!
+  hubFellowships: [HubFellowship!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(fellowships:HubFellowship)
+      MATCH (this)-[:HAS*3]->(fellowship:HubFellowship)
       RETURN fellowship
       """
       columnName: "result"
@@ -306,7 +300,7 @@ type HubCouncil {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS]-(:Ministry)<-[:HAS]-(creativeArts:CreativeArts)
-      MATCH (this)<-[:HAS_MINISTRY]-(council:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)<-[:HAS_MINISTRY]-(council:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
@@ -316,7 +310,7 @@ type HubCouncil {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS]-(:Ministry)<-[:HAS]-(creativeArts:CreativeArts)
-      MATCH (this)<-[:HAS_MINISTRY]-(council:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)<-[:HAS_MINISTRY]-(council:Council)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN COUNT(DISTINCT members) AS memberCount
       """
@@ -400,7 +394,7 @@ type Hub {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS]-(:HubCouncil)<-[:HAS]-(:Ministry)<-[:HAS]-(creativeArts:CreativeArts)
-      MATCH (this)<-[:HAS_MINISTRY]-(governorship:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)<-[:HAS_MINISTRY]-(governorship:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)
       """
@@ -410,7 +404,7 @@ type Hub {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS]-(:HubCouncil)<-[:HAS]-(:Ministry)<-[:HAS]-(creativeArts:CreativeArts)
-      MATCH (this)<-[:HAS_MINISTRY]-(governorship:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)<-[:HAS_MINISTRY]-(governorship:Governorship)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       MATCH (members)-[:BELONGS_TO]->(creativeArts)
       RETURN COUNT(DISTINCT members) AS memberCount
       """
@@ -460,7 +454,7 @@ type Hub {
       """
       columnName: "status"
     )
-  hubFellowships: [Fellowship!]! @relationship(type: "HAS", direction: OUT)
+  hubFellowships: [HubFellowship!]! @relationship(type: "HAS", direction: OUT)
   hubCouncil: HubCouncil! @relationship(type: "HAS", direction: IN)
   governorship: Governorship! @relationship(type: "HAS_MINISTRY", direction: IN)
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
@@ -498,7 +492,7 @@ extend type Campus {
       statement: "MATCH (this)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)-[:HAS*4]->(fellowship:HubFellowship) RETURN COUNT(fellowship)"
       columnName: "hubFellowshipCount"
     )
-  hubFellowships: [Fellowship!]!
+  hubFellowships: [HubFellowship!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*4]->(fellowship:HubFellowship) RETURN fellowship"
       columnName: "fellowship"
@@ -549,7 +543,7 @@ extend type Stream {
       columnName: "hubFellowshipCount"
     )
 
-  hubFellowships: [Fellowship!]!
+  hubFellowships: [HubFellowship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_MINISTRY]->(:Ministry)-[:HAS*2]->(:Hub)-[:HAS]->(hubFellowships:HubFellowship)
@@ -613,19 +607,6 @@ extend type Governorship {
       RETURN COUNT(fellowship) AS hubFellowshipCount
       """
       columnName: "hubFellowshipCount"
-    )
-}
-
-extend type Fellowship {
-  hub: Hub @relationship(type: "HAS", direction: IN)
-  councilHubs: [Hub!]!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS]-(:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(council:Council)
-      MATCH (council)-[:HAS_MINISTRY]->(hub:Hub)
-      RETURN hub
-      """
-      columnName: "result"
     )
 }
 
@@ -1008,82 +989,6 @@ extend type Mutation {
       columnName: "result"
     )
 
-  #Set Fellowship to be 'HubFellowship'
-  SetFellowshipToHubFellowship(fellowshipId: ID!, hubId: ID!): Fellowship!
-    @authentication(
-      jwt: {
-        OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminCreativeArts" }
-          { roles_INCLUDES: "adminMinistry" }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id: $fellowshipId})
-      MATCH (hub:Hub {id: $hubId})<-[:HAS]-(ministry:HubCouncil)
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = fellowship.name + ' Fellowship was made into a hub fellowship for ' + ministry.name
-
-      WITH log,fellowship, hub
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MERGE (hub)-[:HAS]->(fellowship)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-      MERGE (hub)-[:HAS_HISTORY]->(log)
-
-      SET fellowship:HubFellowship
-
-      RETURN fellowship
-      """
-      columnName: "result"
-    )
-
-  SetHubFellowshipToRegularFellowship(fellowshipId: ID!): Fellowship!
-    @authentication(
-      jwt: {
-        OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminCreativeArts" }
-          { roles_INCLUDES: "adminMinistry" }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-      MATCH (fellowship:HubFellowship {id: $fellowshipId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = fellowship.name + ' hub fellowship was made into a regular fellowship '
-
-      WITH log,fellowship
-
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (fellowship)<-[r:HAS]-(hub:Hub)
-      DELETE r
-
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-      MERGE (hub)-[:HAS_HISTORY]->(log)
-
-      REMOVE fellowship:HubFellowship
-
-      RETURN fellowship
-      """
-      columnName: "result"
-    )
 }
 
 extend type Mutation {
@@ -1205,7 +1110,7 @@ type RehearsalRecord implements Record {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
-      WHERE church:Fellowship OR church:Governorship OR church:Council OR church:Stream
+      WHERE church:Governorship OR church:Council OR church:Stream
       MATCH (church)<-[:HAS*1..4]-(stream:Stream)
       RETURN  AS stream
       """

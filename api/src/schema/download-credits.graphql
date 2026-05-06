@@ -1,7 +1,3 @@
-extend type Fellowship {
-  downloadMembership: [Member!]!
-}
-
 extend type Bacenta {
   downloadMembership: [Member!]!
 }

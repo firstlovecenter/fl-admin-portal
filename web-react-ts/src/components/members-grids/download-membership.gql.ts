@@ -45,16 +45,6 @@ const MEMBERSHIP_FIELDS = `
   }
 `
 
-export const DISPLAY_FELLOWSHIP_MEMBERSHIP = gql`
-  query DisplayFellowshipMembership($id: ID!) {
-    fellowships(where: { id: $id }) {
-      id
-      name
-      ${MEMBERSHIP_FIELDS}
-    }
-  }
-`
-
 export const DISPLAY_BACENTA_MEMBERSHIP = gql`
   query DisplayBacentaMembership($id: ID!) {
     bacentas(where: { id: $id }) {

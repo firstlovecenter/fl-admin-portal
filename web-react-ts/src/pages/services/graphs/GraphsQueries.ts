@@ -1,33 +1,5 @@
 import { gql } from '@apollo/client'
 
-export const FELLOWSHIP_GRAPHS = gql`
-  query fellowshipGraphs($fellowshipId: ID) {
-    fellowships(where: { id: $fellowshipId }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        pictureUrl
-        nameWithTitle
-      }
-      services(limit: 4) {
-        id
-        createdAt
-        attendance
-        income
-        week
-        serviceDate {
-          date
-        }
-      }
-      memberCount
-    }
-  }
-`
-
 export const BACENTA_GRAPHS = gql`
   query bacentaGraphs($id: ID!, $limit: Int = 4, $skip: Int = 0) {
     bacentas(where: { id: $id }) {

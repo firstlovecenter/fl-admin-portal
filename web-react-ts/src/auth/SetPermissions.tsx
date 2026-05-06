@@ -53,12 +53,10 @@ const SetPermissions = ({
         const streamId = memberData?.bacenta.governorship?.council.stream.id
         const councilId = memberData?.bacenta.governorship?.council.id
         const governorshipId = memberData?.bacenta.governorship?.id
-        const hubId = memberData?.fellowship?.hub?.id
-
-        const hubCouncilId = memberData?.fellowship?.hub?.hubCouncil.id
-        const ministryId = memberData?.fellowship?.hub?.hubCouncil?.ministry.id
-        const creativeArtsId =
-          memberData?.fellowship?.hub?.hubCouncil?.ministry?.creativeArts.id
+        const hubId: string | undefined = undefined
+        const hubCouncilId: string | undefined = undefined
+        const ministryId: string | undefined = undefined
+        const creativeArtsId: string | undefined = undefined
 
         doNotUse.setDenominationId(
           sessionStorage.getItem('denominationId') ?? denominationId
@@ -153,11 +151,6 @@ const SetPermissions = ({
               if (!isAuthorised(permitMe('Governorship'))) {
                 //User is not a Governorship Admin the he can only be looking at his bacenta membership
                 doNotUse.setGovernorshipId(currentUser.governorship)
-                // doNotUse.setBacentaId(currentUser.bacenta)
-                // if (!isAuthorised(['leaderBacenta'])) {
-                //   //User is not a Bacenta Leader and he can only be looking at his fellowship membership
-                // doNotUse.setFellowshipId(currentUser.fellowship?.id)
-                // }
               }
             }
           }

@@ -104,7 +104,7 @@ extend type Governorship {
       OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
       WHERE agg.week = $week AND agg.year = date().year
 
-      WITH this, list, income, attendance, agg ORDER BY agg.recomputedAt DESC NULLS LAST
+      WITH this, list, income, attendance, agg ORDER BY coalesce(agg.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH this, list, income, attendance, head(collect(agg)) AS agg
 
       RETURN {
@@ -139,10 +139,10 @@ extend type Governorship {
           AND record.tellerConfirmationTime IS NULL
       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
 
-      WITH DISTINCT fellowships, this
-      MATCH (fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(this)
+      WITH DISTINCT bacentas, this
+      MATCH (bacentas)<-[:HAS]-(this)
 
-      WITH COUNT(DISTINCT fellowships) as bankingDefaulters
+      WITH COUNT(DISTINCT bacentas) as bankingDefaulters
       RETURN
       CASE bankingDefaulters
       WHEN 0 THEN true
@@ -173,7 +173,7 @@ extend type Governorship {
 
 
       WITH DISTINCT  this, record
-      MATCH (teller:Member)-[:CONFIRMED_BANKING_FOR]->(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(fellowships)<-[:HAS]-(:Bacenta)<-[:HAS]-(this)
+      MATCH (teller:Member)-[:CONFIRMED_BANKING_FOR]->(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas)<-[:HAS]-(this)
 
 
       RETURN DISTINCT teller AS bankedBy

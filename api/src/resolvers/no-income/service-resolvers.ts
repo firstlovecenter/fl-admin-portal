@@ -18,7 +18,7 @@ const serviceNoIncomeMutations = {
     args: Member,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(

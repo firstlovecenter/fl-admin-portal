@@ -25,7 +25,6 @@ type FormOptions = {
 const LEADER_OPTIONS = [
   { key: 'CO', value: 'CO' },
   { key: 'Bacenta Leader', value: 'Bacenta Leader' },
-  { key: 'Fellowship Leader', value: 'Fellowship Leader' },
   { key: 'Hub Fellowship Leader', value: 'Hub Fellowship Leader' },
   { key: 'Hub Leader', value: 'Hub Leader' },
   { key: 'Hub Council Leader', value: 'Hub Council Leader' },

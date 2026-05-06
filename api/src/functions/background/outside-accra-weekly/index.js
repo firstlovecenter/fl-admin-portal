@@ -10,7 +10,6 @@ const { campusList } = require('./query-exec/campusList.js')
 const campusAttendanceIncome = require('./query-exec/campusAttendanceIncome.js')
 const campusBankedIncome = require('./query-exec/campusBankedIncome.js')
 const campusNotBankedIncome = require('./query-exec/campusNotBankedIncome.js')
-const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceIncome.js')
 const weekdayBankedIncome = require('./query-exec/weekdayBankedIncome.js')
 const weekdayNotBankedIncome = require('./query-exec/weekdayNotBankedIncome.js')
 const {
@@ -362,11 +361,9 @@ const handler = async (event = {}, targetDate = null) => {
 
     if (mode === REPORT_MODES.COMBINED || mode === REPORT_MODES.FELLOWSHIP) {
       ;[
-        fellowshipAttendanceIncomeData,
         weekdayBankedIncomeData,
         weekdayNotBankedIncomeData,
       ] = await Promise.all([
-        fellowshipAttendanceIncome(driver, fellowshipQueryDate),
         weekdayBankedIncome(driver, fellowshipQueryDate),
         weekdayNotBankedIncome(driver, fellowshipQueryDate),
       ])

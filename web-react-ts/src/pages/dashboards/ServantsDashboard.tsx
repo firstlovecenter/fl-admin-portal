@@ -86,7 +86,7 @@ const ServantsDashboard = () => {
                       loading={!assessmentChurchData}
                       number={''}
                       authRoles=""
-                      role={'leaderFellowship'}
+                      role={'leaderBacenta'}
                     />
                   </td>
                 )}

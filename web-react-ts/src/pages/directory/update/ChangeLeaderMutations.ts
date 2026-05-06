@@ -1,41 +1,5 @@
 import { gql } from '@apollo/client'
 
-export const MAKE_FELLOWSHIP_LEADER = gql`
-  mutation MakeFellowshipLeader(
-    $fellowshipId: ID!
-    $newLeaderId: ID!
-    $oldLeaderId: ID!
-  ) {
-    RemoveFellowshipLeader(
-      fellowshipId: $fellowshipId
-      leaderId: $oldLeaderId
-      newLeaderId: $newLeaderId
-    ) {
-      id
-      firstName
-      lastName
-    }
-    MakeFellowshipLeader(
-      fellowshipId: $fellowshipId
-      leaderId: $newLeaderId
-      oldLeaderId: $oldLeaderId
-    ) {
-      id
-      firstName
-      lastName
-      fullName
-      leadsFellowship {
-        id
-        leader {
-          id
-          firstName
-          lastName
-        }
-      }
-    }
-  }
-`
-
 export const SET_BACENTA_ADMIN = gql`
   mutation SetBacentaAdmin($bacentaId: ID!, $adminId: ID!) {
     SetBacentaAdmin(bacentaId: $bacentaId, adminId: $adminId) {

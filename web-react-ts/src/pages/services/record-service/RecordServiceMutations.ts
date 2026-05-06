@@ -266,65 +266,6 @@ export const RECORD_HUBCOUNCIL_SUNDAY_MEETING = gql`
   }
 `
 
-export const DISPLAY_FELLOWSHIP_SERVICE = gql`
-  query fellowshipDisplayServiceRecords($serviceId: ID!, $fellowshipId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
-      id
-      createdAt
-      created_by {
-        id
-        firstName
-        lastName
-        fullName
-      }
-      serviceDate {
-        date
-      }
-      noServiceReason
-      attendance
-      income
-      cash
-      onlineGiving
-      numberOfTithers
-      foreignCurrency
-      treasurerSelfie
-      familyPicture
-      bankingProof
-      bankingSlip
-      bankingSlipUploader {
-        id
-        firstName
-        lastName
-        fullName
-      }
-      offeringBankedBy {
-        id
-        firstName
-        lastName
-        fullName
-      }
-      transactionId
-      treasurers {
-        id
-        firstName
-        lastName
-        fullName
-      }
-      bankingConfirmer {
-        id
-        firstName
-        lastName
-        fullName
-      }
-    }
-    fellowships(where: { id: $fellowshipId }) {
-      id
-      name
-      noIncomeTracking
-      stream_name
-    }
-  }
-`
 export const DISPLAY_AGGREGATE_SERVICE_RECORD = gql`
   query aggregateServiceRecordForWeek($week: Int!, $governorshipId: ID!) {
     governorships(where: { id: $governorshipId }) {
@@ -388,6 +329,7 @@ export const DISPLAY_BACENTA_SERVICE = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
     bacentas(where: { id: $bacentaId }) {
@@ -470,6 +412,7 @@ export const DISPLAY_HUB_REHEARSAL = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
     hubs(where: { id: $hubId }) {
@@ -523,6 +466,7 @@ export const DISPLAY_HUBCOUNCIL_REHEARSAL = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
     hubCouncils(where: { id: $hubCouncilId }) {
@@ -576,6 +520,7 @@ export const DISPLAY_MINISTRY_REHEARSAL = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
     ministries(where: { id: $ministryId }) {
@@ -637,6 +582,7 @@ export const DISPLAY_GOVERNORSHIP_SERVICE = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
     governorships(where: { id: $governorshipId }) {
@@ -696,6 +642,7 @@ export const DISPLAY_COUNCIL_SERVICE = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
     councils(where: { id: $councilId }) {
@@ -759,6 +706,7 @@ export const DISPLAY_STREAM_SERVICE = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
     streams(where: { id: $streamId }) {
@@ -816,6 +764,7 @@ export const DISPLAY_CAMPUS_SERVICE = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
     campuses(where: { id: $campusId }) {

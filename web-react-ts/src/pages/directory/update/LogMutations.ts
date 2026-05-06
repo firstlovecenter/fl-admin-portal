@@ -1,40 +1,5 @@
 import { gql } from '@apollo/client'
 
-export const LOG_FELLOWSHIP_HISTORY = gql`
-  mutation LogFellowshipHistory(
-    $fellowshipId: ID!
-    $historyRecord: String!
-    $oldLeaderId: ID
-    $newLeaderId: ID
-    $oldBacentaId: ID
-    $newBacentaId: ID
-  ) {
-    LogFellowshipHistory(
-      fellowshipId: $fellowshipId
-      historyRecord: $historyRecord
-      oldLeaderId: $oldLeaderId
-      newLeaderId: $newLeaderId
-      oldBacentaId: $oldBacentaId
-      newBacentaId: $newBacentaId
-    ) {
-      id
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
 export const LOG_BACENTA_HISTORY = gql`
   mutation LogBacentaHistory(
     $bacentaId: ID!

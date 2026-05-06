@@ -15,7 +15,6 @@ type FocusChurch = {
 }
 
 const GRAPHS_TYPES = new Set<string>([
-  'Fellowship',
   'Bacenta',
   'Governorship',
   'Council',
@@ -38,7 +37,6 @@ const QUICK_FACTS_TYPES = new Set<string>([
 ])
 
 const DOWNLOAD_MEMBERSHIP_TYPES = new Set<string>([
-  'Fellowship',
   'Bacenta',
   'Governorship',
   'Council',

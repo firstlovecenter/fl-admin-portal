@@ -73,7 +73,7 @@ const Banked = () => {
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>
-            {`Fellowships That Have Banked This Week (Week ${getWeekNumber()})`}
+            {`Bacentas That Have Banked This Week (Week ${getWeekNumber()})`}
           </HeadingSecondary>
 
           <PlaceholderCustom as="h6" loading={!church?.bankedThisWeek.length}>

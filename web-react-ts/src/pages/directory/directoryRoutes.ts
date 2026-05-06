@@ -22,9 +22,6 @@ const CouncilHistory = lazy(
 const GovernorshipHistory = lazy(
   () => import('pages/directory/display/church-history/GovernorshipHistory')
 )
-const FellowshipHistory = lazy(
-  () => import('pages/directory/display/church-history/FellowshipHistory')
-)
 const BacentaHistory = lazy(
   () => import('pages/directory/display/church-history/BacentaHistory')
 )
@@ -164,9 +161,6 @@ const CreateMinistry = lazy(
 )
 const CreateCreativeArts = lazy(
   () => import('pages/directory/create/CreateCreativeArts')
-)
-const MakeHubFellowship = lazy(
-  () => import('pages/directory/reusable-forms/MakeHubFellowship')
 )
 const UpdateBacenta = lazy(() => import('pages/directory/update/UpdateBacenta'))
 const UpdateGovernorship = lazy(
@@ -409,13 +403,6 @@ export const directory: LazyRouteTypes[] = [
     roles: ['all'],
     placeholder: true,
   },
-  {
-    path: '/fellowship/history',
-    element: FellowshipHistory,
-    roles: ['all'],
-    placeholder: true,
-  },
-
   //CREATIVE ARTS ROUTE PATH STARTS
 
   {
@@ -731,12 +718,6 @@ export const directory: LazyRouteTypes[] = [
   },
 
   //Pages to Update the Directory
-  {
-    path: 'fellowship/make-hub-fellowship',
-    element: MakeHubFellowship,
-    roles: permitAdmin('Hub'),
-    placeholder: false,
-  },
   {
     path: '/bacenta/editbacenta',
     element: UpdateBacenta,

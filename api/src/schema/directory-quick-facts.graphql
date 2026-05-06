@@ -3,7 +3,7 @@ extend type ServiceRecord {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS_SERVICE]-(:ServiceLog:HistoryLog)<-[:HAS_HISTORY]-(church)
-      WHERE church:Fellowship OR church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
+      WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
       RETURN church.name
       """
       columnName: "church_name"
@@ -21,105 +21,7 @@ type MemberConversion {
   number: Int!
 }
 
-extend type Fellowship {
-  avgWeekdayStats(days: Int!): Stats!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record) WHERE NOT (record:NoService)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      MATCH (date)
-      WHERE date.date > date() - duration({days: $days})
-      RETURN {
-        attendance: toInteger(round(avg(record.attendance))),
-        income: round(avg(record.income), 2)
-        } AS avgWeekdayStats
-      """
-      columnName: "avgWeekdayStats"
-    )
-
-  peakFellowshipAttendance(days: Int!): ServiceRecord
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      WITH date, record, this
-            MATCH (date)
-            WHERE date.date > date() - duration({days: $days})
-      WITH  max(record.attendance) as max, this
-      MATCH (fellowship)-[:HAS_HISTORY]->(s:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      WHERE record.attendance = max
-      RETURN  record LIMIT 1
-      """
-      columnName: "record"
-    )
-
-  peakFellowshipIncome(days: Int!): ServiceRecord
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      WITH date, record, this
-            MATCH (date)
-            WHERE date.date > date() - duration({days: $days})
-      WITH  max(record.income) as max, this
-      MATCH (fellowship)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      WHERE record.income = max
-      RETURN record LIMIT 1
-      """
-      columnName: "record"
-    )
-  aggregateMemberConversion: [MemberConversion!]!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      WITH this,COUNT(DISTINCT members) AS total
-
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-
-      WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
-      WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
-      WITH COLLECT({howYouJoined:howYouJoined, percentage:conversion_percent, number: numberOfMembers}) AS data
-      UNWIND data as row
-      RETURN DISTINCT row
-      """
-      columnName: "row"
-    )
-}
-
 extend type Bacenta {
-  peakFellowshipAttendance(days: Int!): ServiceRecord!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS]->(fellowship) WHERE fellowship:Fellowship OR fellowship:ClosedFellowship
-      MATCH (fellowship)-[:HAS_HISTORY]-(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-            MATCH (date)
-            WHERE date.date > date() - duration({days: $days})
-      WITH  max(record.attendance) as max, record
-      MATCH (record)
-      WHERE record.attendance = max
-      RETURN record ORDER BY record.attendance DESC LIMIT 1
-      """
-      columnName: "record"
-    )
-
-  peakFellowshipIncome(days: Int!): ServiceRecord!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS]->(fellowship) WHERE fellowship:Fellowship OR fellowship:ClosedFellowship
-      MATCH (fellowship)-[:HAS_HISTORY]-(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-            MATCH (date)
-            WHERE date.date > date() - duration({days: $days})
-      WITH  max(record.income) as max, record
-      MATCH (record)
-      WHERE record.income = max
-      RETURN  record ORDER BY record.income DESC LIMIT 1
-      """
-      columnName: "record"
-    )
-
   avgWeekdayStats(days: Int!): Stats!
     @cypher(
       statement: """
@@ -157,10 +59,10 @@ extend type Bacenta {
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       WITH this,COUNT(DISTINCT members) AS total
 
-      MATCH (this)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
 
       WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
       WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
@@ -245,25 +147,6 @@ extend type Governorship {
 }
 
 extend type Council {
-  avgFellowshipWeekdayStats(days: Int!): Stats!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(fellowship)
-          WHERE fellowship:Fellowship OR fellowship:ClosedFellowship
-      MATCH (fellowship)-[:HAS_HISTORY]-(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record) WHERE NOT (record:NoService)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      MATCH (date)
-      WHERE date.date > date() - duration({days: $days})
-      WITH sum(record.attendance) AS attendance, sum(record.income) as income, fellowship, date(date.date).week as weeknumber
-      RETURN {
-        attendance: toInteger(round(avg(attendance))),
-        income: round(avg(income), 2)
-        } AS avgFellowshipWeekdayStats
-      """
-      columnName: "avgFellowshipWeekdayStats"
-    )
-
   avgBacentaWeekdayStats(days: Int!): Stats!
     @cypher(
       statement: """

@@ -269,7 +269,7 @@ extend type Mutation {
 
       WITH log
        UNWIND $ids AS nodeId
-       MATCH (node {id: nodeId}) WHERE node:Active:Member OR node:Fellowship
+       MATCH (node {id: nodeId}) WHERE node:Active:Member
        MERGE (node)-[:HAS_HISTORY]->(log)
 
        WITH node WHERE node:Active:Member
@@ -279,49 +279,6 @@ extend type Mutation {
       columnName: "member"
     )
 
-  LogFellowshipHistory(
-    fellowshipId: ID!
-    historyRecord: String!
-    oldLeaderId: ID
-    newLeaderId: ID
-    oldBacentaId: ID
-    newBacentaId: ID
-  ): Fellowship
-    @cypher(
-      statement: """
-      MATCH  (fellowship:Fellowship {id: $fellowshipId})
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      CREATE (log:HistoryLog {id: apoc.create.uuid()})
-        SET log.historyRecord = $historyRecord,
-          log.timeStamp = datetime()
-      MERGE (date:TimeGraph {date: date()})
-      MERGE (fellowship)-[r:HAS_HISTORY]->(log)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (log)-[:LOGGED_BY]->(admin)
-
-
-      WITH log,fellowship
-      CALL{
-        WITH log
-        WITH log WHERE $oldBacentaId IS NOT NULL
-        MATCH (oldBacenta:Bacenta {id: $oldBacentaId})
-        MERGE (oldBacenta)-[:OLD_HISTORY]->(log)
-        RETURN COUNT(log) AS logCount
-      }
-
-      WITH log,fellowship
-      CALL{
-        WITH log
-        WITH log WHERE $newBacentaId IS NOT NULL
-        MATCH (newBacenta:Bacenta {id: $newBacentaId})
-        MERGE (newBacenta)-[:HAS_HISTORY]->(log)
-        RETURN COUNT(log) AS logCount
-      }
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
   LogBacentaHistory(
     bacentaId: ID!
     historyRecord: String!

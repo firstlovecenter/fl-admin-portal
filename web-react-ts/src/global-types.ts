@@ -34,7 +34,6 @@ export type ChurchLevel =
   | 'CreativeArts'
 
 export type ChurchLevelLower =
-  | 'fellowship'
   | 'bacenta'
   | 'governorship'
   | 'council'
@@ -222,10 +221,6 @@ export interface Member {
   gender: { gender: 'Male' | 'Female' }
   occupation: { occupation: string }
   bacenta: Bacenta
-  fellowship: {
-    id: string
-    name: string
-  }
   basonta: {
     id: string
     name: string
@@ -234,7 +229,6 @@ export interface Member {
 
 export interface MemberWithChurches extends Member {
   roles?: Role[]
-  leadsFellowship: Church[]
   leadsBacenta: Church[]
   leadsGovernorship: Church[]
   leadsCouncil: Church[]
@@ -331,7 +325,6 @@ export interface LazyRouteTypes {
 }
 
 export type Role =
-  | 'leaderFellowship'
   | 'leaderBacenta'
   | 'leaderGovernorship'
   | 'leaderCouncil'
@@ -422,7 +415,6 @@ export type EquipmentChurch = {
   id: string
   name: string
   equipmentRecord: EquipmentRecord
-  fellowshipEquipmentFilledCount: number
   governorshipEquipmentFilledCount: number
 }
 
@@ -436,7 +428,6 @@ export interface HigherChurch extends Church {
   stream_name: StreamOptions
   vacationStatus?: VacationStatusOptions
   admin: MemberWithoutBioData
-  fellowshipCount: number
   bacentaCount: number
   governorshipCount: number
   councilCount: number

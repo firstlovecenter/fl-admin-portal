@@ -1,10 +1,15 @@
-import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from 'components/ui/dialog'
 import { Skeleton } from 'components/ui/skeleton'
 import CurrencySpan from 'components/CurrencySpan'
 import { Church, ServiceRecord } from 'global-types'
 import { parseNeoTime } from 'jd-date-utils'
-import { TrendingUp } from 'lucide-react'
 import { type ReactNode, useEffect } from 'react'
+import { VisuallyHidden } from 'radix-ui'
 import { useNavigate } from 'react-router'
 
 type ServiceDetailsProps = {
@@ -27,6 +32,52 @@ function DetailRow({
         {children}
       </span>
     </div>
+  )
+}
+
+function PhotoTile({
+  src,
+  label,
+  shape = 'rect',
+}: {
+  src: string
+  label: string
+  shape?: 'rect' | 'square'
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          aria-label={`Expand ${label}`}
+          className={
+            shape === 'square'
+              ? 'group relative aspect-square w-full overflow-hidden rounded-lg ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+              : 'group relative h-44 w-full overflow-hidden rounded-lg ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+          }
+        >
+          <img
+            src={src}
+            alt={label}
+            loading="lazy"
+            className="h-full w-full object-cover object-top transition group-hover:scale-[1.02] group-active:scale-[0.99]"
+          />
+        </button>
+      </DialogTrigger>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-3xl border-0 bg-transparent p-0 shadow-none sm:max-w-3xl"
+      >
+        <VisuallyHidden.Root>
+          <DialogTitle>{label}</DialogTitle>
+        </VisuallyHidden.Root>
+        <img
+          src={src}
+          alt={label}
+          className="h-auto max-h-[85vh] w-full rounded-lg object-contain"
+        />
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -124,28 +175,8 @@ const ServiceDetailsNoIncome = ({
               </div>
             </div>
 
-            {/* RIGHT — actions first, photos below (sticky on desktop) */}
+            {/* RIGHT — photos (sticky on desktop) */}
             <div className="space-y-4 lg:sticky lg:top-6">
-
-              {/* Actions card */}
-              <div className="overflow-hidden rounded-xl border border-border bg-card">
-                <div className="border-b border-border px-4 py-3">
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Actions
-                  </h2>
-                </div>
-                <div className="p-3">
-                  <Button
-                    className="w-full min-h-11 gap-2"
-                    onClick={() =>
-                      navigate(`/${church?.__typename.toLowerCase()}/graphs`)
-                    }
-                  >
-                    <TrendingUp className="h-4 w-4" />
-                    View Last 4 Weeks
-                  </Button>
-                </div>
-              </div>
 
               {/* Photos card — height-capped */}
               {(service.familyPicture || (service.onStagePictures?.length ?? 0) > 0) && (
@@ -161,10 +192,9 @@ const ServiceDetailsNoIncome = ({
                         <p className="mb-2 text-xs font-medium text-muted-foreground">
                           Family Picture
                         </p>
-                        <img
+                        <PhotoTile
                           src={service.familyPicture}
-                          alt="service report"
-                          className="h-44 w-full rounded-lg object-cover object-top"
+                          label="Family Picture"
                         />
                       </div>
                     )}
@@ -176,12 +206,11 @@ const ServiceDetailsNoIncome = ({
                         <div className="grid grid-cols-2 gap-2">
                           {service.onStagePictures?.map((image: string, i: number) =>
                             image ? (
-                              <img
+                              <PhotoTile
                                 key={i}
                                 src={image}
-                                alt="on stage attendance"
-                                loading="lazy"
-                                className="aspect-square w-full rounded-lg object-cover object-top"
+                                label={`On Stage ${i + 1}`}
+                                shape="square"
                               />
                             ) : null
                           )}

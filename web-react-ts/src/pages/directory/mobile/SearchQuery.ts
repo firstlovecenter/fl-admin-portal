@@ -90,17 +90,6 @@ export const MEMBER_SEARCH = gql`
           pictureUrl
         }
       }
-      fellowshipSearch(key: $key, limit: $limit) {
-        id
-        name
-        leader {
-          id
-          firstName
-          lastName
-          nameWithTitle
-          pictureUrl
-        }
-      }
       creativeArtsSearch(key: $key, limit: $limit) {
         id
         name

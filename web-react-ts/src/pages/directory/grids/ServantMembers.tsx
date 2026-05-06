@@ -9,7 +9,6 @@ import { GET_SERVANT_MEMBERS } from './GridQueries'
 // Only the church levels that have a backend `downloadMembership` resolver.
 // Hub / HubCouncil / Ministry / CreativeArts have no resolver and are skipped.
 const DOWNLOADABLE_TYPES = new Set<string>([
-  'Fellowship',
   'Bacenta',
   'Governorship',
   'Council',

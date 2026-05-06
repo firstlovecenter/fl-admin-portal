@@ -21,16 +21,6 @@ extend type Mutation {
   ): Member
 
   #Pastoral Roles
-  MakeFellowshipLeader(
-    leaderId: ID!
-    fellowshipId: ID!
-    oldLeaderId: ID
-  ): Member!
-  RemoveFellowshipLeader(
-    leaderId: ID!
-    newLeaderId: ID!
-    fellowshipId: ID!
-  ): Member
   MakeBacentaLeader(leaderId: ID!, bacentaId: ID!, oldLeaderId: ID): Member!
   RemoveBacentaLeader(leaderId: ID!, newLeaderId: ID!, bacentaId: ID!): Member
   MakeGovernorshipLeader(
@@ -97,32 +87,6 @@ extend type Mutation {
 
 #### GO ON VACATION AND COME BACK ###
 extend type Mutation {
-  #Set Fellowship to be 'OnVacation
-  SetVacationFellowship(fellowshipId: ID!): Fellowship!
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id:$fellowshipId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = fellowship.name + ' Fellowship went on vacation mode'
-
-      WITH log,fellowship
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-      MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-      SET fellowship:Vacation
-      REMOVE fellowship:Active, fellowship:Online
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
   #Set Bacenta to be 'OnVacation
   SetVacationBacenta(bacentaId: ID!): Bacenta!
     @cypher(
@@ -149,7 +113,7 @@ extend type Mutation {
       """
       columnName: "bacenta"
     )
-  SetVacationStream(streamId: ID!): Fellowship!
+  SetVacationStream(streamId: ID!): Stream!
     @cypher(
       statement: """
       MATCH (stream:Stream {id:$streamId})
@@ -175,7 +139,6 @@ extend type Mutation {
       columnName: "stream"
     )
 
-  #Set Fellowship to be 'Active
   SetActiveStream(streamId: ID!): Stream!
     @cypher(
       statement: """
@@ -200,31 +163,6 @@ extend type Mutation {
       RETURN stream
       """
       columnName: "stream"
-    )
-  SetActiveFellowship(fellowshipId: ID!): Fellowship!
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id:$fellowshipId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = fellowship.name + ' Fellowship was made active again'
-
-      WITH log,fellowship
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-      MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-      SET fellowship:Active:Fellowship
-      REMOVE fellowship:Vacation, fellowship:Online
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
     )
   SetActiveHub(hubId: ID!): Hub!
     @cypher(
@@ -275,33 +213,6 @@ extend type Mutation {
       RETURN hub
       """
       columnName: "hub"
-    )
-
-  # Set fellowship to be 'Online'
-  SetOnlineFellowship(fellowshipId: ID!): Fellowship!
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id:$fellowshipId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = fellowship.name + ' Fellowship was made an online fellowship'
-
-      WITH log,fellowship
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-      MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-      SET fellowship:Online
-      REMOVE fellowship:Active, fellowship:Vacation
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
     )
 
   #Set Bacenta to be 'Active
@@ -382,48 +293,6 @@ extend type Mutation {
     venueLatitude: Float
   ): Bacenta!
 
-  CreateFellowship(
-    name: String!
-    bacentaId: ID!
-    leaderId: ID!
-    meetingDay: String!
-    venueLongitude: Float
-    venueLatitude: Float
-  ): Fellowship!
-    @authentication(
-      jwt: {
-        OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminGovernorship" }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-      MATCH (leader:Active:Member {id:$leaderId}) WHERE leader.email IS NOT NULL
-      MATCH (lastCode:LastBankingCode)
-      CREATE (fellowship:Fellowship:Active {name:$name,location: point({latitude:toFloat($venueLatitude), longitude:toFloat($venueLongitude), crs:'WGS-84'})})
-         	SET
-      	fellowship.id = apoc.create.uuid(),
-        fellowship.bankingCode = lastCode.number + 1,
-        lastCode.number = fellowship.bankingCode
-
-
-      WITH fellowship, leader
-      MATCH (bacenta:Bacenta {id: $bacentaId})
-      MATCH (currentUser:Active:Member {id:$jwt.userId})
-      MATCH (meetingDay:ServiceDay {day: $meetingDay})
-
-      MERGE (bacenta)-[:HAS]->(fellowship)
-      MERGE (leader)-[:LEADS]->(fellowship)
-      MERGE (fellowship)-[:MEETS_ON]->(meetingDay)
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
 }
 
 ### UPDATE OPERATIONS ###
@@ -762,52 +631,12 @@ extend type Mutation {
       columnName: "bacenta"
     )
 
-  UpdateFellowshipDetails(
-    id: ID!
-    name: String!
-    meetingDay: String
-    venueLongitude: Float
-    venueLatitude: Float
-  ): Fellowship
-    @authentication(
-      jwt: {
-        OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminGovernorship" }
-          { roles_INCLUDES: "leaderFellowship" }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-               MATCH (fellowship:Fellowship {id: $id})
-               	SET fellowship.name = $name
-              	SET fellowship.location = point({latitude:toFloat($venueLatitude), longitude:toFloat($venueLongitude), crs:'WGS-84'})
-
-               WITH fellowship
-                    CALL {
-                     	WITH fellowship
-                      WITH fellowship WHERE $meetingDay IS NOT NULL
-                      MATCH (meetingDay:ServiceDay {day: $meetingDay})
-                      OPTIONAL MATCH (fellowship)-[r:MEETS_ON]->()
-                      DELETE r
-                      MERGE (fellowship)-[:MEETS_ON]->(meetingDay)
-                     	RETURN count(fellowship)
-                     	}
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
 }
 
 ### DELETE OPERATIONS (MAKE INACTIVE) ###
 extend type Mutation {
   # In the context of church data we never delete, we only render inactive
   MakeMemberInactive(id: ID!, reason: String!): Member
-  CloseDownFellowship(fellowshipId: ID!, leaderId: ID!): Bacenta!
   CloseDownBacenta(bacentaId: ID!, leaderId: ID!): Governorship!
   CloseDownGovernorship(
     governorshipId: ID!
@@ -907,20 +736,6 @@ extend type Mutation {
       RETURN bacenta
       """
       columnName: "bacenta"
-    )
-
-  MoveFellowshipToBacenta(fellowshipId: ID!, bacentaId: ID!): Fellowship!
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id: $fellowshipId})
-      MATCH (bacenta:Bacenta {id: $bacentaId})
-      OPTIONAL MATCH (fellowship)<-[r:HAS]-(:Bacenta)
-      DELETE r
-
-      MERGE (bacenta)-[:HAS]->(fellowship)
-      RETURN fellowship
-      """
-      columnName: "fellowship"
     )
 
   MoveCreativeArtsToCampus(creativeArtsId: ID!, campusId: ID!): CreativeArts!

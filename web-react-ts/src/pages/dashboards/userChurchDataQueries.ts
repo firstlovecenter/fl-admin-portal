@@ -1,34 +1,5 @@
 import { gql } from '@apollo/client'
 
-export const SERVANT_FELLOWSHIP_LEADER = gql`
-  query fellowshipLeader($id: ID!) {
-    members(where: { id: $id }) {
-      id
-      leadsFellowship {
-        id
-        name
-        stream_name
-        memberCount
-        vacationStatus
-
-        services(limit: 24) {
-          id
-          createdAt
-          attendance
-          income
-          noServiceReason
-          bankingProof
-          transactionStatus
-          week
-          serviceDate {
-            date
-          }
-        }
-      }
-    }
-  }
-`
-
 export const SERVANT_BACENTA_LEADER = gql`
   query bacentaLeader($id: ID!) {
     members(where: { id: $id }) {

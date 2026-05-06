@@ -173,7 +173,7 @@ const servantCypher = {
    WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight 
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
-   OR church:ClosedFellowship OR church:ClosedBacenta
+   OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
    MATCH (currentUser:Member {id: $jwt.userId}) 
    MATCH (log:ServiceLog {id: $logId})
@@ -210,7 +210,7 @@ const servantCypher = {
    WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
    OR church:Campus OR church:Oversight 
    OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
-   OR church:ClosedFellowship OR church:ClosedBacenta
+   OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
    MATCH (currentUser:Member {id: $jwt.userId}) 
    MATCH (log:HistoryLog {id: $logId})

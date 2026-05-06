@@ -2,9 +2,6 @@ import { LazyRouteTypes } from 'global-types'
 import { permitMe } from 'permission-utils'
 import { lazy } from 'react'
 
-const DownloadFellowshipMembership = lazy(
-  () => import('./membership-list/DownloadFellowshipMembership')
-)
 const DownloadBacentaMembership = lazy(
   () => import('./membership-list/DownloadBacentaMembership')
 )
@@ -23,16 +20,11 @@ const DownloadCampusMembership = lazy(
 const DownloadOversightMembership = lazy(
   () => import('./membership-list/DownloadOversightMembership')
 )
-const CampusFellowshipServicesThisWeek = lazy(
+const CampusBacentaServicesThisWeek = lazy(
   () => import('./services-this-week/CampusBacentaServicesThisWeek')
 )
 
 export const downloadReports: LazyRouteTypes[] = [
-  {
-    path: '/download-reports/fellowship/membership',
-    element: DownloadFellowshipMembership,
-    roles: permitMe('Bacenta'),
-  },
   {
     path: '/download-reports/bacenta/membership',
     element: DownloadBacentaMembership,
@@ -65,7 +57,7 @@ export const downloadReports: LazyRouteTypes[] = [
   },
   {
     path: '/campus/download-fellowship-services',
-    element: CampusFellowshipServicesThisWeek,
+    element: CampusBacentaServicesThisWeek,
     roles: permitMe('Campus'),
   },
 ]

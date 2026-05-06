@@ -28,7 +28,6 @@ const ProtectedRouteHome = ({
         'adminGovernorship',
         'leaderGovernorship',
         'leaderBacenta',
-        'leaderFellowship',
       ],
       currentUser.roles
     )

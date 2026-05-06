@@ -59,9 +59,6 @@ const DisplayChurchList = (props: {
                             </span>
                           </Row>
                           <Row className="text-muted d-block">
-                            {church.fellowshipCount
-                              ? `| ${church?.fellowshipCount} Fellowships`
-                              : null}{' '}
                             {church.bacentaCount
                               ? `| ${church?.bacentaCount} Bacentas`
                               : null}{' '}

@@ -53,9 +53,6 @@ export const setPriorityLevel = (churchType: ChurchLevel) => {
     case 'Bacenta':
       priority = 7
       break
-    case 'Fellowship':
-      priority = 8
-      break
     default:
       priority = 0
   }

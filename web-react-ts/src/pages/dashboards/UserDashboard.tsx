@@ -387,7 +387,6 @@ const UserDashboard = () => {
 
     const isBussingPoint = point.category.includes('bussing')
     const serviceDetailRoutes: Record<string, string> = {
-      Fellowship: '/fellowship/service-details',
       Bacenta: '/bacenta/service-details',
       Governorship: '/governorship/service-details',
       Council: '/council/service-details',

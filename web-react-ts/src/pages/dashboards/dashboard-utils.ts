@@ -252,20 +252,6 @@ export const getServantRoles = (servant: MemberWithChurches) => {
   const userroles: UserJobs[] = []
   const roleTitles: Role[] = []
 
-  if (servant?.leadsFellowship?.length) {
-    roleTitles.push('leaderFellowship')
-    userroles.push({
-      authRoles: 'leaderFellowship',
-      name: 'Fellowship',
-      church: servant?.leadsFellowship,
-      number: servant?.leadsFellowship?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('Bacenta'),
-        '/fellowship/displaydetails'
-      ),
-    })
-  }
   if (servant?.leadsBacenta?.length) {
     roleTitles.push('leaderBacenta')
     userroles.push({

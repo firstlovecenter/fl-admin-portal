@@ -140,8 +140,6 @@ export const isAuth = (permittedRoles: Role[], userRoles?: Role[]) => {
 
 export const nextHigherChurch = (churchLevel: ChurchLevel) => {
   switch (churchLevel) {
-    case 'Fellowship':
-      return 'Bacenta'
     case 'Bacenta':
       return 'Governorship'
     case 'Governorship':

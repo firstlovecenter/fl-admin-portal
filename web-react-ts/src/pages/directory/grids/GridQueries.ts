@@ -24,9 +24,6 @@ export const GET_FEDERAL_MEMBERS = gql`
       title {
         name
       }
-      leadsFellowship {
-        name
-      }
       leadsBacenta {
         id
         name
@@ -538,80 +535,6 @@ export const GET_BACENTA_MEMBERS = gql`
         firstName
         lastName
         pictureUrl
-        bacenta {
-          id
-          name
-        }
-        basonta {
-          name
-        }
-        maritalStatus {
-          status
-        }
-        gender {
-          gender
-        }
-        title {
-          name
-        }
-        bacenta {
-          id
-          name
-        }
-        leadsBacenta {
-          id
-          name
-        }
-        leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
-          id
-          name
-        }
-        isAdminForCouncil {
-          id
-          name
-        }
-        isAdminForGovernorship {
-          id
-          name
-        }
-
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
-      }
-    }
-  }
-`
-
-export const GET_FELLOWSHIP_MEMBERS = gql`
-  query getFellowshipMembers($id: ID!) {
-    fellowships(where: { id: $id }) {
-      id
-      name
-      members {
-        id
-        firstName
-        lastName
-        pictureUrl
-        stream_name
         bacenta {
           id
           name

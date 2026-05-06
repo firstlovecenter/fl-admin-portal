@@ -37,7 +37,7 @@ export const MemberPlaces = ({
 }: MemberPlacesProps) => {
   return (
     <MemberPlacesCombobox
-      placeholder="Search for a Member/Fellowship/Outreach Venues"
+      placeholder="Search for a Member/Bacenta/Outreach Venues"
       name="member-places-search"
       initialValue=""
       setCentre={setCentre}
