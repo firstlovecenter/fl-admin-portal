@@ -69,10 +69,6 @@ const roleTypes = [
   'Stream',
   'Campus',
   'Oversight',
-  'CreativeArts',
-  'Ministry',
-  'Hub',
-  'HubCouncil',
 ]
 
 const adminTypes = [
@@ -81,11 +77,9 @@ const adminTypes = [
   'Stream',
   'Campus',
   'Oversight',
-  'CreativeArts',
-  'Ministry',
 ]
 
-// role must be the PascalCase role name, e.g. 'CreativeArts', not its lowercased form,
+// role must be the PascalCase role name, e.g. 'Governorship', not its lowercased form,
 // so that member property lookups like `isAdminForCreativeArts` resolve correctly.
 const updateRank = (
   member: MemberWithChurches,

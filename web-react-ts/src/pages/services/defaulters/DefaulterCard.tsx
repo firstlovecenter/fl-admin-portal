@@ -106,7 +106,7 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             </Button>
           </a>
           <a
-            href={`https://wa.me/${defaulter?.leader?.whatsappNumber}`}
+            href={`whatsapp://send?phone=${defaulter?.leader?.whatsappNumber}`}
             className="ms-3"
           >
             <Button variant="success">

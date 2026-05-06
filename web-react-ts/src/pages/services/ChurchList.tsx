@@ -59,10 +59,6 @@ const ChurchList = ({
                     'Campus',
                     'Oversight',
                     'Denomination',
-                    'CreativeArts',
-                    'Ministry',
-                    'HubCouncil',
-                    'Hub',
                   ].includes(church.__typename)
                 ) {
                   return null

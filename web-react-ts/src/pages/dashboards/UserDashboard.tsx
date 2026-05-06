@@ -386,7 +386,6 @@ const UserDashboard = () => {
       Council: '/council/service-details',
       Stream: '/stream/service-details',
       Campus: '/campus/service-details',
-      Hub: '/hub/service-details',
     }
 
     const targetRoute = isBussingPoint

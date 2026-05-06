@@ -22,10 +22,6 @@ const GRAPHS_TYPES = new Set<string>([
   'Campus',
   'Oversight',
   'Denomination',
-  'Hub',
-  'HubCouncil',
-  'Ministry',
-  'CreativeArts',
 ])
 
 const QUICK_FACTS_TYPES = new Set<string>([

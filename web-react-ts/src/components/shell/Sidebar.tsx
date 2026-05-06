@@ -44,10 +44,6 @@ const DISPLAYDETAILS_CHURCH_TYPES = new Set([
   'Campus',
   'Oversight',
   'Denomination',
-  'Hub',
-  'HubCouncil',
-  'Ministry',
-  'CreativeArts',
 ])
 
 const ChurchScopeNavItem = ({ open }: { open: boolean }) => {

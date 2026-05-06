@@ -232,12 +232,6 @@ const ServiceForm = ({
                                       name={`treasurers[${index}]`}
                                       placeholder="Start typing"
                                       setFieldValue={formik.setFieldValue}
-                                      creativeArts={[
-                                        'CreativeArts',
-                                        'Ministry',
-                                        'HubCouncil',
-                                        'Hub',
-                                      ].includes(churchType)}
                                       aria-describedby="Member List"
                                       error={
                                         !Array.isArray(

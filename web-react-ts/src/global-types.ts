@@ -58,7 +58,6 @@ export interface Church {
   stream_name?: StreamOptions
   leader: MemberWithoutBioData
   admin?: MemberWithoutBioData
-  hubs?: Church[]
   lowerChurch?: Church[]
   memberCount: number
   members: Member[]

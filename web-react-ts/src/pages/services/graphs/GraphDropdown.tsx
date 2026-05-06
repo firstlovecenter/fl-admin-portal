@@ -20,7 +20,6 @@ const GraphDropdown = ({
   const [selected, setSelected] = React.useState('Select Service')
   const churchLevel: ChurchLevel = data?.__typename
 
-  const sontaLevels = ['Hub', 'HubCouncil', 'Ministry', 'CreativeArts']
 
   const churchData = useMemo(
     () => getServiceGraphData(data, graphs),
@@ -48,41 +47,16 @@ const GraphDropdown = ({
           </Dropdown.Item>
         )}
 
-        {![...sontaLevels].includes(churchLevel) && (
-          <Dropdown.Item
-            className="py-3"
-            onClick={() => {
-              setSelected('Services')
-              setGraphs('services')
-            }}
-          >
-            {`${churchLevel} Services`}
-          </Dropdown.Item>
-        )}
-        {['CreativeArts'].includes(churchLevel) && (
-          <Dropdown.Item
-            className="py-3"
-            onClick={() => {
-              setSelected('OnStage Attendance')
-              setGraphs('onStageAttendanceAggregate')
-            }}
-          >
-            {`On Stage Attendance Total`}
-          </Dropdown.Item>
-        )}
-        {['Ministry'].includes(churchLevel) && (
-          <Dropdown.Item
-            className="py-3"
-            onClick={() => {
-              setSelected('OnStage Attendance')
-              setGraphs('onStageAttendance')
-            }}
-          >
-            {`On Stage Attendance`}
-          </Dropdown.Item>
-        )}
-
-        {!['Bacenta', ...sontaLevels].includes(churchLevel) && (
+        <Dropdown.Item
+          className="py-3"
+          onClick={() => {
+            setSelected('Services')
+            setGraphs('services')
+          }}
+        >
+          {`${churchLevel} Services`}
+        </Dropdown.Item>
+        {churchLevel !== 'Bacenta' && (
           <Dropdown.Item
             className="py-3"
             onClick={() => {
@@ -116,40 +90,6 @@ const GraphDropdown = ({
           </Dropdown.Item>
         )}
 
-        {['Hub', 'HubCouncil'].includes(churchLevel) && (
-          <Dropdown.Item
-            className="py-3"
-            onClick={() => {
-              setSelected('Rehearsals')
-              setGraphs('rehearsals')
-            }}
-          >
-            {`${churchLevel} Rehearsals`}
-          </Dropdown.Item>
-        )}
-
-        {['Ministry', 'CreativeArts', 'HubCouncil'].includes(churchLevel) && (
-          <Dropdown.Item
-            className="py-3"
-            onClick={() => {
-              setSelected('Rehearsals Total')
-              setGraphs('rehearsalAggregate')
-            }}
-          >
-            {`${churchLevel} Rehearsals Total`}
-          </Dropdown.Item>
-        )}
-        {['Ministry', 'CreativeArts'].includes(churchLevel) && (
-          <Dropdown.Item
-            className="py-3"
-            onClick={() => {
-              setSelected('Rehearsals')
-              setGraphs('ministryMeeting')
-            }}
-          >
-            {`${churchLevel} Weekend Meeting Total`}
-          </Dropdown.Item>
-        )}
       </Dropdown.Menu>
     </Dropdown>
   )

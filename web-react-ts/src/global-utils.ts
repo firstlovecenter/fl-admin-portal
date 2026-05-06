@@ -339,20 +339,6 @@ export const plural = (church: ChurchLevel | string) => {
       return 'bacentas'
     case 'Bacenta':
       return 'Bacentas'
-    case 'hub':
-      return 'hubs'
-    case 'Hub':
-      return 'Hubs'
-    case 'HubCouncil':
-      return 'Hub Councils'
-    case 'hubCouncil':
-      return 'hub councils'
-    case 'ministry':
-      return 'ministries'
-    case 'Ministry':
-      return 'Ministries'
-    case 'CreativeArts':
-      return 'Creative Arts'
     default:
       return church
   }
@@ -695,8 +681,6 @@ export const firstDayOfThisYear = new Date(new Date().getFullYear(), 0, 1)
 
 export const check = (bacenta: any) => {
   let serviceType: 'services' | 'rehearsals' = 'services'
-  if (bacenta.__typename === 'Hub') serviceType = 'rehearsals'
-
   const lastFilled = bacenta?.[serviceType].map(
     ({
       bankingProof,

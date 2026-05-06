@@ -35,9 +35,6 @@ const services = fs
 const servicesNoIncome = fs.readFileSync(
   path.join(__dirname, 'services-no-income.graphql')
 )
-const servicesCreativeArts = fs.readFileSync(
-  path.join(__dirname, 'services-creativearts.graphql')
-)
 
 const banking = fs
   .readFileSync(path.join(__dirname, './banking.graphql'))
@@ -60,10 +57,6 @@ const quickFacts = fs
 
 const bankingAnagkazo = fs
   .readFileSync(path.join(__dirname, './banking-anagkazo.graphql'))
-  .toString('utf-8')
-
-const creativeartsChurches = fs
-  .readFileSync(path.join(__dirname, './directory-creativearts.graphql'))
   .toString('utf-8')
 
 const maps = fs
@@ -92,8 +85,6 @@ const array = [
   aggregates,
   quickFacts,
   servicesNoIncome,
-  servicesCreativeArts,
-  creativeartsChurches,
   maps,
   accounts,
   downloadMembership,

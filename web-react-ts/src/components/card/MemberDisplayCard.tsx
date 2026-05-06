@@ -58,8 +58,6 @@ const ChurchTypeIcon = ({ typename }: { typename: string }) => {
       return <StreamIcon />
     case 'Oversight':
       return <BsEyeFill size={20} />
-    case 'HubFellowship':
-      return <BsMusicNote size={20} />
     case 'Bus':
       return <BusIcon />
     default:

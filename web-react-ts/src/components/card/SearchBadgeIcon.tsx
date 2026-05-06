@@ -41,21 +41,6 @@ const SearchBadgeIcon = ({
     return <BsBusFront {...rest} />
   }
 
-  if (category === 'CreativeArts') {
-    return <MusicNoteBeamed {...rest} />
-  }
-
-  if (category === 'Ministry') {
-    return <BuildingsFill {...rest} />
-  }
-  if (category === 'HubCouncil') {
-    return <FaCogs {...rest} />
-  }
-
-  if (category === 'Hub') {
-    return <FaHubspot {...rest} />
-  }
-
   return <div>SearchBadgeIcon</div>
 }
 

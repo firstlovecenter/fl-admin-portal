@@ -37,18 +37,6 @@ const AllChurchesSummary = (props: AllChurchesSummaryProps) => {
             </Link>
           </Card>
         </Col>
-        {churchType === 'Bacenta' || churchType === 'IC Bacenta' ? (
-          <Col>
-            <Card className="mb-2 card-border">
-              <Link to="/hub/displayall">
-                <Card.Body className="summary-padding">
-                  <Row className="text-muted text-small">Hubs</Row>
-                  <Row className="number">{church?.hubs?.length}</Row>
-                </Card.Body>
-              </Link>
-            </Card>
-          </Col>
-        ) : null}
       </Row>
     </Container>
   )
