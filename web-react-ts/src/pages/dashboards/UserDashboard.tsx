@@ -22,6 +22,9 @@ import { MemberContext } from 'contexts/MemberContext'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
+import { Badge } from 'components/ui/badge'
+import { Separator } from 'components/ui/separator'
+import { ChevronRight } from 'lucide-react'
 import { cn } from 'components/lib/utils'
 import {
   GraphTypes,
@@ -415,93 +418,125 @@ const UserDashboard = () => {
     navigate(targetRoute)
   }
 
+  const scopeVacationStatus = (
+    assessmentChurch as unknown as { vacationStatus?: string } | undefined
+  )?.vacationStatus
+  const isScopeOnVacation = scopeVacationStatus === 'Vacation'
+
   return (
     <div className="min-h-full bg-background">
-        <motion.div
-          variants={sectionStagger}
-          initial="hidden"
-          animate="show"
-          className="mx-auto max-w-6xl px-4 pt-4 pb-10 sm:px-6 md:pt-8 lg:px-10 lg:pt-12 lg:pb-14"
+      <motion.div
+        variants={sectionStagger}
+        initial="hidden"
+        animate="show"
+        className="mx-auto max-w-6xl px-4 pt-4 pb-10 sm:px-6 md:pt-8 lg:px-10 lg:pt-10 lg:pb-14"
+      >
+        {/* ── Header band — full width above the grid ── */}
+        <motion.header
+          variants={fadeUp}
+          className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
         >
-          {/* ── Header ── */}
-          <motion.header
-            variants={fadeUp}
-            className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">
-                {new Date().toLocaleDateString('en-GB', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                })}
-              </p>
-              <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {isLoading ? (
-                  <Skeleton className="h-10 w-40 max-w-full" />
-                ) : (
-                  <>{greeting}</>
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {new Date().toLocaleDateString('en-GB', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              })}
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              {isLoading ? (
+                <Skeleton className="h-10 w-56 max-w-full" />
+              ) : (
+                <>{greeting}</>
+              )}
+            </h1>
+            {selectedScopeSummary ? (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <Badge
+                  variant="secondary"
+                  className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                >
+                  {selectedScope?.churchName}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
+                >
+                  {formatChurchLevel(selectedScope?.churchType)}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
+                >
+                  {getRoleRelationLabel(
+                    selectedScope?.authRole,
+                    selectedScope?.roleName
+                  )}
+                </Badge>
+                {isScopeOnVacation && (
+                  <Badge className="gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 dark:bg-warning/20">
+                    <Palmtree className="size-3" />
+                    On vacation
+                  </Badge>
                 )}
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {selectedScopeSummary
-                  ? selectedScopeSummary
-                  : activeRoles
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {activeRoles
                   ? 'Select a church in focus to view role context.'
                   : 'No roles assigned yet.'}
               </p>
-            </div>
-            {roleChurchOptions.length > 0 && (
-              <div className="w-full shrink-0 sm:w-56">
-                <ChurchRoleScopePicker />
-              </div>
             )}
-          </motion.header>
-
-          {/* ── Two-column layout on lg+: main content (left) + sticky quick-actions (right) ── */}
-          <motion.div
-            variants={sectionStagger}
-            className="mt-8 lg:flex lg:items-start lg:gap-6"
-          >
-            <motion.div variants={fadeUp} className="space-y-6 lg:flex-1 lg:min-w-0">
-          {/* ── Metrics — asymmetric: primary stat + divider + two secondaries ── */}
-          <section
-            className="rounded-2xl border border-border bg-card overflow-hidden"
-          >
-            {/* Primary metric — full width with left accent bar */}
-            <div className="flex items-stretch gap-0">
-              <div
-                className="w-1 shrink-0 rounded-l-2xl"
-                style={{ background: 'hsl(var(--brand))' }}
-              />
-              <div className="flex-1 px-6 py-5">
-                <p className="text-xs font-medium text-muted-foreground tracking-wide">
-                  Avg. weekly bussing attendance
-                </p>
-                {isLoading ? (
-                  <Skeleton className="mt-3 h-10 w-32" />
-                ) : (
-                  <p
-                    className={cn(
-                      'mt-1.5 font-semibold tracking-tight',
-                      hasBussingAttendance
-                        ? 'text-5xl tracking-tighter tabular-nums text-foreground'
-                        : 'text-2xl text-muted-foreground/40'
-                    )}
-                  >
-                    {hasBussingAttendance
-                      ? fmtBussingAttendance
-                      : 'No recent bussing'}
-                  </p>
-                )}
-              </div>
+          </div>
+          {roleChurchOptions.length > 0 && (
+            <div className="w-full shrink-0 sm:w-64">
+              <ChurchRoleScopePicker />
             </div>
+          )}
+        </motion.header>
 
-            {/* Divider + two secondary metrics */}
-            <div className="border-t border-border">
+        {/* ── Canonical 2-column grid: primary (1fr) + supporting (360px) on lg+ ── */}
+        <motion.div
+          variants={sectionStagger}
+          className="mt-8 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start"
+        >
+          {/* ── Primary column ── */}
+          <motion.div variants={fadeUp} className="min-w-0 space-y-6">
+            {/* ── Metrics — asymmetric: primary stat + two secondaries ── */}
+            <section className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="flex items-stretch">
+                <div
+                  className="w-1 shrink-0 rounded-l-2xl"
+                  style={{ background: 'hsl(var(--brand))' }}
+                />
+                <div className="flex-1 px-6 py-5">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Avg. weekly bussing attendance
+                  </p>
+                  {isLoading ? (
+                    <Skeleton className="mt-3 h-12 w-32" />
+                  ) : (
+                    <p
+                      className={cn(
+                        'mt-1.5 font-semibold tracking-tight',
+                        hasBussingAttendance
+                          ? 'text-5xl tracking-tighter tabular-nums text-foreground'
+                          : 'text-2xl text-muted-foreground/40'
+                      )}
+                    >
+                      {hasBussingAttendance
+                        ? fmtBussingAttendance
+                        : 'No recent bussing'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
               <div className="grid grid-cols-2 divide-x divide-border">
                 <div className="px-6 py-4">
-                  <p className="text-xs font-medium text-muted-foreground tracking-wide">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Avg. attendance
                   </p>
                   {isLoading ? (
@@ -513,7 +548,7 @@ const UserDashboard = () => {
                   )}
                 </div>
                 <div className="px-6 py-4">
-                  <p className="text-xs font-medium text-muted-foreground tracking-wide">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Avg. income
                   </p>
                   {isLoading ? (
@@ -532,17 +567,12 @@ const UserDashboard = () => {
                   )}
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* ── Bacenta weekly tasks ── */}
-          {assessmentChurch?.__typename === 'Bacenta' && (
-            <div>
+            {/* ── Bacenta weekly tasks ── */}
+            {assessmentChurch?.__typename === 'Bacenta' && (
               <BacentaWeeklyTasks
-                vacationStatus={
-                  (assessmentChurch as unknown as { vacationStatus?: string })
-                    .vacationStatus
-                }
+                vacationStatus={scopeVacationStatus}
                 services={
                   (
                     assessmentChurch as unknown as {
@@ -589,105 +619,106 @@ const UserDashboard = () => {
                 onRecordBussing={() => navigate('/arrivals')}
                 serviceAwaitingBanking={serviceAwaitingBanking}
               />
-            </div>
-          )}
+            )}
 
-          {/* ── Trend chart ── */}
-          <section
-            className="rounded-2xl border border-border bg-card p-6"
-          >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div className="min-w-0">
-                <h2 className="text-base font-medium text-foreground">
-                  Weekly trend
-                </h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {assessmentChurch?.name
-                    ? `${assessmentChurch.name} · ${assessmentChurch.__typename}`
-                    : 'Across your churches'}
-                </p>
+            {/* ── Trend chart ── */}
+            <section className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-base font-medium text-foreground">
+                    Weekly trend
+                  </h2>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {assessmentChurch?.name
+                      ? `${assessmentChurch.name} · ${assessmentChurch.__typename}`
+                      : 'Across your churches'}
+                  </p>
 
-                {canToggleTrendMode && (
-                  <div
-                    className="mt-3 inline-flex w-full max-w-sm rounded-lg border border-border p-1 sm:w-auto"
-                    role="group"
-                    aria-label="Trend data mode"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setTrendMode('weekday')}
-                      aria-pressed={activeTrendMode === 'weekday'}
-                      className={cn(
-                        'flex-1 min-h-11 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:flex-none sm:min-h-11',
-                        activeTrendMode === 'weekday'
-                          ? 'bg-accent text-accent-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
+                  {canToggleTrendMode && (
+                    <div
+                      className="mt-3 inline-flex w-full max-w-sm rounded-lg border border-border p-1 sm:w-auto"
+                      role="group"
+                      aria-label="Trend data mode"
                     >
-                      Weekday service
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTrendMode('bussing')}
-                      aria-pressed={activeTrendMode === 'bussing'}
-                      className={cn(
-                        'flex-1 min-h-11 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:flex-none sm:min-h-11',
-                        activeTrendMode === 'bussing'
-                          ? 'bg-accent text-accent-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      Sunday bussing
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:justify-end">
-                <span className="flex items-center gap-1.5">
-                  <span
-                    className="size-1.5 rounded-full"
-                    style={{
-                      backgroundColor:
-                        activeTrendMode === 'bussing'
-                          ? 'hsl(var(--destructive))'
-                          : 'hsl(var(--arrivals))',
-                    }}
-                  />
-                  {activeTrendMode === 'bussing'
-                    ? 'Bussing'
-                    : 'Weekday attendance'}
-                </span>
-                {trendIncomeTracked && (
+                      <button
+                        type="button"
+                        onClick={() => setTrendMode('weekday')}
+                        aria-pressed={activeTrendMode === 'weekday'}
+                        className={cn(
+                          'min-h-11 flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:min-h-11 sm:flex-none',
+                          activeTrendMode === 'weekday'
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        Weekday service
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTrendMode('bussing')}
+                        aria-pressed={activeTrendMode === 'bussing'}
+                        className={cn(
+                          'min-h-11 flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:min-h-11 sm:flex-none',
+                          activeTrendMode === 'bussing'
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        Sunday bussing
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:justify-end">
                   <span className="flex items-center gap-1.5">
                     <span
                       className="size-1.5 rounded-full"
-                      style={{ backgroundColor: 'hsl(var(--success))' }}
+                      style={{
+                        backgroundColor:
+                          activeTrendMode === 'bussing'
+                            ? 'hsl(var(--destructive))'
+                            : 'hsl(var(--arrivals))',
+                      }}
                     />
-                    Income
+                    {activeTrendMode === 'bussing'
+                      ? 'Bussing'
+                      : 'Weekday attendance'}
                   </span>
-                )}
+                  {trendIncomeTracked && (
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className="size-1.5 rounded-full"
+                        style={{ backgroundColor: 'hsl(var(--success))' }}
+                      />
+                      Income
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="mt-6">
-              <TrendSpark
-                data={trendData}
-                incomeTracked={trendIncomeTracked}
-                mode={activeTrendMode}
-                onBarClick={handleTrendBarClick}
-              />
-            </div>
-          </section>
-            </motion.div>
+              <div className="mt-6">
+                <TrendSpark
+                  data={trendData}
+                  incomeTracked={trendIncomeTracked}
+                  mode={activeTrendMode}
+                  onBarClick={handleTrendBarClick}
+                />
+              </div>
+            </section>
+          </motion.div>
 
-            {/* ── Quick actions: right pane on lg+, full-width below trend on smaller screens ── */}
-            <motion.aside
-              variants={fadeUp}
-              className="mt-6 lg:mt-0 lg:w-60 lg:shrink-0 lg:sticky lg:top-6"
-            >
-              <h3 className="hidden lg:mb-3 lg:block text-xs font-medium text-muted-foreground tracking-wide">
-                Quick actions
-              </h3>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-1">
+          {/* ── Supporting column ── */}
+          <motion.aside
+            variants={fadeUp}
+            className="space-y-4 lg:sticky lg:top-6"
+          >
+            {/* Quick actions: 2x2 grid on mobile, list rows on lg */}
+            <section className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="border-b border-border px-4 py-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Quick actions
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-4 lg:grid-cols-1 lg:gap-0 lg:divide-y lg:divide-border lg:p-0">
                 {quickActions.map((action) => {
                   const Icon = action.icon
                   return (
@@ -695,7 +726,13 @@ const UserDashboard = () => {
                       key={action.label}
                       type="button"
                       onClick={() => navigate(action.to)}
-                      className="group flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-4 text-left [transition:background-color_0.15s_ease,transform_0.1s_ease] hover:bg-accent active:scale-[0.97] active:translate-y-px lg:flex-row lg:items-center"
+                      className={cn(
+                        'group flex min-h-11 items-center gap-3 text-left transition-colors',
+                        // mobile: card tile
+                        'flex-col items-start rounded-xl border border-border bg-card p-4 hover:bg-accent active:translate-y-px active:scale-[0.98]',
+                        // desktop: list row
+                        'lg:flex-row lg:items-center lg:rounded-none lg:border-0 lg:bg-transparent lg:px-4 lg:py-3 lg:hover:bg-accent/60 lg:active:scale-100'
+                      )}
                     >
                       <div
                         className="flex size-9 shrink-0 items-center justify-center rounded-xl"
@@ -706,16 +743,84 @@ const UserDashboard = () => {
                       >
                         <Icon className="size-4" stroke={2} />
                       </div>
-                      <span className="text-sm font-medium text-foreground leading-tight">
+                      <span className="flex-1 text-sm font-medium leading-tight text-foreground">
                         {action.label}
                       </span>
+                      <ChevronRight className="hidden size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 lg:block" />
                     </button>
                   )
                 })}
               </div>
-            </motion.aside>
-          </motion.div>
+            </section>
+
+            {/* Current focus card — shows scope detail with visual identity */}
+            {selectedScope && (
+              <section className="overflow-hidden rounded-2xl border border-border bg-card">
+                <div className="border-b border-border px-4 py-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Current focus
+                  </h3>
+                </div>
+                <div className="space-y-3 p-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Church</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
+                      {selectedScope.churchName}
+                    </p>
+                  </div>
+                  <Separator />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Level</p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
+                        {formatChurchLevel(selectedScope.churchType)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Role</p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
+                        {getRoleRelationLabel(
+                          selectedScope.authRole,
+                          selectedScope.roleName
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  {(isScopeOnVacation || dashboardCurrency) && (
+                    <>
+                      <Separator />
+                      <div className="flex flex-wrap gap-1.5">
+                        {dashboardCurrency && (
+                          <Badge
+                            variant="outline"
+                            className="rounded-full px-2.5 py-0.5 text-xs font-normal"
+                          >
+                            {dashboardCurrency}
+                          </Badge>
+                        )}
+                        {!incomeTracked && (
+                          <Badge
+                            variant="outline"
+                            className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
+                          >
+                            No income tracking
+                          </Badge>
+                        )}
+                        {isScopeOnVacation && (
+                          <Badge className="gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 dark:bg-warning/20">
+                            <Palmtree className="size-3" />
+                            On vacation
+                          </Badge>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </section>
+            )}
+          </motion.aside>
         </motion.div>
+      </motion.div>
     </div>
   )
 }
@@ -775,7 +880,7 @@ const BacentaWeeklyTasks = ({
   const serviceActionDisabled = serviceDone && !canViewService
 
   return (
-    <section className="mt-6">
+    <section>
       <div className="flex items-end justify-between mb-3">
         <div>
           <h2 className="text-sm font-medium text-foreground">

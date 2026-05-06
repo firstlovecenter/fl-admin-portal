@@ -237,8 +237,115 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
               </div>
             </div>
 
-            {/* RIGHT — photos + actions (sticky on desktop) */}
+            {/* RIGHT — actions first, photos below (sticky on desktop) */}
             <div className="space-y-4 lg:sticky lg:top-6">
+
+              {/* Actions card — always visible at top */}
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="border-b border-border px-4 py-3">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Actions
+                  </h2>
+                </div>
+                <div className="space-y-2 p-3">
+                  {noBankingProof && (
+                    <div className="mb-1 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2">
+                      <p className="text-xs font-semibold text-destructive">
+                        Banking slip not submitted
+                      </p>
+                    </div>
+                  )}
+                  <Button
+                    className="w-full min-h-11 gap-2"
+                    onClick={() =>
+                      navigate(`/${church?.__typename.toLowerCase()}/graphs`)
+                    }
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    View Last 4 Weeks
+                  </Button>
+                  {noBankingProof && church.__typename !== 'Hub' && (
+                    <>
+                      <RoleView
+                        roles={[
+                          ...permitAdmin('Oversight'),
+                          ...permitTellerStream(),
+                        ]}
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full min-h-11 gap-2"
+                          disabled={submitting}
+                          onClick={async () => {
+                            setSubmitting(true)
+                            const confirmed = window.confirm(
+                              'Do you want to confirm banking for this service?'
+                            )
+                            if (confirmed) {
+                              try {
+                                const res =
+                                  await ManuallyConfirmOfferingPayment({
+                                    variables: { serviceRecordId: service.id },
+                                  })
+                                if (res.errors)
+                                  throw new Error(res.errors[0].message)
+                                alertMsg(
+                                  'Offering Payment has been confirmed. Thank you!'
+                                )
+                              } catch (error) {
+                                throwToSentry('', error)
+                              } finally {
+                                setSubmitting(false)
+                              }
+                            } else {
+                              setSubmitting(false)
+                            }
+                          }}
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          {submitting ? 'Confirming…' : 'Confirm Offering'}
+                        </Button>
+                      </RoleView>
+                      <RoleView roles={permitAdmin('Stream')}>
+                        <Button
+                          variant="outline"
+                          className="w-full min-h-11 gap-2"
+                          onClick={() =>
+                            navigate(
+                              `/${church.__typename.toLowerCase()}/banking-slip/submission`
+                            )
+                          }
+                        >
+                          <FileUp className="h-4 w-4" />
+                          Upload Banking Slip
+                        </Button>
+                      </RoleView>
+                    </>
+                  )}
+                  {!currentUser.noIncomeTracking && service.offeringBankedBy && (
+                    <Button
+                      variant="outline"
+                      className="w-full min-h-11 gap-2"
+                      onClick={() => navigate('/self-banking/receipt')}
+                    >
+                      View Banking Details
+                    </Button>
+                  )}
+                  <RoleView roles={['fishers']}>
+                    <Button
+                      variant="destructive"
+                      className="w-full min-h-11 gap-2"
+                      disabled={deleting}
+                      onClick={handleDeleteService}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {deleting ? 'Deleting…' : 'Delete Service'}
+                    </Button>
+                  </RoleView>
+                </div>
+              </div>
+
+              {/* Photos card — below actions, images height-capped */}
               {((!currentUser.noIncomeTracking && service.treasurerSelfie) ||
                 service.familyPicture ||
                 (!currentUser.noIncomeTracking && service.bankingSlip)) && (
@@ -248,153 +355,46 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                       Photos
                     </h2>
                   </div>
-                  <div className="space-y-4 p-4">
+                  <div className="divide-y divide-border">
                     {!currentUser.noIncomeTracking && service.treasurerSelfie && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <div className="p-3">
+                        <p className="mb-2 text-xs font-medium text-muted-foreground">
                           Treasurer Selfie
                         </p>
                         <img
                           src={service.treasurerSelfie}
                           alt="treasurer selfie"
-                          className="w-full rounded-lg object-cover"
+                          className="h-44 w-full rounded-lg object-cover object-top"
                         />
                       </div>
                     )}
                     {service.familyPicture && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <div className="p-3">
+                        <p className="mb-2 text-xs font-medium text-muted-foreground">
                           Family Picture
                         </p>
                         <img
                           src={service.familyPicture}
                           alt="service report"
-                          className="w-full rounded-lg object-cover"
+                          className="h-44 w-full rounded-lg object-cover object-top"
                         />
                       </div>
                     )}
                     {!currentUser.noIncomeTracking && service.bankingSlip && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <div className="p-3">
+                        <p className="mb-2 text-xs font-medium text-muted-foreground">
                           Banking Slip
                         </p>
                         <img
                           src={service.bankingSlip}
                           alt="banking slip"
-                          className="w-full rounded-lg object-cover"
+                          className="h-44 w-full rounded-lg object-cover object-top"
                         />
                       </div>
                     )}
                   </div>
                 </div>
               )}
-
-              {/* Banking missing warning */}
-              {noBankingProof && (
-                <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
-                  <p className="text-sm font-semibold text-destructive">
-                    Banking slip not submitted
-                  </p>
-                </div>
-              )}
-
-              {/* Self-banking receipt */}
-              {!currentUser.noIncomeTracking && service.offeringBankedBy && (
-                <div className="space-y-2 rounded-xl border border-border bg-card px-4 py-3">
-                  <p className="text-sm text-muted-foreground">
-                    {service.offeringBankedBy.fullName} used the Self Banking
-                    Feature.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => navigate('/self-banking/receipt')}
-                  >
-                    View Banking Details
-                  </Button>
-                </div>
-              )}
-
-              {/* Action buttons */}
-              <div className="space-y-2">
-                {noBankingProof && church.__typename !== 'Hub' && (
-                  <>
-                    <RoleView
-                      roles={[
-                        ...permitAdmin('Oversight'),
-                        ...permitTellerStream(),
-                      ]}
-                    >
-                      <Button
-                        variant="outline"
-                        className="w-full min-h-[44px] gap-2"
-                        disabled={submitting}
-                        onClick={async () => {
-                          setSubmitting(true)
-                          const confirmed = window.confirm(
-                            'Do you want to confirm banking for this service?'
-                          )
-                          if (confirmed) {
-                            try {
-                              const res = await ManuallyConfirmOfferingPayment({
-                                variables: { serviceRecordId: service.id },
-                              })
-                              if (res.errors)
-                                throw new Error(res.errors[0].message)
-                              alertMsg(
-                                'Offering Payment has been confirmed. Thank you!'
-                              )
-                            } catch (error) {
-                              throwToSentry('', error)
-                            } finally {
-                              setSubmitting(false)
-                            }
-                          } else {
-                            setSubmitting(false)
-                          }
-                        }}
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        {submitting ? 'Confirming…' : 'Confirm Offering'}
-                      </Button>
-                    </RoleView>
-                    <RoleView roles={permitAdmin('Stream')}>
-                      <Button
-                        variant="outline"
-                        className="w-full min-h-[44px] gap-2"
-                        onClick={() =>
-                          navigate(
-                            `/${church.__typename.toLowerCase()}/banking-slip/submission`
-                          )
-                        }
-                      >
-                        <FileUp className="h-4 w-4" />
-                        Upload Banking Slip
-                      </Button>
-                    </RoleView>
-                  </>
-                )}
-                <Button
-                  className="w-full min-h-[44px] gap-2"
-                  onClick={() =>
-                    navigate(`/${church?.__typename.toLowerCase()}/graphs`)
-                  }
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  View Last 4 Weeks
-                </Button>
-                <RoleView roles={['fishers']}>
-                  <Button
-                    variant="destructive"
-                    className="w-full min-h-[44px] gap-2"
-                    disabled={deleting}
-                    onClick={handleDeleteService}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    {deleting ? 'Deleting…' : 'Delete Service'}
-                  </Button>
-                </RoleView>
-              </div>
             </div>
           </div>
         )}

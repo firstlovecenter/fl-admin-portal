@@ -124,42 +124,64 @@ const ServiceDetailsNoIncome = ({
               </div>
             </div>
 
-            {/* RIGHT — photo + action (sticky on desktop) */}
+            {/* RIGHT — actions first, photos below (sticky on desktop) */}
             <div className="space-y-4 lg:sticky lg:top-6">
-              {(service.familyPicture || service.onStagePictures?.length) && (
+
+              {/* Actions card */}
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="border-b border-border px-4 py-3">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Actions
+                  </h2>
+                </div>
+                <div className="p-3">
+                  <Button
+                    className="w-full min-h-11 gap-2"
+                    onClick={() =>
+                      navigate(`/${church?.__typename.toLowerCase()}/graphs`)
+                    }
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    View Last 4 Weeks
+                  </Button>
+                </div>
+              </div>
+
+              {/* Photos card — height-capped */}
+              {(service.familyPicture || (service.onStagePictures?.length ?? 0) > 0) && (
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="border-b border-border px-4 py-3">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Photos
                     </h2>
                   </div>
-                  <div className="space-y-4 p-4">
+                  <div className="divide-y divide-border">
                     {service.familyPicture && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <div className="p-3">
+                        <p className="mb-2 text-xs font-medium text-muted-foreground">
                           Family Picture
                         </p>
                         <img
                           src={service.familyPicture}
                           alt="service report"
-                          className="w-full rounded-lg object-cover"
+                          className="h-44 w-full rounded-lg object-cover object-top"
                         />
                       </div>
                     )}
                     {(service.onStagePictures?.length ?? 0) > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <div className="p-3">
+                        <p className="mb-2 text-xs font-medium text-muted-foreground">
                           On Stage
                         </p>
                         <div className="grid grid-cols-2 gap-2">
-                          {service.onStagePictures?.map((image: string) =>
+                          {service.onStagePictures?.map((image: string, i: number) =>
                             image ? (
                               <img
-                                key={image}
+                                key={i}
                                 src={image}
                                 alt="on stage attendance"
                                 loading="lazy"
-                                className="w-full rounded-lg object-cover"
+                                className="aspect-square w-full rounded-lg object-cover object-top"
                               />
                             ) : null
                           )}
@@ -169,16 +191,6 @@ const ServiceDetailsNoIncome = ({
                   </div>
                 </div>
               )}
-
-              <Button
-                className="w-full min-h-[44px] gap-2"
-                onClick={() =>
-                  navigate(`/${church?.__typename.toLowerCase()}/graphs`)
-                }
-              >
-                <TrendingUp className="h-4 w-4" />
-                View Last 4 Weeks
-              </Button>
             </div>
           </div>
         )}
