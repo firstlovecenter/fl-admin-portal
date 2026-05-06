@@ -1,97 +1,60 @@
 import { useLazyQuery } from '@apollo/client'
 import { MemberContext } from 'contexts/MemberContext'
-import { ErrorMessage } from 'formik'
 import { DEBOUNCE_TIMER, throwToSentry } from 'global-utils'
 import { useContext, useEffect, useState } from 'react'
-import Autosuggest from 'react-autosuggest'
-import './react-autosuggest.css'
 import { RoleBasedSearch } from './formik-types'
-import { initialise } from './search-utils'
+import { useSearchInitialValue } from './search-utils'
 import { MEMBER_HUBFELLOWSHIP_SEARCH } from './SearchHubFellowshipQueries'
-import TextError from './TextError/TextError'
+import SearchCombobox from './SearchCombobox'
+
+type Suggestion = { id: string; name: string }
 
 const SearchHubFellowship = (props: RoleBasedSearch) => {
   const { currentUser } = useContext(MemberContext)
-  const [suggestions, setSuggestions] = useState([])
-  const [searchString, setSearchString] = useState(props.initialValue ?? '')
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [searchString, setSearchString] = useSearchInitialValue(
+    props.initialValue
+  )
+
   const [memberSearch, { error: memberError }] = useLazyQuery(
     MEMBER_HUBFELLOWSHIP_SEARCH,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.members[0].hubFellowshipSearch)
-        return
-      },
+      onCompleted: (data) =>
+        setSuggestions(data.members[0].hubFellowshipSearch),
     }
   )
 
-  const error = memberError
-  throwToSentry('', error)
-
-  const whichSearch = (searchString: string) => {
-    memberSearch({
-      variables: {
-        id: currentUser.id,
-        key: searchString?.trim(),
-      },
-    })
-  }
-
   useEffect(() => {
-    setSearchString(initialise(searchString, props.initialValue))
-  }, [props.initialValue])
+    if (memberError) throwToSentry('', memberError)
+  }, [memberError])
 
   useEffect(() => {
     const timerId = setTimeout(() => {
-      whichSearch(searchString)
+      memberSearch({
+        variables: { id: currentUser.id, key: searchString?.trim() },
+      })
     }, DEBOUNCE_TIMER)
-
-    return () => {
-      clearTimeout(timerId)
-    }
-  }, [searchString, props.initialValue])
+    return () => clearTimeout(timerId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchString])
 
   return (
-    <div>
-      {props.label ? <label className="label">{props.label}</label> : null}
-      {/*// @ts-ignore*/}
-      <Autosuggest
-        inputProps={{
-          placeholder: props.placeholder,
-          id: name,
-          autoComplete: 'off',
-          value: searchString,
-          name: name,
-          className: 'form-control',
-          onChange: (_event, { newValue }) => {
-            setSearchString(newValue)
-          },
-        }}
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={async ({ value }) => {
-          if (!value) {
-            setSuggestions([])
-          }
-        }}
-        onSuggestionsClearRequested={() => {
-          setSuggestions([])
-        }}
-        onSuggestionSelected={(event, { suggestion, method }) => {
-          if (method === 'enter') {
-            event.preventDefault()
-          }
-          setSearchString(suggestion.name)
-          props.setFieldValue(`${props.name}`, suggestion)
-        }}
-        getSuggestionValue={(suggestion: any) => suggestion.name}
-        highlightFirstSuggestion={true}
-        renderSuggestion={(suggestion: any) => (
-          <div className="combobox-control">{suggestion.name}</div>
-        )}
-      />
-      {props.error && <TextError>{props.error}</TextError>}
-      {/*// @ts-ignore*/}
-      {!props.error ?? <ErrorMessage name={name} component={TextError} />}
-    </div>
+    <SearchCombobox<Suggestion>
+      label={props.label}
+      name={props.name}
+      id={props.name}
+      placeholder={props.placeholder}
+      value={searchString}
+      onValueChange={setSearchString}
+      suggestions={suggestions}
+      getItemKey={(s) => s.id}
+      getItemValue={(s) => s.name}
+      onSelect={(suggestion) => {
+        setSearchString(suggestion.name)
+        props.setFieldValue(props.name, suggestion)
+      }}
+      error={props.error}
+    />
   )
 }
 

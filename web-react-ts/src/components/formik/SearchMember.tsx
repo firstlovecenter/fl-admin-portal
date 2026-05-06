@@ -1,6 +1,6 @@
 import { useLazyQuery } from '@apollo/client'
+import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
-import { ErrorMessage } from 'formik'
 import {
   DEBOUNCE_TIMER,
   getFirstLetterInEveryWord,
@@ -8,134 +8,103 @@ import {
 } from 'global-utils'
 import { useContext, useEffect, useState } from 'react'
 import { RoleBasedSearch } from './formik-types'
-import Autosuggest from 'react-autosuggest'
-import './react-autosuggest.css'
 import {
   BASONTA_MEMBER_SEARCH,
   BASONTA_MEMBER_SEARCH_FROM_HUB,
   MEMBER_MEMBER_SEARCH,
 } from './SearchMemberQueries'
-import TextError from './TextError/TextError'
-import { ChurchContext } from 'contexts/ChurchContext'
+import { useSearchInitialValue } from './search-utils'
+import SearchCombobox from './SearchCombobox'
+
+type Member = {
+  id: string
+  firstName: string
+  middleName?: string
+  lastName: string
+  email?: string
+}
+
+const formatName = (m: Member) => `${m.firstName} ${m.lastName}`
 
 const SearchMember = (props: RoleBasedSearch) => {
   const { currentUser } = useContext(MemberContext)
   const { hubId } = useContext(ChurchContext)
-  const [suggestions, setSuggestions] = useState([])
-  const [searchString, setSearchString] = useState(props.initialValue ?? '')
+  const [suggestions, setSuggestions] = useState<Member[]>([])
+  const [searchString, setSearchString] = useSearchInitialValue(
+    props.initialValue
+  )
+
   const [memberSearch, { error: memberError }] = useLazyQuery(
     MEMBER_MEMBER_SEARCH,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.members[0].memberSearch)
-        return
-      },
+      onCompleted: (data) => setSuggestions(data.members[0].memberSearch),
     }
   )
   const [basontaMemberSearchFromHub, { error: hubMemberError }] = useLazyQuery(
     BASONTA_MEMBER_SEARCH_FROM_HUB,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.members[0].basontaMemberSearchFromHub)
-        return
-      },
+      onCompleted: (data) =>
+        setSuggestions(data.members[0].basontaMemberSearchFromHub),
     }
   )
   const [basontaMemberSearch, { error: basontaMemberError }] = useLazyQuery(
     BASONTA_MEMBER_SEARCH,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.members[0].basontaMemberSearch)
-        return
-      },
+      onCompleted: (data) =>
+        setSuggestions(data.members[0].basontaMemberSearch),
     }
   )
 
   const error = memberError || hubMemberError || basontaMemberError
-  throwToSentry('', error)
+  useEffect(() => {
+    if (error) throwToSentry('', error)
+  }, [error])
 
-  const whichSearch = (searchString: string) => {
+  const whichSearch = (key: string) => {
     if (props.creativeArts && hubId) {
       basontaMemberSearchFromHub({
-        variables: { id: currentUser.id, key: searchString?.trim(), hubId },
+        variables: { id: currentUser.id, key, hubId },
       })
     } else if (props.creativeArts && !hubId) {
-      basontaMemberSearch({
-        variables: { id: currentUser.id, key: searchString?.trim() },
-      })
+      basontaMemberSearch({ variables: { id: currentUser.id, key } })
     } else {
-      memberSearch({
-        variables: {
-          id: currentUser.id,
-          key: searchString?.trim(),
-        },
-      })
+      memberSearch({ variables: { id: currentUser.id, key } })
     }
   }
 
   useEffect(() => {
     const timerId = setTimeout(() => {
-      whichSearch(searchString)
+      whichSearch(searchString?.trim())
     }, DEBOUNCE_TIMER)
-
-    return () => {
-      clearTimeout(timerId)
-    }
+    return () => clearTimeout(timerId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchString])
 
   return (
-    <div>
-      {props.label ? <label className="label">{props.label}</label> : null}
-      {/*// @ts-ignore*/}
-      <Autosuggest
-        inputProps={{
-          placeholder: props.placeholder,
-          id: name,
-          autoComplete: 'off',
-          value: searchString,
-          name: name,
-          className: 'form-control',
-          onChange: (_event, { newValue }) => {
-            setSearchString(newValue)
-          },
-        }}
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={async ({ value }) => {
-          if (!value) {
-            setSuggestions([])
-          }
-        }}
-        onSuggestionsClearRequested={() => {
-          setSuggestions([])
-        }}
-        onSuggestionSelected={(event, { suggestion, method }) => {
-          if (method === 'enter') {
-            event.preventDefault()
-          }
-          setSearchString(suggestion.firstName + ' ' + suggestion.lastName)
-
-          props.setFieldValue(`${props.name}`, suggestion.id)
-          props.setFieldValue('leaderEmail', suggestion?.email)
-        }}
-        getSuggestionValue={(suggestion) =>
-          suggestion.firstName + ' ' + suggestion.lastName
-        }
-        highlightFirstSuggestion={true}
-        renderSuggestion={(suggestion: any) => (
-          <div className="combobox-control">
-            {suggestion?.firstName +
-              ' ' +
-              getFirstLetterInEveryWord(suggestion?.middleName) +
-              ' ' +
-              suggestion?.lastName}
-          </div>
-        )}
-      />
-
-      {props.error && <TextError>{props.error}</TextError>}
-      {/*// @ts-ignore*/}
-      {!props.error ?? <ErrorMessage name={name} component={TextError} />}
-    </div>
+    <SearchCombobox<Member>
+      label={props.label}
+      name={props.name}
+      id={props.name}
+      placeholder={props.placeholder}
+      value={searchString}
+      onValueChange={setSearchString}
+      suggestions={suggestions}
+      getItemKey={(m) => m.id}
+      getItemValue={formatName}
+      renderItem={(m) => (
+        <span className="truncate">
+          {m.firstName}{' '}
+          {m.middleName ? getFirstLetterInEveryWord(m.middleName) : ''}{' '}
+          {m.lastName}
+        </span>
+      )}
+      onSelect={(member) => {
+        setSearchString(formatName(member))
+        props.setFieldValue(props.name, member.id)
+        props.setFieldValue('leaderEmail', member.email)
+      }}
+      error={props.error}
+    />
   )
 }
 

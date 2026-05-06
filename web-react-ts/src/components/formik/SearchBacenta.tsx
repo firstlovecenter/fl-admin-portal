@@ -1,13 +1,10 @@
 import { useLazyQuery } from '@apollo/client'
 import { MemberContext } from 'contexts/MemberContext'
-import { ErrorMessage } from 'formik'
 import { DEBOUNCE_TIMER, isAuthorised, throwToSentry } from 'global-utils'
 import { permitMe } from 'permission-utils'
-import React, { useContext, useEffect, useState } from 'react'
-import Autosuggest from 'react-autosuggest'
-import './react-autosuggest.css'
+import { useContext, useEffect, useState } from 'react'
 import { RoleBasedSearch } from './formik-types'
-import { initialise } from './search-utils'
+import { useSearchInitialValue } from './search-utils'
 import {
   COUNCIL_BACENTA_SEARCH,
   CAMPUS_BACENTA_SEARCH,
@@ -15,58 +12,46 @@ import {
   GOVERNORSHIP_BACENTA_SEARCH,
   MEMBER_BACENTA_SEARCH,
 } from './SearchBacentaQueries'
-import TextError from './TextError/TextError'
+import SearchCombobox from './SearchCombobox'
+
+type Suggestion = { id: string; name: string }
 
 const SearchBacenta = (props: RoleBasedSearch) => {
   const { currentUser } = useContext(MemberContext)
-  const [suggestions, setSuggestions] = useState([])
-  const [searchString, setSearchString] = useState(props.initialValue ?? '')
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [searchString, setSearchString] = useSearchInitialValue(
+    props.initialValue
+  )
 
   const [campusSearch, { error: campusError }] = useLazyQuery(
     CAMPUS_BACENTA_SEARCH,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.campuses[0].bacentaSearch)
-        return
-      },
+      onCompleted: (data) => setSuggestions(data.campuses[0].bacentaSearch),
     }
   )
   const [streamSearch, { error: streamError }] = useLazyQuery(
     STREAM_BACENTA_SEARCH,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.streams[0].bacentaSearch)
-        return
-      },
+      onCompleted: (data) => setSuggestions(data.streams[0].bacentaSearch),
     }
   )
   const [councilSearch, { error: councilError }] = useLazyQuery(
     COUNCIL_BACENTA_SEARCH,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.councils[0].bacentaSearch)
-        return
-      },
+      onCompleted: (data) => setSuggestions(data.councils[0].bacentaSearch),
     }
   )
-
   const [governorshipSearch, { error: governorshipError }] = useLazyQuery(
     GOVERNORSHIP_BACENTA_SEARCH,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.governorships[0].bacentaSearch)
-        return
-      },
+      onCompleted: (data) =>
+        setSuggestions(data.governorships[0].bacentaSearch),
     }
   )
-
   const [memberSearch, { error: memberError }] = useLazyQuery(
     MEMBER_BACENTA_SEARCH,
     {
-      onCompleted: (data) => {
-        setSuggestions(data.members[0].bacentaSearch)
-        return
-      },
+      onCompleted: (data) => setSuggestions(data.members[0].bacentaSearch),
     }
   )
 
@@ -76,104 +61,54 @@ const SearchBacenta = (props: RoleBasedSearch) => {
     streamError ||
     councilError ||
     governorshipError
-  throwToSentry('', error)
+  useEffect(() => {
+    if (error) throwToSentry('', error)
+  }, [error])
 
-  const whichSearch = (searchString: string) => {
+  const whichSearch = (key: string) => {
     memberSearch({
-      variables: {
-        id: currentUser.id,
-        key: searchString?.trim(),
-      },
+      variables: { id: currentUser.id, key },
     })
     if (props.roleBased) {
       if (isAuthorised(permitMe('Campus'), currentUser.roles)) {
-        campusSearch({
-          variables: {
-            id: currentUser.campus,
-            key: searchString?.trim(),
-          },
-        })
+        campusSearch({ variables: { id: currentUser.campus, key } })
       } else if (isAuthorised(permitMe('Stream'), currentUser.roles)) {
-        streamSearch({
-          variables: {
-            id: currentUser.stream,
-            key: searchString?.trim(),
-          },
-        })
+        streamSearch({ variables: { id: currentUser.stream, key } })
       } else if (isAuthorised(permitMe('Council'), currentUser.roles)) {
-        councilSearch({
-          variables: {
-            id: currentUser.council,
-            key: searchString?.trim(),
-          },
-        })
+        councilSearch({ variables: { id: currentUser.council, key } })
       } else if (isAuthorised(permitMe('Governorship'), currentUser.roles)) {
         governorshipSearch({
-          variables: {
-            id: currentUser.governorship,
-            key: searchString?.trim(),
-          },
+          variables: { id: currentUser.governorship, key },
         })
       }
     }
   }
 
   useEffect(() => {
-    setSearchString(initialise(searchString, props.initialValue))
-  }, [props.initialValue])
-
-  useEffect(() => {
     const timerId = setTimeout(() => {
-      whichSearch(searchString)
+      whichSearch(searchString?.trim())
     }, DEBOUNCE_TIMER)
-
-    return () => {
-      clearTimeout(timerId)
-    }
-  }, [searchString, props.initialValue])
+    return () => clearTimeout(timerId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchString])
 
   return (
-    <div>
-      {props.label ? <label className="label">{props.label}</label> : null}
-      {/*// @ts-ignore*/}
-      <Autosuggest
-        inputProps={{
-          placeholder: props.placeholder,
-          id: name,
-          autoComplete: 'off',
-          value: searchString,
-          name: name,
-          className: 'form-control',
-          onChange: (_event, { newValue }) => {
-            setSearchString(newValue)
-          },
-        }}
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={async ({ value }) => {
-          if (!value) {
-            setSuggestions([])
-          }
-        }}
-        onSuggestionsClearRequested={() => {
-          setSuggestions([])
-        }}
-        onSuggestionSelected={(event, { suggestion, method }) => {
-          if (method === 'enter') {
-            event.preventDefault()
-          }
-          setSearchString(suggestion.name)
-          props.setFieldValue(`${props.name}`, suggestion)
-        }}
-        getSuggestionValue={(suggestion: any) => suggestion.name}
-        highlightFirstSuggestion={true}
-        renderSuggestion={(suggestion: any) => (
-          <div className="combobox-control">{suggestion.name}</div>
-        )}
-      />
-      {props.error && <TextError>{props.error}</TextError>}
-      {/*// @ts-ignore*/}
-      {!props.error ?? <ErrorMessage name={name} component={TextError} />}
-    </div>
+    <SearchCombobox<Suggestion>
+      label={props.label}
+      name={props.name}
+      id={props.name}
+      placeholder={props.placeholder}
+      value={searchString}
+      onValueChange={setSearchString}
+      suggestions={suggestions}
+      getItemKey={(s) => s.id}
+      getItemValue={(s) => s.name}
+      onSelect={(suggestion) => {
+        setSearchString(suggestion.name)
+        props.setFieldValue(props.name, suggestion)
+      }}
+      error={props.error}
+    />
   )
 }
 
