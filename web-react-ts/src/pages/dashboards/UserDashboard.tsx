@@ -4,6 +4,7 @@ import { motion } from 'motion/react'
 import {
   Bus,
   Check,
+  ChevronRight,
   ClipboardCheck,
   Palmtree,
   type LucideIcon,
@@ -24,7 +25,6 @@ import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
 import { Badge } from 'components/ui/badge'
 import { Separator } from 'components/ui/separator'
-import { ChevronRight } from 'lucide-react'
 import { cn } from 'components/lib/utils'
 import {
   GraphTypes,
@@ -422,6 +422,9 @@ const UserDashboard = () => {
     assessmentChurch as unknown as { vacationStatus?: string } | undefined
   )?.vacationStatus
   const isScopeOnVacation = scopeVacationStatus === 'Vacation'
+  const scopeRoleLabel = selectedScope
+    ? getRoleRelationLabel(selectedScope.authRole, selectedScope.roleName)
+    : ''
 
   return (
     <div className="min-h-full bg-background">
@@ -465,15 +468,14 @@ const UserDashboard = () => {
                 >
                   {formatChurchLevel(selectedScope?.churchType)}
                 </Badge>
-                <Badge
-                  variant="outline"
-                  className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
-                >
-                  {getRoleRelationLabel(
-                    selectedScope?.authRole,
-                    selectedScope?.roleName
-                  )}
-                </Badge>
+                {scopeRoleLabel && (
+                  <Badge
+                    variant="outline"
+                    className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
+                  >
+                    {scopeRoleLabel}
+                  </Badge>
+                )}
                 {isScopeOnVacation && (
                   <Badge className="gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 dark:bg-warning/20">
                     <Palmtree className="size-3" />
@@ -507,7 +509,10 @@ const UserDashboard = () => {
             <section className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="flex items-stretch">
                 <div
-                  className="w-1 shrink-0 rounded-l-2xl"
+                  className={cn(
+                    'w-1 shrink-0 rounded-l-2xl',
+                    !hasBussingAttendance && !isLoading && 'opacity-30'
+                  )}
                   style={{ background: 'hsl(var(--brand))' }}
                 />
                 <div className="flex-1 px-6 py-5">
@@ -779,10 +784,7 @@ const UserDashboard = () => {
                     <div>
                       <p className="text-xs text-muted-foreground">Role</p>
                       <p className="mt-0.5 text-sm font-medium text-foreground">
-                        {getRoleRelationLabel(
-                          selectedScope.authRole,
-                          selectedScope.roleName
-                        )}
+                        {scopeRoleLabel || '—'}
                       </p>
                     </div>
                   </div>
