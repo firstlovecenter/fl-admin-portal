@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
+import { BackButton } from './BackButton'
 
 interface AppShellProps {
   children: ReactNode
@@ -35,11 +36,14 @@ export const AppShell = ({
 
       {/* Content column */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
+        {/* PWA back button — only renders in standalone mode */}
+        <BackButton className="absolute left-3 top-3 z-20 md:hidden" />
+
         {/* Floating mobile sidebar toggle */}
         <button
           type="button"
           onClick={() => setMobileOpen((v) => !v)}
-          className="absolute right-3 top-3 z-20 flex size-9 items-center justify-center rounded-full border border-sidebar-border bg-background text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+          className="absolute right-3 top-3 z-20 flex size-11 items-center justify-center rounded-full border border-sidebar-border bg-background text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
           aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
         >
           {mobileOpen ? (
