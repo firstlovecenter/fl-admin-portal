@@ -18,12 +18,6 @@ import {
   matchMemberQuery,
   matchMemberTellerQuery,
 } from '../cypher/resolver-cypher'
-import {
-  matchMemberCreativeArtsQuery,
-  matchMemberHubCouncilQuery,
-  matchMemberHubQuery,
-  matchMemberMinistryQuery,
-} from '../cypher/ministry-directory-cypher'
 
 export const setPriorityLevel = (churchType: ChurchLevel) => {
   let priority = 0
@@ -38,18 +32,14 @@ export const setPriorityLevel = (churchType: ChurchLevel) => {
       priority = 3
       break
     case 'Stream':
-    case 'CreativeArts':
       priority = 4
       break
     case 'Council':
-    case 'Ministry':
       priority = 5
       break
-    case 'HubCouncil':
     case 'Governorship':
       priority = 6
       break
-    case 'Hub':
     case 'Bacenta':
       priority = 7
       break
@@ -100,23 +90,6 @@ export const formatting = (
   }
   if (churchType === 'Denomination') {
     memberQuery = matchMemberDenominationQuery
-  }
-
-  if (churchType === 'CreativeArts') {
-    churchLower = 'creativeArts'
-    memberQuery = matchMemberCreativeArtsQuery
-  }
-  if (churchType === 'Ministry') {
-    churchLower = 'ministry'
-    memberQuery = matchMemberMinistryQuery
-  }
-  if (churchType === 'HubCouncil') {
-    churchLower = 'hubCouncil'
-    memberQuery = matchMemberHubCouncilQuery
-  }
-  if (churchType === 'Hub') {
-    churchLower = 'hub'
-    memberQuery = matchMemberHubQuery
   }
 
   const priority = setPriorityLevel(churchType)

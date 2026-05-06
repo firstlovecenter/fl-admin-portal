@@ -16,12 +16,6 @@ import {
 import PlaceholderDefaulterList from './PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from './defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import {
-  CREATIVEARTS_BANKING_DEFAULTERS_LIST,
-  HUBCOUNCIL_BANKING_DEFAULTERS_LIST,
-  HUB_BANKING_DEFAULTERS_LIST,
-  MINISTRY_BANKING_DEFAULTERS_LIST,
-} from './creative-arts/SontaDefaultersQueries'
 import useSontaLevel from 'hooks/useSontaLevel'
 
 const BankingDefaulters = () => {
@@ -36,15 +30,6 @@ const BankingDefaulters = () => {
   const [campusBankingDefaulters, { refetch: campusRefetch }] = useLazyQuery(
     CAMPUS_BANKING_DEFAULTERS_LIST
   )
-  const [creativeArtsBankingDefaulters, { refetch: creativeArtsRefetch }] =
-    useLazyQuery(CREATIVEARTS_BANKING_DEFAULTERS_LIST)
-  const [ministryBankingDefaulters, { refetch: ministryRefetch }] =
-    useLazyQuery(MINISTRY_BANKING_DEFAULTERS_LIST)
-  const [hubCouncilBankingDefaulters, { refetch: hubCouncilRefetch }] =
-    useLazyQuery(HUBCOUNCIL_BANKING_DEFAULTERS_LIST)
-  const [hubBankingDefaulters, { refetch: hubRefetch }] = useLazyQuery(
-    HUB_BANKING_DEFAULTERS_LIST
-  )
 
   const data = useSontaLevel({
     governorshipFunction: governorshipBankingDefaulters,
@@ -55,14 +40,6 @@ const BankingDefaulters = () => {
     streamRefetch,
     campusFunction: campusBankingDefaulters,
     campusRefetch,
-    creativeArtsFunction: creativeArtsBankingDefaulters,
-    creativeArtsRefetch,
-    ministryFunction: ministryBankingDefaulters,
-    ministryRefetch,
-    hubCouncilFunction: hubCouncilBankingDefaulters,
-    hubCouncilRefetch,
-    hubFunction: hubBankingDefaulters,
-    hubRefetch,
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType

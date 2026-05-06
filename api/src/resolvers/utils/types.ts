@@ -16,10 +16,6 @@ export type ChurchLevel =
   | 'Campus'
   | 'Oversight'
   | 'Denomination'
-  | 'HubCouncil'
-  | 'Hub'
-  | 'Ministry'
-  | 'CreativeArts'
 
 export type ChurchLevelWithClosed = 'ClosedBacenta'
 
@@ -28,10 +24,6 @@ export type Role =
   | 'leaderGovernorship'
   | 'leaderCouncil'
   | 'leaderStream'
-  | 'leaderHub'
-  | 'leaderHubCouncil'
-  | 'leaderMinistry'
-  | 'leaderCreativeArts'
   | 'leaderCampus'
   | 'leaderOversight'
   | 'leaderDenomination'
@@ -41,8 +33,6 @@ export type Role =
   | 'adminCampus'
   | 'adminOversight'
   | 'adminDenomination'
-  | 'adminMinistry'
-  | 'adminCreativeArts'
   | 'arrivalsAdminCampus'
   | 'arrivalsAdminStream'
   | 'arrivalsAdminCouncil'
@@ -156,22 +146,4 @@ export type ServiceRecord = {
   }
 }
 
-interface ChurchesForAggregateion {
-  typename: string
-  labels: string[]
-  properties: {
-    [key: string]: string | number | boolean | string[]
-  }
-}
-interface SontaHigherChurchesForAgggregation extends ChurchesForAggregateion {
-  rehearsalCypher: string
-  ministryMeetingCypher: string
-  ministryStagePerformanceCypher: string
-}
 
-export type SontaHigherChurches = {
-  hub?: SontaHigherChurchesForAgggregation
-  hubCouncil?: SontaHigherChurchesForAgggregation
-  ministry?: SontaHigherChurchesForAgggregation
-  creativeArts?: SontaHigherChurchesForAgggregation
-}

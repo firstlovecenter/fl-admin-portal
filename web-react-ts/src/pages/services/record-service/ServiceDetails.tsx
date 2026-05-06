@@ -56,7 +56,6 @@ type ServiceDetailsProps = {
 
 const SELF_BANKING_ROLES_BY_TYPE: Record<string, Role[]> = {
   Bacenta: ['leaderBacenta'],
-  Hub: ['leaderHub'],
   Governorship: ['leaderGovernorship', 'adminGovernorship'],
   Council: ['leaderCouncil', 'adminCouncil'],
   Stream: ['leaderStream', 'adminStream'],
@@ -214,13 +213,10 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   const churchType = church?.__typename
   const selfBankingRoles =
     (churchType && SELF_BANKING_ROLES_BY_TYPE[churchType]) ?? []
-  const selfBankingPath =
-    churchType === 'Hub'
-      ? '/rehearsals/hub/self-banking'
-      : `/services/${churchType?.toLowerCase()}/self-banking`
+  const selfBankingPath = `/services/${churchType?.toLowerCase()}/self-banking`
 
   const showWarning = noBankingProof
-  const showAdminBankingActions = noBankingProof && churchType !== 'Hub'
+  const showAdminBankingActions = noBankingProof
   const showSelfBankingPay = noBankingProof && selfBankingRoles.length > 0
   const showBankingReceiptLink =
     !currentUser.noIncomeTracking && Boolean(service?.offeringBankedBy)

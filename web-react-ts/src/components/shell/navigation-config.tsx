@@ -2,6 +2,7 @@ import {
   Bot,
   Bus,
   ClipboardList,
+  Download,
   Home,
   type LucideIcon,
   Settings,
@@ -49,6 +50,12 @@ export const primaryNav: NavItem[] = [
 
 /** Secondary nav — Church in Focus section items (sidebar + mobile drawer) */
 export const secondaryNav: NavItem[] = [
+  {
+    name: 'Reports',
+    to: '/reports',
+    icon: Download,
+    accentClass: 'text-banking',
+  },
   {
     name: 'Trends',
     to: '/trends',

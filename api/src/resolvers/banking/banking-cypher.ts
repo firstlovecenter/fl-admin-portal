@@ -1,14 +1,13 @@
 export const initiateServiceRecordTransaction = `
-MATCH (record {id: $serviceRecordId}) WHERE record:ServiceRecord OR record:RehearsalRecord
+MATCH (record {id: $serviceRecordId}) WHERE record:ServiceRecord
 
 MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
 WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
-OR church:Hub OR church:HubCouncil OR church:Ministry OR church:CreativeArts
 
 
-UNWIND labels(church) AS churchLevel 
+UNWIND labels(church) AS churchLevel
 WITH record, church, churchLevel
-WHERE churchLevel IN ['Bacenta','Governorship','Council', 'Stream', 'Campus', 'Hub', 'HubCouncil', 'Ministry', 'CreativeArts'] 
+WHERE churchLevel IN ['Bacenta','Governorship','Council', 'Stream', 'Campus']
 
 MATCH (author:Member {id: $jwt.userId})
 MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
@@ -80,33 +79,6 @@ RETURN record {
 } 
 `
 
-export const checkRehearsalTransactionReference = `
-MATCH (record:RehearsalRecord {id: $rehearsalRecordId})<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)<-[:HAS*0..3]-(ministry:Ministry)
-WHERE church:Hub OR church:HubCouncil OR church:Ministry
-MATCH (ministry)<-[:HAS_MINISTRY]-(stream:Stream)
-OPTIONAL MATCH (record)-[:OFFERING_BANKED_BY]->(banker)
-
-RETURN record {
-    .id,
-    .transactionReference,
-    .transactionStatus,
-    .transactionTime,
-    .income
-}, banker {
-    .id,
-    .firstName, 
-    .lastName
-}, ministry {
-    .id,
-    .bankAccount,
-    .name
-}, stream {
-    .id,
-    .bankAccount,
-    .name
-}
-`
-
 export const setTransactionStatusFailed = `
 MATCH (record {id: $serviceRecordId}) WHERE record:ServiceRecord OR record:RehearsalRecord
 SET record.transactionStatus = $status,
@@ -124,9 +96,8 @@ export const setTransactionStatusSuccess = `
 
 export const getLastServiceRecord = `
 MATCH (record:ServiceRecord {id: $serviceRecordId})-[:SERVICE_HELD_ON]->(date:TimeGraph)
-MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church) 
+MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
 WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
-OR church:Hub OR church:HubCouncil OR church:Ministry OR church:CreativeArts
 MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(otherRecords:ServiceRecord)-[:SERVICE_HELD_ON]->(otherDate:TimeGraph)
 WHERE NOT (otherRecords:NoService) AND duration.between(otherDate.date, date.date).weeks < 52 AND otherDate.date < date.date
 
@@ -137,7 +108,6 @@ WITH apoc.coll.indexOf(recordIds,currentServiceId) + 1 AS lastServiceIndex, reco
 MATCH (lastService:ServiceRecord {id: recordIds[lastServiceIndex]})-[:SERVICE_HELD_ON]->(lastDate:TimeGraph)
 MATCH (record:ServiceRecord {id: $serviceRecordId})<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
 WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus OR church:Oversight OR church:Denomination
-OR church:Hub OR church:HubCouncil OR church:Ministry OR church:CreativeArts
 
 RETURN lastService, lastDate, record, church
 `

@@ -34,16 +34,12 @@ export const menuItems: MenuItem[] = [
     name: 'Directory',
     exact: 'true',
     to: '/directory',
-    roles: [...permitMe('Bacenta'), ...permitMe('Hub')],
+    roles: permitMe('Bacenta'),
   },
   {
     name: 'Services',
     to: '/services/church-list',
-    roles: [
-      ...permitLeaderAdmin('Bacenta'),
-      ...permitTellerStream(),
-      ...permitLeaderAdmin('Hub'),
-    ],
+    roles: [...permitLeaderAdmin('Bacenta'), ...permitTellerStream()],
   },
   {
     name: 'Arrivals',
@@ -72,10 +68,7 @@ export const menuItems: MenuItem[] = [
   {
     name: 'Maps',
     to: '/maps',
-    roles: [
-      ...permitLeaderAdminArrivals('Bacenta'),
-      ...permitLeaderAdmin('Hub'),
-    ],
+    roles: permitLeaderAdminArrivals('Bacenta'),
   },
 ]
 
@@ -95,10 +88,6 @@ export const roles: {
   Campus: ['leads', 'isAdminFor', 'isArrivalsAdminFor'],
   Oversight: ['leads', 'isAdminFor'],
   Denomination: ['leads', 'isAdminFor'],
-  Hub: ['leads'],
-  HubCouncil: ['leads'],
-  Ministry: ['leads', 'isAdminFor'],
-  CreativeArts: ['leads', 'isAdminFor'],
 }
 
 export const parseRoles = (role: VerbTypes): VerbTypes => {
@@ -263,73 +252,6 @@ export const getServantRoles = (servant: MemberWithChurches) => {
         servant,
         permitMe('Bacenta'),
         '/bacenta/displaydetails'
-      ),
-    })
-  }
-
-  if (servant?.leadsHub?.length) {
-    roleTitles.push('leaderHub')
-    userroles.push({
-      authRoles: 'leaderHub',
-      name: 'Hub',
-      church: servant?.leadsHub,
-      number: servant?.leadsHub?.length,
-      link: authorisedLink(servant, permitMe('Hub'), '/hub/displaydetails'),
-    })
-  }
-  if (servant?.leadsMinistry?.length) {
-    roleTitles.push('leaderMinistry')
-    userroles.push({
-      authRoles: 'leaderMinistry',
-      name: 'Ministry',
-      church: servant?.leadsMinistry,
-      number: servant?.leadsMinistry?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('Ministry'),
-        '/ministry/displaydetails'
-      ),
-    })
-  }
-  if (servant?.isAdminForMinistry?.length) {
-    roleTitles.push('adminMinistry')
-    userroles.push({
-      authRoles: 'adminMinistry',
-      name: 'Ministry Admin',
-      church: servant?.isAdminForMinistry,
-      number: servant?.isAdminForMinistry?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('Ministry'),
-        '/ministry/displaydetails'
-      ),
-    })
-  }
-  if (servant?.leadsCreativeArts?.length) {
-    roleTitles.push('leaderCreativeArts')
-    userroles.push({
-      authRoles: 'leaderCreativeArts',
-      name: 'Creative Arts',
-      church: servant?.leadsCreativeArts,
-      number: servant?.leadsCreativeArts?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('CreativeArts'),
-        '/creativearts/displaydetails'
-      ),
-    })
-  }
-  if (servant?.isAdminForCreativeArts?.length) {
-    roleTitles.push('adminCreativeArts')
-    userroles.push({
-      authRoles: 'adminCreativeArts',
-      name: 'Creative Arts Admin',
-      church: servant?.isAdminForCreativeArts,
-      number: servant?.isAdminForCreativeArts?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('CreativeArts'),
-        '/creativearts/displaydetails'
       ),
     })
   }

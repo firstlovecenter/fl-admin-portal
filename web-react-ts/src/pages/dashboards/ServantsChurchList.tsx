@@ -108,26 +108,6 @@ const ServantsChurchList = () => {
       pushIntoChurch(servant?.isAdminForOversight)
     }
 
-    // Creative Arts
-    if (servant?.leadsHub.length) {
-      pushIntoChurch(servant?.leadsHub)
-    }
-    if (servant?.leadsHubCouncil.length) {
-      pushIntoChurch(servant?.leadsHubCouncil)
-    }
-    if (servant?.leadsMinistry.length) {
-      pushIntoChurch(servant?.leadsMinistry)
-    }
-    if (servant?.leadsCreativeArts.length) {
-      pushIntoChurch(servant?.leadsCreativeArts)
-    }
-    if (servant?.isAdminForMinistry?.length) {
-      pushIntoChurch(servant?.isAdminForMinistry)
-    }
-    if (servant?.isAdminForCreativeArts?.length) {
-      pushIntoChurch(servant?.isAdminForCreativeArts)
-    }
-
     //run the get graph function after all checking is done to avoid multiple unnecessary runs
     return churches
   }

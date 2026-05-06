@@ -53,12 +53,6 @@ const dashboardScopeSupportedRoles: Role[] = [
   'arrivalsAdminCampus',
   'arrivalsCounterStream',
   'tellerStream',
-  'leaderHub',
-  'leaderHubCouncil',
-  'leaderMinistry',
-  'leaderCreativeArts',
-  'adminMinistry',
-  'adminCreativeArts',
 ]
 
 const ChurchRoleScopeContext = createContext<

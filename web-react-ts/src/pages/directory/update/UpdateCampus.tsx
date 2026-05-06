@@ -33,7 +33,6 @@ const UpdateCampus = () => {
     currency: campus?.currency,
     conversionRateToDollar: campus?.conversionRateToDollar,
     streams: campus?.streams?.length ? campus.streams : [''],
-    creativeArts: campus?.creativeArts?.length ? campus.creativeArts : [''],
   }
   const [LogCampusHistory] = useMutation(LOG_CAMPUS_HISTORY, {
     refetchQueries: [

@@ -25,15 +25,6 @@ type useSontaLevelProps = {
   oversightRefetch?: () => Promise<ApolloQueryResult<any>>
   denominationFunction?: LazyQueryExecFunction<any, OperationVariables>
   denominationRefetch?: () => Promise<ApolloQueryResult<any>>
-
-  hubFunction?: LazyQueryExecFunction<any, OperationVariables>
-  hubRefetch: () => Promise<ApolloQueryResult<any>>
-  hubCouncilFunction?: LazyQueryExecFunction<any, OperationVariables>
-  hubCouncilRefetch: () => Promise<ApolloQueryResult<any>>
-  ministryFunction?: LazyQueryExecFunction<any, OperationVariables>
-  ministryRefetch: () => Promise<ApolloQueryResult<any>>
-  creativeArtsFunction?: LazyQueryExecFunction<any, OperationVariables>
-  creativeArtsRefetch: () => Promise<ApolloQueryResult<any>>
 }
 
 const useSontaLevel = (props: useSontaLevelProps) => {
@@ -55,14 +46,6 @@ const useSontaLevel = (props: useSontaLevelProps) => {
 
   const chooseRefetch = () => {
     switch (churchLevel) {
-      case 'CreativeArts':
-        return props.creativeArtsRefetch
-      case 'Ministry':
-        return props.ministryRefetch
-      case 'HubCouncil':
-        return props.hubCouncilRefetch
-      case 'Hub':
-        return props.hubRefetch
       case 'Governorship':
         return props.governorshipRefetch
       case 'Council':
@@ -82,67 +65,6 @@ const useSontaLevel = (props: useSontaLevelProps) => {
   useEffect(() => {
     const whichQuery = async () => {
       switch (churchLevel) {
-        case 'CreativeArts':
-          {
-            if (!props.creativeArtsFunction) break
-            const res = await props.creativeArtsFunction({
-              variables: {
-                id: currentChurch?.id,
-                arrivalDate: arrivalDate,
-              },
-            })
-
-            setChurch(res?.data?.creativeArts[0])
-            setLoading(res.loading)
-            setError(res.error)
-          }
-          break
-        case 'Ministry':
-          {
-            if (!props.ministryFunction) break
-            const res = await props.ministryFunction({
-              variables: {
-                id: currentChurch?.id,
-                arrivalDate: arrivalDate,
-              },
-            })
-
-            setChurch(res?.data?.ministries[0])
-            setLoading(res.loading)
-            setError(res.error)
-          }
-          break
-        case 'HubCouncil':
-          {
-            if (!props.hubCouncilFunction) break
-            const res = await props.hubCouncilFunction({
-              variables: {
-                id: currentChurch?.id,
-                arrivalDate: arrivalDate,
-              },
-            })
-
-            setChurch(res?.data?.hubCouncils[0])
-            setLoading(res.loading)
-            setError(res.error)
-          }
-          break
-        case 'Hub':
-          {
-            if (!props.hubFunction) break
-
-            const res = await props.hubFunction({
-              variables: {
-                id: currentChurch?.id,
-                arrivalDate: arrivalDate,
-              },
-            })
-
-            setChurch(res?.data?.hubs[0])
-            setLoading(res.loading)
-            setError(res.error)
-          }
-          break
         case 'Governorship':
           {
             if (!props.governorshipFunction) break

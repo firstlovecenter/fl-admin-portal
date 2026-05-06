@@ -31,7 +31,6 @@ const UpdateGovernorship = () => {
     leaderEmail: governorship?.leader?.email || '',
     council: governorship?.council,
     bacentas: governorship?.bacentas?.length ? governorship.bacentas : [''],
-    hubs: governorship?.hubs?.length ? governorship.hubs : [''],
   }
   const [LogGovernorshipHistory] = useMutation(LOG_GOVERNORSHIP_HISTORY, {
     refetchQueries: [

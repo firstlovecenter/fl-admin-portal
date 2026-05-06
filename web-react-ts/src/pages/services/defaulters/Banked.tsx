@@ -16,12 +16,6 @@ import {
 import PlaceholderDefaulterList from './PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from './defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import {
-  CREATIVEARTS_BANKED_LIST,
-  HUBCOUNCIL_BANKED_LIST,
-  HUB_BANKED_LIST,
-  MINISTRY_BANKED_LIST,
-} from './creative-arts/SontaDefaultersQueries'
 import useSontaLevel from 'hooks/useSontaLevel'
 
 const Banked = () => {
@@ -34,15 +28,6 @@ const Banked = () => {
     useLazyQuery(STREAM_BANKED_LIST)
   const [campusBanked, { refetch: campusRefetch }] =
     useLazyQuery(CAMPUS_BANKED_LIST)
-  const [creativeArtsBanked, { refetch: creativeArtsRefetch }] = useLazyQuery(
-    CREATIVEARTS_BANKED_LIST
-  )
-  const [ministryBanked, { refetch: ministryRefetch }] =
-    useLazyQuery(MINISTRY_BANKED_LIST)
-  const [hubCouncilBanked, { refetch: hubCouncilRefetch }] = useLazyQuery(
-    HUBCOUNCIL_BANKED_LIST
-  )
-  const [hubBanked, { refetch: hubRefetch }] = useLazyQuery(HUB_BANKED_LIST)
 
   const data = useSontaLevel({
     governorshipFunction: governorshipBanked,
@@ -53,14 +38,6 @@ const Banked = () => {
     streamRefetch,
     campusFunction: campusBanked,
     campusRefetch,
-    creativeArtsFunction: creativeArtsBanked,
-    creativeArtsRefetch,
-    ministryFunction: ministryBanked,
-    ministryRefetch,
-    hubCouncilFunction: hubCouncilBanked,
-    hubCouncilRefetch,
-    hubFunction: hubBanked,
-    hubRefetch,
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType

@@ -1,12 +1,8 @@
 import { Church, ChurchLevel, Role, VerbTypes } from 'global-types'
 
 export const churchLevels: ChurchLevel[] = [
-  'Hub',
   'Bacenta',
   'Governorship',
-  'HubCouncil',
-  'Ministry',
-  'CreativeArts',
   'Council',
   'Stream',
   'Campus',

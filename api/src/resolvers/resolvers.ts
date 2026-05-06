@@ -3,7 +3,6 @@ import serviceMutation from './services/service-resolvers'
 import { Member } from './utils/types'
 import treasuryMutations from './anagkazo/treasury-resolvers'
 import directoryMutation from './directory/directory-resolvers'
-import directoryCreativeArtsMutation from './directory/directory-creativearts-resolvers'
 import {
   arrivalsMutation,
   arrivalsResolvers,
@@ -11,7 +10,6 @@ import {
 import bankingMutation from './banking/banking-resolver'
 import { accountsMutations } from './accounts/accounts-resolvers'
 import { mapsResolvers } from './maps/maps-resolvers'
-import SontaServiceMutation from './services/rehearsal-resolver'
 import { Context } from './utils/neo4j-types'
 import MakeServantResolvers from './directory/make-servant-resolvers'
 import { downloadMembershipResolvers } from './download-credits/download-credits-resolvers'
@@ -223,9 +221,7 @@ const resolvers = {
     ...bankingMutation,
     ...treasuryMutations,
     ...serviceNoIncomeMutations,
-    ...SontaServiceMutation,
     ...accountsMutations,
-    ...directoryCreativeArtsMutation,
     ...uploadMutations,
   },
 }

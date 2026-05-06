@@ -15,14 +15,13 @@ import { useNavigate } from 'react-router'
 import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
   BacentaWithDefaulters,
-  HubWithDefaulters,
   StreamWithDefaulters,
 } from './defaulters-types'
 import './Defaulters.css'
 import { MemberContext } from 'contexts/MemberContext'
 
 type DefaulterCardProps = {
-  defaulter: BacentaWithDefaulters | StreamWithDefaulters | HubWithDefaulters
+  defaulter: BacentaWithDefaulters | StreamWithDefaulters
   link?: string
 }
 
@@ -36,8 +35,6 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
 
   if ('services' in defaulter && defaulter.services?.length) {
     serviceDetails = defaulter.services[0]
-  } else if ('rehearsals' in defaulter && defaulter.rehearsals?.length) {
-    serviceDetails = defaulter.rehearsals[0]
   }
 
   return (

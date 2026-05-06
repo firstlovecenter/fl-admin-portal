@@ -23,12 +23,6 @@ import {
 } from './defaulters-types'
 import { ChurchLevel } from 'global-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import {
-  CREATIVEARTS_DEFAULTERS,
-  HUBCOUNCIL_DEFAULTERS,
-  HUB_DEFAULTERS,
-  MINISTRY_DEFAULTERS,
-} from './creative-arts/SontaDefaultersQueries'
 import useSontaLevel from 'hooks/useSontaLevel'
 
 const DefaultersDashboard = () => {
@@ -43,14 +37,6 @@ const DefaultersDashboard = () => {
     useLazyQuery(CAMPUS_DEFAULTERS)
   const [oversightDefaulters, { refetch: oversightRefetch }] =
     useLazyQuery(OVERSIGHT_DEFAULTERS)
-  const [hubDefaulters, { refetch: hubRefetch }] = useLazyQuery(HUB_DEFAULTERS)
-  const [hubCouncilDefaulters, { refetch: hubCouncilRefetch }] = useLazyQuery(
-    HUBCOUNCIL_DEFAULTERS
-  )
-  const [ministryDefaulters, { refetch: ministryRefetch }] =
-    useLazyQuery(MINISTRY_DEFAULTERS)
-  const [creativeArtsDefaulters, { refetch: creativeArtsRefetch }] =
-    useLazyQuery(CREATIVEARTS_DEFAULTERS)
 
   let subChurch: ChurchLevel | string = ''
 
@@ -65,14 +51,6 @@ const DefaultersDashboard = () => {
     campusRefetch,
     oversightFunction: oversightDefaulters,
     oversightRefetch,
-    hubFunction: hubDefaulters,
-    hubRefetch,
-    hubCouncilFunction: hubCouncilDefaulters,
-    hubCouncilRefetch,
-    ministryFunction: ministryDefaulters,
-    ministryRefetch,
-    creativeArtsFunction: creativeArtsDefaulters,
-    creativeArtsRefetch,
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
@@ -95,61 +73,9 @@ const DefaultersDashboard = () => {
       subChurch = 'oversight'
       break
 
-    case 'Ministry':
-      subChurch = 'hubCouncil'
-      break
-    case 'CreativeArts':
-      subChurch = 'ministry'
-      break
     default:
       break
   }
-
-  const rehearsalDefaulters = [
-    {
-      title: 'Rehearsals This Week',
-      data: church?.hubRehearsalsThisWeekCount,
-      color: church?.hubRehearsalsThisWeekCount ? 'good' : 'bad',
-      link: church?.hubRehearsalsThisWeekCount
-        ? '/rehearsal/rehearsal-this-week'
-        : '#',
-    },
-    {
-      title: 'Not Filled Forms',
-      data: church?.hubFormDefaultersThisWeekCount,
-      color: church?.hubFormDefaultersThisWeekCount ? 'bad' : 'good',
-      link: church?.hubFormDefaultersThisWeekCount
-        ? '/rehearsal/form-defaulters'
-        : '#',
-    },
-    {
-      title: 'Have Banked',
-      data: church?.hubsBankedThisWeekCount,
-      color:
-        church?.hubsBankedThisWeekCount === church?.hubRehearsalsThisWeekCount
-          ? 'good'
-          : (church?.hubsBankedThisWeekCount || 0) > 0
-          ? 'yellow'
-          : 'bad',
-      link: church?.hubsBankedThisWeekCount ? '/rehearsal/banked' : '#',
-    },
-    {
-      title: 'Have Not Banked',
-      data: church?.hubBankingDefaultersThisWeekCount,
-      color: church?.hubBankingDefaultersThisWeekCount ? 'bad' : 'good',
-      link: church?.hubBankingDefaultersThisWeekCount
-        ? '/rehearsal/banking-defaulters'
-        : '#',
-    },
-    {
-      title: 'Cancelled Rehearsal',
-      data: church?.hubCancelledRehearsalsThisWeekCount,
-      color: church?.hubCancelledRehearsalsThisWeekCount ? 'bad' : 'good',
-      link: church?.hubCancelledRehearsalsThisWeekCount
-        ? '/rehearsal/cancelled-rehearsals'
-        : '#',
-    },
-  ]
 
   const streamDefaultersArray = [
     {
@@ -296,14 +222,6 @@ const DefaultersDashboard = () => {
     ) {
       return '2'
     }
-
-    if (
-      ['CreativeArts', 'Ministry', 'HubCouncil'].includes(
-        church?.__typename ?? ''
-      )
-    ) {
-      return '1'
-    }
   }
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -313,12 +231,7 @@ const DefaultersDashboard = () => {
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
           <HeadingSecondary>Defaulters Page</HeadingSecondary>
-          <RoleView
-            roles={[
-              ...permitLeaderAdmin('Council'),
-              ...permitLeaderAdmin('HubCouncil'),
-            ]}
-          >
+          <RoleView roles={permitLeaderAdmin('Council')}>
             <Col xs={12} className="mb-3">
               {aggregates?.title && (
                 <DefaulterInfoCard defaulter={aggregates} />
@@ -356,42 +269,12 @@ const DefaultersDashboard = () => {
               )}
             </Accordion.Item>
 
-            <Accordion.Item eventKey="1">
-              {['CreativeArts', 'Ministry', 'HubCouncil'].includes(
-                church?.__typename ?? ''
-              ) && (
-                <>
-                  <Accordion.Header>
-                    <Col xs={12}>
-                      <HeadingSecondary>Rehearsals</HeadingSecondary>
-                      <PlaceholderCustom as="h6" loading={!church}>
-                        <h6>{`Active Hubs: ${church?.activeHubCount}`}</h6>
-                      </PlaceholderCustom>
-                    </Col>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
-                      {rehearsalDefaulters.map((defaulter, i) => (
-                        <Col key={i} xs={6} className="mb-3">
-                          <DefaulterInfoCard defaulter={defaulter} />
-                        </Col>
-                      ))}
-                    </Row>
-                  </Accordion.Body>
-                </>
-              )}
-            </Accordion.Item>
-
             <Accordion.Item eventKey="2">
               {[
                 'Campus',
                 'Stream',
                 'Council',
                 'Governorship',
-                'Hub',
-                'HubCouncil',
-                'Ministry',
-                'CreativeArts',
               ].includes(church?.__typename ?? '') && (
                 <>
                   <Accordion.Header>
@@ -438,43 +321,6 @@ const DefaultersDashboard = () => {
               )}
             </Accordion.Item>
 
-            <Accordion.Item eventKey="4">
-              {['Campus'].includes(church?.__typename ?? '') && (
-                <>
-                  <Accordion.Header>
-                    <div>
-                      <HeadingSecondary>Rehearsals</HeadingSecondary>
-                      <PlaceholderCustom as="h6" loading={!church}>
-                        <h6>{`Active Hubs: ${church?.activeHubCount}`}</h6>
-                      </PlaceholderCustom>
-                    </div>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
-                      <RoleView roles={['leaderCampus', 'adminCampus']}>
-                        <Col xs={12} className="mb-3">
-                          {aggregates?.title && (
-                            <DefaulterInfoCard
-                              defaulter={{
-                                title: 'Creative Arts',
-                                data: church?.creativeArtsCount,
-                                link: `/services/campus-by-creativearts`,
-                              }}
-                            />
-                          )}
-                        </Col>
-                      </RoleView>
-
-                      {rehearsalDefaulters.map((defaulter, i) => (
-                        <Col key={i} xs={6} className="mb-3">
-                          <DefaulterInfoCard defaulter={defaulter} />
-                        </Col>
-                      ))}
-                    </Row>
-                  </Accordion.Body>
-                </>
-              )}
-            </Accordion.Item>
           </Accordion>
           <Row>
             {loading && (

@@ -7,12 +7,10 @@ const StreamSelfBanking = lazy(() => import('./StreamSelfBanking'))
 const CouncilSelfBanking = lazy(() => import('./CouncilSelfBanking'))
 const GovernorshipSelfBanking = lazy(() => import('./GovernorshipSelfBanking'))
 const BacentaSelfBanking = lazy(() => import('./BacentaSelfBanking'))
-const HubSelfBanking = lazy(() => import('./HubSelfBanking'))
 const PayStreamOffering = lazy(() => import('./PayStreamOffering'))
 const PayCouncilOffering = lazy(() => import('./PayCouncilOffering'))
 const PayGovernorshipOffering = lazy(() => import('./PayGovernorshipOffering'))
 const PayBacentaOffering = lazy(() => import('./PayBacentaOffering'))
-const PayHubOffering = lazy(() => import('./PayHubOffering'))
 const ReceiptPage = lazy(() => import('./ReceiptPage'))
 
 export const banking: LazyRouteTypes[] = [
@@ -47,11 +45,6 @@ export const banking: LazyRouteTypes[] = [
     roles: ['leaderBacenta'],
   },
   {
-    path: '/rehearsals/hub/self-banking/pay',
-    element: PayHubOffering,
-    roles: ['leaderHub'],
-  },
-  {
     path: '/services/governorship/self-banking/pay',
     element: PayGovernorshipOffering,
     roles: ['leaderGovernorship', 'adminGovernorship'],
@@ -77,10 +70,4 @@ export const banking: LazyRouteTypes[] = [
     roles: [...permitMe('Governorship'), 'leaderBacenta'],
   },
 
-  {
-    path: '/services/hub/self-banking',
-    element: HubSelfBanking,
-    roles: ['leaderHub'],
-    placeholder: true,
-  },
 ]

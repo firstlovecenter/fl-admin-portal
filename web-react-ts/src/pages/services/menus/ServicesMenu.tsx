@@ -166,17 +166,13 @@ const ServicesMenu = () => {
   const hasServiceThisWeek =
     !!latestService && isInCurrentISOWeek(latestService.serviceDate?.date)
 
-  const showHubOrMinistryForms =
-    !!churchType && ['Hub', 'Ministry'].includes(churchType) && isVacationActive
   const showBankingSlips =
     !!churchType &&
     ['Stream', 'Council', 'Governorship', 'Bacenta'].includes(churchType) &&
     !isManualBanking
   const showSelfBanking =
     !!churchType &&
-    ['Stream', 'Council', 'Governorship', 'Bacenta', 'Hub'].includes(
-      churchType
-    ) &&
+    ['Stream', 'Council', 'Governorship', 'Bacenta'].includes(churchType) &&
     !isManualBanking
   const showStreamManualBanking = isManualBanking && churchType === 'Stream'
   const showDefaulters = !!churchType && churchType !== 'Bacenta'
@@ -232,16 +228,6 @@ const ServicesMenu = () => {
                 onClick={handleRecordService}
               />
             ))}
-
-          {showHubOrMinistryForms && (
-            <MenuCard
-              icon={<BookOpen className="h-5 w-5" />}
-              accent="bg-members/10 text-members"
-              title="Fill Forms"
-              description={`Submit this week's ${formatChurchLevel(churchType)} forms`}
-              onClick={() => navigate(`/services/${routeSlug}`)}
-            />
-          )}
 
           <MenuCard
             icon={<BarChart3 className="h-5 w-5" />}
@@ -306,7 +292,6 @@ const ServicesMenu = () => {
             <RoleView
               roles={[
                 ...permitLeaderAdmin('Governorship'),
-                ...permitLeaderAdmin('Hub'),
               ]}
             >
               <MenuCard

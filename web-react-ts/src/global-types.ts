@@ -27,11 +27,6 @@ export type ChurchLevel =
   | 'Campus'
   | 'Oversight'
   | 'Denomination'
-  | 'Ministry'
-  | 'HubCouncil'
-  | 'Hub'
-  | 'HubCouncil'
-  | 'CreativeArts'
 
 export type ChurchLevelLower =
   | 'bacenta'
@@ -40,10 +35,6 @@ export type ChurchLevelLower =
   | 'stream'
   | 'campus'
   | 'oversight'
-  | 'creativeArts'
-  | 'ministry'
-  | 'hubCouncil'
-  | 'hub'
 
 export type VacationStatusOptions = 'Vacation' | 'Active'
 
@@ -113,7 +104,6 @@ export interface Campus extends Church {
   __typename: 'Campus'
   streams?: Stream[]
   oversight: Oversight
-  creativeArts?: CreativeArts[]
 }
 
 export interface Stream extends Church {
@@ -124,7 +114,6 @@ export interface Stream extends Church {
   meetingDay: { day: 'Friday' | 'Saturday' | 'Sunday' }
   stream_name?: StreamOptions
   campus: Campus
-  ministries?: Ministry[]
   councils?: Council[]
 }
 export interface Governorship extends Church {
@@ -136,50 +125,7 @@ export interface Governorship extends Church {
 export interface Council extends Church {
   __typename: 'Council'
   stream: Stream
-  hubCouncils?: HubCouncil[]
   governorships?: Governorship[]
-  hubCouncilsFromMinistry?: HubCouncil[]
-}
-
-export interface CreativeArts extends Church {
-  __typename: 'CreativeArts'
-  campus: Campus
-  ministries?: Ministry[]
-}
-
-export interface Ministry extends HigherChurch {
-  id: string
-  __typename: 'Ministry'
-  bankAccount: string
-  name: string
-  creativeArts: CreativeArts
-  stream: Stream
-  councils: Council[]
-  hubCouncils?: HubCouncil[]
-}
-
-export interface HubCouncil extends Church {
-  __typename: 'HubCouncil'
-  hub: Hub
-  council: Council
-  ministry: Ministry
-}
-
-export interface Hub extends Church {
-  __typename: 'Hub'
-  location: {
-    latitude: number
-    longitude: number
-  }
-  activeHubFellowshipCount: number
-  vacationHubFellowshipCount: number
-  hubCouncil: HubCouncil
-  governorship: Governorship
-  creativeArts: Campus
-  vacationStatus: VacationStatusOptions
-  meetingDay: {
-    day: 'Wednesday' | 'Friday' | 'Saturday'
-  }
 }
 
 //MEMBERSHIP
@@ -234,13 +180,6 @@ export interface MemberWithChurches extends Member {
   leadsCouncil: Church[]
   leadsStream: Church[]
 
-  leadsHub: Church[]
-  leadsHubCouncil: Church[]
-  leadsMinistry: Church[]
-  leadsCreativeArts: Church[]
-  isAdminForMinistry: Church[]
-  isAdminForCreativeArts: Church[]
-
   leadsCampus: Church[]
   leadsOversight: Church[]
   leadsDenomination: Church[]
@@ -292,10 +231,6 @@ export type CurrentUser = {
   campus?: string
   oversight?: string
   denomination?: string
-  hub?: string
-  hubCouncil?: string
-  ministry?: string
-  creativeArts?: string
   stream_name?: string
   noIncomeTracking?: boolean
   currency?: string
@@ -329,10 +264,6 @@ export type Role =
   | 'leaderGovernorship'
   | 'leaderCouncil'
   | 'leaderStream'
-  | 'leaderHub'
-  | 'leaderHubCouncil'
-  | 'leaderMinistry'
-  | 'leaderCreativeArts'
   | 'leaderCampus'
   | 'leaderOversight'
   | 'leaderDenomination'
@@ -342,8 +273,6 @@ export type Role =
   | 'adminCampus'
   | 'adminOversight'
   | 'adminDenomination'
-  | 'adminMinistry'
-  | 'adminCreativeArts'
   | 'arrivalsAdminCampus'
   | 'arrivalsAdminStream'
   | 'arrivalsAdminCouncil'

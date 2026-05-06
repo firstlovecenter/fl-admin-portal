@@ -1,3 +1,11 @@
+#### Unreleased
+
+##### Refactors
+
+- remove Creative Arts hierarchy dead code (CreativeArts, Ministry, HubCouncil, Hub, Sonta)
+
+---
+
 #### 8.1.3 (2025-09-06)
 
 ##### Chores

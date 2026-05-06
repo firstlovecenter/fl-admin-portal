@@ -23,22 +23,16 @@ import Input from 'components/formik/Input'
 import SearchMember from 'components/formik/SearchMember'
 import SearchBacenta from 'components/formik/SearchBacenta'
 import { FormikInitialValues } from 'components/formik/formik-types'
-import { Bacenta, Council, Hub } from 'global-types'
-import {
-  MOVE_BACENTA_TO_GOVERNORSHIP,
-  MOVE_HUB_TO_GOVERNORSHIP,
-} from '../update/UpdateMutations'
+import { Bacenta, Council } from 'global-types'
+import { MOVE_BACENTA_TO_GOVERNORSHIP } from '../update/UpdateMutations'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import { DISPLAY_GOVERNORSHIP, DISPLAY_COUNCIL } from '../display/ReadQueries'
 import BtnSubmitText from 'components/formik/BtnSubmitText'
-import SearchHub from 'components/formik/SearchHub'
 import { displayError, isPermissionError } from 'utils/errorHandler'
 
 export interface GovernorshipFormValues extends FormikInitialValues {
   council?: Council
   bacentas?: Bacenta[]
-  hubs?: Hub[]
-  hub?: Hub
   bacenta?: Bacenta
 }
 
@@ -60,7 +54,6 @@ const GovernorshipForm = ({
 }: GovernorshipFormProps) => {
   const { clickCard, governorshipId } = useContext(ChurchContext)
   const [bacentaModal, setBacentaModal] = useState(false)
-  const [hubModal, setHubModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
   const navigate = useNavigate()
@@ -78,12 +71,6 @@ const GovernorshipForm = ({
       ],
     }
   )
-  const [MoveHubToGovernorship] = useMutation(MOVE_HUB_TO_GOVERNORSHIP, {
-    refetchQueries: [
-      { query: DISPLAY_GOVERNORSHIP, variables: { id: governorshipId } },
-    ],
-  })
-
   const validationSchema = Yup.object({
     name: Yup.string().required(`Governorship Name is a required field`),
     leaderId: Yup.string().required(
@@ -102,9 +89,6 @@ const GovernorshipForm = ({
         {!newGovernorship && (
           <>
             <Button onClick={() => setBacentaModal(true)}>Add Bacenta</Button>
-            <Button variant="warning" onClick={() => setHubModal(true)}>
-              Add Hub
-            </Button>
             <Button variant="success" onClick={() => setCloseDown(true)}>
               {`Close Down Governorship`}
             </Button>
@@ -161,20 +145,6 @@ const GovernorshipForm = ({
                       })}
                     </div>
 
-                    <div className="d-grid gap-2 mt-3">
-                      {initialValues.hubs?.length && (
-                        <p className="fw-bold fs-5">Hubs</p>
-                      )}
-                      {initialValues.hubs?.map((hub, index) => {
-                        if (!hub && !index)
-                          return <NoDataComponent text="No Hubs" />
-                        return (
-                          <Button variant="secondary" className="text-start">
-                            {hub.name} {hub.__typename}
-                          </Button>
-                        )
-                      })}
-                    </div>
                   </Col>
                 </Row>
               </div>
@@ -239,55 +209,6 @@ const GovernorshipForm = ({
                   variant="primary"
                   onClick={() => setBacentaModal(false)}
                 >
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
-
-            <Modal show={hubModal} onHide={() => setHubModal(false)} centered>
-              <Modal.Header closeButton>Add A Hub</Modal.Header>
-              <Modal.Body>
-                <p>Choose a hub to move to this governorship</p>
-                <SearchHub
-                  name={`hub`}
-                  placeholder="Hub Name"
-                  initialValue=""
-                  setFieldValue={formik.setFieldValue}
-                  aria-describedby="Hub Name"
-                />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading || !formik.values.hub}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await MoveHubToGovernorship({
-                        variables: {
-                          hubId: formik.values.hub?.id,
-                          historyRecord: `${formik.values.hub?.name} Hub has been moved to ${formik.values.name} Governorship from ${formik.values.hub?.governorship.name} Governorship`,
-                          newGovernorshipId: governorshipId,
-                          oldGovernorshipId: formik.values.hub?.governorship.id,
-                        },
-                      })
-
-                      clickCard(res.data.MoveHubToGovernorship)
-                      setHubModal(false)
-                    } catch (error) {
-                      if (!isPermissionError(error)) {
-                        throwToSentry(`Error moving hub to governorship`, error)
-                      }
-                      displayError('Unable to Move Hub', error)
-                    } finally {
-                      setButtonLoading(false)
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button variant="primary" onClick={() => setHubModal(false)}>
                   Close
                 </Button>
               </Modal.Footer>

@@ -16,12 +16,6 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PlaceholderDefaulterList from './PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from './defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import {
-  CREATIVE_ARTS_SERVICES_LIST,
-  HUBCOUNCIL_SERVICES_LIST,
-  HUB_SERVICES_LIST,
-  MINISTRY_SERVICES_LIST,
-} from './creative-arts/SontaDefaultersQueries'
 import useSontaLevel from 'hooks/useSontaLevel'
 
 const ServicesThisWeek = () => {
@@ -34,15 +28,6 @@ const ServicesThisWeek = () => {
     useLazyQuery(STREAM_SERVICES_LIST)
   const [campusThisWeek, { refetch: campusRefetch }] =
     useLazyQuery(CAMPUS_SERVICES_LIST)
-  const [creativeArtsServicesThisWeek, { refetch: creativeArtsRefetch }] =
-    useLazyQuery(CREATIVE_ARTS_SERVICES_LIST)
-  const [ministryServicesThisWeek, { refetch: ministryRefetch }] = useLazyQuery(
-    MINISTRY_SERVICES_LIST
-  )
-  const [hubCouncilServicesThisWeek, { refetch: hubCouncilRefetch }] =
-    useLazyQuery(HUBCOUNCIL_SERVICES_LIST)
-  const [hubServicesThisWeek, { refetch: hubRefetch }] =
-    useLazyQuery(HUB_SERVICES_LIST)
 
   const data = useSontaLevel({
     governorshipFunction: governorshipServicesThisWeek,
@@ -53,14 +38,6 @@ const ServicesThisWeek = () => {
     streamRefetch,
     campusFunction: campusThisWeek,
     campusRefetch,
-    creativeArtsFunction: creativeArtsServicesThisWeek,
-    creativeArtsRefetch,
-    ministryFunction: ministryServicesThisWeek,
-    ministryRefetch,
-    hubCouncilFunction: hubCouncilServicesThisWeek,
-    hubCouncilRefetch,
-    hubFunction: hubServicesThisWeek,
-    hubRefetch,
   })
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
 

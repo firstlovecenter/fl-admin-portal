@@ -197,10 +197,6 @@ const UserDashboard = () => {
     graphType = 'serviceAggregate'
   }
 
-  if (assessmentChurch?.__typename === 'Hub') {
-    graphType = 'rehearsals'
-  }
-
   const hasRehearsalAggregateField =
     !!assessmentChurch && 'aggregateRehearsalRecords' in assessmentChurch
 
@@ -252,9 +248,7 @@ const UserDashboard = () => {
   )
   const hasBussingDataField = hasBussingAggregateField
   const hasWeekdayDataField =
-    hasServiceAggregateField ||
-    hasRehearsalAggregateField ||
-    graphType === 'rehearsals'
+    hasServiceAggregateField || hasRehearsalAggregateField
   const canToggleTrendMode = assessmentChurch?.__typename === 'Bacenta'
   const shouldForceBussingMode = hasBussingDataField && !hasWeekdayDataField
   const activeTrendMode = shouldForceBussingMode

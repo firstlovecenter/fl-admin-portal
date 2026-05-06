@@ -33,7 +33,6 @@ const UpdateCouncil = () => {
     governorships: council?.governorships?.length
       ? council.governorships
       : [''],
-    hubCouncils: council?.hubCouncils,
   }
 
   const [LogCouncilHistory] = useMutation(LOG_COUNCIL_HISTORY, {

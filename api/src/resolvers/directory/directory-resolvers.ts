@@ -6,7 +6,6 @@ import {
   permitAdmin,
   permitLeaderAdmin,
   permitAdminArrivals,
-  permitLeader,
   permitMe,
 } from '../permissions'
 import { RemoveServant } from './make-remove-servants'
@@ -33,7 +32,7 @@ const texts = require('../texts.json')
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
     isAuth(
-      [...permitLeaderAdmin('Bacenta'), ...permitLeader('Hub')],
+      permitLeaderAdmin('Bacenta'),
       context?.jwt.roles
     )
     const session = context.executionContext.session()
@@ -126,7 +125,7 @@ const directoryMutation = {
     args: { memberId: string; bacentaId: string },
     context: Context
   ) => {
-    isAuth([...permitMe('Bacenta'), ...permitMe('Hub')], context.jwt.roles)
+    isAuth(permitMe('Bacenta'), context.jwt.roles)
 
     const session = context.executionContext.session()
 

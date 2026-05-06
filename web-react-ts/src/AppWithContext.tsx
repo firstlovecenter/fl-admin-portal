@@ -34,6 +34,7 @@ import { maps } from 'pages/maps/mapsRoutes'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
 import { aiAssistant } from 'pages/ai-assistant/aiAssistantRoutes'
 import { settings } from 'pages/settings/settingsRoutes'
+import { reportsRoutes } from 'pages/reports/reportsRoutes'
 import { ThemeProvider } from 'components/shell/ThemeProvider'
 import { Toaster } from 'components/ui/sonner'
 import { ChurchRoleScopeProvider } from 'contexts/ChurchRoleScopeContext'
@@ -108,10 +109,6 @@ const AppWithContext = (props: AppPropsType) => {
     councilId,
     governorshipId,
     bacentaId,
-    hubId,
-    hubCouncilId,
-    ministryId,
-    creativeArtsId,
     bussingRecordId,
     serviceRecordId,
     vehicleRecordId,
@@ -128,10 +125,6 @@ const AppWithContext = (props: AppPropsType) => {
     setStreamId,
     setCouncilId,
     setGovernorshipId,
-    setHubId,
-    setHubCouncilId,
-    setMinistryId,
-    setCreativeArtsId,
     setArrivalDate,
   } = useClickCard()
 
@@ -143,10 +136,6 @@ const AppWithContext = (props: AppPropsType) => {
     setStreamId,
     setCouncilId,
     setGovernorshipId,
-    setHubId,
-    setHubCouncilId,
-    setMinistryId,
-    setCreativeArtsId,
   }
 
   const { user } = useAuth()
@@ -183,10 +172,6 @@ const AppWithContext = (props: AppPropsType) => {
             councilId,
             governorshipId,
             bacentaId,
-                    hubId,
-            hubCouncilId,
-            ministryId,
-            creativeArtsId,
             oversightId,
             denominationId,
             doNotUse,
@@ -232,6 +217,7 @@ const AppWithContext = (props: AppPropsType) => {
                           ...accountsRoutes,
                           ...aiAssistant,
                           ...settings,
+                          ...reportsRoutes,
                         ].map((route, i) => (
                           <Route
                             key={i}

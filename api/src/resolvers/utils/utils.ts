@@ -150,12 +150,6 @@ export const nextHigherChurch = (churchLevel: ChurchLevel) => {
       return 'Campus'
     case 'Campus':
       return 'Oversight'
-    case 'Hub':
-      return 'Ministry'
-    case 'Ministry':
-      return 'CreativeArts'
-    case 'CreativeArts':
-      return 'Campus'
     default:
       return 'Oversight'
   }

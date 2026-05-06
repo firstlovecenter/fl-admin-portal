@@ -20,8 +20,6 @@ import {
   getHigherChurches,
   recordSpecialService,
 } from './service-cypher'
-import { recordCancelledService as cancelRehearsal } from './rehearsal-cypher'
-
 const errorMessage = require('../texts.json').error
 
 type RecordServiceArgs = {
@@ -321,14 +319,8 @@ const serviceMutation = {
       throw new Error(errorMessage.vacation_cannot_fill_service)
     }
 
-    let cypher = recordCancelledService
-
-    if (serviceCheck.labels?.includes('Hub')) {
-      cypher = cancelRehearsal
-    }
-
     const cypherResponse = await session.executeWrite((tx) =>
-      tx.run(cypher, {
+      tx.run(recordCancelledService, {
         ...args,
         jwt: context.jwt,
       })

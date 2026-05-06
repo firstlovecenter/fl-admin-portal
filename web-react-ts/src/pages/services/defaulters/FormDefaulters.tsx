@@ -16,12 +16,6 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PlaceholderDefaulterList from './PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from './defaulters-types'
 import PullToRefresh from 'react-simple-pull-to-refresh'
-import {
-  CREATIVEARTS_FORM_DEFAULTERS_LIST,
-  HUBCOUNCIL_FORM_DEFAULTERS_LIST,
-  HUB_FORM_DEFAULTERS_LIST,
-  MINISTRY_FORM_DEFAULTERS_LIST,
-} from './creative-arts/SontaDefaultersQueries'
 import useSontaLevel from 'hooks/useSontaLevel'
 
 const FormDefaulters = () => {
@@ -36,16 +30,6 @@ const FormDefaulters = () => {
   const [campusFormDefaulters, { refetch: campusRefetch }] = useLazyQuery(
     CAMPUS_FORM_DEFAULTERS_LIST
   )
-  const [creativeArtsFormDefaulters, { refetch: creativeArtsRefetch }] =
-    useLazyQuery(CREATIVEARTS_FORM_DEFAULTERS_LIST)
-  const [ministryFormDefaulters, { refetch: ministryRefetch }] = useLazyQuery(
-    MINISTRY_FORM_DEFAULTERS_LIST
-  )
-  const [hubCouncilFormDefaulters, { refetch: hubCouncilRefetch }] =
-    useLazyQuery(HUBCOUNCIL_FORM_DEFAULTERS_LIST)
-  const [hubFormDefaulters, { refetch: hubRefetch }] = useLazyQuery(
-    HUB_FORM_DEFAULTERS_LIST
-  )
 
   const data = useSontaLevel({
     governorshipFunction: governorshipFormDefaulters,
@@ -56,14 +40,6 @@ const FormDefaulters = () => {
     streamRefetch,
     campusFunction: campusFormDefaulters,
     campusRefetch,
-    creativeArtsFunction: creativeArtsFormDefaulters,
-    creativeArtsRefetch,
-    ministryFunction: ministryFormDefaulters,
-    ministryRefetch,
-    hubCouncilFunction: hubCouncilFormDefaulters,
-    hubCouncilRefetch,
-    hubFunction: hubFormDefaulters,
-    hubRefetch,
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
