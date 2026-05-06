@@ -15,7 +15,7 @@ import {
   IconBuildingBank,
   type Icon as TablerIcon,
 } from '@tabler/icons-react'
-import { getWeekNumber } from 'global-utils'
+import { getWeekNumber, getISOWeekYear } from 'global-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
@@ -324,6 +324,7 @@ const UserDashboard = () => {
     : '—'
 
   const currentWeek = getWeekNumber()
+  const currentISOWeekYear = getISOWeekYear()
   const recentServices =
     assessmentChurch && 'services' in assessmentChurch
       ? (
@@ -335,6 +336,7 @@ const UserDashboard = () => {
               noServiceReason?: string
               bankingProof?: boolean
               transactionStatus?: string
+              serviceDate?: { date?: string } | null
             }>
           }
         ).services ?? []
@@ -343,7 +345,9 @@ const UserDashboard = () => {
     (service) =>
       service.week !== undefined &&
       Number(service.week) === currentWeek &&
-      !service.noServiceReason
+      !service.noServiceReason &&
+      (!service.serviceDate?.date ||
+        getISOWeekYear(service.serviceDate.date) === currentISOWeekYear)
   )
   const thisWeekServiceForNavigation = [...thisWeekServices].sort((a, b) => {
     const aDate = a.createdAt ? Date.parse(a.createdAt) : NaN
@@ -542,20 +546,22 @@ const UserDashboard = () => {
                 services={
                   (
                     assessmentChurch as unknown as {
-                      aggregateServiceRecords?: Array<{
+                      services?: Array<{
                         week?: number | string
+                        serviceDate?: { date?: string } | null
                       }>
                     }
-                  ).aggregateServiceRecords ?? []
+                  ).services ?? []
                 }
                 bussing={
                   (
                     assessmentChurch as unknown as {
-                      aggregateBussingRecords?: Array<{
+                      bussing?: Array<{
                         week?: number | string
+                        serviceDate?: { date?: string } | null
                       }>
                     }
-                  ).aggregateBussingRecords ?? []
+                  ).bussing ?? []
                 }
                 serviceMeetingDay={
                   (
@@ -716,8 +722,8 @@ const UserDashboard = () => {
 
 interface BacentaWeeklyTasksProps {
   vacationStatus?: string
-  services: Array<{ week?: number | string }>
-  bussing: Array<{ week?: number | string }>
+  services: Array<{ week?: number | string; serviceDate?: { date?: string } | null }>
+  bussing: Array<{ week?: number | string; serviceDate?: { date?: string } | null }>
   serviceMeetingDay?: { day?: string; dayNumber?: number }
   bussingMeetingDay?: { day?: string; dayNumber?: number }
   onRecordService: () => void
@@ -740,11 +746,22 @@ const BacentaWeeklyTasks = ({
   serviceAwaitingBanking = false,
 }: BacentaWeeklyTasksProps) => {
   const currentWeek = getWeekNumber()
+  const currentISOWeekYear = getISOWeekYear()
   const onVacation = vacationStatus === 'Vacation'
-  const matchesCurrentWeek = (w?: number | string) =>
-    w !== undefined && w !== null && Number(w) === currentWeek
-  const serviceDone = services.some((s) => matchesCurrentWeek(s.week))
-  const bussingDone = bussing.some((b) => matchesCurrentWeek(b.week))
+  const matchesCurrentWeek = (
+    w?: number | string,
+    date?: string | null
+  ) => {
+    if (w === undefined || w === null || Number(w) !== currentWeek) return false
+    if (date) return getISOWeekYear(date) === currentISOWeekYear
+    return true
+  }
+  const serviceDone = services.some((s) =>
+    matchesCurrentWeek(s.week, s.serviceDate?.date)
+  )
+  const bussingDone = bussing.some((b) =>
+    matchesCurrentWeek(b.week, b.serviceDate?.date)
+  )
   const serviceDueNow = hasMeetingDayStarted(serviceMeetingDay?.dayNumber)
   const bussingDueNow = hasMeetingDayStarted(bussingMeetingDay?.dayNumber)
 

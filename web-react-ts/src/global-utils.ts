@@ -205,9 +205,9 @@ export const throwToSentry = (
 
 export const showUserReportDialog = () => {}
 
-export const alertMsg = (message: string) => {
-  // eslint-disable-next-line no-alert
-  alert(message)
+export const alertMsg = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error)
+  import('sonner').then(({ toast }) => toast.error(message, { duration: 10000 }))
 }
 
 export const isAuthorised = (permittedRoles: Role[], userRoles: Role[]) => {
@@ -247,6 +247,15 @@ export const getWeekNumber = (date?: Date | string): number => {
         7
     )
   )
+}
+
+// Returns the ISO 8601 week-year, which can differ from the calendar year
+// for dates in late December (when ISO week 1 has already started) or early January.
+export const getISOWeekYear = (date?: Date | string): number => {
+  const target = typeof date === 'string' ? new Date(date) : date ? new Date(date) : new Date()
+  target.setHours(0, 0, 0, 0)
+  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7))
+  return target.getFullYear()
 }
 
 export const last3Weeks = (): number[] => {
