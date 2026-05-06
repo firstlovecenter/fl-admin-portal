@@ -15,46 +15,46 @@ OPTIONAL MATCH (church)<-[:HAS_MINISTRY]-(stream:Stream)-[:MEETS_ON]->(serviceDa
 RETURN serviceDay.day IS NOT NULL AS serviceDay
 `
 export const checkCurrentServiceLog = `
-MATCH (church {id:$churchId}) 
+MATCH (church {id:$churchId})
 WHERE church:Hub OR church:HubCouncil OR church:Ministry
 MATCH (church)-[:CURRENT_HISTORY]->(log:ServiceLog)
 RETURN true AS exists
 `
 export const getServantAndChurch = `
-MATCH (church {id: $churchId}) 
+MATCH (church {id: $churchId})
 WHERE church:Hub OR church:HubCouncil OR church:Ministry
 MATCH (church)<-[:LEADS]-(servant:Active:Member)
-UNWIND labels(church) AS churchType 
+UNWIND labels(church) AS churchType
 WITH churchType, church, servant WHERE churchType IN ['Hub', 'HubCouncil','Ministry']
 RETURN church.id AS churchId, church.name AS churchName, servant.id AS servantId, servant.firstName AS firstName, servant.lastName AS lastName, churchType AS churchType
 `
 
 export const checkMinistryAttendanceFormFilledThisWeek = `
     MATCH (church {id: $churchId})
-    WHERE church:HubCouncil OR church:Ministry 
+    WHERE church:HubCouncil OR church:Ministry
     MATCH (church)<-[:HAS]-(higherChurch) WHERE higherChurch:Ministry OR higherChurch:CreativeArts
-    
-    OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record)-[:SERVICE_HELD_ON]->(date)    
+
+    OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record)-[:SERVICE_HELD_ON]->(date)
     WHERE date(date.date).week = date().week AND date(date.date).year = date().year AND (record:MinistryAttendanceRecord)
     RETURN church.id AS id, church.name AS name, labels(church) AS labels, labels(higherChurch) AS higherChurchLabels, higherChurch.id AS higherChurchId, record IS NOT NULL AS alreadyFilled
     `
 
 export const checkMinistryStageAttendanceFormFilledThisWeek = `
 MATCH (church {id: $churchId})
-WHERE church:Ministry 
+WHERE church:Ministry
 MATCH (church)<-[:HAS]-(higherChurch) WHERE higherChurch:CreativeArts
 
-OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record)-[:SERVICE_HELD_ON]->(date)    
+OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record)-[:SERVICE_HELD_ON]->(date)
 WHERE date(date.date).week = date().week AND date(date.date).year = date().year AND (record:StageAttendanceRecord)
 RETURN church.id AS id, church.name AS name, labels(church) AS labels, labels(higherChurch) AS higherChurchLabels, higherChurch.id AS higherChurchId, record IS NOT NULL AS alreadyFilled
 `
 
 export const recordSundayMinistryAttendance = `
     CREATE (ministryAttendanceRecord:MinistryAttendanceRecord {id: apoc.create.uuid()})
-        SET ministryAttendanceRecord.createdAt = datetime(), 
-        ministryAttendanceRecord.attendance = $attendance, 
+        SET ministryAttendanceRecord.createdAt = datetime(),
+        ministryAttendanceRecord.attendance = $attendance,
         ministryAttendanceRecord.familyPicture = $familyPicture
-    
+
     WITH ministryAttendanceRecord
     MATCH (church {id: $churchId}) WHERE church:HubCouncil
     MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
@@ -62,19 +62,22 @@ export const recordSundayMinistryAttendance = `
 
     MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 
-    WITH DISTINCT ministryAttendanceRecord, leader, serviceDate, log 
+    WITH DISTINCT ministryAttendanceRecord, leader, serviceDate, log, church
     MERGE (ministryAttendanceRecord)-[:LOGGED_BY]->(leader)
     MERGE (ministryAttendanceRecord)-[:SERVICE_HELD_ON]->(serviceDate)
     MERGE (log)-[:HAS_SERVICE]->(ministryAttendanceRecord)
 
-    WITH log, ministryAttendanceRecord
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    WITH log, ministryAttendanceRecord, serviceDate, church
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: church.id + '-' + toString(serviceDate.date.week) + '-' + toString(serviceDate.date.year)})
+      ON CREATE SET aggregate.week = serviceDate.date.week, aggregate.year = serviceDate.date.year
+      SET aggregate.month = serviceDate.date.month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
 
-    WITH ministryAttendanceRecord, aggregate, SUM(ministryAttendanceRecord.attendance) AS attendance, SUM(aggregate.attendance) AS aggregateAttendance
-    MATCH (aggregate)
-    SET aggregate.attendance = aggregateAttendance + attendance
-    
+    SET aggregate.attendance = ministryAttendanceRecord.attendance,
+        aggregate.componentServiceIds = [ministryAttendanceRecord.id],
+        aggregate.numberOfServices = 1,
+        aggregate.recomputedAt = datetime()
+
     RETURN ministryAttendanceRecord
 `
 
@@ -97,22 +100,23 @@ MATCH (leader:Member {id: $jwt.userId})
 
 MERGE (serviceDate:TimeGraph {date:date($serviceDate)})
 
-WITH DISTINCT rehearsalRecord, leader, serviceDate, log
+WITH DISTINCT rehearsalRecord, leader, serviceDate, log, church
 MERGE (rehearsalRecord)-[:LOGGED_BY]->(leader)
 MERGE (rehearsalRecord)-[:SERVICE_HELD_ON]->(serviceDate)
 MERGE (log)-[:HAS_SERVICE]->(rehearsalRecord)
 
-WITH log, rehearsalRecord
-MERGE (aggregate:AggregateRehearsalRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+WITH log, rehearsalRecord, serviceDate, church
+MERGE (aggregate:AggregateRehearsalRecord {id: church.id + '-' + toString(serviceDate.date.week) + '-' + toString(serviceDate.date.year)})
+  ON CREATE SET aggregate.week = serviceDate.date.week, aggregate.year = serviceDate.date.year
+  SET aggregate.month = serviceDate.date.month
 MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
 
-WITH rehearsalRecord, aggregate, SUM(rehearsalRecord.attendance) AS attendance, SUM(rehearsalRecord.income) AS income, SUM(rehearsalRecord.dollarIncome) AS dollarIncome, SUM(aggregate.attendance) AS aggregateAttendance, SUM(aggregate.income) AS aggregateIncome, SUM(aggregate.dollarIncome) AS aggregateDollarIncome
-MATCH (aggregate)
-SET aggregate.attendance = aggregateAttendance + attendance,
-aggregate.income = round(toFloat(aggregateIncome + income), 2),
-aggregate.dollarIncome = round(toFloat(aggregateDollarIncome + dollarIncome), 2),
-aggregate.numberOfServices = 1
-
+SET aggregate.attendance = rehearsalRecord.attendance,
+    aggregate.income = rehearsalRecord.income,
+    aggregate.dollarIncome = rehearsalRecord.dollarIncome,
+    aggregate.componentServiceIds = [rehearsalRecord.id],
+    aggregate.numberOfServices = 1,
+    aggregate.recomputedAt = datetime()
 
 WITH rehearsalRecord
 UNWIND $treasurers AS treasurerId WITH treasurerId, rehearsalRecord
@@ -124,10 +128,10 @@ RETURN rehearsalRecord
 
 export const recordOnStageAttendance = `
     CREATE (stageAttendanceRecord:StageAttendanceRecord {id: apoc.create.uuid()})
-        SET stageAttendanceRecord.createdAt = datetime(), 
-        stageAttendanceRecord.attendance = $attendance, 
+        SET stageAttendanceRecord.createdAt = datetime(),
+        stageAttendanceRecord.attendance = $attendance,
         stageAttendanceRecord.onStagePictures = $onStagePictures
-    
+
     WITH stageAttendanceRecord
     MATCH (church {id: $churchId}) WHERE church:Ministry
     MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)
@@ -135,21 +139,22 @@ export const recordOnStageAttendance = `
 
     MERGE (serviceDate:TimeGraph {date: date($serviceDate)})
 
-    WITH DISTINCT stageAttendanceRecord, leader, serviceDate, log 
+    WITH DISTINCT stageAttendanceRecord, leader, serviceDate, log, church
     MERGE (stageAttendanceRecord)-[:LOGGED_BY]->(leader)
     MERGE (stageAttendanceRecord)-[:SERVICE_HELD_ON]->(serviceDate)
     MERGE (log)-[:HAS_SERVICE]->(stageAttendanceRecord)
 
-    WITH log, stageAttendanceRecord
-    MERGE (aggregate:AggregateStageAttendanceRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    WITH log, stageAttendanceRecord, serviceDate, church
+    MERGE (aggregate:AggregateStageAttendanceRecord {id: church.id + '-' + toString(serviceDate.date.week) + '-' + toString(serviceDate.date.year)})
+      ON CREATE SET aggregate.week = serviceDate.date.week, aggregate.year = serviceDate.date.year
+      SET aggregate.month = serviceDate.date.month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
 
-    WITH stageAttendanceRecord, aggregate, COUNT(DISTINCT stageAttendanceRecord) AS recordCount, SUM(stageAttendanceRecord.attendance) AS attendance, SUM(aggregate.attendance) AS aggregateAttendance
-    
-    MATCH (aggregate)
-    SET aggregate.attendance = aggregateAttendance + attendance,
-    aggregate.numberOfServices = recordCount
-    
+    SET aggregate.attendance = stageAttendanceRecord.attendance,
+        aggregate.componentServiceIds = [stageAttendanceRecord.id],
+        aggregate.numberOfServices = 1,
+        aggregate.recomputedAt = datetime()
+
     RETURN stageAttendanceRecord
 `
 
@@ -196,36 +201,44 @@ export const aggregateMinistryMeetingDataForHub = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT hub, record
     MATCH (hub)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: hub.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH hub, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) as totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
-    WITH hub as lowerChurch 
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
+    WITH hub as lowerChurch
     MATCH (lowerChurch)<-[:HAS]-(hubCouncil:HubCouncil)
     MATCH (hubCouncil)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..4]->(record:MinistryAttendanceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
     WHERE date.date.week = date().week AND date().year = date().year AND NOT record:NoService
     WITH DISTINCT hubCouncil, record
     MATCH (hubCouncil)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
-
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: hubCouncil.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  hubCouncil, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) AS totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
-    
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
+
         WITH hubCouncil AS lowerChurch
     MATCH (lowerChurch)<-[:HAS]-(ministry:Ministry)
     MATCH (ministry)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..5]->(record:MinistryAttendanceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT ministry, record
     MATCH (ministry)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: ministry.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  ministry, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) AS totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
-    
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
+
     WITH ministry as lowerChurch
 
     MATCH (lowerChurch)<-[:HAS]-(creativeArt:CreativeArts)
@@ -233,11 +246,14 @@ export const aggregateMinistryMeetingDataForHub = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT creativeArt, record
     MATCH (creativeArt)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: creativeArt.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  creativeArt, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) AS totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
 
     RETURN creativeArt, aggregate
 `
@@ -249,24 +265,30 @@ export const aggregateMinistryMeetingDataForHubCouncil = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT hubCouncil, record
     MATCH (hubCouncil)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: hubCouncil.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH hubCouncil, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) as totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
-    
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
+
     WITH hubCouncil AS lowerChurch
     MATCH (lowerChurch)<-[:HAS]-(ministry:Ministry)
     MATCH (ministry)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..5]->(record:MinistryAttendanceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT ministry, record
     MATCH (ministry)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: ministry.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  ministry, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) AS totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
-    
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
+
     WITH ministry as lowerChurch
 
     MATCH (lowerChurch)<-[:HAS]-(creativeArt:CreativeArts)
@@ -274,11 +296,14 @@ export const aggregateMinistryMeetingDataForHubCouncil = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT creativeArt, record
     MATCH (creativeArt)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: creativeArt.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  creativeArt, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) AS totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
 
     RETURN creativeArt, aggregate
 `
@@ -291,24 +316,30 @@ export const aggregateMinistryMeetingDataForMinistry = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT ministry, record
     MATCH (ministry)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: ministry.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  ministry, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) AS totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
 
     WITH ministry as lowerChurch
 
     MATCH (lowerChurch)<-[:HAS]-(creativeArt:CreativeArts)
-    MATCH (creativeArt)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..6]->(record:MinistryAttendanceRecord>)-[:SERVICE_HELD_ON]->(date:TimeGraph)
+    MATCH (creativeArt)-[:CURRENT_HISTORY|HAS_SERVICE|HAS*2..6]->(record:MinistryAttendanceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT creativeArt, record
     MATCH (creativeArt)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: creativeArt.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
     WITH  creativeArt, aggregate, collect(record.id) AS componentServiceIds, SUM(record.attendance) AS totalAttendance
         SET aggregate.attendance = totalAttendance,
-        aggregate.componentServiceIds = componentServiceIds
+        aggregate.componentServiceIds = componentServiceIds,
+        aggregate.recomputedAt = datetime()
 
     RETURN creativeArt, aggregate
 `
@@ -322,17 +353,20 @@ export const aggregateMinistryMeetingDataForCreativeArts = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT creativeArt, record
     MATCH (creativeArt)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateMinistryMeetingRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateMinistryMeetingRecord {id: creativeArt.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
-    WITH  creativeArt, aggregate, collect(record.id) AS componentServiceIds, COUNT(DISTINCT record) AS numberOfServices, 
-        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
-        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+    WITH  creativeArt, aggregate, collect(record.id) AS componentServiceIds, COUNT(DISTINCT record) AS numberOfServices,
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance,
+        round(toFloat(SUM(record.income)), 2) AS totalIncome,
         round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
         SET aggregate.attendance = totalAttendance,
         aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
-        aggregate.numberOfServices = numberOfServices
+        aggregate.numberOfServices = numberOfServices,
+        aggregate.recomputedAt = datetime()
 
     RETURN creativeArt, aggregate
 `
@@ -345,17 +379,20 @@ export const aggregateHubRehearsalDataForHubCouncil = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT hubcouncil, record
     MATCH (hubcouncil)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateRehearsalRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateRehearsalRecord {id: hubcouncil.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
-    WITH  hubcouncil, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
-        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+    WITH  hubcouncil, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices,
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance,
+        round(toFloat(SUM(record.income)), 2) AS totalIncome,
         round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
         SET aggregate.attendance = totalAttendance,
         aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
-        aggregate.numberOfServices = numberOfServices 
+        aggregate.numberOfServices = numberOfServices,
+        aggregate.recomputedAt = datetime()
 
     WITH hubcouncil as lowerChurch
 
@@ -364,18 +401,21 @@ export const aggregateHubRehearsalDataForHubCouncil = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT ministry, record
     MATCH (ministry)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateRehearsalRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateRehearsalRecord {id: ministry.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
-    WITH  ministry, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
-        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+    WITH  ministry, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices,
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance,
+        round(toFloat(SUM(record.income)), 2) AS totalIncome,
         round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
         SET aggregate.attendance = totalAttendance,
         aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
-        aggregate.numberOfServices = numberOfServices 
-    
+        aggregate.numberOfServices = numberOfServices,
+        aggregate.recomputedAt = datetime()
+
     WITH ministry as lowerChurch
 
     MATCH (lowerChurch)<-[:HAS]-(creativearts:CreativeArts)
@@ -383,17 +423,20 @@ export const aggregateHubRehearsalDataForHubCouncil = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT creativearts, record
     MATCH (creativearts)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateRehearsalRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateRehearsalRecord {id: creativearts.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
-    WITH  creativearts, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
-        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+    WITH  creativearts, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices,
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance,
+        round(toFloat(SUM(record.income)), 2) AS totalIncome,
         round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
         SET aggregate.attendance = totalAttendance,
         aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
-        aggregate.numberOfServices = numberOfServices 
+        aggregate.numberOfServices = numberOfServices,
+        aggregate.recomputedAt = datetime()
 
     RETURN creativearts, aggregate
 `
@@ -407,15 +450,18 @@ export const aggregateHubRehearsalDataForMinistry = `
     WHERE date.date.week = date().week AND date.date.year = date().year AND NOT record:NoService
     WITH DISTINCT ministry, record
     MATCH (ministry)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateRehearsalRecord {id: date().week + '-' + date().year + '-' + log.id, week: date().week, year: date().year})
+    MERGE (aggregate:AggregateRehearsalRecord {id: ministry.id + '-' + toString(date().week) + '-' + toString(date().year)})
+      ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+      SET aggregate.month = date().month
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
-    WITH  ministry, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices, 
-        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance, 
-        round(toFloat(SUM(record.income)), 2) AS totalIncome, 
+    WITH  ministry, aggregate, collect(record.id) AS componentServiceIds,COUNT(DISTINCT record) AS numberOfServices,
+        round(toFloat(SUM(record.attendance)), 2) AS totalAttendance,
+        round(toFloat(SUM(record.income)), 2) AS totalIncome,
         round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
         SET aggregate.attendance = totalAttendance,
         aggregate.income = totalIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
-        aggregate.numberOfServices = numberOfServices 
+        aggregate.numberOfServices = numberOfServices,
+        aggregate.recomputedAt = datetime()
 `

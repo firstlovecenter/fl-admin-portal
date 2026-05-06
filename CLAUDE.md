@@ -151,7 +151,7 @@ Read the relevant file before working on a related area — do not guess.
 | [`kb/03-workflows.md`](kb/03-workflows.md) | W1–W8 — record service, rehearsals, servant changes, arrivals, accounts, reports, login, cache busting |
 | [`kb/04-state-machines.md`](kb/04-state-machines.md) | SM1–SM8 — `transactionStatus`, banking proof, vacation, servant slots, vehicles, expenses, auth, app modal |
 | [`kb/05-data-entities.md`](kb/05-data-entities.md) | Church hierarchy, Member, ServiceRecord, BussingRecord, HistoryLog, Equipment, accounts; constants |
-| [`kb/06-adr.md`](kb/06-adr.md) | ADR-001…013 — duplicated permissions, custom JWT, Bootstrap, route arrays, financial truth, servant factory, useClickCard, idempotent aggregation, absolute imports, no tests, ADR-011 superseded (@jaedag removed), parameterised Cypher, test-first refactors |
+| [`kb/06-adr.md`](kb/06-adr.md) | ADR-001…014 — duplicated permissions, custom JWT, Bootstrap, route arrays, financial truth, servant factory, useClickCard, idempotent aggregation, absolute imports, no tests, ADR-011 superseded (@jaedag removed), parameterised Cypher, test-first refactors, weekly aggregate keying / Model-A snapshots |
 | [`kb/07-test-accounts.md`](kb/07-test-accounts.md) | Test login credentials for all roles (Bacenta, Creative Arts, Arrivals, Banking). Password: `password`. Use for Chrome DevTools e2e testing. |
 
 ### `web-react-ts/kb/` (frontend)
@@ -260,6 +260,13 @@ or before `/commit`.
   `api/src/resolvers/permissions.ts` (ADR-001).
 - ❌ **String-interpolated Cypher.** All variable inputs go through `$param`
   bindings (ADR-012).
+- ❌ **Aggregate nodes keyed on `log.id`.** Weekly aggregates
+  (`AggregateServiceRecord`, `AggregateBussingRecord`,
+  `AggregateRehearsalRecord`, `AggregateMinistryMeetingRecord`,
+  `AggregateStageAttendanceRecord`) MUST be keyed
+  `<church.id>-<week>-<year>` and written with `MERGE … SET` (overwrite,
+  never `+=`). Historical aggregates are Model-A snapshots — only the
+  current week is recomputed. ADR-014.
 - ❌ **Hand-rolled `MakeXLeader` / `RemoveXLeader` resolvers.** Add a single
   line to `api/src/resolvers/directory/servant-config.ts` (ADR-006).
 - ❌ **Skipping `isAuth(...)` in a resolver.** It must be the first line of

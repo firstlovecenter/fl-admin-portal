@@ -21,12 +21,26 @@ treasurers, then a `tellerStream` for confirmation.
 2. Frontend submits the `RecordService` mutation with attendance, income, foreign
    currency, treasurers (Member IDs), treasurer selfie, family picture.
 3. Resolver runs `isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)`.
-4. Resolver auto-creates a `ServiceLog` for the Bacenta if missing, then writes the
-   `ServiceRecord` and links it via `(ServiceLog)-[:HAS_SERVICE]->(record)`.
-5. Resolver appends a `HistoryLog` and links it to the Bacenta.
-6. `service-graph-aggregator` Lambda (or scheduled run) propagates attendance /
-   income totals upward through Governorship → Council → Stream → Campus.
-7. Leader returns later to bank: chooses self-banking (Paystack momo) or manual
+4. Resolver auto-creates a `ServiceLog` for the Bacenta if missing.
+5. **Inside one atomic `session.executeWrite` transaction (ADR-005, ADR-014):**
+   1. `recordService` writes the `ServiceRecord` and links it via
+      `(ServiceLog)-[:HAS_SERVICE]->(record)`. HistoryLog entry written.
+   2. `absorbAllTransactions` folds any pending Paystack online giving
+      into the new `ServiceRecord`'s income.
+   3. `recomputeAggregateChainAfterServiceRecord` runs four `CALL { ... }`
+      subqueries — one per supported parent rollup (Bacenta→Governorship,
+      Governorship→Council, Council→Stream, Stream→Campus). Each is gated
+      on the **exact** submitting label so exactly one parent recompute
+      runs per submission. The submitter's own level is not written
+      synchronously — that's the lambda's job. Aggregates are keyed
+      `<target.id>-<week>-<year>` on the service date's week (ADR-014).
+6. Once the resolver returns, the immediate parent has a fresh aggregate.
+7. The `service-graph-aggregator` and `bacenta-graph-aggregator` Lambdas
+   (every 30 minutes) are the **primary writer for general aggregation**:
+   they re-roll Governorship → Council → Stream → Campus → Oversight →
+   Denomination from live ServiceRecords. Every level above the
+   submission's immediate parent picks up the change at the next run.
+8. Leader returns later to bank: chooses self-banking (Paystack momo) or manual
    slip upload.
    - **Self-banking:** `BankServiceOffering` mutation initiates Paystack debit;
      `transactionStatus` flows `pending` → `success` (or `failed`, or `send OTP`).
@@ -37,7 +51,7 @@ treasurers, then a `tellerStream` for confirmation.
 **Post-conditions:**
 - Bacenta has a new `ServiceRecord` for the week.
 - The week is no longer counted as a defaulter for that Bacenta.
-- Aggregates rolled up the hierarchy.
+- Every level's weekly aggregate (leaf → Denomination) is up to date.
 - HistoryLog entry written.
 
 **Cancel path:** If no service was held, the leader files a `RecordCancelledService`
@@ -141,6 +155,13 @@ Lambdas (also runnable as CLI scripts under `api/src/scripts/`):
 - `service-graph-aggregator` / `bacenta-graph-aggregator` — aggregate
   service / bussing data upward through the hierarchy. Must be **idempotent**:
   re-running for an already-aggregated week must not double-count.
+  Aggregate nodes are keyed on `<church.id>-<week>-<year>` and written with
+  `MERGE … SET` (overwrite, never `+=`). Only the **current week** is
+  recomputed; historical aggregates are Model-A snapshots and are not
+  rewritten when a Bacenta is transferred between Governorships. Per
+  ADR-014 these lambdas are the **primary writer for general aggregation**
+  — `recordService` only synchronously updates the leaf and the immediate
+  parent; the lambda fills in every level above. See ADR-014.
 - `payment-webhook` — Paystack callback handler that promotes a service's
   `transactionStatus` from `pending` to `success` / `failed`.
 

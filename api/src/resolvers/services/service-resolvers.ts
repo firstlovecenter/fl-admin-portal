@@ -14,6 +14,7 @@ import {
   checkFormFilledThisWeek,
   getCurrency,
   getServantAndChurch as getServantAndChurchCypher,
+  recomputeAggregateChainAfterServiceRecord,
   recordCancelledService,
   recordService,
   getHigherChurches,
@@ -138,32 +139,46 @@ const serviceMutation = {
         throw new Error(errorMessage.vacation_cannot_fill_service)
       }
 
+      // All four writes (record + absorb + leaf-recompute + parent-recompute)
+      // run in a single transaction so a failure mid-flow rolls everything
+      // back. ADR-005 idempotency for money-bearing flows.
       const cypherResponse = await session
-        .executeWrite((tx) =>
-          tx.run(recordService, {
+        .executeWrite(async (tx) => {
+          const createRes = await tx.run(recordService, {
             ...args,
             conversionRateToDollar: currencyCheck.conversionRateToDollar,
             jwt: context.jwt,
           })
-        )
-        .catch((error: any) => throwToSentry('Error Recording Service', error))
 
-      if (!cypherResponse.records || cypherResponse.records.length === 0) {
-        throw new Error(
-          'Service record could not be created. Please ensure the church is a Bacenta, Governorship, Council, or Stream.'
-        )
-      }
+          if (!createRes.records || createRes.records.length === 0) {
+            throw new Error(
+              'Service record could not be created. Please ensure the church is a Bacenta, Governorship, Council, or Stream.'
+            )
+          }
 
-      const serviceRecordId =
-        cypherResponse.records[0].get('serviceRecord').properties.id
+          const serviceRecordId =
+            createRes.records[0].get('serviceRecord').properties.id
 
-      await session.executeWrite((tx) =>
-        tx.run(absorbAllTransactions, {
-          ...args,
-          conversionRateToDollar: currencyCheck.conversionRateToDollar,
-          serviceRecordId,
+          await tx.run(absorbAllTransactions, {
+            ...args,
+            conversionRateToDollar: currencyCheck.conversionRateToDollar,
+            serviceRecordId,
+          })
+
+          // Sync recompute: ONLY the immediate parent of the submitting
+          // church (Bacenta→Gov, Gov→Council, Council→Stream, Stream→Campus).
+          // Each subquery is gated on the exact submitting label and is a
+          // no-op otherwise. The lambda remains the primary writer for
+          // general aggregation — this exists purely so the parent
+          // dashboard updates live without waiting for the next lambda run.
+          await tx.run(recomputeAggregateChainAfterServiceRecord, {
+            churchId: args.churchId,
+            serviceRecordId,
+          })
+
+          return createRes
         })
-      )
+        .catch((error: any) => throwToSentry('Error Recording Service', error))
 
       const serviceDetails = rearrangeCypherObject(cypherResponse)
 
@@ -211,25 +226,36 @@ const serviceMutation = {
       }
 
       const cypherResponse = await session
-        .executeWrite((tx) =>
-          tx.run(recordSpecialService, {
+        .executeWrite(async (tx) => {
+          const createRes = await tx.run(recordSpecialService, {
             ...args,
             conversionRateToDollar: currencyCheck.conversionRateToDollar,
             jwt: context.jwt,
           })
-        )
-        .catch((error: any) => throwToSentry('Error Recording Service', error))
 
-      const serviceRecordId =
-        cypherResponse.records[0].get('serviceRecord').properties.id
+          if (!createRes.records || createRes.records.length === 0) {
+            throw new Error(
+              'Special service record could not be created. Please ensure the church is a Fellowship, Bacenta, Governorship, Council, or Stream.'
+            )
+          }
 
-      await session.executeWrite((tx) =>
-        tx.run(absorbAllTransactions, {
-          ...args,
-          conversionRateToDollar: currencyCheck.conversionRateToDollar,
-          serviceRecordId,
+          const serviceRecordId =
+            createRes.records[0].get('serviceRecord').properties.id
+
+          await tx.run(absorbAllTransactions, {
+            ...args,
+            conversionRateToDollar: currencyCheck.conversionRateToDollar,
+            serviceRecordId,
+          })
+
+          await tx.run(recomputeAggregateChainAfterServiceRecord, {
+            churchId: args.churchId,
+            serviceRecordId,
+          })
+
+          return createRes
         })
-      )
+        .catch((error: any) => throwToSentry('Error Recording Service', error))
 
       const serviceDetails = rearrangeCypherObject(cypherResponse)
 

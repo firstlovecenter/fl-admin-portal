@@ -44,10 +44,22 @@ exports.createBacentaAggregationConstraints = async (driver) => {
       `CREATE CONSTRAINT bussing_record_id_unique IF NOT EXISTS 
        FOR (r:BussingRecord) REQUIRE r.id IS UNIQUE`,
 
-      `CREATE CONSTRAINT aggregate_bussing_record_id_unique IF NOT EXISTS 
+      `CREATE CONSTRAINT aggregate_bussing_record_id_unique IF NOT EXISTS
        FOR (a:AggregateBussingRecord) REQUIRE a.id IS UNIQUE`,
 
-      `CREATE CONSTRAINT time_graph_date_unique IF NOT EXISTS 
+      `CREATE CONSTRAINT aggregate_service_record_id_unique IF NOT EXISTS
+       FOR (a:AggregateServiceRecord) REQUIRE a.id IS UNIQUE`,
+
+      `CREATE CONSTRAINT aggregate_rehearsal_record_id_unique IF NOT EXISTS
+       FOR (a:AggregateRehearsalRecord) REQUIRE a.id IS UNIQUE`,
+
+      `CREATE CONSTRAINT aggregate_ministry_meeting_record_id_unique IF NOT EXISTS
+       FOR (a:AggregateMinistryMeetingRecord) REQUIRE a.id IS UNIQUE`,
+
+      `CREATE CONSTRAINT aggregate_stage_attendance_record_id_unique IF NOT EXISTS
+       FOR (a:AggregateStageAttendanceRecord) REQUIRE a.id IS UNIQUE`,
+
+      `CREATE CONSTRAINT time_graph_date_unique IF NOT EXISTS
        FOR (t:TimeGraph) REQUIRE t.date IS UNIQUE`,
     ]
 

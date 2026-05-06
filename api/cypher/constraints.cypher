@@ -109,6 +109,11 @@ CREATE CONSTRAINT uniqueOccupation IF NOT EXISTS ON (o:Occupation) ASSERT o.id I
 CREATE CONSTRAINT uniqueServiceLog IF NOT EXISTS ON (s:ServiceLog) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueServiceRecord IF NOT EXISTS ON (s:ServiceRecord) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueServiceRecordTransaction IF NOT EXISTS ON (s:ServiceRecord) ASSERT s.transactionReference IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateServiceRecord IF NOT EXISTS ON (a:AggregateServiceRecord) ASSERT a.id IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateBussingRecord IF NOT EXISTS ON (a:AggregateBussingRecord) ASSERT a.id IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateRehearsalRecord IF NOT EXISTS ON (a:AggregateRehearsalRecord) ASSERT a.id IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateMinistryMeetingRecord IF NOT EXISTS ON (a:AggregateMinistryMeetingRecord) ASSERT a.id IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateStageAttendanceRecord IF NOT EXISTS ON (a:AggregateStageAttendanceRecord) ASSERT a.id IS UNIQUE;
 
 CREATE CONSTRAINT uniqueClosedBacenta IF NOT EXISTS ON (c:ClosedBacenta) ASSERT c.id IS UNIQUE;
 CREATE CONSTRAINT uniqueNoService IF NOT EXISTS ON (n:NoService) ASSERT n.id IS UNIQUE;

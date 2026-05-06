@@ -360,3 +360,129 @@ handling, banking proof, etc.).
   parallel work mixed in.
 - Old code without tests stays untested until it is refactored or extended.
   We do not write a backfill suite for unchanged code.
+
+---
+
+## ADR-014 — Weekly aggregates are keyed on `(church.id, week, year)` and are Model-A snapshots
+
+**Status:** Accepted (2026-05-06). Refines ADR-008.
+
+**Context:** Every higher church (Governorship, Council, Stream, Campus, Oversight,
+Denomination, Hub, HubCouncil, Ministry, CreativeArts) gets a new `:ServiceLog`
+node every time its leadership rotates (via the servant-config flow — see ADR-006
+and `directory/servant-cypher.ts`). Aggregate nodes were previously keyed
+`<week>-<year>-<log.id>`, so each leader tenure produced its own aggregate node
+for the same week. Because the FE @cypher resolvers in `aggregates.graphql` walk
+`(this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate)` —
+i.e. every ServiceLog the church has ever had — multiple aggregates for the same
+(church, week) were returned and the line graphs showed duplicate points.
+
+The form-time aggregate write in `recordService` / `recordSpecialService` was
+also additive (`aggregate.attendance = aggregateAttendance + attendance`), which
+double-counted on retry and conflicted with the lambda's overwrite semantics.
+
+Aggregates also need to be stable under hierarchy changes: when a Bacenta is
+transferred from one Governorship to another, **historical aggregates must not
+move**. A week-12 aggregate computed when the Bacenta was under X should remain
+attributed to X, even after the transfer.
+
+**Decision:**
+
+1. **Aggregate id format** is `<church.id>-<week>-<year>` (with `toString()`
+   applied to the integer week and year). One canonical node per
+   `(church × week × year)`. Applies to:
+   - `AggregateServiceRecord`
+   - `AggregateBussingRecord`
+   - `AggregateRehearsalRecord`
+   - `AggregateMinistryMeetingRecord`
+   - `AggregateStageAttendanceRecord`
+
+2. **The `(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate)` relationship is
+   preserved.** The historical drill-down ("what did this church look like
+   under Leader A's tenure") relies on it. After the id change, both the old
+   and new ServiceLogs `MERGE` to the same aggregate node for any given
+   (church, week, year), so the relationship is fan-in rather than a duplicate.
+
+3. **FE @cypher resolvers in `aggregates.graphql` dedup by `(week, year)`
+   using `recomputedAt DESC NULLS LAST`.** Pattern:
+   ```cypher
+   MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
+   WHERE aggregate.year = date().year OR aggregate.year = date().year - 1
+   WITH aggregate ORDER BY aggregate.recomputedAt DESC NULLS LAST
+   WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
+   RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+   ```
+   New aggregates carry `recomputedAt: datetime()`; legacy old-format
+   aggregates do not, so they always lose to fresh writes. This means the
+   re-keying does NOT require a data migration to take effect — old nodes
+   coexist harmlessly until they're cleaned up (or never).
+
+4. **All aggregate writes use `SET` (overwrite), never `+= / append`.**
+   The old additive form-time write is removed from `recordService`,
+   `recordSpecialService`, `absorbAllTransactions`, and the rehearsal record
+   mutations. ADR-008 idempotency is restated and tightened: every write is
+   a full overwrite of the aggregated values, and every write stamps
+   `recomputedAt: datetime()`.
+
+5. **Attribution model is Model A (snapshot).** The lambda only recomputes
+   the **current week**. Historical aggregates are frozen at the org structure
+   that existed when they were last written. A Bacenta transfer therefore
+   does not retroactively rewrite past weeks for the old or new Governorship.
+   The Bacenta's own data (its `ServiceRecord` nodes and its own per-week
+   aggregate) lives on its own ServiceLog and is unaffected by transfers.
+
+6. **Synchronous compute is exactly ONE aggregate write: the immediate
+   parent of the submitter.** When `recordService` / `recordSpecialService`
+   is called, the resolver wraps three writes inside a single
+   `session.executeWrite` so a failure anywhere rolls everything back
+   (ADR-005 idempotency for money-bearing flows):
+   1. `recordService` (creates the `ServiceRecord`).
+   2. `absorbAllTransactions` (folds online giving into the record).
+   3. `recomputeAggregateChainAfterServiceRecord` — a single Cypher with
+      four `CALL { ... }` subqueries, one per immediate-parent pair:
+      - **Bacenta → Governorship** (only when `church:Bacenta`).
+      - **Governorship → Council** (only when `church:Governorship`).
+      - **Council → Stream** (only when `church:Council`).
+      - **Stream → Campus** (only when `church:Stream`).
+
+      Each subquery is gated by `OPTIONAL MATCH (:<Label> {id: $churchId})
+      <-[:HAS]-(target:<ParentLabel>)` so at most one parent rollup fires
+      per submission; the other three are no-ops. The submitter's OWN
+      level is not written synchronously — that is the lambda's job.
+
+   The week/year are taken from the just-created ServiceRecord's
+   `serviceDate` so back-dated and future-dated records land in the
+   correct weekly bucket.
+
+7. **The lambda is the primary writer for general aggregation.** It runs
+   every 30 minutes (`service-graph-aggregator`, `bacenta-graph-aggregator`)
+   and recomputes Governorship → Council → Stream → Campus → Oversight →
+   Denomination from live ServiceRecords. The synchronous immediate-parent
+   write is purely a UX optimisation so the leader sees the parent
+   dashboard reflect their submission instantly. Every other level — the
+   submitter's own and every level above the immediate parent — picks up
+   the change on the next lambda run.
+
+8. **Uniqueness constraints** are present in `api/cypher/constraints.cypher`
+   and `api/src/db/constraints/bacenta-aggregation-constraints.js` for every
+   aggregate label, but they are defence-in-depth only. They are NOT
+   load-bearing because the `(week, year)` dedup in the FE @cypher
+   absorbs duplicate nodes.
+
+9. **Migration is OPTIONAL.** `api/cypher/migrate-aggregate-ids.cypher`
+   deletes all aggregate nodes keyed under the old format. Skip it unless
+   you also want to apply the strict uniqueness constraints (which would
+   otherwise fail) or reclaim disk space. The system is correct without it.
+
+**Consequences:**
+- Duplicate graph points are eliminated structurally, not by FE-side dedup.
+- Lambda runs are now safely re-runnable: same key, same set, same result.
+- Bacenta-level submissions update the parent Governorship in real time.
+  Higher-level leaders (Governorship, Council, Stream) recording their own
+  direct service still see lambda-driven roll-ups (worst case ~1 hour
+  staleness).
+- Historical drill-down via `(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate)`
+  still works — multiple logs can fan in to the same aggregate node, which
+  is the correct semantic for Model A.
+- `recomputedAt: datetime()` is now stamped on every aggregate write, giving
+  ops a way to reason about how fresh a given aggregate is.

@@ -128,6 +128,76 @@ checks or business logic.
 - The Neo4j driver's `session()` must be `await`ed via `.close()` even on
   errors — otherwise the connection pool leaks.
 
+## Weekly aggregate writes (Model A, ADR-014)
+
+Every weekly rollup node — `AggregateServiceRecord`, `AggregateBussingRecord`,
+`AggregateRehearsalRecord`, `AggregateMinistryMeetingRecord`,
+`AggregateStageAttendanceRecord` — follows the same shape:
+
+```cypher
+// church is the church node at the level being aggregated
+MERGE (aggregate:AggregateXxxRecord {
+  id: church.id + '-' + toString(date().week) + '-' + toString(date().year)
+})
+  ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+  SET aggregate.month = date().month
+MERGE (currentLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
+
+SET aggregate.attendance = totalAttendance,
+    aggregate.income = totalIncome,
+    aggregate.dollarIncome = totalDollarIncome,
+    aggregate.componentServiceIds = componentServiceIds,
+    aggregate.numberOfServices = numberOfServices,
+    aggregate.recomputedAt = datetime()
+```
+
+Rules:
+
+- **Id format is `<church.id>-<week>-<year>`**, with `toString()` applied to the
+  integer week and year. Stable across leadership changes, so the lambda's
+  `MERGE` always finds the same node regardless of which `:ServiceLog` is
+  current. ADR-014.
+- **Always overwrite, never accumulate.** No `aggregate.attendance + record.attendance`.
+  Resubmissions and lambda re-runs must produce the same final value.
+- **Always stamp `recomputedAt: datetime()`** so ops can reason about freshness.
+- **Use the date the service was held**, not necessarily today's date. For
+  form-time writes, take it from the `serviceDate:TimeGraph` node so the key
+  matches the week the service belongs to (matters when a leader records a
+  back-dated service).
+- **`(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(:AggregateXxxRecord)` is preserved.**
+  Multiple ServiceLogs (one per leader tenure) fan in to the same aggregate
+  node. Historical drill-down via a specific ServiceLog still works.
+- **FE-facing `@cypher` blocks dedup by `(week, year)` using
+  `recomputedAt`:**
+  ```cypher
+  MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:Aggregate…Record)
+  WHERE aggregate.year = date().year OR aggregate.year = date().year - 1
+  WITH aggregate ORDER BY aggregate.recomputedAt DESC NULLS LAST
+  WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
+  RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+  ```
+  Newly written nodes carry a `recomputedAt` timestamp; legacy
+  `<week>-<year>-<log.id>`-keyed nodes do not. `DESC NULLS LAST` ranks the
+  fresh nodes first, so they always win. This dedup is what makes the
+  re-keying safe to ship without a data migration.
+- **Lambda recomputes only the current week.** Historical aggregates are
+  frozen Model-A snapshots; transfers do not retroactively rewrite them.
+- **Synchronous immediate-parent recompute** runs inside the same
+  transaction as `recordService` — see
+  `recomputeAggregateChainAfterServiceRecord` in
+  `api/src/resolvers/services/service-cypher.ts`. Four `CALL { ... }`
+  subqueries, one per supported parent pair: Bacenta→Governorship,
+  Governorship→Council, Council→Stream, Stream→Campus. Each is gated on
+  the exact submitting label so exactly one parent rollup fires per
+  submission. The submitter's own level is NOT written synchronously —
+  the lambda is the primary writer for every level except the immediate
+  parent of the submission.
+
+The migration script `api/cypher/migrate-aggregate-ids.cypher` is now
+**optional** — only run it if you also want the strict uniqueness
+constraints in `constraints.cypher` to be applicable, or to reclaim disk
+space from orphaned old-format nodes.
+
 ## Validating a change locally
 
 1. `cd api && npm run start:dev` — watches files, rebuilds schema on save.

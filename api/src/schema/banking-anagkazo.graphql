@@ -104,10 +104,11 @@ extend type Governorship {
       OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
       WHERE agg.week = $week AND agg.year = date().year
 
+      WITH this, list, income, attendance, agg ORDER BY agg.recomputedAt DESC NULLS LAST
       WITH this, list, income, attendance, head(collect(agg)) AS agg
 
       RETURN {
-        id: coalesce(agg.id, toString($week) + '-' + toString(date().year) + '-' + this.id),
+        id: coalesce(agg.id, this.id + '-' + toString($week) + '-' + toString(date().year)),
         attendance: attendance,
         income: income,
         week: $week,
