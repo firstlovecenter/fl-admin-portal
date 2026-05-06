@@ -52,8 +52,8 @@ Before designing, read what already exists:
   plus UI.
 - For routes, follow ADR-004: lazy-loaded entries in the section's
   `*Routes.ts`. Check `web-react-ts/kb/03-routing-and-permissions.md`.
-- For shared types, check `@jaedag/admin-portal-types` and
-  `@jaedag/admin-portal-api-core` (ADR-011) before declaring a new type.
+- For shared types, check `web-react-ts/src/global-types.ts` (FE) and
+  `api/src/resolvers/utils/types.ts` (BE) before declaring a new type.
 
 State your findings: "I will reuse X, Y, Z. I will need to add A, B."
 

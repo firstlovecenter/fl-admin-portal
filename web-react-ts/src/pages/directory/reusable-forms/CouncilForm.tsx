@@ -23,14 +23,13 @@ import Input from 'components/formik/Input'
 import SearchMember from 'components/formik/SearchMember'
 import SearchGovernorship from 'components/formik/SearchGovernorship'
 import { FormikInitialValues } from 'components/formik/formik-types'
-import { Governorship, HubCouncil } from 'global-types'
+import { Governorship, HubCouncil, Stream } from 'global-types'
 import {
   MOVE_GOVERNORSHIP_TO_COUNCIL,
   MOVE_HUBCOUNCIL_TO_COUNCIL,
 } from '../update/UpdateMutations'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import { DISPLAY_COUNCIL, DISPLAY_STREAM } from '../display/ReadQueries'
-import { Stream } from '@jaedag/admin-portal-types'
 import BtnSubmitText from 'components/formik/BtnSubmitText'
 import SearchHubCouncil from 'components/formik/SearchHubCouncil'
 

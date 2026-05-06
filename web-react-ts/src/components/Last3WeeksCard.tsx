@@ -1,4 +1,4 @@
-import { getWeekNumber } from '@jaedag/admin-portal-types'
+import { getWeekNumber } from 'global-utils'
 import { cn } from 'components/lib/utils'
 import { VacationStatusOptions } from 'global-types'
 

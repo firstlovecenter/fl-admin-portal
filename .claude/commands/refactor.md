@@ -26,7 +26,7 @@ Restate the change in your own words. Capture, explicitly:
   arrivals page", **block** and ask them to pick a single file or symbol.
 - **Move** — which of the allowed moves from the `refactor` agent's
   contract: rename, extract, inline, dedupe, replace conditional with
-  lookup / polymorphism, move file, tighten types, swap to `@jaedag/*`,
+  lookup / polymorphism, move file, tighten types,
   class→function. If the move is not on that list, **block** and ask the
   user whether they actually want `/fix`, `/implement`, or `/design`.
 - **Rationale** — why now? Two duplicate call sites? An upcoming feature

@@ -15,7 +15,7 @@ import {
   IconBuildingBank,
   type Icon as TablerIcon,
 } from '@tabler/icons-react'
-import { getWeekNumber } from '@jaedag/admin-portal-types'
+import { getWeekNumber } from 'global-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'

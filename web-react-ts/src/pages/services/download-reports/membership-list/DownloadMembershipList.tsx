@@ -5,7 +5,7 @@ import { Church, Member } from 'global-types'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import { Button, Container } from 'react-bootstrap'
 import { CSVLink } from 'react-csv'
-import { getHumanReadableDate } from '@jaedag/admin-portal-types'
+import { getHumanReadableDate } from 'global-utils'
 import { ArrowDownCircle } from 'react-bootstrap-icons'
 
 const formatDate = (dateString: string) => {

@@ -66,13 +66,10 @@ KB wins — write the test against the KB, mark the code as the bug.
 - Test runner: **Jest** with `babel-jest` (reusing `api/babel.config.js`).
   Config at `api/jest.config.js`. No separate ts-jest pipeline — tests
   use the same transformer as the production build.
-  - The Jest config's `transformIgnorePatterns` is set to
-    `/node_modules/(?!@jaedag/)` so `@jaedag/admin-portal-types` and
-    `@jaedag/admin-portal-api-core` get transpiled by Babel even though
-    they live under `node_modules`. If you write a test that imports
-    from a different scoped package that ships untranspiled ESM and you
-    hit "unexpected token export", widen the negation rather than
-    inlining `transform` overrides per-test.
+  - If you import from a `node_modules` package that ships untranspiled
+    ESM and hit "unexpected token export", set
+    `transformIgnorePatterns: ['/node_modules/(?!<scope>/)']` in the
+    Jest config rather than inlining `transform` overrides per-test.
 - Resolver unit tests:
   - Mock the `neo4j-driver` session per test. Assert (a) the Cypher string
     issued, (b) the params passed, (c) the resolver's return value given a

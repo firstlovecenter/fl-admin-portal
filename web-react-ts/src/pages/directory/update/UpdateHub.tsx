@@ -1,7 +1,11 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
-import { alertMsg, throwToSentry } from '../../../global-utils'
+import {
+  alertMsg,
+  repackDecimals,
+  throwToSentry,
+} from '../../../global-utils'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import { DISPLAY_HUB } from '../display/ReadQueries'
 import { LOG_HUB_HISTORY } from './LogMutations'
@@ -12,7 +16,6 @@ import { FormikHelpers } from 'formik'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { GET_HUBCOUNCIL_HUBS } from 'queries/ListQueries'
 import { UPDATE_HUB_MUTATION } from './UpdateSontaMutations'
-import { repackDecimals } from '@jaedag/admin-portal-types'
 
 const UpdateHub = () => {
   const { hubId } = useContext(ChurchContext)

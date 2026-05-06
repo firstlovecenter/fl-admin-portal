@@ -246,12 +246,21 @@ Defined in `web-react-ts/src/global-utils.ts`:
 | `SHORT_POLL_INTERVAL` | 30_000 |
 | `YES_NO_OPTIONS`, `GENDER_OPTIONS`, `MARITAL_STATUS_OPTIONS`, `VACATION_OPTIONS`, `VACATION_ONLINE_OPTIONS`, `TITLE_OPTIONS`, `SERVICE_DAY_OPTIONS`, `STREAM_SERVICE_DAY_OPTIONS` | Formik select options — reuse them, do not re-declare |
 
-## What lives in the private `@jaedag` packages
+## Where shared types and utilities live
 
-- `@jaedag/admin-portal-types` — shared TypeScript types (`AuthUser`, `last3Weeks`,
-  more). Used by both packages. **Do not duplicate types into the local repo if
-  they already live here.**
-- `@jaedag/admin-portal-api-core` — shared backend utilities. If you find yourself
-  writing a generic helper, check this package first.
+- Frontend types: `web-react-ts/src/global-types.ts` (`Member`, `Church`,
+  `Stream`, `Role`, `ServiceRecord`, etc.). Reuse, do not duplicate.
+- Frontend utilities: `web-react-ts/src/global-utils.ts` (date helpers like
+  `getWeekNumber`, `last3Weeks`, `getHumanReadableDate`,
+  `getHumanReadableDateTime`; financial helpers like `repackDecimals`; auth
+  helpers like `isAuthorised`). Reuse, do not duplicate.
+- Backend utilities: `api/src/resolvers/utils/utils.ts` (`isAuth`,
+  `throwToSentry`, `rearrangeCypherObject`, `checkIfArrayHasRepeatingValues`)
+  and `api/src/resolvers/utils/financial-utils.ts` (`getMobileCode`,
+  `padNumbers`).
+- Permission helpers: mirrored between
+  `web-react-ts/src/permission-utils.ts` and
+  `api/src/resolvers/permissions.ts` per ADR-001.
 
-Both come from a private GitHub Packages registry under the `@jaedag` scope.
+The `@jaedag/admin-portal-types` and `@jaedag/admin-portal-api-core` private
+packages were removed in the deprecation of ADR-011.

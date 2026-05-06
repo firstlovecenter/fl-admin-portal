@@ -66,7 +66,7 @@ Build in this order; validate at each step.
 ### 3b. Frontend types (if any local-only types)
 
 - Co-located file: `pages/<section>/<feature>-types.ts`. Reuse from
-  `global-types.ts` and `@jaedag/admin-portal-types` first.
+  `global-types.ts` first.
 
 ### 3c. GraphQL operations
 

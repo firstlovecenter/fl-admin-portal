@@ -12,12 +12,11 @@ import usePopup from 'hooks/usePopup'
 import { CONFIRM_BANKING } from './Treasury.gql'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { DISPLAY_AGGREGATE_SERVICE_RECORD } from 'pages/services/record-service/RecordServiceMutations'
-import { alertMsg, throwToSentry } from 'global-utils'
+import { alertMsg, getWeekNumber, throwToSentry } from 'global-utils'
 import Popup from 'components/Popup/Popup'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import Input from 'components/formik/Input'
 import './TellerSelect.css'
-import { getWeekNumber } from '@jaedag/admin-portal-types'
 import { Church } from 'global-types'
 
 type FormOptions = {

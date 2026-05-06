@@ -13,7 +13,6 @@ This document summarizes all changes made to configure the project for AWS Ampli
 #### 1. **`amplify.yml`** - Amplify Build Configuration
 
 - Fetches secrets from AWS Secrets Manager
-- Configures GitHub Packages authentication for `@jaedag/admin-portal-types`
 - Runs frontend build with Vite
 - Caches `node_modules` at both root and `web-react-ts/` levels
 - Output: `web-react-ts/dist/`
@@ -21,7 +20,7 @@ This document summarizes all changes made to configure the project for AWS Ampli
 #### 2. **`web-react-ts/.env.example`** - Environment Variables Template
 
 - Template for all required VITE\_\* variables
-- Auth0, Cloudinary, Google Maps, Sentry, GitHub token
+- Auth0, Cloudinary, Google Maps, Sentry
 - Instructions for local development
 
 ### Documentation Files
@@ -50,14 +49,7 @@ This document summarizes all changes made to configure the project for AWS Ampli
 - Updating secrets
 - Security best practices
 
-#### 6. **`docs/GITHUB_PACKAGES_AUTH.md`** - GitHub Packages Authentication
-
-- How to create GitHub Personal Access Token
-- Configure Amplify environment variable
-- How `.npmrc` is auto-generated
-- Troubleshooting 401 errors
-
-#### 7. **`docs/IAM_PERMISSIONS_GUIDE.md`** - IAM Permissions Step-by-Step
+#### 6. **`docs/IAM_PERMISSIONS_GUIDE.md`** - IAM Permissions Step-by-Step
 
 - Finding your Amplify service role
 - Adding IAM permissions to read Secrets Manager
@@ -130,9 +122,6 @@ amplify-artifacts.json
 
    # Extract VITE_* variables
    python3 -c "... parse JSON and create .env ..."
-
-   # Create .npmrc for GitHub Packages
-   echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
    ```
 
 2. **Build Phase**:
@@ -219,7 +208,6 @@ Users copy `.env.example` to `.env.local` and fill in values manually.
 | **Deployment Time**       | ~3-5 min                      | ~3-5 min (Amplify) + unchanged API time |
 | **CDN**                   | Netlify CDN                   | AWS CloudFront                          |
 | **Environment Variables** | Netlify UI or Doppler         | AWS Secrets Manager (JSON)              |
-| **GitHub Packages Auth**  | Not configured                | Automatic via `.npmrc` in build         |
 
 ---
 
@@ -244,7 +232,6 @@ git push origin dev
 
 1. **Create Secrets Manager secret**: `fl-admin-portal/main` with all VITE\_\* variables
 2. **Add IAM permission**: Amplify service role can read secrets
-3. **Set GITHUB_TOKEN**: Amplify environment variable for GitHub Packages
 
 ### 4. Add CORS to API
 
@@ -313,10 +300,9 @@ In Amplify Console → **Rewrites and redirects**:
 ## 🚨 Important Notes
 
 1. **Secrets Manager Setup is Critical**: Without AWS Secrets Manager secret and IAM permissions, builds will fail
-2. **GITHUB_TOKEN Required**: For `@jaedag/admin-portal-types` private package
-3. **CORS Configuration**: Must add Amplify domain to API CORS whitelist
-4. **Environment Variables are Build-Time**: Not runtime - redeploy to change values
-5. **Branch Deployment**: Each branch gets its own preview URL
+2. **CORS Configuration**: Must add Amplify domain to API CORS whitelist
+3. **Environment Variables are Build-Time**: Not runtime - redeploy to change values
+4. **Branch Deployment**: Each branch gets its own preview URL
 
 ---
 
@@ -328,7 +314,6 @@ If you encounter issues:
 2. Review Amplify build logs for exact error
 3. Verify AWS Secrets Manager secret exists and is accessible
 4. Check IAM permissions are properly configured
-5. Ensure GitHub token has `read:packages` scope
 
 ---
 

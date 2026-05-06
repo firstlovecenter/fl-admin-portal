@@ -15,7 +15,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { throwToSentry } from 'global-utils'
 import SubmitButton from 'components/formik/SubmitButton'
 import SearchHub from 'components/formik/SearchHub'
-import { Church } from '@jaedag/admin-portal-types'
+import { Church } from 'global-types'
 
 const MakeHubFellowship = () => {
   const { clickCard, fellowshipId } = useContext(ChurchContext)

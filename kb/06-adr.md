@@ -22,8 +22,7 @@ permission helper MUST be applied to both files in the same PR.
 **Consequences:**
 - Drift causes silent UX/security bugs (UI hides what the API allows, or vice
   versa). The API is the security boundary; the UI is cosmetic.
-- A future migration could move both copies into `@jaedag/admin-portal-api-core`
-  or a new shared package.
+- A future migration could move both copies into a new shared internal package.
 
 ---
 
@@ -212,18 +211,29 @@ is refactored or extended.
 
 ## ADR-011 — `@jaedag/admin-portal-types` and `-api-core` are private packages
 
-**Status:** Accepted
+**Status:** Superseded — `@jaedag` packages have been removed from the project.
 
-**Context:** Shared types live in `@jaedag/admin-portal-types`; shared backend
-helpers live in `@jaedag/admin-portal-api-core`. Both are published to GitHub
-Packages under the `@jaedag` scope and require an `NPM_TOKEN` with read access.
+**Context (historical):** Shared types had lived in `@jaedag/admin-portal-types`;
+shared backend helpers in `@jaedag/admin-portal-api-core`. Both were published
+to GitHub Packages under the `@jaedag` scope and required an `NPM_TOKEN` /
+`GITHUB_TOKEN` with `read:packages` scope to install.
 
-**Decision:** Before introducing a new shared type or helper to the local repo,
-check the `@jaedag` packages first. Do not duplicate.
+**Why superseded:** The token requirement created a recurring CI/onboarding
+friction point. Audit showed `admin-portal-api-core` was unused in source
+(zero imports under `api/src/`); `admin-portal-types` was used in 11 frontend
+files for a small set of utility functions (`getWeekNumber`, `last3Weeks`,
+`getHumanReadableDate`, `getHumanReadableDateTime`) and three types
+(`Member`, `Church`, `Stream`). The types already existed locally in
+`web-react-ts/src/global-types.ts`; `repackDecimals` and `isAuthorised` were
+already locally re-implemented in `global-utils.ts`. The remaining four
+utility functions were inlined into `global-utils.ts`, the package deps were
+dropped, and the GitHub Packages auth wiring was removed from `amplify.yml`
+and the two GitHub Actions workflows.
 
-**Consequences:**
-- `amplify.yml` configures the `@jaedag` scope at build time.
-- Local installs require the developer to have access (see CONTRIBUTING.md).
+**Replacement rule:** Shared types and utilities live in
+`web-react-ts/src/global-types.ts` / `global-utils.ts` (frontend) and
+`api/src/resolvers/utils/` (backend). Mirror the FE/BE permission helpers
+manually per ADR-001.
 
 ---
 

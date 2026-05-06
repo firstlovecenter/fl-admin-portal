@@ -6,7 +6,6 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testPathIgnorePatterns: ['/node_modules/', '/build/', '/lambda-package/'],
-  transformIgnorePatterns: ['/node_modules/(?!@jaedag/)'],
   clearMocks: true,
   restoreMocks: true,
   collectCoverageFrom: [

@@ -82,8 +82,6 @@ You make ONE of these changes per dispatch:
 - **Tighten types.** Remove `any`, narrow a union, replace a `Record`
   with a discriminated type. Behavior identical, callers may need
   adjustment.
-- **Replace a custom utility with a `@jaedag/admin-portal-types` /
-  `-api-core` import** where the package already exports it (ADR-011).
 - **Convert a class component to a function component**, or
   `connect()`-style wrappers to hooks, when the migration is mechanical.
 

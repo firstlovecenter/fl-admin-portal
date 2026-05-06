@@ -60,8 +60,7 @@ Amplify auto-detects `amplify.yml` configuration. Click **Save and deploy** to c
   "VITE_WHATSAPP_REG": "https://wa.me/your_link",
   "VITE_GOOGLE_MAPS_API_KEY": "your_google_maps_key",
   "VITE_SYNAGO_GRAPHQL_URI": "https://synago-endpoint",
-  "SENTRY_AUTH_TOKEN": "your_sentry_token",
-  "GITHUB_TOKEN": "ghp_xxxxxxxxxxxxxxxxxxxx"
+  "SENTRY_AUTH_TOKEN": "your_sentry_token"
 }
 ```
 
@@ -94,21 +93,6 @@ Amplify auto-detects `amplify.yml` configuration. Click **Save and deploy** to c
 7. Click **Create policy**
 
 **Wait 2 minutes** for IAM changes to propagate.
-
-#### 2c. Add GitHub Token
-
-In **Amplify Console** → **Environment variables**, add:
-
-- **Key**: `GITHUB_TOKEN`
-- **Value**: Your GitHub Personal Access Token with `read:packages` scope
-
-**How to create GitHub token**:
-
-1. Go to https://github.com/settings/tokens
-2. Click **Generate new token (classic)**
-3. Name it: `AWS Amplify - FL Admin Portal`
-4. Check scope: `read:packages` only
-5. Generate and copy token immediately
 
 ---
 
@@ -168,9 +152,8 @@ In **Amplify Console** → **App settings** → **Rewrites and redirects**:
 ### Build Process
 
 1. **preBuild**: Fetch secrets from AWS Secrets Manager
-2. **preBuild**: Create `.npmrc` for GitHub Packages authentication
-3. **build**: Compile React with Vite
-4. **deploy**: CloudFront CDN distribution
+2. **build**: Compile React with Vite
+3. **deploy**: CloudFront CDN distribution
 
 ### Secret Injection
 
@@ -195,14 +178,13 @@ In **Amplify Console** → **App settings** → **Rewrites and redirects**:
 
 ## Troubleshooting
 
-| Error                                                 | Cause                             | Solution                                |
-| ----------------------------------------------------- | --------------------------------- | --------------------------------------- |
-| **Build fails: "AccessDeniedException"**              | Missing IAM policy                | Add policy (Step 2b), wait 2 min, retry |
-| **"401 Unauthorized" for @jaedag/admin-portal-types** | Missing GitHub token              | Add `GITHUB_TOKEN` env var (Step 2c)    |
-| **"SecretNotFoundException"**                         | Secret name doesn't match config  | Update secret name in `amplify.yml`     |
-| **CORS errors in browser**                            | API doesn't allow Amplify domain  | Update CORS (Step 3) and redeploy API   |
-| **404 on page refresh**                               | SPA routing not configured        | Add redirect rule (Step 4)              |
-| **Blank page**                                        | Environment variables not applied | Redeploy after adding variables         |
+| Error                                    | Cause                             | Solution                                |
+| ---------------------------------------- | --------------------------------- | --------------------------------------- |
+| **Build fails: "AccessDeniedException"** | Missing IAM policy                | Add policy (Step 2b), wait 2 min, retry |
+| **"SecretNotFoundException"**            | Secret name doesn't match config  | Update secret name in `amplify.yml`     |
+| **CORS errors in browser**               | API doesn't allow Amplify domain  | Update CORS (Step 3) and redeploy API   |
+| **404 on page refresh**                  | SPA routing not configured        | Add redirect rule (Step 4)              |
+| **Blank page**                           | Environment variables not applied | Redeploy after adding variables         |
 
 ---
 

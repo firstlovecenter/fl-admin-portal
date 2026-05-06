@@ -1,5 +1,4 @@
 import { ApolloError } from '@apollo/client'
-import { last3Weeks } from '@jaedag/admin-portal-types'
 import {
   ChurchLevel,
   CurrentUser,
@@ -232,6 +231,59 @@ export const authorisedLink = (
 
 export const convertNeoWeekdayToJSWeekday = (neoWeekday: number): number => {
   return neoWeekday === 7 ? 0 : neoWeekday
+}
+
+export const getWeekNumber = (date?: Date | string): number => {
+  const target = typeof date === 'string' ? new Date(date) : date || new Date()
+  target.setHours(0, 0, 0, 0)
+  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7))
+  const firstThursday = new Date(target.getFullYear(), 0, 4)
+  return (
+    1 +
+    Math.ceil(
+      ((target.getTime() - firstThursday.getTime()) / 86400000 -
+        3 +
+        ((firstThursday.getDay() + 6) % 7)) /
+        7
+    )
+  )
+}
+
+export const last3Weeks = (): number[] => {
+  const oneWeekAgo = new Date(Date.now() - 604800000).toString()
+  const twoWeeksAgo = new Date(Date.now() - 1209600000).toString()
+  return [getWeekNumber(), getWeekNumber(oneWeekAgo), getWeekNumber(twoWeeksAgo)]
+}
+
+export const getHumanReadableDate = (
+  date: string,
+  weekday?: true
+): string | undefined => {
+  if (!date) return undefined
+  if (weekday) {
+    return new Date(date).toLocaleDateString('en-gb', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    })
+  }
+  return new Date(date).toLocaleDateString('en-gb', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+export const getHumanReadableDateTime = (date: string): string | undefined => {
+  if (!date) return undefined
+  return new Date(date).toLocaleString('en-gb', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+  })
 }
 
 export const capitalise = (str: string) => {

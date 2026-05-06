@@ -76,7 +76,7 @@ flag the discrepancy.
 ### TypeScript
 - No `any` in new or modified code (existing `any` is tolerated when not
   touched).
-- Reuses types from `global-types.ts` and `@jaedag/admin-portal-types`. No
+- Reuses types from `global-types.ts`. No
   duplicate `Member`, `ChurchLevel`, `Role`, `ServiceRecord` declarations.
 - Function components are arrow-function (lint-enforced).
 - Absolute imports from `src/` (ADR-009). No `../../../` chains.

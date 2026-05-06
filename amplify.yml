@@ -153,7 +153,7 @@ frontend:
 
           on_error () {
             local exit_code="$?"
-            local error_details="*Exit Code:* ${exit_code}\n*Phase:* preBuild\n*Possible Issues:*\n• Dependencies installation failed\n• AWS Secrets Manager access issue\n• GitHub Packages authentication problem"
+            local error_details="*Exit Code:* ${exit_code}\n*Phase:* preBuild\n*Possible Issues:*\n• Dependencies installation failed\n• AWS Secrets Manager access issue"
             slack_notify "preBuild" "failed" "$error_details"
             exit "$exit_code"
           }
@@ -190,16 +190,11 @@ frontend:
             | .[]
           ' > web-react-ts/.env
 
-          # Configure GitHub Packages authentication for @jaedag scope
-          echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
-
           # Install root dependencies
           npm install
 
-          # Install frontend dependencies with GitHub token
+          # Install frontend dependencies
           cd web-react-ts
-          cp ../.npmrc .
           npm install
           cd ..
 

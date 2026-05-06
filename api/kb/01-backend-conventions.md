@@ -156,4 +156,5 @@ Idempotency is required (ADR-008).
   `utils/` or domain `helper-functions.ts` files.
 - Do not bypass `isAuth` even for "read-only" mutations — they're still
   mutations.
-- Do not duplicate types from `@jaedag/admin-portal-types` (ADR-011).
+- Do not duplicate types that already live in `api/src/resolvers/utils/types.ts`
+  or `web-react-ts/src/global-types.ts` (FE counterpart for shared shapes).

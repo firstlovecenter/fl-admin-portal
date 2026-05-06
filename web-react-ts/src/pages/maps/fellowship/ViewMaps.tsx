@@ -6,7 +6,7 @@ import {
   MEMBER_PLACES_SEARCH_BY_LOCATION,
   MEMBER_PLACES_SEARCH_BY_NAME,
 } from './GeoQueries'
-import { isAuthorised } from '@jaedag/admin-portal-types'
+import { isAuthorised } from 'global-utils'
 import { useContext } from 'react'
 import { MemberContext } from 'contexts/MemberContext'
 

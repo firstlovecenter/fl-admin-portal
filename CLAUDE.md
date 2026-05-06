@@ -90,7 +90,6 @@ fl-admin-portal/
 | Linter / formatter | ESLint (Airbnb + react-app + Prettier + import) + Prettier + lint-staged |
 | Type checker | `tsc --noEmit` per package (run via lint-staged) |
 | Deployment | AWS Amplify pulls secrets from `prod/fl-admin-portal` (main) or `dev/fl-admin-portal` (other branches); Slack notifications on build status |
-| Private packages | `@jaedag/admin-portal-types`, `@jaedag/admin-portal-api-core` (GitHub Packages, scope `@jaedag`) |
 
 ---
 
@@ -152,7 +151,7 @@ Read the relevant file before working on a related area — do not guess.
 | [`kb/03-workflows.md`](kb/03-workflows.md) | W1–W8 — record service, rehearsals, servant changes, arrivals, accounts, reports, login, cache busting |
 | [`kb/04-state-machines.md`](kb/04-state-machines.md) | SM1–SM8 — `transactionStatus`, banking proof, vacation, servant slots, vehicles, expenses, auth, app modal |
 | [`kb/05-data-entities.md`](kb/05-data-entities.md) | Church hierarchy, Member, ServiceRecord, BussingRecord, HistoryLog, Equipment, accounts; constants |
-| [`kb/06-adr.md`](kb/06-adr.md) | ADR-001…012 — duplicated permissions, custom JWT, Bootstrap, route arrays, financial truth, servant factory, useClickCard, idempotent aggregation, absolute imports, no tests, @jaedag, parameterised Cypher |
+| [`kb/06-adr.md`](kb/06-adr.md) | ADR-001…013 — duplicated permissions, custom JWT, Bootstrap, route arrays, financial truth, servant factory, useClickCard, idempotent aggregation, absolute imports, no tests, ADR-011 superseded (@jaedag removed), parameterised Cypher, test-first refactors |
 | [`kb/07-test-accounts.md`](kb/07-test-accounts.md) | Test login credentials for all roles (Bacenta, Creative Arts, Arrivals, Banking). Password: `password`. Use for Chrome DevTools e2e testing. |
 
 ### `web-react-ts/kb/` (frontend)

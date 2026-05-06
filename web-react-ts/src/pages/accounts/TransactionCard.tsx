@@ -1,4 +1,4 @@
-import { getHumanReadableDateTime } from '@jaedag/admin-portal-types'
+import { getHumanReadableDateTime } from 'global-utils'
 import React, { useContext } from 'react'
 import { Badge, Card, Col, Row } from 'react-bootstrap'
 import { AccountTransaction } from './transaction-history/transaction-types'
