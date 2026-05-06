@@ -107,7 +107,7 @@ const FormAddVehicleRecord = () => {
                 <Col className="mb-2">
                   <small className="form-text label">Date of Service</small>
                   <HeadingPrimary>
-                    {parseDate(bacenta?.bussing[0].serviceDate.date.toString())}
+                    {parseDate(bacenta?.bussingThisWeek?.serviceDate?.date?.toString())}
                   </HeadingPrimary>
 
                   <Input name="leaderDeclaration" label="Attendance*" />

@@ -31,11 +31,6 @@ export const GOVERNORSHIP_ARRIVALS_DASHBOARD = gql`
       bacentasHaveArrivedCount(arrivalDate: $arrivalDate)
       bussingMembersOnTheWayCount(arrivalDate: $arrivalDate)
       bussingMembersHaveArrivedCount(arrivalDate: $arrivalDate)
-      bussesThatArrivedCount(arrivalDate: $arrivalDate)
-
-      bacentasHaveArrivedCount(arrivalDate: $arrivalDate)
-      bussingMembersOnTheWayCount(arrivalDate: $arrivalDate)
-      bussingMembersHaveArrivedCount(arrivalDate: $arrivalDate)
       bussesOnTheWayCount(arrivalDate: $arrivalDate)
       bussesThatArrivedCount(arrivalDate: $arrivalDate)
     }
@@ -325,6 +320,7 @@ export const BACENTA_ARRIVALS = gql`
           date
         }
         attendance
+        leaderDeclaration
         vehicleRecords {
           id
           vehicle
@@ -521,12 +517,6 @@ export const DISPLAY_VEHICLE_RECORDS = gql`
         arrivalStartTime
         arrivalEndTime
       }
-      bussing(limit: 1) {
-        id
-        vehicleRecords {
-          id
-        }
-      }
     }
   }
 `
@@ -588,12 +578,6 @@ export const DISPLAY_VEHICLE_PAYMENT_RECORDS = gql`
       stream {
         id
         name
-      }
-      bussing(limit: 1) {
-        id
-        vehicleRecords {
-          id
-        }
       }
     }
   }
