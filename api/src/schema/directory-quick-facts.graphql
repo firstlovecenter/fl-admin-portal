@@ -33,7 +33,7 @@ extend type Fellowship {
       RETURN {
         attendance: toInteger(round(avg(record.attendance))),
         income: round(avg(record.income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -135,7 +135,7 @@ extend type Bacenta {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -188,7 +188,7 @@ extend type Governorship {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -259,7 +259,7 @@ extend type Council {
       RETURN {
         attendance: toInteger(round(avg(attendance))),
         income: round(avg(income), 2)
-        }
+        } AS avgFellowshipWeekdayStats
       """
       columnName: "avgFellowshipWeekdayStats"
     )
@@ -279,7 +279,7 @@ extend type Council {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgBacentaWeekdayStats
       """
       columnName: "avgBacentaWeekdayStats"
     )
@@ -299,7 +299,7 @@ extend type Council {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgGovernorshipWeekdayStats
       """
       columnName: "avgGovernorshipWeekdayStats"
     )
@@ -319,7 +319,7 @@ extend type Council {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -409,7 +409,7 @@ extend type Stream {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -429,7 +429,7 @@ extend type Stream {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgCouncilWeekdayStats
       """
       columnName: "avgCouncilWeekdayStats"
     )
@@ -518,7 +518,7 @@ extend type Campus {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgGovernorshipWeekdayStats
       """
       columnName: "avgGovernorshipWeekdayStats"
     )
@@ -555,7 +555,7 @@ extend type Campus {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgStreamWeekdayStats
       """
       columnName: "avgStreamWeekdayStats"
     )
@@ -609,7 +609,7 @@ extend type Campus {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -647,7 +647,7 @@ extend type Oversight {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgCampusWeekdayStats
       """
       columnName: "avgCampusWeekdayStats"
     )

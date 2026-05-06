@@ -25,7 +25,7 @@ extend type Oversight {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(council:Council)
-      RETURN SUM(council.hrAmount)
+      RETURN SUM(council.hrAmount) AS hrAmount
       """
       columnName: "hrAmount"
     )
@@ -33,7 +33,7 @@ extend type Oversight {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(council:Council)
-      RETURN SUM(council.bussingAmount)
+      RETURN SUM(council.bussingAmount) AS bussingAmount
       """
       columnName: "bussingAmount"
     )

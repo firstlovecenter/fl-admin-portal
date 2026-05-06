@@ -1,8 +1,24 @@
 import { showUserReportDialog } from 'global-utils'
 import useModal from 'hooks/useModal'
-import React from 'react'
-import { Button, Card, Container, Modal } from 'react-bootstrap'
-import './ErrorScreen.css'
+import { AlertTriangle, Bug, RefreshCcw, Send } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from 'components/ui/card'
+import { Button } from 'components/ui/button'
+import { Alert, AlertDescription, AlertTitle } from 'components/ui/alert'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { ScrollArea } from 'components/ui/scroll-area'
 
 export interface ApolloError {
   name: string
@@ -54,10 +70,62 @@ interface ErrorScreenProps {
   error: ApolloError | Error | undefined | FirebaseError
 }
 
-const ErrorPage = ({ error }: ErrorScreenProps) => {
+type Summary = {
+  code: string
+  message: string
+  meta?: string
+}
+
+const buildSummaries = (error: ApolloError | undefined): Summary[] => {
+  if (!error) return []
+  const summaries: Summary[] = []
+
+  error.graphQLErrors?.forEach(({ message, locations, path, extensions }) => {
+    summaries.push({
+      code: extensions?.code ?? 'GRAPHQL_ERROR',
+      message,
+      meta: [
+        path?.length ? `Path: ${path.join(' › ')}` : null,
+        locations?.length
+          ? `Location: line ${locations[0].line}, column ${locations[0].column}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(' • '),
+    })
+  })
+
+  if (error.networkError) {
+    const { networkError } = error
+    if (networkError.result?.errors?.length) {
+      networkError.result.errors.forEach((e) => {
+        summaries.push({
+          code: e.extensions?.code ?? 'NETWORK_ERROR',
+          message: e.message,
+        })
+      })
+    } else {
+      summaries.push({
+        code: String(networkError.statusCode ?? 'NETWORK_ERROR'),
+        message:
+          networkError.result?.errorMessage ??
+          networkError.name ??
+          'Network request failed',
+      })
+    }
+  }
+
+  return summaries
+}
+
+const ErrorScreen = ({ error }: ErrorScreenProps) => {
   const { show, handleShow, handleClose } = useModal()
 
-  const { graphQLErrors, networkError } = error as ApolloError
+  const apolloError = error as ApolloError | undefined
+  const { graphQLErrors, networkError } = apolloError ?? {
+    graphQLErrors: undefined,
+    networkError: undefined,
+  }
 
   if (graphQLErrors)
     graphQLErrors.forEach(({ message, locations, path }) =>
@@ -73,94 +141,120 @@ const ErrorPage = ({ error }: ErrorScreenProps) => {
     // eslint-disable-next-line no-console
     console.error(`[Network error]: ${JSON.stringify(networkError)}`)
 
+  const summaries = buildSummaries(apolloError)
+  const headline = error?.message || apolloError?.name || 'Something went wrong'
+
   return (
-    <>
-      <Container className="100vh text-center mt-5">
-        <p className="my-5">There seems to be an error loading data</p>
-        <Card className="text-center">
-          <Card.Header className="p3-4">
-            <h4>{error?.name}</h4>
-          </Card.Header>
-          <Card.Body className="py-4">
-            {graphQLErrors?.length > 0 && (
-              <>
-                {graphQLErrors.map(
-                  ({ message, locations, path, extensions }) => (
-                    <>
-                      <p className="fw-bold text-danger">{`code: ${extensions.code}`}</p>
-                      <p>{`Location: ${JSON.stringify(locations)}`}</p>
-                      <p className="mb-3">{`Path: ${JSON.stringify(path)}`}</p>
-                      <Card.Text className="text-truncate truncate-2-lines">
-                        {`[GraphQL error]: Message: ${message}`}
-                      </Card.Text>
-                    </>
-                  )
-                )}
-              </>
-            )}
+    <div className="flex min-h-svh items-start justify-center bg-background px-4 py-10 sm:items-center sm:py-16">
+      <div className="w-full max-w-xl">
+        <Card className="overflow-hidden">
+          <CardHeader className="items-center gap-3 text-center">
+            <div
+              aria-hidden="true"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-destructive"
+            >
+              <AlertTriangle className="h-7 w-7" />
+            </div>
+            <CardTitle className="text-xl">
+              We couldn&apos;t load this page
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {apolloError?.name ?? 'Error'} — please try again. If the issue
+              persists, send a crash report so the team can investigate.
+            </p>
+          </CardHeader>
 
-            {!!networkError && (
-              <>
-                {networkError.result?.errors?.map((error) => (
-                  <>
-                    <Card.Text className="fw-bold text-danger">{`code: ${error.extensions.code}`}</Card.Text>
-                    <Card.Text className="text-truncate">
-                      {`[Network error]: ${error?.message}`}
-                    </Card.Text>
-                  </>
-                ))}
-                {!networkError.result?.errors?.length && (
-                  <>
-                    <Card.Text className="fw-bold text-danger">{`code: ${networkError?.statusCode}`}</Card.Text>
-                    <Card.Text className="text-truncate">
-                      {`[Network error]: ${networkError?.result?.errorMessage}`}
-                    </Card.Text>
-                  </>
-                )}
-              </>
-            )}
-            <Modal show={show} onHide={handleClose} centered scrollable>
-              <Modal.Header closeButton>{error?.name}</Modal.Header>
-              <Modal.Body>
-                <p className="text-info">{JSON.stringify(error)}</p>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="primary" onClick={handleClose}>
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </Card.Body>
-
-          <Card.Footer>
-            <Container>
-              <p className="fw-bold pb-2">
-                Click the <span className="text-danger">Show Details</span>{' '}
-                Button and take a screenshot to provide more details to the
-                support team
-              </p>
-              <Button variant="danger" onClick={handleShow}>
-                Show Details
-              </Button>
-              <div>
-                <Button
-                  variant="outline-warning"
-                  className="my-2"
-                  onClick={showUserReportDialog}
+          <CardContent className="space-y-3">
+            {summaries.length > 0 ? (
+              summaries.map((s, i) => (
+                <Alert
+                  key={`${s.code}-${i}`}
+                  variant="destructive"
+                  className="text-left"
                 >
-                  Send Crash Report
-                </Button>
-              </div>
-            </Container>
-          </Card.Footer>
+                  <Bug aria-hidden="true" />
+                  <AlertTitle className="font-mono text-xs uppercase tracking-wide">
+                    {s.code}
+                  </AlertTitle>
+                  <AlertDescription>
+                    <p className="break-words text-sm">{s.message}</p>
+                    {s.meta && (
+                      <p className="text-xs text-muted-foreground">{s.meta}</p>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              ))
+            ) : (
+              <Alert variant="destructive" className="text-left">
+                <Bug aria-hidden="true" />
+                <AlertTitle>Unexpected error</AlertTitle>
+                <AlertDescription>
+                  <p className="break-words text-sm">{headline}</p>
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+
+          <CardFooter className="flex flex-col gap-2 border-t border-border bg-muted/30 p-4 sm:flex-row sm:justify-end sm:p-6">
+            <Button
+              variant="ghost"
+              onClick={handleShow}
+              className="min-h-11 w-full sm:min-h-9 sm:w-auto"
+            >
+              <Bug aria-hidden="true" className="h-4 w-4" />
+              Show details
+            </Button>
+            <Button
+              variant="outline"
+              onClick={showUserReportDialog}
+              className="min-h-11 w-full sm:min-h-9 sm:w-auto"
+            >
+              <Send aria-hidden="true" className="h-4 w-4" />
+              Send crash report
+            </Button>
+            <Button
+              onClick={() => window.location.reload()}
+              className="min-h-11 w-full sm:min-h-9 sm:w-auto"
+            >
+              <RefreshCcw aria-hidden="true" className="h-4 w-4" />
+              Reload page
+            </Button>
+          </CardFooter>
         </Card>
 
-        <Button className="mt-5" onClick={() => window.location.reload()}>
-          Reload Page
-        </Button>
-      </Container>
-    </>
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Tip: tap{' '}
+          <span className="font-medium text-foreground">Show details</span> and
+          screenshot it when you contact support.
+        </p>
+      </div>
+
+      <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>{apolloError?.name ?? 'Error details'}</DialogTitle>
+            <DialogDescription>
+              Raw payload — share this with the support team.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh] rounded-md border border-border bg-muted/40">
+            <pre className="whitespace-pre-wrap break-words p-4 font-mono text-xs text-foreground">
+              {JSON.stringify(error, null, 2)}
+            </pre>
+          </ScrollArea>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              className="min-h-11 sm:min-h-9"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
 
-export default ErrorPage
+export default ErrorScreen
