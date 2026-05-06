@@ -4,6 +4,7 @@ import {
   ClipboardList,
   Home,
   type LucideIcon,
+  Settings,
   TrendingUp,
   UserCheck,
   Wallet,
@@ -58,5 +59,10 @@ export const secondaryNav: NavItem[] = [
     name: 'AI Assistant',
     to: '/ai-assistant',
     icon: Bot,
+  },
+  {
+    name: 'Settings',
+    to: '/settings',
+    icon: Settings,
   },
 ]

@@ -21,7 +21,7 @@ import {
   Inbox,
   Users,
 } from 'lucide-react'
-import { enqueueSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
 import { CSVLink } from 'react-csv'
 import { useNavigate } from 'react-router-dom'
@@ -108,7 +108,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
       await navigator.clipboard.writeText(filename)
       setCopied(true)
     } catch {
-      enqueueSnackbar('Could not copy filename', { variant: 'error' })
+      toast.error('Could not copy filename')
     }
   }
 

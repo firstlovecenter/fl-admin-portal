@@ -8,6 +8,10 @@ import {
 } from 'react'
 import { Role, UserJobs } from 'global-types'
 import { getHighestRole } from 'pages/directory/update/directory-utils'
+import {
+  clearDefaultScopeKey,
+  readDefaultScopeKey,
+} from 'lib/default-scope-storage'
 import { MemberContext } from './MemberContext'
 
 export interface RoleChurchScopeOption {
@@ -161,6 +165,22 @@ export const ChurchRoleScopeProvider = ({
     )
 
     if (!selectedScopeKey || !currentSelectionExists) {
+      const persistedKey = readDefaultScopeKey()
+      const persistedOption = persistedKey
+        ? roleChurchOptions.find(
+            (option: RoleChurchScopeOption) => option.key === persistedKey
+          )
+        : undefined
+
+      if (persistedOption) {
+        setSelectedScopeKey(persistedOption.key)
+        return
+      }
+
+      if (persistedKey) {
+        clearDefaultScopeKey()
+      }
+
       const { highestLevel, highestVerb } = getHighestRole(
         currentUser?.roles ?? []
       )

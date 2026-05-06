@@ -33,7 +33,9 @@ import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
 import { aiAssistant } from 'pages/ai-assistant/aiAssistantRoutes'
+import { settings } from 'pages/settings/settingsRoutes'
 import { ThemeProvider } from 'components/shell/ThemeProvider'
+import { Toaster } from 'components/ui/sonner'
 import { ChurchRoleScopeProvider } from 'contexts/ChurchRoleScopeContext'
 
 type AppPropsType = {
@@ -168,6 +170,7 @@ const AppWithContext = (props: AppPropsType) => {
 
   return (
     <ThemeProvider>
+      <Toaster />
       <Router>
         <ChurchContext.Provider
           value={{
@@ -230,6 +233,7 @@ const AppWithContext = (props: AppPropsType) => {
                           ...maps,
                           ...accountsRoutes,
                           ...aiAssistant,
+                          ...settings,
                         ].map((route, i) => (
                           <Route
                             key={i}

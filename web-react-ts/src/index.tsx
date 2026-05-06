@@ -23,13 +23,7 @@ import './app.css'
 // import './color-theme.css'
 // import './index.css'
 import ReactGA from 'react-ga4'
-import {
-  SnackbarKey,
-  SnackbarProvider,
-  closeSnackbar,
-  enqueueSnackbar,
-} from 'notistack'
-import { Button, Card } from 'react-bootstrap'
+import { toast } from 'sonner'
 import SplashSreen from 'pages/splash-screen/SplashSreen'
 import AppWithContext from 'AppWithContext'
 
@@ -83,43 +77,22 @@ const AppWithApollo = () => {
     },
   })
 
-  const action = (snackbarId: SnackbarKey | undefined) => (
-    <Button
-      variant="outline-light"
-      onClick={() => {
-        closeSnackbar(snackbarId)
-      }}
-    >
-      Dismiss
-    </Button>
-  )
-
   const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors) {
       graphQLErrors.forEach(({ message, locations, path }) => {
         if (message.includes('Unauthenticated')) return
 
-        enqueueSnackbar(
-          <Card>
-            <Card.Header className="fw-bold">GraphQL Error</Card.Header>
-            <Card.Body>
-              <div>{`Message: ${message}`}</div>
-              <div>{`Location: ${JSON.stringify(locations, null, 2)}`}</div>
-              <div>{`Path: ${path}`}</div>
-            </Card.Body>
-          </Card>,
-          {
-            action,
-            preventDuplicate: true,
-            variant: 'error',
-            autoHideDuration: 20000,
-            hideIconVariant: true,
-            anchorOrigin: {
-              vertical: 'bottom',
-              horizontal: 'right',
-            },
-          }
-        )
+        toast.error('GraphQL Error', {
+          id: `gql:${message}:${path?.join('.') ?? ''}`,
+          description: (
+            <div className="space-y-1">
+              <div>Message: {message}</div>
+              <div>Location: {JSON.stringify(locations)}</div>
+              <div>Path: {path?.join('.')}</div>
+            </div>
+          ),
+          duration: 20000,
+        })
       })
     }
 
@@ -127,27 +100,13 @@ const AppWithApollo = () => {
       networkError &&
       !networkError.message.includes('400') &&
       !networkError.message.includes('Failed to fetch')
-    )
-      enqueueSnackbar(
-        <Card>
-          <Card.Header className="fw-bold">Network Error</Card.Header>
-          <Card.Body>
-            <div>{`Message: ${networkError?.message}`}</div>
-            {/* <div>{`Stack: ${JSON.stringify(networkError?.stack)}`}</div> */}
-          </Card.Body>
-        </Card>,
-        {
-          action,
-          preventDuplicate: true,
-          variant: 'error',
-          autoHideDuration: 20000,
-          hideIconVariant: true,
-          anchorOrigin: {
-            vertical: 'bottom',
-            horizontal: 'right',
-          },
-        }
-      )
+    ) {
+      toast.error('Network Error', {
+        id: `network:${networkError.message}`,
+        description: networkError.message,
+        duration: 20000,
+      })
+    }
   })
 
   const errorPolicy = 'all'
@@ -188,7 +147,6 @@ const AppWithApollo = () => {
 
   return (
     <ApolloProvider client={client}>
-      <SnackbarProvider />
       <AppWithContext token={accessToken} />
     </ApolloProvider>
   )
