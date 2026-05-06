@@ -225,46 +225,158 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     }
   }
 
+  const identityBlock = (
+    <>
+      <LeaderAvatar leader={props.leader} leaderTitle={props.leaderTitle} />
+
+      {props.churchType === 'Bacenta' && (
+        <div className="space-y-2">
+          {props.deputyLeader && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-24 shrink-0">
+                Deputy Leader
+              </span>
+              <MemberAvatarWithName member={props.deputyLeader} />
+            </div>
+          )}
+          {props.admin && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-24 shrink-0">
+                Bacenta Admin
+              </span>
+              <MemberAvatarWithName member={props.admin} />
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  )
+
+  const busPaymentBlock =
+    props.churchType === 'Bacenta' &&
+    (props.church?.sprinterTopUp !== 0 || props.church?.urvanTopUp !== 0) ? (
+      <RoleView roles={['leaderBacenta']} verifyId={props?.leader?.id}>
+        {!props.momoNumber && !props.loading && (
+          <p className="text-sm font-semibold text-destructive text-center">
+            There is no valid Mobile Money Number! Please update!
+          </p>
+        )}
+        <Button
+          className="w-full"
+          variant="outline"
+          onClick={() =>
+            navigate(`/${props.churchType.toLowerCase()}/editbussing`)
+          }
+        >
+          Bus Payment Details
+        </Button>
+      </RoleView>
+    ) : null
+
+  const actionButtonsBlock = (
+    <div className="space-y-3">
+      <Button
+        className="w-full"
+        size="lg"
+        onClick={() => {
+          setUserChurch({
+            id: props.churchId,
+            name: props.name,
+            __typename: props.churchType,
+          })
+          navigate('/trends')
+        }}
+      >
+        View Trends
+      </Button>
+
+      {shouldFill({
+        last3Weeks: props.last3Weeks ?? [],
+        vacation: props.vacation ?? 'Active',
+      }) && (
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={() => {
+            setUserChurch({
+              id: props.churchId,
+              name: props.name,
+              __typename: props.churchType,
+            })
+            navigate(`/services/${props.churchType.toLowerCase()}`)
+          }}
+        >
+          Service Forms
+        </Button>
+      )}
+    </div>
+  )
+
+  const locationBlock =
+    props?.location && props.location?.latitude !== 0 ? (
+      <div className="text-center py-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+          Location
+        </h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Click for directions
+        </p>
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${props?.location?.latitude}%2C${props?.location?.longitude}`}
+          className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-muted hover:bg-muted/80 active:bg-muted/80 transition-colors"
+        >
+          <MapPin className="h-8 w-8 text-[hsl(var(--maps))]" />
+        </a>
+      </div>
+    ) : null
+
+  const last3WeeksBlock =
+    props.last3Weeks && props.details[2]?.number === 'Active' ? (
+      <Last3WeeksCard last3Weeks={props.last3Weeks} />
+    ) : null
+
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border px-4 py-3">
-        <Breadcrumb breadcrumb={props.breadcrumb} />
-        <div className="flex items-center justify-between mt-1">
-          <h1 className="text-xl font-semibold text-foreground">
-            {props.name ? `${props.name} ${props.churchType}` : ''}
-          </h1>
-          {directoryLock(currentUser, props.churchType) && (
-            <RoleView roles={props.editPermitted} directoryLock>
-              <EditButton link={props.editlink} />
+      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
+        <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3">
+          <Breadcrumb breadcrumb={props.breadcrumb} />
+          <div className="flex items-center justify-between mt-1">
+            <h1 className="text-xl font-semibold text-foreground">
+              {props.name ? `${props.name} ${props.churchType}` : ''}
+            </h1>
+            {directoryLock(currentUser, props.churchType) && (
+              <RoleView roles={props.editPermitted} directoryLock>
+                <EditButton link={props.editlink} />
+              </RoleView>
+            )}
+          </div>
+
+          {needsAdmin && (
+            <RoleView roles={roles}>
+              <div className="flex items-center gap-2 mt-2">
+                {props.admin && (
+                  <MemberAvatarWithName
+                    member={props.admin}
+                    onClick={() => {
+                      clickCard(props.admin)
+                      navigate('/member/displaydetails')
+                    }}
+                  />
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-xs h-8"
+                  onClick={handleShow}
+                >
+                  <Pencil className="h-3 w-3" />
+                  Change Admin
+                </Button>
+              </div>
             </RoleView>
           )}
         </div>
-
-        {needsAdmin && (
-          <RoleView roles={roles}>
-            <div className="flex items-center gap-2 mt-2">
-              {props.admin && (
-                <MemberAvatarWithName
-                  member={props.admin}
-                  onClick={() => {
-                    clickCard(props.admin)
-                    navigate('/member/displaydetails')
-                  }}
-                />
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1.5 text-xs h-8"
-                onClick={handleShow}
-              >
-                <Pencil className="h-3 w-3" />
-                Change Admin
-              </Button>
-            </div>
-          </RoleView>
-        )}
       </div>
 
       {/* Change Admin Dialog */}
@@ -302,192 +414,111 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         </DialogContent>
       </Dialog>
 
-      <div className="px-4 py-5 space-y-5 max-w-2xl mx-auto">
-        {/* Leader */}
-        <LeaderAvatar leader={props.leader} leaderTitle={props.leaderTitle} />
+      <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-8">
+        <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[320px_1fr] lg:gap-8 lg:items-start">
+          {/* LEFT — identity panel (desktop only) */}
+          <aside className="hidden lg:flex lg:flex-col lg:gap-5 lg:sticky lg:top-40 lg:rounded-xl lg:border lg:border-border lg:bg-card lg:p-6">
+            {identityBlock}
+            {busPaymentBlock}
+            {actionButtonsBlock}
+            {locationBlock}
+          </aside>
 
-        {/* Bacenta deputy + admin */}
-        {props.churchType === 'Bacenta' && (
-          <div className="space-y-2">
-            {props.deputyLeader && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-24 shrink-0">
-                  Deputy Leader
-                </span>
-                <MemberAvatarWithName member={props.deputyLeader} />
+          {/* MAIN content */}
+          <div className="space-y-5 min-w-0">
+            {/* Mobile-only identity */}
+            <div className="space-y-5 lg:hidden">{identityBlock}</div>
+
+            {/* Detail stat cards */}
+            {props.details?.length > 0 && (
+              <div className="grid grid-cols-2 gap-0">
+                {props.details.map((detail, i) => (
+                  <div
+                    key={i}
+                    className={detail.width === 12 ? 'col-span-2' : 'col-span-1'}
+                  >
+                    <DetailsCard
+                      onClick={() => navigate(detail.link)}
+                      heading={detail.title}
+                      creativearts={detail?.creativearts}
+                      detail={
+                        !props.loading ? detail?.number?.toString() || '0' : ''
+                      }
+                      vacationCount={
+                        !props.loading
+                          ? detail?.vacationCount?.toString() || '0'
+                          : ''
+                      }
+                      vacationIcBacentaCount={
+                        !props.loading
+                          ? detail?.vacationIcBacentaCount?.toString() || '0'
+                          : ''
+                      }
+                    />
+                  </div>
+                ))}
               </div>
             )}
-            {props.admin && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-24 shrink-0">
-                  Bacenta Admin
-                </span>
-                <MemberAvatarWithName member={props.admin} />
+
+            {/* Last 3 weeks — desktop placement (alongside stats) */}
+            <div className="hidden lg:block">{last3WeeksBlock}</div>
+
+            {/* Mobile-only actions + location */}
+            <div className="space-y-5 lg:hidden">
+              {busPaymentBlock}
+              {actionButtonsBlock}
+              {locationBlock}
+            </div>
+
+            {/* Last 3 weeks — mobile placement (after location, original order) */}
+            <div className="lg:hidden">{last3WeeksBlock}</div>
+
+            {/* Sub-church buttons */}
+            {props.subChurch && props.buttons?.length > 0 && (
+              <div>
+                <Separator className="my-4" />
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-muted-foreground">
+                    {`${props.subChurch} Locations`}
+                  </p>
+                  <Link
+                    to={`/${props.subChurch.toLowerCase()}/displayall`}
+                    className="text-sm text-[hsl(var(--brand))]"
+                  >
+                    {`View All ${plural(props.subChurch)}`}
+                  </Link>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {props.buttons.slice(0, 5).map((church, index) => (
+                    <ChurchButton key={index} church={church} />
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* Add new sub-church */}
+            {props.subChurch && !props.buttons?.length && (
+              <RoleView roles={props.editPermitted}>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() =>
+                    navigate(
+                      `/${props.subChurch?.toLowerCase()}/add${props.subChurch?.toLowerCase()}`
+                    )
+                  }
+                >
+                  {`Add New ${props.subChurch}`}
+                </Button>
+              </RoleView>
+            )}
           </div>
-        )}
-
-        {/* Detail stat cards */}
-        {props.details?.length > 0 && (
-          <div className="grid grid-cols-2 gap-0">
-            {props.details.map((detail, i) => (
-              <div
-                key={i}
-                className={detail.width === 12 ? 'col-span-2' : 'col-span-1'}
-              >
-                <DetailsCard
-                  onClick={() => navigate(detail.link)}
-                  heading={detail.title}
-                  creativearts={detail?.creativearts}
-                  detail={
-                    !props.loading ? detail?.number?.toString() || '0' : ''
-                  }
-                  vacationCount={
-                    !props.loading
-                      ? detail?.vacationCount?.toString() || '0'
-                      : ''
-                  }
-                  vacationIcBacentaCount={
-                    !props.loading
-                      ? detail?.vacationIcBacentaCount?.toString() || '0'
-                      : ''
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Bacenta: momo warning + bus payment */}
-        {props.churchType === 'Bacenta' &&
-          (props.church?.sprinterTopUp !== 0 ||
-            props.church?.urvanTopUp !== 0) && (
-            <RoleView roles={['leaderBacenta']} verifyId={props?.leader?.id}>
-              {!props.momoNumber && !props.loading && (
-                <p className="text-sm font-semibold text-destructive text-center">
-                  There is no valid Mobile Money Number! Please update!
-                </p>
-              )}
-              <Button
-                className="w-full"
-                variant="outline"
-                onClick={() =>
-                  navigate(
-                    `/${props.churchType.toLowerCase()}/editbussing`
-                  )
-                }
-              >
-                Bus Payment Details
-              </Button>
-            </RoleView>
-          )}
-
-        {/* Action buttons */}
-        <div className="space-y-3">
-          <Button
-            className="w-full"
-            size="lg"
-            onClick={() => {
-              setUserChurch({
-                id: props.churchId,
-                name: props.name,
-                __typename: props.churchType,
-              })
-              navigate('/trends')
-            }}
-          >
-            View Trends
-          </Button>
-
-          {shouldFill({
-            last3Weeks: props.last3Weeks ?? [],
-            vacation: props.vacation ?? 'Active',
-          }) && (
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={() => {
-                setUserChurch({
-                  id: props.churchId,
-                  name: props.name,
-                  __typename: props.churchType,
-                })
-                navigate(`/services/${props.churchType.toLowerCase()}`)
-              }}
-            >
-              Service Forms
-            </Button>
-          )}
         </div>
 
-        {/* Location */}
-        {props?.location && props.location?.latitude !== 0 && (
-          <div className="text-center py-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-              Location
-            </h3>
-            <p className="text-xs text-muted-foreground mb-3">
-              Click for directions
-            </p>
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${props?.location?.latitude}%2C${props?.location?.longitude}`}
-              className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-muted hover:bg-muted/80 active:bg-muted/80 transition-colors"
-            >
-              <MapPin className="h-8 w-8 text-[hsl(var(--maps))]" />
-            </a>
-          </div>
-        )}
-
-        {/* Last 3 weeks */}
-        {props.last3Weeks && props.details[2]?.number === 'Active' && (
-          <Last3WeeksCard last3Weeks={props.last3Weeks} />
-        )}
-
-        {/* Sub-church buttons */}
-        {props.subChurch && props.buttons?.length > 0 && (
-          <div>
-            <Separator className="my-4" />
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-muted-foreground">
-                {`${props.subChurch} Locations`}
-              </p>
-              <Link
-                to={`/${props.subChurch.toLowerCase()}/displayall`}
-                className="text-sm text-[hsl(var(--brand))]"
-              >
-                {`View All ${plural(props.subChurch)}`}
-              </Link>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {props.buttons.slice(0, 5).map((church, index) => (
-                <ChurchButton key={index} church={church} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Add new sub-church */}
-        {props.subChurch && !props.buttons?.length && (
-          <RoleView roles={props.editPermitted}>
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={() =>
-                navigate(
-                  `/${props.subChurch?.toLowerCase()}/add${props.subChurch?.toLowerCase()}`
-                )
-              }
-            >
-              {`Add New ${props.subChurch}`}
-            </Button>
-          </RoleView>
-        )}
-
-        {/* Church history */}
+        {/* Church history — full width below the grid */}
         {props.history?.length > 0 && (
-          <div>
-            <Separator className="my-4" />
+          <div className="mt-8 lg:mt-10 lg:max-w-4xl lg:mx-auto">
+            <Separator className="mb-6" />
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Church History

@@ -1,3 +1,7 @@
-::-webkit-calendar-picker-indicator {
-    filter: invert(1);
+/* Calendar / time picker icon — invert in dark mode so the system icon
+ * (rendered by the browser) is readable on dark backgrounds.
+ */
+[data-theme='dark'] ::-webkit-calendar-picker-indicator,
+[data-bs-theme='dark'] ::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }
