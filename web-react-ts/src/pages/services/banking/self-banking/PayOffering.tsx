@@ -354,7 +354,12 @@ const PayOffering = (props: PayOfferingProps) => {
                             reference: service?.transactionReference,
                             otp,
                           },
-                        }).then(() => navigate('/self-banking/confirm-payment'))
+                        })
+                          .then(() => navigate('/self-banking/confirm-payment'))
+                          .catch((err: any) => {
+                            setOtpSent(false)
+                            throwToSentry('Error sending payment OTP', err)
+                          })
                       }}
                     >
                       {otpSent ? (

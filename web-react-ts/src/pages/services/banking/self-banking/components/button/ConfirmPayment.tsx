@@ -1,7 +1,7 @@
 import { ApolloQueryResult, useMutation } from '@apollo/client'
 import { Button } from 'components/ui/button'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { alertMsg } from 'global-utils'
+import { alertMsg, throwToSentry } from 'global-utils'
 import { Loader2 } from 'lucide-react'
 import { useContext, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
@@ -175,7 +175,8 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
           }
         } catch (error: any) {
           navigate('/services/bacenta/self-banking')
-          alert('Something went wrong 😞' + JSON.stringify(error))
+          alertMsg(error?.message ?? 'Something went wrong 😞')
+          throwToSentry('Error confirming offering payment', error)
         } finally {
           if (handleClose) {
             handleClose()

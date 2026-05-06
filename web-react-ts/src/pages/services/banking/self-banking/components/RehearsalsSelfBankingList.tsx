@@ -225,7 +225,7 @@ const RehearsalsSelfBankingList = ({
                     <button
                       key={rehearsal.id}
                       type="button"
-                      className="group block w-full rounded-xl border border-border bg-card text-left shadow-card transition-colors hover:border-brand/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:bg-muted"
+                      className="group block w-full rounded-xl border border-border bg-card text-left shadow-sm transition-colors hover:border-brand/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:bg-muted"
                       onClick={() => {
                         clickCard(rehearsal)
                         setConfirmService({ id: rehearsal.id })
