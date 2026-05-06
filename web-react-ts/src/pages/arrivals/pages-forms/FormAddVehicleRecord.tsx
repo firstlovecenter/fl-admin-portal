@@ -31,8 +31,9 @@ const FormAddVehicleRecord = () => {
   const { bacentaId, clickCard } = useContext(ChurchContext)
   const { bussingRecordId } = useContext(ServiceContext)
 
+  const today = new Date().toISOString().slice(0, 10)
   const { data, loading, error } = useQuery(BACENTA_ARRIVALS, {
-    variables: { id: bacentaId, date: new Date().toISOString().slice(0, 10) },
+    variables: { id: bacentaId, date: today, bussingDate: today },
   })
   const bacenta: BacentaWithArrivals = data?.bacentas[0]
 
