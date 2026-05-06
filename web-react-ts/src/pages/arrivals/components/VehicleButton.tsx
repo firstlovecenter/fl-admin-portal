@@ -1,43 +1,57 @@
+import { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { CheckCircle2 } from 'lucide-react'
 import { ChurchContext } from 'contexts/ChurchContext'
-import React, { useContext } from 'react'
-import { Button } from 'react-bootstrap'
-import { CheckCircleFill } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
+import { cn } from 'components/lib/utils'
 import { VehicleRecord } from '../arrivals-types'
 import ButtonIcons from './ButtonIcons'
 
 const VehicleButton = ({
   record,
   canFillOnTheWay,
-  size,
   className,
 }: {
   record: VehicleRecord
   canFillOnTheWay?: boolean | null
-  size?: 'sm' | 'lg'
   className?: string
 }) => {
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
+  const arrived = !!record?.arrivalTime
 
   return (
-    <Button
-      key={record.id}
-      variant={record?.arrivalTime ? 'success' : 'warning'}
-      size={size || 'lg'}
-      className={`text-start ${className}`}
+    <button
+      type="button"
       disabled={canFillOnTheWay === false}
       onClick={() => {
         clickCard(record)
         navigate('/bacenta/vehicle-details')
       }}
+      className={cn(
+        'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors',
+        'min-h-14 disabled:cursor-not-allowed disabled:opacity-60',
+        arrived
+          ? 'border-success/30 bg-success/10 hover:bg-success/15 active:bg-success/20'
+          : 'border-warning/40 bg-warning/10 hover:bg-warning/15 active:bg-warning/20',
+        className
+      )}
     >
-      <ButtonIcons type={record?.vehicle} />
-      {record?.vehicle} ({record?.attendance || '0'}){'  '}
-      {record?.arrivalTime ? (
-        <CheckCircleFill className="ms-3" color="white" size={20} />
-      ) : null}
-    </Button>
+      <span
+        className={cn(
+          'flex size-9 shrink-0 items-center justify-center rounded-full',
+          arrived ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'
+        )}
+      >
+        <ButtonIcons type={record?.vehicle} />
+      </span>
+      <span className="flex-1 truncate text-sm font-medium text-foreground">
+        {record?.vehicle}{' '}
+        <span className="text-muted-foreground">
+          ({record?.attendance ?? 0})
+        </span>
+      </span>
+      {arrived && <CheckCircle2 className="size-5 shrink-0 text-success" />}
+    </button>
   )
 }
 

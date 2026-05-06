@@ -120,9 +120,7 @@ export const beforeArrivalDeadline = (
       return true
     }
 
-    if (isToday(bussing?.createdAt) && !bussing?.leaderDeclaration) {
-      //If the record was created today
-      //And if the time is less than the arrivals cutoff time
+    if (!bussing?.leaderDeclaration) {
       return true
     }
   }
@@ -157,11 +155,7 @@ export const beforeMobilisationDeadline = (
   ) {
     if (!bussing) return true
 
-    if (!isToday(bussing?.createdAt)) return true
-
-    if (isToday(bussing?.createdAt) && !bussing?.mobilisationPicture) {
-      return true //Should Fill
-    }
+    if (!bussing?.mobilisationPicture) return true
   }
 
   // return false

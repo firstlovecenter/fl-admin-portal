@@ -1,33 +1,20 @@
 import BusIcon from 'assets/icons/BusIcon'
 import CarFrontFill from 'assets/icons/Car'
 import UrvanFront from 'assets/icons/Urvan'
-import React from 'react'
-import { StopCircle } from 'react-bootstrap-icons'
+import { CircleStop } from 'lucide-react'
 
 const ButtonIcons = ({ type }: { type?: 'Sprinter' | 'Urvan' | 'Car' }) => {
   if (type === 'Sprinter') {
-    return (
-      <span className="button-icons">
-        <BusIcon width={20} />
-      </span>
-    )
+    return <BusIcon width={20} />
   }
   if (type === 'Urvan') {
-    return (
-      <span className="button-icons">
-        <UrvanFront width={20} height={20} />
-      </span>
-    )
+    return <UrvanFront width={20} height={20} />
   }
   if (type === 'Car') {
-    return (
-      <span className="button-icons">
-        <CarFrontFill width={20} height={20} />
-      </span>
-    )
+    return <CarFrontFill width={20} height={20} />
   }
 
-  return <StopCircle />
+  return <CircleStop className="size-5" />
 }
 
 export default ButtonIcons

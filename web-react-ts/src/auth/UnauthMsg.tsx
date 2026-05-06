@@ -1,30 +1,24 @@
 import React from 'react'
-import { Button, Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
-import MenAtWork from 'assets/men-at-work-shivendu-shukla.webp'
-import './UnauthMsg.css'
+import { Link } from 'react-router-dom'
+import { ShieldAlert } from 'lucide-react'
+import { Button } from 'components/ui/button'
 
 export const UnauthMsg = () => {
-  const navigate = useNavigate()
-
   return (
-    <div className="bg-img" style={{ backgroundImage: `url(${MenAtWork})` }}>
-      <Container className="message text-center">
-        {/* <!--Web Logo and text--> */}
-
-        {`Sorry! There was an error trying to view this page, but we are working on it!`}
-        <div className="pt-3">
-          <Button
-            variant="dark"
-            size="lg"
-            onClick={() => {
-              navigate('/')
-            }}
-          >
-            Click Here To Go Home
-          </Button>
-        </div>
-      </Container>
+    <div className="flex min-h-full flex-1 flex-col items-center justify-center px-4 py-10 text-center">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+        <ShieldAlert className="h-8 w-8" />
+      </div>
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
+        You don&apos;t have access to this page
+      </h1>
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+        Your account doesn&apos;t have the permissions needed to view this
+        page. If you think this is a mistake, contact your church admin.
+      </p>
+      <Button asChild className="mt-6">
+        <Link to="/">Go back to the dashboard</Link>
+      </Button>
     </div>
   )
 }

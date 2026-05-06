@@ -1,18 +1,20 @@
 import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle,
   ArrowDown,
   BarChart3,
+  Camera,
   CheckCircle2,
   Clock,
+  Maximize2,
   Plus,
   ReceiptText,
   Wallet,
 } from 'lucide-react'
-import { getTodayTime, isToday } from 'jd-date-utils'
+import { getTodayTime } from 'jd-date-utils'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Button } from 'components/ui/button'
@@ -92,10 +94,12 @@ const SectionLabel = ({ children }: { children: string }) => (
 const BacentaArrivals = () => {
   const { clickCard, bacentaId } = useContext(ChurchContext)
   const { show, handleClose } = useModal()
+  const [showCodeFullscreen, setShowCodeFullscreen] = useState(false)
+  const [showMobPic, setShowMobPic] = useState(false)
   const navigate = useNavigate()
   const today = new Date().toISOString().slice(0, 10)
   const { data, loading, error, refetch } = useQuery(BACENTA_ARRIVALS, {
-    variables: { id: bacentaId, date: today },
+    variables: { id: bacentaId, date: today, bussingDate: today },
   })
 
   const bacenta: BacentaWithArrivals = data?.bacentas[0]
@@ -109,9 +113,7 @@ const BacentaArrivals = () => {
     return true
   }
 
-  const bussing = bacenta?.bussing.find((rec) =>
-    isToday(rec.serviceDate.date.toString())
-  )
+  const bussing = bacenta?.bussingThisWeek
 
   const isBeforeArrivalEnd = bussing
     ? beforeArrivalDeadline(bussing, bacenta)
@@ -167,29 +169,41 @@ const BacentaArrivals = () => {
                 <SectionLabel>Today&apos;s Status</SectionLabel>
 
                 <Card className="overflow-hidden">
-                  <CardContent className="space-y-5 p-6 text-center">
-                    {!filledFormsToday && (
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Code of the Day
-                        </p>
-                        <p className="mt-1 font-mono text-3xl font-bold tabular-nums text-arrivals">
+                  {/* Code of the Day */}
+                  {!filledFormsToday && (
+                    <CardContent className="p-6 text-center">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Code of the Day
+                      </p>
+                      <div className="mt-1 flex items-center justify-center gap-2">
+                        <p className="font-mono text-3xl font-bold tabular-nums text-foreground dark:text-yellow-300">
                           {bacenta?.arrivalsCodeOfTheDay ?? '—'}
                         </p>
+                        {bacenta?.arrivalsCodeOfTheDay && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-11 shrink-0 text-muted-foreground hover:text-foreground"
+                            aria-label="Show code of the day fullscreen"
+                            onClick={() => setShowCodeFullscreen(true)}
+                          >
+                            <Maximize2 className="size-4" />
+                          </Button>
+                        )}
                       </div>
-                    )}
+                    </CardContent>
+                  )}
 
-                    {isBeforeArrivalEnd && (
-                      <div className="space-y-2 border-t border-border pt-5">
-                        <div className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          <Clock className="size-3.5" /> Arrivals close in
-                        </div>
-                        <div className="text-success">
-                          <CountdownTimer targetDate={dateTimeToEnd} />
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
+                  {/* Countdown — flush to card edges */}
+                  {isBeforeArrivalEnd && (
+                    <div className={cn('border-border', !filledFormsToday && 'border-t')}>
+                      <p className="flex items-center justify-center gap-2 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Clock className="size-3.5" /> Arrivals close in
+                      </p>
+                      <CountdownTimer targetDate={dateTimeToEnd} />
+                    </div>
+                  )}
                 </Card>
 
                 {tooLate && (
@@ -260,25 +274,51 @@ const BacentaArrivals = () => {
                   </Card>
                 )}
 
-                <div className="space-y-2">
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    disabled={mobilisationDisabled}
-                    onClick={() => {
-                      clickCard(bacenta)
-                      clickCard(bussing)
-                      navigate('/arrivals/submit-mobilisation-picture')
-                    }}
+                {bussing?.mobilisationPicture ? (
+                  /* Already submitted — show thumbnail, click opens lightbox */
+                  <button
+                    type="button"
+                    className="group relative w-full overflow-hidden rounded-xl border border-success/40 bg-success/5 transition-colors hover:bg-success/10 active:bg-success/15"
+                    onClick={() => setShowMobPic(true)}
+                    aria-label="View mobilisation picture"
                   >
-                    Upload Pre-Mobilisation Picture
-                  </Button>
-                  {showMobilisationError && (
-                    <p className="text-center text-xs font-medium text-destructive">
-                      Pre-Mobilisation Form is not open!
-                    </p>
-                  )}
-                </div>
+                    <img
+                      src={bussing.mobilisationPicture}
+                      alt="Mobilisation"
+                      className="h-36 w-full object-cover"
+                    />
+                    <div className="flex items-center justify-between px-4 py-2">
+                      <span className="flex items-center gap-2 text-xs font-semibold text-success">
+                        <CheckCircle2 className="size-4" />
+                        Mobilisation picture uploaded
+                      </span>
+                      <span className="flex items-center gap-1 text-xs font-medium text-success">
+                        <Camera className="size-3.5" />
+                        View
+                      </span>
+                    </div>
+                  </button>
+                ) : (
+                  /* Not yet submitted */
+                  <div className="space-y-2">
+                    <Button
+                      size="lg"
+                      className="w-full"
+                      disabled={mobilisationDisabled}
+                      onClick={() => {
+                        clickCard(bacenta)
+                        navigate('/arrivals/submit-mobilisation-picture')
+                      }}
+                    >
+                      Upload Pre-Mobilisation Picture
+                    </Button>
+                    {showMobilisationError && (
+                      <p className="text-center text-xs font-medium text-destructive">
+                        Pre-Mobilisation window is not open
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <Card>
                   <CardContent className="space-y-3 p-5">
@@ -339,6 +379,7 @@ const BacentaArrivals = () => {
               </section>
             </div>
 
+            {/* Too-late modal */}
             <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
               <DialogContent>
                 <DialogHeader>
@@ -356,6 +397,64 @@ const BacentaArrivals = () => {
                     Close
                   </Button>
                 </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Code of the Day — fullscreen */}
+            <Dialog
+              open={showCodeFullscreen}
+              onOpenChange={setShowCodeFullscreen}
+            >
+              <DialogContent
+                className="flex h-svh w-screen max-w-none flex-col items-center justify-center gap-6 rounded-none border-0 bg-background p-6 sm:max-w-none"
+                showCloseButton={false}
+              >
+                <DialogHeader className="sr-only">
+                  <DialogTitle>Code of the Day</DialogTitle>
+                  <DialogDescription>
+                    Fullscreen view of today&apos;s arrivals code
+                  </DialogDescription>
+                </DialogHeader>
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Code of the Day
+                </p>
+                <p className="break-all text-center font-mono text-[clamp(4rem,22vw,16rem)] font-black leading-none tabular-nums text-foreground dark:text-yellow-300">
+                  {bacenta?.arrivalsCodeOfTheDay ?? '—'}
+                </p>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="mt-4"
+                  onClick={() => setShowCodeFullscreen(false)}
+                >
+                  Close
+                </Button>
+              </DialogContent>
+            </Dialog>
+
+            {/* Mobilisation picture lightbox */}
+            <Dialog open={showMobPic} onOpenChange={setShowMobPic}>
+              <DialogContent className="flex max-h-svh max-w-[95vw] flex-col items-center gap-4 p-4 sm:max-w-xl">
+                <DialogHeader className="sr-only">
+                  <DialogTitle>Mobilisation Picture</DialogTitle>
+                  <DialogDescription>
+                    Pre-mobilisation picture submitted for today
+                  </DialogDescription>
+                </DialogHeader>
+                {bussing?.mobilisationPicture && (
+                  <img
+                    src={bussing.mobilisationPicture}
+                    alt="Pre-mobilisation"
+                    className="max-h-[75svh] w-full rounded-lg object-contain"
+                  />
+                )}
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowMobPic(false)}
+                >
+                  Close
+                </Button>
               </DialogContent>
             </Dialog>
           </main>

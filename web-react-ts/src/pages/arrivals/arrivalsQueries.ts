@@ -296,7 +296,7 @@ export const CONFIRM_CAMPUS_ARRIVALS = gql`
 `
 
 export const BACENTA_ARRIVALS = gql`
-  query bacentaArrivals($id: ID!, $date: Date!) {
+  query bacentaArrivals($id: ID!, $date: Date!, $bussingDate: String!) {
     bacentas(where: { id: $id }, options: { limit: 1 }) {
       id
       name
@@ -318,7 +318,7 @@ export const BACENTA_ARRIVALS = gql`
       urvanTopUp
 
       arrivalsCodeOfTheDay
-      bussing(limit: 1) {
+      bussingThisWeek(bussingDate: $bussingDate) {
         id
         createdAt
         serviceDate {
@@ -450,6 +450,11 @@ export const DISPLAY_BUSSING_RECORDS = gql`
       numberOfSprinters
       numberOfUrvans
       numberOfCars
+      mobileNetwork
+      momoNumber
+      momoName
+      comments
+      arrivalTime
       vehicleRecords {
         id
         vehicle
