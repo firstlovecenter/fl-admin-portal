@@ -15,9 +15,10 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
   `First Love Experience` (`StreamOptions` in `web-react-ts/src/global-types.ts`).
 - **Council** — a sub-grouping under a Stream that owns Governorships.
 - **Governorship** — a sub-grouping under a Council that owns Bacentas.
-- **Bacenta** — a mid-week home cell that owns Fellowships. A Bacenta has a
-  `meetingDay` of Wednesday | Thursday | Friday | Saturday and a `bankingCode`.
-- **Fellowship** — the smallest church unit; lives under a Bacenta.
+- **Bacenta** — the leaf node of the church hierarchy; a mid-week home cell.
+  A Bacenta has a `meetingDay` of Wednesday | Thursday | Friday | Saturday and
+  a `bankingCode`. Fellowships have been removed — Bacenta is now the smallest
+  unit.
 - **CreativeArts** — a parallel hierarchy under Campus for the creative arts ministry.
 - **Ministry** — a sub-unit of CreativeArts (also called a "Sonta" in some contexts).
 - **HubCouncil** — a Council inside the CreativeArts/Ministry tree.
