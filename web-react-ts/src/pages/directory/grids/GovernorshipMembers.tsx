@@ -17,6 +17,15 @@ export const GovernorshipMembers = () => {
       data={data?.governorships[0]?.members}
       loading={loading}
       error={error}
+      downloadConfig={
+        governorshipId
+          ? {
+              level: 'Governorship',
+              churchId: governorshipId,
+              churchName: data?.governorships[0]?.name,
+            }
+          : undefined
+      }
     />
   )
 }

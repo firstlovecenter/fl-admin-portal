@@ -17,6 +17,15 @@ const StreamMembers = () => {
       data={data && data.streams[0].members}
       loading={loading}
       error={error}
+      downloadConfig={
+        streamId
+          ? {
+              level: 'Stream',
+              churchId: streamId,
+              churchName: data?.streams[0]?.name,
+            }
+          : undefined
+      }
     />
   )
 }

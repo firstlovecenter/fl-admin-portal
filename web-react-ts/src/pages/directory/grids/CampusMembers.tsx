@@ -16,6 +16,15 @@ const CampusMembers = () => {
       data={data && data.campuses[0].members}
       loading={loading}
       error={error}
+      downloadConfig={
+        campusId
+          ? {
+              level: 'Campus',
+              churchId: campusId,
+              churchName: data?.campuses[0]?.name,
+            }
+          : undefined
+      }
     />
   )
 }

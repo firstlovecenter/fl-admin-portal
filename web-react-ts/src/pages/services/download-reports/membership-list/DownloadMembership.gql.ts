@@ -1,116 +1,13 @@
-import { gql } from '@apollo/client'
-
-const MEMBERSHIP_FIELDS = `
-  downloadMembership {
-    id
-    firstName
-    lastName
-    phoneNumber
-    whatsappNumber
-    email
-    visitationArea
-    maritalStatus {
-      status
-    }
-    gender {
-      gender
-    }
-    dob {
-      date
-    }
-    basonta {
-      id
-      name
-    }
-    bacenta {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-      }
-      governorship {
-        id
-        name
-        leader {
-          id
-          firstName
-          lastName
-          fullName
-        }
-      }
-    }
-  }
-`
-
-export const DISPLAY_FELLOWSHIP_MEMBERSHIP = gql`
-  query DisplayFellowshipMembership($id: ID!) {
-    fellowships(where: { id: $id }) {
-      id
-      name
-      ${MEMBERSHIP_FIELDS}
-    }
-  }
-`
-
-export const DISPLAY_BACENTA_MEMBERSHIP = gql`
-  query DisplayBacentaMembership($id: ID!) {
-    bacentas(where: { id: $id }) {
-      id
-      name
-      ${MEMBERSHIP_FIELDS}
-    }
-  }
-`
-
-export const DISPLAY_GOVERNORSHIP_MEMBERSHIP = gql`
-  query DisplayGovernorshipMembership($id: ID!) {
-    governorships(where: { id: $id }) {
-      id
-      name
-      ${MEMBERSHIP_FIELDS}
-    }
-  }
-`
-
-export const DISPLAY_COUNCIL_MEMBERSHIP = gql`
-  query DisplayCouncilMembership($id: ID!) {
-    councils(where: { id: $id }) {
-      id
-      name
-      ${MEMBERSHIP_FIELDS}
-    }
-  }
-`
-
-export const DISPLAY_STREAM_MEMBERSHIP = gql`
-  query DisplayStreamMembership($id: ID!) {
-    streams(where: { id: $id }) {
-      id
-      name
-      ${MEMBERSHIP_FIELDS}
-    }
-  }
-`
-
-export const DISPLAY_CAMPUS_MEMBERSHIP = gql`
-  query DisplayCampusMembership($id: ID!) {
-    campuses(where: { id: $id }) {
-      id
-      name
-      ${MEMBERSHIP_FIELDS}
-    }
-  }
-`
-
-export const DISPLAY_OVERSIGHT_MEMBERSHIP = gql`
-  query DisplayOversightMembership($id: ID!) {
-    oversights(where: { id: $id }) {
-      id
-      name
-      ${MEMBERSHIP_FIELDS}
-    }
-  }
-`
+// Queries moved to components/members-grids/download-membership.gql.ts so the
+// in-grid Download Membership modal does not depend on a page module. This
+// file re-exports them for the legacy `/download-reports/<level>/membership`
+// pages (still wired up via TrendsMenu) until those routes are retired.
+export {
+  DISPLAY_FELLOWSHIP_MEMBERSHIP,
+  DISPLAY_BACENTA_MEMBERSHIP,
+  DISPLAY_GOVERNORSHIP_MEMBERSHIP,
+  DISPLAY_COUNCIL_MEMBERSHIP,
+  DISPLAY_STREAM_MEMBERSHIP,
+  DISPLAY_CAMPUS_MEMBERSHIP,
+  DISPLAY_OVERSIGHT_MEMBERSHIP,
+} from 'components/members-grids/download-membership.gql'

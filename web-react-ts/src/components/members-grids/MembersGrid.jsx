@@ -12,19 +12,49 @@ import {
 } from 'components/ui/sheet'
 import { Skeleton } from 'components/ui/skeleton'
 import Filters from './Filters'
+import DownloadMembershipModal from './DownloadMembershipModal'
 import RoleView from 'auth/RoleView'
-import { permitLeaderAdmin } from 'permission-utils'
-import { Search, SlidersHorizontal, UserPlus } from 'lucide-react'
+import { permitLeaderAdmin, permitMe } from 'permission-utils'
+import { Download, Search, SlidersHorizontal, UserPlus } from 'lucide-react'
 import { cn } from 'components/lib/utils'
 
-const MembersGrid = ({ data, error, loading, title }) => {
+/**
+ * @typedef {{
+ *   id: string,
+ *   firstName?: string,
+ *   lastName?: string,
+ *   pictureUrl?: string,
+ *   bacenta?: { name?: string },
+ *   basonta?: { name?: string },
+ * }} GridMember
+ *
+ * @typedef {{
+ *   level: 'Fellowship' | 'Bacenta' | 'Governorship' | 'Council' | 'Stream' | 'Campus' | 'Oversight',
+ *   churchId: string,
+ *   churchName?: string,
+ * }} DownloadConfig
+ *
+ * @param {{
+ *   data: GridMember[] | null | undefined,
+ *   error: import('@apollo/client').ApolloError | undefined,
+ *   loading: boolean,
+ *   title: string | null,
+ *   downloadConfig?: DownloadConfig | null,
+ * }} props
+ */
+const MembersGrid = ({
+  data,
+  error,
+  loading,
+  title,
+  downloadConfig = null,
+}) => {
   const { filters } = useContext(ChurchContext)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.matchMedia('(min-width: 768px)').matches
+  const [downloadOpen, setDownloadOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(() =>
+    window.matchMedia('(min-width: 768px)').matches
   )
 
   useEffect(() => {
@@ -89,7 +119,7 @@ const MembersGrid = ({ data, error, loading, title }) => {
         </div>
 
         {/* Actions row */}
-        <div className="flex items-center justify-between px-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
+        <div className="flex items-center justify-between gap-2 px-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
           <RoleView
             roles={[
               ...permitLeaderAdmin('Bacenta'),
@@ -107,21 +137,37 @@ const MembersGrid = ({ data, error, loading, title }) => {
               </Button>
             </Link>
           </RoleView>
-          <Button
-            variant="ghost"
-            size="default"
-            className={cn(
-              'h-11 gap-1.5 text-sm text-foreground',
-              hasActiveFilters && 'text-members'
+          <div className="ml-auto flex items-center gap-1">
+            {downloadConfig && (
+              <RoleView roles={permitMe(downloadConfig.level)}>
+                <Button
+                  variant="ghost"
+                  size="default"
+                  className="h-11 gap-1.5 text-sm text-foreground"
+                  onClick={() => setDownloadOpen(true)}
+                  disabled={loading || !data}
+                >
+                  <Download className="size-4" />
+                  Download
+                </Button>
+              </RoleView>
             )}
-            onClick={() => setFilterOpen(true)}
-          >
-            <SlidersHorizontal className="size-4" />
-            Filters
-            {hasActiveFilters && (
-              <span className="size-1.5 rounded-full bg-members inline-block" />
-            )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="default"
+              className={cn(
+                'h-11 gap-1.5 text-sm text-foreground',
+                hasActiveFilters && 'text-members'
+              )}
+              onClick={() => setFilterOpen(true)}
+            >
+              <SlidersHorizontal className="size-4" />
+              Filters
+              {hasActiveFilters && (
+                <span className="size-1.5 rounded-full bg-members inline-block" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -153,6 +199,23 @@ const MembersGrid = ({ data, error, loading, title }) => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Download CSV modal — opens lazily, applies the same filters + search.
+          `key={level}` keeps useLazyQuery in lockstep with the church level
+          if a parent ever reuses the same MembersGrid instance across levels. */}
+      {downloadConfig && (
+        <DownloadMembershipModal
+          key={downloadConfig.level}
+          open={downloadOpen}
+          onOpenChange={setDownloadOpen}
+          level={downloadConfig.level}
+          churchId={downloadConfig.churchId}
+          churchName={downloadConfig.churchName ?? title}
+          filters={filters}
+          searchTerm={searchTerm}
+          isDesktop={isDesktop}
+        />
+      )}
     </div>
   )
 }

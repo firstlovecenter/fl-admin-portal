@@ -17,6 +17,15 @@ const CouncilMembers = () => {
       data={data && data.councils[0].members}
       loading={loading}
       error={error}
+      downloadConfig={
+        councilId
+          ? {
+              level: 'Council',
+              churchId: councilId,
+              churchName: data?.councils[0]?.name,
+            }
+          : undefined
+      }
     />
   )
 }

@@ -16,6 +16,15 @@ const OversightMembers = () => {
       data={data && data.oversights[0].members}
       loading={loading}
       error={error}
+      downloadConfig={
+        oversightId
+          ? {
+              level: 'Oversight',
+              churchId: oversightId,
+              churchName: data?.oversights[0]?.name,
+            }
+          : undefined
+      }
     />
   )
 }

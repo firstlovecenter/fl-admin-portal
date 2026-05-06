@@ -16,6 +16,15 @@ const BacentaMembers = () => {
       data={data?.bacentas[0]?.members}
       loading={loading}
       error={error}
+      downloadConfig={
+        bacentaId
+          ? {
+              level: 'Bacenta',
+              churchId: bacentaId,
+              churchName: data?.bacentas[0]?.name,
+            }
+          : undefined
+      }
     />
   )
 }
