@@ -1,5 +1,3 @@
-import MinusSign from 'components/buttons/PlusMinusSign/MinusSign'
-import PlusSign from 'components/buttons/PlusMinusSign/PlusSign'
 import {
   FieldArray,
   FieldArrayRenderProps,
@@ -10,8 +8,7 @@ import {
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { Col, Container, Row } from 'react-bootstrap'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
+import { Minus, Plus } from 'lucide-react'
 import SubmitButton from 'components/formik/SubmitButton'
 import {
   checkIfArrayHasRepeatingValues,
@@ -27,6 +24,7 @@ import ImageUpload from 'components/formik/ImageUpload'
 import { MemberContext } from 'contexts/MemberContext'
 import SearchMember from 'components/formik/SearchMember'
 import Textarea from 'components/formik/Textarea'
+import { Button } from 'components/ui/button'
 
 type ServiceFormProps = {
   church: Church
@@ -135,6 +133,7 @@ const ServiceForm = ({
             familyPicture: values.familyPicture,
           },
         })
+        if (res?.errors?.length) throw new Error(res.errors[0].message)
 
         if (recordType === 'RehearsalRecord') {
           clickCard(res.data?.RecordRehearsalMeeting)
@@ -160,115 +159,166 @@ const ServiceForm = ({
       validateOnMount
     >
       {(formik) => (
-        <Container>
-          <HeadingPrimary>
-            Record Your {event || 'Service'} Details
-          </HeadingPrimary>
-          <h5 className="text-secondary">{`${church?.name} ${church?.__typename}`}</h5>
+        <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+            <header className="mb-6 space-y-1">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                Record {event || 'Service'} Details
+              </h1>
+              {church && (
+                <p className="text-sm text-muted-foreground">
+                  {church.name} · {church.__typename}
+                </p>
+              )}
+            </header>
 
-          <Form className="form-group">
-            <Row className="row-cols-1 row-cols-md-2">
-              {/* <!-- Service Form--> */}
-              <Col className="mb-2">
-                <div className="form-row d-flex justify-content-center">
-                  <Col>
-                    <small className="form-text label">
-                      Date of Service*
-                      <i className="text-secondary">(Day/Month/Year)</i>
-                    </small>
-                    <Input
-                      name="serviceDate"
-                      type="date"
-                      placeholder="dd/mm/yyyy"
-                      aria-describedby="dateofservice"
-                    />
-                    <Input name="attendance" label="Attendance*" />
-                    <Input
-                      name="cediIncome"
-                      label={`Income (in ${currentUser.currency})*`}
-                    />
-                    <Textarea
-                      name="foreignCurrency"
-                      label="Foreign Currency and Cheques (if any) (Optional)"
-                      rows={2}
-                    />
-                    <Input name="numberOfTithers" label="Number of Tithers*" />
-                    <small className="label">Treasurers (minimum of 2)</small>
-                    <small className="yellow">
-                      Please fill the names in the order in which they appear
-                    </small>
-                    <FieldArray name="treasurers">
-                      {(fieldArrayProps: FieldArrayRenderProps) => {
-                        const { push, remove, form } = fieldArrayProps
-                        const { values } = form
-                        const { treasurers }: { treasurers: string[] } = values
-
-                        return (
-                          <>
-                            {treasurers.map((treasurer, index) => (
-                              <Row key={index} className="form-row">
-                                <Col>
-                                  <SearchMember
-                                    name={`treasurers[${index}]`}
-                                    placeholder="Start typing"
-                                    setFieldValue={formik.setFieldValue}
-                                    creativeArts={[
-                                      'CreativeArts',
-                                      'Ministry',
-                                      'HubCouncil',
-                                      'Hub',
-                                    ].includes(churchType)}
-                                    aria-describedby="Member List"
-                                    error={
-                                      !Array.isArray(formik.errors.treasurers)
-                                        ? formik.errors.treasurers
-                                        : formik.errors.treasurers &&
-                                          formik.errors.treasurers[index]
-                                    }
-                                  />
-                                </Col>
-
-                                <Col className="col-auto d-flex">
-                                  <PlusSign onClick={() => push('')} />
-                                  {index > 0 && (
-                                    <MinusSign onClick={() => remove(index)} />
-                                  )}
-                                </Col>
-                              </Row>
-                            ))}
-                          </>
-                        )
-                      }}
-                    </FieldArray>
-                    <Col className="my-2 mt-2">
-                      <small>Upload Treasurer Selfie*</small>
-                      <ImageUpload
-                        name="treasurerSelfie"
-                        placeholder="Choose"
-                        setFieldValue={formik.setFieldValue}
-                        aria-describedby="ImageUpload"
-                      />
-                    </Col>
-                    <Col className="my-2">
-                      <small className="mb-3">
-                        Upload Your Family Picture*
-                      </small>
-                      <ImageUpload
-                        name="familyPicture"
-                        placeholder="Choose"
-                        setFieldValue={formik.setFieldValue}
-                        aria-describedby="UploadfamilyPicture"
-                      />
-                    </Col>
-                    <div className="d-flex justify-content-center mt-3">
-                      <SubmitButton formik={formik} />
+            <Form>
+              {/* 2-column on lg+, stacked on mobile */}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+                {/* Left — primary data entry */}
+                <div className="space-y-6">
+                  <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="border-b border-border px-4 py-3">
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Service Details
+                      </h2>
                     </div>
-                  </Col>
+                    <div className="space-y-4 px-4 py-4">
+                      <Input
+                        name="serviceDate"
+                        type="date"
+                        label="Date of Service"
+                      />
+                      <Input name="attendance" label="Attendance" />
+                      <Input
+                        name="cediIncome"
+                        label={`Income (in ${currentUser.currency})`}
+                      />
+                      <Textarea
+                        name="foreignCurrency"
+                        label="Foreign Currency and Cheques (Optional)"
+                        rows={2}
+                      />
+                      <Input name="numberOfTithers" label="Number of Tithers" />
+                    </div>
+                  </div>
+
+                  <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="border-b border-border px-4 py-3">
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Treasurers
+                      </h2>
+                    </div>
+                    <div className="space-y-3 px-4 py-4">
+                      <p className="text-xs text-muted-foreground">
+                        Minimum of 2. Fill names in the order they appear.
+                      </p>
+                      <FieldArray name="treasurers">
+                        {(fieldArrayProps: FieldArrayRenderProps) => {
+                          const { push, remove, form } = fieldArrayProps
+                          const { values } = form
+                          const { treasurers }: { treasurers: string[] } =
+                            values
+
+                          return (
+                            <div className="space-y-3">
+                              {treasurers.map((treasurer, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-start gap-2"
+                                >
+                                  <div className="flex-1">
+                                    <SearchMember
+                                      name={`treasurers[${index}]`}
+                                      placeholder="Start typing"
+                                      setFieldValue={formik.setFieldValue}
+                                      creativeArts={[
+                                        'CreativeArts',
+                                        'Ministry',
+                                        'HubCouncil',
+                                        'Hub',
+                                      ].includes(churchType)}
+                                      aria-describedby="Member List"
+                                      error={
+                                        !Array.isArray(
+                                          formik.errors.treasurers
+                                        )
+                                          ? formik.errors.treasurers
+                                          : formik.errors.treasurers &&
+                                            formik.errors.treasurers[index]
+                                      }
+                                    />
+                                  </div>
+                                  <div className="flex shrink-0 gap-1 pt-1">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-11 w-11"
+                                      onClick={() => push('')}
+                                    >
+                                      <Plus className="h-4 w-4" />
+                                    </Button>
+                                    {index > 0 && (
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-11 w-11"
+                                        onClick={() => remove(index)}
+                                      >
+                                        <Minus className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        }}
+                      </FieldArray>
+                    </div>
+                  </div>
                 </div>
-              </Col>
-            </Row>
-          </Form>
-        </Container>
+
+                {/* Right — photos + submit (sticky on desktop) */}
+                <div className="space-y-6 lg:sticky lg:top-6">
+                  <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="border-b border-border px-4 py-3">
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Photos
+                      </h2>
+                    </div>
+                    <div className="space-y-5 px-4 py-4">
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-foreground">
+                          Treasurer Selfie
+                        </p>
+                        <ImageUpload
+                          name="treasurerSelfie"
+                          placeholder="Choose"
+                          setFieldValue={formik.setFieldValue}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-foreground">
+                          Service / Family Picture
+                        </p>
+                        <ImageUpload
+                          name="familyPicture"
+                          placeholder="Choose"
+                          setFieldValue={formik.setFieldValue}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <SubmitButton formik={formik} />
+                </div>
+              </div>
+            </Form>
+          </main>
+        </div>
       )}
     </Formik>
   )

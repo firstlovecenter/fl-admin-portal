@@ -2,8 +2,6 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { Col, Container, Row } from 'react-bootstrap'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
 import { throwToSentry } from 'global-utils'
 import { getMondayThisWeek } from 'jd-date-utils'
@@ -84,7 +82,7 @@ const ServiceForm = ({
         navigate(`/hub/sunday-meeting-details`)
       } else {
         clickCard(res.data.RecordServiceNoIncome)
-        navigate(`/${churchType}/service-details`)
+        navigate(`/${churchType.toLowerCase()}/service-details`)
       }
     } catch (error) {
       throwToSentry('', error)
@@ -101,50 +99,65 @@ const ServiceForm = ({
       validateOnMount
     >
       {(formik) => (
-        <Container>
-          <HeadingPrimary>
-            Record Your {event || 'Service'} Details
-          </HeadingPrimary>
-          <h5 className="text-secondary">{`${church?.name} ${church?.__typename}`}</h5>
+        <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+            <header className="mb-6 space-y-1">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                Record {event || 'Service'} Details
+              </h1>
+              {church && (
+                <p className="text-sm text-muted-foreground">
+                  {church.name} · {church.__typename}
+                </p>
+              )}
+            </header>
 
-          <Form className="form-group">
-            <Row className="row-cols-1 row-cols-md-2">
-              {/* <!-- Service Form--> */}
-              <Col className="mb-2">
-                <div className="form-row d-flex justify-content-center">
-                  <Col>
-                    <small className="form-text label">
-                      Date of Service*
-                      <i className="text-secondary">(Day/Month/Year)</i>
-                    </small>
+            <Form>
+              {/* 2-column on lg+, stacked on mobile */}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+                {/* Left — primary data entry */}
+                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                  <div className="border-b border-border px-4 py-3">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Service Details
+                    </h2>
+                  </div>
+                  <div className="space-y-4 px-4 py-4">
                     <Input
                       name="serviceDate"
                       type="date"
-                      placeholder="dd/mm/yyyy"
-                      aria-describedby="dateofservice"
+                      label="Date of Service"
                     />
-                    <Input name="attendance" label="Attendance*" />
+                    <Input name="attendance" label="Attendance" />
+                  </div>
+                </div>
 
-                    <Col className="my-2">
-                      <small className="mb-3">
-                        Upload Your Family Picture*
-                      </small>
+                {/* Right — photo + submit (sticky on desktop) */}
+                <div className="space-y-6 lg:sticky lg:top-6">
+                  <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="border-b border-border px-4 py-3">
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Photos
+                      </h2>
+                    </div>
+                    <div className="space-y-2 px-4 py-4">
+                      <p className="text-sm font-medium text-foreground">
+                        Service / Family Picture
+                      </p>
                       <ImageUpload
                         name="familyPicture"
                         placeholder="Choose"
                         setFieldValue={formik.setFieldValue}
-                        aria-describedby="UploadfamilyPicture"
                       />
-                    </Col>
-                    <div className="d-flex justify-content-center mt-5">
-                      <SubmitButton formik={formik} />
                     </div>
-                  </Col>
+                  </div>
+
+                  <SubmitButton formik={formik} />
                 </div>
-              </Col>
-            </Row>
-          </Form>
-        </Container>
+              </div>
+            </Form>
+          </main>
+        </div>
       )}
     </Formik>
   )

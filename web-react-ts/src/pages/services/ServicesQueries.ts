@@ -306,6 +306,76 @@ export const STREAM_SERVICE_RECORDS = gql`
   }
 `
 
+export const LATEST_SERVICE_FOR_BACENTA = gql`
+  query LatestServiceForBacenta($bacentaId: ID!) {
+    bacentas(where: { id: $bacentaId }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
+        }
+      }
+    }
+  }
+`
+
+export const LATEST_SERVICE_FOR_STREAM = gql`
+  query LatestServiceForStream($streamId: ID!) {
+    streams(where: { id: $streamId }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
+        }
+      }
+    }
+  }
+`
+
+export const LATEST_SERVICE_FOR_COUNCIL = gql`
+  query LatestServiceForCouncil($councilId: ID!) {
+    councils(where: { id: $councilId }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
+        }
+      }
+    }
+  }
+`
+
+export const LATEST_SERVICE_FOR_GOVERNORSHIP = gql`
+  query LatestServiceForGovernorship($governorshipId: ID!) {
+    governorships(where: { id: $governorshipId }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
+        }
+      }
+    }
+  }
+`
+
+export const LATEST_SERVICE_FOR_CAMPUS = gql`
+  query LatestServiceForCampus($campusId: ID!) {
+    campuses(where: { id: $campusId }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
+        }
+      }
+    }
+  }
+`
+
 export const HUB_BANKING_SLIP_QUERIES = gql`
   query hubMeetings($hubId: ID!, $skip: Int) {
     hubs(where: { id: $hubId }) {
