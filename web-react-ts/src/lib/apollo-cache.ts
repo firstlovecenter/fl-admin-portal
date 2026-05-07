@@ -29,6 +29,8 @@ const MEMBERS_PARENT_TYPES = [
   'Denomination',
 ] as const
 
+const TRANSACTIONS_PARENT_TYPES = ['Council', 'Stream', 'Campus'] as const
+
 // Mutation/preview projections call `history(limit: N)` and `members(limit: N)`
 // with no `$offset`. The off-the-shelf `offsetLimitPagination()` defaults a
 // missing `offset` to 0 and writes the response in-place at slots [0..N-1],
@@ -81,6 +83,11 @@ const membersFieldPolicy: FieldPolicy<Reference[]> = {
   merge: offsetMerge,
 }
 
+const transactionsFieldPolicy: FieldPolicy<Reference[]> = {
+  keyArgs: false,
+  merge: offsetMerge,
+}
+
 const buildApolloCache = (config?: InMemoryCacheConfig): InMemoryCache =>
   new InMemoryCache({
     ...config,
@@ -98,6 +105,11 @@ const buildApolloCache = (config?: InMemoryCacheConfig): InMemoryCache =>
             fields: {
               history: historyFieldPolicy,
               members: membersFieldPolicy,
+              ...(TRANSACTIONS_PARENT_TYPES.includes(
+                type as (typeof TRANSACTIONS_PARENT_TYPES)[number]
+              )
+                ? { transactions: transactionsFieldPolicy }
+                : {}),
             },
           },
         ])

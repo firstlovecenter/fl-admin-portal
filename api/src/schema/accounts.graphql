@@ -88,15 +88,21 @@ extend type Campus {
       """
       columnName: "bussingSocietyBalance"
     )
-  transactions: [AccountTransaction!]!
+  transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(council:Council)
-      MATCH (council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
-
-      RETURN transaction ORDER BY transaction.lastModified DESC
+      MATCH (this)-[:HAS*2]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN transaction ORDER BY transaction.lastModified DESC, transaction.id SKIP $offset LIMIT $limit
       """
       columnName: "transaction"
+    )
+  transactionCount: Int!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS*2]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN count(DISTINCT transaction) AS total
+      """
+      columnName: "total"
     )
 }
 
@@ -133,15 +139,21 @@ extend type Stream {
       """
       columnName: "bussingSocietyBalance"
     )
-  transactions: [AccountTransaction!]!
+  transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(council:Council)
-      MATCH (council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
-
-      RETURN transaction ORDER BY transaction.lastModified DESC
+      MATCH (this)-[:HAS]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN transaction ORDER BY transaction.lastModified DESC, transaction.id SKIP $offset LIMIT $limit
       """
       columnName: "transaction"
+    )
+  transactionCount: Int!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN count(DISTINCT transaction) AS total
+      """
+      columnName: "total"
     )
 }
 
@@ -150,8 +162,22 @@ extend type Council {
   bussingAmount: Float
   weekdayBalance: Float!
   bussingSocietyBalance: Float
-  transactions: [AccountTransaction!]!
-    @relationship(type: "HAS_TRANSACTION", direction: OUT)
+  transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN transaction ORDER BY transaction.lastModified DESC, transaction.id SKIP $offset LIMIT $limit
+      """
+      columnName: "transaction"
+    )
+  transactionCount: Int!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN count(DISTINCT transaction) AS total
+      """
+      columnName: "total"
+    )
 }
 
 extend type Mutation {
