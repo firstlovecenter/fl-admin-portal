@@ -1238,3 +1238,19 @@ export const OVERSIGHT_DEFAULTERS = gql`
     }
   }
 `
+
+export const DENOMINATION_DEFAULTERS = gql`
+  query denominationDefaulters($id: ID!) {
+    denominations(where: { id: $id }) {
+      id
+      name
+      activeStreamCount
+
+      streamFormDefaultersThisWeekCount
+      streamBankingDefaultersThisWeekCount
+      streamBankedThisWeekCount
+      streamServicesThisWeekCount
+      streamCancelledServicesThisWeekCount
+    }
+  }
+`
