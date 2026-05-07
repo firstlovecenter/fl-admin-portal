@@ -17,15 +17,15 @@ import { VehicleRecord } from '../arrivals-types'
 import Input from 'components/formik/Input'
 import CloudinaryImage from 'components/CloudinaryImage'
 import '../Arrivals.css'
-import {
-  convertOutboundToString,
-  convertOutboundToBoolean,
-} from 'pages/directory/update/UpdateBusPaymentDetails'
 import CurrencySpan from 'components/CurrencySpan'
 import TableFromArrays from 'components/TableFromArrays/TableFromArrays'
 import useModal from 'hooks/useModal'
 import RadioButtons from 'components/formik/RadioButtons'
-import { OUTBOUND_OPTIONS } from '../arrivals-utils'
+import {
+  convertOutboundToBoolean,
+  convertOutboundToString,
+  OUTBOUND_OPTIONS,
+} from '../arrivals-utils'
 
 type FormOptions = {
   momoNumber: string

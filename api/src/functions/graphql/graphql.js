@@ -6,6 +6,10 @@ const { jwtDecode } = require('jwt-decode')
 const { typeDefs } = require('./schema/graphql-schema')
 const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
+const {
+  isDownloadEvent,
+  handleDownloadLambdaEvent,
+} = require('./resolvers/downloads/downloads-lambda')
 
 // Server state
 let isInitialized = false
@@ -130,8 +134,20 @@ exports.handler = async (event, context) => {
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+
+  // Membership CSV downloads share this Lambda but do not go through Apollo
+  // — they stream Cypher rows into a base64-encoded CSV body. Dispatched
+  // here before the body-parsing path because GET requests have no body.
+  if (isDownloadEvent(event)) {
+    return handleDownloadLambdaEvent(
+      event,
+      driver,
+      corsHeaders,
+      SECRETS?.JWT_SECRET
+    )
   }
 
   try {

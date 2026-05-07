@@ -12,6 +12,7 @@ import {
 } from 'components/ui/table'
 import { Church, Member } from 'global-types'
 import { getHumanReadableDate } from 'global-utils'
+import { getAccessToken } from 'lib/auth-service'
 import {
   Check,
   ChevronLeft,
@@ -19,15 +20,13 @@ import {
   Download,
   FileSpreadsheet,
   Inbox,
+  Loader2,
   Users,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
-import { CSVLink } from 'react-csv'
 import { useNavigate } from 'react-router-dom'
 
-// Birthdays are formatted day + month only (no year), so we can't reuse
-// global-utils' getHumanReadableDate which always includes the year.
 const formatBirthday = (dateString?: string) => {
   if (!dateString) return ''
   const date = new Date(dateString)
@@ -37,14 +36,19 @@ const formatBirthday = (dateString?: string) => {
 
 const ILLEGAL_FILENAME_CHARS = /[/\\:*?"<>|]/g
 
-type DownloadMembershipListProps = {
-  church: Church
-  loading: boolean
-  error: ApolloError | undefined
-  churchType: string
+// Mirrors the server's filename builder so the user sees the same name in
+// the "Filename" panel before downloading. The browser still uses whatever
+// Content-Disposition the server returns; this is display-only.
+const buildDisplayFilename = (churchName: string, churchType: string) => {
+  const today = new Date().toISOString().slice(0, 10)
+  const safeName = (churchName || churchType).replace(
+    ILLEGAL_FILENAME_CHARS,
+    '-'
+  )
+  return `${safeName} ${churchType} Membership - ${today}.csv`
 }
 
-const headers = [
+const previewHeaders = [
   { label: 'Governorship', key: 'governorship' },
   { label: 'Governorship Leader', key: 'governorshipLeader' },
   { label: 'Bacenta', key: 'bacenta' },
@@ -61,11 +65,11 @@ const headers = [
   { label: 'Basonta', key: 'basonta' },
 ] as const
 
-type RowKey = (typeof headers)[number]['key']
-type Row = { id: string } & Record<RowKey, string>
+type PreviewKey = (typeof previewHeaders)[number]['key']
+type PreviewRow = { id: string } & Record<PreviewKey, string>
 
-const buildRows = (church: Church | undefined): Row[] =>
-  church?.downloadMembership?.map((member: Member) => ({
+const buildPreviewRows = (church: Church | undefined): PreviewRow[] =>
+  church?.members?.map((member: Member) => ({
     id: member.id,
     governorship: member.bacenta?.governorship?.name ?? '',
     governorshipLeader: member.bacenta?.governorship?.leader?.fullName ?? '',
@@ -83,10 +87,61 @@ const buildRows = (church: Church | undefined): Row[] =>
     basonta: member.basonta?.name ?? '',
   })) ?? []
 
+const filenameFromContentDisposition = (
+  header: string | null
+): string | undefined => {
+  if (!header) return undefined
+  const utf8 = header.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8?.[1]) {
+    try {
+      return decodeURIComponent(utf8[1].trim())
+    } catch {
+      /* fall through to plain filename */
+    }
+  }
+  const plain = header.match(/filename="?([^";]+)"?/i)
+  return plain?.[1]?.trim()
+}
+
+const buildDownloadUrl = (level: string, churchId: string): string => {
+  // Match the absolute fallback used in src/index.tsx so a dev without
+  // VITE_SYNAGO_GRAPHQL_URI set still hits the API on :4001 and not the
+  // Vite dev server on :3000. The download endpoint sits at the same host
+  // as `/graphql`, so we derive its base by stripping the GraphQL path.
+  const graphqlUri =
+    import.meta.env.VITE_SYNAGO_GRAPHQL_URI || 'http://localhost:4001/graphql'
+  const apiBase = graphqlUri.replace(/\/graphql\/?$/, '')
+  return `${apiBase}/downloads/membership/${encodeURIComponent(
+    level
+  )}/${encodeURIComponent(churchId)}.csv`
+}
+
+const triggerBlobDownload = (blob: Blob, filename: string) => {
+  const objectUrl = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = objectUrl
+  anchor.download = filename
+  anchor.rel = 'noopener'
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+  // Revoke after the download has had a chance to start. Some mobile
+  // PWAs need the URL to live a bit past the click().
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+}
+
+type DownloadMembershipListProps = {
+  church: Church
+  loading: boolean
+  error: ApolloError | undefined
+  churchType: string
+}
+
 const DownloadMembershipList = (props: DownloadMembershipListProps) => {
   const { church, loading, error, churchType } = props
   const navigate = useNavigate()
   const [copied, setCopied] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     if (!copied) return undefined
@@ -96,23 +151,49 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
 
   const today = new Date().toISOString().slice(0, 10)
   const generatedOn = getHumanReadableDate(today) ?? today
-  const rows = buildRows(church)
-  const total = rows.length
-  const churchName = (church?.name ?? '').replace(ILLEGAL_FILENAME_CHARS, '-')
-  const filename = `${
-    churchName ? `${churchName} ` : ''
-  }${churchType} Membership - ${generatedOn}.csv`
+  const previewRows = buildPreviewRows(church)
+  const total = church?.memberCount ?? 0
+  const displayFilename = buildDisplayFilename(church?.name ?? '', churchType)
 
   const copyFilename = async () => {
     try {
-      await navigator.clipboard.writeText(filename)
+      await navigator.clipboard.writeText(displayFilename)
       setCopied(true)
     } catch {
       toast.error('Could not copy filename')
     }
   }
 
-  const previewRows = rows.slice(0, 5)
+  const handleDownload = async () => {
+    if (!church?.id) return
+    const token = getAccessToken()
+    if (!token) {
+      toast.error('Sign in expired. Please sign in again.')
+      return
+    }
+
+    setDownloading(true)
+    try {
+      const res = await fetch(buildDownloadUrl(churchType, church.id), {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        throw new Error(text || `Download failed (${res.status})`)
+      }
+      const blob = await res.blob()
+      const serverName = filenameFromContentDisposition(
+        res.headers.get('Content-Disposition')
+      )
+      triggerBlobDownload(blob, serverName ?? displayFilename)
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Could not download membership'
+      toast.error(message)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
@@ -176,7 +257,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                     </p>
                     <div className="mt-2 flex items-center gap-2">
                       <p className="min-w-0 flex-1 truncate font-mono text-sm text-foreground">
-                        {filename}
+                        {displayFilename}
                       </p>
                       <Button
                         type="button"
@@ -198,18 +279,17 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                   </section>
 
                   <Button
-                    asChild
+                    type="button"
+                    onClick={handleDownload}
+                    disabled={downloading || !church?.id}
                     className="h-12 w-full gap-2 text-base font-semibold"
                   >
-                    <CSVLink
-                      data={rows}
-                      headers={[...headers]}
-                      filename={filename}
-                      target="_self"
-                    >
+                    {downloading ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : (
                       <Download className="size-5" />
-                      Download CSV
-                    </CSVLink>
+                    )}
+                    {downloading ? 'Generating…' : 'Download CSV'}
                   </Button>
                 </div>
 
@@ -224,7 +304,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                         ? `Showing first ${previewRows.length} of ${total.toLocaleString(
                             'en-GH'
                           )}`
-                        : `Showing ${total} of ${total}`}
+                        : `Showing ${previewRows.length} of ${total}`}
                     </p>
                   </div>
                   <Table>
@@ -233,7 +313,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                         <TableHead className="w-10 px-3 text-muted-foreground">
                           #
                         </TableHead>
-                        {headers.map((h) => (
+                        {previewHeaders.map((h) => (
                           <TableHead key={h.key} className="px-3">
                             {h.label}
                           </TableHead>
@@ -246,7 +326,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                           <TableCell className="px-3 font-medium text-muted-foreground tabular-nums">
                             {index + 1}
                           </TableCell>
-                          {headers.map((h) => (
+                          {previewHeaders.map((h) => (
                             <TableCell
                               key={h.key}
                               className={

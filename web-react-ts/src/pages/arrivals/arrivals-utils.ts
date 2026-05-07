@@ -31,6 +31,12 @@ export const OUTBOUND_OPTIONS: FormikSelectOptions = [
   { key: 'In and Out', value: 'In and Out' },
 ]
 
+export const convertOutboundToBoolean = (value: string | boolean) =>
+  value === 'In and Out'
+
+export const convertOutboundToString = (value: boolean) =>
+  value === true ? 'In and Out' : 'In Only'
+
 const isArrivalsToday = (bacenta: { stream: StreamWithArrivals }) => {
   if (!bacenta) return false
   if (import.meta.env.DEV) return true

@@ -267,14 +267,98 @@ const buildChildrenWeeklyCypher = (parentLevel: string, childLevel: string) => `
 `
 
 /**
+ * Per-Bacenta-child weekly report. Aggregators only roll Bacenta data UP into
+ * Governorship+ aggregates — no `AggregateServiceRecord` /
+ * `AggregateBussingRecord` is ever written for a Bacenta. So the
+ * Governorship → Bacenta sub-churches view must read raw `ServiceRecord` /
+ * `BussingRecord` per child, mirroring `bacentaWeeklyReport`'s shape.
+ *
+ * The two `WHERE year IS NOT NULL AND week IS NOT NULL` guards mirror the
+ * Bacenta-self path: when an OPTIONAL MATCH yields no rows, the subsequent
+ * aggregation still emits one synthetic null-keyed row that would otherwise
+ * leak through with a null `id`.
+ */
+const governorshipBacentaSubChurchesCypher = `
+  MATCH (parent:Governorship {id: $id})-[:HAS]->(child:Bacenta)
+
+  CALL {
+    WITH child
+    OPTIONAL MATCH (child)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(t:TimeGraph)
+    WHERE NOT record:NoService
+      AND (t.date.year * 100 + t.date.week) >= $startWeekKey
+      AND (t.date.year * 100 + t.date.week) <= $endWeekKey
+    WITH DISTINCT t.date.year AS year, t.date.week AS week, record
+    WITH year, week,
+         count(DISTINCT record) AS numberOfServices,
+         round(toFloat(sum(coalesce(record.attendance, 0))), 2) AS attendance,
+         round(toFloat(sum(coalesce(record.income, 0))), 2) AS income,
+         round(toFloat(sum(coalesce(record.dollarIncome, 0))), 2) AS dollarIncome
+    WITH year, week, numberOfServices, attendance, income, dollarIncome
+    WHERE year IS NOT NULL AND week IS NOT NULL
+    RETURN collect({
+      week: week, year: year,
+      numberOfServices: numberOfServices,
+      attendance: attendance,
+      income: income,
+      dollarIncome: dollarIncome
+    }) AS serviceRows
+  }
+
+  CALL {
+    WITH child
+    OPTIONAL MATCH (child)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
+    WHERE (t.date.year * 100 + t.date.week) >= $startWeekKey
+      AND (t.date.year * 100 + t.date.week) <= $endWeekKey
+    WITH DISTINCT t.date.year AS year, t.date.week AS week, record
+    WITH year, week,
+         round(toFloat(sum(coalesce(record.attendance, 0))), 2) AS attendance,
+         round(toFloat(sum(coalesce(record.leaderDeclaration, 0))), 2) AS leaderDeclaration,
+         sum(coalesce(record.numberOfSprinters, 0)) AS numberOfSprinters,
+         sum(coalesce(record.numberOfUrvans, 0)) AS numberOfUrvans,
+         sum(coalesce(record.numberOfCars, 0)) AS numberOfCars,
+         round(toFloat(sum(coalesce(record.bussingTopUp, 0))), 2) AS bussingTopUp
+    WITH year, week, attendance, leaderDeclaration, numberOfSprinters, numberOfUrvans, numberOfCars, bussingTopUp
+    WHERE year IS NOT NULL AND week IS NOT NULL
+    RETURN collect({
+      week: week, year: year,
+      attendance: attendance,
+      leaderDeclaration: leaderDeclaration,
+      numberOfSprinters: numberOfSprinters,
+      numberOfUrvans: numberOfUrvans,
+      numberOfCars: numberOfCars,
+      bussingTopUp: bussingTopUp
+    }) AS bussingRows
+  }
+
+  WITH child, serviceRows, bussingRows
+  WITH child,
+       [r IN serviceRows | r.year * 100 + r.week] +
+       [r IN bussingRows | r.year * 100 + r.week] AS allKeys,
+       serviceRows, bussingRows
+  UNWIND allKeys AS weekKey
+  WITH child, weekKey, serviceRows, bussingRows
+  WITH child, weekKey,
+       head([r IN serviceRows WHERE r.year * 100 + r.week = weekKey | r]) AS serviceAgg,
+       head([r IN bussingRows WHERE r.year * 100 + r.week = weekKey | r]) AS bussingAgg
+  WITH DISTINCT child, weekKey, serviceAgg, bussingAgg
+  ORDER BY child.name ASC, weekKey DESC
+
+  WITH collect(${weeklyEntryReturn(
+    'child',
+    'Bacenta',
+    'serviceAgg',
+    'bussingAgg'
+  )}) AS entries
+  RETURN entries
+`
+
+/**
  * Bacenta has no sub-churches in the directory hierarchy. Return its own
  * weekly rows so the FE doesn't need to special-case.
  */
 export const bacentaSubChurchesReport = bacentaWeeklyReport
-export const governorshipSubChurchesReport = buildChildrenWeeklyCypher(
-  'Governorship',
-  'Bacenta'
-)
+export const governorshipSubChurchesReport =
+  governorshipBacentaSubChurchesCypher
 export const councilSubChurchesReport = buildChildrenWeeklyCypher(
   'Council',
   'Governorship'

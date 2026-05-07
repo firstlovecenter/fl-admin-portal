@@ -11,6 +11,7 @@ import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
+import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 const startServer = async () => {
   const SECRETS = await loadSecrets()
@@ -141,9 +142,11 @@ const startServer = async () => {
     })
   )
 
-  await new Promise((resolve) =>
+  mountDownloadRoutes(app, driver, SECRETS.JWT_SECRET)
+
+  await new Promise((resolve) => {
     httpServer.listen({ port: SECRETS.GRAPHQL_SERVER_PORT || 4001 }, resolve)
-  )
+  })
   console.log(
     `🚀 GraphQL Server ready at http://${
       SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'

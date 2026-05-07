@@ -29,6 +29,7 @@ import {
 import { Skeleton } from 'components/ui/skeleton'
 import useModal from 'hooks/useModal'
 import { cn } from 'components/lib/utils'
+import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
 import { BACENTA_ARRIVALS } from './arrivalsQueries'
 import {
   beforeArrivalDeadline,
@@ -88,6 +89,7 @@ const BacentaArrivals = () => {
   const { show, handleClose } = useModal()
   const [showCodeFullscreen, setShowCodeFullscreen] = useState(false)
   const [showMobPic, setShowMobPic] = useState(false)
+  const [editBussingOpen, setEditBussingOpen] = useState(false)
   const navigate = useNavigate()
   const today = new Date().toISOString().slice(0, 10)
   const { data, loading, error, refetch } = useQuery(BACENTA_ARRIVALS, {
@@ -260,7 +262,7 @@ const BacentaArrivals = () => {
                         variant="destructive"
                         size="lg"
                         className="w-full gap-2"
-                        onClick={() => navigate('/bacenta/editbussing')}
+                        onClick={() => setEditBussingOpen(true)}
                       >
                         <Wallet className="size-4" />
                         Update payment details
@@ -413,6 +415,12 @@ const BacentaArrivals = () => {
                 </Button>
               </DialogContent>
             </Dialog>
+
+            {/* Bus payment details dialog */}
+            <UpdateBusPaymentDialog
+              open={editBussingOpen}
+              onOpenChange={setEditBussingOpen}
+            />
 
             {/* Mobilisation picture lightbox */}
             <Dialog open={showMobPic} onOpenChange={setShowMobPic}>
