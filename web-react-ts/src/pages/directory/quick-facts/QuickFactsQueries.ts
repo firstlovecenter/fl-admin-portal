@@ -40,6 +40,8 @@ export const GOVERNORSHIP_AVG_WEEKDAY_STATS = gql`
         id
         firstName
         lastName
+        nameWithTitle
+        pictureUrl
       }
       avgWeekdayStats(days: $days) {
         income
