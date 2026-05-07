@@ -54,10 +54,15 @@ type Member {
       """
       columnName: "memberCount"
     )
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   loggedHistory: [HistoryLog!]! @relationship(type: "LOGGED_BY", direction: IN)
   bacenta: Bacenta @relationship(type: "BELONGS_TO", direction: OUT)
@@ -318,7 +323,8 @@ interface Church {
   memberSearch(key: String!, limit: Int!): [Member!]!
   memberCount: Int!
   pastorCount: Int
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
+  historyCount: Int!
 
   serviceLogs: [ServiceLog!]! @declareRelationship
   services(limit: Int!, skip: Int): [ServiceRecord!]!
@@ -436,10 +442,15 @@ type Denomination implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -562,10 +573,15 @@ type Oversight implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -682,10 +698,15 @@ type Campus implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -821,10 +842,15 @@ type Stream implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -933,10 +959,15 @@ type Council implements Church {
     )
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -1037,10 +1068,15 @@ type Governorship implements Church {
   council: Council @relationship(type: "HAS", direction: IN)
 
   admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -1125,10 +1161,15 @@ type Bacenta implements Church {
   deputyLeader: Member @relationship(type: "DEPUTY_LEADS", direction: IN)
 
   governorship: Governorship @relationship(type: "HAS", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int! = 12, skip: Int = 0): [ServiceRecord!]!
@@ -1161,9 +1202,14 @@ type Basonta {
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
 }
