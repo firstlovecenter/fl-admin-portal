@@ -303,7 +303,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               name: props.name,
               __typename: props.churchType,
             })
-            navigate(`/services/${props.churchType.toLowerCase()}`)
+            navigate('/services')
           }}
         >
           Service Forms
