@@ -77,8 +77,9 @@ const CancelledServiceForm = ({
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
             <header className="mb-6 space-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                I Cancelled My Service
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                Cancelled{' '}
+                <span className="text-churches">Service</span>
               </h1>
               {church && (
                 <p className="text-sm text-muted-foreground">

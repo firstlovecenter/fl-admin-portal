@@ -122,7 +122,7 @@ export default {
 | Token | Tailwind class | Usage |
 | --- | --- | --- |
 | Display | `text-3xl font-bold tracking-tight` | Page hero numbers (offering total, member count) |
-| Heading 1 | `text-2xl font-semibold` | Page title |
+| Heading 1 | `text-2xl font-bold tracking-tight` | Page title — **always `font-bold`, never `font-semibold`** |
 | Heading 2 | `text-lg font-semibold` | Section / card title |
 | Heading 3 | `text-base font-medium` | Sub-section label |
 | Body | `text-sm` | Default body copy |
@@ -130,6 +130,57 @@ export default {
 | Monospace | `font-mono text-sm` | IDs, phone numbers, amounts |
 
 Numbers that represent money or counts get `tabular-nums` (`font-variant-numeric: tabular-nums`) via the Tailwind class `tabular-nums`.
+
+### Page heading convention — MANDATORY
+
+Every redesigned page **must** use this `<h1>` pattern:
+
+```tsx
+<h1 className="text-2xl font-bold tracking-tight text-foreground">
+  {contextName}{' '}
+  <span className="text-[feature-accent]">Section Name</span>
+</h1>
+```
+
+- **`contextName`** — the church name, entity name, or omit when the section name is the full heading (e.g. Reports, Arrivals hub).
+- **`Section Name`** — the domain label that matches the sidebar accent for that section.
+- **Always `font-bold`** — never `font-semibold` on an `<h1>`.
+- On responsive pages add `lg:text-3xl` for the desktop breakpoint.
+
+**Section → accent class mapping** (from `navigation-config.tsx`):
+
+| Section | Accent class |
+| --- | --- |
+| Arrivals | `text-arrivals` |
+| Services / Trends / Graphs | `text-churches` |
+| Banking / Reports | `text-banking` |
+| Members / Directory | `text-members` |
+
+**Examples:**
+
+```tsx
+// Arrivals page
+<h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+  {bacenta?.name} <span className="text-arrivals">Arrivals</span>
+</h1>
+
+// Services page
+<h1 className="text-2xl font-bold tracking-tight text-foreground">
+  {church?.name} <span className="text-churches">Services</span>
+</h1>
+
+// Banking page
+<h1 className="text-2xl font-bold tracking-tight text-foreground">
+  {church?.name} <span className="text-banking">Banking</span>
+</h1>
+
+// Section hub (no church name context)
+<h1 className="text-2xl font-bold tracking-tight text-foreground">
+  <span className="text-arrivals">Arrivals</span>
+</h1>
+```
+
+When a skeleton is needed during loading, wrap the entire `<h1>` content in the loading check — do not show partial text while loading.
 
 ---
 

@@ -116,11 +116,12 @@ const ServiceDetailsNoIncome = ({
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         {/* Page header */}
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {church?.__typename} Service Details
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {church?.name}{' '}
+            <span className="text-churches">Service Details</span>
           </h1>
           <p className="text-sm text-muted-foreground">
-            {church?.name} · {church?.__typename}
+            {church?.__typename}
           </p>
           {service?.created_by && (
             <p className="text-sm text-muted-foreground">

@@ -287,11 +287,12 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
         <div className="space-y-6">
           {/* Page header */}
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {church?.__typename} Meeting Details
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {church?.name}{' '}
+              <span className="text-churches">Meeting Details</span>
             </h1>
             <p className="text-sm text-muted-foreground">
-              {church?.name} · {church?.__typename}
+              {church?.__typename}
             </p>
             {service?.created_by && (
               <p className="text-sm text-muted-foreground">

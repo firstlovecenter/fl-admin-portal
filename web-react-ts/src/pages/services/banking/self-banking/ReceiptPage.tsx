@@ -134,11 +134,9 @@ const ReceiptPage = () => {
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Self-Banking
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Receipt
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Self-Banking{' '}
+            <span className="text-banking">Receipt</span>
           </h1>
         </header>
 

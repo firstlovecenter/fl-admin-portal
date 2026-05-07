@@ -139,11 +139,11 @@ const BacentaArrivals = () => {
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
             {/* Page header */}
             <header className="mb-6 space-y-1 lg:mb-8">
-              {loading ? (
+              {loading || !bacenta ? (
                 <Skeleton className="h-8 w-64" />
               ) : (
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
-                  {bacenta?.name}{' '}
+                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                  {bacenta.name}{' '}
                   <span className="text-arrivals">Arrivals</span>
                 </h1>
               )}

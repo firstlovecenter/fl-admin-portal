@@ -155,21 +155,14 @@ const PayOffering = (props: PayOfferingProps) => {
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         {/* Header */}
         <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Offering Self-Banking
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {loading || !church ? (
-              <Skeleton className="h-8 w-64" />
-            ) : (
-              <>
-                {church.name}{' '}
-                <span className="text-muted-foreground">
-                  {church.__typename}
-                </span>
-              </>
-            )}
-          </h1>
+          {loading || !church ? (
+            <Skeleton className="h-8 w-64" />
+          ) : (
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {church.name}{' '}
+              <span className="text-banking">Banking</span>
+            </h1>
+          )}
           {church?.bankingCode && (
             <p className="font-mono text-sm text-muted-foreground">
               Banking Code: {church.bankingCode}

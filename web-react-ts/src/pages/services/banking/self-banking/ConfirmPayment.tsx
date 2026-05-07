@@ -44,9 +44,9 @@ const ConfirmPayment = () => {
               </span>
             )}
             <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              <p className="text-2xl font-bold tracking-tight text-foreground">
                 Processing!
-              </h1>
+              </p>
               <p className="mx-auto max-w-sm text-sm text-muted-foreground">
                 Your transaction is being processed. Please wait for the prompt
                 on your phone to authorise the transaction.

@@ -77,7 +77,7 @@ const BusFormDetails = () => {
                 </>
               ) : (
                 <>
-                  <h1 className="text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     Bacenta{' '}
                     <span className="text-arrivals">Bussing Details</span>
                   </h1>

@@ -342,8 +342,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3">
           <Breadcrumb breadcrumb={props.breadcrumb} />
           <div className="flex items-center justify-between mt-1">
-            <h1 className="text-xl font-semibold text-foreground">
-              {props.name ? `${props.name} ${props.churchType}` : ''}
+            <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+              {props.name}{' '}
+              <span className="text-members">{props.churchType}</span>
             </h1>
             {directoryLock(currentUser, props.churchType) && (
               <RoleView roles={props.editPermitted} directoryLock>

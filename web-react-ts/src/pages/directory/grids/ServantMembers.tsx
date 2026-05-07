@@ -48,7 +48,8 @@ const ServantMembers = () => {
 
   return (
     <MembersGrid
-      title={data ? `${data?.members[0]?.fullName} Membership` : null}
+      contextName={data ? data?.members[0]?.fullName : null}
+      sectionLabel="Members"
       data={data?.members[0]?.members}
       loading={loading}
       error={error}

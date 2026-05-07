@@ -38,7 +38,9 @@ import { cn } from 'components/lib/utils'
  *   data: GridMember[] | null | undefined,
  *   error: import('@apollo/client').ApolloError | undefined,
  *   loading: boolean,
- *   title: string | null,
+ *   title?: string | null,
+ *   contextName?: string | null,
+ *   sectionLabel?: string | null,
  *   downloadConfig?: DownloadConfig | null,
  * }} props
  */
@@ -47,6 +49,8 @@ const MembersGrid = ({
   error,
   loading,
   title,
+  contextName = null,
+  sectionLabel = null,
   downloadConfig = null,
 }) => {
   const { filters } = useContext(ChurchContext)
@@ -89,9 +93,14 @@ const MembersGrid = ({
           {/* Title + count */}
           <div className="flex items-center justify-between mb-3">
             {loading || !data ? (
-              <Skeleton className="h-6 w-40 rounded" />
+              <Skeleton className="h-8 w-48 rounded" />
+            ) : contextName || sectionLabel ? (
+              <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
+                {contextName && <>{contextName}{' '}</>}
+                <span className="text-members">{sectionLabel ?? 'Members'}</span>
+              </h1>
             ) : (
-              <h1 className="text-lg font-semibold text-foreground leading-tight truncate">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
                 {title || 'Members'}
               </h1>
             )}

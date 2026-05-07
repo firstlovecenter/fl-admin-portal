@@ -97,11 +97,9 @@ const FormAddVehicleRecord = () => {
           <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
             <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
               <header className="mb-6 space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-wider text-arrivals">
-                  Record Bussing Data
-                </p>
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                  {bacenta?.name ? `${bacenta.name} Bacenta` : 'Bacenta'}
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                  {bacenta?.name ?? 'Bacenta'}{' '}
+                  <span className="text-arrivals">Arrivals</span>
                 </h1>
                 {serviceDate && (
                   <p className="text-sm text-muted-foreground">

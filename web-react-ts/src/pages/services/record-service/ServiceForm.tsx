@@ -162,12 +162,13 @@ const ServiceForm = ({
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
             <header className="mb-6 space-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Record {event || 'Service'} Details
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                {church?.name}{' '}
+                <span className="text-churches">{event || 'Service'}</span>
               </h1>
               {church && (
                 <p className="text-sm text-muted-foreground">
-                  {church.name} · {church.__typename}
+                  {church.__typename}
                 </p>
               )}
             </header>

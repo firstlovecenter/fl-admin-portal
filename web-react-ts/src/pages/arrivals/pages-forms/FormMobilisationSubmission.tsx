@@ -105,7 +105,7 @@ const FormMobilisationSubmission = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <main className="mx-auto w-full max-w-xl px-4 py-5 lg:px-6 lg:py-8">
           <header className="mb-6 space-y-1 lg:mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
               Pre-Mobilisation{' '}
               <span className="text-arrivals">Picture</span>
             </h1>

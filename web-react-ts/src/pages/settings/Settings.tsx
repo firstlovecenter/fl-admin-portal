@@ -64,7 +64,7 @@ const Settings = () => {
           <SettingsIcon className="size-5 text-sidebar-foreground/70" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Settings</h1>
           <p className="text-sm text-muted-foreground">
             Preferences saved to this device only.
           </p>

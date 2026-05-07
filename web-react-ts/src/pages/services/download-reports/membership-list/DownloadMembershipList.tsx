@@ -128,17 +128,12 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
             <ChevronLeft className="size-5" />
           </Button>
           <div className="min-w-0 flex-1 space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-banking">
-              Membership Export
-            </p>
             {loading ? (
               <Skeleton className="h-7 w-48" />
             ) : (
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                {church?.name ?? '—'}
-                <span className="ml-2 text-base font-normal text-muted-foreground">
-                  {churchType}
-                </span>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                {church?.name ?? '—'}{' '}
+                <span className="text-members">Members</span>
               </h1>
             )}
           </div>
@@ -156,7 +151,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                 <div className="flex flex-col gap-6 lg:sticky lg:top-6">
                   <section className="rounded-xl border border-border bg-card p-5">
                     <div className="flex items-start gap-4">
-                      <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-banking/10 text-banking">
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-members/10 text-members">
                         <FileSpreadsheet className="size-6" />
                       </div>
                       <div className="min-w-0 flex-1">

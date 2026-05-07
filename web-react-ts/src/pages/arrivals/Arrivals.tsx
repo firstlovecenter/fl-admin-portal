@@ -38,8 +38,8 @@ const Arrivals = () => {
       {!canAutoRedirect && (
         <main className="mx-auto max-w-2xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
           <header className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Arrivals
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              <span className="text-arrivals">Arrivals</span>
             </h1>
             <p className="text-sm text-muted-foreground">
               Choose a church to continue.
