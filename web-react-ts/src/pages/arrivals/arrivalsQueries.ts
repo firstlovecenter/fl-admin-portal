@@ -449,8 +449,6 @@ export const DISPLAY_BUSSING_RECORDS = gql`
       mobileNetwork
       momoNumber
       momoName
-      comments
-      arrivalTime
       vehicleRecords {
         id
         vehicle

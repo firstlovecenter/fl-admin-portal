@@ -4,13 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   Camera,
-  CheckCircle2,
   ChevronRight,
-  Clock,
   Users,
 } from 'lucide-react'
-import { getHumanReadableDate, parseNeoTime } from 'jd-date-utils'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import { getHumanReadableDate } from 'jd-date-utils'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -201,23 +199,6 @@ const BusFormDetails = () => {
                         <FactRow label="Momo Name">{bussing.momoName}</FactRow>
                       )}
 
-                      {bussing?.comments && (
-                        <FactRow label="Comments">
-                          <span className="italic text-muted-foreground">
-                            {bussing.comments}
-                          </span>
-                        </FactRow>
-                      )}
-
-                      {bussing?.arrivalTime && (
-                        <FactRow label="Arrival Time">
-                          <span className="flex items-center gap-1.5 text-success">
-                            <Clock className="size-4" />
-                            <CheckCircle2 className="size-4" />
-                            {parseNeoTime(bussing.arrivalTime.toString())}
-                          </span>
-                        </FactRow>
-                      )}
                     </>
                   )}
                 </div>

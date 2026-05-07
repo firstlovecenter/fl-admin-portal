@@ -30,8 +30,6 @@ export interface BussingRecord {
   bussingTopUp: number
   counted_by: [Member]
 
-  comments: string
-  arrivalTime: Date
   transactionId: number
   arrival_confirmed_by: Member
 
