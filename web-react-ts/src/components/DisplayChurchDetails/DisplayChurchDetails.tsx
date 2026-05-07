@@ -33,7 +33,7 @@ import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
 import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
 import { permitAdmin } from 'permission-utils'
 import { useContext, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import SearchMember from 'components/formik/SearchMember'
 import SubmitButton from 'components/formik/SubmitButton'
 import * as Yup from 'yup'
@@ -493,12 +493,10 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                         {`${props.subChurch} Locations`}
                       </h3>
-                      <Link
+                      <ViewAll
                         to={`/${props.subChurch.toLowerCase()}/displayall`}
-                        className="text-sm text-[hsl(var(--brand))]"
-                      >
-                        {`View All ${plural(props.subChurch)}`}
-                      </Link>
+                        label={`View All ${plural(props.subChurch)}`}
+                      />
                     </div>
                     {/* Mobile: chip buttons */}
                     <div className="flex flex-wrap gap-2 lg:hidden">
