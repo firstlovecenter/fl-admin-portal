@@ -13,6 +13,16 @@
  *     For Bacenta this returns the bacenta itself (degenerate).
  */
 
+/**
+ * Projection helper. The two `*AggAlias` callers can be either an
+ * `AggregateXxxRecord` node (higher levels) or a Cypher map literal (Bacenta).
+ * In both shapes the helper reads these keys, so map-literal callers must
+ * project them: service → `attendance, income, dollarIncome, numberOfServices,
+ * year, week`; bussing → `attendance, leaderDeclaration, numberOfSprinters,
+ * numberOfUrvans, numberOfCars, bussingTopUp, year, week`. Renaming a key in
+ * the Bacenta CALL blocks without updating this helper will silently null
+ * the corresponding column in the response.
+ */
 const weeklyEntryReturn = (
   alias: string,
   levelLiteral: string,
@@ -59,6 +69,8 @@ const buildSelfWeeklyCypher = (level: string, label: string) => `
     WITH serviceAgg
     ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
     WITH serviceAgg.week AS week, serviceAgg.year AS year, head(collect(serviceAgg)) AS serviceAgg
+    WITH week, year, serviceAgg
+    WHERE serviceAgg IS NOT NULL
     RETURN collect({week: week, year: year, serviceAgg: serviceAgg}) AS serviceRows
   }
 
@@ -70,6 +82,8 @@ const buildSelfWeeklyCypher = (level: string, label: string) => `
     WITH bussingAgg
     ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
     WITH bussingAgg.week AS week, bussingAgg.year AS year, head(collect(bussingAgg)) AS bussingAgg
+    WITH week, year, bussingAgg
+    WHERE bussingAgg IS NOT NULL
     RETURN collect({week: week, year: year, bussingAgg: bussingAgg}) AS bussingRows
   }
 
@@ -95,7 +109,95 @@ const buildSelfWeeklyCypher = (level: string, label: string) => `
   RETURN entries
 `
 
-export const bacentaWeeklyReport = buildSelfWeeklyCypher('Bacenta', 'Bacenta')
+/**
+ * Bacenta-specific weekly report. Bacenta is the leaf of the directory and no
+ * job writes per-Bacenta `AggregateServiceRecord` / `AggregateBussingRecord`
+ * (the aggregators only roll Bacenta data UP into Governorship+ aggregates).
+ * So we read raw `ServiceRecord` / `BussingRecord` directly via the TimeGraph
+ * date and project the same `WeeklyChurchReportEntry` shape. `:NoService`
+ * markers are excluded on the service side to mirror the higher-level
+ * aggregators; `BussingRecord` has no equivalent marker label, so the
+ * bussing branch has no analogous filter by design.
+ *
+ * The `WHERE year IS NOT NULL AND week IS NOT NULL` guard after each
+ * grouping is load-bearing: when the OPTIONAL MATCH yields no rows, the
+ * subsequent aggregation still emits one synthetic `(year=null, week=null,
+ * sums=0)` row. Without the guard, that row's null weekKey carries through
+ * UNWIND and produces an entry whose non-nullable `id` would be null.
+ */
+export const bacentaWeeklyReport = `
+  MATCH (church:Bacenta {id: $id})
+
+  CALL {
+    WITH church
+    OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(t:TimeGraph)
+    WHERE NOT record:NoService
+      AND (t.date.year * 100 + t.date.week) >= $startWeekKey
+      AND (t.date.year * 100 + t.date.week) <= $endWeekKey
+    WITH t.date.year AS year, t.date.week AS week, record
+    WITH year, week,
+         count(DISTINCT record) AS numberOfServices,
+         round(toFloat(sum(coalesce(record.attendance, 0))), 2) AS attendance,
+         round(toFloat(sum(coalesce(record.income, 0))), 2) AS income,
+         round(toFloat(sum(coalesce(record.dollarIncome, 0))), 2) AS dollarIncome
+    WITH year, week, numberOfServices, attendance, income, dollarIncome
+    WHERE year IS NOT NULL AND week IS NOT NULL
+    RETURN collect({
+      week: week, year: year,
+      numberOfServices: numberOfServices,
+      attendance: attendance,
+      income: income,
+      dollarIncome: dollarIncome
+    }) AS serviceRows
+  }
+
+  CALL {
+    WITH church
+    OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
+    WHERE (t.date.year * 100 + t.date.week) >= $startWeekKey
+      AND (t.date.year * 100 + t.date.week) <= $endWeekKey
+    WITH t.date.year AS year, t.date.week AS week, record
+    WITH year, week,
+         round(toFloat(sum(coalesce(record.attendance, 0))), 2) AS attendance,
+         round(toFloat(sum(coalesce(record.leaderDeclaration, 0))), 2) AS leaderDeclaration,
+         sum(coalesce(record.numberOfSprinters, 0)) AS numberOfSprinters,
+         sum(coalesce(record.numberOfUrvans, 0)) AS numberOfUrvans,
+         sum(coalesce(record.numberOfCars, 0)) AS numberOfCars,
+         round(toFloat(sum(coalesce(record.bussingTopUp, 0))), 2) AS bussingTopUp
+    WITH year, week, attendance, leaderDeclaration, numberOfSprinters, numberOfUrvans, numberOfCars, bussingTopUp
+    WHERE year IS NOT NULL AND week IS NOT NULL
+    RETURN collect({
+      week: week, year: year,
+      attendance: attendance,
+      leaderDeclaration: leaderDeclaration,
+      numberOfSprinters: numberOfSprinters,
+      numberOfUrvans: numberOfUrvans,
+      numberOfCars: numberOfCars,
+      bussingTopUp: bussingTopUp
+    }) AS bussingRows
+  }
+
+  WITH church, serviceRows, bussingRows
+  WITH church,
+       [r IN serviceRows | r.year * 100 + r.week] +
+       [r IN bussingRows | r.year * 100 + r.week] AS allKeys,
+       serviceRows, bussingRows
+  UNWIND allKeys AS weekKey
+  WITH church, weekKey, serviceRows, bussingRows
+  WITH church, weekKey,
+       head([r IN serviceRows WHERE r.year * 100 + r.week = weekKey | r]) AS serviceAgg,
+       head([r IN bussingRows WHERE r.year * 100 + r.week = weekKey | r]) AS bussingAgg
+  WITH DISTINCT church, weekKey, serviceAgg, bussingAgg
+  ORDER BY weekKey DESC
+
+  WITH collect(${weeklyEntryReturn(
+    'church',
+    'Bacenta',
+    'serviceAgg',
+    'bussingAgg'
+  )}) AS entries
+  RETURN entries
+`
 export const governorshipWeeklyReport = buildSelfWeeklyCypher(
   'Governorship',
   'Governorship'
@@ -124,6 +226,8 @@ const buildChildrenWeeklyCypher = (parentLevel: string, childLevel: string) => `
     WITH serviceAgg
     ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
     WITH serviceAgg.week AS week, serviceAgg.year AS year, head(collect(serviceAgg)) AS serviceAgg
+    WITH week, year, serviceAgg
+    WHERE serviceAgg IS NOT NULL
     RETURN collect({week: week, year: year, serviceAgg: serviceAgg}) AS serviceRows
   }
 
@@ -135,6 +239,8 @@ const buildChildrenWeeklyCypher = (parentLevel: string, childLevel: string) => `
     WITH bussingAgg
     ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
     WITH bussingAgg.week AS week, bussingAgg.year AS year, head(collect(bussingAgg)) AS bussingAgg
+    WITH week, year, bussingAgg
+    WHERE bussingAgg IS NOT NULL
     RETURN collect({week: week, year: year, bussingAgg: bussingAgg}) AS bussingRows
   }
 
