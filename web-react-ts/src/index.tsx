@@ -8,9 +8,9 @@ import {
   // ApolloProvider,
   createHttpLink,
   from,
-  InMemoryCache,
 } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
+import buildApolloCache from 'lib/apollo-cache'
 import CacheBuster from 'CacheBuster'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import SimpleApp from './SimpleApp'
@@ -114,7 +114,7 @@ const AppWithApollo = () => {
   const client = new ApolloClient({
     uri: import.meta.env.VITE_SYNAGO_GRAPHQL_URI || '/graphql',
     link: from([retryLink, errorLink, authLink.concat(httpLink)]),
-    cache: new InMemoryCache(),
+    cache: buildApolloCache(),
     connectToDevTools: true,
     defaultOptions: {
       watchQuery: {
