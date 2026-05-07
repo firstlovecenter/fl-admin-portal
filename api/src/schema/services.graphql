@@ -5,7 +5,7 @@ type ServiceDay {
 }
 
 extend type Stream {
-  servicesThisWeek: [Bacenta!]!
+  servicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -25,7 +25,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "servicesThisWeek"
     )
@@ -53,7 +53,7 @@ extend type Stream {
       """
       columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek: [Bacenta!]!
+  cancelledServicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -74,7 +74,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "cancelledServicesThisWeek"
     )
@@ -103,7 +103,7 @@ extend type Stream {
       """
       columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek: [Bacenta!]!
+  formDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -128,7 +128,7 @@ extend type Stream {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name
+       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name, defaulters.id SKIP $offset LIMIT $limit
       """
       columnName: "formDefaultersThisWeek"
     )
@@ -161,7 +161,7 @@ extend type Stream {
       """
       columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek: [Bacenta!]!
+  bankingDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -185,7 +185,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY governorship.name
+      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY governorship.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "bankingDefaultersThisWeek"
     )
@@ -217,7 +217,7 @@ extend type Stream {
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek: [Bacenta!]!
+  bankedThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -239,7 +239,7 @@ extend type Stream {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY governorship.name
+      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY governorship.name, bacentas.id SKIP $offset LIMIT $limit
       """
 
       columnName: "bankedThisWeek"
@@ -368,7 +368,7 @@ extend type Stream {
     )
 }
 extend type Council {
-  servicesThisWeek: [Bacenta!]!
+  servicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -416,7 +416,7 @@ extend type Council {
       """
       columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek: [Bacenta!]!
+  cancelledServicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -464,7 +464,7 @@ extend type Council {
       """
       columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek: [Bacenta!]!
+  formDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -523,7 +523,7 @@ extend type Council {
       """
       columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek: [Bacenta!]!
+  bankingDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -579,7 +579,7 @@ extend type Council {
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek: [Bacenta!]!
+  bankedThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -682,7 +682,7 @@ extend type Council {
 }
 
 extend type Governorship {
-  servicesThisWeek: [Bacenta!]!
+  servicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -703,7 +703,7 @@ extend type Governorship {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "servicesThisWeek"
     )
@@ -732,7 +732,7 @@ extend type Governorship {
       """
       columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek: [Bacenta!]!
+  cancelledServicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -753,7 +753,7 @@ extend type Governorship {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "cancelledServicesThisWeek"
     )
@@ -782,7 +782,7 @@ extend type Governorship {
       """
       columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek: [Bacenta!]!
+  formDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -808,7 +808,7 @@ extend type Governorship {
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
 
-       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name
+       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name, defaulters.id SKIP $offset LIMIT $limit
       """
       columnName: "formDefaultersThisWeek"
     )
@@ -842,7 +842,7 @@ extend type Governorship {
       """
       columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek: [Bacenta!]!
+  bankingDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -866,7 +866,7 @@ extend type Governorship {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "bankingDefaultersThisWeek"
     )
@@ -898,7 +898,7 @@ extend type Governorship {
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek: [Bacenta!]!
+  bankedThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -920,7 +920,7 @@ extend type Governorship {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "bankedThisWeek"
     )
@@ -1321,7 +1321,7 @@ extend type Campus {
 }
 
 extend type Campus {
-  servicesThisWeek: [Bacenta!]!
+  servicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1341,7 +1341,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS servicesThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "servicesThisWeek"
     )
@@ -1369,7 +1369,7 @@ extend type Campus {
       """
       columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek: [Bacenta!]!
+  cancelledServicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1389,7 +1389,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS cancelledServicesThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "cancelledServicesThisWeek"
     )
@@ -1417,7 +1417,7 @@ extend type Campus {
       """
       columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek: [Bacenta!]!
+  formDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1442,7 +1442,7 @@ extend type Campus {
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
         WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
-       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name
+       RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name, defaulters.id SKIP $offset LIMIT $limit
       """
       columnName: "formDefaultersThisWeek"
     )
@@ -1475,7 +1475,7 @@ extend type Campus {
       """
       columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek: [Bacenta!]!
+  bankingDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1499,7 +1499,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "bankingDefaultersThisWeek"
     )
@@ -1531,7 +1531,7 @@ extend type Campus {
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek: [Bacenta!]!
+  bankedThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1553,7 +1553,7 @@ extend type Campus {
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(:Stream)<-[:HAS]-(this)
 
-      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY bacentas.name
+      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY bacentas.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "bankedThisWeek"
     )
