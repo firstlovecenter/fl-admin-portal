@@ -9,7 +9,8 @@ import {
 } from 'components/ui/sheet'
 import { cn } from 'components/lib/utils'
 import { primaryNav, secondaryNav, type NavItem } from './navigation-config'
-import { useAuth } from 'contexts/AuthContext'
+import { useAuth as useAuthContext } from 'contexts/AuthContext'
+import useAuth from 'auth/useAuth'
 import { useTheme } from './ThemeProvider'
 import {
   DropdownMenu,
@@ -87,7 +88,8 @@ export const MobileNav = ({
   userName,
   userImageUrl,
 }: MobileNavProps) => {
-  const { logout } = useAuth()
+  const { logout } = useAuthContext()
+  const { isAuthorised } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const isDarkMode = theme === 'dark'
   const accountName = userName?.trim() || 'Account'
@@ -96,6 +98,16 @@ export const MobileNav = ({
     .map((n) => n[0])
     .slice(0, 2)
     .join('')
+
+  // Filter upstream rather than wrapping each item in <RoleView>: hidden
+  // <RoleView> children would still occupy slots in the staggerChildren
+  // index below, leaving visible gaps.
+  const visiblePrimary = primaryNav.filter(
+    (item) => !item.roles || isAuthorised(item.roles)
+  )
+  const visibleSecondary = secondaryNav.filter(
+    (item) => !item.roles || isAuthorised(item.roles)
+  )
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -125,7 +137,7 @@ export const MobileNav = ({
           animate="visible"
           variants={containerVariants}
         >
-          {primaryNav.map((item) => (
+          {visiblePrimary.map((item) => (
             <MobileNavItem key={item.to} item={item} onClose={onClose} />
           ))}
           <motion.div
@@ -138,7 +150,7 @@ export const MobileNav = ({
           <motion.div variants={itemVariants}>
             <ChurchScopeNavItem variant="mobile" onNavigate={onClose} />
           </motion.div>
-          {secondaryNav.map((item) => (
+          {visibleSecondary.map((item) => (
             <MobileNavItem key={item.to} item={item} onClose={onClose} />
           ))}
         </motion.nav>

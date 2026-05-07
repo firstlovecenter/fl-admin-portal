@@ -12,7 +12,8 @@ import {
 import { Button } from 'components/ui/button'
 import { cn } from 'components/lib/utils'
 import { primaryNav, secondaryNav, type NavItem } from './navigation-config'
-import { useAuth } from 'contexts/AuthContext'
+import { useAuth as useAuthContext } from 'contexts/AuthContext'
+import useAuth from 'auth/useAuth'
 import { useTheme } from './ThemeProvider'
 import { ChurchRoleScopePicker } from './ChurchRoleScopePicker'
 import { ChurchScopeNavItem } from './ChurchScopeNavItem'
@@ -83,10 +84,21 @@ export const Sidebar = ({
   userImageUrl?: string
 }) => {
   const [open, setOpen] = useState(true)
-  const { logout } = useAuth()
+  const { logout } = useAuthContext()
+  const { isAuthorised } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const isDarkMode = theme === 'dark'
   const accountName = userName?.trim() || 'Account'
+
+  // Filter upstream rather than wrapping each item in <RoleView>: hidden
+  // <RoleView> children would still occupy slots in framer-motion's
+  // staggerChildren index in MobileNav, leaving visible gaps.
+  const visiblePrimary = primaryNav.filter(
+    (item) => !item.roles || isAuthorised(item.roles)
+  )
+  const visibleSecondary = secondaryNav.filter(
+    (item) => !item.roles || isAuthorised(item.roles)
+  )
 
   const initials = accountName
     .split(' ')
@@ -160,7 +172,7 @@ export const Sidebar = ({
 
         {/* Primary nav */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-0.5">
-          {primaryNav.map((item) => (
+          {visiblePrimary.map((item) => (
             <DesktopNavItem key={item.to} item={item} open={open} />
           ))}
 
@@ -170,7 +182,7 @@ export const Sidebar = ({
 
           <ChurchScopeNavItem open={open} />
 
-          {secondaryNav.map((item) => (
+          {visibleSecondary.map((item) => (
             <DesktopNavItem key={item.to} item={item} open={open} />
           ))}
         </div>

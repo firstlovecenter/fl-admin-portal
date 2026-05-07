@@ -33,6 +33,7 @@ import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
 import { aiAssistant } from 'pages/ai-assistant/aiAssistantRoutes'
+import { shepherdingControl } from 'pages/shepherding-control/shepherdingControlRoutes'
 import { settings } from 'pages/settings/settingsRoutes'
 import { reportsRoutes } from 'pages/reports/reportsRoutes'
 import { ThemeProvider } from 'components/shell/ThemeProvider'
@@ -216,6 +217,7 @@ const AppWithContext = (props: AppPropsType) => {
                           ...maps,
                           ...accountsRoutes,
                           ...aiAssistant,
+                          ...shepherdingControl,
                           ...settings,
                           ...reportsRoutes,
                         ].map((route, i) => (

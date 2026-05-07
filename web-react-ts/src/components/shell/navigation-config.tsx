@@ -6,10 +6,13 @@ import {
   Home,
   type LucideIcon,
   Settings,
+  ShieldCheck,
   TrendingUp,
   UserCheck,
   Wallet,
 } from 'lucide-react'
+import { Role } from 'global-types'
+import { permitAdmin } from 'permission-utils'
 
 export interface NavItem {
   name: string
@@ -17,6 +20,8 @@ export interface NavItem {
   icon: LucideIcon
   /** Tailwind classes for icon accent color in the active state */
   accentClass?: string
+  /** When set, the item is only rendered if the user's roles intersect this list (or the list contains 'all'). */
+  roles?: Role[]
 }
 
 /** Primary nav (sidebar + bottom nav top slots) */
@@ -61,6 +66,12 @@ export const secondaryNav: NavItem[] = [
     to: '/trends',
     icon: TrendingUp,
     accentClass: 'text-churches',
+  },
+  {
+    name: 'Shepherding Control',
+    to: '/shepherding-control',
+    icon: ShieldCheck,
+    roles: permitAdmin('Bacenta'),
   },
   {
     name: 'AI Assistant',
