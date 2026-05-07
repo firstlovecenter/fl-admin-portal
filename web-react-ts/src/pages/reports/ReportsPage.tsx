@@ -11,6 +11,7 @@ import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { cn } from 'components/lib/utils'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
+import { getSubChurchLevel, plural } from 'global-utils'
 import type { ChurchLevel } from 'global-types'
 
 const MEMBERSHIP_PATHS: Record<string, string> = {
@@ -81,10 +82,16 @@ const ReportCard = ({ icon, title, description, to }: ReportCardProps) => {
 const ReportsPage = () => {
   const { selectedScope } = useChurchRoleScope()
   const churchType = selectedScope?.churchType ?? ''
+  const churchName = selectedScope?.churchName ?? ''
+  const churchPrefix = churchName ? `${churchName} ` : ''
   const reportsAvailable = SUPPORTED_REPORT_LEVELS.has(churchType)
   const membershipPath = getMembershipDownloadPath(churchType)
   // Bacenta is the leaf level; sub-church breakdowns don't apply at this scope.
   const hasSubChurches = reportsAvailable && churchType !== 'Bacenta'
+  const subChurchType = hasSubChurches
+    ? getSubChurchLevel(churchType as ChurchLevel)
+    : ''
+  const subChurchPlural = subChurchType ? plural(subChurchType) : ''
 
   const directoryPath =
     reportsAvailable && hasSubChurches ? '/reports/directory' : null
@@ -108,7 +115,7 @@ const ReportsPage = () => {
       <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
         <header className="mb-6 space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {selectedScope?.churchName && `${selectedScope.churchName} `}
+            {churchPrefix}
             <span className="text-banking">Reports</span>
           </h1>
         </header>
@@ -125,20 +132,20 @@ const ReportsPage = () => {
                 >
                   <ReportCard
                     icon={<Users className="size-5" />}
-                    title={
-                      selectedScope?.churchName
-                        ? `${selectedScope.churchName} Membership List`
-                        : 'Membership List'
-                    }
-                    description="Export the full membership roster as a CSV file, including contact details and group assignments."
+                    title={`${churchPrefix}Membership List`}
+                    description={`Every member in ${
+                      churchName || 'this church'
+                    } as a CSV — name, contact details, ministry, and group assignments.`}
                     to={membershipPath}
                   />
                 </RoleView>
                 {hasSubChurches && (
                   <ReportCard
                     icon={<Network className="size-5" />}
-                    title="Sub-Churches Directory"
-                    description="One row per sub-church with its leader's name and phone numbers."
+                    title={`${churchPrefix}${subChurchPlural} Directory`}
+                    description={`One row per ${subChurchType} in ${
+                      churchName || 'this church'
+                    } — leader's name and phone number.`}
                     to={directoryPath}
                   />
                 )}
@@ -154,21 +161,27 @@ const ReportsPage = () => {
                   icon={<Bus className="size-5" />}
                   title={
                     churchType === 'Bacenta'
-                      ? 'Bacenta Bussing Records'
-                      : 'Bussing'
+                      ? `${churchPrefix}Bussing Records`
+                      : `${churchPrefix}Bussing`
                   }
                   description={
                     churchType === 'Bacenta'
-                      ? 'Every Sunday bussing record — attendance, leader declaration, vehicles, and top-up.'
-                      : 'Per-week Sunday bussing attendance, leader declaration, vehicles, and top-up for this church level.'
+                      ? `Every Sunday bussing record for ${
+                          churchName || 'this Bacenta'
+                        } — attendance, leader declaration, vehicles, and top-up.`
+                      : `Per-week Sunday bussing totals for ${
+                          churchName || 'this church'
+                        } — attendance, leader declaration, vehicles, and top-up.`
                   }
                   to={bussingPath}
                 />
                 {hasSubChurches && (
                   <ReportCard
                     icon={<Network className="size-5" />}
-                    title="Bussing by Sub-Church"
-                    description="Per-week bussing breakdown for each immediate sub-church."
+                    title={`${churchPrefix}Bussing by ${subChurchType}`}
+                    description={`Per-week Sunday bussing totals broken down by each ${subChurchType} in ${
+                      churchName || 'this church'
+                    }.`}
                     to={bussingSubChurchesPath}
                   />
                 )}
@@ -184,21 +197,27 @@ const ReportsPage = () => {
                   icon={<CalendarRange className="size-5" />}
                   title={
                     churchType === 'Bacenta'
-                      ? 'Bacenta Service Records'
-                      : 'Weekday'
+                      ? `${churchPrefix}Weekday Service Records`
+                      : `${churchPrefix}Weekday`
                   }
                   description={
                     churchType === 'Bacenta'
-                      ? 'Every weekday service record — attendance, income, no-service reasons, treasurers, photo URLs, and banking proof.'
-                      : 'Per-week weekday service attendance, count, and income (cedis and USD) for this church level.'
+                      ? `Every weekday service record for ${
+                          churchName || 'this Bacenta'
+                        } — attendance, income, no-service reasons, treasurers, photo URLs, and banking proof.`
+                      : `Per-week weekday service totals for ${
+                          churchName || 'this church'
+                        } — attendance, count, and income (cedis and USD).`
                   }
                   to={weekdayPath}
                 />
                 {hasSubChurches && (
                   <ReportCard
                     icon={<Network className="size-5" />}
-                    title="Weekday by Sub-Church"
-                    description="Per-week weekday attendance and income for each immediate sub-church."
+                    title={`${churchPrefix}Weekday by ${subChurchType}`}
+                    description={`Per-week weekday service totals broken down by each ${subChurchType} in ${
+                      churchName || 'this church'
+                    }.`}
                     to={weekdaySubChurchesPath}
                   />
                 )}
