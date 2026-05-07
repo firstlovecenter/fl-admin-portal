@@ -1,65 +1,65 @@
 extend type Member {
-  memberSearch(key: String!, limit: Int! = 5): [Member!]!
+  memberSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.middleName + ' ' + members.lastName) CONTAINS toLower($key)
       OR toLower(members.firstName + ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) SKIP $offset LIMIT $limit
       """
       columnName: "memberSearch"
     )
-  bacentaSearch(key: String!, limit: Int! = 5): [Bacenta!]!
+  bacentaSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta AS bacentaSearch LIMIT $limit
+      RETURN DISTINCT bacenta AS bacentaSearch SKIP $offset LIMIT $limit
       """
       columnName: "bacentaSearch"
     )
-  governorshipSearch(key: String!, limit: Int! = 5): [Governorship!]!
+  governorshipSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..6]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship AS governorshipSearch LIMIT $limit
+      RETURN DISTINCT governorship AS governorshipSearch SKIP $offset LIMIT $limit
       """
       columnName: "governorshipSearch"
     )
-  councilSearch(key: String!, limit: Int! = 5): [Council!]!
+  councilSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Council!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..5]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
-      RETURN DISTINCT council AS councilSearch LIMIT $limit
+      RETURN DISTINCT council AS councilSearch SKIP $offset LIMIT $limit
       """
       columnName: "councilSearch"
     )
-  streamSearch(key: String!, limit: Int! = 5): [Stream!]!
+  streamSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..4]->(stream:Stream)
       WHERE toLower(stream.name) CONTAINS toLower($key)
-      RETURN DISTINCT stream AS streamSearch LIMIT $limit
+      RETURN DISTINCT stream AS streamSearch SKIP $offset LIMIT $limit
       """
       columnName: "streamSearch"
     )
-  campusSearch(key: String!, limit: Int! = 5): [Campus!]!
+  campusSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Campus!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..3]->(campus:Campus)
       WHERE toLower(campus.name) CONTAINS toLower($key)
-      RETURN DISTINCT campus AS campusSearch LIMIT $limit
+      RETURN DISTINCT campus AS campusSearch SKIP $offset LIMIT $limit
       """
       columnName: "campusSearch"
     )
-  oversightSearch(key: String!, limit: Int! = 5): [Oversight!]!
+  oversightSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Oversight!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|IS_ADMIN_FOR*1..2]->(oversight:Oversight)
       WHERE toLower(oversight.name) CONTAINS toLower($key)
-      RETURN DISTINCT oversight AS oversightSearch LIMIT $limit
+      RETURN DISTINCT oversight AS oversightSearch SKIP $offset LIMIT $limit
       """
       columnName: "oversightSearch"
     )
@@ -67,273 +67,273 @@ extend type Member {
 }
 
 extend type Denomination {
-  memberSearch(key: String!, limit: Int!): [Member!]!
+  memberSearch(key: String!, limit: Int!, offset: Int! = 0): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) SKIP $offset LIMIT $limit
       """
       columnName: "memberSearch"
     )
-  bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
+  bacentaSearch(key: String!, limit: Int!, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*6]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta AS bacentaSearch LIMIT $limit
+      RETURN DISTINCT bacenta AS bacentaSearch SKIP $offset LIMIT $limit
       """
       columnName: "bacentaSearch"
     )
-  governorshipSearch(key: String!, limit: Int!): [Governorship!]!
+  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*5]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship AS governorshipSearch LIMIT $limit
+      RETURN DISTINCT governorship AS governorshipSearch SKIP $offset LIMIT $limit
       """
       columnName: "governorshipSearch"
     )
-  councilSearch(key: String!, limit: Int!): [Council!]!
+  councilSearch(key: String!, limit: Int!, offset: Int! = 0): [Council!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*4]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
-      RETURN DISTINCT council AS councilSearch LIMIT $limit
+      RETURN DISTINCT council AS councilSearch SKIP $offset LIMIT $limit
       """
       columnName: "councilSearch"
     )
-  streamSearch(key: String!, limit: Int!): [Stream!]!
+  streamSearch(key: String!, limit: Int!, offset: Int! = 0): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(stream:Stream)
       WHERE toLower(stream.name) CONTAINS toLower($key)
-      RETURN DISTINCT stream AS streamSearch LIMIT $limit
+      RETURN DISTINCT stream AS streamSearch SKIP $offset LIMIT $limit
       """
       columnName: "streamSearch"
     )
-  campusSearch(key: String!, limit: Int!): [Campus!]!
+  campusSearch(key: String!, limit: Int!, offset: Int! = 0): [Campus!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(campus:Campus)
       WHERE toLower(campus.name) CONTAINS toLower($key)
-      RETURN DISTINCT campus AS campusSearch LIMIT $limit
+      RETURN DISTINCT campus AS campusSearch SKIP $offset LIMIT $limit
       """
       columnName: "campusSearch"
     )
-  oversightSearch(key: String!, limit: Int!): [Oversight!]!
+  oversightSearch(key: String!, limit: Int!, offset: Int! = 0): [Oversight!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(oversight:Oversight)
       WHERE toLower(oversight.name) CONTAINS toLower($key)
-      RETURN DISTINCT oversight AS oversightSearch LIMIT $limit
+      RETURN DISTINCT oversight AS oversightSearch SKIP $offset LIMIT $limit
       """
       columnName: "oversightSearch"
     )
 }
 
 extend type Oversight {
-  memberSearch(key: String!, limit: Int!): [Member!]!
+  memberSearch(key: String!, limit: Int!, offset: Int! = 0): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) SKIP $offset LIMIT $limit
       """
       columnName: "memberSearch"
     )
-  bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
+  bacentaSearch(key: String!, limit: Int!, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*5]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta AS bacentaSearch LIMIT $limit
+      RETURN DISTINCT bacenta AS bacentaSearch SKIP $offset LIMIT $limit
       """
       columnName: "bacentaSearch"
     )
-  governorshipSearch(key: String!, limit: Int!): [Governorship!]!
+  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*4]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship AS governorshipSearch LIMIT $limit
+      RETURN DISTINCT governorship AS governorshipSearch SKIP $offset LIMIT $limit
       """
       columnName: "governorshipSearch"
     )
-  councilSearch(key: String!, limit: Int!): [Council!]!
+  councilSearch(key: String!, limit: Int!, offset: Int! = 0): [Council!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
-      RETURN DISTINCT council AS councilSearch LIMIT $limit
+      RETURN DISTINCT council AS councilSearch SKIP $offset LIMIT $limit
       """
       columnName: "councilSearch"
     )
-  streamSearch(key: String!, limit: Int!): [Stream!]!
+  streamSearch(key: String!, limit: Int!, offset: Int! = 0): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(stream:Stream)
       WHERE toLower(stream.name) CONTAINS toLower($key)
-      RETURN DISTINCT stream AS streamSearch LIMIT $limit
+      RETURN DISTINCT stream AS streamSearch SKIP $offset LIMIT $limit
       """
       columnName: "streamSearch"
     )
-  campusSearch(key: String!, limit: Int!): [Campus!]!
+  campusSearch(key: String!, limit: Int!, offset: Int! = 0): [Campus!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(campus:Campus)
       WHERE toLower(campus.name) CONTAINS toLower($key)
-      RETURN DISTINCT campus AS campusSearch LIMIT $limit
+      RETURN DISTINCT campus AS campusSearch SKIP $offset LIMIT $limit
       """
       columnName: "campusSearch"
     )
 }
 
 extend type Campus {
-  memberSearch(key: String!, limit: Int!): [Member!]!
+  memberSearch(key: String!, limit: Int!, offset: Int! = 0): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) LIMIT $limit
+      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
-  bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
+  bacentaSearch(key: String!, limit: Int!, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*4]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta LIMIT $limit
+      RETURN DISTINCT bacenta SKIP $offset LIMIT $limit
       """
       columnName: "bacenta"
     )
-  governorshipSearch(key: String!, limit: Int!): [Governorship!]!
+  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship LIMIT $limit
+      RETURN DISTINCT governorship SKIP $offset LIMIT $limit
       """
       columnName: "governorship"
     )
-  councilSearch(key: String!, limit: Int!): [Council!]!
+  councilSearch(key: String!, limit: Int!, offset: Int! = 0): [Council!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
-      RETURN DISTINCT council AS councilSearch LIMIT $limit
+      RETURN DISTINCT council AS councilSearch SKIP $offset LIMIT $limit
       """
       columnName: "councilSearch"
     )
-  streamSearch(key: String!, limit: Int!): [Stream!]!
+  streamSearch(key: String!, limit: Int!, offset: Int! = 0): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(stream:Stream)
       WHERE toLower(stream.name) CONTAINS toLower($key)
-      RETURN DISTINCT stream AS streamSearch LIMIT $limit
+      RETURN DISTINCT stream AS streamSearch SKIP $offset LIMIT $limit
       """
       columnName: "streamSearch"
     )
 }
 
 extend type Stream {
-  memberSearch(key: String!, limit: Int!): [Member!]!
+  memberSearch(key: String!, limit: Int!, offset: Int! = 0): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
+      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
-  bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
+  bacentaSearch(key: String!, limit: Int!, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta LIMIT $limit
+      RETURN DISTINCT bacenta SKIP $offset LIMIT $limit
       """
       columnName: "bacenta"
     )
-  governorshipSearch(key: String!, limit: Int!): [Governorship!]!
+  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship LIMIT $limit
+      RETURN DISTINCT governorship SKIP $offset LIMIT $limit
       """
       columnName: "governorship"
     )
-  councilSearch(key: String!, limit: Int!): [Council!]!
+  councilSearch(key: String!, limit: Int!, offset: Int! = 0): [Council!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(council:Council)
       WHERE toLower(council.name) CONTAINS toLower($key)
-      RETURN DISTINCT council LIMIT $limit
+      RETURN DISTINCT council SKIP $offset LIMIT $limit
       """
       columnName: "council"
     )
 }
 
 extend type Council {
-  memberSearch(key: String!, limit: Int!): [Member!]!
+  memberSearch(key: String!, limit: Int!, offset: Int! = 0): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
+      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
-  bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
+  bacentaSearch(key: String!, limit: Int!, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta LIMIT $limit
+      RETURN DISTINCT bacenta SKIP $offset LIMIT $limit
       """
       columnName: "bacenta"
     )
-  governorshipSearch(key: String!, limit: Int!): [Governorship!]!
+  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(governorship:Governorship)
       WHERE toLower(governorship.name) CONTAINS toLower($key)
-      RETURN DISTINCT governorship LIMIT $limit
+      RETURN DISTINCT governorship SKIP $offset LIMIT $limit
       """
       columnName: "governorship"
     )
 }
 
 extend type Governorship {
-  memberSearch(key: String!, limit: Int!): [Member!]!
+  memberSearch(key: String!, limit: Int!, offset: Int! = 0): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
+      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
-  bacentaSearch(key: String!, limit: Int!): [Bacenta!]!
+  bacentaSearch(key: String!, limit: Int!, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(bacenta:Bacenta)
       WHERE toLower(bacenta.name) CONTAINS toLower($key)
-      RETURN DISTINCT bacenta LIMIT $limit
+      RETURN DISTINCT bacenta SKIP $offset LIMIT $limit
       """
       columnName: "bacenta"
     )
 }
 
 extend type Bacenta {
-  memberSearch(key: String!, limit: Int!): [Member!]!
+  memberSearch(key: String!, limit: Int!, offset: Int! = 0): [Member!]!
     @cypher(
       statement: """
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
-      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  LIMIT $limit
+      RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
