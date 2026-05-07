@@ -7,8 +7,8 @@ import { Skeleton } from 'components/ui/skeleton'
 import { History as HistoryIcon } from 'lucide-react'
 import { HistoryLog } from 'global-types'
 
-const INITIAL_PAGE_SIZE = 5
-const PAGE_SIZE = 10
+const INITIAL_PAGE_SIZE = 50
+const PAGE_SIZE = 25
 
 export type ChurchHistoryParent = {
   displayName?: string
