@@ -194,20 +194,21 @@ const ServicesMenu = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-2xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {churchName}
-            {churchType && (
-              <span className="ml-2 text-base font-normal text-muted-foreground">
-                {formatChurchLevel(churchType)}
-              </span>
-            )}
+      <main className="mx-auto max-w-4xl px-4 py-5 lg:px-6 lg:py-8">
+        <header className="mb-6 space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {churchName ?? ''}{' '}
+            <span className="text-churches">Services</span>
           </h1>
-          <p className="text-sm text-muted-foreground">Services</p>
+          {churchType && (
+            <p className="text-sm text-muted-foreground">
+              {formatChurchLevel(churchType)}
+            </p>
+          )}
         </header>
 
-        <div className="space-y-3">
+        <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+          <div className="space-y-3">
           {showServiceToggle &&
             (latestServiceLoading ? (
               <Skeleton className="h-[64px] w-full rounded-xl" />
@@ -303,6 +304,10 @@ const ServicesMenu = () => {
               />
             </RoleView>
           )}
+          </div>
+
+          {/* Right column — intentional negative space on desktop */}
+          <div className="hidden lg:block" aria-hidden="true" />
         </div>
       </main>
 
