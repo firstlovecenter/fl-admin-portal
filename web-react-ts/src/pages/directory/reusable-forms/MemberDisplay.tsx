@@ -664,17 +664,20 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
           </div>
         </div>
 
-        {/* ── Church history — only shown when history entries exist ── */}
+        {/* ── Church history — mirrors top 2-column grid; left column is intentional negative space ── */}
         {memberChurch?.history?.length > 0 && (
-          <div className="mt-8">
-            <Separator className="mb-6" />
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Church History
-              </h3>
-              <ViewAll to="/member/history" />
+          <div className="mt-8 flex flex-col gap-6 lg:grid lg:grid-cols-[300px_1fr]">
+            <div aria-hidden="true" className="hidden lg:block" />
+            <div>
+              <Separator className="mb-6" />
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Church History
+                </h3>
+                <ViewAll to="/member/history" />
+              </div>
+              <Timeline entries={(memberChurch.history ?? []).slice(0, 3)} />
             </div>
-            <Timeline entries={(memberChurch.history ?? []).slice(0, 3)} />
           </div>
         )}
       </div>
