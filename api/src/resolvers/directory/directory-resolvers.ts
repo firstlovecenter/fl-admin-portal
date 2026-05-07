@@ -6,7 +6,6 @@ import {
   permitAdmin,
   permitLeaderAdmin,
   permitAdminArrivals,
-  permitMe,
 } from '../permissions'
 import { RemoveServant } from './make-remove-servants'
 
@@ -125,7 +124,12 @@ const directoryMutation = {
     args: { memberId: string; bacentaId: string },
     context: Context
   ) => {
-    isAuth(permitMe('Bacenta'), context.jwt.roles)
+    // Defense-in-depth: the FE route to UpdateMember is already gated on
+    // `permitLeaderAdmin('Bacenta')`, but the resolver itself was on the
+    // looser `permitMe('Bacenta')` — which lets `arrivalsCounterStream`,
+    // `arrivalsPayerCouncil`, and `tellerStream` reorganise the membership
+    // graph via direct API calls. Tighten to match the FE gate.
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
 
     const session = context.executionContext.session()
 

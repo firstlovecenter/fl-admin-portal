@@ -9,6 +9,9 @@ import {
 } from 'lucide-react'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { cn } from 'components/lib/utils'
+import RoleView from 'auth/RoleView'
+import { permitLeaderAdmin } from 'permission-utils'
+import type { ChurchLevel } from 'global-types'
 
 const MEMBERSHIP_PATHS: Record<string, string> = {
   Bacenta: '/download-reports/bacenta/membership',
@@ -117,12 +120,16 @@ const ReportsPage = () => {
                 Directory
               </p>
               <div className="space-y-3">
-                <ReportCard
-                  icon={<Users className="size-5" />}
-                  title="Membership List"
-                  description="Export the full membership roster as a CSV file, including contact details and group assignments."
-                  to={membershipPath}
-                />
+                <RoleView
+                  roles={permitLeaderAdmin(churchType as ChurchLevel)}
+                >
+                  <ReportCard
+                    icon={<Users className="size-5" />}
+                    title="Membership List"
+                    description="Export the full membership roster as a CSV file, including contact details and group assignments."
+                    to={membershipPath}
+                  />
+                </RoleView>
                 {hasSubChurches && (
                   <ReportCard
                     icon={<Network className="size-5" />}
