@@ -89,49 +89,50 @@ const WeeklyReportDownloadCard = ({
   const previewRows = rows.slice(0, 5)
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-start gap-4">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-banking/10 text-banking">
-            <FileSpreadsheet className="size-6" />
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start lg:gap-6">
+      {/* LEFT — action panel */}
+      <div className="flex flex-col gap-6 lg:sticky lg:top-6">
+        <section className="rounded-xl border border-border bg-card p-5">
+          <div className="flex items-start gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-banking/10 text-banking">
+              <FileSpreadsheet className="size-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-semibold text-foreground">
+                {title}
+              </h2>
+              <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-base font-semibold text-foreground">
-              {title}
-            </h2>
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
-        </div>
 
-        <dl className="mt-5 grid grid-cols-2 gap-3">
-          <StatTile
-            icon={<FileSpreadsheet className="size-4" />}
-            label="Rows"
-            value={entriesCount.toLocaleString('en-GH')}
-          />
-          <StatTile
-            icon={<CalendarRange className="size-4" />}
-            label="Range"
-            value={rangeLabel ?? '—'}
-          />
-        </dl>
-      </section>
+          <dl className="mt-5 grid grid-cols-2 gap-3">
+            <StatTile
+              icon={<FileSpreadsheet className="size-4" />}
+              label="Rows"
+              value={entriesCount.toLocaleString('en-GH')}
+            />
+            <StatTile
+              icon={<CalendarRange className="size-4" />}
+              label="Range"
+              value={rangeLabel ?? '—'}
+            />
+          </dl>
+        </section>
 
-      {notice}
+        {notice}
 
-      <section className="rounded-xl border border-border bg-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Filename
-        </p>
-        <p className="mt-2 truncate font-mono text-sm text-foreground">
-          {filename}
-        </p>
-      </section>
+        <section className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Filename
+          </p>
+          <p className="mt-2 truncate font-mono text-sm text-foreground">
+            {filename}
+          </p>
+        </section>
 
-      <div className="flex justify-center">
         <Button
           asChild
-          className="h-12 w-full gap-2 px-8 text-base font-semibold sm:w-auto sm:min-w-64"
+          className="h-12 w-full gap-2 text-base font-semibold"
         >
           <CSVLink
             data={rows}
@@ -145,6 +146,7 @@ const WeeklyReportDownloadCard = ({
         </Button>
       </div>
 
+      {/* RIGHT — preview */}
       <section className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
