@@ -357,6 +357,34 @@ Rendered structure:
 └──────────────────────────────────────┘
 ```
 
+### Button width rule — MANDATORY
+
+**Never ship a `w-full` button on `sm+`.** Full-width buttons are a mobile
+pattern — on a desktop card 800–1200 px wide they look like an unfinished
+landing page. Every primary CTA must shrink to its intrinsic width on `sm`
+and up, and align to the natural edge of its container (centred for a
+single CTA in a card, right for a form action row, inline for a toolbar).
+
+Canonical shape (full-width on mobile, centred + intrinsic on `sm+`):
+
+```tsx
+<div className="flex justify-center">
+  <Button className="h-11 w-full gap-2 px-8 font-semibold sm:w-auto sm:min-w-64">
+    <Icon className="size-4" />
+    Action label
+  </Button>
+</div>
+```
+
+Adjust `sm:min-w-64` (256 px) up or down depending on label length — never
+set the button itself to `w-full` without the `sm:w-auto` companion. The
+loading skeleton that stands in for the button must match: `mx-auto h-11
+w-full sm:w-64`. A `w-full` skeleton on desktop telegraphs the wrong
+layout. The full Actions section (variants for form action rows,
+toolbars, FAB) is in the Component library further down.
+
+This rule is not negotiable — repeated violations have shipped to prod.
+
 ### Desktop layout rule — MANDATORY
 
 **Every page MUST use at least a 2-column layout on `lg` screens.** A single

@@ -2,6 +2,14 @@ import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from 'components/ui/table'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { getHumanReadableDate } from 'global-utils'
 import {
@@ -21,6 +29,13 @@ import {
   type DirectoryReportEntry,
   type ReportLevel,
 } from '../_shared/report-types'
+
+const PREVIEW_COLUMNS = [
+  { key: 'name', label: 'Name' },
+  { key: 'parentName', label: 'Parent' },
+  { key: 'leaderName', label: 'Leader' },
+  { key: 'leaderPhone', label: 'Phone' },
+] as const
 
 const ILLEGAL_FILENAME_CHARS = /[/\\:*?"<>|]/g
 
@@ -154,12 +169,14 @@ const DirectoryReportPage = () => {
             presentLevels.map((level) => {
               const rows = grouped[level].map(toCsvRow)
               const filename = buildFilename(level)
+              const previewRows = rows.slice(0, 5)
+              const totalLabel = grouped[level].length.toLocaleString('en-GH')
               return (
                 <section
                   key={level}
-                  className="rounded-xl border border-border bg-card p-5"
+                  className="overflow-hidden rounded-xl border border-border bg-card"
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-4 p-5">
                     <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-banking/10 text-banking">
                       {level === 'Bacenta' ? (
                         <Users className="size-5" />
@@ -172,7 +189,7 @@ const DirectoryReportPage = () => {
                         {LEVEL_PLURAL[level]}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {grouped[level].length.toLocaleString('en-GH')}{' '}
+                        {totalLabel}{' '}
                         {grouped[level].length === 1 ? 'entry' : 'entries'}
                       </p>
                       <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
@@ -180,20 +197,66 @@ const DirectoryReportPage = () => {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    asChild
-                    className="mt-4 h-11 w-full gap-2 font-semibold"
-                  >
-                    <CSVLink
-                      data={rows}
-                      headers={[...DIRECTORY_HEADERS]}
-                      filename={filename}
-                      target="_self"
+
+                  <div className="border-t border-border">
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Preview
+                      </h3>
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        {grouped[level].length > previewRows.length
+                          ? `Showing first ${previewRows.length} of ${totalLabel}`
+                          : `Showing ${grouped[level].length} of ${totalLabel}`}
+                      </p>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            {PREVIEW_COLUMNS.map((col) => (
+                              <TableHead key={col.key} className="px-3">
+                                {col.label}
+                              </TableHead>
+                            ))}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {previewRows.map((row, index) => (
+                            <TableRow key={`${level}-${index}`}>
+                              {PREVIEW_COLUMNS.map((col) => (
+                                <TableCell key={col.key} className="px-3">
+                                  {row[col.key] ? (
+                                    row[col.key]
+                                  ) : (
+                                    <span className="text-muted-foreground">
+                                      —
+                                    </span>
+                                  )}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center border-t border-border p-5">
+                    <Button
+                      asChild
+                      className="h-11 w-full gap-2 px-8 font-semibold sm:w-auto sm:min-w-64"
                     >
-                      <Download className="size-4" />
-                      Download CSV
-                    </CSVLink>
-                  </Button>
+                      <CSVLink
+                        data={rows}
+                        headers={[...DIRECTORY_HEADERS]}
+                        filename={filename}
+                        target="_self"
+                      >
+                        <Download className="size-4" />
+                        Download CSV
+                      </CSVLink>
+                    </Button>
+                  </div>
                 </section>
               )
             })

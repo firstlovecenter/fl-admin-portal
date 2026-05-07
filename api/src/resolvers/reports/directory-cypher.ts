@@ -1,10 +1,14 @@
 /**
- * Directory report Cypher.
+ * Sub-churches directory report Cypher.
  *
- * Returns a flat list of every sub-church under the given church (and the
- * church itself) with that unit's leader's name + phone numbers. The CSV is
- * grouped by `level` on the frontend, so we produce one row per unit at every
- * level beneath (and including) the current one.
+ * Returns one row per descendant church under the given church (NOT the
+ * church itself — the user already has that context from the page header
+ * and the report card is named "Sub-Churches Directory"). The CSV is
+ * grouped by `level` on the frontend, so we produce one row per unit at
+ * every level beneath the current one.
+ *
+ * Bacenta has no sub-churches, so its report is empty and the frontend
+ * already hides the entry point at Bacenta scope.
  */
 
 const directoryEntryProjection = (
@@ -31,31 +35,11 @@ const directoryEntryProjection = (
 `
 
 export const bacentaDirectoryReport = `
-  MATCH (bacenta:Bacenta {id: $id})
-  OPTIONAL MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Active:Member)
-  OPTIONAL MATCH (governorship:Governorship)-[:HAS]->(bacenta)
-
-  WITH ${directoryEntryProjection(
-    'Bacenta',
-    'bacenta',
-    'governorship',
-    'bacentaLeader'
-  )} AS entry
-  RETURN collect(entry) AS entries
+  RETURN [] AS entries
 `
 
 export const governorshipDirectoryReport = `
   MATCH (governorship:Governorship {id: $id})
-  OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
-  OPTIONAL MATCH (parentCouncil:Council)-[:HAS]->(governorship)
-
-  WITH governorship, governorshipLeader, parentCouncil,
-       ${directoryEntryProjection(
-         'Governorship',
-         'governorship',
-         'parentCouncil',
-         'governorshipLeader'
-       )} AS govEntry
 
   CALL {
     WITH governorship
@@ -70,21 +54,11 @@ export const governorshipDirectoryReport = `
     )}) AS bacentaEntries
   }
 
-  RETURN [govEntry] + bacentaEntries AS entries
+  RETURN bacentaEntries AS entries
 `
 
 export const councilDirectoryReport = `
   MATCH (council:Council {id: $id})
-  OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
-  OPTIONAL MATCH (parentStream:Stream)-[:HAS]->(council)
-
-  WITH council, councilLeader, parentStream,
-       ${directoryEntryProjection(
-         'Council',
-         'council',
-         'parentStream',
-         'councilLeader'
-       )} AS councilEntry
 
   CALL {
     WITH council
@@ -111,21 +85,11 @@ export const councilDirectoryReport = `
     )}) AS bacentaEntries
   }
 
-  RETURN [councilEntry] + govEntries + bacentaEntries AS entries
+  RETURN govEntries + bacentaEntries AS entries
 `
 
 export const streamDirectoryReport = `
   MATCH (stream:Stream {id: $id})
-  OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
-  OPTIONAL MATCH (parentCampus:Campus)-[:HAS]->(stream)
-
-  WITH stream, streamLeader, parentCampus,
-       ${directoryEntryProjection(
-         'Stream',
-         'stream',
-         'parentCampus',
-         'streamLeader'
-       )} AS streamEntry
 
   CALL {
     WITH stream
@@ -164,21 +128,11 @@ export const streamDirectoryReport = `
     )}) AS bacentaEntries
   }
 
-  RETURN [streamEntry] + councilEntries + govEntries + bacentaEntries AS entries
+  RETURN councilEntries + govEntries + bacentaEntries AS entries
 `
 
 export const campusDirectoryReport = `
   MATCH (campus:Campus {id: $id})
-  OPTIONAL MATCH (campus)<-[:LEADS]-(campusLeader:Active:Member)
-  OPTIONAL MATCH (parentOversight:Oversight)-[:HAS]->(campus)
-
-  WITH campus, campusLeader, parentOversight,
-       ${directoryEntryProjection(
-         'Campus',
-         'campus',
-         'parentOversight',
-         'campusLeader'
-       )} AS campusEntry
 
   CALL {
     WITH campus
@@ -229,20 +183,11 @@ export const campusDirectoryReport = `
     )}) AS bacentaEntries
   }
 
-  RETURN [campusEntry] + streamEntries + councilEntries + govEntries + bacentaEntries AS entries
+  RETURN streamEntries + councilEntries + govEntries + bacentaEntries AS entries
 `
 
 export const oversightDirectoryReport = `
   MATCH (oversight:Oversight {id: $id})
-  OPTIONAL MATCH (oversight)<-[:LEADS]-(oversightLeader:Active:Member)
-
-  WITH oversight, oversightLeader,
-       ${directoryEntryProjection(
-         'Oversight',
-         'oversight',
-         null,
-         'oversightLeader'
-       )} AS oversightEntry
 
   CALL {
     WITH oversight
@@ -305,5 +250,5 @@ export const oversightDirectoryReport = `
     )}) AS bacentaEntries
   }
 
-  RETURN [oversightEntry] + campusEntries + streamEntries + councilEntries + govEntries + bacentaEntries AS entries
+  RETURN campusEntries + streamEntries + councilEntries + govEntries + bacentaEntries AS entries
 `
