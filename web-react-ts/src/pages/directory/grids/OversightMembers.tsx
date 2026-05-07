@@ -13,14 +13,6 @@ const OversightMembers = () => {
       parentTypename="Oversight"
       pluckParent={(data) => data?.oversights?.[0]}
       getHeading={(parent) => (parent ? parent.name : null)}
-      downloadConfig={
-        oversightId
-          ? {
-              level: 'Oversight',
-              churchId: oversightId,
-            }
-          : null
-      }
     />
   )
 }

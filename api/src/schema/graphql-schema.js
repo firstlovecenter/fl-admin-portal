@@ -67,10 +67,6 @@ const accounts = fs
   .readFileSync(path.join(__dirname, './accounts.graphql'))
   .toString('utf-8')
 
-const downloadMembership = fs
-  .readFileSync(path.join(__dirname, './download-credits.graphql'))
-  .toString('utf-8')
-
 const reports = fs
   .readFileSync(path.join(__dirname, './reports.graphql'))
   .toString('utf-8')
@@ -91,7 +87,6 @@ const array = [
   servicesNoIncome,
   maps,
   accounts,
-  downloadMembership,
   reports,
 ]
 

@@ -13,14 +13,6 @@ const BacentaMembers = () => {
       parentTypename="Bacenta"
       pluckParent={(data) => data?.bacentas?.[0]}
       getHeading={(parent) => (parent ? `${parent.name} Bacenta` : null)}
-      downloadConfig={
-        bacentaId
-          ? {
-              level: 'Bacenta',
-              churchId: bacentaId,
-            }
-          : null
-      }
     />
   )
 }

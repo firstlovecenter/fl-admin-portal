@@ -13,14 +13,6 @@ const CouncilMembers = () => {
       parentTypename="Council"
       pluckParent={(data) => data?.councils?.[0]}
       getHeading={(parent) => (parent ? `${parent.name} Council` : null)}
-      downloadConfig={
-        councilId
-          ? {
-              level: 'Council',
-              churchId: councilId,
-            }
-          : null
-      }
     />
   )
 }

@@ -12,10 +12,9 @@ import {
 } from 'components/ui/sheet'
 import { Skeleton } from 'components/ui/skeleton'
 import Filters from './Filters'
-import DownloadMembershipModal from './DownloadMembershipModal'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
-import { Download, Search, SlidersHorizontal, UserPlus } from 'lucide-react'
+import { Search, SlidersHorizontal, UserPlus } from 'lucide-react'
 import { cn } from 'components/lib/utils'
 
 const INITIAL_PAGE_SIZE = 30
@@ -40,19 +39,12 @@ const buildFilterVars = (filters) => ({
  *   basonta?: { name?: string },
  * }} GridMember
  *
- * @typedef {{
- *   level: 'Fellowship' | 'Bacenta' | 'Governorship' | 'Council' | 'Stream' | 'Campus' | 'Oversight',
- *   churchId: string,
- *   churchName?: string,
- * }} DownloadConfig
- *
  * @param {{
  *   query: import('@apollo/client').DocumentNode,
  *   parentId: string | undefined,
  *   parentTypename: 'Bacenta' | 'Governorship' | 'Council' | 'Stream' | 'Campus' | 'Oversight' | 'Denomination' | 'Member',
  *   pluckParent: (data: any) => { members?: GridMember[], memberCount?: number } | undefined,
  *   getHeading: (parent: any) => React.ReactNode | null,
- *   downloadConfig?: DownloadConfig | null,
  * }} props
  */
 const MembersGrid = ({
@@ -61,13 +53,11 @@ const MembersGrid = ({
   parentTypename,
   pluckParent,
   getHeading,
-  downloadConfig = null,
 }) => {
   const { filters } = useContext(ChurchContext)
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
-  const [downloadOpen, setDownloadOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(() =>
     window.matchMedia('(min-width: 768px)').matches
   )
@@ -184,20 +174,6 @@ const MembersGrid = ({
             </Link>
           </RoleView>
           <div className="ml-auto flex items-center gap-1">
-            {downloadConfig && (
-              <RoleView roles={permitLeaderAdmin(downloadConfig.level)}>
-                <Button
-                  variant="ghost"
-                  size="default"
-                  className="h-11 gap-1.5 text-sm text-foreground"
-                  onClick={() => setDownloadOpen(true)}
-                  disabled={loading}
-                >
-                  <Download className="size-4" />
-                  Download
-                </Button>
-              </RoleView>
-            )}
             <Button
               variant="ghost"
               size="default"
@@ -247,20 +223,6 @@ const MembersGrid = ({
           </div>
         </SheetContent>
       </Sheet>
-
-      {downloadConfig && (
-        <DownloadMembershipModal
-          key={downloadConfig.level}
-          open={downloadOpen}
-          onOpenChange={setDownloadOpen}
-          level={downloadConfig.level}
-          churchId={downloadConfig.churchId}
-          churchName={downloadConfig.churchName}
-          filters={filters}
-          searchTerm={debouncedSearch}
-          isDesktop={isDesktop}
-        />
-      )}
     </div>
   )
 }

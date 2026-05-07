@@ -13,14 +13,6 @@ const CampusMembers = () => {
       parentTypename="Campus"
       pluckParent={(data) => data?.campuses?.[0]}
       getHeading={(parent) => (parent ? `${parent.name} Campus` : null)}
-      downloadConfig={
-        campusId
-          ? {
-              level: 'Campus',
-              churchId: campusId,
-            }
-          : null
-      }
     />
   )
 }

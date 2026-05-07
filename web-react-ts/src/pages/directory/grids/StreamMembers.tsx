@@ -13,14 +13,6 @@ const StreamMembers = () => {
       parentTypename="Stream"
       pluckParent={(data) => data?.streams?.[0]}
       getHeading={(parent) => (parent ? `${parent.name} Stream` : null)}
-      downloadConfig={
-        streamId
-          ? {
-              level: 'Stream',
-              churchId: streamId,
-            }
-          : null
-      }
     />
   )
 }

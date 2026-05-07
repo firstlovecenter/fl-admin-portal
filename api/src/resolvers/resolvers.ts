@@ -12,7 +12,6 @@ import { accountsMutations } from './accounts/accounts-resolvers'
 import { mapsResolvers } from './maps/maps-resolvers'
 import { Context } from './utils/neo4j-types'
 import MakeServantResolvers from './directory/make-servant-resolvers'
-import { downloadMembershipResolvers } from './download-credits/download-credits-resolvers'
 import { reportsResolvers } from './reports/reports-resolvers'
 import uploadMutations from './uploads/upload-resolvers'
 
@@ -192,19 +191,15 @@ const resolvers = {
   },
 
   Bacenta: {
-    ...downloadMembershipResolvers.Bacenta,
     ...reportsResolvers.Bacenta,
   },
   Governorship: {
-    ...downloadMembershipResolvers.Governorship,
     ...reportsResolvers.Governorship,
   },
   Council: {
-    ...downloadMembershipResolvers.Council,
     ...reportsResolvers.Council,
   },
   Campus: {
-    ...downloadMembershipResolvers.Campus,
     ...reportsResolvers.Campus,
     streams: loadCampusStreams,
   },
@@ -212,11 +207,9 @@ const resolvers = {
     meetingDay: loadStreamMeetingDay,
     campus: loadStreamCampus,
     ...arrivalsResolvers.Stream,
-    ...downloadMembershipResolvers.Stream,
     ...reportsResolvers.Stream,
   },
   Oversight: {
-    ...downloadMembershipResolvers.Oversight,
     ...reportsResolvers.Oversight,
   },
 

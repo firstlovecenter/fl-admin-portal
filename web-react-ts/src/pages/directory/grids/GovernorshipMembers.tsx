@@ -13,14 +13,6 @@ export const GovernorshipMembers = () => {
       parentTypename="Governorship"
       pluckParent={(data) => data?.governorships?.[0]}
       getHeading={(parent) => (parent ? `${parent.name} Governorship` : null)}
-      downloadConfig={
-        governorshipId
-          ? {
-              level: 'Governorship',
-              churchId: governorshipId,
-            }
-          : null
-      }
     />
   )
 }
