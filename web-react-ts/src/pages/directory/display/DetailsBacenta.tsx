@@ -15,7 +15,6 @@ export type DetailsArray = {
   number: number | string
   link: string
   width?: number
-  creativearts?: boolean
   vacationCount?: number
   activeIcBacentaCount?: number
   vacationIcBacentaCount?: number

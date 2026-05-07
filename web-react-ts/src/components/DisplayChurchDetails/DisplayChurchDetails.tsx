@@ -56,6 +56,7 @@ import DetailsCard from 'components/card/DetailsCard'
 import Timeline, { TimelineElement } from 'components/Timeline/Timeline'
 import ViewAll from 'components/buttons/ViewAll'
 import ChurchButton from 'components/buttons/ChurchButton/ChurchButton'
+import ChurchRow from 'components/buttons/ChurchButton/ChurchRow'
 import { displayError, isPermissionError } from 'utils/errorHandler'
 
 type DisplayChurchDetailsProps = {
@@ -77,10 +78,6 @@ type DisplayChurchDetailsProps = {
   buttons: Church[]
   vacation?: VacationStatusOptions
   vacationCount?: number
-
-  buttonsSecondRow?: Church[]
-  subChurchBasonta?: string
-  basontaLeaders?: MemberWithoutBioData[]
   momoNumber?: string
   location?: {
     longitude: number
@@ -449,7 +446,6 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                     <DetailsCard
                       onClick={() => navigate(detail.link)}
                       heading={detail.title}
-                      creativearts={detail?.creativearts}
                       detail={
                         !props.loading ? detail?.number?.toString() || '0' : ''
                       }
@@ -481,60 +477,78 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
 
             {/* Last 3 weeks — mobile placement (after location, original order) */}
             <div className="lg:hidden">{last3WeeksBlock}</div>
-
-            {/* Sub-church buttons */}
-            {props.subChurch && props.buttons?.length > 0 && (
-              <div>
-                <Separator className="my-4" />
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-muted-foreground">
-                    {`${props.subChurch} Locations`}
-                  </p>
-                  <Link
-                    to={`/${props.subChurch.toLowerCase()}/displayall`}
-                    className="text-sm text-[hsl(var(--brand))]"
-                  >
-                    {`View All ${plural(props.subChurch)}`}
-                  </Link>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {props.buttons.slice(0, 5).map((church, index) => (
-                    <ChurchButton key={index} church={church} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Add new sub-church */}
-            {props.subChurch && !props.buttons?.length && (
-              <RoleView roles={props.editPermitted}>
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() =>
-                    navigate(
-                      `/${props.subChurch?.toLowerCase()}/add${props.subChurch?.toLowerCase()}`
-                    )
-                  }
-                >
-                  {`Add New ${props.subChurch}`}
-                </Button>
-              </RoleView>
-            )}
           </div>
         </div>
 
-        {/* Church history — full width below the grid */}
-        {props.history?.length > 0 && (
-          <div className="mt-8 lg:mt-10 lg:max-w-4xl lg:mx-auto">
+        {/* Bottom section — sub-churches (left) + history (right) on lg+ */}
+        {!props.loading && (props.subChurch || props.history?.length > 0) && (
+          <div className="mt-8 lg:mt-10">
             <Separator className="mb-6" />
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                Church History
-              </h3>
-              <ViewAll to={`/${props.churchType.toLowerCase()}/history`} />
+            <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[320px_1fr] lg:gap-8 lg:items-start">
+              {/* LEFT — sub-churches (empty on Bacenta) */}
+              <div>
+                {props.subChurch && props.buttons?.length > 0 && (
+                  <>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        {`${props.subChurch} Locations`}
+                      </h3>
+                      <Link
+                        to={`/${props.subChurch.toLowerCase()}/displayall`}
+                        className="text-sm text-[hsl(var(--brand))]"
+                      >
+                        {`View All ${plural(props.subChurch)}`}
+                      </Link>
+                    </div>
+                    {/* Mobile: chip buttons */}
+                    <div className="flex flex-wrap gap-2 lg:hidden">
+                      {props.buttons.slice(0, 5).map((church, index) => (
+                        <ChurchButton key={index} church={church} />
+                      ))}
+                    </div>
+                    {/* Desktop: stacked rows */}
+                    <div className="hidden lg:block divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
+                      {props.buttons.slice(0, 5).map((church, index) => (
+                        <ChurchRow key={index} church={church} />
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {props.subChurch && !props.buttons?.length && (
+                  <RoleView roles={props.editPermitted}>
+                    <Button
+                      className="w-full sm:w-auto"
+                      variant="outline"
+                      onClick={() =>
+                        navigate(
+                          `/${props.subChurch?.toLowerCase()}/add${props.subChurch?.toLowerCase()}`
+                        )
+                      }
+                    >
+                      {`Add New ${props.subChurch}`}
+                    </Button>
+                  </RoleView>
+                )}
+              </div>
+
+              {/* RIGHT — church history */}
+              <div>
+                {props.history?.length > 0 && (
+                  <>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        Church History
+                      </h3>
+                      <ViewAll
+                        to={`/${props.churchType.toLowerCase()}/history`}
+                      />
+                    </div>
+                    <Timeline entries={(props.history ?? []).slice(0, 5)} />
+                  </>
+                )}
+              </div>
             </div>
-            <Timeline entries={(props.history ?? []).slice(0, 5)} />
           </div>
         )}
       </div>

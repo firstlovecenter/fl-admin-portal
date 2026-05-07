@@ -13,7 +13,6 @@ type DetailsCardPropsType = {
   onClick?: () => void
   bgNone?: boolean
   img?: string
-  creativearts?: boolean
   vacationCount?: string
   vacationIcBacentaCount?: string
   leading?: JSX.Element
@@ -22,7 +21,7 @@ type DetailsCardPropsType = {
 
 const DetailsCard = (props: DetailsCardPropsType) => {
   const { currentUser } = useContext(MemberContext)
-  const { leading, trailing, detail, heading, onClick, creativearts } = props
+  const { leading, trailing, detail, heading, onClick } = props
   const loading = !heading || props.loading || !currentUser.id || !detail
 
   if (loading) {
@@ -38,7 +37,6 @@ const DetailsCard = (props: DetailsCardPropsType) => {
     <div
       className={cn(
         'rounded-lg border border-border bg-card p-3 m-1 transition-colors',
-        creativearts && 'border-[hsl(var(--campaigns)/0.6)]',
         onClick && 'cursor-pointer active:bg-muted'
       )}
       onClick={onClick}

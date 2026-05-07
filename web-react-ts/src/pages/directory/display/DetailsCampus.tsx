@@ -55,12 +55,6 @@ const DetailsCampus = () => {
       link: '#',
     },
     {
-      title: 'Creative Arts',
-      number: gathering?.creativeArtsCount,
-      link: '/campus/creativearts',
-      creativearts: true,
-    },
-    {
       title: 'Income Tracking',
       number: gathering?.noIncomeTracking ? 'No' : 'Yes',
       link: `#`,

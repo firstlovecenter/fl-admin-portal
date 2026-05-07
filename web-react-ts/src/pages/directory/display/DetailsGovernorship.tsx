@@ -30,12 +30,6 @@ const DetailsGovernorship = () => {
       link: `/bacenta/displayall`,
       vacationCount: governorship?.vacationGraduatedBacentaCount,
     },
-    {
-      title: 'Hubs',
-      number: governorship?.hubCount,
-      link: '/governorship/hubs',
-      creativearts: true,
-    },
   ]
 
   return (
@@ -51,7 +45,6 @@ const DetailsGovernorship = () => {
         churchType={`Governorship`}
         subChurch={`Bacenta`}
         buttons={data?.governorships[0]?.bacentas}
-        buttonsSecondRow={data?.governorships[0]?.hubFellowships}
         editlink="/governorship/editgovernorship"
         editPermitted={permitAdminArrivals('Council')}
         history={

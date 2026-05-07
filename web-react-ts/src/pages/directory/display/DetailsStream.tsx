@@ -62,25 +62,6 @@ const DetailsStream = () => {
       vacationCount: stream?.vacationIcBacentaCount,
       link: '#',
     },
-
-    {
-      title: 'Ministries',
-      number: stream?.ministryCount,
-      link: `/stream/ministries`,
-      creativearts: true,
-    },
-    {
-      title: 'Hubs',
-      number: stream?.hubCount || 0,
-      link: `/stream/hubs`,
-      creativearts: true,
-    },
-    {
-      title: 'Hub Fellowships',
-      number: stream?.hubFellowshipCount || 0,
-      link: `#`,
-      creativearts: true,
-    },
   ]
 
   return (
