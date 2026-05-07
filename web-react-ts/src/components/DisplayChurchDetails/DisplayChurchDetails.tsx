@@ -30,8 +30,9 @@ import useSetUserChurch from 'hooks/useSetUserChurch'
 import { MapPin, Pencil } from 'lucide-react'
 import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
 import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
+import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
 import { permitAdmin } from 'permission-utils'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import SearchMember from 'components/formik/SearchMember'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -131,6 +132,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
 
   const { currentUser } = useContext(MemberContext)
   const { show, handleShow, handleClose } = useModal()
+  const [editBussingOpen, setEditBussingOpen] = useState(false)
   const { governorshipId, councilId, streamId, campusId, clickCard } =
     useContext(ChurchContext)
 
@@ -264,9 +266,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         <Button
           className="w-full"
           variant="outline"
-          onClick={() =>
-            navigate(`/${props.churchType.toLowerCase()}/editbussing`)
-          }
+          onClick={() => setEditBussingOpen(true)}
         >
           Bus Payment Details
         </Button>
@@ -379,6 +379,14 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           )}
         </div>
       </div>
+
+      {/* Bus payment details dialog */}
+      {props.churchType === 'Bacenta' && (
+        <UpdateBusPaymentDialog
+          open={editBussingOpen}
+          onOpenChange={setEditBussingOpen}
+        />
+      )}
 
       {/* Change Admin Dialog */}
       <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>

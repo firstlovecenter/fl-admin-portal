@@ -1,5 +1,6 @@
 import { useMutation } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
+import { Loader2, LocateFixed, Wallet } from 'lucide-react'
 import * as Yup from 'yup'
 import {
   DECIMAL_NUM_REGEX,
@@ -15,23 +16,22 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
 import { MAKE_BACENTA_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import RoleView from 'auth/RoleView'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
 import {
-  Container,
-  Row,
-  Col,
-  Button,
-  ButtonGroup,
-  Modal,
-  Spinner,
-} from 'react-bootstrap'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import HeadingSecondary from 'components/HeadingSecondary'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
 import SubmitButton from 'components/formik/SubmitButton'
 import { DISPLAY_GOVERNORSHIP } from 'pages/directory/display/ReadQueries'
 import Select from 'components/formik/Select'
 import Input from 'components/formik/Input'
 import SearchMember from 'components/formik/SearchMember'
-import BtnSubmitText from 'components/formik/BtnSubmitText'
+import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
 
 export interface BacentaFormValues extends FormikInitialValues {
   governorship?: Governorship
@@ -63,6 +63,7 @@ const BacentaForm = ({
 }: BacentaFormProps) => {
   const { clickCard, bacentaId } = useContext(ChurchContext)
   const [closeDown, setCloseDown] = useState(false)
+  const [editBussingOpen, setEditBussingOpen] = useState(false)
 
   const navigate = useNavigate()
   const [buttonLoading, setButtonLoading] = useState(false)
@@ -102,221 +103,247 @@ const BacentaForm = ({
   })
 
   return (
-    <Container>
-      <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{initialValues.name}</HeadingSecondary>
-      <ButtonGroup className="mt-3">
-        {!newBacenta && (
-          <>
-            <Button variant="danger" onClick={() => setCloseDown(true)}>
-              {`Close Down Bacenta`}
+    <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+        <header className="mb-6 space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+            {title}
+          </h1>
+          {initialValues.name && (
+            <p className="text-sm text-muted-foreground">
+              {initialValues.name}
+            </p>
+          )}
+        </header>
+
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          {!newBacenta && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setCloseDown(true)}
+            >
+              Close Down Bacenta
             </Button>
-          </>
-        )}
-      </ButtonGroup>
+          )}
+          <RoleView roles={permitAdminArrivals('Governorship')}>
+            <Button
+              type="button"
+              variant="outline"
+              className="gap-2"
+              onClick={() => setEditBussingOpen(true)}
+            >
+              <Wallet className="size-4" />
+              Edit Bussing Details
+            </Button>
+          </RoleView>
+        </div>
 
-      <RoleView roles={permitAdminArrivals('Governorship')}>
-        <Button
-          variant="warning"
-          className="mt-1"
-          onClick={() => navigate('/bacenta/editbussing')}
-        >
-          Edit Bussing Details
-        </Button>
-      </RoleView>
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={onSubmit}
+            validateOnMount
+          >
+            {(formik) => (
+              <Form className="space-y-6">
+                <Card>
+                  <CardContent className="space-y-4 p-5">
+                    <Input
+                      name="name"
+                      label="Name of Bacenta"
+                      placeholder="Enter Name Here"
+                    />
+                    <Select
+                      name="vacationStatus"
+                      options={VACATION_OPTIONS}
+                      defaultOption="Choose Vacation Status"
+                      label="Status"
+                    />
 
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={onSubmit}
-        validateOnMount
-      >
-        {(formik) => (
-          <Container className="py-4">
-            <Form>
-              <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
-                  {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
-                    <Row className="form-row">
-                      <Col>
-                        <Input
-                          name="name"
-                          label="Name of Bacenta"
-                          placeholder="Enter Name Here"
-                        />
-                        <Select
-                          name="vacationStatus"
-                          options={VACATION_OPTIONS}
-                          defaultOption="Choose Vacation Status"
-                          label="Status"
-                        />
-                      </Col>
-                    </Row>
-                    <Row className="d-flex align-items-center mb-3">
-                      <RoleView roles={permitAdminArrivals('Governorship')}>
-                        <Col>
-                          <SearchMember
-                            name="leaderId"
-                            initialValue={initialValues?.leaderName}
-                            placeholder="Start typing"
-                            label="Select a Leader"
-                            setFieldValue={formik.setFieldValue}
-                            aria-describedby="Member Search Box"
-                            error={formik.errors.leaderId}
-                          />
-                        </Col>
-                      </RoleView>
-                    </Row>
-                    <Row className="d-flex align-items-center mb-3">
-                      <RoleView roles={permitAdminArrivals('Governorship')}>
-                        <Col>
-                          <SearchMember
-                            name="adminId"
-                            initialValue={initialValues?.adminName}
-                            placeholder="Start typing"
-                            label="Select Bacenta Admin"
-                            setFieldValue={formik.setFieldValue}
-                            aria-describedby="Admin Search Box"
-                            error={formik.errors.adminId}
-                          />
-                        </Col>
-                      </RoleView>
-                    </Row>
-                    <Row className="d-flex align-items-center mb-3">
-                      <RoleView roles={permitAdminArrivals('Governorship')}>
-                        <Col>
-                          <SearchMember
-                            name="deputyLeaderId"
-                            initialValue={initialValues?.deputyLeaderName}
-                            placeholder="Start typing"
-                            label="Select Deputy Bacenta Leader"
-                            setFieldValue={formik.setFieldValue}
-                            aria-describedby="Deputy Leader Search Box"
-                            error={formik.errors.deputyLeaderId}
-                          />
-                        </Col>
-                      </RoleView>
-                    </Row>
-                    <Col sm={12}>
-                      <Select
-                        label="Meeting Day"
-                        name="meetingDay"
-                        options={SERVICE_DAY_OPTIONS}
-                        defaultOption="Pick a Service Day"
+                    <RoleView roles={permitAdminArrivals('Governorship')}>
+                      <SearchMember
+                        name="leaderId"
+                        initialValue={initialValues?.leaderName}
+                        placeholder="Start typing"
+                        label="Select a Leader"
+                        setFieldValue={formik.setFieldValue}
+                        aria-describedby="Member Search Box"
+                        error={formik.errors.leaderId}
                       />
-                    </Col>
+                      <SearchMember
+                        name="adminId"
+                        initialValue={initialValues?.adminName}
+                        placeholder="Start typing"
+                        label="Select Bacenta Admin"
+                        setFieldValue={formik.setFieldValue}
+                        aria-describedby="Admin Search Box"
+                        error={formik.errors.adminId}
+                      />
+                      <SearchMember
+                        name="deputyLeaderId"
+                        initialValue={initialValues?.deputyLeaderName}
+                        placeholder="Start typing"
+                        label="Select Deputy Bacenta Leader"
+                        setFieldValue={formik.setFieldValue}
+                        aria-describedby="Deputy Leader Search Box"
+                        error={formik.errors.deputyLeaderId}
+                      />
+                    </RoleView>
 
-                    <small className="text-muted">
-                      Enter The Coordinates for the Service Venue
-                    </small>
-                    <Row className="row-cols-2 d-flex align-items-center">
-                      <Col>
-                        <Input name="venueLatitude" placeholder="Latitude" />
-                      </Col>
-                      <Col>
-                        <Input name="venueLongitude" placeholder="Longitude" />
-                      </Col>
-                      <Col className="my-2">
-                        <Button
-                          variant="primary"
-                          className="btn-loading"
-                          disabled={positionLoading}
-                          onClick={() => {
-                            setPositionLoading(true)
+                    <Select
+                      label="Meeting Day"
+                      name="meetingDay"
+                      options={SERVICE_DAY_OPTIONS}
+                      defaultOption="Pick a Service Day"
+                    />
+                  </CardContent>
+                </Card>
 
-                            window.navigator.geolocation.getCurrentPosition(
-                              (position) => {
-                                formik.setFieldValue(
-                                  'venueLatitude',
-                                  position.coords.latitude
-                                )
-                                formik.setFieldValue(
-                                  'venueLongitude',
-                                  position.coords.longitude
-                                )
-                                document
-                                  .getElementById('venueLongitude')
-                                  ?.focus()
-                                document
-                                  .getElementById('venueLatitude')
-                                  ?.focus()
-                                document.getElementById('venueLatitude')?.blur()
-                                setPositionLoading(false)
-                              }
+                <Card>
+                  <CardContent className="space-y-3 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Service Venue Coordinates
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input name="venueLatitude" placeholder="Latitude" />
+                      <Input name="venueLongitude" placeholder="Longitude" />
+                    </div>
+                    <Button
+                      type="button"
+                      className="w-full gap-2"
+                      disabled={positionLoading}
+                      onClick={() => {
+                        setPositionLoading(true)
+
+                        window.navigator.geolocation.getCurrentPosition(
+                          (position) => {
+                            formik.setFieldValue(
+                              'venueLatitude',
+                              position.coords.latitude
                             )
-                          }}
-                        >
-                          {positionLoading ? (
-                            <>
-                              <Spinner animation="grow" size="sm" />
-                              <span> Loading</span>
-                            </>
-                          ) : (
-                            'Locate Me Now'
-                          )}
-                        </Button>
-                      </Col>
-                    </Row>
-                    <small className="text-muted">
-                      Click this button if you are currently at your bacenta
-                      service venue
-                    </small>
-                  </Col>
-                </Row>
-              </div>
+                            formik.setFieldValue(
+                              'venueLongitude',
+                              position.coords.longitude
+                            )
+                            setPositionLoading(false)
+                          }
+                        )
+                      }}
+                    >
+                      {positionLoading ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" />
+                          Loading
+                        </>
+                      ) : (
+                        <>
+                          <LocateFixed className="size-4" />
+                          Locate Me Now
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Tap this button while you&apos;re at the bacenta service
+                      venue.
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <div className="text-center mt-5">
                 <SubmitButton formik={formik} />
-              </div>
-            </Form>
+              </Form>
+            )}
+          </Formik>
 
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Bacenta</Modal.Header>
-              <Modal.Body>
-                <p className="text-info">
-                  Are you sure you want to close down this bacenta?
+          <aside className="space-y-3 lg:sticky lg:top-6">
+            <Card>
+              <CardContent className="space-y-2 p-5">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  About this form
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Update bacenta details — leadership, meeting day, vacation
+                  status, and venue coordinates.
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await CloseDownBacenta({
-                        variables: {
-                          id: bacentaId,
-                          leaderId: initialValues.leaderId,
-                        },
-                      })
+                <p className="text-sm text-muted-foreground">
+                  Use{' '}
+                  <span className="font-medium text-foreground">
+                    Edit Bussing Details
+                  </span>{' '}
+                  to manage Sunday top-ups and the bacenta&apos;s mobile money
+                  number.
+                </p>
+              </CardContent>
+            </Card>
+          </aside>
+        </div>
+      </main>
 
-                      setButtonLoading(false)
-                      clickCard(res.data.CloseDownBacenta)
-                      setCloseDown(false)
-                      navigate(`/governorship/displayall`)
-                    } catch (error) {
-                      setButtonLoading(false)
-                      throwToSentry(
-                        `There was an error closing down this governorship`,
-                        error
-                      )
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
-                  No, take me back
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
-        )}
-      </Formik>
-    </Container>
+      <Dialog open={closeDown} onOpenChange={setCloseDown}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Close Down Bacenta</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to close down this bacenta? This action
+              will mark it inactive.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCloseDown(false)}
+              disabled={buttonLoading}
+            >
+              No, take me back
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="gap-2"
+              disabled={buttonLoading}
+              onClick={async () => {
+                try {
+                  setButtonLoading(true)
+                  const res = await CloseDownBacenta({
+                    variables: {
+                      id: bacentaId,
+                      leaderId: initialValues.leaderId,
+                    },
+                  })
+
+                  setButtonLoading(false)
+                  clickCard(res.data.CloseDownBacenta)
+                  setCloseDown(false)
+                  navigate(`/governorship/displayall`)
+                } catch (error) {
+                  setButtonLoading(false)
+                  throwToSentry(
+                    `There was an error closing down this governorship`,
+                    error
+                  )
+                }
+              }}
+            >
+              {buttonLoading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Submitting
+                </>
+              ) : (
+                "Yes, I'm sure"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <UpdateBusPaymentDialog
+        open={editBussingOpen}
+        onOpenChange={setEditBussingOpen}
+      />
+    </div>
   )
 }
 

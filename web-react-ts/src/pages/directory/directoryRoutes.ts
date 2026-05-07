@@ -126,9 +126,6 @@ const StreamMembers = lazy(() => import('pages/directory/grids/StreamMembers'))
 const ServantMembers = lazy(
   () => import('pages/directory/grids/ServantMembers')
 )
-const UpdateBacentaBussing = lazy(
-  () => import('pages/directory/update/UpdateBusPaymentDetails')
-)
 const AllStreamGovernorships = lazy(
   () => import('pages/directory/display/AllStreamGovernorships')
 )
@@ -474,12 +471,6 @@ export const directory: LazyRouteTypes[] = [
     element: UpdateBacenta,
     roles: permitMe('Governorship'),
     placeholder: false,
-  },
-  {
-    path: '/bacenta/editbussing',
-    element: UpdateBacentaBussing,
-    roles: ['leaderBacenta', ...permitAdminArrivals('Stream')],
-    placeholder: true,
   },
   {
     path: '/governorship/editgovernorship',
