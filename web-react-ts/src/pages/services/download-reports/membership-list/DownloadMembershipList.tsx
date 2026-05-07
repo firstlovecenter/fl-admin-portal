@@ -118,15 +118,6 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-5 lg:max-w-6xl lg:px-6 lg:py-8">
         <header className="flex items-start gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            aria-label="Back"
-            className="-ml-2 mt-0.5 size-11 shrink-0"
-          >
-            <ChevronLeft className="size-5" />
-          </Button>
           <div className="min-w-0 flex-1 space-y-1">
             {loading ? (
               <Skeleton className="h-7 w-48" />
