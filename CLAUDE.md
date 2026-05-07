@@ -75,7 +75,7 @@ fl-admin-portal/
 | --- | --- |
 | Frontend framework | React 18 + TypeScript 4.7 |
 | Build tool (FE) | Vite 4 (PWA, Sentry, SVG, TS paths) |
-| Styling | **Shadcn/UI + Tailwind CSS** (migration in progress from Bootstrap 5). New and touched pages use Shadcn + Tailwind; legacy untouched pages retain Bootstrap. Design tokens in `src/index.css`. |
+| Styling | **Shadcn/UI + Tailwind CSS**. All pages are being migrated from Bootstrap 5 — Bootstrap is fully deprecated. Every file touched must be migrated to Shadcn + Tailwind in the same PR. Design tokens in `src/index.css`. |
 | Forms | Formik + Yup (in-house wrappers in `components/formik/`) |
 | Routing | `react-router-dom` v6 (lazy-loaded, declared in `*Routes.ts` arrays) |
 | GraphQL client | Apollo Client 3 (retry + error links, snackbar surface via `notistack`) |
@@ -111,7 +111,7 @@ The frontend is deployed and **primarily used as an installed PWA** on Android a
 
 - ❌ **No `target="_blank"` links for in-app navigation.** Standalone mode has no browser chrome — new-tab links leave users stranded. Use `react-router-dom` `<Link>` or `useNavigate`.
 - ❌ **No "back to browser" assumptions.** There is no address bar, no browser back button (unless the device OS provides one). Every page needs a clear in-app back/close path.
-- ❌ **No touch targets under 44 × 44 px.** Use Bootstrap spacing / button sizing. Small tap targets are unusable on mobile.
+- ❌ **No touch targets under 44 × 44 px.** Use Tailwind spacing (`p-3`, `min-h-11`) or Shadcn button sizing. Small tap targets are unusable on mobile.
 - ❌ **No `hover`-only interactions.** Touch devices have no hover state. Interactive elements must work on tap.
 - ✅ **Use `type="tel"` / `type="number"` / `type="email"` on inputs.** Triggers the correct mobile keyboard.
 - ✅ **Respect safe areas.** Use `env(safe-area-inset-*)` in CSS where content risks being clipped by notches or home bars.
@@ -249,9 +249,10 @@ or before `/commit`.
 ### Must not
 
 - ❌ **Auth0.** Do not import `@auth0/auth0-react`. Auth is custom (ADR-002).
-- ❌ **Chakra / styled-components / MUI.** The design system is Shadcn/UI +
-  Tailwind CSS. Bootstrap is being phased out — do not write new Bootstrap.
-  Do not mix Bootstrap and Tailwind on the same page (ADR-003 superseded by
+- ❌ **Chakra / styled-components / MUI / Bootstrap.** The design system is
+  Shadcn/UI + Tailwind CSS. Bootstrap is fully deprecated — do not write or
+  retain Bootstrap in any file you touch. Every touched file must be fully
+  migrated to Shadcn + Tailwind in the same PR (ADR-003 superseded by
   `/design` skill).
 - ❌ **Inline `<Route>` JSX.** Routes go through `LazyRouteTypes[]` arrays in
   `*Routes.ts` files (ADR-004).

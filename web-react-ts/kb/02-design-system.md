@@ -36,15 +36,14 @@ All colours are CSS custom properties on `:root` / `[data-theme="dark"]` in
 | `--success` | Success state |
 | `--warning` | Warning state |
 
-Dark mode tokens are defined under `[data-theme="dark"]`. During the Bootstrap
-migration period, both `data-bs-theme` and `data-theme` are set together.
+Dark mode tokens are defined under `[data-theme="dark"]`.
 
 ### Typography
 
 | Style | Tailwind classes | Usage |
 | --- | --- | --- |
 | Display | `text-3xl font-bold tracking-tight tabular-nums` | Hero numbers, totals |
-| H1 | `text-2xl font-semibold` | Page title |
+| H1 | `text-2xl font-bold tracking-tight` | Page title — always `font-bold`, never `font-semibold`. Section name accented with feature token (see "Page heading convention" in `/design` skill). |
 | H2 | `text-lg font-semibold` | Card / section title |
 | H3 | `text-base font-medium` | Sub-section |
 | Body | `text-sm` | Default prose |
@@ -292,10 +291,12 @@ const recentBussing = bussingData.filter((r) => {
 
 ## Migration rules
 
-- **New pages**: Shadcn + Tailwind always. Never write new Bootstrap.
-- **Touched pages**: redesign fully in the same PR when you change any code.
-- **Untouched pages**: leave Bootstrap until the page needs a change.
-- **Never mix** Bootstrap grid + Tailwind flex/grid on the same page.
+Bootstrap is **fully deprecated**. Every file you touch must be fully migrated
+to Shadcn + Tailwind in the same PR — no exceptions, no partial migrations.
+
+- **New pages**: Shadcn + Tailwind always. Never write Bootstrap.
+- **Touched pages**: migrate fully in the same PR when you change any code.
+- **Never mix** Bootstrap and Tailwind in the same file.
 
 Run `/design` whenever you are starting any UI work. It contains the full
 colour system, layout patterns, component catalogue, and migration checklist.
