@@ -107,9 +107,7 @@ const BacentaArrivals = () => {
 
   const bussing = bacenta?.bussingThisWeek
 
-  const isBeforeArrivalEnd = bussing
-    ? beforeArrivalDeadline(bussing, bacenta)
-    : false
+  const isBeforeArrivalEnd = beforeArrivalDeadline(bacenta)
 
   // Vehicles can be added until the arrival deadline closes — there is no
   // one-vehicle-per-bussing cap. The mobilisation picture remains a
@@ -345,9 +343,8 @@ const BacentaArrivals = () => {
                     )}
 
                     <Button
-                      variant="destructive"
                       size="lg"
-                      className="w-full gap-2"
+                      className="w-full gap-2 bg-arrivals text-white hover:bg-arrivals/90"
                       disabled={!canAddVehicle}
                       onClick={() => {
                         clickCard(bacenta)

@@ -96,37 +96,22 @@ export const beforeCountingDeadline = (
 }
 
 export const beforeArrivalDeadline = (
-  bussing: BussingRecord,
   church: BacentaWithArrivals
-) => {
-  if (!church) {
-    return
-  }
+): boolean => {
+  if (!church) return false
+  if (church?.__typename !== 'Bacenta') return false
 
   const today = new Date()
-
-  if (church?.__typename !== 'Bacenta') return
-
   const arrivalStartTime = new Date(
     getTodayTime(church?.stream.arrivalStartTime)
   )
   const arrivalEndTime = new Date(getTodayTime(church?.stream.arrivalEndTime))
-  if (
+
+  return (
     isArrivalsToday(church) &&
     arrivalStartTime < today &&
     today < arrivalEndTime
-  ) {
-    if (!bussing) {
-      return true
-    }
-
-    if (!bussing?.leaderDeclaration) {
-      return true
-    }
-  }
-
-  // return false
-  return false
+  )
 }
 
 export const beforeMobilisationDeadline = (
