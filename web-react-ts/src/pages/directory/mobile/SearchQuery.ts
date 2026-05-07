@@ -90,50 +90,6 @@ export const MEMBER_SEARCH = gql`
           pictureUrl
         }
       }
-      creativeArtsSearch(key: $key, limit: $limit) {
-        id
-        name
-        leader {
-          id
-          firstName
-          lastName
-          nameWithTitle
-          pictureUrl
-        }
-      }
-      ministrySearch(key: $key, limit: $limit) {
-        id
-        name
-        leader {
-          id
-          firstName
-          lastName
-          nameWithTitle
-          pictureUrl
-        }
-      }
-      hubCouncilSearch(key: $key, limit: $limit) {
-        id
-        name
-        leader {
-          id
-          firstName
-          lastName
-          nameWithTitle
-          pictureUrl
-        }
-      }
-      hubSearch(key: $key, limit: $limit) {
-        id
-        name
-        leader {
-          id
-          firstName
-          lastName
-          nameWithTitle
-          pictureUrl
-        }
-      }
     }
   }
 `

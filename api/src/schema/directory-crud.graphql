@@ -164,57 +164,6 @@ extend type Mutation {
       """
       columnName: "stream"
     )
-  SetActiveHub(hubId: ID!): Hub!
-    @cypher(
-      statement: """
-      MATCH (hub:Hub {id:$hubId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = hub.name + ' Hub was made active again'
-
-      WITH log,hub
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (hub)<-[:HAS]-(fellowship:HubCouncil)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (hub)-[:HAS_HISTORY]->(log)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-
-      SET hub:Active:Hub
-      REMOVE hub:Vacation, hub:Online
-
-      RETURN hub
-      """
-      columnName: "hub"
-    )
-  SetVacationHub(hubId: ID!): Hub!
-    @cypher(
-      statement: """
-      MATCH (hub:Hub {id:$hubId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = hub.name + ' Hub went on vacation mode'
-
-      WITH log,hub
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (hub)<-[:HAS]-(hubCouncil:HubCouncil)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (hub)-[:HAS_HISTORY]->(log)
-      MERGE (hubCouncil)-[:HAS_HISTORY]->(log)
-
-      SET hub:Vacation
-      REMOVE hub:Active, hub:Online
-
-      RETURN hub
-      """
-      columnName: "hub"
-    )
-
   #Set Bacenta to be 'Active
   SetActiveBacenta(bacentaId: ID!): Bacenta
     @cypher(
@@ -357,6 +306,7 @@ extend type Mutation {
   UpdateMemberBacenta(memberId: ID!, bacentaId: ID!): Member!
 
   UpdateMemberBasonta(memberId: ID!, basontaId: ID!): Member!
+    @authentication
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $memberId})
@@ -365,13 +315,13 @@ extend type Mutation {
 
       WITH member
       CALL {
-      	WITH member
-      	WITH member  WHERE $basontaId <> 'None'
-        MATCH (ministry:Basonta {id: $basontaId})
-        MERGE (member)-[:BELONGS_TO]->(ministry)
+        WITH member
+        WITH member WHERE $basontaId <> 'None'
+        MATCH (basonta:Basonta {id: $basontaId})
+        MERGE (member)-[:BELONGS_TO]->(basonta)
 
         RETURN count(member) AS memberCount
-        }
+      }
 
       RETURN member
       """
@@ -738,109 +688,4 @@ extend type Mutation {
       columnName: "bacenta"
     )
 
-  MoveCreativeArtsToCampus(creativeArtsId: ID!, campusId: ID!): CreativeArts!
-    @cypher(
-      statement: """
-      MATCH (creativeArts:CreativeArts {id: $creativeArtsId})
-      MATCH (campus:Campus {id: $campusId})
-      OPTIONAL MATCH (creativeArts)<-[r:HAS_MINISTRY]-(:Campus)
-      DELETE r
-
-      MERGE (campus)-[:HAS_MINISTRY]->(creativeArts)
-      RETURN creativeArts
-      """
-      columnName: "creativeArts"
-    )
-
-  MoveMinistryToCreativeArts(ministryId: ID!, creativeArtsId: ID!): Ministry!
-    @cypher(
-      statement: """
-      MATCH (ministry:Ministry {id: $ministryId})
-      MATCH (creativeArts:CreativeArts {id: $creativeArtsId})
-      OPTIONAL MATCH (ministry)<-[r:HAS]-(:CreativeArts)
-      DELETE r
-
-      MERGE (creativeArts)-[:HAS]->(ministry)
-      RETURN ministry
-      """
-      columnName: "ministry"
-    )
-  MoveMinistryToStream(ministryId: ID!, streamId: ID!): Ministry!
-    @cypher(
-      statement: """
-      MATCH (ministry:Ministry {id: $ministryId})
-      MATCH (stream:Stream {id: $streamId})
-      OPTIONAL MATCH (ministry)<-[r:HAS_MINISTRY]-(:Stream)
-      DELETE r
-
-      MERGE (stream)-[:HAS_MINISTRY]->(ministry)
-      RETURN ministry
-      """
-      columnName: "ministry"
-    )
-  MoveHubCouncilToMinistry(hubCouncilId: ID!, ministryId: ID!): HubCouncil!
-    @cypher(
-      statement: """
-      MATCH (hubCouncil:HubCouncil {id: $hubCouncilId})
-      MATCH (ministry:Ministry {id: $ministryId})
-      OPTIONAL MATCH (hubCouncil)<-[r:HAS]-(:Ministry)
-      DELETE r
-
-      MERGE (ministry)-[:HAS]->(hubCouncil)
-      RETURN hubCouncil
-      """
-      columnName: "hubCouncil"
-    )
-  MoveHubCouncilToCouncil(hubCouncilId: ID!, councilId: ID!): HubCouncil!
-    @cypher(
-      statement: """
-      MATCH (hubCouncil:HubCouncil {id: $hubCouncilId})
-      MATCH (council:Council {id: $councilId})
-      OPTIONAL MATCH (hubCouncil)<-[r:HAS_MINISTRY]-(:Council)
-      DELETE r
-
-      MERGE (council)-[:HAS_MINISTRY]->(hubCouncil)
-      RETURN hubCouncil
-      """
-      columnName: "hubCouncil"
-    )
-  MoveHubToHubCouncil(hubId: ID!, hubCouncilId: ID!): Hub!
-    @cypher(
-      statement: """
-      MATCH (hub:Hub {id: $hubId})
-      MATCH (hubCouncil:HubCouncil {id: $hubCouncilId})
-      OPTIONAL MATCH (hub)<-[r:HAS]-(:HubCouncil)
-      DELETE r
-
-      MERGE (hubCouncil)-[:HAS]->(hub)
-      RETURN hub
-      """
-      columnName: "hub"
-    )
-  MoveHubToGovernorship(hubId: ID!, governorshipId: ID!): Hub!
-    @cypher(
-      statement: """
-      MATCH (hub:Hub {id: $hubId})
-      MATCH (governorship:Governorship {id: $governorshipId})
-      OPTIONAL MATCH (hub)<-[r:HAS_MINISTRY]-(:Governorship)
-      DELETE r
-
-      MERGE (governorship)-[:HAS_MINISTRY]->(hub)
-      RETURN hub
-      """
-      columnName: "hub"
-    )
-  MoveHubFellowshipToHub(hubFellowshipId: ID!, hubId: ID!): HubFellowship!
-    @cypher(
-      statement: """
-      MATCH (hubFellowship:HubFellowship {id: $hubFellowshipId})
-      MATCH (hub:Hub {id: $hubId})
-      OPTIONAL MATCH (hubFellowship)<-[r:HAS]-(:Hub)
-      DELETE r
-
-      MERGE (hub)-[:HAS]->(hubFellowship)
-      RETURN hubFellowship
-      """
-      columnName: "hubFellowship"
-    )
 }

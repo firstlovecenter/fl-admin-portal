@@ -4,7 +4,7 @@ import InitialLoading from 'components/base-component/InitialLoading'
 import { GET_LOGGED_IN_USER } from 'components/UserProfileIcon/UserQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
-import { capitalise } from 'global-utils'
+import { capitalise, throwToSentry } from 'global-utils'
 import { getUserServantRoles } from 'pages/dashboards/dashboard-utils'
 import { permitMe } from 'permission-utils'
 import { useContext, useEffect } from 'react'
@@ -53,10 +53,6 @@ const SetPermissions = ({
         const streamId = memberData?.bacenta.governorship?.council.stream.id
         const councilId = memberData?.bacenta.governorship?.council.id
         const governorshipId = memberData?.bacenta.governorship?.id
-        const hubId: string | undefined = undefined
-        const hubCouncilId: string | undefined = undefined
-        const ministryId: string | undefined = undefined
-        const creativeArtsId: string | undefined = undefined
 
         doNotUse.setDenominationId(
           sessionStorage.getItem('denominationId') ?? denominationId
@@ -69,16 +65,6 @@ const SetPermissions = ({
         doNotUse.setCouncilId(sessionStorage.getItem('councilId') ?? councilId)
         doNotUse.setGovernorshipId(
           sessionStorage.getItem('governorshipId') ?? governorshipId
-        )
-        doNotUse.setHubId(sessionStorage.getItem('hubId') ?? hubId)
-        doNotUse.setHubCouncilId(
-          sessionStorage.getItem('hubCouncilId') ?? hubCouncilId
-        )
-        doNotUse.setMinistryId(
-          sessionStorage.getItem('ministryId') ?? ministryId
-        )
-        doNotUse.setCreativeArtsId(
-          sessionStorage.getItem('creativeArtsId') ?? creativeArtsId
         )
 
         const nextCurrentUser = {
@@ -100,14 +86,8 @@ const SetPermissions = ({
           oversight: oversightId,
           denomination: denominationId,
 
-          // Creative Arts
-          hub: hubId,
-          hubCouncil: hubCouncilId,
-          ministry: ministryId,
-          creativeArts: creativeArtsId,
-
           // Other Details
-          doNotUse: { doNotUse: streamName, subdoNotUse: 'bacenta' },
+          church: { church: streamName, subChurch: 'bacenta' },
           stream_name: capitalise(memberData?.stream_name),
           noIncomeTracking: campus?.noIncomeTracking,
           currency: campus?.currency,
@@ -120,11 +100,13 @@ const SetPermissions = ({
         const servant = { ...memberData, ...nextCurrentUser }
         setUserJobs(getUserServantRoles(servant))
 
-        doNotUse.setChurch(nextCurrentUser.church)
+        const churchValue = { church: streamName, subChurch: 'bacenta' }
+        doNotUse.setChurch(churchValue)
+        sessionStorage.setItem('church', JSON.stringify(churchValue))
 
         sessionStorage.setItem('currentUser', JSON.stringify(nextCurrentUser))
       } catch (error) {
-        // Error setting user permissions
+        throwToSentry('Error setting user permissions', error)
       }
     },
   })

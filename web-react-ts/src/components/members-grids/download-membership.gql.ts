@@ -18,10 +18,6 @@ const MEMBERSHIP_FIELDS = `
     dob {
       date
     }
-    basonta {
-      id
-      name
-    }
     bacenta {
       id
       name
@@ -41,6 +37,10 @@ const MEMBERSHIP_FIELDS = `
           fullName
         }
       }
+    }
+    basonta {
+      id
+      name
     }
   }
 `

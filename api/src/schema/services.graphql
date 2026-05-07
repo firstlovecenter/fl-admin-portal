@@ -1049,8 +1049,6 @@ type ServiceLog {
     @relationship(type: "HAS_HISTORY", direction: IN)
   council: [Council!]! @relationship(type: "HAS_HISTORY", direction: IN)
   stream: [Stream!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  ministry: [Ministry!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  hub: [Hub!]! @relationship(type: "HAS_HISTORY", direction: IN)
   bacenta: [Bacenta!]! @relationship(type: "HAS_HISTORY", direction: IN)
 }
 

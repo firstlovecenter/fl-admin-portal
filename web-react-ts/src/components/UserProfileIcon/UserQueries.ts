@@ -75,25 +75,6 @@ export const GET_LOGGED_IN_USER = gql`
         id
         name
       }
-      leadsHub {
-        id
-        name
-        vacationStatus
-      }
-      leadsHubCouncil {
-        id
-        name
-      }
-      leadsMinistry {
-        id
-        name
-        vacationStatus
-      }
-      leadsCreativeArts {
-        id
-        name
-      }
-
       # Administrative relationships
       isAdminForGovernorship {
         id
@@ -126,16 +107,6 @@ export const GET_LOGGED_IN_USER = gql`
         id
         name
       }
-      isAdminForMinistry {
-        id
-        name
-        vacationStatus
-      }
-      isAdminForCreativeArts {
-        id
-        name
-      }
-
       # Arrivals admin relationships
       isArrivalsAdminForGovernorship {
         id

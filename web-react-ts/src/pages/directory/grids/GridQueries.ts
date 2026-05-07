@@ -11,10 +11,6 @@ export const GET_FEDERAL_MEMBERS = gql`
         id
         name
       }
-      basonta {
-        id
-        name
-      }
       maritalStatus {
         status
       }
@@ -29,19 +25,6 @@ export const GET_FEDERAL_MEMBERS = gql`
         name
       }
       leadsGovernorship {
-        id
-        name
-      }
-
-      leadsHubFellowship {
-        id
-        name
-      }
-      leadsHub {
-        id
-        name
-      }
-      basonta {
         id
         name
       }
@@ -76,10 +59,6 @@ export const GET_SERVANT_MEMBERS = gql`
           id
           name
         }
-        basonta {
-          id
-          name
-        }
         maritalStatus {
           status
         }
@@ -89,7 +68,7 @@ export const GET_SERVANT_MEMBERS = gql`
         title {
           name
         }
-        bacenta {
+        basonta {
           id
           name
         }
@@ -98,19 +77,6 @@ export const GET_SERVANT_MEMBERS = gql`
           name
         }
         leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
           id
           name
         }
@@ -124,14 +90,6 @@ export const GET_SERVANT_MEMBERS = gql`
           name
         }
 
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
       }
     }
   }
@@ -153,10 +111,6 @@ export const GET_CAMPUS_MEMBERS = gql`
           id
           name
         }
-        basonta {
-          id
-          name
-        }
         maritalStatus {
           status
         }
@@ -166,7 +120,7 @@ export const GET_CAMPUS_MEMBERS = gql`
         title {
           name
         }
-        bacenta {
+        basonta {
           id
           name
         }
@@ -175,19 +129,6 @@ export const GET_CAMPUS_MEMBERS = gql`
           name
         }
         leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
           id
           name
         }
@@ -201,14 +142,6 @@ export const GET_CAMPUS_MEMBERS = gql`
           name
         }
 
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
       }
     }
   }
@@ -229,10 +162,6 @@ export const GET_STREAM_MEMBERS = gql`
           id
           name
         }
-        basonta {
-          id
-          name
-        }
         maritalStatus {
           status
         }
@@ -242,7 +171,7 @@ export const GET_STREAM_MEMBERS = gql`
         title {
           name
         }
-        bacenta {
+        basonta {
           id
           name
         }
@@ -255,18 +184,6 @@ export const GET_STREAM_MEMBERS = gql`
           name
         }
 
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
-          id
-          name
-        }
         isAdminForCouncil {
           id
           name
@@ -276,14 +193,6 @@ export const GET_STREAM_MEMBERS = gql`
           name
         }
 
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
       }
     }
   }
@@ -305,10 +214,6 @@ export const GET_OVERSIGHT_MEMBERS = gql`
           id
           name
         }
-        basonta {
-          id
-          name
-        }
         maritalStatus {
           status
         }
@@ -318,7 +223,7 @@ export const GET_OVERSIGHT_MEMBERS = gql`
         title {
           name
         }
-        bacenta {
+        basonta {
           id
           name
         }
@@ -331,18 +236,6 @@ export const GET_OVERSIGHT_MEMBERS = gql`
           name
         }
 
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
-          id
-          name
-        }
         isAdminForCouncil {
           id
           name
@@ -352,14 +245,6 @@ export const GET_OVERSIGHT_MEMBERS = gql`
           name
         }
 
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
       }
     }
   }
@@ -381,10 +266,6 @@ export const GET_COUNCIL_MEMBERS = gql`
           id
           name
         }
-        basonta {
-          id
-          name
-        }
         maritalStatus {
           status
         }
@@ -394,7 +275,7 @@ export const GET_COUNCIL_MEMBERS = gql`
         title {
           name
         }
-        bacenta {
+        basonta {
           id
           name
         }
@@ -403,19 +284,6 @@ export const GET_COUNCIL_MEMBERS = gql`
           name
         }
         leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
           id
           name
         }
@@ -429,23 +297,6 @@ export const GET_COUNCIL_MEMBERS = gql`
           name
         }
 
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
-
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
       }
     }
   }
@@ -465,9 +316,6 @@ export const GET_GOVERNORSHIP_MEMBERS = gql`
           id
           name
         }
-        basonta {
-          name
-        }
         maritalStatus {
           status
         }
@@ -477,7 +325,7 @@ export const GET_GOVERNORSHIP_MEMBERS = gql`
         title {
           name
         }
-        bacenta {
+        basonta {
           id
           name
         }
@@ -486,19 +334,6 @@ export const GET_GOVERNORSHIP_MEMBERS = gql`
           name
         }
         leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
           id
           name
         }
@@ -512,14 +347,6 @@ export const GET_GOVERNORSHIP_MEMBERS = gql`
           name
         }
 
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
       }
     }
   }
@@ -539,9 +366,6 @@ export const GET_BACENTA_MEMBERS = gql`
           id
           name
         }
-        basonta {
-          name
-        }
         maritalStatus {
           status
         }
@@ -551,80 +375,7 @@ export const GET_BACENTA_MEMBERS = gql`
         title {
           name
         }
-        bacenta {
-          id
-          name
-        }
-        leadsBacenta {
-          id
-          name
-        }
-        leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
-          id
-          name
-        }
-        isAdminForCouncil {
-          id
-          name
-        }
-        isAdminForGovernorship {
-          id
-          name
-        }
-
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
-      }
-    }
-  }
-`
-
-export const GET_HUB_MEMBERS = gql`
-  query getHubMembers($id: ID!) {
-    hubs(where: { id: $id }) {
-      id
-      name
-      members {
-        id
-        firstName
-        lastName
-        pictureUrl
-        bacenta {
-          id
-          name
-        }
         basonta {
-          name
-        }
-        maritalStatus {
-          status
-        }
-        gender {
-          gender
-        }
-        title {
-          name
-        }
-        bacenta {
           id
           name
         }
@@ -633,19 +384,6 @@ export const GET_HUB_MEMBERS = gql`
           name
         }
         leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
           id
           name
         }
@@ -659,240 +397,8 @@ export const GET_HUB_MEMBERS = gql`
           name
         }
 
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
       }
     }
   }
 `
 
-export const GET_HUBCOUNCIL_MEMBERS = gql`
-  query getHubCouncilMembers($id: ID!) {
-    hubCouncils(where: { id: $id }) {
-      id
-      name
-      members {
-        id
-        firstName
-        lastName
-        pictureUrl
-        stream_name
-        bacenta {
-          id
-          name
-        }
-        basonta {
-          name
-        }
-        maritalStatus {
-          status
-        }
-        gender {
-          gender
-        }
-        title {
-          name
-        }
-        bacenta {
-          id
-          name
-        }
-        leadsBacenta {
-          id
-          name
-        }
-        leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
-          id
-          name
-        }
-
-        isAdminForCouncil {
-          id
-          name
-        }
-        isAdminForGovernorship {
-          id
-          name
-        }
-
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
-      }
-    }
-  }
-`
-
-export const GET_MINISTRY_MEMBERS = gql`
-  query getMinistryMembers($id: ID!) {
-    ministries(where: { id: $id }) {
-      id
-      name
-      members {
-        id
-        firstName
-        lastName
-        pictureUrl
-        stream_name
-        bacenta {
-          id
-          name
-        }
-        basonta {
-          name
-        }
-        maritalStatus {
-          status
-        }
-        gender {
-          gender
-        }
-        title {
-          name
-        }
-        bacenta {
-          id
-          name
-        }
-        leadsBacenta {
-          id
-          name
-        }
-        leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
-          id
-          name
-        }
-
-        isAdminForCouncil {
-          id
-          name
-        }
-        isAdminForGovernorship {
-          id
-          name
-        }
-
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
-      }
-    }
-  }
-`
-
-export const GET_CREATIVEARTS_MEMBERS = gql`
-  query getCreativeArtsMembers($id: ID!) {
-    creativeArts(where: { id: $id }) {
-      id
-      name
-      members {
-        id
-        firstName
-        lastName
-        pictureUrl
-        stream_name
-        bacenta {
-          id
-          name
-        }
-        basonta {
-          name
-        }
-        maritalStatus {
-          status
-        }
-        gender {
-          gender
-        }
-        title {
-          name
-        }
-        bacenta {
-          id
-          name
-        }
-        leadsBacenta {
-          id
-          name
-        }
-        leadsGovernorship {
-          id
-          name
-        }
-
-        bacenta {
-          id
-          name
-        }
-        leadsHub {
-          id
-          name
-        }
-        leadsMinistry {
-          id
-          name
-        }
-
-        isAdminForCouncil {
-          id
-          name
-        }
-        isAdminForGovernorship {
-          id
-          name
-        }
-
-        isAdminForMinistry {
-          id
-          name
-        }
-        isAdminForCreativeArts {
-          id
-          name
-        }
-      }
-    }
-  }
-`

@@ -121,36 +121,6 @@ export const SERVANT_CHURCH_LIST = gql`
         name
       }
 
-      leadsHub {
-        id
-        name
-        vacationStatus
-      }
-
-      leadsHubCouncil {
-        id
-        name
-      }
-
-      leadsMinistry {
-        id
-        name
-        vacationStatus
-      }
-
-      leadsCreativeArts {
-        id
-        name
-      }
-      isAdminForMinistry {
-        id
-        name
-        vacationStatus
-      }
-      isAdminForCreativeArts {
-        id
-        name
-      }
     }
   }
 `
@@ -160,14 +130,10 @@ export const SERVANT_CHURCHES_COUNT = gql`
     members(where: { id: $id }) {
       id
       memberCount
-      basontaMembershipCount
       leadsBacentaCount
       leadsAdminsGovernorshipCount
       leadsAdminsCouncilCount
       leadsAdminsCampusCount
-      leadsHubCount
-      leadsAdminsMinistryCount
-      leadsAdminsCreativeArtsCount
     }
   }
 `

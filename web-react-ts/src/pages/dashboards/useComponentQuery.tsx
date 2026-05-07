@@ -34,12 +34,6 @@ import {
   SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN,
   SERVANTS_STREAM_ARRIVALS_COUNTER,
   SERVANTS_STREAM_TELLER,
-  SERVANTS_HUB_LEADER,
-  SERVANTS_MINISTRY_LEADER,
-  SERVANTS_CREATIVEARTS_LEADER,
-  SERVANTS_MINISTRY_ADMIN,
-  SERVANTS_CREATIVEARTS_ADMIN,
-  SERVANTS_HUBCOUNCIL_LEADER,
   SERVANT_DENOMINATION_LEADER,
   SERVANTS_DENOMINATION_ADMIN,
 } from './userChurchDataQueries'
@@ -121,14 +115,6 @@ const useComponentQuery = (props?: UseComponentQuery) => {
 
   const [streamTellerQuery] = useLazyQuery(SERVANTS_STREAM_TELLER)
 
-  //sonta
-  const [hubLeaderQuery] = useLazyQuery(SERVANTS_HUB_LEADER)
-  const [hubCouncilLeaderQuery] = useLazyQuery(SERVANTS_HUBCOUNCIL_LEADER)
-  const [ministryLeaderQuery] = useLazyQuery(SERVANTS_MINISTRY_LEADER)
-  const [creativeArtsLeaderQuery] = useLazyQuery(SERVANTS_CREATIVEARTS_LEADER)
-  const [ministryAdminQuery] = useLazyQuery(SERVANTS_MINISTRY_ADMIN)
-  const [creativeArtsAdminQuery] = useLazyQuery(SERVANTS_CREATIVEARTS_ADMIN)
-
   const church: {
     [key: string]: any
   } = {
@@ -168,20 +154,6 @@ const useComponentQuery = (props?: UseComponentQuery) => {
       arrivalsAdmin: '',
     },
 
-    Hub: {
-      leader: hubLeaderQuery,
-    },
-    HubCouncil: {
-      leader: hubCouncilLeaderQuery,
-    },
-    Ministry: {
-      leader: ministryLeaderQuery,
-      admin: ministryAdminQuery,
-    },
-    CreativeArts: {
-      leader: creativeArtsLeaderQuery,
-      admin: creativeArtsAdminQuery,
-    },
   }
 
   useEffect(() => {

@@ -26,7 +26,6 @@ type Member {
   dob: TimeGraph @relationship(type: "WAS_BORN_ON", direction: OUT)
   title: [Title!]!
     @relationship(type: "HAS_TITLE", properties: "HasTitle", direction: OUT)
-  basonta: Basonta @relationship(type: "BELONGS_TO", direction: OUT)
   stickyNote: String
   occupation: Occupation @relationship(type: "HAS_OCCUPATION", direction: OUT)
   stream_name: String
@@ -55,24 +54,6 @@ type Member {
       """
       columnName: "memberCount"
     )
-  basontaMembers: [Member!]!
-    @cypher(
-      statement: """
-      MATCH (this)-[:LEADS|HAS|IS_ADMIN_FOR*1..5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      MATCH (members)-[:BELONGS_TO]->(:Basonta)
-      RETURN DISTINCT members AS basontaMembers ORDER BY toLower(basontaMembers.firstName), toLower(basontaMembers.lastName)
-      """
-      columnName: "basontaMembers"
-    )
-  basontaMembershipCount: Int
-    @cypher(
-      statement: """
-      MATCH (this)-[:LEADS|HAS|IS_ADMIN_FOR*1..5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      MATCH (members)-[:BELONGS_TO]->(:Basonta)
-      RETURN COUNT(DISTINCT members) AS basontaMembershipCount
-      """
-      columnName: "basontaMembershipCount"
-    )
   history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
       statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
@@ -80,6 +61,7 @@ type Member {
     )
   loggedHistory: [HistoryLog!]! @relationship(type: "LOGGED_BY", direction: IN)
   bacenta: Bacenta @relationship(type: "BELONGS_TO", direction: OUT)
+  basonta: Basonta @relationship(type: "BELONGS_TO", direction: OUT)
   leadsBacenta: [Bacenta!]! @relationship(type: "LEADS", direction: OUT)
   leadsBacentaCount: Int
     @cypher(
@@ -90,11 +72,6 @@ type Member {
       columnName: "leadsBacentaCount"
     )
 
-  ### CREATIVE ARTS WORK ###
-  leadsCreativeArts: [CreativeArts!]!
-    @relationship(type: "LEADS", direction: OUT)
-  leadsMinistry: [Ministry!]! @relationship(type: "LEADS", direction: OUT)
-  leadsHub: [Hub!]! @relationship(type: "LEADS", direction: OUT)
   leadsGovernorship: [Governorship!]!
     @relationship(type: "LEADS", direction: OUT)
   leadsGovernorshipCount: Int
@@ -329,10 +306,6 @@ type HistoryLog {
   leaders: [Member!]! @relationship(type: "HAS_HISTORY", direction: IN)
   bacenta: [Bacenta!]! @relationship(type: "HAS_HISTORY", direction: IN)
   governorship: [Governorship!]!
-    @relationship(type: "HAS_HISTORY", direction: IN)
-  ministry: [Ministry!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  hub: Hub! @relationship(type: "HAS_HISTORY", direction: IN)
-  creativeArt: [CreativeArts!]!
     @relationship(type: "HAS_HISTORY", direction: IN)
 }
 
@@ -616,9 +589,7 @@ type Campus implements Church {
   leader: Member @relationship(type: "LEADS", direction: IN)
   oversight: Oversight! @relationship(type: "HAS", direction: IN)
   streams: [Stream!]! @relationship(type: "HAS", direction: OUT)
-  creativeArts: [CreativeArts!]!
-    @relationship(type: "HAS_MINISTRY", direction: OUT)
-
+  basontas: [Basonta!]! @relationship(type: "HAS_MINISTRY", direction: OUT)
   councils: [Council!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(councils:Council) RETURN councils"
@@ -753,7 +724,6 @@ type Stream implements Church {
   leader: Member @relationship(type: "LEADS", direction: IN)
   councils: [Council!]! @relationship(type: "HAS", direction: OUT)
   campus: Campus @relationship(type: "HAS", direction: IN)
-  ministries: [Ministry!]! @relationship(type: "HAS_MINISTRY", direction: OUT)
   meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
 
   stream_name: String
@@ -1185,12 +1155,15 @@ type Bacenta implements Church {
       columnName: "stream"
     )
 
-  hubs: [Hub!]!
+}
+
+type Basonta {
+  id: ID @id
+  name: String!
+  leader: Member @relationship(type: "LEADS", direction: IN)
+  history(limit: Int! = 3): [HistoryLog!]!
     @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*2]-(council:Council)-[:HAS_MINISTRY]->(hubs:Hub)
-      RETURN hubs AS hubs
-      """
-      columnName: "hubs"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC LIMIT $limit"
+      columnName: "history"
     )
 }

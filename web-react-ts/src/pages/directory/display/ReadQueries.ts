@@ -59,24 +59,6 @@ export const DISPLAY_MEMBER_LEADERSHIP = gql`
         id
         name
       }
-      leadsCreativeArts {
-        id
-        name
-      }
-
-      leadsMinistry {
-        id
-        name
-      }
-      leadsHubCouncil {
-        id
-        name
-      }
-
-      leadsHub {
-        id
-        name
-      }
     }
   }
 `
@@ -110,14 +92,6 @@ export const DISPLAY_MEMBER_ADMIN = gql`
         stream_name
       }
 
-      isAdminForCreativeArts {
-        id
-        name
-      }
-      isAdminForMinistry {
-        id
-        name
-      }
     }
   }
 `
@@ -127,15 +101,6 @@ export const DISPLAY_MEMBER_CHURCH = gql`
     members(where: { id: $id }) {
       id
       #church info
-      basonta {
-        id
-        name
-        leader {
-          firstName
-          lastName
-        }
-      }
-
       bacenta {
         id
         name
@@ -152,6 +117,15 @@ export const DISPLAY_MEMBER_CHURCH = gql`
             lastName
             fullName
           }
+        }
+      }
+      basonta {
+        id
+        name
+        leader {
+          id
+          firstName
+          lastName
         }
       }
       #Personal history
@@ -268,19 +242,11 @@ export const DISPLAY_GOVERNORSHIP = gql`
       id
       name
       stream_name
-      hubCount
       bacentaCount
       vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
       bacentas(options: { limit: 5 }) {
-        id
-        name
-        leader {
-          id
-        }
-      }
-      hubs(options: { limit: 5 }) {
         id
         name
         leader {
@@ -338,9 +304,6 @@ export const DISPLAY_COUNCIL = gql`
       stream_name
       governorshipCount
       bacentaCount
-      hubCouncilCount
-      hubCount
-      hubFellowshipCount
       memberCount
       pastorCount
       vacationGraduatedBacentaCount
@@ -351,11 +314,6 @@ export const DISPLAY_COUNCIL = gql`
         name
       }
       governorships(options: { limit: 5 }) {
-        id
-        name
-      }
-
-      hubCouncils(options: { limit: 5 }) {
         id
         name
       }
@@ -402,15 +360,11 @@ export const DISPLAY_STREAM = gql`
       councilCount
       governorshipCount
       bacentaCount
-      hubFellowshipCount
       memberCount
       pastorCount
       vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
-      ministryCount
-      hubCount
-      hubCouncilCount
       meetingDay {
         day
         dayNumber
@@ -420,10 +374,6 @@ export const DISPLAY_STREAM = gql`
         name
       }
       councils(options: { limit: 5 }) {
-        id
-        name
-      }
-      ministries(options: { limit: 5 }) {
         id
         name
       }
@@ -477,7 +427,6 @@ export const DISPLAY_CAMPUS = gql`
       vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
-      creativeArtsCount
       oversight {
         id
         name
@@ -486,10 +435,6 @@ export const DISPLAY_CAMPUS = gql`
         id
         name
         stream_name
-      }
-      creativeArts(options: { limit: 5 }) {
-        id
-        name
       }
 
       admin {
@@ -584,58 +529,6 @@ export const DISPLAY_OVERSIGHT = gql`
   }
 `
 
-export const DISPLAY_CREATIVEARTS = gql`
-  query DisplayCreativeArts($id: ID!) {
-    creativeArts(where: { id: $id }, options: { limit: 1 }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        currentTitle
-        nameWithTitle
-        pictureUrl
-      }
-      admin {
-        id
-        firstName
-        lastName
-        pictureUrl
-      }
-      memberCount
-      ministryCount
-      hubCouncilCount
-      hubCount
-      activeHubFellowshipCount
-      vacationHubFellowshipCount
-      ministries {
-        id
-        name
-      }
-      campus {
-        id
-        name
-      }
-      history {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
 export const DISPLAY_DENOMINATION = gql`
   query displayDenomination($id: ID!) {
     denominations(where: { id: $id }, options: { limit: 1 }) {
@@ -687,257 +580,3 @@ export const DISPLAY_DENOMINATION = gql`
   }
 `
 
-export const DISPLAY_MINISTRY = gql`
-  query displayMinistry($id: ID!) {
-    ministries(where: { id: $id }, options: { limit: 1 }) {
-      id
-      name
-      vacationStatus
-      bankAccount
-      stream {
-        id
-        name
-      }
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        currentTitle
-        nameWithTitle
-        pictureUrl
-      }
-      admin {
-        id
-        firstName
-        lastName
-        pictureUrl
-      }
-      memberCount
-      hubCouncilCount
-      hubCount
-
-      activeHubFellowshipCount
-      vacationHubFellowshipCount
-
-      history {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-      hubCouncils {
-        id
-        name
-      }
-      creativeArts {
-        id
-        name
-        campus {
-          id
-          name
-        }
-      }
-    }
-  }
-`
-
-export const DISPLAY_HUBCOUNCIL = gql`
-  query DisplayHubCouncil($id: ID!) {
-    hubCouncils(where: { id: $id }, options: { limit: 1 }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        currentTitle
-        nameWithTitle
-        pictureUrl
-      }
-      hubCount
-      activeHubFellowshipCount
-      vacationHubFellowshipCount
-      memberCount
-      council {
-        id
-        name
-      }
-      hubs {
-        id
-        name
-      }
-      history {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-      ministry {
-        id
-        name
-        creativeArts {
-          id
-          name
-          campus {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-`
-
-export const DISPLAY_HUB = gql`
-  query DisplayHub($id: ID!) {
-    hubs(where: { id: $id }, options: { limit: 1 }) {
-      id
-      name
-      vacationStatus
-      meetingDay {
-        day
-      }
-      location {
-        longitude
-        latitude
-      }
-      governorship {
-        id
-        name
-      }
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        currentTitle
-        nameWithTitle
-        pictureUrl
-      }
-      memberCount
-      vacationHubFellowshipCount
-      activeHubFellowshipCount
-
-      hubFellowships {
-        id
-        name
-      }
-      history {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-      hubCouncil {
-        id
-        name
-
-        ministry {
-          id
-          name
-          creativeArts {
-            id
-            name
-            campus {
-              id
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`
-
-export const DISPLAY_HUB_HISTORY = gql`
-  query displayHubHistory($id: ID!) {
-    hubs(where: { id: $id }, options: { limit: 1 }) {
-      id
-      rehearsals(limit: 5) {
-        id
-        bankingProof
-        week
-        noServiceReason
-      }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const DISPLAY_HUBFELLOWSHIP = gql`
-  query displayHubFellowship($id: ID!) {
-    hubFellowships(where: { id: $id }, options: { limit: 1 }) {
-      id
-      noIncomeTracking
-      vacationStatus
-      stream_name
-      bankingCode
-      name
-      memberCount
-      location {
-        longitude
-        latitude
-      }
-      meetingDay {
-        day
-        dayNumber
-      }
-      bacenta {
-        id
-        name
-        governorship {
-          id
-          name
-        }
-      }
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        currentTitle
-        nameWithTitle
-        pictureUrl
-      }
-    }
-  }
-`

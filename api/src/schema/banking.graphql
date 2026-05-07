@@ -5,12 +5,6 @@ extend type Mutation {
     mobileNumber: String!
     momoName: String!
   ): ServiceRecord!
-  BankRehearsalOffering(
-    rehearsalRecordId: ID!
-    mobileNetwork: String!
-    mobileNumber: String!
-    momoName: String!
-  ): RehearsalRecord!
   SendPaymentOTP(
     serviceRecordId: String!
     reference: String
@@ -19,39 +13,6 @@ extend type Mutation {
   ConfirmOfferingPayment(serviceRecordId: ID!): ServiceRecord!
   SubmitBankingSlip(serviceRecordId: ID!, bankingSlip: String!): ServiceRecord!
   ManuallyConfirmOfferingPayment(serviceRecordId: ID!): ServiceRecord!
-}
-
-extend type RehearsalRecord {
-  offeringBankedBy: Member
-    @relationship(type: "OFFERING_BANKED_BY", direction: OUT)
-  sourceNumber: String
-  sourceNetwork: String
-  desc: String
-  transactionTime: DateTime
-}
-
-extend type RehearsalRecord {
-  transactionTime: DateTime
-  transactionReference: ID
-  transactionOTP: String
-  transactionStatus: String
-  transactionError: String
-  confirmedBy: ID!
-  bankingProof: Boolean
-    @cypher(
-      statement: """
-       MATCH (this)
-      WITH this
-      RETURN CASE
-        WHEN this.bankingSlip IS NOT NULL
-        OR this.transactionStatus = 'success'
-        OR this.tellerConfirmationTime IS NOT NULL
-        THEN true
-        ELSE false
-      END AS bankingProof
-      """
-      columnName: "bankingProof"
-    )
 }
 
 extend type ServiceRecord {
