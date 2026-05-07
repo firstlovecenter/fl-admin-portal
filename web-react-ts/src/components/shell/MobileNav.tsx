@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from 'components/ui/dropdown-menu'
 import { ChurchRoleScopePicker } from './ChurchRoleScopePicker'
+import { ChurchScopeNavItem } from './ChurchScopeNavItem'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 
 const containerVariants = {
@@ -131,7 +132,12 @@ export const MobileNav = ({
             variants={itemVariants}
             className="my-2 h-px bg-sidebar-border"
           />
-          <ChurchRoleScopePicker />
+          <motion.div variants={itemVariants}>
+            <ChurchRoleScopePicker />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <ChurchScopeNavItem variant="mobile" onNavigate={onClose} />
+          </motion.div>
           {secondaryNav.map((item) => (
             <MobileNavItem key={item.to} item={item} onClose={onClose} />
           ))}
