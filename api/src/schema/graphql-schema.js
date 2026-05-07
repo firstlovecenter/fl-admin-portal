@@ -71,6 +71,10 @@ const downloadMembership = fs
   .readFileSync(path.join(__dirname, './download-credits.graphql'))
   .toString('utf-8')
 
+const reports = fs
+  .readFileSync(path.join(__dirname, './reports.graphql'))
+  .toString('utf-8')
+
 const array = [
   schema,
   directory,
@@ -88,6 +92,7 @@ const array = [
   maps,
   accounts,
   downloadMembership,
+  reports,
 ]
 
 const combinedSchema = array.join(' ')

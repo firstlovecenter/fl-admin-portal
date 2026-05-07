@@ -1,0 +1,124 @@
+type DirectoryReportEntry {
+  id: ID!
+  level: String!
+  name: String!
+  parentName: String
+  leaderName: String
+  leaderPhone: String
+  leaderWhatsApp: String
+}
+
+type WeeklyChurchReportEntry {
+  id: ID!
+  churchId: ID!
+  churchName: String!
+  churchLevel: String!
+  week: Int!
+  year: Int!
+  serviceAttendance: Int
+  serviceIncome: Float
+  serviceDollarIncome: Float
+  numberOfServices: Int
+  bussingAttendance: Int
+  bussingLeaderDeclaration: Int
+  numberOfSprinters: Int
+  numberOfUrvans: Int
+  numberOfCars: Int
+  bussingTopUp: Float
+}
+
+extend type Bacenta {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+}
+
+extend type Governorship {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+}
+
+extend type Council {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+}
+
+extend type Stream {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+}
+
+extend type Campus {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+}
+
+extend type Oversight {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+}

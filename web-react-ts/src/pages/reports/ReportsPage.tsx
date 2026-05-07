@@ -1,6 +1,13 @@
 import { type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, FileSpreadsheet } from 'lucide-react'
+import {
+  CalendarRange,
+  Download,
+  FileSpreadsheet,
+  Network,
+  PiggyBank,
+  Users,
+} from 'lucide-react'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { cn } from 'components/lib/utils'
 
@@ -12,6 +19,15 @@ const MEMBERSHIP_PATHS: Record<string, string> = {
   Campus: '/download-reports/campus/membership',
   Oversight: '/download-reports/oversight/membership',
 }
+
+const SUPPORTED_REPORT_LEVELS = new Set([
+  'Bacenta',
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+  'Oversight',
+])
 
 const getMembershipDownloadPath = (churchType: string | undefined) =>
   MEMBERSHIP_PATHS[churchType ?? ''] ?? null
@@ -31,7 +47,9 @@ const ReportCard = ({ icon, title, description, to }: ReportCardProps) => {
     <button
       type="button"
       disabled={unavailable}
-      onClick={() => { if (to) navigate(to) }}
+      onClick={() => {
+        if (to) navigate(to)
+      }}
       className={cn(
         'flex w-full items-start gap-4 rounded-xl border border-border bg-card p-5 text-left transition-colors',
         unavailable
@@ -60,7 +78,16 @@ const ReportCard = ({ icon, title, description, to }: ReportCardProps) => {
 
 const ReportsPage = () => {
   const { selectedScope } = useChurchRoleScope()
-  const membershipPath = getMembershipDownloadPath(selectedScope?.churchType)
+  const churchType = selectedScope?.churchType ?? ''
+  const reportsAvailable = SUPPORTED_REPORT_LEVELS.has(churchType)
+  const membershipPath = getMembershipDownloadPath(churchType)
+
+  const directoryPath = reportsAvailable ? '/reports/directory' : null
+  const servicesHeldPath = reportsAvailable ? '/reports/services-held' : null
+  const incomeBussingPath = reportsAvailable
+    ? '/reports/weekday-income-bussing'
+    : null
+  const subChurchesPath = reportsAvailable ? '/reports/sub-churches' : null
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
@@ -73,7 +100,6 @@ const ReportsPage = () => {
         </header>
 
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
-          {/* Left — report list */}
           <div className="space-y-6">
             <section className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -81,16 +107,47 @@ const ReportsPage = () => {
               </p>
               <div className="space-y-3">
                 <ReportCard
-                  icon={<FileSpreadsheet className="size-5" />}
+                  icon={<Users className="size-5" />}
                   title="Membership List"
                   description="Export the full membership roster as a CSV file, including contact details and group assignments."
                   to={membershipPath}
+                />
+                <ReportCard
+                  icon={<Network className="size-5" />}
+                  title="Church Directory"
+                  description="One CSV per level — every sub-church with its leader's name and phone numbers."
+                  to={directoryPath}
+                />
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Services & Income
+              </p>
+              <div className="space-y-3">
+                <ReportCard
+                  icon={<CalendarRange className="size-5" />}
+                  title="Services Held"
+                  description="Per-week service counts and total attendance for this church level. Choose a date range."
+                  to={servicesHeldPath}
+                />
+                <ReportCard
+                  icon={<PiggyBank className="size-5" />}
+                  title="Weekday Income & Bussing"
+                  description="Per-week service income and bussing totals for this church level."
+                  to={incomeBussingPath}
+                />
+                <ReportCard
+                  icon={<FileSpreadsheet className="size-5" />}
+                  title="Sub-Churches Breakdown"
+                  description="Per-week weekday income and Sunday attendance for each immediate sub-church."
+                  to={subChurchesPath}
                 />
               </div>
             </section>
           </div>
 
-          {/* Right — intentional negative space */}
           <div className="hidden lg:block" aria-hidden="true" />
         </div>
       </main>
