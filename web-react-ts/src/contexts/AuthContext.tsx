@@ -24,6 +24,7 @@ import {
   getAccessToken,
   getRefreshToken,
   getStoredUser,
+  getTokenExpiryMs,
   isTokenExpired,
   AuthServiceError,
   AuthUser,
@@ -32,6 +33,7 @@ import {
   ResetPasswordData,
   SetupPasswordData,
   STORAGE_KEYS,
+  ACCESS_TOKEN_EXPIRY_BUFFER_MS,
 } from '../lib/auth-service'
 
 interface AuthContextType {
@@ -167,6 +169,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initAuth()
   }, [refreshAccessToken, reverifyInBackground])
+
+  /**
+   * Proactive silent refresh. While a user session is active, schedule a
+   * refresh ~1 minute before the access token's `exp` so idle sessions
+   * stay alive without the user noticing. On success, reschedule from the
+   * new token's `exp`. On failure, `refreshAccessToken` already clears
+   * auth (which will tear down this effect via the `user` dep), so we
+   * just stop scheduling.
+   */
+  useEffect(() => {
+    if (!user) return undefined
+
+    let cancelled = false
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+
+    const scheduleNext = () => {
+      if (cancelled) return
+
+      const token = getAccessToken()
+      if (!token) return
+
+      const exp = getTokenExpiryMs(token)
+      if (exp === null) return
+
+      const minDelay = 5 * 1000
+      const delay = Math.max(
+        exp - Date.now() - ACCESS_TOKEN_EXPIRY_BUFFER_MS,
+        minDelay
+      )
+
+      timeoutId = setTimeout(async () => {
+        if (cancelled) return
+        const next = await refreshAccessToken()
+        if (cancelled) return
+        if (next) scheduleNext()
+      }, delay)
+    }
+
+    scheduleNext()
+
+    return () => {
+      cancelled = true
+      if (timeoutId !== undefined) clearTimeout(timeoutId)
+    }
+  }, [user, refreshAccessToken])
 
   /**
    * Cross-tab auth sync. The `storage` event fires same-origin only, on

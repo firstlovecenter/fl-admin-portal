@@ -13,13 +13,7 @@ import useAuthPermissions from './useAuth'
 import { useLocation } from 'react-router-dom'
 import { isPublicAuthRoute } from 'lib/auth-service'
 
-const SetPermissions = ({
-  token,
-  children,
-}: {
-  token: string
-  children: JSX.Element
-}) => {
+const SetPermissions = ({ children }: { children: JSX.Element }) => {
   const { currentUser, setUserJobs, setCurrentUser } = useContext(MemberContext)
   const { doNotUse } = useContext(ChurchContext)
   const { isAuthenticated, user } = useAuth()
@@ -146,8 +140,9 @@ const SetPermissions = ({
     return <>{children}</>
   }
 
-  // Show loading while getting member data or if no token (for protected routes)
-  if (loggedInLoading || !token) {
+  // Show loading while fetching member data, or while we're still unauthenticated
+  // (token rotation in flight) on a protected route.
+  if (loggedInLoading || !isAuthenticated) {
     return <InitialLoading text={'Retrieving your church information...'} />
   }
 

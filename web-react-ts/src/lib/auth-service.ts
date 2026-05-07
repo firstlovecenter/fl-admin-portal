@@ -180,19 +180,33 @@ export function clearAuth(): void {
 }
 
 /**
- * Check if access token is expired (with 5 minute buffer)
+ * Treat the access token as expired this far in advance of its actual `exp`.
+ * Shared with the proactive refresh scheduler in AuthContext so on-request
+ * refresh and timer-driven refresh agree on when a token has gone stale.
  */
-export function isTokenExpired(token: string): boolean {
+export const ACCESS_TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000
+
+/**
+ * Decode the `exp` claim (milliseconds since epoch) from a JWT, or null if
+ * the token is malformed or missing the claim.
+ */
+export function getTokenExpiryMs(token: string): number | null {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
-    const exp = payload.exp * 1000 // Convert to milliseconds
-    const now = Date.now()
-    const bufferTime = 5 * 60 * 1000 // 5 minutes
-
-    return now >= exp - bufferTime
+    if (typeof payload?.exp !== 'number') return null
+    return payload.exp * 1000
   } catch {
-    return true
+    return null
   }
+}
+
+/**
+ * Check if access token is expired (with the shared buffer applied).
+ */
+export function isTokenExpired(token: string): boolean {
+  const exp = getTokenExpiryMs(token)
+  if (exp === null) return true
+  return Date.now() >= exp - ACCESS_TOKEN_EXPIRY_BUFFER_MS
 }
 
 /**

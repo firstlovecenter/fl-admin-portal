@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { RetryLink } from '@apollo/client/link/retry'
 import { onError } from '@apollo/client/link/error'
@@ -24,28 +24,12 @@ import './app.css'
 // import './index.css'
 import ReactGA from 'react-ga4'
 import { toast } from 'sonner'
-import SplashSreen from 'pages/splash-screen/SplashSreen'
 import AppWithContext from 'AppWithContext'
 
+const AUTH_LINK_TOKEN_TIMEOUT_MS = 8000
+
 const AppWithApollo = () => {
-  const [accessToken, setAccessToken] = useState<string>('')
-  const { getAccessTokenSilently, isLoading, user } = useAuth()
-
-  const getAccessToken = useCallback(async () => {
-    try {
-      const token = await getAccessTokenSilently()
-
-      setAccessToken(token)
-    } catch (err) {
-      // Error obtaining token silently
-    }
-  }, [getAccessTokenSilently])
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      getAccessToken()
-    }
-  }, [getAccessToken, isLoading, user])
+  const { getAccessTokenSilently } = useAuth()
 
   const httpLink = createHttpLink({
     uri:
@@ -53,15 +37,38 @@ const AppWithApollo = () => {
       'http://localhost:4001/graphql',
   })
 
-  const authLink = setContext((_, { headers }) => {
-    // get the authentication token from memory or localStorage
-    const token = accessToken
+  const authLink = setContext(async (_, { headers }) => {
+    // Pull a fresh token per-request. getAccessTokenSilently transparently
+    // refreshes via the refresh token when the access token is past the
+    // local expiry buffer, so outgoing queries never ship a stale Bearer.
+    // Race against a timeout so a hung refresh fetch can't block every
+    // in-flight request indefinitely — RetryLink only retries failures, not
+    // requests stalled in the link layer.
+    let token = ''
+    let timerId: ReturnType<typeof setTimeout> | undefined
+    try {
+      token = await Promise.race([
+        getAccessTokenSilently(),
+        new Promise<string>((_resolve, reject) => {
+          timerId = setTimeout(
+            () => reject(new Error('Auth token fetch timed out')),
+            AUTH_LINK_TOKEN_TIMEOUT_MS
+          )
+        }),
+      ])
+    } catch {
+      // No token / refresh failed / timed out. If refresh failed for real,
+      // AuthContext has already cleared the user and SimpleApp will swap to
+      // the login screen; if it timed out, the request goes without auth and
+      // the server will reject it.
+    } finally {
+      if (timerId !== undefined) clearTimeout(timerId)
+    }
 
-    // return the headers to the context so httpLink can read them
     return {
       headers: {
         ...headers,
-        Authorization: `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     }
   })
@@ -141,13 +148,9 @@ const AppWithApollo = () => {
   //   )
   // }
 
-  if (isLoading) {
-    return <SplashSreen />
-  }
-
   return (
     <ApolloProvider client={client}>
-      <AppWithContext token={accessToken} />
+      <AppWithContext />
     </ApolloProvider>
   )
 }
@@ -170,7 +173,9 @@ const AppWithAuth = () => (
 
       return (
         <AuthProvider>
-          <AppWithApollo />
+          <SimpleApp>
+            <AppWithApollo />
+          </SimpleApp>
         </AuthProvider>
       )
     }}
@@ -186,8 +191,6 @@ const root = createRoot(container)
 
 root.render(
   <React.StrictMode>
-    <SimpleApp>
-      <AppWithAuth />
-    </SimpleApp>
+    <AppWithAuth />
   </React.StrictMode>
 )

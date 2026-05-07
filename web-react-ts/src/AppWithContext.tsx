@@ -40,9 +40,6 @@ import { ThemeProvider } from 'components/shell/ThemeProvider'
 import { Toaster } from 'components/ui/sonner'
 import { ChurchRoleScopeProvider } from 'contexts/ChurchRoleScopeContext'
 
-type AppPropsType = {
-  token: string
-}
 
 const ServantsDashboard = React.lazy(
   () => import('pages/dashboards/ServantsDashboard')
@@ -98,7 +95,7 @@ const getInitialCurrentUser = (
   }
 }
 
-const AppWithContext = (props: AppPropsType) => {
+const AppWithContext = () => {
   const {
     clickCard,
     church,
@@ -200,7 +197,7 @@ const AppWithContext = (props: AppPropsType) => {
                     multiplicationRecordId,
                   }}
                 >
-                  <SetPermissions token={props.token}>
+                  <SetPermissions>
                     <Routes>
                       <Route
                         path="/setup-password"
