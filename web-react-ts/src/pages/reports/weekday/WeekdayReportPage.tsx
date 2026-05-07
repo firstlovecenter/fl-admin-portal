@@ -6,40 +6,37 @@ import WeeklyReportDownloadCard, {
   sanitizeFilenamePart,
 } from '../_shared/WeeklyReportDownloadCard'
 import { useWeeklyReportQuery } from '../_shared/useWeeklyReportQuery'
-import { SUB_CHURCHES_REPORT_QUERIES } from '../_shared/reports.gql'
+import { WEEKDAY_REPORT_QUERIES } from '../_shared/reports.gql'
 import type { WeeklyChurchReportEntry } from '../_shared/report-types'
 
 const HEADERS = [
-  { label: 'Sub-Church Level', key: 'churchLevel' },
-  { label: 'Sub-Church', key: 'churchName' },
   { label: 'Year', key: 'year' },
   { label: 'Week', key: 'week' },
-  { label: 'Weekday Income', key: 'serviceIncome' },
   { label: 'Service Attendance', key: 'serviceAttendance' },
-  { label: 'Sunday Attendance (Bussing)', key: 'bussingAttendance' },
   { label: 'Number of Services', key: 'numberOfServices' },
+  { label: 'Service Income', key: 'serviceIncome' },
+  { label: 'Service Income (USD)', key: 'serviceDollarIncome' },
+  { label: 'Church', key: 'churchName' },
 ] as const
 
 const PREVIEW_COLUMNS = [
-  { key: 'churchName', label: 'Sub-Church' },
   { key: 'year', label: 'Year' },
   { key: 'week', label: 'Week' },
-  { key: 'serviceIncome', label: 'Weekday Income' },
-  { key: 'bussingAttendance', label: 'Sunday Att.' },
+  { key: 'serviceAttendance', label: 'Attendance' },
+  { key: 'serviceIncome', label: 'Income' },
 ]
 
 const toRow = (entry: WeeklyChurchReportEntry) => ({
-  churchLevel: entry.churchLevel,
-  churchName: entry.churchName,
   year: entry.year,
   week: entry.week,
-  serviceIncome: entry.serviceIncome ?? '',
   serviceAttendance: entry.serviceAttendance ?? '',
-  bussingAttendance: entry.bussingAttendance ?? '',
   numberOfServices: entry.numberOfServices ?? '',
+  serviceIncome: entry.serviceIncome ?? '',
+  serviceDollarIncome: entry.serviceDollarIncome ?? '',
+  churchName: entry.churchName,
 })
 
-const SubChurchesReportPage = () => {
+const WeekdayReportPage = () => {
   const {
     startDate,
     endDate,
@@ -52,8 +49,8 @@ const SubChurchesReportPage = () => {
     churchName,
     rangeLabel,
   } = useWeeklyReportQuery({
-    queriesByLevel: SUB_CHURCHES_REPORT_QUERIES,
-    reportField: 'subChurchesReport',
+    queriesByLevel: WEEKDAY_REPORT_QUERIES,
+    reportField: 'weekdayIncomeBussingReport',
   })
 
   const today = new Date().toISOString().slice(0, 10)
@@ -61,29 +58,23 @@ const SubChurchesReportPage = () => {
   const safeChurchName = sanitizeFilenamePart(churchName)
   const filename = `${safeChurchName ? `${safeChurchName} ` : ''}${
     churchType ?? ''
-  } Sub-Churches Breakdown - ${generatedOn}.csv`
+  } Weekday - ${generatedOn}.csv`
 
   if (!churchType) {
     return (
-      <ReportPageShell title="Sub-Churches" highlightWord="Breakdown">
+      <ReportPageShell title="Weekday" highlightWord="Report">
         <p className="text-sm text-muted-foreground">
-          Select a church scope to download the sub-churches breakdown.
+          Select a church scope to download the weekday report.
         </p>
       </ReportPageShell>
     )
   }
 
-  const isBacenta = churchType === 'Bacenta'
-
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Sub-Churches"
-      subtitle={
-        isBacenta
-          ? 'Bacenta has no sub-churches — the export is the bacenta itself.'
-          : `Per-week weekday income and Sunday attendance for each immediate sub-church.`
-      }
+      highlightWord="Weekday"
+      subtitle={`Per-week weekday service attendance and income for this ${churchType.toLowerCase()}.`}
     >
       <div className="space-y-6">
         <DateRangePicker
@@ -95,12 +86,8 @@ const SubChurchesReportPage = () => {
 
         <ApolloWrapper data={entries} loading={loading} error={error} placeholder>
           <WeeklyReportDownloadCard
-            title="Sub-Churches Breakdown"
-            description={
-              isBacenta
-                ? 'Per-week weekday income and Sunday attendance for this bacenta.'
-                : `Per-week weekday income and Sunday attendance for each immediate sub-church.`
-            }
+            title="Weekday"
+            description={`Per-week service attendance, count, and income for this ${churchType.toLowerCase()}.`}
             filename={filename}
             loading={loading}
             rows={entries.map(toRow)}
@@ -108,7 +95,7 @@ const SubChurchesReportPage = () => {
             entriesCount={entries.length}
             rangeLabel={rangeLabel ?? undefined}
             previewColumns={PREVIEW_COLUMNS}
-            emptyMessage="No sub-church aggregates in the selected range."
+            emptyMessage="No weekday aggregates in the selected range."
           />
         </ApolloWrapper>
       </div>
@@ -116,4 +103,4 @@ const SubChurchesReportPage = () => {
   )
 }
 
-export default SubChurchesReportPage
+export default WeekdayReportPage

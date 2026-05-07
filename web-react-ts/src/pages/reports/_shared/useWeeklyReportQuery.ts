@@ -14,10 +14,7 @@ type UseWeeklyReportQueryArgs = {
   /** One query per church-level. Indexed by selectedScope.churchType. */
   queriesByLevel: Record<ReportLevel, DocumentNode>
   /** Field on the church node that holds the report rows. */
-  reportField:
-    | 'servicesHeldReport'
-    | 'weekdayIncomeBussingReport'
-    | 'subChurchesReport'
+  reportField: 'weekdayIncomeBussingReport' | 'subChurchesReport'
 }
 
 type WeeklyReportQueryState = {

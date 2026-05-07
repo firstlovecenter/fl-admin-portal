@@ -24,6 +24,7 @@ import {
   campusSubChurchesReport,
   oversightSubChurchesReport,
 } from './weekly-report-cypher'
+import { bacentaServiceRecordsReport } from './service-records-cypher'
 
 type WeekRangeArgs = {
   startWeekKey: number
@@ -91,6 +92,11 @@ export const reportsResolvers = {
       bacentaWeeklyReport,
       'Bacenta',
       'weekday income & bussing'
+    ),
+    weekdayServiceRecordsReport: createWeeklyReportResolver(
+      bacentaServiceRecordsReport,
+      'Bacenta',
+      'weekday service records'
     ),
     subChurchesReport: createWeeklyReportResolver(
       bacentaSubChurchesReport,

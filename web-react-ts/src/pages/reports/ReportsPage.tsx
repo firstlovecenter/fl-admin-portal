@@ -1,11 +1,10 @@
 import { type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  Bus,
   CalendarRange,
   Download,
-  FileSpreadsheet,
   Network,
-  PiggyBank,
   Users,
 } from 'lucide-react'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
@@ -81,13 +80,25 @@ const ReportsPage = () => {
   const churchType = selectedScope?.churchType ?? ''
   const reportsAvailable = SUPPORTED_REPORT_LEVELS.has(churchType)
   const membershipPath = getMembershipDownloadPath(churchType)
+  // Bacenta is the leaf level; sub-church breakdowns don't apply at this scope.
+  const hasSubChurches = reportsAvailable && churchType !== 'Bacenta'
 
-  const directoryPath = reportsAvailable ? '/reports/directory' : null
-  const servicesHeldPath = reportsAvailable ? '/reports/services-held' : null
-  const incomeBussingPath = reportsAvailable
-    ? '/reports/weekday-income-bussing'
+  const directoryPath =
+    reportsAvailable && hasSubChurches ? '/reports/directory' : null
+  const bussingPath = reportsAvailable ? '/reports/bussing' : null
+  const bussingSubChurchesPath =
+    reportsAvailable && hasSubChurches ? '/reports/bussing/sub-churches' : null
+  // At Bacenta scope the Weekday card drills into per-service-record detail
+  // (no-service reasons, treasurers, photo URLs, banking proof). Above
+  // Bacenta the detail set explodes, so higher levels stay on the weekly
+  // aggregate view.
+  const weekdayPath = reportsAvailable
+    ? churchType === 'Bacenta'
+      ? '/reports/weekday/services'
+      : '/reports/weekday'
     : null
-  const subChurchesPath = reportsAvailable ? '/reports/sub-churches' : null
+  const weekdaySubChurchesPath =
+    reportsAvailable && hasSubChurches ? '/reports/weekday/sub-churches' : null
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
@@ -103,7 +114,7 @@ const ReportsPage = () => {
           <div className="space-y-6">
             <section className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Membership
+                Directory
               </p>
               <div className="space-y-3">
                 <ReportCard
@@ -112,38 +123,62 @@ const ReportsPage = () => {
                   description="Export the full membership roster as a CSV file, including contact details and group assignments."
                   to={membershipPath}
                 />
-                <ReportCard
-                  icon={<Network className="size-5" />}
-                  title="Church Directory"
-                  description="One CSV per level — every sub-church with its leader's name and phone numbers."
-                  to={directoryPath}
-                />
+                {hasSubChurches && (
+                  <ReportCard
+                    icon={<Network className="size-5" />}
+                    title="Sub-Churches Directory"
+                    description="One row per sub-church with its leader's name and phone numbers."
+                    to={directoryPath}
+                  />
+                )}
               </div>
             </section>
 
             <section className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Services & Income
+                Bussing
+              </p>
+              <div className="space-y-3">
+                <ReportCard
+                  icon={<Bus className="size-5" />}
+                  title="Bussing"
+                  description="Per-week Sunday bussing attendance, leader declaration, vehicles, and top-up for this church level."
+                  to={bussingPath}
+                />
+                {hasSubChurches && (
+                  <ReportCard
+                    icon={<Network className="size-5" />}
+                    title="Bussing by Sub-Church"
+                    description="Per-week bussing breakdown for each immediate sub-church."
+                    to={bussingSubChurchesPath}
+                  />
+                )}
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Weekday
               </p>
               <div className="space-y-3">
                 <ReportCard
                   icon={<CalendarRange className="size-5" />}
-                  title="Services Held"
-                  description="Per-week service counts and total attendance for this church level. Choose a date range."
-                  to={servicesHeldPath}
+                  title="Weekday"
+                  description={
+                    churchType === 'Bacenta'
+                      ? 'One row per service record — including no-service reasons, treasurers, photo URLs, and banking proof.'
+                      : 'Per-week weekday service attendance, count, and income (cedis and USD) for this church level.'
+                  }
+                  to={weekdayPath}
                 />
-                <ReportCard
-                  icon={<PiggyBank className="size-5" />}
-                  title="Weekday Income & Bussing"
-                  description="Per-week service income and bussing totals for this church level."
-                  to={incomeBussingPath}
-                />
-                <ReportCard
-                  icon={<FileSpreadsheet className="size-5" />}
-                  title="Sub-Churches Breakdown"
-                  description="Per-week weekday income and Sunday attendance for each immediate sub-church."
-                  to={subChurchesPath}
-                />
+                {hasSubChurches && (
+                  <ReportCard
+                    icon={<Network className="size-5" />}
+                    title="Weekday by Sub-Church"
+                    description="Per-week weekday attendance and income for each immediate sub-church."
+                    to={weekdaySubChurchesPath}
+                  />
+                )}
               </div>
             </section>
           </div>

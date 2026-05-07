@@ -6,14 +6,16 @@ const ReportsPage = lazy(() => import('./ReportsPage'))
 const DirectoryReportPage = lazy(
   () => import('./directory/DirectoryReportPage')
 )
-const ServicesHeldReportPage = lazy(
-  () => import('./services-held/ServicesHeldReportPage')
+const BussingReportPage = lazy(() => import('./bussing/BussingReportPage'))
+const BussingSubChurchesReportPage = lazy(
+  () => import('./bussing/BussingSubChurchesReportPage')
 )
-const WeekdayIncomeBussingReportPage = lazy(
-  () => import('./weekday-income/WeekdayIncomeBussingReportPage')
+const WeekdayReportPage = lazy(() => import('./weekday/WeekdayReportPage'))
+const WeekdaySubChurchesReportPage = lazy(
+  () => import('./weekday/WeekdaySubChurchesReportPage')
 )
-const SubChurchesReportPage = lazy(
-  () => import('./sub-churches/SubChurchesReportPage')
+const BacentaServiceRecordsReportPage = lazy(
+  () => import('./weekday/BacentaServiceRecordsReportPage')
 )
 
 export const reportsRoutes: LazyRouteTypes[] = [
@@ -28,18 +30,28 @@ export const reportsRoutes: LazyRouteTypes[] = [
     roles: permitMe('Bacenta'),
   },
   {
-    path: '/reports/services-held',
-    element: ServicesHeldReportPage,
+    path: '/reports/bussing',
+    element: BussingReportPage,
     roles: permitMe('Bacenta'),
   },
   {
-    path: '/reports/weekday-income-bussing',
-    element: WeekdayIncomeBussingReportPage,
+    path: '/reports/bussing/sub-churches',
+    element: BussingSubChurchesReportPage,
     roles: permitMe('Bacenta'),
   },
   {
-    path: '/reports/sub-churches',
-    element: SubChurchesReportPage,
+    path: '/reports/weekday',
+    element: WeekdayReportPage,
+    roles: permitMe('Bacenta'),
+  },
+  {
+    path: '/reports/weekday/services',
+    element: BacentaServiceRecordsReportPage,
+    roles: permitMe('Bacenta'),
+  },
+  {
+    path: '/reports/weekday/sub-churches',
+    element: WeekdaySubChurchesReportPage,
     roles: permitMe('Bacenta'),
   },
 ]

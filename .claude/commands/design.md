@@ -276,6 +276,36 @@ wrappers by replacing the inner rendered element. Keep the Formik `Field` /
 | Floating action | Custom `<Fab>` wrapping `<Button>` | For primary mobile CTA |
 | Dropdown menu | `<DropdownMenu>` from `ui/dropdown-menu` | Replaces react-bootstrap `<Dropdown>` |
 
+##### Button width rule — MANDATORY
+
+**Never ship a full-width button on desktop.** Full-width buttons are a
+mobile pattern: they enlarge the tap target on a narrow viewport. On `sm+`
+the button must shrink to its intrinsic width and align to the natural
+edge of its container — usually centred for a single primary CTA in a
+card, right-aligned for a form action row, or inline within a toolbar.
+
+A button stretched edge-to-edge across a wide desktop card looks like an
+unfinished landing page; the user has flagged this explicitly. Use this
+shape for any primary CTA that needs to be full-width on mobile:
+
+```tsx
+{/* Full-width on mobile (≤640 px), centred + intrinsic on sm+ */}
+<div className="flex justify-center">
+  <Button className="h-12 w-full gap-2 px-8 text-base font-semibold sm:w-auto sm:min-w-64">
+    <Icon className="size-5" />
+    Action label
+  </Button>
+</div>
+```
+
+Variants:
+- **Form action row** (Save / Cancel): `flex flex-col gap-3 sm:flex-row sm:justify-end`. Each button: `w-full sm:w-auto`.
+- **Toolbar / inline action**: never `w-full` — let the button size to its content.
+- **Skeleton placeholder for the same button**: match the resolved width — `mx-auto h-12 w-full rounded-md sm:w-64`. A skeleton that's `w-full` on desktop telegraphs the wrong layout.
+
+Touch targets still apply: `min-h-11` (44 px) on the button regardless of
+breakpoint. The shrink to intrinsic width should never reduce height.
+
 #### Data display
 
 | Need | Component | Notes |
@@ -790,3 +820,8 @@ the page is trivial (< 80 lines, no layout change).
       grid on `lg` screens. A `max-w-2xl mx-auto` single column is mobile-only.
       On desktop, split primary content and a supporting/summary column at
       minimum — see the "Desktop layout rule" table above.
+- ❌ **Full-width buttons on desktop.** A `w-full` button is a mobile pattern;
+      from `sm` and up the button must shrink to intrinsic width
+      (`w-full sm:w-auto sm:min-w-64`) and centre or align to its natural edge
+      via the parent. Same for skeleton placeholders that stand in for the
+      button. See the "Button width rule" under Actions.

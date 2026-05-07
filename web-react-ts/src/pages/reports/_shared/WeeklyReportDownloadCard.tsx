@@ -63,7 +63,7 @@ const WeeklyReportDownloadCard = ({
     return (
       <section className="space-y-4">
         <Skeleton className="h-32 w-full rounded-xl" />
-        <Skeleton className="h-12 w-full rounded-md" />
+        <Skeleton className="mx-auto h-12 w-full rounded-md sm:w-64" />
         <Skeleton className="h-48 w-full rounded-xl" />
       </section>
     )
@@ -128,17 +128,22 @@ const WeeklyReportDownloadCard = ({
         </p>
       </section>
 
-      <Button asChild className="h-12 w-full gap-2 text-base font-semibold">
-        <CSVLink
-          data={rows}
-          headers={[...headers]}
-          filename={filename}
-          target="_self"
+      <div className="flex justify-center">
+        <Button
+          asChild
+          className="h-12 w-full gap-2 px-8 text-base font-semibold sm:w-auto sm:min-w-64"
         >
-          <Download className="size-5" />
-          Download CSV
-        </CSVLink>
-      </Button>
+          <CSVLink
+            data={rows}
+            headers={[...headers]}
+            filename={filename}
+            target="_self"
+          >
+            <Download className="size-5" />
+            Download CSV
+          </CSVLink>
+        </Button>
+      </div>
 
       <section className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">

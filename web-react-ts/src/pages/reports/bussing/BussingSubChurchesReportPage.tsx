@@ -6,33 +6,44 @@ import WeeklyReportDownloadCard, {
   sanitizeFilenamePart,
 } from '../_shared/WeeklyReportDownloadCard'
 import { useWeeklyReportQuery } from '../_shared/useWeeklyReportQuery'
-import { SERVICES_HELD_REPORT_QUERIES } from '../_shared/reports.gql'
+import { BUSSING_SUB_CHURCHES_QUERIES } from '../_shared/reports.gql'
 import type { WeeklyChurchReportEntry } from '../_shared/report-types'
 
 const HEADERS = [
+  { label: 'Sub-Church Level', key: 'churchLevel' },
+  { label: 'Sub-Church', key: 'churchName' },
   { label: 'Year', key: 'year' },
   { label: 'Week', key: 'week' },
-  { label: 'Number of Services', key: 'numberOfServices' },
-  { label: 'Total Attendance', key: 'serviceAttendance' },
-  { label: 'Church', key: 'churchName' },
+  { label: 'Bussing Attendance', key: 'bussingAttendance' },
+  { label: 'Bussing Leader Declaration', key: 'bussingLeaderDeclaration' },
+  { label: 'Sprinters', key: 'numberOfSprinters' },
+  { label: 'Urvans', key: 'numberOfUrvans' },
+  { label: 'Cars', key: 'numberOfCars' },
+  { label: 'Bussing Top-Up', key: 'bussingTopUp' },
 ] as const
 
 const PREVIEW_COLUMNS = [
+  { key: 'churchName', label: 'Sub-Church' },
   { key: 'year', label: 'Year' },
   { key: 'week', label: 'Week' },
-  { key: 'numberOfServices', label: 'Services' },
-  { key: 'serviceAttendance', label: 'Attendance' },
+  { key: 'bussingAttendance', label: 'Bussing Att.' },
+  { key: 'bussingTopUp', label: 'Top-Up' },
 ]
 
 const toRow = (entry: WeeklyChurchReportEntry) => ({
+  churchLevel: entry.churchLevel,
+  churchName: entry.churchName,
   year: entry.year,
   week: entry.week,
-  numberOfServices: entry.numberOfServices ?? '',
-  serviceAttendance: entry.serviceAttendance ?? '',
-  churchName: entry.churchName,
+  bussingAttendance: entry.bussingAttendance ?? '',
+  bussingLeaderDeclaration: entry.bussingLeaderDeclaration ?? '',
+  numberOfSprinters: entry.numberOfSprinters ?? '',
+  numberOfUrvans: entry.numberOfUrvans ?? '',
+  numberOfCars: entry.numberOfCars ?? '',
+  bussingTopUp: entry.bussingTopUp ?? '',
 })
 
-const ServicesHeldReportPage = () => {
+const BussingSubChurchesReportPage = () => {
   const {
     startDate,
     endDate,
@@ -45,8 +56,8 @@ const ServicesHeldReportPage = () => {
     churchName,
     rangeLabel,
   } = useWeeklyReportQuery({
-    queriesByLevel: SERVICES_HELD_REPORT_QUERIES,
-    reportField: 'servicesHeldReport',
+    queriesByLevel: BUSSING_SUB_CHURCHES_QUERIES,
+    reportField: 'subChurchesReport',
   })
 
   const today = new Date().toISOString().slice(0, 10)
@@ -54,13 +65,13 @@ const ServicesHeldReportPage = () => {
   const safeChurchName = sanitizeFilenamePart(churchName)
   const filename = `${safeChurchName ? `${safeChurchName} ` : ''}${
     churchType ?? ''
-  } Services Held - ${generatedOn}.csv`
+  } Bussing by Sub-Church - ${generatedOn}.csv`
 
   if (!churchType) {
     return (
-      <ReportPageShell title="Services" highlightWord="Held">
+      <ReportPageShell title="Bussing" highlightWord="Sub-Churches">
         <p className="text-sm text-muted-foreground">
-          Select a church scope to download the services-held report.
+          Select a church scope to download the bussing breakdown.
         </p>
       </ReportPageShell>
     )
@@ -69,8 +80,8 @@ const ServicesHeldReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Services Held"
-      subtitle={`Weekly attendance and service counts for this ${churchType.toLowerCase()}.`}
+      highlightWord="Bussing by Sub-Church"
+      subtitle={`Per-week Sunday bussing totals for each sub-church under this ${churchType.toLowerCase()}.`}
     >
       <div className="space-y-6">
         <DateRangePicker
@@ -82,8 +93,8 @@ const ServicesHeldReportPage = () => {
 
         <ApolloWrapper data={entries} loading={loading} error={error} placeholder>
           <WeeklyReportDownloadCard
-            title="Services Held"
-            description={`Number of services and total attendance per week for this ${churchType.toLowerCase()}.`}
+            title="Bussing by Sub-Church"
+            description="Per-week bussing attendance, leader declaration, vehicles, and top-up for each immediate sub-church."
             filename={filename}
             loading={loading}
             rows={entries.map(toRow)}
@@ -91,7 +102,7 @@ const ServicesHeldReportPage = () => {
             entriesCount={entries.length}
             rangeLabel={rangeLabel ?? undefined}
             previewColumns={PREVIEW_COLUMNS}
-            emptyMessage="No service aggregates were recorded in the selected date range."
+            emptyMessage="No bussing aggregates in the selected range."
           />
         </ApolloWrapper>
       </div>
@@ -99,4 +110,4 @@ const ServicesHeldReportPage = () => {
   )
 }
 
-export default ServicesHeldReportPage
+export default BussingSubChurchesReportPage

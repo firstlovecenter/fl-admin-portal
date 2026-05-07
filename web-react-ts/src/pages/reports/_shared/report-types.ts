@@ -60,3 +60,38 @@ export type WeeklyChurchReportEntry = {
   numberOfCars: number | null
   bussingTopUp: number | null
 }
+
+export type ServiceTreasurerEntry = {
+  id: string
+  name: string
+  phone: string | null
+  whatsapp: string | null
+}
+
+export type ServiceRecordDetailEntry = {
+  id: string
+  churchId: string
+  churchName: string
+  serviceDate: string | null
+  week: number | null
+  year: number | null
+  attendance: number | null
+  income: number | null
+  cash: number | null
+  onlineGiving: number | null
+  numberOfTithers: number | null
+  dollarIncome: number | null
+  foreignCurrency: string | null
+  noServiceReason: string | null
+  createdAt: string | null
+  recordedByName: string | null
+  recordedByPhone: string | null
+  treasurers: ServiceTreasurerEntry[]
+  familyPicture: string | null
+  treasurerSelfie: string | null
+  bankingSlip: string | null
+  transactionStatus: string | null
+  bankingProof: boolean | null
+  bankedByName: string | null
+  bankedByPhone: string | null
+}

@@ -17,18 +17,7 @@ const DIRECTORY_FIELDS = `
   }
 `
 
-const SERVICE_ONLY_FIELDS = `
-  id
-  churchId
-  churchName
-  churchLevel
-  week
-  year
-  serviceAttendance
-  numberOfServices
-`
-
-const INCOME_BUSSING_FIELDS = `
+const WEEKDAY_FIELDS = `
   id
   churchId
   churchName
@@ -39,25 +28,21 @@ const INCOME_BUSSING_FIELDS = `
   serviceIncome
   serviceDollarIncome
   numberOfServices
-  bussingAttendance
-  bussingLeaderDeclaration
-  numberOfSprinters
-  numberOfUrvans
-  numberOfCars
-  bussingTopUp
 `
 
-const SUB_CHURCH_FIELDS = `
+const BUSSING_FIELDS = `
   id
   churchId
   churchName
   churchLevel
   week
   year
-  serviceAttendance
-  serviceIncome
-  numberOfServices
   bussingAttendance
+  bussingLeaderDeclaration
+  numberOfSprinters
+  numberOfUrvans
+  numberOfCars
+  bussingTopUp
 `
 
 const buildDirectoryQuery = (level: ReportLevel) => {
@@ -73,10 +58,7 @@ const buildDirectoryQuery = (level: ReportLevel) => {
 
 const buildWeeklyQuery = (
   level: ReportLevel,
-  field:
-    | 'servicesHeldReport'
-    | 'weekdayIncomeBussingReport'
-    | 'subChurchesReport',
+  field: 'weekdayIncomeBussingReport' | 'subChurchesReport',
   alias: string,
   selection: string
 ) => {
@@ -94,6 +76,19 @@ const buildWeeklyQuery = (
   `
 }
 
+const buildLevelMap = (
+  field: 'weekdayIncomeBussingReport' | 'subChurchesReport',
+  alias: string,
+  selection: string
+): Record<ReportLevel, ReturnType<typeof gql>> => ({
+  Bacenta: buildWeeklyQuery('Bacenta', field, alias, selection),
+  Governorship: buildWeeklyQuery('Governorship', field, alias, selection),
+  Council: buildWeeklyQuery('Council', field, alias, selection),
+  Stream: buildWeeklyQuery('Stream', field, alias, selection),
+  Campus: buildWeeklyQuery('Campus', field, alias, selection),
+  Oversight: buildWeeklyQuery('Oversight', field, alias, selection),
+})
+
 export const DIRECTORY_REPORT_QUERIES: Record<ReportLevel, ReturnType<typeof gql>> = {
   Bacenta: buildDirectoryQuery('Bacenta'),
   Governorship: buildDirectoryQuery('Governorship'),
@@ -103,128 +98,74 @@ export const DIRECTORY_REPORT_QUERIES: Record<ReportLevel, ReturnType<typeof gql
   Oversight: buildDirectoryQuery('Oversight'),
 }
 
-export const SERVICES_HELD_REPORT_QUERIES: Record<
-  ReportLevel,
-  ReturnType<typeof gql>
-> = {
-  Bacenta: buildWeeklyQuery(
-    'Bacenta',
-    'servicesHeldReport',
-    'ServicesHeld',
-    SERVICE_ONLY_FIELDS
-  ),
-  Governorship: buildWeeklyQuery(
-    'Governorship',
-    'servicesHeldReport',
-    'ServicesHeld',
-    SERVICE_ONLY_FIELDS
-  ),
-  Council: buildWeeklyQuery(
-    'Council',
-    'servicesHeldReport',
-    'ServicesHeld',
-    SERVICE_ONLY_FIELDS
-  ),
-  Stream: buildWeeklyQuery(
-    'Stream',
-    'servicesHeldReport',
-    'ServicesHeld',
-    SERVICE_ONLY_FIELDS
-  ),
-  Campus: buildWeeklyQuery(
-    'Campus',
-    'servicesHeldReport',
-    'ServicesHeld',
-    SERVICE_ONLY_FIELDS
-  ),
-  Oversight: buildWeeklyQuery(
-    'Oversight',
-    'servicesHeldReport',
-    'ServicesHeld',
-    SERVICE_ONLY_FIELDS
-  ),
-}
+export const WEEKDAY_REPORT_QUERIES = buildLevelMap(
+  'weekdayIncomeBussingReport',
+  'WeekdayReport',
+  WEEKDAY_FIELDS
+)
 
-export const WEEKDAY_INCOME_BUSSING_QUERIES: Record<
-  ReportLevel,
-  ReturnType<typeof gql>
-> = {
-  Bacenta: buildWeeklyQuery(
-    'Bacenta',
-    'weekdayIncomeBussingReport',
-    'WeekdayIncomeBussing',
-    INCOME_BUSSING_FIELDS
-  ),
-  Governorship: buildWeeklyQuery(
-    'Governorship',
-    'weekdayIncomeBussingReport',
-    'WeekdayIncomeBussing',
-    INCOME_BUSSING_FIELDS
-  ),
-  Council: buildWeeklyQuery(
-    'Council',
-    'weekdayIncomeBussingReport',
-    'WeekdayIncomeBussing',
-    INCOME_BUSSING_FIELDS
-  ),
-  Stream: buildWeeklyQuery(
-    'Stream',
-    'weekdayIncomeBussingReport',
-    'WeekdayIncomeBussing',
-    INCOME_BUSSING_FIELDS
-  ),
-  Campus: buildWeeklyQuery(
-    'Campus',
-    'weekdayIncomeBussingReport',
-    'WeekdayIncomeBussing',
-    INCOME_BUSSING_FIELDS
-  ),
-  Oversight: buildWeeklyQuery(
-    'Oversight',
-    'weekdayIncomeBussingReport',
-    'WeekdayIncomeBussing',
-    INCOME_BUSSING_FIELDS
-  ),
-}
+export const BUSSING_REPORT_QUERIES = buildLevelMap(
+  'weekdayIncomeBussingReport',
+  'BussingReport',
+  BUSSING_FIELDS
+)
 
-export const SUB_CHURCHES_REPORT_QUERIES: Record<
-  ReportLevel,
-  ReturnType<typeof gql>
-> = {
-  Bacenta: buildWeeklyQuery(
-    'Bacenta',
-    'subChurchesReport',
-    'SubChurches',
-    SUB_CHURCH_FIELDS
-  ),
-  Governorship: buildWeeklyQuery(
-    'Governorship',
-    'subChurchesReport',
-    'SubChurches',
-    SUB_CHURCH_FIELDS
-  ),
-  Council: buildWeeklyQuery(
-    'Council',
-    'subChurchesReport',
-    'SubChurches',
-    SUB_CHURCH_FIELDS
-  ),
-  Stream: buildWeeklyQuery(
-    'Stream',
-    'subChurchesReport',
-    'SubChurches',
-    SUB_CHURCH_FIELDS
-  ),
-  Campus: buildWeeklyQuery(
-    'Campus',
-    'subChurchesReport',
-    'SubChurches',
-    SUB_CHURCH_FIELDS
-  ),
-  Oversight: buildWeeklyQuery(
-    'Oversight',
-    'subChurchesReport',
-    'SubChurches',
-    SUB_CHURCH_FIELDS
-  ),
-}
+export const WEEKDAY_SUB_CHURCHES_QUERIES = buildLevelMap(
+  'subChurchesReport',
+  'WeekdaySubChurches',
+  WEEKDAY_FIELDS
+)
+
+export const BUSSING_SUB_CHURCHES_QUERIES = buildLevelMap(
+  'subChurchesReport',
+  'BussingSubChurches',
+  BUSSING_FIELDS
+)
+
+export const BACENTA_SERVICE_RECORDS_QUERY = gql`
+  query BacentaWeekdayServiceRecords(
+    $id: ID!
+    $startWeekKey: Int!
+    $endWeekKey: Int!
+  ) {
+    bacentas(where: { id: $id }) {
+      id
+      name
+      weekdayServiceRecordsReport(
+        startWeekKey: $startWeekKey
+        endWeekKey: $endWeekKey
+      ) {
+        id
+        churchId
+        churchName
+        serviceDate
+        week
+        year
+        attendance
+        income
+        cash
+        onlineGiving
+        numberOfTithers
+        dollarIncome
+        foreignCurrency
+        noServiceReason
+        createdAt
+        recordedByName
+        recordedByPhone
+        treasurers {
+          id
+          name
+          phone
+          whatsapp
+        }
+        familyPicture
+        treasurerSelfie
+        bankingSlip
+        transactionStatus
+        bankingProof
+        bankedByName
+        bankedByPhone
+      }
+    }
+  }
+`
