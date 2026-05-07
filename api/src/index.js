@@ -102,11 +102,14 @@ const startServer = async () => {
     json(),
     expressMiddleware(server, {
       context: async ({ req }) => {
+        // Coerce a verifier-rejected token to {} so resolvers that read
+        // `context.jwt.roles` directly (no optional chaining, ~80 sites)
+        // surface FORBIDDEN via `isAuth`, not a TypeError → 500.
         const jwt = verifyJwt(req.headers.authorization, SECRETS.JWT_SECRET)
         return {
           req,
           executionContext: driver,
-          jwt,
+          jwt: jwt ?? {},
         }
       },
     })

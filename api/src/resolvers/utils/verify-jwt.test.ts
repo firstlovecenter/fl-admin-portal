@@ -100,6 +100,26 @@ describe('verifyJwt', () => {
     ).toBeNull()
   })
 
+  // crypto.timingSafeEqual throws RangeError on length mismatch — the
+  // verifier short-circuits before that. Pin the early return so a refactor
+  // that drops the length check doesn't crash request handlers on truncated
+  // signatures.
+  it('rejects a signature whose byte length differs from 32 without throwing', () => {
+    const token = sign(
+      { alg: 'HS256', typ: 'JWT' },
+      { roles: ['leaderBacenta'] },
+      SECRET
+    )
+    const [headerB64, payloadB64] = token.split('.')
+    const shortSig = base64UrlEncode(Buffer.alloc(16, 0))
+    expect(() =>
+      verifyJwt(`${headerB64}.${payloadB64}.${shortSig}`, SECRET)
+    ).not.toThrow()
+    expect(
+      verifyJwt(`${headerB64}.${payloadB64}.${shortSig}`, SECRET)
+    ).toBeNull()
+  })
+
   it('rejects an expired token', () => {
     const token = sign(
       { alg: 'HS256', typ: 'JWT' },

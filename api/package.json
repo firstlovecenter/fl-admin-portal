@@ -56,7 +56,6 @@
     "googleapis": "^131.0.0",
     "graphql": "^16.8.1",
     "jd-date-utils": "^1.0.9",
-    "jwt-decode": "^4.0.0",
     "neo4j-driver": "^5.28.1",
     "node-fetch": "^3.3.2",
     "serverless-http": "^3.2.0"

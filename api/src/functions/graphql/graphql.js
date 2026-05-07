@@ -151,9 +151,14 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Log event structure for debugging
+    // Log event structure for debugging — redact Authorization so we don't
+    // dump signed bearer tokens into CloudWatch on every authenticated call.
+    const safeHeaders = { ...(event.headers || {}) }
+    if (safeHeaders.authorization) safeHeaders.authorization = '[redacted]'
+    if (safeHeaders.Authorization) safeHeaders.Authorization = '[redacted]'
+    const safeEvent = { ...event, headers: safeHeaders }
     console.log('[Event Debug] Event keys:', Object.keys(event))
-    console.log('[Event Debug] Event:', JSON.stringify(event, null, 2))
+    console.log('[Event Debug] Event:', JSON.stringify(safeEvent, null, 2))
 
     // Handle OPTIONS preflight request
     if (
@@ -200,7 +205,10 @@ exports.handler = async (event, context) => {
     })
 
     const token = headers.authorization || headers.Authorization
-    const jwt = verifyJwt(token, SECRETS?.JWT_SECRET)
+    // Coerce a verifier-rejected token to {} so resolvers that read
+    // `context.jwt.roles` directly (no optional chaining, ~80 sites)
+    // surface FORBIDDEN via `isAuth`, not a TypeError → 500.
+    const jwt = verifyJwt(token, SECRETS?.JWT_SECRET) ?? {}
 
     const contextValue = {
       req: event,
