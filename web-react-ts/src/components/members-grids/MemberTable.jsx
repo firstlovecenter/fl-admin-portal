@@ -94,16 +94,18 @@ const MemberTable = ({ data, error, loading }) => {
             </div>
           ))}
         </div>
-        {/* Desktop skeleton grid */}
+        {/* Desktop skeleton grid — mirrors MemberCard */}
         <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 px-4 py-4">
           {Array.from({ length: 12 }, (_, i) => (
             <div
               key={i}
-              className="flex flex-col items-center gap-3 rounded-xl border border-border p-4"
+              className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 min-h-44"
             >
               <Skeleton className="size-16 rounded-full" />
-              <Skeleton className="h-3.5 w-24 rounded" />
-              <Skeleton className="h-3 w-16 rounded" />
+              <div className="flex w-full flex-col items-center gap-1.5">
+                <Skeleton className="h-3.5 w-28 rounded" />
+                <Skeleton className="h-3 w-20 rounded" />
+              </div>
             </div>
           ))}
         </div>
