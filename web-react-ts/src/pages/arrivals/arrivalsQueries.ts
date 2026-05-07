@@ -582,11 +582,21 @@ export const DISPLAY_VEHICLE_PAYMENT_RECORDS = gql`
 `
 
 export const DISPLAY_ARRIVALS_PAYMENT_DATA = gql`
-  query DisplayArrivalsPaymentData($arrivalsDate: String!, $streamId: ID!) {
+  query DisplayArrivalsPaymentData(
+    $arrivalsDate: String!
+    $streamId: ID!
+    $offset: Int!
+    $limit: Int!
+  ) {
     streams(where: { id: $streamId }) {
       id
       name
-      arrivalsPaymentData(arrivalsDate: $arrivalsDate) {
+      arrivalsPaymentCount(arrivalsDate: $arrivalsDate)
+      arrivalsPaymentData(
+        arrivalsDate: $arrivalsDate
+        limit: $limit
+        offset: $offset
+      ) {
         stream
         bacenta
         councilHead

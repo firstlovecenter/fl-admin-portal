@@ -26,6 +26,7 @@ import {
   checkTransactionReference,
   confirmVehicleByAdmin,
   getArrivalsPaymentDataCypher,
+  getArrivalsPaymentCountCypher,
   getVehicleRecordWithDate,
   noVehicleTopUp,
   recordVehicleFromBacenta,
@@ -766,8 +767,7 @@ export const arrivalsMutation = {
 
 const getArrivalsPaymentData = async (
   object: any,
-  // eslint-disable-next-line camelcase
-  args: { arrivalsDate: string },
+  args: { arrivalsDate: string; limit: number; offset: number },
   context: Context
 ) => {
   isAuth(permitAdminArrivals('Stream'), context.jwt.roles)
@@ -778,6 +778,8 @@ const getArrivalsPaymentData = async (
     await session.run(getArrivalsPaymentDataCypher, {
       streamId: object.id,
       date: args.arrivalsDate,
+      limit: args.limit,
+      offset: args.offset,
     }),
     true
   )
@@ -785,12 +787,34 @@ const getArrivalsPaymentData = async (
   return cypherResponse
 }
 
+const getArrivalsPaymentCount = async (
+  object: any,
+  args: { arrivalsDate: string },
+  context: Context
+) => {
+  isAuth(permitAdminArrivals('Stream'), context.jwt.roles)
+
+  const session = context.executionContext.session()
+
+  const result = await session.run(getArrivalsPaymentCountCypher, {
+    streamId: object.id,
+    date: args.arrivalsDate,
+  })
+
+  return result.records[0]?.get('total')?.toNumber?.() ?? 0
+}
+
 export const arrivalsResolvers = {
   Stream: {
     arrivalsPaymentData: async (
       object: any,
-      args: { arrivalsDate: string },
+      args: { arrivalsDate: string; limit: number; offset: number },
       context: Context
     ) => getArrivalsPaymentData(object, args, context),
+    arrivalsPaymentCount: async (
+      object: any,
+      args: { arrivalsDate: string },
+      context: Context
+    ) => getArrivalsPaymentCount(object, args, context),
   },
 }

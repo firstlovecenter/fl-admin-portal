@@ -1463,5 +1463,10 @@ type ArrivalsSheetData {
 }
 
 extend type Stream {
-  arrivalsPaymentData(arrivalsDate: String): [ArrivalsSheetData!]!
+  arrivalsPaymentData(
+    arrivalsDate: String
+    limit: Int! = 1000
+    offset: Int! = 0
+  ): [ArrivalsSheetData!]!
+  arrivalsPaymentCount(arrivalsDate: String): Int!
 }

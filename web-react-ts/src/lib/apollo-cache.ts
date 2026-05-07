@@ -88,6 +88,24 @@ const transactionsFieldPolicy: FieldPolicy<Reference[]> = {
   merge: offsetMerge,
 }
 
+// `arrivalsPaymentData` returns ArrivalsSheetData value objects (no id), so
+// the dedupe-by-id branch of offsetMerge would treat every item as a dupe.
+// Plain offset placement is the right semantic — and we key on arrivalsDate
+// so each day has its own cache slot.
+const arrivalsPaymentDataFieldPolicy: FieldPolicy<unknown[]> = {
+  keyArgs: ['arrivalsDate'],
+  merge(existing, incoming, { args }) {
+    if (!incoming || incoming.length === 0) return existing ?? []
+    if (!args || args.offset == null) return incoming
+    const merged = existing ? existing.slice() : []
+    const offset = args.offset as number
+    for (let i = 0; i < incoming.length; i += 1) {
+      merged[offset + i] = incoming[i]
+    }
+    return merged
+  },
+}
+
 const buildApolloCache = (config?: InMemoryCacheConfig): InMemoryCache =>
   new InMemoryCache({
     ...config,
@@ -109,6 +127,9 @@ const buildApolloCache = (config?: InMemoryCacheConfig): InMemoryCache =>
                 type as (typeof TRANSACTIONS_PARENT_TYPES)[number]
               )
                 ? { transactions: transactionsFieldPolicy }
+                : {}),
+              ...(type === 'Stream'
+                ? { arrivalsPaymentData: arrivalsPaymentDataFieldPolicy }
                 : {}),
             },
           },

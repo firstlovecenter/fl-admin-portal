@@ -231,12 +231,18 @@ export const getArrivalsPaymentDataCypher = `
 MATCH (stream:Stream {id:$streamId})-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph {date:date($date)})
 MATCH (leader:Member)-[:LEADS]->(bacenta)
 MATCH (councilHead:Member)-[:LEADS]->(council)
-MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7 
+MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7
 OPTIONAL MATCH (governorship)-[:IS_SUPPORTED_BY]->(society:BussingSociety)
-RETURN DISTINCT date.date as date, stream.name as stream, (councilHead.firstName+ " "+ councilHead.lastName) as councilHead, bacenta.name as bacenta, (stream.arrivalsPrefix+toString(bacenta.code)) as bacentaCode, record.leaderDeclaration as attendance, record.attendance as confirmedAttendance, record.vehicle as vehicle, 
-(CASE 
+RETURN DISTINCT date.date as date, stream.name as stream, (councilHead.firstName+ " "+ councilHead.lastName) as councilHead, bacenta.name as bacenta, (stream.arrivalsPrefix+toString(bacenta.code)) as bacentaCode, record.leaderDeclaration as attendance, record.attendance as confirmedAttendance, record.vehicle as vehicle,
+(CASE
     WHEN record.outbound = true THEN 'In and Out'
     WHEN record.outbound = false THEN 'In Only'
-    END) as outbound, 
-round(toFloat(record.vehicleTopUp), 2) as topUp, record.vehicleCost as vehicleCost, record.momoNumber as momoNumber, record.comments as comments, record.arrivalTime as arrivalTime, (leader.firstName+ " "+ leader.lastName) as leader, council.name as council, governorship.name as governorship, record.momoName as momoName, society.society as society ORDER BY toInteger(society) ASC
+    END) as outbound,
+round(toFloat(record.vehicleTopUp), 2) as topUp, record.vehicleCost as vehicleCost, record.momoNumber as momoNumber, record.comments as comments, record.arrivalTime as arrivalTime, (leader.firstName+ " "+ leader.lastName) as leader, council.name as council, governorship.name as governorship, record.momoName as momoName, society.society as society ORDER BY toInteger(society) ASC, record.id ASC SKIP $offset LIMIT $limit
+`
+
+export const getArrivalsPaymentCountCypher = `
+MATCH (stream:Stream {id:$streamId})-[:HAS*3]->(:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(:TimeGraph {date:date($date)})
+MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7
+RETURN count(DISTINCT record) AS total
 `
