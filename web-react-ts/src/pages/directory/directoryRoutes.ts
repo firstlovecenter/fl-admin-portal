@@ -40,7 +40,6 @@ const UpdateMember = lazy(() => import('pages/directory/update/UpdateMember'))
 const MemberTitleForm = lazy(
   () => import('pages/directory/reusable-forms/MemberTitleForm')
 )
-const SearchPageMobile = lazy(() => import('pages/directory/mobile/SearchPage'))
 const CouncilMembers = lazy(
   () => import('pages/directory/grids/CouncilMembers')
 )
@@ -319,14 +318,6 @@ export const directory: LazyRouteTypes[] = [
     element: MemberTitleForm,
     roles: [...permitAdmin('Denomination')],
     placeholder: false,
-  },
-
-  //Search Routes
-  {
-    path: '/search-results',
-    element: SearchPageMobile,
-    roles: ['all'],
-    placeholder: true,
   },
 
   //Display Church Details

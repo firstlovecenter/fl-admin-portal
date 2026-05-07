@@ -7,6 +7,7 @@ import {
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
   Sun,
 } from 'lucide-react'
 import { Button } from 'components/ui/button'
@@ -76,14 +77,21 @@ const DesktopNavItem = ({ item, open }: { item: NavItem; open: boolean }) => {
   )
 }
 
+const isMacLike = () =>
+  typeof navigator !== 'undefined' &&
+  /(Mac|iPhone|iPad|iPod)/i.test(navigator.platform)
+
 export const Sidebar = ({
   userName,
   userImageUrl,
+  onOpenSearch,
 }: {
   userName?: string
   userImageUrl?: string
+  onOpenSearch?: () => void
 }) => {
   const [open, setOpen] = useState(true)
+  const shortcut = isMacLike() ? '⌘K' : 'Ctrl K'
   const { logout } = useAuthContext()
   const { isAuthorised } = useAuth()
   const { theme, toggleTheme } = useTheme()
@@ -172,6 +180,38 @@ export const Sidebar = ({
 
         {/* Primary nav */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-0.5">
+          {onOpenSearch && (
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              aria-label="Open search"
+              title={`Search (${shortcut})`}
+              className={cn(
+                'mb-2 flex h-10 w-full items-center gap-3 rounded-lg px-2.5 text-sm transition-colors',
+                'border border-sidebar-border bg-sidebar-accent/40 text-sidebar-foreground/70',
+                'hover:bg-sidebar-accent/70 hover:text-sidebar-foreground'
+              )}
+            >
+              <Search className="size-4 shrink-0" />
+              <AnimatePresence>
+                {open && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.12 }}
+                    className="flex flex-1 items-center justify-between overflow-hidden whitespace-nowrap"
+                  >
+                    <span>Search</span>
+                    <kbd className="ml-2 inline-block rounded border border-sidebar-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      {shortcut}
+                    </kbd>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+          )}
+
           {visiblePrimary.map((item) => (
             <DesktopNavItem key={item.to} item={item} open={open} />
           ))}

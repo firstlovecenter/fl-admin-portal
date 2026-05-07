@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
 import { BackButton } from './BackButton'
+import SearchPalette from './SearchPalette'
 
 interface AppShellProps {
   children: ReactNode
@@ -26,12 +27,40 @@ export const AppShell = ({
   userImageUrl,
 }: AppShellProps) => {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // Global Cmd/Ctrl+K shortcut to open the search palette. Skip when the
+  // user is typing in a form field so we don't hijack edits.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'k' || !(event.metaKey || event.ctrlKey)) return
+      const target = event.target as HTMLElement | null
+      if (
+        target?.isContentEditable ||
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'SELECT'
+      ) {
+        return
+      }
+      event.preventDefault()
+      setSearchOpen(true)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  const openSearch = () => setSearchOpen(true)
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop sidebar */}
       <div className="hidden shrink-0 md:block">
-        <Sidebar userName={userName} userImageUrl={userImageUrl} />
+        <Sidebar
+          userName={userName}
+          userImageUrl={userImageUrl}
+          onOpenSearch={openSearch}
+        />
       </div>
 
       {/* Content column */}
@@ -62,7 +91,10 @@ export const AppShell = ({
         onClose={() => setMobileOpen(false)}
         userName={userName}
         userImageUrl={userImageUrl}
+        onOpenSearch={openSearch}
       />
+
+      <SearchPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   )
 }

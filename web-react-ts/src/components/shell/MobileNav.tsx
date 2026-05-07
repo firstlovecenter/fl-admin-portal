@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { ChevronDown, LogOut, Moon, Sun } from 'lucide-react'
+import { ChevronDown, LogOut, Moon, Search, Sun } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -80,6 +80,7 @@ interface MobileNavProps {
   onClose: () => void
   userName?: string
   userImageUrl?: string
+  onOpenSearch?: () => void
 }
 
 export const MobileNav = ({
@@ -87,6 +88,7 @@ export const MobileNav = ({
   onClose,
   userName,
   userImageUrl,
+  onOpenSearch,
 }: MobileNavProps) => {
   const { logout } = useAuthContext()
   const { isAuthorised } = useAuth()
@@ -137,6 +139,22 @@ export const MobileNav = ({
           animate="visible"
           variants={containerVariants}
         >
+          {onOpenSearch && (
+            <motion.button
+              type="button"
+              variants={itemVariants}
+              onClick={() => {
+                onClose()
+                onOpenSearch()
+              }}
+              aria-label="Open search"
+              className="mb-2 flex h-11 items-center gap-3 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+            >
+              <Search className="size-5 shrink-0" />
+              Search
+            </motion.button>
+          )}
+
           {visiblePrimary.map((item) => (
             <MobileNavItem key={item.to} item={item} onClose={onClose} />
           ))}

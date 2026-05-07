@@ -10,12 +10,7 @@ export const MEMBER_SEARCH = gql`
         lastName
         nameWithTitle
         pictureUrl
-        stream_name
         bacenta {
-          id
-          name
-        }
-        basonta {
           id
           name
         }
@@ -31,7 +26,6 @@ export const MEMBER_SEARCH = gql`
           pictureUrl
         }
       }
-
       campusSearch(key: $key, limit: $limit) {
         id
         name
