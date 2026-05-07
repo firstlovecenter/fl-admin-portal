@@ -125,8 +125,13 @@ const useInfiniteScroll = <TData, TItem = unknown>({
       const len = getItemsRef.current(data).length
       const total = getCountRef.current?.(data)
       offsetRef.current = len
-      hasMoreRef.current =
-        total !== undefined ? len < total : len >= firstPage
+      if (total !== undefined) {
+        hasMoreRef.current = len < total
+      } else if (len === 0) {
+        hasMoreRef.current = false
+      } else {
+        hasMoreRef.current = true
+      }
       initializedKeyRef.current = variablesKey
     }
   }, [variablesKey, firstPage, loading, data])

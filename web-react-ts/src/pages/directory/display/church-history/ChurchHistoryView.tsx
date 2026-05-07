@@ -72,7 +72,8 @@ const ChurchHistoryView = <TData,>({
             </h1>
           )}
           <p className="text-sm text-muted-foreground">
-            Audit trail of leadership and status changes.
+            Audit trail of leadership and status changes for this{' '}
+            {parentTypename.toLowerCase()}.
           </p>
         </header>
 

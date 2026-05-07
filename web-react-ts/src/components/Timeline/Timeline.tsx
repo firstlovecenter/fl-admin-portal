@@ -12,10 +12,14 @@ import { Skeleton } from 'components/ui/skeleton'
 export type TimelineElement = HistoryLog
 
 type TimelineProps = {
-  entries: TimelineElement[]
+  entries?: TimelineElement[]
   fetchingMore?: boolean
   hasMore?: boolean
   sentinelRef?: (el: HTMLElement | null) => void
+  // Legacy props retained while preview-widget pages still use the
+  // pre-pagination API. New callers should pass `entries` only.
+  record?: TimelineElement[]
+  limit?: number
 }
 
 const Timeline = ({
@@ -23,15 +27,20 @@ const Timeline = ({
   fetchingMore = false,
   hasMore = false,
   sentinelRef,
+  record,
+  limit,
 }: TimelineProps) => {
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
 
-  if (!entries?.length && !fetchingMore) {
+  const list =
+    entries ?? (record ? record.slice(0, limit ?? record.length) : [])
+
+  if (!list.length && !fetchingMore) {
     return null
   }
 
-  const aceternityEntries: AceternityTimelineEntry[] = entries.map(
+  const aceternityEntries: AceternityTimelineEntry[] = list.map(
     (element, index) => {
       const author = element?.loggedBy
       const authorName = author
