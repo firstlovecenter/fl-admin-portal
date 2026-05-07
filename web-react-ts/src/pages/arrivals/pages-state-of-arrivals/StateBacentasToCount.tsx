@@ -11,7 +11,7 @@ import useChurchLevel from 'hooks/useChurchLevel'
 import PlaceholderDefaulterList from 'pages/services/defaulters/PlaceholderDefaulterList'
 import { useContext, useEffect, useState } from 'react'
 import { Button, ButtonGroup, Container } from 'react-bootstrap'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import { ArrivalsUseChurchType, BacentaWithArrivals } from '../arrivals-types'
 import {
   GOVERNORSHIP_BACENTAS_TO_COUNT,

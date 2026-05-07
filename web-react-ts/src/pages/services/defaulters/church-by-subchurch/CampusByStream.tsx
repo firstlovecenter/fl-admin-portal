@@ -10,7 +10,7 @@ import '../Defaulters.css'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 
 const CampusByStream = () => {

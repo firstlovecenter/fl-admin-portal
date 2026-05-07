@@ -12,7 +12,7 @@ import useChurchLevel from 'hooks/useChurchLevel'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PlaceholderDefaulterList from './PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from './defaulters-types'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import JointServiceDefaulterCard from './JointServiceDefaultersCard'
 
 const CouncilNotBankedThisWeek = () => {

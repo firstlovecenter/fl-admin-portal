@@ -14,7 +14,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { getTodayTime } from 'jd-date-utils'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'

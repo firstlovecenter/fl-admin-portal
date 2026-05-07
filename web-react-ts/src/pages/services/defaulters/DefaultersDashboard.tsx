@@ -22,7 +22,7 @@ import {
   HigherChurchWithDefaulters,
 } from './defaulters-types'
 import { ChurchLevel } from 'global-types'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import useSontaLevel from 'hooks/useSontaLevel'
 
 const DefaultersDashboard = () => {

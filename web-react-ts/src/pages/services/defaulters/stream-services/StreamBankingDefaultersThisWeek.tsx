@@ -10,7 +10,7 @@ import { Container, Row, Col } from 'react-bootstrap'
 import DefaulterCard from '../DefaulterCard'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from '../defaulters-types'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import {
   CAMPUS_STREAM_BANKING_DEFAULTERS_LIST,
   DENOMINATION_STREAM_BANKING_DEFAULTERS_LIST,

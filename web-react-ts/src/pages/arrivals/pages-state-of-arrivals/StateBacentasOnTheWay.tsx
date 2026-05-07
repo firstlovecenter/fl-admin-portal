@@ -10,7 +10,7 @@ import PlaceholderDefaulterList from 'pages/services/defaulters/PlaceholderDefau
 import React, { useContext } from 'react'
 import { Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import { ArrivalsUseChurchType } from '../arrivals-types'
 import {
   GOVERNORSHIP_BACENTAS_ON_THE_WAY,
