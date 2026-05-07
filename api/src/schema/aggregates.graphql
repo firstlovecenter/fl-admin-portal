@@ -36,7 +36,7 @@ extend type Bacenta {
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(t:TimeGraph)
       WHERE NOT record:NoService
         AND (t.date.year = date().year OR t.date.year = date().year - 1)
-      WITH this, t.date.year AS year, t.date.week AS week, record
+      WITH DISTINCT this, t.date.year AS year, t.date.week AS week, record
       WITH this, year, week,
            toInteger(sum(coalesce(record.attendance, 0))) AS attendance,
            round(toFloat(sum(coalesce(record.income, 0))), 2) AS income,
@@ -63,7 +63,7 @@ extend type Bacenta {
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
       WHERE t.date.year = date().year OR t.date.year = date().year - 1
-      WITH this, t.date.year AS year, t.date.week AS week, record
+      WITH DISTINCT this, t.date.year AS year, t.date.week AS week, record
       WITH this, year, week,
            toInteger(sum(coalesce(record.attendance, 0))) AS attendance,
            toInteger(sum(coalesce(record.leaderDeclaration, 0))) AS leaderDeclaration,

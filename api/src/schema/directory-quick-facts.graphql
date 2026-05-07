@@ -34,7 +34,7 @@ extend type Bacenta {
 
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(t:TimeGraph)
       WHERE NOT record:NoService AND t.date >= startDate AND t.date <= today
-      WITH this, t.date.year AS year, t.date.week AS week, record
+      WITH DISTINCT this, t.date.year AS year, t.date.week AS week, record
       WITH this, year, week,
            sum(coalesce(record.attendance, 0)) AS weeklyAttendance,
            sum(coalesce(record.income, 0)) AS weeklyIncome
@@ -110,7 +110,8 @@ extend type Governorship {
 
       MATCH (this)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
       WHERE record.attendance IS NOT NULL AND t.date >= startDate AND t.date <= today
-      WITH bacenta, t.date.year AS year, t.date.week AS week,
+      WITH DISTINCT bacenta, t.date.year AS year, t.date.week AS week, record
+      WITH bacenta, year, week,
            sum(coalesce(record.attendance, 0)) AS weeklyAttendance
       RETURN round(avg(weeklyAttendance)) AS average
       """
@@ -163,7 +164,7 @@ extend type Council {
 
       MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(t:TimeGraph)
       WHERE NOT record:NoService AND t.date >= startDate AND t.date <= today
-      WITH bacenta, t.date.year AS year, t.date.week AS week, record
+      WITH DISTINCT bacenta, t.date.year AS year, t.date.week AS week, record
       WITH bacenta, year, week,
            sum(coalesce(record.attendance, 0)) AS weeklyAttendance,
            sum(coalesce(record.income, 0)) AS weeklyIncome
@@ -226,7 +227,8 @@ extend type Council {
 
       MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
       WHERE record.attendance IS NOT NULL AND t.date >= startDate AND t.date <= today
-      WITH bacenta, t.date.year AS year, t.date.week AS week,
+      WITH DISTINCT bacenta, t.date.year AS year, t.date.week AS week, record
+      WITH bacenta, year, week,
            sum(coalesce(record.attendance, 0)) AS weeklyAttendance
       RETURN round(avg(weeklyAttendance)) AS average
       """

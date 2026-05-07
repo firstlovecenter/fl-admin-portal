@@ -134,7 +134,7 @@ export const bacentaWeeklyReport = `
     WHERE NOT record:NoService
       AND (t.date.year * 100 + t.date.week) >= $startWeekKey
       AND (t.date.year * 100 + t.date.week) <= $endWeekKey
-    WITH t.date.year AS year, t.date.week AS week, record
+    WITH DISTINCT t.date.year AS year, t.date.week AS week, record
     WITH year, week,
          count(DISTINCT record) AS numberOfServices,
          round(toFloat(sum(coalesce(record.attendance, 0))), 2) AS attendance,
@@ -156,7 +156,7 @@ export const bacentaWeeklyReport = `
     OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
     WHERE (t.date.year * 100 + t.date.week) >= $startWeekKey
       AND (t.date.year * 100 + t.date.week) <= $endWeekKey
-    WITH t.date.year AS year, t.date.week AS week, record
+    WITH DISTINCT t.date.year AS year, t.date.week AS week, record
     WITH year, week,
          round(toFloat(sum(coalesce(record.attendance, 0))), 2) AS attendance,
          round(toFloat(sum(coalesce(record.leaderDeclaration, 0))), 2) AS leaderDeclaration,
