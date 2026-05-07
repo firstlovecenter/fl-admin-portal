@@ -7,25 +7,32 @@ import {
   AceternityTimeline,
   AceternityTimelineEntry,
 } from 'components/ui/aceternity-timeline'
+import { Skeleton } from 'components/ui/skeleton'
 
 export type TimelineElement = HistoryLog
 
 type TimelineProps = {
-  limit: number
-  record: TimelineElement[]
+  entries: TimelineElement[]
+  fetchingMore?: boolean
+  hasMore?: boolean
+  sentinelRef?: (el: HTMLElement | null) => void
 }
 
-const Timeline = ({ record, limit }: TimelineProps) => {
+const Timeline = ({
+  entries,
+  fetchingMore = false,
+  hasMore = false,
+  sentinelRef,
+}: TimelineProps) => {
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
 
-  if (!record?.length) {
+  if (!entries?.length && !fetchingMore) {
     return null
   }
 
-  const entries: AceternityTimelineEntry[] = record
-    .slice(0, limit)
-    .map((element, index) => {
+  const aceternityEntries: AceternityTimelineEntry[] = entries.map(
+    (element, index) => {
       const author = element?.loggedBy
       const authorName = author
         ? `${author.firstName} ${author.lastName}`
@@ -58,9 +65,26 @@ const Timeline = ({ record, limit }: TimelineProps) => {
           </div>
         ),
       }
-    })
+    }
+  )
 
-  return <AceternityTimeline data={entries} />
+  return (
+    <>
+      {aceternityEntries.length > 0 && (
+        <AceternityTimeline data={aceternityEntries} />
+      )}
+      {fetchingMore && (
+        <div className="space-y-3 pt-4">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+      )}
+      {hasMore && sentinelRef && (
+        <div ref={sentinelRef} aria-hidden className="h-1" />
+      )}
+    </>
+  )
 }
 
 export default Timeline

@@ -1,32 +1,37 @@
-import { useQuery } from '@apollo/client'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import HeadingSecondary from 'components/HeadingSecondary'
-import Timeline from 'components/Timeline/Timeline'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { ChurchContext } from 'contexts/ChurchContext'
-import { STREAM_HISTORY } from './HistoryQueries'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { HistoryLog } from 'global-types'
+import ChurchHistoryView from './ChurchHistoryView'
+import { STREAM_HISTORY } from './HistoryQueries'
 
-function StreamHistory() {
+type StreamHistoryData = {
+  streams: Array<{
+    id: string
+    name: string
+    historyCount: number
+    history: HistoryLog[]
+  }>
+}
+
+const StreamHistory = () => {
   const { streamId } = useContext(ChurchContext)
-  const { error, loading, data } = useQuery(STREAM_HISTORY, {
-    variables: { id: streamId },
-  })
-  const stream = data?.streams[0]
 
   return (
-    <ApolloWrapper loading={loading} error={error} data={data}>
-      <>
-        <div className="text-center mb-5">
-          <HeadingPrimary>{`${stream?.name} ${stream?.__typename}`}</HeadingPrimary>
-          <HeadingSecondary>Stream History</HeadingSecondary>
-        </div>
-        <Container>
-          <Timeline record={stream?.history} limit={100} />
-        </Container>
-      </>
-    </ApolloWrapper>
+    <ChurchHistoryView<StreamHistoryData>
+      parentTypename="Stream"
+      parentId={streamId}
+      query={STREAM_HISTORY}
+      pluckParent={(d) => {
+        const s = d?.streams?.[0]
+        if (!s) return undefined
+        return {
+          displayName: s.name,
+          historyCount: s.historyCount,
+          history: s.history,
+        }
+      }}
+      headingSuffix="History"
+    />
   )
 }
 

@@ -534,7 +534,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               </h3>
               <ViewAll to={`/${props.churchType.toLowerCase()}/history`} />
             </div>
-            <Timeline record={props.history} limit={5} />
+            <Timeline entries={(props.history ?? []).slice(0, 5)} />
           </div>
         )}
       </div>

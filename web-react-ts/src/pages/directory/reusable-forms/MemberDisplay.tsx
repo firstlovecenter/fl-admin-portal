@@ -674,7 +674,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               </h3>
               <ViewAll to="/member/history" />
             </div>
-            <Timeline record={memberChurch.history} limit={3} />
+            <Timeline entries={(memberChurch.history ?? []).slice(0, 3)} />
           </div>
         )}
       </div>

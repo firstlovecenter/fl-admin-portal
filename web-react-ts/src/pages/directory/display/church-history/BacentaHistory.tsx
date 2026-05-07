@@ -1,32 +1,37 @@
-import { useQuery } from '@apollo/client'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import HeadingSecondary from 'components/HeadingSecondary'
-import Timeline from 'components/Timeline/Timeline'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { HistoryLog } from 'global-types'
+import ChurchHistoryView from './ChurchHistoryView'
 import { BACENTA_HISTORY } from './HistoryQueries'
 
-function BacentaHistory() {
-  const { bacentaId } = useContext(ChurchContext)
-  const { data, loading, error } = useQuery(BACENTA_HISTORY, {
-    variables: { id: bacentaId },
-  })
+type BacentaHistoryData = {
+  bacentas: Array<{
+    id: string
+    name: string
+    historyCount: number
+    history: HistoryLog[]
+  }>
+}
 
-  const bacenta = data?.bacentas[0]
+const BacentaHistory = () => {
+  const { bacentaId } = useContext(ChurchContext)
+
   return (
-    <ApolloWrapper loading={loading} error={error} data={data}>
-      <>
-        <div className="text-center mb-5">
-          <HeadingPrimary>{`${bacenta?.name} ${bacenta?.__typename}`}</HeadingPrimary>
-          <HeadingSecondary>Bacenta History</HeadingSecondary>
-        </div>
-        <Container>
-          <Timeline record={bacenta?.history} limit={100} />
-        </Container>
-      </>
-    </ApolloWrapper>
+    <ChurchHistoryView<BacentaHistoryData>
+      parentTypename="Bacenta"
+      parentId={bacentaId}
+      query={BACENTA_HISTORY}
+      pluckParent={(d) => {
+        const b = d?.bacentas?.[0]
+        if (!b) return undefined
+        return {
+          displayName: b.name,
+          historyCount: b.historyCount,
+          history: b.history,
+        }
+      }}
+      headingSuffix="History"
+    />
   )
 }
 

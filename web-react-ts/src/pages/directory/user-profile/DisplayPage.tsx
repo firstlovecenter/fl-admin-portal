@@ -195,8 +195,10 @@ const DisplayPage = () => {
                           <div>
                             {memberChurch?.history?.length ? (
                               <Timeline
-                                record={memberChurch?.history}
-                                limit={3}
+                                entries={(memberChurch?.history ?? []).slice(
+                                  0,
+                                  3
+                                )}
                               />
                             ) : null}
                           </div>
