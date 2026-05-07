@@ -1,4 +1,4 @@
-import { permitMe } from '../permissions'
+import { permitLeaderAdmin } from '../permissions'
 import { Context } from '../utils/neo4j-types'
 import { ChurchLevel } from '../utils/types'
 import { isAuth, throwToSentry } from '../utils/utils'
@@ -21,7 +21,7 @@ const createDownloadMembershipResolver = (
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(permitMe(permissionLevel), context.jwt.roles)
+    isAuth(permitLeaderAdmin(permissionLevel), context.jwt.roles)
 
     try {
       const result = await session.executeRead((tx) => {

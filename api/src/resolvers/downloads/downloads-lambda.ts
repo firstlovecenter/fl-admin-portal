@@ -6,8 +6,8 @@ import {
   DownloadError,
   handleMembershipDownload,
   isDownloadLevel,
-  verifyJwt,
 } from './downloads-handler'
+import { verifyJwt } from '../utils/verify-jwt'
 
 // API Gateway response body limit (10 MB for REST APIs, 6 MB for the
 // Lambda invocation envelope). Base64 inflates payloads ~33%, so we cap

@@ -7,10 +7,10 @@ import cors from 'cors'
 import { json } from 'body-parser'
 import neo4j from 'neo4j-driver'
 import { Neo4jGraphQL } from '@neo4j/graphql'
-import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
+import { verifyJwt } from './resolvers/utils/verify-jwt'
 import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 const startServer = async () => {
@@ -89,26 +89,6 @@ const startServer = async () => {
   })
 
   const server = new ApolloServer({
-    context: async ({ req }) => {
-      const token = req.headers.authorization
-      let jwt = null
-
-      if (token) {
-        try {
-          jwt = jwtDecode(token.replace(/^Bearer\s+/i, ''))
-        } catch (error) {
-          console.error('Invalid token:', error)
-        }
-      }
-
-      return {
-        req,
-        executionContext: driver,
-        jwt: {
-          ...jwt,
-        },
-      }
-    },
     introspection: true,
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
@@ -122,17 +102,7 @@ const startServer = async () => {
     json(),
     expressMiddleware(server, {
       context: async ({ req }) => {
-        const token = req.headers.authorization
-        let jwt = null
-
-        if (token) {
-          try {
-            jwt = jwtDecode(token.replace(/^Bearer\s+/i, ''))
-          } catch (error) {
-            console.error('Invalid token:', error)
-          }
-        }
-
+        const jwt = verifyJwt(req.headers.authorization, SECRETS.JWT_SECRET)
         return {
           req,
           executionContext: driver,

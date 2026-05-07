@@ -14,7 +14,7 @@ import { Skeleton } from 'components/ui/skeleton'
 import Filters from './Filters'
 import DownloadMembershipModal from './DownloadMembershipModal'
 import RoleView from 'auth/RoleView'
-import { permitLeaderAdmin, permitMe } from 'permission-utils'
+import { permitLeaderAdmin } from 'permission-utils'
 import { Download, Search, SlidersHorizontal, UserPlus } from 'lucide-react'
 import { cn } from 'components/lib/utils'
 
@@ -185,7 +185,7 @@ const MembersGrid = ({
           </RoleView>
           <div className="ml-auto flex items-center gap-1">
             {downloadConfig && (
-              <RoleView roles={permitMe(downloadConfig.level)}>
+              <RoleView roles={permitLeaderAdmin(downloadConfig.level)}>
                 <Button
                   variant="ghost"
                   size="default"

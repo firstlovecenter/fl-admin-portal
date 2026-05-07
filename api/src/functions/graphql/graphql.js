@@ -2,10 +2,10 @@ const { Neo4jGraphQL } = require('@neo4j/graphql')
 const { ApolloServer } = require('@apollo/server')
 // Removed startServerAndCreateLambdaHandler import
 const neo4j = require('neo4j-driver')
-const { jwtDecode } = require('jwt-decode')
 const { typeDefs } = require('./schema/graphql-schema')
 const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
+const { verifyJwt } = require('./resolvers/utils/verify-jwt')
 const {
   isDownloadEvent,
   handleDownloadLambdaEvent,
@@ -199,30 +199,13 @@ exports.handler = async (event, context) => {
       headers: Object.keys(headers),
     })
 
-    // Handle JWT authentication properly
     const token = headers.authorization || headers.Authorization
-    let jwt = null
+    const jwt = verifyJwt(token, SECRETS?.JWT_SECRET)
 
-    if (token) {
-      try {
-        const cleanToken = token.replace(/^Bearer\s+/i, '')
-        console.log('[Auth] Decoding JWT token')
-        jwt = jwtDecode(cleanToken)
-        console.log('[Auth] JWT decoded successfully', {
-          roles: jwt?.roles,
-        })
-      } catch (error) {
-        console.error('[Auth] Invalid token:', error)
-      }
-    }
-
-    // Build context for GraphQL operation
     const contextValue = {
       req: event,
       executionContext: driver,
-      jwt: {
-        ...jwt,
-      },
+      jwt,
     }
 
     // Execute GraphQL operation

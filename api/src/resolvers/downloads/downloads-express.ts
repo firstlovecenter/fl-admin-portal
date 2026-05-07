@@ -7,8 +7,8 @@ import {
   DownloadError,
   handleMembershipDownload,
   isDownloadLevel,
-  verifyJwt,
 } from './downloads-handler'
+import { verifyJwt } from '../utils/verify-jwt'
 
 const handleDownloadRequest =
   (driver: Driver, jwtSecret: string | undefined) =>

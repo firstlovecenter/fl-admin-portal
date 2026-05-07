@@ -1,72 +1,14 @@
 /* eslint-disable no-relative-import-paths/no-relative-import-paths */
-import * as crypto from 'crypto'
 import { Driver, Record as Neo4jRecord, Result } from 'neo4j-driver'
 import { Writable } from 'stream'
 import { Role } from '../utils/types'
-import { permitMe } from '../permissions'
+import { permitLeaderAdmin } from '../permissions'
 import { isAuth } from '../utils/utils'
 import {
   DownloadLevel,
   ROWS_BY_LEVEL,
   NAME_QUERY_BY_LEVEL,
 } from './downloads-cypher'
-
-// Hand-rolled HS256 verification: matches `@neo4j/graphql`'s
-// `features.authorization.key` flow used at `api/src/index.js`. The custom
-// resolver / non-Apollo paths historically relied on `jwtDecode`, which
-// ONLY decodes — it does not validate the signature — so any client
-// could forge a JWT with arbitrary `roles`. This verifier closes that
-// gap for the membership CSV endpoint. Locked to HS256 to defeat the
-// classic `alg: none` and `alg: RS256→HS256` confusion attacks.
-type JwtPayload = { roles?: Role[]; exp?: number; [key: string]: unknown }
-
-const base64UrlDecode = (input: string): Buffer =>
-  Buffer.from(
-    input.replace(/-/g, '+').replace(/_/g, '/') +
-      '='.repeat((4 - (input.length % 4)) % 4),
-    'base64'
-  )
-
-export const verifyJwt = (
-  token: string | undefined,
-  secret: string | undefined
-): JwtPayload | null => {
-  if (!token || !secret) return null
-  const parts = token.replace(/^Bearer\s+/i, '').split('.')
-  if (parts.length !== 3) return null
-
-  const [headerB64, payloadB64, signatureB64] = parts
-  let header: { alg?: string; typ?: string }
-  try {
-    header = JSON.parse(base64UrlDecode(headerB64).toString('utf8'))
-  } catch {
-    return null
-  }
-  if (header.alg !== 'HS256') return null
-
-  const expected = crypto
-    .createHmac('sha256', secret)
-    .update(`${headerB64}.${payloadB64}`)
-    .digest()
-  const actual = base64UrlDecode(signatureB64)
-  if (
-    expected.length !== actual.length ||
-    !crypto.timingSafeEqual(expected, actual)
-  ) {
-    return null
-  }
-
-  let payload: JwtPayload
-  try {
-    payload = JSON.parse(base64UrlDecode(payloadB64).toString('utf8'))
-  } catch {
-    return null
-  }
-  if (typeof payload.exp === 'number' && Date.now() / 1000 >= payload.exp) {
-    return null
-  }
-  return payload
-}
 
 const DOWNLOAD_LEVELS: ReadonlyArray<DownloadLevel> = [
   'Bacenta',
@@ -186,8 +128,12 @@ export async function handleMembershipDownload(
   const { driver, level, churchId, roles, output, hooks, abort } = params
 
   // Throws a `FORBIDDEN` Error if the user lacks the role for this level.
-  // Caller maps that to HTTP 403.
-  isAuth(permitMe(level), roles)
+  // Caller maps that to HTTP 403. `permitLeaderAdmin` (not `permitMe`)
+  // because membership exports leak PII (phone, WhatsApp, email, DOB) for
+  // an entire branch of the hierarchy — that's the leader/admin gate, not
+  // the broader "any servant in the building" gate that includes
+  // `arrivalsCounterStream`, `arrivalsPayerCouncil`, and `tellerStream`.
+  isAuth(permitLeaderAdmin(level), roles)
 
   if (!churchId) throw new DownloadError(400, 'Missing churchId')
 
