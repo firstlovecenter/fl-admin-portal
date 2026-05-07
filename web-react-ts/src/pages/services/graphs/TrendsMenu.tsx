@@ -41,9 +41,6 @@ const DOWNLOAD_MEMBERSHIP_TYPES = new Set<string>([
   'Oversight',
 ])
 
-const formatChurchLevel = (churchType?: string) =>
-  churchType ? churchType.replace(/([a-z])([A-Z])/g, '$1 $2') : ''
-
 const TrendsMenu = () => {
   const navigate = useNavigate()
   const { clickCard } = useContext(ChurchContext)
@@ -80,69 +77,73 @@ const TrendsMenu = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-2xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        <header className="space-y-1">
-          {focusChurch ? (
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {focusChurch.name}
-              <span className="ml-2 text-base font-normal text-muted-foreground">
-                {formatChurchLevel(churchType)}
-              </span>
-            </h1>
-          ) : (
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Trends
-            </h1>
+      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+        <header className="mb-6 space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {focusChurch && `${focusChurch.name} `}
+            <span className="text-churches">Trends</span>
+          </h1>
+          {focusChurch && (
+            <p className="text-sm text-muted-foreground">
+              Trends for the church currently in focus.
+            </p>
           )}
-          <p className="text-sm text-muted-foreground">
-            Trends for the church currently in focus.
-          </p>
         </header>
 
-        {!focusChurch ? (
-          <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
-            No church in focus. Pick one from the Church in Focus selector to
-            view trends.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {showGraphs && (
-              <MenuCard
-                icon={<BarChart3 className="h-5 w-5" />}
-                accent="bg-churches/10 text-churches"
-                title="Last 4 Weeks"
-                description="Income and attendance graphs"
-                onClick={() => handleNavigate(`/${routeSlug}/graphs`)}
-              />
-            )}
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+          {/* Left — menu list */}
+          <div>
+            {!focusChurch ? (
+              <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+                No church in focus. Pick one from the Church in Focus selector
+                to view trends.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {showGraphs && (
+                  <MenuCard
+                    icon={<BarChart3 className="h-5 w-5" />}
+                    accent="bg-churches/10 text-churches"
+                    title="Last 4 Weeks"
+                    description="Income and attendance graphs"
+                    onClick={() => handleNavigate(`/${routeSlug}/graphs`)}
+                  />
+                )}
 
-            {showQuickFacts && (
-              <MenuCard
-                icon={<Sparkles className="h-5 w-5" />}
-                accent="bg-campaigns/10 text-campaigns"
-                title="Quick Facts"
-                description="Quick facts about your church"
-                onClick={() =>
-                  handleNavigate(`/quick-facts/this-month/${routeSlug}`)
-                }
-              />
-            )}
+                {showQuickFacts && (
+                  <MenuCard
+                    icon={<Sparkles className="h-5 w-5" />}
+                    accent="bg-campaigns/10 text-campaigns"
+                    title="Quick Facts"
+                    description="Quick facts about your church"
+                    onClick={() =>
+                      handleNavigate(`/quick-facts/this-month/${routeSlug}`)
+                    }
+                  />
+                )}
 
-            {showDownload && (
-              <RoleView roles={permitLeaderAdmin('Bacenta')}>
-                <MenuCard
-                  icon={<Download className="h-5 w-5" />}
-                  accent="bg-banking/10 text-banking"
-                  title="Download Membership"
-                  description="Download membership list as CSV"
-                  onClick={() =>
-                    handleNavigate(`/download-reports/${routeSlug}/membership`)
-                  }
-                />
-              </RoleView>
+                {showDownload && (
+                  <RoleView roles={permitLeaderAdmin('Bacenta')}>
+                    <MenuCard
+                      icon={<Download className="h-5 w-5" />}
+                      accent="bg-banking/10 text-banking"
+                      title="Download Membership"
+                      description="Download membership list as CSV"
+                      onClick={() =>
+                        handleNavigate(
+                          `/download-reports/${routeSlug}/membership`
+                        )
+                      }
+                    />
+                  </RoleView>
+                )}
+              </div>
             )}
           </div>
-        )}
+
+          {/* Right — intentional negative space */}
+          <div className="hidden lg:block" aria-hidden="true" />
+        </div>
       </main>
     </div>
   )

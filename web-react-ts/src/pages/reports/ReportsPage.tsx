@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, Download, FileSpreadsheet } from 'lucide-react'
-import { Button } from 'components/ui/button'
+import { Download, FileSpreadsheet } from 'lucide-react'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { cn } from 'components/lib/utils'
 
@@ -32,7 +31,7 @@ const ReportCard = ({ icon, title, description, to }: ReportCardProps) => {
     <button
       type="button"
       disabled={unavailable}
-      onClick={() => navigate(to!)}
+      onClick={() => { if (to) navigate(to) }}
       className={cn(
         'flex w-full items-start gap-4 rounded-xl border border-border bg-card p-5 text-left transition-colors',
         unavailable
@@ -60,52 +59,40 @@ const ReportCard = ({ icon, title, description, to }: ReportCardProps) => {
 }
 
 const ReportsPage = () => {
-  const navigate = useNavigate()
   const { selectedScope } = useChurchRoleScope()
   const membershipPath = getMembershipDownloadPath(selectedScope?.churchType)
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-2xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        <header className="flex items-start gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            aria-label="Back"
-            className="-ml-2 mt-0.5 size-11 shrink-0"
-          >
-            <ChevronLeft className="size-5" />
-          </Button>
-          <div className="min-w-0 flex-1 space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-banking">
-              Reports
-            </p>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Reports
-            </h1>
-            {selectedScope && (
-              <p className="text-sm text-muted-foreground">
-                Showing reports for{' '}
-                <span className="font-medium text-foreground">
-                  {selectedScope.churchName}
-                </span>
-              </p>
-            )}
-          </div>
+      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+        <header className="mb-6 space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {selectedScope?.churchName && `${selectedScope.churchName} `}
+            <span className="text-banking">Reports</span>
+          </h1>
         </header>
 
-        <section className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Membership
-          </p>
-          <ReportCard
-            icon={<FileSpreadsheet className="size-5" />}
-            title="Membership List"
-            description="Export the full membership roster as a CSV file, including contact details and group assignments."
-            to={membershipPath}
-          />
-        </section>
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+          {/* Left — report list */}
+          <div className="space-y-6">
+            <section className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Membership
+              </p>
+              <div className="space-y-3">
+                <ReportCard
+                  icon={<FileSpreadsheet className="size-5" />}
+                  title="Membership List"
+                  description="Export the full membership roster as a CSV file, including contact details and group assignments."
+                  to={membershipPath}
+                />
+              </div>
+            </section>
+          </div>
+
+          {/* Right — intentional negative space */}
+          <div className="hidden lg:block" aria-hidden="true" />
+        </div>
       </main>
     </div>
   )
