@@ -21,17 +21,37 @@ type AggregateBussingRecord {
 }
 
 extend type Bacenta {
+  # Bacenta is the leaf of the directory; no job writes per-Bacenta
+  # AggregateServiceRecord / AggregateBussingRecord nodes (the aggregators
+  # only roll Bacenta data UP into Governorship+ aggregates). Project the
+  # AggregateXxxRecord shape from raw ServiceRecord / BussingRecord, keyed
+  # by (year, week) derived from the TimeGraph date. NoService markers are
+  # excluded on the service side to mirror the higher-level aggregators.
   aggregateServiceRecords(
     limit: Int! = 4
     skip: Int = 0
   ): [AggregateServiceRecord!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
-      WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
-      WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(t:TimeGraph)
+      WHERE NOT record:NoService
+        AND (t.date.year = date().year OR t.date.year = date().year - 1)
+      WITH this, t.date.year AS year, t.date.week AS week, record
+      WITH this, year, week,
+           toInteger(sum(coalesce(record.attendance, 0))) AS attendance,
+           round(toFloat(sum(coalesce(record.income, 0))), 2) AS income,
+           round(toFloat(sum(coalesce(record.dollarIncome, 0))), 2) AS dollarIncome,
+           count(DISTINCT record) AS numberOfServices
+      WITH {
+        id: this.id + '-' + toString(year) + '-' + toString(week),
+        week: week,
+        year: year,
+        attendance: attendance,
+        income: income,
+        dollarIncome: dollarIncome,
+        numberOfServices: numberOfServices
+      } AS aggregate
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -41,11 +61,28 @@ extend type Bacenta {
   ): [AggregateBussingRecord!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
-      WHERE aggregate.year = date().year OR aggregate.year = date().year -1
-      WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
-      WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
+      WHERE t.date.year = date().year OR t.date.year = date().year - 1
+      WITH this, t.date.year AS year, t.date.week AS week, record
+      WITH this, year, week,
+           toInteger(sum(coalesce(record.attendance, 0))) AS attendance,
+           toInteger(sum(coalesce(record.leaderDeclaration, 0))) AS leaderDeclaration,
+           toInteger(sum(coalesce(record.numberOfSprinters, 0))) AS numberOfSprinters,
+           toInteger(sum(coalesce(record.numberOfUrvans, 0))) AS numberOfUrvans,
+           toInteger(sum(coalesce(record.numberOfCars, 0))) AS numberOfCars,
+           round(toFloat(sum(coalesce(record.bussingTopUp, 0))), 2) AS bussingTopUp
+      WITH {
+        id: this.id + '-' + toString(year) + '-' + toString(week),
+        week: week,
+        year: year,
+        attendance: attendance,
+        leaderDeclaration: leaderDeclaration,
+        numberOfSprinters: numberOfSprinters,
+        numberOfUrvans: numberOfUrvans,
+        numberOfCars: numberOfCars,
+        bussingTopUp: bussingTopUp
+      } AS aggregate
+      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
