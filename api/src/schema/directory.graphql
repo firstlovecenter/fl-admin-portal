@@ -37,11 +37,35 @@ type Member {
       columnName: "stream_name"
     )
   # Church Details
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -319,7 +343,16 @@ interface Church {
   id: ID
   name: String!
   leader: Member @declareRelationship
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
   memberSearch(key: String!, limit: Int!): [Member!]!
   memberCount: Int!
   pastorCount: Int
@@ -360,11 +393,35 @@ type Denomination implements Church {
       statement: "MATCH (this)-[:HAS*6]->(bacentas:Bacenta) RETURN bacentas"
       columnName: "bacentas"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -491,11 +548,35 @@ type Oversight implements Church {
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Bacenta) RETURN bacentas"
       columnName: "bacentas"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -621,11 +702,35 @@ type Campus implements Church {
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Bacenta) RETURN bacentas"
       columnName: "bacentas"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -771,11 +876,35 @@ type Stream implements Church {
       columnName: "ics"
     )
 
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -893,11 +1022,35 @@ type Council implements Church {
       columnName: "bacentas"
     )
   governorships: [Governorship!]! @relationship(type: "HAS", direction: OUT)
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -1002,11 +1155,35 @@ type Governorship implements Church {
       """
       columnName: "stream_name"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -1132,11 +1309,35 @@ type Bacenta implements Church {
       """
       columnName: "labels"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )

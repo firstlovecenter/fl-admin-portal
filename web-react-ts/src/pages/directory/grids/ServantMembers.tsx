@@ -1,9 +1,8 @@
-import { useQuery } from '@apollo/client'
+import React, { useContext } from 'react'
 import MembersGrid from 'components/members-grids/MembersGrid'
 import { DownloadableLevel } from 'components/members-grids/DownloadMembershipModal'
 import { MemberContext } from 'contexts/MemberContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
-import React, { useContext } from 'react'
 import { GET_SERVANT_MEMBERS } from './GridQueries'
 
 // Only the church levels that have a backend `downloadMembership` resolver.
@@ -20,10 +19,6 @@ const DOWNLOADABLE_TYPES = new Set<string>([
 const ServantMembers = () => {
   const { currentUser } = useContext(MemberContext)
   const { selectedScope } = useChurchRoleScope()
-
-  const { data, loading, error } = useQuery(GET_SERVANT_MEMBERS, {
-    variables: { id: currentUser.id },
-  })
 
   // Match TrendsMenu: prefer the role-scoped focus church, fall back to
   // currentUser.currentChurch. The download modal needs an explicit level +
@@ -44,15 +39,22 @@ const ServantMembers = () => {
           churchId: focusChurchId,
           churchName: focusChurchName,
         }
-      : undefined
+      : null
 
   return (
     <MembersGrid
-      contextName={data ? data?.members[0]?.fullName : null}
-      sectionLabel="Members"
-      data={data?.members[0]?.members}
-      loading={loading}
-      error={error}
+      query={GET_SERVANT_MEMBERS}
+      parentId={currentUser?.id}
+      parentTypename="Member"
+      pluckParent={(data) => data?.members?.[0]}
+      getHeading={(parent) =>
+        parent ? (
+          <>
+            {parent.fullName}{' '}
+            <span className="text-members">Members</span>
+          </>
+        ) : null
+      }
       downloadConfig={downloadConfig}
     />
   )

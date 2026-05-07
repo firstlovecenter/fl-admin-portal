@@ -1,30 +1,25 @@
 import React, { useContext } from 'react'
-import { useQuery } from '@apollo/client'
-import MembersGrid from '../../../components/members-grids/MembersGrid'
+import MembersGrid from 'components/members-grids/MembersGrid'
 import { GET_STREAM_MEMBERS } from './GridQueries'
-import { ChurchContext } from '../../../contexts/ChurchContext'
-// import TabletDesktopView from 'components/responsive-design/TabletDesktopView'
+import { ChurchContext } from 'contexts/ChurchContext'
 
 const StreamMembers = () => {
   const { streamId } = useContext(ChurchContext)
-  const { data, loading, error } = useQuery(GET_STREAM_MEMBERS, {
-    variables: { id: streamId },
-  })
 
   return (
     <MembersGrid
-      title={data ? `${data?.streams[0]?.name} Stream` : null}
-      data={data && data.streams[0].members}
-      loading={loading}
-      error={error}
+      query={GET_STREAM_MEMBERS}
+      parentId={streamId}
+      parentTypename="Stream"
+      pluckParent={(data) => data?.streams?.[0]}
+      getHeading={(parent) => (parent ? `${parent.name} Stream` : null)}
       downloadConfig={
         streamId
           ? {
               level: 'Stream',
               churchId: streamId,
-              churchName: data?.streams[0]?.name,
             }
-          : undefined
+          : null
       }
     />
   )

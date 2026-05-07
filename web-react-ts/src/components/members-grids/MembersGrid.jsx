@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import useInfiniteScroll from 'hooks/useInfiniteScroll'
 import MemberTable from './MemberTable'
-import { memberFilter } from './member-filter-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Button } from 'components/ui/button'
 import {
@@ -17,6 +17,18 @@ import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin, permitMe } from 'permission-utils'
 import { Download, Search, SlidersHorizontal, UserPlus } from 'lucide-react'
 import { cn } from 'components/lib/utils'
+
+const INITIAL_PAGE_SIZE = 30
+const PAGE_SIZE = 30
+const SEARCH_DEBOUNCE_MS = 300
+
+const buildFilterVars = (filters) => ({
+  genders: filters.gender?.length ? filters.gender : null,
+  maritalStatuses: filters.maritalStatus?.length ? filters.maritalStatus : null,
+  leaderTitles: filters.leaderTitle?.length ? filters.leaderTitle : null,
+  basontas: filters.basonta?.length ? filters.basonta : null,
+  leaderRanks: filters.leaderRank?.length ? filters.leaderRank : null,
+})
 
 /**
  * @typedef {{
@@ -35,26 +47,25 @@ import { cn } from 'components/lib/utils'
  * }} DownloadConfig
  *
  * @param {{
- *   data: GridMember[] | null | undefined,
- *   error: import('@apollo/client').ApolloError | undefined,
- *   loading: boolean,
- *   title?: string | null,
- *   contextName?: string | null,
- *   sectionLabel?: string | null,
+ *   query: import('@apollo/client').DocumentNode,
+ *   parentId: string | undefined,
+ *   parentTypename: 'Bacenta' | 'Governorship' | 'Council' | 'Stream' | 'Campus' | 'Oversight' | 'Denomination' | 'Member',
+ *   pluckParent: (data: any) => { members?: GridMember[], memberCount?: number } | undefined,
+ *   getHeading: (parent: any) => React.ReactNode | null,
  *   downloadConfig?: DownloadConfig | null,
  * }} props
  */
 const MembersGrid = ({
-  data,
-  error,
-  loading,
-  title,
-  contextName = null,
-  sectionLabel = null,
+  query,
+  parentId,
+  parentTypename,
+  pluckParent,
+  getHeading,
   downloadConfig = null,
 }) => {
   const { filters } = useContext(ChurchContext)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(() =>
@@ -68,15 +79,45 @@ const MembersGrid = ({
     return () => mq.removeEventListener('change', handler)
   }, [])
 
-  const memberData = useMemo(() => {
-    const base = data ? (memberFilter(data, filters) ?? []) : []
-    if (!searchTerm.trim()) return base
-    return base.filter((member) =>
-      `${member.firstName} ${member.lastName}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setDebouncedSearch(searchInput.trim()),
+      SEARCH_DEBOUNCE_MS
     )
-  }, [data, filters, searchTerm])
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  const filterVars = useMemo(() => buildFilterVars(filters), [filters])
+  const search = debouncedSearch || null
+
+  const variables = useMemo(
+    () => ({ id: parentId, search, ...filterVars }),
+    [parentId, search, filterVars]
+  )
+
+  const {
+    data,
+    items,
+    totalCount,
+    loading,
+    error,
+    fetchingMore,
+    hasMore,
+    sentinelRef,
+  } = useInfiniteScroll({
+    query,
+    variables,
+    initialPageSize: INITIAL_PAGE_SIZE,
+    pageSize: PAGE_SIZE,
+    getItems: (d) => pluckParent(d)?.members ?? [],
+    getCount: (d) => pluckParent(d)?.memberCount,
+    skip: !parentId,
+    cacheKey: parentId
+      ? { id: `${parentTypename}:${parentId}`, fieldName: 'members' }
+      : undefined,
+  })
+
+  const heading = getHeading(pluckParent(data))
 
   const hasActiveFilters =
     filters.gender?.length > 0 ||
@@ -85,49 +126,45 @@ const MembersGrid = ({
     filters.leaderRank?.length > 0 ||
     filters.basonta?.length > 0
 
+  const isFiltering = Boolean(search) || hasActiveFilters
+  const displayCount = isFiltering ? items.length : totalCount ?? items.length
+
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      {/* Sticky header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-4 pt-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
-          {/* Title + count */}
           <div className="flex items-center justify-between mb-3">
-            {loading || !data ? (
+            {loading || !heading ? (
               <Skeleton className="h-8 w-48 rounded" />
-            ) : contextName || sectionLabel ? (
-              <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
-                {contextName && <>{contextName}{' '}</>}
-                <span className="text-members">{sectionLabel ?? 'Members'}</span>
-              </h1>
             ) : (
               <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
-                {title || 'Members'}
+                {heading}
               </h1>
             )}
-            {!loading && data && (
+            {!loading && (
               <span className="text-sm tabular-nums shrink-0 ml-2">
                 <span className="font-semibold text-members">
-                  {memberData.length}
+                  {displayCount}
                 </span>
-                <span className="text-muted-foreground"> members</span>
+                <span className="text-muted-foreground">
+                  {isFiltering ? ' matches' : ' members'}
+                </span>
               </span>
             )}
           </div>
 
-          {/* Search input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <input
               type="search"
               placeholder="Search members…"
               className="h-11 w-full rounded-lg border border-input bg-muted/40 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Actions row */}
         <div className="flex items-center justify-between gap-2 px-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
           <RoleView
             roles={[
@@ -154,7 +191,7 @@ const MembersGrid = ({
                   size="default"
                   className="h-11 gap-1.5 text-sm text-foreground"
                   onClick={() => setDownloadOpen(true)}
-                  disabled={loading || !data}
+                  disabled={loading}
                 >
                   <Download className="size-4" />
                   Download
@@ -180,16 +217,18 @@ const MembersGrid = ({
         </div>
       </div>
 
-      {/* Member list */}
       <div className="max-w-2xl md:max-w-7xl mx-auto">
-        <MemberTable
-          data={memberData}
-          error={error}
-          loading={!data || loading}
-        />
+        <MemberTable data={items} error={error} loading={loading} />
+        {fetchingMore && (
+          <div className="space-y-3 px-4 py-3">
+            <Skeleton className="h-12 w-full rounded" />
+            <Skeleton className="h-12 w-full rounded" />
+            <Skeleton className="h-12 w-full rounded" />
+          </div>
+        )}
+        {hasMore && <div ref={sentinelRef} aria-hidden className="h-1" />}
       </div>
 
-      {/* Filter sheet — right side on desktop, bottom on mobile */}
       <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
         <SheetContent
           side={isDesktop ? 'right' : 'bottom'}
@@ -209,9 +248,6 @@ const MembersGrid = ({
         </SheetContent>
       </Sheet>
 
-      {/* Download CSV modal — opens lazily, applies the same filters + search.
-          `key={level}` keeps useLazyQuery in lockstep with the church level
-          if a parent ever reuses the same MembersGrid instance across levels. */}
       {downloadConfig && (
         <DownloadMembershipModal
           key={downloadConfig.level}
@@ -219,9 +255,9 @@ const MembersGrid = ({
           onOpenChange={setDownloadOpen}
           level={downloadConfig.level}
           churchId={downloadConfig.churchId}
-          churchName={downloadConfig.churchName ?? title}
+          churchName={downloadConfig.churchName}
           filters={filters}
-          searchTerm={searchTerm}
+          searchTerm={debouncedSearch}
           isDesktop={isDesktop}
         />
       )}
