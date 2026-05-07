@@ -125,7 +125,11 @@ const ReportsPage = () => {
                 >
                   <ReportCard
                     icon={<Users className="size-5" />}
-                    title="Membership List"
+                    title={
+                      selectedScope?.churchName
+                        ? `${selectedScope.churchName} Membership List`
+                        : 'Membership List'
+                    }
                     description="Export the full membership roster as a CSV file, including contact details and group assignments."
                     to={membershipPath}
                   />
@@ -148,8 +152,16 @@ const ReportsPage = () => {
               <div className="space-y-3">
                 <ReportCard
                   icon={<Bus className="size-5" />}
-                  title="Bussing"
-                  description="Per-week Sunday bussing attendance, leader declaration, vehicles, and top-up for this church level."
+                  title={
+                    churchType === 'Bacenta'
+                      ? 'Bacenta Bussing Records'
+                      : 'Bussing'
+                  }
+                  description={
+                    churchType === 'Bacenta'
+                      ? 'Every Sunday bussing record — attendance, leader declaration, vehicles, and top-up.'
+                      : 'Per-week Sunday bussing attendance, leader declaration, vehicles, and top-up for this church level.'
+                  }
                   to={bussingPath}
                 />
                 {hasSubChurches && (
@@ -170,10 +182,14 @@ const ReportsPage = () => {
               <div className="space-y-3">
                 <ReportCard
                   icon={<CalendarRange className="size-5" />}
-                  title="Weekday"
+                  title={
+                    churchType === 'Bacenta'
+                      ? 'Bacenta Service Records'
+                      : 'Weekday'
+                  }
                   description={
                     churchType === 'Bacenta'
-                      ? 'One row per service record — including no-service reasons, treasurers, photo URLs, and banking proof.'
+                      ? 'Every weekday service record — attendance, income, no-service reasons, treasurers, photo URLs, and banking proof.'
                       : 'Per-week weekday service attendance, count, and income (cedis and USD) for this church level.'
                   }
                   to={weekdayPath}
