@@ -145,6 +145,8 @@ const ServicesMenu = () => {
   const isVacationActive = churchDetails?.vacationStatus === 'Active'
 
   const isServiceLevelChurch = isServiceLevel(churchType)
+  const isCongregationLevel =
+    churchType === 'Bacenta' || churchType === 'Stream'
   const showServiceToggle =
     isServiceLevelChurch &&
     !!churchId &&
@@ -224,8 +226,16 @@ const ServicesMenu = () => {
               <MenuCard
                 icon={<BookOpen className="h-5 w-5" />}
                 accent="bg-members/10 text-members"
-                title="Record Service"
-                description={`Fill this week's ${formatChurchLevel(churchType)} service`}
+                title={
+                  isCongregationLevel ? 'Record Service' : 'Record Joint Service'
+                }
+                description={
+                  isCongregationLevel
+                    ? `Fill this week's ${formatChurchLevel(churchType)} service`
+                    : `Optional — fill if a joint ${formatChurchLevel(
+                        churchType
+                      )} service was held this week`
+                }
                 onClick={handleRecordService}
               />
             ))}
