@@ -93,8 +93,9 @@ const BacentaAvgWeekdayQuickFacts = () => {
               </Badge>
             </div>
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                {bacenta?.name ?? 'Bacenta'}
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                {bacenta?.name ?? 'Bacenta'}{' '}
+                <span className="text-members">Quick Facts</span>
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 How this Bacenta compares against the average Bacenta in{' '}
