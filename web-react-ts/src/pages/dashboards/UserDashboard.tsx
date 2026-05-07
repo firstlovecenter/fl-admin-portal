@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
@@ -170,6 +170,19 @@ const fadeUp = {
     y: 0,
     transition: { type: 'spring' as const, stiffness: 260, damping: 22 },
   },
+}
+
+const highlightName = (text: string, name: string): React.ReactNode => {
+  if (!name) return text
+  const idx = text.indexOf(name)
+  if (idx === -1) return text
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className="text-brand">{name}</span>
+      {text.slice(idx + name.length)}
+    </>
+  )
 }
 
 const UserDashboard = () => {
@@ -439,11 +452,11 @@ const UserDashboard = () => {
                 month: 'long',
               })}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               {isLoading ? (
                 <Skeleton className="h-10 w-56 max-w-full" />
               ) : (
-                <>{greeting}</>
+                <>{highlightName(greeting, firstName)}</>
               )}
             </h1>
             {selectedScopeSummary ? (
