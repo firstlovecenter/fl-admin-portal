@@ -189,12 +189,12 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   if (loading) {
     return (
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
+        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           <div className="space-y-2">
             <Skeleton className="h-7 w-48" />
             <Skeleton className="h-4 w-64" />
           </div>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
             <Skeleton className="h-64 rounded-xl" />
             <Skeleton className="h-80 rounded-xl" />
           </div>
@@ -202,6 +202,8 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
       </div>
     )
   }
+
+  const trackIncome = !currentUser.noIncomeTracking
 
   const noBankingProof =
     service?.cash &&
@@ -215,24 +217,23 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
     (churchType && SELF_BANKING_ROLES_BY_TYPE[churchType]) ?? []
   const selfBankingPath = `/services/${churchType?.toLowerCase()}/self-banking`
 
-  const showWarning = noBankingProof
-  const showAdminBankingActions = noBankingProof
-  const showSelfBankingPay = noBankingProof && selfBankingRoles.length > 0
+  const showWarning = trackIncome && noBankingProof
+  const showAdminBankingActions = trackIncome && noBankingProof
+  const showSelfBankingPay =
+    trackIncome && noBankingProof && selfBankingRoles.length > 0
   const showBankingReceiptLink =
-    !currentUser.noIncomeTracking && Boolean(service?.offeringBankedBy)
+    trackIncome && Boolean(service?.offeringBankedBy)
   const showActionsCard =
     showAdminBankingActions || showSelfBankingPay || showBankingReceiptLink
 
   const showRightRail =
     Boolean(service?.attendance) &&
     (showActionsCard ||
-      (!currentUser.noIncomeTracking && service.treasurerSelfie) ||
+      (trackIncome && service.treasurerSelfie) ||
       service?.familyPicture ||
-      (!currentUser.noIncomeTracking && service?.bankingSlip))
+      (trackIncome && service?.bankingSlip))
 
-  const isCancelled = Boolean(
-    service?.noServiceReason && !service?.attendance
-  )
+  const isCancelled = Boolean(service?.noServiceReason && !service?.attendance)
 
   const deleteTrashButton = (
     <RoleView roles={['fishers']}>
@@ -282,9 +283,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-5 lg:grid-cols-[1fr_360px] lg:items-start lg:px-6 lg:py-8">
-        {/* LEFT COLUMN — header, banners, service record */}
-        <div className="space-y-6">
+      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+        {/* FULL-WIDTH TOP BAND — page header + event / cancelled banners */}
+        <div className="space-y-4">
           {/* Page header */}
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -300,28 +301,26 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
               </p>
             )}
             <div className="flex flex-wrap gap-2 pt-1">
-              {!currentUser.noIncomeTracking &&
-                service?.bankingSlipUploader && (
-                  <Badge
-                    variant="outline"
-                    className="border-banking/40 bg-banking/5 text-banking"
-                  >
-                    Banking Slip · {service.bankingSlipUploader.fullName}
-                  </Badge>
-                )}
-              {!currentUser.noIncomeTracking &&
-                service?.transactionStatus === 'success' && (
-                  <Badge
-                    variant="outline"
-                    className="border-banking/40 bg-banking/5 text-banking"
-                  >
-                    Banked · {service.offeringBankedBy?.fullName}
-                  </Badge>
-                )}
+              {trackIncome && service?.bankingSlipUploader && (
+                <Badge
+                  variant="outline"
+                  className="border-banking/40 bg-banking/5 text-banking"
+                >
+                  Banking Slip · {service.bankingSlipUploader.fullName}
+                </Badge>
+              )}
+              {trackIncome && service?.transactionStatus === 'success' && (
+                <Badge
+                  variant="outline"
+                  className="border-banking/40 bg-banking/5 text-banking"
+                >
+                  Banked · {service.offeringBankedBy?.fullName}
+                </Badge>
+              )}
               <RoleView
                 roles={[...permitAdmin('Council'), ...permitTellerStream()]}
               >
-                {!currentUser.noIncomeTracking && service?.bankingConfirmer && (
+                {trackIncome && service?.bankingConfirmer && (
                   <Badge
                     variant="outline"
                     className="border-success/40 bg-success/5 text-success"
@@ -362,242 +361,253 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
               {deleteTrashButton}
             </div>
           )}
-
-          {/* Service Record card — only when service happened */}
-          {service?.attendance && (
-            <div className="overflow-hidden rounded-xl border border-border bg-card">
-              <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Service Record
-                </h2>
-                {deleteTrashButton}
-              </div>
-              <div className="divide-y divide-border">
-                <DetailRow label="Date of Service">
-                  {new Date(service.serviceDate.date).toDateString()}
-                </DetailRow>
-                <DetailRow label="Form Filled At">
-                  {parseNeoTime(service.createdAt)}
-                </DetailRow>
-                <DetailRow label="Attendance">
-                  <span className="tabular-nums">{service.attendance}</span>
-                </DetailRow>
-                <DetailRow label="Income">
-                  <CurrencySpan number={service.income} />
-                </DetailRow>
-                {service.onlineGiving ? (
-                  <DetailRow label="Online Giving">
-                    <CurrencySpan number={service.onlineGiving} />
-                  </DetailRow>
-                ) : null}
-                {service.cash ? (
-                  <>
-                    <DetailRow label="Cash">
-                      <CurrencySpan number={service.cash} />
-                    </DetailRow>
-                    <DetailRow label="Number of Tithers">
-                      <span className="tabular-nums">
-                        {service.numberOfTithers}
-                      </span>
-                    </DetailRow>
-                    {service.foreignCurrency && (
-                      <DetailRow label="Foreign Currency & Cheques">
-                        <span className="text-right">
-                          {service.foreignCurrency
-                            .split('\n')
-                            .map((line, i, arr) => (
-                              <Fragment key={i}>
-                                {line}
-                                {i < arr.length - 1 && <br />}
-                              </Fragment>
-                            ))}
-                        </span>
-                      </DetailRow>
-                    )}
-                    {service.treasurers?.map((treasurer, i) => (
-                      <DetailRow key={i} label={`Treasurer ${i + 1}`}>
-                        <TreasurerCell treasurer={treasurer} />
-                      </DetailRow>
-                    ))}
-                  </>
-                ) : null}
-                {service.noServiceReason && (
-                  <DetailRow label="No Service Reason">
-                    {service.noServiceReason}
-                  </DetailRow>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* RIGHT COLUMN — actions and photos (sticky on desktop). Reserved space stays empty when there's no content. */}
-        {showRightRail && (
-          <div className="space-y-4 lg:sticky lg:top-6">
-            {/* Actions card — only when there's something to do */}
-            {showActionsCard && (
-              <div
-                className={
-                  showWarning
-                    ? 'overflow-hidden rounded-xl border border-warning/40 bg-warning/5'
-                    : 'overflow-hidden rounded-xl border border-border bg-card'
-                }
-              >
-                <div
-                  className={
-                    showWarning
-                      ? 'flex items-center gap-2 border-b border-warning/30 px-4 py-3'
-                      : 'border-b border-border px-4 py-3'
-                  }
-                >
-                  {showWarning && (
-                    <AlertTriangle className="h-4 w-4 text-warning" />
-                  )}
-                  <h2
+        {/* 2-COLUMN GRID — Service Record (left) and Action Required + Photos (right) start at the same y */}
+        {(service?.attendance || showRightRail) && (
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+            {/* LEFT — Service Record card */}
+            <div className="space-y-6">
+              {/* Service Record card — only when service happened */}
+              {service?.attendance && (
+                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                  <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Service Record
+                    </h2>
+                    {deleteTrashButton}
+                  </div>
+                  <div className="divide-y divide-border">
+                    <DetailRow label="Date of Service">
+                      {new Date(service.serviceDate.date).toDateString()}
+                    </DetailRow>
+                    <DetailRow label="Form Filled At">
+                      {parseNeoTime(service.createdAt)}
+                    </DetailRow>
+                    <DetailRow label="Attendance">
+                      <span className="tabular-nums">{service.attendance}</span>
+                    </DetailRow>
+                    {trackIncome && (
+                      <DetailRow label="Income">
+                        <CurrencySpan number={service.income} />
+                      </DetailRow>
+                    )}
+                    {trackIncome && service.onlineGiving ? (
+                      <DetailRow label="Online Giving">
+                        <CurrencySpan number={service.onlineGiving} />
+                      </DetailRow>
+                    ) : null}
+                    {trackIncome && service.cash ? (
+                      <>
+                        <DetailRow label="Cash">
+                          <CurrencySpan number={service.cash} />
+                        </DetailRow>
+                        <DetailRow label="Number of Tithers">
+                          <span className="tabular-nums">
+                            {service.numberOfTithers}
+                          </span>
+                        </DetailRow>
+                        {service.foreignCurrency && (
+                          <DetailRow label="Foreign Currency & Cheques">
+                            <span className="text-right">
+                              {service.foreignCurrency
+                                .split('\n')
+                                .map((line, i, arr) => (
+                                  <Fragment key={i}>
+                                    {line}
+                                    {i < arr.length - 1 && <br />}
+                                  </Fragment>
+                                ))}
+                            </span>
+                          </DetailRow>
+                        )}
+                      </>
+                    ) : null}
+                    {trackIncome &&
+                      service.treasurers?.map((treasurer, i) => (
+                        <DetailRow key={i} label={`Treasurer ${i + 1}`}>
+                          <TreasurerCell treasurer={treasurer} />
+                        </DetailRow>
+                      ))}
+                    {service.noServiceReason && (
+                      <DetailRow label="No Service Reason">
+                        {service.noServiceReason}
+                      </DetailRow>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT COLUMN — actions and photos (sticky on desktop). Reserved space stays empty when there's no content. */}
+            {showRightRail && (
+              <div className="space-y-4 lg:sticky lg:top-6">
+                {/* Actions card — only when there's something to do */}
+                {showActionsCard && (
+                  <div
                     className={
                       showWarning
-                        ? 'text-xs font-semibold uppercase tracking-wider text-warning'
-                        : 'text-xs font-semibold uppercase tracking-wider text-muted-foreground'
+                        ? 'overflow-hidden rounded-xl border border-warning/40 bg-warning/5'
+                        : 'overflow-hidden rounded-xl border border-border bg-card'
                     }
                   >
-                    {showWarning ? 'Action Required' : 'Actions'}
-                  </h2>
-                </div>
-                <div className="space-y-2 p-3">
-                  {showWarning && (
-                    <p className="px-1 pb-1 text-sm text-foreground/80">
-                      Cash was recorded but no banking proof has been submitted
-                      yet.
-                    </p>
-                  )}
-                  {showSelfBankingPay && (
-                    <RoleView roles={selfBankingRoles}>
-                      <Button
-                        className="w-full min-h-11 gap-2"
-                        onClick={() => navigate(selfBankingPath)}
-                      >
-                        <Banknote className="h-4 w-4" />
-                        Pay Offering
-                      </Button>
-                    </RoleView>
-                  )}
-                  {showAdminBankingActions && (
-                    <>
-                      <RoleView
-                        roles={[
-                          ...permitAdmin('Oversight'),
-                          ...permitTellerStream(),
-                        ]}
-                      >
-                        <Button
-                          className="w-full min-h-11 gap-2"
-                          disabled={submitting}
-                          onClick={async () => {
-                            setSubmitting(true)
-                            const confirmed = window.confirm(
-                              'Do you want to confirm banking for this service?'
-                            )
-                            if (confirmed) {
-                              try {
-                                const res =
-                                  await ManuallyConfirmOfferingPayment({
-                                    variables: {
-                                      serviceRecordId: service.id,
-                                    },
-                                  })
-                                if (res.errors)
-                                  throw new Error(res.errors[0].message)
-                                alertMsg(
-                                  'Offering Payment has been confirmed. Thank you!'
-                                )
-                              } catch (error) {
-                                throwToSentry('', error)
-                              } finally {
-                                setSubmitting(false)
-                              }
-                            } else {
-                              setSubmitting(false)
-                            }
-                          }}
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                          {submitting ? 'Confirming…' : 'Confirm Offering'}
-                        </Button>
-                      </RoleView>
-                      <RoleView roles={permitAdmin('Stream')}>
-                        <Button
-                          variant="outline"
-                          className="w-full min-h-11 gap-2"
-                          onClick={() =>
-                            navigate(
-                              `/${church.__typename.toLowerCase()}/banking-slip/submission`
-                            )
-                          }
-                        >
-                          <FileUp className="h-4 w-4" />
-                          Upload Banking Slip
-                        </Button>
-                      </RoleView>
-                    </>
-                  )}
-                  {showBankingReceiptLink && (
-                    <Button
-                      variant="ghost"
-                      className="w-full min-h-11 justify-start px-2 text-muted-foreground hover:text-foreground"
-                      onClick={() => navigate('/self-banking/receipt')}
+                    <div
+                      className={
+                        showWarning
+                          ? 'flex items-center gap-2 border-b border-warning/30 px-4 py-3'
+                          : 'border-b border-border px-4 py-3'
+                      }
                     >
-                      View banking details
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
+                      {showWarning && (
+                        <AlertTriangle className="h-4 w-4 text-warning" />
+                      )}
+                      <h2
+                        className={
+                          showWarning
+                            ? 'text-xs font-semibold uppercase tracking-wider text-warning'
+                            : 'text-xs font-semibold uppercase tracking-wider text-muted-foreground'
+                        }
+                      >
+                        {showWarning ? 'Action Required' : 'Actions'}
+                      </h2>
+                    </div>
+                    <div className="space-y-2 p-3">
+                      {showWarning && (
+                        <p className="px-1 pb-1 text-sm text-foreground/80">
+                          Cash was recorded but no banking proof has been
+                          submitted yet.
+                        </p>
+                      )}
+                      {showSelfBankingPay && (
+                        <RoleView roles={selfBankingRoles}>
+                          <Button
+                            className="w-full min-h-11 gap-2"
+                            onClick={() => navigate(selfBankingPath)}
+                          >
+                            <Banknote className="h-4 w-4" />
+                            Pay Offering
+                          </Button>
+                        </RoleView>
+                      )}
+                      {showAdminBankingActions && (
+                        <>
+                          <RoleView
+                            roles={[
+                              ...permitAdmin('Oversight'),
+                              ...permitTellerStream(),
+                            ]}
+                          >
+                            <Button
+                              className="w-full min-h-11 gap-2"
+                              disabled={submitting}
+                              onClick={async () => {
+                                setSubmitting(true)
+                                const confirmed = window.confirm(
+                                  'Do you want to confirm banking for this service?'
+                                )
+                                if (confirmed) {
+                                  try {
+                                    const res =
+                                      await ManuallyConfirmOfferingPayment({
+                                        variables: {
+                                          serviceRecordId: service.id,
+                                        },
+                                      })
+                                    if (res.errors)
+                                      throw new Error(res.errors[0].message)
+                                    alertMsg(
+                                      'Offering Payment has been confirmed. Thank you!'
+                                    )
+                                  } catch (error) {
+                                    throwToSentry('', error)
+                                  } finally {
+                                    setSubmitting(false)
+                                  }
+                                } else {
+                                  setSubmitting(false)
+                                }
+                              }}
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              {submitting ? 'Confirming…' : 'Confirm Offering'}
+                            </Button>
+                          </RoleView>
+                          <RoleView roles={permitAdmin('Stream')}>
+                            <Button
+                              variant="outline"
+                              className="w-full min-h-11 gap-2"
+                              onClick={() =>
+                                navigate(
+                                  `/${church.__typename.toLowerCase()}/banking-slip/submission`
+                                )
+                              }
+                            >
+                              <FileUp className="h-4 w-4" />
+                              Upload Banking Slip
+                            </Button>
+                          </RoleView>
+                        </>
+                      )}
+                      {showBankingReceiptLink && (
+                        <Button
+                          variant="ghost"
+                          className="w-full min-h-11 justify-start px-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => navigate('/self-banking/receipt')}
+                        >
+                          View banking details
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
-            {/* Photos card — below actions, images height-capped */}
-            {((!currentUser.noIncomeTracking && service.treasurerSelfie) ||
-              service.familyPicture ||
-              (!currentUser.noIncomeTracking && service.bankingSlip)) && (
-              <div className="overflow-hidden rounded-xl border border-border bg-card">
-                <div className="border-b border-border px-4 py-3">
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Photos
-                  </h2>
-                </div>
-                <div className="divide-y divide-border">
-                  {!currentUser.noIncomeTracking && service.treasurerSelfie && (
-                    <div className="p-3">
-                      <p className="mb-2 text-xs font-medium text-muted-foreground">
-                        Treasurer Selfie
-                      </p>
-                      <PhotoTile
-                        src={service.treasurerSelfie}
-                        label="Treasurer Selfie"
-                      />
+                {/* Photos card — below actions, images height-capped */}
+                {((trackIncome && service.treasurerSelfie) ||
+                  service.familyPicture ||
+                  (trackIncome && service.bankingSlip)) && (
+                  <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="border-b border-border px-4 py-3">
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Photos
+                      </h2>
                     </div>
-                  )}
-                  {service.familyPicture && (
-                    <div className="p-3">
-                      <p className="mb-2 text-xs font-medium text-muted-foreground">
-                        Family Picture
-                      </p>
-                      <PhotoTile
-                        src={service.familyPicture}
-                        label="Family Picture"
-                      />
+                    <div className="divide-y divide-border">
+                      {trackIncome && service.treasurerSelfie && (
+                        <div className="p-3">
+                          <p className="mb-2 text-xs font-medium text-muted-foreground">
+                            Treasurer Selfie
+                          </p>
+                          <PhotoTile
+                            src={service.treasurerSelfie}
+                            label="Treasurer Selfie"
+                          />
+                        </div>
+                      )}
+                      {service.familyPicture && (
+                        <div className="p-3">
+                          <p className="mb-2 text-xs font-medium text-muted-foreground">
+                            Family Picture
+                          </p>
+                          <PhotoTile
+                            src={service.familyPicture}
+                            label="Family Picture"
+                          />
+                        </div>
+                      )}
+                      {trackIncome && service.bankingSlip && (
+                        <div className="p-3">
+                          <p className="mb-2 text-xs font-medium text-muted-foreground">
+                            Banking Slip
+                          </p>
+                          <PhotoTile
+                            src={service.bankingSlip}
+                            label="Banking Slip"
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {!currentUser.noIncomeTracking && service.bankingSlip && (
-                    <div className="p-3">
-                      <p className="mb-2 text-xs font-medium text-muted-foreground">
-                        Banking Slip
-                      </p>
-                      <PhotoTile
-                        src={service.bankingSlip}
-                        label="Banking Slip"
-                      />
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
