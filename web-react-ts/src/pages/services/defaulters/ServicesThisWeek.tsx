@@ -9,7 +9,6 @@ import useSontaLevel from 'hooks/useSontaLevel'
 import { MemberContext } from 'contexts/MemberContext'
 import { Badge } from 'components/ui/badge'
 import { Card, CardContent } from 'components/ui/card'
-import { Separator } from 'components/ui/separator'
 import { Skeleton } from 'components/ui/skeleton'
 
 import {
@@ -18,28 +17,11 @@ import {
   GOVERNORSHIP_SERVICES_LIST,
   STREAM_SERVICES_LIST,
 } from './DefaultersQueries'
-import BacentaServiceCard from './BacentaServiceCard'
+import BacentaServiceCard, {
+  BacentaServiceCardSkeleton,
+} from './BacentaServiceCard'
+import WeekTotalsCard, { WeekTotalItem } from './WeekTotalsCard'
 import { DefaultersUseChurchType } from './defaulters-types'
-
-const RowSkeleton = () => (
-  <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-    <div className="flex items-center justify-between">
-      <Skeleton className="h-5 w-2/3" />
-      <Skeleton className="size-4 rounded" />
-    </div>
-    <div className="flex items-center gap-3">
-      <Skeleton className="size-10 shrink-0 rounded-full" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-3 w-1/3" />
-      </div>
-    </div>
-    <div className="flex gap-2">
-      <Skeleton className="h-11 flex-1 rounded-md" />
-      <Skeleton className="h-11 flex-1 rounded-md" />
-    </div>
-  </div>
-)
 
 const ServicesThisWeek = () => {
   const [governorshipServicesThisWeek, { refetch: governorshipRefetch }] =
@@ -101,6 +83,32 @@ const ServicesThisWeek = () => {
     }
   }
 
+  const totalsItems: WeekTotalItem[] = [
+    {
+      key: 'filed',
+      label: 'Forms filed',
+      value: formatCount(total),
+      accent: 'churches',
+      icon: <CalendarCheck />,
+    },
+    {
+      key: 'attendance',
+      label: 'Total attendance',
+      value: totalAttendance > 0 ? formatCount(totalAttendance) : '—',
+      accent: 'members',
+      icon: <Users />,
+    },
+  ]
+  if (trackIncome) {
+    totalsItems.push({
+      key: 'income',
+      label: 'Total income',
+      value: totalIncome > 0 ? formatMoney(totalIncome) : '—',
+      accent: 'banking',
+      icon: <Banknote />,
+    })
+  }
+
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
@@ -135,17 +143,28 @@ const ServicesThisWeek = () => {
             </header>
 
             <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
-              <section className="space-y-3">
+              <aside className="lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
+                <WeekTotalsCard
+                  week={week}
+                  items={totalsItems}
+                  loading={!church}
+                />
+              </aside>
+
+              <section className="space-y-3 lg:col-start-1 lg:row-start-1 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
                 {!church && (
                   <>
-                    <RowSkeleton />
-                    <RowSkeleton />
-                    <RowSkeleton />
+                    <BacentaServiceCardSkeleton />
+                    <BacentaServiceCardSkeleton />
+                    <BacentaServiceCardSkeleton />
+                    <div className="hidden lg:block">
+                      <BacentaServiceCardSkeleton />
+                    </div>
                   </>
                 )}
 
                 {church && total === 0 && (
-                  <Card>
+                  <Card className="lg:col-span-2">
                     <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
                       <div className="rounded-full bg-muted p-3">
                         <Inbox className="size-6 text-muted-foreground" />
@@ -172,81 +191,6 @@ const ServicesThisWeek = () => {
                     />
                   ))}
               </section>
-
-              <aside className="space-y-3 lg:sticky lg:top-6">
-                <Card>
-                  <CardContent className="space-y-4 p-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Week {week} totals
-                    </p>
-
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-lg bg-churches/10 p-2 text-churches">
-                        <CalendarCheck className="size-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-muted-foreground">
-                          Forms filed
-                        </p>
-                        {church ? (
-                          <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
-                            {formatCount(total)}
-                          </p>
-                        ) : (
-                          <Skeleton className="h-7 w-16" />
-                        )}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-lg bg-members/10 p-2 text-members">
-                        <Users className="size-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-muted-foreground">
-                          Total attendance
-                        </p>
-                        {church ? (
-                          <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
-                            {totalAttendance > 0
-                              ? formatCount(totalAttendance)
-                              : '—'}
-                          </p>
-                        ) : (
-                          <Skeleton className="h-7 w-20" />
-                        )}
-                      </div>
-                    </div>
-
-                    {trackIncome && (
-                      <>
-                        <Separator />
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-lg bg-banking/10 p-2 text-banking">
-                            <Banknote className="size-5" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs text-muted-foreground">
-                              Total income
-                            </p>
-                            {church ? (
-                              <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
-                                {totalIncome > 0
-                                  ? formatMoney(totalIncome)
-                                  : '—'}
-                              </p>
-                            ) : (
-                              <Skeleton className="h-7 w-28" />
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              </aside>
             </div>
           </main>
         </div>

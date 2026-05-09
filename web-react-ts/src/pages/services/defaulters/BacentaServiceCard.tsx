@@ -1,13 +1,35 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, MessageCircle, Phone, Users } from 'lucide-react'
+import { useMutation } from '@apollo/client'
+import {
+  ChevronRight,
+  MessageCircle,
+  Phone,
+  RotateCcw,
+  Users,
+} from 'lucide-react'
 
+import RoleView from 'auth/RoleView'
 import { Avatar, AvatarFallback } from 'components/ui/avatar'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Separator } from 'components/ui/separator'
+import { Skeleton } from 'components/ui/skeleton'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from 'components/ui/alert-dialog'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
+import { alertMsg } from 'global-utils'
+import { permitLeaderAdmin } from 'permission-utils'
+import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
   BacentaWithDefaulters,
   StreamWithDefaulters,
@@ -16,6 +38,7 @@ import {
 type BacentaServiceCardProps = {
   defaulter: BacentaWithDefaulters | StreamWithDefaulters
   link?: string
+  showCancellationControls?: boolean
 }
 
 const initials = (name?: string) =>
@@ -38,7 +61,96 @@ const parentLabel = (
   return null
 }
 
-const BacentaServiceCard = ({ defaulter, link }: BacentaServiceCardProps) => {
+type UndoCancellationButtonProps = {
+  defaulter: BacentaWithDefaulters | StreamWithDefaulters
+  serviceRecordId: string
+}
+
+const UndoCancellationButton = ({
+  defaulter,
+  serviceRecordId,
+}: UndoCancellationButtonProps) => {
+  const navigate = useNavigate()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { clickCard } = useContext(ChurchContext) as any
+  const [undoCancelledService, { loading: undoLoading }] = useMutation(
+    UNDO_CANCELLED_SERVICE,
+    {
+      refetchQueries: [
+        'governorshipFormDefaulters',
+        'councilFormDefaulters',
+        'streamFormDefaulters',
+        'gatheringFormDefaulters',
+        'governorshipCancelledServicesThisWeek',
+        'councilCancelledServicesThisWeek',
+        'streamCancelledServicesThisWeek',
+        'gatheringCancelledServicesThisWeek',
+      ],
+    }
+  )
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  return (
+    <RoleView roles={permitLeaderAdmin('Governorship')}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={undoLoading}
+        onClick={() => setConfirmOpen(true)}
+        className="min-h-11 w-full gap-2 border-warning/40 text-warning hover:bg-warning/10 hover:text-warning"
+      >
+        <RotateCcw className="size-4" />
+        Undo cancellation
+      </Button>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Undo cancellation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will allow the leader to fill the form for{' '}
+              <span className="font-semibold">{defaulter.name}</span>{' '}
+              {defaulter.__typename} again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={undoLoading}
+              onClick={async (event) => {
+                event.preventDefault()
+                try {
+                  await undoCancelledService({
+                    variables: { serviceRecordId },
+                  })
+                  setConfirmOpen(false)
+                  alertMsg('Leader can now fill the form again. Thank you!')
+                  clickCard(defaulter)
+                  navigate(
+                    `/${defaulter.__typename.toLowerCase()}/displaydetails`
+                  )
+                } catch {
+                  setConfirmOpen(false)
+                  alertMsg(
+                    'Could not undo the cancellation. Please try again.'
+                  )
+                }
+              }}
+            >
+              Yes, undo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </RoleView>
+  )
+}
+
+const BacentaServiceCard = ({
+  defaulter,
+  link,
+  showCancellationControls = false,
+}: BacentaServiceCardProps) => {
   const navigate = useNavigate()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { clickCard } = useContext(ChurchContext) as any
@@ -48,6 +160,10 @@ const BacentaServiceCard = ({ defaulter, link }: BacentaServiceCardProps) => {
     'services' in defaulter && defaulter.services?.length
       ? defaulter.services[0]
       : undefined
+  const cancellationReason = serviceDetails?.noServiceReason
+  const showUndo = Boolean(
+    showCancellationControls && cancellationReason && serviceDetails?.id
+  )
 
   const leaderName = defaulter?.leader?.fullName ?? 'No Leader'
   const phone = defaulter?.leader?.phoneNumber
@@ -122,6 +238,15 @@ const BacentaServiceCard = ({ defaulter, link }: BacentaServiceCardProps) => {
           </div>
         )}
 
+        {showCancellationControls && cancellationReason && (
+          <div className="rounded-md border border-defaulters/30 bg-defaulters/10 px-3 py-2 text-xs">
+            <p className="font-semibold uppercase tracking-wider text-defaulters">
+              Cancelled service
+            </p>
+            <p className="mt-1 text-foreground">{cancellationReason}</p>
+          </div>
+        )}
+
         <div className="flex flex-col gap-2 sm:flex-row">
           {phone ? (
             <Button
@@ -169,9 +294,36 @@ const BacentaServiceCard = ({ defaulter, link }: BacentaServiceCardProps) => {
             </Button>
           )}
         </div>
+
+        {showUndo && serviceDetails?.id && (
+          <UndoCancellationButton
+            defaulter={defaulter}
+            serviceRecordId={serviceDetails.id}
+          />
+        )}
       </CardContent>
     </Card>
   )
 }
+
+export const BacentaServiceCardSkeleton = () => (
+  <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+    <div className="flex items-center justify-between">
+      <Skeleton className="h-5 w-2/3" />
+      <Skeleton className="size-4 rounded" />
+    </div>
+    <div className="flex items-center gap-3">
+      <Skeleton className="size-10 shrink-0 rounded-full" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-3 w-1/3" />
+      </div>
+    </div>
+    <div className="flex gap-2">
+      <Skeleton className="h-11 flex-1 rounded-md" />
+      <Skeleton className="h-11 flex-1 rounded-md" />
+    </div>
+  </div>
+)
 
 export default BacentaServiceCard
