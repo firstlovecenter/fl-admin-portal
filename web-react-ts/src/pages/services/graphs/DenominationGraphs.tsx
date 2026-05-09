@@ -222,10 +222,15 @@ const DenominationGraphs = () => {
             />
           </section>
 
+          {/* 3 options including "All Services (USD)" — 2×2 grid keeps tap targets wide enough */}
           <Tabs value={graphs} onValueChange={handleTabChange}>
-            <TabsList className="grid h-12 w-full grid-cols-3">
+            <TabsList className="grid h-auto w-full grid-cols-2">
               {DENOMINATION_GRAPH_OPTIONS.map((option) => (
-                <TabsTrigger key={option.value} value={option.value}>
+                <TabsTrigger
+                  key={option.value}
+                  value={option.value}
+                  className="h-11"
+                >
                   {option.label}
                 </TabsTrigger>
               ))}
@@ -240,7 +245,6 @@ const DenominationGraphs = () => {
                 churchData={windowedData}
                 church="denomination"
                 graphType={graphs}
-                income={incomeTracked}
               />
             </CardContent>
             <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-3 sm:px-5">

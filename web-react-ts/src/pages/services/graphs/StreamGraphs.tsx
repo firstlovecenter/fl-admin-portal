@@ -227,7 +227,6 @@ const StreamGraphs = () => {
                 churchData={windowedData}
                 church="stream"
                 graphType={graphs}
-                income={incomeTracked}
               />
             </CardContent>
             <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-3 sm:px-5">
