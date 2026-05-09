@@ -5,6 +5,7 @@ import { Button } from 'components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -27,7 +28,7 @@ import {
 } from 'global-utils'
 import useModal from 'hooks/useModal'
 import useSetUserChurch from 'hooks/useSetUserChurch'
-import { MapPin, Pencil } from 'lucide-react'
+import { ChevronRight, MapPin, Pencil, PencilLine, XCircle } from 'lucide-react'
 import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
 import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
 import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
@@ -130,6 +131,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   const { currentUser } = useContext(MemberContext)
   const { show, handleShow, handleClose } = useModal()
   const [editBussingOpen, setEditBussingOpen] = useState(false)
+  const [recordDialogOpen, setRecordDialogOpen] = useState(false)
   const { governorshipId, councilId, streamId, campusId, clickCard } =
     useContext(ChurchContext)
 
@@ -300,10 +302,19 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               name: props.name,
               __typename: props.churchType,
             })
+            if (props.churchType === 'Bacenta') {
+              clickCard({
+                id: props.churchId,
+                name: props.name,
+                __typename: props.churchType,
+              })
+              setRecordDialogOpen(true)
+              return
+            }
             navigate('/services')
           }}
         >
-          Service Forms
+          {props.churchType === 'Bacenta' ? 'Fill Service Form' : 'Service Forms'}
         </Button>
       )}
     </div>
@@ -383,6 +394,64 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           open={editBussingOpen}
           onOpenChange={setEditBussingOpen}
         />
+      )}
+
+      {/* Fill Service Form dialog (Bacenta only) */}
+      {props.churchType === 'Bacenta' && (
+        <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Record this week&apos;s service</DialogTitle>
+              <DialogDescription>
+                Did the service take place this week?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordDialogOpen(false)
+                  navigate('/bacenta/record-service')
+                }}
+                className="group flex min-h-[64px] w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99]"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-members/10 text-members">
+                  <PencilLine className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Record Service
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    We met this week — fill the service form
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordDialogOpen(false)
+                  navigate('/services/bacenta/no-service')
+                }}
+                className="group flex min-h-[64px] w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99]"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                  <XCircle className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    I Cancelled My Service
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    No service this week — give a reason
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Change Admin Dialog */}
