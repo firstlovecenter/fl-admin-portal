@@ -40,6 +40,8 @@ const BacentaArrivalsCard = ({
   const showContact =
     contact && !!(leader?.phoneNumber || leader?.whatsappNumber)
 
+  const Body = onClick ? 'button' : 'div'
+
   return (
     <div
       className={cn(
@@ -47,22 +49,11 @@ const BacentaArrivalsCard = ({
         className
       )}
     >
-      <div
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
+      <Body
+        type={onClick ? 'button' : undefined}
         onClick={onClick}
-        onKeyDown={
-          onClick
-            ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  onClick()
-                }
-              }
-            : undefined
-        }
         className={cn(
-          'flex flex-1 flex-col items-center gap-3 p-4 text-center',
+          'flex flex-1 flex-col items-center gap-3 p-4 text-center w-full',
           onClick &&
             'cursor-pointer transition-colors hover:bg-muted/50 active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
         )}
@@ -88,16 +79,12 @@ const BacentaArrivalsCard = ({
         </div>
 
         {children && <div className="w-full">{children}</div>}
-      </div>
+      </Body>
 
       {showContact && (
         <div className="flex gap-2 border-t border-border px-3 py-3">
           {leader?.phoneNumber && (
-            <a
-              href={`tel:${leader.phoneNumber}`}
-              className="flex-1"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <a href={`tel:${leader.phoneNumber}`} className="flex-1">
               <Button
                 type="button"
                 variant="outline"
@@ -113,7 +100,6 @@ const BacentaArrivalsCard = ({
             <a
               href={`https://wa.me/${leader.whatsappNumber}`}
               className="flex-1"
-              onClick={(e) => e.stopPropagation()}
             >
               <Button
                 type="button"

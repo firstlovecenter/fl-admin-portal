@@ -18,6 +18,7 @@ import {
 } from '../bussingStatusQueries'
 import { SectionLabel } from '../components/live-feed'
 import BacentaArrivalsCard from './BacentaArrivalsCard'
+import BacentaListSkeleton from './BacentaListSkeleton'
 import { useArrivalsScopedQuery } from './useArrivalsScopedQuery'
 
 const QUERIES_BY_LEVEL = {
@@ -26,43 +27,6 @@ const QUERIES_BY_LEVEL = {
   Stream: STREAM_BACENTAS_NO_ACTIVITY,
   Campus: CAMPUS_BACENTAS_NO_ACTIVITY,
 }
-
-const RowSkeleton = () => (
-  <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-    <Skeleton className="size-12 shrink-0 rounded-full" />
-    <div className="flex-1 space-y-2">
-      <Skeleton className="h-4 w-2/3" />
-      <Skeleton className="h-3 w-1/2" />
-    </div>
-    <Skeleton className="size-9 shrink-0 rounded-md" />
-  </div>
-)
-
-const CardSkeleton = () => (
-  <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4">
-    <Skeleton className="size-16 rounded-full" />
-    <div className="flex w-full flex-col items-center gap-1.5">
-      <Skeleton className="h-3.5 w-28 rounded" />
-      <Skeleton className="h-3 w-20 rounded" />
-    </div>
-    <Skeleton className="h-9 w-full rounded-md" />
-  </div>
-)
-
-const ListSkeleton = () => (
-  <>
-    <div className="md:hidden space-y-3">
-      {[0, 1, 2].map((i) => (
-        <RowSkeleton key={i} />
-      ))}
-    </div>
-    <div className="hidden md:grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-      {[0, 1, 2, 3].map((i) => (
-        <CardSkeleton key={i} />
-      ))}
-    </div>
-  </>
-)
 
 const BacentasNoActivity = () => {
   const navigate = useNavigate()
@@ -142,7 +106,7 @@ const BacentasNoActivity = () => {
                     )}
                   </div>
 
-                  {loading && !church && <ListSkeleton />}
+                  {loading && !church && <BacentaListSkeleton />}
 
                   {isEmpty && (
                     <Card className="border-success/40 bg-success/5">
@@ -158,7 +122,7 @@ const BacentasNoActivity = () => {
                     </Card>
                   )}
 
-                  {!isEmpty && bacentas.length > 0 && (
+                  {!isEmpty && (
                     <>
                       <div className="md:hidden space-y-3">
                         {bacentas.map((bacenta, i) => (
