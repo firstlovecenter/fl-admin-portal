@@ -70,6 +70,8 @@ export const COUNCIL_AVG_WEEKDAY_STATS = gql`
         id
         firstName
         lastName
+        nameWithTitle
+        pictureUrl
       }
       avgWeekdayStats(days: $days) {
         income
@@ -98,6 +100,8 @@ export const STREAM_AVG_WEEKDAY_STATS = gql`
         id
         firstName
         lastName
+        nameWithTitle
+        pictureUrl
       }
       avgWeekdayStats(days: $days) {
         income
@@ -126,6 +130,8 @@ export const CAMPUS_AVG_WEEKDAY_STATS = gql`
         id
         firstName
         lastName
+        nameWithTitle
+        pictureUrl
       }
       avgWeekdayStats(days: $days) {
         income

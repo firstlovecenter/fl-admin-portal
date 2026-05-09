@@ -10,7 +10,7 @@ const LeaderAvatar = ({
   loading,
   leaderTitle,
 }: {
-  leader: MemberWithoutBioData
+  leader: MemberWithoutBioData | undefined
   leaderTitle?: string
   loading?: boolean
 }) => {
