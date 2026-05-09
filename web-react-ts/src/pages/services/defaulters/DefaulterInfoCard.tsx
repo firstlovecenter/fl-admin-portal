@@ -4,7 +4,7 @@ import { Card, CardContent } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
 import { cn } from 'components/lib/utils'
 
-type Tone = 'good' | 'bad' | 'yellow' | 'neutral'
+export type Tone = 'good' | 'bad' | 'yellow' | 'neutral'
 
 const toneClass: Record<Tone, string> = {
   good: 'text-success',
@@ -13,23 +13,18 @@ const toneClass: Record<Tone, string> = {
   neutral: 'text-foreground',
 }
 
-type Defaulter = {
+export type Defaulter = {
   title: string
   link: string
   data?: number | string | null
-  color?: string
+  color?: Tone
 }
 
 const isInteractive = (link?: string) => !!link && link !== '#'
 
-const resolveTone = (color?: string): Tone => {
-  if (color === 'good' || color === 'bad' || color === 'yellow') return color
-  return 'neutral'
-}
-
 const DefaulterInfoCard = ({ defaulter }: { defaulter: Defaulter }) => {
   const navigate = useNavigate()
-  const tone = resolveTone(defaulter.color)
+  const tone: Tone = defaulter.color ?? 'neutral'
   const clickable = isInteractive(defaulter.link)
   const loading = defaulter.data === undefined || defaulter.data === null
 

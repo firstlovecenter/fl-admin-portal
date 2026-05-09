@@ -6,6 +6,7 @@ import {
 } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { ChurchLevel } from 'global-types'
 import { getSubChurchLevel } from 'global-utils'
 import { HigherChurchWithArrivals } from 'pages/arrivals/arrivals-types'
@@ -29,12 +30,19 @@ type useSontaLevelProps = {
 
 const useSontaLevel = (props: useSontaLevelProps) => {
   const { currentUser } = useContext(MemberContext)
+  const { selectedScope } = useChurchRoleScope()
 
-  const currentChurch = currentUser?.currentChurch
-  const churchLevel: ChurchLevel = currentUser?.currentChurch?.__typename
-  const subChurchLevel: ChurchLevel = getSubChurchLevel(
-    currentChurch?.__typename
-  )
+  // "Church in Focus" picker is the source of truth when set; fall back to
+  // the user's primary `currentChurch` for legacy / pre-scope flows.
+  const focusChurch = selectedScope
+    ? {
+        id: selectedScope.churchId,
+        __typename: selectedScope.churchType as ChurchLevel,
+      }
+    : currentUser?.currentChurch
+  const currentChurch = focusChurch
+  const churchLevel: ChurchLevel = focusChurch?.__typename
+  const subChurchLevel: ChurchLevel = getSubChurchLevel(focusChurch?.__typename)
 
   const [church, setChurch] = useState<
     HigherChurchWithDefaulters | HigherChurchWithArrivals | null
@@ -63,6 +71,12 @@ const useSontaLevel = (props: useSontaLevelProps) => {
     }
   }
   useEffect(() => {
+    if (!currentChurch?.id || !churchLevel) {
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+
     const whichQuery = async () => {
       switch (churchLevel) {
         case 'Governorship':
@@ -157,12 +171,15 @@ const useSontaLevel = (props: useSontaLevelProps) => {
           }
           break
         default:
+          // Unknown level — exit loading so the UI doesn't hang.
+          setLoading(false)
           break
       }
     }
 
     whichQuery()
-  }, [setChurch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentChurch?.id, churchLevel])
 
   return { church, subChurchLevel, loading, error, refetch: chooseRefetch() }
 }

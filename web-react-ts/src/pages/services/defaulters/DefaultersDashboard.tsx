@@ -1,32 +1,113 @@
 import { useLazyQuery } from '@apollo/client'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import HeadingSecondary from 'components/HeadingSecondary'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  AlertTriangle,
+  Banknote,
+  CalendarCheck,
+  Users,
+} from 'lucide-react'
+
+import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import PullToRefresh from 'components/base-component/PullToRefresh'
+import RoleView from 'auth/RoleView'
+import { permitLeaderAdmin } from 'permission-utils'
 import { capitalise, plural } from 'global-utils'
-import React, { useContext } from 'react'
-import { Accordion, Col, Container, Row } from 'react-bootstrap'
+import { MemberContext } from 'contexts/MemberContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
+import { ChurchLevel } from 'global-types'
+import useSontaLevel from 'hooks/useSontaLevel'
+
+import { Card, CardContent } from 'components/ui/card'
+import { Skeleton } from 'components/ui/skeleton'
+import { StatCard } from 'components/ui/stat-card'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from 'components/ui/tabs'
+
 import {
   GOVERNORSHIP_DEFAULTERS,
   COUNCIL_DEFAULTERS,
   STREAM_DEFAULTERS,
   CAMPUS_DEFAULTERS,
   OVERSIGHT_DEFAULTERS,
+  DENOMINATION_DEFAULTERS,
 } from './DefaultersQueries'
-import PlaceholderCustom from 'components/Placeholder'
-import DefaulterInfoCard from './DefaulterInfoCard'
-import RoleView from 'auth/RoleView'
-import { permitLeaderAdmin } from 'permission-utils'
-import { MemberContext } from 'contexts/MemberContext'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import DefaulterInfoCard, { Defaulter as Tile } from './DefaulterInfoCard'
 import {
   DefaultersUseChurchType,
   HigherChurchWithDefaulters,
 } from './defaulters-types'
-import { ChurchLevel } from 'global-types'
-import PullToRefresh from 'components/base-component/PullToRefresh'
-import useSontaLevel from 'hooks/useSontaLevel'
+
+type DashboardTab = 'bacenta' | 'stream' | 'joint'
+
+// Denomination intentionally omitted — `Denomination` SDL has no
+// `oversightCount` field, so the sub-church aggregate card cannot render
+// at that level. Drop the entry so the mapping reflects what's queryable.
+const SUB_CHURCH_BY_LEVEL: Partial<Record<ChurchLevel, ChurchLevel>> = {
+  Council: 'Governorship',
+  Stream: 'Council',
+  Campus: 'Stream',
+  Oversight: 'Campus',
+}
+
+const DEFAULT_TAB_BY_LEVEL: Partial<Record<ChurchLevel, DashboardTab>> = {
+  Governorship: 'bacenta',
+  Council: 'bacenta',
+  Stream: 'bacenta',
+  Campus: 'bacenta',
+  Oversight: 'stream',
+  Denomination: 'stream',
+}
+
+const safeNumber = (value: number | null | undefined): number => value ?? 0
+
+const SectionHeader = ({
+  title,
+  subtitle,
+  loading,
+}: {
+  title: string
+  subtitle: string
+  loading: boolean
+}) => (
+  <div className="flex items-end justify-between gap-3">
+    <div className="min-w-0">
+      <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+      {loading ? (
+        <Skeleton className="mt-1 h-4 w-40" />
+      ) : (
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      )}
+    </div>
+  </div>
+)
+
+const TileGrid = ({ tiles, loading }: { tiles: Tile[]; loading: boolean }) => {
+  const slots = loading ? Array.from({ length: 5 }) : tiles
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4">
+      {slots.map((item, i) => (
+        <DefaulterInfoCard
+          key={(item as Tile)?.title ?? i}
+          defaulter={
+            loading
+              ? { title: '—', data: undefined, link: '#', color: 'neutral' }
+              : (item as Tile)
+          }
+        />
+      ))}
+    </div>
+  )
+}
 
 const DefaultersDashboard = () => {
   const { currentUser } = useContext(MemberContext)
+  const { selectedScope } = useChurchRoleScope()
+  const navigate = useNavigate()
   const [governorshipDefaulters, { refetch: governorshipRefetch }] =
     useLazyQuery(GOVERNORSHIP_DEFAULTERS)
   const [councilDefaulters, { refetch: councilRefetch }] =
@@ -37,8 +118,8 @@ const DefaultersDashboard = () => {
     useLazyQuery(CAMPUS_DEFAULTERS)
   const [oversightDefaulters, { refetch: oversightRefetch }] =
     useLazyQuery(OVERSIGHT_DEFAULTERS)
-
-  let subChurch: ChurchLevel | string = ''
+  const [denominationDefaulters, { refetch: denominationRefetch }] =
+    useLazyQuery(DENOMINATION_DEFAULTERS)
 
   const data = useSontaLevel({
     governorshipFunction: governorshipDefaulters,
@@ -51,291 +132,373 @@ const DefaultersDashboard = () => {
     campusRefetch,
     oversightFunction: oversightDefaulters,
     oversightRefetch,
+    denominationFunction: denominationDefaulters,
+    denominationRefetch,
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
 
-  switch (currentUser?.currentChurch?.__typename) {
-    case 'Council':
-      subChurch = 'governorship'
-      break
-    case 'Stream':
-      subChurch = 'council'
-      break
+  const level = (church?.__typename ??
+    (selectedScope?.churchType as ChurchLevel | undefined) ??
+    currentUser?.currentChurch?.__typename) as ChurchLevel | undefined
+  const subChurch = level ? SUB_CHURCH_BY_LEVEL[level] : undefined
 
-    case 'Campus':
-      subChurch = 'stream'
-      break
-    case 'Oversight':
-      subChurch = 'campus'
-      break
-    case 'Denomination':
-      subChurch = 'oversight'
-      break
+  const showStreamSection =
+    !!level && ['Campus', 'Oversight', 'Denomination'].includes(level)
+  const showBacentaSection =
+    !!level && ['Governorship', 'Council', 'Stream', 'Campus'].includes(level)
+  const showJointSection =
+    !!level && ['Council', 'Stream', 'Campus'].includes(level)
 
-    default:
-      break
-  }
+  const initialTab: DashboardTab = level
+    ? DEFAULT_TAB_BY_LEVEL[level] ?? 'bacenta'
+    : 'bacenta'
+  const [tab, setTab] = useState<DashboardTab>(initialTab)
+  // Reset to the level's canonical default tab when the level resolves
+  // (cold-load case — `church.__typename` is undefined on first paint).
+  useEffect(() => {
+    setTab(initialTab)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level])
 
-  const streamDefaultersArray = [
-    {
-      title: 'Services This Week',
-      data: church?.streamServicesThisWeekCount,
-      color: church?.streamServicesThisWeekCount ? 'good' : 'bad',
-      link: church?.streamServicesThisWeekCount
-        ? '/stream-services/filled-services'
-        : '#',
-    },
-    {
-      title: 'Not Filled Forms',
-      data: church?.streamFormDefaultersThisWeekCount,
-      color: church?.streamFormDefaultersThisWeekCount ? 'bad' : 'good',
-      link: church?.streamFormDefaultersThisWeekCount
-        ? '/stream-services/form-defaulters'
-        : '#',
-    },
-    {
-      title: 'Have Banked',
-      data: church?.streamBankedThisWeekCount,
-      color:
-        church?.streamBankedThisWeekCount ===
-        church?.streamServicesThisWeekCount
-          ? 'good'
-          : (church?.streamBankedThisWeekCount || 0) > 0
-          ? 'yellow'
-          : 'bad',
-      link: church?.streamBankedThisWeekCount ? '/stream-services/banked' : '#',
-    },
-    {
-      title: 'Have Not Banked',
-      data: church?.streamBankingDefaultersThisWeekCount,
-      color: church?.streamBankingDefaultersThisWeekCount ? 'bad' : 'good',
-      link: church?.streamBankingDefaultersThisWeekCount
-        ? '/stream-services/banking-defaulters'
-        : '#',
-    },
-    {
-      title: 'Cancelled Service',
-      data: church?.streamCancelledServicesThisWeekCount,
-      color: church?.streamCancelledServicesThisWeekCount ? 'bad' : 'good',
-      link: church?.streamCancelledServicesThisWeekCount
-        ? '/stream-services/cancelled-services'
-        : '#',
-    },
-  ]
+  const streamTiles = useMemo<Tile[]>(
+    () => [
+      {
+        title: 'Services This Week',
+        data: church?.streamServicesThisWeekCount,
+        color: church?.streamServicesThisWeekCount ? 'good' : 'bad',
+        link: church?.streamServicesThisWeekCount
+          ? '/stream-services/filled-services'
+          : '#',
+      },
+      {
+        title: 'Not Filled Forms',
+        data: church?.streamFormDefaultersThisWeekCount,
+        color: church?.streamFormDefaultersThisWeekCount ? 'bad' : 'good',
+        link: church?.streamFormDefaultersThisWeekCount
+          ? '/stream-services/form-defaulters'
+          : '#',
+      },
+      {
+        title: 'Have Banked',
+        data: church?.streamBankedThisWeekCount,
+        color:
+          safeNumber(church?.streamBankedThisWeekCount) ===
+          safeNumber(church?.streamServicesThisWeekCount)
+            ? 'good'
+            : safeNumber(church?.streamBankedThisWeekCount) > 0
+            ? 'yellow'
+            : 'bad',
+        link: church?.streamBankedThisWeekCount
+          ? '/stream-services/banked'
+          : '#',
+      },
+      {
+        title: 'Have Not Banked',
+        data: church?.streamBankingDefaultersThisWeekCount,
+        color: church?.streamBankingDefaultersThisWeekCount ? 'bad' : 'good',
+        link: church?.streamBankingDefaultersThisWeekCount
+          ? '/stream-services/banking-defaulters'
+          : '#',
+      },
+      {
+        title: 'Cancelled Service',
+        data: church?.streamCancelledServicesThisWeekCount,
+        color: church?.streamCancelledServicesThisWeekCount ? 'bad' : 'good',
+        link: church?.streamCancelledServicesThisWeekCount
+          ? '/stream-services/cancelled-services'
+          : '#',
+      },
+    ],
+    [church]
+  )
 
-  const bacentaDefaulters = [
-    {
-      title: 'Services This Week',
-      data: church?.servicesThisWeekCount,
-      color: church?.servicesThisWeekCount ? 'good' : 'bad',
-      link: church?.servicesThisWeekCount ? '/services/filled-services' : '#',
-    },
-    {
-      title: 'Not Filled Forms',
-      data: church?.formDefaultersThisWeekCount,
-      color: church?.formDefaultersThisWeekCount ? 'bad' : 'good',
-      link: church?.formDefaultersThisWeekCount
-        ? '/services/form-defaulters'
-        : '#',
-    },
-    {
-      title: 'Have Banked',
-      data: church?.bankedThisWeekCount,
-      color:
-        church?.bankedThisWeekCount === church?.servicesThisWeekCount
-          ? 'good'
-          : (church?.bankedThisWeekCount || 0) > 0
-          ? 'yellow'
-          : 'bad',
-      link: church?.bankedThisWeekCount ? '/services/banked' : '#',
-    },
-    {
-      title: 'Have Not Banked',
-      data: church?.bankingDefaultersThisWeekCount,
-      color: church?.bankingDefaultersThisWeekCount ? 'bad' : 'good',
-      link: church?.bankingDefaultersThisWeekCount
-        ? '/services/banking-defaulters'
-        : '#',
-    },
-    {
-      title: 'Cancelled Service',
-      data: church?.cancelledServicesThisWeekCount,
-      color: church?.cancelledServicesThisWeekCount ? 'bad' : 'good',
-      link: church?.cancelledServicesThisWeekCount
-        ? '/services/cancelled-services'
-        : '#',
-    },
-  ]
+  const bacentaTiles = useMemo<Tile[]>(
+    () => [
+      {
+        title: 'Services This Week',
+        data: church?.servicesThisWeekCount,
+        color: church?.servicesThisWeekCount ? 'good' : 'bad',
+        link: church?.servicesThisWeekCount
+          ? '/services/filled-services'
+          : '#',
+      },
+      {
+        title: 'Not Filled Forms',
+        data: church?.formDefaultersThisWeekCount,
+        color: church?.formDefaultersThisWeekCount ? 'bad' : 'good',
+        link: church?.formDefaultersThisWeekCount
+          ? '/services/form-defaulters'
+          : '#',
+      },
+      {
+        title: 'Have Banked',
+        data: church?.bankedThisWeekCount,
+        color:
+          safeNumber(church?.bankedThisWeekCount) ===
+          safeNumber(church?.servicesThisWeekCount)
+            ? 'good'
+            : safeNumber(church?.bankedThisWeekCount) > 0
+            ? 'yellow'
+            : 'bad',
+        link: church?.bankedThisWeekCount ? '/services/banked' : '#',
+      },
+      {
+        title: 'Have Not Banked',
+        data: church?.bankingDefaultersThisWeekCount,
+        color: church?.bankingDefaultersThisWeekCount ? 'bad' : 'good',
+        link: church?.bankingDefaultersThisWeekCount
+          ? '/services/banking-defaulters'
+          : '#',
+      },
+      {
+        title: 'Cancelled Service',
+        data: church?.cancelledServicesThisWeekCount,
+        color: church?.cancelledServicesThisWeekCount ? 'bad' : 'good',
+        link: church?.cancelledServicesThisWeekCount
+          ? '/services/cancelled-services'
+          : '#',
+      },
+    ],
+    [church]
+  )
 
-  const jointServiceDefaulters = [
-    {
-      title: 'Governorship Banked',
-      data: church?.governorshipBankedThisWeekCount,
-      color: church?.governorshipBankedThisWeekCount ? 'good' : 'bad',
-      link: church?.governorshipBankedThisWeekCount
-        ? '/services/governorship-banked'
-        : '#',
-    },
-    {
-      title: 'Governorship Not Banked',
-      data: church?.governorshipBankingDefaultersThisWeekCount,
-      color: church?.governorshipBankingDefaultersThisWeekCount
-        ? 'bad'
-        : 'good',
-      link: church?.governorshipBankingDefaultersThisWeekCount
-        ? '/services/governorship-banking-defaulters'
-        : '#',
-    },
-    {
-      title: 'Council Banked',
-      data: church?.councilBankedThisWeekCount,
-      color: church?.councilBankedThisWeekCount ? 'good' : 'bad',
-      link: church?.councilBankedThisWeekCount
-        ? '/services/council-banked'
-        : '#',
-    },
-    {
-      title: 'Council Not Banked',
-      data: church?.councilBankingDefaultersThisWeekCount,
-      color: church?.councilBankingDefaultersThisWeekCount ? 'bad' : 'good',
-      link: church?.councilBankingDefaultersThisWeekCount
-        ? '/services/council-banking-defaulters'
-        : '#',
-    },
-  ]
+  const jointTiles = useMemo<Tile[]>(
+    () =>
+      (
+        [
+          {
+            title: 'Governorship Banked',
+            data: church?.governorshipBankedThisWeekCount,
+            color: church?.governorshipBankedThisWeekCount ? 'good' : 'bad',
+            link: church?.governorshipBankedThisWeekCount
+              ? '/services/governorship-banked'
+              : '#',
+          },
+          {
+            title: 'Governorship Not Banked',
+            data: church?.governorshipBankingDefaultersThisWeekCount,
+            color: church?.governorshipBankingDefaultersThisWeekCount
+              ? 'bad'
+              : 'good',
+            link: church?.governorshipBankingDefaultersThisWeekCount
+              ? '/services/governorship-banking-defaulters'
+              : '#',
+          },
+          {
+            title: 'Council Banked',
+            data: church?.councilBankedThisWeekCount,
+            color: church?.councilBankedThisWeekCount ? 'good' : 'bad',
+            link: church?.councilBankedThisWeekCount
+              ? '/services/council-banked'
+              : '#',
+          },
+          {
+            title: 'Council Not Banked',
+            data: church?.councilBankingDefaultersThisWeekCount,
+            color: church?.councilBankingDefaultersThisWeekCount
+              ? 'bad'
+              : 'good',
+            link: church?.councilBankingDefaultersThisWeekCount
+              ? '/services/council-banking-defaulters'
+              : '#',
+          },
+        ] as Tile[]
+      ).filter((tile) => tile.data !== undefined && tile.data !== null),
+    [church]
+  )
 
-  const aggregates = {
-    title: capitalise(plural(subChurch)),
-    data: church ? church[`${subChurch}Count`] : null,
-    link: `/services/${church?.__typename?.toLowerCase()}-by-${subChurch?.toLowerCase()}`,
-  }
+  // Headline KPIs track the active tab so the summary always reconciles to
+  // what's drawn in the breakdown grid below. At Campus the user can switch
+  // between Bacenta and Stream tabs and the summary follows.
+  const summaryUsesBacenta = tab === 'bacenta' && showBacentaSection
+  const totalServices = summaryUsesBacenta
+    ? safeNumber(church?.servicesThisWeekCount)
+    : safeNumber(church?.streamServicesThisWeekCount)
+  const totalBanked = summaryUsesBacenta
+    ? safeNumber(church?.bankedThisWeekCount)
+    : safeNumber(church?.streamBankedThisWeekCount)
+  const totalFormDefaulters = summaryUsesBacenta
+    ? safeNumber(church?.formDefaultersThisWeekCount)
+    : safeNumber(church?.streamFormDefaultersThisWeekCount)
+  const totalBankingDefaulters = summaryUsesBacenta
+    ? safeNumber(church?.bankingDefaultersThisWeekCount)
+    : safeNumber(church?.streamBankingDefaultersThisWeekCount)
+  const totalCancelled = summaryUsesBacenta
+    ? safeNumber(church?.cancelledServicesThisWeekCount)
+    : safeNumber(church?.streamCancelledServicesThisWeekCount)
+  const outstanding =
+    totalFormDefaulters + totalBankingDefaulters + totalCancelled
 
-  const getDefaultActiveKey = (church: HigherChurchWithDefaulters) => {
-    if (
-      ['Denomination', 'Oversight', 'Campus'].includes(church?.__typename ?? '')
-    ) {
-      return '0'
+  const activeUnitLabel = summaryUsesBacenta ? 'Active Bacentas' : 'Active Streams'
+  const activeUnitValue = summaryUsesBacenta
+    ? safeNumber(church?.activeBacentaCount)
+    : safeNumber(church?.activeStreamCount)
+
+  const subChurchAggregate = useMemo<Tile | null>(() => {
+    if (!subChurch || !church) return null
+    const countKey = `${subChurch.toLowerCase()}Count` as const
+    const value = (church as Record<string, unknown>)[countKey]
+    if (typeof value !== 'number') return null
+    return {
+      title: capitalise(plural(subChurch)),
+      data: value,
+      color: 'neutral',
+      link: `/services/${church?.__typename?.toLowerCase()}-by-${subChurch?.toLowerCase()}`,
     }
-    if (
-      ['Stream', 'Council', 'Governorship'].includes(church?.__typename ?? '')
-    ) {
-      return '2'
-    }
-  }
+  }, [church, subChurch])
+
+  const tabsCount = [
+    showBacentaSection,
+    showStreamSection,
+    showJointSection && jointTiles.length > 0,
+  ].filter(Boolean).length
+
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error}>
-        <Container>
-          <HeadingPrimary
-            loading={!church}
-          >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
-          <HeadingSecondary>Defaulters Page</HeadingSecondary>
-          <RoleView roles={permitLeaderAdmin('Council')}>
-            <Col xs={12} className="mb-3">
-              {aggregates?.title && (
-                <DefaulterInfoCard defaulter={aggregates} />
+        <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
+            <header className="space-y-1">
+              {church ? (
+                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                  {church.name}{' '}
+                  <span className="text-defaulters">
+                    {(church as HigherChurchWithDefaulters).__typename}{' '}
+                    Defaulters
+                  </span>
+                </h1>
+              ) : (
+                <Skeleton className="h-9 w-72" />
               )}
-            </Col>
-          </RoleView>
-          <Accordion
-            defaultActiveKey={getDefaultActiveKey(
-              church as HigherChurchWithDefaulters
-            )}
-          >
-            <Accordion.Item eventKey="0">
-              {['Campus', 'Oversight', 'Denomination'].includes(
-                church?.__typename ?? ''
-              ) && (
-                <>
-                  <Accordion.Header>
-                    <div>
-                      <HeadingSecondary>Stream Services</HeadingSecondary>
-                      <PlaceholderCustom as="h6" loading={!church}>
-                        <h6>{`Active Streams: ${church?.activeStreamCount}`}</h6>
-                      </PlaceholderCustom>
+              <p className="text-sm text-muted-foreground">
+                Weekly defaulter overview &mdash; current week
+              </p>
+            </header>
+
+            <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <StatCard
+                compact
+                label={activeUnitLabel}
+                value={activeUnitValue.toLocaleString('en-GH')}
+                icon={Users}
+                accent="members"
+                loading={!church}
+              />
+              <StatCard
+                compact
+                label="Services Filed"
+                value={totalServices.toLocaleString('en-GH')}
+                icon={CalendarCheck}
+                accent="churches"
+                loading={!church}
+              />
+              <StatCard
+                compact
+                label="Have Banked"
+                value={totalBanked.toLocaleString('en-GH')}
+                icon={Banknote}
+                accent="banking"
+                loading={!church}
+              />
+              <StatCard
+                compact
+                label="Outstanding"
+                value={outstanding.toLocaleString('en-GH')}
+                icon={AlertTriangle}
+                accent="defaulters"
+                hint="Forms + banking + cancelled"
+                loading={!church}
+              />
+            </section>
+
+            <RoleView roles={permitLeaderAdmin('Council')}>
+              {subChurchAggregate && (
+                <Card>
+                  <CardContent className="flex items-center justify-between gap-4 p-4">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {subChurchAggregate.title}
+                      </p>
+                      <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                        {subChurchAggregate.data}
+                      </p>
                     </div>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
-                      {streamDefaultersArray.map((defaulter, i) => (
-                        <Col key={i} xs={6} className="mb-3">
-                          <DefaulterInfoCard defaulter={defaulter} />
-                        </Col>
-                      ))}
-                    </Row>
-                  </Accordion.Body>
-                </>
+                    <button
+                      type="button"
+                      onClick={() => navigate(subChurchAggregate.link)}
+                      className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-muted active:bg-muted/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background outline-none"
+                    >
+                      View list
+                    </button>
+                  </CardContent>
+                </Card>
               )}
-            </Accordion.Item>
+            </RoleView>
 
-            <Accordion.Item eventKey="2">
-              {[
-                'Campus',
-                'Stream',
-                'Council',
-                'Governorship',
-              ].includes(church?.__typename ?? '') && (
-                <>
-                  <Accordion.Header>
-                    <div>
-                      <HeadingSecondary>Bacenta Services</HeadingSecondary>
-                      <PlaceholderCustom as="h6" loading={!church}>
-                        <h6>{`Active Bacentas: ${church?.activeBacentaCount}`}</h6>
-                      </PlaceholderCustom>
-                    </div>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
-                      {bacentaDefaulters.map((defaulter, i) => (
-                        <Col key={i} xs={6} className="mb-3">
-                          <DefaulterInfoCard defaulter={defaulter} />
-                        </Col>
-                      ))}
-                    </Row>
-                  </Accordion.Body>
-                </>
+            <Tabs
+              value={tab}
+              onValueChange={(value) => setTab(value as DashboardTab)}
+              className="space-y-4"
+            >
+              {tabsCount > 1 && (
+                <TabsList
+                  className="grid h-12 w-full lg:max-w-md"
+                  style={{
+                    gridTemplateColumns: `repeat(${tabsCount}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {showBacentaSection && (
+                    <TabsTrigger value="bacenta">Bacenta Services</TabsTrigger>
+                  )}
+                  {showStreamSection && (
+                    <TabsTrigger value="stream">Stream Services</TabsTrigger>
+                  )}
+                  {showJointSection && jointTiles.length > 0 && (
+                    <TabsTrigger value="joint">Joint Services</TabsTrigger>
+                  )}
+                </TabsList>
               )}
-            </Accordion.Item>
-            <Accordion.Item eventKey="3">
-              {['Campus', 'Stream', 'Council'].includes(
-                church?.__typename ?? ''
-              ) && (
-                <>
-                  <Accordion.Header>Joint Services</Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
-                      {jointServiceDefaulters.map((defaulter, i) => {
-                        if (!defaulter.data) return null
 
-                        return (
-                          <Col key={i} xs={6} className="mb-3">
-                            <DefaulterInfoCard defaulter={defaulter} />
-                            <hr />
-                          </Col>
-                        )
-                      })}
-                    </Row>
-                  </Accordion.Body>
-                </>
+              {showBacentaSection && (
+                <TabsContent value="bacenta" className="space-y-3">
+                  <SectionHeader
+                    title="Bacenta Services"
+                    subtitle={`${activeUnitValue.toLocaleString(
+                      'en-GH'
+                    )} active bacentas this week`}
+                    loading={!church}
+                  />
+                  <TileGrid tiles={bacentaTiles} loading={!church} />
+                </TabsContent>
               )}
-            </Accordion.Item>
 
-          </Accordion>
-          <Row>
-            {loading && (
-              <Row>
-                {[1, 2, 3, 4, 5].map((number: number) => (
-                  <Col key={number} xs={6} className="mb-3">
-                    <DefaulterInfoCard
-                      defaulter={{ title: '-', data: undefined, link: '#' }}
-                    />
-                  </Col>
-                ))}
-              </Row>
-            )}
-          </Row>
-        </Container>
+              {showStreamSection && (
+                <TabsContent value="stream" className="space-y-3">
+                  <SectionHeader
+                    title="Stream Services"
+                    subtitle={`${safeNumber(
+                      church?.activeStreamCount
+                    ).toLocaleString('en-GH')} active streams this week`}
+                    loading={!church}
+                  />
+                  <TileGrid tiles={streamTiles} loading={!church} />
+                </TabsContent>
+              )}
+
+              {showJointSection && jointTiles.length > 0 && (
+                <TabsContent value="joint" className="space-y-3">
+                  <SectionHeader
+                    title="Joint Services"
+                    subtitle="Banking status by sub-level"
+                    loading={!church}
+                  />
+                  <TileGrid tiles={jointTiles} loading={!church} />
+                </TabsContent>
+              )}
+            </Tabs>
+          </main>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )
