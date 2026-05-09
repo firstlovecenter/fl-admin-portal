@@ -13,6 +13,7 @@ import {
   Network,
 } from '../utils/financial-utils'
 import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'
+import { assertScopeViaServiceRecord } from '../utils/scope-utils'
 
 import {
   checkTransactionReference,
@@ -93,6 +94,7 @@ const bankingMutation = {
   ) => {
     const SECRETS = await loadSecrets()
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
 
     const session = context.executionContext.session()
     // This code checks if there has already been a successful transaction
@@ -239,6 +241,7 @@ const bankingMutation = {
     context: Context
   ) => {
     isAuth(permitMe('Bacenta'), context.jwt.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
 
     const session = context.executionContext.session()
 
@@ -335,6 +338,7 @@ const bankingMutation = {
     context: Context
   ) => {
     isAuth(permitMe('Bacenta'), context.jwt.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
     const transactionResponse = rearrangeCypherObject(
@@ -474,6 +478,7 @@ const bankingMutation = {
     context: Context
   ) => {
     isAuth(permitAdmin('Campus'), context.jwt.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
     await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
@@ -502,6 +507,7 @@ const bankingMutation = {
     context: Context
   ) => {
     isAuth(['fishers', ...permitTellerStream()], context.jwt.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
     const churchRes = await session.executeRead((tx) =>

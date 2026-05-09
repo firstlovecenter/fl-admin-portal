@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs')
 const path = require('path')
+const { expandChurchScopedMarkers } = require('./church-scoped-directive')
 /*
  * Check for GRAPHQL_SCHEMA environment variable to specify schema file
  * fallback to schema.graphql if GRAPHQL_SCHEMA environment variable is not set
@@ -90,7 +91,7 @@ const array = [
   reports,
 ]
 
-const combinedSchema = array.join(' ')
+const combinedSchema = expandChurchScopedMarkers(array.join(' '))
 
 // Write the combined schema to a file
 // const outputPath = path.join(__dirname, 'combined-schema.gql')

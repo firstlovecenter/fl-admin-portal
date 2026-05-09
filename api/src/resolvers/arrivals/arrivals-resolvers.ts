@@ -9,6 +9,7 @@ import {
   rearrangeCypherObject,
   throwToSentry,
 } from '../utils/utils'
+import { assertChurchScope } from '../utils/scope-utils'
 import {
   permitAdmin,
   permitAdminArrivals,
@@ -205,6 +206,7 @@ export const arrivalsMutation = {
   ) => {
     const session = context.executionContext.session()
     isAuth(['leaderBacenta'], context.jwt.roles)
+    await assertChurchScope(context, args.bacentaId)
 
     const recordResponse = rearrangeCypherObject(
       await session.run(checkArrivalTimes, args)
@@ -292,6 +294,7 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     isAuth(['leaderBacenta'], context.jwt.roles)
+    await assertChurchScope(context, args.bacentaId)
     const session = context.executionContext.session()
 
     const recordResponse = rearrangeCypherObject(
@@ -369,6 +372,7 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     isAuth(permitArrivalsCounter(), context.jwt.roles)
+    await assertChurchScope(context, args.bacentaId)
     const session = context.executionContext.session()
 
     const recordResponse = rearrangeCypherObject(

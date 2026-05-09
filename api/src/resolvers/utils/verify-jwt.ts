@@ -1,5 +1,5 @@
 import * as crypto from 'crypto'
-import { Role } from './types'
+import { ChurchScopes, Role } from './types'
 
 // Hand-rolled HS256 verification: matches `@neo4j/graphql`'s
 // `features.authorization.key` flow used at `api/src/index.js`. The custom
@@ -8,7 +8,10 @@ import { Role } from './types'
 // could forge a JWT with arbitrary `roles`. Locked to HS256 to defeat the
 // classic `alg: none` and `alg: RS256→HS256` confusion attacks.
 export type JwtPayload = {
+  userId?: string
+  email?: string
   roles?: Role[]
+  churchScopes?: ChurchScopes
   exp?: number
   [key: string]: unknown
 }

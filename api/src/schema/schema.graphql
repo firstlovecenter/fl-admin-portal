@@ -1,7 +1,50 @@
 #Query Definitions
 extend schema @authentication
 type JWT @jwt {
+  userId: String
+  email: String
   roles: [String!]!
+
+  # Flat church-scope id claims, mapped from the nested `churchScopes` object
+  # the auth service emits. Declaring each path explicitly lets `@authorization`
+  # rules reference `$jwt.<key>Id` to gate reads/writes by hierarchy.
+  leadsBacentaOfId: String @jwtClaim(path: "churchScopes.leadsBacentaOf.id")
+  leadsGovernorshipOfId: String
+    @jwtClaim(path: "churchScopes.leadsGovernorshipOf.id")
+  leadsCouncilOfId: String @jwtClaim(path: "churchScopes.leadsCouncilOf.id")
+  leadsStreamOfId: String @jwtClaim(path: "churchScopes.leadsStreamOf.id")
+  leadsCampusOfId: String @jwtClaim(path: "churchScopes.leadsCampusOf.id")
+  leadsOversightOfId: String @jwtClaim(path: "churchScopes.leadsOversightOf.id")
+  leadsDenominationOfId: String
+    @jwtClaim(path: "churchScopes.leadsDenominationOf.id")
+
+  isAdminForGovernorshipOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForGovernorshipOf.id")
+  isAdminForCouncilOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForCouncilOf.id")
+  isAdminForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForStreamOf.id")
+  isAdminForCampusOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForCampusOf.id")
+  isAdminForOversightOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForOversightOf.id")
+  isAdminForDenominationOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForDenominationOf.id")
+
+  isArrivalsAdminForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsAdminForStreamOf.id")
+  isArrivalsAdminForCampusOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsAdminForCampusOf.id")
+  isArrivalsAdminForCouncilOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsAdminForCouncilOf.id")
+  isArrivalsCounterForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsCounterForStreamOf.id")
+  isArrivalsPayerCouncilOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsPayerCouncilOf.id")
+  isTellerForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isTellerForStreamOf.id")
+  isSheepSeekerForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isSheepSeekerForStreamOf.id")
 }
 
 type Query {

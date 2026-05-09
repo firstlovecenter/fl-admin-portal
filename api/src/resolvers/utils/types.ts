@@ -123,6 +123,32 @@ export type ChurchIdAndName = {
   name: string
 }
 
+export type ChurchScopeKey =
+  | 'leadsBacentaOf'
+  | 'leadsGovernorshipOf'
+  | 'leadsCouncilOf'
+  | 'leadsStreamOf'
+  | 'leadsCampusOf'
+  | 'leadsOversightOf'
+  | 'leadsDenominationOf'
+  | 'isAdminForGovernorshipOf'
+  | 'isAdminForCouncilOf'
+  | 'isAdminForStreamOf'
+  | 'isAdminForCampusOf'
+  | 'isAdminForOversightOf'
+  | 'isAdminForDenominationOf'
+  | 'isArrivalsAdminForStreamOf'
+  | 'isArrivalsAdminForCampusOf'
+  | 'isArrivalsAdminForCouncilOf'
+  | 'isArrivalsCounterForStreamOf'
+  | 'isArrivalsPayerCouncilOf'
+  | 'isTellerForStreamOf'
+  | 'isSheepSeekerForStreamOf'
+
+export type ChurchScopes = {
+  [K in ChurchScopeKey]?: ChurchIdAndName
+}
+
 export interface Record {
   id: string
   attendance: number

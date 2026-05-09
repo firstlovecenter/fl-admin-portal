@@ -8,6 +8,7 @@ import {
   rearrangeCypherObject,
   throwToSentry,
 } from '../utils/utils'
+import { assertChurchScope } from '../utils/scope-utils'
 import {
   absorbAllTransactions,
   checkCurrentServiceLog,
@@ -101,6 +102,7 @@ const serviceMutation = {
     context: Context
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -197,6 +199,7 @@ const serviceMutation = {
     context: Context
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -274,6 +277,7 @@ const serviceMutation = {
     context: Context
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(

@@ -2,6 +2,7 @@ import { Context } from '../utils/neo4j-types'
 import { sendBulkSMS } from '../utils/notify'
 import { Member } from '../utils/types'
 import { isAuth, throwToSentry } from '../utils/utils'
+import { assertChurchScope } from '../utils/scope-utils'
 import {
   approveBussingExpense,
   approveExpense,
@@ -25,6 +26,7 @@ export const accountsMutations = {
   ) => {
     const session = context.executionContext.session()
     isAuth(['adminCampus'], context.jwt.roles)
+    await assertChurchScope(context, args.councilId)
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)
@@ -223,6 +225,7 @@ export const accountsMutations = {
   ) => {
     const session = context.executionContext.session()
     isAuth(['arrivalsAdminCampus', 'adminCampus'], context.jwt.roles)
+    await assertChurchScope(context, args.councilId)
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)
