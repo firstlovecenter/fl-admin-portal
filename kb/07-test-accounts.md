@@ -13,13 +13,13 @@ flow. All data returned is live dev-database data — no mocks needed.
 | --- | --- | --- |
 | Fellowship Leader | fellowshipleader@test.com | ✅ |
 | Bacenta Leader | bacentaleader@test.com | ✅ |
-| Constituency Leader | constituencyleader@test.com | ✅ |
+| Governor | governor@test.com | ✅ |
 | Council Leader | councilleader@test.com | ✅ |
 | Stream Leader | streamleader@test.com | ✅ |
 | Campus Leader | campusleader@test.com | ✅ |
 | Oversight Leader | oversightleader@test.com | ✅ |
 | Denomination Leader | denominationleader@test.com | ✅ |
-| Constituency Admin | constituencyadmin@test.com | ✅ |
+| Governorship Admin | governorshipadmin@test.com | ✅ |
 | Council Admin | counciladmin@test.com | ✅ |
 | Stream Admin | streamadmin@test.com | ✅ |
 | Campus Admin | campusadmin@test.com | ✅ |
