@@ -19,11 +19,13 @@ export const BACENTA_GRAPHS = gql`
         income
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -72,11 +74,13 @@ export const GOVERNORSHIP_GRAPHS = gql`
         income
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -116,11 +120,13 @@ export const COUNCIL_GRAPHS = gql`
         income
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -160,11 +166,13 @@ export const STREAM_GRAPHS = gql`
         income
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -205,11 +213,13 @@ export const CAMPUS_GRAPHS = gql`
         dollarIncome
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -250,11 +260,13 @@ export const OVERSIGHT_GRAPHS = gql`
         dollarIncome
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -299,11 +311,13 @@ export const DENOMINATION_GRAPHS = gql`
         dollarIncome
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars

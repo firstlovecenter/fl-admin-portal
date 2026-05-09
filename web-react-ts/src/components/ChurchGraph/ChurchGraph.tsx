@@ -23,7 +23,6 @@ type ChurchGraphProps = {
   churchData: any[]
   secondaryTitle?: string
   graphType: GraphTypes
-  income: boolean
   church: ChurchLevelLower | string
   swollenSunday?: boolean
 }
@@ -33,14 +32,16 @@ const compactNumberFormatter = new Intl.NumberFormat('en', {
   maximumFractionDigits: 1,
 })
 
+// Individual (first-class) records use the feature accent; aggregates (rollups) use a
+// distinct hue so it's visually clear whether a chart shows "this church" vs "everything below".
 const PRIMARY_COLOR_BY_TYPE: Record<GraphTypes, string> = {
-  bussing: 'hsl(var(--destructive))',
-  bussingAggregate: 'hsl(var(--destructive))',
-  swellBussing: 'hsl(var(--destructive))',
+  bussing: 'hsl(var(--destructive))',         // red  — individual bacenta bussing
+  bussingAggregate: 'hsl(var(--defaulters))', // orange — all bussing rolled up
+  swellBussing: 'hsl(var(--warning))',        // amber — swell-Sunday special
 
-  services: 'hsl(var(--arrivals))',
-  serviceAggregate: 'hsl(var(--arrivals))',
-  serviceAggregateWithDollar: 'hsl(var(--arrivals))',
+  services: 'hsl(var(--arrivals))',              // indigo — this level's own joint/weekday service
+  serviceAggregate: 'hsl(var(--churches))',      // purple — all services aggregated
+  serviceAggregateWithDollar: 'hsl(var(--banking))', // green  — aggregated in USD
   multiplicationAggregate: 'hsl(var(--arrivals))',
 
   rehearsals: 'hsl(var(--churches))',
@@ -49,6 +50,23 @@ const PRIMARY_COLOR_BY_TYPE: Record<GraphTypes, string> = {
 
   onStageAttendance: 'hsl(var(--campaigns))',
   onStageAttendanceAggregate: 'hsl(var(--campaigns))',
+}
+
+// Human-readable chart title labels — plain language, no camelCase type names.
+// At Bacenta level "services" means "Service"; at every level above it is a joint service.
+const GRAPH_TYPE_LABELS: Record<GraphTypes, string> = {
+  bussing: 'Bussing',
+  bussingAggregate: 'All Bussing',
+  swellBussing: 'Swell Sunday',
+  services: 'Service',
+  serviceAggregate: 'All Services',
+  serviceAggregateWithDollar: 'All Services (USD)',
+  multiplicationAggregate: 'Multiplication Total',
+  rehearsals: 'Rehearsal',
+  rehearsalAggregate: 'All Rehearsals',
+  ministryMeeting: 'Ministry Meeting',
+  onStageAttendance: 'On-Stage',
+  onStageAttendanceAggregate: 'On-Stage Total',
 }
 
 const SECONDARY_COLOR = 'hsl(var(--success))'
@@ -164,8 +182,8 @@ const ChurchGraph = (props: ChurchGraphProps) => {
     stat2,
     churchData,
     secondaryTitle,
-    income,
     graphType,
+    church,
   } = props
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
@@ -191,11 +209,16 @@ const ChurchGraph = (props: ChurchGraphProps) => {
 
   const primaryColor = PRIMARY_COLOR_BY_TYPE[graphType]
 
+  // At levels above Bacenta, individual "services" records are joint/combined services.
+  const isJointServiceLevel = !['bacenta'].includes(church)
+  const graphLabel =
+    graphType === 'services' && isJointServiceLevel
+      ? 'Joint Service'
+      : (GRAPH_TYPE_LABELS[graphType] ?? capitalise(graphType))
+
   const graphTitle = stat2
-    ? `${capitalise(graphType)} ${capitalise(stat1)} and ${capitalise(stat2)}`
-    : income
-    ? `${graphType} ${capitalise(stat1)} Graph`
-    : capitalise(stat1)
+    ? `${graphLabel} — Attendance & Income`
+    : graphLabel
 
   const handleBarClick = (data: any, statKey: string) => {
     if (!data?.id || data?.category?.includes('Aggregate')) return

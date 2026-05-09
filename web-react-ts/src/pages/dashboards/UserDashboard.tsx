@@ -867,6 +867,12 @@ const UserDashboard = () => {
             <button
               type="button"
               onClick={() => {
+                if (!selectedScope) return
+                clickCard({
+                  id: selectedScope.churchId,
+                  name: selectedScope.churchName,
+                  __typename: selectedScope.churchType,
+                })
                 setRecordDialogOpen(false)
                 navigate('/bacenta/record-service')
               }}
@@ -888,6 +894,12 @@ const UserDashboard = () => {
             <button
               type="button"
               onClick={() => {
+                if (!selectedScope) return
+                clickCard({
+                  id: selectedScope.churchId,
+                  name: selectedScope.churchName,
+                  __typename: selectedScope.churchType,
+                })
                 setRecordDialogOpen(false)
                 navigate('/services/bacenta/no-service')
               }}

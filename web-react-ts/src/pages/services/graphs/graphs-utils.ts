@@ -101,8 +101,9 @@ export const sortingFunction = (key: string, order = 'asc') => {
   }
 }
 
-const extractServiceDataWithDollars = (arr: any[]) =>
-  arr.map(
+const extractServiceDataWithDollars = (arr: any[] | undefined) => {
+  if (!arr || arr.length === 0) return []
+  return arr.map(
     ({
       id,
       attendance,
@@ -120,6 +121,7 @@ const extractServiceDataWithDollars = (arr: any[]) =>
       date: serviceDate?.date || date,
     })
   )
+}
 
 export type GraphTypes =
   | 'bussing'
