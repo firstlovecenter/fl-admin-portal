@@ -39,6 +39,8 @@ const PullToRefresh = ({
   const dragging = useRef(false)
   const pullDistanceRef = useRef(0)
   const mounted = useRef(true)
+  const onRefreshRef = useRef(onRefresh)
+  onRefreshRef.current = onRefresh
 
   pullDistanceRef.current = pullDistance
 
@@ -115,7 +117,7 @@ const PullToRefresh = ({
       setRefreshing(true)
       setPullDistance(PULL_THRESHOLD)
       try {
-        await onRefresh()
+        await onRefreshRef.current()
       } finally {
         if (mounted.current) {
           setRefreshing(false)
@@ -135,7 +137,7 @@ const PullToRefresh = ({
       el.removeEventListener('touchend', handleTouchEnd)
       el.removeEventListener('touchcancel', handleTouchEnd)
     }
-  }, [disabled, refreshing, onRefresh])
+  }, [disabled, refreshing])
 
   const indicatorVisible = pullDistance > 0 || refreshing
   const progress = Math.min(pullDistance / PULL_THRESHOLD, 1)

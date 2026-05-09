@@ -62,6 +62,35 @@ const useChurchLevel = (props: useChurchLevelProps) => {
         return props.councilRefetch
     }
   }
+
+  const refetch = async () => {
+    const fn = chooseRefetch()
+    if (!fn) return
+    const res = await fn()
+    switch (churchLevel) {
+      case 'Governorship':
+        setChurch(res.data?.governorships[0] ?? null)
+        break
+      case 'Council':
+        setChurch(res.data?.councils[0] ?? null)
+        break
+      case 'Stream':
+        setChurch(res.data?.streams[0] ?? null)
+        break
+      case 'Campus':
+        setChurch(res.data?.campuses[0] ?? null)
+        break
+      case 'Oversight':
+        setChurch(res.data?.oversights[0] ?? null)
+        break
+      case 'Denomination':
+        setChurch(res.data?.denominations[0] ?? null)
+        break
+      default:
+        break
+    }
+  }
+
   useEffect(() => {
     const whichQuery = async () => {
       switch (churchLevel) {
@@ -162,7 +191,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
     whichQuery()
   }, [setChurch])
 
-  return { church, subChurchLevel, loading, error, refetch: chooseRefetch() }
+  return { church, subChurchLevel, loading, error, refetch }
 }
 
 export default useChurchLevel

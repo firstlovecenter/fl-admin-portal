@@ -70,6 +70,35 @@ const useSontaLevel = (props: useSontaLevelProps) => {
         return props.councilRefetch
     }
   }
+
+  const refetch = async () => {
+    const fn = chooseRefetch()
+    if (!fn) return
+    const res = await fn()
+    switch (churchLevel) {
+      case 'Governorship':
+        setChurch(res.data?.governorships[0] ?? null)
+        break
+      case 'Council':
+        setChurch(res.data?.councils[0] ?? null)
+        break
+      case 'Stream':
+        setChurch(res.data?.streams[0] ?? null)
+        break
+      case 'Campus':
+        setChurch(res.data?.campuses[0] ?? null)
+        break
+      case 'Oversight':
+        setChurch(res.data?.oversights[0] ?? null)
+        break
+      case 'Denomination':
+        setChurch(res.data?.denominations[0] ?? null)
+        break
+      default:
+        break
+    }
+  }
+
   useEffect(() => {
     if (!currentChurch?.id || !churchLevel) {
       setLoading(false)
@@ -181,7 +210,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChurch?.id, churchLevel])
 
-  return { church, subChurchLevel, loading, error, refetch: chooseRefetch() }
+  return { church, subChurchLevel, loading, error, refetch }
 }
 
 export default useSontaLevel
