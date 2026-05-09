@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { DocumentNode } from '@apollo/client'
 import useInfiniteScroll from 'hooks/useInfiniteScroll'
-import MemberTable from './MemberTable'
+import MemberTable, { GridMember } from './MemberTable'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Button } from 'components/ui/button'
 import {
@@ -21,7 +22,39 @@ const INITIAL_PAGE_SIZE = 30
 const PAGE_SIZE = 30
 const SEARCH_DEBOUNCE_MS = 300
 
-const buildFilterVars = (filters) => ({
+type MemberFilters = {
+  gender?: string[]
+  maritalStatus?: string[]
+  leaderTitle?: string[]
+  leaderRank?: string[]
+  basonta?: string[]
+}
+
+type ChurchParent = {
+  members?: GridMember[]
+  memberCount?: number
+  name?: string
+  fullName?: string
+}
+
+type MembersGridProps = {
+  query: DocumentNode
+  parentId: string | undefined
+  parentTypename:
+    | 'Bacenta'
+    | 'Governorship'
+    | 'Council'
+    | 'Stream'
+    | 'Campus'
+    | 'Oversight'
+    | 'Denomination'
+    | 'Member'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pluckParent: (data: any) => ChurchParent | undefined
+  getHeading: (parent: ChurchParent | undefined) => React.ReactNode | null
+}
+
+const buildFilterVars = (filters: MemberFilters) => ({
   genders: filters.gender?.length ? filters.gender : null,
   maritalStatuses: filters.maritalStatus?.length ? filters.maritalStatus : null,
   leaderTitles: filters.leaderTitle?.length ? filters.leaderTitle : null,
@@ -29,32 +62,15 @@ const buildFilterVars = (filters) => ({
   leaderRanks: filters.leaderRank?.length ? filters.leaderRank : null,
 })
 
-/**
- * @typedef {{
- *   id: string,
- *   firstName?: string,
- *   lastName?: string,
- *   pictureUrl?: string,
- *   bacenta?: { name?: string },
- *   basonta?: { name?: string },
- * }} GridMember
- *
- * @param {{
- *   query: import('@apollo/client').DocumentNode,
- *   parentId: string | undefined,
- *   parentTypename: 'Bacenta' | 'Governorship' | 'Council' | 'Stream' | 'Campus' | 'Oversight' | 'Denomination' | 'Member',
- *   pluckParent: (data: any) => { members?: GridMember[], memberCount?: number } | undefined,
- *   getHeading: (parent: any) => React.ReactNode | null,
- * }} props
- */
 const MembersGrid = ({
   query,
   parentId,
   parentTypename,
   pluckParent,
   getHeading,
-}) => {
-  const { filters } = useContext(ChurchContext)
+}: MembersGridProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { filters } = useContext(ChurchContext) as { filters: MemberFilters }
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
@@ -64,7 +80,7 @@ const MembersGrid = ({
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)')
-    const handler = (e) => setIsDesktop(e.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
@@ -94,7 +110,7 @@ const MembersGrid = ({
     fetchingMore,
     hasMore,
     sentinelRef,
-  } = useInfiniteScroll({
+  } = useInfiniteScroll<unknown, GridMember>({
     query,
     variables,
     initialPageSize: INITIAL_PAGE_SIZE,
@@ -110,14 +126,14 @@ const MembersGrid = ({
   const heading = getHeading(pluckParent(data))
 
   const hasActiveFilters =
-    filters.gender?.length > 0 ||
-    filters.maritalStatus?.length > 0 ||
-    filters.leaderTitle?.length > 0 ||
-    filters.leaderRank?.length > 0 ||
-    filters.basonta?.length > 0
+    (filters.gender?.length ?? 0) > 0 ||
+    (filters.maritalStatus?.length ?? 0) > 0 ||
+    (filters.leaderTitle?.length ?? 0) > 0 ||
+    (filters.leaderRank?.length ?? 0) > 0 ||
+    (filters.basonta?.length ?? 0) > 0
 
   const isFiltering = Boolean(search) || hasActiveFilters
-  const displayCount = isFiltering ? items.length : totalCount ?? items.length
+  const displayCount = isFiltering ? items.length : (totalCount ?? items.length)
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
@@ -157,10 +173,7 @@ const MembersGrid = ({
 
         <div className="flex items-center justify-between gap-2 px-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
           <RoleView
-            roles={[
-              ...permitLeaderAdmin('Bacenta'),
-              ...permitLeaderAdmin('Hub'),
-            ]}
+            roles={[...permitLeaderAdmin('Bacenta')]}
           >
             <Link to="/member/addmember">
               <Button
@@ -194,14 +207,12 @@ const MembersGrid = ({
       </div>
 
       <div className="max-w-2xl md:max-w-7xl mx-auto">
-        <MemberTable data={items} error={error} loading={loading} />
-        {fetchingMore && (
-          <div className="space-y-3 px-4 py-3">
-            <Skeleton className="h-12 w-full rounded" />
-            <Skeleton className="h-12 w-full rounded" />
-            <Skeleton className="h-12 w-full rounded" />
-          </div>
-        )}
+        <MemberTable
+          data={items}
+          error={error}
+          loading={loading}
+          fetchingMore={fetchingMore}
+        />
         {hasMore && <div ref={sentinelRef} aria-hidden className="h-1" />}
       </div>
 

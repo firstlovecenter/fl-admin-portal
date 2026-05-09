@@ -1,17 +1,33 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ApolloError } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Skeleton } from 'components/ui/skeleton'
 import { ChevronRight } from 'lucide-react'
 
-const getInitials = (soul) =>
+export type GridMember = {
+  id: string
+  firstName?: string
+  lastName?: string
+  pictureUrl?: string
+  bacenta?: { name?: string }
+  basonta?: { name?: string }
+}
+
+const getInitials = (soul: GridMember) =>
   `${soul.firstName?.[0] ?? ''}${soul.lastName?.[0] ?? ''}`.toUpperCase()
 
-const getSubtitle = (soul) =>
+const getSubtitle = (soul: GridMember) =>
   [soul.bacenta?.name, soul.basonta?.name].filter(Boolean).join(' · ')
 
-const MemberRow = ({ soul, onClick }) => {
+const MemberRow = ({
+  soul,
+  onClick,
+}: {
+  soul: GridMember
+  onClick: (soul: GridMember) => void
+}) => {
   const subtitle = getSubtitle(soul)
   return (
     <button
@@ -41,7 +57,13 @@ const MemberRow = ({ soul, onClick }) => {
   )
 }
 
-const MemberCard = ({ soul, onClick }) => {
+const MemberCard = ({
+  soul,
+  onClick,
+}: {
+  soul: GridMember
+  onClick: (soul: GridMember) => void
+}) => {
   const subtitle = getSubtitle(soul)
   return (
     <button
@@ -72,41 +94,53 @@ const MemberCard = ({ soul, onClick }) => {
   )
 }
 
-const MemberTable = ({ data, error, loading }) => {
-  const { clickCard } = useContext(ChurchContext)
+const RowSkeleton = () => (
+  <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+    <Skeleton className="size-10 rounded-full shrink-0" />
+    <div className="flex-1 space-y-2">
+      <Skeleton className="h-3.5 w-36 rounded" />
+      <Skeleton className="h-3 w-24 rounded" />
+    </div>
+  </div>
+)
+
+const CardSkeleton = () => (
+  <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 min-h-44">
+    <Skeleton className="size-16 rounded-full" />
+    <div className="flex w-full flex-col items-center gap-1.5">
+      <Skeleton className="h-3.5 w-28 rounded" />
+      <Skeleton className="h-3 w-20 rounded" />
+    </div>
+  </div>
+)
+
+type MemberTableProps = {
+  data: GridMember[]
+  error?: ApolloError
+  loading: boolean
+  fetchingMore?: boolean
+}
+
+const MemberTable = ({
+  data,
+  error,
+  loading,
+  fetchingMore = false,
+}: MemberTableProps) => {
+  const { clickCard } = useContext(ChurchContext) as { clickCard: (card: GridMember) => void }
   const navigate = useNavigate()
 
   if (loading || !data) {
     return (
       <>
-        {/* Mobile skeleton list */}
         <div className="md:hidden">
           {Array.from({ length: 8 }, (_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 px-4 py-3 border-b border-border"
-            >
-              <Skeleton className="size-10 rounded-full shrink-0" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-3.5 w-36 rounded" />
-                <Skeleton className="h-3 w-24 rounded" />
-              </div>
-            </div>
+            <RowSkeleton key={i} />
           ))}
         </div>
-        {/* Desktop skeleton grid — mirrors MemberCard */}
         <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 px-4 py-4">
           {Array.from({ length: 12 }, (_, i) => (
-            <div
-              key={i}
-              className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 min-h-44"
-            >
-              <Skeleton className="size-16 rounded-full" />
-              <div className="flex w-full flex-col items-center gap-1.5">
-                <Skeleton className="h-3.5 w-28 rounded" />
-                <Skeleton className="h-3 w-20 rounded" />
-              </div>
-            </div>
+            <CardSkeleton key={i} />
           ))}
         </div>
       </>
@@ -121,7 +155,7 @@ const MemberTable = ({ data, error, loading }) => {
     )
   }
 
-  if (!data.length) {
+  if (!data.length && !fetchingMore) {
     return (
       <p className="px-4 py-20 text-center text-sm text-muted-foreground">
         No members match your search
@@ -129,25 +163,26 @@ const MemberTable = ({ data, error, loading }) => {
     )
   }
 
-  const handleClick = (soul) => {
+  const handleClick = (soul: GridMember) => {
     clickCard(soul)
     navigate('/member/displaydetails')
   }
 
   return (
     <>
-      {/* Mobile: list */}
       <div className="md:hidden">
         {data.map((soul) => (
           <MemberRow key={soul.id} soul={soul} onClick={handleClick} />
         ))}
+        {fetchingMore &&
+          Array.from({ length: 4 }, (_, i) => <RowSkeleton key={`sk-${i}`} />)}
       </div>
-
-      {/* Tablet + Desktop: grid */}
       <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 px-4 py-4">
         {data.map((soul) => (
           <MemberCard key={soul.id} soul={soul} onClick={handleClick} />
         ))}
+        {fetchingMore &&
+          Array.from({ length: 4 }, (_, i) => <CardSkeleton key={`sk-${i}`} />)}
       </div>
     </>
   )
