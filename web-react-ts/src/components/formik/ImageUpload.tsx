@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from 'formik'
 import { useMutation } from '@apollo/client'
-import { Camera, Loader2, RefreshCw } from 'lucide-react'
+import { Camera, Loader2, RefreshCw, UploadCloud } from 'lucide-react'
 import TextError from './TextError/TextError'
 import { FormikComponentProps } from './formik-types'
 import { uploadToS3 } from 'utils/s3Upload'
@@ -12,6 +12,8 @@ interface ImageUploadProps extends FormikComponentProps {
   initialValue?: string
   setFieldValue: (field: string, value: string) => void
 }
+
+const ACCEPTED_TYPES = ['image/png', 'image/webp', 'image/jpeg']
 
 const ImageUpload = (props: ImageUploadProps) => {
   const {
@@ -43,14 +45,19 @@ const ImageUpload = (props: ImageUploadProps) => {
   const [loading, setLoading] = useState(false)
   const [image, setImage] = useState('')
   const [uploadError, setUploadError] = useState('')
+  const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const dragCounter = useRef(0)
 
   const [generatePresignedUrl] = useMutation(GENERATE_PRESIGNED_URL)
 
-  const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  useEffect(() => {
+    return () => {
+      dragCounter.current = 0
+    }
+  }, [])
 
+  const uploadFile = async (file: File) => {
     try {
       setLoading(true)
       setUploadError('')
@@ -58,14 +65,58 @@ const ImageUpload = (props: ImageUploadProps) => {
       setImage(imageUrl)
       setFieldValue(name, imageUrl)
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Upload failed:', err)
       setUploadError(
         err instanceof Error ? err.message : 'Failed to upload image'
       )
     } finally {
       setLoading(false)
     }
+  }
+
+  const uploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) uploadFile(file)
+  }
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current += 1
+    if (e.dataTransfer.types.includes('Files')) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current = Math.max(0, dragCounter.current - 1)
+    if (dragCounter.current === 0) setIsDragging(false)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    dragCounter.current = 0
+
+    if (loading) return
+
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setUploadError('Only JPG, PNG, or WebP images are accepted')
+      return
+    }
+
+    uploadFile(file)
   }
 
   const handleZoneActivate = () => inputRef.current?.click()
@@ -99,11 +150,17 @@ const ImageUpload = (props: ImageUploadProps) => {
         aria-label={!label ? (placeholder ?? 'Upload a photo') : undefined}
         onClick={handleZoneActivate}
         onKeyDown={handleZoneKeyDown}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         className={cn(
           'group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed transition-colors',
-          hasImage || loading
-            ? 'border-border'
-            : 'border-border hover:border-primary hover:bg-muted/30 active:bg-muted/50',
+          isDragging
+            ? 'border-primary bg-primary/10'
+            : hasImage || loading
+              ? 'border-border'
+              : 'border-border hover:border-primary hover:bg-muted/30 active:bg-muted/50',
           hasImage && !loading ? 'h-60' : 'min-h-[240px]'
         )}
       >
@@ -125,7 +182,16 @@ const ImageUpload = (props: ImageUploadProps) => {
           </div>
         )}
 
-        {hasImage && !loading && (
+        {isDragging && !loading && (
+          <div className="flex flex-col items-center gap-3 p-8 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-primary/20">
+              <UploadCloud className="size-7 text-primary" />
+            </div>
+            <p className="text-sm font-semibold text-primary">Drop to upload</p>
+          </div>
+        )}
+
+        {hasImage && !loading && !isDragging && (
           <>
             <img
               src={previewSrc}
@@ -140,14 +206,14 @@ const ImageUpload = (props: ImageUploadProps) => {
           </>
         )}
 
-        {!hasImage && !loading && (
+        {!hasImage && !loading && !isDragging && (
           <div className="flex flex-col items-center gap-3 p-8 text-center">
             <div className="flex size-14 items-center justify-center rounded-full bg-muted">
               <Camera className="size-7 text-muted-foreground" />
             </div>
             <div className="space-y-1">
               <p className="text-sm font-semibold text-foreground">
-                {placeholder ?? 'Upload a photo'}
+                {placeholder ?? 'Drag & drop or tap to upload'}
               </p>
               <p className="text-xs text-muted-foreground">JPG, PNG or WebP</p>
             </div>
