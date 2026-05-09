@@ -7,6 +7,8 @@ import {
   ChevronRight,
   ClipboardCheck,
   Palmtree,
+  PencilLine,
+  XCircle,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -26,6 +28,13 @@ import { Skeleton } from 'components/ui/skeleton'
 import { Badge } from 'components/ui/badge'
 import { Separator } from 'components/ui/separator'
 import { cn } from 'components/lib/utils'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
 import {
   GraphTypes,
   getMonthlyStatAverage,
@@ -58,36 +67,9 @@ const GREETINGS: Array<(name: string) => string> = [
 interface QuickAction {
   label: string
   icon: TablerIcon
-  to: string
+  onPress: () => void
   accent: string
 }
-
-const quickActions: QuickAction[] = [
-  {
-    label: 'Record service',
-    icon: IconClipboardCheck,
-    to: '/services/church-list',
-    accent: 'hsl(var(--arrivals))',
-  },
-  {
-    label: 'Fill bussing',
-    icon: IconBusStop,
-    to: '/arrivals',
-    accent: 'hsl(var(--brand))',
-  },
-  {
-    label: 'Add member',
-    icon: IconUsersPlus,
-    to: '/directory/members/addmember',
-    accent: 'hsl(var(--members))',
-  },
-  {
-    label: 'Bank service',
-    icon: IconBuildingBank,
-    to: '/self-banking',
-    accent: 'hsl(var(--banking))',
-  },
-]
 
 const formatCurrency = (amount: number, currencyCode?: unknown) => {
   const normalizedCurrency =
@@ -191,6 +173,50 @@ const UserDashboard = () => {
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
   const [trendMode, setTrendMode] = useState<'weekday' | 'bussing'>('bussing')
+  const [recordDialogOpen, setRecordDialogOpen] = useState(false)
+  const routeSlug = (
+    selectedScope?.churchType ?? roleChurchOptions[0]?.churchType
+  )?.toLowerCase()
+
+  const quickActions: QuickAction[] = [
+    {
+      label: 'Record service',
+      icon: IconClipboardCheck,
+      accent: 'hsl(var(--arrivals))',
+      onPress: () => {
+        if (!selectedScope) return
+        if (routeSlug === 'bacenta') {
+          setRecordDialogOpen(true)
+        } else {
+          clickCard({
+            id: selectedScope.churchId,
+            name: selectedScope.churchName,
+            __typename: selectedScope.churchType,
+          })
+          navigate(`/${routeSlug}/record-service`)
+        }
+      },
+    },
+    {
+      label: 'Fill bussing',
+      icon: IconBusStop,
+      accent: 'hsl(var(--brand))',
+      onPress: () => navigate('/arrivals'),
+    },
+    {
+      label: 'Add member',
+      icon: IconUsersPlus,
+      accent: 'hsl(var(--members))',
+      onPress: () => navigate('/member/addmember'),
+    },
+    {
+      label: 'Bank service',
+      icon: IconBuildingBank,
+      accent: 'hsl(var(--banking))',
+      onPress: () =>
+        navigate(`/services/${routeSlug ?? 'bacenta'}/self-banking`),
+    },
+  ]
 
   const { assessmentChurch } = useComponentQuery(
     selectedScope
@@ -623,7 +649,7 @@ const UserDashboard = () => {
                     }
                   ).governorship?.council?.stream?.meetingDay
                 }
-                onRecordService={() => navigate('/services/church-list')}
+                onRecordService={() => setRecordDialogOpen(true)}
                 onViewService={handleViewCurrentWeekService}
                 canViewService={canViewCurrentWeekService}
                 onRecordBussing={() => navigate('/arrivals')}
@@ -735,7 +761,7 @@ const UserDashboard = () => {
                     <button
                       key={action.label}
                       type="button"
-                      onClick={() => navigate(action.to)}
+                      onClick={action.onPress}
                       className={cn(
                         'group flex min-h-11 items-center gap-3 text-left transition-colors',
                         // mobile: card tile
@@ -828,6 +854,61 @@ const UserDashboard = () => {
           </motion.aside>
         </motion.div>
       </motion.div>
+
+      <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Record this week&apos;s service</DialogTitle>
+            <DialogDescription>
+              Did the service take place this week?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setRecordDialogOpen(false)
+                navigate('/bacenta/record-service')
+              }}
+              className="group flex min-h-[64px] w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99]"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-members/10 text-members">
+                <PencilLine className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  Record Service
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  We met this week — fill the service form
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRecordDialogOpen(false)
+                navigate('/services/bacenta/no-service')
+              }}
+              className="group flex min-h-[64px] w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99]"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                <XCircle className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  I Cancelled My Service
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  No service this week — give a reason
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
