@@ -38,18 +38,10 @@ const PullToRefresh = ({
   const touchId = useRef<number | null>(null)
   const dragging = useRef(false)
   const pullDistanceRef = useRef(0)
-  const mounted = useRef(true)
   const onRefreshRef = useRef(onRefresh)
   onRefreshRef.current = onRefresh
 
   pullDistanceRef.current = pullDistance
-
-  useEffect(
-    () => () => {
-      mounted.current = false
-    },
-    []
-  )
 
   useEffect(() => {
     const el = containerRef.current
@@ -119,10 +111,8 @@ const PullToRefresh = ({
       try {
         await onRefreshRef.current()
       } finally {
-        if (mounted.current) {
-          setRefreshing(false)
-          setPullDistance(0)
-        }
+        setRefreshing(false)
+        setPullDistance(0)
       }
     }
 

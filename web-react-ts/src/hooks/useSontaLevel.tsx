@@ -74,28 +74,27 @@ const useSontaLevel = (props: useSontaLevelProps) => {
   const refetch = async () => {
     const fn = chooseRefetch()
     if (!fn) return
-    const res = await fn()
-    switch (churchLevel) {
-      case 'Governorship':
-        setChurch(res.data?.governorships[0] ?? null)
-        break
-      case 'Council':
-        setChurch(res.data?.councils[0] ?? null)
-        break
-      case 'Stream':
-        setChurch(res.data?.streams[0] ?? null)
-        break
-      case 'Campus':
-        setChurch(res.data?.campuses[0] ?? null)
-        break
-      case 'Oversight':
-        setChurch(res.data?.oversights[0] ?? null)
-        break
-      case 'Denomination':
-        setChurch(res.data?.denominations[0] ?? null)
-        break
-      default:
-        break
+    setLoading(true)
+    try {
+      const res = await fn()
+      if (res.error) setError(res.error)
+      const pick = (key: string) => {
+        const value = res.data?.[key]?.[0]
+        if (value != null) setChurch(value)
+      }
+      switch (churchLevel) {
+        case 'Governorship': pick('governorships'); break
+        case 'Council': pick('councils'); break
+        case 'Stream': pick('streams'); break
+        case 'Campus': pick('campuses'); break
+        case 'Oversight': pick('oversights'); break
+        case 'Denomination': pick('denominations'); break
+        default: break
+      }
+    } catch (e) {
+      if (e instanceof ApolloError) setError(e)
+    } finally {
+      setLoading(false)
     }
   }
 
