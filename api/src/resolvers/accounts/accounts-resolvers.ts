@@ -76,8 +76,9 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
+    isAuth(['arrivalsAdminCampus', 'adminCampus'], context.jwt.roles)
+    await assertChurchScope(context, args.councilId)
     const session = context.executionContext.session()
-    // isAuth(['arrivalsAdminCampus'], context.jwt.roles)
 
     try {
       const councilBalancesResult = await session.run(getCouncilBalances, args)
