@@ -9,7 +9,10 @@ import {
   rearrangeCypherObject,
   throwToSentry,
 } from '../utils/utils'
-import { assertChurchScope } from '../utils/scope-utils'
+import {
+  assertChurchScope,
+  assertScopeViaVehicleRecord,
+} from '../utils/scope-utils'
 import {
   permitAdmin,
   permitAdminArrivals,
@@ -473,6 +476,8 @@ export const arrivalsMutation = {
     args: { vehicleRecordId: string },
     context: Context
   ) => {
+    isAuth(permitArrivalsHelpers('Stream'), context.jwt.roles)
+    await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
     type responseType = {
@@ -615,6 +620,7 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     isAuth(permitArrivalsHelpers('Stream'), context.jwt.roles)
+    await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
     try {

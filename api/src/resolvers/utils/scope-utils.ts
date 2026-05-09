@@ -79,6 +79,19 @@ const ASSERT_VIA_TRANSACTION_CYPHER = `
   RETURN transaction.id AS id
 `
 
+const ASSERT_VIA_VEHICLE_RECORD_CYPHER = `
+  MATCH (record:VehicleRecord {id: $vehicleRecordId})
+        <-[:INCLUDES_RECORD]-(:BussingRecord)
+        <-[:HAS_BUSSING]-(:ServiceLog)
+        <-[:HAS_HISTORY]-(church)
+  WHERE any(l IN labels(church) WHERE l IN ${CHURCH_LEVEL_LABELS})
+    AND EXISTS {
+      MATCH (church)<-[:HAS*0..6]-(scoped)
+            <-[:${SERVANT_EDGES}]-(:Active:Member {id: $userId})
+    }
+  RETURN record.id AS id
+`
+
 const forbidden = (message: string) => {
   const error = new Error(message) as Error & {
     extensions?: { code: string; severity: string }
@@ -173,5 +186,26 @@ export const assertScopeViaTransaction = async (
     ASSERT_VIA_TRANSACTION_CYPHER,
     { transactionId },
     { transactionId }
+  )
+}
+
+// Variant for resolvers anchored on a VehicleRecord id (SetVehicleSupport,
+// SendVehicleSupport). Walks VehicleRecord <- INCLUDES_RECORD - BussingRecord
+// <- HAS_BUSSING - ServiceLog <- HAS_HISTORY - Bacenta, then applies the same
+// scope check.
+export const assertScopeViaVehicleRecord = async (
+  context: ScopeContext,
+  vehicleRecordId: string | undefined | null
+): Promise<void> => {
+  if (!vehicleRecordId) {
+    throw forbidden(
+      'assertScopeViaVehicleRecord: vehicleRecordId is required to verify access scope.'
+    )
+  }
+  await runAssert(
+    context,
+    ASSERT_VIA_VEHICLE_RECORD_CYPHER,
+    { vehicleRecordId },
+    { vehicleRecordId }
   )
 }
