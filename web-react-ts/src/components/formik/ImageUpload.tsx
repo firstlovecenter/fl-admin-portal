@@ -169,7 +169,7 @@ const ImageUpload = (props: ImageUploadProps) => {
           id={name}
           name={name}
           type="file"
-          accept="image/png, image/webp, image/jpg, image/jpeg"
+          accept="image/png, image/webp, image/jpeg"
           className="sr-only"
           onChange={uploadImage}
           {...inputRest}
