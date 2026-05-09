@@ -129,7 +129,6 @@ const CreateMember = () => {
   return (
     <>
       <MemberForm
-        title="Register a New Member"
         initialValues={initialValues}
         loading={false}
         onSubmit={onSubmit}

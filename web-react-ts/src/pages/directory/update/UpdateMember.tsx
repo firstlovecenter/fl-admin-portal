@@ -123,7 +123,6 @@ const UpdateMember = () => {
 
   return (
     <MemberForm
-      title="Edit Member Details"
       initialValues={initialValues}
       onSubmit={onSubmit}
       loading={memberLoading}

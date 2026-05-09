@@ -3,7 +3,6 @@ import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext } from 'react'
 import {
-  ArrowLeft,
   BadgePlus,
   Loader2,
   Mail,
@@ -13,7 +12,8 @@ import {
   Trash2,
   User,
 } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
+import { BackButton } from 'components/shell/BackButton'
 import {
   GENDER_OPTIONS,
   isAuthorised,
@@ -50,7 +50,6 @@ type MemberFormProps = {
     values: CreateMemberFormOptions,
     onSubmitProps: FormikHelpers<CreateMemberFormOptions>
   ) => void
-  title: string
   loading: boolean
   update?: boolean
 }
@@ -91,11 +90,15 @@ const FieldMessage = ({ name }: { name: string }) => (
 
 const FormSkeleton = () => (
   <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-    <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
-      <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 h-[68px] flex items-center">
-        <Skeleton className="h-6 w-48" />
+    <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-6">
+        <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
+        <div className="min-w-0 space-y-1">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-7 w-52" />
+        </div>
       </div>
-    </div>
+    </header>
     <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-8">
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[300px_1fr]">
         <Skeleton className="h-80 rounded-xl" />
@@ -114,7 +117,6 @@ const FormSkeleton = () => (
 const MemberForm = ({
   initialValues,
   onSubmit,
-  title,
   loading,
   update,
 }: MemberFormProps) => {
@@ -180,22 +182,28 @@ const MemberForm = ({
       {(formik) => (
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           {/* Sticky top action bar */}
-          <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
-            <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-11 w-11 -ml-2 shrink-0"
-                  onClick={() => navigate(-1)}
-                  aria-label="Go back"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <h1 className="text-base lg:text-lg font-semibold text-foreground truncate">
-                  {title}
-                </h1>
+          <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 lg:px-6">
+              <div className="flex min-w-0 items-center gap-1">
+                <BackButton className="-ml-2 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Directory
+                  </p>
+                  <h1 className="truncate text-2xl font-bold tracking-tight text-foreground">
+                    {update ? (
+                      <>
+                        Edit{' '}
+                        <span className="text-members">Member</span>
+                      </>
+                    ) : (
+                      <>
+                        Register a New{' '}
+                        <span className="text-members">Member</span>
+                      </>
+                    )}
+                  </h1>
+                </div>
               </div>
 
               {update && (
@@ -225,7 +233,7 @@ const MemberForm = ({
                 </div>
               )}
             </div>
-          </div>
+          </header>
 
           {/* Body */}
           <Form>
