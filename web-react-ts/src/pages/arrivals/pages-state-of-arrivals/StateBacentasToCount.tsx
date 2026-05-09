@@ -269,6 +269,8 @@ const StateBacentasToCount = () => {
                   {bacentasWithVisibleRecords.length > 0 && (
                     <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
                       {bacentasWithVisibleRecords.map(({ bacenta, records }) => (
+                        // onClickCapture seeds bacenta + bussing context before
+                        // VehicleButton's click navigates to /bacenta/vehicle-details.
                         <Card
                           key={bacenta.id}
                           onClickCapture={() => {

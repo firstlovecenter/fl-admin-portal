@@ -120,7 +120,7 @@ const BacentasHaveArrived = () => {
                     )}
                   </div>
 
-                  {loading && !church && <ListSkeleton />}
+                  {loading && !church && <BacentaListSkeleton />}
 
                   {isEmpty && (
                     <Card className="border-warning/40 bg-warning/5">
@@ -136,7 +136,7 @@ const BacentasHaveArrived = () => {
                     </Card>
                   )}
 
-                  {!isEmpty && bacentas.length > 0 && (
+                  {!isEmpty && (
                     <>
                       <div className="md:hidden space-y-3">
                         {bacentas.map((bacenta, i) => (
@@ -147,7 +147,7 @@ const BacentasHaveArrived = () => {
                             contact
                             onClick={() => onBacentaClick(bacenta)}
                           >
-                            <span className="text-xs font-semibold text-success">
+                            <span className="text-xs font-semibold text-success tabular-nums">
                               Attendance:{' '}
                               {bacenta.bussingThisWeek?.attendance ?? 0}
                             </span>
