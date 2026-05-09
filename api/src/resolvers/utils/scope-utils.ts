@@ -69,6 +69,16 @@ const ASSERT_VIA_SERVICE_RECORD_CYPHER = `
   RETURN record.id AS id
 `
 
+const ASSERT_VIA_TRANSACTION_CYPHER = `
+  MATCH (transaction:AccountTransaction {id: $transactionId})
+        <-[:HAS_TRANSACTION]-(church:Council)
+  WHERE EXISTS {
+    MATCH (church)<-[:HAS*0..6]-(scoped)
+          <-[:${SERVANT_EDGES}]-(:Active:Member {id: $userId})
+  }
+  RETURN transaction.id AS id
+`
+
 const forbidden = (message: string) => {
   const error = new Error(message) as Error & {
     extensions?: { code: string; severity: string }
@@ -143,5 +153,25 @@ export const assertScopeViaServiceRecord = async (
     ASSERT_VIA_SERVICE_RECORD_CYPHER,
     { recordId: serviceRecordId },
     { serviceRecordId }
+  )
+}
+
+// Variant for resolvers anchored on an AccountTransaction id (ApproveExpense,
+// DeclineExpense). Walks AccountTransaction <- HAS_TRANSACTION - Council, then
+// applies the same scope check.
+export const assertScopeViaTransaction = async (
+  context: ScopeContext,
+  transactionId: string | undefined | null
+): Promise<void> => {
+  if (!transactionId) {
+    throw forbidden(
+      'assertScopeViaTransaction: transactionId is required to verify access scope.'
+    )
+  }
+  await runAssert(
+    context,
+    ASSERT_VIA_TRANSACTION_CYPHER,
+    { transactionId },
+    { transactionId }
   )
 }
