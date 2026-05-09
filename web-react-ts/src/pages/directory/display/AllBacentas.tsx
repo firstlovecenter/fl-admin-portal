@@ -211,7 +211,7 @@ const DisplayAllBacentas = () => {
                       </Avatar>
                       <div className="min-w-0">
                         <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                          Constituency Overseer
+                          Governor
                         </p>
                         <p className="truncate text-sm font-semibold text-foreground">
                           {governorship.leader.fullName ??

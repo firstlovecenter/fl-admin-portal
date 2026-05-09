@@ -13,6 +13,7 @@ import PullToRefresh from 'components/base-component/PullToRefresh'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
 import { capitalise, plural } from 'global-utils'
+import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { ChurchLevel } from 'global-types'
@@ -107,6 +108,8 @@ const TileGrid = ({ tiles, loading }: { tiles: Tile[]; loading: boolean }) => {
 const DefaultersDashboard = () => {
   const { currentUser } = useContext(MemberContext)
   const { selectedScope } = useChurchRoleScope()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { clickCard } = useContext(ChurchContext) as any
   const navigate = useNavigate()
   const [governorshipDefaulters, { refetch: governorshipRefetch }] =
     useLazyQuery(GOVERNORSHIP_DEFAULTERS)
@@ -335,6 +338,17 @@ const DefaultersDashboard = () => {
     ? safeNumber(church?.activeBacentaCount)
     : safeNumber(church?.activeStreamCount)
 
+  // /bacenta/displayall reads governorshipId from ChurchContext;
+  // /stream/displayall reads campusId. Only wire the click when the
+  // current level matches a destination that exists.
+  const activeUnitLink: string | null = summaryUsesBacenta
+    ? level === 'Governorship'
+      ? '/bacenta/displayall'
+      : null
+    : level === 'Campus'
+    ? '/stream/displayall'
+    : null
+
   const subChurchAggregate = useMemo<Tile | null>(() => {
     if (!subChurch || !church) return null
     const countKey = `${subChurch.toLowerCase()}Count` as const
@@ -377,14 +391,38 @@ const DefaultersDashboard = () => {
             </header>
 
             <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <StatCard
-                compact
-                label={activeUnitLabel}
-                value={activeUnitValue.toLocaleString('en-GH')}
-                icon={Users}
-                accent="members"
-                loading={!church}
-              />
+              {activeUnitLink ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!church) return
+                    clickCard(church)
+                    navigate(activeUnitLink)
+                  }}
+                  disabled={!church}
+                  aria-label={`View ${activeUnitLabel.toLowerCase()} list`}
+                  className="block h-full rounded-xl text-left outline-none transition-transform hover:scale-[1.01] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99] disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  <StatCard
+                    compact
+                    label={activeUnitLabel}
+                    value={activeUnitValue.toLocaleString('en-GH')}
+                    icon={Users}
+                    accent="members"
+                    hint="Tap to view list"
+                    loading={!church}
+                  />
+                </button>
+              ) : (
+                <StatCard
+                  compact
+                  label={activeUnitLabel}
+                  value={activeUnitValue.toLocaleString('en-GH')}
+                  icon={Users}
+                  accent="members"
+                  loading={!church}
+                />
+              )}
               <StatCard
                 compact
                 label="Services Filed"
