@@ -8,7 +8,6 @@ import {
   AlertOctagon,
   AlertTriangle,
   BusFront,
-  Calendar,
   CheckCircle2,
   Loader2,
   Megaphone,
@@ -81,7 +80,7 @@ const POLL_SECONDS = Math.max(1, Math.round(SHORT_POLL_INTERVAL / 1000))
 
 const GovernorshipDashboard = () => {
   const navigate = useNavigate()
-  const { arrivalDate, setArrivalDate, governorshipId } =
+  const { arrivalDate, governorshipId } =
     useContext(ChurchContext)
   const [adminDialogOpen, setAdminDialogOpen] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
@@ -206,7 +205,6 @@ const GovernorshipDashboard = () => {
       <ApolloWrapper data={data} loading={loading} error={error}>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            <ArrivalsHeader level="Governorship" churchId={governorshipId} />
             {/* ── Header ── */}
             <header className="mb-6 flex flex-col gap-4 lg:mb-8 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-2">
@@ -229,24 +227,6 @@ const GovernorshipDashboard = () => {
 
               {/* Action row */}
               <div className="flex flex-wrap items-center gap-2">
-                <label
-                  htmlFor="arrivalDate"
-                  className="flex h-11 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-xs focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30"
-                >
-                  <Calendar
-                    className="size-4 text-muted-foreground"
-                    aria-hidden
-                  />
-                  <input
-                    id="arrivalDate"
-                    type="date"
-                    value={effectiveDate}
-                    onChange={(e) => setArrivalDate(e.target.value)}
-                    className="bg-transparent text-sm text-foreground tabular-nums outline-none"
-                    aria-label="Arrivals date"
-                  />
-                </label>
-
                 <RoleView
                   roles={[
                     ...permitAdmin('Governorship'),
@@ -323,6 +303,14 @@ const GovernorshipDashboard = () => {
                   </Card>
                 </section>
 
+                {/* Date selector + download (mobile placement) */}
+                <div className="lg:hidden">
+                  <ArrivalsHeader
+                    level="Governorship"
+                    churchId={governorshipId}
+                  />
+                </div>
+
                 {/* Bacenta status grid */}
                 <section className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -347,9 +335,16 @@ const GovernorshipDashboard = () => {
                 </section>
               </div>
 
-              {/* RIGHT — live arrivals */}
-              <aside className="space-y-3 lg:sticky lg:top-6">
-                <SectionLabel>Live Arrivals</SectionLabel>
+              {/* RIGHT — date picker + live arrivals */}
+              <aside className="space-y-6 lg:sticky lg:top-6">
+                <div className="hidden lg:block">
+                  <ArrivalsHeader
+                    level="Governorship"
+                    churchId={governorshipId}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <SectionLabel>Live Arrivals</SectionLabel>
                 <Card className="overflow-hidden">
                   <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                     <div className="flex items-center gap-2">
@@ -386,6 +381,7 @@ const GovernorshipDashboard = () => {
                     />
                   </div>
                 </Card>
+                </div>
               </aside>
             </div>
 

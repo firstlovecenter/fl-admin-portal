@@ -304,8 +304,6 @@ const CampusDashboard = () => {
                 </RoleView>
               </div>
 
-              {/* Date selector + download button */}
-              <ArrivalsHeader level="Campus" churchId={campusId} />
             </div>
 
             {/* ── 2-column grid ── */}
@@ -352,6 +350,11 @@ const CampusDashboard = () => {
                     }}
                   />
                 </section>
+
+                {/* Date selector + download (mobile placement) */}
+                <div className="lg:hidden">
+                  <ArrivalsHeader level="Campus" churchId={campusId} />
+                </div>
 
                 {/* Bacenta status grid */}
                 <section className="space-y-3">
@@ -422,8 +425,12 @@ const CampusDashboard = () => {
               </div>
 
               {/* RIGHT — live arrivals */}
-              <aside className="space-y-3 lg:sticky lg:top-6">
-                <SectionLabel>Live Arrivals</SectionLabel>
+              <aside className="space-y-6 lg:sticky lg:top-6">
+                <div className="hidden lg:block">
+                  <ArrivalsHeader level="Campus" churchId={campusId} />
+                </div>
+                <div className="space-y-3">
+                  <SectionLabel>Live Arrivals</SectionLabel>
                 <Card className="overflow-hidden">
                   <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                     <div className="flex items-center gap-2">
@@ -467,6 +474,7 @@ const CampusDashboard = () => {
                     />
                   </div>
                 </Card>
+                </div>
               </aside>
             </div>
 
