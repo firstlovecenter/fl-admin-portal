@@ -64,6 +64,12 @@ Rules that apply only to the React/Vite app. Cross-package rules are in the root
   `global-utils.ts`.
 - Mutations that change state which other components display should call
   `refetchQueries` or update the cache; bare mutations leave stale UI.
+- The API runs `@neo4j/graphql` **v7**. Every `where`, `sort`, `limit`, and
+  `offset` uses the v7 input shape. The full v6 → v7 cheat-sheet
+  (`{ eq: ... }`, flat pagination, list-form sort, nested `some/none/all`
+  list-relation filters, `NOT` block instead of `_NOT`, etc.) lives in
+  `api/kb/02-graphql-and-cypher.md` ("v7 input cheat-sheet"). Read it before
+  copying old patterns or hand-writing a query.
 
 ## Forms
 

@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const GOVERNORSHIP_ARRIVALS_DASHBOARD = gql`
   query governorshipArrivalsDashboard($id: ID!, $arrivalDate: String!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       council {
@@ -39,7 +39,7 @@ export const GOVERNORSHIP_ARRIVALS_DASHBOARD = gql`
 
 export const COUNCIL_ARRIVALS_DASHBOARD = gql`
   query councilArrivalsDashboard($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       stream {
@@ -81,7 +81,7 @@ export const COUNCIL_ARRIVALS_DASHBOARD = gql`
 
 export const STREAM_ARRIVALS_DASHBOARD = gql`
   query streamArrivalsDashboard($id: ID!, $arrivalDate: String!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       meetingDay {
@@ -124,7 +124,7 @@ export const CAMPUS_ARRIVALS_DASHBOARD = gql`
     $date: Date!
     $arrivalDate: String!
   ) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -154,7 +154,7 @@ export const CAMPUS_ARRIVALS_DASHBOARD = gql`
       vehicleAmountToBePaid(arrivalDate: $arrivalDate)
       vehicleAmountHasBeenPaid(arrivalDate: $arrivalDate)
     }
-    timeGraphs(where: { date: $date }) {
+    timeGraphs(where: { date: { eq: $date } }) {
       id
       date
       swell
@@ -164,7 +164,7 @@ export const CAMPUS_ARRIVALS_DASHBOARD = gql`
 
 export const CONFIRM_GOVERNORSHIP_ARRIVALS = gql`
   query confirmGovernorshipArrivals($id: ID!, $arrivalDate: String!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       stream_name
@@ -196,7 +196,7 @@ export const CONFIRM_GOVERNORSHIP_ARRIVALS = gql`
 
 export const CONFIRM_COUNCIL_ARRIVALS = gql`
   query confirmCouncilArrivals($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       stream_name
@@ -228,7 +228,7 @@ export const CONFIRM_COUNCIL_ARRIVALS = gql`
 
 export const CONFIRM_STREAM_ARRIVALS = gql`
   query confirmStreamArrivals($id: ID!, $arrivalDate: String!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       stream_name
@@ -260,7 +260,7 @@ export const CONFIRM_STREAM_ARRIVALS = gql`
 
 export const CONFIRM_CAMPUS_ARRIVALS = gql`
   query confirmGatheringArrivals($id: ID!, $arrivalDate: String!) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -292,7 +292,7 @@ export const CONFIRM_CAMPUS_ARRIVALS = gql`
 
 export const BACENTA_ARRIVALS = gql`
   query bacentaArrivals($id: ID!, $date: Date!, $bussingDate: String!) {
-    bacentas(where: { id: $id }, options: { limit: 1 }) {
+    bacentas(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       stream_name
@@ -331,7 +331,7 @@ export const BACENTA_ARRIVALS = gql`
         mobilisationPicture
       }
     }
-    timeGraphs(where: { date: $date }) {
+    timeGraphs(where: { date: { eq: $date } }) {
       id
       date
       swell
@@ -341,7 +341,7 @@ export const BACENTA_ARRIVALS = gql`
 
 export const GOVERNORSHIP_LEADER_ARRIVALS = gql`
   query governorshipLeaderArrivals($id: ID!) {
-    members(where: { id: $id }, options: { limit: 1 }) {
+    members(where: { id: { eq: $id } }, limit: 1) {
       id
       firstName
       lastName
@@ -360,7 +360,7 @@ export const GOVERNORSHIP_LEADER_ARRIVALS = gql`
 
 export const COUNCIL_LEADER_ARRIVALS = gql`
   query councilLeaderArrivals($id: ID!) {
-    members(where: { id: $id }, options: { limit: 1 }) {
+    members(where: { id: { eq: $id } }, limit: 1) {
       id
       firstName
       lastName
@@ -379,7 +379,7 @@ export const COUNCIL_LEADER_ARRIVALS = gql`
 
 export const STREAM_LEADER_ARRIVALS = gql`
   query streamLeaderArrivals($id: ID!) {
-    members(where: { id: $id }, options: { limit: 1 }) {
+    members(where: { id: { eq: $id } }, limit: 1) {
       id
       firstName
       lastName
@@ -398,7 +398,7 @@ export const STREAM_LEADER_ARRIVALS = gql`
 
 export const CAMPUS_LEADER_ARRIVALS = gql`
   query gatheringLeaderArrivals($id: ID!) {
-    members(where: { id: $id }, options: { limit: 1 }) {
+    members(where: { id: { eq: $id } }, limit: 1) {
       id
       firstName
       lastName
@@ -417,7 +417,7 @@ export const CAMPUS_LEADER_ARRIVALS = gql`
 
 export const DISPLAY_BUSSING_RECORDS = gql`
   query DisplayBussingRecords($bussingRecordId: ID!, $bacentaId: ID!) {
-    bussingRecords(where: { id: $bussingRecordId }) {
+    bussingRecords(where: { id: { eq: $bussingRecordId } }) {
       id
       createdAt
       created_by {
@@ -456,7 +456,7 @@ export const DISPLAY_BUSSING_RECORDS = gql`
         attendance
       }
     }
-    bacentas(where: { id: $bacentaId }) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
       name
       stream_name
@@ -470,7 +470,7 @@ export const DISPLAY_BUSSING_RECORDS = gql`
 `
 export const DISPLAY_VEHICLE_RECORDS = gql`
   query DisplayVehicleRecords($vehicleRecordId: ID!, $bacentaId: ID!) {
-    vehicleRecords(where: { id: $vehicleRecordId }) {
+    vehicleRecords(where: { id: { eq: $vehicleRecordId } }) {
       id
       createdAt
       created_by {
@@ -500,7 +500,7 @@ export const DISPLAY_VEHICLE_RECORDS = gql`
       transactionReference
       transactionStatus
     }
-    bacentas(where: { id: $bacentaId }) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
       name
       stream_name
@@ -521,7 +521,7 @@ export const DISPLAY_VEHICLE_RECORDS = gql`
 
 export const DISPLAY_VEHICLE_PAYMENT_RECORDS = gql`
   query DisplayVehiclePaymentRecords($vehicleRecordId: ID!, $bacentaId: ID!) {
-    vehicleRecords(where: { id: $vehicleRecordId }) {
+    vehicleRecords(where: { id: { eq: $vehicleRecordId } }) {
       id
       createdAt
       created_by {
@@ -549,7 +549,7 @@ export const DISPLAY_VEHICLE_PAYMENT_RECORDS = gql`
       paystackTransferCode
       transactionStatus
     }
-    bacentas(where: { id: $bacentaId }) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
       name
       leader {
@@ -588,7 +588,7 @@ export const DISPLAY_ARRIVALS_PAYMENT_DATA = gql`
     $offset: Int!
     $limit: Int!
   ) {
-    streams(where: { id: $streamId }) {
+    streams(where: { id: { eq: $streamId } }) {
       id
       name
       arrivalsPaymentCount(arrivalsDate: $arrivalsDate)

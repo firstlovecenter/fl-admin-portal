@@ -6,7 +6,9 @@ root `kb/`.
 ## Project shape
 
 - Apollo Server 4 (`@apollo/server`) + Express + `expressMiddleware`.
-- `@neo4j/graphql` v6 generates Cypher from the SDL and exposes a runnable schema.
+- `@neo4j/graphql` v7 generates Cypher from the SDL and exposes a runnable
+  schema. v7 input shapes (scalar `where`, flat pagination, list-form sort)
+  differ from v6 — see `kb/02-graphql-and-cypher.md` for the cheat-sheet.
 - Neo4j 5 driver (`neo4j-driver`).
 - Babel-compiled JS with TypeScript files mixed in
   (`@babel/preset-typescript`). `prebuild` step runs `tsc` over

@@ -1,8 +1,12 @@
 import { gql } from '@apollo/client'
 
 export const GET_INDOOR_VENUES = gql`
-  query IndoorVenues($options: IndoorVenueOptions) {
-    indoorVenues(options: $options) {
+  query IndoorVenues(
+    $limit: Int
+    $offset: Int
+    $sort: [IndoorVenueSort!]
+  ) {
+    indoorVenues(limit: $limit, offset: $offset, sort: $sort) {
       id
       name
       capacity
@@ -14,8 +18,12 @@ export const GET_INDOOR_VENUES = gql`
   }
 `
 export const GET_OUTDOOR_VENUES = gql`
-  query OutdoorVenues($options: OutdoorVenueOptions) {
-    outdoorVenues(options: $options) {
+  query OutdoorVenues(
+    $limit: Int
+    $offset: Int
+    $sort: [OutdoorVenueSort!]
+  ) {
+    outdoorVenues(limit: $limit, offset: $offset, sort: $sort) {
       id
       name
       capacity
@@ -27,8 +35,12 @@ export const GET_OUTDOOR_VENUES = gql`
   }
 `
 export const GET_SENIOR_HIGH_SCHOOLS = gql`
-  query HighSchools($options: HighSchoolOptions) {
-    highSchools(options: $options) {
+  query HighSchools(
+    $limit: Int
+    $offset: Int
+    $sort: [HighSchoolSort!]
+  ) {
+    highSchools(limit: $limit, offset: $offset, sort: $sort) {
       capacity
       id
       location {
@@ -41,8 +53,12 @@ export const GET_SENIOR_HIGH_SCHOOLS = gql`
   }
 `
 export const GET_HOSTEL_INFORMATION = gql`
-  query Hostels($options: HostelOptions) {
-    hostels(options: $options) {
+  query Hostels(
+    $limit: Int
+    $offset: Int
+    $sort: [HostelSort!]
+  ) {
+    hostels(limit: $limit, offset: $offset, sort: $sort) {
       capacity
       id
       name

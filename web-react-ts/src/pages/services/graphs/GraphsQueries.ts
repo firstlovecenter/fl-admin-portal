@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const BACENTA_GRAPHS = gql`
   query bacentaGraphs($id: ID!, $limit: Int = 4, $skip: Int = 0) {
-    bacentas(where: { id: $id }) {
+    bacentas(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -57,7 +57,7 @@ export const BACENTA_GRAPHS = gql`
 
 export const GOVERNORSHIP_GRAPHS = gql`
   query governorshipGraphs($id: ID!, $limit: Int = 4, $skip: Int = 0) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -103,7 +103,7 @@ export const GOVERNORSHIP_GRAPHS = gql`
 
 export const COUNCIL_GRAPHS = gql`
   query councilGraphs($councilId: ID!, $limit: Int = 4, $skip: Int = 0) {
-    councils(where: { id: $councilId }) {
+    councils(where: { id: { eq: $councilId } }) {
       id
       name
       leader {
@@ -149,7 +149,7 @@ export const COUNCIL_GRAPHS = gql`
 
 export const STREAM_GRAPHS = gql`
   query streamGraphs($streamId: ID!, $limit: Int = 4, $skip: Int = 0) {
-    streams(where: { id: $streamId }) {
+    streams(where: { id: { eq: $streamId } }) {
       id
       name
       leader {
@@ -195,7 +195,7 @@ export const STREAM_GRAPHS = gql`
 
 export const CAMPUS_GRAPHS = gql`
   query campusGraphs($campusId: ID!, $limit: Int = 4, $skip: Int = 0) {
-    campuses(where: { id: $campusId }) {
+    campuses(where: { id: { eq: $campusId } }) {
       id
       name
       leader {
@@ -242,7 +242,7 @@ export const CAMPUS_GRAPHS = gql`
 
 export const OVERSIGHT_GRAPHS = gql`
   query oversightGraphs($oversightId: ID!, $limit: Int = 4, $skip: Int = 0) {
-    oversights(where: { id: $oversightId }) {
+    oversights(where: { id: { eq: $oversightId } }) {
       id
       name
       leader {
@@ -293,7 +293,7 @@ export const DENOMINATION_GRAPHS = gql`
     $limit: Int = 4
     $skip: Int = 0
   ) {
-    denominations(where: { id: $denominationId }) {
+    denominations(where: { id: { eq: $denominationId } }) {
       id
       name
       leader {

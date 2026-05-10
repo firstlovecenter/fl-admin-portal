@@ -7,7 +7,7 @@ divergence.
 
 ## Core conventions
 
-- **Neo4j 5** stores the data; `@neo4j/graphql` v6 generates Apollo resolvers from
+- **Neo4j 5** stores the data; `@neo4j/graphql` v7 generates Apollo resolvers from
   the SDL. Custom resolvers live in `api/src/resolvers/` and override or augment.
 - **`id`** on every node is a string (`uuid` in practice).
 - **`createdAt`** is a `TimeGraph` node: `{ date: string }`.

@@ -8,7 +8,7 @@ export const REMOVE_USER_ROLE = gql`
 
 export const SERVANT_CHURCH_LIST = gql`
   query churchList($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       firstName
       lastName
@@ -127,7 +127,7 @@ export const SERVANT_CHURCH_LIST = gql`
 
 export const SERVANT_CHURCHES_COUNT = gql`
   query churchesLed($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       memberCount
       leadsBacentaCount

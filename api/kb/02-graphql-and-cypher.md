@@ -115,9 +115,60 @@ checks or business logic.
 - Custom mutations call `isAuth(permitX('Level'), context.jwt.roles)` first.
   This is non-negotiable.
 
+## v7 input cheat-sheet (auto-generated query / mutation shapes)
+
+`@neo4j/graphql` v7 changed every auto-generated `where`, sort, and pagination
+input from the v6 forms. Every FE query and mutation must use the v7 shape or
+Apollo Server rejects the operation with `GRAPHQL_VALIDATION_FAILED` before it
+hits a resolver. Same rules apply server-side in any `@authorization(filter:)`
+or hand-written `where` you embed in SDL.
+
+| Concern | v6 (do NOT use) | v7 (current) |
+| --- | --- | --- |
+| Scalar equality | `where: { id: $id }` | `where: { id: { eq: $id } }` |
+| Scalar IN | `where: { id_IN: $ids }` | `where: { id: { in: $ids } }` |
+| Scalar comparators | `<f>_GT/_GTE/_LT/_LTE: <v>` | `<f>: { gt/gte/lt/lte: <v> }` |
+| String operators | `<f>_CONTAINS/_STARTS_WITH/_ENDS_WITH: <v>` | `<f>: { contains/startsWith/endsWith: <v> }` |
+| `_NOT` | `<f>_NOT: <v>` (no v7 equivalent for null) | `NOT: { <f>: { eq: <v> } }` at the parent level |
+| List relation filter | `<rel>_SOME / _NONE / _EVERY / _SINGLE: { ... }` | `<rel>: { some / none / all / single: { ... } }` |
+| Pagination | `options: { limit: N, offset: N }` | top-level `limit: N, offset: N` |
+| Sort (object form) | `options: { sort: { name: ASC } }` | `sort: [{ name: ASC }]` (always a list) |
+| Sort (already a list) | `options: { sort: [{ name: ASC }] }` | `sort: [{ name: ASC }]` (drop `options`) |
+| Paginated query var | `query Q($options: GovernorshipOptions)` | `query Q($limit: Int, $offset: Int, $sort: [GovernorshipSort!])` |
+| Connect input scalar | `connect: { rel: { where: { node: { name: $n } } } }` | `connect: { rel: { where: { node: { name: { eq: $n } } } } }` |
+
+Scalar filter operators by type (introspect `<Type>ScalarFilters` if unsure):
+
+- **Int / Float / Date / DateTime**: `eq, in, gt, gte, lt, lte`. **No `neq`** —
+  use a top-level `NOT: { … }` block.
+- **String**: `eq, in, contains, startsWith, endsWith`.
+- **ID**: same as String.
+
+Quick checks before writing or copy-pasting a query:
+
+1. If the query has `options: { ... }` anywhere, it's v6 — flatten.
+2. If it has `where: { <field>: $var }` for a scalar field, it's v6 — wrap in
+   `{ eq: $var }`.
+3. If it uses `<rel>_SOME` / `<rel>_NOT`, it's v6 — switch to nested form.
+4. If unsure of an input shape, hit the running dev API:
+
+   ```bash
+   curl -s -X POST http://localhost:4001/graphql \
+     -H 'Content-Type: application/json' \
+     -d '{"query":"{ __type(name: \"GovernorshipWhere\") { inputFields { name type { name kind } } } }"}'
+   ```
+
+   The auto-generated input is the source of truth.
+
+The original v6→v7 migration of every FE query lived in commit
+`fix(web): migrate Apollo queries to @neo4j/graphql v7 input shapes`. Mechanical
+substitutions were applied via a script that scoped to `gql\`…\`` template
+literals only — see that commit for the patterns and edge cases (`title_SOME`,
+connect-input scalars, queries that took `$options: <X>Options` as a variable).
+
 ## Common gotchas
 
-- `@neo4j/graphql` v6 has `excludeDeprecatedFields` configured (`bookmark`,
+- `@neo4j/graphql` v7 has `excludeDeprecatedFields` configured (`bookmark`,
   `negationFilters`, `arrayFilters`, `stringAggregation`,
   `aggregationFilters`). Don't expect those filter operators.
 - The schema rebuild on boot is opaque — if it fails, the server logs a JSON

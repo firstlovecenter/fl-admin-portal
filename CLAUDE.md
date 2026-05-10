@@ -82,7 +82,7 @@ fl-admin-portal/
 | State | Apollo cache + React Context (`Auth`, `Church`, `Member`, `Service`) |
 | Auth | Custom JWT (`lib/auth-service.ts` + `contexts/AuthContext.tsx`) — NOT Auth0 |
 | Backend framework | Node + Express + Apollo Server 4 |
-| GraphQL schema | `@neo4j/graphql` v6 over 16 `.graphql` SDL files |
+| GraphQL schema | `@neo4j/graphql` v7 over 16 `.graphql` SDL files |
 | Database | Neo4j 5 (`neo4j-driver` 5.28) |
 | Background jobs | AWS Lambda (also CLI-runnable from `api/src/scripts/`) |
 | Cloud | AWS Amplify (FE), AWS Lambda + Secrets Manager + S3 (BE), Cloudinary (images) |

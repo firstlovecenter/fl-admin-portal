@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const SERVANT_BACENTA_LEADER = gql`
   query bacentaLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsBacenta {
         id
@@ -74,7 +74,7 @@ export const SERVANT_BACENTA_LEADER = gql`
 
 export const SERVANT_GOVERNORSHIP_LEADER = gql`
   query governorshipLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsGovernorship {
         id
@@ -106,7 +106,7 @@ export const SERVANT_GOVERNORSHIP_LEADER = gql`
 
 export const SERVANT_COUNCIL_LEADER = gql`
   query councilLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsCouncil {
         id
@@ -135,7 +135,7 @@ export const SERVANT_COUNCIL_LEADER = gql`
 
 export const SERVANT_STREAM_LEADER = gql`
   query streamLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsStream {
         id
@@ -163,7 +163,7 @@ export const SERVANT_STREAM_LEADER = gql`
 
 export const SERVANT_CAMPUS_LEADER = gql`
   query campusLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsCampus {
         id
@@ -194,7 +194,7 @@ export const SERVANT_CAMPUS_LEADER = gql`
 
 export const SERVANT_OVERSIGHT_LEADER = gql`
   query oversightLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsOversight {
         id
@@ -222,7 +222,7 @@ export const SERVANT_OVERSIGHT_LEADER = gql`
 
 export const SERVANT_DENOMINATION_LEADER = gql`
   query denominationLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsDenomination {
         id
@@ -250,7 +250,7 @@ export const SERVANT_DENOMINATION_LEADER = gql`
 
 export const SERVANT_GOVERNORSHIP_ADMIN = gql`
   query governorshipAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForGovernorship {
@@ -288,7 +288,7 @@ export const SERVANT_GOVERNORSHIP_ADMIN = gql`
 
 export const SERVANT_COUNCIL_ADMIN = gql`
   query councilAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForCouncil {
@@ -324,7 +324,7 @@ export const SERVANT_COUNCIL_ADMIN = gql`
 
 export const SERVANTS_STREAM_ADMIN = gql`
   query streamAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForStream {
@@ -359,7 +359,7 @@ export const SERVANTS_STREAM_ADMIN = gql`
 
 export const SERVANTS_CAMPUS_ADMIN = gql`
   query campusAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForCampus {
@@ -392,7 +392,7 @@ export const SERVANTS_CAMPUS_ADMIN = gql`
 
 export const SERVANTS_OVERSIGHT_ADMIN = gql`
   query oversightAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForOversight {
@@ -422,7 +422,7 @@ export const SERVANTS_OVERSIGHT_ADMIN = gql`
 
 export const SERVANTS_DENOMINATION_ADMIN = gql`
   query denominationAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForDenomination {
@@ -452,7 +452,7 @@ export const SERVANTS_DENOMINATION_ADMIN = gql`
 
 export const SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN = gql`
   query governorshipArrivalsAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsAdminForGovernorship {
@@ -478,7 +478,7 @@ export const SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN = gql`
 
 export const SERVANTS_COUNCIL_ARRIVALS_ADMIN = gql`
   query councilArrivalsAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsAdminForCouncil {
@@ -505,7 +505,7 @@ export const SERVANTS_COUNCIL_ARRIVALS_ADMIN = gql`
 
 export const SERVANTS_STREAM_ARRIVALS_ADMIN = gql`
   query streamArrivalsAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsAdminForStream {
@@ -531,7 +531,7 @@ export const SERVANTS_STREAM_ARRIVALS_ADMIN = gql`
 
 export const SERVANTS_CAMPUS_ARRIVALS_ADMIN = gql`
   query campusArrivalsAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsAdminForCampus {
@@ -554,7 +554,7 @@ export const SERVANTS_CAMPUS_ARRIVALS_ADMIN = gql`
 
 export const SERVANTS_STREAM_ARRIVALS_COUNTER = gql`
   query streamArrivalsCounter($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsCounterForStream {
@@ -574,7 +574,7 @@ export const SERVANTS_STREAM_ARRIVALS_COUNTER = gql`
 
 export const SERVANTS_STREAM_TELLER = gql`
   query streamArrivalsTeller($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isTellerForStream {

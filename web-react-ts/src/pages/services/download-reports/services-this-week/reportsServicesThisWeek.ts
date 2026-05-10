@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const CAMPUS_BACENTA_SERVICES_THIS_WEEK = gql`
   query campusBacentaServicesThisWeekReport($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
 

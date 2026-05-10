@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const CAMPUS_GOVERNORSHIP_SEARCH = gql`
   query gatheringGovernorshipSearch($id: ID!, $key: String!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       governorshipSearch(key: $key, limit: 5) {
         id
@@ -14,7 +14,7 @@ export const CAMPUS_GOVERNORSHIP_SEARCH = gql`
 
 export const STREAM_GOVERNORSHIP_SEARCH = gql`
   query streamGovernorshipSearch($id: ID!, $key: String!) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       governorshipSearch(key: $key, limit: 5) {
         id
@@ -26,7 +26,7 @@ export const STREAM_GOVERNORSHIP_SEARCH = gql`
 
 export const COUNCIL_GOVERNORSHIP_SEARCH = gql`
   query councilGovernorshipSearch($id: ID!, $key: String!) {
-    councils(where: { id: $id }) {
+    councils(where: { id: { eq: $id } }) {
       id
       governorshipSearch(key: $key, limit: 5) {
         id
@@ -38,7 +38,7 @@ export const COUNCIL_GOVERNORSHIP_SEARCH = gql`
 
 export const MEMBER_GOVERNORSHIP_SEARCH = gql`
   query memberGovernorshipSearch($id: ID!, $key: String!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       governorshipSearch(key: $key) {
         id

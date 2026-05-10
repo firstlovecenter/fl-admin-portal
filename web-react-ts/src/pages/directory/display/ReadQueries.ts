@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const DISPLAY_MEMBER_BIO = gql`
   query displayMemberBio($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       firstName
       middleName
@@ -33,7 +33,7 @@ export const DISPLAY_MEMBER_BIO = gql`
 `
 export const DISPLAY_MEMBER_LEADERSHIP = gql`
   query displayMemberLeadership($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       leadsBacenta {
@@ -65,7 +65,7 @@ export const DISPLAY_MEMBER_LEADERSHIP = gql`
 
 export const DISPLAY_MEMBER_ADMIN = gql`
   query displayMemberAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       #Admin Information
@@ -98,7 +98,7 @@ export const DISPLAY_MEMBER_ADMIN = gql`
 
 export const DISPLAY_MEMBER_CHURCH = gql`
   query displayMemberChurch($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       #church info
       bacenta {
@@ -149,7 +149,7 @@ export const DISPLAY_MEMBER_CHURCH = gql`
 
 export const DISPLAY_BACENTA_HISTORY = gql`
   query displayBacentaHistory($id: ID!) {
-    bacentas(where: { id: $id }, options: { limit: 1 }) {
+    bacentas(where: { id: { eq: $id } }, limit: 1) {
       id
       services(limit: 5) {
         id
@@ -177,7 +177,7 @@ export const DISPLAY_BACENTA_HISTORY = gql`
 
 export const DISPLAY_BACENTA = gql`
   query displayBacenta($id: ID!) {
-    bacentas(where: { id: $id }, options: { limit: 1 }) {
+    bacentas(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       bankingCode
@@ -238,7 +238,7 @@ export const DISPLAY_BACENTA = gql`
 
 export const DISPLAY_GOVERNORSHIP = gql`
   query displayGovernorship($id: ID!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       stream_name
@@ -246,7 +246,7 @@ export const DISPLAY_GOVERNORSHIP = gql`
       vacationGraduatedBacentaCount
       activeIcBacentaCount
       vacationIcBacentaCount
-      bacentas(options: { limit: 5 }) {
+      bacentas(limit: 5) {
         id
         name
         leader {
@@ -294,7 +294,7 @@ export const DISPLAY_GOVERNORSHIP = gql`
 
 export const DISPLAY_COUNCIL = gql`
   query displayCouncil($id: ID!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       stream {
@@ -313,7 +313,7 @@ export const DISPLAY_COUNCIL = gql`
         id
         name
       }
-      governorships(options: { limit: 5 }) {
+      governorships(limit: 5) {
         id
         name
       }
@@ -352,7 +352,7 @@ export const DISPLAY_COUNCIL = gql`
 
 export const DISPLAY_STREAM = gql`
   query displayStream($id: ID!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       vacationStatus
@@ -373,7 +373,7 @@ export const DISPLAY_STREAM = gql`
         id
         name
       }
-      councils(options: { limit: 5 }) {
+      councils(limit: 5) {
         id
         name
       }
@@ -412,7 +412,7 @@ export const DISPLAY_STREAM = gql`
 
 export const DISPLAY_CAMPUS = gql`
   query displayCampus($id: ID!) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       noIncomeTracking
@@ -431,7 +431,7 @@ export const DISPLAY_CAMPUS = gql`
         id
         name
       }
-      streams(options: { limit: 5 }) {
+      streams(limit: 5) {
         id
         name
         stream_name
@@ -472,7 +472,7 @@ export const DISPLAY_CAMPUS = gql`
 
 export const DISPLAY_OVERSIGHT = gql`
   query displayOversight($id: ID!) {
-    oversights(where: { id: $id }, options: { limit: 1 }) {
+    oversights(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       campusCount
@@ -531,7 +531,7 @@ export const DISPLAY_OVERSIGHT = gql`
 
 export const DISPLAY_DENOMINATION = gql`
   query displayDenomination($id: ID!) {
-    denominations(where: { id: $id }, options: { limit: 1 }) {
+    denominations(where: { id: { eq: $id } }, limit: 1) {
       id
       name
       campusCount

@@ -17,7 +17,7 @@ const HISTORY_FIELDS = `
 
 export const MEMBER_HISTORY = gql`
   query MemberHistory($id: ID!, $offset: Int!, $limit: Int!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       firstName
       lastName
@@ -31,7 +31,7 @@ export const MEMBER_HISTORY = gql`
 
 export const STREAM_HISTORY = gql`
   query StreamsHistory($id: ID!, $offset: Int!, $limit: Int!) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       name
       __typename
@@ -45,7 +45,7 @@ export const STREAM_HISTORY = gql`
 
 export const COUNCIL_HISTORY = gql`
   query CouncilsHistory($id: ID!, $offset: Int!, $limit: Int!) {
-    councils(where: { id: $id }) {
+    councils(where: { id: { eq: $id } }) {
       id
       name
       __typename
@@ -59,7 +59,7 @@ export const COUNCIL_HISTORY = gql`
 
 export const GOVERNORSHIP_HISTORY = gql`
   query GovernorshipsHistory($id: ID!, $offset: Int!, $limit: Int!) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       name
       __typename
@@ -73,7 +73,7 @@ export const GOVERNORSHIP_HISTORY = gql`
 
 export const BACENTA_HISTORY = gql`
   query BacentasHistory($id: ID!, $offset: Int!, $limit: Int!) {
-    bacentas(where: { id: $id }) {
+    bacentas(where: { id: { eq: $id } }) {
       id
       name
       __typename
@@ -87,7 +87,7 @@ export const BACENTA_HISTORY = gql`
 
 export const CAMPUS_HISTORY = gql`
   query CampusHistory($id: ID!, $offset: Int!, $limit: Int!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
       __typename

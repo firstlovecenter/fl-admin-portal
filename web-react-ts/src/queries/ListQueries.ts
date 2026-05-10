@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const GET_BISHOPS = gql`
   query getBishops {
-    members(where: { title_SOME: { name: "Bishop" } }) {
+    members(where: { title: { some: { name: { eq: "Bishop" } } } }) {
       id
       firstName
       lastName
@@ -13,7 +13,7 @@ export const GET_BISHOPS = gql`
 
 export const GET_GOVERNORSHIP_BACENTAS = gql`
   query getGovernorshipBacentas($id: ID!) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       name
 
@@ -51,7 +51,7 @@ export const GET_GOVERNORSHIP_BACENTAS = gql`
 
 export const GET_GOVERNORSHIP_ICBACENTAS = gql`
   query getGovernorshipIcBacentas($id: ID!) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       name
 
@@ -88,7 +88,7 @@ export const GET_GOVERNORSHIP_ICBACENTAS = gql`
 
 export const GET_COUNCIL_GOVERNORSHIPS = gql`
   query getCouncilGovernorships($id: ID!) {
-    councils(where: { id: $id }) {
+    councils(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -135,7 +135,7 @@ export const GET_COUNCIL_GOVERNORSHIPS = gql`
 `
 export const GET_CAMPUS_GOVERNORSHIPS = gql`
   query getGatheringGovernorships($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
       noIncomeTracking
@@ -181,7 +181,7 @@ export const GET_CAMPUS_GOVERNORSHIPS = gql`
 
 export const GET_STREAM_COUNCILS = gql`
   query getStreamCouncils($id: ID!) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -227,7 +227,7 @@ export const GET_STREAM_COUNCILS = gql`
 
 export const GET_CAMPUS_STREAMS = gql`
   query gatheringStreams($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
       noIncomeTracking
@@ -276,7 +276,7 @@ export const GET_CAMPUS_STREAMS = gql`
 
 export const GET_DENOMINATION_OVERSIGHTS = gql`
   query getDenominationOversights($id: ID!) {
-    denominations(where: { id: $id }) {
+    denominations(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -317,7 +317,7 @@ export const GET_DENOMINATION_OVERSIGHTS = gql`
 
 export const GET_OVERSIGHT_CAMPUSES = gql`
   query getOversightCampuses($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -360,7 +360,7 @@ export const GET_OVERSIGHT_CAMPUSES = gql`
 
 export const GET_STREAM_GOVERNORSHIPS = gql`
   query getStreamGovernorships($id: ID!) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -485,7 +485,7 @@ export const GET_HUBS = gql`
 
 export const GET_CAMPUS_BASONTAS = gql`
   query getCampusBasontas($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
       basontas {

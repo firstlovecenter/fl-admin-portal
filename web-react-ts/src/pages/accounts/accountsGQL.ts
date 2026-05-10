@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const COUNCIL_ACCOUNT_DASHBOARD = gql`
   query CouncilAccountDashboard($id: ID!) {
-    councils(where: { id: $id }) {
+    councils(where: { id: { eq: $id } }) {
       id
       name
       hrAmount
@@ -22,7 +22,7 @@ export const COUNCIL_ACCOUNT_DASHBOARD = gql`
 
 export const CAMPUS_ACCOUNT_DASHBOARD = gql`
   query CampusAccountDashboard($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
       weekdayBalance
@@ -40,7 +40,7 @@ export const CAMPUS_ACCOUNT_DASHBOARD = gql`
 
 export const OVERSIGHT_ACCOUNT_DASHBOARD = gql`
   query OversightAccountDashboard($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
       weekdayBalance
@@ -58,7 +58,7 @@ export const OVERSIGHT_ACCOUNT_DASHBOARD = gql`
 
 export const CAMPUS_BY_COUNCIL_ACCOUNTS = gql`
   query CampusByCouncilAccounts($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
 
@@ -66,7 +66,7 @@ export const CAMPUS_BY_COUNCIL_ACCOUNTS = gql`
         id
         name
 
-        councils(options: { sort: { name: ASC } }) {
+        councils(sort: [{ name: ASC }]) {
           id
           name
 
@@ -88,7 +88,7 @@ export const CAMPUS_BY_COUNCIL_ACCOUNTS = gql`
 
 export const OVERSIGHT_BY_CAMPUS_ACCOUNT = gql`
   query OversightByCampusesAccounts($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
 
@@ -96,7 +96,7 @@ export const OVERSIGHT_BY_CAMPUS_ACCOUNT = gql`
         id
         name
 
-        streams(options: { sort: { name: ASC } }) {
+        streams(sort: [{ name: ASC }]) {
           id
           name
 

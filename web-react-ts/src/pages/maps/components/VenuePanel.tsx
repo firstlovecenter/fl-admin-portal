@@ -103,11 +103,9 @@ const VenuePanel = ({ kind, setCentre }: VenuePanelProps) => {
 
   const { data, loading } = useQuery(config.query, {
     variables: {
-      options: {
-        limit: 100,
-        offset: 0,
-        sort: sortVariable,
-      },
+      limit: 100,
+      offset: 0,
+      sort: sortVariable,
     },
   })
 

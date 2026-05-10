@@ -153,7 +153,7 @@ export const RECORD_SERVICE_NO_INCOME = gql`
 
 export const DISPLAY_AGGREGATE_SERVICE_RECORD = gql`
   query aggregateServiceRecordForWeek($week: Int!, $governorshipId: ID!) {
-    governorships(where: { id: $governorshipId }) {
+    governorships(where: { id: { eq: $governorshipId } }) {
       id
       name
       aggregateServiceRecordForWeek(week: $week) {
@@ -167,7 +167,7 @@ export const DISPLAY_AGGREGATE_SERVICE_RECORD = gql`
 
 export const DISPLAY_BACENTA_SERVICE = gql`
   query bacentaDisplayServiceRecords($serviceId: ID!, $bacentaId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       createdAt
       created_by {
@@ -217,7 +217,7 @@ export const DISPLAY_BACENTA_SERVICE = gql`
         pictureUrl
       }
     }
-    bacentas(where: { id: $bacentaId }) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
       name
       stream_name
@@ -230,7 +230,7 @@ export const DISPLAY_GOVERNORSHIP_SERVICE = gql`
     $serviceId: ID!
     $governorshipId: ID!
   ) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       createdAt
       created_by {
@@ -280,7 +280,7 @@ export const DISPLAY_GOVERNORSHIP_SERVICE = gql`
         pictureUrl
       }
     }
-    governorships(where: { id: $governorshipId }) {
+    governorships(where: { id: { eq: $governorshipId } }) {
       id
       name
       stream_name
@@ -290,7 +290,7 @@ export const DISPLAY_GOVERNORSHIP_SERVICE = gql`
 
 export const DISPLAY_COUNCIL_SERVICE = gql`
   query councilDisplayServiceRecords($serviceId: ID!, $councilId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       createdAt
       created_by {
@@ -340,7 +340,7 @@ export const DISPLAY_COUNCIL_SERVICE = gql`
         pictureUrl
       }
     }
-    councils(where: { id: $councilId }) {
+    councils(where: { id: { eq: $councilId } }) {
       id
       name
       stream_name
@@ -350,7 +350,7 @@ export const DISPLAY_COUNCIL_SERVICE = gql`
 
 export const DISPLAY_STREAM_SERVICE = gql`
   query streamDisplayServiceRecords($serviceId: ID!, $streamId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       createdAt
       created_by {
@@ -404,7 +404,7 @@ export const DISPLAY_STREAM_SERVICE = gql`
         pictureUrl
       }
     }
-    streams(where: { id: $streamId }) {
+    streams(where: { id: { eq: $streamId } }) {
       id
       name
       stream_name
@@ -414,7 +414,7 @@ export const DISPLAY_STREAM_SERVICE = gql`
 
 export const DISPLAY_CAMPUS_SERVICE = gql`
   query gatheringDisplayServiceRecords($serviceId: ID!, $campusId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       createdAt
       created_by {
@@ -462,7 +462,7 @@ export const DISPLAY_CAMPUS_SERVICE = gql`
         pictureUrl
       }
     }
-    campuses(where: { id: $campusId }) {
+    campuses(where: { id: { eq: $campusId } }) {
       id
       name
     }

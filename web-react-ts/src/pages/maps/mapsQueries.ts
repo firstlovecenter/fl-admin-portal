@@ -6,7 +6,7 @@ export const PLACES_SEARCH_BY_LOCATION = gql`
     $latitude: Float!
     $longitude: Float!
   ) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       placesSearchByLocation(latitude: $latitude, longitude: $longitude) {
         id
@@ -25,7 +25,7 @@ export const PLACES_SEARCH_BY_LOCATION = gql`
 
 export const PLACES_SEARCH_BY_NAME = gql`
   query PlacesSearchByName($id: ID!, $key: String!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       placesSearchByName(key: $key) {
         id
@@ -44,7 +44,7 @@ export const PLACES_SEARCH_BY_NAME = gql`
 
 export const LOAD_COUNCIL_UNVISITED_MEMBERS = gql`
   query LoadCouncilUnvisitedMembers($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       memberLoadCouncilUnvisitedMembers {
         id
@@ -65,7 +65,7 @@ export const LOAD_COUNCIL_UNVISITED_MEMBERS = gql`
 // Marker locations only — no PII. Scoped server-side by Member auth.
 export const BACENTAS_WITH_LOCATIONS = gql`
   query BacentasWithLocations($limit: Int!) {
-    bacentas(options: { limit: $limit }) {
+    bacentas(limit: $limit) {
       id
       name
       location {

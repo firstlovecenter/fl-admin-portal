@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const BACENTA_AVG_WEEKDAY_STATS = gql`
   query bacentaAvgWeekdayStats($bacentaId: ID, $days: Int!) {
-    bacentas(where: { id: $bacentaId }) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
       name
       avgBussingAttendance(days: $days)
@@ -32,7 +32,7 @@ export const BACENTA_AVG_WEEKDAY_STATS = gql`
 
 export const GOVERNORSHIP_AVG_WEEKDAY_STATS = gql`
   query governorshipAvgWeekdayStats($governorshipId: ID, $days: Int!) {
-    governorships(where: { id: $governorshipId }) {
+    governorships(where: { id: { eq: $governorshipId } }) {
       id
       name
       avgBussingAttendance(days: $days)
@@ -62,7 +62,7 @@ export const GOVERNORSHIP_AVG_WEEKDAY_STATS = gql`
 
 export const COUNCIL_AVG_WEEKDAY_STATS = gql`
   query councilAvgWeekdayStats($councilId: ID, $days: Int!) {
-    councils(where: { id: $councilId }) {
+    councils(where: { id: { eq: $councilId } }) {
       id
       name
       avgBussingAttendance(days: $days)
@@ -92,7 +92,7 @@ export const COUNCIL_AVG_WEEKDAY_STATS = gql`
 
 export const STREAM_AVG_WEEKDAY_STATS = gql`
   query streamAvgWeekdayStats($streamId: ID, $days: Int!) {
-    streams(where: { id: $streamId }) {
+    streams(where: { id: { eq: $streamId } }) {
       id
       name
       avgBussingAttendance(days: $days)
@@ -122,7 +122,7 @@ export const STREAM_AVG_WEEKDAY_STATS = gql`
 
 export const CAMPUS_AVG_WEEKDAY_STATS = gql`
   query campusAvgWeekdayStats($campusId: ID, $days: Int!) {
-    campuses(where: { id: $campusId }) {
+    campuses(where: { id: { eq: $campusId } }) {
       id
       name
       avgBussingAttendance(days: $days)

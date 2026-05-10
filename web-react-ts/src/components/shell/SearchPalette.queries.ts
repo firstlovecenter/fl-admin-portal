@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const MEMBER_SEARCH = gql`
   query memberSearch($key: String!, $id: ID!, $limit: Int!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       memberSearch(key: $key, limit: $limit) {
         id

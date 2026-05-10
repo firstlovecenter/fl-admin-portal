@@ -55,7 +55,7 @@ const PREVIEW_FIELDS = `
 
 export const BACENTA_MEMBERSHIP_DOWNLOAD = gql`
   query BacentaMembershipDownload($id: ID!) {
-    bacentas(where: { id: $id }) {
+    bacentas(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -66,7 +66,7 @@ export const BACENTA_MEMBERSHIP_DOWNLOAD = gql`
 
 export const GOVERNORSHIP_MEMBERSHIP_DOWNLOAD = gql`
   query GovernorshipMembershipDownload($id: ID!) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -77,7 +77,7 @@ export const GOVERNORSHIP_MEMBERSHIP_DOWNLOAD = gql`
 
 export const COUNCIL_MEMBERSHIP_DOWNLOAD = gql`
   query CouncilMembershipDownload($id: ID!) {
-    councils(where: { id: $id }) {
+    councils(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -88,7 +88,7 @@ export const COUNCIL_MEMBERSHIP_DOWNLOAD = gql`
 
 export const STREAM_MEMBERSHIP_DOWNLOAD = gql`
   query StreamMembershipDownload($id: ID!) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -99,7 +99,7 @@ export const STREAM_MEMBERSHIP_DOWNLOAD = gql`
 
 export const CAMPUS_MEMBERSHIP_DOWNLOAD = gql`
   query CampusMembershipDownload($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -110,7 +110,7 @@ export const CAMPUS_MEMBERSHIP_DOWNLOAD = gql`
 
 export const OVERSIGHT_MEMBERSHIP_DOWNLOAD = gql`
   query OversightMembershipDownload($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
       memberCount

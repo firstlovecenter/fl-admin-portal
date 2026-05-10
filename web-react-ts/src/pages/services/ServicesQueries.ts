@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const BACENTA_BANKING_SLIP_QUERIES = gql`
   query bacentaServices($bacentaId: ID!, $skip: Int) {
-    bacentas(where: { id: $bacentaId }) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
       bankingCode
       name
@@ -66,7 +66,7 @@ export const BANKING_SLIP_SUBMISSION = gql`
 
 export const GOVERNORSHIP_BANKING_SLIP_QUERIES = gql`
   query governorshipServices($governorshipId: ID!) {
-    governorships(where: { id: $governorshipId }) {
+    governorships(where: { id: { eq: $governorshipId } }) {
       id
 
       name
@@ -109,7 +109,7 @@ export const GOVERNORSHIP_BANKING_SLIP_QUERIES = gql`
 
 export const STREAM_BANKING_SLIP_QUERIES = gql`
   query streamServices($streamId: ID!) {
-    streams(where: { id: $streamId }) {
+    streams(where: { id: { eq: $streamId } }) {
       id
 
       name
@@ -152,7 +152,7 @@ export const STREAM_BANKING_SLIP_QUERIES = gql`
 
 export const COUNCIL_BANKING_SLIP_QUERIES = gql`
   query councilServices($councilId: ID!) {
-    councils(where: { id: $councilId }) {
+    councils(where: { id: { eq: $councilId } }) {
       id
 
       name
@@ -195,7 +195,7 @@ export const COUNCIL_BANKING_SLIP_QUERIES = gql`
 
 export const BACENTA_SERVICE_RECORDS = gql`
   query BacentaServiceRecords($serviceId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       serviceLog {
         bacenta {
@@ -224,7 +224,7 @@ export const BACENTA_SERVICE_RECORDS = gql`
 
 export const GOVERNORSHIP_SERVICE_RECORDS = gql`
   query GovernorshipServiceRecords($serviceId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       serviceLog {
         governorship {
@@ -252,7 +252,7 @@ export const GOVERNORSHIP_SERVICE_RECORDS = gql`
 
 export const COUNCIL_SERVICE_RECORDS = gql`
   query CouncilServiceRecords($serviceId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       serviceLog {
         council {
@@ -280,7 +280,7 @@ export const COUNCIL_SERVICE_RECORDS = gql`
 
 export const STREAM_SERVICE_RECORDS = gql`
   query streamServiceRecords($serviceId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       serviceLog {
         stream {
@@ -308,7 +308,7 @@ export const STREAM_SERVICE_RECORDS = gql`
 
 export const LATEST_SERVICE_FOR_BACENTA = gql`
   query LatestServiceForBacenta($bacentaId: ID!) {
-    bacentas(where: { id: $bacentaId }) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
       services(limit: 1) {
         id
@@ -322,7 +322,7 @@ export const LATEST_SERVICE_FOR_BACENTA = gql`
 
 export const LATEST_SERVICE_FOR_STREAM = gql`
   query LatestServiceForStream($streamId: ID!) {
-    streams(where: { id: $streamId }) {
+    streams(where: { id: { eq: $streamId } }) {
       id
       services(limit: 1) {
         id
@@ -336,7 +336,7 @@ export const LATEST_SERVICE_FOR_STREAM = gql`
 
 export const LATEST_SERVICE_FOR_COUNCIL = gql`
   query LatestServiceForCouncil($councilId: ID!) {
-    councils(where: { id: $councilId }) {
+    councils(where: { id: { eq: $councilId } }) {
       id
       services(limit: 1) {
         id
@@ -350,7 +350,7 @@ export const LATEST_SERVICE_FOR_COUNCIL = gql`
 
 export const LATEST_SERVICE_FOR_GOVERNORSHIP = gql`
   query LatestServiceForGovernorship($governorshipId: ID!) {
-    governorships(where: { id: $governorshipId }) {
+    governorships(where: { id: { eq: $governorshipId } }) {
       id
       services(limit: 1) {
         id
@@ -364,7 +364,7 @@ export const LATEST_SERVICE_FOR_GOVERNORSHIP = gql`
 
 export const LATEST_SERVICE_FOR_CAMPUS = gql`
   query LatestServiceForCampus($campusId: ID!) {
-    campuses(where: { id: $campusId }) {
+    campuses(where: { id: { eq: $campusId } }) {
       id
       services(limit: 1) {
         id

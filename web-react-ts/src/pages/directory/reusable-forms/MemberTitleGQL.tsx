@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const GET_MEMBER_TITLES = gql`
   query GetMemberTitles($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       firstName
       lastName

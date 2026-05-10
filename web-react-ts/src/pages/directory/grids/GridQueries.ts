@@ -43,7 +43,7 @@ const MEMBER_FIELDS = `
 
 export const GET_FEDERAL_MEMBERS = gql`
   query getFederalMembers {
-    members(options: { sort: { firstName: ASC } }) {
+    members(sort: [{ firstName: ASC }]) {
       id
       firstName
       lastName
@@ -94,7 +94,7 @@ export const GET_SERVANT_MEMBERS = gql`
     $basontas: [String!]
     $leaderRanks: [String!]
   ) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       firstName
       lastName
@@ -129,7 +129,7 @@ export const GET_CAMPUS_MEMBERS = gql`
     $basontas: [String!]
     $leaderRanks: [String!]
   ) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -161,7 +161,7 @@ export const GET_STREAM_MEMBERS = gql`
     $basontas: [String!]
     $leaderRanks: [String!]
   ) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -193,7 +193,7 @@ export const GET_OVERSIGHT_MEMBERS = gql`
     $basontas: [String!]
     $leaderRanks: [String!]
   ) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -225,7 +225,7 @@ export const GET_COUNCIL_MEMBERS = gql`
     $basontas: [String!]
     $leaderRanks: [String!]
   ) {
-    councils(where: { id: $id }) {
+    councils(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -257,7 +257,7 @@ export const GET_GOVERNORSHIP_MEMBERS = gql`
     $basontas: [String!]
     $leaderRanks: [String!]
   ) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       name
       memberCount
@@ -289,7 +289,7 @@ export const GET_BACENTA_MEMBERS = gql`
     $basontas: [String!]
     $leaderRanks: [String!]
   ) {
-    bacentas(where: { id: $id }) {
+    bacentas(where: { id: { eq: $id } }) {
       id
       name
       memberCount

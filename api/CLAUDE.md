@@ -5,7 +5,7 @@ file scopes to backend conventions only.
 
 ## What this package is
 
-Node + Apollo Server 4 + `@neo4j/graphql` v6 GraphQL API on top of Neo4j 5.
+Node + Apollo Server 4 + `@neo4j/graphql` v7 GraphQL API on top of Neo4j 5.
 Babel-compiled JS with TS files mixed in via `@babel/preset-typescript`.
 Custom resolvers under `src/resolvers/`; SDL under `src/schema/`. Background
 Lambdas under `src/functions/background/` (also CLI-runnable from
@@ -14,7 +14,9 @@ Lambdas under `src/functions/background/` (also CLI-runnable from
 ## Stack reminders (full table in root CLAUDE.md)
 
 - Apollo Server 4 + Express, port 4001.
-- `@neo4j/graphql` v6 generates Cypher from 16 `.graphql` SDL files.
+- `@neo4j/graphql` v7 generates Cypher from 16 `.graphql` SDL files. v7 changed
+  the auto-generated input shapes — see `kb/02-graphql-and-cypher.md` "v7 input
+  cheat-sheet" for the v6 → v7 rules every FE query and mutation must follow.
 - Neo4j 5 driver (`neo4j-driver` 5.28).
 - AWS SDK v3 (S3, Secrets Manager, Lambda) + `serverless-http`.
 - `firebase-admin`, `googleapis`, `axios`, `csv-parse`, Cloudinary.

@@ -59,9 +59,9 @@ export const ADD_MEMBER_TITLE_MUTATION = gql`
     $date: Date
   ) {
     updateMembers(
-      where: { id: $memberId }
+      where: { id: { eq: $memberId } }
       connect: {
-        title: { where: { node: { name: $title } }, edge: { date: $date } }
+        title: { where: { node: { name: { eq: $title } } }, edge: { date: { eq: $date } } }
       }
     ) {
       members {

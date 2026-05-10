@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const STREAM_BANK_TELLERS = gql`
   query streamBankTellers($id: ID!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 

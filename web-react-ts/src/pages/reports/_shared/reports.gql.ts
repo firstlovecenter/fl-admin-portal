@@ -51,7 +51,7 @@ const buildDirectoryQuery = (level: ReportLevel) => {
   const collection = LEVEL_COLLECTION_KEY[level]
   return gql`
     query Directory${level}Report($id: ID!) {
-      ${collection}(where: { id: $id }) {
+      ${collection}(where: { id: { eq: $id } }) {
         ${DIRECTORY_FIELDS}
       }
     }
@@ -67,7 +67,7 @@ const buildWeeklyQuery = (
   const collection = LEVEL_COLLECTION_KEY[level]
   return gql`
     query ${alias}${level}($id: ID!, $startWeekKey: Int!, $endWeekKey: Int!) {
-      ${collection}(where: { id: $id }) {
+      ${collection}(where: { id: { eq: $id } }) {
         id
         name
         ${field}(startWeekKey: $startWeekKey, endWeekKey: $endWeekKey) {
@@ -130,7 +130,7 @@ export const BACENTA_SERVICE_RECORDS_QUERY = gql`
     $startWeekKey: Int!
     $endWeekKey: Int!
   ) {
-    bacentas(where: { id: $id }) {
+    bacentas(where: { id: { eq: $id } }) {
       id
       name
       weekdayServiceRecordsReport(

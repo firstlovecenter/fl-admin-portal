@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const BACENTA_SERVICE_PAYMENT = gql`
   query bacentaServicePayment($id: ID!) {
-    bacentas(where: { id: $id }) {
+    bacentas(where: { id: { eq: $id } }) {
       id
       name
       bankingCode
@@ -12,7 +12,7 @@ export const BACENTA_SERVICE_PAYMENT = gql`
 
 export const GOVERNORSHIP_SERVICE_PAYMENT = gql`
   query governorshipServicePayment($id: ID!) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       name
     }
@@ -21,7 +21,7 @@ export const GOVERNORSHIP_SERVICE_PAYMENT = gql`
 
 export const COUNCIL_SERVICE_PAYMENT = gql`
   query councilServicePayment($id: ID!) {
-    councils(where: { id: $id }) {
+    councils(where: { id: { eq: $id } }) {
       id
       name
     }
@@ -30,7 +30,7 @@ export const COUNCIL_SERVICE_PAYMENT = gql`
 
 export const STREAM_SERVICE_PAYMENT = gql`
   query streamServicePayment($id: ID!) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       name
     }
@@ -39,7 +39,7 @@ export const STREAM_SERVICE_PAYMENT = gql`
 
 export const DISPLAY_OFFERING_DETAILS = gql`
   query displayOfferingDetails($serviceRecordId: ID!) {
-    serviceRecords(where: { id: $serviceRecordId }) {
+    serviceRecords(where: { id: { eq: $serviceRecordId } }) {
       id
       serviceDate {
         date
@@ -117,7 +117,7 @@ export const CONFIRM_OFFERING_PAYMENT = gql`
 
 export const SELF_BANKING_RECEIPT = gql`
   query selfBankingReceipt($id: ID!) {
-    serviceRecords(where: { id: $id }) {
+    serviceRecords(where: { id: { eq: $id } }) {
       id
       cash
       serviceDate {
@@ -147,7 +147,7 @@ export const SET_TRANSACTION_REFERENCE = gql`
     $currentUserId: ID!
   ) {
     updateServiceRecords(
-      where: { id: $serviceRecordId }
+      where: { id: { eq: $serviceRecordId } }
       update: {
         transactionReference: $transactionReference
         transactionStatus: "pending"

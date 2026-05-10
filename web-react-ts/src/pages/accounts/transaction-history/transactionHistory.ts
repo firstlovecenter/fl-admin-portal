@@ -6,7 +6,7 @@ export const GET_CAMPUS_TRANSACTION_HISTORY = gql`
     $offset: Int!
     $limit: Int!
   ) {
-    campuses(where: { id: $campusId }) {
+    campuses(where: { id: { eq: $campusId } }) {
       id
       name
       transactionCount
@@ -51,7 +51,7 @@ export const GET_COUNCIL_TRANSACTION_HISTORY = gql`
     $offset: Int!
     $limit: Int!
   ) {
-    councils(where: { id: $councilId }) {
+    councils(where: { id: { eq: $councilId } }) {
       id
       name
       transactionCount
@@ -82,7 +82,7 @@ export const GET_COUNCIL_TRANSACTION_HISTORY = gql`
 
 export const GET_TRANSACTION_DETAILS = gql`
   query getTransactionDetails($id: ID!) {
-    accountTransactions(where: { id: $id }) {
+    accountTransactions(where: { id: { eq: $id } }) {
       id
       createdAt
       lastModified
