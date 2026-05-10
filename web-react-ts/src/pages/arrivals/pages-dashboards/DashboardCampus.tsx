@@ -29,6 +29,7 @@ import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
 import { ChurchContext } from 'contexts/ChurchContext'
 import useAuth from 'auth/useAuth'
 import ArrivalsHeader from '../ArrivalsHeader'
+import DownloadArrivalsButton from '../DownloadArrivalsButton'
 
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
@@ -353,16 +354,22 @@ const CampusDashboard = () => {
 
                 {/* Date selector + download (mobile placement) */}
                 <div className="lg:hidden">
-                  <ArrivalsHeader level="Campus" churchId={campusId} />
+                  <ArrivalsHeader />
                 </div>
 
                 {/* Bacenta status grid */}
                 <section className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <SectionLabel>Bacenta Status</SectionLabel>
-                    <span className="text-xs text-muted-foreground">
-                      Tap a tile to drill in
-                    </span>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <SectionLabel>Bacenta Status</SectionLabel>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Tap a tile to drill in
+                      </p>
+                    </div>
+                    <DownloadArrivalsButton
+                      level="Campus"
+                      churchId={campusId}
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {bacentaTiles.map((tile) => (
@@ -427,7 +434,7 @@ const CampusDashboard = () => {
               {/* RIGHT — live arrivals */}
               <aside className="space-y-6 lg:sticky lg:top-6">
                 <div className="hidden lg:block">
-                  <ArrivalsHeader level="Campus" churchId={campusId} />
+                  <ArrivalsHeader />
                 </div>
                 <div className="space-y-3">
                   <SectionLabel>Live Arrivals</SectionLabel>
