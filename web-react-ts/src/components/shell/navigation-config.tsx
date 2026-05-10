@@ -5,6 +5,7 @@ import {
   Download,
   Home,
   type LucideIcon,
+  Map,
   Settings,
   ShieldCheck,
   TrendingUp,
@@ -12,7 +13,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { Role } from 'global-types'
-import { permitAdmin } from 'permission-utils'
+import { permitAdmin, permitMe } from 'permission-utils'
 
 export interface NavItem {
   name: string
@@ -66,6 +67,13 @@ export const secondaryNav: NavItem[] = [
     to: '/trends',
     icon: TrendingUp,
     accentClass: 'text-churches',
+  },
+  {
+    name: 'Maps',
+    to: '/maps',
+    icon: Map,
+    accentClass: 'text-maps',
+    roles: permitMe('Bacenta'),
   },
   {
     name: 'Shepherding Control',

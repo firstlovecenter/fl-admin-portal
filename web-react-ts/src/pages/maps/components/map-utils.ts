@@ -1,4 +1,4 @@
-import { PlaceType } from './MapComponent'
+import { PlaceType } from '../types'
 
 type MapIconType = google.maps.Icon
 export type Neo4jLocation = { x: number; y: number }

@@ -69,6 +69,7 @@ export interface Bacenta extends Church {
   governorship: Governorship
   council: Council
   bankingCode: number
+  location?: { latitude: number; longitude: number }
   services: ServiceRecord[]
   vacationStatus: VacationStatusOptions
   meetingDay: {

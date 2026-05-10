@@ -5,7 +5,7 @@ import usePlacesAutocomplete, {
   getGeocode,
   getLatLng,
 } from 'use-places-autocomplete'
-import { PlaceType } from './MapComponent'
+import { PlaceType } from '../types'
 
 interface ComboBoxProps extends FormikComponentProps {
   initialValue: string

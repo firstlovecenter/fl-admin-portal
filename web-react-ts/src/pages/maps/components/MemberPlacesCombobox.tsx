@@ -5,12 +5,11 @@ import { useSearchInitialValue } from 'components/formik/search-utils'
 import { LazyQueryExecFunction, OperationVariables } from '@apollo/client'
 import { MemberContext } from 'contexts/MemberContext'
 import { DEBOUNCE_TIMER } from 'global-utils'
-import { PlaceType } from './MapComponent'
+import { PlaceType } from '../types'
 
 interface ComboBoxProps extends FormikComponentProps {
   initialValue: string
   setCentre: (position: PlaceType) => void
-  memberSearch: LazyQueryExecFunction<any, OperationVariables>
   placesSearchByName: LazyQueryExecFunction<any, OperationVariables>
   handleClose: () => void
 }
