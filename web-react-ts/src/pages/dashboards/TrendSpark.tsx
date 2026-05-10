@@ -57,9 +57,9 @@ interface ChartTooltipProps {
 }
 
 interface ChartBarLabelProps {
-  x?: number
-  y?: number
-  width?: number
+  x?: number | string
+  y?: number | string
+  width?: number | string
   value?: number | string
 }
 
@@ -70,21 +70,24 @@ const compactNumberFormatter = new Intl.NumberFormat('en', {
 
 const renderBarLabel = ({ x, y, width, value }: ChartBarLabelProps) => {
   const numericValue = typeof value === 'number' ? value : Number(value)
+  const xNum = typeof x === 'number' ? x : Number(x)
+  const yNum = typeof y === 'number' ? y : Number(y)
+  const widthNum = typeof width === 'number' ? width : Number(width)
 
   if (
     !Number.isFinite(numericValue) ||
     numericValue <= 0 ||
-    x == null ||
-    y == null ||
-    width == null
+    !Number.isFinite(xNum) ||
+    !Number.isFinite(yNum) ||
+    !Number.isFinite(widthNum)
   ) {
     return null
   }
 
   return (
     <text
-      x={x + width / 2}
-      y={y - 8}
+      x={xNum + widthNum / 2}
+      y={yNum - 8}
       textAnchor="middle"
       fill="hsl(var(--muted-foreground))"
       fontSize={11}

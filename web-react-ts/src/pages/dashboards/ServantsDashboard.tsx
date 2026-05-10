@@ -123,7 +123,6 @@ const ServantsDashboard = () => {
             loading={!assessmentChurchData}
             stat1="attendance"
             stat2="income"
-            income={true}
             church={assessmentChurch?.__typename.toLowerCase() || ''}
             churchData={assessmentChurchData || []}
             graphType="services"
