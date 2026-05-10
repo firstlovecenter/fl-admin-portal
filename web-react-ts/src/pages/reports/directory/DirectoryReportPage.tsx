@@ -45,6 +45,8 @@ const DIRECTORY_HEADERS = [
   { label: 'Leader', key: 'leaderName' },
   { label: 'Phone', key: 'leaderPhone' },
   { label: 'WhatsApp', key: 'leaderWhatsApp' },
+  { label: 'Latitude', key: 'latitude' },
+  { label: 'Longitude', key: 'longitude' },
 ] as const
 
 type CsvRow = {
@@ -53,7 +55,12 @@ type CsvRow = {
   leaderName: string
   leaderPhone: string
   leaderWhatsApp: string
+  latitude: string
+  longitude: string
 }
+
+const formatCoord = (n: number | null | undefined): string =>
+  typeof n === 'number' && Number.isFinite(n) ? n.toFixed(6) : ''
 
 const LEVEL_PLURAL: Record<ReportLevel, string> = {
   Bacenta: 'Bacentas',
@@ -79,6 +86,8 @@ const toCsvRow = (entry: DirectoryReportEntry): CsvRow => ({
   leaderName: entry.leaderName ?? '',
   leaderPhone: entry.leaderPhone ?? '',
   leaderWhatsApp: entry.leaderWhatsApp ?? '',
+  latitude: formatCoord(entry.latitude),
+  longitude: formatCoord(entry.longitude),
 })
 
 const DirectoryReportPage = () => {

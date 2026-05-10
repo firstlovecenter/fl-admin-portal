@@ -40,6 +40,8 @@ export type DirectoryReportEntry = {
   leaderName: string | null
   leaderPhone: string | null
   leaderWhatsApp: string | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export type WeeklyChurchReportEntry = {

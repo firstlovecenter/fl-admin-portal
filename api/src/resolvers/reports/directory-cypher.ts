@@ -11,6 +11,11 @@
  * already hides the entry point at Bacenta scope.
  */
 
+// `latitude` / `longitude` are sourced from the node's `location: Point`.
+// Only `Bacenta` (and `Member`) carry locations in the schema today; for any
+// alias that doesn't have a `location` property, `${alias}.location` returns
+// null in Cypher and the `CASE WHEN ... IS NULL` guards keep the projection
+// safe — the entry just gets empty coordinate fields.
 const directoryEntryProjection = (
   level:
     | 'Bacenta'
@@ -30,7 +35,9 @@ const directoryEntryProjection = (
     parentName: ${parentAlias ? `${parentAlias}.name` : 'null'},
     leaderName: CASE WHEN ${leaderAlias} IS NULL THEN null ELSE ${leaderAlias}.firstName + ' ' + ${leaderAlias}.lastName END,
     leaderPhone: CASE WHEN ${leaderAlias} IS NULL THEN null ELSE ${leaderAlias}.phoneNumber END,
-    leaderWhatsApp: CASE WHEN ${leaderAlias} IS NULL THEN null ELSE ${leaderAlias}.whatsappNumber END
+    leaderWhatsApp: CASE WHEN ${leaderAlias} IS NULL THEN null ELSE ${leaderAlias}.whatsappNumber END,
+    latitude: CASE WHEN ${alias}.location IS NULL THEN null ELSE ${alias}.location.y END,
+    longitude: CASE WHEN ${alias}.location IS NULL THEN null ELSE ${alias}.location.x END
   }
 `
 

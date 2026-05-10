@@ -6,6 +6,8 @@ type DirectoryReportEntry @node{
   leaderName: String
   leaderPhone: String
   leaderWhatsApp: String
+  latitude: Float
+  longitude: Float
 }
 
 type WeeklyChurchReportEntry @node{

@@ -14,6 +14,8 @@ const DIRECTORY_FIELDS = `
     leaderName
     leaderPhone
     leaderWhatsApp
+    latitude
+    longitude
   }
 `
 
