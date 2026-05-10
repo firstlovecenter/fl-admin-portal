@@ -23,6 +23,9 @@ frontend:
           if [ "${AWS_BRANCH:-}" = "main" ]; then
             ENV_LABEL="🚀 Production"
             ENV_COLOR="#FF0000"
+          elif [ "${AWS_BRANCH:-}" = "staging" ]; then
+            ENV_LABEL="🟠 Staging (Pre-Production)"
+            ENV_COLOR="#FF8C00"
           else
             ENV_LABEL="🟡 Development"
             ENV_COLOR="#FFA500"
@@ -160,9 +163,9 @@ frontend:
           trap on_error ERR
 
           # Pick the right secret name based on branch
-          # main -> prod/fl-admin-portal
+          # main and staging -> prod/fl-admin-portal
           # anything else -> dev/fl-admin-portal
-          if [ "${AWS_BRANCH:-}" = "main" ]; then
+          if [ "${AWS_BRANCH:-}" = "main" ] || [ "${AWS_BRANCH:-}" = "staging" ]; then
             SECRET_ID="prod/fl-admin-portal"
           else
             SECRET_ID="dev/fl-admin-portal"
@@ -215,6 +218,9 @@ frontend:
           if [ "${AWS_BRANCH:-}" = "main" ]; then
             ENV_LABEL="🔴 Production"
             ENV_COLOR="#FF0000"
+          elif [ "${AWS_BRANCH:-}" = "staging" ]; then
+            ENV_LABEL="🟠 Staging (Pre-Production)"
+            ENV_COLOR="#FF8C00"
           else
             ENV_LABEL="🟡 Development"
             ENV_COLOR="#FFA500"
