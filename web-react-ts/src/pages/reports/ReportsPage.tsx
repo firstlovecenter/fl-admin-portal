@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { useEffect, useState, type MouseEvent, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertOctagon,
@@ -15,6 +15,89 @@ import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
 import { getSubChurchLevel, plural } from 'global-utils'
 import type { ChurchLevel } from 'global-types'
+
+type TocSection = { id: string; label: string }
+
+const ReportsTableOfContents = ({
+  sections,
+  className,
+}: {
+  sections: TocSection[]
+  className?: string
+}) => {
+  const [activeId, setActiveId] = useState<string | null>(
+    sections[0]?.id ?? null
+  )
+
+  useEffect(() => {
+    if (sections.length === 0) return undefined
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort(
+            (a, b) =>
+              a.target.getBoundingClientRect().top -
+              b.target.getBoundingClientRect().top
+          )
+        if (visible[0]) setActiveId(visible[0].target.id)
+      },
+      { rootMargin: '-15% 0px -65% 0px', threshold: 0 }
+    )
+    sections.forEach((section) => {
+      const el = document.getElementById(section.id)
+      if (el) observer.observe(el)
+    })
+    return () => observer.disconnect()
+  }, [sections])
+
+  const handleClick = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault()
+    const el = document.getElementById(id)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setActiveId(id)
+  }
+
+  if (sections.length === 0) return null
+
+  return (
+    <nav
+      aria-label="Report sections"
+      className={cn(
+        'lg:sticky lg:top-6 lg:rounded-xl lg:border lg:border-border lg:bg-card lg:p-4',
+        className
+      )}
+    >
+      <p className="mb-3 hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground lg:block">
+        On this page
+      </p>
+      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:p-0">
+        {sections.map((section) => {
+          const isActive = activeId === section.id
+          return (
+            <li key={section.id} className="shrink-0">
+              <a
+                href={`#${section.id}`}
+                onClick={(e) => handleClick(e, section.id)}
+                aria-current={isActive ? 'true' : undefined}
+                className={cn(
+                  'block min-h-11 whitespace-nowrap rounded-full border px-4 py-2.5 text-sm font-medium transition-colors',
+                  'lg:min-h-0 lg:rounded-md lg:border-transparent lg:px-3 lg:py-2',
+                  isActive
+                    ? 'border-banking bg-banking/10 text-banking'
+                    : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground lg:bg-transparent'
+                )}
+              >
+                {section.label}
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
 
 const MEMBERSHIP_PATHS: Record<string, string> = {
   Bacenta: '/download-reports/bacenta/membership',
@@ -121,6 +204,16 @@ const ReportsPage = () => {
   const weekdaySubChurchesPath =
     reportsAvailable && hasSubChurches ? '/reports/weekday/sub-churches' : null
 
+  const tocSections: TocSection[] = [
+    { id: 'directory', label: 'Directory' },
+    { id: 'bussing', label: 'Bussing' },
+    ...(defaultersAvailable
+      ? [{ id: 'defaulters', label: 'Defaulters' }]
+      : []),
+    ...(arrivalsAvailable ? [{ id: 'arrivals', label: 'Arrivals' }] : []),
+    { id: 'weekday', label: 'Weekday' },
+  ]
+
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
@@ -131,9 +224,13 @@ const ReportsPage = () => {
           </h1>
         </header>
 
-        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
-          <div className="space-y-6">
-            <section className="space-y-3">
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_240px] lg:items-start lg:gap-8">
+          <ReportsTableOfContents
+            sections={tocSections}
+            className="lg:order-2"
+          />
+          <div className="space-y-6 lg:order-1">
+            <section id="directory" className="space-y-3 scroll-mt-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Directory
               </p>
@@ -163,7 +260,7 @@ const ReportsPage = () => {
               </div>
             </section>
 
-            <section className="space-y-3">
+            <section id="bussing" className="space-y-3 scroll-mt-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Bussing
               </p>
@@ -200,7 +297,7 @@ const ReportsPage = () => {
             </section>
 
             {defaultersAvailable && (
-              <section className="space-y-3">
+              <section id="defaulters" className="space-y-3 scroll-mt-6">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Defaulters
                 </p>
@@ -216,7 +313,7 @@ const ReportsPage = () => {
             )}
 
             {arrivalsAvailable && (
-              <section className="space-y-3">
+              <section id="arrivals" className="space-y-3 scroll-mt-6">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Arrivals
                 </p>
@@ -231,7 +328,7 @@ const ReportsPage = () => {
               </section>
             )}
 
-            <section className="space-y-3">
+            <section id="weekday" className="space-y-3 scroll-mt-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Weekday
               </p>
@@ -267,8 +364,6 @@ const ReportsPage = () => {
               </div>
             </section>
           </div>
-
-          <div className="hidden lg:block" aria-hidden="true" />
         </div>
       </main>
     </div>
