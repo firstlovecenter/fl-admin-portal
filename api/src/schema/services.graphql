@@ -5,11 +5,11 @@ type ServiceDay {
 }
 
 extend type Stream {
-  servicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  servicesThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -29,11 +29,11 @@ extend type Stream {
       """
       columnName: "servicesThisWeek"
     )
-  servicesThisWeekCount: Int!
+  servicesThisWeekCount(weekStart: Date): Int!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -53,11 +53,11 @@ extend type Stream {
       """
       columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  cancelledServicesThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -78,11 +78,11 @@ extend type Stream {
       """
       columnName: "cancelledServicesThisWeek"
     )
-  cancelledServicesThisWeekCount: Int
+  cancelledServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
        MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -103,11 +103,11 @@ extend type Stream {
       """
       columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  formDefaultersThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -127,16 +127,16 @@ extend type Stream {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name, defaulters.id SKIP $offset LIMIT $limit
       """
       columnName: "formDefaultersThisWeek"
     )
-  formDefaultersThisWeekCount: Int
+  formDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -156,16 +156,16 @@ extend type Stream {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
       columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  bankingDefaultersThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -189,11 +189,11 @@ extend type Stream {
       """
       columnName: "bankingDefaultersThisWeek"
     )
-  bankingDefaultersThisWeekCount: Int
+  bankingDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -217,11 +217,11 @@ extend type Stream {
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  bankedThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -244,11 +244,11 @@ extend type Stream {
 
       columnName: "bankedThisWeek"
     )
-  bankedThisWeekCount: Int
+  bankedThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -270,11 +270,11 @@ extend type Stream {
       """
       columnName: "bankedThisWeekCount"
     )
-  governorshipServicesThisWeek: [Governorship!]!
+  governorshipServicesThisWeek(weekStart: Date): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -294,11 +294,11 @@ extend type Stream {
       """
       columnName: "governorshipServicesThisWeek"
     )
-  governorshipServicesThisWeekCount: Int
+  governorshipServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -318,11 +318,11 @@ extend type Stream {
       """
       columnName: "governorshipServicesThisWeekCount"
     )
-  councilServicesThisWeek: [Council!]!
+  councilServicesThisWeek(weekStart: Date): [Council!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -342,11 +342,11 @@ extend type Stream {
       """
       columnName: "councilServicesThisWeek"
     )
-  councilServicesThisWeekCount: Int
+  councilServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -368,11 +368,11 @@ extend type Stream {
     )
 }
 extend type Council {
-  servicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  servicesThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -392,11 +392,11 @@ extend type Council {
       """
       columnName: "servicesThisWeek"
     )
-  servicesThisWeekCount: Int
+  servicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -416,11 +416,11 @@ extend type Council {
       """
       columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  cancelledServicesThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -440,11 +440,11 @@ extend type Council {
       """
       columnName: "cancelledServicesThisWeek"
     )
-  cancelledServicesThisWeekCount: Int
+  cancelledServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -464,11 +464,11 @@ extend type Council {
       """
       columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  formDefaultersThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -488,17 +488,17 @@ extend type Council {
 
        WITH defaulters, this, governorship
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
         WITH DISTINCT defaulters, governorship
        RETURN defaulters AS formDefaultersThisWeek ORDER BY governorship.name
       """
       columnName: "formDefaultersThisWeek"
     )
-  formDefaultersThisWeekCount: Int
+  formDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -518,16 +518,16 @@ extend type Council {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
       columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  bankingDefaultersThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -551,11 +551,11 @@ extend type Council {
       """
       columnName: "bankingDefaultersThisWeek"
     )
-  bankingDefaultersThisWeekCount: Int
+  bankingDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -579,11 +579,11 @@ extend type Council {
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  bankedThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -605,11 +605,11 @@ extend type Council {
       """
       columnName: "bankedThisWeek"
     )
-  bankedThisWeekCount: Int
+  bankedThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -631,11 +631,11 @@ extend type Council {
       """
       columnName: "bankedThisWeekCount"
     )
-  governorshipServicesThisWeek: [Governorship!]!
+  governorshipServicesThisWeek(weekStart: Date): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -655,11 +655,11 @@ extend type Council {
       """
       columnName: "governorshipServicesThisWeek"
     )
-  governorshipServicesThisWeekCount: Int
+  governorshipServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -682,11 +682,11 @@ extend type Council {
 }
 
 extend type Governorship {
-  servicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  servicesThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -707,11 +707,11 @@ extend type Governorship {
       """
       columnName: "servicesThisWeek"
     )
-  servicesThisWeekCount: Int!
+  servicesThisWeekCount(weekStart: Date): Int!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -732,11 +732,11 @@ extend type Governorship {
       """
       columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  cancelledServicesThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -757,11 +757,11 @@ extend type Governorship {
       """
       columnName: "cancelledServicesThisWeek"
     )
-  cancelledServicesThisWeekCount: Int
+  cancelledServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -782,11 +782,11 @@ extend type Governorship {
       """
       columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  formDefaultersThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -806,17 +806,17 @@ extend type Governorship {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
 
        RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name, defaulters.id SKIP $offset LIMIT $limit
       """
       columnName: "formDefaultersThisWeek"
     )
-  formDefaultersThisWeekCount: Int
+  formDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -836,17 +836,17 @@ extend type Governorship {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
 
        RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
       columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  bankingDefaultersThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -870,11 +870,11 @@ extend type Governorship {
       """
       columnName: "bankingDefaultersThisWeek"
     )
-  bankingDefaultersThisWeekCount: Int
+  bankingDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -898,11 +898,11 @@ extend type Governorship {
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  bankedThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -924,11 +924,11 @@ extend type Governorship {
       """
       columnName: "bankedThisWeek"
     )
-  bankedThisWeekCount: Int
+  bankedThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1124,7 +1124,7 @@ extend type Campus {
       """
       columnName: "activeStreamCount"
     )
-  streamServicesThisWeek: [Stream!]!
+  streamServicesThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1141,7 +1141,7 @@ extend type Campus {
       """
       columnName: "streams"
     )
-  streamServicesThisWeekCount: Int!
+  streamServicesThisWeekCount(weekStart: Date): Int!
     @cypher(
       statement: """
       MATCH (this)
@@ -1158,7 +1158,7 @@ extend type Campus {
       """
       columnName: "streamServicesThisWeekCount"
     )
-  streamCancelledServicesThisWeek: [Stream!]!
+  streamCancelledServicesThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1176,7 +1176,7 @@ extend type Campus {
       """
       columnName: "streamCancelledServicesThisWeek"
     )
-  streamCancelledServicesThisWeekCount: Int
+  streamCancelledServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1193,7 +1193,7 @@ extend type Campus {
       """
       columnName: "streamCancelledServicesThisWeekCount"
     )
-  streamFormDefaultersThisWeek: [Stream!]!
+  streamFormDefaultersThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1211,12 +1211,12 @@ extend type Campus {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
       columnName: "streamFormDefaultersThisWeek"
     )
-  streamFormDefaultersThisWeekCount: Int
+  streamFormDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1233,12 +1233,12 @@ extend type Campus {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
       columnName: "streamFormDefaultersThisWeekCount"
     )
-  streamBankingDefaultersThisWeek: [Stream!]!
+  streamBankingDefaultersThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1259,7 +1259,7 @@ extend type Campus {
       """
       columnName: "streamBankingDefaultersThisWeek"
     )
-  streamBankingDefaultersThisWeekCount: Int
+  streamBankingDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1280,7 +1280,7 @@ extend type Campus {
       """
       columnName: "streamBankingDefaultersThisWeekCount"
     )
-  streamBankedThisWeek: [Stream!]!
+  streamBankedThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1299,7 +1299,7 @@ extend type Campus {
       """
       columnName: "streamBankedThisWeek"
     )
-  streamBankedThisWeekCount: Int
+  streamBankedThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1321,11 +1321,11 @@ extend type Campus {
 }
 
 extend type Campus {
-  servicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  servicesThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1345,11 +1345,11 @@ extend type Campus {
       """
       columnName: "servicesThisWeek"
     )
-  servicesThisWeekCount: Int
+  servicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1369,11 +1369,11 @@ extend type Campus {
       """
       columnName: "servicesThisWeekCount"
     )
-  cancelledServicesThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  cancelledServicesThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1393,11 +1393,11 @@ extend type Campus {
       """
       columnName: "cancelledServicesThisWeek"
     )
-  cancelledServicesThisWeekCount: Int
+  cancelledServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1417,11 +1417,11 @@ extend type Campus {
       """
       columnName: "cancelledServicesThisWeekCount"
     )
-  formDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  formDefaultersThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1441,16 +1441,16 @@ extend type Campus {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN DISTINCT defaulters AS formDefaultersThisWeek ORDER BY defaulters.name, defaulters.id SKIP $offset LIMIT $limit
       """
       columnName: "formDefaultersThisWeek"
     )
-  formDefaultersThisWeekCount: Int
+  formDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1470,16 +1470,16 @@ extend type Campus {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek AND  time() > time('20:30'))
        RETURN COUNT(DISTINCT defaulters) AS formDefaultersThisWeekCount
       """
       columnName: "formDefaultersThisWeekCount"
     )
-  bankingDefaultersThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  bankingDefaultersThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1503,11 +1503,11 @@ extend type Campus {
       """
       columnName: "bankingDefaultersThisWeek"
     )
-  bankingDefaultersThisWeekCount: Int
+  bankingDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1531,11 +1531,11 @@ extend type Campus {
       """
       columnName: "bankingDefaultersThisWeekCount"
     )
-  bankedThisWeek(limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
+  bankedThisWeek(weekStart: Date, limit: Int! = 200, offset: Int! = 0): [Bacenta!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1557,11 +1557,11 @@ extend type Campus {
       """
       columnName: "bankedThisWeek"
     )
-  bankedThisWeekCount: Int
+  bankedThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1583,11 +1583,11 @@ extend type Campus {
       """
       columnName: "bankedThisWeekCount"
     )
-  governorshipServicesThisWeek: [Governorship!]!
+  governorshipServicesThisWeek(weekStart: Date): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1607,11 +1607,11 @@ extend type Campus {
       """
       columnName: "governorshipServicesThisWeek"
     )
-  governorshipServicesThisWeekCount: Int
+  governorshipServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1631,11 +1631,11 @@ extend type Campus {
       """
       columnName: "governorshipServicesThisWeekCount"
     )
-  councilServicesThisWeek: [Council!]!
+  councilServicesThisWeek(weekStart: Date): [Council!]!
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1655,11 +1655,11 @@ extend type Campus {
       """
       columnName: "councilServicesThisWeek"
     )
-  councilServicesThisWeekCount: Int
+  councilServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
-      WITH date() as today, this
+      WITH coalesce(date($weekStart), date()) AS today, this
       WITH  today.weekDay as theDay, today, this
       WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
       WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
@@ -1689,7 +1689,7 @@ extend type Oversight {
       """
       columnName: "activeStreamCount"
     )
-  streamServicesThisWeek: [Stream!]!
+  streamServicesThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1706,7 +1706,7 @@ extend type Oversight {
       """
       columnName: "streams"
     )
-  streamServicesThisWeekCount: Int!
+  streamServicesThisWeekCount(weekStart: Date): Int!
     @cypher(
       statement: """
       MATCH (this)
@@ -1723,7 +1723,7 @@ extend type Oversight {
       """
       columnName: "streamServicesThisWeekCount"
     )
-  streamCancelledServicesThisWeek: [Stream!]!
+  streamCancelledServicesThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1741,7 +1741,7 @@ extend type Oversight {
       """
       columnName: "streamCancelledServicesThisWeek"
     )
-  streamCancelledServicesThisWeekCount: Int
+  streamCancelledServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1758,7 +1758,7 @@ extend type Oversight {
       """
       columnName: "streamCancelledServicesThisWeekCount"
     )
-  streamFormDefaultersThisWeek: [Stream!]!
+  streamFormDefaultersThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1776,12 +1776,12 @@ extend type Oversight {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
       columnName: "streamFormDefaultersThisWeek"
     )
-  streamFormDefaultersThisWeekCount: Int
+  streamFormDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1798,12 +1798,12 @@ extend type Oversight {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
       columnName: "streamFormDefaultersThisWeekCount"
     )
-  streamBankingDefaultersThisWeek: [Stream!]!
+  streamBankingDefaultersThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1824,7 +1824,7 @@ extend type Oversight {
       """
       columnName: "streamBankingDefaultersThisWeek"
     )
-  streamBankingDefaultersThisWeekCount: Int
+  streamBankingDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1845,7 +1845,7 @@ extend type Oversight {
       """
       columnName: "streamBankingDefaultersThisWeekCount"
     )
-  streamBankedThisWeek: [Stream!]!
+  streamBankedThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1864,7 +1864,7 @@ extend type Oversight {
       """
       columnName: "streamBankedThisWeek"
     )
-  streamBankedThisWeekCount: Int
+  streamBankedThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1893,7 +1893,7 @@ extend type Denomination {
       """
       columnName: "activeStreamCount"
     )
-  streamServicesThisWeek: [Stream!]!
+  streamServicesThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1910,7 +1910,7 @@ extend type Denomination {
       """
       columnName: "streamServicesThisWeek"
     )
-  streamServicesThisWeekCount: Int!
+  streamServicesThisWeekCount(weekStart: Date): Int!
     @cypher(
       statement: """
       MATCH (this)
@@ -1927,7 +1927,7 @@ extend type Denomination {
       """
       columnName: "streamServicesThisWeekCount"
     )
-  streamCancelledServicesThisWeek: [Stream!]!
+  streamCancelledServicesThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1945,7 +1945,7 @@ extend type Denomination {
       """
       columnName: "streamCancelledServicesThisWeek"
     )
-  streamCancelledServicesThisWeekCount: Int
+  streamCancelledServicesThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -1962,7 +1962,7 @@ extend type Denomination {
       """
       columnName: "streamCancelledServicesThisWeekCount"
     )
-  streamFormDefaultersThisWeek: [Stream!]!
+  streamFormDefaultersThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -1980,12 +1980,12 @@ extend type Denomination {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN DISTINCT defaulters AS streamFormDefaultersThisWeek ORDER BY defaulters.name
       """
       columnName: "streamFormDefaultersThisWeek"
     )
-  streamFormDefaultersThisWeekCount: Int
+  streamFormDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -2002,12 +2002,12 @@ extend type Denomination {
 
        WITH defaulters, this
        MATCH (defaulters)-[:MEETS_ON]->(day:ServiceDay)
-        WHERE day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
+        WHERE ($weekStart IS NOT NULL AND date($weekStart) < date.truncate('week', date())) OR day.dayNumber < date().dayOfWeek OR (day.dayNumber = date().dayOfWeek)
        RETURN COUNT(DISTINCT defaulters) AS streamFormDefaultersThisWeekCount
       """
       columnName: "streamFormDefaultersThisWeekCount"
     )
-  streamBankingDefaultersThisWeek: [Stream!]!
+  streamBankingDefaultersThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -2028,7 +2028,7 @@ extend type Denomination {
       """
       columnName: "streamBankingDefaultersThisWeek"
     )
-  streamBankingDefaultersThisWeekCount: Int
+  streamBankingDefaultersThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)
@@ -2049,7 +2049,7 @@ extend type Denomination {
       """
       columnName: "streamBankingDefaultersThisWeekCount"
     )
-  streamBankedThisWeek: [Stream!]!
+  streamBankedThisWeek(weekStart: Date): [Stream!]!
     @cypher(
       statement: """
       MATCH (this)
@@ -2068,7 +2068,7 @@ extend type Denomination {
       """
       columnName: "streamBankedThisWeek"
     )
-  streamBankedThisWeekCount: Int
+  streamBankedThisWeekCount(weekStart: Date): Int
     @cypher(
       statement: """
       MATCH (this)

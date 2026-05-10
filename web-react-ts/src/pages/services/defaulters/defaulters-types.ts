@@ -21,6 +21,10 @@ export interface BacentaWithDefaulters extends Bacenta {
   __typename: 'Bacenta'
   governorship: Governorship
   services: ServiceRecord[]
+  // Single service record for the selected week (driven by `weekStart` arg
+  // on the cypher field). Replaces the `services(limit: 1)` accessor that
+  // always returned the latest record across all time.
+  serviceRecordForWeek?: ServiceRecord | null
 }
 export interface GovernorshipWithDefaulters extends Governorship {
   __typename: 'Governorship'

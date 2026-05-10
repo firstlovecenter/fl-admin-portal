@@ -1383,6 +1383,22 @@ type Bacenta implements Church {
       columnName: "services"
     )
 
+  serviceRecordForWeek(weekStart: Date): ServiceRecord
+    @cypher(
+      statement: """
+      MATCH (this)
+      WITH coalesce(date($weekStart), date()) AS today, this
+      WITH  today.weekDay as theDay, today, this
+      WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
+      WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+      RETURN record AS record ORDER BY date.date DESC LIMIT 1
+      """
+      columnName: "record"
+    )
+
   council: Council
     @cypher(
       statement: """

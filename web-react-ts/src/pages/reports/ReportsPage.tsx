@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  AlertOctagon,
   Bus,
   CalendarRange,
   Download,
@@ -95,6 +96,12 @@ const ReportsPage = () => {
 
   const directoryPath =
     reportsAvailable && hasSubChurches ? '/reports/directory' : null
+  // Defaulters export is gated to Governorship+ on the route. The card stays
+  // visible for those scopes; lower scopes (Bacenta) hide it.
+  const defaultersAvailable =
+    reportsAvailable &&
+    ['Governorship', 'Council', 'Stream', 'Campus'].includes(churchType)
+  const defaultersPath = defaultersAvailable ? '/reports/defaulters' : null
   const bussingPath = reportsAvailable ? '/reports/bussing' : null
   const bussingSubChurchesPath =
     reportsAvailable && hasSubChurches ? '/reports/bussing/sub-churches' : null
@@ -187,6 +194,22 @@ const ReportsPage = () => {
                 )}
               </div>
             </section>
+
+            {defaultersAvailable && (
+              <section className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Defaulters
+                </p>
+                <ReportCard
+                  icon={<AlertOctagon className="size-5" />}
+                  title={`${churchPrefix}Defaulters Report`}
+                  description={`Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-${
+                    subChurchType || 'sub-church'
+                  } summary at Council and above.`}
+                  to={defaultersPath}
+                />
+              </section>
+            )}
 
             <section className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

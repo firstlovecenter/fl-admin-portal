@@ -1,5 +1,5 @@
 import { useLazyQuery } from '@apollo/client'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle,
@@ -18,6 +18,8 @@ import { MemberContext } from 'contexts/MemberContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { ChurchLevel } from 'global-types'
 import useSontaLevel from 'hooks/useSontaLevel'
+import useSelectedWeek from 'hooks/useSelectedWeek'
+import WeekSelector from 'components/WeekSelector/WeekSelector'
 
 import { Card, CardContent } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
@@ -38,6 +40,8 @@ import {
   DENOMINATION_DEFAULTERS,
 } from './DefaultersQueries'
 import DefaulterInfoCard, { Defaulter as Tile } from './DefaulterInfoCard'
+import DownloadDefaultersButton from './DownloadDefaultersButton'
+import { isDefaultersDownloadLevel } from './utils/buildDefaultersWorkbook'
 import {
   DefaultersUseChurchType,
   HigherChurchWithDefaulters,
@@ -70,10 +74,12 @@ const SectionHeader = ({
   title,
   subtitle,
   loading,
+  action,
 }: {
   title: string
   subtitle: string
   loading: boolean
+  action?: ReactNode
 }) => (
   <div className="flex items-end justify-between gap-3">
     <div className="min-w-0">
@@ -84,6 +90,7 @@ const SectionHeader = ({
         <p className="text-xs text-muted-foreground">{subtitle}</p>
       )}
     </div>
+    {action && <div className="shrink-0">{action}</div>}
   </div>
 )
 
@@ -111,6 +118,7 @@ const DefaultersDashboard = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { clickCard } = useContext(ChurchContext) as any
   const navigate = useNavigate()
+  const { weekStart, isCurrent, weekLabel, linkWith } = useSelectedWeek()
   const [governorshipDefaulters, { refetch: governorshipRefetch }] =
     useLazyQuery(GOVERNORSHIP_DEFAULTERS)
   const [councilDefaulters, { refetch: councilRefetch }] =
@@ -137,6 +145,7 @@ const DefaultersDashboard = () => {
     oversightRefetch,
     denominationFunction: denominationDefaulters,
     denominationRefetch,
+    weekStart,
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
@@ -171,7 +180,7 @@ const DefaultersDashboard = () => {
         data: church?.streamServicesThisWeekCount,
         color: church?.streamServicesThisWeekCount ? 'good' : 'bad',
         link: church?.streamServicesThisWeekCount
-          ? '/stream-services/filled-services'
+          ? linkWith('/stream-services/filled-services')
           : '#',
       },
       {
@@ -179,7 +188,7 @@ const DefaultersDashboard = () => {
         data: church?.streamFormDefaultersThisWeekCount,
         color: church?.streamFormDefaultersThisWeekCount ? 'bad' : 'good',
         link: church?.streamFormDefaultersThisWeekCount
-          ? '/stream-services/form-defaulters'
+          ? linkWith('/stream-services/form-defaulters')
           : '#',
       },
       {
@@ -193,7 +202,7 @@ const DefaultersDashboard = () => {
             ? 'yellow'
             : 'bad',
         link: church?.streamBankedThisWeekCount
-          ? '/stream-services/banked'
+          ? linkWith('/stream-services/banked')
           : '#',
       },
       {
@@ -201,7 +210,7 @@ const DefaultersDashboard = () => {
         data: church?.streamBankingDefaultersThisWeekCount,
         color: church?.streamBankingDefaultersThisWeekCount ? 'bad' : 'good',
         link: church?.streamBankingDefaultersThisWeekCount
-          ? '/stream-services/banking-defaulters'
+          ? linkWith('/stream-services/banking-defaulters')
           : '#',
       },
       {
@@ -209,11 +218,11 @@ const DefaultersDashboard = () => {
         data: church?.streamCancelledServicesThisWeekCount,
         color: church?.streamCancelledServicesThisWeekCount ? 'bad' : 'good',
         link: church?.streamCancelledServicesThisWeekCount
-          ? '/stream-services/cancelled-services'
+          ? linkWith('/stream-services/cancelled-services')
           : '#',
       },
     ],
-    [church]
+    [church, linkWith]
   )
 
   const bacentaTiles = useMemo<Tile[]>(
@@ -223,7 +232,7 @@ const DefaultersDashboard = () => {
         data: church?.servicesThisWeekCount,
         color: church?.servicesThisWeekCount ? 'good' : 'bad',
         link: church?.servicesThisWeekCount
-          ? '/services/filled-services'
+          ? linkWith('/services/filled-services')
           : '#',
       },
       {
@@ -231,7 +240,7 @@ const DefaultersDashboard = () => {
         data: church?.formDefaultersThisWeekCount,
         color: church?.formDefaultersThisWeekCount ? 'bad' : 'good',
         link: church?.formDefaultersThisWeekCount
-          ? '/services/form-defaulters'
+          ? linkWith('/services/form-defaulters')
           : '#',
       },
       {
@@ -244,14 +253,14 @@ const DefaultersDashboard = () => {
             : safeNumber(church?.bankedThisWeekCount) > 0
             ? 'yellow'
             : 'bad',
-        link: church?.bankedThisWeekCount ? '/services/banked' : '#',
+        link: church?.bankedThisWeekCount ? linkWith('/services/banked') : '#',
       },
       {
         title: 'Have Not Banked',
         data: church?.bankingDefaultersThisWeekCount,
         color: church?.bankingDefaultersThisWeekCount ? 'bad' : 'good',
         link: church?.bankingDefaultersThisWeekCount
-          ? '/services/banking-defaulters'
+          ? linkWith('/services/banking-defaulters')
           : '#',
       },
       {
@@ -259,11 +268,11 @@ const DefaultersDashboard = () => {
         data: church?.cancelledServicesThisWeekCount,
         color: church?.cancelledServicesThisWeekCount ? 'bad' : 'good',
         link: church?.cancelledServicesThisWeekCount
-          ? '/services/cancelled-services'
+          ? linkWith('/services/cancelled-services')
           : '#',
       },
     ],
-    [church]
+    [church, linkWith]
   )
 
   const jointTiles = useMemo<Tile[]>(
@@ -275,7 +284,7 @@ const DefaultersDashboard = () => {
             data: church?.governorshipBankedThisWeekCount,
             color: church?.governorshipBankedThisWeekCount ? 'good' : 'bad',
             link: church?.governorshipBankedThisWeekCount
-              ? '/services/governorship-banked'
+              ? linkWith('/services/governorship-banked')
               : '#',
           },
           {
@@ -285,7 +294,7 @@ const DefaultersDashboard = () => {
               ? 'bad'
               : 'good',
             link: church?.governorshipBankingDefaultersThisWeekCount
-              ? '/services/governorship-banking-defaulters'
+              ? linkWith('/services/governorship-banking-defaulters')
               : '#',
           },
           {
@@ -293,7 +302,7 @@ const DefaultersDashboard = () => {
             data: church?.councilBankedThisWeekCount,
             color: church?.councilBankedThisWeekCount ? 'good' : 'bad',
             link: church?.councilBankedThisWeekCount
-              ? '/services/council-banked'
+              ? linkWith('/services/council-banked')
               : '#',
           },
           {
@@ -303,12 +312,12 @@ const DefaultersDashboard = () => {
               ? 'bad'
               : 'good',
             link: church?.councilBankingDefaultersThisWeekCount
-              ? '/services/council-banking-defaulters'
+              ? linkWith('/services/council-banking-defaulters')
               : '#',
           },
         ] as Tile[]
       ).filter((tile) => tile.data !== undefined && tile.data !== null),
-    [church]
+    [church, linkWith]
   )
 
   // Headline KPIs track the active tab so the summary always reconciles to
@@ -358,15 +367,26 @@ const DefaultersDashboard = () => {
       title: capitalise(plural(subChurch)),
       data: value,
       color: 'neutral',
-      link: `/services/${church?.__typename?.toLowerCase()}-by-${subChurch?.toLowerCase()}`,
+      link: linkWith(
+        `/services/${church?.__typename?.toLowerCase()}-by-${subChurch?.toLowerCase()}`
+      ),
     }
-  }, [church, subChurch])
+  }, [church, subChurch, linkWith])
 
   const tabsCount = [
     showBacentaSection,
     showStreamSection,
     showJointSection && jointTiles.length > 0,
   ].filter(Boolean).length
+
+  const downloadAction =
+    isDefaultersDownloadLevel(church?.__typename) && church?.id ? (
+      <DownloadDefaultersButton
+        level={church.__typename}
+        churchId={church.id}
+        disabled={!church}
+      />
+    ) : null
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -386,7 +406,8 @@ const DefaultersDashboard = () => {
                 <Skeleton className="h-9 w-72" />
               )}
               <p className="text-sm text-muted-foreground">
-                Weekly defaulter overview &mdash; current week
+                Weekly defaulter overview
+                {isCurrent ? '' : ` — ${weekLabel}`}
               </p>
             </header>
 
@@ -450,91 +471,102 @@ const DefaultersDashboard = () => {
               />
             </section>
 
-            <RoleView roles={permitLeaderAdmin('Council')}>
-              {subChurchAggregate && (
-                <Card>
-                  <CardContent className="flex items-center justify-between gap-4 p-4">
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        {subChurchAggregate.title}
-                      </p>
-                      <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-foreground">
-                        {subChurchAggregate.data}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => navigate(subChurchAggregate.link)}
-                      className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-muted active:bg-muted/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background outline-none"
-                    >
-                      View list
-                    </button>
-                  </CardContent>
-                </Card>
-              )}
-            </RoleView>
-
-            <Tabs
-              value={tab}
-              onValueChange={(value) => setTab(value as DashboardTab)}
-              className="space-y-4"
-            >
-              {tabsCount > 1 && (
-                <TabsList
-                  className="grid h-12 w-full lg:max-w-md"
-                  style={{
-                    gridTemplateColumns: `repeat(${tabsCount}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {showBacentaSection && (
-                    <TabsTrigger value="bacenta">Bacenta Services</TabsTrigger>
+            {/* 2-column body on lg+, stacked on mobile.
+                Sidebar uses order-first on mobile so the WeekSelector still
+                appears before the tabs in the natural reading order. */}
+            <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
+              <aside className="order-first space-y-4 lg:order-none lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1">
+                <WeekSelector />
+                <RoleView roles={permitLeaderAdmin('Council')}>
+                  {subChurchAggregate && (
+                    <Card>
+                      <CardContent className="flex items-center justify-between gap-4 p-4">
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                            {subChurchAggregate.title}
+                          </p>
+                          <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                            {subChurchAggregate.data}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => navigate(subChurchAggregate.link)}
+                          className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:bg-muted/80"
+                        >
+                          View list
+                        </button>
+                      </CardContent>
+                    </Card>
                   )}
-                  {showStreamSection && (
-                    <TabsTrigger value="stream">Stream Services</TabsTrigger>
-                  )}
-                  {showJointSection && jointTiles.length > 0 && (
-                    <TabsTrigger value="joint">Joint Services</TabsTrigger>
-                  )}
-                </TabsList>
-              )}
+                </RoleView>
+              </aside>
 
-              {showBacentaSection && (
-                <TabsContent value="bacenta" className="space-y-3">
-                  <SectionHeader
-                    title="Bacenta Services"
-                    subtitle={`${activeUnitValue.toLocaleString(
-                      'en-GH'
-                    )} active bacentas this week`}
-                    loading={!church}
-                  />
-                  <TileGrid tiles={bacentaTiles} loading={!church} />
-                </TabsContent>
-              )}
+              <Tabs
+                value={tab}
+                onValueChange={(value) => setTab(value as DashboardTab)}
+                className="space-y-4 lg:col-start-1 lg:row-start-1"
+              >
+                {tabsCount > 1 && (
+                  <TabsList
+                    className="grid h-12 w-full"
+                    style={{
+                      gridTemplateColumns: `repeat(${tabsCount}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {showBacentaSection && (
+                      <TabsTrigger value="bacenta">Bacenta Services</TabsTrigger>
+                    )}
+                    {showStreamSection && (
+                      <TabsTrigger value="stream">Stream Services</TabsTrigger>
+                    )}
+                    {showJointSection && jointTiles.length > 0 && (
+                      <TabsTrigger value="joint">Joint Services</TabsTrigger>
+                    )}
+                  </TabsList>
+                )}
 
-              {showStreamSection && (
-                <TabsContent value="stream" className="space-y-3">
-                  <SectionHeader
-                    title="Stream Services"
-                    subtitle={`${safeNumber(
-                      church?.activeStreamCount
-                    ).toLocaleString('en-GH')} active streams this week`}
-                    loading={!church}
-                  />
-                  <TileGrid tiles={streamTiles} loading={!church} />
-                </TabsContent>
-              )}
+                {showBacentaSection && (
+                  <TabsContent value="bacenta" className="space-y-3">
+                    <SectionHeader
+                      title="Bacenta Services"
+                      subtitle={`${activeUnitValue.toLocaleString(
+                        'en-GH'
+                      )} active bacentas this week`}
+                      loading={!church}
+                      action={downloadAction}
+                    />
+                    <TileGrid tiles={bacentaTiles} loading={!church} />
+                  </TabsContent>
+                )}
 
-              {showJointSection && jointTiles.length > 0 && (
-                <TabsContent value="joint" className="space-y-3">
-                  <SectionHeader
-                    title="Joint Services"
-                    subtitle="Banking status by sub-level"
-                    loading={!church}
-                  />
-                  <TileGrid tiles={jointTiles} loading={!church} />
-                </TabsContent>
-              )}
-            </Tabs>
+                {showStreamSection && (
+                  <TabsContent value="stream" className="space-y-3">
+                    <SectionHeader
+                      title="Stream Services"
+                      subtitle={`${safeNumber(
+                        church?.activeStreamCount
+                      ).toLocaleString('en-GH')} active streams this week`}
+                      loading={!church}
+                      action={downloadAction}
+                    />
+                    <TileGrid tiles={streamTiles} loading={!church} />
+                  </TabsContent>
+                )}
+
+                {showJointSection && jointTiles.length > 0 && (
+                  <TabsContent value="joint" className="space-y-3">
+                    <SectionHeader
+                      title="Joint Services"
+                      subtitle="Banking status by sub-level"
+                      loading={!church}
+                      action={downloadAction}
+                    />
+                    <TileGrid tiles={jointTiles} loading={!church} />
+                  </TabsContent>
+                )}
+              </Tabs>
+            </div>
           </main>
         </div>
       </ApolloWrapper>

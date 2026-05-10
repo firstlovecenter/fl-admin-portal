@@ -1,11 +1,12 @@
 import { useLazyQuery } from '@apollo/client'
 import { useContext, useMemo } from 'react'
 import { Banknote, CalendarCheck, Inbox, Users } from 'lucide-react'
-import { getWeekNumber } from 'jd-date-utils'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import useSontaLevel from 'hooks/useSontaLevel'
+import useSelectedWeek from 'hooks/useSelectedWeek'
+import WeekSelector from 'components/WeekSelector/WeekSelector'
 import { MemberContext } from 'contexts/MemberContext'
 import { Badge } from 'components/ui/badge'
 import { Card, CardContent } from 'components/ui/card'
@@ -21,9 +22,13 @@ import BacentaServiceCard, {
   BacentaServiceCardSkeleton,
 } from './BacentaServiceCard'
 import WeekTotalsCard, { WeekTotalItem } from './WeekTotalsCard'
+import DownloadDefaultersButton from './DownloadDefaultersButton'
+import { isDefaultersDownloadLevel } from './utils/buildDefaultersWorkbook'
 import { DefaultersUseChurchType } from './defaulters-types'
 
 const ServicesThisWeek = () => {
+  const { weekStart, week, isCurrent } = useSelectedWeek()
+
   const [governorshipServicesThisWeek, { refetch: governorshipRefetch }] =
     useLazyQuery(GOVERNORSHIP_SERVICES_LIST)
   const [councilServicesThisWeek, { refetch: councilRefetch }] = useLazyQuery(
@@ -45,18 +50,18 @@ const ServicesThisWeek = () => {
     streamRefetch,
     campusFunction: campusThisWeek,
     campusRefetch,
+    weekStart,
   })
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
 
   const { currentUser } = useContext(MemberContext)
   const services = church?.servicesThisWeek ?? []
   const total = services.length
-  const week = getWeekNumber()
 
   const { totalAttendance, totalIncome } = useMemo(() => {
     return services.reduce(
       (acc, service) => {
-        const detail = service.services?.[0]
+        const detail = service.serviceRecordForWeek
         if (typeof detail?.attendance === 'number') {
           acc.totalAttendance += detail.attendance
         }
@@ -86,7 +91,7 @@ const ServicesThisWeek = () => {
   const totalsItems: WeekTotalItem[] = [
     {
       key: 'filed',
-      label: 'Forms filed',
+      label: 'Forms filled',
       value: formatCount(total),
       accent: 'churches',
       icon: <CalendarCheck />,
@@ -115,14 +120,23 @@ const ServicesThisWeek = () => {
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
             <header className="space-y-2">
-              {church ? (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {church.name}{' '}
-                  <span className="text-churches">Filled Services</span>
-                </h1>
-              ) : (
-                <Skeleton className="h-9 w-72" />
-              )}
+              <div className="flex items-start justify-between gap-3">
+                {church ? (
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                    {church.name}{' '}
+                    <span className="text-churches">Filled Services</span>
+                  </h1>
+                ) : (
+                  <Skeleton className="h-9 w-72" />
+                )}
+                {isDefaultersDownloadLevel(church?.__typename) && church?.id && (
+                  <DownloadDefaultersButton
+                    level={church.__typename}
+                    churchId={church.id}
+                    disabled={!church}
+                  />
+                )}
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarCheck className="size-3.5" />
@@ -133,8 +147,8 @@ const ServicesThisWeek = () => {
                     <span className="font-semibold tabular-nums text-foreground">
                       {total}
                     </span>{' '}
-                    {total === 1 ? 'service form' : 'service forms'} filed this
-                    week
+                    {total === 1 ? 'service form' : 'service forms'} filled
+                    {isCurrent ? ' this week' : ' that week'}
                   </p>
                 ) : (
                   <Skeleton className="h-4 w-48" />
@@ -143,7 +157,8 @@ const ServicesThisWeek = () => {
             </header>
 
             <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
-              <aside className="lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
+              <aside className="space-y-3 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
+                <WeekSelector />
                 <WeekTotalsCard
                   week={week}
                   items={totalsItems}
@@ -171,7 +186,7 @@ const ServicesThisWeek = () => {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-foreground">
-                          No service forms filed yet
+                          No service forms filled yet
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Forms filled by Bacenta leaders this week will appear

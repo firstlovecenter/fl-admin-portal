@@ -7,11 +7,12 @@ import {
   CheckCircle2,
   Clock,
 } from 'lucide-react'
-import { getWeekNumber } from 'jd-date-utils'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import useSontaLevel from 'hooks/useSontaLevel'
+import useSelectedWeek from 'hooks/useSelectedWeek'
+import WeekSelector from 'components/WeekSelector/WeekSelector'
 import { Badge } from 'components/ui/badge'
 import { Card, CardContent } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
@@ -26,9 +27,13 @@ import BacentaServiceCard, {
   BacentaServiceCardSkeleton,
 } from './BacentaServiceCard'
 import WeekTotalsCard, { WeekTotalItem } from './WeekTotalsCard'
+import DownloadDefaultersButton from './DownloadDefaultersButton'
+import { isDefaultersDownloadLevel } from './utils/buildDefaultersWorkbook'
 import { DefaultersUseChurchType } from './defaulters-types'
 
 const FormDefaulters = () => {
+  const { weekStart, week, isCurrent } = useSelectedWeek()
+
   const [governorshipFormDefaulters, { refetch: governorshipRefetch }] =
     useLazyQuery(GOVERNORSHIP_FORM_DEFAULTERS_LIST)
   const [councilFormDefaulters, { refetch: councilRefetch }] = useLazyQuery(
@@ -50,17 +55,17 @@ const FormDefaulters = () => {
     streamRefetch,
     campusFunction: campusFormDefaulters,
     campusRefetch,
+    weekStart,
   })
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
 
   const defaulters = church?.formDefaultersThisWeek ?? []
   const total = defaulters.length
-  const week = getWeekNumber()
 
   const { cancelledCount, awaitingCount } = useMemo(() => {
     return defaulters.reduce(
       (acc, defaulter) => {
-        const detail = defaulter.services?.[0]
+        const detail = defaulter.serviceRecordForWeek
         if (detail?.noServiceReason) acc.cancelledCount += 1
         else acc.awaitingCount += 1
         return acc
@@ -101,14 +106,23 @@ const FormDefaulters = () => {
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
             <header className="space-y-2">
-              {church ? (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {church.name}{' '}
-                  <span className="text-defaulters">Form Defaulters</span>
-                </h1>
-              ) : (
-                <Skeleton className="h-9 w-72" />
-              )}
+              <div className="flex items-start justify-between gap-3">
+                {church ? (
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                    {church.name}{' '}
+                    <span className="text-defaulters">Form Defaulters</span>
+                  </h1>
+                ) : (
+                  <Skeleton className="h-9 w-72" />
+                )}
+                {isDefaultersDownloadLevel(church?.__typename) && church?.id && (
+                  <DownloadDefaultersButton
+                    level={church.__typename}
+                    churchId={church.id}
+                    disabled={!church}
+                  />
+                )}
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarCheck className="size-3.5" />
@@ -119,8 +133,8 @@ const FormDefaulters = () => {
                     <span className="font-semibold tabular-nums text-foreground">
                       {total}
                     </span>{' '}
-                    {total === 1 ? 'bacenta has' : 'bacentas have'} not filed
-                    this week
+                    {total === 1 ? 'bacenta has' : 'bacentas have'} not filled
+                    {isCurrent ? ' this week' : ' that week'}
                   </p>
                 ) : (
                   <Skeleton className="h-4 w-48" />
@@ -129,7 +143,8 @@ const FormDefaulters = () => {
             </header>
 
             <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
-              <aside className="lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
+              <aside className="space-y-3 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
+                <WeekSelector />
                 <WeekTotalsCard
                   week={week}
                   items={totalsItems}
@@ -157,7 +172,7 @@ const FormDefaulters = () => {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-foreground">
-                          All bacentas have filed
+                          All bacentas filled
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Nothing outstanding for week {week}.

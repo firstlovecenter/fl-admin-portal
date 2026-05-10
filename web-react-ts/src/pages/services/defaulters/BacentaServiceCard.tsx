@@ -2,6 +2,7 @@ import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import {
+  CalendarDays,
   ChevronRight,
   MessageCircle,
   Phone,
@@ -10,7 +11,7 @@ import {
 } from 'lucide-react'
 
 import RoleView from 'auth/RoleView'
-import { Avatar, AvatarFallback } from 'components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Separator } from 'components/ui/separator'
@@ -156,10 +157,14 @@ const BacentaServiceCard = ({
   const { clickCard } = useContext(ChurchContext) as any
   const { currentUser } = useContext(MemberContext)
 
+  // Prefer the per-week record (driven by `weekStart`) so card numbers
+  // match the selected week. Fall back to the legacy `services[0]` shape
+  // for any caller that hasn't been migrated yet.
   const serviceDetails =
-    'services' in defaulter && defaulter.services?.length
+    ('serviceRecordForWeek' in defaulter && defaulter.serviceRecordForWeek) ||
+    ('services' in defaulter && defaulter.services?.length
       ? defaulter.services[0]
-      : undefined
+      : undefined)
   const cancellationReason = serviceDetails?.noServiceReason
   const showUndo = Boolean(
     showCancellationControls && cancellationReason && serviceDetails?.id
@@ -170,6 +175,24 @@ const BacentaServiceCard = ({
   const whatsapp = defaulter?.leader?.whatsappNumber
   const parent = parentLabel(defaulter)
   const meetingDay = defaulter?.meetingDay?.day
+  // `serviceDate.date` is a YYYY-MM-DD string from the TimeGraph.date field.
+  // Anchored to UTC noon to avoid the `new Date('YYYY-MM-DD')` UTC-midnight
+  // back-shift that would render Apr 22 as "Apr 21" for negative-offset
+  // browsers.
+  const serviceDateRaw =
+    serviceDetails && 'serviceDate' in serviceDetails
+      ? (serviceDetails as { serviceDate?: { date?: string } | null })
+          .serviceDate?.date
+      : undefined
+  const serviceDateLabel = serviceDateRaw
+    ? new Date(`${serviceDateRaw}T12:00:00Z`).toLocaleDateString('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+      })
+    : null
 
   const openDetails = () => {
     clickCard(defaulter)
@@ -201,6 +224,12 @@ const BacentaServiceCard = ({
       <CardContent className="space-y-3 px-4 py-3">
         <div className="flex items-center gap-3">
           <Avatar className="size-10 shrink-0">
+            {defaulter?.leader?.pictureUrl && (
+              <AvatarImage
+                src={defaulter.leader.pictureUrl}
+                alt={defaulter.leader.fullName ?? ''}
+              />
+            )}
             <AvatarFallback className="bg-muted text-xs font-medium">
               {initials(defaulter?.leader?.fullName)}
             </AvatarFallback>
@@ -217,9 +246,16 @@ const BacentaServiceCard = ({
           </div>
         </div>
 
-        {(serviceDetails?.attendance != null ||
+        {(serviceDateLabel ||
+          serviceDetails?.attendance != null ||
           serviceDetails?.income != null) && (
           <div className="flex flex-wrap gap-2">
+            {serviceDateLabel && (
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
+                <CalendarDays className="size-3.5 text-muted-foreground" />
+                <span className="tabular-nums">{serviceDateLabel}</span>
+              </div>
+            )}
             {serviceDetails?.attendance != null && (
               <div className="inline-flex items-center gap-1.5 rounded-full bg-members/10 px-2.5 py-1 text-xs font-medium text-members">
                 <Users className="size-3.5" />

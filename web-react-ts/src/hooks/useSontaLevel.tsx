@@ -26,6 +26,8 @@ type useSontaLevelProps = {
   oversightRefetch?: () => Promise<ApolloQueryResult<any>>
   denominationFunction?: LazyQueryExecFunction<any, OperationVariables>
   denominationRefetch?: () => Promise<ApolloQueryResult<any>>
+  /** Optional ISO `YYYY-MM-DD` Monday for week-scoped queries (defaulters). */
+  weekStart?: string
 }
 
 const useSontaLevel = (props: useSontaLevelProps) => {
@@ -104,6 +106,11 @@ const useSontaLevel = (props: useSontaLevelProps) => {
       return
     }
     setLoading(true)
+    // Clear the previous church snapshot so consumers' `!church` skeleton
+    // branches fire while the refetch is in flight. Without this, switching
+    // the week (or changing scope) silently keeps showing stale rows until
+    // the new query resolves — there is no visual cue that work is happening.
+    setChurch(null)
 
     const whichQuery = async () => {
       switch (churchLevel) {
@@ -114,6 +121,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -129,6 +137,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -145,6 +154,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
             setChurch(res?.data?.streams[0])
@@ -160,6 +170,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -175,6 +186,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -190,6 +202,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -207,7 +220,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
 
     whichQuery()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChurch?.id, churchLevel])
+  }, [currentChurch?.id, churchLevel, props.weekStart])
 
   return { church, subChurchLevel, loading, error, refetch }
 }
