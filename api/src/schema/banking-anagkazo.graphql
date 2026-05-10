@@ -96,6 +96,8 @@ extend type Governorship {
         AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
         AND record.tellerConfirmationTime IS NULL
 
+      WITH DISTINCT this, record
+
       WITH this,
       [currency IN collect(record.foreignCurrency) WHERE currency IS NOT NULL] AS list,
       round(coalesce(sum(coalesce(record.income, record.cash, 0)), 0), 2) AS income,
