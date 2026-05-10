@@ -364,7 +364,6 @@ interface Church {
 }
 
 type Denomination implements Church @node
-  # @churchScoped(level: Denomination)
 {
   id: ID! @id
   name: String!
@@ -524,7 +523,6 @@ type Denomination implements Church @node
 }
 
 type Oversight implements Church @node
-  # @churchScoped(level: Oversight)
 {
   id: ID @id
   name: String!
@@ -681,7 +679,6 @@ type Oversight implements Church @node
 }
 
 type Campus implements Church @node
-  # @churchScoped(level: Campus)
 {
   id: ID @id
   name: String!
@@ -832,7 +829,6 @@ type Campus implements Church @node
 }
 
 type Stream implements Church @node
-  # @churchScoped(level: Stream)
 {
   id: ID @id
   name: String!
@@ -1004,7 +1000,6 @@ type Stream implements Church @node
 }
 
 type Council implements Church @node
-  # @churchScoped(level: Council)
 {
   id: ID @id
   name: String!
@@ -1147,7 +1142,6 @@ type Council implements Church @node
 }
 
 type Governorship implements Church @node
-  # @churchScoped(level: Governorship)
 {
   id: ID @id
   name: String!
@@ -1282,7 +1276,6 @@ type Governorship implements Church @node
 }
 
 type Bacenta implements Church @node
-  # @churchScoped(level: Bacenta)
 {
   id: ID @id
   name: String!
