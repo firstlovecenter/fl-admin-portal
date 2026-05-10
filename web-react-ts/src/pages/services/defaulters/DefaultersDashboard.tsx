@@ -370,7 +370,7 @@ const DefaultersDashboard = () => {
 
   return (
     <PullToRefresh onRefresh={refetch}>
-      <ApolloWrapper data={church} loading={loading} error={error}>
+      <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
             <header className="space-y-1">
