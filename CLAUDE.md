@@ -183,6 +183,7 @@ Read the relevant file before working on a related area — do not guess.
 | `/new-component` | Command | Scaffold a reusable React component under `web-react-ts/src/components/` |
 | `/new-module` | Command | Scaffold a feature module — page + queries + types + route + (optional) resolver |
 | `/commit` | Command | Stage changes and create a Conventional Commits commit |
+| `/jira-move` | Skill | Move a SYN issue through the board (To Do → In Progress → Review → Done). Fires proactively when starting/finishing work on a SYN-X ticket; resolves the key from your message, the current branch, or an explicit arg |
 | `code-reviewer` | Agent (blue) | Reviews a diff for code quality, conventions, framework correctness, TS, architecture, domain. Severity-grouped output |
 | `security-reviewer` | Agent (red) | Audits a diff for auth, authorisation, financial, injection, exposure issues. Critical/High/Medium/Low |
 | `cypher-reviewer` | Agent (green) | Reviews Cypher (in `*-cypher.ts` and SDL `@cypher` blocks) for correctness, performance, parameter safety |
