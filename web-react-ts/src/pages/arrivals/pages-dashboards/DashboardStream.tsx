@@ -279,8 +279,6 @@ const StreamDashboard = () => {
                 </RoleView>
               </div>
 
-              {/* Date selector + download button */}
-              <ArrivalsHeader level="Stream" churchId={streamId} />
             </div>
 
             {deadlinePassed && (
@@ -336,6 +334,11 @@ const StreamDashboard = () => {
                     }}
                   />
                 </section>
+
+                {/* Date selector + download (mobile placement) */}
+                <div className="lg:hidden">
+                  <ArrivalsHeader level="Stream" churchId={streamId} />
+                </div>
 
                 {/* Bacenta status grid */}
                 <section className="space-y-3">
@@ -415,9 +418,13 @@ const StreamDashboard = () => {
                 </RoleView>
               </div>
 
-              {/* RIGHT — live arrivals */}
-              <aside className="space-y-3 lg:sticky lg:top-6">
-                <SectionLabel>Live Arrivals</SectionLabel>
+              {/* RIGHT — date picker + live arrivals */}
+              <aside className="space-y-6 lg:sticky lg:top-6">
+                <div className="hidden lg:block">
+                  <ArrivalsHeader level="Stream" churchId={streamId} />
+                </div>
+                <div className="space-y-3">
+                  <SectionLabel>Live Arrivals</SectionLabel>
                 <Card className="overflow-hidden">
                   <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                     <div className="flex items-center gap-2">
@@ -461,6 +468,7 @@ const StreamDashboard = () => {
                     />
                   </div>
                 </Card>
+                </div>
               </aside>
             </div>
 

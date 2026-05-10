@@ -264,8 +264,6 @@ const CouncilDashboard = () => {
                 </RoleView>
               </div>
 
-              {/* Date selector + download button */}
-              <ArrivalsHeader level="Council" churchId={councilId} />
             </div>
 
             {deadlinePassed && (
@@ -323,6 +321,13 @@ const CouncilDashboard = () => {
                     }}
                   />
                 </section>
+
+                {/* Date selector + download button (mobile placement) —
+                    on lg+ screens this lives in the right aside instead so
+                    the legacy "single picker" shape stays true. */}
+                <div className="lg:hidden">
+                  <ArrivalsHeader level="Council" churchId={councilId} />
+                </div>
 
                 {/* Bacenta status grid */}
                 <section className="space-y-3">
@@ -395,9 +400,13 @@ const CouncilDashboard = () => {
                 </RoleView>
               </div>
 
-              {/* RIGHT — live arrivals */}
-              <aside className="space-y-3 lg:sticky lg:top-6">
-                <SectionLabel>Live Arrivals</SectionLabel>
+              {/* RIGHT — date picker + live arrivals */}
+              <aside className="space-y-6 lg:sticky lg:top-6">
+                <div className="hidden lg:block">
+                  <ArrivalsHeader level="Council" churchId={councilId} />
+                </div>
+                <div className="space-y-3">
+                  <SectionLabel>Live Arrivals</SectionLabel>
                 <Card className="overflow-hidden">
                   <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                     <div className="flex items-center gap-2">
@@ -441,6 +450,7 @@ const CouncilDashboard = () => {
                     />
                   </div>
                 </Card>
+                </div>
               </aside>
             </div>
 
