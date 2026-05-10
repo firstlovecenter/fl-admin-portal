@@ -20,6 +20,9 @@ const BacentaServiceRecordsReportPage = lazy(
 const DefaultersReportPage = lazy(
   () => import('./defaulters/DefaultersReportPage')
 )
+const ArrivalsReportPage = lazy(
+  () => import('./arrivals/ArrivalsReportPage')
+)
 
 export const reportsRoutes: LazyRouteTypes[] = [
   {
@@ -60,6 +63,11 @@ export const reportsRoutes: LazyRouteTypes[] = [
   {
     path: '/reports/defaulters',
     element: DefaultersReportPage,
+    roles: permitLeaderAdmin('Governorship'),
+  },
+  {
+    path: '/reports/arrivals',
+    element: ArrivalsReportPage,
     roles: permitLeaderAdmin('Governorship'),
   },
 ]

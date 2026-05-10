@@ -1,376 +1,566 @@
-import { useMutation, useQuery } from '@apollo/client'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { useContext } from 'react'
-import * as Yup from 'yup'
-import { useNavigate } from 'react-router'
-import { MAKE_CAMPUSARRIVALS_ADMIN, SET_SWELL_DATE } from '../arrivalsMutation'
-import { CAMPUS_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
-import { alertMsg, SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Accordion, Col, Container, Row } from 'react-bootstrap'
-import Popup from 'components/Popup/Popup'
+import { NetworkStatus, useMutation, useQuery } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
-import SubmitButton from 'components/formik/SubmitButton'
-import RoleView from 'auth/RoleView'
-import {
-  permitAdmin,
-  permitArrivals,
-  permitLeaderAdmin,
-} from 'permission-utils'
-import MenuButton from 'components/buttons/MenuButton'
+import * as Yup from 'yup'
+import { useContext, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { getHumanReadableDate } from 'jd-date-utils'
-import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
-import usePopup from 'hooks/usePopup'
-import ArrivalsMenuDropdown from '../ArrivalsMenuDropdown'
-import { AdminFormOptions } from './DashboardGovernorship'
-import SearchMember from 'components/formik/SearchMember'
-import PullToRefresh from 'components/base-component/PullToRefresh'
-import Input from 'components/formik/Input'
-import { ChurchContext } from 'contexts/ChurchContext'
-import ArrivalsDateSubmitBtn from '../components/ArrivalsDateSubmitBtn'
-import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
+import {
+  AlertOctagon,
+  AlertTriangle,
+  Banknote,
+  BusFront,
+  CheckCircle2,
+  CreditCard,
+  Loader2,
+  Megaphone,
+  Settings2,
+  Sparkles,
+  Users,
+  UsersRound,
+} from 'lucide-react'
 
-type DateFormOptions = {
-  arrivalDate: string
+import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import PullToRefresh from 'components/base-component/PullToRefresh'
+import RoleView from 'auth/RoleView'
+import SearchMember from 'components/formik/SearchMember'
+import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
+import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
+import { ChurchContext } from 'contexts/ChurchContext'
+import useAuth from 'auth/useAuth'
+import ArrivalsHeader from '../ArrivalsHeader'
+
+import { Badge } from 'components/ui/badge'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from 'components/ui/dropdown-menu'
+import { Skeleton } from 'components/ui/skeleton'
+
+import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
+import { permitAdmin, permitArrivals, permitLeaderAdmin } from 'permission-utils'
+
+import { CAMPUS_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
+import { MAKE_CAMPUSARRIVALS_ADMIN, SET_SWELL_DATE } from '../arrivalsMutation'
+import { formatAmount } from '../arrivals-utils'
+import { AdminFormOptions } from './DashboardGovernorship'
+import {
+  LiveDot,
+  LiveRow,
+  SectionLabel,
+  StatusTile,
+  useUpdatedAt,
+  useVisibilityAwarePolling,
+  type StatusTone,
+} from '../components/live-feed'
+
+type BacentaTile = {
+  key: string
+  label: string
+  value?: number
+  icon: React.ComponentType<{ className?: string }>
+  tone: StatusTone
+  to: string
 }
 
+const POLL_SECONDS = Math.max(1, Math.round(SHORT_POLL_INTERVAL / 1000))
+
 const CampusDashboard = () => {
-  const { isOpen, togglePopup } = usePopup()
-  const { arrivalDate, setArrivalDate, campusId } = useContext(ChurchContext)
   const navigate = useNavigate()
+  const { isAuthorised } = useAuth()
+  const { arrivalDate, campusId } = useContext(ChurchContext)
+  const [adminDialogOpen, setAdminDialogOpen] = useState(false)
+  const [swellDialogOpen, setSwellDialogOpen] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
-  const { data, loading, error, refetch } = useQuery(
-    CAMPUS_ARRIVALS_DASHBOARD,
-    {
-      variables: {
-        id: campusId,
-        date: today,
-        arrivalDate: arrivalDate || today,
-      },
-      pollInterval: SHORT_POLL_INTERVAL,
-      fetchPolicy: 'cache-and-network',
-    }
+  const effectiveDate = arrivalDate || today
+
+  const {
+    data,
+    loading,
+    error,
+    refetch,
+    startPolling,
+    stopPolling,
+    networkStatus,
+  } = useQuery(CAMPUS_ARRIVALS_DASHBOARD, {
+    variables: { id: campusId, date: today, arrivalDate: effectiveDate },
+    fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
+  })
+
+  useVisibilityAwarePolling({
+    startPolling,
+    stopPolling,
+    refetch,
+    interval: SHORT_POLL_INTERVAL,
+  })
+
+  const [MakeCampusArrivalsAdmin] = useMutation(MAKE_CAMPUSARRIVALS_ADMIN)
+  const [SetSwellDate, { loading: swellLoading }] = useMutation(SET_SWELL_DATE)
+  const campus = data?.campuses?.[0]
+  const timeGraph = data?.timeGraphs?.[0]
+  const updatedLabel = useUpdatedAt(data)
+
+  const initialAdminValues: AdminFormOptions = useMemo(
+    () => ({
+      adminName: campus?.arrivalsAdmin?.fullName ?? '',
+      adminSelect: campus?.arrivalsAdmin?.id ?? '',
+    }),
+    [campus?.arrivalsAdmin]
   )
 
-  const [SetSwellDate] = useMutation(SET_SWELL_DATE)
-  const [MakeCampusArrivalsAdmin] = useMutation(MAKE_CAMPUSARRIVALS_ADMIN)
-  const campus = data?.campuses[0]
-
-  const initialValues: AdminFormOptions = {
-    adminName: campus?.arrivalsAdmin
-      ? `${campus?.arrivalsAdmin?.firstName} ${campus?.arrivalsAdmin?.lastName}`
-      : '',
-    adminSelect: campus?.arrivalsAdmin?.id ?? '',
-  }
-  const validationSchema = Yup.object({
+  const adminValidationSchema = Yup.object({
     adminSelect: Yup.string().required(
       'Please select an Admin from the dropdown'
     ),
   })
 
-  // const submitCodeOfTheDay = async () => {
-  //   const promptBox = window.prompt('Enter the Code of The Day')
-
-  //   await SetCodeOfTheDay({ variables: { code: promptBox } })
-  //     .then((res) => {
-  //       alertMsg(
-  //         `Code of the day has been set to "${res?.data?.SetCodeOfTheDay}"`
-  //       )
-  //     })
-  //     .catch((error) => {
-  //       alertMsg(error)
-  //     })
-  // }
-
-  const onSubmit = (
+  const onAdminSubmit = async (
     values: AdminFormOptions,
     onSubmitProps: FormikHelpers<AdminFormOptions>
   ) => {
+    if (!isAuthorised(permitAdmin('Campus'))) {
+      toast.error('You are not authorised to change the arrivals admin')
+      return
+    }
     onSubmitProps.setSubmitting(true)
-
-    MakeCampusArrivalsAdmin({
-      variables: {
-        campusId,
-        newAdminId: values.adminSelect,
-        oldAdminId: initialValues.adminSelect || 'no-old-admin',
-      },
-    })
-      .then(() => {
-        togglePopup()
-        onSubmitProps.setSubmitting(false)
-        alert('Campus Arrivals Admin has been changed successfully')
+    try {
+      const result = await MakeCampusArrivalsAdmin({
+        variables: {
+          campusId,
+          newAdminId: values.adminSelect,
+          oldAdminId: initialAdminValues.adminSelect || 'no-old-admin',
+        },
       })
-      .catch((e) => throwToSentry(e))
+      if (result.errors?.length) {
+        toast.error(String(result.errors[0].message ?? 'Update failed'))
+        return
+      }
+      toast.success('Arrivals admin updated')
+      setAdminDialogOpen(false)
+    } catch (e) {
+      throwToSentry('Failed to update arrivals admin', e)
+    } finally {
+      onSubmitProps.setSubmitting(false)
+    }
   }
 
-  const aggregates = {
-    title: 'Streams',
-    data: campus?.streamCount,
-    link: `/arrivals/campus-by-stream`,
+  const isSwellDay = !!timeGraph?.swell
+
+  const handleSetSwell = async () => {
+    if (!isAuthorised(permitAdmin('Campus'))) {
+      toast.error('You are not authorised to set the swell date')
+      return
+    }
+    if (isSwellDay) {
+      toast.info('Swell is already set for today')
+      setSwellDialogOpen(false)
+      return
+    }
+    try {
+      await SetSwellDate({ variables: { date: today } })
+      toast.success('Swell date set successfully')
+      setSwellDialogOpen(false)
+    } catch (e) {
+      throwToSentry('Failed to set swell date', e)
+    }
   }
 
-  const ArrivalsMenu = [
-    { title: 'Change Arrivals Admin', onClick: togglePopup },
-    !data?.timeGraphs.length || !data?.timeGraphs[0]?.swell
-      ? {
-          title: ' Set Today as Swell',
-          onClick: () => {
-            const confirmBox = window.confirm(
-              'Do you want to set today as a swell day?'
-            )
+  const canSetSwell =
+    networkStatus === NetworkStatus.ready &&
+    (!data?.timeGraphs?.length || !timeGraph?.swell)
 
-            if (confirmBox === true) {
-              SetSwellDate({
-                variables: { date: today },
-              }).then(() => alertMsg('Swell Date Set Succesffully'))
-            }
-          },
-        }
-      : {},
-    // { title: 'Code of the Day', onClick: () => submitCodeOfTheDay() },
+  const bacentaTiles: BacentaTile[] = [
+    {
+      key: 'no-activity',
+      label: 'No Activity',
+      value: campus?.bacentasNoActivityCount,
+      icon: AlertOctagon,
+      tone: 'defaulters',
+      to: '/arrivals/bacentas-no-activity',
+    },
+    {
+      key: 'mobilising',
+      label: 'Mobilising',
+      value: campus?.bacentasMobilisingCount,
+      icon: Megaphone,
+      tone: 'warning',
+      to: '/arrivals/bacentas-mobilising',
+    },
+    {
+      key: 'on-the-way',
+      label: 'On The Way',
+      value: campus?.bacentasOnTheWayCount,
+      icon: BusFront,
+      tone: 'arrivals',
+      to: '/arrivals/bacentas-on-the-way',
+    },
+    {
+      key: 'didnt-bus',
+      label: "Didn't Bus",
+      value: campus?.bacentasBelow8Count,
+      icon: AlertTriangle,
+      tone: 'destructive',
+      to: '/arrivals/bacentas-below-8',
+    },
+    {
+      key: 'arrived',
+      label: 'Have Arrived',
+      value: campus?.bacentasHaveArrivedCount,
+      icon: CheckCircle2,
+      tone: 'success',
+      to: '/arrivals/bacentas-have-arrived',
+    },
   ]
-
-  const dateValidationSchema = Yup.object({
-    date: Yup.date().notRequired(),
-  })
-
-  const dateInitialValues: DateFormOptions = {
-    arrivalDate: arrivalDate,
-  }
-
-  const onDateSubmit = (
-    values: DateFormOptions,
-    onSubmitProps: FormikHelpers<DateFormOptions>
-  ) => {
-    onSubmitProps.setSubmitting(true)
-    setArrivalDate(values.arrivalDate)
-    onSubmitProps.setSubmitting(false)
-  }
 
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error}>
-        <Container>
-          <HeadingPrimary loading={loading}>
-            {campus?.name} Campus Arrivals Real Time Dashboard
-          </HeadingPrimary>
-          {campus?.arrivalsAdmin && (
-            <>
-              <hr className="m-2" />
-              <div className="ps-4">
-                <div className="text-warning">Arrivals Admin</div>
-                <MemberAvatarWithName member={campus?.arrivalsAdmin} />
+        <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+            {/* ── Page header ── */}
+            <div className="mb-6 space-y-4 lg:mb-8">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    <LiveDot />
+                    <span>Live Dashboard</span>
+                  </div>
+                  {loading && !campus ? (
+                    <Skeleton className="h-9 w-72" />
+                  ) : (
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                      {campus?.name}{' '}
+                      <span className="text-arrivals">Arrivals</span>
+                    </h1>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm text-muted-foreground">
+                      Real-time bussing dashboard · refreshes every{' '}
+                      {POLL_SECONDS}s
+                    </p>
+                    {isSwellDay && (
+                      <Badge
+                        variant="outline"
+                        className="gap-1 border-warning/30 bg-warning/10 text-warning"
+                      >
+                        <Sparkles className="size-3" />
+                        Swollen Weekend
+                      </Badge>
+                    )}
+                  </div>
+                  {timeGraph?.date && (
+                    <p className="text-xs text-muted-foreground tabular-nums">
+                      {getHumanReadableDate(timeGraph.date, true)}
+                    </p>
+                  )}
+                </div>
+
+                {/* Settings dropdown */}
+                <RoleView roles={permitAdmin('Campus')}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-11 shrink-0"
+                        aria-label="Dashboard settings"
+                      >
+                        <Settings2 className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={() => setAdminDialogOpen(true)}
+                      >
+                        Change Arrivals Admin
+                      </DropdownMenuItem>
+                      {canSetSwell && (
+                        <DropdownMenuItem
+                          onSelect={() => setSwellDialogOpen(true)}
+                        >
+                          Set Today as Swell
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </RoleView>
               </div>
-              <hr className="m-2" />
-            </>
-          )}
-          {isOpen && (
-            <Popup handleClose={togglePopup}>
-              <b>Change Arrivals Admin</b>
-              <p>Please enter the name of the new arrivals rep</p>
 
-              <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={onSubmit}
-              >
-                {(formik) => (
-                  <Form>
-                    <Row className="form-row">
-                      <Col>
-                        <SearchMember
-                          name="adminSelect"
-                          initialValue={initialValues?.adminName}
-                          placeholder="Select an Admin"
-                          setFieldValue={formik.setFieldValue}
-                          aria-describedby="Member Search"
-                          error={formik.errors.adminSelect}
+              {/* Date selector + download button */}
+              <ArrivalsHeader level="Campus" churchId={campusId} />
+            </div>
+
+            {/* ── 2-column grid ── */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+              {/* LEFT — admin + overview + bacenta status + financial */}
+              <div className="space-y-6">
+                {/* Arrivals admin */}
+                <section className="space-y-3">
+                  <SectionLabel>Arrivals Admin</SectionLabel>
+                  <Card>
+                    <CardContent className="flex items-center justify-between gap-3 p-4">
+                      {loading && !campus ? (
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="size-9 rounded-full" />
+                          <Skeleton className="h-4 w-32" />
+                        </div>
+                      ) : campus?.arrivalsAdmin ? (
+                        <>
+                          <MemberAvatarWithName member={campus.arrivalsAdmin} />
+                          <Badge
+                            variant="outline"
+                            className="border-arrivals/30 bg-arrivals/10 text-arrivals"
+                          >
+                            Admin
+                          </Badge>
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          No arrivals admin assigned
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </section>
+
+                {/* Sub-church count */}
+                <section className="space-y-3">
+                  <SectionLabel>Overview</SectionLabel>
+                  <DefaulterInfoCard
+                    defaulter={{
+                      title: 'Streams',
+                      data: campus?.streamCount,
+                      link: '/arrivals/campus-by-stream',
+                    }}
+                  />
+                </section>
+
+                {/* Bacenta status grid */}
+                <section className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <SectionLabel>Bacenta Status</SectionLabel>
+                    <span className="text-xs text-muted-foreground">
+                      Tap a tile to drill in
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {bacentaTiles.map((tile) => (
+                      <StatusTile
+                        key={tile.key}
+                        label={tile.label}
+                        value={tile.value}
+                        icon={tile.icon}
+                        tone={tile.tone}
+                        onClick={() => navigate(tile.to)}
+                        loading={loading && !campus}
+                      />
+                    ))}
+                  </div>
+                </section>
+
+                {/* Financial data */}
+                <RoleView
+                  roles={[
+                    ...permitArrivals('Campus'),
+                    ...permitLeaderAdmin('Campus'),
+                  ]}
+                >
+                  <section className="space-y-3">
+                    <SectionLabel>Financial Data</SectionLabel>
+                    <Card className="overflow-hidden">
+                      <div className="divide-y divide-border">
+                        <LiveRow
+                          label="Vehicles Paid"
+                          value={campus?.vehiclesHaveBeenPaidCount}
+                          icon={CheckCircle2}
+                          tone="success"
+                          loading={loading && !campus}
                         />
-                      </Col>
-                    </Row>
+                        <LiveRow
+                          label="Vehicles To Be Paid"
+                          value={campus?.vehiclesToBePaidCount}
+                          icon={BusFront}
+                          tone="warning"
+                          loading={loading && !campus}
+                        />
+                        <LiveRow
+                          label="Amount Paid"
+                          value={formatAmount(campus?.vehicleAmountHasBeenPaid)}
+                          icon={Banknote}
+                          tone="success"
+                          loading={loading && !campus}
+                        />
+                        <LiveRow
+                          label="Amount To Be Paid"
+                          value={formatAmount(campus?.vehicleAmountToBePaid)}
+                          icon={CreditCard}
+                          tone="warning"
+                          loading={loading && !campus}
+                        />
+                      </div>
+                    </Card>
+                  </section>
+                </RoleView>
+              </div>
 
-                    <SubmitButton formik={formik} />
-                  </Form>
-                )}
-              </Formik>
-            </Popup>
-          )}
-          {data?.timeGraphs.length ? (
-            <>
-              <h4>{getHumanReadableDate(data?.timeGraphs[0]?.date, true)}</h4>
-              <h5>{data?.timeGraphs[0].swell && `Swollen Weekend!`}</h5>
-            </>
-          ) : null}
-          <div className="d-grid gap-2">
-            <Formik
-              initialValues={dateInitialValues}
-              validationSchema={dateValidationSchema}
-              onSubmit={onDateSubmit}
-              validateOnMount
-            >
-              {(formik) => (
-                <Form>
-                  <Row className="align-items-center gx-0 justify-content-between">
-                    <Col className="d-inline-block" xs={5}>
-                      <Input
-                        name="arrivalDate"
-                        type="date"
-                        placeholder="dd/mm/yyyy"
-                        aria-describedby="date"
-                      />
-                    </Col>
-                    <Col xs={2}>
-                      <ArrivalsDateSubmitBtn formik={formik} />
-                    </Col>
-                    <Col>
-                      <RoleView roles={permitAdmin('Campus')}>
-                        <ArrivalsMenuDropdown menuItems={ArrivalsMenu} />
-                      </RoleView>
-                    </Col>
-                  </Row>
-                </Form>
-              )}
-            </Formik>
-
-            <DefaulterInfoCard defaulter={aggregates} />
-            <Accordion defaultActiveKey="0">
-              <Accordion.Item eventKey="0">
-                <Accordion.Header>Bacenta Monitoring</Accordion.Header>
-                <Accordion.Body>
-                  <div className="d-grid gap-2">
-                    <MenuButton
-                      title="Bacentas With No Activity"
-                      onClick={() => navigate('/arrivals/bacentas-no-activity')}
-                      number={campus?.bacentasNoActivityCount.toString()}
-                      color="red"
-                      iconBg
-                      noCaption
-                    />
-                    <MenuButton
-                      title="Bacentas Mobilising"
-                      onClick={() => navigate('/arrivals/bacentas-mobilising')}
-                      number={campus?.bacentasMobilisingCount.toString()}
-                      color="orange"
-                      iconBg
-                      noCaption
-                    />
-                    <MenuButton
-                      title="Bacentas On The Way"
-                      onClick={() => navigate('/arrivals/bacentas-on-the-way')}
-                      number={campus?.bacentasOnTheWayCount.toString()}
-                      color="yellow"
-                      iconBg
-                      noCaption
-                    />
-
-                    <MenuButton
-                      title="Bacentas That Didn't Bus"
-                      onClick={() => navigate('/arrivals/bacentas-below-8')}
-                      number={campus?.bacentasBelow8Count.toString()}
-                      iconBg
-                      color="red"
-                      noCaption
-                    />
-
-                    <MenuButton
-                      title="Bacentas That Have Arrived"
-                      onClick={() =>
-                        navigate('/arrivals/bacentas-have-arrived')
-                      }
-                      number={campus?.bacentasHaveArrivedCount.toString()}
-                      iconBg
-                      color="green"
-                      noCaption
-                    />
-                  </div>
-                </Accordion.Body>
-              </Accordion.Item>
-
-              <RoleView
-                roles={[
-                  ...permitArrivals('Campus'),
-                  ...permitLeaderAdmin('Campus'),
-                ]}
-              >
-                <Accordion.Item eventKey="1">
-                  <Accordion.Header>Financial Data</Accordion.Header>
-                  <Accordion.Body>
-                    <div className="d-grid gap-2">
-                      <MenuButton
-                        title="Vehicles That Have Been Paid"
-                        onClick={() => navigate('#')}
-                        number={campus?.vehiclesHaveBeenPaidCount.toString()}
-                        color="green"
-                        iconBg
-                        noCaption
-                      />
-                      <MenuButton
-                        title="Vehicles To Be Paid"
-                        onClick={() => navigate('#')}
-                        number={campus?.vehiclesToBePaidCount.toString()}
-                        color="yellow"
-                        iconBg
-                        noCaption
-                      />
-
-                      <MenuButton
-                        title="Amount That Has Been Paid"
-                        onClick={() => navigate('#')}
-                        number={campus?.vehicleAmountHasBeenPaid.toString()}
-                        color="green"
-                        noCaption
-                        iconBg
-                      />
-                      <MenuButton
-                        title="Amount To Be Paid"
-                        onClick={() => navigate('#')}
-                        number={campus?.vehicleAmountToBePaid.toString()}
-                        color="yellow"
-                        noCaption
-                        iconBg
-                      />
+              {/* RIGHT — live arrivals */}
+              <aside className="space-y-3 lg:sticky lg:top-6">
+                <SectionLabel>Live Arrivals</SectionLabel>
+                <Card className="overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <LiveDot />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Realtime
+                      </span>
                     </div>
-                  </Accordion.Body>
-                </Accordion.Item>
-              </RoleView>
-              <Accordion.Item eventKey="2">
-                <Accordion.Header>Bussing Data</Accordion.Header>
-                <Accordion.Body>
-                  <div className="d-grid gap-2">
-                    <MenuButton
-                      title="Members On The Way"
-                      number={campus?.bussingMembersOnTheWayCount.toString()}
-                      color="yellow"
-                      iconBg
-                      noCaption
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      Updated {updatedLabel}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-border">
+                    <LiveRow
+                      label="Members On The Way"
+                      value={campus?.bussingMembersOnTheWayCount}
+                      icon={UsersRound}
+                      tone="warning"
+                      loading={loading && !campus}
                     />
-                    <MenuButton
-                      title="Members That Have Arrived"
-                      number={campus?.bussingMembersHaveArrivedCount.toString()}
-                      color="green"
-                      iconBg
-                      noCaption
+                    <LiveRow
+                      label="Members Arrived"
+                      value={campus?.bussingMembersHaveArrivedCount}
+                      icon={Users}
+                      tone="success"
+                      loading={loading && !campus}
                     />
-                    <MenuButton
-                      title="Busses On The Way"
-                      number={campus?.bussesOnTheWayCount.toString()}
-                      color="yellow"
-                      iconBg
-                      noCaption
+                    <LiveRow
+                      label="Buses On The Way"
+                      value={campus?.bussesOnTheWayCount}
+                      icon={BusFront}
+                      tone="warning"
+                      loading={loading && !campus}
                     />
-                    <MenuButton
-                      title="Busses That Have Arrived"
-                      number={campus?.bussesThatArrivedCount.toString()}
-                      color="green"
-                      iconBg
-                      noCaption
+                    <LiveRow
+                      label="Buses Arrived"
+                      value={campus?.bussesThatArrivedCount}
+                      icon={BusFront}
+                      tone="success"
+                      loading={loading && !campus}
                     />
                   </div>
-                </Accordion.Body>
-              </Accordion.Item>
-            </Accordion>
-          </div>
-        </Container>
+                </Card>
+              </aside>
+            </div>
+
+            {/* ── Change Arrivals Admin dialog ── */}
+            <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Change Arrivals Admin</DialogTitle>
+                  <DialogDescription>
+                    Search for the member you want to assign as the new
+                    arrivals admin for this campus.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Formik
+                  initialValues={initialAdminValues}
+                  validationSchema={adminValidationSchema}
+                  onSubmit={onAdminSubmit}
+                  enableReinitialize
+                >
+                  {(formik) => (
+                    <Form className="space-y-4">
+                      <SearchMember
+                        name="adminSelect"
+                        initialValue={initialAdminValues.adminName}
+                        placeholder="Search for a member"
+                        setFieldValue={formik.setFieldValue}
+                        aria-describedby="Member Search"
+                        error={formik.errors.adminSelect}
+                      />
+                      <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setAdminDialogOpen(false)}
+                          disabled={formik.isSubmitting}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={!formik.isValid || formik.isSubmitting}
+                          className="gap-2"
+                        >
+                          {formik.isSubmitting && (
+                            <Loader2 className="size-4 animate-spin" />
+                          )}
+                          Save Changes
+                        </Button>
+                      </DialogFooter>
+                    </Form>
+                  )}
+                </Formik>
+              </DialogContent>
+            </Dialog>
+
+            {/* ── Set Swell confirmation dialog ── */}
+            <Dialog open={swellDialogOpen} onOpenChange={setSwellDialogOpen}>
+              <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="size-5 text-warning" />
+                    Set Today as Swell
+                  </DialogTitle>
+                  <DialogDescription>
+                    This will mark today as a Swell / special weekend. This
+                    action applies to the entire campus.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSwellDialogOpen(false)}
+                    disabled={swellLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSetSwell}
+                    disabled={swellLoading}
+                    className="gap-2"
+                  >
+                    {swellLoading && (
+                      <Loader2 className="size-4 animate-spin" />
+                    )}
+                    Set as Swell
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </main>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

@@ -1,13 +1,20 @@
 import { FormikSelectOptions, convertNeoWeekdayToJSWeekday } from 'global-utils'
-import { addMinutes } from 'jd-date-utils'
-import { getTodayTime } from 'jd-date-utils'
-import { isToday } from 'jd-date-utils'
+import { addMinutes, getTodayTime, isToday } from 'jd-date-utils'
 import {
   BacentaWithArrivals,
   BussingRecord,
   StreamWithArrivals,
   VehicleRecord,
 } from './arrivals-types'
+
+export const formatAmount = (amount?: number) =>
+  typeof amount === 'number' && Number.isFinite(amount)
+    ? new Intl.NumberFormat('en-GH', {
+        style: 'currency',
+        currency: 'GHS',
+        maximumFractionDigits: 0,
+      }).format(amount)
+    : '—'
 
 export const MOBILE_NETWORK_OPTIONS: FormikSelectOptions = [
   { key: '', value: '' },

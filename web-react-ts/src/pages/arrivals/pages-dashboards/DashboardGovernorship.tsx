@@ -23,6 +23,7 @@ import RoleView from 'auth/RoleView'
 import SearchMember from 'components/formik/SearchMember'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { ChurchContext } from 'contexts/ChurchContext'
+import ArrivalsHeader from '../ArrivalsHeader'
 
 import { Alert, AlertDescription } from 'components/ui/alert'
 import { Badge } from 'components/ui/badge'
@@ -205,6 +206,7 @@ const GovernorshipDashboard = () => {
       <ApolloWrapper data={data} loading={loading} error={error}>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+            <ArrivalsHeader level="Governorship" churchId={governorshipId} />
             {/* ── Header ── */}
             <header className="mb-6 flex flex-col gap-4 lg:mb-8 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-2">

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   AlertOctagon,
   Bus,
+  BusFront,
   CalendarRange,
   Download,
   Network,
@@ -102,6 +103,9 @@ const ReportsPage = () => {
     reportsAvailable &&
     ['Governorship', 'Council', 'Stream', 'Campus'].includes(churchType)
   const defaultersPath = defaultersAvailable ? '/reports/defaulters' : null
+  // Arrivals export shares the same level gate as defaulters — Governorship+.
+  const arrivalsAvailable = defaultersAvailable
+  const arrivalsPath = arrivalsAvailable ? '/reports/arrivals' : null
   const bussingPath = reportsAvailable ? '/reports/bussing' : null
   const bussingSubChurchesPath =
     reportsAvailable && hasSubChurches ? '/reports/bussing/sub-churches' : null
@@ -207,6 +211,22 @@ const ReportsPage = () => {
                     subChurchType || 'sub-church'
                   } summary at Council and above.`}
                   to={defaultersPath}
+                />
+              </section>
+            )}
+
+            {arrivalsAvailable && (
+              <section className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Arrivals
+                </p>
+                <ReportCard
+                  icon={<BusFront className="size-5" />}
+                  title={`${churchPrefix}Arrivals Report`}
+                  description={`Per-Bacenta and per-vehicle bussing snapshot for any Sunday — attendance, leader declaration, vehicle counts, top-ups, and a per-${
+                    subChurchType || 'sub-church'
+                  } summary at Council and above.`}
+                  to={arrivalsPath}
                 />
               </section>
             )}

@@ -1,12 +1,10 @@
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, AlertOctagon, Compass } from 'lucide-react'
+import { CheckCircle2, AlertOctagon, Compass } from 'lucide-react'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import MemberDisplayCard from 'components/card/MemberDisplayCard'
 
 import { Badge } from 'components/ui/badge'
-import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
 
@@ -29,7 +27,6 @@ const QUERIES_BY_LEVEL = {
 }
 
 const BacentasNoActivity = () => {
-  const navigate = useNavigate()
   const {
     church,
     churchName,
@@ -49,17 +46,6 @@ const BacentasNoActivity = () => {
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="-ml-2 mb-4 gap-1 text-muted-foreground hover:text-foreground"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="size-4" />
-              Back
-            </Button>
-
             <header className="mb-6 space-y-2 lg:mb-8">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-defaulters">
                 <AlertOctagon className="size-3.5" />

@@ -71,6 +71,40 @@ const GRAPH_TYPE_LABELS: Record<GraphTypes, string> = {
 
 const SECONDARY_COLOR = 'hsl(var(--success))'
 
+// Per-level arrivals dashboard for bussing-aggregate bar clicks. Bacenta
+// is intentionally absent — the bacenta-level "arrivals" view is the
+// per-record bussing detail (already routed via the non-aggregate path).
+const ARRIVALS_PATH_BY_CHURCH: Partial<Record<string, string>> = {
+  campus: '/arrivals/campus',
+  stream: '/arrivals/stream',
+  council: '/arrivals/council',
+  governorship: '/arrivals/governorship',
+}
+
+// ISO Sunday (last day of the ISO week) for a given week + year. Returns
+// `null` for invalid inputs so the bar click is a no-op rather than
+// navigating to a garbage date. The Neo4j aggregator returns the bar's
+// `week` as an ISO week number — Sunday is day 7 of that week.
+const isoSundayOfWeek = (
+  week: number | undefined,
+  year: number | undefined
+): string | null => {
+  if (!Number.isFinite(week) || !Number.isFinite(year)) return null
+  const w = Number(week)
+  const y = Number(year)
+  if (w < 1 || w > 53 || y < 2000) return null
+
+  const jan4 = new Date(Date.UTC(y, 0, 4))
+  const jan4Day = jan4.getUTCDay() || 7 // 1..7 with Sunday = 7
+  const week1Monday = new Date(jan4)
+  week1Monday.setUTCDate(jan4.getUTCDate() - (jan4Day - 1))
+  const sunday = new Date(week1Monday)
+  // Monday of week W is week1Monday + (W-1)*7 days; Sunday = +6 days from
+  // there.
+  sunday.setUTCDate(week1Monday.getUTCDate() + (w - 1) * 7 + 6)
+  return sunday.toISOString().slice(0, 10)
+}
+
 type LabelProps = {
   x?: number
   y?: number
@@ -221,6 +255,19 @@ const ChurchGraph = (props: ChurchGraphProps) => {
     : graphLabel
 
   const handleBarClick = (data: any, statKey: string) => {
+    // Bussing aggregate bars don't have a single source record to drill
+    // into, but each bar represents one ISO week — clicking jumps to the
+    // arrivals summary dashboard for that week's Sunday so the user can
+    // see "what was the bussing state on that day".
+    if (graphType === 'bussingAggregate') {
+      const sundayYmd = isoSundayOfWeek(data?.week, data?.year)
+      if (!sundayYmd) return
+      const arrivalsPath = ARRIVALS_PATH_BY_CHURCH[props.church]
+      if (!arrivalsPath) return
+      navigate(`${arrivalsPath}?date=${sundayYmd}`)
+      return
+    }
+
     if (!data?.id || data?.category?.includes('Aggregate')) return
 
     const routes: Record<string, { typename: string; route: string }> = {

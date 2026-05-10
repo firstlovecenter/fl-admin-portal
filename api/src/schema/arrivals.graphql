@@ -1068,6 +1068,18 @@ extend type Bacenta {
       """
       columnName: "bussingThisWeek"
     )
+  # Single bussing record for the exact arrival date (or null). Mirrors
+  # `Bacenta.serviceRecordForWeek` but day-scoped instead of week-scoped —
+  # arrivals are anchored to a specific Sunday/swell day, not a week range.
+  bussingRecordForDate(arrivalDate: String!): BussingRecord
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
+      WHERE date(date.date) = date($arrivalDate)
+      RETURN bussing AS bussing ORDER BY date.date DESC LIMIT 1
+      """
+      columnName: "bussing"
+    )
   code: Int!
 }
 
