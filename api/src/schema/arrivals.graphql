@@ -1,4 +1,4 @@
-type SwellDate implements TimeGraphNode {
+type SwellDate implements TimeGraphNode @node{
   id: ID!
     @cypher(
       statement: """
@@ -1083,7 +1083,7 @@ extend type Bacenta {
   code: Int!
 }
 
-type BussingRecord implements Record {
+type BussingRecord implements Record @node{
   id: ID!
 
   week: Int!
@@ -1096,9 +1096,9 @@ type BussingRecord implements Record {
     )
   # Mobilisation
   createdAt: DateTime! #mobilisation time is the time the record was created
-  serviceDate: TimeGraph! @relationship(type: "BUSSED_ON", direction: OUT)
+  serviceDate: TimeGraph @relationship(type: "BUSSED_ON", direction: OUT)
   mobilisationPicture: String!
-  created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)
+  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
 
   #On The Way
   attendance: Int
@@ -1135,12 +1135,12 @@ type BussingRecord implements Record {
 
   vehicleRecords: [VehicleRecord!]!
     @relationship(type: "INCLUDES_RECORD", direction: OUT)
-  serviceLog: ServiceLog! @relationship(type: "HAS_BUSSING", direction: IN)
+  serviceLog: ServiceLog @relationship(type: "HAS_BUSSING", direction: IN)
 }
 
-type VehicleRecord {
+type VehicleRecord @node{
   id: ID!
-  created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)
+  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
   createdAt: DateTime! #mobilisation time is the time the record was created
   leaderDeclaration: Int!
   attendance: Int
@@ -1163,7 +1163,7 @@ type VehicleRecord {
   transactionReference: String
   outbound: Boolean!
 
-  bussingRecord: BussingRecord!
+  bussingRecord: BussingRecord
     @relationship(type: "INCLUDES_RECORD", direction: IN)
 }
 
@@ -1452,7 +1452,7 @@ extend type Mutation {
     )
 }
 
-type ArrivalsSheetData {
+type ArrivalsSheetData @node{
   date: Date
   stream: String
   councilHead: String

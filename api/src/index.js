@@ -117,8 +117,10 @@ const startServer = async () => {
 
   mountDownloadRoutes(app, driver, SECRETS.JWT_SECRET)
 
+  const port =
+    process.env.GRAPHQL_SERVER_PORT || SECRETS.GRAPHQL_SERVER_PORT || 4001
   await new Promise((resolve) => {
-    httpServer.listen({ port: SECRETS.GRAPHQL_SERVER_PORT || 4001 }, resolve)
+    httpServer.listen({ port }, resolve)
   })
   console.log(
     `🚀 GraphQL Server ready at http://${

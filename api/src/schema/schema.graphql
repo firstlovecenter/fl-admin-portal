@@ -47,7 +47,7 @@ type JWT @jwt {
     @jwtClaim(path: "churchScopes.isSheepSeekerForStreamOf.id")
 }
 
-type Query {
+type Query @node{
   currentUser(id: ID): Member!
     @cypher(
       statement: "MATCH (member:Active:Member {id: $jwt.userId}) RETURN member"
@@ -61,14 +61,14 @@ type Query {
     )
 }
 
-type PresignedUrlResponse {
+type PresignedUrlResponse @node{
   presignedUrl: String!
   publicUrl: String!
   key: String!
   expiresIn: Int!
 }
 
-type Mutation {
+type Mutation @node{
   generatePresignedUrl(
     fileName: String!
     fileType: String!

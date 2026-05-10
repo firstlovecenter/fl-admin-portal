@@ -1,4 +1,4 @@
-type Member {
+type Member @node{
   id: ID! @id
   firstName: String #@search
   middleName: String
@@ -20,8 +20,8 @@ type Member {
   pictureUrl: String
   visitationArea: String
   location: Point
-  gender: Gender! @relationship(type: "HAS_GENDER", direction: OUT)
-  maritalStatus: MaritalStatus!
+  gender: Gender @relationship(type: "HAS_GENDER", direction: OUT)
+  maritalStatus: MaritalStatus
     @relationship(type: "HAS_MARITAL_STATUS", direction: OUT)
   dob: TimeGraph @relationship(type: "WAS_BORN_ON", direction: OUT)
   title: [Title!]!
@@ -265,22 +265,22 @@ type Member {
     @relationship(type: "WAS_TREASURER_FOR", direction: OUT)
 }
 
-type Gender {
+type Gender @node{
   gender: String
   members: [Member!]! @relationship(type: "HAS_GENDER", direction: IN)
 }
 
-type MaritalStatus {
+type MaritalStatus @node{
   status: String
   members: [Member!]! @relationship(type: "HAS_MARITAL_STATUS", direction: IN)
 }
 
-type Occupation {
+type Occupation @node{
   occupation: String
   members: [Member!]! @relationship(type: "HAS_OCCUPATION", direction: IN)
 }
 
-type Title {
+type Title @node{
   name: String! #Pastor, Reverend, Apostle, Bishop (Mother)
   members: [Member!]!
     @relationship(type: "HAS_TITLE", properties: "HasTitle", direction: IN)
@@ -294,7 +294,7 @@ interface TimeGraphNode {
   date: Date
 }
 
-type TimeGraph implements TimeGraphNode {
+type TimeGraph implements TimeGraphNode @node{
   id: ID
     @cypher(
       statement: """
@@ -326,7 +326,7 @@ type TimeGraph implements TimeGraphNode {
   bussingDate: [BussingRecord!]! @relationship(type: "BUSSED_ON", direction: IN)
 }
 
-type HistoryLog {
+type HistoryLog @node{
   id: ID @id
   timeStamp: DateTime
   historyRecord: String #leader was transferred to
@@ -363,7 +363,9 @@ interface Church {
   services(limit: Int!, skip: Int): [ServiceRecord!]!
 }
 
-type Denomination implements Church {
+type Denomination implements Church @node
+  # @churchScoped(level: Denomination)
+{
   id: ID! @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
@@ -521,7 +523,9 @@ type Denomination implements Church {
     )
 }
 
-type Oversight implements Church {
+type Oversight implements Church @node
+  # @churchScoped(level: Oversight)
+{
   id: ID @id
   name: String!
   noIncomeTracking: Boolean
@@ -676,7 +680,9 @@ type Oversight implements Church {
     )
 }
 
-type Campus implements Church {
+type Campus implements Church @node
+  # @churchScoped(level: Campus)
+{
   id: ID @id
   name: String!
   noIncomeTracking: Boolean!
@@ -684,7 +690,7 @@ type Campus implements Church {
   conversionRateToDollar: Float!
 
   leader: Member @relationship(type: "LEADS", direction: IN)
-  oversight: Oversight! @relationship(type: "HAS", direction: IN)
+  oversight: Oversight @relationship(type: "HAS", direction: IN)
   streams: [Stream!]! @relationship(type: "HAS", direction: OUT)
   basontas: [Basonta!]! @relationship(type: "HAS_MINISTRY", direction: OUT)
   councils: [Council!]!
@@ -825,7 +831,9 @@ type Campus implements Church {
     )
 }
 
-type Stream implements Church {
+type Stream implements Church @node
+  # @churchScoped(level: Stream)
+{
   id: ID @id
   name: String!
   bankAccount: String!
@@ -850,7 +858,7 @@ type Stream implements Church {
   leader: Member @relationship(type: "LEADS", direction: IN)
   councils: [Council!]! @relationship(type: "HAS", direction: OUT)
   campus: Campus @relationship(type: "HAS", direction: IN)
-  meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
+  meetingDay: ServiceDay @relationship(type: "MEETS_ON", direction: OUT)
 
   stream_name: String
     @cypher(
@@ -995,7 +1003,9 @@ type Stream implements Church {
     )
 }
 
-type Council implements Church {
+type Council implements Church @node
+  # @churchScoped(level: Council)
+{
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
@@ -1136,7 +1146,9 @@ type Council implements Church {
     )
 }
 
-type Governorship implements Church {
+type Governorship implements Church @node
+  # @churchScoped(level: Governorship)
+{
   id: ID @id
   name: String!
   isManualBanking: Boolean!
@@ -1269,7 +1281,9 @@ type Governorship implements Church {
     )
 }
 
-type Bacenta implements Church {
+type Bacenta implements Church @node
+  # @churchScoped(level: Bacenta)
+{
   id: ID @id
   name: String!
   bankingCode: Int
@@ -1282,7 +1296,7 @@ type Bacenta implements Church {
       """
       columnName: "isManualBanking"
     )
-  meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
+  meetingDay: ServiceDay @relationship(type: "MEETS_ON", direction: OUT)
   stream_name: String
     @cypher(
       statement: """
@@ -1301,7 +1315,7 @@ type Bacenta implements Church {
       """
       columnName: "status"
     )
-  labels: [String]
+  labels: [String!]
     @cypher(
       statement: """
       MATCH (this)
@@ -1415,7 +1429,7 @@ type Bacenta implements Church {
 
 }
 
-type Basonta {
+type Basonta @node{
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)

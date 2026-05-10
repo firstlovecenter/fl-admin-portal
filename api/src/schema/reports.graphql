@@ -1,4 +1,4 @@
-type DirectoryReportEntry {
+type DirectoryReportEntry @node{
   id: ID!
   level: String!
   name: String!
@@ -8,7 +8,7 @@ type DirectoryReportEntry {
   leaderWhatsApp: String
 }
 
-type WeeklyChurchReportEntry {
+type WeeklyChurchReportEntry @node{
   id: ID!
   churchId: ID!
   churchName: String!
@@ -27,7 +27,7 @@ type WeeklyChurchReportEntry {
   bussingTopUp: Float
 }
 
-type ServiceTreasurerEntry {
+type ServiceTreasurerEntry @node{
   id: ID!
   name: String!
   phone: String
@@ -40,7 +40,7 @@ Bacenta-scope Weekday detail report — higher levels stay on the weekly
 aggregate shape (`WeeklyChurchReportEntry`) because per-record granularity
 explodes the row count.
 """
-type ServiceRecordDetail {
+type ServiceRecordDetail @node{
   id: ID!
   churchId: ID!
   churchName: String!

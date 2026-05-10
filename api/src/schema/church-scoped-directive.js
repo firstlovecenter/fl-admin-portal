@@ -102,7 +102,8 @@ const fieldPathBetween = (targetLevel, scopeLevel) => {
   const parts = []
   if (targetIdx === scopeIdx) return parts
   if (scopeIdx < targetIdx) {
-    // scope is an ancestor of target: walk up via singular fields
+    // scope is an ancestor of target: walk up via singular fields. Singular
+    // relationships in v7 nest directly: `governorship: { ... }`.
     let cursor = targetLevel
     while (cursor !== scopeLevel) {
       const field = PARENT_FIELD_OF[cursor]
@@ -111,11 +112,14 @@ const fieldPathBetween = (targetLevel, scopeLevel) => {
           `fieldPathBetween: ${targetLevel} has no ancestor path to ${scopeLevel}`
         )
       }
-      parts.push(field)
+      parts.push({ field, list: false })
       cursor = HIERARCHY[indexOf(cursor) - 1]
     }
   } else {
-    // scope is a descendant of target: walk down via list fields with _SOME
+    // scope is a descendant of target: walk down via list fields wrapped in
+    // a `some` predicate (v7 nested-input form). The buildBranch step needs
+    // to know which path components are list traversals so it can emit
+    // `<field>: { some: { ... } }` rather than `<field>: { ... }`.
     let cursor = targetLevel
     while (cursor !== scopeLevel) {
       const field = CHILDREN_FIELD_OF[cursor]
@@ -124,18 +128,32 @@ const fieldPathBetween = (targetLevel, scopeLevel) => {
           `fieldPathBetween: ${targetLevel} has no descendant path to ${scopeLevel}`
         )
       }
-      parts.push(`${field}_SOME`)
+      parts.push({ field, list: true })
       cursor = HIERARCHY[indexOf(cursor) + 1]
     }
+    return parts
   }
   return parts
 }
 
 const buildBranch = (pathParts, scopeKey) => {
-  const leaf = { id_EQ: `$jwt.${scopeKey}Id` }
+  // v7 nested-input filter form. Singular relationship fields nest directly
+  // (`governorship: { ... }`); list relationship fields wrap the predicate
+  // in `some` (`bacentas: { some: { ... } }`).
+  //
+  // We reference the JWT claim by its nested path
+  // (`$jwt.churchScopes.<key>.id`) rather than via a `@jwtClaim`-aliased
+  // flat field. Empirically, v7's `@jwtClaim` does not populate the claims
+  // map for nested-object aliases — the alias lookup falls through and the
+  // engine compares against `undefined`, which excludes everything. Direct
+  // path resolution works.
+  const leaf = { id: { eq: `$jwt.churchScopes.${scopeKey}.id` } }
   let inner = leaf
   for (let i = pathParts.length - 1; i >= 0; i -= 1) {
-    inner = { [pathParts[i]]: inner }
+    const segment = pathParts[i]
+    inner = segment.list
+      ? { [segment.field]: { some: inner } }
+      : { [segment.field]: inner }
   }
   return inner
 }
@@ -182,8 +200,11 @@ const buildChurchScopedDirective = (level) => {
 // the 16 SDL files can never get expanded into a free-floating directive.
 // Captures: 1) the type header, 2) the `level: X` argument, 3) the level name
 // in the type header (for cross-check below).
+// Allow optional intervening directives (e.g. `@node`) between the type
+// header and the marker comment. Greedy on the header lets us capture e.g.
+// `type Bacenta implements Church @node` before the `# @churchScoped(...)`.
 const MARKER_RE =
-  /(type\s+([A-Za-z]+)\s+implements\s+\w+\s*)#\s*@churchScoped\(\s*level:\s*([A-Za-z]+)\s*\)/g
+  /(type\s+([A-Za-z]+)\s+implements\s+\w+(?:\s+@\w+(?:\([^)]*\))?)*\s*)#\s*@churchScoped\(\s*level:\s*([A-Za-z]+)\s*\)/g
 
 const expandChurchScopedMarkers = (sdl) =>
   sdl.replace(MARKER_RE, (_, header, typeName, level) => {

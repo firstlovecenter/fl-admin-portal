@@ -4,7 +4,7 @@ interface MapLocation {
   location: Point!
 }
 
-type Place implements MapLocation {
+type Place implements MapLocation @node{
   id: ID!
   typename: String!
   name: String!
@@ -29,21 +29,21 @@ extend type Member {
   memberLoadCouncilUnvisitedMembers: [Place!]!
 }
 
-type IndoorVenue implements MapLocation {
+type IndoorVenue implements MapLocation @node{
   id: ID!
   name: String!
   location: Point!
   capacity: Int!
 }
 
-type OutdoorVenue implements MapLocation {
+type OutdoorVenue implements MapLocation @node{
   id: ID!
   name: String!
   location: Point!
   capacity: Int!
 }
 
-type Hostel implements MapLocation {
+type Hostel implements MapLocation @node{
   id: ID!
   name: String!
   location: Point!
@@ -53,7 +53,7 @@ type Hostel implements MapLocation {
     @cypher(statement: "MATCH (this) RETURN this.school", columnName: "school")
 }
 
-type HighSchool implements MapLocation {
+type HighSchool implements MapLocation @node{
   id: ID!
   name: String!
   location: Point!

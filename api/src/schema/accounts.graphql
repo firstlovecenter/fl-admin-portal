@@ -1,4 +1,4 @@
-type AccountTransaction {
+type AccountTransaction @node{
   id: ID!
   createdAt: DateTime!
   lastModified: DateTime!
@@ -13,8 +13,8 @@ type AccountTransaction {
   momoName: String
   invoiceUrl: String
 
-  council: Council! @relationship(type: "HAS_TRANSACTION", direction: IN)
-  loggedBy: Member! @relationship(type: "LOGGED_BY", direction: OUT)
+  council: Council @relationship(type: "HAS_TRANSACTION", direction: IN)
+  loggedBy: Member @relationship(type: "LOGGED_BY", direction: OUT)
 
   bussingSocietyBalance: Float!
   weekdayBalance: Float!

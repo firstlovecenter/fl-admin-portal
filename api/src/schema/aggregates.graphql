@@ -1,4 +1,4 @@
-type AggregateServiceRecord implements HadService {
+type AggregateServiceRecord implements HadService @node{
   id: ID!
   week: Int!
   year: Int!
@@ -8,7 +8,7 @@ type AggregateServiceRecord implements HadService {
   numberOfServices: Int
 }
 
-type AggregateBussingRecord {
+type AggregateBussingRecord @node{
   id: ID!
   week: Int!
   year: Int!
@@ -274,7 +274,7 @@ extend type Denomination {
     )
 }
 
-type AggregateStageAttendanceRecord {
+type AggregateStageAttendanceRecord @node{
   id: ID!
   week: Int!
   year: Int!

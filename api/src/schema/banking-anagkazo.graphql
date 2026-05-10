@@ -79,7 +79,7 @@ extend type Stream {
 }
 
 extend type AggregateServiceRecord {
-  foreignCurrency: [String]
+  foreignCurrency: [String!]
 }
 
 extend type Governorship {

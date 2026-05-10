@@ -1,4 +1,4 @@
-type ServiceDay {
+type ServiceDay @node{
   day: String!
   dayNumber: Int!
   bacenta: Bacenta @relationship(type: "MEETS_ON", direction: IN)
@@ -964,7 +964,7 @@ interface HadService {
   income: Float!
 }
 
-type ServiceRecord implements Record {
+type ServiceRecord implements Record @node{
   id: ID!
   createdAt: DateTime!
   created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
@@ -990,7 +990,7 @@ type ServiceRecord implements Record {
     @relationship(type: "UPLOADED_SLIP_FOR", direction: IN)
   transactionId: ID #deprecated
   treasurers: [Member!]! @relationship(type: "WAS_TREASURER_FOR", direction: IN)
-  serviceLog: ServiceLog! @relationship(type: "HAS_SERVICE", direction: IN)
+  serviceLog: ServiceLog @relationship(type: "HAS_SERVICE", direction: IN)
   noServiceReason: String
   name: String
   description: String
@@ -1016,10 +1016,10 @@ type ServiceRecord implements Record {
     )
 }
 
-type NoService implements Record {
+type NoService implements Record @node{
   id: ID!
   createdAt: DateTime!
-  created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)
+  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
   serviceDate: TimeGraph @relationship(type: "SERVICE_HELD_ON", direction: OUT)
   week: Int!
     @cypher(
@@ -1033,7 +1033,7 @@ type NoService implements Record {
   noServiceReason: String!
 }
 
-type ServiceLog {
+type ServiceLog @node{
   id: ID
   historyRecord: String #leader was transferred to
   createdAt: TimeGraph @relationship(type: "RECORDED_ON", direction: OUT)
