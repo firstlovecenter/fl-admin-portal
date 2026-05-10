@@ -8,7 +8,7 @@ const AiAssistant = () => {
       </div>
       <h1 className="text-2xl font-bold tracking-tight text-foreground">AI Assistant</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
-        Coming soon. Your AI-powered assistant for the FL Servants Portal.
+        Coming soon. Your AI-powered assistant for Synago.
       </p>
     </div>
   )

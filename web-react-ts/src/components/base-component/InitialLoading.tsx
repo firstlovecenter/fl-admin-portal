@@ -1,11 +1,9 @@
-import { Loader2 } from 'lucide-react'
-import logo from 'assets/flc-logo-small.webp'
+import SynagoLogo from 'components/SynagoLogo'
 
 const InitialLoading = ({ text }: { text?: string }) => {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background px-4">
-      <img src={logo} alt="FLC Logo" className="h-12 w-auto object-contain" />
-      <Loader2 className="h-7 w-7 animate-spin text-brand" />
+      <SynagoLogo className="h-16 w-16 text-brand" title="Synago" animated />
       <p className="max-w-xs text-center text-sm text-muted-foreground">
         {text ?? 'Please wait while we log you in'}
       </p>

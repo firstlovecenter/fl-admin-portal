@@ -10,7 +10,7 @@ import 'slick-carousel/slick/slick-theme.css'
 
 import GlobeIcon from 'assets/icons/Globe'
 import Silhouette from 'assets/icons/flcOutline'
-import Logo from '../assets/flc-logo-small.webp'
+import SynagoLogo from 'components/SynagoLogo'
 import BarsIcon from 'assets/icons/Bars'
 
 const Login = () => {
@@ -32,11 +32,9 @@ const Login = () => {
         <>
           <Navbar bg="dark">
             <Container>
-              <img
-                src={Logo}
-                height="30"
-                className="d-inline-block align-top"
-                alt="FirstLove Logo"
+              <SynagoLogo
+                className="d-inline-block align-top text-brand"
+                title="Synago"
               />
             </Container>
           </Navbar>
@@ -54,7 +52,7 @@ const Login = () => {
                 </div>
               </Slider>
               <h2 className="mb-3 mt-3 text-white font-weight-bold">
-                FLC State of the Flock
+                Synago
               </h2>
               <p>
                 <span className="mt-3 text-white">{catchPhrase}</span>
@@ -78,11 +76,9 @@ const Login = () => {
         <div className="bg-wrapper">
           <Navbar bg="dark">
             <Container>
-              <img
-                src={Logo}
-                height="30"
-                className="d-inline-block align-top"
-                alt="FirstLove Logo"
+              <SynagoLogo
+                className="d-inline-block align-top text-brand"
+                title="Synago"
               />
             </Container>
           </Navbar>
@@ -99,7 +95,7 @@ const Login = () => {
               </div>
             </Slider>
             <h3 className="mb-3 mt-3 text-white font-weight-bold">
-              FLC State of the Flock
+              Synago
             </h3>
 
             <p>

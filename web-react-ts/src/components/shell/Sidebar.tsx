@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { Button } from 'components/ui/button'
 import { cn } from 'components/lib/utils'
+import SynagoLogo from 'components/SynagoLogo'
 import { primaryNav, secondaryNav, type NavItem } from './navigation-config'
 import { useAuth as useAuthContext } from 'contexts/AuthContext'
 import useAuth from 'auth/useAuth'
@@ -156,7 +157,7 @@ export const Sidebar = ({
         {/* Brand */}
         <div className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border px-3.5">
           <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-foreground">
-            <span className="text-xs font-bold">FL</span>
+            <SynagoLogo className="h-4 w-4" />
           </div>
           <AnimatePresence>
             {open && (
@@ -168,10 +169,10 @@ export const Sidebar = ({
                 className="overflow-hidden"
               >
                 <p className="whitespace-nowrap text-sm font-semibold leading-tight text-sidebar-foreground">
-                  First Love
+                  Synago
                 </p>
                 <p className="whitespace-nowrap text-xs text-sidebar-foreground/60">
-                  Servants Portal
+                  FLC Servants Portal
                 </p>
               </motion.div>
             )}

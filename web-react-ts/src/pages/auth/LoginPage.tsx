@@ -11,7 +11,7 @@ import { Input } from 'components/ui/input'
 import { Label } from 'components/ui/label'
 import { requestPasswordReset } from 'lib/auth-service'
 import { cn } from 'components/lib/utils'
-import Logo from 'assets/flc-logo-small.webp'
+import SynagoLogo from 'components/SynagoLogo'
 
 const APP_VERSION = '8.1.3'
 
@@ -94,13 +94,13 @@ const AuthShell = ({ children }: { children: React.ReactNode }) => (
             }}
           />
           <div className="relative flex h-[68px] w-[68px] items-center justify-center rounded-[20px] border border-border bg-card shadow-[0_4px_20px_0_rgb(0_0_0/0.10)] dark:shadow-[0_4px_24px_0_rgb(0_0_0/0.30),inset_0_1px_0_rgb(255_255_255/0.06)]">
-            <img src={Logo} alt="First Love Center logo" className="h-10 w-10 object-contain" />
+            <SynagoLogo className="h-10 w-10 text-brand" title="Synago" />
           </div>
         </motion.div>
 
         <motion.div variants={slideUp} className="text-center">
           <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
-            FLC State of the Flock
+            Synago
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">For church leaders and servants</p>
         </motion.div>

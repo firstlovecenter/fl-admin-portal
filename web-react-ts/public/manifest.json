@@ -1,7 +1,7 @@
 {
-  "short_name": "FLC State of the Flock",
-  "name": "FLC Servants Synago Portal",
-  "description": "An administrative portal for managing and adminstering all aspects of the First Love Church.",
+  "short_name": "Synago",
+  "name": "Synago — FLC Servants Portal",
+  "description": "Synago — the FLC servants portal. Gather, lead, and serve across First Love Center.",
   "icons": [
     {
       "src": "app-icon-inverted.png",

@@ -4,7 +4,7 @@ import { Eye, EyeOff, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Button } from 'components/ui/button'
 import { Input } from 'components/ui/input'
 import { Label } from 'components/ui/label'
-import Logo from 'assets/flc-logo-small.webp'
+import SynagoLogo from 'components/SynagoLogo'
 
 const APP_VERSION = '8.1.3'
 
@@ -17,11 +17,11 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-10">
       <div className="mb-8 flex flex-col items-center gap-3">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10">
-          <img src={Logo} alt="FLC Logo" className="h-10 w-10 object-contain" />
+          <SynagoLogo className="h-10 w-10 text-brand" title="Synago" />
         </div>
         <div className="text-center">
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            FLC State of the Flock
+            Synago
           </h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Portal for Church Leaders

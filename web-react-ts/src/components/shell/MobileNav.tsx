@@ -8,6 +8,7 @@ import {
   SheetTitle,
 } from 'components/ui/sheet'
 import { cn } from 'components/lib/utils'
+import SynagoLogo from 'components/SynagoLogo'
 import { primaryNav, secondaryNav, type NavItem } from './navigation-config'
 import { useAuth as useAuthContext } from 'contexts/AuthContext'
 import useAuth from 'auth/useAuth'
@@ -120,12 +121,12 @@ export const MobileNav = ({
       >
         <SheetHeader className="flex h-14 flex-row items-center gap-3 border-b border-sidebar-border px-4 space-y-0">
           <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-foreground">
-            <span className="text-xs font-bold">FL</span>
+            <SynagoLogo className="h-4 w-4" />
           </div>
           <SheetTitle className="text-sm font-semibold text-sidebar-foreground leading-tight">
-            First Love
+            Synago
             <span className="block text-xs font-normal text-sidebar-foreground/60">
-              Servants Portal
+              FLC Servants Portal
             </span>
           </SheetTitle>
         </SheetHeader>
