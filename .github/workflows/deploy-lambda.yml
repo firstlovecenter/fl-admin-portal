@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
       - dev
     paths:
       - "api/**" # Only trigger when backend files change
@@ -101,6 +102,9 @@ jobs:
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "function-name=arn:aws:lambda:eu-west-2:871777052000:function:fl-synago-graphql" >> $GITHUB_OUTPUT
             echo "environment=Production" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            echo "function-name=arn:aws:lambda:eu-west-2:871777052000:function:staging-fl-synago-graphql" >> $GITHUB_OUTPUT
+            echo "environment=Staging" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/dev" ]; then
             echo "function-name=arn:aws:lambda:eu-west-2:871777052000:function:dev-fl-synago-graphql" >> $GITHUB_OUTPUT
             echo "environment=Development" >> $GITHUB_OUTPUT
