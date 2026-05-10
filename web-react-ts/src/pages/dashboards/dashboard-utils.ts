@@ -9,68 +9,8 @@ import {
 import { authorisedLink, plural } from 'global-utils'
 import { churchLevels } from 'pages/directory/update/directory-utils'
 import {
-  permitArrivals,
-  permitArrivalsHelpers,
-  permitLeaderAdmin,
-  permitLeaderAdminArrivals,
   permitMe,
-  permitTellerStream,
 } from 'permission-utils'
-
-type MenuItem = {
-  name: string
-  to: string
-  roles: Role[]
-  exact?: 'true'
-}
-
-export const arrayDiff = (membersIn: any[], notIn: any[]) => {
-  return membersIn.filter((i) => notIn.indexOf(i) < 0)
-}
-
-export const menuItems: MenuItem[] = [
-  { name: 'Home', to: '/', roles: ['all'] },
-  {
-    name: 'Directory',
-    exact: 'true',
-    to: '/directory',
-    roles: permitMe('Bacenta'),
-  },
-  {
-    name: 'Services',
-    to: '/services/church-list',
-    roles: [...permitLeaderAdmin('Bacenta'), ...permitTellerStream()],
-  },
-  {
-    name: 'Arrivals',
-    to: '/arrivals',
-    roles: arrayDiff(
-      [
-        ...permitLeaderAdmin('Bacenta'),
-        ...permitArrivals('Bacenta'),
-        ...permitArrivalsHelpers('Stream'),
-      ],
-      [...permitLeaderAdminArrivals('Oversight')]
-    ),
-  },
-  {
-    name: 'Accounts',
-    to: '/accounts',
-    roles: [
-      'fishers',
-      'adminOversight',
-      'adminCampus',
-      'leaderCouncil',
-      'leaderStream',
-      'leaderCampus',
-    ],
-  },
-  {
-    name: 'Maps',
-    to: '/maps',
-    roles: permitLeaderAdminArrivals('Bacenta'),
-  },
-]
 
 export const roles: {
   [key in ChurchLevel]: VerbTypes[]
@@ -184,9 +124,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
       link: authorisedLink(
         servant,
         permittedForLink,
-        adminsOneChurch
-          ? `/${churchType.toLowerCase()}/displaydetails`
-          : `/servants/church-list`
+        `/${churchType.toLowerCase()}/displaydetails`
       ),
     })
 
@@ -203,13 +141,13 @@ const setServantRoles = (args: ServantRolesArgs) => {
     link: authorisedLink(
       servant,
       permittedForLink,
-      leadsOneChurch
-        ? `/${churchType.toLowerCase()}/displaydetails`
-        : `/servants/church-list`
+      `/${churchType.toLowerCase()}/displaydetails`
     ),
   })
 }
 
+// The `link` field below satisfies the UserJobs type but is never read for
+// navigation — ChurchRoleScopeContext owns routing for multi-church users.
 export const getUserServantRoles = (servant: Servant) => {
   let userroles: UserJobs[] = []
 

@@ -151,10 +151,6 @@ const CampusAvgWeekdayQuickFacts = lazy(
   () =>
     import('pages/directory/quick-facts/this-month/CampusAvgWeekdayQuickFacts')
 )
-const QuickFactsChurchList = lazy(
-  () => import('pages/directory/quick-facts/QuickFactsChurchList')
-)
-
 export const memberDirectory: LazyRouteTypes[] = [
   {
     path: '/directory/members',
@@ -164,12 +160,6 @@ export const memberDirectory: LazyRouteTypes[] = [
 ]
 
 export const quickFacts: LazyRouteTypes[] = [
-  {
-    path: '/directory/quick-facts/church-list',
-    element: QuickFactsChurchList,
-    roles: ['all'],
-  },
-
   {
     path: '/quick-facts/this-month/bacenta',
     element: BacentaAvgWeekdayQuickFacts,

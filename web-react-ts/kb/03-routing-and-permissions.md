@@ -55,9 +55,8 @@ Defined in per-section route arrays:
 4. Verify: `tsc --noEmit` and click the route in the running app.
 
 Do **not** add inline `<Route>` JSX in `AppWithContext.tsx`. The only inline
-routes there are `/setup-password`, `/dashboard/servants`,
-`/servants/church-list`, and the catch-all `*` — and that is by design (they
-have non-standard wrappers).
+routes there are `/setup-password`, `/dashboard/servants`, and the catch-all
+`*` — and that is by design (they have non-standard wrappers).
 
 ## URL conventions
 

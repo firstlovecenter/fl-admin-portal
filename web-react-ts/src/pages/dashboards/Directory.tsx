@@ -10,6 +10,15 @@ import { getChurchCount, getMemberCount } from 'global-utils'
 import Church from 'assets/icons/Church'
 import People from 'assets/icons/People'
 import Stars from 'assets/icons/Stars'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
+
+const QUICK_FACTS_LEVELS = new Set([
+  'Bacenta',
+  'Governorship',
+  'Stream',
+  'Council',
+  'Campus',
+])
 
 const Directory = () => {
   const { currentUser, theme } = useContext(MemberContext)
@@ -17,6 +26,10 @@ const Directory = () => {
     variables: { id: currentUser.id },
   })
   const navigate = useNavigate()
+  const { selectedScope } = useChurchRoleScope()
+
+  const hasQuickFacts =
+    !!selectedScope && QUICK_FACTS_LEVELS.has(selectedScope.churchType)
 
   return (
     <div className="d-flex align-items-center justify-content-center ">
@@ -43,13 +56,19 @@ const Directory = () => {
             color="churches"
             onClick={() => navigate(`/directory/churches`)}
           />
-          <MenuButton
-            iconComponent={<Stars />}
-            title="quick facts"
-            caption={'Quick facts about your church'}
-            color="quick-facts"
-            onClick={() => navigate(`/directory/quick-facts/church-list`)}
-          />
+          {hasQuickFacts && (
+            <MenuButton
+              iconComponent={<Stars />}
+              title="quick facts"
+              caption={'Quick facts about your church'}
+              color="quick-facts"
+              onClick={() =>
+                navigate(
+                  `/quick-facts/this-month/${selectedScope.churchType.toLowerCase()}`
+                )
+              }
+            />
+          )}
         </div>
       </Container>
     </div>

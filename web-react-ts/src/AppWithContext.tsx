@@ -10,7 +10,6 @@ import { AppShell } from 'components/shell/AppShell'
 import { ChurchContext } from './contexts/ChurchContext'
 import ProtectedRoute from './auth/ProtectedRoute'
 import ProtectedRouteHome from './auth/ProtectedRouteHome'
-import ServantsChurchList from 'pages/dashboards/ServantsChurchList'
 import { ServiceContext } from 'contexts/ServiceContext'
 import MembersDirectoryRoute from './pages/directory/MembersDirectoryRoute'
 import { dashboards } from 'pages/dashboards/dashboardRoutes'
@@ -251,17 +250,6 @@ const AppWithContext = () => {
                             roles={permitMe('Bacenta')}
                             component={<ServantsDashboard />}
                           />
-                        }
-                      />
-                      <Route
-                        path="/servants/church-list"
-                        element={
-                          <ProtectedRoute
-                            roles={permitMe('Bacenta')}
-                            placeholder
-                          >
-                            <ServantsChurchList />
-                          </ProtectedRoute>
                         }
                       />
                       <Route path="*" element={<PageNotFound />} />

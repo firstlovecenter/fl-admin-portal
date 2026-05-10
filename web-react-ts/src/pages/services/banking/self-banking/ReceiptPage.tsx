@@ -305,7 +305,7 @@ const ReceiptPage = () => {
                         : 'default'
                     }
                     className="w-full"
-                    onClick={() => navigate('/services/church-list')}
+                    onClick={() => navigate('/services')}
                   >
                     Go Home
                   </Button>

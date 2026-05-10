@@ -1,5 +1,4 @@
 import {
-  permitLeader,
   permitLeaderAdmin,
   permitLeaderAdminArrivals,
   permitTellerStream,
@@ -67,9 +66,6 @@ const GovernorshipJointBanked = lazy(
 const CouncilJointBanked = lazy(
   () => import('pages/services/defaulters/CouncilBankedThisWeek')
 )
-const ServicesChurchList = lazy(
-  () => import('pages/services/ServicesChurchList')
-)
 const ServicesMenu = lazy(() => import('pages/services/menus/ServicesMenu'))
 const StreamReport = lazy(() => import('pages/services/graphs/StreamGraphs'))
 const CampusReport = lazy(() => import('pages/services/graphs/CampusGraphs'))
@@ -131,7 +127,6 @@ const CampusService = lazy(
 const CampusServiceDetails = lazy(
   () => import('pages/services/record-service/CampusServiceDetails')
 )
-const Defaulters = lazy(() => import('./defaulters/Defaulters'))
 const DefaultersDashboard = lazy(
   () => import('./defaulters/DefaultersDashboard')
 )
@@ -158,21 +153,6 @@ export const services: LazyRouteTypes[] = [
     ],
     placeholder: true,
   },
-  {
-    path: '/services/church-list',
-    element: ServicesChurchList,
-    roles: [
-      ...permitLeaderAdmin('Bacenta'),
-      ...permitTellerStream(),
-    ],
-    placeholder: true,
-  },
-  // {
-  //   path: '/bacenta/record-service',
-  //   element: BacentaService,
-  //   roles: permitLeaderAdmin('Bacenta'),
-  //   placeholder: true,
-  // },
   {
     path: '/services/governorship',
     element: GovernorshipJoint,
@@ -392,12 +372,6 @@ export const graphs: LazyRouteTypes[] = [
   },
 
   //Defaulters Flow
-  {
-    path: '/services/defaulters',
-    element: Defaulters,
-    roles: permitLeaderAdmin('Governorship'),
-    placeholder: true,
-  },
   {
     path: '/services/defaulters/dashboard',
     element: DefaultersDashboard,
