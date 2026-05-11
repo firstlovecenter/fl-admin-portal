@@ -371,21 +371,35 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                   </div>
                 </div>
                 <DialogFooter>
+                  {hasStickyNote && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={onDelete}
+                      disabled={noteLoading}
+                      className="min-h-11 gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive sm:mr-auto"
+                    >
+                      {noteLoading ? (
+                        <Loader2
+                          className="h-4 w-4 animate-spin"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      )}
+                      Delete Note
+                    </Button>
+                  )}
                   <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={onDelete}
-                    disabled={noteLoading}
+                    type="submit"
+                    disabled={formik.isSubmitting}
+                    className="min-h-11"
                   >
-                    {noteLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      'Delete Note'
-                    )}
-                  </Button>
-                  <Button type="submit" disabled={formik.isSubmitting}>
                     {formik.isSubmitting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2
+                        className="h-4 w-4 animate-spin"
+                        aria-hidden="true"
+                      />
                     ) : (
                       'Save Note'
                     )}

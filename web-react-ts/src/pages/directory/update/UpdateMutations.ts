@@ -66,7 +66,10 @@ export const UPDATE_MEMBER_STICKY_NOTE = gql`
     $ids: [ID]
     $historyRecord: String!
   ) {
-    updateMembers(where: { id: { eq: $id } }, update: { stickyNote: $stickyNote }) {
+    updateMembers(
+      where: { id: { eq: $id } }
+      update: { stickyNote: { set: $stickyNote } }
+    ) {
       members {
         id
         stickyNote
