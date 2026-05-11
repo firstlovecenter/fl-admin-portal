@@ -75,11 +75,11 @@ export const ChurchScopeNavItem = ({
         onClick={handleClick}
         aria-label={ariaLabel}
         className={cn(
-          'flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors',
+          'flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors',
           'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground active:scale-[0.98]'
         )}
       >
-        <Building2 className="size-5 shrink-0 text-churches" />
+        <Building2 className="size-4 shrink-0 text-churches" />
         <span className="flex min-w-0 flex-1 items-baseline gap-1.5 overflow-hidden">
           {label}
         </span>

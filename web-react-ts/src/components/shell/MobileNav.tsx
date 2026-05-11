@@ -53,7 +53,7 @@ const MobileNavItem = ({
         onClick={onClose}
         className={({ isActive }) =>
           cn(
-            'flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors',
+            'flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors',
             isActive
               ? 'bg-sidebar-accent text-sidebar-accent-foreground'
               : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
@@ -64,7 +64,7 @@ const MobileNavItem = ({
           <>
             <Icon
               className={cn(
-                'size-5 shrink-0',
+                'size-4 shrink-0',
                 isActive && item.accentClass ? item.accentClass : ''
               )}
             />
@@ -135,7 +135,7 @@ export const MobileNav = ({
             If forceMount is ever added to SheetPortal/SheetContent, add
             key={String(open)} here to guarantee remount on each open. */}
         <motion.nav
-          className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4"
+          className="flex flex-1 flex-col gap-px overflow-y-auto px-2 py-2"
           initial="hidden"
           animate="visible"
           variants={containerVariants}
@@ -149,9 +149,9 @@ export const MobileNav = ({
                 onOpenSearch()
               }}
               aria-label="Open search"
-              className="mb-2 flex h-11 items-center gap-3 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+              className="mb-1.5 flex h-9 items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar-accent/40 px-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
             >
-              <Search className="size-5 shrink-0" />
+              <Search className="size-4 shrink-0" />
               Search
             </motion.button>
           )}
@@ -161,7 +161,7 @@ export const MobileNav = ({
           ))}
           <motion.div
             variants={itemVariants}
-            className="my-2 h-px bg-sidebar-border"
+            className="my-1.5 h-px bg-sidebar-border"
           />
           <motion.div variants={itemVariants}>
             <ChurchRoleScopePicker />
