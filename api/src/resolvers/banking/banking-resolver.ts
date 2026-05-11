@@ -132,7 +132,12 @@ const bankingMutation = {
         transactionResponse.stream
       )
 
-      if (!subaccount && SECRETS.TEST_ENV !== 'true') {
+      // In development the merchant uses Paystack test keys with no
+      // subaccount split — the charge goes to the main merchant account so
+      // local payments can complete end-to-end. In production a missing
+      // subaccount is a configuration error and must fail loudly.
+      const environment = SECRETS.ENVIRONMENT || 'production'
+      if (!subaccount && environment !== 'development') {
         throw new Error(
           'There was an error with the payment. Please email admin@firstlovecenter.com.'
         )
