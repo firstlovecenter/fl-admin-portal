@@ -3,6 +3,12 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Skeleton } from 'components/ui/skeleton'
 import { cn } from 'components/lib/utils'
+import { SHORT_POLL_INTERVAL } from 'global-utils'
+
+export const POLL_SECONDS = Math.max(
+  1,
+  Math.round(SHORT_POLL_INTERVAL / 1000)
+)
 
 export type StatusTone =
   | 'defaulters'
