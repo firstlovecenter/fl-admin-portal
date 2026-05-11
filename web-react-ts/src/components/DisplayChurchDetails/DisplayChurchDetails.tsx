@@ -47,6 +47,7 @@ import {
   MAKE_STREAM_ADMIN,
 } from './AdminMutations'
 import EditButton from 'components/buttons/EditButton'
+import CloseDownBacentaButton from 'components/buttons/CloseDownBacentaButton'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import Last3WeeksCard, {
@@ -356,7 +357,16 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             </h1>
             {directoryLock(currentUser, props.churchType) && (
               <RoleView roles={props.editPermitted} directoryLock>
-                <EditButton link={props.editlink} />
+                <div className="flex items-center gap-2">
+                  <EditButton link={props.editlink} />
+                  {props.churchType === 'Bacenta' && props.leader?.id && (
+                    <CloseDownBacentaButton
+                      bacentaId={props.churchId}
+                      bacentaName={props.name}
+                      leaderId={props.leader.id}
+                    />
+                  )}
+                </div>
               </RoleView>
             )}
           </div>

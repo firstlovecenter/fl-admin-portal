@@ -27,7 +27,10 @@ const UpdateBacenta = () => {
 
   const initialValues: BacentaFormValues = {
     name: bacenta?.name,
-    leaderName: bacenta?.leader?.firstName + ' ' + bacenta?.leader?.lastName,
+    leaderName:
+      bacenta?.leader?.firstName && bacenta?.leader?.lastName
+        ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
+        : '',
     leaderId: bacenta?.leader?.id || '',
     leaderEmail: bacenta?.leader?.email ?? '',
     governorship: bacenta?.governorship,
@@ -240,7 +243,6 @@ const UpdateBacenta = () => {
         initialValues={initialValues}
         onSubmit={onSubmit}
         title="Update Bacenta Form"
-        newBacenta={false}
       />
     </ApolloWrapper>
   )
