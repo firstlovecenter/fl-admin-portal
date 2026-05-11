@@ -134,6 +134,7 @@ exports.handler = async (event, context) => {
       ? ['https://dev-synago.firstlovecenter.com']
       : [
           'https://admin.firstlovecenter.com',
+          'https://synago.firstlovecenter.com',
           'https://staging-synago.firstlovecenter.com',
         ]
 
