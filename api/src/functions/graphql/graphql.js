@@ -124,18 +124,32 @@ exports.handler = async (event, context) => {
   // Initialize on cold start to ensure SECRETS are loaded
   await initializeServer()
 
-  // Determine CORS origin based on environment
-  const allowedOrigin =
+  // Determine CORS origin based on environment. Production accepts both the
+  // main admin host and the staging-synago host; we reflect whichever origin
+  // the request came from so a single Lambda can serve both. On mismatch we
+  // omit Access-Control-Allow-Origin entirely so the browser blocks the
+  // response rather than seeing a misleading default.
+  const allowedOrigins =
     SECRETS?.ENVIRONMENT === 'development'
-      ? 'https://dev-synago.firstlovecenter.com'
-      : 'https://admin.firstlovecenter.com'
+      ? ['https://dev-synago.firstlovecenter.com']
+      : [
+          'https://admin.firstlovecenter.com',
+          'https://staging-synago.firstlovecenter.com',
+        ]
 
-  console.log('[CORS Debug] Allowed origin:', allowedOrigin)
+  const requestOrigin =
+    event.headers?.origin || event.headers?.Origin || null
+  const matchedOrigin = allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : null
+
+  console.log('[CORS Debug] Matched origin:', matchedOrigin)
 
   const corsHeaders = {
-    'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    Vary: 'Origin',
+    ...(matchedOrigin && { 'Access-Control-Allow-Origin': matchedOrigin }),
   }
 
   // Membership CSV downloads share this Lambda but do not go through Apollo
