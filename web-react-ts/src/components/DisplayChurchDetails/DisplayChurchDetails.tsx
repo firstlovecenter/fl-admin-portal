@@ -544,7 +544,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                     className={detail.width === 12 ? 'col-span-2' : 'col-span-1'}
                   >
                     <DetailsCard
-                      onClick={() => navigate(detail.link)}
+                      onClick={detail.onClick ?? (() => navigate(detail.link))}
                       heading={detail.title}
                       detail={
                         !props.loading ? detail?.number?.toString() || '0' : ''

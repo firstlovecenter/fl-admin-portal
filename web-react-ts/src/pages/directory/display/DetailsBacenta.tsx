@@ -16,6 +16,7 @@ export type DetailsArray = {
   link: string
   width?: number
   vacationCount?: number
+  onClick?: () => void
 }[]
 
 const convertToString = (value: string | boolean) => {

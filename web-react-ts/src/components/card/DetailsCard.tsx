@@ -35,8 +35,9 @@ const DetailsCard = (props: DetailsCardPropsType) => {
   return (
     <div
       className={cn(
-        'rounded-lg border border-border bg-card p-3 m-1 transition-colors',
-        onClick && 'cursor-pointer active:bg-muted'
+        'rounded-lg border border-border bg-card p-3 m-1 transition-all duration-200',
+        onClick &&
+          'cursor-pointer hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-muted/50 hover:shadow-sm active:translate-y-0 active:bg-muted active:shadow-none'
       )}
       onClick={onClick}
     >
