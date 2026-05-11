@@ -16,7 +16,11 @@ const SubmitButton = ({ formik, children, onClick, className }: SubmitButtonProp
   <Button
     type="submit"
     size="lg"
-    className={cn('w-full gap-2', !formik.isValid && 'opacity-65', className)}
+    className={cn(
+      'w-full gap-2 px-8 font-semibold sm:w-auto sm:min-w-64',
+      !formik.isValid && 'opacity-65',
+      className
+    )}
     disabled={formik.isSubmitting}
     onClick={onClick}
   >
