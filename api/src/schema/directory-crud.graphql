@@ -247,7 +247,7 @@ extend type Mutation {
 ### UPDATE OPERATIONS ###
 extend type Mutation {
   UpdateMemberAppointmentDate(id: ID!, appointmentDate: String): Member!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -262,7 +262,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberOrdinationDate(id: ID!, ordinationDate: String!): Member!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -277,7 +277,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberConsecrationDate(id: ID!, consecrationDate: String!): Member!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -293,7 +293,7 @@ extend type Mutation {
     )
 
   DeleteMemberTitles(id: ID!): Member!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -414,7 +414,7 @@ extend type Mutation {
     )
 
   UpdateDenominationDetails(denominationId: ID!, name: String!): Denomination
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (denomination:Denomination {id: $denominationId})
@@ -425,7 +425,7 @@ extend type Mutation {
       columnName: "denomination"
     )
   UpdateOversightDetails(oversightId: ID!, name: String!): Oversight!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (oversight:Oversight {id: $oversightId})
@@ -446,8 +446,8 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "adminDenomination" }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
         ]
       }
     )
@@ -472,9 +472,9 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "adminDenomination" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
         ]
       }
     )
@@ -503,10 +503,10 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "adminDenomination" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
         ]
       }
     )
@@ -524,9 +524,9 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCouncil" } }
         ]
       }
     )
@@ -549,13 +549,13 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminDenomination" }
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminGovernorship" }
-          { roles_INCLUDES: "arrivalsAdminGovernorship" }
+          { roles: { includes: "adminDenomination" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "arrivalsAdminGovernorship" } }
         ]
       }
     )

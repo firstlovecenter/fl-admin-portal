@@ -359,9 +359,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "leaderCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -381,9 +381,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "leaderStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
         ]
       }
     )
@@ -404,9 +404,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "leaderCouncil" }
-          { roles_INCLUDES: "arrivalsAdminCouncil" }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "leaderCouncil" } }
+          { roles: { includes: "arrivalsAdminCouncil" } }
         ]
       }
     )
@@ -427,9 +427,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminGovernorship" }
-          { roles_INCLUDES: "leaderGovernorship" }
-          { roles_INCLUDES: "arrivalsAdminGovernorship" }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "leaderGovernorship" } }
+          { roles: { includes: "arrivalsAdminGovernorship" } }
         ]
       }
     )
@@ -447,7 +447,7 @@ extend type Query {
       columnName: "member"
     )
   bacentaMemberSearch(searchKey: String!, bacentaId: ID!): [Member!]!
-    @authentication(jwt: { OR: [{ roles_INCLUDES: "leaderBacenta" }] })
+    @authentication(jwt: { OR: [{ roles: { includes: "leaderBacenta" } }] })
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})<-[:BELONGS_TO]-(member:Active:Member)
@@ -466,9 +466,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "leaderOversight" }
-          { roles_INCLUDES: "arrivalsAdminOversight" }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "arrivalsAdminOversight" } }
         ]
       }
     )
@@ -486,9 +486,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "leaderCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -505,9 +505,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "leaderStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
         ]
       }
     )
@@ -525,9 +525,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "leaderCouncil" }
-          { roles_INCLUDES: "arrivalsAdminCouncil" }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "leaderCouncil" } }
+          { roles: { includes: "arrivalsAdminCouncil" } }
         ]
       }
     )
@@ -548,9 +548,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminGovernorship" }
-          { roles_INCLUDES: "leaderGovernorship" }
-          { roles_INCLUDES: "arrivalsAdminGovernorship" }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "leaderGovernorship" } }
+          { roles: { includes: "arrivalsAdminGovernorship" } }
         ]
       }
     )
@@ -574,9 +574,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "leaderOversight" }
-          { roles_INCLUDES: "arrivalsAdminOversight" }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "arrivalsAdminOversight" } }
         ]
       }
     )
@@ -594,9 +594,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "leaderCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -613,9 +613,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "leaderStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
         ]
       }
     )
@@ -636,9 +636,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "leaderCouncil" }
-          { roles_INCLUDES: "arrivalsAdminCouncil" }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "leaderCouncil" } }
+          { roles: { includes: "arrivalsAdminCouncil" } }
         ]
       }
     )
@@ -658,9 +658,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "leaderOversight" }
-          { roles_INCLUDES: "arrivalsAdminOversight" }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "arrivalsAdminOversight" } }
         ]
       }
     )
@@ -678,9 +678,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "leaderCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -697,9 +697,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "leaderStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
         ]
       }
     )
@@ -719,9 +719,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "leaderOversight" }
-          { roles_INCLUDES: "arrivalsAdminOversight" }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "arrivalsAdminOversight" } }
         ]
       }
     )
@@ -738,9 +738,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "leaderCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -759,9 +759,9 @@ extend type Query {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "leaderOversight" }
-          { roles_INCLUDES: "arrivalsAdminOversight" }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "arrivalsAdminOversight" } }
         ]
       }
     )

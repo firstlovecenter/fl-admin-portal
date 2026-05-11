@@ -182,7 +182,7 @@ extend type Council {
 
 extend type Mutation {
   SetCouncilHRAmount(councilId: ID!, amount: Float!): Council!
-    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
+    @authentication(jwt: { roles: { includes: "adminCampus" } })
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
@@ -211,8 +211,8 @@ extend type Mutation {
     # @authentication(
     #   jwt: {
     #     OR: [
-    #       { roles_INCLUDES: "leaderCouncil" }
-    #       { roles_INCLUDES: "adminCampus" }
+    #       { roles: { includes: "leaderCouncil" } }
+    #       { roles: { includes: "adminCampus" } }
     #     ]
     #   }
     # )
@@ -251,8 +251,8 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "leaderCampus" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "leaderCampus" } }
         ]
       }
     )

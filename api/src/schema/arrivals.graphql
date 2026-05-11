@@ -1218,9 +1218,9 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -1236,8 +1236,8 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -1259,10 +1259,10 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
         ]
       }
     )
@@ -1300,7 +1300,7 @@ extend type Mutation {
     momoName: String!
     momoNumber: String!
   ): Bacenta!
-    @authentication(jwt: { roles_INCLUDES: "leaderBacenta" })
+    @authentication(jwt: { roles: { includes: "leaderBacenta" } })
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})
@@ -1349,7 +1349,7 @@ extend type Mutation {
     vehicle: String!
     comments: String
   ): VehicleRecord!
-    @authentication(jwt: { roles_INCLUDES: "arrivalsCounterStream" })
+    @authentication(jwt: { roles: { includes: "arrivalsCounterStream" } })
     @cypher(
       statement: """
       MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId}) WHERE vehicleRecord.arrivalTime IS NULL
@@ -1398,10 +1398,10 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -1443,10 +1443,10 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )

@@ -1089,10 +1089,10 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminGovernorship" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminGovernorship" } }
         ]
       }
     )
@@ -1105,7 +1105,7 @@ extend type Mutation {
       columnName: "bacenta"
     )
   DeleteServiceRecord(serviceRecordId: ID!): String!
-    @authentication(jwt: { OR: [{ roles_INCLUDES: "fishers" }] })
+    @authentication(jwt: { OR: [{ roles: { includes: "fishers" } }] })
     @cypher(
       statement: """
       MATCH (this:ServiceRecord {id: $serviceRecordId})
