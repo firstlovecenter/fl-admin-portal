@@ -36,7 +36,6 @@ export const CREATE_MEMBER_MUTATION = gql`
       id
       firstName
       lastName
-      stream_name
 
       bacenta {
         id
@@ -103,7 +102,6 @@ export const CREATE_BACENTA_MUTATION = gql`
     ) {
       id
       name
-      stream_name
       governorship {
         id
         bacentas {
@@ -130,7 +128,6 @@ export const CREATE_GOVERNORSHIP_MUTATION = gql`
     ) {
       id
       name
-      stream_name
       council {
         id
         governorships {
@@ -147,7 +144,6 @@ export const CREATE_COUNCIL_MUTATION = gql`
     CreateCouncil(name: $name, leaderId: $leaderId, streamId: $streamId) {
       id
       name
-      stream_name
       stream {
         id
         councils {

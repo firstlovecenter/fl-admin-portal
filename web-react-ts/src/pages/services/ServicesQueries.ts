@@ -8,7 +8,6 @@ export const BACENTA_BANKING_SLIP_QUERIES = gql`
       name
       services(limit: 10, skip: $skip) {
         id
-        stream_name
         noServiceReason
         createdAt
         serviceDate {
@@ -72,7 +71,6 @@ export const GOVERNORSHIP_BANKING_SLIP_QUERIES = gql`
       name
       services(limit: 20) {
         id
-        stream_name
         noServiceReason
         createdAt
         serviceDate {
@@ -115,7 +113,6 @@ export const STREAM_BANKING_SLIP_QUERIES = gql`
       name
       services(limit: 20) {
         id
-        stream_name
         noServiceReason
         createdAt
         serviceDate {
@@ -158,7 +155,6 @@ export const COUNCIL_BANKING_SLIP_QUERIES = gql`
       name
       services(limit: 20) {
         id
-        stream_name
         noServiceReason
         createdAt
         serviceDate {

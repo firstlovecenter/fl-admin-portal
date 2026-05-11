@@ -167,7 +167,6 @@ export const CONFIRM_GOVERNORSHIP_ARRIVALS = gql`
     governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
-      stream_name
       bacentasOnTheWay(arrivalDate: $arrivalDate) {
         id
         name
@@ -199,7 +198,6 @@ export const CONFIRM_COUNCIL_ARRIVALS = gql`
     councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
-      stream_name
       bacentasOnTheWay(arrivalDate: $arrivalDate) {
         id
         name
@@ -231,7 +229,6 @@ export const CONFIRM_STREAM_ARRIVALS = gql`
     streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
-      stream_name
       bacentasOnTheWay(arrivalDate: $arrivalDate) {
         id
         name
@@ -295,7 +292,6 @@ export const BACENTA_ARRIVALS = gql`
     bacentas(where: { id: { eq: $id } }, limit: 1) {
       id
       name
-      stream_name
       stream {
         id
         name
@@ -459,7 +455,6 @@ export const DISPLAY_BUSSING_RECORDS = gql`
     bacentas(where: { id: { eq: $bacentaId } }) {
       id
       name
-      stream_name
       stream {
         id
         arrivalStartTime

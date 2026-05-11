@@ -89,7 +89,6 @@ export const UPDATE_MEMBER_STICKY_NOTE = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -113,7 +112,6 @@ export const LOG_MEMBER_HISTORY = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -151,7 +149,6 @@ export const UPDATE_MEMBER_BACENTA = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -201,7 +198,6 @@ export const UPDATE_STREAM_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -252,7 +248,6 @@ export const UPDATE_OVERSIGHT_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -297,7 +292,6 @@ export const UPDATE_DENOMINATION_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -363,7 +357,6 @@ export const UPDATE_CAMPUS_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -414,7 +407,6 @@ export const UPDATE_COUNCIL_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -465,7 +457,6 @@ export const UPDATE_GOVERNORSHIP_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -595,7 +586,6 @@ export const MOVE_OVERSIGHT_TO_DENOMINATION = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -640,7 +630,6 @@ export const MOVE_CAMPUS_TO_OVERSIGHT = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -685,7 +674,6 @@ export const MOVE_STREAM_TO_CAMPUS = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -730,7 +718,6 @@ export const MOVE_COUNCIL_TO_STREAM = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -778,7 +765,6 @@ export const MOVE_GOVERNORSHIP_TO_COUNCIL = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -826,7 +812,6 @@ export const MOVE_BACENTA_TO_GOVERNORSHIP = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }

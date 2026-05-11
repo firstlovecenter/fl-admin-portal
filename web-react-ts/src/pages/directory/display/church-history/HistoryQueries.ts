@@ -10,7 +10,6 @@ const HISTORY_FIELDS = `
     id
     firstName
     lastName
-    stream_name
   }
   historyRecord
 `

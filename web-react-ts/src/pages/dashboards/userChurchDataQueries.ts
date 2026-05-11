@@ -7,7 +7,6 @@ export const SERVANT_BACENTA_LEADER = gql`
       leadsBacenta {
         id
         name
-        stream_name
         meetingDay {
           day
           dayNumber
@@ -79,7 +78,6 @@ export const SERVANT_GOVERNORSHIP_LEADER = gql`
       leadsGovernorship {
         id
         name
-        stream_name
 
         council {
           id
@@ -111,7 +109,6 @@ export const SERVANT_COUNCIL_LEADER = gql`
       leadsCouncil {
         id
         name
-        stream_name
 
         aggregateServiceRecords(limit: 24) {
           id
@@ -256,7 +253,6 @@ export const SERVANT_GOVERNORSHIP_ADMIN = gql`
       isAdminForGovernorship {
         id
         name
-        stream_name
         leader {
           id
           firstName
@@ -294,7 +290,6 @@ export const SERVANT_COUNCIL_ADMIN = gql`
       isAdminForCouncil {
         id
         name
-        stream_name
 
         leader {
           id
@@ -484,7 +479,6 @@ export const SERVANTS_COUNCIL_ARRIVALS_ADMIN = gql`
       isArrivalsAdminForCouncil {
         id
         name
-        stream_name
 
         leader {
           id
@@ -580,7 +574,6 @@ export const SERVANTS_STREAM_TELLER = gql`
       isTellerForStream {
         id
         name
-        stream_name
 
         leader {
           id

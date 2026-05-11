@@ -16,7 +16,6 @@ export const SET_VACATION_STREAM = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -40,7 +39,6 @@ export const SET_ACTIVE_STREAM = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -64,7 +62,6 @@ export const SET_VACATION_BACENTA = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -88,7 +85,6 @@ export const SET_ACTIVE_BACENTA = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -112,7 +108,6 @@ export const SET_ACTIVE_HUB = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -136,7 +131,6 @@ export const SET_VACATION_HUB = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }

@@ -220,7 +220,6 @@ export const DISPLAY_BACENTA_SERVICE = gql`
     bacentas(where: { id: { eq: $bacentaId } }) {
       id
       name
-      stream_name
     }
   }
 `
@@ -283,7 +282,6 @@ export const DISPLAY_GOVERNORSHIP_SERVICE = gql`
     governorships(where: { id: { eq: $governorshipId } }) {
       id
       name
-      stream_name
     }
   }
 `
@@ -343,7 +341,6 @@ export const DISPLAY_COUNCIL_SERVICE = gql`
     councils(where: { id: { eq: $councilId } }) {
       id
       name
-      stream_name
     }
   }
 `
@@ -407,7 +404,6 @@ export const DISPLAY_STREAM_SERVICE = gql`
     streams(where: { id: { eq: $streamId } }) {
       id
       name
-      stream_name
     }
   }
 `
