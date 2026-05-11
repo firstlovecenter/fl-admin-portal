@@ -290,6 +290,41 @@ export const DISPLAY_GOVERNORSHIP = gql`
   }
 `
 
+export const GET_COUNCIL_BACENTAS = gql`
+  query getCouncilBacentas($id: ID!) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
+      id
+      name
+      memberCount
+      governorships {
+        id
+        name
+        leader {
+          id
+          firstName
+          lastName
+          fullName
+          nameWithTitle
+          pictureUrl
+        }
+        bacentas {
+          id
+          name
+          memberCount
+          vacationStatus
+          labels
+          leader {
+            id
+            firstName
+            lastName
+            pictureUrl
+          }
+        }
+      }
+    }
+  }
+`
+
 export const DISPLAY_COUNCIL = gql`
   query displayCouncil($id: ID!) {
     councils(where: { id: { eq: $id } }, limit: 1) {

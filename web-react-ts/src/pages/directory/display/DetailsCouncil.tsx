@@ -39,7 +39,7 @@ const DetailsCouncil = () => {
       title: 'Bacentas',
       number: council?.bacentaCount || 0,
       vacationCount: council?.vacationBacentaCount,
-      link: '#',
+      link: '/council/bacentas',
     },
     {
       title: 'Pastors',

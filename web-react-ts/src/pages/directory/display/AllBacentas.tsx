@@ -13,6 +13,7 @@ import { permitAdminArrivals } from 'permission-utils'
 import { GET_GOVERNORSHIP_BACENTAS } from 'queries/ListQueries'
 import { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { classifyBacenta } from './bacenta-classification'
 
 type BacentaRow = {
   id: string
@@ -28,22 +29,6 @@ type BacentaRow = {
     lastName: string
     pictureUrl?: string
   } | null
-}
-
-type Category = {
-  label: 'IC' | 'Graduated'
-  variant: 'destructive' | 'success'
-} | null
-
-const classifyBacenta = (labels?: string[] | null): Category => {
-  if (!labels) return null
-  if (labels.includes('Red')) {
-    return { label: 'IC', variant: 'destructive' }
-  }
-  if (labels.includes('Green') || labels.includes('Graduated')) {
-    return { label: 'Graduated', variant: 'success' }
-  }
-  return null
 }
 
 type GovernorshipLeader = {

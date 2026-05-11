@@ -71,6 +71,9 @@ const DisplayAllBacentas = lazy(
 const DisplayAllGovernorships = lazy(
   () => import('pages/directory/display/AllGovernorships')
 )
+const CouncilBacentas = lazy(
+  () => import('pages/directory/display/CouncilBacentas')
+)
 
 const CreateGovernorship = lazy(
   () => import('pages/directory/create/CreateGovernorship')
@@ -328,6 +331,12 @@ export const directory: LazyRouteTypes[] = [
   {
     path: '/council/displaydetails',
     element: DetailsCouncil,
+    roles: permitMe('Council'),
+    placeholder: true,
+  },
+  {
+    path: '/council/bacentas',
+    element: CouncilBacentas,
     roles: permitMe('Council'),
     placeholder: true,
   },
