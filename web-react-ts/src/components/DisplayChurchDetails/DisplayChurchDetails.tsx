@@ -600,7 +600,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                       />
                     </div>
                     {(() => {
-                      const PREVIEW_LIMIT = 4
+                      const PREVIEW_LIMIT = 3
                       const visible = props.buttons.slice(0, PREVIEW_LIMIT)
                       const remaining = Math.max(
                         0,
@@ -620,7 +620,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="min-h-11 gap-1 border-dashed text-nowrap text-members hover:bg-members/10 hover:text-members"
+                                  className="gap-1 border-dashed text-nowrap text-members hover:bg-members/10 hover:text-members"
                                 >
                                   +{remaining} more
                                   <ChevronRight className="size-3.5" />
