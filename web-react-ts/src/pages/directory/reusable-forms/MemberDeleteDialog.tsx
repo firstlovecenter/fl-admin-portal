@@ -35,7 +35,7 @@ type MemberDeleteDialogProps = {
   onClose: () => void
   memberFirstName: string
   memberLastName: string
-  bacentaId: string
+  bacentaId?: string
 }
 
 const validationSchema = Yup.object({
@@ -70,10 +70,14 @@ const MemberDeleteDialog = ({
         },
       })
 
-      clickCard({ __typename: 'Bacenta', id: bacentaId })
       onClose()
       alertMsg('Member has been deleted successfully')
-      navigate('/bacenta/displaydetails')
+      if (bacentaId) {
+        clickCard({ __typename: 'Bacenta', id: bacentaId })
+        navigate('/bacenta/displaydetails')
+      } else {
+        navigate('/directory')
+      }
     } catch (e) {
       throwToSentry('Cannot delete member', e)
     } finally {

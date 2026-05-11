@@ -11,7 +11,7 @@ import {
   DISPLAY_MEMBER_LEADERSHIP,
 } from 'pages/directory/display/ReadQueries'
 import { Member, MemberWithChurches } from 'global-types'
-import { permitAdmin, permitLeader } from 'permission-utils'
+import { permitAdmin, permitLeader, permitLeaderAdmin } from 'permission-utils'
 import {
   Phone,
   Save,
@@ -19,10 +19,13 @@ import {
   MessageCircle,
   Loader2,
   ChevronRight,
+  Trash2,
 } from 'lucide-react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
 import useModal from 'hooks/useModal'
+import usePopup from 'hooks/usePopup'
+import MemberDeleteDialog from 'pages/directory/reusable-forms/MemberDeleteDialog'
 import { Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { Textarea } from 'components/ui/textarea'
@@ -48,40 +51,106 @@ import { cn } from 'components/lib/utils'
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
-const generateVCard = async (member: Member, roles: string) => {
-  let base64Image = ''
-  if (member.pictureUrl) {
-    const response = await fetch(member.pictureUrl)
+const escapeVCardText = (value: string) =>
+  value
+    .replace(/\\/g, '\\\\')
+    .replace(/\r\n|\r|\n/g, '\\n')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;')
+
+const detectPhotoType = (contentType: string): string => {
+  if (contentType.includes('png')) return 'PNG'
+  if (contentType.includes('webp')) return 'WEBP'
+  if (contentType.includes('gif')) return 'GIF'
+  return 'JPEG'
+}
+
+const fetchMemberPhoto = async (
+  pictureUrl: string | undefined
+): Promise<string> => {
+  if (!pictureUrl) return ''
+  try {
+    const response = await fetch(pictureUrl)
+    if (!response.ok) return ''
     const buffer = await response.arrayBuffer()
     const uint8 = new Uint8Array(buffer)
-    let binaryData = ''
-    uint8.forEach((byte) => {
-      binaryData += String.fromCharCode(byte)
-    })
-    base64Image = window.btoa(binaryData)
+    const chunkSize = 0x8000
+    let binary = ''
+    for (let i = 0; i < uint8.length; i += chunkSize) {
+      binary += String.fromCharCode.apply(
+        null,
+        Array.from(uint8.subarray(i, i + chunkSize))
+      )
+    }
+    const base64 = window.btoa(binary)
+    const photoType = detectPhotoType(response.headers.get('content-type') ?? '')
+    return `PHOTO;ENCODING=b;TYPE=${photoType}:${base64}`
+  } catch {
+    return ''
+  }
+}
+
+const generateVCard = async (member: Member, roles: string) => {
+  const middleName = member.middleName?.trim()
+  const nameParts = [
+    member.lastName ?? '',
+    member.firstName ?? '',
+    middleName ?? '',
+    member.currentTitle ?? '',
+    '',
+  ]
+    .map(escapeVCardText)
+    .join(';')
+
+  const councilName = member?.bacenta?.council?.name ?? ''
+  const visitationArea = member.visitationArea ?? ''
+  const occupation = member.occupation?.occupation || 'None'
+  const maritalStatus = member.maritalStatus?.status ?? 'Unknown'
+  const dob = member.dob?.date
+  const hasDistinctWhatsapp =
+    !!member.whatsappNumber && member.whatsappNumber !== member.phoneNumber
+
+  const photoLine = await fetchMemberPhoto(member.pictureUrl)
+
+  const noteBody = [
+    `Visitation Landmark: ${visitationArea}`,
+    `Occupation: ${occupation}`,
+    `Marital Status: ${maritalStatus}`,
+    '',
+    'Roles in Church:',
+    roles,
+  ]
+    .map(escapeVCardText)
+    .join('\\n')
+
+  const lines: string[] = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `N:${nameParts}`,
+    `FN:${escapeVCardText(member.nameWithTitle ?? '')}`,
+    `ORG:${escapeVCardText(`FLC ${councilName} Council`)}`,
+  ]
+
+  if (member.email) {
+    lines.push(
+      `EMAIL;type=INTERNET;type=HOME;type=pref:${escapeVCardText(member.email)}`
+    )
+  }
+  if (member.phoneNumber) {
+    lines.push(`TEL;type=CELL;type=VOICE;type=pref:+${member.phoneNumber}`)
+  }
+  if (hasDistinctWhatsapp) {
+    lines.push(`TEL;type=HOME:+${member.whatsappNumber}`)
   }
 
-  return `BEGIN:VCARD\nVERSION:3.0\nN:${member.lastName};${member.firstName};${
-    member.middleName?.trim() !== '' ? member.middleName + ';' : ''
-  }${!!member.currentTitle ? member.currentTitle + ';' : ''}\nFN:${
-    member.nameWithTitle
-  }\nORG:FLC ${member?.bacenta?.council?.name ?? ''} Council;${
-    member.email
-      ? '\nEMAIL;type=INTERNET;type=HOME;type=pref:' + member.email
-      : ''
-  }\nTEL;type=CELL;type=VOICE;type=pref:+${member.phoneNumber}\n${
-    member.whatsappNumber !== member.phoneNumber
-      ? `;TYPE=HOME:+${member.whatsappNumber}`
-      : ''
-  }\nNOTE:Visitation Landmark: ${member.visitationArea}\\nOccupation: ${
-    member.occupation.occupation || 'None'
-  }\\nMarital Status: ${
-    member.maritalStatus.status
-  }\\n\\nRoles in Church:\\n${roles}\n${
-    base64Image ? 'PHOTO;ENCODING=b;TYPE=JPEG:' + base64Image + '\n' : ''
-  }BDAY:${member.dob.date}\nADR;TYPE=HOME:;;;;${
-    member.visitationArea
-  };;\nEND:VCARD`
+  lines.push(`NOTE:${noteBody}`)
+
+  if (photoLine) lines.push(photoLine)
+  if (dob) lines.push(`BDAY:${dob}`)
+  lines.push(`ADR;TYPE=HOME:;;;;${escapeVCardText(visitationArea)};;`)
+  lines.push('END:VCARD')
+
+  return lines.join('\r\n')
 }
 
 const returnStringMemberRoles = (
@@ -193,6 +262,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
     UPDATE_MEMBER_STICKY_NOTE
   )
   const { show, handleShow, handleClose } = useModal()
+  const { isOpen: isDeleteOpen, togglePopup: toggleDelete } = usePopup()
   const initialValues = { note: member?.stickyNote ?? '' }
   const validationSchema = Yup.object({
     note: Yup.string().required('Note is required'),
@@ -251,6 +321,14 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <MemberDeleteDialog
+        open={isDeleteOpen}
+        onClose={toggleDelete}
+        memberFirstName={member?.firstName ?? ''}
+        memberLastName={member?.lastName ?? ''}
+        bacentaId={memberChurch?.bacenta?.id}
+      />
+
       {/* Sticky Note Dialog */}
       <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
         <DialogContent>
@@ -324,14 +402,29 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
           Left aside uses lg:top-[69px] to match. */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
         <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 flex items-center justify-between">
-          <RoleView
-            roles={[
-              ...permitAdmin('Governorship'),
-              ...permitLeader('Bacenta'),
-            ]}
-          >
-            <EditButton link="/member/editmember" />
-          </RoleView>
+          <div className="flex items-center gap-2">
+            <RoleView
+              roles={[
+                ...permitAdmin('Governorship'),
+                ...permitLeader('Bacenta'),
+              ]}
+            >
+              <EditButton link="/member/editmember" />
+            </RoleView>
+
+            <RoleView roles={permitLeaderAdmin('Governorship')}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={toggleDelete}
+                disabled={bioLoading || !member}
+                className="min-h-[44px] gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Delete</span>
+              </Button>
+            </RoleView>
+          </div>
 
           <RoleView roles={['all']} verifyNotId={member?.id}>
             <Button
