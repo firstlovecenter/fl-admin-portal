@@ -73,10 +73,11 @@ const QuickFactComparisonCard = ({
       : direction === 'down'
         ? 'below'
         : 'at'
+  const benchmarkShort = benchmarkLabel.toLowerCase()
   const deltaText = showDeltaPill
     ? direction === 'flat'
-      ? 'At the council avg'
-      : `${Math.round(Math.abs(delta as number))}% ${aboveBelow} council avg`
+      ? `At the ${benchmarkShort}`
+      : `${Math.round(Math.abs(delta as number))}% ${aboveBelow} ${benchmarkShort}`
     : ''
 
   return (
@@ -134,7 +135,7 @@ const QuickFactComparisonCard = ({
 
         <Separator className="my-5" />
 
-        {/* Council avg */}
+        {/* Benchmark */}
         <div className="mt-auto space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {benchmarkLabel}

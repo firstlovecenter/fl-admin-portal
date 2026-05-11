@@ -10,46 +10,13 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 
 import { GOVERNORSHIP_AVG_WEEKDAY_STATS } from '../QuickFactsQueries'
-import { getPercentageChange } from '../components/quick-fact-utils'
+import {
+  computeDelta,
+  formatCount,
+  formatMoney,
+  safeNumber,
+} from '../components/quick-fact-utils'
 import QuickFactComparisonCard from './QuickFactComparisonCard'
-
-const formatCount = (value: number | null | undefined) => {
-  if (value === null || value === undefined || Number.isNaN(Number(value))) {
-    return '—'
-  }
-  return Number(value).toLocaleString('en-GH', { maximumFractionDigits: 0 })
-}
-
-const formatMoney = (value: number | null | undefined, currency: string) => {
-  if (value === null || value === undefined || Number.isNaN(Number(value))) {
-    return '—'
-  }
-  try {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 0,
-    }).format(Number(value))
-  } catch {
-    return new Intl.NumberFormat('en-GH', {
-      style: 'currency',
-      currency: 'GHS',
-      maximumFractionDigits: 0,
-    }).format(Number(value))
-  }
-}
-
-const safeNumber = (value: unknown): number | null => {
-  if (value === null || value === undefined) return null
-  const n = Number(value)
-  return Number.isFinite(n) ? n : null
-}
-
-const computeDelta = (church: number | null, parent: number | null) => {
-  if (church === null || parent === null || parent === 0) return null
-  const raw = getPercentageChange(church, parent)
-  return typeof raw === 'number' && Number.isFinite(raw) ? raw : null
-}
 
 const GovernorshipAvgWeekdayQuickFacts = () => {
   const { governorshipId } = useContext(ChurchContext)
