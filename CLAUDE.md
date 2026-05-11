@@ -35,7 +35,7 @@ fl-admin-portal/
 │   │   │   ├── secrets.ts          # AWS Secrets Manager loader
 │   │   │   ├── utils/              # isAuth, neo4j-types, throwToSentry
 │   │   │   ├── accounts/, anagkazo/, arrivals/, banking/, directory/,
-│   │   │   ├── download-credits/, maps/, no-income/, services/, uploads/
+│   │   │   ├── downloads/, maps/, no-income/, reports/, services/, uploads/
 │   │   ├── functions/
 │   │   │   ├── graphql/            # Lambda GraphQL handler
 │   │   │   └── background/         # 9 scheduled jobs (also CLI-runnable)

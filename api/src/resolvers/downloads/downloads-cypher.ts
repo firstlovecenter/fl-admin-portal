@@ -1,6 +1,5 @@
 // Per-level Cypher for the streaming membership CSV export.
 //
-// Differences from the legacy `download-credits-member-cypher.ts`:
 //   1. Returns ONE ROW per member (no `collect(...)`) so the driver can
 //      stream records into the CSV writer.
 //   2. Returns flat scalars in the column order used by the CSV header,

@@ -38,9 +38,10 @@ api/src/
 │   ├── arrivals/
 │   ├── banking/
 │   ├── directory/                    # also: servant-resolver-factory, servant-config
-│   ├── download-credits/
+│   ├── downloads/                    # streaming CSV exports (members, defaulters, arrivals)
 │   ├── maps/
 │   ├── no-income/
+│   ├── reports/                      # directory + weekly + service-record reporting
 │   ├── services/
 │   └── uploads/
 ├── functions/
