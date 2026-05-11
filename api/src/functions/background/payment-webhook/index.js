@@ -1,22 +1,75 @@
+const crypto = require('crypto')
 const neo4j = require('neo4j-driver')
 const { db } = require('./firebase')
 const { loadSecrets } = require('./secrets')
 
+class UnauthorizedWebhookError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'UnauthorizedWebhookError'
+  }
+}
+
+const SHA512_HEX_LENGTH = 128
+
+const lowercaseHeaders = (event) =>
+  Object.fromEntries(
+    Object.entries(event.headers || {}).map(([k, v]) => [k.toLowerCase(), v])
+  )
+
+// Paystack signs the exact bytes they sent. If API Gateway is ever
+// reconfigured to parse the body or forward it base64-encoded, the bytes
+// Paystack signed against will no longer match — handle base64, but reject
+// non-string bodies rather than try to reconstruct them via JSON.stringify.
+const getRawBody = (event) => {
+  if (event.isBase64Encoded && typeof event.body === 'string') {
+    return Buffer.from(event.body, 'base64').toString('utf8')
+  }
+  if (typeof event.body !== 'string') return null
+  return event.body
+}
+
 /**
- * Validates that the request is coming from a whitelisted IP address
- * @param {Object} event - The Lambda event object
- * @returns {boolean} - Whether the IP is whitelisted
+ * Verifies the Paystack HMAC-SHA512 signature on the raw request body.
+ * Paystack signs every webhook with our secret key; this is their primary
+ * authentication mechanism (IP whitelisting is documented as defence-in-depth).
  */
+const verifyPaystackSignature = (event, secret) => {
+  if (!secret) return false
+
+  const signature = lowercaseHeaders(event)['x-paystack-signature']
+  if (
+    typeof signature !== 'string' ||
+    signature.length !== SHA512_HEX_LENGTH ||
+    !/^[a-f0-9]+$/i.test(signature)
+  ) {
+    return false
+  }
+
+  const rawBody = getRawBody(event)
+  if (rawBody === null) return false
+
+  // The merchant API key is stored as 'Bearer sk_*' for axios; HMAC needs the raw key.
+  const hmacKey = secret.replace(/^Bearer\s+/i, '')
+  const expected = crypto
+    .createHmac('sha512', hmacKey)
+    .update(rawBody)
+    .digest('hex')
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature, 'hex'),
+    Buffer.from(expected, 'hex')
+  )
+}
+
 const whitelistIPs = (event) => {
-  // Paystack IP addresses
   const validIps = ['52.31.139.75', '52.49.173.169', '52.214.14.220']
+  const sourceIp = event.requestContext?.identity?.sourceIp
 
-  // AWS Lambda uses different header format than Netlify
-  const sourceIp =
-    event.requestContext?.identity?.sourceIp ||
-    event.headers['X-Forwarded-For'] ||
-    event.headers['x-forwarded-for']?.split(',')[0]
-
+  if (!sourceIp) {
+    console.error('Bad IP: source IP missing from requestContext')
+    return false
+  }
   if (validIps.includes(sourceIp)) {
     console.log('IP OK:', sourceIp)
     return true
@@ -25,80 +78,60 @@ const whitelistIPs = (event) => {
   return false
 }
 
-// Cypher queries for updating transaction status
-const setTransactionStatusSuccess = `
-  MATCH (record {transactionReference: $reference}) 
-  WHERE record:ServiceRecord OR record:Transaction OR record:RehearsalRecord
-    SET record.transactionStatus = 'success'
-  
-  RETURN record
+// SM1 guard: 'success' is terminal; only flip rows still mid-flow. We accept
+// 'send OTP' as a source as well as 'pending' so a webhook that lands before
+// the OTP-submission write hits Neo4j is not lost. UNION subqueries let each
+// label leg use its own unique index on transactionReference.
+const updateTransactionStatusCypher = `
+  CALL {
+    MATCH (r:ServiceRecord {transactionReference: $reference})
+    WHERE r.transactionStatus IN ['pending', 'send OTP']
+    RETURN r
+    UNION
+    MATCH (r:Transaction {transactionReference: $reference})
+    WHERE r.transactionStatus IN ['pending', 'send OTP']
+    RETURN r
+    UNION
+    MATCH (r:RehearsalRecord {transactionReference: $reference})
+    WHERE r.transactionStatus IN ['pending', 'send OTP']
+    RETURN r
+  }
+  SET r.transactionStatus = $status
+  RETURN r AS record
 `
 
-const setTransactionStatusFailed = `
-  MATCH (record {transactionReference: $reference}) 
-  WHERE record:ServiceRecord OR record:Transaction OR record:RehearsalRecord
-    SET record.transactionStatus = 'failed'
-  
-  RETURN record
-`
-
-const setTransactionStatusPending = `
-  MATCH (record {transactionReference: $reference})
-  WHERE record:ServiceRecord OR record:Transaction OR record:RehearsalRecord
-    SET record.transactionStatus = 'pending'
-  
-  RETURN record
-`
-
-/**
- * Executes the appropriate Cypher query based on the payment status
- * @param {Object} neoDriver - Neo4j driver
- * @param {Object} paymentResponse - Payment response data
- * @returns {Object} - Neo4j result
- */
 const executeQuery = async (neoDriver, paymentResponse) => {
+  const { reference, status } = paymentResponse
+
+  if (!['success', 'failed'].includes(status)) {
+    console.log(`Ignoring non-terminal Paystack status: ${status}`)
+    return null
+  }
+
   const session = neoDriver.session()
-  let response = ''
-
   try {
-    const neoRes = await session.executeWrite(async (tx) => {
-      const { reference, status } = paymentResponse
-      let query = ''
-
-      if (status === 'success') {
-        query = setTransactionStatusSuccess
-        response = `Successfully updated transaction status to success ${reference}`
-      } else if (status === 'failed') {
-        query = setTransactionStatusFailed
-        response = `Successfully updated transaction status to failed ${reference}`
-      } else if (status === 'pending') {
-        query = setTransactionStatusPending
-        response = `Successfully updated transaction status to pending ${reference}`
-      }
-
-      return tx.run(query, { reference })
-    })
-    console.log('Response:', response)
-
+    const neoRes = await session.executeWrite((tx) =>
+      tx.run(updateTransactionStatusCypher, { reference, status })
+    )
+    if (neoRes.records.length === 0) {
+      console.warn(
+        `No row updated for ${reference} → ${status} (duplicate event or wrong state)`
+      )
+    } else {
+      console.log(`Updated transaction ${reference} to ${status}`)
+    }
     return neoRes
-  } catch (error) {
-    console.error('There was an error writing to db', error)
   } finally {
     await session.close()
   }
-
-  return null
 }
 
-/**
- * Handles the Paystack webhook request
- * @param {Object} event - Lambda event
- * @param {Object} neoDriver - Neo4j driver
- * @returns {Object} - Transaction result
- */
-const handlePaystackReq = async (event, neoDriver) => {
+const handlePaystackReq = async (event, neoDriver, secrets) => {
+  if (!verifyPaystackSignature(event, secrets.PAYSTACK_PRIVATE_KEY_WEEKDAY)) {
+    throw new UnauthorizedWebhookError('Invalid or missing Paystack signature')
+  }
   if (!whitelistIPs(event)) {
-    throw new Error('IP not whitelisted')
+    throw new UnauthorizedWebhookError('IP not whitelisted')
   }
 
   const parsedBody =
@@ -107,9 +140,13 @@ const handlePaystackReq = async (event, neoDriver) => {
 
   const neoRes = await executeQuery(neoDriver, { reference, status })
 
-  const categories = neoRes?.records[0]?.get('record')?.labels
-  if (!categories) console.log('No categories found in response:', neoRes)
+  // Mirror only when Neo4j actually transitioned a row — otherwise this is a
+  // duplicate/late event and writing to Firebase would re-open a settled doc.
+  if (!neoRes?.records?.length) {
+    return null
+  }
 
+  const categories = neoRes.records[0].get('record').labels
   console.log('Categories:', categories)
 
   if (categories?.includes('Offering')) {
@@ -131,7 +168,7 @@ const handlePaystackReq = async (event, neoDriver) => {
       .update({ transactionStatus: status })
   }
 
-  return neoRes?.records[0]?.get('record')?.properties
+  return neoRes.records[0].get('record').properties
 }
 
 /**
@@ -172,11 +209,12 @@ exports.handler = async (event, context) => {
     await driver.verifyConnectivity()
     console.log('[Neo4j] Connection established successfully')
 
-    // Process payment webhook
-    const result = await handlePaystackReq(event, driver)
-
-    // Close the driver when done
-    await driver.close()
+    let result
+    try {
+      result = await handlePaystackReq(event, driver, SECRETS)
+    } finally {
+      await driver.close()
+    }
 
     return {
       statusCode: 200,
@@ -191,6 +229,14 @@ exports.handler = async (event, context) => {
   } catch (error) {
     console.error('Error in payment-webhook Lambda function:', error)
 
+    if (error instanceof UnauthorizedWebhookError) {
+      return {
+        statusCode: 401,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Unauthorized' }),
+      }
+    }
+
     return {
       statusCode: 500,
       headers: {
@@ -198,7 +244,7 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         message: 'Error processing payment webhook',
-        error: error.message,
+        error: 'Internal error',
       }),
     }
   }
