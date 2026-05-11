@@ -213,7 +213,7 @@ These rules override any default behaviour. They are not suggestions.
 | Resolver or `*-cypher.ts` change | `api/kb/01-backend-conventions.md` and `api/kb/03-resolver-patterns.md` |
 | GraphQL SDL change or new `@cypher` block | `api/kb/02-graphql-and-cypher.md` |
 | Refactoring any code | `kb/06-adr.md` (ADR-013) and `kb/04-state-machines.md`. Run `/refactor` — never refactor outside the test-first loop |
-| Writing or modifying tests | `kb/06-adr.md` (ADR-013) for stack and conventions. Vitest on FE, Jest on BE |
+| Writing or modifying tests | `TESTING.md` (operational guide) and `kb/06-adr.md` (ADR-013) for stack and conventions. Vitest on FE, Jest on BE |
 
 ### Command usage — if asked to do X, you MUST use /command
 
