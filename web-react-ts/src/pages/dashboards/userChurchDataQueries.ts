@@ -90,6 +90,13 @@ export const SERVANT_GOVERNORSHIP_LEADER = gql`
           year
         }
 
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
         services(limit: 24) {
           id
           week
@@ -118,6 +125,13 @@ export const SERVANT_COUNCIL_LEADER = gql`
           year
         }
 
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
         services(limit: 24) {
           id
           week
@@ -142,6 +156,13 @@ export const SERVANT_STREAM_LEADER = gql`
           id
           attendance
           income
+          week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
           week
           year
         }
@@ -177,6 +198,13 @@ export const SERVANT_CAMPUS_LEADER = gql`
           year
         }
 
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
         services(limit: 24) {
           id
           week
@@ -205,6 +233,13 @@ export const SERVANT_OVERSIGHT_LEADER = gql`
           year
         }
 
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
         services(limit: 24) {
           id
           week
@@ -229,6 +264,13 @@ export const SERVANT_DENOMINATION_LEADER = gql`
           id
           attendance
           income
+          week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
           week
           year
         }
@@ -270,6 +312,13 @@ export const SERVANT_GOVERNORSHIP_ADMIN = gql`
           year
         }
 
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
         services(limit: 24) {
           id
           week
@@ -301,6 +350,13 @@ export const SERVANT_COUNCIL_ADMIN = gql`
           id
           attendance
           income
+          week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
           week
           year
         }
@@ -340,6 +396,13 @@ export const SERVANTS_STREAM_ADMIN = gql`
           year
         }
 
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
         services(limit: 24) {
           id
           week
@@ -369,6 +432,13 @@ export const SERVANTS_CAMPUS_ADMIN = gql`
           attendance
           income
           dollarIncome
+          week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
           week
           year
         }
@@ -403,6 +473,13 @@ export const SERVANTS_OVERSIGHT_ADMIN = gql`
           year
         }
 
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
         services(limit: 24) {
           id
           week
@@ -429,6 +506,13 @@ export const SERVANTS_DENOMINATION_ADMIN = gql`
           attendance
           income
           dollarIncome
+          week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
           week
           year
         }

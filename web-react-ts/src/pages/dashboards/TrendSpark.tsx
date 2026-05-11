@@ -138,20 +138,10 @@ const TrendSpark = ({
   mode = 'weekday',
   onBarClick,
 }: TrendSparkProps) => {
-  const hasData = !!data && data.length > 0
-
-  if (!hasData) {
-    return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
-        {mode === 'bussing' ? 'No bussing data yet' : 'No service data yet'}
-      </div>
-    )
-  }
-
   const chartData = useMemo(() => {
     const groupedByWeek = new Map<string, ChartPoint>()
 
-    data.forEach((d, index) => {
+    ;(data ?? []).forEach((d, index) => {
       const parsedWeek = d.week == null ? NaN : Number(d.week)
       const week = Number.isFinite(parsedWeek) ? parsedWeek : null
       const parsedYear = d.year == null ? NaN : Number(d.year)

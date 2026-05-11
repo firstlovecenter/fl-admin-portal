@@ -288,7 +288,7 @@ const UserDashboard = () => {
   const hasBussingDataField = hasBussingAggregateField
   const hasWeekdayDataField =
     hasServiceAggregateField || hasRehearsalAggregateField
-  const canToggleTrendMode = assessmentChurch?.__typename === 'Bacenta'
+  const canToggleTrendMode = hasWeekdayDataField && hasBussingDataField
   const shouldForceBussingMode = hasBussingDataField && !hasWeekdayDataField
   const activeTrendMode = shouldForceBussingMode
     ? 'bussing'
