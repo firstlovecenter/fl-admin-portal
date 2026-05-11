@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   AlertOctagon,
@@ -245,6 +245,26 @@ const GovernorshipCard = ({
   onDrillIn,
 }: GovernorshipCardProps) => {
   const [expanded, setExpanded] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const toggleExpanded = () => {
+    setExpanded((prev) => {
+      const next = !prev
+      // When expanding on mobile, scroll the card into view so the freshly
+      // revealed body isn't pushed below the fold. `nearest` keeps it stable
+      // when the card is already visible.
+      if (next) {
+        requestAnimationFrame(() => {
+          cardRef.current?.scrollIntoView({
+            block: 'nearest',
+            behavior: 'smooth',
+          })
+        })
+      }
+      return next
+    })
+  }
+
   const leader = governorship.leader
   const initials = leader
     ? `${leader.firstName?.[0] ?? ''}${leader.lastName?.[0] ?? ''}`
@@ -278,11 +298,11 @@ const GovernorshipCard = ({
   )
 
   return (
-    <Card className="overflow-hidden">
+    <Card ref={cardRef} className="overflow-hidden">
       {/* Mobile header — taps toggle expand/collapse */}
       <button
         type="button"
-        onClick={() => setExpanded((prev) => !prev)}
+        onClick={toggleExpanded}
         className="group flex w-full items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
         aria-expanded={expanded}
         aria-label={`${expanded ? 'Collapse' : 'Expand'} ${
@@ -317,14 +337,18 @@ const GovernorshipCard = ({
             value={governorship.bussingMembersOnTheWayCount}
             label="on way"
           />
-          <span className="text-muted-foreground">·</span>
+          <span aria-hidden="true" className="text-muted-foreground">
+            ·
+          </span>
           <SummaryStat
             icon={Users}
             tone="success"
             value={governorship.bussingMembersHaveArrivedCount}
             label="arrived"
           />
-          <span className="text-muted-foreground">·</span>
+          <span aria-hidden="true" className="text-muted-foreground">
+            ·
+          </span>
           <SummaryStat
             icon={BusFront}
             tone="success"
