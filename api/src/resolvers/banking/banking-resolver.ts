@@ -269,7 +269,14 @@ const bankingMutation = {
           })
         )
 
-        return otpCypherRes.record
+        if (otpCypherRes?.record) {
+          return otpCypherRes.record
+        }
+        // SM1 guard refused — webhook beat us to a terminal state. Return the
+        // post-charge reference write; the FE will navigate to confirm-payment.
+        console.warn(
+          `setRecordTransactionReferenceWithOTP no-op for ${serviceRecord.id}; status precluded the OTP transition`
+        )
       }
 
       return paymentCypherRes.record
@@ -400,7 +407,18 @@ const bankingMutation = {
               )
             )
         )
-        return paymentCypherRes.record
+        if (paymentCypherRes?.record) {
+          return paymentCypherRes.record
+        }
+        // SM1 guard refused — the webhook already marked the record as
+        // success between OTP submission and now. Don't clobber it.
+        console.warn(
+          `setTransactionStatusFailed no-op for ${args.serviceRecordId}; webhook likely settled to success`
+        )
+        return {
+          id: args.serviceRecordId,
+          transactionStatus: 'success',
+        }
       }
 
       return {
@@ -486,7 +504,15 @@ const bankingMutation = {
               throwToSentry('There was an error setting the transaction', error)
             )
         )
-        return failedRes.record.properties
+        if (failedRes?.record) {
+          return failedRes.record.properties
+        }
+        // SM1 guard refused — record is already in 'success'. Return the
+        // current state instead of crashing on a missing failedRes.
+        console.warn(
+          `setTransactionStatusFailed no-op for ${args.serviceRecordId} (no-reference branch); already terminal`
+        )
+        return { ...record, offeringBankedBy: buildBankerShape() }
       }
 
       const { auth } = await getStreamFinancials(stream)
@@ -518,7 +544,17 @@ const bankingMutation = {
                 )
               )
           )
-          record = successRes.record.properties
+          if (successRes?.record) {
+            record = successRes.record.properties
+          } else {
+            // SM1 guard refused — current state is not in {pending, send OTP}.
+            // Webhook already settled this record; reflect that on the local
+            // copy so the response carries the truth.
+            console.warn(
+              `setTransactionStatusSuccess no-op for ${args.serviceRecordId}; webhook already settled`
+            )
+            record = { ...record, transactionStatus: 'success' }
+          }
         }
 
         if (
@@ -539,7 +575,16 @@ const bankingMutation = {
                 )
               )
           )
-          record = failedRes.record.properties
+          if (failedRes?.record) {
+            record = failedRes.record.properties
+          } else {
+            // SM1 guard refused — record is already 'success'. Paystack verify
+            // disagrees with the webhook (rare) — webhook event wins per SM1.
+            console.warn(
+              `setTransactionStatusFailed no-op for ${args.serviceRecordId}; record already success, verify said ${confirmationResponse.data.data.status}`
+            )
+            record = { ...record, transactionStatus: 'success' }
+          }
         }
       } catch (error: any) {
         // Paystack reports 'transaction_not_found' when the reference never
@@ -556,10 +601,17 @@ const bankingMutation = {
               })
             )
           )
-          return {
-            ...failedRes.record.properties,
-            offeringBankedBy: buildBankerShape(),
+          if (failedRes?.record) {
+            return {
+              ...failedRes.record.properties,
+              offeringBankedBy: buildBankerShape(),
+            }
           }
+          // SM1 guard refused — already success. Don't clobber.
+          console.warn(
+            `setTransactionStatusFailed no-op for ${args.serviceRecordId} (transaction_not_found branch); already terminal`
+          )
+          return { ...record, offeringBankedBy: buildBankerShape() }
         }
 
         throwToSentry(

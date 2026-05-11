@@ -47,10 +47,15 @@ export const setRecordTransactionReference = `
     }
 `
 
+// SM1 guard: only legal transition is 'pending' -> 'send OTP'. Blocks the
+// race where the Paystack webhook flips to 'success' between the resolver's
+// initiate-write and Paystack's send_otp response.
 export const setRecordTransactionReferenceWithOTP = `
-    MATCH (record {id: $id}) WHERE record:ServiceRecord OR record:RehearsalRecord
+    MATCH (record {id: $id})
+    WHERE (record:ServiceRecord OR record:RehearsalRecord)
+      AND record.transactionStatus = 'pending'
     SET record.transactionStatus = 'send OTP'
-    
+
     RETURN record {
         .id,
         .transactionReference,
@@ -86,19 +91,32 @@ RETURN record {
 }
 `
 
+// SM1 guard: 'success' is terminal — never overwrite. Allow null so the
+// defensive ConfirmOfferingPayment "no transactionReference" branch can
+// still mark a never-banked record as failed.
 export const setTransactionStatusFailed = `
-MATCH (record {id: $serviceRecordId}) WHERE record:ServiceRecord OR record:RehearsalRecord
+MATCH (record {id: $serviceRecordId})
+WHERE (record:ServiceRecord OR record:RehearsalRecord)
+  AND (
+    record.transactionStatus IS NULL
+    OR record.transactionStatus IN ['pending', 'send OTP', 'failed']
+  )
 SET record.transactionStatus = $status,
-record.transactionError = $error
+    record.transactionError = $error
 
 RETURN record
 `
 
+// SM1 guard: only legal transitions into 'success' are from 'pending' or
+// 'send OTP'. Prevents a stale ConfirmOfferingPayment from reviving a
+// failed/abandoned record after the user's mobile money declined.
 export const setTransactionStatusSuccess = `
-   MATCH (record {id: $serviceRecordId}) WHERE record:ServiceRecord OR record:RehearsalRecord
-   SET record.transactionStatus = 'success'
-   
-   RETURN record
+MATCH (record {id: $serviceRecordId})
+WHERE (record:ServiceRecord OR record:RehearsalRecord)
+  AND record.transactionStatus IN ['pending', 'send OTP']
+SET record.transactionStatus = 'success'
+
+RETURN record
 `
 
 export const getLastServiceRecord = `
