@@ -131,7 +131,10 @@ exports.handler = async (event, context) => {
   // response rather than seeing a misleading default.
   const allowedOrigins =
     SECRETS?.ENVIRONMENT === 'development'
-      ? ['https://dev-synago.firstlovecenter.com']
+      ? [
+          'https://dev-synago.firstlovecenter.com',
+          'https://staging-synago.firstlovecenter.com',
+        ]
       : [
           'https://admin.firstlovecenter.com',
           'https://synago.firstlovecenter.com',
