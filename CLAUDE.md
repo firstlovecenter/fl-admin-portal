@@ -325,13 +325,13 @@ or before `/commit`.
 
   | Server | Target | When to use |
   | --- | --- | --- |
-  | `neo4j` | `dev-neo4j.firstlovecenter.com` (dev, plain bolt) | Query the live dev database — schema verification, data shape, Cypher prototype testing. **Read-only by preference.** |
-  | `neo4j-prod` | `neo4j.firstlovecenter.com` (prod, TLS bolt) | ⚠️ **Production data.** Only use when the user explicitly asks to inspect prod. Never mutate without explicit user approval. |
+  | `neo4j` | `dev-neo4j.firstlovecenter.com` (dev, plain bolt) | **Default Neo4j MCP.** Query the live dev database — schema verification, data shape, Cypher prototype testing. **Read-only by preference.** |
+  | `neo4j-prod` | `neo4j.firstlovecenter.com` (prod, TLS bolt) | ⚠️ **Production data — DO NOT USE unless the user explicitly asks to inspect prod in the current turn.** Reads as well as writes are forbidden by default. A previous "you can use prod" approval does NOT carry over — re-ask every time. Never mutate without explicit user approval. |
   | `context7` | Upstash Context7 | Up-to-date library docs (Apollo, `@neo4j/graphql`, React Router, etc.). Use when you need current API signatures rather than training-data guesses. |
   | `shadcn` | shadcn CLI | Look up Shadcn component APIs and available components. Use `npx shadcn@latest add <name>` to scaffold components into `src/components/ui/`. |
   | `chrome-devtools` | Local Chrome instance | Browser DevTools automation — DOM inspection, console, network tab. Useful for PWA debugging and verifying service-worker state. |
 
-  Never mutate production data via MCP. Dev mutations require explicit user approval.
+  Always use the `neo4j` MCP (dev). Never touch `neo4j-prod` — not even for reads — unless the user explicitly asks you to inspect production in the current turn. If a data question feels like it needs prod, ask first.
 - **Pre-tool / post-tool hooks** (configured in `.claude/settings.json`):
   - PreToolUse: blocks edits to lock files and env / secret files.
   - PostToolUse: runs `tsc --noEmit` for the touched package and `eslint` for
