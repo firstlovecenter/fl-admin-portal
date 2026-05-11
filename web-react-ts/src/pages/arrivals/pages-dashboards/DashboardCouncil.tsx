@@ -10,6 +10,7 @@ import {
   Banknote,
   BusFront,
   CheckCircle2,
+  ChevronRight,
   CreditCard,
   Loader2,
   Megaphone,
@@ -24,7 +25,6 @@ import RoleView from 'auth/RoleView'
 import useAuth from 'auth/useAuth'
 import SearchMember from 'components/formik/SearchMember'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
-import DefaulterInfoCard from 'pages/services/defaulters/DefaulterInfoCard'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ArrivalsHeader from '../ArrivalsHeader'
 import DownloadArrivalsButton from '../DownloadArrivalsButton'
@@ -210,9 +210,9 @@ const CouncilDashboard = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error}>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+          <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {/* ── Page header ── */}
-            <div className="mb-6 space-y-4 lg:mb-8">
+            <div className="mb-3 space-y-2 lg:mb-8">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -279,12 +279,12 @@ const CouncilDashboard = () => {
             {/* ── 2-column grid ── */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
               {/* LEFT — admin + overview + bacenta status + financial */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Arrivals admin */}
-                <section className="space-y-3">
+                <section className="space-y-2">
                   <SectionLabel>Arrivals Admin</SectionLabel>
                   <Card>
-                    <CardContent className="flex items-center justify-between gap-3 p-4">
+                    <CardContent className="flex items-center justify-between gap-3 p-3">
                       {loading && !council ? (
                         <div className="flex items-center gap-3">
                           <Skeleton className="size-9 rounded-full" />
@@ -312,15 +312,39 @@ const CouncilDashboard = () => {
                 </section>
 
                 {/* Sub-church count */}
-                <section className="space-y-3">
+                <section className="space-y-2">
                   <SectionLabel>Overview</SectionLabel>
-                  <DefaulterInfoCard
-                    defaulter={{
-                      title: 'Governorships',
-                      data: council?.governorshipCount,
-                      link: '/arrivals/council-by-governorship',
+                  <Card
+                    role="button"
+                    tabIndex={0}
+                    aria-label="View Governorships"
+                    onClick={() =>
+                      navigate('/arrivals/council-by-governorship')
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        navigate('/arrivals/council-by-governorship')
+                      }
                     }}
-                  />
+                    className="cursor-pointer outline-none transition-colors hover:bg-muted/50 active:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
+                    <CardContent className="flex items-center justify-between gap-3 p-3">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Governorships
+                      </p>
+                      <div className="flex items-center gap-2">
+                        {loading && !council ? (
+                          <Skeleton className="h-6 w-8" />
+                        ) : (
+                          <span className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                            {council?.governorshipCount}
+                          </span>
+                        )}
+                        <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
                 </section>
 
                 {/* Date selector + download button (mobile placement) —
@@ -331,7 +355,7 @@ const CouncilDashboard = () => {
                 </div>
 
                 {/* Bacenta status grid */}
-                <section className="space-y-3">
+                <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <SectionLabel>Bacenta Status</SectionLabel>
@@ -367,7 +391,7 @@ const CouncilDashboard = () => {
                     ...permitArrivalsPayer(),
                   ]}
                 >
-                  <section className="space-y-3">
+                  <section className="space-y-2">
                     <SectionLabel>Financial Data</SectionLabel>
                     <Card className="overflow-hidden">
                       <div className="divide-y divide-border">

@@ -7,7 +7,7 @@ import ArrivalDateSelector from 'components/ArrivalDateSelector/ArrivalDateSelec
  * alone — no duplicate download UI on the page.
  */
 const ArrivalsHeader = () => (
-  <div className="mb-4">
+  <div className="mb-2">
     <ArrivalDateSelector />
   </div>
 )
