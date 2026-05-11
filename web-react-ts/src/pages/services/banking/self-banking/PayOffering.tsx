@@ -1,14 +1,24 @@
 import { ApolloError, useMutation, useQuery } from '@apollo/client'
-import ErrorPopup from 'components/Popup/ErrorPopup'
 import Input from 'components/formik/Input'
 import Select from 'components/formik/Select'
 import SubmitButton from 'components/formik/SubmitButton'
+import { Alert, AlertDescription, AlertTitle } from 'components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from 'components/ui/alert-dialog'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from 'components/ui/dialog'
@@ -34,6 +44,14 @@ import {
   PAY_OFFERING_MUTATION,
   SEND_PAYMENT_OTP,
 } from './bankingQueries'
+
+// Paystack mobile-money OTPs are always 4 or 6 digits (mirrors backend regex).
+const OTP_REGEX = /^(\d{4}|\d{6})$/
+
+const messageFromError = (err: unknown): string => {
+  if (err instanceof Error) return err.message
+  return String(err)
+}
 
 type PayOfferingProps = {
   church: Bacenta
@@ -72,6 +90,7 @@ const PayOffering = (props: PayOfferingProps) => {
   const { togglePopup, isOpen } = usePopup()
   const { show, handleClose, handleShow } = useModal()
   const [errorMessage, setErrorMessage] = useState('')
+  const [otpError, setOtpError] = useState('')
   const [otp, setOtp] = useState('')
   const [otpSent, setOtpSent] = useState(false)
 
@@ -118,7 +137,6 @@ const PayOffering = (props: PayOfferingProps) => {
       const paymentRes = await BankServiceOffering({
         variables: {
           serviceRecordId,
-          stream_name: service.stream_name,
           mobileNetwork: values.mobileNetwork,
           mobileNumber: values.mobileNumber,
           momoName: values.momoName,
@@ -126,31 +144,58 @@ const PayOffering = (props: PayOfferingProps) => {
       })
       if (paymentRes.errors) {
         throw new Error(paymentRes.errors[0]?.message)
-      } else if (
+      }
+      if (
         paymentRes.data?.BankServiceOffering.transactionStatus === 'send OTP'
       ) {
         handleShow()
       } else {
-        setSubmitting(false)
         navigate('/self-banking/confirm-payment')
       }
-    } catch (err: any) {
-      setErrorMessage(err.message)
+    } catch (err: unknown) {
+      setErrorMessage(messageFromError(err))
       togglePopup()
+    } finally {
+      setSubmitting(false)
     }
   }
 
   const currency = currentUser.currency
 
+  const isPoimenError = errorMessage.includes('Poimen')
+
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      {isOpen && (
-        <ErrorPopup
-          errorMessage={errorMessage}
-          togglePopup={togglePopup}
-          link={`/services/${church?.__typename.toLowerCase()}/self-banking`}
-        />
-      )}
+      <AlertDialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) togglePopup()
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Payment failed</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isPoimenError
+                ? 'There was a problem with your payment.'
+                : 'Please make sure you have enough funds in your mobile wallet, and try again after 30 mins – 1 hour.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <code className="block break-words rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+            {errorMessage}
+          </code>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                togglePopup()
+                navigate('/services/bacenta/self-banking')
+              }}
+            >
+              Okay
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         {/* Header */}
@@ -313,7 +358,14 @@ const PayOffering = (props: PayOfferingProps) => {
                 {/* OTP dialog */}
                 <Dialog
                   open={show}
-                  onOpenChange={(open) => (open ? handleShow() : handleClose())}
+                  onOpenChange={(open) => {
+                    if (open) {
+                      handleShow()
+                    } else {
+                      setOtpError('')
+                      handleClose()
+                    }
+                  }}
                 >
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
@@ -330,16 +382,32 @@ const PayOffering = (props: PayOfferingProps) => {
                         type="tel"
                         inputMode="numeric"
                         autoComplete="one-time-code"
+                        maxLength={6}
+                        pattern="(\d{4}|\d{6})"
                         className="min-h-11 font-mono tabular-nums"
-                        onChange={(e) => setOtp(e.target.value)}
+                        onChange={(e) => {
+                          setOtp(e.target.value.replace(/\D/g, ''))
+                          if (otpError) setOtpError('')
+                        }}
                       />
                     </div>
+                    {otpError && (
+                      <Alert variant="destructive">
+                        <AlertTitle>Could not submit OTP</AlertTitle>
+                        <AlertDescription>{otpError}</AlertDescription>
+                      </Alert>
+                    )}
                     <Button
                       type="button"
                       size="lg"
                       className="w-full gap-2"
                       disabled={otpSent}
                       onClick={() => {
+                        if (!OTP_REGEX.test(otp)) {
+                          setOtpError('Enter a valid OTP (4 or 6 digits).')
+                          return
+                        }
+                        setOtpError('')
                         setOtpSent(true)
                         SendPaymentOTP({
                           variables: {
@@ -348,9 +416,14 @@ const PayOffering = (props: PayOfferingProps) => {
                             otp,
                           },
                         })
-                          .then(() => navigate('/self-banking/confirm-payment'))
-                          .catch((err: any) => {
+                          .then(() => {
+                            setOtpError('')
+                            handleClose()
+                            navigate('/self-banking/confirm-payment')
+                          })
+                          .catch((err: unknown) => {
                             setOtpSent(false)
+                            setOtpError(messageFromError(err))
                             throwToSentry('Error sending payment OTP', err)
                           })
                       }}
@@ -364,33 +437,52 @@ const PayOffering = (props: PayOfferingProps) => {
                         'Submit OTP'
                       )}
                     </Button>
-                    <button
-                      type="button"
-                      className="mt-1 w-full text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                      onClick={() => {
-                        setOtpSent(true)
-                        ConfirmOfferingPayment({
-                          variables: {
-                            serviceRecordId: service.id,
-                            stream_name: service.stream_name,
-                          },
-                        })
-                          .then(() => {
-                            setOtpSent(false)
-                            navigate('/self-banking/confirm-payment')
+                    <DialogFooter className="mt-2 flex-col gap-2 sm:flex-col sm:space-x-0">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="lg"
+                        className="w-full"
+                        disabled={otpSent}
+                        onClick={() => {
+                          setOtpError('')
+                          setOtpSent(true)
+                          ConfirmOfferingPayment({
+                            variables: {
+                              serviceRecordId: service.id,
+                            },
                           })
-                          .catch((err: any) => {
-                            setOtpSent(false)
-                            setErrorMessage(err.message)
-                            throwToSentry(
-                              'Error Confirming Offering Payment',
-                              err
-                            )
-                          })
-                      }}
-                    >
-                      Didn't receive a token? Tap to resend
-                    </button>
+                            .then(() => {
+                              setOtpSent(false)
+                              handleClose()
+                              navigate('/self-banking/confirm-payment')
+                            })
+                            .catch((err: unknown) => {
+                              setOtpSent(false)
+                              setOtpError(messageFromError(err))
+                              throwToSentry(
+                                'Error Confirming Offering Payment',
+                                err
+                              )
+                            })
+                        }}
+                      >
+                        Already paid? Check status
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="lg"
+                        className="w-full text-muted-foreground"
+                        onClick={() => {
+                          setOtpError('')
+                          handleClose()
+                          navigate('/self-banking/confirm-payment')
+                        }}
+                      >
+                        Cancel and check status later
+                      </Button>
+                    </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </Form>
