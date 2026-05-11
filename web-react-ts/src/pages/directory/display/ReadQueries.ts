@@ -243,9 +243,7 @@ export const DISPLAY_GOVERNORSHIP = gql`
       name
       stream_name
       bacentaCount
-      vacationGraduatedBacentaCount
-      activeIcBacentaCount
-      vacationIcBacentaCount
+      vacationBacentaCount
       bacentas(limit: 5) {
         id
         name
@@ -304,11 +302,9 @@ export const DISPLAY_COUNCIL = gql`
       stream_name
       governorshipCount
       bacentaCount
+      vacationBacentaCount
       memberCount
       pastorCount
-      vacationGraduatedBacentaCount
-      activeIcBacentaCount
-      vacationIcBacentaCount
       stream {
         id
         name
@@ -360,11 +356,9 @@ export const DISPLAY_STREAM = gql`
       councilCount
       governorshipCount
       bacentaCount
+      vacationBacentaCount
       memberCount
       pastorCount
-      vacationGraduatedBacentaCount
-      activeIcBacentaCount
-      vacationIcBacentaCount
       meetingDay {
         day
         dayNumber
@@ -422,11 +416,9 @@ export const DISPLAY_CAMPUS = gql`
       councilCount
       governorshipCount
       bacentaCount
+      vacationBacentaCount
       memberCount
       pastorCount
-      vacationGraduatedBacentaCount
-      activeIcBacentaCount
-      vacationIcBacentaCount
       oversight {
         id
         name
@@ -480,11 +472,9 @@ export const DISPLAY_OVERSIGHT = gql`
       councilCount
       governorshipCount
       bacentaCount
+      vacationBacentaCount
       memberCount
       pastorCount
-      vacationGraduatedBacentaCount
-      activeIcBacentaCount
-      vacationIcBacentaCount
       denomination {
         id
         name
@@ -539,9 +529,9 @@ export const DISPLAY_DENOMINATION = gql`
       councilCount
       governorshipCount
       bacentaCount
+      vacationBacentaCount
       memberCount
       pastorCount
-      vacationGraduatedBacentaCount
 
       oversights {
         id

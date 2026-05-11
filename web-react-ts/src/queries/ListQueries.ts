@@ -17,7 +17,6 @@ export const GET_GOVERNORSHIP_BACENTAS = gql`
       id
       name
 
-      stream_name
       council {
         id
       }
@@ -37,43 +36,7 @@ export const GET_GOVERNORSHIP_BACENTAS = gql`
         name
         memberCount
         vacationStatus
-        council {
-          id
-        }
-        leader {
-          id
-          firstName
-          lastName
-          pictureUrl
-        }
-      }
-    }
-  }
-`
-
-export const GET_GOVERNORSHIP_ICBACENTAS = gql`
-  query getGovernorshipIcBacentas($id: ID!) {
-    governorships(where: { id: { eq: $id } }) {
-      id
-      name
-
-      council {
-        id
-      }
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-      }
-
-      memberCount
-
-      icBacentas {
-        id
-        name
-        memberCount
-        vacationStatus
+        labels
         council {
           id
         }
@@ -104,12 +67,10 @@ export const GET_COUNCIL_GOVERNORSHIPS = gql`
         id
         firstName
         lastName
-        stream_name
       }
       governorships {
         name
         id
-        stream_name
         memberCount
         bacentaCount
 
@@ -117,14 +78,12 @@ export const GET_COUNCIL_GOVERNORSHIPS = gql`
           id
           firstName
           lastName
-          stream_name
           pictureUrl
         }
         admin {
           id
           firstName
           lastName
-          stream_name
         }
 
         bacentas {
@@ -154,13 +113,11 @@ export const GET_CAMPUS_GOVERNORSHIPS = gql`
         id
         firstName
         lastName
-        stream_name
         fullName
       }
       governorships {
         name
         id
-        stream_name
         memberCount
         bacentaCount
         leader {
@@ -168,13 +125,11 @@ export const GET_CAMPUS_GOVERNORSHIPS = gql`
           firstName
           lastName
           pictureUrl
-          stream_name
         }
         admin {
           id
           firstName
           lastName
-          stream_name
         }
       }
     }
@@ -198,12 +153,10 @@ export const GET_STREAM_COUNCILS = gql`
         firstName
         lastName
         fullName
-        stream_name
       }
       councils {
         name
         id
-        stream_name
         memberCount
         governorshipCount
         governorships {
@@ -213,14 +166,12 @@ export const GET_STREAM_COUNCILS = gql`
           id
           firstName
           lastName
-          stream_name
           pictureUrl
         }
         admin {
           id
           firstName
           lastName
-          stream_name
         }
       }
     }
@@ -248,12 +199,10 @@ export const GET_CAMPUS_STREAMS = gql`
         firstName
         lastName
         fullName
-        stream_name
       }
       streams {
         name
         id
-        stream_name
         memberCount
         councilCount
         vacationStatus
@@ -261,14 +210,12 @@ export const GET_CAMPUS_STREAMS = gql`
           id
           firstName
           lastName
-          stream_name
           pictureUrl
         }
         admin {
           id
           firstName
           lastName
-          stream_name
           fullName
         }
       }
@@ -377,19 +324,16 @@ export const GET_STREAM_GOVERNORSHIPS = gql`
         firstName
         lastName
         fullName
-        stream_name
       }
       governorships {
         name
         id
-        stream_name
         memberCount
         bacentaCount
         leader {
           id
           firstName
           lastName
-          stream_name
           pictureUrl
           fullName
         }

@@ -14,7 +14,6 @@ type DetailsCardPropsType = {
   bgNone?: boolean
   img?: string
   vacationCount?: string
-  vacationIcBacentaCount?: string
   leading?: JSX.Element
   trailing?: JSX.Element
 }
@@ -53,12 +52,6 @@ const DetailsCard = (props: DetailsCardPropsType) => {
           )}
         </p>
         {trailing && <>{trailing}</>}
-        {heading === 'Reds' &&
-          parseFloat(props?.vacationIcBacentaCount || '0') !== 0 && (
-            <Badge variant="destructive" className="text-xs shrink-0">
-              +{props?.vacationIcBacentaCount} Vacation
-            </Badge>
-          )}
         {parseFloat(props?.vacationCount?.toString() || '0') !== 0 && (
           <Badge variant="destructive" className="text-xs shrink-0">
             +{props?.vacationCount} Vacation

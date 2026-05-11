@@ -33,20 +33,13 @@ const DetailsCouncil = () => {
       number: council?.governorshipCount || 0,
       link: `/${`Governorship`.toLowerCase()}/displayall`,
     },
-    { title: 'Target', number: council?.target, link: '#' },
-    { title: 'Pastors', number: council?.pastorCount, link: '#' },
     {
-      title: 'Greens',
-      number: council?.activeGraduatedBacentaCount,
-      vacationCount: council?.vacationGraduatedBacentaCount,
-      link: `#`,
-    },
-    {
-      title: 'Reds',
-      number: council?.activeIcBacentaCount,
-      vacationCount: council?.vacationIcBacentaCount,
+      title: 'Bacentas',
+      number: council?.bacentaCount || 0,
+      vacationCount: council?.vacationBacentaCount,
       link: '#',
     },
+    { title: 'Pastors', number: council?.pastorCount ?? 0, link: '#' },
   ]
 
   return (

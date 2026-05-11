@@ -80,7 +80,6 @@ type DisplayChurchDetailsProps = {
   breadcrumb: BreadcrumbType[]
   buttons: Church[]
   vacation?: VacationStatusOptions
-  vacationCount?: number
   momoNumber?: string
   location?: {
     longitude: number
@@ -553,11 +552,6 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                       vacationCount={
                         !props.loading
                           ? detail?.vacationCount?.toString() || '0'
-                          : ''
-                      }
-                      vacationIcBacentaCount={
-                        !props.loading
-                          ? detail?.vacationIcBacentaCount?.toString() || '0'
                           : ''
                       }
                     />

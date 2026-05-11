@@ -16,8 +16,6 @@ export type DetailsArray = {
   link: string
   width?: number
   vacationCount?: number
-  activeIcBacentaCount?: number
-  vacationIcBacentaCount?: number
 }[]
 
 const convertToString = (value: string | boolean) => {

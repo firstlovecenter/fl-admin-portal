@@ -19,6 +19,7 @@ type BacentaRow = {
   name: string
   memberCount: number
   vacationStatus?: 'Vacation' | 'Active' | null
+  labels?: string[] | null
   __typename: 'Bacenta'
   council?: { id: string }
   leader?: {
@@ -27,6 +28,22 @@ type BacentaRow = {
     lastName: string
     pictureUrl?: string
   } | null
+}
+
+type Category = {
+  label: 'IC' | 'Graduated'
+  variant: 'destructive' | 'success'
+} | null
+
+const classifyBacenta = (labels?: string[] | null): Category => {
+  if (!labels) return null
+  if (labels.includes('Red')) {
+    return { label: 'IC', variant: 'destructive' }
+  }
+  if (labels.includes('Green') || labels.includes('Graduated')) {
+    return { label: 'Graduated', variant: 'success' }
+  }
+  return null
 }
 
 type GovernorshipLeader = {
@@ -131,6 +148,7 @@ const DisplayAllBacentas = () => {
                       bacenta.name?.charAt(0) ||
                       '?'
                     const isVacation = bacenta.vacationStatus === 'Vacation'
+                    const category = classifyBacenta(bacenta.labels)
 
                     return (
                       <Link
@@ -179,6 +197,14 @@ const DisplayAllBacentas = () => {
                                   className="px-2 py-0.5"
                                 >
                                   Vacation
+                                </Badge>
+                              )}
+                              {category && (
+                                <Badge
+                                  variant={category.variant}
+                                  className="px-2 py-0.5"
+                                >
+                                  {category.label}
                                 </Badge>
                               )}
                             </div>

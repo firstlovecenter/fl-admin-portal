@@ -28,7 +28,7 @@ const DetailsGovernorship = () => {
       title: 'Bacentas',
       number: governorship?.bacentaCount || 0,
       link: `/bacenta/displayall`,
-      vacationCount: governorship?.vacationGraduatedBacentaCount,
+      vacationCount: governorship?.vacationBacentaCount,
     },
   ]
 
@@ -52,7 +52,6 @@ const DetailsGovernorship = () => {
           data?.governorships[0]?.history
         }
         breadcrumb={[data?.governorships[0]?.council, data?.governorships[0]]}
-        vacationCount={governorship?.vacationBacentaCount}
       />
     </ApolloWrapper>
   )

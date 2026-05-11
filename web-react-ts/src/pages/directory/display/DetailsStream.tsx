@@ -51,15 +51,9 @@ const DetailsStream = () => {
       link: `/stream/governorships`,
     },
     {
-      title: 'Greens',
-      number: stream?.activeGraduatedBacentaCount,
-      vacationCount: stream?.vacationGraduatedBacentaCount,
-      link: `#`,
-    },
-    {
-      title: 'Reds',
-      number: stream?.activeIcBacentaCount,
-      vacationCount: stream?.vacationIcBacentaCount,
+      title: 'Bacentas',
+      number: stream?.bacentaCount || 0,
+      vacationCount: stream?.vacationBacentaCount,
       link: '#',
     },
   ]

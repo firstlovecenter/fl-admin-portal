@@ -45,15 +45,9 @@ const DetailsOversight = () => {
       link: `/campus/governorships`,
     },
     {
-      title: 'Greens',
-      number: oversight?.activeGraduatedBacentaCount,
-      vacationCount: oversight?.vacationGraduatedBacentaCount,
-      link: `#`,
-    },
-    {
-      title: 'Reds',
-      number: oversight?.activeIcBacentaCount,
-      vacationCount: oversight?.vacationIcBacentaCount,
+      title: 'Bacentas',
+      number: oversight?.bacentaCount || 0,
+      vacationCount: oversight?.vacationBacentaCount,
       link: '#',
     },
   ]

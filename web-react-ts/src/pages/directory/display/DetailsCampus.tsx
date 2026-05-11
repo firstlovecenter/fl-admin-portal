@@ -43,15 +43,9 @@ const DetailsCampus = () => {
       link: `/campus/governorships`,
     },
     {
-      title: 'Greens',
-      number: gathering?.activeGraduatedBacentaCount,
-      vacationCount: gathering?.vacationGraduatedBacentaCount,
-      link: `#`,
-    },
-    {
-      title: 'Reds',
-      number: gathering?.activeIcBacentaCount,
-      vacationCount: gathering?.vacationIcBacentaCount,
+      title: 'Bacentas',
+      number: gathering?.bacentaCount || 0,
+      vacationCount: gathering?.vacationBacentaCount,
       link: '#',
     },
     {
