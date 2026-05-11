@@ -1,10 +1,14 @@
 extend type Mutation {
+  # momoName is deprecated and ignored by the resolver — kept on the schema for
+  # one release so stale PWA bundles don't fail GraphQL validation. Drop next cut.
   BankServiceOffering(
     serviceRecordId: ID!
     mobileNetwork: String!
     mobileNumber: String!
-    momoName: String!
+    momoName: String
   ): ServiceRecord!
+  # reference is deprecated and ignored — the resolver reads transactionReference
+  # from the ServiceRecord. Kept for one release; drop next cut.
   SendPaymentOTP(
     serviceRecordId: String!
     reference: String

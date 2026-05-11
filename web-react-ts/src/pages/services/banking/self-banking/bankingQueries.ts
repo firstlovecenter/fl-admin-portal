@@ -55,14 +55,12 @@ export const PAY_OFFERING_MUTATION = gql`
   mutation PayOfferingMutation(
     $serviceRecordId: ID!
     $mobileNetwork: String!
-    $momoName: String!
     $mobileNumber: String!
   ) {
     BankServiceOffering(
       serviceRecordId: $serviceRecordId
       mobileNetwork: $mobileNetwork
       mobileNumber: $mobileNumber
-      momoName: $momoName
     ) {
       id
       cash
@@ -77,16 +75,8 @@ export const PAY_OFFERING_MUTATION = gql`
 `
 
 export const SEND_PAYMENT_OTP = gql`
-  mutation SendPaymentOTP(
-    $serviceRecordId: String!
-    $reference: String!
-    $otp: String!
-  ) {
-    SendPaymentOTP(
-      serviceRecordId: $serviceRecordId
-      reference: $reference
-      otp: $otp
-    ) {
+  mutation SendPaymentOTP($serviceRecordId: String!, $otp: String!) {
+    SendPaymentOTP(serviceRecordId: $serviceRecordId, otp: $otp) {
       id
       transactionStatus
     }

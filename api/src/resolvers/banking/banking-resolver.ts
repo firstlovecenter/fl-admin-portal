@@ -86,11 +86,9 @@ const bankingMutation = {
   BankServiceOffering: async (
     object: any,
     args: {
-      // eslint-disable-next-line camelcase
       serviceRecordId: string
       mobileNetwork: Network
       mobileNumber: string
-      momoName: string
     },
     context: Context
   ) => {
@@ -296,7 +294,6 @@ const bankingMutation = {
     object: any,
     args: {
       serviceRecordId: string
-      reference: string
       otp: string
     },
     context: Context

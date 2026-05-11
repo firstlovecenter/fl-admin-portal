@@ -60,9 +60,6 @@ type PayOfferingProps = {
 }
 
 type FormOptions = {
-  bankingDate: string
-  cash: number
-  momoName: string
   mobileNetwork: string
   mobileNumber: string
 }
@@ -95,9 +92,6 @@ const PayOffering = (props: PayOfferingProps) => {
   const [otpSent, setOtpSent] = useState(false)
 
   const initialValues: FormOptions = {
-    bankingDate: new Date().toISOString().slice(0, 10),
-    cash: service?.cash,
-    momoName: '',
     mobileNetwork: '',
     mobileNumber: '',
   }
@@ -116,10 +110,6 @@ const PayOffering = (props: PayOfferingProps) => {
         MOMO_NUM_REGEX,
         'Enter a valid MoMo Number without spaces. eg. (02XXXXXXXX)'
       ),
-    momoName: Yup.string().when('mobileNumber', {
-      is: (mobileNumber: string) => mobileNumber && mobileNumber.length > 0,
-      then: Yup.string().required('Please enter the Momo Name'),
-    }),
     mobileNetwork: Yup.string().when('mobileNumber', {
       is: (mobileNumber: string) => mobileNumber && mobileNumber.length > 0,
       then: Yup.string().required('Please enter the Mobile Network'),
@@ -139,7 +129,6 @@ const PayOffering = (props: PayOfferingProps) => {
           serviceRecordId,
           mobileNetwork: values.mobileNetwork,
           mobileNumber: values.mobileNumber,
-          momoName: values.momoName,
         },
       })
       if (paymentRes.errors) {
@@ -309,7 +298,6 @@ const PayOffering = (props: PayOfferingProps) => {
                           inputMode="tel"
                           placeholder="02XXXXXXXX"
                         />
-                        <Input name="momoName" label="MoMo Name" />
                       </CardContent>
                     </Card>
 
@@ -412,7 +400,6 @@ const PayOffering = (props: PayOfferingProps) => {
                         SendPaymentOTP({
                           variables: {
                             serviceRecordId: service.id,
-                            reference: service?.transactionReference,
                             otp,
                           },
                         })
