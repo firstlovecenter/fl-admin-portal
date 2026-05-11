@@ -29,6 +29,15 @@ type BacentaRow = {
   } | null
 }
 
+type GovernorshipLeader = {
+  id: string
+  firstName?: string
+  lastName?: string
+  fullName?: string
+  nameWithTitle?: string
+  pictureUrl?: string
+}
+
 const formatCount = (n: number) => n.toLocaleString('en-GH')
 
 const DisplayAllBacentas = () => {
@@ -196,30 +205,48 @@ const DisplayAllBacentas = () => {
                   >
                     {governorship?.name}
                   </Link>
-                  {governorship?.leader && (
-                    <Link
-                      to="/member/displaydetails"
-                      onClick={() => clickCard(governorship.leader)}
-                      className="mt-3 flex items-center gap-3 rounded-lg p-2 -mx-2 transition-colors hover:bg-muted/50 active:bg-muted"
-                    >
-                      <Avatar className="size-10 shrink-0">
-                        <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
-                          {`${governorship.leader.firstName?.[0] ?? ''}${
-                            governorship.leader.lastName?.[0] ?? ''
-                          }`}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0">
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                          Governor
-                        </p>
-                        <p className="truncate text-sm font-semibold text-foreground">
-                          {governorship.leader.fullName ??
-                            `${governorship.leader.firstName} ${governorship.leader.lastName}`}
-                        </p>
-                      </div>
-                    </Link>
-                  )}
+                  {governorship?.leader &&
+                    (() => {
+                      const leader: GovernorshipLeader = governorship.leader
+                      const displayName =
+                        leader.nameWithTitle ||
+                        leader.fullName ||
+                        [leader.firstName, leader.lastName]
+                          .filter(Boolean)
+                          .join(' ')
+                      const initials =
+                        `${leader.firstName?.[0] ?? ''}${
+                          leader.lastName?.[0] ?? ''
+                        }` ||
+                        governorship?.name?.charAt(0) ||
+                        '?'
+
+                      return (
+                        <Link
+                          to="/member/displaydetails"
+                          onClick={() => clickCard(leader)}
+                          className="-mx-2 mt-3 flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50 active:bg-muted"
+                        >
+                          <Avatar className="size-10 shrink-0">
+                            <AvatarImage
+                              src={leader.pictureUrl}
+                              alt={displayName}
+                            />
+                            <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                              Governor
+                            </p>
+                            <p className="truncate text-sm font-semibold text-foreground">
+                              {displayName || 'Unnamed Governor'}
+                            </p>
+                          </div>
+                        </Link>
+                      )
+                    })()}
                 </CardContent>
               </Card>
 

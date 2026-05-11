@@ -34,7 +34,7 @@ import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
 import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
 import { permitAdmin } from 'permission-utils'
 import { useContext, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import SearchMember from 'components/formik/SearchMember'
 import SubmitButton from 'components/formik/SubmitButton'
 import * as Yup from 'yup'
@@ -577,18 +577,69 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                         label={`View All ${plural(props.subChurch)}`}
                       />
                     </div>
-                    {/* Mobile: chip buttons */}
-                    <div className="flex flex-wrap gap-2 lg:hidden">
-                      {props.buttons.slice(0, 5).map((church, index) => (
-                        <ChurchButton key={index} church={church} />
-                      ))}
-                    </div>
-                    {/* Desktop: stacked rows */}
-                    <div className="hidden lg:block divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
-                      {props.buttons.slice(0, 5).map((church, index) => (
-                        <ChurchRow key={index} church={church} />
-                      ))}
-                    </div>
+                    {(() => {
+                      const PREVIEW_LIMIT = 4
+                      const visible = props.buttons.slice(0, PREVIEW_LIMIT)
+                      const remaining = Math.max(
+                        0,
+                        props.buttons.length - PREVIEW_LIMIT
+                      )
+                      const moreHref = `/${props.subChurch?.toLowerCase()}/displayall`
+
+                      return (
+                        <>
+                          {/* Mobile: chip buttons */}
+                          <div className="flex flex-wrap gap-2 lg:hidden">
+                            {visible.map((church, index) => (
+                              <ChurchButton key={index} church={church} />
+                            ))}
+                            {remaining > 0 && (
+                              <Link to={moreHref}>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="min-h-11 gap-1 border-dashed text-nowrap text-members hover:bg-members/10 hover:text-members"
+                                >
+                                  +{remaining} more
+                                  <ChevronRight className="size-3.5" />
+                                </Button>
+                              </Link>
+                            )}
+                          </div>
+                          {/* Desktop: stacked rows */}
+                          <div className="hidden lg:block divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
+                            {visible.map((church, index) => (
+                              <ChurchRow key={index} church={church} />
+                            ))}
+                            {remaining > 0 && (
+                              <Link
+                                to={moreHref}
+                                className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/50 active:bg-muted"
+                              >
+                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-members/10">
+                                  <span className="text-xs font-semibold text-members">
+                                    +{remaining}
+                                  </span>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-base font-semibold text-members">
+                                    {`${remaining} more ${
+                                      remaining === 1
+                                        ? props.subChurch
+                                        : plural(props.subChurch)
+                                    }`}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Show all
+                                  </p>
+                                </div>
+                                <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+                              </Link>
+                            )}
+                          </div>
+                        </>
+                      )
+                    })()}
                   </>
                 )}
 

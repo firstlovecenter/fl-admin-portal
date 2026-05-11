@@ -26,6 +26,8 @@ export const GET_GOVERNORSHIP_BACENTAS = gql`
         firstName
         lastName
         fullName
+        nameWithTitle
+        pictureUrl
       }
 
       memberCount
