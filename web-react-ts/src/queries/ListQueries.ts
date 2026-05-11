@@ -68,6 +68,18 @@ export const GET_COUNCIL_GOVERNORSHIPS = gql`
         firstName
         lastName
       }
+      stream {
+        id
+        campus {
+          id
+          oversight {
+            id
+            denomination {
+              id
+            }
+          }
+        }
+      }
       governorships {
         name
         id
