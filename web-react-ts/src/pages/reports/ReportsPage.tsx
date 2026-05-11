@@ -128,10 +128,10 @@ const ReportCard = ({ icon, title, description, to }: ReportCardProps) => {
         if (to) navigate(to)
       }}
       className={cn(
-        'flex w-full items-start gap-4 rounded-xl border border-border bg-card p-5 text-left transition-colors',
+        'flex w-full items-start gap-4 rounded-xl border border-border bg-card p-5 text-left transition-[transform,box-shadow,background-color] duration-200',
         unavailable
           ? 'cursor-not-allowed opacity-50'
-          : 'hover:bg-accent/40 active:scale-[0.99]'
+          : 'hover:bg-accent/40 motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md active:scale-[0.99]'
       )}
     >
       <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-banking/10 text-banking">

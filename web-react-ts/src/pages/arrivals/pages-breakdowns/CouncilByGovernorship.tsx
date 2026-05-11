@@ -1,12 +1,14 @@
 import { useQuery } from '@apollo/client'
-import { useContext, useMemo } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   AlertOctagon,
   AlertTriangle,
   BusFront,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   Megaphone,
   Users,
   UsersRound,
@@ -183,8 +185,8 @@ const CouncilByGovernorship = () => {
                   [0, 1, 2].map((i) => <GovernorshipCardSkeleton key={i} />)}
               </div>
 
-              {/* RIGHT — council-wide live totals */}
-              <aside className="space-y-6 lg:sticky lg:top-6">
+              {/* RIGHT (desktop) / TOP (mobile) — council-wide live totals */}
+              <aside className="order-first space-y-6 lg:order-none lg:sticky lg:top-6">
                 <div className="space-y-3">
                   <SectionLabel>Council Live Totals</SectionLabel>
                   <Card className="overflow-hidden">
@@ -242,6 +244,7 @@ const GovernorshipCard = ({
   governorship,
   onDrillIn,
 }: GovernorshipCardProps) => {
+  const [expanded, setExpanded] = useState(false)
   const leader = governorship.leader
   const initials = leader
     ? `${leader.firstName?.[0] ?? ''}${leader.lastName?.[0] ?? ''}`
@@ -253,79 +256,172 @@ const GovernorshipCard = ({
       )} ${leader.lastName ?? ''}`.trim()
     : null
 
+  const headerInner = (
+    <>
+      {leader && (
+        <Avatar className="size-9 shrink-0">
+          <AvatarImage src={leader.pictureUrl} alt="" />
+          <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+      )}
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <p className="truncate text-base font-semibold text-foreground">
+          {governorship.name}
+        </p>
+        <p className="truncate text-xs text-muted-foreground">
+          {leaderName ?? 'No leader assigned'}
+        </p>
+      </div>
+    </>
+  )
+
   return (
     <Card className="overflow-hidden">
-      {/* Header — name + leader + drill-in affordance (whole header is the drill target) */}
+      {/* Mobile header — taps toggle expand/collapse */}
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        className="group flex w-full items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
+        aria-expanded={expanded}
+        aria-label={`${expanded ? 'Collapse' : 'Expand'} ${
+          governorship.name
+        } details`}
+      >
+        {headerInner}
+        {expanded ? (
+          <ChevronUp className="size-5 shrink-0 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="size-5 shrink-0 text-muted-foreground" />
+        )}
+      </button>
+
+      {/* Desktop header — taps drill into the governorship page */}
       <button
         type="button"
         onClick={onDrillIn}
-        className="group flex w-full items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="group hidden w-full items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:flex"
         aria-label={`Open ${governorship.name} governorship`}
       >
-        {leader && (
-          <Avatar className="size-9 shrink-0">
-            <AvatarImage src={leader.pictureUrl} alt="" />
-            <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-        )}
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <p className="truncate text-base font-semibold text-foreground">
-            {governorship.name}
-          </p>
-          <p className="truncate text-xs text-muted-foreground">
-            {leaderName ?? 'No leader assigned'}
-          </p>
-        </div>
+        {headerInner}
         <ChevronRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </button>
 
-      {/* Bacenta status tiles */}
-      <div className="space-y-3 p-4">
-        <SectionLabel>Bacentas</SectionLabel>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {statusTiles.map((tile) => (
-            <StatusTile
-              key={tile.key}
-              label={tile.label}
-              value={tile.read(governorship)}
-              icon={tile.icon}
-              tone={tile.tone}
+      {/* Mobile summary row — visible only when collapsed */}
+      {!expanded && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 text-sm lg:hidden">
+          <SummaryStat
+            icon={UsersRound}
+            tone="warning"
+            value={governorship.bussingMembersOnTheWayCount}
+            label="on way"
+          />
+          <span className="text-muted-foreground">·</span>
+          <SummaryStat
+            icon={Users}
+            tone="success"
+            value={governorship.bussingMembersHaveArrivedCount}
+            label="arrived"
+          />
+          <span className="text-muted-foreground">·</span>
+          <SummaryStat
+            icon={BusFront}
+            tone="success"
+            value={governorship.bussesThatArrivedCount}
+            label="buses"
+          />
+        </div>
+      )}
+
+      {/* Body — always visible on desktop, only when expanded on mobile */}
+      <div className={expanded ? '' : 'hidden lg:block'}>
+        {/* Bacenta status tiles */}
+        <div className="space-y-3 p-4">
+          <SectionLabel>Bacentas</SectionLabel>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {statusTiles.map((tile) => (
+              <StatusTile
+                key={tile.key}
+                label={tile.label}
+                value={tile.read(governorship)}
+                icon={tile.icon}
+                tone={tile.tone}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Members + buses live rows */}
+        <div className="border-t border-border">
+          <div className="px-4 pt-3">
+            <SectionLabel>Members &amp; Buses</SectionLabel>
+          </div>
+          <div className="divide-y divide-border">
+            <LiveRow
+              label="Members On The Way"
+              value={governorship.bussingMembersOnTheWayCount}
+              icon={UsersRound}
+              tone="warning"
             />
-          ))}
+            <LiveRow
+              label="Members Arrived"
+              value={governorship.bussingMembersHaveArrivedCount}
+              icon={Users}
+              tone="success"
+            />
+            <LiveRow
+              label="Buses Arrived"
+              value={governorship.bussesThatArrivedCount}
+              icon={BusFront}
+              tone="success"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Members + buses live rows */}
-      <div className="border-t border-border">
-        <div className="px-4 pt-3">
-          <SectionLabel>Members &amp; Buses</SectionLabel>
-        </div>
-        <div className="divide-y divide-border">
-          <LiveRow
-            label="Members On The Way"
-            value={governorship.bussingMembersOnTheWayCount}
-            icon={UsersRound}
-            tone="warning"
-          />
-          <LiveRow
-            label="Members Arrived"
-            value={governorship.bussingMembersHaveArrivedCount}
-            icon={Users}
-            tone="success"
-          />
-          <LiveRow
-            label="Buses Arrived"
-            value={governorship.bussesThatArrivedCount}
-            icon={BusFront}
-            tone="success"
-          />
-        </div>
-      </div>
+      {/* Mobile drill-in CTA — visible only when expanded */}
+      {expanded && (
+        <button
+          type="button"
+          onClick={onDrillIn}
+          className="flex w-full items-center justify-between border-t border-border bg-muted/40 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
+          aria-label={`Open ${governorship.name} governorship page`}
+        >
+          <span>Open Governorship</span>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </button>
+      )}
     </Card>
   )
 }
+
+type SummaryStatProps = {
+  icon: React.ComponentType<{ className?: string }>
+  tone: 'warning' | 'success'
+  value?: number
+  label: string
+}
+
+const summaryToneClasses: Record<SummaryStatProps['tone'], string> = {
+  warning: 'text-warning',
+  success: 'text-success',
+}
+
+const SummaryStat = ({
+  icon: Icon,
+  tone,
+  value,
+  label,
+}: SummaryStatProps) => (
+  <div className="flex items-center gap-1.5">
+    <Icon className={`size-4 ${summaryToneClasses[tone]}`} />
+    <span className="font-semibold tabular-nums text-foreground">
+      {value ?? '—'}
+    </span>
+    <span className="text-muted-foreground">{label}</span>
+  </div>
+)
 
 const GovernorshipCardSkeleton = () => (
   <Card className="overflow-hidden">
