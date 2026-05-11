@@ -51,6 +51,7 @@ export const primaryNav: NavItem[] = [
     to: '/accounts',
     icon: Wallet,
     accentClass: 'text-banking',
+    roles: ['fishers'],
   },
 ]
 
