@@ -1,5 +1,11 @@
+// SM1 atomic transition: a fresh banking attempt is only allowed from
+// null (never banked) or 'failed' (previous attempt exploded). Concurrent
+// requests both passing the read-side check race here — by filtering at
+// MATCH the SET only fires for the first one, and the second sees zero
+// rows returned.
 export const initiateServiceRecordTransaction = `
-MATCH (record {id: $serviceRecordId}) WHERE record:ServiceRecord
+MATCH (record:ServiceRecord {id: $serviceRecordId})
+WHERE record.transactionStatus IS NULL OR record.transactionStatus = 'failed'
 
 MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
 WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
@@ -64,19 +70,20 @@ WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
 OPTIONAL MATCH (record)-[:OFFERING_BANKED_BY]->(banker)
 RETURN record {
     .id,
+    .cash,
     .transactionReference,
     .transactionStatus,
     .transactionTime,
     .income
 }, banker {
     .id,
-    .firstName, 
+    .firstName,
     .lastName
 }, stream {
     .id,
     .bankAccount,
     .name
-} 
+}
 `
 
 export const setTransactionStatusFailed = `

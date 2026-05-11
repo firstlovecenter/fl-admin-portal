@@ -7,6 +7,22 @@ dotenv.config()
 export type Network = 'MTN' | 'Vodafone' | 'AirtelTigo' | 'Airtel' | 'Tigo'
 export type NetworkCode = 'mtn' | 'vod' | 'tgo'
 
+// Mirrors web-react-ts/src/global-utils.ts:13. Ghanaian mobile-money numbers
+// arrive either as 0XXXXXXXXX (10 digits, leading 0) or XXXXXXXXXX (10 digits,
+// no leading 0). Anything else is rejected before we hand it to Paystack.
+export const MOMO_NUM_REGEX = /^(0[1-9]\d{8}|[1-9]\d{9})$/
+
+export const NETWORKS: readonly Network[] = [
+  'MTN',
+  'Vodafone',
+  'AirtelTigo',
+  'Airtel',
+  'Tigo',
+]
+
+export const isValidNetwork = (value: unknown): value is Network =>
+  typeof value === 'string' && (NETWORKS as readonly string[]).includes(value)
+
 export const getMobileCode = (network: Network): NetworkCode => {
   switch (network) {
     case 'MTN':
