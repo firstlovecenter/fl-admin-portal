@@ -34,7 +34,6 @@ const GovernorshipReport = lazy(
   () => import('pages/services/graphs/GovernorshipGraphs')
 )
 const CouncilReport = lazy(() => import('pages/services/graphs/CouncilGraphs'))
-const GovernorshipJoint = lazy(() => import('pages/services/GovernorshipJoint'))
 const Banked = lazy(() => import('pages/services/defaulters/Banked'))
 const BankingDefaulters = lazy(
   () => import('pages/services/defaulters/BankingDefaulters')
@@ -109,9 +108,6 @@ const CouncilBankingSlipSubmission = lazy(
 const StreamBankingSlipSubmission = lazy(
   () => import('pages/services/banking/banking-slip/StreamSubmission')
 )
-const CouncilJoint = lazy(() => import('pages/services/CouncilJoint'))
-const StreamJoint = lazy(() => import('pages/services/StreamJoint'))
-const CampusJoint = lazy(() => import('pages/services/CampusJoint'))
 const StreamService = lazy(
   () => import('pages/services/record-service/StreamService')
 )
@@ -153,31 +149,6 @@ export const services: LazyRouteTypes[] = [
     ],
     placeholder: true,
   },
-  {
-    path: '/services/governorship',
-    element: GovernorshipJoint,
-    roles: permitLeaderAdmin('Governorship'),
-    placeholder: true,
-  },
-  {
-    path: '/services/council',
-    element: CouncilJoint,
-    roles: permitLeaderAdmin('Council'),
-    placeholder: true,
-  },
-  {
-    path: '/services/stream',
-    element: StreamJoint,
-    roles: permitLeaderAdmin('Stream'),
-    placeholder: true,
-  },
-  {
-    path: '/services/campus',
-    element: CampusJoint,
-    roles: permitLeaderAdmin('Campus'),
-    placeholder: true,
-  },
-
   {
     path: '/services/bacenta/banking-slips',
     element: BacentaBankingSlipView,
