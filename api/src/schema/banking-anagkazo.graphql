@@ -89,19 +89,30 @@ extend type Governorship {
       WITH this, date() AS today
       WITH this, [day IN range(0, 5) | date(today) - duration({days: (today.weekDay - 2)}) + duration({days: day})] AS dates
 
-      OPTIONAL MATCH (dateNode:TimeGraph)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY|HAS*1..2]-(this)
+      MATCH (dateNode:TimeGraph)
+      USING INDEX dateNode:TimeGraph(date)
       WHERE dateNode.date IN dates
-        AND record.noServiceReason IS NULL
+      OPTIONAL MATCH (dateNode)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:CURRENT_HISTORY]-(this)
+      WHERE record.noServiceReason IS NULL
         AND record.bankingSlip IS NULL
         AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
         AND record.tellerConfirmationTime IS NULL
+      WITH this, dates, collect(DISTINCT record) AS ownRecords
 
-      WITH DISTINCT this, record
+      MATCH (dateNode2:TimeGraph)
+      USING INDEX dateNode2:TimeGraph(date)
+      WHERE dateNode2.date IN dates
+      OPTIONAL MATCH (dateNode2)<-[:SERVICE_HELD_ON]-(record2:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:CURRENT_HISTORY]-(:Bacenta)<-[:HAS]-(this)
+      WHERE record2.noServiceReason IS NULL
+        AND record2.bankingSlip IS NULL
+        AND (record2.transactionStatus IS NULL OR record2.transactionStatus <> 'success')
+        AND record2.tellerConfirmationTime IS NULL
+      WITH this, ownRecords + collect(DISTINCT record2) AS allRecords
 
       WITH this,
-      [currency IN collect(record.foreignCurrency) WHERE currency IS NOT NULL] AS list,
-      round(coalesce(sum(coalesce(record.income, record.cash, 0)), 0), 2) AS income,
-      toInteger(coalesce(sum(coalesce(record.attendance, 0)), 0)) AS attendance
+      [r IN allRecords WHERE r.foreignCurrency IS NOT NULL | r.foreignCurrency] AS list,
+      round(coalesce(reduce(s = 0.0, r IN allRecords | s + coalesce(r.income, r.cash, 0)), 0), 2) AS income,
+      toInteger(coalesce(reduce(s = 0, r IN allRecords | s + coalesce(r.attendance, 0)), 0)) AS attendance
 
       OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
       WHERE agg.week = $week AND agg.year = date().year

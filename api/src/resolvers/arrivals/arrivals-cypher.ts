@@ -118,10 +118,16 @@ WHERE church:Stream
 OPTIONAL MATCH (church)<-[oldHelpers:COUNTS_ARRIVALS_FOR|CONFIRMS_ARRIVALS_FOR]-(admin:Member)
 DELETE oldHelpers
 
-WITH church, admin
+WITH DISTINCT church
 
-MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)<-[oldAdminHistory:CURRENT_HISTORY]-(admin)
-DELETE oldHistory, oldAdminHistory
+OPTIONAL MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)
+DELETE oldHistory
+
+WITH church
+OPTIONAL MATCH (church)<-[:COUNTS_ARRIVALS_FOR|CONFIRMS_ARRIVALS_FOR]-(admin:Member)
+WITH DISTINCT admin
+OPTIONAL MATCH (admin)-[oldAdminHistory:CURRENT_HISTORY]->(:ServiceLog)
+DELETE oldAdminHistory
 
 
 RETURN church

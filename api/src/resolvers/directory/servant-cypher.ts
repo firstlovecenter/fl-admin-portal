@@ -11,11 +11,15 @@ const servantCypher = {
    OPTIONAL MATCH (bacenta:Bacenta {id: $churchId})
    REMOVE bacenta.momoNumber, bacenta.momoName, bacenta.mobileNetwork, bacenta.recipientCode
 
-   WITH church,leader
-   
-   OPTIONAL MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)<-[oldLeaderHistory:CURRENT_HISTORY]-(leader)
-   DELETE oldHistory, oldLeaderHistory
-   
+   WITH church, leader
+
+   OPTIONAL MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)
+   DELETE oldHistory
+
+   WITH DISTINCT church, leader
+   OPTIONAL MATCH (leader)-[oldLeaderHistory:CURRENT_HISTORY]->(:ServiceLog)
+   DELETE oldLeaderHistory
+
    RETURN leader.id AS id,  leader.firstName AS firstName, leader.lastName AS lastName
    `,
 
