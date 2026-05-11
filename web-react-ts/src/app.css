@@ -102,6 +102,28 @@
 
   /* Font family */
   --font-sans: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Accordion (radix) — height interpolates from the data attribute Radix sets. */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
 }
 
 /* Base layer: wire design-token text/bg to body so all elements inherit

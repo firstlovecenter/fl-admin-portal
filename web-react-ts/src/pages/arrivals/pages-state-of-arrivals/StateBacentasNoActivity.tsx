@@ -17,6 +17,7 @@ import {
 import { SectionLabel } from '../components/live-feed'
 import BacentaArrivalsCard from './BacentaArrivalsCard'
 import BacentaListSkeleton from './BacentaListSkeleton'
+import BacentasByGovernorshipAccordion from './BacentasByGovernorshipAccordion'
 import { useArrivalsScopedQuery } from './useArrivalsScopedQuery'
 
 const QUERIES_BY_LEVEL = {
@@ -29,6 +30,7 @@ const QUERIES_BY_LEVEL = {
 const BacentasNoActivity = () => {
   const {
     church,
+    churchType,
     churchName,
     loading,
     error,
@@ -40,6 +42,7 @@ const BacentasNoActivity = () => {
   const bacentas = church?.bacentasNoActivity ?? []
   const count = bacentas.length
   const isEmpty = !!church && !loading && count === 0
+  const groupByGovernorship = churchType === 'Council'
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -108,7 +111,14 @@ const BacentasNoActivity = () => {
                     </Card>
                   )}
 
-                  {!isEmpty && (
+                  {!isEmpty && groupByGovernorship && (
+                    <BacentasByGovernorshipAccordion
+                      bacentas={bacentas}
+                      tone="defaulters"
+                    />
+                  )}
+
+                  {!isEmpty && !groupByGovernorship && (
                     <>
                       <div className="md:hidden space-y-3">
                         {bacentas.map((bacenta, i) => (

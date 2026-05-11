@@ -22,6 +22,7 @@ import {
 import { SectionLabel } from '../components/live-feed'
 import BacentaArrivalsCard from './BacentaArrivalsCard'
 import BacentaListSkeleton from './BacentaListSkeleton'
+import BacentasByGovernorshipAccordion from './BacentasByGovernorshipAccordion'
 import { useArrivalsScopedQuery } from './useArrivalsScopedQuery'
 
 const QUERIES_BY_LEVEL = {
@@ -36,6 +37,7 @@ const BacentasHaveArrived = () => {
   const { clickCard } = useContext(ChurchContext)
   const {
     church,
+    churchType,
     churchName,
     loading,
     error,
@@ -51,6 +53,7 @@ const BacentasHaveArrived = () => {
     0
   )
   const isEmpty = !!church && !loading && count === 0
+  const groupByGovernorship = churchType === 'Council'
 
   const onBacentaClick = (bacenta: (typeof bacentas)[number]) => {
     clickCard(bacenta)
@@ -67,7 +70,7 @@ const BacentasHaveArrived = () => {
               type="button"
               variant="ghost"
               size="sm"
-              className="-ml-2 mb-4 gap-1 text-muted-foreground hover:text-foreground"
+              className="-ml-2 mb-4 min-h-11 gap-1 text-muted-foreground hover:text-foreground"
               onClick={() => navigate(-1)}
             >
               <ArrowLeft className="size-4" />
@@ -136,7 +139,21 @@ const BacentasHaveArrived = () => {
                     </Card>
                   )}
 
-                  {!isEmpty && (
+                  {!isEmpty && groupByGovernorship && (
+                    <BacentasByGovernorshipAccordion
+                      bacentas={bacentas}
+                      tone="success"
+                      onBacentaClick={onBacentaClick}
+                      renderExtra={(bacenta) => (
+                        <span className="text-xs font-semibold text-success tabular-nums">
+                          Attendance:{' '}
+                          {bacenta.bussingThisWeek?.attendance ?? 0}
+                        </span>
+                      )}
+                    />
+                  )}
+
+                  {!isEmpty && !groupByGovernorship && (
                     <>
                       <div className="md:hidden space-y-3">
                         {bacentas.map((bacenta, i) => (

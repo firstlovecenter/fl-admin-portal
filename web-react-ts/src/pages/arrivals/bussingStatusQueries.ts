@@ -34,6 +34,10 @@ export const COUNCIL_BACENTAS_NO_ACTIVITY = gql`
       bacentasNoActivity(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -133,6 +137,10 @@ export const COUNCIL_BACENTAS_MOBILISING = gql`
       bacentasMobilising(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -241,6 +249,10 @@ export const COUNCIL_BACENTAS_ON_THE_WAY = gql`
       bacentasOnTheWay(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -348,6 +360,10 @@ export const COUNCIL_BACENTAS_TO_COUNT = gql`
       bacentasNotCounted(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -375,6 +391,10 @@ export const COUNCIL_VEHICLES_TO_BE_PAID = gql`
       bacentasToBePaid(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -497,6 +517,10 @@ export const COUNCIL_BACENTAS_ARRIVED = gql`
       bacentasHaveArrived(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -609,6 +633,10 @@ export const COUNCIL_BACENTAS_BELOW_8 = gql`
       bacentasBelow8(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName

@@ -12,6 +12,12 @@ import {
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from 'components/ui/accordion'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
@@ -22,7 +28,7 @@ import { cn } from 'components/lib/utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
 
-import { BacentaWithArrivals } from '../arrivals-types'
+import { BacentaWithArrivals, VehicleRecord } from '../arrivals-types'
 import {
   GOVERNORSHIP_BACENTAS_TO_COUNT,
   COUNCIL_BACENTAS_TO_COUNT,
@@ -32,6 +38,17 @@ import {
 import { SectionLabel } from '../components/live-feed'
 import VehicleButton from '../components/VehicleButton'
 import { useArrivalsScopedQuery } from './useArrivalsScopedQuery'
+
+type BacentaWithRecords = {
+  bacenta: BacentaWithArrivals
+  records: VehicleRecord[]
+}
+
+type GovernorshipGroup = {
+  id: string
+  name: string
+  items: BacentaWithRecords[]
+}
 
 const QUERIES_BY_LEVEL = {
   Governorship: GOVERNORSHIP_BACENTAS_TO_COUNT,
@@ -59,6 +76,7 @@ const StateBacentasToCount = () => {
   const { clickCard } = useContext(ChurchContext)
   const {
     church,
+    churchType,
     churchName,
     loading,
     error,
@@ -114,6 +132,54 @@ const StateBacentasToCount = () => {
     0
   )
 
+  const groupByGovernorship = churchType === 'Council'
+
+  const renderBacentaWithRecords = ({ bacenta, records }: BacentaWithRecords) => (
+    // onClickCapture seeds bacenta + bussing context before
+    // VehicleButton's click navigates to /bacenta/vehicle-details.
+    <Card
+      key={bacenta.id}
+      onClickCapture={() => {
+        clickCard(bacenta)
+        if (bacenta.bussingThisWeek) clickCard(bacenta.bussingThisWeek)
+      }}
+    >
+      <CardContent className="space-y-3 p-4">
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            {bacenta.name} Bacenta
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {bacenta.leader?.nameWithTitle ?? bacenta.leader?.fullName ?? ''}
+          </p>
+        </div>
+        <div className="space-y-2">
+          {records.map((record) => (
+            <VehicleButton key={record.id} record={record} />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const governorshipGroups = useMemo<GovernorshipGroup[]>(() => {
+    if (!groupByGovernorship) return []
+    const map = new Map<string, GovernorshipGroup>()
+    bacentasWithVisibleRecords.forEach((item) => {
+      const id = item.bacenta.governorship?.id ?? '__unassigned'
+      const name = item.bacenta.governorship?.name ?? 'Unassigned'
+      const existing = map.get(id)
+      if (existing) {
+        existing.items.push(item)
+      } else {
+        map.set(id, { id, name, items: [item] })
+      }
+    })
+    return Array.from(map.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+  }, [bacentasWithVisibleRecords, groupByGovernorship])
+
   const baseEmpty = !!church && !loading && allBacentas.length === 0
   const searchEmpty =
     !!church && !loading && !!trimmedSearch && filteredBacentas.length === 0
@@ -133,7 +199,7 @@ const StateBacentasToCount = () => {
               type="button"
               variant="ghost"
               size="sm"
-              className="-ml-2 mb-4 gap-1 text-muted-foreground hover:text-foreground"
+              className="-ml-2 mb-4 min-h-11 gap-1 text-muted-foreground hover:text-foreground"
               onClick={() => navigate(-1)}
             >
               <ArrowLeft className="size-4" />
@@ -266,43 +332,53 @@ const StateBacentasToCount = () => {
                     </Card>
                   )}
 
-                  {bacentasWithVisibleRecords.length > 0 && (
-                    <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-                      {bacentasWithVisibleRecords.map(({ bacenta, records }) => (
-                        // onClickCapture seeds bacenta + bussing context before
-                        // VehicleButton's click navigates to /bacenta/vehicle-details.
-                        <Card
-                          key={bacenta.id}
-                          onClickCapture={() => {
-                            clickCard(bacenta)
-                            if (bacenta.bussingThisWeek)
-                              clickCard(bacenta.bussingThisWeek)
-                          }}
-                        >
-                          <CardContent className="space-y-3 p-4">
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">
-                                {bacenta.name} Bacenta
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {bacenta.leader?.nameWithTitle ??
-                                  bacenta.leader?.fullName ??
-                                  ''}
-                              </p>
-                            </div>
-                            <div className="space-y-2">
-                              {records.map((record) => (
-                                <VehicleButton
-                                  key={record.id}
-                                  record={record}
-                                />
-                              ))}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                  {bacentasWithVisibleRecords.length > 0 &&
+                    !groupByGovernorship && (
+                      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                        {bacentasWithVisibleRecords.map(renderBacentaWithRecords)}
+                      </div>
+                    )}
+
+                  {bacentasWithVisibleRecords.length > 0 &&
+                    groupByGovernorship && (
+                      <Accordion type="multiple" className="space-y-3">
+                        {governorshipGroups.map((group) => {
+                          const groupVehicleCount = group.items.reduce(
+                            (sum, item) => sum + item.records.length,
+                            0
+                          )
+                          return (
+                            <AccordionItem
+                              key={group.id}
+                              value={group.id}
+                              className="overflow-hidden rounded-xl border border-border bg-card"
+                            >
+                              <AccordionTrigger className="min-h-12 px-4 hover:no-underline">
+                                <div className="flex flex-1 items-center justify-between gap-3 pr-2">
+                                  <span className="truncate text-sm font-semibold text-foreground">
+                                    {group.name}
+                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className="border-arrivals/30 bg-arrivals/10 text-arrivals tabular-nums"
+                                  >
+                                    {groupVehicleCount}{' '}
+                                    {groupVehicleCount === 1
+                                      ? 'vehicle'
+                                      : 'vehicles'}
+                                  </Badge>
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pt-1">
+                                <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                                  {group.items.map(renderBacentaWithRecords)}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          )
+                        })}
+                      </Accordion>
+                    )}
                 </section>
 
                 <aside className="space-y-3 lg:sticky lg:top-6 lg:order-2">
