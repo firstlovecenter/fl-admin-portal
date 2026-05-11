@@ -10,10 +10,11 @@ WHERE record.transactionStatus IS NULL OR record.transactionStatus = 'failed'
 MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
 WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
 
-
-UNWIND labels(church) AS churchLevel
-WITH record, church, churchLevel
-WHERE churchLevel IN ['Bacenta','Governorship','Council', 'Stream', 'Campus']
+// Hierarchy labels are mutually exclusive per kb/05-data-entities.md, so the
+// head() always resolves to exactly one value. The allowlist is duplicated
+// here intentionally to keep the projection explicit at the point of use.
+WITH record, church,
+     head([l IN labels(church) WHERE l IN ['Bacenta','Governorship','Council','Stream','Campus']]) AS churchLevel
 
 MATCH (author:Member {id: $jwt.userId})
 MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
@@ -115,6 +116,20 @@ MATCH (record {id: $serviceRecordId})
 WHERE (record:ServiceRecord OR record:RehearsalRecord)
   AND record.transactionStatus IN ['pending', 'send OTP']
 SET record.transactionStatus = 'success'
+
+RETURN record
+`
+
+// SM1 special transition: Paystack reversed a previously-settled charge
+// (refund to customer). 'reversed' is the only path that legally overwrites
+// 'success' — the money was settled, then returned. Distinct from 'failed'
+// so accounting can tell a never-settled charge apart from a refund.
+export const setTransactionStatusReversed = `
+MATCH (record {id: $serviceRecordId})
+WHERE (record:ServiceRecord OR record:RehearsalRecord)
+  AND record.transactionStatus IN ['pending', 'send OTP', 'failed', 'success']
+SET record.transactionStatus = 'reversed',
+    record.transactionError = $error
 
 RETURN record
 `

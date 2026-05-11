@@ -44,17 +44,21 @@ States observed in `api/src/resolvers/banking/banking-cypher.ts` and
 | `pending` | `send OTP` | Paystack returns OTP requirement | `setRecordTransactionReferenceWithOTP` |
 | `send OTP` | `pending` | User submits OTP | `SendPaymentOTP` mutation |
 | `pending` | `success` | Paystack webhook with successful charge | `setTransactionStatusSuccess` |
-| `pending` | `failed` | Paystack webhook with failure | `setTransactionStatusFailed` |
+| `pending` \| `send OTP` | `failed` | Paystack webhook with failure | `setTransactionStatusFailed` |
+| `null` \| `failed` | `failed` | `ConfirmOfferingPayment` defensive write (no-reference / transaction_not_found / verify failure) | `setTransactionStatusFailed` |
 | `failed` | `pending` | User re-initiates banking | `BankServiceOffering` |
+| `pending` \| `send OTP` \| `failed` \| `success` | `reversed` | Paystack verify reports `reversed` (refund to customer) | `setTransactionStatusReversed` |
 | any | (reset) | Manual confirmation by `tellerStream` overrides via `ManuallyConfirmOfferingPayment` (sets `tellerConfirmationTime` instead of touching `transactionStatus`) | `manuallyConfirmOfferingPayment` |
 
 **Rules:**
-- `success` is terminal for self-banking. Do **not** transition out of `success`.
+- `success` is terminal for self-banking — with one exception: `success → reversed`
+  when Paystack reports the charge was reversed (customer refunded).
+- `reversed` is terminal once written.
 - A new banking attempt for a service that already has `bankingSlip` or
   `tellerConfirmationTime` set must be rejected (`checkIfLastServiceBanked`).
 - The aggregation Cypher treats `WHERE record.transactionStatus IN ['pending','success']`
-  as "in flight or done" — anything else (`null`, `failed`, `send OTP`) is treated
-  as not-banked when computing defaulters.
+  as "in flight or done" — anything else (`null`, `failed`, `send OTP`, `reversed`) is
+  treated as not-banked when computing defaulters.
 
 ## SM2 — Service banking proof presence
 

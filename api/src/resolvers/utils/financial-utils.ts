@@ -12,6 +12,11 @@ export type NetworkCode = 'mtn' | 'vod' | 'tgo'
 // no leading 0). Anything else is rejected before we hand it to Paystack.
 export const MOMO_NUM_REGEX = /^(0[1-9]\d{8}|[1-9]\d{9})$/
 
+// Paranoia ceiling on a single offering bank. Well above any realistic
+// single-service total at any church level; catches fat-fingered typos
+// (e.g. 5000 → 5000000) before they reach Paystack.
+export const MAX_OFFERING_CASH = 50_000
+
 export const NETWORKS: readonly Network[] = [
   'MTN',
   'Vodafone',

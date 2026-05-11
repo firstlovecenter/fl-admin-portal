@@ -166,7 +166,7 @@ export type ServiceRecord = {
   noServiceReason: string
   bankingProof: boolean
   bankingSlip: string
-  transactionStatus: 'pending' | 'success' | 'failed'
+  transactionStatus: 'pending' | 'send OTP' | 'success' | 'failed' | 'reversed'
   serviceDate: {
     date: string
   }

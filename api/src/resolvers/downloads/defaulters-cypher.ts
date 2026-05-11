@@ -87,6 +87,7 @@ RETURN
     WHEN filledRecord.bankingSlip IS NOT NULL
        OR filledRecord.transactionStatus = 'success'
        OR filledRecord.tellerConfirmationTime IS NOT NULL THEN 'Yes'
+    WHEN filledRecord.transactionStatus = 'reversed' THEN 'Reversed'
     WHEN filledRecord.transactionStatus = 'failed' THEN 'Failed'
     ELSE 'No'
   END AS bankingStatus

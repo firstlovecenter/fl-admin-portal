@@ -11,6 +11,7 @@ import {
   getMobileCode,
   getStreamFinancials,
   isValidNetwork,
+  MAX_OFFERING_CASH,
   MOMO_NUM_REGEX,
   Network,
 } from '../utils/financial-utils'
@@ -22,6 +23,7 @@ import {
   getLastServiceRecord,
   initiateServiceRecordTransaction,
   setTransactionStatusFailed,
+  setTransactionStatusReversed,
   setTransactionStatusSuccess,
   setRecordTransactionReference,
   setRecordTransactionReferenceWithOTP,
@@ -164,6 +166,11 @@ const bankingMutation = {
       if (!Number.isFinite(cash) || cash <= 0) {
         throw new Error(
           'Cannot bank a zero offering. Please record the cash amount on the service before banking.'
+        )
+      }
+      if (cash > MAX_OFFERING_CASH) {
+        throw new Error(
+          `Recorded cash (GHS ${cash.toLocaleString()}) exceeds the GHS ${MAX_OFFERING_CASH.toLocaleString()} safety check. Edit the service record if the amount is wrong, or contact your admin if it is correct.`
         )
       }
 
@@ -554,6 +561,9 @@ const bankingMutation = {
           }
         }
 
+        // 'failed' and 'abandoned' both mean money never settled in our
+        // subaccount. SM1 forbids overwriting 'success' here — that path is
+        // handled by the 'reversed' branch below.
         if (
           confirmationResponse.data.data.status === 'failed' ||
           confirmationResponse.data.data.status === 'abandoned'
@@ -583,6 +593,39 @@ const bankingMutation = {
             record = { ...record, transactionStatus: 'success' }
           }
         }
+
+        // 'reversed' is special: the charge settled, then Paystack returned
+        // the money to the customer. The record was previously 'success'.
+        // SM1 grants 'reversed' an exception to the success-is-terminal rule
+        // so accounting reflects the refund instead of silently re-asserting
+        // success.
+        if (confirmationResponse.data.data.status === 'reversed') {
+          const reversedRes = rearrangeCypherObject(
+            await session
+              .run(setTransactionStatusReversed, {
+                ...args,
+                error: confirmationResponse.data.data.gateway_response,
+              })
+              .catch((error: any) =>
+                throwToSentry(
+                  'There was an error setting the reversed transaction',
+                  error
+                )
+              )
+          )
+          if (reversedRes?.record) {
+            record = reversedRes.record.properties
+          } else {
+            console.warn(
+              `setTransactionStatusReversed no-op for ${args.serviceRecordId}; record in unexpected state`
+            )
+            record = { ...record, transactionStatus: 'reversed' }
+          }
+        }
+
+        // Non-terminal Paystack statuses (ongoing, pending, processing, queued)
+        // intentionally fall through — the record stays in its current state
+        // for the client to retry verification later.
       } catch (error: any) {
         // Paystack reports 'transaction_not_found' when the reference never
         // succeeded — write failed and return the updated record. For any
