@@ -35,7 +35,7 @@ const UpdateBacenta = () => {
     leaderEmail: bacenta?.leader?.email ?? '',
     governorship: bacenta?.governorship,
     vacationStatus: bacenta?.vacationStatus,
-    meetingDay: bacenta.meetingDay.day,
+    meetingDay: bacenta?.meetingDay?.day ?? '',
     venueLatitude: repackDecimals(bacenta?.location?.latitude) ?? '',
     venueLongitude: repackDecimals(bacenta?.location?.longitude) ?? '',
     adminId: bacenta?.admin?.id || '',
