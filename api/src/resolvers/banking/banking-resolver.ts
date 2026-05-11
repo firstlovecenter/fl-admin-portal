@@ -15,9 +15,8 @@ import {
   MOMO_NUM_REGEX,
   Network,
 } from '../utils/financial-utils'
-import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'
+import { isAuth, rearrangeCypherObject } from '../utils/utils'
 import { assertScopeViaServiceRecord } from '../utils/scope-utils'
-
 import {
   checkTransactionReference,
   getLastServiceRecord,
@@ -37,6 +36,33 @@ import {
 } from './banking-types'
 import { loadSecrets } from '../secrets'
 
+// Banking-scoped error helper. Logs a scrubbed forensic record (status,
+// gateway code, message) for ops but throws only a curated user-facing
+// message so Paystack response codes, axios stack traces, and Neo4j
+// driver text never reach a church leader's UI. The full axios error
+// also carries error.config.data — the request body we sent Paystack,
+// which includes the depositor's momo number and email. Never log that
+// (CLAUDE.md: "Don't log full JWTs, momo numbers, or PII").
+const scrubError = (error: unknown) => {
+  const e = error as any
+  if (e?.response) {
+    return {
+      status: e.response.status,
+      code: e.response.data?.code,
+      message: e.response.data?.message,
+    }
+  }
+  if (e instanceof Error) {
+    return { name: e.name, message: e.message }
+  }
+  return { message: String(e) }
+}
+
+const throwClean = (userMessage: string, error: unknown): never => {
+  console.error(`[banking] ${userMessage}`, scrubError(error))
+  throw new Error(userMessage)
+}
+
 export const checkIfLastServiceBanked = async (
   serviceRecordId: string,
   context: Context
@@ -50,7 +76,10 @@ export const checkIfLastServiceBanked = async (
       jwt: context.jwt,
     })
     .catch((error: any) =>
-      throwToSentry('There was a problem checking the lastService', error)
+      throwClean(
+        'We could not check your previous service banking. Please try again.',
+        error
+      )
     )
   const lastServiceRecord: any = rearrangeCypherObject(lastServiceResponse)
 
@@ -115,8 +144,8 @@ const bankingMutation = {
         await session
           .run(checkTransactionReference, args)
           .catch((error: any) =>
-            throwToSentry(
-              'There was a problem checking the transactionReference',
+            throwClean(
+              'We could not look up your service record. Please try again.',
               error
             )
           )
@@ -183,8 +212,8 @@ const bankingMutation = {
             })
           )
           .catch((error: any) =>
-            throwToSentry(
-              'There was an error setting serviceRecordTransactionReference',
+            throwClean(
+              'We could not start the payment. Please try again.',
               error
             )
           )
@@ -246,7 +275,12 @@ const bankingMutation = {
         },
       }
 
-      const paymentResponse = await axios(payOffering)
+      const paymentResponse = await axios(payOffering).catch((error: any) =>
+        throwClean(
+          'Your mobile money charge could not be started. Check the number and network, then try again.',
+          error
+        )
+      )
 
       axios(updatePaystackCustomer).catch((err: any) => {
         // Don't log err.response.data — Paystack echoes the request body
@@ -259,19 +293,33 @@ const bankingMutation = {
       })
 
       const paymentCypherRes = rearrangeCypherObject(
-        await session.executeWrite((tx) =>
-          tx.run(setRecordTransactionReference, {
-            id: serviceRecord.id,
-            reference: paymentResponse.data.data.reference,
-          })
-        )
+        await session
+          .executeWrite((tx) =>
+            tx.run(setRecordTransactionReference, {
+              id: serviceRecord.id,
+              reference: paymentResponse.data.data.reference,
+            })
+          )
+          .catch((error: any) =>
+            throwClean(
+              'We could not save your payment reference. Please try again.',
+              error
+            )
+          )
       )
 
       if (paymentResponse.data.data.status === 'send_otp') {
         const otpCypherRes = rearrangeCypherObject(
-          await session.run(setRecordTransactionReferenceWithOTP, {
-            id: serviceRecord.id,
-          })
+          await session
+            .run(setRecordTransactionReferenceWithOTP, {
+              id: serviceRecord.id,
+            })
+            .catch((error: any) =>
+              throwClean(
+                'We could not save your OTP status. Please try again.',
+                error
+              )
+            )
         )
 
         if (otpCypherRes?.record) {
@@ -285,13 +333,6 @@ const bankingMutation = {
       }
 
       return paymentCypherRes.record
-    } catch (error: any) {
-      // Surface user-facing messages from validation/state guards directly;
-      // wrap unexpected errors (Paystack 5xx, Neo4j) in a generic message
-      // and log the original to console for forensics.
-      const friendly = error?.response?.data?.message || error?.message
-      console.error('BankServiceOffering failed:', error)
-      throw new Error(friendly || 'There was an error processing your payment.')
     } finally {
       await session.close()
     }
@@ -319,8 +360,8 @@ const bankingMutation = {
         await session
           .run(checkTransactionReference, args)
           .catch((error: any) =>
-            throwToSentry(
-              'There was a problem checking the transactionReference',
+            throwClean(
+              'We could not look up your payment. Please try again.',
               error
             )
           )
@@ -374,7 +415,10 @@ const bankingMutation = {
           }
         }
 
-        return throwToSentry('There was an error sending OTP', error)
+        return throwClean(
+          'We could not submit your OTP. Please request a fresh OTP and try again.',
+          error
+        )
       })
 
       if (otpResponse.data.data.status === 'pay_offline') {
@@ -385,8 +429,8 @@ const bankingMutation = {
               reference,
             })
             .catch((error: any) =>
-              throwToSentry(
-                'There was an error setting transaction reference',
+              throwClean(
+                'We could not save your payment status. Please try again.',
                 error
               )
             )
@@ -405,8 +449,8 @@ const bankingMutation = {
               error: otpResponse.data.data.gateway_response,
             })
             .catch((error: any) =>
-              throwToSentry(
-                'There was an error setting transaction reference',
+              throwClean(
+                'We could not save your payment status. Please try again.',
                 error
               )
             )
@@ -449,8 +493,8 @@ const bankingMutation = {
         await session
           .run(checkTransactionReference, args)
           .catch((error: any) =>
-            throwToSentry(
-              'There was an error checking transaction reference',
+            throwClean(
+              'We could not look up your payment. Please try again.',
               error
             )
           )
@@ -505,7 +549,10 @@ const bankingMutation = {
               error: 'No Transaction Reference',
             })
             .catch((error: any) =>
-              throwToSentry('There was an error setting the transaction', error)
+              throwClean(
+                'We could not save your payment status. Please try again.',
+                error
+              )
             )
         )
         if (failedRes?.record) {
@@ -542,8 +589,8 @@ const bankingMutation = {
                 status: confirmationResponse.data.data.status,
               })
               .catch((error: any) =>
-                throwToSentry(
-                  'There was an error setting the successful transaction',
+                throwClean(
+                  'We could not save your successful payment. Please try again.',
                   error
                 )
               )
@@ -576,8 +623,8 @@ const bankingMutation = {
                 error: confirmationResponse.data.data.gateway_response,
               })
               .catch((error: any) =>
-                throwToSentry(
-                  'There was an error setting the transaction',
+                throwClean(
+                  'We could not save your payment status. Please try again.',
                   error
                 )
               )
@@ -607,8 +654,8 @@ const bankingMutation = {
                 error: confirmationResponse.data.data.gateway_response,
               })
               .catch((error: any) =>
-                throwToSentry(
-                  'There was an error setting the reversed transaction',
+                throwClean(
+                  'We could not save the reversed payment status. Please try again.',
                   error
                 )
               )
@@ -633,13 +680,20 @@ const bankingMutation = {
         // local state.
         if (error.response?.data?.code === 'transaction_not_found') {
           const failedRes = rearrangeCypherObject(
-            await session.executeWrite((tx) =>
-              tx.run(setTransactionStatusFailed, {
-                ...args,
-                status: error.response.data.status,
-                error: error.response.data.message,
-              })
-            )
+            await session
+              .executeWrite((tx) =>
+                tx.run(setTransactionStatusFailed, {
+                  ...args,
+                  status: 'failed',
+                  error: 'Transaction reference not found at Paystack',
+                })
+              )
+              .catch((cypherErr: any) =>
+                throwClean(
+                  'We could not save your payment status. Please try again.',
+                  cypherErr
+                )
+              )
           )
           if (failedRes?.record) {
             return {
@@ -654,9 +708,9 @@ const bankingMutation = {
           return { ...record, offeringBankedBy: buildBankerShape() }
         }
 
-        throwToSentry(
-          'There was an error confirming transaction - ',
-          JSON.stringify(error.response?.data || error.message)
+        throwClean(
+          'We could not confirm your payment. Please try again in a few minutes.',
+          error
         )
       }
 
@@ -679,8 +733,8 @@ const bankingMutation = {
 
     await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
       (error: any) => {
-        throwToSentry(
-          'There was an error checking if last service banked',
+        throwClean(
+          'We could not check your previous service banking. Please try again.',
           error
         )
       }
@@ -690,7 +744,10 @@ const bankingMutation = {
       await session
         .run(submitBankingSlip, { ...args, jwt: context.jwt })
         .catch((error: any) =>
-          throwToSentry('There was an error submitting banking slip', error)
+          throwClean(
+            'We could not upload your banking slip. Please try again.',
+            error
+          )
         )
     )
 
@@ -729,8 +786,8 @@ const bankingMutation = {
 
     await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
       (error: any) => {
-        throwToSentry(
-          'There was an error checking if last service banked',
+        throwClean(
+          'We could not check the previous service banking. Please try again.',
           error
         )
       }
@@ -740,7 +797,10 @@ const bankingMutation = {
       await session
         .run(manuallyConfirmOfferingPayment, { ...args, jwt: context.jwt })
         .catch((error: any) =>
-          throwToSentry('There was an error confirming offering payment', error)
+          throwClean(
+            'We could not confirm this offering payment. Please try again.',
+            error
+          )
         )
     )
 

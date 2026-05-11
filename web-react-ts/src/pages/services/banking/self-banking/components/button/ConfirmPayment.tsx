@@ -12,7 +12,13 @@ import {
 
 export type ConfirmPaymentServiceType = {
   id: string
-  transactionStatus?: 'success' | 'pending' | 'failed' | 'abandoned'
+  transactionStatus?:
+    | 'pending'
+    | 'send OTP'
+    | 'success'
+    | 'failed'
+    | 'abandoned'
+    | 'reversed'
 } | null
 
 type ButtonConfirmPaymentProps = {
@@ -158,6 +164,25 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               alertMsg('Payment Confirmed Successfully 😊')
               return
             }
+
+            if (
+              confirmationRes.data.ConfirmOfferingPayment?.transactionStatus ===
+              'reversed'
+            ) {
+              navigate('/services/bacenta/self-banking')
+              alertMsg(
+                'This payment was reversed by the mobile money provider. Please try again.'
+              )
+              return
+            }
+          }
+
+          if (serviceRecord.transactionStatus === 'reversed') {
+            navigate('/services/bacenta/self-banking')
+            alertMsg(
+              'This payment was reversed by the mobile money provider. Please try again.'
+            )
+            return
           }
 
           if (
