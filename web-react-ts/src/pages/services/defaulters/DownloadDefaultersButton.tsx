@@ -3,14 +3,12 @@ import { Download, FileSpreadsheet, FileText, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from 'components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from 'components/ui/dropdown-menu'
 import useSelectedWeek from 'hooks/useSelectedWeek'
 import { getAccessToken } from 'lib/auth-service'
+import DownloadFormatDialog, {
+  type DownloadFormatOption,
+} from 'pages/reports/_shared/DownloadFormatDialog'
+import { triggerBlobDownload } from 'pages/reports/_shared/triggerBlobDownload'
 
 import {
   buildDefaultersWorkbook,
@@ -38,19 +36,23 @@ const buildDownloadUrl = (
   )}/${encodeURIComponent(churchId)}.json${qs ? `?${qs}` : ''}`
 }
 
-const triggerBlobDownload = (blob: Blob, filename: string) => {
-  const objectUrl = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = objectUrl
-  anchor.download = filename
-  anchor.rel = 'noopener'
-  document.body.appendChild(anchor)
-  anchor.click()
-  document.body.removeChild(anchor)
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
-}
-
 type Format = 'xlsx' | 'csv-zip'
+
+const FORMATS: ReadonlyArray<DownloadFormatOption<Format>> = [
+  {
+    id: 'xlsx',
+    label: 'Excel (.xlsx)',
+    description:
+      'Multi-sheet workbook with the per-Bacenta breakdown and a sub-church summary.',
+    icon: FileSpreadsheet,
+  },
+  {
+    id: 'csv-zip',
+    label: 'CSV (.zip)',
+    description: 'One CSV per sheet, bundled into a single zip file.',
+    icon: FileText,
+  },
+]
 
 type DownloadDefaultersButtonProps = {
   level: DefaultersDownloadLevel
@@ -58,6 +60,12 @@ type DownloadDefaultersButtonProps = {
   // Disabled when the parent's church query is still loading or errored.
   disabled?: boolean
   className?: string
+  /**
+   * When true the "Download" label is always visible. Default (false)
+   * matches dashboard usage where space is tight and only the icon
+   * shows below `lg`.
+   */
+  showLabel?: boolean
 }
 
 const DownloadDefaultersButton = ({
@@ -65,11 +73,13 @@ const DownloadDefaultersButton = ({
   churchId,
   disabled,
   className,
+  showLabel = false,
 }: DownloadDefaultersButtonProps) => {
   const { weekStart, isCurrent, weekShortLabel } = useSelectedWeek()
+  const [open, setOpen] = useState(false)
   const [pending, setPending] = useState<Format | null>(null)
 
-  const handleDownload = async (format: Format) => {
+  const handleSelect = async (format: Format) => {
     if (!churchId) return
     const token = getAccessToken()
     if (!token) {
@@ -84,12 +94,19 @@ const DownloadDefaultersButton = ({
         { headers: { Authorization: `Bearer ${token}` } }
       )
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body?.error || `Download failed (${res.status})`)
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string
+        }
+        throw new Error(
+          typeof body.error === 'string'
+            ? body.error
+            : `Download failed (${res.status})`
+        )
       }
       const payload = (await res.json()) as DefaultersExportPayload
       if (!payload.detail || payload.detail.length === 0) {
         toast.info('No defaulters data to download for the selected week.')
+        setOpen(false)
         return
       }
       const built = buildDefaultersWorkbook(payload, weekShortLabel)
@@ -99,6 +116,7 @@ const DownloadDefaultersButton = ({
         const zipBlob = await built.csvZipBlob
         triggerBlobDownload(zipBlob, `${built.filenameStem}.zip`)
       }
+      setOpen(false)
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Could not download defaulters'
@@ -109,45 +127,38 @@ const DownloadDefaultersButton = ({
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={disabled || pending !== null || !churchId}
-          aria-label="Download defaulters list"
-          className={className}
-        >
-          {pending !== null ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <Download />
-          )}
-          <span className="hidden lg:inline">Download</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem
-          onSelect={(e) => {
-            e.preventDefault()
-            handleDownload('xlsx')
-          }}
-        >
-          <FileSpreadsheet />
-          Excel (.xlsx)
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={(e) => {
-            e.preventDefault()
-            handleDownload('csv-zip')
-          }}
-        >
-          <FileText />
-          CSV (.zip)
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <Button
+        type="button"
+        variant={showLabel ? 'default' : 'outline'}
+        size={showLabel ? 'default' : 'sm'}
+        disabled={disabled || pending !== null || !churchId}
+        aria-label="Download defaulters list"
+        aria-busy={pending !== null}
+        className={className}
+        onClick={() => setOpen(true)}
+      >
+        {pending !== null ? (
+          <>
+            <Loader2 className="animate-spin" aria-hidden="true" />
+            <span className="sr-only">Downloading…</span>
+          </>
+        ) : (
+          <Download aria-hidden="true" />
+        )}
+        <span className={showLabel ? '' : 'hidden lg:inline'}>Download</span>
+      </Button>
+      <DownloadFormatDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Download defaulters"
+        description="Choose a file format. The full report includes every Bacenta in scope for the selected week."
+        formats={FORMATS}
+        pending={pending}
+        onSelect={handleSelect}
+        accent="defaulters"
+      />
+    </>
   )
 }
 
