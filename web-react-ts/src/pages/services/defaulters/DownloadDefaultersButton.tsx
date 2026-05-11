@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 
 import { Button } from 'components/ui/button'
 import useSelectedWeek from 'hooks/useSelectedWeek'
-import { getAccessToken } from 'lib/auth-service'
 import DownloadFormatDialog, {
   type DownloadFormatOption,
 } from 'pages/reports/_shared/DownloadFormatDialog'
@@ -13,28 +12,8 @@ import { triggerBlobDownload } from 'pages/reports/_shared/triggerBlobDownload'
 import {
   buildDefaultersWorkbook,
   DefaultersDownloadLevel,
-  DefaultersExportPayload,
 } from './utils/buildDefaultersWorkbook'
-
-const buildDownloadUrl = (
-  level: DefaultersDownloadLevel,
-  churchId: string,
-  weekStart: string,
-  isCurrent: boolean
-): string => {
-  const graphqlUri =
-    import.meta.env.VITE_SYNAGO_GRAPHQL_URI || 'http://localhost:4001/graphql'
-  const apiBase = graphqlUri.replace(/\/graphql\/?$/, '')
-  const params = new URLSearchParams()
-  // Only send `weekStart` for past weeks. Omitting it on the current week
-  // lets the server use `date()` directly and matches what the dashboard
-  // queries are doing.
-  if (!isCurrent) params.set('weekStart', weekStart)
-  const qs = params.toString()
-  return `${apiBase}/downloads/defaulters/${encodeURIComponent(
-    level
-  )}/${encodeURIComponent(churchId)}.json${qs ? `?${qs}` : ''}`
-}
+import { fetchDefaultersExport } from './utils/useDefaultersExport'
 
 type Format = 'xlsx' | 'csv-zip'
 
@@ -81,29 +60,15 @@ const DownloadDefaultersButton = ({
 
   const handleSelect = async (format: Format) => {
     if (!churchId) return
-    const token = getAccessToken()
-    if (!token) {
-      toast.error('Sign in expired. Please sign in again.')
-      return
-    }
 
     setPending(format)
     try {
-      const res = await fetch(
-        buildDownloadUrl(level, churchId, weekStart, isCurrent),
-        { headers: { Authorization: `Bearer ${token}` } }
+      const payload = await fetchDefaultersExport(
+        level,
+        churchId,
+        weekStart,
+        isCurrent
       )
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as {
-          error?: string
-        }
-        throw new Error(
-          typeof body.error === 'string'
-            ? body.error
-            : `Download failed (${res.status})`
-        )
-      }
-      const payload = (await res.json()) as DefaultersExportPayload
       if (!payload.detail || payload.detail.length === 0) {
         toast.info('No defaulters data to download for the selected week.')
         setOpen(false)

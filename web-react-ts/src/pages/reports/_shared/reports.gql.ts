@@ -10,10 +10,19 @@ const DIRECTORY_FIELDS = `
     id
     level
     name
-    parentName
-    leaderName
+    leaderFirstName
+    leaderLastName
     leaderPhone
     leaderWhatsApp
+    ancestors {
+      id
+      level
+      name
+      leaderFirstName
+      leaderLastName
+      leaderPhone
+      leaderWhatsApp
+    }
     latitude
     longitude
   }

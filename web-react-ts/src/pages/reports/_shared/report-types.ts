@@ -32,14 +32,25 @@ const REPORT_LEVELS: ReadonlySet<string> = new Set<ReportLevel>([
 export const isReportLevel = (value: string | undefined): value is ReportLevel =>
   value !== undefined && REPORT_LEVELS.has(value)
 
+export type DirectoryAncestorEntry = {
+  id: string
+  level: ReportLevel
+  name: string
+  leaderFirstName: string | null
+  leaderLastName: string | null
+  leaderPhone: string | null
+  leaderWhatsApp: string | null
+}
+
 export type DirectoryReportEntry = {
   id: string
   level: ReportLevel
   name: string
-  parentName: string | null
-  leaderName: string | null
+  leaderFirstName: string | null
+  leaderLastName: string | null
   leaderPhone: string | null
   leaderWhatsApp: string | null
+  ancestors: DirectoryAncestorEntry[]
   latitude: number | null
   longitude: number | null
 }

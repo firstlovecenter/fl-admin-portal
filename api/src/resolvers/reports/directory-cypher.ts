@@ -9,7 +9,45 @@
  *
  * Bacenta has no sub-churches, so its report is empty and the frontend
  * already hides the entry point at Bacenta scope.
+ *
+ * Each row includes the full `ancestors` chain (closest first) up to —
+ * but not including — the scope, with each ancestor's leader contact
+ * details. This lets the frontend build per-level CSVs that show, e.g.
+ * at Council scope on the Bacenta CSV: Governorship + Governor first
+ * name / last name / phone / WhatsApp alongside the bacenta's own leader.
  */
+
+type DirectoryLevel =
+  | 'Bacenta'
+  | 'Governorship'
+  | 'Council'
+  | 'Stream'
+  | 'Campus'
+  | 'Oversight'
+
+const leaderField = (leaderAlias: string, field: string) =>
+  `CASE WHEN ${leaderAlias} IS NULL THEN null ELSE ${leaderAlias}.${field} END`
+
+type AncestorSpec = {
+  level: DirectoryLevel
+  alias: string
+  leaderAlias: string
+}
+
+const ancestorObject = (spec: AncestorSpec) => `{
+    id: ${spec.alias}.id,
+    level: '${spec.level}',
+    name: ${spec.alias}.name,
+    leaderFirstName: ${leaderField(spec.leaderAlias, 'firstName')},
+    leaderLastName: ${leaderField(spec.leaderAlias, 'lastName')},
+    leaderPhone: ${leaderField(spec.leaderAlias, 'phoneNumber')},
+    leaderWhatsApp: ${leaderField(spec.leaderAlias, 'whatsappNumber')}
+  }`
+
+const ancestorListExpr = (ancestors: AncestorSpec[]) =>
+  ancestors.length === 0
+    ? '[]'
+    : `[${ancestors.map(ancestorObject).join(', ')}]`
 
 // `latitude` / `longitude` are sourced from the node's `location: Point`.
 // Only `Bacenta` (and `Member`) carry locations in the schema today; for any
@@ -17,25 +55,20 @@
 // null in Cypher and the `CASE WHEN ... IS NULL` guards keep the projection
 // safe — the entry just gets empty coordinate fields.
 const directoryEntryProjection = (
-  level:
-    | 'Bacenta'
-    | 'Governorship'
-    | 'Council'
-    | 'Stream'
-    | 'Campus'
-    | 'Oversight',
+  level: DirectoryLevel,
   alias: string,
-  parentAlias: string | null,
-  leaderAlias: string
+  leaderAlias: string,
+  ancestors: AncestorSpec[]
 ) => `
   ${alias} {
     .id,
     level: '${level}',
     .name,
-    parentName: ${parentAlias ? `${parentAlias}.name` : 'null'},
-    leaderName: CASE WHEN ${leaderAlias} IS NULL THEN null ELSE ${leaderAlias}.firstName + ' ' + ${leaderAlias}.lastName END,
-    leaderPhone: CASE WHEN ${leaderAlias} IS NULL THEN null ELSE ${leaderAlias}.phoneNumber END,
-    leaderWhatsApp: CASE WHEN ${leaderAlias} IS NULL THEN null ELSE ${leaderAlias}.whatsappNumber END,
+    leaderFirstName: ${leaderField(leaderAlias, 'firstName')},
+    leaderLastName: ${leaderField(leaderAlias, 'lastName')},
+    leaderPhone: ${leaderField(leaderAlias, 'phoneNumber')},
+    leaderWhatsApp: ${leaderField(leaderAlias, 'whatsappNumber')},
+    ancestors: ${ancestorListExpr(ancestors)},
     latitude: CASE WHEN ${alias}.location IS NULL THEN null ELSE ${alias}.location.y END,
     longitude: CASE WHEN ${alias}.location IS NULL THEN null ELSE ${alias}.location.x END
   }
@@ -56,8 +89,8 @@ export const governorshipDirectoryReport = `
     RETURN collect(${directoryEntryProjection(
       'Bacenta',
       'bacenta',
-      'governorship',
-      'bacentaLeader'
+      'bacentaLeader',
+      []
     )}) AS bacentaEntries
   }
 
@@ -75,8 +108,8 @@ export const councilDirectoryReport = `
     RETURN collect(${directoryEntryProjection(
       'Governorship',
       'governorship',
-      'council',
-      'governorshipLeader'
+      'governorshipLeader',
+      []
     )}) AS govEntries
   }
   CALL {
@@ -84,12 +117,10 @@ export const councilDirectoryReport = `
     OPTIONAL MATCH (council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
     WHERE bacenta IS NOT NULL
     OPTIONAL MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Bacenta',
-      'bacenta',
-      'governorship',
-      'bacentaLeader'
-    )}) AS bacentaEntries
+    OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Bacenta', 'bacenta', 'bacentaLeader', [
+      { level: 'Governorship', alias: 'governorship', leaderAlias: 'governorshipLeader' },
+    ])}) AS bacentaEntries
   }
 
   RETURN govEntries + bacentaEntries AS entries
@@ -106,8 +137,8 @@ export const streamDirectoryReport = `
     RETURN collect(${directoryEntryProjection(
       'Council',
       'council',
-      'stream',
-      'councilLeader'
+      'councilLeader',
+      []
     )}) AS councilEntries
   }
   CALL {
@@ -115,24 +146,22 @@ export const streamDirectoryReport = `
     OPTIONAL MATCH (stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)
     WHERE governorship IS NOT NULL
     OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Governorship',
-      'governorship',
-      'council',
-      'governorshipLeader'
-    )}) AS govEntries
+    OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Governorship', 'governorship', 'governorshipLeader', [
+      { level: 'Council', alias: 'council', leaderAlias: 'councilLeader' },
+    ])}) AS govEntries
   }
   CALL {
     WITH stream
-    OPTIONAL MATCH (stream)-[:HAS]->(:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
+    OPTIONAL MATCH (stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
     WHERE bacenta IS NOT NULL
     OPTIONAL MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Bacenta',
-      'bacenta',
-      'governorship',
-      'bacentaLeader'
-    )}) AS bacentaEntries
+    OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
+    OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Bacenta', 'bacenta', 'bacentaLeader', [
+      { level: 'Governorship', alias: 'governorship', leaderAlias: 'governorshipLeader' },
+      { level: 'Council', alias: 'council', leaderAlias: 'councilLeader' },
+    ])}) AS bacentaEntries
   }
 
   RETURN councilEntries + govEntries + bacentaEntries AS entries
@@ -149,8 +178,8 @@ export const campusDirectoryReport = `
     RETURN collect(${directoryEntryProjection(
       'Stream',
       'stream',
-      'campus',
-      'streamLeader'
+      'streamLeader',
+      []
     )}) AS streamEntries
   }
   CALL {
@@ -158,36 +187,36 @@ export const campusDirectoryReport = `
     OPTIONAL MATCH (campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)
     WHERE council IS NOT NULL
     OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Council',
-      'council',
-      'stream',
-      'councilLeader'
-    )}) AS councilEntries
+    OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Council', 'council', 'councilLeader', [
+      { level: 'Stream', alias: 'stream', leaderAlias: 'streamLeader' },
+    ])}) AS councilEntries
   }
   CALL {
     WITH campus
-    OPTIONAL MATCH (campus)-[:HAS]->(:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)
+    OPTIONAL MATCH (campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)
     WHERE governorship IS NOT NULL
     OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Governorship',
-      'governorship',
-      'council',
-      'governorshipLeader'
-    )}) AS govEntries
+    OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
+    OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Governorship', 'governorship', 'governorshipLeader', [
+      { level: 'Council', alias: 'council', leaderAlias: 'councilLeader' },
+      { level: 'Stream', alias: 'stream', leaderAlias: 'streamLeader' },
+    ])}) AS govEntries
   }
   CALL {
     WITH campus
-    OPTIONAL MATCH (campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
+    OPTIONAL MATCH (campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
     WHERE bacenta IS NOT NULL
     OPTIONAL MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Bacenta',
-      'bacenta',
-      'governorship',
-      'bacentaLeader'
-    )}) AS bacentaEntries
+    OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
+    OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
+    OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Bacenta', 'bacenta', 'bacentaLeader', [
+      { level: 'Governorship', alias: 'governorship', leaderAlias: 'governorshipLeader' },
+      { level: 'Council', alias: 'council', leaderAlias: 'councilLeader' },
+      { level: 'Stream', alias: 'stream', leaderAlias: 'streamLeader' },
+    ])}) AS bacentaEntries
   }
 
   RETURN streamEntries + councilEntries + govEntries + bacentaEntries AS entries
@@ -204,8 +233,8 @@ export const oversightDirectoryReport = `
     RETURN collect(${directoryEntryProjection(
       'Campus',
       'campus',
-      'oversight',
-      'campusLeader'
+      'campusLeader',
+      []
     )}) AS campusEntries
   }
   CALL {
@@ -213,48 +242,52 @@ export const oversightDirectoryReport = `
     OPTIONAL MATCH (oversight)-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)
     WHERE stream IS NOT NULL
     OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Stream',
-      'stream',
-      'campus',
-      'streamLeader'
-    )}) AS streamEntries
+    OPTIONAL MATCH (campus)<-[:LEADS]-(campusLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Stream', 'stream', 'streamLeader', [
+      { level: 'Campus', alias: 'campus', leaderAlias: 'campusLeader' },
+    ])}) AS streamEntries
   }
   CALL {
     WITH oversight
-    OPTIONAL MATCH (oversight)-[:HAS]->(:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)
+    OPTIONAL MATCH (oversight)-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)
     WHERE council IS NOT NULL
     OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Council',
-      'council',
-      'stream',
-      'councilLeader'
-    )}) AS councilEntries
+    OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
+    OPTIONAL MATCH (campus)<-[:LEADS]-(campusLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Council', 'council', 'councilLeader', [
+      { level: 'Stream', alias: 'stream', leaderAlias: 'streamLeader' },
+      { level: 'Campus', alias: 'campus', leaderAlias: 'campusLeader' },
+    ])}) AS councilEntries
   }
   CALL {
     WITH oversight
-    OPTIONAL MATCH (oversight)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)
+    OPTIONAL MATCH (oversight)-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)
     WHERE governorship IS NOT NULL
     OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Governorship',
-      'governorship',
-      'council',
-      'governorshipLeader'
-    )}) AS govEntries
+    OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
+    OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
+    OPTIONAL MATCH (campus)<-[:LEADS]-(campusLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Governorship', 'governorship', 'governorshipLeader', [
+      { level: 'Council', alias: 'council', leaderAlias: 'councilLeader' },
+      { level: 'Stream', alias: 'stream', leaderAlias: 'streamLeader' },
+      { level: 'Campus', alias: 'campus', leaderAlias: 'campusLeader' },
+    ])}) AS govEntries
   }
   CALL {
     WITH oversight
-    OPTIONAL MATCH (oversight)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
+    OPTIONAL MATCH (oversight)-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)
     WHERE bacenta IS NOT NULL
     OPTIONAL MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Active:Member)
-    RETURN collect(${directoryEntryProjection(
-      'Bacenta',
-      'bacenta',
-      'governorship',
-      'bacentaLeader'
-    )}) AS bacentaEntries
+    OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
+    OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
+    OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
+    OPTIONAL MATCH (campus)<-[:LEADS]-(campusLeader:Active:Member)
+    RETURN collect(${directoryEntryProjection('Bacenta', 'bacenta', 'bacentaLeader', [
+      { level: 'Governorship', alias: 'governorship', leaderAlias: 'governorshipLeader' },
+      { level: 'Council', alias: 'council', leaderAlias: 'councilLeader' },
+      { level: 'Stream', alias: 'stream', leaderAlias: 'streamLeader' },
+      { level: 'Campus', alias: 'campus', leaderAlias: 'campusLeader' },
+    ])}) AS bacentaEntries
   }
 
   RETURN campusEntries + streamEntries + councilEntries + govEntries + bacentaEntries AS entries

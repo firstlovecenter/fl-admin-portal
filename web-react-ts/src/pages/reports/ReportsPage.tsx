@@ -175,9 +175,21 @@ const ReportsPage = () => {
     reportsAvailable &&
     ['Governorship', 'Council', 'Stream', 'Campus'].includes(churchType)
   const defaultersPath = defaultersAvailable ? '/reports/defaulters' : null
+  // By-sub-church breakdown only matters when there *is* a sub-church layer
+  // between the scope and the Bacenta detail — so Council+ (skip Governorship
+  // where the sub-church IS the Bacenta and the main workbook covers it).
+  const defaultersSubChurchesAvailable =
+    defaultersAvailable && hasSubChurches
+  const defaultersSubChurchesPath = defaultersSubChurchesAvailable
+    ? '/reports/defaulters/sub-churches'
+    : null
   // Arrivals export shares the same level gate as defaulters — Governorship+.
   const arrivalsAvailable = defaultersAvailable
   const arrivalsPath = arrivalsAvailable ? '/reports/arrivals' : null
+  const arrivalsSubChurchesAvailable = defaultersSubChurchesAvailable
+  const arrivalsSubChurchesPath = arrivalsSubChurchesAvailable
+    ? '/reports/arrivals/sub-churches'
+    : null
   const bussingPath = reportsAvailable ? '/reports/bussing' : null
   const bussingSubChurchesPath =
     reportsAvailable && hasSubChurches ? '/reports/bussing/sub-churches' : null
@@ -290,14 +302,26 @@ const ReportsPage = () => {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Defaulters
                 </p>
-                <ReportCard
-                  icon={<AlertOctagon className="size-5" />}
-                  title={`${churchPrefix}Defaulters Report`}
-                  description={`Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-${
-                    subChurchType || 'sub-church'
-                  } summary at Council and above.`}
-                  to={defaultersPath}
-                />
+                <div className="space-y-3">
+                  <ReportCard
+                    icon={<AlertOctagon className="size-5" />}
+                    title={`${churchPrefix}Defaulters Report`}
+                    description={`Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-${
+                      subChurchType || 'sub-church'
+                    } summary at Council and above.`}
+                    to={defaultersPath}
+                  />
+                  {defaultersSubChurchesAvailable && (
+                    <ReportCard
+                      icon={<Network className="size-5" />}
+                      title={`${churchPrefix}Defaulters by ${subChurchType}`}
+                      description={`One row per ${subChurchType} in ${
+                        churchName || 'this church'
+                      } — services filed, form defaulters, banked, banking defaulters, and cancelled.`}
+                      to={defaultersSubChurchesPath}
+                    />
+                  )}
+                </div>
               </section>
             )}
 
@@ -306,14 +330,26 @@ const ReportsPage = () => {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Arrivals
                 </p>
-                <ReportCard
-                  icon={<BusFront className="size-5" />}
-                  title={`${churchPrefix}Arrivals Report`}
-                  description={`Per-Bacenta and per-vehicle bussing snapshot for any Sunday — attendance, leader declaration, vehicle counts, top-ups, and a per-${
-                    subChurchType || 'sub-church'
-                  } summary at Council and above.`}
-                  to={arrivalsPath}
-                />
+                <div className="space-y-3">
+                  <ReportCard
+                    icon={<BusFront className="size-5" />}
+                    title={`${churchPrefix}Arrivals Report`}
+                    description={`Per-Bacenta and per-vehicle bussing snapshot for any Sunday — attendance, leader declaration, vehicle counts, top-ups, and a per-${
+                      subChurchType || 'sub-church'
+                    } summary at Council and above.`}
+                    to={arrivalsPath}
+                  />
+                  {arrivalsSubChurchesAvailable && (
+                    <ReportCard
+                      icon={<Network className="size-5" />}
+                      title={`${churchPrefix}Arrivals by ${subChurchType}`}
+                      description={`One row per ${subChurchType} in ${
+                        churchName || 'this church'
+                      } — bacentas bussed, attendance, vehicles, cost, and top-up.`}
+                      to={arrivalsSubChurchesPath}
+                    />
+                  )}
+                </div>
               </section>
             )}
 

@@ -1,11 +1,22 @@
+type DirectoryAncestorEntry @node{
+  id: ID!
+  level: String!
+  name: String!
+  leaderFirstName: String
+  leaderLastName: String
+  leaderPhone: String
+  leaderWhatsApp: String
+}
+
 type DirectoryReportEntry @node{
   id: ID!
   level: String!
   name: String!
-  parentName: String
-  leaderName: String
+  leaderFirstName: String
+  leaderLastName: String
   leaderPhone: String
   leaderWhatsApp: String
+  ancestors: [DirectoryAncestorEntry!]!
   latitude: Float
   longitude: Float
 }
