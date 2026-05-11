@@ -163,10 +163,13 @@ frontend:
           trap on_error ERR
 
           # Pick the right secret name based on branch
-          # main and staging -> prod/fl-admin-portal
+          # main -> prod/fl-admin-portal
+          # staging -> staging/fl-admin-portal
           # anything else -> dev/fl-admin-portal
-          if [ "${AWS_BRANCH:-}" = "main" ] || [ "${AWS_BRANCH:-}" = "staging" ]; then
+          if [ "${AWS_BRANCH:-}" = "main" ]; then
             SECRET_ID="prod/fl-admin-portal"
+          elif [ "${AWS_BRANCH:-}" = "staging" ]; then
+            SECRET_ID="staging/fl-admin-portal"
           else
             SECRET_ID="dev/fl-admin-portal"
           fi
