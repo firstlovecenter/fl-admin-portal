@@ -266,7 +266,7 @@ const BacentaForm = ({
                     </CardContent>
                   </Card>
 
-                  <div className="flex justify-center sm:justify-end">
+                  <div className="flex justify-center">
                     <SubmitButton formik={formik} />
                   </div>
                 </Form>
@@ -294,7 +294,7 @@ const BacentaForm = ({
                     </Card>
                   )}
 
-                  <RoleView roles={permitAdminArrivals('Governorship')}>
+                  <RoleView roles={permitAdminArrivals('Stream')}>
                     <Card>
                       <CardContent className="space-y-3 p-5">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -310,8 +310,8 @@ const BacentaForm = ({
                           Edit Bussing Details
                         </Button>
                         <p className="text-xs text-muted-foreground">
-                          Manage Sunday top-ups, outbound trips, and the
-                          bacenta&apos;s mobile money number.
+                          Set Sunday top-ups and whether the bacenta is bussing
+                          back this week.
                         </p>
                       </CardContent>
                     </Card>
