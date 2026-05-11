@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
@@ -42,27 +42,11 @@ import {
 } from 'pages/services/graphs/graphs-utils'
 import useComponentQuery from './useComponentQuery'
 import TrendSpark from './TrendSpark'
+import { getHourlyGreeting } from './greetings'
 
 const TREND_HISTORY_WEEKS = 24
 
-// Add as many as you like — one is picked at random each session.
-// Each function receives the user's first name as `name`. Ignore it if you don't need it.
-const GREETINGS: Array<(name: string) => string> = [
-  (name) => `Hey, ${name}!`,
-  () => `Welcome back, man of God.`,
-  (name) => `Grace and peace, ${name}.`,
-  () => `The Lord's servant is in the building.`,
-  (name) => `Good to see you, ${name}.`,
-  () => `Arise and shine!`,
-  (name) => `Walk good, ${name}.`,
-  () => `Another day, another blessing.`,
-  (name) => `Ready to lead, ${name}?`,
-  () => `The harvest is plentiful and so is the Wi-Fi.`,
-  (name) => `Ah, ${name} has entered the chat.`,
-  () => `Church admin hours — let's get it.`,
-  (name) => `God is good, ${name}. All the time.`,
-  () => `You showed up. Half the battle is won.`,
-]
+const HOUR_MS = 60 * 60 * 1000
 
 interface QuickAction {
   label: string
@@ -178,6 +162,18 @@ const UserDashboard = () => {
     selectedScope?.churchType ?? roleChurchOptions[0]?.churchType
   )?.toLowerCase()
 
+  const isSelectedScopeManualBanking = useMemo(() => {
+    const scopeChurchId = selectedScope?.churchId
+    if (!scopeChurchId || !userJobs) return false
+    for (const job of userJobs as any[]) {
+      const found = (job.church as any[])?.find(
+        (c: any) => c?.id === scopeChurchId
+      )
+      if (found) return !!found.isManualBanking
+    }
+    return false
+  }, [selectedScope?.churchId, userJobs])
+
   const quickActions: QuickAction[] = [
     {
       label: 'Record service',
@@ -209,13 +205,17 @@ const UserDashboard = () => {
       accent: 'hsl(var(--members))',
       onPress: () => navigate('/member/addmember'),
     },
-    {
-      label: 'Bank service',
-      icon: IconBuildingBank,
-      accent: 'hsl(var(--banking))',
-      onPress: () =>
-        navigate(`/services/${routeSlug ?? 'bacenta'}/self-banking`),
-    },
+    ...(isSelectedScopeManualBanking
+      ? []
+      : [
+          {
+            label: 'Bank service',
+            icon: IconBuildingBank,
+            accent: 'hsl(var(--banking))',
+            onPress: () =>
+              navigate(`/services/${routeSlug ?? 'bacenta'}/self-banking`),
+          },
+        ]),
   ]
 
   const { assessmentChurch } = useComponentQuery(
@@ -326,12 +326,25 @@ const UserDashboard = () => {
 
   const isLoading = !currentUser?.fullName
   const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
-  const [greetingIdx] = useState(() =>
-    Math.floor(Math.random() * GREETINGS.length)
+  const userKey = currentUser?.fullName ?? firstName
+  // Re-render at the top of every hour so the greeting rotates without a reload.
+  const [hourTick, setHourTick] = useState(() => Math.floor(Date.now() / HOUR_MS))
+  useEffect(() => {
+    const msToNextHour = HOUR_MS - (Date.now() % HOUR_MS) + 1000
+    const timer = window.setTimeout(() => {
+      setHourTick(Math.floor(Date.now() / HOUR_MS))
+    }, msToNextHour)
+    return () => window.clearTimeout(timer)
+  }, [hourTick])
+  const greeting = useMemo(
+    () =>
+      getHourlyGreeting({
+        firstName,
+        userKey,
+        now: new Date(hourTick * HOUR_MS),
+      }),
+    [firstName, userKey, hourTick]
   )
-  const greeting =
-    (GREETINGS[greetingIdx] ?? GREETINGS[0])?.(firstName) ??
-    `Hello, ${firstName}.`
   const selectedScopeIncomeTracked =
     typeof selectedScope?.noIncomeTracking === 'boolean'
       ? !selectedScope.noIncomeTracking
@@ -397,7 +410,9 @@ const UserDashboard = () => {
       !(service.bankingProof || service.transactionStatus === 'success')
   )
   const serviceAwaitingBanking =
-    hasFilledServiceForWeek && hasUnbankedServiceForWeek
+    hasFilledServiceForWeek &&
+    hasUnbankedServiceForWeek &&
+    !isSelectedScopeManualBanking
   const canViewCurrentWeekService = !!thisWeekServiceForNavigation?.id
 
   const handleViewCurrentWeekService = () => {
@@ -1123,13 +1138,15 @@ const WeeklyTaskCard = ({
       {!waived && (
         <Button
           size="sm"
-          disabled={upcoming || actionDisabled}
+          disabled={actionDisabled}
           variant={done ? 'outline' : 'default'}
           onClick={onAction}
           className={cn(
             'shrink-0',
             done
               ? 'border-border bg-background text-foreground hover:bg-accent'
+              : upcoming
+              ? 'bg-muted text-muted-foreground hover:bg-muted/80'
               : 'bg-brand text-brand-foreground hover:bg-brand/90'
           )}
         >
