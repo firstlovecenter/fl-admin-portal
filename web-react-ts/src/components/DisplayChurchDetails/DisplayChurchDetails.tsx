@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from 'components/ui/dialog'
+import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Separator } from 'components/ui/separator'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
@@ -227,9 +228,54 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     }
   }
 
+  const adminInitials = props.admin
+    ? `${props.admin?.firstName?.[0] ?? ''}${props.admin?.lastName?.[0] ?? ''}`
+    : ''
+
   const identityBlock = (
     <>
-      <LeaderAvatar leader={props.leader} leaderTitle={props.leaderTitle} />
+      <div>
+        <LeaderAvatar leader={props.leader} leaderTitle={props.leaderTitle} />
+
+        {needsAdmin && (props.admin || roles.length > 0) && (
+          <div className="flex items-center gap-2 -mt-2">
+            {props.admin && (
+              <Link
+                to="/member/displaydetails"
+                onClick={() => clickCard(props.admin)}
+                className="flex min-h-11 min-w-0 items-center gap-2 no-underline transition-opacity hover:opacity-80"
+              >
+                <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Admin
+                </span>
+                <Avatar className="h-6 w-6 shrink-0">
+                  <AvatarImage
+                    src={props.admin.pictureUrl}
+                    alt={`${props.admin.firstName} ${props.admin.lastName}`}
+                  />
+                  <AvatarFallback className="bg-muted text-[10px] font-medium text-muted-foreground">
+                    {adminInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate text-xs font-medium text-foreground">
+                  {props.admin.firstName} {props.admin.lastName}
+                </span>
+              </Link>
+            )}
+            <RoleView roles={roles}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1 px-2 text-xs"
+                onClick={handleShow}
+              >
+                <Pencil className="h-3 w-3" />
+                {props.admin ? 'Change' : 'Add Admin'}
+              </Button>
+            </RoleView>
+          </div>
+        )}
+      </div>
 
       {props.churchType === 'Bacenta' && (
         <div className="space-y-2">
@@ -371,30 +417,6 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             )}
           </div>
 
-          {needsAdmin && (
-            <RoleView roles={roles}>
-              <div className="flex items-center gap-2 mt-2">
-                {props.admin && (
-                  <MemberAvatarWithName
-                    member={props.admin}
-                    onClick={() => {
-                      clickCard(props.admin)
-                      navigate('/member/displaydetails')
-                    }}
-                  />
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1.5 text-xs h-8"
-                  onClick={handleShow}
-                >
-                  <Pencil className="h-3 w-3" />
-                  Change Admin
-                </Button>
-              </div>
-            </RoleView>
-          )}
         </div>
       </div>
 
