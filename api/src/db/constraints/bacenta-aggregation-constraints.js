@@ -67,6 +67,32 @@ exports.createBacentaAggregationConstraints = async (driver) => {
     const indexes = [
       `CREATE INDEX bacenta_name_index IF NOT EXISTS FOR (b:Bacenta) ON (b.name)`,
 
+      // id lookups — mirror the IS UNIQUE constraints already in place for
+      // sibling entities (Bacenta, Council, ServiceLog, etc.). Promotion to
+      // UNIQUE is low risk since these ids are UUIDs.
+      `CREATE INDEX service_record_id_index IF NOT EXISTS
+       FOR (r:ServiceRecord) ON (r.id)`,
+
+      `CREATE INDEX rehearsal_record_id_index IF NOT EXISTS
+       FOR (r:RehearsalRecord) ON (r.id)`,
+
+      // transactionReference seek indexes — payment-webhook MATCHes on
+      // transactionReference across these three labels (UNION) and would
+      // otherwise full-scan each label. Promote to UNIQUE in a follow-up
+      // PR once prod data has been audited with:
+      //   MATCH (r) WHERE r.transactionReference IS NOT NULL
+      //   WITH r.transactionReference AS ref, count(*) AS c WHERE c > 1
+      //   RETURN ref, c
+      // across each of the three labels.
+      `CREATE INDEX service_record_transaction_reference_index IF NOT EXISTS
+       FOR (r:ServiceRecord) ON (r.transactionReference)`,
+
+      `CREATE INDEX rehearsal_record_transaction_reference_index IF NOT EXISTS
+       FOR (r:RehearsalRecord) ON (r.transactionReference)`,
+
+      `CREATE INDEX transaction_reference_index IF NOT EXISTS
+       FOR (t:Transaction) ON (t.transactionReference)`,
+
       `CREATE INDEX aggregate_bussing_week_year IF NOT EXISTS 
        FOR (a:AggregateBussingRecord) ON (a.week, a.year)`,
 

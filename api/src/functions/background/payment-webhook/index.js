@@ -62,8 +62,14 @@ const verifyPaystackSignature = (event, secret) => {
   )
 }
 
+// Paystack's published webhook source IPs.
+// Source: https://paystack.com/docs/payments/webhooks#ip-whitelisting
+// Last verified: 2026-05-11. Re-verify quarterly or when a webhook delivery
+// failure is reported with a `Bad IP:` log line for an unfamiliar source.
+const PAYSTACK_WEBHOOK_IPS = ['52.31.139.75', '52.49.173.169', '52.214.14.220']
+
 const whitelistIPs = (event) => {
-  const validIps = ['52.31.139.75', '52.49.173.169', '52.214.14.220']
+  const validIps = PAYSTACK_WEBHOOK_IPS
   const sourceIp = event.requestContext?.identity?.sourceIp
 
   if (!sourceIp) {
@@ -127,7 +133,26 @@ const executeQuery = async (neoDriver, paymentResponse) => {
 }
 
 const handlePaystackReq = async (event, neoDriver, secrets) => {
-  if (!verifyPaystackSignature(event, secrets.PAYSTACK_PRIVATE_KEY_WEEKDAY)) {
+  // Paystack signs webhooks with the merchant secret key (sk_*); there is no
+  // separate webhook secret in Paystack's model. We read PAYSTACK_WEBHOOK_SECRET
+  // first so a future Paystack feature, or a manual independent rotation, can
+  // diverge from the API auth key without a code change. Falls back to
+  // PAYSTACK_PRIVATE_KEY_WEEKDAY today so the two names resolve to the same value.
+  const usingDedicatedWebhookSecret = Boolean(secrets.PAYSTACK_WEBHOOK_SECRET)
+  const webhookSecret =
+    secrets.PAYSTACK_WEBHOOK_SECRET || secrets.PAYSTACK_PRIVATE_KEY_WEEKDAY
+
+  // Log which secret name resolved (never the value) so that during a
+  // rotation an operator can tell at a glance whether the override took.
+  console.log(
+    `[webhook] signing secret source: ${
+      usingDedicatedWebhookSecret
+        ? 'PAYSTACK_WEBHOOK_SECRET'
+        : 'PAYSTACK_PRIVATE_KEY_WEEKDAY (fallback)'
+    }`
+  )
+
+  if (!verifyPaystackSignature(event, webhookSecret)) {
     throw new UnauthorizedWebhookError('Invalid or missing Paystack signature')
   }
   if (!whitelistIPs(event)) {
