@@ -82,20 +82,38 @@ chore(deps): bump @neo4j/graphql to 6.3.0
 ci: send Slack failure pings on amplify build error
 ```
 
+## Scope: current session only (default)
+
+By default, `/commit` only commits work produced in **this session/thread**.
+
+- Identify the set of files this session actually edited, created, or deleted
+  (from the conversation's tool history — Edit/Write/Bash mutations you ran in
+  this thread).
+- Treat any other modified/untracked files in the working tree as **out of
+  scope**. Do not stage them. Do not include them in the diff you review for
+  the message.
+- If `git status` shows pre-existing changes you don't recognise from this
+  session, leave them alone — they belong to the user or a prior session.
+- If the user explicitly says "commit everything" / "include the other
+  changes" / names specific extra files, expand scope to match the ask.
+
 ## Workflow
 
-1. Run `git status` and `git diff` (staged + unstaged) to see what's about to be
-   committed.
-2. Run `git log -n 10 --oneline` to match the recent style.
-3. Group the staged changes into a single coherent commit. If they are not
+1. Build the in-scope file list from this session's tool history (files you
+   edited, wrote, moved, or deleted in this thread).
+2. Run `git status` and `git diff -- <in-scope files>` to see exactly what's
+   about to be committed. Sanity-check that nothing pre-existing has snuck in.
+3. Run `git log -n 10 --oneline` to match the recent style.
+4. Group the in-scope changes into a single coherent commit. If they are not
    coherent, **stop and ask** which subset to commit.
-4. Pick `type(scope)` per the tables above.
-5. Draft the subject. Keep it under 72 chars.
-6. If the body adds value (the *why*), include it. Skip it if the subject is
+5. Pick `type(scope)` per the tables above.
+6. Draft the subject. Keep it under 72 chars.
+7. If the body adds value (the *why*), include it. Skip it if the subject is
    self-explanatory.
-7. Stage only the files that belong in this commit (`git add <specific files>`,
-   not `git add -A`).
-8. Commit with a HEREDOC if the message has multiple lines:
+8. Stage **only the in-scope files** by name (`git add <specific files>`).
+   Never `git add -A`, `git add .`, or `git add -u` — those sweep up
+   out-of-session work.
+9. Commit with a HEREDOC if the message has multiple lines:
 
    ```
    git commit -m "$(cat <<'EOF'
@@ -108,8 +126,9 @@ ci: send Slack failure pings on amplify build error
    )"
    ```
 
-9. Run `git status` to confirm a clean tree (or expected leftovers).
-10. **Do not push.** Only push if the user explicitly asks.
+10. Run `git status` to confirm. Pre-existing out-of-session changes should
+    still be unstaged — that is expected, not a problem.
+11. **Do not push.** Only push if the user explicitly asks.
 
 ## Hard rules
 
@@ -118,6 +137,8 @@ ci: send Slack failure pings on amplify build error
 - Never commit `.env`, secrets, or generated artifacts (`build/`, `dist/`,
   `node_modules/`, `package-lock.json` changes you didn't intend).
 - Never commit if `git status` shows files you don't recognise — investigate
-  first.
+  first. Default behaviour is to leave them unstaged, not to add them.
+- Never use `git add -A`, `git add .`, or `git add -u`. Always stage by
+  explicit file path so out-of-session changes stay out.
 - If lint-staged hooks fail, fix the underlying issue and create a **new**
   commit. Don't `--no-verify`.
