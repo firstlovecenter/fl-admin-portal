@@ -15,6 +15,7 @@ import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
 import { getSubChurchLevel, plural } from 'global-utils'
 import type { ChurchLevel } from 'global-types'
+import { getMembershipDownloadPath } from './membership-paths'
 
 type TocSection = { id: string; label: string }
 
@@ -99,15 +100,6 @@ const ReportsTableOfContents = ({
   )
 }
 
-const MEMBERSHIP_PATHS: Record<string, string> = {
-  Bacenta: '/download-reports/bacenta/membership',
-  Governorship: '/download-reports/governorship/membership',
-  Council: '/download-reports/council/membership',
-  Stream: '/download-reports/stream/membership',
-  Campus: '/download-reports/campus/membership',
-  Oversight: '/download-reports/oversight/membership',
-}
-
 const SUPPORTED_REPORT_LEVELS = new Set([
   'Bacenta',
   'Governorship',
@@ -116,9 +108,6 @@ const SUPPORTED_REPORT_LEVELS = new Set([
   'Campus',
   'Oversight',
 ])
-
-const getMembershipDownloadPath = (churchType: string | undefined) =>
-  MEMBERSHIP_PATHS[churchType ?? ''] ?? null
 
 type ReportCardProps = {
   icon: ReactNode

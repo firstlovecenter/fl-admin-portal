@@ -4,6 +4,7 @@ import { DocumentNode } from '@apollo/client'
 import useInfiniteScroll from 'hooks/useInfiniteScroll'
 import MemberTable, { GridMember } from './MemberTable'
 import { ChurchContext } from 'contexts/ChurchContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Button } from 'components/ui/button'
 import {
   Sheet,
@@ -15,8 +16,12 @@ import { Skeleton } from 'components/ui/skeleton'
 import Filters from './Filters'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
-import { Search, SlidersHorizontal, UserPlus } from 'lucide-react'
+import { Download, Search, SlidersHorizontal, UserPlus } from 'lucide-react'
 import { cn } from 'components/lib/utils'
+import {
+  MEMBERSHIP_DOWNLOAD_PATHS,
+  getMembershipDownloadPath,
+} from 'pages/reports/membership-paths'
 
 const INITIAL_PAGE_SIZE = 30
 const PAGE_SIZE = 30
@@ -71,6 +76,7 @@ const MembersGrid = ({
 }: MembersGridProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { filters } = useContext(ChurchContext) as { filters: MemberFilters }
+  const { selectedScope } = useChurchRoleScope()
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
@@ -135,6 +141,19 @@ const MembersGrid = ({
   const isFiltering = Boolean(search) || hasActiveFilters
   const displayCount = isFiltering ? items.length : (totalCount ?? items.length)
 
+  // For ServantMembers (parentTypename="Member") the grid renders the members
+  // under the logged-in servant — derive the download level from their current
+  // role scope (which can be a non-church type like "Basonta", so we resolve
+  // against the path map rather than casting). For per-church-level grids the
+  // parentTypename IS the level.
+  const candidateLevel =
+    parentTypename === 'Member' ? selectedScope?.churchType : parentTypename
+  const downloadPath = getMembershipDownloadPath(candidateLevel)
+  const downloadLevel =
+    downloadPath && candidateLevel
+      ? (candidateLevel as keyof typeof MEMBERSHIP_DOWNLOAD_PATHS)
+      : undefined
+
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -187,6 +206,21 @@ const MembersGrid = ({
             </Link>
           </RoleView>
           <div className="ml-auto flex items-center gap-1">
+            {downloadPath && downloadLevel && (
+              <RoleView roles={permitLeaderAdmin(downloadLevel)}>
+                <Link to={downloadPath}>
+                  <Button
+                    variant="ghost"
+                    size="default"
+                    className="h-11 gap-1.5 text-sm text-foreground"
+                    aria-label="Download membership list"
+                  >
+                    <Download className="size-4" />
+                    <span className="hidden sm:inline">Download</span>
+                  </Button>
+                </Link>
+              </RoleView>
+            )}
             <Button
               variant="ghost"
               size="default"
