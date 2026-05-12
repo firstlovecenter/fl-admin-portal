@@ -3,32 +3,78 @@ import { useNavigate } from 'react-router'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberWithChurches } from 'global-types'
 import { cn } from 'components/lib/utils'
-import { ChevronRight, ChevronDown, Crown } from 'lucide-react'
+import {
+  ChevronRight,
+  ChevronDown,
+  Crown,
+  Banknote,
+  Users,
+  Wallet,
+  ListChecks,
+} from 'lucide-react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+type RoleKind =
+  | 'Leader'
+  | 'Admin'
+  | 'Arrivals Admin'
+  | 'Arrivals Counter'
+  | 'Arrivals Payer'
+  | 'Teller'
 
 type ChurchShape = {
   id: string
   name: string
   stream_name?: string
-  bacenta?: unknown
-  hub?: unknown
-  governorship?: unknown
   __typename: string
 }
 
-type RankEntry = {
+export type RankEntry = {
+  id: string
   name: string
   stream_name?: string
-  bacenta?: unknown
-  hub?: unknown
-  governorship?: unknown
-  id: string
-  admin?: boolean
-  link: string
   __typename: string
+  kind: RoleKind
+  link: string
 }
-type Rank = Record<string, RankEntry[]>
+
+// ── Role descriptors ─────────────────────────────────────────────────────────
+// Each descriptor maps a Member field returned by either query to the human-
+// readable role kind it represents. `source: 'leader'` → DISPLAY_MEMBER_LEADERSHIP,
+// `'admin'` → DISPLAY_MEMBER_ADMIN. Order here is the display order.
+
+type RoleDescriptor = {
+  field: string
+  source: 'leader' | 'admin'
+  kind: RoleKind
+}
+
+const ROLE_DESCRIPTORS: RoleDescriptor[] = [
+  { field: 'leadsDenomination', source: 'leader', kind: 'Leader' },
+  { field: 'leadsOversight', source: 'leader', kind: 'Leader' },
+  { field: 'leadsCampus', source: 'leader', kind: 'Leader' },
+  { field: 'leadsStream', source: 'leader', kind: 'Leader' },
+  { field: 'leadsCouncil', source: 'leader', kind: 'Leader' },
+  { field: 'leadsGovernorship', source: 'leader', kind: 'Leader' },
+  { field: 'leadsBacenta', source: 'leader', kind: 'Leader' },
+
+  { field: 'isAdminForDenomination', source: 'admin', kind: 'Admin' },
+  { field: 'isAdminForOversight', source: 'admin', kind: 'Admin' },
+  { field: 'isAdminForCampus', source: 'admin', kind: 'Admin' },
+  { field: 'isAdminForStream', source: 'admin', kind: 'Admin' },
+  { field: 'isAdminForCouncil', source: 'admin', kind: 'Admin' },
+  { field: 'isAdminForGovernorship', source: 'admin', kind: 'Admin' },
+
+  { field: 'isArrivalsAdminForCampus', source: 'leader', kind: 'Arrivals Admin' },
+  { field: 'isArrivalsAdminForStream', source: 'leader', kind: 'Arrivals Admin' },
+  { field: 'isArrivalsAdminForCouncil', source: 'leader', kind: 'Arrivals Admin' },
+  { field: 'isArrivalsAdminForGovernorship', source: 'leader', kind: 'Arrivals Admin' },
+
+  { field: 'isArrivalsCounterForStream', source: 'leader', kind: 'Arrivals Counter' },
+  { field: 'isArrivalsPayerForCouncil', source: 'leader', kind: 'Arrivals Payer' },
+  { field: 'isTellerForStream', source: 'leader', kind: 'Teller' },
+]
 
 // ── Church level → accent config ─────────────────────────────────────────────
 
@@ -38,7 +84,6 @@ type ChurchConfig = {
   nav: string      // in-app navigation path
 }
 
-// Fellowship omitted — not in roleTypes, so getRank never produces it here.
 const CHURCH_CONFIG: Record<string, ChurchConfig> = {
   Bacenta:      { accent: 'text-members',    dot: 'bg-members',    nav: '/bacenta/displaydetails' },
   Governorship: { accent: 'text-arrivals',   dot: 'bg-arrivals',   nav: '/governorship/displaydetails' },
@@ -46,10 +91,7 @@ const CHURCH_CONFIG: Record<string, ChurchConfig> = {
   Stream:       { accent: 'text-campaigns',  dot: 'bg-campaigns',  nav: '/stream/displaydetails' },
   Campus:       { accent: 'text-defaulters', dot: 'bg-defaulters', nav: '/campus/displaydetails' },
   Oversight:    { accent: 'text-banking',    dot: 'bg-banking',    nav: '/oversight/displaydetails' },
-  CreativeArts: { accent: 'text-campaigns',  dot: 'bg-campaigns',  nav: '/creativearts/displaydetails' },
-  Ministry:     { accent: 'text-maps',       dot: 'bg-maps',       nav: '/ministry/displaydetails' },
-  Hub:          { accent: 'text-maps',       dot: 'bg-maps',       nav: '/hub/displaydetails' },
-  HubCouncil:   { accent: 'text-maps',       dot: 'bg-maps',       nav: '/hubcouncil/displaydetails' },
+  Denomination: { accent: 'text-banking',    dot: 'bg-banking',    nav: '/denomination/displaydetails' },
 }
 
 const FALLBACK_CONFIG: ChurchConfig = {
@@ -60,91 +102,56 @@ const FALLBACK_CONFIG: ChurchConfig = {
 
 const VISIBLE_LIMIT = 3
 
-// ── Rank utilities (logic unchanged) ─────────────────────────────────────────
-
-const roleTypes = [
-  'Bacenta',
-  'Governorship',
-  'Council',
-  'Stream',
-  'Campus',
-  'Oversight',
-]
-
-const adminTypes = [
-  'Governorship',
-  'Council',
-  'Stream',
-  'Campus',
-  'Oversight',
-]
-
-// role must be the PascalCase role name, e.g. 'Governorship', not its lowercased form,
-// so that member property lookups like `isAdminForCreativeArts` resolve correctly.
-const updateRank = (
-  member: MemberWithChurches,
-  role: string,
-  rank: Rank
-): Rank => {
-  const m = member as unknown as Record<string, any[]>
-
-  m[`isAdminFor${role}`]?.map((church: ChurchShape) => {
-    rank[`${church.__typename.toLowerCase()}Admin`].push({
-      name: church.name,
-      stream_name: church.stream_name,
-      bacenta: church.bacenta,
-      hub: church.hub,
-      governorship: church.governorship,
-      id: church.id,
-      admin: true,
-      link: '',
-      __typename: church.__typename,
-    })
-    return null
-  })
-
-  m[`leads${role}`]?.map((church: ChurchShape) => {
-    rank[`${church.__typename.toLowerCase()}Leader`].push({
-      name: church.name,
-      stream_name: church.stream_name,
-      bacenta: church.bacenta,
-      hub: church.hub,
-      governorship: church.governorship,
-      id: church.id,
-      link: '',
-      __typename: church.__typename,
-    })
-    return null
-  })
-
-  return rank
-}
+// ── Public API ───────────────────────────────────────────────────────────────
 
 export const getRank = (
-  memberLeader: MemberWithChurches,
-  memberAdmin: MemberWithChurches
-): Rank => {
-  if (!memberLeader || !memberAdmin) return {}
+  memberLeader: MemberWithChurches | undefined,
+  memberAdmin: MemberWithChurches | undefined
+): RankEntry[] => {
+  if (!memberLeader && !memberAdmin) return []
 
-  let rank: Rank = roleTypes.reduce((acc, role) => {
-    acc[`${role.toLowerCase()}Leader`] = []
-    acc[`${role.toLowerCase()}Admin`] = []
-    return acc
-  }, {} as Rank)
+  const entries: RankEntry[] = []
+  const sources = {
+    leader: memberLeader as unknown as Record<string, ChurchShape[] | undefined>,
+    admin: memberAdmin as unknown as Record<string, ChurchShape[] | undefined>,
+  }
 
-  const leader = memberLeader as unknown as Record<string, any[]>
-  const admin = memberAdmin as unknown as Record<string, any[]>
-
-  roleTypes.forEach((role) => {
-    if (leader[`leads${role}`]?.[0]) {
-      rank = updateRank(memberLeader, role, rank)
-    }
-    if (adminTypes.includes(role) && admin[`isAdminFor${role}`]?.[0]) {
-      rank = updateRank(memberAdmin, role, rank)
-    }
+  ROLE_DESCRIPTORS.forEach((desc) => {
+    const churches = sources[desc.source]?.[desc.field]
+    if (!churches?.length) return
+    churches.forEach((church) => {
+      entries.push({
+        id: church.id,
+        name: church.name,
+        stream_name: church.stream_name,
+        __typename: church.__typename,
+        kind: desc.kind,
+        link: '',
+      })
+    })
   })
 
-  return rank
+  return entries
+}
+
+// ── Per-kind icon ────────────────────────────────────────────────────────────
+
+const KIND_ICONS: Record<RoleKind, typeof Crown> = {
+  Admin: Crown,
+  Leader: ChevronRight,
+  'Arrivals Admin': Users,
+  'Arrivals Counter': ListChecks,
+  'Arrivals Payer': Wallet,
+  Teller: Banknote,
+}
+
+const KIND_ICON_TONE: Record<RoleKind, string> = {
+  Admin: 'text-warning',
+  Leader: 'text-muted-foreground',
+  'Arrivals Admin': 'text-arrivals',
+  'Arrivals Counter': 'text-arrivals',
+  'Arrivals Payer': 'text-arrivals',
+  Teller: 'text-banking',
 }
 
 // ── RoleButton ────────────────────────────────────────────────────────────────
@@ -162,7 +169,8 @@ const RoleButton = ({
 }) => {
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
-  const servant = place.admin ? 'Admin' : 'Leader'
+  const Icon = KIND_ICONS[place.kind]
+  const iconTone = KIND_ICON_TONE[place.kind]
 
   return (
     // NOTE: clickCard sets the church ID in context. Ancestor IDs for levels
@@ -181,17 +189,13 @@ const RoleButton = ({
       />
       <div className="min-w-0 flex-1">
         <p className={cn('text-[10px] font-semibold uppercase tracking-wider leading-tight', accent)}>
-          {place.__typename} {servant}
+          {place.__typename} {place.kind}
         </p>
         <p className="text-sm font-medium text-foreground truncate leading-snug">
           {place.name}
         </p>
       </div>
-      {place.admin ? (
-        <Crown aria-hidden="true" className="h-3.5 w-3.5 text-warning shrink-0" />
-      ) : (
-        <ChevronRight aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-      )}
+      <Icon aria-hidden="true" className={cn('h-3.5 w-3.5 shrink-0', iconTone)} />
     </button>
   )
 }
@@ -202,16 +206,12 @@ const MemberRoleList = ({
   memberLeader,
   memberAdmin,
 }: {
-  memberLeader: MemberWithChurches
-  memberAdmin: MemberWithChurches
+  memberLeader: MemberWithChurches | undefined
+  memberAdmin: MemberWithChurches | undefined
 }) => {
   const [expanded, setExpanded] = useState(false)
 
-  if (!memberLeader || !memberAdmin) return null
-
-  const rank = getRank(memberLeader, memberAdmin)
-  const allRoles = Object.values(rank).flat()
-
+  const allRoles = getRank(memberLeader, memberAdmin)
   if (allRoles.length === 0) return null
 
   const visibleRoles = expanded ? allRoles : allRoles.slice(0, VISIBLE_LIMIT)
@@ -225,7 +225,7 @@ const MemberRoleList = ({
           CHURCH_CONFIG[place.__typename] ?? FALLBACK_CONFIG
         return (
           <RoleButton
-            key={`${place.id}-${place.__typename}-${place.admin ? 'Admin' : 'Leader'}`}
+            key={`${place.id}-${place.__typename}-${place.kind}`}
             place={place}
             accent={accent}
             dot={dot}

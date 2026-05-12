@@ -157,21 +157,10 @@ const returnStringMemberRoles = (
   memberLeader: MemberWithChurches | undefined,
   memberAdmin: MemberWithChurches | undefined
 ) => {
-  const rank = getRank(
-    memberLeader as MemberWithChurches,
-    memberAdmin as MemberWithChurches
-  )
-  const arrayOfRoles: string[] = []
-
-  Object.entries(rank).forEach(([, entries]) => {
-    if (entries.length > 0) {
-      const place = entries[0]
-      const servant = place.admin ? 'Admin' : 'Leader'
-      arrayOfRoles.push(`${place.__typename} ${servant}: ${place.name}`)
-    }
-  })
-
-  return arrayOfRoles.join('\\n')
+  const entries = getRank(memberLeader, memberAdmin)
+  return entries
+    .map((place) => `${place.__typename} ${place.kind}: ${place.name}`)
+    .join('\\n')
 }
 
 // ── InfoRow ──────────────────────────────────────────────────────────────────
@@ -253,10 +242,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
   const memberAdmin = adminData?.members[0]
   const memberBirthday = getMemberDob(member)
   const roles = returnStringMemberRoles(memberLeader, memberAdmin)
-  const hasRoles =
-    memberLeader && memberAdmin
-      ? Object.values(getRank(memberLeader, memberAdmin)).flat().length > 0
-      : false
+  const hasRoles = getRank(memberLeader, memberAdmin).length > 0
 
   const [UpdateMemberStickyNote, { loading: noteLoading }] = useMutation(
     UPDATE_MEMBER_STICKY_NOTE

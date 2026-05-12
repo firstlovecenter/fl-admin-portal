@@ -59,6 +59,46 @@ export const DISPLAY_MEMBER_LEADERSHIP = gql`
         id
         name
       }
+      leadsOversight {
+        id
+        name
+      }
+      leadsDenomination {
+        id
+        name
+      }
+
+      isArrivalsAdminForCampus {
+        id
+        name
+      }
+      isArrivalsAdminForStream {
+        id
+        name
+      }
+      isArrivalsAdminForCouncil {
+        id
+        name
+        stream_name
+      }
+      isArrivalsAdminForGovernorship {
+        id
+        name
+        stream_name
+      }
+      isArrivalsCounterForStream {
+        id
+        name
+      }
+      isArrivalsPayerForCouncil {
+        id
+        name
+        stream_name
+      }
+      isTellerForStream {
+        id
+        name
+      }
     }
   }
 `
@@ -69,6 +109,10 @@ export const DISPLAY_MEMBER_ADMIN = gql`
       id
 
       #Admin Information
+      isAdminForDenomination {
+        id
+        name
+      }
       isAdminForOversight {
         id
         name
