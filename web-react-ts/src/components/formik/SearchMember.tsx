@@ -100,8 +100,12 @@ const SearchMember = (props: RoleBasedSearch) => {
       )}
       onSelect={(member) => {
         setSearchString(formatName(member))
+        // Set the side-effect email first without validating — Formik's
+        // setFieldValue validates against a stale state.values closure, so
+        // a follow-up validating call on the primary field would re-fire
+        // validation with leaderEmail filled but the primary field empty.
+        props.setFieldValue('leaderEmail', member.email, false)
         props.setFieldValue(props.name, member.id)
-        props.setFieldValue('leaderEmail', member.email)
       }}
       error={props.error}
     />

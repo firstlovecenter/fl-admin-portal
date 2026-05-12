@@ -35,7 +35,11 @@ export interface FormikWithApolloProps extends FormikComponentProps {
 export interface RoleBasedSearch extends FormikComponentProps {
   creativeArts?: boolean
   initialValue?: string
-  setFieldValue: (field: string, value: any) => void
+  setFieldValue: (
+    field: string,
+    value: any,
+    shouldValidate?: boolean
+  ) => void
 }
 
 // Form Stuff
