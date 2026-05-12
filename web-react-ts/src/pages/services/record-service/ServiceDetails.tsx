@@ -39,6 +39,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 import { VisuallyHidden } from 'radix-ui'
@@ -154,8 +155,18 @@ function TreasurerCell({ treasurer }: { treasurer: Member }) {
 }
 
 const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
-  const { currentUser } = useContext(MemberContext)
+  const { currentUser, userJobs } = useContext(MemberContext)
   const navigate = useNavigate()
+
+  const isChurchManualBanking = useMemo(() => {
+    const churchId = church?.id
+    if (!churchId || !userJobs) return false
+    for (const job of userJobs) {
+      const found = job.church?.find((c: Church) => c?.id === churchId)
+      if (found) return !!found.isManualBanking
+    }
+    return false
+  }, [church?.id, userJobs])
 
   const [ManuallyConfirmOfferingPayment] = useMutation(
     MANUALLY_CONFIRM_OFFERING_PAYMENT
@@ -220,7 +231,10 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   const showWarning = trackIncome && noBankingProof
   const showAdminBankingActions = trackIncome && noBankingProof
   const showSelfBankingPay =
-    trackIncome && noBankingProof && selfBankingRoles.length > 0
+    trackIncome &&
+    noBankingProof &&
+    selfBankingRoles.length > 0 &&
+    !isChurchManualBanking
   const showBankingReceiptLink =
     trackIncome && Boolean(service?.offeringBankedBy)
   const showActionsCard =

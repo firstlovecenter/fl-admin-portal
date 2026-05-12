@@ -62,6 +62,7 @@ export interface Church {
   members: Member[]
   history: HistoryLog[]
   __typename: ChurchLevel
+  isManualBanking?: boolean
 }
 
 export interface Bacenta extends Church {
