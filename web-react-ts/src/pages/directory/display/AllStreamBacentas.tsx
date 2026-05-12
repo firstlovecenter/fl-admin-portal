@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import { BackButton } from 'components/shell/BackButton'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
@@ -387,12 +388,8 @@ const AllStreamBacentas = () => {
     <ApolloWrapper loading={loading} data={data} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-6">
-            <Button size="icon" variant="ghost" className="size-11 shrink-0" asChild>
-              <Link to="/stream/displaydetails" aria-label="Back to stream">
-                <ArrowLeft className="size-5" />
-              </Link>
-            </Button>
+          <div className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-3 lg:px-6">
+            <BackButton className="-ml-2 shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Directory
