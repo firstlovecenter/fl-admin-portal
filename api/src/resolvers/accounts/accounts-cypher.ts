@@ -75,10 +75,11 @@ CREATE (transaction:AccountTransaction {id: randomUUID()})
   transaction.account = 'Bussing Society',
   transaction.status = 'success',
   transaction.createdAt = datetime(),
-  transaction.lastModified = datetime(),
-  council.bussingAmount = $expenseAmount
-  
+  transaction.lastModified = datetime()
 
+// SYN-99 -- council.bussingAmount = $expenseAmount removed. The four
+// spine bussingAmount aggregates now compute from the
+// AccountTransaction ledger directly, so the snapshot field is unused.
 SET council.bussingSocietyBalance = council.bussingSocietyBalance - $expenseAmount,
   transaction.bussingSocietyBalance = council.bussingSocietyBalance,
   transaction.weekdayBalance = council.weekdayBalance
