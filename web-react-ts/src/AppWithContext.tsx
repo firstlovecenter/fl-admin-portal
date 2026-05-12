@@ -32,7 +32,10 @@ import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
 import { aiAssistant } from 'pages/ai-assistant/aiAssistantRoutes'
-import { shepherdingControl } from 'pages/shepherding-control/shepherdingControlRoutes'
+import {
+  shepherdingControl,
+  shepherdingControlProjector,
+} from 'pages/shepherding-control/shepherdingControlRoutes'
 import { settings } from 'pages/settings/settingsRoutes'
 import { reportsRoutes } from 'pages/reports/reportsRoutes'
 import { ThemeProvider } from 'components/shell/ThemeProvider'
@@ -199,6 +202,22 @@ const AppWithContext = () => {
                       path="/setup-password"
                       element={<SetupPasswordPage />}
                     />
+                    {/* Projector window runs full-bleed — deliberately
+                        mounted outside ShellLayout so the external
+                        monitor shows only the slide, no sidebar / nav. */}
+                    {shepherdingControlProjector.map((route, i) => (
+                      <Route
+                        key={`shepherding-projector-${i}`}
+                        path={route.path}
+                        element={
+                          <ProtectedRoute roles={route.roles ?? ['all']}>
+                            <Suspense fallback={<LoadingScreen />}>
+                              <route.element />
+                            </Suspense>
+                          </ProtectedRoute>
+                        }
+                      />
+                    ))}
                     <Route element={<ShellLayout />}>
                       {[
                         ...dashboards,

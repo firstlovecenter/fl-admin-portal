@@ -78,6 +78,29 @@ export const nextLevelFor = (
   return SHEPHERDING_LEVELS[idx + 1]
 }
 
+// Plural form used in slide headers ("12 Governorships", "2 Councils").
+// Campus → Campuses is the only irregular form.
+const CHILD_LEVEL_PLURAL: Record<ShepherdingLevel, string> = {
+  Denomination: 'Denominations',
+  Oversight: 'Oversights',
+  Campus: 'Campuses',
+  Stream: 'Streams',
+  Council: 'Councils',
+  Governorship: 'Governorships',
+  Bacenta: 'Bacentas',
+}
+
+export const childLevelLabel = (
+  parentLevel: ShepherdingLevel,
+  count: number
+): string | null => {
+  const child = nextLevelFor(parentLevel)
+  if (!child) return null
+  return count === 1
+    ? child
+    : CHILD_LEVEL_PLURAL[child]
+}
+
 const ROLE_PRIORITY: { role: keyof CurrentUser; level: ShepherdingLevel }[] = [
   { role: 'denomination', level: 'Denomination' },
   { role: 'oversight', level: 'Oversight' },

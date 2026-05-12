@@ -37,7 +37,33 @@ export const useShepherdingSlide = (
   }
 
   const childKey = childRelationshipFor[level]
-  const rawChildren: ChildSummary[] = childKey ? node[childKey] ?? [] : []
+  const rawChildren: ChildSummary[] = childKey
+    ? (node[childKey] ?? []).map(
+        (c: {
+          id: string
+          name: string
+          leader?: {
+            id: string
+            firstName?: string | null
+            lastName?: string | null
+            pictureUrl?: string | null
+            nameWithTitle?: string | null
+          } | null
+        }) => ({
+          id: c.id,
+          name: c.name,
+          leader: c.leader
+            ? {
+                id: c.leader.id,
+                firstName: c.leader.firstName ?? null,
+                lastName: c.leader.lastName ?? null,
+                pictureUrl: c.leader.pictureUrl ?? null,
+                nameWithTitle: c.leader.nameWithTitle ?? null,
+              }
+            : null,
+        })
+      )
+    : []
   const children = [...rawChildren].sort((a, b) =>
     a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
   )

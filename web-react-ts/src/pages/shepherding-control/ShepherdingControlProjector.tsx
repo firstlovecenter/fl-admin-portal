@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import LoadingScreen from 'components/base-component/LoadingScreen'
 import ShepherdingSlide from './components/ShepherdingSlide'
 import { useShepherdingSlide } from './useShepherdingSlide'
 import { useProjectorViewer } from './shepherding-control-channel'
@@ -33,16 +34,7 @@ const ShepherdingControlProjector = () => {
           onSelectChild={() => undefined}
         />
       ) : (
-        <div className="grid place-items-center p-12 text-center">
-          <div>
-            <h1 className="text-5xl font-bold">Waiting for controller…</h1>
-            <p className="mt-4 text-2xl text-muted-foreground">
-              Drag this window to your projector or external monitor. The
-              slide will appear here as soon as the controller pushes the
-              first selection.
-            </p>
-          </div>
-        </div>
+        <LoadingScreen text="Waiting for controller — drag this window to your projector or external monitor." />
       )}
     </div>
   )

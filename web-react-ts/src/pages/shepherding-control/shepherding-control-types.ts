@@ -20,6 +20,7 @@ export type SlideNode = {
 export type ChildSummary = {
   id: string
   name: string
+  leader: LeaderSummary | null
 }
 
 export type LeaderSummary = {

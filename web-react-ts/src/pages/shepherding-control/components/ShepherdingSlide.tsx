@@ -3,7 +3,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from 'components/ui/avatar'
-import { Skeleton } from 'components/ui/skeleton'
+import LoadingScreen from 'components/base-component/LoadingScreen'
 import { cn } from 'components/lib/utils'
 import {
   AnchorWeekYear,
@@ -12,6 +12,7 @@ import {
   SlideData,
   WindowWeeks,
 } from 'pages/shepherding-control/shepherding-control-types'
+import { childLevelLabel } from 'pages/shepherding-control/shepherding-control-utils'
 import ChildChurchCard from './ChildChurchCard'
 import ProjectionChart from './ProjectionChart'
 
@@ -35,11 +36,7 @@ const ShepherdingSlide = ({
   onSelectChild,
 }: Props) => {
   if (!slide) {
-    return (
-      <div className="grid h-full place-items-center">
-        <Skeleton className="h-32 w-3/4 rounded-2xl" />
-      </div>
-    )
+    return <LoadingScreen text="Loading slide…" />
   }
 
   const leader = slide.leader
@@ -51,7 +48,7 @@ const ShepherdingSlide = ({
   return (
     <div className="flex h-full w-full flex-col gap-8 p-8 text-foreground">
       <header className="flex items-center gap-8">
-        <Avatar className="h-32 w-32 shrink-0 border-2 border-white/20">
+        <Avatar className="h-32 w-32 shrink-0 border-2 border-border">
           <AvatarImage
             src={leader?.pictureUrl ?? undefined}
             alt={leader?.nameWithTitle ?? slide.name}
@@ -71,7 +68,7 @@ const ShepherdingSlide = ({
           <p
             className={cn(
               'mt-3 truncate text-3xl font-medium',
-              leader ? 'text-foreground/90' : 'text-muted-foreground'
+              leader ? 'text-foreground' : 'text-muted-foreground'
             )}
           >
             {leader?.nameWithTitle ?? 'No leader assigned'}
@@ -110,8 +107,8 @@ const ShepherdingSlide = ({
       {slide.children?.length > 0 && (
         <section className="space-y-3">
           <p className="text-2xl uppercase tracking-wider text-muted-foreground">
-            {slide.children.length} direct child
-            {slide.children.length === 1 ? '' : 'ren'}
+            {slide.children.length}{' '}
+            {childLevelLabel(slide.level, slide.children.length)}
           </p>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
             {slide.children.map((child) => (

@@ -27,6 +27,12 @@ const AGGREGATES_FRAGMENT = `
   }
 `
 
+const CHILD_FRAGMENT = `
+  id
+  name
+  ${LEADER_FRAGMENT}
+`
+
 export const SHEPHERDING_DENOMINATION = gql`
   query shepherdingDenomination($id: ID!, $limit: Int = 24, $skip: Int = 0) {
     denominations(where: { id: { eq: $id } }) {
@@ -37,8 +43,7 @@ export const SHEPHERDING_DENOMINATION = gql`
       bacentaCount
       ${AGGREGATES_FRAGMENT}
       oversights {
-        id
-        name
+        ${CHILD_FRAGMENT}
       }
     }
   }
@@ -54,8 +59,7 @@ export const SHEPHERDING_OVERSIGHT = gql`
       bacentaCount
       ${AGGREGATES_FRAGMENT}
       campuses {
-        id
-        name
+        ${CHILD_FRAGMENT}
       }
     }
   }
@@ -71,8 +75,7 @@ export const SHEPHERDING_CAMPUS = gql`
       bacentaCount
       ${AGGREGATES_FRAGMENT}
       streams {
-        id
-        name
+        ${CHILD_FRAGMENT}
       }
     }
   }
@@ -88,8 +91,7 @@ export const SHEPHERDING_STREAM = gql`
       bacentaCount
       ${AGGREGATES_FRAGMENT}
       councils {
-        id
-        name
+        ${CHILD_FRAGMENT}
       }
     }
   }
@@ -105,8 +107,7 @@ export const SHEPHERDING_COUNCIL = gql`
       bacentaCount
       ${AGGREGATES_FRAGMENT}
       governorships {
-        id
-        name
+        ${CHILD_FRAGMENT}
       }
     }
   }
@@ -122,8 +123,7 @@ export const SHEPHERDING_GOVERNORSHIP = gql`
       bacentaCount
       ${AGGREGATES_FRAGMENT}
       bacentas {
-        id
-        name
+        ${CHILD_FRAGMENT}
       }
     }
   }
@@ -142,7 +142,7 @@ export const SHEPHERDING_BACENTA = gql`
 `
 
 export const SHEPHERDING_SCOPE_CHECK = gql`
-  query shepherdingScopeCheck($level: String!, $id: ID!) {
+  query shepherdingScopeCheck($level: ShepherdingChurchLevel!, $id: ID!) {
     shepherdingScopeCheck(level: $level, id: $id)
   }
 `

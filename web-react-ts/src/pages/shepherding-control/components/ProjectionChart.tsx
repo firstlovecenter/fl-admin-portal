@@ -115,23 +115,52 @@ const ProjectionChart = ({
   const sameUnit =
     metricB != null && METRIC_UNIT[metricA] === METRIC_UNIT[metricB]
   const secondaryTitle = metricB
-    ? `${METRIC_LABEL[metricA]} + ${METRIC_LABEL[metricB]}${
-        sameUnit ? '' : ' (dual axis)'
-      }`
-    : METRIC_LABEL[metricA]
+    ? sameUnit
+      ? undefined
+      : 'Dual axis'
+    : undefined
+
+  const legend: Array<{ key: MetricKey; color: string; label: string }> = [
+    {
+      key: metricA,
+      color: METRIC_COLOR[metricA],
+      label: METRIC_LABEL[metricA],
+    },
+  ]
+  if (metricB) {
+    legend.push({
+      key: metricB,
+      color: METRIC_COLOR[metricB],
+      label: METRIC_LABEL[metricB],
+    })
+  }
 
   return (
-    <ChurchGraph
-      stat1={dataKeyA}
-      stat2={stat2Slot}
-      churchData={chartData}
-      church={churchKeyFor(level)}
-      graphType="serviceAggregate"
-      loading={loading}
-      secondaryTitle={secondaryTitle}
-      stat1Color={METRIC_COLOR[metricA]}
-      stat2Color={metricB ? METRIC_COLOR[metricB] : undefined}
-    />
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xl">
+        {legend.map((entry) => (
+          <span key={entry.key} className="inline-flex items-center gap-2">
+            <span
+              aria-hidden
+              className="inline-block size-4 rounded-sm"
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="font-medium text-foreground">{entry.label}</span>
+          </span>
+        ))}
+      </div>
+      <ChurchGraph
+        stat1={dataKeyA}
+        stat2={stat2Slot}
+        churchData={chartData}
+        church={churchKeyFor(level)}
+        graphType="serviceAggregate"
+        loading={loading}
+        secondaryTitle={secondaryTitle}
+        stat1Color={METRIC_COLOR[metricA]}
+        stat2Color={metricB ? METRIC_COLOR[metricB] : undefined}
+      />
+    </div>
   )
 }
 

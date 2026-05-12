@@ -31,7 +31,33 @@ export const fetchSlide = async (
   if (!data) return null
 
   const childKey = childRelationshipFor[node.type]
-  const rawChildren: ChildSummary[] = childKey ? data[childKey] ?? [] : []
+  const rawChildren: ChildSummary[] = childKey
+    ? (data[childKey] ?? []).map(
+        (c: {
+          id: string
+          name: string
+          leader?: {
+            id: string
+            firstName?: string | null
+            lastName?: string | null
+            pictureUrl?: string | null
+            nameWithTitle?: string | null
+          } | null
+        }) => ({
+          id: c.id,
+          name: c.name,
+          leader: c.leader
+            ? {
+                id: c.leader.id,
+                firstName: c.leader.firstName ?? null,
+                lastName: c.leader.lastName ?? null,
+                pictureUrl: c.leader.pictureUrl ?? null,
+                nameWithTitle: c.leader.nameWithTitle ?? null,
+              }
+            : null,
+        })
+      )
+    : []
   const children = [...rawChildren].sort((a, b) =>
     a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
   )

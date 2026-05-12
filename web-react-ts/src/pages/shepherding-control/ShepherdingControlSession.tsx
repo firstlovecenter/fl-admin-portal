@@ -6,11 +6,11 @@ import {
   MonitorPlay,
   MonitorUp,
 } from 'lucide-react'
+import LoadingScreen from 'components/base-component/LoadingScreen'
 import { MemberContext } from 'contexts/MemberContext'
 import { isAuthorised } from 'global-utils'
 import { permitLeaderAdmin } from 'permission-utils'
 import { Button } from 'components/ui/button'
-import { Skeleton } from 'components/ui/skeleton'
 import { useShepherdingSlide } from './useShepherdingSlide'
 import {
   ChildSummary,
@@ -201,11 +201,7 @@ const ShepherdingControlSession = () => {
   }
 
   if (!current) {
-    return (
-      <div className="dark min-h-svh bg-background p-8">
-        <Skeleton className="h-full w-full" />
-      </div>
-    )
+    return <LoadingScreen text="Loading Shepherding Control…" />
   }
 
   const weekLabel = `Week ${anchor.week} · ${anchor.year}`
