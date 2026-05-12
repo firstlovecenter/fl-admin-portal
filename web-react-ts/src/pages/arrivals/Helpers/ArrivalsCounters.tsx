@@ -8,6 +8,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { Loader2, Plus, UserMinus, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from 'components/ui/button'
+import { Skeleton } from 'components/ui/skeleton'
 import {
   Dialog,
   DialogContent,
@@ -122,15 +123,22 @@ const ArrivalsCounters = () => {
 
   const counters = stream?.arrivalsCounters ?? []
   const counterCount = counters.length
+  const showSkeletons = loading && !stream
 
   return (
-    <ApolloWrapper data={data} loading={loading} error={error}>
+    <ApolloWrapper data={data} loading={loading} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
           <header className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              {stream?.name}{' '}
-              <span className="text-arrivals">Arrivals Counters</span>
+              {showSkeletons ? (
+                <Skeleton className="inline-block h-8 w-72 align-middle lg:h-9" />
+              ) : (
+                <>
+                  {stream?.name}{' '}
+                  <span className="text-arrivals">Arrivals Counters</span>
+                </>
+              )}
             </h1>
             <p className="text-sm text-muted-foreground">
               Manage the team that counts arrivals for this stream.
@@ -147,19 +155,32 @@ const ArrivalsCounters = () => {
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Active counters
                     </p>
-                    <p className="mt-1 text-3xl font-bold tracking-tight text-foreground tabular-nums">
-                      {counterCount}
-                    </p>
+                    {showSkeletons ? (
+                      <Skeleton className="mt-1 h-9 w-16" />
+                    ) : (
+                      <p className="mt-1 text-3xl font-bold tracking-tight text-foreground tabular-nums">
+                        {counterCount}
+                      </p>
+                    )}
                   </div>
-                  {typeof stream?.activeBacentaCount === 'number' && (
+                  {showSkeletons ? (
                     <div className="border-t border-border pt-4">
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Active Bacentas
                       </p>
-                      <p className="mt-1 text-lg font-semibold text-foreground tabular-nums">
-                        {stream.activeBacentaCount}
-                      </p>
+                      <Skeleton className="mt-1 h-6 w-12" />
                     </div>
+                  ) : (
+                    typeof stream?.activeBacentaCount === 'number' && (
+                      <div className="border-t border-border pt-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Active Bacentas
+                        </p>
+                        <p className="mt-1 text-lg font-semibold text-foreground tabular-nums">
+                          {stream.activeBacentaCount}
+                        </p>
+                      </div>
+                    )
                   )}
                 </div>
               </div>
@@ -168,6 +189,7 @@ const ArrivalsCounters = () => {
                 size="lg"
                 className="w-full gap-2 px-8 font-semibold sm:w-auto sm:min-w-64 lg:w-full"
                 onClick={() => setAddOpen(true)}
+                disabled={showSkeletons}
               >
                 <Plus className="h-5 w-5" />
                 Add Counter
@@ -180,12 +202,22 @@ const ArrivalsCounters = () => {
                 <h2 className="text-lg font-semibold text-foreground">
                   Current Counters
                 </h2>
-                <span className="text-xs font-medium text-muted-foreground tabular-nums">
-                  {counterCount} {counterCount === 1 ? 'person' : 'people'}
-                </span>
+                {showSkeletons ? (
+                  <Skeleton className="h-4 w-16" />
+                ) : (
+                  <span className="text-xs font-medium text-muted-foreground tabular-nums">
+                    {counterCount} {counterCount === 1 ? 'person' : 'people'}
+                  </span>
+                )}
               </div>
 
-              {counterCount === 0 ? (
+              {showSkeletons ? (
+                <div className="space-y-3">
+                  {[0, 1, 2].map((i) => (
+                    <Skeleton key={i} className="h-20 w-full rounded-xl" />
+                  ))}
+                </div>
+              ) : counterCount === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-arrivals/10">
                     <Users className="h-6 w-6 text-arrivals" />
