@@ -26,7 +26,11 @@ const BussingExpenseEntry = () => {
       id: councilId,
     },
   })
-  const [DebitBussingSociety] = useMutation(DEBIT_BUSSING_SOCIETY)
+  // SYN-109: refetch active queries so the bussing-society balance on
+  // every open dashboard tab refreshes after a debit.
+  const [DebitBussingSociety] = useMutation(DEBIT_BUSSING_SOCIETY, {
+    refetchQueries: 'active',
+  })
 
   const council: CouncilForAccounts = data?.councils[0]
 
