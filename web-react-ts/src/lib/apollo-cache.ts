@@ -14,7 +14,6 @@ const HISTORY_PARENT_TYPES = [
   'Campus',
   'Oversight',
   'Denomination',
-  'Hub',
   'Basonta',
 ] as const
 

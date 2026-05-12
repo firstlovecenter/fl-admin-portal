@@ -71,9 +71,9 @@ A service is considered **banked** when at least one of the following is true (p
 
 Otherwise it is a **defaulter** for the week and blocks new bankings.
 
-## SM3 — Bacenta / Hub vacation status
+## SM3 — Bacenta vacation status
 
-`vacationStatus: 'Vacation' | 'Active'` on `Bacenta` and `Hub`.
+`vacationStatus: 'Vacation' | 'Active'` on `Bacenta`.
 
 | From | To | Triggered by | Notes |
 | --- | --- | --- | --- |

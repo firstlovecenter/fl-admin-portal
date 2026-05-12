@@ -414,27 +414,9 @@ export const GET_DENOMINATIONS = gql`
   }
 `
 
-export const GET_CREATIVEARTS = gql`
-  query getCreativeArts {
-    creativeArts {
-      id
-      name
-    }
-  }
-`
-
 export const GET_MINISTRIES = gql`
   query getMinistries {
     ministries {
-      id
-      name
-    }
-  }
-`
-
-export const GET_HUBS = gql`
-  query getHubs {
-    hubs {
       id
       name
     }

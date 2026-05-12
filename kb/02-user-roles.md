@@ -29,10 +29,7 @@ and below.
 | `leaderGovernorship` | One Governorship | |
 | `leaderBacenta` | One Bacenta | Records services, banks offering |
 | `leaderFellowship` | One Fellowship | Smallest unit |
-| `leaderCreativeArts` | One CreativeArts node | |
 | `leaderMinistry` | One Ministry | |
-| `leaderHubCouncil` | One HubCouncil | |
-| `leaderHub` | One Hub | |
 
 ### Admin roles
 
@@ -41,7 +38,7 @@ directory / record / financial admin at their level. No `adminFellowship` or
 `adminBacenta` exists — admin roles start at Governorship.
 
 `adminGovernorship`, `adminCouncil`, `adminStream`, `adminCampus`, `adminOversight`,
-`adminDenomination`, `adminMinistry`, `adminCreativeArts`.
+`adminDenomination`, `adminMinistry`.
 
 ### Specialist roles
 

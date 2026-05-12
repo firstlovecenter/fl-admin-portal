@@ -368,9 +368,9 @@ handling, banking proof, etc.).
 **Status:** Accepted (2026-05-06). Refines ADR-008.
 
 **Context:** Every higher church (Governorship, Council, Stream, Campus, Oversight,
-Denomination, Hub, HubCouncil, Ministry, CreativeArts) gets a new `:ServiceLog`
-node every time its leadership rotates (via the servant-config flow — see ADR-006
-and `directory/servant-cypher.ts`). Aggregate nodes were previously keyed
+Denomination, Ministry) gets a new `:ServiceLog` node every time its leadership
+rotates (via the servant-config flow — see ADR-006 and
+`directory/servant-cypher.ts`). Aggregate nodes were previously keyed
 `<week>-<year>-<log.id>`, so each leader tenure produced its own aggregate node
 for the same week. Because the FE @cypher resolvers in `aggregates.graphql` walk
 `(this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate)` —

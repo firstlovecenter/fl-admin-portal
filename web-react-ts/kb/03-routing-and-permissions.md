@@ -23,7 +23,7 @@ Defined in per-section route arrays:
 | `pages/dashboards/dashboardRoutes.ts` | Dashboards (`/`, user dashboard) |
 | `pages/directory/directoryRoutes.ts` | Directory (member + church CRUD/views) |
 | `pages/services/servicesRoutes.ts` | Services + banking + defaulters + graphs |
-| `pages/services/rehearsalRoutes.ts` | CreativeArts rehearsals |
+| `pages/services/rehearsalRoutes.ts` | Ministry rehearsals |
 | `pages/arrivals/arrivalsRoutes.ts` | Arrivals (bussing) |
 | `pages/reconciliation/reconRoutes.ts` | Reconciliation |
 | `pages/maps/mapsRoutes.ts` | Maps |

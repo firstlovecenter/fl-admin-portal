@@ -26,17 +26,12 @@ flow. All data returned is live dev-database data — no mocks needed.
 | Oversight Admin | oversightadmin@test.com | ✅ |
 | Denomination Admin | denominationadmin@test.com | — |
 
-## Creative Arts
+## Ministry
 
 | Role | Email | Ready |
 | --- | --- | --- |
-| Hub Fellowship Leader | hubfellowshipleader@test.com | ✅ |
-| Hub Leader | hubleader@test.com | ✅ |
-| Hub Council Leader | hubcouncilleader@test.com | ✅ |
 | Ministry Leader | ministryleader@test.com | ✅ |
-| Creative Arts Leader | creativeartsleader@test.com | ✅ |
 | Ministry Admin | ministryadmin@test.com | ✅ |
-| Creative Arts Admin | creativeartsadmin@test.com | ✅ |
 
 ## Arrivals
 

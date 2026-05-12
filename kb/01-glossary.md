@@ -19,11 +19,7 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
   A Bacenta has a `meetingDay` of Wednesday | Thursday | Friday | Saturday and
   a `bankingCode`. Fellowships have been removed — Bacenta is now the smallest
   unit.
-- **CreativeArts** — a parallel hierarchy under Campus for the creative arts ministry.
-- **Ministry** — a sub-unit of CreativeArts (also called a "Sonta" in some contexts).
-- **HubCouncil** — a Council inside the CreativeArts/Ministry tree.
-- **Hub** — the smallest CreativeArts unit (analogous to a Bacenta but for sontas);
-  has a `meetingDay` of Wednesday | Friday | Saturday.
+- **Ministry** — a sub-unit under a Stream (also called a "Sonta" in some contexts).
 
 ## People
 
@@ -45,7 +41,7 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
 - **ServiceRecord** — a single weekly service entry: attendance, income, family
   picture, treasurers, banking proof. Variants exist as `RehearsalRecord` and
   `StageAttendanceRecord` (same TypeScript union).
-- **RehearsalRecord** — service record for a CreativeArts rehearsal.
+- **RehearsalRecord** — service record for a Ministry rehearsal.
 - **StageAttendanceRecord** — on-stage attendance during a service.
 - **BussingRecord** — a Bacenta's record of bringing members to Sunday service:
   attendance, mobilisation/bussing pictures, vehicle records, top-up payments.

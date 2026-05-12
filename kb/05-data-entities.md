@@ -23,31 +23,25 @@ divergence.
 Denomination
    └─ Oversight
         └─ Campus
-             ├─ Stream
-             │    └─ Council
-             │         └─ Governorship
-             │              └─ Bacenta
-             │                   └─ Fellowship
-             └─ CreativeArts
+             └─ Stream
+                  ├─ Council
+                  │    └─ Governorship
+                  │         └─ Bacenta
+                  │              └─ Fellowship
                   └─ Ministry
-                       └─ HubCouncil
-                            └─ Hub
 ```
 
 | Level | Extra fields | Relationships |
 | --- | --- | --- |
 | `Denomination` | — | `oversight: Oversight` |
 | `Oversight` | — | `streams: Stream` (note: SDL exposes plural; type is single in TS) |
-| `Campus` | — | `streams?: Stream[]`, `oversight: Oversight`, `creativeArts?: CreativeArts[]` |
+| `Campus` | — | `streams?: Stream[]`, `oversight: Oversight` |
 | `Stream` | `name: StreamOptions`, `bankAccount: string`, `meetingDay: { day: 'Friday'|'Saturday'|'Sunday' }`, `mobilisation*Time`, `arrival*Time`, `arrivalsPayers`, `arrivalsCounters` | `campus: Campus`, `ministries?: Ministry[]`, `councils?: Council[]` |
-| `Council` | — | `stream: Stream`, `governorships?: Governorship[]`, `hubCouncils?: HubCouncil[]` |
+| `Council` | — | `stream: Stream`, `governorships?: Governorship[]` |
 | `Governorship` | — | `stream: Stream`, `council: Council` |
 | `Bacenta` | `bankingCode: number`, `meetingDay: { day: 'Wednesday'|'Thursday'|'Friday'|'Saturday' }`, `vacationStatus`, `services: ServiceRecord[]` | `governorship: Governorship`, `council: Council` |
 | `Fellowship` | (smallest unit) | parent Bacenta |
-| `CreativeArts` | — | `campus: Campus`, `ministries?: Ministry[]` |
-| `Ministry` | `bankAccount: string`, all higher counts | `creativeArts: CreativeArts`, `stream: Stream`, `councils: Council[]`, `hubCouncils?: HubCouncil[]` |
-| `HubCouncil` | — | `hub: Hub`, `council: Council`, `ministry: Ministry` |
-| `Hub` | `location: { latitude, longitude }`, `activeHubFellowshipCount`, `vacationHubFellowshipCount`, `meetingDay: { day: 'Wednesday'|'Friday'|'Saturday' }`, `vacationStatus` | `hubCouncil: HubCouncil`, `governorship: Governorship`, `creativeArts: Campus` |
+| `Ministry` | `bankAccount: string` | `stream: Stream` |
 
 `StreamOptions = 'Anagkazo Encounter' | 'Gospel Encounter' | 'Holy Ghost Encounter'
 | 'First Love Experience'`

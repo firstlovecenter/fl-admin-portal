@@ -17,14 +17,12 @@ RETURN bacenta.name AS name, COUNT(member) AS memberCount
 export const checkGovernorshipHasNoMembers = `//cypher
 MATCH (governorship:Governorship {id:$governorshipId})
 OPTIONAL MATCH (governorship)-[:HAS]->(bacentas:Bacenta)
-OPTIONAL MATCH (governorship)-[:HAS_MINISTRY]->(hub:Hub)
-RETURN governorship.name AS name,  COUNT(bacentas) AS bacentaCount,  COUNT(hub) AS hubCount
+RETURN governorship.name AS name,  COUNT(bacentas) AS bacentaCount
 `
 export const checkCouncilHasNoMembers = `//cypher
 MATCH (council:Council {id:$councilId})
 OPTIONAL MATCH (council)-[:HAS]->(governorships:Governorship)<-[:LEADS]-(member:Active:Member)
-OPTIONAL MATCH (council)-[:HAS_MINISTRY]->(hubCouncils:HubCouncil)<-[:LEADS]-(leader:Active:Member)
-RETURN council.name AS name, COUNT(member) AS memberCount, COUNT(governorships) AS governorshipCount, COUNT(leader) AS hubCouncilLeaderCount, COUNT(hubCouncils) AS hubCouncilCount
+RETURN council.name AS name, COUNT(member) AS memberCount, COUNT(governorships) AS governorshipCount
 `
 
 export const checkStreamHasNoMembers = `//cypher
@@ -36,8 +34,7 @@ RETURN stream.name AS name, COUNT(member) AS memberCount, COUNT(councils) AS cou
 export const checkCampusHasNoMembers = `//cypher
 MATCH (campus:Campus {id:$campusId})
 OPTIONAL MATCH (campus)-[:HAS]->(streams:Stream)<-[:LEADS]-(member:Active:Member)
-OPTIONAL MATCH (campus)-[:HAS_MINISTRY]->(creativeArts:CreativeArts)<-[:LEADS]-(leader:Active:Member)
-RETURN campus.name AS name, COUNT(member) AS memberCount, COUNT(streams) AS streamCount, COUNT(leader) AS leaderCount, COUNT(creativeArts) AS creativeArtsCount
+RETURN campus.name AS name, COUNT(member) AS memberCount, COUNT(streams) AS streamCount
 `
 export const checkOversightHasNoMembers = `//cypher
 MATCH (oversight:Oversight {id:$oversightId})

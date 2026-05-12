@@ -120,7 +120,7 @@ export const getStreamFinancials = async (stream: Stream) => {
       subaccount = SECRETS.PS_SB_OA_GHSOUTH
       break
 
-    // Creative Arts Accounts
+    // Ministry Accounts
     case 'accra_greater_love_choir':
       subaccount = SECRETS.PS_SB_CA_GREATER_LOVE_CHOIR
       break

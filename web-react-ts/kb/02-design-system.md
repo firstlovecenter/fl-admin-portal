@@ -112,7 +112,7 @@ one for the job; do not mix them.
 
 | Component | Use for | Notes |
 | --- | --- | --- |
-| **`components/ChurchGraph`** | Per-church-level **graph pages** in `pages/services/graphs/` (BacentaGraphs, FellowshipGraphs, CouncilGraphs, StreamGraphs, CampusGraphs, OversightGraphs, GovernorshipGraphs, HubGraphs, HubCouncilGraphs, MinistryGraphs, CreativeArtsGraphs, DenominationGraphs). Drives the `/{level}/graphs` routes. | The canonical chart for graph pages. Drives all 12+ per-level views off a single `graphType` prop. **This is the upgrade target — keep using it.** |
+| **`components/ChurchGraph`** | Per-church-level **graph pages** in `pages/services/graphs/` (BacentaGraphs, FellowshipGraphs, CouncilGraphs, StreamGraphs, CampusGraphs, OversightGraphs, GovernorshipGraphs, MinistryGraphs, DenominationGraphs). Drives the `/{level}/graphs` routes. | The canonical chart for graph pages. Drives all per-level views off a single `graphType` prop. **This is the upgrade target — keep using it.** |
 | **`pages/dashboards/TrendSpark`** | The **UserDashboard** spark / trend chart only. | Dashboard-specific (own data window, own drill-down semantics). Do not import on graph pages — keep the chart implementations separate so each can evolve independently. |
 
 `ChurchGraph` was modernized in 2026-Q2 to match the dashboard's visual

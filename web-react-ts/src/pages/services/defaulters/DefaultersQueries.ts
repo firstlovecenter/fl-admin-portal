@@ -730,7 +730,6 @@ export const CAMPUS_DEFAULTERS = gql`
       id
       name
       streamCount
-      creativeArtsCount
       activeStreamCount
 
       streamFormDefaultersThisWeekCount(weekStart: $weekStart)
@@ -749,13 +748,6 @@ export const CAMPUS_DEFAULTERS = gql`
       governorshipBankingDefaultersThisWeekCount(weekStart: $weekStart)
       councilBankedThisWeekCount(weekStart: $weekStart)
       councilBankingDefaultersThisWeekCount(weekStart: $weekStart)
-
-      activeHubCount
-      hubFormDefaultersThisWeekCount
-      hubBankingDefaultersThisWeekCount
-      hubsBankedThisWeekCount
-      hubRehearsalsThisWeekCount
-      hubCancelledRehearsalsThisWeekCount
     }
   }
 `

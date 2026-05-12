@@ -38,17 +38,12 @@ access the feature — it proves the gate works without over-privileging the tes
 | Campus Admin | campusadmin@test.com |
 | Oversight Admin | oversightadmin@test.com |
 
-### Creative Arts
+### Ministry
 
 | Role | Email |
 | --- | --- |
-| Hub Fellowship Leader | hubfellowshipleader@test.com |
-| Hub Leader | hubleader@test.com |
-| Hub Council Leader | hubcouncilleader@test.com |
 | Ministry Leader | ministryleader@test.com |
-| Creative Arts Leader | creativeartsleader@test.com |
 | Ministry Admin | ministryadmin@test.com |
-| Creative Arts Admin | creativeartsadmin@test.com |
 
 ### Arrivals
 

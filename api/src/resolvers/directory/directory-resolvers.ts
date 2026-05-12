@@ -258,11 +258,6 @@ const directoryMutation = {
           `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
         )
       }
-      if (governorshipCheck.hubCount.toNumber()) {
-        throw new Error(
-          `${governorshipCheck?.name} Governorship has ${governorshipCheck?.hubCount} active hubs. Please close down all hubs and try again.`
-        )
-      }
 
       const record = lastServiceRecord.lastService?.properties ?? {
         bankingSlip: null,
@@ -347,12 +342,6 @@ const directoryMutation = {
       if (councilCheck.governorshipCount.toNumber()) {
         throw new Error(
           `${councilCheck?.name} Council has ${councilCheck?.governorshipCount} active governorships. Please close down all governorships and try again.`
-        )
-      }
-
-      if (councilCheck.hubCouncilLeaderCount.toNumber()) {
-        throw new Error(
-          `${councilCheck?.name} Council has ${councilCheck?.hubCouncilCount} active hub councils. Please close down all hub councils and try again.`
         )
       }
 
@@ -527,12 +516,6 @@ const directoryMutation = {
       if (campusCheck.memberCount > 0) {
         throw new Error(
           `${campusCheck?.name} Campus has ${campusCheck?.streamCount} active streams. Please close down all streams and try again.`
-        )
-      }
-
-      if (campusCheck.leaderCount > 0) {
-        throw new Error(
-          `${campusCheck?.name} Campus has ${campusCheck?.creativeArtsCount} active creativeArts. Please close down all creativeArts and try again.`
         )
       }
 

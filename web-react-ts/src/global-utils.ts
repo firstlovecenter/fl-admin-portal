@@ -424,9 +424,7 @@ interface MemberWithChurchCount extends Member {
   leadsAdminsOversightCount: number
 
   //sonta
-  leadsHubCount: number
   leadsAdminsMinistryCount: number
-  leadsAdminsCreativeArtsCount: number
 }
 export const getMemberCount = (servant: MemberWithChurchCount) => {
   if (!servant?.memberCount) {
@@ -508,22 +506,6 @@ export const getChurchCount = (servant: MemberWithChurchCount) => {
     }
   }
 
-  if (servant?.leadsHubCount) {
-    if (churchesCount) {
-      churchesCount += ','
-
-      if (servant.leadsHubCount === 1) {
-        churchesCount = `${churchesCount} ${servant.leadsHubCount} Hub`
-      } else {
-        churchesCount = `${churchesCount} ${servant.leadsHubCount} Hubs`
-      }
-    } else if (servant.leadsHubCount === 1) {
-      churchesCount = `${servant.leadsHubCount} Hub`
-    } else {
-      churchesCount = `${servant.leadsHubCount} Hubs`
-    }
-  }
-
   if (servant?.leadsAdminsMinistryCount) {
     if (churchesCount) {
       churchesCount += ','
@@ -537,22 +519,6 @@ export const getChurchCount = (servant: MemberWithChurchCount) => {
       churchesCount = `${servant.leadsAdminsMinistryCount} Ministry`
     } else {
       churchesCount = `${servant.leadsAdminsMinistryCount} Ministries`
-    }
-  }
-
-  if (servant?.leadsAdminsCreativeArtsCount) {
-    if (churchesCount) {
-      churchesCount += ','
-
-      if (servant.leadsAdminsCreativeArtsCount === 1) {
-        churchesCount = `${churchesCount} ${servant.leadsAdminsCreativeArtsCount} Creative Arts`
-      } else {
-        churchesCount = `${churchesCount} ${servant.leadsAdminsCreativeArtsCount} Creative Arts`
-      }
-    } else if (servant.leadsAdminsCreativeArtsCount === 1) {
-      churchesCount = `${servant.leadsAdminsCreativeArtsCount} Creative Arts`
-    } else {
-      churchesCount = `${servant.leadsAdminsCreativeArtsCount} Creative Arts`
     }
   }
 

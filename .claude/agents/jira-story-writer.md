@@ -79,7 +79,7 @@ Apply one or more labels that describe the domain. Use the exact strings below.
 | `auth` | JWT, login flow, roles, `isAuth`, permission guards |
 | `pwa` | PWA-specific behaviour: offline cache, service worker, installability, touch targets |
 | `directory` | Member management, church hierarchy (Bacenta → Stream → Council → Oversight), servant config |
-| `services` | Service records, offerings, attendance, weekday services, Creative Arts |
+| `services` | Service records, offerings, attendance, weekday services, ministry rehearsals |
 | `arrivals` | Bussing records, arrivals, vehicles, Anagkazo payments |
 | `banking` | Banking proofs, banking slips, Anagkazo confirmations |
 | `accounts` | Account transactions, expenses, financial flows |
@@ -115,7 +115,7 @@ business rule. Name the church level or role affected.
 ```
 
 **Title format**: `[Module] Short action-oriented description`
-- Example: `[Services] Record weekday attendance for Creative Arts governorship`
+- Example: `[Services] Record weekday attendance for a governorship`
 - Example: `[Arrivals] Display bussing vehicle capacity on confirmation screen`
 - Example: `[Design] Migrate banking proof pages from Bootstrap to Shadcn`
 

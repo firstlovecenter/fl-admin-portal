@@ -30,8 +30,6 @@ type ButtonConfirmPaymentProps = {
           bacentaId?: string
           governorshipId?: string
           councilId?: string
-          hubId?: string
-          hubCouncilId?: string
           ministryId?: string
         }>
       | undefined
@@ -46,15 +44,8 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
   const { refetch, service, handleClose, disabled, className } = props
   const [sending, setSending] = useState(false)
   const navigate = useNavigate()
-  const {
-    bacentaId,
-    governorshipId,
-    councilId,
-    hubId,
-    hubCouncilId,
-    ministryId,
-    clickCard,
-  } = useContext(ChurchContext)
+  const { bacentaId, governorshipId, councilId, ministryId, clickCard } =
+    useContext(ChurchContext)
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
   const location = useLocation()
 
@@ -72,8 +63,6 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
             bacentaId,
             governorshipId,
             councilId,
-            hubId,
-            hubCouncilId,
             ministryId,
           })
 
@@ -99,16 +88,6 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
             )
           } else if (res.data?.councils) {
             serviceRecord = res.data?.councils[0].services.find(
-              (serviceFromList: ConfirmPaymentServiceType) =>
-                serviceFromList?.id === service?.id
-            )
-          } else if (res.data?.hubs) {
-            serviceRecord = res.data?.hubs[0].rehearsals.find(
-              (serviceFromList: ConfirmPaymentServiceType) =>
-                serviceFromList?.id === service?.id
-            )
-          } else if (res.data?.hubCouncils) {
-            serviceRecord = res.data?.hubCouncils[0].rehearsals.find(
               (serviceFromList: ConfirmPaymentServiceType) =>
                 serviceFromList?.id === service?.id
             )

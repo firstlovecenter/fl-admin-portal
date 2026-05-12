@@ -33,7 +33,6 @@ export interface FormikWithApolloProps extends FormikComponentProps {
 }
 
 export interface RoleBasedSearch extends FormikComponentProps {
-  creativeArts?: boolean
   initialValue?: string
   setFieldValue: (
     field: string,

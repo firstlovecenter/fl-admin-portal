@@ -173,10 +173,7 @@ export function clearAuth(): void {
   sessionStorage.removeItem('streamId')
   sessionStorage.removeItem('councilId')
   sessionStorage.removeItem('governorshipId')
-  sessionStorage.removeItem('hubId')
-  sessionStorage.removeItem('hubCouncilId')
   sessionStorage.removeItem('ministryId')
-  sessionStorage.removeItem('creativeArtsId')
 }
 
 /**

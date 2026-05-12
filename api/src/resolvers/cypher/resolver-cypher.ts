@@ -87,24 +87,24 @@ RETURN member {
 `
 
 export const matchChurchQuery = `
-  MATCH (church {id:$id}) 
+  MATCH (church {id:$id})
   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus OR church:Oversight OR church:Denomination
-  OR church:ClosedBacenta 
-  OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
+  OR church:ClosedBacenta
+  OR church:Ministry
 
-  WITH church, labels(church) as labels 
-  UNWIND labels AS label 
+  WITH church, labels(church) as labels
+  UNWIND labels AS label
   WITH church, label WHERE label IN ['Bacenta', 'Governorship', 'Council',
-  'Stream', 'Campus', 'Oversight', 'Denomination', 'ClosedBacenta', 'CreativeArts', 'Ministry', 'HubCouncil', 'Hub']
+  'Stream', 'Campus', 'Oversight', 'Denomination', 'ClosedBacenta', 'Ministry']
 
   RETURN church.id AS id, church.name AS name, church.firstName AS firstName, church.lastName AS lastName, label AS type
   `
 
 export const getChurchDataQuery = `
-  MATCH (church {id:$id}) 
+  MATCH (church {id:$id})
   WHERE church:Bacenta OR church:Constituency OR church:Council OR church:Stream
   OR church:Campus OR church:Oversight OR church:Denomination
-  OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
+  OR church:Ministry
 
   MATCH (church)-[:HAS_HISTORY]->(:SERVICE_LOG)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
   WHERE date.date >= date() - duration('P8W')
@@ -144,10 +144,16 @@ OR member.whatsappNumber = $whatsappNumber
 RETURN member IS NOT NULL AS predicate, member AS member
 `
 
+// Closed-Hub-tree labels (ClosedHub, ClosedHubCouncil, ClosedCreativeArts) are
+// still excluded even though those tiers were removed from the active SDL —
+// dev/prod still hold historical LEADS edges to those closed nodes, and
+// without the excludes a member with old leadership history would be falsely
+// blocked from deactivation.
 export const checkMemberHasNoActiveRelationships = `
 MATCH p=(member:Member {id:$id})-[:LEADS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|COUNTS_ARRIVALS_FOR|IS_TELLER_FOR]->(church)
-WHERE NOT church:ClosedBacenta AND NOT church:ClosedGovernorship AND NOT church:ClosedCouncil AND NOT church:ClosedStream AND NOT church:ClosedCampus AND NOT church:ClosedOversight AND NOT church:ClosedDenomination 
-AND NOT church:ClosedCreativeArts AND NOT church:ClosedMinistry AND NOT church:ClosedHubCouncil AND NOT church:ClosedHub
+WHERE NOT church:ClosedBacenta AND NOT church:ClosedGovernorship AND NOT church:ClosedCouncil AND NOT church:ClosedStream AND NOT church:ClosedCampus AND NOT church:ClosedOversight AND NOT church:ClosedDenomination
+AND NOT church:ClosedMinistry
+AND NOT church:ClosedHub AND NOT church:ClosedHubCouncil AND NOT church:ClosedCreativeArts
 RETURN COUNT(p) as relationshipCount
 `
 
@@ -327,7 +333,7 @@ WITH member, bacenta
       CALL {
           WITH member
           WITH member  WHERE $basonta IS NOT NULL
-          MATCH (basonta:CreativeArts {id:$basonta})
+          MATCH (basonta:Basonta {id:$basonta})
           MERGE (member)-[:BELONGS_TO]-> (basonta)
           RETURN count(member) AS member_basonta
           }

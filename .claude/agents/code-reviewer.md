@@ -119,7 +119,7 @@ UI change as mobile-first and installable.
   imported across resolver files.
 
 ### Domain correctness
-- Terminology matches `kb/01-glossary.md` (Bacenta, Bussing, Hub, etc.).
+- Terminology matches `kb/01-glossary.md` (Bacenta, Bussing, Ministry, etc.).
 - State transitions match `kb/04-state-machines.md` — no illegal moves
   (especially `transactionStatus` after `success`, vacation Bacentas marked as
   defaulters, money values mutated after settlement).

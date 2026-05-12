@@ -6,8 +6,8 @@ collapse a step.
 
 ## W1 — Record a Bacenta service (and bank the offering)
 
-**Actors:** `leaderBacenta` (or `adminMinistry`/`adminCreativeArts`), assisted by
-treasurers, then a `tellerStream` for confirmation.
+**Actors:** `leaderBacenta` (or `adminMinistry`), assisted by treasurers, then a
+`tellerStream` for confirmation.
 
 **Pre-conditions:**
 - The Bacenta has a current leader (`HAS_HISTORY` → `ServiceLog` exists, or one is
@@ -57,9 +57,9 @@ treasurers, then a `tellerStream` for confirmation.
 **Cancel path:** If no service was held, the leader files a `RecordCancelledService`
 mutation with `noServiceReason` instead of attendance/income.
 
-## W2 — Record a creative-arts rehearsal
+## W2 — Record a ministry rehearsal
 
-**Actors:** `leaderHub` (or admin equivalents above).
+**Actors:** `leaderMinistry` (or admin equivalents above).
 
 Same shape as W1 but uses the `RehearsalRecord` typename, `rehearsal-resolver.ts`,
 and the rehearsal Cypher in `rehearsal-cypher.ts`. Banking is not part of this

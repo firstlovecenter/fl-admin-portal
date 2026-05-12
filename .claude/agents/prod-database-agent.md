@@ -51,7 +51,7 @@ Use `Neo4j-prod` to:
 Domain context to keep in mind (from `CLAUDE.md`):
 ```
 Denomination → Oversight → Campus → Stream → Council → Governorship → Bacenta → Fellowship
-                                           ↘ CreativeArts → Ministry → HubCouncil → Hub
+                                           ↘ Ministry
 ```
 
 ### Step 3 — Root-cause analysis via `/fix`
