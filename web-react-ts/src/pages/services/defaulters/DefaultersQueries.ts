@@ -423,6 +423,7 @@ export const STREAM_DEFAULTERS = gql`
       id
       name
       councilCount
+      governorshipCount
       activeBacentaCount
       formDefaultersThisWeekCount(weekStart: $weekStart)
       bankingDefaultersThisWeekCount(weekStart: $weekStart)
@@ -433,6 +434,45 @@ export const STREAM_DEFAULTERS = gql`
       governorshipBankingDefaultersThisWeekCount(weekStart: $weekStart)
       councilBankedThisWeekCount(weekStart: $weekStart)
       councilBankingDefaultersThisWeekCount(weekStart: $weekStart)
+    }
+  }
+`
+
+export const STREAM_BY_GOVERNORSHIP = gql`
+  query streamByGovernorship($id: ID!, $weekStart: Date) {
+    streams(where: { id: { eq: $id } }) {
+      id
+      name
+      councils {
+        id
+        name
+        leader {
+          id
+          fullName
+        }
+        governorships {
+          id
+          name
+          leader {
+            id
+            fullName
+          }
+          admin {
+            id
+            firstName
+            lastName
+            fullName
+            phoneNumber
+            whatsappNumber
+          }
+          activeBacentaCount
+          formDefaultersThisWeekCount(weekStart: $weekStart)
+          bankingDefaultersThisWeekCount(weekStart: $weekStart)
+          bankedThisWeekCount(weekStart: $weekStart)
+          servicesThisWeekCount(weekStart: $weekStart)
+          cancelledServicesThisWeekCount(weekStart: $weekStart)
+        }
+      }
     }
   }
 `

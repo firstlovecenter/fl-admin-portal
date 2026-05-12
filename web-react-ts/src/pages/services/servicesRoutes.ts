@@ -77,6 +77,12 @@ const DenominationReport = lazy(
 const StreamByCouncil = lazy(
   () => import('pages/services/defaulters/church-by-subchurch/StreamByCouncil')
 )
+const StreamByGovernorship = lazy(
+  () =>
+    import(
+      'pages/services/defaulters/church-by-subchurch/StreamByGovernorship'
+    )
+)
 const CampusByStream = lazy(
   () => import('pages/services/defaulters/church-by-subchurch/CampusByStream')
 )
@@ -416,6 +422,12 @@ export const graphs: LazyRouteTypes[] = [
     placeholder: true,
   },
   {
+    path: '/services/stream-by-governorship',
+    element: StreamByGovernorship,
+    roles: permitLeaderAdmin('Stream'),
+    placeholder: true,
+  },
+  {
     path: '/services/campus-by-stream',
     element: CampusByStream,
     roles: permitLeaderAdmin('Campus'),
@@ -426,12 +438,6 @@ export const graphs: LazyRouteTypes[] = [
     path: '/services/oversight-by-campus',
     element: OversightByCampus,
     roles: permitLeaderAdmin('Oversight'),
-    placeholder: true,
-  },
-  {
-    path: '/services/stream-by-council',
-    element: StreamByCouncil,
-    roles: permitLeaderAdmin('Bacenta'),
     placeholder: true,
   },
 ]

@@ -12,82 +12,20 @@ import { Skeleton } from 'components/ui/skeleton'
 import { STREAM_BY_COUNCIL } from '../DefaultersQueries'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
-
-const statClass = (value: number, goodWhenZero = true) =>
-  goodWhenZero
-    ? value
-      ? 'text-destructive'
-      : 'text-success'
-    : value
-    ? 'text-success'
-    : 'text-muted-foreground'
-
-const bankedClass = (banked: number, services: number) => {
-  if (services === 0) return 'text-muted-foreground'
-  if (banked === services) return 'text-success'
-  if (banked > 0) return 'text-warning'
-  return 'text-destructive'
-}
-
-const StatRow = ({
-  label,
-  value,
-  valueClass,
-}: {
-  label: string
-  value: number
-  valueClass: string
-}) => (
-  <div className="flex items-center justify-between px-4 py-2.5">
-    <span className="text-sm text-muted-foreground">{label}</span>
-    <span className={`text-sm font-semibold tabular-nums ${valueClass}`}>
-      {value}
-    </span>
-  </div>
-)
-
-const SummaryRow = ({
-  label,
-  value,
-  valueClass = 'text-foreground',
-}: {
-  label: string
-  value: string
-  valueClass?: string
-}) => (
-  <div className="flex items-center justify-between px-4 py-2.5">
-    <span className="text-sm text-muted-foreground">{label}</span>
-    <span className={`text-sm font-semibold tabular-nums ${valueClass}`}>
-      {value}
-    </span>
-  </div>
-)
-
-const CouncilCardSkeleton = () => (
-  <div className="overflow-hidden rounded-xl border border-border bg-card">
-    <div className="border-b border-border px-4 py-3">
-      <Skeleton className="h-5 w-48" />
-      <Skeleton className="mt-1.5 h-4 w-32" />
-    </div>
-    <div className="divide-y divide-border">
-      {Array.from({ length: 5 }).map((_, j) => (
-        <div key={j} className="flex items-center justify-between px-4 py-2.5">
-          <Skeleton className="h-4 w-44" />
-          <Skeleton className="h-4 w-8" />
-        </div>
-      ))}
-    </div>
-    <div className="flex gap-3 border-t border-border bg-muted/20 px-4 py-3">
-      <Skeleton className="h-10 w-20 rounded-md" />
-      <Skeleton className="h-10 w-28 rounded-md" />
-    </div>
-  </div>
-)
+import useSelectedWeek from 'hooks/useSelectedWeek'
+import {
+  statClass,
+  bankedClass,
+  StatRow,
+  SummaryRow,
+  CardSkeleton,
+} from './subchurch-shared'
 
 const StreamByCouncil = () => {
   const { streamId, clickCard } = useContext(ChurchContext)
+  const { weekStart } = useSelectedWeek()
   const { data, loading, error, refetch } = useQuery(STREAM_BY_COUNCIL, {
-    variables: { id: streamId },
+    variables: { id: streamId, weekStart },
   })
   const navigate = useNavigate()
 
@@ -138,7 +76,7 @@ const StreamByCouncil = () => {
               <div className="space-y-4">
                 {loading
                   ? Array.from({ length: 3 }).map((_, i) => (
-                      <CouncilCardSkeleton key={i} />
+                      <CardSkeleton key={i} />
                     ))
                   : councils.map((council) => (
                       <div
@@ -148,7 +86,7 @@ const StreamByCouncil = () => {
                         {/* Clickable area: header + stats */}
                         <button
                           type="button"
-                          className="w-full text-left transition-colors hover:bg-muted/30 active:bg-muted/50"
+                          className="w-full text-left transition-colors hover:bg-muted/30 active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
                           onClick={() => {
                             clickCard(council)
                             navigate('/services/council-by-governorship')

@@ -21,6 +21,7 @@ import useSontaLevel from 'hooks/useSontaLevel'
 import useSelectedWeek from 'hooks/useSelectedWeek'
 import WeekSelector from 'components/WeekSelector/WeekSelector'
 
+import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
 import { StatCard } from 'components/ui/stat-card'
@@ -373,6 +374,19 @@ const DefaultersDashboard = () => {
     }
   }, [church, subChurch, linkWith])
 
+  // Stream-only: second drill-down by Governorship (one level deeper than Council)
+  const streamGovernorshipAggregate = useMemo<Tile | null>(() => {
+    if (level !== 'Stream' || !church) return null
+    const value = (church as Record<string, unknown>).governorshipCount
+    if (typeof value !== 'number') return null
+    return {
+      title: 'Governorships',
+      data: value,
+      color: 'neutral',
+      link: linkWith('/services/stream-by-governorship'),
+    }
+  }, [church, level, linkWith])
+
   const tabsCount = [
     showBacentaSection,
     showStreamSection,
@@ -489,13 +503,34 @@ const DefaultersDashboard = () => {
                             {subChurchAggregate.data}
                           </p>
                         </div>
-                        <button
-                          type="button"
+                        <Button
+                          variant="outline"
                           onClick={() => navigate(subChurchAggregate.link)}
-                          className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:bg-muted/80"
                         >
                           View list
-                        </button>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {streamGovernorshipAggregate && (
+                    <Card>
+                      <CardContent className="flex items-center justify-between gap-4 p-4">
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                            {streamGovernorshipAggregate.title}
+                          </p>
+                          <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                            {streamGovernorshipAggregate.data}
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            navigate(streamGovernorshipAggregate.link)
+                          }
+                        >
+                          View list
+                        </Button>
                       </CardContent>
                     </Card>
                   )}
