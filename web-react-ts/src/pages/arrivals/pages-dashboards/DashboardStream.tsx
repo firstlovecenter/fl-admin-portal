@@ -99,13 +99,18 @@ const StreamDashboard = () => {
   const today = new Date().toISOString().slice(0, 10)
   const effectiveDate = arrivalDate || today
 
-  const { data, loading, error, refetch, startPolling, stopPolling } = useQuery(
-    STREAM_ARRIVALS_DASHBOARD,
-    {
-      variables: { id: streamId, arrivalDate: effectiveDate },
-      fetchPolicy: 'cache-and-network',
-    }
-  )
+  const {
+    data,
+    previousData,
+    loading,
+    error,
+    refetch,
+    startPolling,
+    stopPolling,
+  } = useQuery(STREAM_ARRIVALS_DASHBOARD, {
+    variables: { id: streamId, arrivalDate: effectiveDate },
+    fetchPolicy: 'cache-and-network',
+  })
 
   useVisibilityAwarePolling({
     startPolling,
@@ -209,7 +214,12 @@ const StreamDashboard = () => {
 
   return (
     <PullToRefresh onRefresh={refetch}>
-      <ApolloWrapper data={data} loading={loading} error={error}>
+      <ApolloWrapper
+        data={data}
+        loading={loading}
+        error={error}
+        placeholder={!!previousData}
+      >
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
             {/* ── Page header ── */}

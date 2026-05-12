@@ -91,6 +91,7 @@ const CampusDashboard = () => {
 
   const {
     data,
+    previousData,
     loading,
     error,
     refetch,
@@ -230,7 +231,12 @@ const CampusDashboard = () => {
 
   return (
     <PullToRefresh onRefresh={refetch}>
-      <ApolloWrapper data={data} loading={loading} error={error}>
+      <ApolloWrapper
+        data={data}
+        loading={loading}
+        error={error}
+        placeholder={!!previousData}
+      >
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
             {/* ── Page header ── */}
