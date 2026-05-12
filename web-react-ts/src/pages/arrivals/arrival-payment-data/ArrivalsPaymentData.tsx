@@ -75,6 +75,7 @@ const ArrivalsPaymentData = () => {
   const { arrivalDate } = useContext(ChurchContext)
   const church = currentUser?.currentChurch
   const arrivalsDate = arrivalDate || today
+  const streamId = church?.id ?? currentUser?.stream
 
   const {
     data,
@@ -88,14 +89,14 @@ const ArrivalsPaymentData = () => {
   } = useInfiniteScroll<ArrivalsPaymentDataResponse, ArrivalPaymentRow>({
     query: DISPLAY_ARRIVALS_PAYMENT_DATA,
     variables: {
-      streamId: currentUser?.currentChurch?.id,
+      streamId,
       arrivalsDate,
     },
     initialPageSize: INITIAL_PAGE_SIZE,
     pageSize: PAGE_SIZE,
     getItems: (d) => d?.streams?.[0]?.arrivalsPaymentData ?? [],
     getCount: (d) => d?.streams?.[0]?.arrivalsPaymentCount,
-    skip: !currentUser?.currentChurch?.id,
+    skip: !streamId,
   })
 
   const humanDate = getHumanReadableDate(arrivalsDate)

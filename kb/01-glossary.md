@@ -127,6 +127,18 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
 - **Maintenance mode** — manual flag; can be enabled by uncommenting in
   `web-react-ts/src/index.tsx`.
 
+## Shepherding
+
+- **Shepherding Control meeting** — a periodic accountability meeting where leaders
+  at every level (Bishop down to Bacenta Leader) are assessed against weekly
+  performance criteria (attendance, income, bussing, etc.). The aim is threefold:
+  surface where shepherds are failing so they can correct course, cull out
+  non-performing shepherds and leaders, and encourage those who are doing well.
+  Functions as a leaderboard. The portal's **Shepherding Control** view is the
+  projection-display tool used to run these meetings live (see SYN-86); each slide
+  shows a leader's photo, their church, and a multi-week metric chart. A PDF export
+  of the same deck is generated ahead of the meeting so attendees can follow along.
+
 ## Codebase patterns
 
 - **Servant resolver factory** — the data-driven generator that turns
