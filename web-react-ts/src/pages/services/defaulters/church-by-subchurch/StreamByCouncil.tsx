@@ -1,129 +1,304 @@
 import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { ChurchContext } from 'contexts/ChurchContext'
-import React, { useContext } from 'react'
-import { Card, Col, Row, Button, Container } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
-import { useNavigate } from 'react-router'
-import { STREAM_BY_COUNCIL } from '../DefaultersQueries'
-import '../Defaulters.css'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
-import { HigherChurchWithDefaulters } from '../defaulters-types'
 import PullToRefresh from 'components/base-component/PullToRefresh'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useContext } from 'react'
+import { useNavigate } from 'react-router'
+import { Phone, MessageCircle, Network } from 'lucide-react'
+
+import { Button } from 'components/ui/button'
+import { Skeleton } from 'components/ui/skeleton'
+
+import { STREAM_BY_COUNCIL } from '../DefaultersQueries'
+import { HigherChurchWithDefaulters } from '../defaulters-types'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
+
+const statClass = (value: number, goodWhenZero = true) =>
+  goodWhenZero
+    ? value
+      ? 'text-destructive'
+      : 'text-success'
+    : value
+    ? 'text-success'
+    : 'text-muted-foreground'
+
+const bankedClass = (banked: number, services: number) => {
+  if (services === 0) return 'text-muted-foreground'
+  if (banked === services) return 'text-success'
+  if (banked > 0) return 'text-warning'
+  return 'text-destructive'
+}
+
+const StatRow = ({
+  label,
+  value,
+  valueClass,
+}: {
+  label: string
+  value: number
+  valueClass: string
+}) => (
+  <div className="flex items-center justify-between px-4 py-2.5">
+    <span className="text-sm text-muted-foreground">{label}</span>
+    <span className={`text-sm font-semibold tabular-nums ${valueClass}`}>
+      {value}
+    </span>
+  </div>
+)
+
+const SummaryRow = ({
+  label,
+  value,
+  valueClass = 'text-foreground',
+}: {
+  label: string
+  value: string
+  valueClass?: string
+}) => (
+  <div className="flex items-center justify-between px-4 py-2.5">
+    <span className="text-sm text-muted-foreground">{label}</span>
+    <span className={`text-sm font-semibold tabular-nums ${valueClass}`}>
+      {value}
+    </span>
+  </div>
+)
+
+const CouncilCardSkeleton = () => (
+  <div className="overflow-hidden rounded-xl border border-border bg-card">
+    <div className="border-b border-border px-4 py-3">
+      <Skeleton className="h-5 w-48" />
+      <Skeleton className="mt-1.5 h-4 w-32" />
+    </div>
+    <div className="divide-y divide-border">
+      {Array.from({ length: 5 }).map((_, j) => (
+        <div key={j} className="flex items-center justify-between px-4 py-2.5">
+          <Skeleton className="h-4 w-44" />
+          <Skeleton className="h-4 w-8" />
+        </div>
+      ))}
+    </div>
+    <div className="flex gap-3 border-t border-border bg-muted/20 px-4 py-3">
+      <Skeleton className="h-10 w-20 rounded-md" />
+      <Skeleton className="h-10 w-28 rounded-md" />
+    </div>
+  </div>
+)
 
 const StreamByCouncil = () => {
   const { streamId, clickCard } = useContext(ChurchContext)
   const { data, loading, error, refetch } = useQuery(STREAM_BY_COUNCIL, {
-    variables: {
-      id: streamId,
-    },
+    variables: { id: streamId },
   })
-
   const navigate = useNavigate()
+
+  const stream = data?.streams?.[0]
+  const councils: HigherChurchWithDefaulters[] = stream?.councils ?? []
+
+  const totals = councils.reduce(
+    (acc, c) => ({
+      services: acc.services + (c.servicesThisWeekCount ?? 0),
+      formDefaulters:
+        acc.formDefaulters + (c.formDefaultersThisWeekCount ?? 0),
+      banked: acc.banked + (c.bankedThisWeekCount ?? 0),
+      notBanked: acc.notBanked + (c.bankingDefaultersThisWeekCount ?? 0),
+      cancelled: acc.cancelled + (c.cancelledServicesThisWeekCount ?? 0),
+    }),
+    { services: 0, formDefaulters: 0, banked: 0, notBanked: 0, cancelled: 0 }
+  )
 
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
-          <HeadingPrimary loading={loading || !data?.streams[0]?.name}>
-            {`${data?.streams[0].name} Stream By Council`}
-          </HeadingPrimary>
-          <Row>
-            {data?.streams.length ? (
-              data?.streams[0].councils.map(
-                (council: HigherChurchWithDefaulters, i: number) => (
-                  <Col key={i} xs={12} className="mb-3">
-                    <Card>
-                      <Card.Header className="fw-bold">
-                        <div>{`${council.name} Council`}</div>
-                        <div className="text-secondary">
-                          {council.leader.fullName}
-                        </div>
-                      </Card.Header>
-                      <Card.Body
-                        onClick={() => {
-                          clickCard(council)
-                          navigate('/services/council-by-governorship')
-                        }}
+        <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6">
+            <header className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                {loading || !stream ? (
+                  <Skeleton className="h-9 w-64" />
+                ) : (
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                    {stream.name}{' '}
+                    <span className="text-churches">Stream By Council</span>
+                  </h1>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-1 shrink-0 gap-1.5"
+                onClick={() => navigate('/services/stream-by-governorship')}
+              >
+                <Network className="h-4 w-4" />
+                By Governorship
+              </Button>
+            </header>
+
+            <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_280px] lg:items-start">
+              {/* Council list */}
+              <div className="space-y-4">
+                {loading
+                  ? Array.from({ length: 3 }).map((_, i) => (
+                      <CouncilCardSkeleton key={i} />
+                    ))
+                  : councils.map((council) => (
+                      <div
+                        key={council.id}
+                        className="overflow-hidden rounded-xl border border-border bg-card"
                       >
-                        <div className="fw-bold">
-                          Active Bacentas {council.activeBacentaCount}
-                        </div>
-                        <div className="good">
-                          Services This Week {council.servicesThisWeekCount}
-                        </div>
-                        <div
-                          className={
-                            council.formDefaultersThisWeekCount ? 'bad' : 'good'
-                          }
+                        {/* Clickable area: header + stats */}
+                        <button
+                          type="button"
+                          className="w-full text-left transition-colors hover:bg-muted/30 active:bg-muted/50"
+                          onClick={() => {
+                            clickCard(council)
+                            navigate('/services/council-by-governorship')
+                          }}
                         >
-                          Form Not Filled This Week{' '}
-                          {council.formDefaultersThisWeekCount}
+                          <div className="border-b border-border px-4 py-3">
+                            <p className="font-semibold text-foreground">
+                              {council.name} Council
+                            </p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {council.leader?.fullName}
+                            </p>
+                          </div>
+                          <div className="divide-y divide-border">
+                            <StatRow
+                              label="Services This Week"
+                              value={council.servicesThisWeekCount}
+                              valueClass={statClass(
+                                council.servicesThisWeekCount,
+                                false
+                              )}
+                            />
+                            <StatRow
+                              label="Form Not Filled"
+                              value={council.formDefaultersThisWeekCount}
+                              valueClass={statClass(
+                                council.formDefaultersThisWeekCount
+                              )}
+                            />
+                            <StatRow
+                              label="Banked This Week"
+                              value={council.bankedThisWeekCount}
+                              valueClass={bankedClass(
+                                council.bankedThisWeekCount,
+                                council.servicesThisWeekCount
+                              )}
+                            />
+                            <StatRow
+                              label="Not Banked This Week"
+                              value={council.bankingDefaultersThisWeekCount}
+                              valueClass={statClass(
+                                council.bankingDefaultersThisWeekCount
+                              )}
+                            />
+                            <StatRow
+                              label="Cancelled Services"
+                              value={council.cancelledServicesThisWeekCount}
+                              valueClass={statClass(
+                                council.cancelledServicesThisWeekCount
+                              )}
+                            />
+                          </div>
+                        </button>
+
+                        {/* Footer — admin contact (outside the clickable area) */}
+                        <div className="border-t border-border bg-muted/20 px-4 py-3">
+                          <p className="mb-2.5 text-xs text-muted-foreground">
+                            Admin:{' '}
+                            <span className="font-medium text-foreground">
+                              {council.admin?.fullName}
+                            </span>
+                          </p>
+                          <div className="flex gap-2">
+                            <a href={`tel:${council.admin?.phoneNumber}`}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="min-h-[44px] gap-1.5"
+                              >
+                                <Phone className="h-4 w-4" />
+                                Call
+                              </Button>
+                            </a>
+                            <a
+                              href={`https://wa.me/${
+                                council.admin?.whatsappNumber
+                              }?text=${messageForAdminsOfDefaulters(council)}`}
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="min-h-[44px] gap-1.5 border-success/30 text-success hover:bg-success/10"
+                              >
+                                <MessageCircle className="h-4 w-4" />
+                                WhatsApp
+                              </Button>
+                            </a>
+                          </div>
                         </div>
-                        <div
-                          className={
-                            council.bankedThisWeekCount ===
-                            council.servicesThisWeekCount
-                              ? 'good'
-                              : council.bankedThisWeekCount > 0
-                              ? 'yellow'
-                              : 'bad'
-                          }
-                        >
-                          Banked This Week {council.bankedThisWeekCount}
-                        </div>
-                        <div
-                          className={
-                            council.bankingDefaultersThisWeekCount
-                              ? 'bad'
-                              : 'good'
-                          }
-                        >
-                          Not Banked This Week{' '}
-                          {council.bankingDefaultersThisWeekCount}
-                        </div>
-                        <div
-                          className={
-                            council.cancelledServicesThisWeekCount
-                              ? 'bad'
-                              : 'good'
-                          }
-                        >
-                          Cancelled Services This Week{' '}
-                          {council.cancelledServicesThisWeekCount}
-                        </div>
-                      </Card.Body>
-                      <Card.Footer>
-                        <div className="mb-2">
-                          Contact Admin: {council?.admin?.fullName}
-                        </div>
-                        <a href={`tel:${council?.admin?.phoneNumber}`}>
-                          <Button variant="primary">
-                            <TelephoneFill /> Call
-                          </Button>
-                        </a>
-                        <a
-                          href={`https://wa.me/${
-                            council?.admin?.whatsappNumber
-                          }?text=${messageForAdminsOfDefaulters(council)}`}
-                          className="ms-3"
-                        >
-                          <Button variant="success">
-                            <Whatsapp /> WhatsApp
-                          </Button>
-                        </a>
-                      </Card.Footer>
-                    </Card>
-                  </Col>
-                )
-              )
-            ) : (
-              <PlaceholderDefaulterList />
-            )}
-          </Row>
-        </Container>
+                      </div>
+                    ))}
+              </div>
+
+              {/* Summary sidebar */}
+              <div className="space-y-4 lg:sticky lg:top-6">
+                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                  <div className="border-b border-border px-4 py-3">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Stream Summary
+                    </h2>
+                  </div>
+                  <div className="divide-y divide-border">
+                    <SummaryRow
+                      label="Councils"
+                      value={loading ? '—' : String(councils.length)}
+                    />
+                    <SummaryRow
+                      label="Services Filed"
+                      value={loading ? '—' : totals.services.toLocaleString('en-GH')}
+                      valueClass={totals.services ? 'text-success' : 'text-muted-foreground'}
+                    />
+                    <SummaryRow
+                      label="Form Defaulters"
+                      value={loading ? '—' : totals.formDefaulters.toLocaleString('en-GH')}
+                      valueClass={
+                        totals.formDefaulters
+                          ? 'text-destructive'
+                          : 'text-muted-foreground'
+                      }
+                    />
+                    <SummaryRow
+                      label="Banked"
+                      value={loading ? '—' : totals.banked.toLocaleString('en-GH')}
+                      valueClass={totals.banked ? 'text-success' : 'text-muted-foreground'}
+                    />
+                    <SummaryRow
+                      label="Not Banked"
+                      value={loading ? '—' : totals.notBanked.toLocaleString('en-GH')}
+                      valueClass={
+                        totals.notBanked
+                          ? 'text-destructive'
+                          : 'text-muted-foreground'
+                      }
+                    />
+                    <SummaryRow
+                      label="Cancelled"
+                      value={loading ? '—' : totals.cancelled.toLocaleString('en-GH')}
+                      valueClass={
+                        totals.cancelled
+                          ? 'text-destructive'
+                          : 'text-muted-foreground'
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )
