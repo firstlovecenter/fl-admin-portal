@@ -1,6 +1,15 @@
+import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { showUserReportDialog } from 'global-utils'
 import useModal from 'hooks/useModal'
-import { AlertTriangle, Bug, RefreshCcw, Send } from 'lucide-react'
+import {
+  AlertTriangle,
+  Bug,
+  Check,
+  Copy,
+  RefreshCcw,
+  Send,
+} from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -120,8 +129,42 @@ const buildSummaries = (error: ApolloError | undefined): Summary[] => {
 
 const ErrorScreen = ({ error }: ErrorScreenProps) => {
   const { show, handleShow, handleClose } = useModal()
+  const [copied, setCopied] = useState(false)
 
   const apolloError = error as ApolloError | undefined
+  const payload = useMemo(() => {
+    if (error instanceof Error) {
+      return JSON.stringify(
+        { name: error.name, message: error.message, stack: error.stack },
+        null,
+        2
+      )
+    }
+    return JSON.stringify(error, null, 2)
+  }, [error])
+
+  const handleCopy = async () => {
+    if (!navigator.clipboard) {
+      toast.error('Copy unavailable — long-press the payload to select it')
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(payload)
+      setCopied(true)
+    } catch {
+      toast.error('Could not copy error details')
+    }
+  }
+
+  useEffect(() => {
+    if (!copied) return undefined
+    const timer = window.setTimeout(() => setCopied(false), 2000)
+    return () => window.clearTimeout(timer)
+  }, [copied])
+
+  useEffect(() => {
+    if (!show) setCopied(false)
+  }, [show])
   const { graphQLErrors, networkError } = apolloError ?? {
     graphQLErrors: undefined,
     networkError: undefined,
@@ -237,12 +280,24 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
               Raw payload — share this with the support team.
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="max-h-[60vh] rounded-md border border-border bg-muted/40">
-            <pre className="whitespace-pre-wrap break-words p-4 font-mono text-xs text-foreground">
-              {JSON.stringify(error, null, 2)}
+          <ScrollArea className="min-w-0 max-h-[60vh] rounded-md border border-border bg-muted/40">
+            <pre className="whitespace-pre-wrap [overflow-wrap:anywhere] p-4 font-mono text-xs text-foreground">
+              {payload}
             </pre>
           </ScrollArea>
           <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCopy}
+              className="min-h-11 sm:min-h-9"
+            >
+              {copied ? (
+                <Check aria-hidden="true" className="h-4 w-4" />
+              ) : (
+                <Copy aria-hidden="true" className="h-4 w-4" />
+              )}
+              {copied ? 'Copied' : 'Copy'}
+            </Button>
             <Button
               variant="outline"
               onClick={handleClose}
