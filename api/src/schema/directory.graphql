@@ -523,6 +523,7 @@ type Denomination implements Church @node
 }
 
 type Oversight implements Church @node
+  # @churchScoped(level: Oversight)
 {
   id: ID @id
   name: String!
@@ -679,6 +680,7 @@ type Oversight implements Church @node
 }
 
 type Campus implements Church @node
+  # @churchScoped(level: Campus)
 {
   id: ID @id
   name: String!
@@ -829,6 +831,7 @@ type Campus implements Church @node
 }
 
 type Stream implements Church @node
+  # @churchScoped(level: Stream)
 {
   id: ID @id
   name: String!
@@ -1000,6 +1003,7 @@ type Stream implements Church @node
 }
 
 type Council implements Church @node
+  # @churchScoped(level: Council)
 {
   id: ID @id
   name: String!

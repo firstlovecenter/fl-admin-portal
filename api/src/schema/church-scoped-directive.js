@@ -50,11 +50,7 @@ const SCOPES_AT_LEVEL = {
     'isTellerForStreamOf',
     'isSheepSeekerForStreamOf',
   ],
-  Campus: [
-    'leadsCampusOf',
-    'isAdminForCampusOf',
-    'isArrivalsAdminForCampusOf',
-  ],
+  Campus: ['leadsCampusOf', 'isAdminForCampusOf', 'isArrivalsAdminForCampusOf'],
   Oversight: ['leadsOversightOf', 'isAdminForOversightOf'],
   Denomination: ['leadsDenominationOf', 'isAdminForDenominationOf'],
 }
@@ -158,13 +154,25 @@ const buildBranch = (pathParts, scopeKey) => {
   return inner
 }
 
-const buildAuthorizationBranches = (targetLevel) => {
-  indexOf(targetLevel) // validate
+// `includeDescendants` controls whether scope-holders BELOW `targetLevel`
+// can also read. Default true (used by spine `@churchScoped` so a Bacenta
+// leader can read THEIR own Bacenta — the predicate matches that Bacenta
+// only). For node-level financial filters via `@churchScopedVia`, set
+// false so a Bacenta leader cannot read sibling-Bacenta financials by
+// virtue of sharing a Council.
+const buildAuthorizationBranches = (
+  targetLevel,
+  { includeDescendants = true } = {}
+) => {
+  const targetIdx = indexOf(targetLevel)
   const branches = []
   for (const scopeLevel of HIERARCHY) {
-    const path = fieldPathBetween(targetLevel, scopeLevel)
-    for (const scopeKey of SCOPES_AT_LEVEL[scopeLevel]) {
-      branches.push(buildBranch(path, scopeKey))
+    const scopeIdx = indexOf(scopeLevel)
+    if (includeDescendants || scopeIdx <= targetIdx) {
+      const path = fieldPathBetween(targetLevel, scopeLevel)
+      for (const scopeKey of SCOPES_AT_LEVEL[scopeLevel]) {
+        branches.push(buildBranch(path, scopeKey))
+      }
     }
   }
   return branches
@@ -196,6 +204,28 @@ const buildChurchScopedDirective = (level) => {
   )} }])`
 }
 
+// Like buildChurchScopedDirective, but for a node that doesn't itself sit on
+// the church spine — instead, it carries a singular @relationship to a
+// church-spine node (e.g. AccountTransaction.council). The generated filter
+// nests the scope predicate inside the relationship field so the auto-
+// generated read query (e.g. `accountTransactions(where: { id: { eq: ... } })`)
+// is restricted to nodes whose related church is in the caller's scope.
+//
+// Descendants are EXCLUDED — a Bacenta leader sharing a Council with the
+// node should not gain READ access by virtue of being below the via-level
+// (their AccountTransaction reads aren't "their own data" the way their own
+// Bacenta would be). Use the spine `@churchScoped` if descendant inclusion
+// is desired.
+const buildChurchScopedViaDirective = (relationshipField, level) => {
+  const branches = buildAuthorizationBranches(level, {
+    includeDescendants: false,
+  })
+  const where = { node: { [relationshipField]: { OR: branches } } }
+  return `@authorization(filter: [{ operations: [READ, AGGREGATE], where: ${toGraphQL(
+    where
+  )} }])`
+}
+
 // Anchor the marker to the type-header line so a comment elsewhere in any of
 // the 16 SDL files can never get expanded into a free-floating directive.
 // Captures: 1) the type header, 2) the `level: X` argument, 3) the level name
@@ -206,8 +236,14 @@ const buildChurchScopedDirective = (level) => {
 const MARKER_RE =
   /(type\s+([A-Za-z]+)\s+implements\s+\w+(?:\s+@\w+(?:\([^)]*\))?)*\s*)#\s*@churchScoped\(\s*level:\s*([A-Za-z]+)\s*\)/g
 
-const expandChurchScopedMarkers = (sdl) =>
-  sdl.replace(MARKER_RE, (_, header, typeName, level) => {
+// Marker for a non-spine node that scopes via a singular relationship field
+// to a spine node — e.g. AccountTransaction → council. Anchored to a type
+// header that does NOT implement Church.
+const MARKER_VIA_RE =
+  /(type\s+([A-Za-z]+)(?:\s+@\w+(?:\([^)]*\))?)*\s*)#\s*@churchScopedVia\(\s*field:\s*([A-Za-z_][A-Za-z0-9_]*)\s*,\s*level:\s*([A-Za-z]+)\s*\)/g
+
+const expandChurchScopedMarkers = (sdl) => {
+  const expanded = sdl.replace(MARKER_RE, (_, header, typeName, level) => {
     if (typeName !== level) {
       throw new Error(
         `church-scoped-directive: marker level "${level}" does not match ` +
@@ -217,8 +253,16 @@ const expandChurchScopedMarkers = (sdl) =>
     return `${header}${buildChurchScopedDirective(level)}`
   })
 
+  return expanded.replace(
+    MARKER_VIA_RE,
+    (_, header, _typeName, field, level) =>
+      `${header}${buildChurchScopedViaDirective(field, level)}`
+  )
+}
+
 module.exports = {
   buildChurchScopedDirective,
+  buildChurchScopedViaDirective,
   expandChurchScopedMarkers,
   HIERARCHY,
   SCOPES_AT_LEVEL,
