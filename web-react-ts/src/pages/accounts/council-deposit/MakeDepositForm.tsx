@@ -18,6 +18,7 @@ import {
   SET_HR_AMOUNT,
 } from './depositGQL'
 import { throwToSentry } from 'global-utils'
+import { newClientTransactionId } from 'lib/idempotency'
 import RoleView from 'auth/RoleView'
 import { CouncilForAccounts } from '../accounts-types'
 
@@ -91,6 +92,7 @@ const MakeDepositForm = () => {
               weekdayBalanceDepositAmount: parseFloat(
                 values.weekdayBalanceDepositAmount
               ),
+              clientTransactionId: newClientTransactionId(),
             },
           })
         )
@@ -116,6 +118,7 @@ const MakeDepositForm = () => {
             variables: {
               councilId: councilId,
               bussingSocietyBalance: parseFloat(values.bussingSocietyBalance),
+              clientTransactionId: newClientTransactionId(),
             },
           })
         )

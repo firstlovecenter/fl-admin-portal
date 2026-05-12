@@ -194,11 +194,13 @@ extend type Mutation {
   DepositIntoCouncilCurrentAccount(
     councilId: ID!
     weekdayBalanceDepositAmount: Float!
+    clientTransactionId: ID!
   ): AccountTransaction!
 
   DepositIntoCouncilBussingSociety(
     councilId: ID!
     bussingSocietyBalance: Float!
+    clientTransactionId: ID!
   ): AccountTransaction!
 
   ExpenseRequest(
@@ -207,6 +209,7 @@ extend type Mutation {
     expenseCategory: String!
     accountType: String!
     description: String! #momoNumber: String! #momoName: String! #invoiceUrl: String!
+    clientTransactionId: ID!
   ): AccountTransaction!
     # @authentication(
     #   jwt: {
@@ -223,8 +226,9 @@ extend type Mutation {
 
       WITH council, requester
 
-      CREATE (transaction:AccountTransaction {id: randomUUID()})
-        SET transaction.description = $description,
+      MERGE (transaction:AccountTransaction {clientTransactionId: $clientTransactionId})
+      ON CREATE SET transaction.id = randomUUID(),
+        transaction.description = $description,
         transaction.amount = $expenseAmount *  -1,
         transaction.account = $accountType,
         transaction.category = $expenseCategory,
@@ -233,9 +237,6 @@ extend type Mutation {
         transaction.lastModified = datetime(),
         transaction.bussingSocietyBalance = council.bussingSocietyBalance,
         transaction.weekdayBalance = council.weekdayBalance
-        // transaction.momoNumber = $momoNumber,
-        // transaction.momoName = $momoName,
-        // transaction.invoiceUrl = $invoiceUrl
 
       MERGE (council)-[:HAS_TRANSACTION]->(transaction)
       MERGE (requester)<-[:LOGGED_BY]-(transaction)
@@ -294,5 +295,6 @@ extend type Mutation {
     councilId: ID!
     expenseAmount: Float!
     expenseCategory: String!
+    clientTransactionId: ID!
   ): AccountTransaction!
 }

@@ -13,6 +13,7 @@ import * as Yup from 'yup'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import { throwToSentry } from 'global-utils'
+import { newClientTransactionId } from 'lib/idempotency'
 import { DEBIT_BUSSING_SOCIETY } from '../request-expense/expenseGQL'
 import { CouncilForAccounts } from '../accounts-types'
 
@@ -53,6 +54,7 @@ const BussingExpenseEntry = () => {
           councilId,
           expenseAmount: parseFloat(values.amountSpent.toString()),
           expenseCategory: 'Bussing',
+          clientTransactionId: newClientTransactionId(),
         },
       })
 

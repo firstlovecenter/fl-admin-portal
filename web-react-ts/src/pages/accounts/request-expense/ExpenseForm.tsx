@@ -13,6 +13,7 @@ import * as Yup from 'yup'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import { throwToSentry } from 'global-utils'
+import { newClientTransactionId } from 'lib/idempotency'
 import RadioButtons from 'components/formik/RadioButtons'
 import Textarea from 'components/formik/Textarea'
 import { EXPENSE_REQUEST } from './expenseGQL'
@@ -65,8 +66,8 @@ const ExpenseForm = () => {
           expenseAmount: parseFloat(values.requestedAmount),
           expenseCategory: values.category,
           accountType: 'Weekday Account',
-
           description: values.description,
+          clientTransactionId: newClientTransactionId(),
         },
       })
 
