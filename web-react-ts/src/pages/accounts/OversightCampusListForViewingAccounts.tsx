@@ -9,7 +9,7 @@ import { CampusForAccounts, StreamForAccounts } from './accounts-types'
 import HeadingSecondary from 'components/HeadingSecondary'
 import CurrencySpan from 'components/CurrencySpan'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
-import { Form, Formik } from 'formik'
+import { Form, Formik, FormikHelpers } from 'formik'
 import Input from 'components/formik/Input'
 import { useNavigate } from 'react-router'
 
@@ -40,7 +40,10 @@ const CampusCouncilList = () => {
     councilSearch: '',
   }
 
-  const onSubmit = (values: typeof initialValues, onSubmitProps: any) => {
+  const onSubmit = (
+    values: typeof initialValues,
+    onSubmitProps: FormikHelpers<typeof initialValues>
+  ) => {
     onSubmitProps.setSubmitting(true)
     const streams = oversight.campuses
       .map((campus: CampusForAccounts) => campus.streams)
@@ -48,7 +51,7 @@ const CampusCouncilList = () => {
 
     setStreamList(
       streams.filter(
-        (stream: any) =>
+        (stream: StreamForAccounts) =>
           stream.name
             .toLowerCase()
             .includes(values.councilSearch.toLowerCase()) ||
