@@ -20,15 +20,13 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import RoleView from 'auth/RoleView'
 import SearchMember from 'components/formik/SearchMember'
-import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ArrivalsHeader from '../ArrivalsHeader'
 import DownloadArrivalsButton from '../DownloadArrivalsButton'
 
 import { Alert, AlertDescription } from 'components/ui/alert'
-import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
-import { Card, CardContent } from 'components/ui/card'
+import { Card } from 'components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -46,6 +44,13 @@ import {
   DropdownMenuTrigger,
 } from 'components/ui/dropdown-menu'
 import { Skeleton } from 'components/ui/skeleton'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from 'components/ui/tabs'
+import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
 
 import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
 import { permitAdmin, permitArrivals } from 'permission-utils'
@@ -76,8 +81,6 @@ type BacentaTile = {
   tone: StatusTone
   to: string
 }
-
-const POLL_SECONDS = Math.max(1, Math.round(SHORT_POLL_INTERVAL / 1000))
 
 const GovernorshipDashboard = () => {
   const navigate = useNavigate()
@@ -219,12 +222,8 @@ const GovernorshipDashboard = () => {
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {/* ── Header ── */}
-            <header className="mb-3 flex flex-col gap-2 lg:mb-8 lg:flex-row lg:items-end lg:justify-between">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  <LiveDot />
-                  <span>Live Dashboard</span>
-                </div>
+            <header className="mb-3 flex items-start justify-between gap-4 pr-14 md:pr-0 lg:mb-6">
+              <div className="min-w-0 flex-1">
                 {loading && !governorship ? (
                   <Skeleton className="h-9 w-72" />
                 ) : (
@@ -233,9 +232,6 @@ const GovernorshipDashboard = () => {
                     <span className="text-arrivals">Arrivals</span>
                   </h1>
                 )}
-                <p className="text-sm text-muted-foreground">
-                  Real-time bussing dashboard · refreshes every {POLL_SECONDS}s
-                </p>
               </div>
 
               {/* Action row */}
@@ -281,55 +277,18 @@ const GovernorshipDashboard = () => {
               </Alert>
             )}
 
-            {/* ── 2-column grid ── */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
-              {/* LEFT — admin + bacenta status */}
-              <div className="space-y-4">
-                {/* Arrivals admin */}
-                <section className="space-y-2">
-                  <SectionLabel>Arrivals Admin</SectionLabel>
-                  <Card>
-                    <CardContent className="flex items-center justify-between gap-3 p-3">
-                      {loading && !governorship ? (
-                        <div className="flex items-center gap-3">
-                          <Skeleton className="size-9 rounded-full" />
-                          <Skeleton className="h-4 w-32" />
-                        </div>
-                      ) : governorship?.arrivalsAdmin ? (
-                        <>
-                          <MemberAvatarWithName
-                            member={governorship.arrivalsAdmin}
-                          />
-                          <Badge
-                            variant="outline"
-                            className="border-arrivals/30 bg-arrivals/10 text-arrivals"
-                          >
-                            Admin
-                          </Badge>
-                        </>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          No arrivals admin assigned
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </section>
+            {(() => {
+              const metaRow = (
+                <ArrivalsDashboardMeta
+                  admin={governorship?.arrivalsAdmin}
+                  loading={loading && !governorship}
+                />
+              )
 
-                {/* Date selector + download (mobile placement) */}
-                <div className="lg:hidden">
-                  <ArrivalsHeader />
-                </div>
-
-                {/* Bacenta status grid */}
+              const bacentaStatusBlock = (
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <SectionLabel>Bacenta Status</SectionLabel>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        Tap a tile to drill in
-                      </p>
-                    </div>
+                    <SectionLabel>Bacenta Status</SectionLabel>
                     <DownloadArrivalsButton
                       level="Governorship"
                       churchId={governorshipId}
@@ -349,54 +308,86 @@ const GovernorshipDashboard = () => {
                     ))}
                   </div>
                 </section>
-              </div>
+              )
 
-              {/* RIGHT — date picker + live arrivals */}
-              <aside className="space-y-6 lg:sticky lg:top-6">
-                <div className="hidden lg:block">
-                  <ArrivalsHeader />
-                </div>
-                <div className="space-y-3">
+              const liveArrivalsBlock = (
+                <section className="space-y-2">
                   <SectionLabel>Live Arrivals</SectionLabel>
-                <Card className="overflow-hidden">
-                  <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <LiveDot />
-                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Realtime
+                  <Card className="overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <LiveDot />
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Realtime
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        Updated {updatedLabel}
                       </span>
                     </div>
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      Updated {updatedLabel}
-                    </span>
+                    <div className="divide-y divide-border">
+                      <LiveRow
+                        label="Members On The Way"
+                        value={governorship?.bussingMembersOnTheWayCount}
+                        icon={UsersRound}
+                        tone="warning"
+                        loading={loading && !governorship}
+                      />
+                      <LiveRow
+                        label="Members Arrived"
+                        value={governorship?.bussingMembersHaveArrivedCount}
+                        icon={Users}
+                        tone="success"
+                        loading={loading && !governorship}
+                      />
+                      <LiveRow
+                        label="Buses Arrived"
+                        value={governorship?.bussesThatArrivedCount}
+                        icon={BusFront}
+                        tone="success"
+                        loading={loading && !governorship}
+                      />
+                    </div>
+                  </Card>
+                </section>
+              )
+
+              return (
+                <>
+                  <div className="lg:hidden">
+                    {metaRow}
+                    <ArrivalsHeader />
+                    <Tabs defaultValue="bacentas">
+                      <TabsList className="grid h-11 w-full grid-cols-2">
+                        <TabsTrigger value="bacentas" className="text-xs">
+                          Bacentas
+                        </TabsTrigger>
+                        <TabsTrigger value="live" className="text-xs">
+                          Live
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="bacentas" className="mt-3">
+                        {bacentaStatusBlock}
+                      </TabsContent>
+                      <TabsContent value="live" className="mt-3">
+                        {liveArrivalsBlock}
+                      </TabsContent>
+                    </Tabs>
                   </div>
-                  <div className="divide-y divide-border">
-                    <LiveRow
-                      label="Members On The Way"
-                      value={governorship?.bussingMembersOnTheWayCount}
-                      icon={UsersRound}
-                      tone="warning"
-                      loading={loading && !governorship}
-                    />
-                    <LiveRow
-                      label="Members Arrived"
-                      value={governorship?.bussingMembersHaveArrivedCount}
-                      icon={Users}
-                      tone="success"
-                      loading={loading && !governorship}
-                    />
-                    <LiveRow
-                      label="Buses Arrived"
-                      value={governorship?.bussesThatArrivedCount}
-                      icon={BusFront}
-                      tone="success"
-                      loading={loading && !governorship}
-                    />
+
+                  <div className="hidden gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+                    <div className="space-y-4">
+                      {metaRow}
+                      {bacentaStatusBlock}
+                    </div>
+                    <aside className="space-y-4 lg:sticky lg:top-6">
+                      <ArrivalsHeader />
+                      {liveArrivalsBlock}
+                    </aside>
                   </div>
-                </Card>
-                </div>
-              </aside>
-            </div>
+                </>
+              )
+            })()}
 
             {/* ── Change Arrivals Admin dialog ── */}
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>

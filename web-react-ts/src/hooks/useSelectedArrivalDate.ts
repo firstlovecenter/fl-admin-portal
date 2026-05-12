@@ -66,6 +66,21 @@ const lastSundayYmd = (): string => {
   return today.toISOString().slice(0, 10)
 }
 
+const addDaysYmd = (ymd: string, n: number): string => {
+  const d = new Date(`${ymd}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
+}
+
+// Sunday of the week containing the given YMD (Sun-anchored, matching the
+// existing arrivals Sunday convention).
+const weekStartOf = (ymd: string): string => {
+  const d = new Date(`${ymd}T00:00:00Z`)
+  const dow = d.getUTCDay()
+  if (dow !== 0) d.setUTCDate(d.getUTCDate() - dow)
+  return d.toISOString().slice(0, 10)
+}
+
 const formatDateLabel = (ymd: string): string => {
   const d = new Date(`${ymd}T12:00:00Z`)
   if (Number.isNaN(d.getTime())) return ymd
@@ -76,21 +91,68 @@ const formatDateLabel = (ymd: string): string => {
   return `${weekday}, ${day} ${month} ${year}`
 }
 
+// "Week of 4–10 May 2026" / "Week of 28 Apr – 4 May 2026" / cross-year variant.
+const formatWeekLabel = (weekStart: string): string => {
+  const start = new Date(`${weekStart}T12:00:00Z`)
+  const end = new Date(`${addDaysYmd(weekStart, 6)}T12:00:00Z`)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return `Week of ${weekStart}`
+  }
+  const sDay = start.getUTCDate()
+  const sMonth = MONTH_NAMES_SHORT[start.getUTCMonth()]
+  const sYear = start.getUTCFullYear()
+  const eDay = end.getUTCDate()
+  const eMonth = MONTH_NAMES_SHORT[end.getUTCMonth()]
+  const eYear = end.getUTCFullYear()
+
+  if (sYear !== eYear) {
+    return `Week of ${sDay} ${sMonth} ${sYear} – ${eDay} ${eMonth} ${eYear}`
+  }
+  if (sMonth !== eMonth) {
+    return `Week of ${sDay} ${sMonth} – ${eDay} ${eMonth} ${sYear}`
+  }
+  return `Week of ${sDay}–${eDay} ${sMonth} ${sYear}`
+}
+
+// Short label for a day chip, e.g. "Sun 4".
+const formatDayChip = (ymd: string): string => {
+  const d = new Date(`${ymd}T12:00:00Z`)
+  if (Number.isNaN(d.getTime())) return ymd
+  return `${WEEKDAY_NAMES_SHORT[d.getUTCDay()]} ${d.getUTCDate()}`
+}
+
+export type ArrivalDayChip = {
+  /** YYYY-MM-DD */
+  date: string
+  /** Short label like `Sun 4`. */
+  label: string
+}
+
 export type SelectedArrivalDate = {
   /** YYYY-MM-DD. Always a valid date string — pass straight to GraphQL `arrivalDate`. */
   arrivalDate: string
-  /** Pre-formatted, e.g. `Sun, 03 May 2026`. */
+  /** Pre-formatted single-date label, e.g. `Sun, 03 May 2026`. */
   dateLabel: string
-  /** True when the selected date equals "most recent Sunday" today. */
+  /** Pre-formatted week-range label, e.g. `Week of 4–10 May 2026`. */
+  weekLabel: string
+  /** True when the selected date sits within the current calendar week. */
   isCurrent: boolean
-  /** Jump to the nearest earlier date that has at least one BussingRecord. No-op if none. */
+  /** Bussing dates within the visible week, ASC. Empty for weeks with no bussings. */
+  daysInWeek: ArrivalDayChip[]
+  /** Step back one Sun-anchored calendar week. No-op when no earlier bussing exists. */
   prevWeek: () => void
-  /** Jump to the nearest later date that has at least one BussingRecord. No-op if none. */
+  /** Step forward one Sun-anchored calendar week. No-op past the current week. */
   nextWeek: () => void
-  /** True iff an earlier bussing date exists. False during the initial cold fetch. */
+  /** True iff at least one bussing exists in an earlier week. False during cold load. */
   hasPrev: boolean
-  /** True iff a later bussing date exists. False during the initial cold fetch. */
+  /** True iff the visible week is earlier than the current week. */
   hasNext: boolean
+  /** Select a specific bussing date (used by day chips). */
+  selectDate: (ymd: string) => void
+  /** Jump to the nearest bussing date — past first, future as fallback. */
+  jumpToNearest: () => void
+  /** True iff `jumpToNearest` would actually navigate. False during cold load or empty data. */
+  hasNearest: boolean
   /** Reset to the canonical default (most recent Sunday). */
   resetToCurrent: () => void
   /** Append `?date=YYYY-MM-DD` to a path so the selection survives navigation. */
@@ -123,31 +185,57 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
     : lastSundayYmd()
 
   const arrivalDate = isValidIsoDate(dateParam) ? dateParam : fallback
-  const isCurrent = arrivalDate === lastSundayYmd()
+  const currentWeekStart = lastSundayYmd()
+  const weekStart = weekStartOf(arrivalDate)
+  const weekEnd = addDaysYmd(weekStart, 6)
+  const isCurrent = weekStart === currentWeekStart
   const dateLabel = formatDateLabel(arrivalDate)
+  const weekLabel = formatWeekLabel(weekStart)
 
-  // bussingDates is returned DESC, so the largest "earlier than current" is
-  // the first entry strictly less than arrivalDate, and the smallest "later
-  // than current" is the last entry strictly greater.
-  const prevDate = useMemo(
-    () => bussingDates.find((d) => d < arrivalDate),
-    [bussingDates, arrivalDate]
+  // Bussings within the visible week, ASC.
+  const daysInWeek = useMemo<ArrivalDayChip[]>(() => {
+    const inWeek = bussingDates.filter((d) => d >= weekStart && d <= weekEnd)
+    // bussingDates is returned DESC, so reverse to get ASC ordering for the
+    // chip row. `sort()` on YYYY-MM-DD strings sorts lexicographically =
+    // chronologically.
+    return inWeek
+      .slice()
+      .sort()
+      .map((date) => ({ date, label: formatDayChip(date) }))
+  }, [bussingDates, weekStart, weekEnd])
+
+  // bussingDates is DESC: the first entry strictly less than weekStart is
+  // the most recent bussing before the visible week. Used to gate `hasPrev`
+  // and as the past candidate for `jumpToNearest`.
+  const pastNearest = useMemo(
+    () => bussingDates.find((d) => d < weekStart),
+    [bussingDates, weekStart]
   )
-  const nextDate = useMemo(() => {
+
+  // Smallest entry strictly greater than weekEnd — the nearest future bussing.
+  // Used as the fallback target for `jumpToNearest` when no past exists.
+  const futureNearest = useMemo<string | undefined>(() => {
     let candidate: string | undefined
     for (const d of bussingDates) {
-      if (d > arrivalDate) candidate = d
+      if (d > weekEnd) candidate = d
       else break
     }
     return candidate
-  }, [bussingDates, arrivalDate])
+  }, [bussingDates, weekEnd])
 
   // Stay disabled during a *cold* load — falling back to ±7 days re-introduces
   // the exact "land on a date with no data" bug this feature removes. Once
   // we've seen any data, refetches (cache-and-network) keep using it.
   const coldLoading = datesLoading && bussingDates.length === 0
-  const hasPrev = coldLoading ? false : prevDate !== undefined
-  const hasNext = coldLoading ? false : nextDate !== undefined
+  const hasPrev = coldLoading ? false : pastNearest !== undefined
+  // `hasNext` is intentionally NOT cold-load gated. Forward stepping is
+  // pure calendar arithmetic capped at the current week — there is no
+  // "land on a date with no data" risk because empty future weeks now
+  // render the empty-week state instead of breaking the dashboard.
+  const hasNext = weekStart < currentWeekStart
+  const hasNearest = coldLoading
+    ? false
+    : pastNearest !== undefined || futureNearest !== undefined
 
   // Keep ChurchContext in lockstep with the URL so the legacy Bootstrap
   // dashboards (which still read `arrivalDate` straight from context)
@@ -176,13 +264,54 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
     [searchParams, setSearchParams]
   )
 
+  // When the visible week has exactly one bussing date and the current
+  // selection isn't that date (e.g. user URL-jumped to the Sunday of a week
+  // whose only bussing is on Wednesday), snap to the bussing date. This is
+  // what makes the "hide chip row when one date" rule actually useful — the
+  // dashboard renders data instead of an empty Sunday.
+  useEffect(() => {
+    if (daysInWeek.length !== 1) return
+    const onlyDate = daysInWeek[0].date
+    if (arrivalDate === onlyDate) return
+    navigateToDate(onlyDate)
+  }, [daysInWeek, arrivalDate, navigateToDate])
+
+  // Step prev/next by Sun-anchored calendar week. When the destination week
+  // contains bussings, land on the earliest bussing of that week so the
+  // dashboard renders data immediately; otherwise land on the Sunday so the
+  // empty-week state can render.
+  const navigateToWeek = useCallback(
+    (targetWeekStart: string) => {
+      const targetWeekEnd = addDaysYmd(targetWeekStart, 6)
+      const datesInTargetWeek = bussingDates
+        .filter((d) => d >= targetWeekStart && d <= targetWeekEnd)
+        .sort()
+      const target = datesInTargetWeek[0] ?? targetWeekStart
+      navigateToDate(target)
+    },
+    [bussingDates, navigateToDate]
+  )
+
   const prevWeek = useCallback(() => {
-    if (prevDate) navigateToDate(prevDate)
-  }, [prevDate, navigateToDate])
+    if (!hasPrev) return
+    navigateToWeek(addDaysYmd(weekStart, -7))
+  }, [hasPrev, weekStart, navigateToWeek])
 
   const nextWeek = useCallback(() => {
-    if (nextDate) navigateToDate(nextDate)
-  }, [nextDate, navigateToDate])
+    if (!hasNext) return
+    navigateToWeek(addDaysYmd(weekStart, 7))
+  }, [hasNext, weekStart, navigateToWeek])
+
+  const selectDate = useCallback(
+    (ymd: string) => navigateToDate(ymd),
+    [navigateToDate]
+  )
+
+  const jumpToNearest = useCallback(() => {
+    const target = pastNearest ?? futureNearest
+    if (!target) return
+    navigateToDate(target)
+  }, [pastNearest, futureNearest, navigateToDate])
 
   const resetToCurrent = useCallback(() => {
     navigateToDate(lastSundayYmd())
@@ -190,21 +319,30 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
 
   const linkWith = useCallback(
     (path: string): string => {
-      if (isCurrent) return path
+      // Round-trip the exact selected day, not the week. `isCurrent` is
+      // week-based and would drop a non-Sunday chip selection in the
+      // current week — `linkWith` exists so drill-downs preserve the
+      // user's choice down to the day.
+      if (arrivalDate === lastSundayYmd()) return path
       const sep = path.includes('?') ? '&' : '?'
       return `${path}${sep}date=${arrivalDate}`
     },
-    [isCurrent, arrivalDate]
+    [arrivalDate]
   )
 
   return {
     arrivalDate,
     dateLabel,
+    weekLabel,
     isCurrent,
+    daysInWeek,
     prevWeek,
     nextWeek,
     hasPrev,
     hasNext,
+    selectDate,
+    jumpToNearest,
+    hasNearest,
     resetToCurrent,
     linkWith,
   }

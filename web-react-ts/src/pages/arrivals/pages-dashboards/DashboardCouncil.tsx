@@ -10,7 +10,6 @@ import {
   Banknote,
   BusFront,
   CheckCircle2,
-  ChevronRight,
   CreditCard,
   Loader2,
   Megaphone,
@@ -24,15 +23,13 @@ import PullToRefresh from 'components/base-component/PullToRefresh'
 import RoleView from 'auth/RoleView'
 import useAuth from 'auth/useAuth'
 import SearchMember from 'components/formik/SearchMember'
-import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ArrivalsHeader from '../ArrivalsHeader'
 import DownloadArrivalsButton from '../DownloadArrivalsButton'
 
 import { Alert, AlertDescription } from 'components/ui/alert'
-import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
-import { Card, CardContent } from 'components/ui/card'
+import { Card } from 'components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -50,6 +47,13 @@ import {
   DropdownMenuTrigger,
 } from 'components/ui/dropdown-menu'
 import { Skeleton } from 'components/ui/skeleton'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from 'components/ui/tabs'
+import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
 
 import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
 import {
@@ -81,8 +85,6 @@ type BacentaTile = {
   tone: StatusTone
   to: string
 }
-
-const POLL_SECONDS = Math.max(1, Math.round(SHORT_POLL_INTERVAL / 1000))
 
 const COUNCIL_ADMIN_ROLES = [
   ...permitAdmin('Council'),
@@ -222,13 +224,9 @@ const CouncilDashboard = () => {
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {/* ── Page header ── */}
-            <div className="mb-3 space-y-2 lg:mb-8">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    <LiveDot />
-                    <span>Live Dashboard</span>
-                  </div>
+            <div className="mb-3 lg:mb-6">
+              <div className="flex items-start justify-between gap-4 pr-14 md:pr-0">
+                <div className="min-w-0 flex-1">
                   {loading && !council ? (
                     <Skeleton className="h-9 w-72" />
                   ) : (
@@ -237,10 +235,6 @@ const CouncilDashboard = () => {
                       <span className="text-arrivals">Arrivals</span>
                     </h1>
                   )}
-                  <p className="text-sm text-muted-foreground">
-                    Real-time bussing dashboard · refreshes every {POLL_SECONDS}
-                    s
-                  </p>
                 </div>
 
                 {/* Settings dropdown */}
@@ -286,93 +280,28 @@ const CouncilDashboard = () => {
               </Alert>
             )}
 
-            {/* ── 2-column grid ── */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
-              {/* LEFT — admin + overview + bacenta status + financial */}
-              <div className="space-y-4">
-                {/* Arrivals admin */}
-                <section className="space-y-2">
-                  <SectionLabel>Arrivals Admin</SectionLabel>
-                  <Card>
-                    <CardContent className="flex items-center justify-between gap-3 p-3">
-                      {loading && !council ? (
-                        <div className="flex items-center gap-3">
-                          <Skeleton className="size-9 rounded-full" />
-                          <Skeleton className="h-4 w-32" />
-                        </div>
-                      ) : council?.arrivalsAdmin ? (
-                        <>
-                          <MemberAvatarWithName
-                            member={council.arrivalsAdmin}
-                          />
-                          <Badge
-                            variant="outline"
-                            className="border-arrivals/30 bg-arrivals/10 text-arrivals"
-                          >
-                            Admin
-                          </Badge>
-                        </>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          No arrivals admin assigned
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </section>
+            {(() => {
+              const metaRow = (
+                <ArrivalsDashboardMeta
+                  admin={council?.arrivalsAdmin}
+                  loading={loading && !council}
+                  subChurch={{
+                    label:
+                      council?.governorshipCount === 1
+                        ? 'Governorship'
+                        : 'Governorships',
+                    count: council?.governorshipCount,
+                    to: '/arrivals/council-by-governorship',
+                  }}
+                />
+              )
 
-                {/* Sub-church count */}
-                <section className="space-y-2">
-                  <SectionLabel>Overview</SectionLabel>
-                  <Card
-                    role="button"
-                    tabIndex={0}
-                    aria-label="View Governorships"
-                    onClick={() =>
-                      navigate('/arrivals/council-by-governorship')
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        navigate('/arrivals/council-by-governorship')
-                      }
-                    }}
-                    className="cursor-pointer outline-none transition-colors hover:bg-muted/50 active:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
-                    <CardContent className="flex items-center justify-between gap-3 p-3">
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        Governorships
-                      </p>
-                      <div className="flex items-center gap-2">
-                        {loading && !council ? (
-                          <Skeleton className="h-6 w-8" />
-                        ) : (
-                          <span className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
-                            {council?.governorshipCount}
-                          </span>
-                        )}
-                        <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </section>
-
-                {/* Date selector + download button (mobile placement) —
-                    on lg+ screens this lives in the right aside instead so
-                    the legacy "single picker" shape stays true. */}
-                <div className="lg:hidden">
-                  <ArrivalsHeader />
-                </div>
-
-                {/* Bacenta status grid */}
+              const bacentaStatusBlock = (
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <SectionLabel>Bacenta Status</SectionLabel>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        Tap a tile to drill in
-                      </p>
-                    </div>
+                    <SectionLabel>
+                      Bacenta Status
+                    </SectionLabel>
                     <DownloadArrivalsButton
                       level="Council"
                       churchId={councilId}
@@ -392,8 +321,9 @@ const CouncilDashboard = () => {
                     ))}
                   </div>
                 </section>
+              )
 
-                {/* Financial data */}
+              const financialDataBlock = (
                 <RoleView
                   roles={[
                     ...permitArrivals('Campus'),
@@ -402,7 +332,9 @@ const CouncilDashboard = () => {
                   ]}
                 >
                   <section className="space-y-2">
-                    <SectionLabel>Financial Data</SectionLabel>
+                    <SectionLabel>
+                      Financial Data
+                    </SectionLabel>
                     <Card className="overflow-hidden">
                       <div className="divide-y divide-border">
                         <LiveRow
@@ -439,61 +371,113 @@ const CouncilDashboard = () => {
                     </Card>
                   </section>
                 </RoleView>
-              </div>
+              )
 
-              {/* RIGHT — date picker + live arrivals */}
-              <aside className="space-y-6 lg:sticky lg:top-6">
-                <div className="hidden lg:block">
-                  <ArrivalsHeader />
-                </div>
-                <div className="space-y-3">
-                  <SectionLabel>Live Arrivals</SectionLabel>
-                <Card className="overflow-hidden">
-                  <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <LiveDot />
-                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Realtime
+              const liveArrivalsBlock = (
+                <section className="space-y-2">
+                  <SectionLabel>
+                    Live Arrivals
+                  </SectionLabel>
+                  <Card className="overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <LiveDot />
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Realtime
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        Updated {updatedLabel}
                       </span>
                     </div>
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      Updated {updatedLabel}
-                    </span>
+                    <div className="divide-y divide-border">
+                      <LiveRow
+                        label="Members On The Way"
+                        value={council?.bussingMembersOnTheWayCount}
+                        icon={UsersRound}
+                        tone="warning"
+                        loading={loading && !council}
+                      />
+                      <LiveRow
+                        label="Members Arrived"
+                        value={council?.bussingMembersHaveArrivedCount}
+                        icon={Users}
+                        tone="success"
+                        loading={loading && !council}
+                      />
+                      <LiveRow
+                        label="Buses On The Way"
+                        value={council?.bussesOnTheWayCount}
+                        icon={BusFront}
+                        tone="warning"
+                        loading={loading && !council}
+                      />
+                      <LiveRow
+                        label="Buses Arrived"
+                        value={council?.bussesThatArrivedCount}
+                        icon={BusFront}
+                        tone="success"
+                        loading={loading && !council}
+                      />
+                    </div>
+                  </Card>
+                </section>
+              )
+
+              return (
+                <>
+                  {/* Mobile: meta row + sticky toolbar + tabs. */}
+                  <div className="lg:hidden">
+                    {metaRow}
+                    <ArrivalsHeader />
+                    <Tabs defaultValue="bacentas">
+                      <TabsList className="grid h-11 w-full grid-cols-3">
+                        <TabsTrigger value="bacentas" className="text-xs">
+                          Bacentas
+                        </TabsTrigger>
+                        <RoleView
+                          roles={[
+                            ...permitArrivals('Campus'),
+                            ...permitLeaderAdmin('Council'),
+                            ...permitArrivalsPayer(),
+                          ]}
+                        >
+                          <TabsTrigger value="financial" className="text-xs">
+                            Financial
+                          </TabsTrigger>
+                        </RoleView>
+                        <TabsTrigger value="live" className="text-xs">
+                          Live
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="bacentas" className="mt-3">
+                        {bacentaStatusBlock}
+                      </TabsContent>
+                      <TabsContent value="financial" className="mt-3">
+                        {financialDataBlock}
+                      </TabsContent>
+                      <TabsContent value="live" className="mt-3">
+                        {liveArrivalsBlock}
+                      </TabsContent>
+                    </Tabs>
                   </div>
-                  <div className="divide-y divide-border">
-                    <LiveRow
-                      label="Members On The Way"
-                      value={council?.bussingMembersOnTheWayCount}
-                      icon={UsersRound}
-                      tone="warning"
-                      loading={loading && !council}
-                    />
-                    <LiveRow
-                      label="Members Arrived"
-                      value={council?.bussingMembersHaveArrivedCount}
-                      icon={Users}
-                      tone="success"
-                      loading={loading && !council}
-                    />
-                    <LiveRow
-                      label="Buses On The Way"
-                      value={council?.bussesOnTheWayCount}
-                      icon={BusFront}
-                      tone="warning"
-                      loading={loading && !council}
-                    />
-                    <LiveRow
-                      label="Buses Arrived"
-                      value={council?.bussesThatArrivedCount}
-                      icon={BusFront}
-                      tone="success"
-                      loading={loading && !council}
-                    />
+
+                  {/* Desktop: 2-col grid — meta + bacentas + financial on
+                      the left; date toolbar + live on the right (sticky). */}
+                  <div className="hidden gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+                    <div className="space-y-4">
+                      {metaRow}
+                      {bacentaStatusBlock}
+                      {financialDataBlock}
+                    </div>
+                    <aside className="space-y-4 lg:sticky lg:top-6">
+                      <ArrivalsHeader />
+                      {liveArrivalsBlock}
+                    </aside>
                   </div>
-                </Card>
-                </div>
-              </aside>
-            </div>
+                </>
+              )
+            })()}
 
             {/* ── Change Arrivals Admin dialog ── */}
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>

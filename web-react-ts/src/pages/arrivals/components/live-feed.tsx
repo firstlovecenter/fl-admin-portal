@@ -217,8 +217,19 @@ export const useUpdatedAt = (data: unknown) => {
   return formatRelative(now - updatedAt)
 }
 
-export const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+export const SectionLabel = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) => (
+  <h2
+    className={cn(
+      'text-xs font-semibold uppercase tracking-wider text-muted-foreground',
+      className
+    )}
+  >
     {children}
   </h2>
 )
