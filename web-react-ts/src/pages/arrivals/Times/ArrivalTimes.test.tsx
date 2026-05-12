@@ -1,51 +1,43 @@
-import TestRenderer from 'react-test-renderer'
+import { afterEach, describe, it, expect } from 'vitest'
+import { cleanup, render, screen } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
-import ArrivalTimes from './ArrivalTimes'
-import { GET_ARRIVAL_TIMES } from './time-gql'
+import { ChurchContext } from 'contexts/ChurchContext'
 import TestProvider from 'TestProvider'
-import { BrowserRouter } from 'react-router-dom'
+import ArrivalTimes from './ArrivalTimes'
 
-const mockedUsedNavigate = jest.fn()
-
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockedUsedNavigate,
-}))
-
-const mocks = [
-  {
-    request: {
-      query: GET_ARRIVAL_TIMES,
-      variables: {
-        id: '0df1f5e9-6d0d-4510-9e0c-fda00d65853',
-      },
-    },
-    result: {
-      data: {
-        streams: [
-          {
-            id: '0df1f5e9-6d0d-4510-9e0c-fda00d65853a',
-            name: 'Town',
-            mobilisationStartTime: '2022-04-13T10:01:12.020Z',
-            mobilisationEndTime: '2022-04-13T10:30:12.020Z',
-            arrivalStartTime: '2022-04-13T08:00:12.020Z',
-            arrivalEndTime: '2022-04-13T12:30:12.020Z',
-            __typename: 'Stream',
-          },
-        ],
-      },
-    },
-  },
-]
-it('renders without error if user id is present', () => {
-  const component = TestRenderer.create(
-    <MockedProvider mocks={mocks} addTypename={false}>
-      <TestProvider>
-        <ArrivalTimes />
-      </TestProvider>
-    </MockedProvider>
+// With no `streamId` in ChurchContext the underlying
+// `getStreamArrivalTimes` query is skipped (`skip: !streamId`), so this is
+// a pure render smoke test for the redesign. ADR-013: redesigns get smoke
+// tests, not characterisation tests.
+const renderWithProviders = (streamId?: string) =>
+  render(
+    <ChurchContext.Provider value={{ streamId }}>
+      <MockedProvider mocks={[]} addTypename={false}>
+        <TestProvider>
+          <ArrivalTimes />
+        </TestProvider>
+      </MockedProvider>
+    </ChurchContext.Provider>
   )
 
-  const tree = component.toJSON()
-  //   expect(mockedUsedNavigate).toHaveBeenCalledWith('/stream/set-arrivals-time')
+describe('ArrivalTimes page', () => {
+  afterEach(cleanup)
+
+  it('renders the heading and four time slot labels', () => {
+    renderWithProviders()
+
+    expect(
+      screen.getByRole('heading', { name: /Arrival Times/i, level: 1 })
+    ).toBeInTheDocument()
+    expect(screen.getByText('Mobilisation Start')).toBeInTheDocument()
+    expect(screen.getByText('Mobilisation End')).toBeInTheDocument()
+    expect(screen.getByText('Arrival Start')).toBeInTheDocument()
+    expect(screen.getByText('Arrival End')).toBeInTheDocument()
+  })
+
+  it('shows the "no stream in focus" alert when ChurchContext has no streamId', () => {
+    renderWithProviders()
+
+    expect(screen.getByText(/No stream in focus/i)).toBeInTheDocument()
+  })
 })
