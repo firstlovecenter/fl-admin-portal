@@ -15,6 +15,8 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
     isCurrent,
     prevWeek,
     nextWeek,
+    hasPrev,
+    hasNext,
     resetToCurrent,
   } = useSelectedArrivalDate()
 
@@ -27,7 +29,8 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
           size="icon"
           className="size-11 lg:size-9"
           onClick={prevWeek}
-          aria-label="Previous week"
+          disabled={!hasPrev}
+          aria-label="Previous bussing date"
         >
           <ChevronLeft />
         </Button>
@@ -47,8 +50,8 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
           size="icon"
           className="size-11 lg:size-9"
           onClick={nextWeek}
-          disabled={isCurrent}
-          aria-label="Next week"
+          disabled={!hasNext}
+          aria-label="Next bussing date"
         >
           <ChevronRight />
         </Button>

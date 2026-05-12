@@ -1,7 +1,9 @@
-import { Context, useCallback, useContext, useEffect } from 'react'
+import { Context, useCallback, useContext, useEffect, useMemo } from 'react'
+import { useQuery } from '@apollo/client'
 import { useSearchParams } from 'react-router-dom'
 
 import { ChurchContext } from 'contexts/ChurchContext'
+import { GET_BUSSING_DATES } from 'hooks/useSelectedArrivalDateQueries'
 
 // `ChurchContext` is plain JS (no createContext type arg), so type the
 // surface we touch here rather than spreading `any` through the hook.
@@ -74,12 +76,6 @@ const formatDateLabel = (ymd: string): string => {
   return `${weekday}, ${day} ${month} ${year}`
 }
 
-const shiftDays = (ymd: string, days: number): string => {
-  const d = new Date(`${ymd}T00:00:00Z`)
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
-}
-
 export type SelectedArrivalDate = {
   /** YYYY-MM-DD. Always a valid date string — pass straight to GraphQL `arrivalDate`. */
   arrivalDate: string
@@ -87,14 +83,14 @@ export type SelectedArrivalDate = {
   dateLabel: string
   /** True when the selected date equals "most recent Sunday" today. */
   isCurrent: boolean
-  /** Step back 7 days. Future: jump to previous *bussing* day if known. */
+  /** Jump to the nearest earlier date that has at least one BussingRecord. No-op if none. */
   prevWeek: () => void
-  /** Step forward 7 days, clamped to today (no future bussing). */
+  /** Jump to the nearest later date that has at least one BussingRecord. No-op if none. */
   nextWeek: () => void
-  /** Step back 1 day. */
-  prevDay: () => void
-  /** Step forward 1 day, clamped to today. */
-  nextDay: () => void
+  /** True iff an earlier bussing date exists. False during the initial cold fetch. */
+  hasPrev: boolean
+  /** True iff a later bussing date exists. False during the initial cold fetch. */
+  hasNext: boolean
   /** Reset to the canonical default (most recent Sunday). */
   resetToCurrent: () => void
   /** Append `?date=YYYY-MM-DD` to a path so the selection survives navigation. */
@@ -109,8 +105,19 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
   const ctxArrivalDate = churchCtx?.arrivalDate
   const setCtxArrivalDate = churchCtx?.setArrivalDate
 
+  // `cache-and-network` so a long PWA session sees today's Sunday appear in
+  // the list as soon as the first BussingRecord is written, without forcing
+  // a hard reload. Apollo still dedupes concurrent consumers, so the cost is
+  // one shared round trip per page transition.
+  const { data: datesData, loading: datesLoading } = useQuery<{
+    bussingDates: string[]
+  }>(GET_BUSSING_DATES, { fetchPolicy: 'cache-and-network' })
+  const bussingDates = useMemo(
+    () => datesData?.bussingDates ?? [],
+    [datesData]
+  )
+
   const dateParam = searchParams.get('date')
-  const today = todayYmd()
   const fallback = isValidIsoDate(ctxArrivalDate)
     ? ctxArrivalDate
     : lastSundayYmd()
@@ -118,6 +125,29 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
   const arrivalDate = isValidIsoDate(dateParam) ? dateParam : fallback
   const isCurrent = arrivalDate === lastSundayYmd()
   const dateLabel = formatDateLabel(arrivalDate)
+
+  // bussingDates is returned DESC, so the largest "earlier than current" is
+  // the first entry strictly less than arrivalDate, and the smallest "later
+  // than current" is the last entry strictly greater.
+  const prevDate = useMemo(
+    () => bussingDates.find((d) => d < arrivalDate),
+    [bussingDates, arrivalDate]
+  )
+  const nextDate = useMemo(() => {
+    let candidate: string | undefined
+    for (const d of bussingDates) {
+      if (d > arrivalDate) candidate = d
+      else break
+    }
+    return candidate
+  }, [bussingDates, arrivalDate])
+
+  // Stay disabled during a *cold* load — falling back to ±7 days re-introduces
+  // the exact "land on a date with no data" bug this feature removes. Once
+  // we've seen any data, refetches (cache-and-network) keep using it.
+  const coldLoading = datesLoading && bussingDates.length === 0
+  const hasPrev = coldLoading ? false : prevDate !== undefined
+  const hasNext = coldLoading ? false : nextDate !== undefined
 
   // Keep ChurchContext in lockstep with the URL so the legacy Bootstrap
   // dashboards (which still read `arrivalDate` straight from context)
@@ -146,21 +176,13 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
     [searchParams, setSearchParams]
   )
 
-  const stepDays = useCallback(
-    (delta: number) => {
-      const target = shiftDays(arrivalDate, delta)
-      // Clamp to today — there's no bussing data for future dates and the
-      // user can't preview tomorrow's Sunday.
-      const clamped = target > today ? today : target
-      navigateToDate(clamped)
-    },
-    [arrivalDate, navigateToDate, today]
-  )
+  const prevWeek = useCallback(() => {
+    if (prevDate) navigateToDate(prevDate)
+  }, [prevDate, navigateToDate])
 
-  const prevDay = useCallback(() => stepDays(-1), [stepDays])
-  const nextDay = useCallback(() => stepDays(1), [stepDays])
-  const prevWeek = useCallback(() => stepDays(-7), [stepDays])
-  const nextWeek = useCallback(() => stepDays(7), [stepDays])
+  const nextWeek = useCallback(() => {
+    if (nextDate) navigateToDate(nextDate)
+  }, [nextDate, navigateToDate])
 
   const resetToCurrent = useCallback(() => {
     navigateToDate(lastSundayYmd())
@@ -181,8 +203,8 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
     isCurrent,
     prevWeek,
     nextWeek,
-    prevDay,
-    nextDay,
+    hasPrev,
+    hasNext,
     resetToCurrent,
     linkWith,
   }

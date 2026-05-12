@@ -1482,3 +1482,46 @@ extend type Stream {
   ): [ArrivalsSheetData!]!
   arrivalsPaymentCount(arrivalsDate: String): Int!
 }
+
+extend type Query {
+  # Distinct dates (YYYY-MM-DD) on which any BussingRecord exists, most-recent
+  # first. Capped at 104 (≈ two years of Sundays). Anchored on BussingRecord
+  # — the smaller label — rather than TimeGraph (the universal date dimension).
+  # PROFILE on dev: ~377 DbHits / ~44ms.
+  bussingDates: [String!]!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "leaderBacenta" } }
+          { roles: { includes: "leaderGovernorship" } }
+          { roles: { includes: "leaderCouncil" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "leaderDenomination" } }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+          { roles: { includes: "arrivalsAdminGovernorship" } }
+          { roles: { includes: "arrivalsAdminCouncil" } }
+          { roles: { includes: "arrivalsAdminStream" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
+          { roles: { includes: "arrivalsCounterStream" } }
+          { roles: { includes: "arrivalsPayerCouncil" } }
+        ]
+      }
+    )
+    @cypher(
+      statement: """
+      MATCH (:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
+      WITH DISTINCT t.date AS d
+      ORDER BY d DESC
+      LIMIT 104
+      RETURN toString(d) AS bussingDate
+      """
+      columnName: "bussingDate"
+    )
+}
