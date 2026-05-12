@@ -131,6 +131,9 @@ const ServantMembers = lazy(
 const AllStreamGovernorships = lazy(
   () => import('pages/directory/display/AllStreamGovernorships')
 )
+const AllStreamBacentas = lazy(
+  () => import('pages/directory/display/AllStreamBacentas')
+)
 
 const BacentaAvgWeekdayQuickFacts = lazy(
   () =>
@@ -373,6 +376,12 @@ export const directory: LazyRouteTypes[] = [
   {
     path: '/stream/governorships',
     element: AllStreamGovernorships,
+    roles: permitMe('Stream'),
+    placeholder: false,
+  },
+  {
+    path: '/stream/bacentas',
+    element: AllStreamBacentas,
     roles: permitMe('Stream'),
     placeholder: false,
   },

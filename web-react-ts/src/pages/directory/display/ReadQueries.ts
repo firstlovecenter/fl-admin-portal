@@ -292,6 +292,115 @@ export const DISPLAY_GOVERNORSHIP = gql`
   }
 `
 
+export const GET_STREAM_COUNCILS_WITH_GOVERNORSHIPS = gql`
+  query getStreamCouncilsWithGovernorships($id: ID!) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
+      id
+      name
+      memberCount
+      leader {
+        id
+        firstName
+        lastName
+        fullName
+      }
+      admin {
+        id
+        firstName
+        lastName
+        fullName
+      }
+      councils {
+        id
+        name
+        memberCount
+        governorshipCount
+        leader {
+          id
+          firstName
+          lastName
+          fullName
+          nameWithTitle
+          pictureUrl
+        }
+        governorships {
+          id
+          name
+          memberCount
+          bacentaCount
+          leader {
+            id
+            firstName
+            lastName
+            pictureUrl
+          }
+        }
+      }
+    }
+  }
+`
+
+export const GET_CAMPUS_STREAMS_WITH_GOVERNORSHIPS = gql`
+  query getCampusStreamsWithGovernorships($id: ID!) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
+      id
+      name
+      memberCount
+      leader {
+        id
+        firstName
+        lastName
+        fullName
+      }
+      admin {
+        id
+        firstName
+        lastName
+        fullName
+      }
+      streams {
+        id
+        name
+        memberCount
+        councilCount
+        leader {
+          id
+          firstName
+          lastName
+          pictureUrl
+          fullName
+        }
+        councils {
+          id
+          name
+          memberCount
+          governorshipCount
+          leader {
+            id
+            firstName
+            lastName
+            fullName
+            nameWithTitle
+            pictureUrl
+          }
+          governorships {
+            id
+            name
+            memberCount
+            bacentaCount
+            leader {
+              id
+              firstName
+              lastName
+              pictureUrl
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
 export const GET_COUNCIL_BACENTAS = gql`
   query getCouncilBacentas($id: ID!) {
     councils(where: { id: { eq: $id } }, limit: 1) {
@@ -320,6 +429,44 @@ export const GET_COUNCIL_BACENTAS = gql`
             firstName
             lastName
             pictureUrl
+          }
+        }
+      }
+    }
+  }
+`
+
+export const GET_STREAM_BACENTAS = gql`
+  query getStreamBacentas($id: ID!) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
+      id
+      name
+      councils {
+        id
+        name
+        governorships {
+          id
+          name
+          leader {
+            id
+            firstName
+            lastName
+            fullName
+            nameWithTitle
+            pictureUrl
+          }
+          bacentas {
+            id
+            name
+            memberCount
+            vacationStatus
+            labels
+            leader {
+              id
+              firstName
+              lastName
+              pictureUrl
+            }
           }
         }
       }

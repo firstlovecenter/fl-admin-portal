@@ -71,7 +71,7 @@ const DetailsStream = () => {
       title: 'Bacentas',
       number: stream?.bacentaCount || 0,
       vacationCount: stream?.vacationBacentaCount,
-      link: '#',
+      link: '/stream/bacentas',
     },
   ]
 
