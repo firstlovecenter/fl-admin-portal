@@ -385,6 +385,47 @@ toolbars, FAB) is in the Component library further down.
 
 This rule is not negotiable — repeated violations have shipped to prod.
 
+### Reserved mobile corners — MANDATORY
+
+On mobile (`< md`), the `AppShell` (`components/shell/AppShell.tsx`) renders
+**two floating absolute-positioned controls** that sit on top of every
+page:
+
+| Position | Component | Class |
+| --- | --- | --- |
+| `right-3 top-3` (size-11, 44 × 44 px) | Sidebar / `MobileNav` toggle (`PanelLeftOpen` / `PanelLeftClose`) | `absolute right-3 top-3 z-20 ... md:hidden` |
+| `left-3 top-3` (size-11, 44 × 44 px) | `BackButton` (PWA-standalone only) | `absolute left-3 top-3 z-20 md:hidden` |
+
+These are owned by the app shell. **Pages must not place their own
+controls in the same 56 × 56 px corner zones on mobile** — the icons
+visually compete with the shell and one will end up tapping through to
+the other.
+
+**Rule.** Any page-level top-right header action (Settings dropdown, Edit
+button, More menu, kebab, etc.) MUST clear the shell toggle on mobile via
+one of:
+
+1. **Reserve right padding on the header flex row** —
+   `pr-14 md:pr-0` on the heading container. The header's right-aligned
+   action sits 56 px left of the page edge on mobile, flush right on
+   `md+`. This is the simplest fix and preserves the heading layout.
+2. **Stack the header vertically on mobile** —
+   `flex flex-col gap-3 md:flex-row md:items-start md:justify-between`.
+   The action moves below the title block on mobile, alongside on
+   desktop. Use this when the action is text + icon (not a bare icon
+   button) so it reads naturally as a row.
+3. **Hide the action on mobile and surface it inside the page body** —
+   `max-md:hidden` on the button, and add a tappable card / list item
+   somewhere on the page (Settings section, action shelf) that exposes
+   the same affordances. Use when the action set is large and a small
+   icon button on the heading row is the wrong density on mobile anyway.
+
+Top-left action zones (`< md`) have the same rule against the BackButton
+— mirror the choice.
+
+Desktop (`md+`) is unaffected: both shell toggles are `md:hidden`, so the
+page owns its top corners and can place actions inline freely.
+
 ### Summary placement rule — MANDATORY
 
 **On mobile, the summary/supporting column MUST appear above the primary

@@ -224,7 +224,8 @@ const StreamDashboard = () => {
           <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {/* ── Page header ── */}
             <div className="mb-3 space-y-2 lg:mb-8">
-              <div className="flex items-start justify-between gap-4">
+              {/* pr-14 reserves space for AppShell's floating sidebar toggle on mobile */}
+              <div className="flex items-start justify-between gap-4 pr-14 md:pr-0">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     <LiveDot />

@@ -289,6 +289,33 @@ const recentBussing = bussingData.filter((r) => {
 
 ---
 
+## Reserved mobile corners — MANDATORY
+
+On mobile (`< md`), `AppShell` floats two absolute-positioned controls
+above every page: the sidebar / `MobileNav` toggle at `right-3 top-3`
+(size-11) and the PWA `BackButton` at `left-3 top-3` (size-11). Both are
+44 × 44 px buttons in a `z-20` layer the page cannot override.
+
+Page-level header actions (Settings dropdown, Edit button, More menu,
+kebab) placed in the top-right of the page header MUST offset on mobile
+so they don't collide with the floating sidebar toggle. Three accepted
+fixes:
+
+1. `pr-14 md:pr-0` on the page-header flex row — simplest; pushes the
+   right-aligned action 56 px left on mobile.
+2. `flex flex-col gap-3 md:flex-row md:items-start md:justify-between`
+   on the header — stacks the action below the title on mobile.
+3. `max-md:hidden` on the action and surface the same options inside the
+   page body — for large action sets.
+
+Top-left actions follow the same rule against the BackButton. Desktop
+(`md+`) is unaffected — both shell toggles are `md:hidden`.
+
+The full rule and rationale live in `/design`
+(`.claude/commands/design.md` → "Reserved mobile corners").
+
+---
+
 ## Summary-on-top rule — MANDATORY (for new/touched pages)
 
 On any **new or touched** 2-column page (`[1fr_320px]` / `[1fr_360px]`
