@@ -217,10 +217,10 @@ const GovernorshipDashboard = () => {
         placeholder={!!previousData}
       >
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+          <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {/* ── Header ── */}
-            <header className="mb-6 flex flex-col gap-4 lg:mb-8 lg:flex-row lg:items-end lg:justify-between">
-              <div className="space-y-2">
+            <header className="mb-3 flex flex-col gap-2 lg:mb-8 lg:flex-row lg:items-end lg:justify-between">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   <LiveDot />
                   <span>Live Dashboard</span>
@@ -284,12 +284,12 @@ const GovernorshipDashboard = () => {
             {/* ── 2-column grid ── */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
               {/* LEFT — admin + bacenta status */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Arrivals admin */}
-                <section className="space-y-3">
+                <section className="space-y-2">
                   <SectionLabel>Arrivals Admin</SectionLabel>
                   <Card>
-                    <CardContent className="flex items-center justify-between gap-3 p-4">
+                    <CardContent className="flex items-center justify-between gap-3 p-3">
                       {loading && !governorship ? (
                         <div className="flex items-center gap-3">
                           <Skeleton className="size-9 rounded-full" />
@@ -322,7 +322,7 @@ const GovernorshipDashboard = () => {
                 </div>
 
                 {/* Bacenta status grid */}
-                <section className="space-y-3">
+                <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <SectionLabel>Bacenta Status</SectionLabel>
