@@ -1,3 +1,12 @@
+import { useMemo, useState, type ReactNode } from 'react'
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from '@tanstack/react-table'
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
 import {
@@ -10,14 +19,15 @@ import {
 } from 'components/ui/table'
 import {
   CalendarRange,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
   Download,
   FileSpreadsheet,
   Inbox,
 } from 'lucide-react'
 import { CSVLink } from 'react-csv'
-import { type ReactNode } from 'react'
 import StatTile from './StatTile'
-import type { WeeklyChurchReportEntry } from './report-types'
 
 type CsvHeader = {
   label: string
@@ -47,6 +57,12 @@ const ILLEGAL_FILENAME_CHARS = /[/\\:*?"<>|]/g
 export const sanitizeFilenamePart = (value: string) =>
   value.replace(ILLEGAL_FILENAME_CHARS, '-')
 
+const SortIcon = ({ sorted }: { sorted: 'asc' | 'desc' | false }) => {
+  if (sorted === 'asc') return <ChevronUp className="size-3.5 shrink-0" />
+  if (sorted === 'desc') return <ChevronDown className="size-3.5 shrink-0" />
+  return <ChevronsUpDown className="size-3.5 shrink-0 opacity-40" />
+}
+
 const WeeklyReportDownloadCard = ({
   title,
   description,
@@ -60,6 +76,31 @@ const WeeklyReportDownloadCard = ({
   emptyMessage = 'No records in the selected date range.',
   notice,
 }: WeeklyReportDownloadCardProps) => {
+  const previewRows = rows.slice(0, 5)
+  const [sorting, setSorting] = useState<SortingState>([])
+  const columns = useMemo<ColumnDef<Record<string, string | number>>[]>(
+    () =>
+      previewColumns.map((col) => ({
+        accessorKey: col.key,
+        header: col.label,
+        cell: ({ getValue }) => {
+          const value = getValue()
+          if (value === undefined || value === '')
+            return <span className="text-muted-foreground">—</span>
+          return value as string | number
+        },
+      })),
+    [previewColumns]
+  )
+  const table = useReactTable({
+    data: previewRows,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
+
   if (loading) {
     return (
       <section className="space-y-4">
@@ -86,8 +127,6 @@ const WeeklyReportDownloadCard = ({
       </section>
     )
   }
-
-  const previewRows = rows.slice(0, 5)
 
   return (
     <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start lg:gap-6">
@@ -161,25 +200,54 @@ const WeeklyReportDownloadCard = ({
               : `Showing ${entriesCount} of ${entriesCount}`}
           </p>
         </div>
+        <div className="overflow-x-auto">
         <Table>
-          <TableHeader>
-            <TableRow>
-              {previewColumns.map((col) => (
-                <TableHead key={col.key} className="px-3">
-                  {col.label}
-                </TableHead>
-              ))}
-            </TableRow>
+          <TableHeader className="bg-muted/40">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow
+                key={headerGroup.id}
+                className="border-b border-border hover:bg-transparent"
+              >
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="px-3 py-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
+                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                      <button
+                        type="button"
+                        onClick={(e) =>
+                          header.column.getToggleSortingHandler()?.(e)
+                        }
+                        className="-ml-1 flex min-h-11 items-center gap-1 rounded px-1 transition-colors hover:text-foreground"
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        <SortIcon sorted={header.column.getIsSorted()} />
+                      </button>
+                    ) : (
+                      <div className="flex min-h-11 items-center">
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </div>
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
-            {previewRows.map((row, index) => (
-              <TableRow key={`${index}`}>
-                {previewColumns.map((col) => (
-                  <TableCell key={col.key} className="px-3">
-                    {row[col.key] !== undefined && row[col.key] !== '' ? (
-                      row[col.key]
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id} className="border-b border-border">
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="px-3 py-3 text-sm">
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
                     )}
                   </TableCell>
                 ))}
@@ -187,10 +255,10 @@ const WeeklyReportDownloadCard = ({
             ))}
           </TableBody>
         </Table>
+        </div>
       </section>
     </div>
   )
 }
 
-export type { WeeklyChurchReportEntry }
 export default WeeklyReportDownloadCard

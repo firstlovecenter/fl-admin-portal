@@ -1,4 +1,13 @@
-import { Bus, Coins, FileSpreadsheet, Home, Users } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from '@tanstack/react-table'
+import { Bus, ChevronDown, ChevronUp, ChevronsUpDown, Coins, FileSpreadsheet, Home, Users } from 'lucide-react'
 
 import {
   Table,
@@ -56,6 +65,14 @@ const computeTotals = (rows: ArrivalsDetailRow[]): Totals =>
     { attendance: 0, vehicles: 0, topUp: 0, bacentas: 0, bacentasBussed: 0 }
   )
 
+const SortIcon = ({ sorted }: { sorted: 'asc' | 'desc' | false }) => {
+  if (sorted === 'asc') return <ChevronUp className="size-3.5 shrink-0" />
+  if (sorted === 'desc') return <ChevronDown className="size-3.5 shrink-0" />
+  return <ChevronsUpDown className="size-3.5 shrink-0 opacity-40" />
+}
+
+const columnHelper = createColumnHelper<ArrivalsDetailRow>()
+
 type ArrivalsReportPreviewProps = {
   payload: ArrivalsExportPayload
   level: ArrivalsDownloadLevel
@@ -71,6 +88,68 @@ const ArrivalsReportPreview = ({
   const vehicles = payload.vehicles ?? []
   const totals = computeTotals(detail)
   const previewRows = detail.slice(0, PREVIEW_ROW_LIMIT)
+
+  const [sorting, setSorting] = useState<SortingState>([])
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('bacenta', {
+        header: 'Bacenta',
+        cell: (info) => (
+          <span className="font-medium">
+            {info.getValue() ?? <span className="text-muted-foreground">—</span>}
+          </span>
+        ),
+      }),
+      columnHelper.accessor('leader', {
+        header: 'Leader',
+        cell: (info) => (
+          <span className="text-muted-foreground">
+            {info.getValue() ?? <span>—</span>}
+          </span>
+        ),
+      }),
+      columnHelper.accessor((row) => safeNum(row.attendance), {
+        id: 'attendance',
+        header: 'Attendance',
+        sortingFn: 'basic',
+        cell: ({ getValue }) => (
+          <span className="tabular-nums">{formatNumber(getValue())}</span>
+        ),
+      }),
+      columnHelper.accessor(
+        (row) =>
+          safeNum(row.sprinters) + safeNum(row.urvans) + safeNum(row.cars),
+        {
+          id: 'vehicleCount',
+          header: 'Vehicles',
+          sortingFn: 'basic',
+          cell: ({ getValue }) => (
+            <span className="tabular-nums">{formatNumber(getValue())}</span>
+          ),
+        }
+      ),
+      columnHelper.accessor((row) => safeNum(row.bussingTopUp), {
+        id: 'topUp',
+        header: 'Top-Up (GHS)',
+        sortingFn: 'basic',
+        cell: ({ getValue }) => (
+          <span className="tabular-nums">{formatNumber(getValue())}</span>
+        ),
+      }),
+    ],
+    []
+  )
+
+  const table = useReactTable({
+    data: previewRows,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
+
   const totalLabel = detail.length.toLocaleString('en-GH')
   const filenameStem = sanitizeFilenamePart(
     `${payload.churchName} ${payload.level} Arrivals ${payload.arrivalDate}`
@@ -154,45 +233,57 @@ const ArrivalsReportPreview = ({
         </div>
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="px-3">Bacenta</TableHead>
-                <TableHead className="px-3">Leader</TableHead>
-                <TableHead className="px-3 text-right">Attendance</TableHead>
-                <TableHead className="px-3 text-right">Vehicles</TableHead>
-                <TableHead className="px-3 text-right">Top-Up (GHS)</TableHead>
-              </TableRow>
+            <TableHeader className="bg-muted/40">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow
+                  key={headerGroup.id}
+                  className="border-b border-border hover:bg-transparent"
+                >
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="px-3 py-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                    >
+                      {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                        <button
+                          type="button"
+                          onClick={(e) =>
+                            header.column.getToggleSortingHandler()?.(e)
+                          }
+                          className="-ml-1 flex min-h-11 items-center gap-1 rounded px-1 transition-colors hover:text-foreground"
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          <SortIcon sorted={header.column.getIsSorted()} />
+                        </button>
+                      ) : (
+                        <div className="flex min-h-11 items-center">
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </div>
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
             </TableHeader>
             <TableBody>
-              {previewRows.map((row, idx) => {
-                const vehicleCount =
-                  safeNum(row.sprinters) +
-                  safeNum(row.urvans) +
-                  safeNum(row.cars)
-                return (
-                  <TableRow key={`${row.bacenta ?? 'bacenta'}-${idx}`}>
-                    <TableCell className="px-3 font-medium">
-                      {row.bacenta ?? (
-                        <span className="text-muted-foreground">—</span>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} className="border-b border-border">
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="px-3 py-3 text-sm">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
                       )}
                     </TableCell>
-                    <TableCell className="px-3 text-muted-foreground">
-                      {row.leader ?? (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="px-3 text-right tabular-nums">
-                      {formatNumber(safeNum(row.attendance))}
-                    </TableCell>
-                    <TableCell className="px-3 text-right tabular-nums">
-                      {formatNumber(vehicleCount)}
-                    </TableCell>
-                    <TableCell className="px-3 text-right tabular-nums">
-                      {formatNumber(safeNum(row.bussingTopUp))}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+                  ))}
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </div>

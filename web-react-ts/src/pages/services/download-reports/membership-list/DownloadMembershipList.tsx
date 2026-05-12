@@ -15,7 +15,10 @@ import { getHumanReadableDate } from 'global-utils'
 import { getAccessToken } from 'lib/auth-service'
 import {
   Check,
+  ChevronDown,
   ChevronLeft,
+  ChevronUp,
+  ChevronsUpDown,
   Copy,
   Download,
   FileSpreadsheet,
@@ -24,8 +27,18 @@ import {
   Users,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from '@tanstack/react-table'
+import StatTile from 'pages/reports/_shared/StatTile'
+import { sanitizeFilenamePart } from 'pages/reports/_shared/WeeklyReportDownloadCard'
 
 const formatBirthday = (dateString?: string) => {
   if (!dateString) return ''
@@ -34,17 +47,12 @@ const formatBirthday = (dateString?: string) => {
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
 }
 
-const ILLEGAL_FILENAME_CHARS = /[/\\:*?"<>|]/g
-
 // Mirrors the server's filename builder so the user sees the same name in
 // the "Filename" panel before downloading. The browser still uses whatever
 // Content-Disposition the server returns; this is display-only.
 const buildDisplayFilename = (churchName: string, churchType: string) => {
   const today = new Date().toISOString().slice(0, 10)
-  const safeName = (churchName || churchType).replace(
-    ILLEGAL_FILENAME_CHARS,
-    '-'
-  )
+  const safeName = sanitizeFilenamePart(churchName || churchType)
   return `${safeName} ${churchType} Membership - ${today}.csv`
 }
 
@@ -67,6 +75,8 @@ const previewHeaders = [
 
 type PreviewKey = (typeof previewHeaders)[number]['key']
 type PreviewRow = { id: string } & Record<PreviewKey, string>
+
+const columnHelper = createColumnHelper<PreviewRow>()
 
 const buildPreviewRows = (church: Church | undefined): PreviewRow[] =>
   church?.members?.map((member: Member) => ({
@@ -130,6 +140,12 @@ const triggerBlobDownload = (blob: Blob, filename: string) => {
   setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
 }
 
+const SortIcon = ({ sorted }: { sorted: 'asc' | 'desc' | false }) => {
+  if (sorted === 'asc') return <ChevronUp className="size-3.5 shrink-0" />
+  if (sorted === 'desc') return <ChevronDown className="size-3.5 shrink-0" />
+  return <ChevronsUpDown className="size-3.5 shrink-0 opacity-40" />
+}
+
 type DownloadMembershipListProps = {
   church: Church
   loading: boolean
@@ -149,11 +165,47 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
     return () => clearTimeout(t)
   }, [copied])
 
+  const [sorting, setSorting] = useState<SortingState>([])
+
   const today = new Date().toISOString().slice(0, 10)
   const generatedOn = getHumanReadableDate(today) ?? today
   const previewRows = buildPreviewRows(church)
   const total = church?.memberCount ?? 0
   const displayFilename = buildDisplayFilename(church?.name ?? '', churchType)
+
+  const previewTableColumns = useMemo(
+    () => [
+      columnHelper.display({
+        id: 'index',
+        header: '#',
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="text-muted-foreground tabular-nums">
+            {row.index + 1}
+          </span>
+        ),
+      }),
+      ...previewHeaders.map((h) =>
+        columnHelper.accessor(h.key, {
+          header: h.label,
+          cell: (info) => {
+            const v = info.getValue()
+            return v || <span className="text-muted-foreground">—</span>
+          },
+        })
+      ),
+    ],
+    []
+  )
+
+  const memberTable = useReactTable({
+    data: previewRows,
+    columns: previewTableColumns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
 
   const copyFilename = async () => {
     try {
@@ -307,39 +359,54 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                         : `Showing ${previewRows.length} of ${total}`}
                     </p>
                   </div>
+                  <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-10 px-3 text-muted-foreground">
-                          #
-                        </TableHead>
-                        {previewHeaders.map((h) => (
-                          <TableHead key={h.key} className="px-3">
-                            {h.label}
-                          </TableHead>
-                        ))}
-                      </TableRow>
+                    <TableHeader className="bg-muted/40">
+                      {memberTable.getHeaderGroups().map((headerGroup) => (
+                        <TableRow
+                          key={headerGroup.id}
+                          className="border-b border-border hover:bg-transparent"
+                        >
+                          {headerGroup.headers.map((header) => (
+                            <TableHead
+                              key={header.id}
+                              className="px-3 py-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                            >
+                              {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) =>
+                                    header.column.getToggleSortingHandler()?.(e)
+                                  }
+                                  className="-ml-1 flex min-h-11 items-center gap-1 rounded px-1 transition-colors hover:text-foreground"
+                                >
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                                  <SortIcon sorted={header.column.getIsSorted()} />
+                                </button>
+                              ) : (
+                                <div className="flex min-h-11 items-center">
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                                </div>
+                              )}
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      ))}
                     </TableHeader>
                     <TableBody>
-                      {previewRows.map((row, index) => (
-                        <TableRow key={row.id}>
-                          <TableCell className="px-3 font-medium text-muted-foreground tabular-nums">
-                            {index + 1}
-                          </TableCell>
-                          {previewHeaders.map((h) => (
-                            <TableCell
-                              key={h.key}
-                              className={
-                                h.key === 'phoneNumber' ||
-                                h.key === 'whatsappNumber'
-                                  ? 'px-3 font-mono tabular-nums'
-                                  : 'px-3'
-                              }
-                            >
-                              {row[h.key] || (
-                                <span className="text-muted-foreground">
-                                  —
-                                </span>
+                      {memberTable.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id} className="border-b border-border">
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} className="px-3 py-3 text-sm">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
                               )}
                             </TableCell>
                           ))}
@@ -347,6 +414,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 </section>
               </div>
             )}
@@ -356,24 +424,6 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
     </div>
   )
 }
-
-type StatTileProps = {
-  icon: React.ReactNode
-  label: string
-  value: string
-}
-
-const StatTile = ({ icon, label, value }: StatTileProps) => (
-  <div className="rounded-lg border border-border bg-background/40 p-3">
-    <div className="flex items-center gap-2 text-muted-foreground">
-      {icon}
-      <p className="text-xs font-medium uppercase tracking-wider">{label}</p>
-    </div>
-    <p className="mt-1.5 text-lg font-semibold tabular-nums text-foreground">
-      {value}
-    </p>
-  </div>
-)
 
 const LoadingSkeleton = () => (
   <>

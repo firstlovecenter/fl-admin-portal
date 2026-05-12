@@ -1,6 +1,14 @@
-import React, { useContext } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { CSVLink } from 'react-csv'
-import { Bus, CalendarDays, Download, Inbox } from 'lucide-react'
+import { Bus, CalendarDays, ChevronDown, ChevronUp, ChevronsUpDown, Download, Inbox } from 'lucide-react'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from '@tanstack/react-table'
 import useInfiniteScroll from 'hooks/useInfiniteScroll'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -8,6 +16,14 @@ import { getHumanReadableDate } from 'jd-date-utils'
 import { Skeleton } from 'components/ui/skeleton'
 import { Button } from 'components/ui/button'
 import ErrorScreen from 'components/base-component/ErrorScreen'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from 'components/ui/table'
 import { DISPLAY_ARRIVALS_PAYMENT_DATA } from '../arrivalsQueries'
 
 const INITIAL_PAGE_SIZE = 25
@@ -69,6 +85,14 @@ const headers = [
 const formatNumber = (value: number | undefined | null) =>
   value == null ? '' : value.toLocaleString('en-GH')
 
+const SortIcon = ({ sorted }: { sorted: 'asc' | 'desc' | false }) => {
+  if (sorted === 'asc') return <ChevronUp className="size-3.5 shrink-0" />
+  if (sorted === 'desc') return <ChevronDown className="size-3.5 shrink-0" />
+  return <ChevronsUpDown className="size-3.5 shrink-0 opacity-40" />
+}
+
+const columnHelper = createColumnHelper<ArrivalPaymentRow>()
+
 const ArrivalsPaymentData = () => {
   const today = new Date().toISOString().slice(0, 10)
   const { currentUser } = useContext(MemberContext)
@@ -99,13 +123,109 @@ const ArrivalsPaymentData = () => {
     skip: !streamId,
   })
 
+  const [sorting, setSorting] = useState<SortingState>([])
+  const columns = useMemo(
+    () => [
+      columnHelper.display({
+        id: 'index',
+        header: '#',
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="text-muted-foreground tabular-nums">
+            {row.index + 1}
+          </span>
+        ),
+      }),
+      columnHelper.accessor('bacenta', {
+        header: 'Bacenta',
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('bacentaCode', {
+        header: 'Code',
+        enableSorting: false,
+        cell: (info) => (
+          <span className="text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor('leader', {
+        header: 'Leader',
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('council', {
+        header: 'Council',
+        cell: (info) => (
+          <span className="text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor('attendance', {
+        header: 'Attendance',
+        sortingFn: 'basic',
+        cell: (info) => (
+          <span className="tabular-nums">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor('confirmedAttendance', {
+        header: 'Confirmed',
+        sortingFn: 'basic',
+        cell: (info) => (
+          <span className="tabular-nums">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor('vehicle', {
+        header: 'Vehicle',
+        enableSorting: false,
+        cell: (info) => (
+          <span className="text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor('outbound', {
+        header: 'In/Out',
+        enableSorting: false,
+        cell: (info) => (
+          <span className="text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor('topUp', {
+        header: 'Top Up',
+        sortingFn: 'basic',
+        cell: (info) => (
+          <span className="tabular-nums">{formatNumber(info.getValue())}</span>
+        ),
+      }),
+      columnHelper.accessor('vehicleCost', {
+        header: 'Cost',
+        sortingFn: 'basic',
+        cell: (info) => (
+          <span className="tabular-nums">{formatNumber(info.getValue())}</span>
+        ),
+      }),
+      columnHelper.accessor('momoNumber', {
+        header: 'Momo',
+        enableSorting: false,
+        cell: (info) => (
+          <span className="text-muted-foreground">{info.getValue()}</span>
+        ),
+      }),
+    ],
+    []
+  )
+
+  const table = useReactTable({
+    data: items,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
+
+  if (error) return <ErrorScreen error={error} />
+
   const humanDate = getHumanReadableDate(arrivalsDate)
   const hasData = items.length > 0
   const showInitialLoading = loading && items.length === 0
   const streamName =
     data?.streams?.[0]?.name ?? church?.name ?? currentUser?.stream_name
-
-  if (error) return <ErrorScreen error={error} />
 
   const csvFilename = streamName
     ? `${streamName} Stream - ${humanDate} - Buses To Be Paid.csv`
@@ -190,79 +310,79 @@ const ArrivalsPaymentData = () => {
                 </p>
               </div>
             ) : (
-              <div className="rounded-xl border border-border bg-card overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="border-b border-border bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-2.5 text-left">#</th>
-                      <th className="px-3 py-2.5 text-left">Bacenta</th>
-                      <th className="px-3 py-2.5 text-left">Code</th>
-                      <th className="px-3 py-2.5 text-left">Leader</th>
-                      <th className="px-3 py-2.5 text-left">Council</th>
-                      <th className="px-3 py-2.5 text-right">Attendance</th>
-                      <th className="px-3 py-2.5 text-right">Confirmed</th>
-                      <th className="px-3 py-2.5 text-left">Vehicle</th>
-                      <th className="px-3 py-2.5 text-left">In/Out</th>
-                      <th className="px-3 py-2.5 text-right">Top Up</th>
-                      <th className="px-3 py-2.5 text-right">Cost</th>
-                      <th className="px-3 py-2.5 text-left">Momo</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {items.map((row, index) => (
-                      <tr
-                        key={`${row.bacentaCode}-${row.vehicle}-${index}`}
-                        className="hover:bg-muted/40 transition-colors"
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow
+                        key={headerGroup.id}
+                        className="border-b border-border hover:bg-transparent"
                       >
-                        <td className="px-3 py-2 text-muted-foreground tabular-nums">
-                          {index + 1}
-                        </td>
-                        <td className="px-3 py-2 text-foreground">
-                          {row.bacenta}
-                        </td>
-                        <td className="px-3 py-2 text-muted-foreground">
-                          {row.bacentaCode}
-                        </td>
-                        <td className="px-3 py-2 text-foreground">
-                          {row.leader}
-                        </td>
-                        <td className="px-3 py-2 text-muted-foreground">
-                          {row.council}
-                        </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-foreground">
-                          {row.attendance}
-                        </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-foreground">
-                          {row.confirmedAttendance}
-                        </td>
-                        <td className="px-3 py-2 text-muted-foreground">
-                          {row.vehicle}
-                        </td>
-                        <td className="px-3 py-2 text-muted-foreground">
-                          {row.outbound}
-                        </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-foreground">
-                          {formatNumber(row.topUp)}
-                        </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-foreground">
-                          {formatNumber(row.vehicleCost)}
-                        </td>
-                        <td className="px-3 py-2 text-muted-foreground">
-                          {row.momoNumber}
-                        </td>
-                      </tr>
+                        {headerGroup.headers.map((header) => (
+                          <TableHead
+                            key={header.id}
+                            className="px-4 py-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                          >
+                            {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                              <button
+                                type="button"
+                                onClick={(e) =>
+                                  header.column.getToggleSortingHandler()?.(e)
+                                }
+                                className="-ml-1 flex min-h-11 items-center gap-1 rounded px-1 transition-colors hover:text-foreground"
+                              >
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                                <SortIcon
+                                  sorted={header.column.getIsSorted()}
+                                />
+                              </button>
+                            ) : (
+                              <div className="flex min-h-11 items-center">
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                              </div>
+                            )}
+                          </TableHead>
+                        ))}
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        className="border-b border-border"
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className="px-4 py-3 text-sm"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                </div>
                 {fetchingMore && (
-                  <div className="space-y-2 p-3">
-                    <Skeleton className="h-10 w-full rounded" />
-                    <Skeleton className="h-10 w-full rounded" />
+                  <div className="space-y-2 p-4">
+                    <Skeleton className="h-12 w-full rounded" />
+                    <Skeleton className="h-12 w-full rounded" />
+                    <Skeleton className="h-12 w-full rounded" />
                   </div>
                 )}
-                {hasMore && (
-                  <div ref={sentinelRef} aria-hidden className="h-1" />
-                )}
+                {hasMore && <div ref={sentinelRef} aria-hidden className="h-1" />}
               </div>
             )}
           </div>
@@ -279,7 +399,7 @@ const ArrivalsPaymentData = () => {
                 <CSVLink
                   filename={csvFilename}
                   headers={headers}
-                  data={items}
+                  data={table.getRowModel().rows.map((row) => row.original)}
                 >
                   <Download className="size-4" />
                   Download CSV
