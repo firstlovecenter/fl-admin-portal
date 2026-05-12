@@ -286,6 +286,8 @@ export const DISPLAY_GOVERNORSHIP = gql`
         historyRecord
       }
       memberCount
+      pastorCount
+      target
     }
   }
 `

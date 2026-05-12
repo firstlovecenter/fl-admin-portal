@@ -3,11 +3,14 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DISPLAY_OVERSIGHT } from './ReadQueries'
 import { permitMe } from 'permission-utils'
+import { DetailsArray } from './DetailsBacenta'
 
 const DetailsOversight = () => {
-  const { oversightId } = useContext(ChurchContext)
+  const { oversightId, setFilters } = useContext(ChurchContext)
+  const navigate = useNavigate()
 
   const { data, loading, error } = useQuery(DISPLAY_OVERSIGHT, {
     variables: { id: oversightId },
@@ -16,7 +19,7 @@ const DetailsOversight = () => {
   const oversight = data?.oversights[0]
   let breadcrumb = [oversight?.denomination, oversight]
 
-  const details = [
+  const details: DetailsArray = [
     {
       title: 'Members',
       number: oversight?.memberCount || 0,
@@ -28,7 +31,22 @@ const DetailsOversight = () => {
       number: oversight?.streamCount || 0,
       link: `#`,
     },
-    { title: 'Pastors', number: oversight?.pastorCount || '0', link: '#' },
+    {
+      title: 'Pastors',
+      number: oversight?.pastorCount || '0',
+      link: '/oversight/members',
+      onClick: () => {
+        setFilters({
+          gender: [],
+          maritalStatus: [],
+          occupation: '',
+          leaderTitle: ['Pastor'],
+          leaderRank: [],
+          basonta: [],
+        })
+        navigate('/oversight/members')
+      },
+    },
     {
       title: 'Campuses',
       number: oversight?.campusCount,

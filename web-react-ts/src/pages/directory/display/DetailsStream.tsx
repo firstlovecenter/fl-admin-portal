@@ -3,12 +3,14 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DISPLAY_STREAM } from './ReadQueries'
 import { permitAdmin } from 'permission-utils'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsStream = () => {
-  const { streamId } = useContext(ChurchContext)
+  const { streamId, setFilters } = useContext(ChurchContext)
+  const navigate = useNavigate()
 
   const { data, loading, error } = useQuery(DISPLAY_STREAM, {
     variables: { id: streamId },
@@ -44,7 +46,22 @@ const DetailsStream = () => {
       link: `/${`Council`.toLowerCase()}/displayall`,
     },
     { title: 'Target', number: stream?.target, link: '#' },
-    { title: 'Pastors', number: stream?.pastorCount || '0', link: '#' },
+    {
+      title: 'Pastors',
+      number: stream?.pastorCount || '0',
+      link: '/stream/members',
+      onClick: () => {
+        setFilters({
+          gender: [],
+          maritalStatus: [],
+          occupation: '',
+          leaderTitle: ['Pastor'],
+          leaderRank: [],
+          basonta: [],
+        })
+        navigate('/stream/members')
+      },
+    },
     {
       title: 'Governorships',
       number: stream?.governorshipCount,
