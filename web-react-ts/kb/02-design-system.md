@@ -289,6 +289,29 @@ const recentBussing = bussingData.filter((r) => {
 
 ---
 
+## Summary-on-top rule — MANDATORY (for new/touched pages)
+
+On any **new or touched** 2-column page (`[1fr_320px]` / `[1fr_360px]`
+with a supporting `<aside>`), the **supporting column comes first in DOM**.
+On mobile the grid collapses in source order, so summary/totals/CTA must
+land above primary content — never below it. On desktop,
+`lg:col-start-2 lg:row-start-1` on the supporting column and
+`lg:col-start-1 lg:row-start-1` on the primary column places them
+side-by-side as expected.
+
+Legacy pages using "primary first, aside second" are grandfathered until
+next touched — same migration policy as Bootstrap.
+
+A right-side aside that is second in DOM forces mobile users to scroll past
+the entire list to reach the summary number they came for. Reversing the
+source order with explicit grid placement fixes both mobile order and
+desktop layout in one shape.
+
+The full rule, examples, and rationale live in `/design`
+(`.claude/commands/design.md` → "Summary placement rule").
+
+---
+
 ## Migration rules
 
 Bootstrap is **fully deprecated**. Every file you touch must be fully migrated

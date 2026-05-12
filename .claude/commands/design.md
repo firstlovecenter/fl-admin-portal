@@ -385,6 +385,52 @@ toolbars, FAB) is in the Component library further down.
 
 This rule is not negotiable — repeated violations have shipped to prod.
 
+### Summary placement rule — MANDATORY
+
+**On mobile, the summary/supporting column MUST appear above the primary
+content — never below it.** On desktop the 2-column layout is unchanged
+(supporting column on the right is the default). This rule is about visual
+order on narrow viewports, not column placement on wide ones.
+
+The default `flex flex-col lg:grid` pattern follows source order, so a
+right-side `<aside>` falls *below* the primary `<section>` when the grid
+collapses on mobile. That puts the summary number — the thing the user
+opened the page to see — below the fold. Invert it.
+
+Canonical pattern — supporting `<aside>` first in DOM, placed in the right
+column on `lg+` via `lg:col-start-2`:
+
+```tsx
+<div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
+  {/* Supporting column — first in DOM so it sits on top on mobile.
+      On lg+ grid placement pushes it to column 2 (right side). */}
+  <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
+    {/* Summary cards, totals, CTA buttons, filters */}
+  </aside>
+
+  {/* Primary column — second in DOM, but placed in column 1 on lg+. */}
+  <section className="space-y-4 lg:col-start-1 lg:row-start-1">
+    {/* Primary list / form / data */}
+  </section>
+</div>
+```
+
+`lg:row-start-1` on both keeps them aligned on the same row on desktop;
+`lg:col-start-N` overrides the natural source-order column flow.
+
+**Why source order matters:** screen readers and tab order follow DOM, and
+on mobile the grid collapses to a single column in DOM order. The right
+column always being source-second means the user always has to scroll past
+the primary content to find the summary on mobile — exactly backwards from
+their intent.
+
+**Where this applies:** every **new or touched** page that uses the
+`[1fr_320px]` or `[1fr_360px]` 2-column layout with a sidebar `<aside>`.
+Legacy pages still using "primary first, aside second" are grandfathered
+until next touched — same migration policy as Bootstrap. Touch a page,
+migrate it fully in the same PR. The 3-column entity-detail layout is
+unaffected — its identity panel is already on the left.
+
 ### Desktop layout rule — MANDATORY
 
 **Every page MUST use at least a 2-column layout on `lg` screens.** A single
@@ -399,19 +445,21 @@ content into a primary column and a secondary/supporting column at minimum.
 | List / directory page | 2-column: `lg:grid-cols-[1fr_280px]` — list left, filters/actions right | Single column |
 | Dashboard | Stat grid `grid-cols-2 lg:grid-cols-4` + chart, then optional sidebar | 2-col stat grid |
 
-For a 2-column layout, the canonical split is:
+For a 2-column layout, the canonical split is — **supporting column first
+in DOM** so it lands above the primary content when the grid collapses on
+mobile (see "Summary placement rule" above):
 
 ```tsx
-{/* 2-column on lg+, stacked on mobile */}
+{/* 2-column on lg+, stacked on mobile (supporting → primary) */}
 <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
-  {/* Primary column */}
-  <div className="space-y-4">
-    {/* Main content — stats, data, form */}
+  {/* Supporting column — first in DOM, placed in column 2 on lg+ */}
+  <div className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-[73px]">
+    {/* Supporting cards — totals, quick actions, links */}
   </div>
 
-  {/* Secondary column — sticky summary, actions, related info */}
-  <div className="space-y-4 lg:sticky lg:top-[73px]">
-    {/* Supporting cards — totals, quick actions, links */}
+  {/* Primary column — second in DOM, placed in column 1 on lg+ */}
+  <div className="space-y-4 lg:col-start-1 lg:row-start-1">
+    {/* Main content — stats, data, form */}
   </div>
 </div>
 ```
@@ -432,13 +480,14 @@ Adjust column widths to fit the content — `360px` is a guide, not a hard rule.
   {/* max-w-6xl on desktop to give the 2-column grid room */}
   <main className="max-w-6xl mx-auto px-4 lg:px-6 py-5 space-y-6">
 
-    {/* 2-column grid on lg+, single column on mobile — MANDATORY */}
+    {/* 2-column grid on lg+, single column on mobile — MANDATORY.
+        Supporting column first in DOM so it sits above primary on mobile. */}
     <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
-      <div className="space-y-4">
-        {/* Primary content */}
-      </div>
-      <div className="space-y-4 lg:sticky lg:top-[73px]">
+      <div className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-[73px]">
         {/* Summary / supporting cards */}
+      </div>
+      <div className="space-y-4 lg:col-start-1 lg:row-start-1">
+        {/* Primary content */}
       </div>
     </div>
 

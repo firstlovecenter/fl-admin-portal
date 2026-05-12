@@ -138,8 +138,44 @@ const ArrivalsCounters = () => {
           </header>
 
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
-            {/* Primary column — counters list */}
-            <section className="space-y-4">
+            {/* Supporting column — first in DOM so summary sits on top on mobile.
+                On lg+ it lands in column 2 (right side). */}
+            <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
+              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Active counters
+                    </p>
+                    <p className="mt-1 text-3xl font-bold tracking-tight text-foreground tabular-nums">
+                      {counterCount}
+                    </p>
+                  </div>
+                  {typeof stream?.activeBacentaCount === 'number' && (
+                    <div className="border-t border-border pt-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Active Bacentas
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-foreground tabular-nums">
+                        {stream.activeBacentaCount}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                size="lg"
+                className="w-full gap-2 px-8 font-semibold sm:w-auto sm:min-w-64 lg:w-full"
+                onClick={() => setAddOpen(true)}
+              >
+                <Plus className="h-5 w-5" />
+                Add Counter
+              </Button>
+            </aside>
+
+            {/* Primary column — counters list. Second in DOM, column 1 on lg+. */}
+            <section className="space-y-4 lg:col-start-1 lg:row-start-1">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-foreground">
                   Current Counters
@@ -166,58 +202,25 @@ const ArrivalsCounters = () => {
               ) : (
                 <div className="space-y-3">
                   {counters.map((counter) => (
-                    <div key={counter.id} className="space-y-2">
+                    <div key={counter.id} className="relative">
                       <MemberDisplayCard member={counter} />
-                      <div className="flex justify-end">
-                        <Button
-                          variant="outline"
-                          className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          onClick={() => setRemoveTarget(counter)}
-                        >
-                          <UserMinus className="h-4 w-4" />
-                          Remove
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Remove ${counter.fullName}`}
+                        className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full text-destructive before:absolute before:-inset-2 before:content-[''] hover:bg-destructive/10 hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setRemoveTarget(counter)
+                        }}
+                      >
+                        <UserMinus className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
               )}
             </section>
-
-            {/* Supporting column — summary + CTA */}
-            <aside className="space-y-4 lg:sticky lg:top-6">
-              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Active counters
-                    </p>
-                    <p className="mt-1 text-3xl font-bold tracking-tight text-foreground tabular-nums">
-                      {counterCount}
-                    </p>
-                  </div>
-                  {typeof stream?.activeBacentaICCount === 'number' && (
-                    <div className="border-t border-border pt-4">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Active Bacenta ICs
-                      </p>
-                      <p className="mt-1 text-lg font-semibold text-foreground tabular-nums">
-                        {stream.activeBacentaICCount}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <Button
-                size="lg"
-                className="w-full gap-2 px-8 font-semibold sm:w-auto sm:min-w-64 lg:w-full"
-                onClick={() => setAddOpen(true)}
-              >
-                <Plus className="h-5 w-5" />
-                Add Counter
-              </Button>
-            </aside>
           </div>
         </main>
 

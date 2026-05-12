@@ -22,7 +22,7 @@ export const STREAM_ARRIVALS_HELPERS = gql`
         }
       }
 
-      activeBacentaICCount
+      activeBacentaCount
     }
   }
 `
