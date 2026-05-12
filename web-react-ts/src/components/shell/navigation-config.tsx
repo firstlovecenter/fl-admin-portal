@@ -13,7 +13,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { Role } from 'global-types'
-import { permitAdmin, permitMe } from 'permission-utils'
+import { permitMe, permitShepherdingControl } from 'permission-utils'
 
 export interface NavItem {
   name: string
@@ -80,7 +80,7 @@ export const secondaryNav: NavItem[] = [
     name: 'Shepherding Control',
     to: '/shepherding-control',
     icon: ShieldCheck,
-    roles: permitAdmin('Bacenta'),
+    roles: permitShepherdingControl(),
   },
   {
     name: 'AI Assistant',

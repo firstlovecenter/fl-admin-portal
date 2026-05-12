@@ -1,0 +1,37 @@
+enum ShepherdingChurchLevel {
+  Denomination
+  Oversight
+  Campus
+  Stream
+  Council
+  Governorship
+  Bacenta
+}
+
+extend type Query {
+  # Returns true when the caller is a leader/admin of the requested church
+  # node OR of any of its ancestors. Used as a server-side guard for the
+  # Shepherding Control PDF export so a tampered URL cannot exfiltrate
+  # out-of-subtree data. Role list mirrors `permitShepherdingControl` in
+  # both `api/src/resolvers/permissions.ts` and
+  # `web-react-ts/src/permission-utils.ts` (ADR-001).
+  shepherdingScopeCheck(level: ShepherdingChurchLevel!, id: ID!): Boolean!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "leaderGovernorship" } }
+          { roles: { includes: "leaderCouncil" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "leaderDenomination" } }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
+}

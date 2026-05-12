@@ -197,3 +197,18 @@ export const permitAdminArrivals = (churchLevel: ChurchLevel): Role[] => {
 export const permitTellerStream = (): Role[] => {
   return ['tellerStream']
 }
+
+export const permitShepherdingControl = (): Role[] => [
+  'leaderGovernorship',
+  'leaderCouncil',
+  'leaderStream',
+  'leaderCampus',
+  'leaderOversight',
+  'leaderDenomination',
+  'adminGovernorship',
+  'adminCouncil',
+  'adminStream',
+  'adminCampus',
+  'adminOversight',
+  'adminDenomination',
+]

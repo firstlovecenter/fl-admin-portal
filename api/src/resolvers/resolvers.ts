@@ -13,6 +13,7 @@ import { mapsResolvers } from './maps/maps-resolvers'
 import { Context } from './utils/neo4j-types'
 import MakeServantResolvers from './directory/make-servant-resolvers'
 import { reportsResolvers } from './reports/reports-resolvers'
+import shepherdingControlResolvers from './shepherding-control/shepherding-control-resolvers'
 import uploadMutations from './uploads/upload-resolvers'
 
 const dotenv = require('dotenv')
@@ -146,6 +147,10 @@ const resolvers = {
   // Args: Field Arguments
   // Context: Context object, database connection, API, etc
   // GraphQLResolveInfo
+
+  Query: {
+    ...shepherdingControlResolvers.Query,
+  },
 
   Member: {
     fullName: (source: Member) => `${source.firstName} ${source.lastName}`,

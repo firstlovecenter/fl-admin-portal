@@ -72,6 +72,10 @@ const reports = fs
   .readFileSync(path.join(__dirname, './reports.graphql'))
   .toString('utf-8')
 
+const shepherdingControl = fs
+  .readFileSync(path.join(__dirname, './shepherding-control.graphql'))
+  .toString('utf-8')
+
 const array = [
   schema,
   directory,
@@ -89,6 +93,7 @@ const array = [
   maps,
   accounts,
   reports,
+  shepherdingControl,
 ]
 
 const combinedSchema = expandChurchScopedMarkers(array.join(' '))

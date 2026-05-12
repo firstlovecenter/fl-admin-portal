@@ -13,7 +13,12 @@ export const getMonthlyStatAverage = (
     year?: number | string
     date?: string
   }[],
-  stat?: 'attendance' | 'income' | 'gatheringAttendance' | 'rehearsalAttendance'
+  stat?:
+    | 'attendance'
+    | 'income'
+    | 'gatheringAttendance'
+    | 'rehearsalAttendance',
+  windowSize: number = numberOfWeeks
 ) => {
   if (!data || !stat) {
     return
@@ -59,19 +64,14 @@ export const getMonthlyStatAverage = (
     })
     .map(({ service }) => service)
 
-  const latestFourServices = sortedData.slice(0, numberOfWeeks)
-
-  const statArray = latestFourServices
+  const latestValues = sortedData
+    .slice(0, windowSize)
     .map((service) => Number(service[stat]))
     .filter((value) => Number.isFinite(value))
 
-  // Use only the latest four services first.
-  const latestFourValues = statArray.slice(0, numberOfWeeks)
-
-  // Ignore zero values within the latest-four window.
-  const nonZeroArray = latestFourValues.filter((value) => {
-    return value > 0
-  })
+  // Ignore zero values within the window so a single missed week doesn't drag
+  // the average to zero.
+  const nonZeroArray = latestValues.filter((value) => value > 0)
 
   return average(nonZeroArray)?.toFixed(2)
 }

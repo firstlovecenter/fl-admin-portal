@@ -25,6 +25,12 @@ type ChurchGraphProps = {
   graphType: GraphTypes
   church: ChurchLevelLower | string
   swollenSunday?: boolean
+  // Optional per-bar colour overrides. When omitted, fall back to the
+  // graphType-driven palette (primary) and the fixed success accent
+  // (secondary). Used by Shepherding Control to colour each metric
+  // distinctly so the projection legend reads naturally.
+  stat1Color?: string
+  stat2Color?: string
 }
 
 const compactNumberFormatter = new Intl.NumberFormat('en', {
@@ -221,6 +227,8 @@ const ChurchGraph = (props: ChurchGraphProps) => {
     secondaryTitle,
     graphType,
     church,
+    stat1Color,
+    stat2Color,
   } = props
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
@@ -244,7 +252,8 @@ const ChurchGraph = (props: ChurchGraphProps) => {
     }
   }, [churchData])
 
-  const primaryColor = PRIMARY_COLOR_BY_TYPE[graphType]
+  const primaryColor = stat1Color ?? PRIMARY_COLOR_BY_TYPE[graphType]
+  const secondaryColor = stat2Color ?? SECONDARY_COLOR
 
   // At levels above Bacenta, individual "services" records are joint/combined services.
   const isJointServiceLevel = !['bacenta'].includes(church)
@@ -376,7 +385,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   name={capitalise(stat2)}
                   dataKey={stat2}
                   yAxisId="right"
-                  fill={SECONDARY_COLOR}
+                  fill={secondaryColor}
                   radius={[6, 6, 0, 0]}
                   maxBarSize={48}
                   cursor="pointer"

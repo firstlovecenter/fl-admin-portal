@@ -1,15 +1,24 @@
 import { LazyRouteTypes } from 'global-types'
-import { permitAdmin } from 'permission-utils'
+import { permitShepherdingControl } from 'permission-utils'
 import { lazy } from 'react'
 
 const ShepherdingControl = lazy(
   () => import('pages/shepherding-control/ShepherdingControl')
 )
 
+const ShepherdingControlProjector = lazy(
+  () => import('pages/shepherding-control/ShepherdingControlProjector')
+)
+
 export const shepherdingControl: LazyRouteTypes[] = [
   {
     path: '/shepherding-control',
     element: ShepherdingControl,
-    roles: permitAdmin('Bacenta'),
+    roles: permitShepherdingControl(),
+  },
+  {
+    path: '/shepherding-control/projector',
+    element: ShepherdingControlProjector,
+    roles: permitShepherdingControl(),
   },
 ]
