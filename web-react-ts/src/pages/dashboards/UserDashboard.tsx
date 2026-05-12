@@ -1146,7 +1146,7 @@ const WeeklyTaskCard = ({
             done
               ? 'border-border bg-background text-foreground hover:bg-accent'
               : upcoming
-              ? 'bg-muted text-muted-foreground hover:bg-muted/80'
+              ? 'bg-brand/50 text-foreground hover:bg-brand/60 dark:bg-brand/20 dark:hover:bg-brand/30'
               : 'bg-brand text-brand-foreground hover:bg-brand/90'
           )}
         >
