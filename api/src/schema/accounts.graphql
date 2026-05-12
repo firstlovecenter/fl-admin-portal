@@ -206,44 +206,8 @@ extend type Mutation {
     expenseAmount: Float!
     expenseCategory: String!
     accountType: String!
-    description: String! #momoNumber: String! #momoName: String! #invoiceUrl: String!
+    description: String!
   ): AccountTransaction!
-    # @authentication(
-    #   jwt: {
-    #     OR: [
-    #       { roles: { includes: "leaderCouncil" } }
-    #       { roles: { includes: "adminCampus" } }
-    #     ]
-    #   }
-    # )
-    @cypher(
-      statement: """
-      MATCH (council:Council {id: $councilId})
-      MATCH (requester:Member {id: $jwt.userId})
-
-      WITH council, requester
-
-      CREATE (transaction:AccountTransaction {id: randomUUID()})
-        SET transaction.description = $description,
-        transaction.amount = $expenseAmount *  -1,
-        transaction.account = $accountType,
-        transaction.category = $expenseCategory,
-        transaction.status = 'pending approval',
-        transaction.createdAt = datetime(),
-        transaction.lastModified = datetime(),
-        transaction.bussingSocietyBalance = council.bussingSocietyBalance,
-        transaction.weekdayBalance = council.weekdayBalance
-        // transaction.momoNumber = $momoNumber,
-        // transaction.momoName = $momoName,
-        // transaction.invoiceUrl = $invoiceUrl
-
-      MERGE (council)-[:HAS_TRANSACTION]->(transaction)
-      MERGE (requester)<-[:LOGGED_BY]-(transaction)
-
-      RETURN transaction
-      """
-      columnName: "transaction"
-    )
 
   ApproveExpense(transactionId: ID!, charge: Float!): AccountTransaction!
 
@@ -266,29 +230,7 @@ extend type Mutation {
       columnName: "transaction"
     )
   UndoBussingTransaction(transactionId: ID!): Council!
-    @cypher(
-      statement: """
-      MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
-
-        SET council.bussingSocietyBalance = council.bussingSocietyBalance - transaction.amount
-      DETACH DELETE transaction
-
-      RETURN council
-      """
-      columnName: "council"
-    )
   UndoWeekdayTransaction(transactionId: ID!): Council!
-    @cypher(
-      statement: """
-      MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
-
-        SET council.weekdayBalance = council.weekdayBalance - transaction.amount
-      DETACH DELETE transaction
-
-      RETURN council
-      """
-      columnName: "council"
-    )
 
   DebitBussingSociety(
     councilId: ID!

@@ -1,8 +1,22 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 /* eslint-disable no-relative-import-paths/no-relative-import-paths */
+import { GraphQLError } from 'graphql'
 import { QueryResult } from 'neo4j-driver'
 import { ChurchLevel, Member, neonumber, Role } from './types'
+
+// `GraphQLError` (not a plain Error with `error.extensions` set) is required so
+// Apollo Server 4's default formatError preserves `extensions.code` once
+// NODE_ENV=production — without this the FE always sees INTERNAL_SERVER_ERROR.
+export const badRequest = (message: string): GraphQLError =>
+  new GraphQLError(message, {
+    extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
+  })
+
+export const isClassifiedError = (err: unknown): boolean => {
+  const code = (err as { extensions?: { code?: string } })?.extensions?.code
+  return code === 'BAD_USER_INPUT' || code === 'FORBIDDEN'
+}
 
 type ErrorCustom = {
   response: {
@@ -127,12 +141,9 @@ export const isAuth = (permittedRoles: Role[], userRoles?: Role[]) => {
       required: permittedRoles,
       userHas: userRoles,
     })
-    const error = new Error('You are not permitted to run this mutation')
-    error.extensions = {
-      code: 'FORBIDDEN',
-      severity: 'USER_ERROR',
-    }
-    throw error
+    throw new GraphQLError('You are not permitted to run this mutation', {
+      extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
+    })
   }
 
   console.log('✅ Authorization passed')

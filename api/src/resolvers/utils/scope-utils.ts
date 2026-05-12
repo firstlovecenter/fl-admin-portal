@@ -1,4 +1,5 @@
 /* eslint-disable no-relative-import-paths/no-relative-import-paths */
+import { GraphQLError } from 'graphql'
 import { Session } from 'neo4j-driver'
 
 /**
@@ -92,13 +93,10 @@ const ASSERT_VIA_VEHICLE_RECORD_CYPHER = `
   RETURN record.id AS id
 `
 
-const forbidden = (message: string) => {
-  const error = new Error(message) as Error & {
-    extensions?: { code: string; severity: string }
-  }
-  error.extensions = { code: 'FORBIDDEN', severity: 'USER_ERROR' }
-  return error
-}
+const forbidden = (message: string): GraphQLError =>
+  new GraphQLError(message, {
+    extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
+  })
 
 // Accept the narrow Context shape the existing resolvers use; only the
 // session() factory and a JWT-with-userId are needed here.
