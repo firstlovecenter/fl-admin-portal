@@ -244,7 +244,7 @@ RETURN DISTINCT date.date as date, stream.name as stream, (councilHead.firstName
     WHEN record.outbound = true THEN 'In and Out'
     WHEN record.outbound = false THEN 'In Only'
     END) as outbound,
-round(toFloat(record.vehicleTopUp), 2) as topUp, record.vehicleCost as vehicleCost, record.momoNumber as momoNumber, record.comments as comments, record.arrivalTime as arrivalTime, (leader.firstName+ " "+ leader.lastName) as leader, council.name as council, governorship.name as governorship, record.momoName as momoName, society.society as society ORDER BY toInteger(society) ASC, record.id ASC SKIP $offset LIMIT $limit
+round(toFloat(record.vehicleTopUp), 2) as topUp, record.vehicleCost as vehicleCost, record.momoNumber as momoNumber, record.comments as comments, record.arrivalTime as arrivalTime, (leader.firstName+ " "+ leader.lastName) as leader, council.name as council, governorship.name as governorship, record.momoName as momoName, society.society as society, record.id as recordId ORDER BY toInteger(society) ASC, recordId ASC SKIP $offset LIMIT $limit
 `
 
 export const getArrivalsPaymentCountCypher = `

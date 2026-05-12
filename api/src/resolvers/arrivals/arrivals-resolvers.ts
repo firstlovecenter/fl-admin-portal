@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { getHumanReadableDate } from 'jd-date-utils'
-import { Integer } from 'neo4j-driver'
+import { Integer, int } from 'neo4j-driver'
 import { getStreamFinancials } from '../utils/financial-utils'
 import { Context } from '../utils/neo4j-types'
 import {
@@ -788,8 +788,8 @@ const getArrivalsPaymentData = async (
     await session.run(getArrivalsPaymentDataCypher, {
       streamId: object.id,
       date: args.arrivalsDate,
-      limit: args.limit,
-      offset: args.offset,
+      limit: int(args.limit),
+      offset: int(args.offset),
     }),
     true
   )
