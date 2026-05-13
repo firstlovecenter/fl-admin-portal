@@ -15,7 +15,6 @@ import {
   approveBussingExpense,
   approveExpense,
   createExpenseRequest,
-  creditBussingSocietyFromWeekday,
   debitBussingSociety,
   depositIntoCoucilBussingSociety,
   depositIntoCouncilCurrentAccount,
@@ -219,8 +218,11 @@ export const accountsMutations = {
   ) => {
     assertAccountsAccess(context.jwt.roles)
     await assertScopeViaTransaction(context, args.transactionId)
+    // SYN-94 — single session. The bussing branch used to allocate a
+    // sessionTwo for the credit-leg insert running in parallel with
+    // the parent debit; that's now collapsed into one Cypher statement
+    // (see approveBussingExpense in accounts-cypher.ts).
     const session = context.executionContext.session()
-    const sessionTwo = context.executionContext.session()
 
     try {
       const councilBalancesResult = await session.run(
@@ -256,9 +258,12 @@ export const accountsMutations = {
           council.bussingSocietyBalance + transactionAmount
         const message = `Dear ${leader.firstName}, your expense request of ${transactionAmount} GHS from ${council.name} weekday account for ${transaction.category} has been approved. Balance remaining is ${currentAmountRemaining} GHS. Bussing Society Balance is ${amountRemaining} GHS`
 
+        // SYN-94 — single Cypher statement covers both the parent
+        // debit and the Bussing Society credit-leg MERGE atomically.
+        // The credit-leg's clientTransactionId is server-derived from
+        // the parent id so the MERGE is idempotent across retries.
         const debitRes = await Promise.all([
-          session.run(approveBussingExpense, args),
-          sessionTwo.run(creditBussingSocietyFromWeekday, {
+          session.run(approveBussingExpense, {
             ...args,
             jwt: context.jwt,
           }),
@@ -315,7 +320,7 @@ export const accountsMutations = {
       if (isClassifiedError(error)) throw error
       throwToSentry('', error.message)
     } finally {
-      await Promise.all([session.close(), sessionTwo.close()])
+      await session.close()
     }
 
     return null

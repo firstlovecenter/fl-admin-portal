@@ -24,10 +24,27 @@ RETURN council, leader
 // Apollo retries the mutation, only the first write matches; the
 // second filters to zero rows and the resolver surfaces a friendly
 // error instead of double-debiting the council balance.
+//
+// SYN-94 — atomic. The parent debit and the Bussing Society credit-leg
+// MERGE now run as a single Cypher statement so they commit together.
+// Previously these were two `session.run` calls across two sessions;
+// a failure or partial commit between them could leave the parent
+// flipped to 'success' with no mirror credit (orphaned debit) or vice
+// versa, and the credit-leg's pre-update balance snapshots were stale
+// because they read the council's PRE-debit balances.
+//
+// Credit-leg keying: `'internal:credit-leg:' + $transactionId`. The
+// MERGE makes a retry on the same parent a no-op for the credit row.
+// Prefixed `internal:credit-leg:` to stay disjoint from FE UUIDs.
+//
+// HAS_MIRROR_DEPOSIT links the credit leg back to the parent so
+// UndoBussingTransaction can DETACH DELETE both together.
 export const approveBussingExpense = `
 MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
 WHERE transaction.status = 'pending approval'
 MATCH (transaction)-[:LOGGED_BY]->(depositor:Member)
+MATCH (requester:Member {id: $jwt.userId})
+
   SET transaction.bussingSocietyBalance = council.bussingSocietyBalance
   SET council.bussingSocietyBalance = council.bussingSocietyBalance + (-1 * transaction.amount)
   SET council.weekdayBalance = council.weekdayBalance - (-1 * transaction.amount) - toFloat($charge)
@@ -35,46 +52,27 @@ MATCH (transaction)-[:LOGGED_BY]->(depositor:Member)
   SET transaction.charge = toFloat($charge) * -1
   SET transaction.weekdayBalance = council.weekdayBalance
 
-RETURN council, transaction, depositor
-`
-
-// Server-derived clientTransactionId — the credit leg has no client
-// caller, so the key is deterministic on the parent weekday transaction
-// id. An Apollo retry of ApproveExpense re-runs both legs; this MERGE
-// matches the existing credit row and skips the body. Prefixed
-// `internal:credit-leg:` to keep server-derived keys disjoint from
-// FE-supplied UUIDs.
-//
-// HAS_MIRROR_DEPOSIT lets UndoBussingTransaction reach the sibling
-// Deposit created here and DETACH DELETE it alongside the original.
-// Without the tag, the mirror would survive the undo and appear in
-// transaction history as a phantom Bussing Society deposit with no
-// source expense.
-export const creditBussingSocietyFromWeekday = `
-MATCH (weekdayTrans:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
-MATCH (requester:Member {id: $jwt.userId})
-
-WITH council, requester, weekdayTrans,
+WITH council, transaction, depositor, requester,
      'internal:credit-leg:' + $transactionId AS creditLegKey
 
-MERGE (transaction:AccountTransaction {clientTransactionId: creditLegKey})
+MERGE (creditLeg:AccountTransaction {clientTransactionId: creditLegKey})
 ON CREATE SET
-  transaction.id = randomUUID(),
-  transaction.amount = weekdayTrans.amount * -1,
-  transaction.account = 'Bussing Society',
-  transaction.category = 'Deposit',
-  transaction.status = 'success',
-  transaction.createdAt = datetime(),
-  transaction.lastModified = datetime(),
-  transaction.bussingSocietyBalance = council.bussingSocietyBalance,
-  transaction.weekdayBalance = council.weekdayBalance,
-  transaction.description = weekdayTrans.description
+  creditLeg.id = randomUUID(),
+  creditLeg.amount = transaction.amount * -1,
+  creditLeg.account = 'Bussing Society',
+  creditLeg.category = 'Deposit',
+  creditLeg.status = 'success',
+  creditLeg.createdAt = datetime(),
+  creditLeg.lastModified = datetime(),
+  creditLeg.bussingSocietyBalance = council.bussingSocietyBalance,
+  creditLeg.weekdayBalance = council.weekdayBalance,
+  creditLeg.description = transaction.description
 
-MERGE (council)-[:HAS_TRANSACTION]->(transaction)
-MERGE (requester)<-[:LOGGED_BY]-(transaction)
-MERGE (weekdayTrans)-[:HAS_MIRROR_DEPOSIT]->(transaction)
+MERGE (council)-[:HAS_TRANSACTION]->(creditLeg)
+MERGE (requester)<-[:LOGGED_BY]-(creditLeg)
+MERGE (transaction)-[:HAS_MIRROR_DEPOSIT]->(creditLeg)
 
-RETURN transaction
+RETURN council, transaction, depositor
 `
 
 // SYN-92 — same precondition as approveBussingExpense above. Without
