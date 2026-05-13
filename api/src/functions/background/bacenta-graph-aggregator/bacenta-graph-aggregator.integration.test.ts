@@ -44,12 +44,22 @@ const BR2_ID = `${RUN_ID}-br2`
 let driver: Driver
 
 beforeAll(async () => {
+  const uri =
+    process.env.NEO4J_URI ?? 'bolt+ssc://dev-neo4j.firstlovecenter.com:7687'
+  const hasSecureScheme =
+    uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
   driver = neo4j.driver(
-    process.env.NEO4J_URI ?? 'bolt+ssc://dev-neo4j.firstlovecenter.com:7687',
+    uri,
     neo4j.auth.basic(
       process.env.NEO4J_USER ?? 'neo4j',
       process.env.NEO4J_PASSWORD ?? 'neo4j'
-    )
+    ),
+    // Mirror the production driver config from api/src/index.js:
+    // when the URI does not already embed a secure scheme, enable TLS
+    // and trust all certificates (dev server uses a self-signed cert).
+    hasSecureScheme
+      ? undefined
+      : { encrypted: 'ENCRYPTION_ON', trust: 'TRUST_ALL_CERTIFICATES' }
   )
 
   await driver.verifyConnectivity()

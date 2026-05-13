@@ -39,12 +39,19 @@ const SR1_ID = `${RUN_ID}-sr1`
 let driver: Driver
 
 beforeAll(async () => {
+  const uri =
+    process.env.NEO4J_URI ?? 'bolt+ssc://dev-neo4j.firstlovecenter.com:7687'
+  const hasSecureScheme =
+    uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
   driver = neo4j.driver(
-    process.env.NEO4J_URI ?? 'bolt://localhost:7687',
+    uri,
     neo4j.auth.basic(
       process.env.NEO4J_USER ?? 'neo4j',
       process.env.NEO4J_PASSWORD ?? 'neo4j'
-    )
+    ),
+    hasSecureScheme
+      ? undefined
+      : { encrypted: 'ENCRYPTION_ON', trust: 'TRUST_ALL_CERTIFICATES' }
   )
 
   await driver.verifyConnectivity()
