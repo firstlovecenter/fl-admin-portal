@@ -11,6 +11,7 @@ import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
 import { verifyJwt } from './resolvers/utils/verify-jwt'
+import { computeAllowedChurchIds } from './resolvers/utils/allowed-church-ids'
 import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 const startServer = async () => {
@@ -106,10 +107,32 @@ const startServer = async () => {
         // `context.jwt.roles` directly (no optional chaining, ~80 sites)
         // surface FORBIDDEN via `isAuth`, not a TypeError → 500.
         const jwt = verifyJwt(req.headers.authorization, SECRETS.JWT_SECRET)
+
+        // Enrich the JWT with a flat list of every church-spine id the user
+        // is permitted to read, computed from their servant edges. The
+        // `@churchScoped`/`@churchScopedVia` directives reference this as
+        // `$jwt.allowedChurchIds` in their authorization filters — collapsing
+        // what used to be a 4-deep `streams.some.councils.some.…` predicate
+        // into a single `id IN [...]` check. See `allowed-church-ids.ts`.
+        //
+        // The engine reads `context.jwt` directly when set
+        // (get-authorization-context.js:22–32 in @neo4j/graphql), so attaching
+        // allowedChurchIds here makes it visible to `$jwt.*` substitutions
+        // without touching the auth-service token format.
+        let allowedChurchIds = []
+        if (jwt?.userId) {
+          allowedChurchIds = await computeAllowedChurchIds(
+            driver,
+            jwt.userId,
+            jwt.iat,
+            jwt.exp
+          )
+        }
+
         return {
           req,
           executionContext: driver,
-          jwt: jwt ?? {},
+          jwt: jwt ? { ...jwt, allowedChurchIds } : {},
         }
       },
     })

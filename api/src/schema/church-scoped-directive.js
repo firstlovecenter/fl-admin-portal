@@ -1,11 +1,29 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /*
- * Expands `# @churchScoped(level: <Level>)` markers in SDL into a full
- * `@authorization(filter: [...])` directive that grants READ/AGGREGATE access
- * to a node when any of the user's `churchScopes` JWT claims belongs to the
- * same hierarchical chain — same level, an ancestor, or a descendant.
+ * Expands `# @churchScoped(level: <Level>)` and
+ * `# @churchScopedVia(field: <field>, level: <Level>)` markers in SDL into a
+ * full `@authorization(filter: [...])` directive that gates READ/AGGREGATE
+ * access on the church spine.
  *
- * Place the marker between `type X implements Y` and the opening `{`:
+ * The filter is the AND of two predicates:
+ *   1. The caller's JWT has at least one of the level-appropriate roles
+ *      (leaderDenomination, adminDenomination, leaderOversight, …) — a
+ *      coarse "does this user belong on this level of the spine at all?"
+ *      gate.
+ *   2. The node's id is in `$jwt.allowedChurchIds` — the flat list of
+ *      every church-spine id the user actually has servant edges to,
+ *      computed once per request from Neo4j and injected into
+ *      `context.jwt`. See `api/src/resolvers/utils/allowed-church-ids.ts`.
+ *
+ * Earlier (SYN-95) versions emitted a 20-branch OR predicate that walked
+ * up to 4 `some`-nested relationship hops per branch (e.g.
+ * `streams.some.councils.some.governorships.some.bacentas.some.id eq …`).
+ * That worked on a single relationship resolution but multiplied
+ * combinatorially when `memberByEmail` selected 21 relationships at once,
+ * hanging the splash screen indefinitely. The flat-list form below is
+ * O(1) per node regardless of fan-out.
+ *
+ * Marker placement (unchanged):
  *
  *   type Bacenta implements Church
  *     # @churchScoped(level: Bacenta)
@@ -14,13 +32,15 @@
  *     ...
  *   }
  *
+ *   type AccountTransaction
+ *     # @churchScopedVia(field: council, level: Council)
+ *   {
+ *     ...
+ *     council: Council @relationship(type: "HAS_TRANSACTION", direction: IN)
+ *   }
+ *
  * Hierarchy (root → leaf):
  *   Denomination → Oversight → Campus → Stream → Council → Governorship → Bacenta
- *
- * Each child carries a singular @relationship field pointing at its parent
- * (e.g. `governorship: Governorship`); each parent carries a list field
- * pointing at its children (e.g. `bacentas: [Bacenta!]!`). For list-direction
- * traversal we use the `_SOME` filter input suffix (v6.6 syntax).
  */
 
 const HIERARCHY = [
@@ -33,149 +53,39 @@ const HIERARCHY = [
   'Bacenta',
 ]
 
-const SCOPES_AT_LEVEL = {
-  Bacenta: ['leadsBacentaOf'],
-  Governorship: ['leadsGovernorshipOf', 'isAdminForGovernorshipOf'],
-  Council: [
-    'leadsCouncilOf',
-    'isAdminForCouncilOf',
-    'isArrivalsAdminForCouncilOf',
-    'isArrivalsPayerCouncilOf',
-  ],
-  Stream: [
-    'leadsStreamOf',
-    'isAdminForStreamOf',
-    'isArrivalsAdminForStreamOf',
-    'isArrivalsCounterForStreamOf',
-    'isTellerForStreamOf',
-    'isSheepSeekerForStreamOf',
-  ],
-  Campus: ['leadsCampusOf', 'isAdminForCampusOf', 'isArrivalsAdminForCampusOf'],
-  Oversight: ['leadsOversightOf', 'isAdminForOversightOf'],
-  Denomination: ['leadsDenominationOf', 'isAdminForDenominationOf'],
-}
+// Council-and-above leader/admin roles. Used for `@churchScopedVia` on
+// non-spine financial nodes (e.g. AccountTransaction) — the SYN-95 IDOR was
+// that a `leaderBacenta` could read any council's ledger via the root
+// `accountTransactions` query. Gating those reads to Council-level+ roles
+// (combined with the AccountTransaction's council being in the caller's
+// `allowedChurchIds`) closes that finding.
+//
+// Spine `@churchScoped` reads (on Oversight/Campus/Stream/Council) do NOT
+// take a role gate — every authenticated user must be able to walk
+// `member.bacenta.governorship.council.stream.campus.oversight.denomination`
+// to populate `SetPermissions` and `ChurchContext`. The `allowedChurchIds`
+// predicate (computed from servant edges in Neo4j) is the per-instance
+// boundary that stops cross-tenant reads on the spine.
+const FINANCIAL_READ_ROLES = [
+  'leaderDenomination',
+  'leaderOversight',
+  'leaderCampus',
+  'leaderStream',
+  'leaderCouncil',
+  'adminDenomination',
+  'adminOversight',
+  'adminCampus',
+  'adminStream',
+  'adminCouncil',
+]
 
-// child → parent: singular @relationship field name on the child type.
-const PARENT_FIELD_OF = {
-  Bacenta: 'governorship',
-  Governorship: 'council',
-  Council: 'stream',
-  Stream: 'campus',
-  Campus: 'oversight',
-  Oversight: 'denomination',
-  Denomination: null,
-}
-
-// parent → children: list @relationship field name on the parent type.
-// The filter input exposes this as `<field>_SOME`.
-const CHILDREN_FIELD_OF = {
-  Denomination: 'oversights',
-  Oversight: 'campuses',
-  Campus: 'streams',
-  Stream: 'councils',
-  Council: 'governorships',
-  Governorship: 'bacentas',
-  Bacenta: null,
-}
-
-const indexOf = (level) => {
-  const idx = HIERARCHY.indexOf(level)
-  if (idx < 0) {
+const assertKnownLevel = (level) => {
+  if (!HIERARCHY.includes(level)) {
     throw new Error(
       `church-scoped-directive: unknown level "${level}". ` +
         `Expected one of: ${HIERARCHY.join(', ')}`
     )
   }
-  return idx
-}
-
-// Build the field-path from the type at `targetLevel` to a node at
-// `scopeLevel`. Walks up through PARENT_FIELD_OF for ancestors, down through
-// CHILDREN_FIELD_OF (with `_SOME`) for descendants.
-const fieldPathBetween = (targetLevel, scopeLevel) => {
-  const targetIdx = indexOf(targetLevel)
-  const scopeIdx = indexOf(scopeLevel)
-  const parts = []
-  if (targetIdx === scopeIdx) return parts
-  if (scopeIdx < targetIdx) {
-    // scope is an ancestor of target: walk up via singular fields. Singular
-    // relationships in v7 nest directly: `governorship: { ... }`.
-    let cursor = targetLevel
-    while (cursor !== scopeLevel) {
-      const field = PARENT_FIELD_OF[cursor]
-      if (!field) {
-        throw new Error(
-          `fieldPathBetween: ${targetLevel} has no ancestor path to ${scopeLevel}`
-        )
-      }
-      parts.push({ field, list: false })
-      cursor = HIERARCHY[indexOf(cursor) - 1]
-    }
-  } else {
-    // scope is a descendant of target: walk down via list fields wrapped in
-    // a `some` predicate (v7 nested-input form). The buildBranch step needs
-    // to know which path components are list traversals so it can emit
-    // `<field>: { some: { ... } }` rather than `<field>: { ... }`.
-    let cursor = targetLevel
-    while (cursor !== scopeLevel) {
-      const field = CHILDREN_FIELD_OF[cursor]
-      if (!field) {
-        throw new Error(
-          `fieldPathBetween: ${targetLevel} has no descendant path to ${scopeLevel}`
-        )
-      }
-      parts.push({ field, list: true })
-      cursor = HIERARCHY[indexOf(cursor) + 1]
-    }
-    return parts
-  }
-  return parts
-}
-
-const buildBranch = (pathParts, scopeKey) => {
-  // v7 nested-input filter form. Singular relationship fields nest directly
-  // (`governorship: { ... }`); list relationship fields wrap the predicate
-  // in `some` (`bacentas: { some: { ... } }`).
-  //
-  // We reference the JWT claim by its nested path
-  // (`$jwt.churchScopes.<key>.id`) rather than via a `@jwtClaim`-aliased
-  // flat field. Empirically, v7's `@jwtClaim` does not populate the claims
-  // map for nested-object aliases — the alias lookup falls through and the
-  // engine compares against `undefined`, which excludes everything. Direct
-  // path resolution works.
-  const leaf = { id: { eq: `$jwt.churchScopes.${scopeKey}.id` } }
-  let inner = leaf
-  for (let i = pathParts.length - 1; i >= 0; i -= 1) {
-    const segment = pathParts[i]
-    inner = segment.list
-      ? { [segment.field]: { some: inner } }
-      : { [segment.field]: inner }
-  }
-  return inner
-}
-
-// `includeDescendants` controls whether scope-holders BELOW `targetLevel`
-// can also read. Default true (used by spine `@churchScoped` so a Bacenta
-// leader can read THEIR own Bacenta — the predicate matches that Bacenta
-// only). For node-level financial filters via `@churchScopedVia`, set
-// false so a Bacenta leader cannot read sibling-Bacenta financials by
-// virtue of sharing a Council.
-const buildAuthorizationBranches = (
-  targetLevel,
-  { includeDescendants = true } = {}
-) => {
-  const targetIdx = indexOf(targetLevel)
-  const branches = []
-  for (const scopeLevel of HIERARCHY) {
-    const scopeIdx = indexOf(scopeLevel)
-    if (includeDescendants || scopeIdx <= targetIdx) {
-      const path = fieldPathBetween(targetLevel, scopeLevel)
-      for (const scopeKey of SCOPES_AT_LEVEL[scopeLevel]) {
-        branches.push(buildBranch(path, scopeKey))
-      }
-    }
-  }
-  return branches
 }
 
 const toGraphQL = (value) => {
@@ -196,43 +106,55 @@ const toGraphQL = (value) => {
   throw new Error(`toGraphQL: unsupported value ${typeof value}`)
 }
 
+// JWT-side predicate: OR over each role-with-includes check. v7 keeps the
+// legacy `includes` syntax for `roles`-array lookups.
+const financialRolesPredicate = () => ({
+  OR: FINANCIAL_READ_ROLES.map((role) => ({ roles: { includes: role } })),
+})
+
+// Node-side predicate. The node is either the spine type itself (for
+// `@churchScoped`) or reached via a singular relationship from a non-spine
+// node (for `@churchScopedVia`).
+const idInAllowedPredicate = () => ({
+  id: { in: '$jwt.allowedChurchIds' },
+})
+
+// Spine type read gate: id-in-list only. Any authenticated user must be
+// able to traverse their own ancestor chain (Bacenta → … → Denomination);
+// blocking that with a role gate breaks `SetPermissions` + `ChurchContext`
+// for every leader below Council. The `allowedChurchIds` list is computed
+// from the user's servant edges in Neo4j and so already excludes
+// cross-tenant nodes the user doesn't own.
 const buildChurchScopedDirective = (level) => {
-  const branches = buildAuthorizationBranches(level)
-  const where = { node: { OR: branches } }
+  assertKnownLevel(level)
+  const where = { node: idInAllowedPredicate() }
   return `@authorization(filter: [{ operations: [READ, AGGREGATE], where: ${toGraphQL(
     where
   )} }])`
 }
 
-// Like buildChurchScopedDirective, but for a node that doesn't itself sit on
-// the church spine — instead, it carries a singular @relationship to a
-// church-spine node (e.g. AccountTransaction.council). The generated filter
-// nests the scope predicate inside the relationship field so the auto-
-// generated read query (e.g. `accountTransactions(where: { id: { eq: ... } })`)
-// is restricted to nodes whose related church is in the caller's scope.
-//
-// Descendants are EXCLUDED — a Bacenta leader sharing a Council with the
-// node should not gain READ access by virtue of being below the via-level
-// (their AccountTransaction reads aren't "their own data" the way their own
-// Bacenta would be). Use the spine `@churchScoped` if descendant inclusion
-// is desired.
+// Non-spine via-marker (e.g. AccountTransaction → council:Council). Gates
+// the read on BOTH the caller having a Council-level financial role AND the
+// related church being in the caller's allowedChurchIds. The role gate is
+// the SYN-95 IDOR fix; the id gate is the per-instance scope.
 const buildChurchScopedViaDirective = (relationshipField, level) => {
-  const branches = buildAuthorizationBranches(level, {
-    includeDescendants: false,
-  })
-  const where = { node: { [relationshipField]: { OR: branches } } }
+  assertKnownLevel(level)
+  const where = {
+    AND: [
+      { jwt: financialRolesPredicate() },
+      { node: { [relationshipField]: idInAllowedPredicate() } },
+    ],
+  }
   return `@authorization(filter: [{ operations: [READ, AGGREGATE], where: ${toGraphQL(
     where
   )} }])`
 }
 
 // Anchor the marker to the type-header line so a comment elsewhere in any of
-// the 16 SDL files can never get expanded into a free-floating directive.
-// Captures: 1) the type header, 2) the `level: X` argument, 3) the level name
-// in the type header (for cross-check below).
+// the SDL files can never get expanded into a free-floating directive.
+// Captures: 1) the type header, 2) the type name, 3) the marker's level arg.
 // Allow optional intervening directives (e.g. `@node`) between the type
-// header and the marker comment. Greedy on the header lets us capture e.g.
-// `type Bacenta implements Church @node` before the `# @churchScoped(...)`.
+// header and the marker comment.
 const MARKER_RE =
   /(type\s+([A-Za-z]+)\s+implements\s+\w+(?:\s+@\w+(?:\([^)]*\))?)*\s*)#\s*@churchScoped\(\s*level:\s*([A-Za-z]+)\s*\)/g
 
@@ -265,9 +187,5 @@ module.exports = {
   buildChurchScopedViaDirective,
   expandChurchScopedMarkers,
   HIERARCHY,
-  SCOPES_AT_LEVEL,
-  PARENT_FIELD_OF,
-  CHILDREN_FIELD_OF,
-  fieldPathBetween,
-  buildAuthorizationBranches,
+  FINANCIAL_READ_ROLES,
 }

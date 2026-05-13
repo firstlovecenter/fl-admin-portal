@@ -7,6 +7,9 @@ const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
 const { verifyJwt } = require('./resolvers/utils/verify-jwt')
 const {
+  computeAllowedChurchIds,
+} = require('./resolvers/utils/allowed-church-ids')
+const {
   isDownloadEvent,
   handleDownloadLambdaEvent,
 } = require('./resolvers/downloads/downloads-lambda')
@@ -226,7 +229,28 @@ exports.handler = async (event, context) => {
     // Coerce a verifier-rejected token to {} so resolvers that read
     // `context.jwt.roles` directly (no optional chaining, ~80 sites)
     // surface FORBIDDEN via `isAuth`, not a TypeError → 500.
-    const jwt = verifyJwt(token, SECRETS?.JWT_SECRET) ?? {}
+    const verifiedJwt = verifyJwt(token, SECRETS?.JWT_SECRET)
+
+    // Enrich the JWT with the flat list of church-spine ids the user can
+    // read, computed from their Neo4j servant edges. The
+    // `@churchScoped`/`@churchScopedVia` filters reference this as
+    // `$jwt.allowedChurchIds`. Without this enrichment every spine read
+    // returns empty in prod — the filter's `id IN null` evaluates to null
+    // (false) in Cypher. Mirrors `api/src/index.js`'s Apollo context
+    // builder; both must stay in sync.
+    let allowedChurchIds = []
+    if (verifiedJwt?.userId) {
+      allowedChurchIds = await computeAllowedChurchIds(
+        driver,
+        verifiedJwt.userId,
+        verifiedJwt.iat,
+        verifiedJwt.exp
+      )
+    }
+
+    const jwt = verifiedJwt
+      ? { ...verifiedJwt, allowedChurchIds }
+      : {}
 
     const contextValue = {
       req: event,

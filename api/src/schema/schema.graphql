@@ -45,6 +45,16 @@ type JWT @jwt {
     @jwtClaim(path: "churchScopes.isTellerForStreamOf.id")
   isSheepSeekerForStreamOfId: String
     @jwtClaim(path: "churchScopes.isSheepSeekerForStreamOf.id")
+
+  # Flat list of every church-spine node id the caller can read, computed
+  # server-side from the user's Neo4j servant edges (LEADS, IS_ADMIN_FOR,
+  # DOES_ARRIVALS_FOR, …) and merged into `context.jwt` before the engine
+  # reads it. The `@churchScoped` / `@churchScopedVia` directives gate
+  # spine-type reads via `node.id IN $jwt.allowedChurchIds` — a single
+  # ID-set lookup that replaces the multiplicative deep-some predicate
+  # that caused the v6/v7 auth-filter hang. See
+  # `api/src/resolvers/utils/allowed-church-ids.ts`.
+  allowedChurchIds: [String!]
 }
 
 type Query @node{
