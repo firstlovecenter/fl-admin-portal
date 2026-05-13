@@ -1,4 +1,5 @@
 import { loadSecrets } from '../secrets'
+import { badRequest } from './utils'
 
 const dotenv = require('dotenv')
 
@@ -16,6 +17,48 @@ export const MOMO_NUM_REGEX = /^(0[1-9]\d{8}|[1-9]\d{9})$/
 // single-service total at any church level; catches fat-fingered typos
 // (e.g. 5000 → 5000000) before they reach Paystack.
 export const MAX_OFFERING_CASH = 50_000
+
+// SYN-93 — paranoia ceilings on accounts mutations. These are well above
+// any realistic single-call value but below the float-precision break
+// point. They primarily catch fat-fingered typos before any council
+// balance is touched. Adjust deliberately if a campus needs more.
+export const MAX_ACCOUNTS_DEPOSIT = 10_000_000
+export const MAX_ACCOUNTS_EXPENSE = 1_000_000
+export const MAX_ACCOUNTS_CHARGE = 100_000
+
+// SYN-93 — single source of truth for amount validation across every
+// accounts money mutation. Throws BAD_USER_INPUT via badRequest (a
+// classified error that the resolver catch block re-throws via
+// isClassifiedError) so the user sees a friendly message and Sentry
+// doesn't get spammed with a stack trace.
+//
+// `allowZero` defaults false — most money fields are deltas where a
+// zero is almost always a UI bug. Set true for new-total fields
+// (DepositIntoCouncilBussingSociety.bussingSocietyBalance is the new
+// account total, not a delta) and for charges (a zero charge is a
+// legitimate "no fee" approval).
+export const assertPositiveFiniteAmount = (
+  value: unknown,
+  fieldName: string,
+  options: { max: number; allowZero?: boolean }
+): void => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw badRequest(`${fieldName} must be a finite number.`)
+  }
+  const minOk = options.allowZero ? value >= 0 : value > 0
+  if (!minOk) {
+    throw badRequest(
+      options.allowZero
+        ? `${fieldName} must be zero or positive.`
+        : `${fieldName} must be a positive number.`
+    )
+  }
+  if (value > options.max) {
+    throw badRequest(
+      `${fieldName} (${value}) exceeds the ${options.max} ceiling.`
+    )
+  }
+}
 
 export const NETWORKS: readonly Network[] = [
   'MTN',

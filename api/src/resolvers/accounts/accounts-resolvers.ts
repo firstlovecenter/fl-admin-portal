@@ -12,6 +12,12 @@ import {
   assertScopeViaTransaction,
 } from '../utils/scope-utils'
 import {
+  MAX_ACCOUNTS_CHARGE,
+  MAX_ACCOUNTS_DEPOSIT,
+  MAX_ACCOUNTS_EXPENSE,
+  assertPositiveFiniteAmount,
+} from '../utils/financial-utils'
+import {
   approveBussingExpense,
   approveExpense,
   createExpenseRequest,
@@ -80,6 +86,11 @@ export const accountsMutations = {
     context: Context
   ) => {
     assertAccountsAccess(context.jwt.roles)
+    assertPositiveFiniteAmount(
+      args.weekdayBalanceDepositAmount,
+      'weekdayBalanceDepositAmount',
+      { max: MAX_ACCOUNTS_DEPOSIT }
+    )
     const session = context.executionContext.session()
     await assertChurchScope(context, args.councilId)
 
@@ -150,6 +161,14 @@ export const accountsMutations = {
     context: Context
   ) => {
     assertAccountsAccess(context.jwt.roles)
+    // SYN-93 — bussingSocietyBalance is the NEW account total, not a
+    // delta, so zero is legitimate (zeroing the account). The downstream
+    // Debit branch (depositAmount < 0) is itself a valid path.
+    assertPositiveFiniteAmount(
+      args.bussingSocietyBalance,
+      'bussingSocietyBalance',
+      { max: MAX_ACCOUNTS_DEPOSIT, allowZero: true }
+    )
     await assertChurchScope(context, args.councilId)
     const session = context.executionContext.session()
 
@@ -217,6 +236,16 @@ export const accountsMutations = {
     context: Context
   ) => {
     assertAccountsAccess(context.jwt.roles)
+    // SYN-93 — closes the negative-charge self-credit primitive.
+    // approveExpense's cypher computes
+    //   weekdayBalance - (-1 * transaction.amount) - toFloat($charge)
+    // A negative $charge value would credit (instead of debit) the
+    // council balance. allowZero: true because a no-fee approval is
+    // legitimate.
+    assertPositiveFiniteAmount(args.charge, 'charge', {
+      max: MAX_ACCOUNTS_CHARGE,
+      allowZero: true,
+    })
     await assertScopeViaTransaction(context, args.transactionId)
     // SYN-94 — single session. The bussing branch used to allocate a
     // sessionTwo for the credit-leg insert running in parallel with
@@ -338,11 +367,13 @@ export const accountsMutations = {
     context: Context
   ) => {
     assertAccountsAccess(context.jwt.roles)
+    // SYN-93 — replaces the inline finite/positive check that lived
+    // here. Adds a paranoia ceiling.
+    assertPositiveFiniteAmount(args.expenseAmount, 'expenseAmount', {
+      max: MAX_ACCOUNTS_EXPENSE,
+    })
     await assertChurchScope(context, args.councilId)
 
-    if (!Number.isFinite(args.expenseAmount) || args.expenseAmount <= 0) {
-      throw badRequest('Expense amount must be a positive, finite number.')
-    }
     if (!ALLOWED_ACCOUNT_TYPES.has(args.accountType)) {
       throw badRequest(
         `Invalid accountType '${args.accountType}'. Allowed: ${[
@@ -551,6 +582,14 @@ export const accountsMutations = {
     context: Context
   ) => {
     assertAccountsAccess(context.jwt.roles)
+    // SYN-93 — closes the negative-expenseAmount audit-trail laundering
+    // primitive. debitBussingSociety's cypher computes
+    //   transaction.amount = -1 * $expenseAmount
+    // A negative $expenseAmount would write a positive transaction
+    // amount and silently shift balance the wrong direction.
+    assertPositiveFiniteAmount(args.expenseAmount, 'expenseAmount', {
+      max: MAX_ACCOUNTS_EXPENSE,
+    })
     const session = context.executionContext.session()
     await assertChurchScope(context, args.councilId)
 
