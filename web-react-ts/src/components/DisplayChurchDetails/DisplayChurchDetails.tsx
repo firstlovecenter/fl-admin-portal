@@ -16,6 +16,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import {
   Church,
+  ChurchIdAndName,
   ChurchLevel,
   MemberWithoutBioData,
   Role,
@@ -28,7 +29,6 @@ import {
   throwToSentry,
 } from 'global-utils'
 import useModal from 'hooks/useModal'
-import useSetUserChurch from 'hooks/useSetUserChurch'
 import { ChevronRight, MapPin, Pencil, PencilLine, XCircle } from 'lucide-react'
 import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
 import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
@@ -94,7 +94,6 @@ type FormOptions = {
 }
 
 const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
-  const { setUserChurch } = useSetUserChurch()
   const navigate = useNavigate()
   let needsAdmin = false
   let roles: Role[] = []
@@ -324,12 +323,15 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         className="w-full"
         size="lg"
         onClick={() => {
-          setUserChurch({
-            id: props.churchId,
-            name: props.name,
-            __typename: props.churchType,
+          navigate('/trends', {
+            state: {
+              overrideChurch: {
+                id: props.churchId,
+                name: props.name,
+                __typename: props.churchType,
+              } satisfies ChurchIdAndName,
+            },
           })
-          navigate('/trends')
         }}
       >
         View Trends
@@ -343,11 +345,6 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           className="w-full"
           size="lg"
           onClick={() => {
-            setUserChurch({
-              id: props.churchId,
-              name: props.name,
-              __typename: props.churchType,
-            })
             if (props.churchType === 'Bacenta') {
               clickCard({
                 id: props.churchId,
@@ -357,7 +354,15 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
               setRecordDialogOpen(true)
               return
             }
-            navigate('/services')
+            navigate('/services', {
+              state: {
+                overrideChurch: {
+                  id: props.churchId,
+                  name: props.name,
+                  __typename: props.churchType,
+                } satisfies ChurchIdAndName,
+              },
+            })
           }}
         >
           {props.churchType === 'Bacenta' ? 'Fill Service Form' : 'Service Forms'}

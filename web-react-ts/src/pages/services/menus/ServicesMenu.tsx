@@ -1,5 +1,5 @@
 import { ReactNode, useContext, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
 import {
   BarChart3,
@@ -22,7 +22,7 @@ import {
   permitLeaderAdmin,
   permitTellerStream,
 } from 'permission-utils'
-import { ChurchLevel } from 'global-types'
+import { ChurchIdAndName, ChurchLevel } from 'global-types'
 import { cn } from 'components/lib/utils'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Skeleton } from 'components/ui/skeleton'
@@ -116,17 +116,29 @@ const ServicesMenu = () => {
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope } = useChurchRoleScope()
   const navigate = useNavigate()
+  const location = useLocation()
   const [recordDialogOpen, setRecordDialogOpen] = useState(false)
 
-  // Prefer the church-in-focus selector (populated at login via ChurchRoleScopeProvider).
-  // Fall back to currentUser.currentChurch (populated after visiting church details).
+  const rawState = location.state as Record<string, unknown> | null
+  const rawOverride = rawState?.overrideChurch as ChurchIdAndName | undefined
+  const navOverride: ChurchIdAndName | null =
+    rawOverride &&
+    typeof rawOverride.id === 'string' &&
+    typeof rawOverride.__typename === 'string'
+      ? rawOverride
+      : null
+
   const churchType = (
-    selectedScope?.churchType ?? currentUser?.currentChurch?.__typename
+    navOverride?.__typename ??
+    selectedScope?.churchType ??
+    currentUser?.currentChurch?.__typename
   ) as ChurchLevel | undefined
   const churchId: string | undefined =
-    selectedScope?.churchId ?? currentUser?.currentChurch?.id
+    navOverride?.id ?? selectedScope?.churchId ?? currentUser?.currentChurch?.id
   const churchName: string | undefined =
-    selectedScope?.churchName ?? currentUser?.currentChurch?.name
+    navOverride?.name ??
+    selectedScope?.churchName ??
+    currentUser?.currentChurch?.name
   const routeSlug = churchType?.toLowerCase()
 
   // Resolve isManualBanking and vacationStatus from userJobs (populated from
@@ -187,6 +199,8 @@ const ServicesMenu = () => {
 
   const handleRecordService = () => {
     if (!isServiceLevelChurch) return
+    if (churchId && churchType)
+      clickCard({ id: churchId, name: churchName, __typename: churchType })
     if (churchType === 'Bacenta') {
       setRecordDialogOpen(true)
       return

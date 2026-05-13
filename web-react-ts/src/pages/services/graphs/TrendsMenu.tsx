@@ -1,5 +1,5 @@
 import { ReactNode, useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { BarChart3, ChevronRight, Download, Sparkles } from 'lucide-react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
@@ -7,12 +7,7 @@ import { MemberContext } from 'contexts/MemberContext'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
 import { cn } from 'components/lib/utils'
-
-type FocusChurch = {
-  id: string
-  name: string
-  __typename: string
-}
+import { ChurchIdAndName } from 'global-types'
 
 const GRAPHS_TYPES = new Set<string>([
   'Bacenta',
@@ -43,24 +38,36 @@ const DOWNLOAD_MEMBERSHIP_TYPES = new Set<string>([
 
 const TrendsMenu = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const { selectedScope } = useChurchRoleScope()
 
+  const rawState = location.state as Record<string, unknown> | null
+  const rawOverride = rawState?.overrideChurch as ChurchIdAndName | undefined
+  const navOverride: ChurchIdAndName | null =
+    rawOverride &&
+    typeof rawOverride.id === 'string' &&
+    typeof rawOverride.__typename === 'string'
+      ? rawOverride
+      : null
+
   const fallbackChurch = currentUser?.currentChurch
-  const focusChurch: FocusChurch | null = selectedScope
-    ? {
-        id: selectedScope.churchId,
-        name: selectedScope.churchName,
-        __typename: selectedScope.churchType,
-      }
-    : fallbackChurch?.id && fallbackChurch?.__typename
-    ? {
-        id: fallbackChurch.id,
-        name: fallbackChurch.name,
-        __typename: fallbackChurch.__typename,
-      }
-    : null
+  const focusChurch: ChurchIdAndName | null =
+    navOverride ??
+    (selectedScope
+      ? {
+          id: selectedScope.churchId,
+          name: selectedScope.churchName,
+          __typename: selectedScope.churchType,
+        }
+      : fallbackChurch?.id && fallbackChurch?.__typename
+      ? {
+          id: fallbackChurch.id,
+          name: fallbackChurch.name,
+          __typename: fallbackChurch.__typename,
+        }
+      : null)
 
   const churchType = focusChurch?.__typename
   const routeSlug = churchType?.toLowerCase()
