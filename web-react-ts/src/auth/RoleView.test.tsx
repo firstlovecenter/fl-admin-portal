@@ -348,7 +348,7 @@ describe('RoleView', () => {
       const user = makeUser({ roles: ['leaderBacenta'] })
       mockUseAuth.mockReturnValue({
         isAuthorised: (permittedRoles: string[]) =>
-          permittedRoles?.some((r) => user.roles.includes(r)),
+          permittedRoles?.some((r) => user.roles.includes(r as Role)),
       })
 
       render(
