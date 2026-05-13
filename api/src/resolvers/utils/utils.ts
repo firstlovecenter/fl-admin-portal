@@ -38,34 +38,42 @@ export const checkIfArrayHasRepeatingValues = (array: any[]) => {
   return false
 }
 
+// SYN-103 — produce a short, audit-safe summary of an error for the
+// log line and the rethrown message. The previous implementation did
+// `JSON.stringify(error)` which serialised Neo4j driver internals,
+// axios headers (Authorization tokens included), full stack frames, and
+// any `.cause` chain into CloudWatch. The new shape extracts only the
+// message text per known error type and drops everything else. Notably
+// no more `JSON.stringify(error?.response?.data?.data)` — which on a
+// Paystack error happily logged full webhook payloads.
+const summariseError = (error: unknown): string => {
+  if (!error) return ''
+  if (typeof error === 'string') return error
+  // Axios-style HTTP error from upstream services (Paystack, mNotify,
+  // etc). Prefer the upstream's user-facing message; fall back to the
+  // status line.
+  const axiosLike = error as ErrorCustom
+  if (axiosLike?.response?.data?.message) {
+    return axiosLike.response.data.message
+  }
+  if (axiosLike?.response?.statusText) {
+    return `${axiosLike.response.status} ${axiosLike.response.statusText}`
+  }
+  // Neo4j driver / generic Error — use the message only. Stack frames,
+  // .cause, .errors arrays, and bound parameters stay out of the log.
+  if (error instanceof Error) return error.message
+  // Unknown shape — record the type, not the contents.
+  return `Unknown error of type ${typeof error}`
+}
+
 export const throwToSentry = (
   message: string,
   error: ErrorCustom | string | any
 ) => {
-  let errorVar: string | ErrorCustom = ''
-
-  if (error) {
-    errorVar = error
-  }
-
-  if (error?.response?.statusText) {
-    errorVar = `${error.response.status} ${error.response.statusText}`
-  }
-
-  if (error?.response?.data?.message) {
-    errorVar = error?.response?.data?.message
-  }
-
-  if (error?.response?.data?.data) {
-    errorVar = JSON.stringify(error?.response?.data?.data)
-  }
-
+  const errorSummary = summariseError(error)
   // eslint-disable-next-line no-console
-  console.error(`${message} ${JSON.stringify(error)}`)
-  console.log('🚀 ~ file: utils.ts:51 ~ errorVar:', errorVar)
-  // Sentry integration removed - error logged to console only
-  console.error('Error details:', error, { message })
-  throw new Error(`${message} ${errorVar}`)
+  console.error(`${message}: ${errorSummary}`)
+  throw new Error(`${message}: ${errorSummary}`)
 }
 
 export const noEmptyArgsValidation = (args: any[]) => {
@@ -135,18 +143,18 @@ export const rearrangeCypherObject = (
   return member?.member || member
 }
 
+// SYN-104 — quiet path. The previous implementation logged the full
+// permittedRoles + userRoles arrays on failure, which leaks the role
+// enum shape to anyone with CloudWatch read, and emitted a noisy
+// per-call success log. Both are dropped. The classified FORBIDDEN
+// error still surfaces to Apollo, the FE shows the same message, and
+// throwToSentry-flavoured traces still capture nothing role-shaped.
 export const isAuth = (permittedRoles: Role[], userRoles?: Role[]) => {
   if (!permittedRoles.some((r) => userRoles?.includes(r))) {
-    console.error('❌ Authorization failed:', {
-      required: permittedRoles,
-      userHas: userRoles,
-    })
     throw new GraphQLError('You are not permitted to run this mutation', {
       extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
     })
   }
-
-  console.log('✅ Authorization passed')
 }
 
 export const nextHigherChurch = (churchLevel: ChurchLevel) => {
