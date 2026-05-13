@@ -232,11 +232,13 @@ extend type Mutation {
   DepositIntoCouncilCurrentAccount(
     councilId: ID!
     weekdayBalanceDepositAmount: Float!
+    clientTransactionId: ID!
   ): AccountTransaction!
 
   DepositIntoCouncilBussingSociety(
     councilId: ID!
     bussingSocietyBalance: Float!
+    clientTransactionId: ID!
   ): AccountTransaction!
 
   ExpenseRequest(
@@ -245,6 +247,7 @@ extend type Mutation {
     expenseCategory: String!
     accountType: String!
     description: String!
+    clientTransactionId: ID!
   ): AccountTransaction!
 
   ApproveExpense(transactionId: ID!, charge: Float!): AccountTransaction!
@@ -274,5 +277,6 @@ extend type Mutation {
     councilId: ID!
     expenseAmount: Float!
     expenseCategory: String!
+    clientTransactionId: ID!
   ): AccountTransaction!
 }

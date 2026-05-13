@@ -46,6 +46,7 @@ export const accountsMutations = {
     args: {
       councilId: string
       weekdayBalanceDepositAmount: number
+      clientTransactionId: string
     },
     context: Context
   ) => {
@@ -70,16 +71,25 @@ export const accountsMutations = {
         council.weekdayBalance + args.weekdayBalanceDepositAmount
       } GHS and bussing society is ${council.bussingSocietyBalance} GHS`
 
-      const debitRes = await Promise.all([
-        session.run(depositIntoCouncilCurrentAccount, {
-          jwt: context.jwt,
-          ...args,
-        }),
-        sendBulkSMS([leader.phoneNumber], message),
-      ])
+      const debitRes = await session.run(depositIntoCouncilCurrentAccount, {
+        jwt: context.jwt,
+        ...args,
+      })
 
-      const trans = debitRes[0].records[0].get('transaction').properties
-      const depositor = debitRes[0].records[0].get('depositor').properties
+      const isNew = debitRes.records[0].get('isNew')
+      // Only fire the SMS when the cypher actually inserted the row.
+      // Apollo retries hit the MERGE-MATCH path (isNew=false) and would
+      // otherwise spam the leader with a stale "balance remaining" line.
+      // Fire-and-forget so an mNotify failure cannot poison the commit.
+      if (isNew) {
+        sendBulkSMS([leader.phoneNumber], message).catch((err) => {
+          // eslint-disable-next-line no-console
+          console.warn('Deposit SMS send failed', err)
+        })
+      }
+
+      const trans = debitRes.records[0].get('transaction').properties
+      const depositor = debitRes.records[0].get('depositor').properties
 
       return {
         ...trans,
@@ -98,6 +108,7 @@ export const accountsMutations = {
     args: {
       councilId: string
       bussingSocietyBalance: number
+      clientTransactionId: string
     },
     context: Context
   ) => {
@@ -129,19 +140,24 @@ export const accountsMutations = {
 
       const message = `Dear ${leader.firstName}, ${transactionSMS} for ${council.name}. Your current bussing society balance is ${args.bussingSocietyBalance} GHS`
 
-      const debitRes = await Promise.all([
-        session.run(depositIntoCoucilBussingSociety, {
-          jwt: context.jwt,
-          ...args,
-          transactionDescription,
-          transactionType,
-          bussingSocietyDepositAmount: depositAmount,
-        }),
-        sendBulkSMS([leader.phoneNumber], message),
-      ])
+      const debitRes = await session.run(depositIntoCoucilBussingSociety, {
+        jwt: context.jwt,
+        ...args,
+        transactionDescription,
+        transactionType,
+        bussingSocietyDepositAmount: depositAmount,
+      })
 
-      const trans = debitRes[0].records[0].get('transaction').properties
-      const depositor = debitRes[0].records[0].get('depositor').properties
+      const isNew = debitRes.records[0].get('isNew')
+      if (isNew) {
+        sendBulkSMS([leader.phoneNumber], message).catch((err) => {
+          // eslint-disable-next-line no-console
+          console.warn('Bussing deposit SMS send failed', err)
+        })
+      }
+
+      const trans = debitRes.records[0].get('transaction').properties
+      const depositor = debitRes.records[0].get('depositor').properties
 
       return {
         ...trans,
@@ -250,6 +266,7 @@ export const accountsMutations = {
       expenseCategory: string
       accountType: string
       description: string
+      clientTransactionId: string
     },
     context: Context
   ) => {
@@ -470,6 +487,7 @@ export const accountsMutations = {
       councilId: string
       expenseAmount: number
       expenseCategory: string
+      clientTransactionId: string
     },
     context: Context
   ) => {
@@ -487,13 +505,21 @@ export const accountsMutations = {
       const amountRemaining = council.bussingSocietyBalance - args.expenseAmount
       const message = `Dear ${leader.firstName}, ${council.name} Council spent ${args.expenseAmount} GHS on bussing. Bussing Society Balance remaining is ${amountRemaining} GHS`
 
-      const debitRes = await Promise.all([
-        session.run(debitBussingSociety, { ...args, jwt: context.jwt }),
-        sendBulkSMS([leader.phoneNumber], message),
-      ])
+      const debitRes = await session.run(debitBussingSociety, {
+        ...args,
+        jwt: context.jwt,
+      })
 
-      const trans = debitRes[0].records[0].get('transaction').properties
-      const depositor = debitRes[0].records[0].get('requester').properties
+      const isNew = debitRes.records[0].get('isNew')
+      if (isNew) {
+        sendBulkSMS([leader.phoneNumber], message).catch((err) => {
+          // eslint-disable-next-line no-console
+          console.warn('Bussing debit SMS send failed', err)
+        })
+      }
+
+      const trans = debitRes.records[0].get('transaction').properties
+      const depositor = debitRes.records[0].get('requester').properties
 
       return {
         ...trans,

@@ -4,10 +4,12 @@ export const DEPOSIT_INTO_COUNCIL_CURRENT_ACCOUNTS = gql`
   mutation DepositIntoCouncilCurrentAccounts(
     $councilId: ID!
     $weekdayBalanceDepositAmount: Float!
+    $clientTransactionId: ID!
   ) {
     DepositIntoCouncilCurrentAccount(
       councilId: $councilId
       weekdayBalanceDepositAmount: $weekdayBalanceDepositAmount
+      clientTransactionId: $clientTransactionId
     ) {
       id
       createdAt
@@ -30,10 +32,12 @@ export const DEPOSIT_INTO_COUNCIL_BUSSING_SOCIETY = gql`
   mutation DepositIntoCouncilBussingSociety(
     $councilId: ID!
     $bussingSocietyBalance: Float!
+    $clientTransactionId: ID!
   ) {
     DepositIntoCouncilBussingSociety(
       councilId: $councilId
       bussingSocietyBalance: $bussingSocietyBalance
+      clientTransactionId: $clientTransactionId
     ) {
       id
       createdAt

@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import Input from 'components/formik/Input'
+import { newClientTransactionId } from 'lib/idempotency'
 import RadioButtons from 'components/formik/RadioButtons'
 import SubmitButton from 'components/formik/SubmitButton'
 import Textarea from 'components/formik/Textarea'
@@ -141,6 +142,7 @@ const ExpenseForm = () => {
           expenseCategory: values.category,
           accountType: 'Weekday Account',
           description: values.description,
+          clientTransactionId: newClientTransactionId(),
         },
       })
 
