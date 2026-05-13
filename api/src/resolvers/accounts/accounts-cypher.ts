@@ -1,5 +1,14 @@
+// SYN-92 — read-time fail-fast. ApproveExpense uses this read to build
+// the SMS body and balance preview BEFORE the write fires. Without the
+// status guard, an already-approved row would still return a record,
+// the SMS would dispatch in the same Promise.all as the write, and the
+// leader would receive a second "approved" SMS for a duplicate request.
+// Filtering pending-only at read time prevents that side effect; the
+// writes below carry the same guard for the narrow race between the
+// read returning and the write firing.
 export const getCouncilBalancesWithTransaction = `
 MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
+WHERE transaction.status = 'pending approval'
 MATCH (council)<-[:LEADS]-(leader:Member)
 RETURN council, transaction, leader
 `
@@ -10,8 +19,14 @@ MATCH (council)<-[:LEADS]-(leader:Member)
 RETURN council, leader
 `
 
+// SYN-92 — `WHERE transaction.status = 'pending approval'` makes
+// double-approval impossible at the DB layer. If two admins race or
+// Apollo retries the mutation, only the first write matches; the
+// second filters to zero rows and the resolver surfaces a friendly
+// error instead of double-debiting the council balance.
 export const approveBussingExpense = `
 MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
+WHERE transaction.status = 'pending approval'
 MATCH (transaction)-[:LOGGED_BY]->(depositor:Member)
   SET transaction.bussingSocietyBalance = council.bussingSocietyBalance
   SET council.bussingSocietyBalance = council.bussingSocietyBalance + (-1 * transaction.amount)
@@ -62,8 +77,12 @@ MERGE (weekdayTrans)-[:HAS_MIRROR_DEPOSIT]->(transaction)
 RETURN transaction
 `
 
+// SYN-92 — same precondition as approveBussingExpense above. Without
+// this guard a second ApproveExpense call (race or Apollo retry) would
+// re-debit the council weekdayBalance and re-apply the charge.
 export const approveExpense = `
 MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
+WHERE transaction.status = 'pending approval'
 MATCH (transaction)-[:LOGGED_BY]->(depositor:Member)
   SET council.weekdayBalance = council.weekdayBalance - (-1 * transaction.amount) - toFloat($charge)
   SET transaction.charge = $charge * -1
