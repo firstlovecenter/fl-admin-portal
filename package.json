@@ -36,6 +36,7 @@
     "release:major": "npm run clean:git && node scripts/release.js major",
     "release:minor": "npm run clean:git && node scripts/release.js minor",
     "release:patch": "npm run clean:git && node scripts/release.js patch",
+    "test": "concurrently --names \"api,web\" --prefix-colors \"blue,green\" \"cd api && npm test\" \"cd web-react-ts && npm run test:run\"",
     "aggregate-bacenta": "node ./api/src/scripts/run-bacenta-aggregation.js",
     "aggregate-bacenta:help": "node ./api/src/scripts/run-bacenta-aggregation.js --help"
   },
