@@ -75,50 +75,18 @@ export const LEADER_SCENARIOS: Record<ChurchLevel, string[]> = {
 }
 
 // ---------------------------------------------------------------------------
-// permitAdmin scenarios
-//
-// KNOWN DRIFT (ADR-001 violation) — 'Bacenta' case only:
-//   FE order:  ['adminGovernorship','adminCouncil','adminStream','adminCampus','adminDenomination','adminOversight']
-//   BE order:  ['adminGovernorship','adminCouncil','adminStream','adminCampus','adminOversight','adminDenomination']
-//   The last two items are swapped.  Each test file pins ITS OWN implementation's
-//   order and flags the divergence so a future reconciliation can fix it.
-//
-// All other levels are identical between FE and BE.
+// permitAdmin scenarios — identical between FE and BE (ADR-001 reconciled).
 // ---------------------------------------------------------------------------
 
-/**
- * FE-specific order for permitAdmin('Bacenta').
- * TODO(refactor): last two items diverge from BE — adminDenomination before
- * adminOversight on FE, reversed on BE.  Reconcile in ADR-001 clean-up PR.
- */
-export const ADMIN_BACENTA_FE: string[] = [
-  'adminGovernorship',
-  'adminCouncil',
-  'adminStream',
-  'adminCampus',
-  'adminDenomination',
-  'adminOversight',
-]
-
-/**
- * BE-specific order for permitAdmin('Bacenta').
- * TODO(refactor): last two items diverge from FE — adminOversight before
- * adminDenomination on BE, reversed on FE.  Reconcile in ADR-001 clean-up PR.
- */
-export const ADMIN_BACENTA_BE: string[] = [
-  'adminGovernorship',
-  'adminCouncil',
-  'adminStream',
-  'adminCampus',
-  'adminOversight',
-  'adminDenomination',
-]
-
-/** Levels where FE and BE return IDENTICAL admin role lists. */
-export const ADMIN_SCENARIOS_SHARED: Omit<
-  Record<ChurchLevel, string[]>,
-  'Bacenta'
-> = {
+export const ADMIN_SCENARIOS: Record<ChurchLevel, string[]> = {
+  Bacenta: [
+    'adminGovernorship',
+    'adminCouncil',
+    'adminStream',
+    'adminCampus',
+    'adminDenomination',
+    'adminOversight',
+  ],
   Governorship: [
     'adminDenomination',
     'adminOversight',

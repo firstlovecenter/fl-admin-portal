@@ -37,8 +37,7 @@ import {
 import {
   ALL_CHURCH_LEVELS,
   LEADER_SCENARIOS,
-  ADMIN_SCENARIOS_SHARED,
-  ADMIN_BACENTA_FE,
+  ADMIN_SCENARIOS,
   ARRIVALS_SCENARIOS,
   ARRIVALS_HELPERS_SCENARIOS,
   SENSITIVE_ROLES,
@@ -107,16 +106,9 @@ describe('permitLeader (FE)', () => {
 // ---------------------------------------------------------------------------
 describe('permitAdmin (FE)', () => {
   it.each(
-    Object.entries(ADMIN_SCENARIOS_SHARED) as [ChurchLevel, string[]][]
+    Object.entries(ADMIN_SCENARIOS) as [ChurchLevel, string[]][]
   )('returns the correct admin role list at %s', (level, expected) => {
     expect(permitAdmin(level)).toEqual(expected)
-  })
-
-  // TODO(refactor): FE has adminDenomination BEFORE adminOversight at Bacenta;
-  // BE has them reversed.  This test pins the FE order.  Reconcile in the
-  // ADR-001 clean-up PR.
-  it('returns Bacenta admin roles in FE-specific order (known drift vs BE)', () => {
-    expect(permitAdmin('Bacenta')).toEqual(ADMIN_BACENTA_FE)
   })
 
   it('returns [] for an unrecognised level (default branch, no throw)', () => {
