@@ -5,6 +5,10 @@ module.exports = {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  // Allow test files to import from lib/ (the shared monorepo directory
+  // above api/).  modulePaths ensures @babel/runtime-corejs3 and other
+  // api-installed deps are resolved even for files outside api/src/.
+  modulePaths: ['<rootDir>/node_modules'],
   testPathIgnorePatterns: ['/node_modules/', '/build/', '/lambda-package/'],
   clearMocks: true,
   restoreMocks: true,
