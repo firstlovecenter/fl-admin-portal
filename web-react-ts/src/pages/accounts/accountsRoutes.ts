@@ -1,11 +1,22 @@
 import { lazy } from 'react'
-import { LazyRouteTypes } from 'global-types'
-import {
-  permitAdmin,
-  permitArrivals,
-  permitLeader,
-  permitLeaderAdmin,
-} from 'permission-utils'
+import { LazyRouteTypes, Role } from 'global-types'
+
+// SYN-98 — accounts policy: only these three church-scoped roles, AND
+// the user must hold the `fishers` role (server-side enforced in
+// accounts-resolvers.ts:assertAccountsAccess). The FE route gate uses
+// OR semantics across this array; the AND with `fishers` is enforced
+// server-side. A fishers-less user reaching the view will see every
+// action fail with the policy error.
+//
+// Intentionally NOT using permitX helpers — they expand to
+// denomination/oversight admins by inheritance, which we don't want
+// for accounts. Any addition to this list is a deliberate policy
+// change made by a human, never by Claude.
+const ACCOUNTS_ROLES: Role[] = [
+  'leaderCouncil',
+  'leaderCampus',
+  'adminCampus',
+]
 
 const LandingPage = lazy(() => import('pages/accounts/LandingPage'))
 const CouncilDashboard = lazy(() => import('pages/accounts/CouncilDashboard'))
@@ -50,104 +61,76 @@ export const accountsRoutes: LazyRouteTypes[] = [
   {
     path: '/accounts',
     element: LandingPage,
-    roles: [
-      ...permitLeader('Council'),
-      ...permitAdmin('Campus'),
-      ...permitArrivals('Campus'),
-    ],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/council/dashboard',
     element: CouncilDashboard,
-    roles: [
-      ...permitLeader('Council'),
-      ...permitAdmin('Campus'),
-      ...permitArrivals('Campus'),
-    ],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/campus/dashboard',
     element: CampusDashboard,
-    roles: [
-      ...permitLeader('Campus'),
-      ...permitAdmin('Campus'),
-      ...permitArrivals('Campus'),
-    ],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/oversight/dashboard',
     element: OversightDashboard,
-    roles: [...permitAdmin('Oversight')],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/request-expense',
     element: ExpenseForm,
-    roles: [
-      ...permitLeader('Council'),
-      ...permitAdmin('Campus'),
-      ...permitArrivals('Campus'),
-    ],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/campus/councils-for-deposits',
     element: CampusCouncilListForDeposits,
-    roles: [...permitAdmin('Campus'), ...permitArrivals('Campus')],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/council/make-deposit',
     element: MakeDepositForm,
-    roles: [...permitAdmin('Campus'), ...permitArrivals('Campus')],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/council/transaction-history',
     element: CouncilTransactionHistory,
-    roles: [
-      ...permitLeader('Council'),
-      ...permitAdmin('Campus'),
-      ...permitArrivals('Campus'),
-    ],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/campus/transaction-history',
     element: CampusTransactionHistory,
-    roles: [...permitLeader('Campus'), ...permitAdmin('Campus')],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/transaction-details/',
     element: TransactionDetails,
-    roles: [
-      ...permitLeader('Council'),
-      ...permitAdmin('Campus'),
-      ...permitArrivals('Campus'),
-    ],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/campus/council/view-accounts',
     element: CampusCouncilListForAccounts,
-    roles: [
-      ...permitLeader('Council'),
-      ...permitAdmin('Campus'),
-      ...permitArrivals('Campus'),
-    ],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/oversight/view-campuses',
     element: OversightCampusListForAccount,
-    roles: [...permitAdmin('Oversight')],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/campus/approvals',
     element: Approvals,
-    roles: permitLeaderAdmin('Campus'),
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/campus/councils-for-bussing-expense',
     element: CampusCouncilListForBussingExpense,
-    roles: [...permitAdmin('Campus'), ...permitArrivals('Campus')],
+    roles: ACCOUNTS_ROLES,
   },
   {
     path: '/accounts/campus/bussing-expense-entry',
     element: BussingExpenseEntry,
-    roles: [...permitAdmin('Campus'), ...permitArrivals('Campus')],
+    roles: ACCOUNTS_ROLES,
   },
 ]
