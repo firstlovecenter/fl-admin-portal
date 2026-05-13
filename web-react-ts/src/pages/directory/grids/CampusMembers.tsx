@@ -12,7 +12,14 @@ const CampusMembers = () => {
       parentId={campusId}
       parentTypename="Campus"
       pluckParent={(data) => data?.campuses?.[0]}
-      getHeading={(parent) => (parent ? `${parent.name} Campus` : null)}
+      getHeading={(parent) =>
+        parent ? (
+          <>
+            {parent.name}{' '}
+            <span className="text-members">Members</span>
+          </>
+        ) : null
+      }
     />
   )
 }

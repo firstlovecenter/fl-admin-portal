@@ -146,7 +146,7 @@ const MembersGrid = ({
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="px-4 pt-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
+        <div className="px-4 pt-4 pb-3 max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-3">
             {loading || !heading ? (
               <Skeleton className="h-8 w-48 rounded" />
@@ -179,7 +179,7 @@ const MembersGrid = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-4 pb-3 max-w-2xl md:max-w-7xl mx-auto">
+        <div className="flex items-center justify-between gap-2 px-4 pb-3 max-w-6xl mx-auto">
           <RoleView
             roles={[...permitLeaderAdmin('Bacenta')]}
           >
@@ -229,7 +229,7 @@ const MembersGrid = ({
         </div>
       </div>
 
-      <div className="max-w-2xl md:max-w-7xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <MemberTable
           data={items}
           error={error}

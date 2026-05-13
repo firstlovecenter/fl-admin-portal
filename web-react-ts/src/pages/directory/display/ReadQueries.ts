@@ -383,6 +383,57 @@ export const GET_STREAM_COUNCILS_WITH_GOVERNORSHIPS = gql`
   }
 `
 
+export const GET_CAMPUS_STREAMS_WITH_COUNCILS = gql`
+  query getCampusStreamsWithCouncils($id: ID!) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
+      id
+      name
+      memberCount
+      leader {
+        id
+        firstName
+        lastName
+        fullName
+        pictureUrl
+      }
+      admin {
+        id
+        firstName
+        lastName
+        fullName
+        pictureUrl
+      }
+      streams {
+        id
+        name
+        memberCount
+        councilCount
+        leader {
+          id
+          firstName
+          lastName
+          pictureUrl
+          fullName
+        }
+        councils {
+          id
+          name
+          memberCount
+          governorshipCount
+          leader {
+            id
+            firstName
+            lastName
+            fullName
+            nameWithTitle
+            pictureUrl
+          }
+        }
+      }
+    }
+  }
+`
+
 export const GET_CAMPUS_STREAMS_WITH_GOVERNORSHIPS = gql`
   query getCampusStreamsWithGovernorships($id: ID!) {
     campuses(where: { id: { eq: $id } }, limit: 1) {

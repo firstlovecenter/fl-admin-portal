@@ -105,6 +105,9 @@ const CreateCouncil = lazy(() => import('pages/directory/create/CreateCouncil'))
 const AllCampusGovernorships = lazy(
   () => import('pages/directory/display/AllCampusGovernorships')
 )
+const AllCampusCouncils = lazy(
+  () => import('pages/directory/display/AllCampusCouncils')
+)
 const UpdateCouncil = lazy(() => import('pages/directory/update/UpdateCouncil'))
 const CreateStream = lazy(() => import('pages/directory/create/CreateStream'))
 const CreateCampus = lazy(() => import('pages/directory/create/CreateCampus'))
@@ -370,6 +373,12 @@ export const directory: LazyRouteTypes[] = [
   {
     path: '/campus/governorships',
     element: AllCampusGovernorships,
+    roles: permitMe('Campus'),
+    placeholder: false,
+  },
+  {
+    path: '/campus/councils',
+    element: AllCampusCouncils,
     roles: permitMe('Campus'),
     placeholder: false,
   },

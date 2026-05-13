@@ -51,7 +51,7 @@ const DetailsCampus = () => {
     {
       title: 'Councils',
       number: gathering?.councilCount,
-      link: `#`,
+      link: `/campus/councils`,
     },
     {
       title: 'Governorships',
