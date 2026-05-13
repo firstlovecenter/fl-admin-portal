@@ -26,7 +26,6 @@ const DetailsCampus = () => {
       link: `/${gathering?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
-    { title: 'Target', number: gathering?.target, link: '#' },
     {
       title: 'Pastors',
       number: gathering?.pastorCount || '0',

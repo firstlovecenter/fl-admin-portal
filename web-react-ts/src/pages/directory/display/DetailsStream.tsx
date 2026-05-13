@@ -45,7 +45,6 @@ const DetailsStream = () => {
       number: stream?.councilCount || 0,
       link: `/${`Council`.toLowerCase()}/displayall`,
     },
-    { title: 'Target', number: stream?.target, link: '#' },
     {
       title: 'Pastors',
       number: stream?.pastorCount || '0',

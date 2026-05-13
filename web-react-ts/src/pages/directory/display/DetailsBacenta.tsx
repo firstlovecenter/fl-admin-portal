@@ -63,11 +63,6 @@ const DetailsBacenta = () => {
       link: '#',
     },
 
-    // {
-    //   title: 'Target',
-    //   number: bacenta?.target,
-    //   link: '#',
-    // },
     {
       title: 'Code',
       number: bacenta?.bankingCode,

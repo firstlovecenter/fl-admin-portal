@@ -364,5 +364,4 @@ export interface HigherChurch extends Church {
   memberCount: number
   hubCount: number
   ministryCount: number
-  target?: number
 }

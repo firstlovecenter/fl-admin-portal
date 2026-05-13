@@ -25,7 +25,6 @@ const DetailsGovernorship = () => {
       link: `/${governorship?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
-    { title: 'Target', number: governorship?.target, link: '#' },
     {
       title: 'Pastors',
       number: governorship?.pastorCount || '0',
