@@ -10,6 +10,10 @@ const ShepherdingControlProjector = lazy(
   () => import('pages/shepherding-control/ShepherdingControlProjector')
 )
 
+const ShepherdingControlPrint = lazy(
+  () => import('pages/shepherding-control/ShepherdingControlPrint')
+)
+
 // Controller — mounts inside the regular ShellLayout (sidebar + nav).
 export const shepherdingControl: LazyRouteTypes[] = [
   {
@@ -19,12 +23,17 @@ export const shepherdingControl: LazyRouteTypes[] = [
   },
 ]
 
-// Projector — mounts OUTSIDE ShellLayout so the external monitor shows
-// only the slide. Wired separately in AppWithContext.tsx.
+// Projector and print — mount OUTSIDE ShellLayout (full-bleed windows).
+// Wired separately in AppWithContext.tsx.
 export const shepherdingControlProjector: LazyRouteTypes[] = [
   {
     path: '/shepherding-control/projector',
     element: ShepherdingControlProjector,
+    roles: permitShepherdingControl(),
+  },
+  {
+    path: '/shepherding-control/print',
+    element: ShepherdingControlPrint,
     roles: permitShepherdingControl(),
   },
 ]

@@ -213,15 +213,3 @@ export const shiftAnchor = (
     year: getISOWeekYear(shifted),
   }
 }
-
-export const slugify = (input: string): string =>
-  input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'scope'
-
-export const pdfFileName = (
-  scopeName: string,
-  anchor: AnchorWeekYear
-): string =>
-  `shepherding-control_${slugify(scopeName)}_week-${anchor.week}-${anchor.year}.pdf`
