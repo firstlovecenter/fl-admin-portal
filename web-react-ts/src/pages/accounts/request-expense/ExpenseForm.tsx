@@ -105,7 +105,12 @@ const ExpenseForm = () => {
       id: councilId,
     },
   })
-  const [ExpenseRequest] = useMutation(EXPENSE_REQUEST)
+  // SYN-109: refetch active queries so balance cards on previously
+  // open dashboard tabs reflect the new pending-approval row without
+  // requiring a hard refresh.
+  const [ExpenseRequest] = useMutation(EXPENSE_REQUEST, {
+    refetchQueries: 'active',
+  })
 
   const council: CouncilForAccounts = data?.councils[0]
 

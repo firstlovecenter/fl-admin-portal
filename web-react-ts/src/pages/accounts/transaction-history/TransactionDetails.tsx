@@ -84,11 +84,16 @@ const TransactionDetails = () => {
   const { data, loading, error } = useQuery(GET_TRANSACTION_DETAILS, {
     variables: { id: transactionId },
   })
+  // SYN-109: refetch active queries so the council dashboard, the
+  // transaction-history list, and any other open view see the
+  // status flip / inverse row immediately.
   const [UndoBussingTransaction, { loading: undoBussingLoading }] = useMutation(
-    UNDO_BUSSING_TRANSACTION
+    UNDO_BUSSING_TRANSACTION,
+    { refetchQueries: 'active' }
   )
   const [UndoWeekdayTransaction, { loading: undoWeekdayLoading }] = useMutation(
-    UNDO_WEEKDAY_TRANSACTION
+    UNDO_WEEKDAY_TRANSACTION,
+    { refetchQueries: 'active' }
   )
   const undoLoading = undoBussingLoading || undoWeekdayLoading
 

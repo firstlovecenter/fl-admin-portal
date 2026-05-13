@@ -45,8 +45,16 @@ const Approvals = () => {
       variables: { campusId },
     }
   )
-  const [approveExpense] = useMutation(APPROVE_EXPENSE)
-  const [declineExpense] = useMutation(DECLINE_EXPENSE)
+  // SYN-109: refetch active queries so balance cards on previously
+  // open dashboard tabs reflect the approve/decline outcome without
+  // requiring a hard refresh. The in-component refetch() call already
+  // updates THIS view; refetchQueries covers OTHER mounted views.
+  const [approveExpense] = useMutation(APPROVE_EXPENSE, {
+    refetchQueries: 'active',
+  })
+  const [declineExpense] = useMutation(DECLINE_EXPENSE, {
+    refetchQueries: 'active',
+  })
 
   const campus = data?.campuses[0]
 
