@@ -98,6 +98,21 @@ const array = [
 
 const combinedSchema = expandChurchScopedMarkers(array.join(' '))
 
+// Fail fast at boot if a `# @churchScoped*` marker survives the expander —
+// otherwise the type ships with NO authorization filter and we'd believe it
+// was protected. The most common cause is a marker placed on a header shape
+// the regex doesn't recognise (e.g. via-marker on an `implements` header, or
+// a typo like `@chuchScoped`).
+const leftover = combinedSchema.match(/#\s*@churchScoped[A-Za-z]*/g)
+if (leftover) {
+  throw new Error(
+    `church-scoped-directive: ${leftover.length} marker(s) survived expansion: ` +
+      `${leftover.join(', ')}. The annotated type would ship with no ` +
+      `authorization filter — refusing to boot. Check the marker placement ` +
+      `against the header pattern in church-scoped-directive.js.`
+  )
+}
+
 // Write the combined schema to a file
 // const outputPath = path.join(__dirname, 'combined-schema.gql')
 // fs.writeFileSync(outputPath, combinedSchema, 'utf-8')

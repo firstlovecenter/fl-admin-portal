@@ -1,4 +1,7 @@
-type AccountTransaction @node{
+type AccountTransaction @node
+  @mutation(operations: [])
+  # @churchScopedVia(field: council, level: Council)
+{
   id: ID!
   createdAt: DateTime!
   lastModified: DateTime!
