@@ -9,7 +9,12 @@ module.exports = {
   // above api/).  modulePaths ensures @babel/runtime-corejs3 and other
   // api-installed deps are resolved even for files outside api/src/.
   modulePaths: ['<rootDir>/node_modules'],
-  testPathIgnorePatterns: ['/node_modules/', '/build/', '/lambda-package/'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/build/',
+    '/lambda-package/',
+    '\\.integration\\.test\\.',  // integration tests run via npm run test:integration
+  ],
   clearMocks: true,
   restoreMocks: true,
   collectCoverageFrom: [
