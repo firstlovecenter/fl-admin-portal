@@ -219,16 +219,10 @@ extend type Council {
 }
 
 extend type Mutation {
+  # SYN-96 — lifted to imperative resolver (accountsMutations) so the
+  # role gate, cross-campus scope check, and amount validation run
+  # before any write. Roles preserved at adminCampus only.
   SetCouncilHRAmount(councilId: ID!, amount: Float!): Council!
-    @authentication(jwt: { roles: { includes: "adminCampus" } })
-    @cypher(
-      statement: """
-      MATCH (council:Council {id: $councilId})
-        SET council.hrAmount = $amount
-      RETURN council
-      """
-      columnName: "council"
-    )
   DepositIntoCouncilCurrentAccount(
     councilId: ID!
     weekdayBalanceDepositAmount: Float!
@@ -252,24 +246,11 @@ extend type Mutation {
 
   ApproveExpense(transactionId: ID!, charge: Float!): AccountTransaction!
 
+  # SYN-96 — lifted to imperative resolver. Adds the SYN-92 status
+  # precondition so an already-approved transaction cannot be silently
+  # re-flipped to 'declined'. Roles preserved at adminCampus +
+  # leaderCampus.
   DeclineExpense(transactionId: ID!): AccountTransaction!
-    @authentication(
-      jwt: {
-        OR: [
-          { roles: { includes: "adminCampus" } }
-          { roles: { includes: "leaderCampus" } }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-      MATCH (transaction:AccountTransaction {id: $transactionId})
-        SET transaction.status = 'declined'
-
-      RETURN transaction
-      """
-      columnName: "transaction"
-    )
   UndoBussingTransaction(transactionId: ID!): Council!
   UndoWeekdayTransaction(transactionId: ID!): Council!
 

@@ -19,6 +19,34 @@ MATCH (council)<-[:LEADS]-(leader:Member)
 RETURN council, leader
 `
 
+// SYN-96 — lifted from inline @cypher in accounts.graphql so the
+// resolver can run a real church-scope check (assertChurchScope) and
+// validate the amount with the SYN-93 helper before any write. The
+// SDL @authentication only verified role membership; nothing stopped
+// an adminCampus from Campus A from overwriting the HR amount on a
+// Council in Campus B and priming an oversize ExpenseRequest.
+//
+// Adds hrAmountLastModified so future audits can spot HR-knob drift.
+export const setCouncilHRAmount = `
+MATCH (council:Council {id: $councilId})
+  SET council.hrAmount = $amount,
+      council.hrAmountLastModified = datetime()
+RETURN council
+`
+
+// SYN-96 — lifted from inline @cypher. Adds the same SYN-92 status
+// precondition the approve mutations use so an already-approved or
+// already-declined transaction cannot be silently re-flipped to
+// 'declined' (which would leave the council balance moved while the
+// row reads 'declined').
+export const declineExpense = `
+MATCH (transaction:AccountTransaction {id: $transactionId})
+WHERE transaction.status = 'pending approval'
+  SET transaction.status = 'declined',
+      transaction.lastModified = datetime()
+RETURN transaction
+`
+
 // SYN-92 — `WHERE transaction.status = 'pending approval'` makes
 // double-approval impossible at the DB layer. If two admins race or
 // Apollo retries the mutation, only the first write matches; the
