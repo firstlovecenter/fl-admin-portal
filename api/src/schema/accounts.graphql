@@ -32,11 +32,17 @@ extend type Oversight {
       """
       columnName: "hrAmount"
     )
+  # SYN-99: compute from the AccountTransaction ledger so the value
+  # reflects total bussing spend (net of reversals), not whatever the
+  # most-recent debit happened to be. Bussing expenses store amount
+  # negative, reversals store positive, so `-amount` flips spend back
+  # to positive and reversals net to zero.
   bussingAmount: Float!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(council:Council)
-      RETURN SUM(council.bussingAmount) AS bussingAmount
+      MATCH (this)-[:HAS*3]->(council:Council)-[:HAS_TRANSACTION]->(t:AccountTransaction)
+      WHERE t.category = 'Bussing' AND t.status = 'success'
+      RETURN coalesce(SUM(-t.amount), 0) AS bussingAmount
       """
       columnName: "bussingAmount"
     )
@@ -67,11 +73,13 @@ extend type Campus {
       """
       columnName: "hrAmount"
     )
+  # SYN-99 — see Oversight.bussingAmount above.
   bussingAmount: Float!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.bussingAmount) AS bussingAmount
+      MATCH (this)-[:HAS*2]->(council:Council)-[:HAS_TRANSACTION]->(t:AccountTransaction)
+      WHERE t.category = 'Bussing' AND t.status = 'success'
+      RETURN coalesce(SUM(-t.amount), 0) AS bussingAmount
       """
       columnName: "bussingAmount"
     )
@@ -118,11 +126,13 @@ extend type Stream {
       """
       columnName: "hrAmount"
     )
+  # SYN-99 — see Oversight.bussingAmount above.
   bussingAmount: Float!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(council:Council)
-      RETURN SUM(council.bussingAmount) AS bussingAmount
+      MATCH (this)-[:HAS]->(council:Council)-[:HAS_TRANSACTION]->(t:AccountTransaction)
+      WHERE t.category = 'Bussing' AND t.status = 'success'
+      RETURN coalesce(SUM(-t.amount), 0) AS bussingAmount
       """
       columnName: "bussingAmount"
     )
@@ -162,7 +172,17 @@ extend type Stream {
 
 extend type Council {
   hrAmount: Float
-  bussingAmount: Float
+  # SYN-99 — see Oversight.bussingAmount above. Council is the leaf — its
+  # transactions live one HAS_TRANSACTION hop away.
+  bussingAmount: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_TRANSACTION]->(t:AccountTransaction)
+      WHERE t.category = 'Bussing' AND t.status = 'success'
+      RETURN coalesce(SUM(-t.amount), 0) AS bussingAmount
+      """
+      columnName: "bussingAmount"
+    )
   weekdayBalance: Float!
   bussingSocietyBalance: Float
   transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
