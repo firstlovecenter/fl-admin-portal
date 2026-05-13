@@ -15,8 +15,6 @@ const {
  * @param {Object} neoDriver - Neo4j Driver instance
  */
 const executeQuery = async (neoDriver) => {
-  const session = neoDriver.session()
-
   try {
     await Promise.all([
       aggregateBussingOnGovernorship(neoDriver),
@@ -33,8 +31,6 @@ const executeQuery = async (neoDriver) => {
   } catch (error) {
     console.error('Error aggregating graphs', error)
     throw error
-  } finally {
-    await session.close()
   }
 }
 

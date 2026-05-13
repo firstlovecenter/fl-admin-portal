@@ -217,14 +217,14 @@ describe('aggregation functions — driver contract', () => {
   )
 
   test.each(ROLLUP_QUERIES)(
-    '$name: always closes the session even when run throws',
+    '$name: re-throws and closes the session when run throws',
     async ({ fn }) => {
       const mockSession = {
         run: jest.fn().mockRejectedValue(new Error('DB down')),
         close: jest.fn().mockResolvedValue(undefined),
       }
       const driver = { session: jest.fn().mockReturnValue(mockSession) }
-      await fn(driver)
+      await expect(fn(driver)).rejects.toThrow('DB down')
       expect(mockSession.close).toHaveBeenCalledTimes(1)
     }
   )
@@ -247,13 +247,13 @@ describe('aggregation functions — driver contract', () => {
     expect(session.close).toHaveBeenCalledTimes(1)
   })
 
-  it('zeroAllNullBussingRecords: closes the session even when run throws', async () => {
+  it('zeroAllNullBussingRecords: re-throws and closes the session when run throws', async () => {
     const mockSession = {
       run: jest.fn().mockRejectedValue(new Error('DB down')),
       close: jest.fn().mockResolvedValue(undefined),
     }
     const driver = { session: jest.fn().mockReturnValue(mockSession) }
-    await zeroAllNullBussingRecords(driver)
+    await expect(zeroAllNullBussingRecords(driver)).rejects.toThrow('DB down')
     expect(mockSession.close).toHaveBeenCalledTimes(1)
   })
 })

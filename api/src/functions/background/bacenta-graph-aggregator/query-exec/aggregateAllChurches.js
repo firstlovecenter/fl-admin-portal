@@ -18,6 +18,7 @@ const zeroAllNullBussingRecords = async (neoDriver) => {
     console.log('Zeroed all null bussing records')
   } catch (error) {
     console.error('Error zeroing all null bussing records', error)
+    throw error
   } finally {
     await session.close()
   }
@@ -39,11 +40,10 @@ const aggregateBussingOnGovernorship = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateBussingOnCouncil = async (neoDriver) => {
@@ -62,11 +62,10 @@ const aggregateBussingOnCouncil = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateBussingOnStream = async (neoDriver) => {
@@ -83,11 +82,10 @@ const aggregateBussingOnStream = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateBussingOnCampus = async (neoDriver) => {
@@ -104,11 +102,10 @@ const aggregateBussingOnCampus = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateBussingOnOversight = async (neoDriver) => {
@@ -127,11 +124,10 @@ const aggregateBussingOnOversight = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateBussingOnDenomination = async (neoDriver) => {
@@ -150,11 +146,10 @@ const aggregateBussingOnDenomination = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 module.exports = {

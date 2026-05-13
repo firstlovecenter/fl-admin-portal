@@ -23,11 +23,10 @@ const aggregateBacentaOnGovernorship = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateGovernorshipOnCouncil = async (neoDriver) => {
@@ -46,11 +45,10 @@ const aggregateGovernorshipOnCouncil = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateCouncilOnStream = async (neoDriver) => {
@@ -67,11 +65,10 @@ const aggregateCouncilOnStream = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateStreamOnCampus = async (neoDriver) => {
@@ -88,11 +85,10 @@ const aggregateStreamOnCampus = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateCampusOnOversight = async (neoDriver) => {
@@ -111,11 +107,10 @@ const aggregateCampusOnOversight = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 const aggregateOversightOnDenomination = async (neoDriver) => {
@@ -134,11 +129,10 @@ const aggregateOversightOnDenomination = async (neoDriver) => {
     return returnValues
   } catch (error) {
     console.error('Error reading data from the DB', error)
+    throw error
   } finally {
     await session.close()
   }
-
-  return []
 }
 
 module.exports = {
