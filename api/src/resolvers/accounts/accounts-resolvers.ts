@@ -1,7 +1,6 @@
-import { permitAdmin, permitArrivals, permitLeader } from '../permissions'
 import { Context } from '../utils/neo4j-types'
 import { sendBulkSMS } from '../utils/notify'
-import { Member } from '../utils/types'
+import { Member, Role } from '../utils/types'
 import {
   badRequest,
   isAuth,
@@ -28,6 +27,31 @@ import {
 } from './accounts-cypher'
 import { AccountTransaction, CouncilForAccounts } from './accounts-types'
 
+// SYN-98 — accounts is a need-to-know surface. Per the user's policy
+// clarification, ONLY these three church-scoped roles can access any
+// accounts mutation, AND the caller must additionally hold the
+// `fishers` role. We deliberately do NOT use the permitX helpers
+// because they expand to denomination/oversight admins (and other
+// downstream roles) by inheritance — which would silently re-widen
+// the gate the next time the helpers grow.
+//
+// Any addition to this list is a deliberate policy change that must
+// be made by a human, never by Claude.
+const ACCOUNTS_CHURCH_ROLES: Role[] = [
+  'leaderCouncil',
+  'leaderCampus',
+  'adminCampus',
+]
+
+const assertAccountsAccess = (jwtRoles: Role[] | undefined) => {
+  isAuth(ACCOUNTS_CHURCH_ROLES, jwtRoles)
+  if (!jwtRoles?.includes('fishers')) {
+    throw badRequest(
+      'Accounts access requires the fishers role. Contact an admin if you need this access.'
+    )
+  }
+}
+
 const ALLOWED_ACCOUNT_TYPES = new Set(['Weekday Account', 'Bussing Society'])
 const ALLOWED_EXPENSE_CATEGORIES = new Set([
   'Bussing',
@@ -50,8 +74,8 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
+    assertAccountsAccess(context.jwt.roles)
     const session = context.executionContext.session()
-    isAuth(['adminCampus'], context.jwt.roles)
     await assertChurchScope(context, args.councilId)
 
     try {
@@ -120,7 +144,7 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
-    isAuth(['arrivalsAdminCampus', 'adminCampus'], context.jwt.roles)
+    assertAccountsAccess(context.jwt.roles)
     await assertChurchScope(context, args.councilId)
     const session = context.executionContext.session()
 
@@ -187,7 +211,7 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
-    isAuth(permitAdmin('Campus'), context.jwt.roles)
+    assertAccountsAccess(context.jwt.roles)
     await assertScopeViaTransaction(context, args.transactionId)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -278,15 +302,7 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
-    // Mirror the route gate at web-react-ts/src/pages/accounts/accountsRoutes.ts.
-    isAuth(
-      [
-        ...permitLeader('Council'),
-        ...permitAdmin('Campus'),
-        ...permitArrivals('Campus'),
-      ],
-      context.jwt.roles
-    )
+    assertAccountsAccess(context.jwt.roles)
     await assertChurchScope(context, args.councilId)
 
     if (!Number.isFinite(args.expenseAmount) || args.expenseAmount <= 0) {
@@ -385,7 +401,7 @@ export const accountsMutations = {
     args: { transactionId: string },
     context: Context
   ) => {
-    isAuth(permitAdmin('Campus'), context.jwt.roles)
+    assertAccountsAccess(context.jwt.roles)
     await assertScopeViaTransaction(context, args.transactionId)
 
     const session = context.executionContext.session()
@@ -442,7 +458,7 @@ export const accountsMutations = {
     args: { transactionId: string },
     context: Context
   ) => {
-    isAuth(permitAdmin('Campus'), context.jwt.roles)
+    assertAccountsAccess(context.jwt.roles)
     await assertScopeViaTransaction(context, args.transactionId)
 
     const session = context.executionContext.session()
@@ -499,8 +515,8 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
+    assertAccountsAccess(context.jwt.roles)
     const session = context.executionContext.session()
-    isAuth(['arrivalsAdminCampus', 'adminCampus'], context.jwt.roles)
     await assertChurchScope(context, args.councilId)
 
     try {
