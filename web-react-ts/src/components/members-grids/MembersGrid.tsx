@@ -4,7 +4,6 @@ import { DocumentNode } from '@apollo/client'
 import useInfiniteScroll from 'hooks/useInfiniteScroll'
 import MemberTable, { GridMember } from './MemberTable'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Button } from 'components/ui/button'
 import {
   Sheet,
@@ -53,7 +52,6 @@ type MembersGridProps = {
     | 'Campus'
     | 'Oversight'
     | 'Denomination'
-    | 'Member'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pluckParent: (data: any) => ChurchParent | undefined
   getHeading: (parent: ChurchParent | undefined) => React.ReactNode | null
@@ -76,7 +74,6 @@ const MembersGrid = ({
 }: MembersGridProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { filters } = useContext(ChurchContext) as { filters: MemberFilters }
-  const { selectedScope } = useChurchRoleScope()
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
@@ -141,18 +138,10 @@ const MembersGrid = ({
   const isFiltering = Boolean(search) || hasActiveFilters
   const displayCount = isFiltering ? items.length : (totalCount ?? items.length)
 
-  // For ServantMembers (parentTypename="Member") the grid renders the members
-  // under the logged-in servant — derive the download level from their current
-  // role scope (which can be a non-church type like "Basonta", so we resolve
-  // against the path map rather than casting). For per-church-level grids the
-  // parentTypename IS the level.
-  const candidateLevel =
-    parentTypename === 'Member' ? selectedScope?.churchType : parentTypename
-  const downloadPath = getMembershipDownloadPath(candidateLevel)
-  const downloadLevel =
-    downloadPath && candidateLevel
-      ? (candidateLevel as keyof typeof MEMBERSHIP_DOWNLOAD_PATHS)
-      : undefined
+  const downloadPath = getMembershipDownloadPath(parentTypename)
+  const downloadLevel = downloadPath
+    ? (parentTypename as keyof typeof MEMBERSHIP_DOWNLOAD_PATHS)
+    : undefined
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">

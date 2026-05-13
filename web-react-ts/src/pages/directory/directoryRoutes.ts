@@ -125,8 +125,8 @@ const OversightMembers = lazy(
   () => import('pages/directory/grids/OversightMembers')
 )
 const StreamMembers = lazy(() => import('pages/directory/grids/StreamMembers'))
-const ServantMembers = lazy(
-  () => import('pages/directory/grids/ServantMembers')
+const ChurchLevelMembers = lazy(
+  () => import('pages/directory/grids/ChurchLevelMembers')
 )
 const AllStreamGovernorships = lazy(
   () => import('pages/directory/display/AllStreamGovernorships')
@@ -160,7 +160,7 @@ const CampusAvgWeekdayQuickFacts = lazy(
 export const memberDirectory: LazyRouteTypes[] = [
   {
     path: '/directory/members',
-    element: ServantMembers,
+    element: ChurchLevelMembers,
     roles: ['all'],
   },
 ]
