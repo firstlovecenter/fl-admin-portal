@@ -22,11 +22,13 @@ import {
   approveExpense,
   createExpenseRequest,
   debitBussingSociety,
+  declineExpense,
   depositIntoCoucilBussingSociety,
   depositIntoCouncilCurrentAccount,
   getCouncilBalances,
   getCouncilBalancesWithTransaction,
   getTransactionForUndo,
+  setCouncilHRAmount,
   undoBussingTransactionCypher,
   undoWeekdayTransactionCypher,
 } from './accounts-cypher'
@@ -58,10 +60,22 @@ const assertAccountsAccess = (jwtRoles: Role[] | undefined) => {
 }
 
 // SYN-92 — surfaced to the user when the read- or write-side status guard
-// trips. Same wording in all three sites so a future copy-edit can't drift
+// trips. Same wording in all sites so a future copy-edit can't drift
 // a partial set of error messages.
+//
+// SYN-96 — also reused by the lifted DeclineExpense resolver, which
+// shares the same status precondition.
 const TRANSACTION_NOT_PENDING_MESSAGE =
   'This transaction is no longer pending approval. Refresh to see the current status.'
+
+// SYN-96 — preserved narrow gates from the lifted SDL @authentication
+// directives. SetCouncilHRAmount was adminCampus only; DeclineExpense
+// was adminCampus + leaderCampus. Refactor-only PR — no role widening.
+// Intentionally NOT using assertAccountsAccess (which would expand the
+// allowed set to leaderCouncil too) and NOT using permitAdmin (which
+// expands by inheritance).
+const SET_COUNCIL_HR_ROLES: Role[] = ['adminCampus']
+const DECLINE_EXPENSE_ROLES: Role[] = ['adminCampus', 'leaderCampus']
 
 const ALLOWED_ACCOUNT_TYPES = new Set(['Weekday Account', 'Bussing Society'])
 const ALLOWED_EXPENSE_CATEGORIES = new Set([
@@ -76,6 +90,71 @@ const DESCRIPTION_MAX_LENGTH = 500
 const HR_AMOUNT_TOLERANCE = 0.005
 
 export const accountsMutations = {
+  // SYN-96 — lifted from SDL @cypher. The previous declarative form
+  // gated only on role membership, so an adminCampus from one campus
+  // could overwrite the HR amount on a Council in another campus and
+  // prime an oversize HR ExpenseRequest. The resolver now runs the
+  // narrow role gate, validates the amount via SYN-93, and asserts
+  // church scope before the write.
+  SetCouncilHRAmount: async (
+    object: unknown,
+    args: { councilId: string; amount: number },
+    context: Context
+  ) => {
+    isAuth(SET_COUNCIL_HR_ROLES, context.jwt.roles)
+    assertPositiveFiniteAmount(args.amount, 'amount', {
+      max: MAX_ACCOUNTS_EXPENSE,
+      allowZero: true,
+    })
+    await assertChurchScope(context, args.councilId)
+    const session = context.executionContext.session()
+
+    try {
+      const result = await session.run(setCouncilHRAmount, args)
+      if (result.records.length === 0) {
+        throw badRequest('Council not found.')
+      }
+      return result.records[0].get('council').properties
+    } catch (err) {
+      if (isClassifiedError(err)) throw err
+      throwToSentry('Error setting council HR amount', err)
+    } finally {
+      await session.close()
+    }
+
+    return null
+  },
+
+  // SYN-96 — lifted from SDL @cypher. Adds the SYN-92 status
+  // precondition so an already-approved transaction cannot be
+  // silently re-flipped to 'declined' (which would leave the council
+  // balance moved while the row reads 'declined'). Roles preserved at
+  // adminCampus + leaderCampus per the lifted SDL gate.
+  DeclineExpense: async (
+    object: unknown,
+    args: { transactionId: string },
+    context: Context
+  ) => {
+    isAuth(DECLINE_EXPENSE_ROLES, context.jwt.roles)
+    await assertScopeViaTransaction(context, args.transactionId)
+    const session = context.executionContext.session()
+
+    try {
+      const result = await session.run(declineExpense, args)
+      if (result.records.length === 0) {
+        throw badRequest(TRANSACTION_NOT_PENDING_MESSAGE)
+      }
+      return result.records[0].get('transaction').properties
+    } catch (err) {
+      if (isClassifiedError(err)) throw err
+      throwToSentry('Error declining expense', err)
+    } finally {
+      await session.close()
+    }
+
+    return null
+  },
+
   DepositIntoCouncilCurrentAccount: async (
     object: unknown,
     args: {
