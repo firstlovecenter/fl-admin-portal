@@ -111,7 +111,7 @@ MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-
 WHERE transaction.status = 'pending approval'
 MATCH (transaction)-[:LOGGED_BY]->(depositor:Member)
   SET council.weekdayBalance = council.weekdayBalance - (-1 * transaction.amount) - toFloat($charge)
-  SET transaction.charge = $charge * -1
+  SET transaction.charge = toFloat($charge) * -1
   SET transaction.status = 'success'
   SET transaction.lastModified = datetime(),
   transaction.bussingSocietyBalance = council.bussingSocietyBalance,
