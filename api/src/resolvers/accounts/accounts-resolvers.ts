@@ -89,6 +89,32 @@ const DESCRIPTION_MAX_LENGTH = 500
 // re-parse can introduce float noise. ADR-005.
 const HR_AMOUNT_TOLERANCE = 0.005
 
+// SYN-111 — accounts office hours, mirrored from
+// web-react-ts/src/pages/accounts/accounts-utils.ts:isAccountOpen.
+// Ghana runs UTC+0 year-round (no DST), and Lambda always runs in UTC,
+// so getUTCHours is the right comparison surface in both environments.
+const ACCOUNTS_OPEN_HOUR_UTC = 6
+const ACCOUNTS_CLOSE_HOUR_UTC = 15
+
+const isAccountsWindowOpen = (now: Date = new Date()): boolean => {
+  const hour = now.getUTCHours()
+  return hour >= ACCOUNTS_OPEN_HOUR_UTC && hour < ACCOUNTS_CLOSE_HOUR_UTC
+}
+
+// SYN-111 — server-side enforcement of the office-hours gate. The FE
+// already blocks ExpenseRequest submission outside this window, but a
+// direct API call (curl, replay, custom client) could bypass that.
+// `fishers` is the ops-override role and skips the check, mirroring
+// the same exemption in the FE's ExpenseForm.
+const assertAccountsWindowOpen = (jwtRoles: Role[] | undefined) => {
+  if (jwtRoles?.includes('fishers')) return
+  if (!isAccountsWindowOpen()) {
+    throw badRequest(
+      'Accounts are closed. Expense requests can only be submitted between 6:00 and 15:00 UTC.'
+    )
+  }
+}
+
 export const accountsMutations = {
   // SYN-96 — lifted from SDL @cypher. The previous declarative form
   // gated only on role membership, so an adminCampus from one campus
@@ -455,6 +481,13 @@ export const accountsMutations = {
     context: Context
   ) => {
     assertAccountsAccess(context.jwt.roles)
+    // SYN-111 — server-side enforcement of the office-hours window.
+    // FE blocks submission, but a direct API call would otherwise
+    // bypass the gate. fishers role exempt (matches FE behaviour).
+    // Hoisted above assertChurchScope so a closed-window call never
+    // reaches the scope DB read; an attacker probing councilIds out
+    // of hours sees the hours error, not "Council not found".
+    assertAccountsWindowOpen(context.jwt.roles)
     // SYN-93 — replaces the inline finite/positive check that lived
     // here. Adds a paranoia ceiling.
     assertPositiveFiniteAmount(args.expenseAmount, 'expenseAmount', {
