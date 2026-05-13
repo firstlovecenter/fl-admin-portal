@@ -52,6 +52,12 @@ const assertAccountsAccess = (jwtRoles: Role[] | undefined) => {
   }
 }
 
+// SYN-92 — surfaced to the user when the read- or write-side status guard
+// trips. Same wording in all three sites so a future copy-edit can't drift
+// a partial set of error messages.
+const TRANSACTION_NOT_PENDING_MESSAGE =
+  'This transaction is no longer pending approval. Refresh to see the current status.'
+
 const ALLOWED_ACCOUNT_TYPES = new Set(['Weekday Account', 'Bussing Society'])
 const ALLOWED_EXPENSE_CATEGORIES = new Set([
   'Bussing',
@@ -222,6 +228,13 @@ export const accountsMutations = {
         args
       )
 
+      // SYN-92 — read is now status-gated. Zero rows means the
+      // transaction is not (or no longer) pending approval, so we
+      // bail before constructing the SMS body or running the write.
+      if (councilBalancesResult.records.length === 0) {
+        throw badRequest(TRANSACTION_NOT_PENDING_MESSAGE)
+      }
+
       const council: CouncilForAccounts =
         councilBalancesResult.records[0].get('council').properties
       const leader: Member =
@@ -252,6 +265,17 @@ export const accountsMutations = {
           sendBulkSMS([leader.phoneNumber], message),
         ])
 
+        // SYN-92 — TOCTOU defense for the narrow race between the read
+        // returning and the Promise.all firing. The read-side guard
+        // catches almost all cases; this exists so a future reader does
+        // not delete it as redundant.
+        // CAVEAT: SMS has already dispatched alongside the write in
+        // Promise.all, so the leader gets one extra "approved" SMS for
+        // the duplicate request. SYN-102 detaches SMS to fix that.
+        if (debitRes[0].records.length === 0) {
+          throw badRequest(TRANSACTION_NOT_PENDING_MESSAGE)
+        }
+
         const trans = debitRes[0].records[0].get('transaction').properties
         const depositor = debitRes[0].records[0].get('depositor').properties
 
@@ -273,6 +297,12 @@ export const accountsMutations = {
         session.run(approveExpense, args),
         sendBulkSMS([leader.phoneNumber], message),
       ])
+
+      // SYN-92 — TOCTOU defense, see above. SMS already dispatched in
+      // Promise.all on race loss; SYN-102 detaches SMS to fix that.
+      if (debitRes[0].records.length === 0) {
+        throw badRequest(TRANSACTION_NOT_PENDING_MESSAGE)
+      }
 
       const trans = debitRes[0].records[0].get('transaction').properties
       const depositor = debitRes[0].records[0].get('depositor').properties
