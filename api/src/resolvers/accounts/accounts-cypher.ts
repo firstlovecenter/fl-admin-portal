@@ -161,8 +161,7 @@ FOREACH (_ IN CASE WHEN isNew THEN [1] ELSE [] END |
       transaction.weekdayBalance = newWeekdayBalance,
       transaction.bussingSocietyBalance = bussingSnapshot,
       transaction.description = depositor.firstName + ' ' + depositor.lastName +
-        ' deposited ' + $weekdayBalanceDepositAmount +
-        ' into the weekday account'
+        $transactionDescription
 )
 
 MERGE (council)-[:HAS_TRANSACTION]->(transaction)

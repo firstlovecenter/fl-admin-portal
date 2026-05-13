@@ -71,9 +71,17 @@ export const accountsMutations = {
         council.weekdayBalance + args.weekdayBalanceDepositAmount
       } GHS and bussing society is ${council.bussingSocietyBalance} GHS`
 
+      // SYN-112: format the description JS-side and pass as
+      // $transactionDescription so the ledger doesn't store "20000.0"
+      // via Cypher's float-to-string concatenation.
+      const transactionDescription = ` deposited ${args.weekdayBalanceDepositAmount.toLocaleString(
+        'en-GB'
+      )} into the weekday account`
+
       const debitRes = await session.run(depositIntoCouncilCurrentAccount, {
         jwt: context.jwt,
         ...args,
+        transactionDescription,
       })
 
       const isNew = debitRes.records[0].get('isNew')
