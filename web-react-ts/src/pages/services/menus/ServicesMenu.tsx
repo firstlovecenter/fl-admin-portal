@@ -181,15 +181,18 @@ const ServicesMenu = () => {
     !!latestService && isInCurrentISOWeek(latestService.serviceDate?.date)
 
   const showBankingSlips =
+    !navOverride &&
     !!churchType &&
     ['Stream', 'Council', 'Governorship', 'Bacenta'].includes(churchType) &&
     !isManualBanking
   const showSelfBanking =
+    !navOverride &&
     !!churchType &&
     ['Stream', 'Council', 'Governorship', 'Bacenta'].includes(churchType) &&
     !isManualBanking
-  const showStreamManualBanking = isManualBanking && churchType === 'Stream'
-  const showDefaulters = !!churchType && churchType !== 'Bacenta'
+  const showStreamManualBanking =
+    !navOverride && isManualBanking && churchType === 'Stream'
+  const showDefaulters = !navOverride && !!churchType && churchType !== 'Bacenta'
 
   const handleServiceThisWeek = () => {
     if (!latestService || !routeSlug) return
