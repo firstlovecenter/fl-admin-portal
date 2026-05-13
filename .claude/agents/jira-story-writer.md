@@ -106,6 +106,13 @@ business rule. Name the church level or role affected.
 ## Testing Scenario
 > Written for the PM and QA tester. Steps must be followable without reading
 > the code. Always name the test account to use (from `kb/07-test-accounts.md`).
+>
+> **If the outcome cannot be observed in the UI** (e.g. a Cypher query change,
+> a resolver guard, an idempotency fix, a background job, a schema migration),
+> replace this section with a single sentence:
+> _"Engineer-verified only: [brief description of how the engineer will confirm
+> this, e.g. 'unit test', 'Cypher PROFILE output', 'CloudWatch log check']."_
+> Do not invent fake UI steps for back-end-only changes.
 
 **Pre-conditions**
 - Logged in as: `<role>` — test account: `<email>` / password: `password`
@@ -247,10 +254,13 @@ mcp__atlassian__createJiraIssue with:
 - **PWA**: Every UI story must address touch targets, back navigation, and
   375 px viewport (iPhone SE baseline).
 - **Testing Scenario (mandatory)**: Every story must include a `## Testing
-  Scenario` section. Name the exact test account from `kb/07-test-accounts.md`,
-  list numbered happy-path steps with expected outcomes at each step, list at
-  least two edge cases, and — for UI stories — include the PWA checklist. The
-  section must be followable by a PM or QA tester who has not read the code.
+  Scenario` section. For UI-visible changes: name the exact test account from
+  `kb/07-test-accounts.md`, list numbered happy-path steps with expected
+  outcomes, at least two edge cases, and (for UI stories) the PWA checklist.
+  For back-end-only changes that cannot be observed in the UI (resolver guards,
+  Cypher changes, background jobs, schema migrations): replace the full template
+  with a single "Engineer-verified only" sentence explaining how the engineer
+  will confirm correctness. Never invent fake UI steps for back-end-only work.
 
 ## Workflow
 
