@@ -103,6 +103,29 @@ business rule. Name the church level or role affected.
 - [ ] Mobile / PWA: touch targets ≥ 44×44 px, works in standalone mode
 - [ ] No Bootstrap classes remain in any touched file
 
+## Testing Scenario
+> Written for the PM and QA tester. Steps must be followable without reading
+> the code. Always name the test account to use (from `kb/07-test-accounts.md`).
+
+**Pre-conditions**
+- Logged in as: `<role>` — test account: `<email>` / password: `password`
+- Any required data state (e.g. "Bacenta has an active service record for this week")
+
+**Happy path**
+1. Navigate to `<path or screen name>`
+2. Do X — expected: Y
+3. Do X — expected: Y
+4. _(Continue until the feature's goal is reached and confirmed on screen)_
+
+**Edge cases / negative tests**
+- If `<invalid input or missing data>` → expected: `<error message or disabled state>`
+- If `<boundary condition>` → expected: `<what the system should do>`
+
+**Mobile / PWA checks** _(include for every UI story)_
+- [ ] Open in standalone mode (installed PWA or DevTools → Application → Manifest → "Add to homescreen")
+- [ ] All buttons and inputs are tappable at 375 px width without zooming
+- [ ] Back navigation works without a browser back button
+
 ## Technical Notes
 - Files to create/modify (e.g., `web-react-ts/src/pages/services/...`)
 - GraphQL SDL fields / types involved
@@ -223,6 +246,11 @@ mcp__atlassian__createJiraIssue with:
   a `HistoryLog` node.
 - **PWA**: Every UI story must address touch targets, back navigation, and
   375 px viewport (iPhone SE baseline).
+- **Testing Scenario (mandatory)**: Every story must include a `## Testing
+  Scenario` section. Name the exact test account from `kb/07-test-accounts.md`,
+  list numbered happy-path steps with expected outcomes at each step, list at
+  least two edge cases, and — for UI stories — include the PWA checklist. The
+  section must be followable by a PM or QA tester who has not read the code.
 
 ## Workflow
 
