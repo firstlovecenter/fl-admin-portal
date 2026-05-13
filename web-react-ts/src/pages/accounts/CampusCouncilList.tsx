@@ -10,7 +10,7 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import { useNavigate } from 'react-router'
 import CurrencySpan from 'components/CurrencySpan'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
-import { Form, Formik } from 'formik'
+import { Form, Formik, FormikHelpers } from 'formik'
 import Input from 'components/formik/Input'
 
 const CampusCouncilList = ({
@@ -47,7 +47,10 @@ const CampusCouncilList = ({
     councilSearch: '',
   }
 
-  const onSubmit = (values: typeof initialValues, onSubmitProps: any) => {
+  const onSubmit = (
+    values: typeof initialValues,
+    onSubmitProps: FormikHelpers<typeof initialValues>
+  ) => {
     onSubmitProps.setSubmitting(true)
     const councils = campus.streams
       .map((stream: StreamForAccounts) => stream.councils)
@@ -55,7 +58,7 @@ const CampusCouncilList = ({
 
     setCouncilList(
       councils.filter(
-        (council: any) =>
+        (council: CouncilForAccounts) =>
           council.name
             .toLowerCase()
             .includes(values.councilSearch.toLowerCase()) ||

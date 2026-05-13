@@ -11,6 +11,7 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { Button, Container } from 'react-bootstrap'
 import { CouncilForAccounts } from '../accounts-types'
+import { AccountTransaction } from '../transaction-history/transaction-types'
 import TransactionCard from '../TransactionCard'
 import { CheckCircleFill, XCircleFill } from 'react-bootstrap-icons'
 import { throwToSentry } from 'global-utils'
@@ -87,12 +88,13 @@ const Approvals = () => {
               )}
 
               <div>
-                {council.transactions.map((transaction: any) => {
-                  const onSubmit = async (
-                    values: typeof initialValues,
-                    onSubmitProps: FormikHelpers<typeof initialValues>
-                  ) => {
-                    const { setSubmitting, resetForm } = onSubmitProps
+                {council.transactions.map(
+                  (transaction: AccountTransaction) => {
+                    const onSubmit = async (
+                      values: typeof initialValues,
+                      onSubmitProps: FormikHelpers<typeof initialValues>
+                    ) => {
+                      const { setSubmitting, resetForm } = onSubmitProps
 
                     try {
                       setSubmitting(true)
