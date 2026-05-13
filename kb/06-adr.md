@@ -13,11 +13,17 @@ treat them as constraints when designing changes. New decisions get a new ADR
 **Context:** `web-react-ts/src/permission-utils.ts` and
 `api/src/resolvers/permissions.ts` define the same `permitLeader / permitAdmin /
 permitMe / permitArrivals / ...` helpers. They are not generated from a single
-source. They are not literally identical (e.g. backend has a `'fellowship'` case
-in `permitLeader` that the frontend lacks).
+source.
 
 **Decision:** Until this is unified into a shared package, every change to a
 permission helper MUST be applied to both files in the same PR.
+
+**Regression net:** `lib/permission-test-scenarios.ts` is the single shared
+scenario fixture imported by both test suites
+(`web-react-ts/src/permission-utils.test.ts` via Vitest and
+`api/src/resolvers/permissions.test.ts` via Jest). Adding a role or level
+requires one edit to the fixture; a one-sided change will fail the mirrored
+suite.
 
 **Consequences:**
 - Drift causes silent UX/security bugs (UI hides what the API allows, or vice
@@ -320,8 +326,9 @@ handling, banking proof, etc.).
    is touched, but the highest-priority surfaces — to be covered before
    any refactor in their area — are:
    - `web-react-ts/src/permission-utils.ts` and
-     `api/src/resolvers/permissions.ts` (ADR-001 mirroring; one suite of
-     scenarios driven against both).
+     `api/src/resolvers/permissions.ts` (ADR-001 mirroring; scenario table
+     lives in `lib/permission-test-scenarios.ts` and is imported by both
+     suites — a one-sided role change will fail the mirrored test).
    - `kb/04-state-machines.md` invariants: `transactionStatus` idempotency
      (SM1, ADR-005), banking proof transitions (SM2), vacation handling
      (SM3), servant slot transitions (SM4).
