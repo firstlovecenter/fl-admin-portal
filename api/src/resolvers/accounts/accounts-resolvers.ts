@@ -370,27 +370,33 @@ export const accountsMutations = {
         // debit and the Bussing Society credit-leg MERGE atomically.
         // The credit-leg's clientTransactionId is server-derived from
         // the parent id so the MERGE is idempotent across retries.
-        const debitRes = await Promise.all([
-          session.run(approveBussingExpense, {
-            ...args,
-            jwt: context.jwt,
-          }),
-          sendBulkSMS([leader.phoneNumber], message),
-        ])
+        // SYN-102 — SMS dispatch detached from Promise.all and gated
+        // on a successful write. An mNotify outage no longer poisons
+        // the mutation response, and a TOCTOU race loser does not get
+        // a duplicate "approved" SMS because the gated write returns
+        // zero rows on the loser side.
+        const debitRes = await session.run(approveBussingExpense, {
+          ...args,
+          jwt: context.jwt,
+        })
 
         // SYN-92 — TOCTOU defense for the narrow race between the read
-        // returning and the Promise.all firing. The read-side guard
-        // catches almost all cases; this exists so a future reader does
-        // not delete it as redundant.
-        // CAVEAT: SMS has already dispatched alongside the write in
-        // Promise.all, so the leader gets one extra "approved" SMS for
-        // the duplicate request. SYN-102 detaches SMS to fix that.
-        if (debitRes[0].records.length === 0) {
+        // returning and the write firing. The read-side guard catches
+        // almost all cases; this exists so a future reader does not
+        // delete it as redundant.
+        if (debitRes.records.length === 0) {
           throw badRequest(TRANSACTION_NOT_PENDING_MESSAGE)
         }
 
-        const trans = debitRes[0].records[0].get('transaction').properties
-        const depositor = debitRes[0].records[0].get('depositor').properties
+        // Fire-and-forget — leader notification must not block or fail
+        // the mutation response.
+        sendBulkSMS([leader.phoneNumber], message).catch((err) => {
+          // eslint-disable-next-line no-console
+          console.warn('ApproveExpense (bussing) SMS send failed', err)
+        })
+
+        const trans = debitRes.records[0].get('transaction').properties
+        const depositor = debitRes.records[0].get('depositor').properties
 
         return {
           ...trans,
@@ -406,19 +412,22 @@ export const accountsMutations = {
         council.weekdayBalance - transactionAmount - args.charge
       const message = `Dear ${leader.firstName}, your expense request of ${transactionAmount} GHS (Charges: ${args.charge} GHS) from ${council.name} weekday account for ${transaction.category} has been approved. Balance remaining is ${amountRemaining} GHS`
 
-      const debitRes = await Promise.all([
-        session.run(approveExpense, args),
-        sendBulkSMS([leader.phoneNumber], message),
-      ])
+      // SYN-102 — see bussing branch above for rationale.
+      const debitRes = await session.run(approveExpense, args)
 
-      // SYN-92 — TOCTOU defense, see above. SMS already dispatched in
-      // Promise.all on race loss; SYN-102 detaches SMS to fix that.
-      if (debitRes[0].records.length === 0) {
+      // SYN-92 — TOCTOU defense.
+      if (debitRes.records.length === 0) {
         throw badRequest(TRANSACTION_NOT_PENDING_MESSAGE)
       }
 
-      const trans = debitRes[0].records[0].get('transaction').properties
-      const depositor = debitRes[0].records[0].get('depositor').properties
+      // Fire-and-forget — see bussing branch.
+      sendBulkSMS([leader.phoneNumber], message).catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn('ApproveExpense SMS send failed', err)
+      })
+
+      const trans = debitRes.records[0].get('transaction').properties
+      const depositor = debitRes.records[0].get('depositor').properties
 
       return {
         ...trans,
