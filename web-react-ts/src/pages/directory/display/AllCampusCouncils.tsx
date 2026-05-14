@@ -10,6 +10,13 @@ import { Skeleton } from 'components/ui/skeleton'
 import { StatCard } from 'components/ui/stat-card'
 import { ChurchContext } from 'contexts/ChurchContext'
 import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from 'components/ui/breadcrumb'
+import {
   Building2,
   ChevronRight,
   Layers,
@@ -304,6 +311,21 @@ const AllCampusCouncils = () => {
               </RoleView>
             </div>
           </header>
+          <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
+            <Breadcrumb>
+              <BreadcrumbList className="text-xs">
+                <BreadcrumbItem><span>Campus</span></BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem><span>Stream</span></BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-semibold text-members">Council</BreadcrumbPage>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem><span>Governorship</span></BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
           <div className="border-t border-border lg:hidden">
             <div className="mx-auto max-w-6xl px-4 py-2">
               <div className="relative">
@@ -324,7 +346,7 @@ const AllCampusCouncils = () => {
         <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
             {/* Aside first in DOM — renders above the list on mobile */}
-            <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-[73px]">
+            <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-[104px]">
               <Card>
                 <CardContent className="p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

@@ -8,6 +8,13 @@ import { Input } from 'components/ui/input'
 import { Skeleton } from 'components/ui/skeleton'
 import { ChurchContext } from 'contexts/ChurchContext'
 import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from 'components/ui/breadcrumb'
+import {
   ArrowLeft,
   Building2,
   ChevronRight,
@@ -424,29 +431,59 @@ const CouncilBacentas = () => {
   return (
     <ApolloWrapper loading={loading} data={data} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-6">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-11 shrink-0"
-              asChild
-            >
-              <Link to="/council/displaydetails" aria-label="Back to council">
-                <ArrowLeft className="size-5" />
-              </Link>
-            </Button>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
-              </p>
-              <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                {council?.name ? `${council.name} ` : ''}
-                <span className="text-members">Bacentas</span>
-              </h1>
+        <div className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
+          <header>
+            <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-6">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-11 shrink-0"
+                asChild
+              >
+                <Link to="/council/displaydetails" aria-label="Back to council">
+                  <ArrowLeft className="size-5" />
+                </Link>
+              </Button>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Directory
+                </p>
+                <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                  {council?.name ? `${council.name} ` : ''}
+                  <span className="text-members">Bacentas</span>
+                </h1>
+              </div>
+            </div>
+          </header>
+          <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
+            <Breadcrumb>
+              <BreadcrumbList className="text-xs">
+                <BreadcrumbItem><span>Council</span></BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem><span>Governorship</span></BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-semibold text-members">Bacenta</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+          <div className="border-t border-border lg:hidden">
+            <div className="mx-auto max-w-6xl px-4 py-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  className="h-11 pl-9"
+                  placeholder="Search bacenta, leader, or governorship"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search bacentas"
+                />
+              </div>
             </div>
           </div>
-        </header>
+        </div>
 
         <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
@@ -480,14 +517,14 @@ const CouncilBacentas = () => {
               )}
             </section>
 
-            <aside className="order-1 space-y-4 lg:order-2 lg:sticky lg:top-[81px]">
+            <aside className="order-1 space-y-4 lg:order-2 lg:sticky lg:top-[104px]">
               <RollupCard
                 council={council}
                 split={councilSplit}
                 loading={loading}
               />
 
-              <div className="relative">
+              <div className="relative hidden lg:block">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="search"
