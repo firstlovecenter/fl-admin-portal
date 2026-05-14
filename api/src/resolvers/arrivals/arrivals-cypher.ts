@@ -207,27 +207,20 @@ RETURN vehicleRecord {
 `
 
 export const recordVehicleFromBacenta = `
-CREATE (vehicleRecord:VehicleRecord  {id: apoc.create.uuid()})
-
-WITH vehicleRecord
 MATCH (bussingRecord:BussingRecord {id: $bussingRecordId})
-MERGE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord)
-
+MATCH (leader:Member {id: $jwt.userId})
+// ADR-005: MERGE on composite key prevents a duplicate VehicleRecord on re-submission
+MERGE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord:VehicleRecord {vehicle: $vehicle, outbound: $outbound})
+ON CREATE SET vehicleRecord.id = apoc.create.uuid(), vehicleRecord.createdAt = datetime()
+MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
 SET vehicleRecord.leaderDeclaration = $leaderDeclaration,
-vehicleRecord.createdAt = datetime(),
-vehicleRecord.vehicle = $vehicle,
-vehicleRecord.picture =  $picture,
-vehicleRecord.outbound = $outbound,
+vehicleRecord.picture = $picture,
 vehicleRecord.momoNumber = $momoNumber,
 vehicleRecord.mobileNetwork = $mobileNetwork
 
 WITH vehicleRecord, bussingRecord
-MATCH (leader:Member {id: $jwt.userId})
-MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
-
-WITH vehicleRecord, bussingRecord
-MATCH (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecords)
-WITH vehicleRecord, bussingRecord, sum(vehicleRecords.leaderDeclaration) as summedLeaderDeclaration 
+MATCH (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecords:VehicleRecord)
+WITH vehicleRecord, bussingRecord, sum(vehicleRecords.leaderDeclaration) as summedLeaderDeclaration
 SET bussingRecord.leaderDeclaration = summedLeaderDeclaration
 
 RETURN vehicleRecord, bussingRecord, date().week AS week

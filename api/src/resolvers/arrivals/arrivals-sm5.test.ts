@@ -391,23 +391,18 @@ describe('SM5 — submitted: RecordVehicleFromBacenta (leaderBacenta)', () => {
     expect(isAuth).toHaveBeenCalledWith(['leaderBacenta'], context.jwt.roles)
   })
 
-  // TODO(refactor): RecordVehicleFromBacenta uses `CREATE (vehicleRecord:VehicleRecord
-  // {id: apoc.create.uuid()})` with no idempotency guard. Calling the mutation
-  // twice for the same bussingRecord with the same vehicle creates TWO distinct
-  // VehicleRecord nodes, each with a fresh UUID, both INCLUDES_RECORD-linked to
-  // the same BussingRecord. There is no per-vehicle / per-leader / per-day
-  // dedupe. This contradicts the SYN-70 outline's "re-submission idempotency"
-  // requirement. Characterised here as the current behaviour; do not fix in
-  // this dispatch.
-  it('SM5: RecordVehicleFromBacenta is NOT idempotent — Cypher uses CREATE with a fresh UUID per call', () => {
-    expect(recordVehicleFromBacenta).toMatch(
-      /CREATE \(vehicleRecord:VehicleRecord\s+\{id: apoc\.create\.uuid\(\)\}\)/
-    )
-    // No MERGE on (bussingRecord)-[:INCLUDES_RECORD]->(:VehicleRecord {vehicle: $vehicle, leaderId: ...})
-    // nor any WHERE NOT EXISTS guard. Two calls → two nodes.
-    expect(recordVehicleFromBacenta).not.toMatch(/WHERE NOT EXISTS/)
+  it('SM5: RecordVehicleFromBacenta IS idempotent — Cypher uses MERGE on (vehicle, outbound) composite key (ADR-005, SYN-117)', () => {
+    // CREATE with a random UUID is gone; MERGE scoped under the parent
+    // BussingRecord deduplicates on (vehicle, outbound) — one node per vehicle
+    // type per bussing day. id and createdAt are frozen on first creation.
     expect(recordVehicleFromBacenta).not.toMatch(
-      /MERGE \([a-z]*:VehicleRecord/
+      /CREATE \(vehicleRecord:VehicleRecord/
+    )
+    expect(recordVehicleFromBacenta).toMatch(
+      /MERGE \(bussingRecord\)-\[:INCLUDES_RECORD\]->\(vehicleRecord:VehicleRecord \{vehicle: \$vehicle, outbound: \$outbound\}\)/
+    )
+    expect(recordVehicleFromBacenta).toMatch(
+      /ON CREATE SET vehicleRecord\.id = apoc\.create\.uuid\(\)/
     )
   })
 })
@@ -824,25 +819,8 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
     )
   })
 
-  // -----------------------------------------------------------------------
-  // Idempotency — ADR-005 financial truth
-  //
-  // TODO(refactor): The eligibility / "already-paid" checks in SendVehicleSupport
-  // throw plain `Error` objects from INSIDE the try block, then the
-  // `catch (error: any) { ... error.response.data.message }` block on line 742
-  // assumes every caught error is an axios error and crashes when it isn't.
-  // The user-visible message therefore becomes
-  // "Cannot read properties of undefined (reading 'data')" rather than the
-  // intended "Money has already been sent to this bacenta" / "not eligible to
-  // receive money" message. The idempotency GUARD still works (Paystack is
-  // not called, no executeWrite happens) — only the error message is wrong.
-  //
-  // ADR-013 §4 — characterise current behaviour, do NOT fix here. SYN-70 should
-  // budget a follow-up to move the eligibility throws outside the try/catch or
-  // switch the catch to throwToSentry's existing summariseError helper.
-  // -----------------------------------------------------------------------
   describe('SM5 — paid-edge idempotency (ADR-005)', () => {
-    it('SM5: re-paying a VehicleRecord with transactionStatus === "success" rejects (idempotency holds; error message is mangled by current catch — see TODO)', async () => {
+    it('SM5: re-paying a VehicleRecord with transactionStatus === "success" rejects — Paystack and executeWrite never called (ADR-005)', async () => {
       mockSession.executeRead.mockResolvedValueOnce(
         makeMockQueryResult({
           record: {
@@ -871,8 +849,6 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
         arrivalsMutation.SendVehicleSupport(null as never, sendArgs, context)
       ).rejects.toThrow()
 
-      // The IMPORTANT guarantees of ADR-005 idempotency hold regardless of the
-      // broken message: Paystack is not called and no record is rewritten.
       expect(axios as unknown as jest.Mock).not.toHaveBeenCalled()
       expect(mockSession.executeWrite).not.toHaveBeenCalled()
     })
@@ -943,7 +919,7 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
       expect(mockSession.executeWrite).not.toHaveBeenCalled()
     })
 
-    it('SM5 TODO bug: re-paying surfaces the wrong error message — "Cannot read properties of undefined" instead of "Money has already been sent" (catch block assumes axios shape)', async () => {
+    it('SM5: re-paying surfaces the correct error message — "Money has already been sent to this bacenta" (SYN-118)', async () => {
       mockSession.executeRead.mockResolvedValueOnce(
         makeMockQueryResult({
           record: {
@@ -968,14 +944,9 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
         })
       )
 
-      // Current buggy behaviour: the plain Error("Money has already been sent...")
-      // gets caught by `catch (error: any) { ...error.response.data.message }`
-      // which dereferences `undefined.data`. The user sees the wrong message.
-      // Pinned so any refactor that fixes the catch block has to update this
-      // expectation to "Money has already been sent to this bacenta".
       await expect(
         arrivalsMutation.SendVehicleSupport(null as never, sendArgs, context)
-      ).rejects.toThrow(/Cannot read properties of undefined/)
+      ).rejects.toThrow('Money has already been sent to this bacenta')
     })
   })
 

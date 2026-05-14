@@ -300,67 +300,74 @@ export const arrivalsMutation = {
     await assertChurchScope(context, args.bacentaId)
     const session = context.executionContext.session()
 
-    const recordResponse = rearrangeCypherObject(
-      await session.run(checkArrivalTimes, args)
-    )
+    try {
+      const recordResponse = rearrangeCypherObject(
+        await session.run(checkArrivalTimes, args)
+      )
 
-    const stream = recordResponse.stream.properties
-    const bacenta = recordResponse.bacenta.properties
-    const arrivalEndTime = new Date(
-      new Date().toISOString().slice(0, 10) +
-        new Date(stream.arrivalEndTime).toISOString().slice(10)
-    )
-    const today = new Date()
+      const stream = recordResponse.stream.properties
+      const bacenta = recordResponse.bacenta.properties
+      const arrivalEndTime = new Date(
+        new Date().toISOString().slice(0, 10) +
+          new Date(stream.arrivalEndTime).toISOString().slice(10)
+      )
+      const today = new Date()
 
-    if (today > arrivalEndTime) {
-      throw new Error('It is past the time to fill your forms. Thank you!')
-    }
+      if (today > arrivalEndTime) {
+        throw new Error('It is past the time to fill your forms. Thank you!')
+      }
 
-    const response = rearrangeCypherObject(
-      await session.run(recordVehicleFromBacenta, {
-        ...args,
-        recipientCode: bacenta.recipientCode,
-        momoNumber: bacenta.momoNumber ?? '',
-        mobileNetwork: bacenta.mobileNetwork ?? '',
-        outbound: bacenta.outbound,
-        jwt: context.jwt,
-      })
-    )
+      const response = rearrangeCypherObject(
+        await session.run(recordVehicleFromBacenta, {
+          ...args,
+          recipientCode: bacenta.recipientCode,
+          momoNumber: bacenta.momoNumber ?? '',
+          mobileNetwork: bacenta.mobileNetwork ?? '',
+          outbound: bacenta.outbound,
+          jwt: context.jwt,
+        })
+      )
 
-    const vehicleRecord = response.vehicleRecord.properties
-    const date = new Date().toISOString().slice(0, 10)
+      const vehicleRecord = response.vehicleRecord.properties
+      const date = new Date().toISOString().slice(0, 10)
 
-    const returnToCache = {
-      id: vehicleRecord.id,
-      leaderDeclaration: vehicleRecord.leaderDeclaration,
-      attendance: vehicleRecord.attendance,
-      vehicle: vehicleRecord.vehicle,
-      picture: vehicleRecord.picture,
-      outbound: vehicleRecord.outbound,
-      bussingRecord: {
-        serviceLog: {
-          bacenta: [
-            {
-              id: args.bacentaId,
-              stream_name: response.stream_name,
-              bussing: [
-                {
-                  id: vehicleRecord.id,
-                  serviceDate: {
-                    date,
+      return {
+        id: vehicleRecord.id,
+        leaderDeclaration: vehicleRecord.leaderDeclaration,
+        attendance: vehicleRecord.attendance,
+        vehicle: vehicleRecord.vehicle,
+        picture: vehicleRecord.picture,
+        outbound: vehicleRecord.outbound,
+        bussingRecord: {
+          serviceLog: {
+            bacenta: [
+              {
+                id: args.bacentaId,
+                stream_name: response.stream_name,
+                bussing: [
+                  {
+                    id: vehicleRecord.id,
+                    serviceDate: {
+                      date,
+                    },
+                    week: response.week,
+                    vehicle: vehicleRecord.vehicle,
+                    picture: vehicleRecord.picture,
+                    outbound: vehicleRecord.outbound,
                   },
-                  week: response.week,
-                  vehicle: vehicleRecord.vehicle,
-                  picture: vehicleRecord.picture,
-                  outbound: vehicleRecord.outbound,
-                },
-              ],
-            },
-          ],
+                ],
+              },
+            ],
+          },
         },
-      },
+      }
+    } catch (error: any) {
+      throwToSentry('RecordVehicleFromBacenta failed', error)
+    } finally {
+      await session.close()
     }
-    return returnToCache
+
+    return null
   },
   ConfirmVehicleByAdmin: async (
     object: never,
@@ -532,7 +539,6 @@ export const arrivalsMutation = {
 
       return 0
     }
-    console.log('🚀 ~ file: arrivals-resolvers.ts:544 ~ response:', response)
     const vehicleTopUp = calculateVehicleTopUp(response)
 
     if (response.vehicle === 'Car') {
@@ -738,10 +744,9 @@ export const arrivalsMutation = {
 
       return vehicleRecord
     } catch (error: any) {
-      throwToSentry(
-        `Money could not be sent! ${error.response.data.message}`,
-        error
-      )
+      const message =
+        error?.response?.data?.message ?? error?.message ?? String(error)
+      throwToSentry(`Money could not be sent! ${message}`, error)
     } finally {
       await session.close()
     }
