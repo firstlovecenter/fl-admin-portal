@@ -259,6 +259,8 @@ field name from the client and inject it.
 - `@neo4j/graphql` auto-generated resolvers are already safe.
 - New `*-cypher.ts` strings should declare params at the top and reference them
   with `$name`.
+- Enforced at lint time by the `fl-cypher/no-interpolated-cypher` ESLint rule
+  (see `api/eslint-plugin-fl-cypher/`).
 
 ---
 

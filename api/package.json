@@ -19,13 +19,15 @@
     "plugins": [
       "@typescript-eslint",
       "no-relative-import-paths",
-      "import"
+      "import",
+      "fl-cypher"
     ],
     "rules": {
       "import/no-unresolved": "off",
       "no-console": "off",
       "@typescript-eslint/no-explicit-any": "off",
-      "no-relative-import-paths/no-relative-import-paths": "off"
+      "no-relative-import-paths/no-relative-import-paths": "off",
+      "fl-cypher/no-interpolated-cypher": "error"
     }
   },
   "lint-staged": {
@@ -77,6 +79,7 @@
     "babel-plugin-auto-import": "^1.0.5",
     "babel-plugin-module-resolver": "^4.0.0",
     "cross-env": "^7.0.2",
+    "eslint-plugin-fl-cypher": "file:eslint-plugin-fl-cypher",
     "jest": "^29.7.0",
     "nodemon": "^2.0.15",
     "shx": "^0.3.2",
