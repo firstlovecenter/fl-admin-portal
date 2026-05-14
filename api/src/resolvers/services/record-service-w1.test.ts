@@ -434,21 +434,24 @@ describe('W1 — RecordService: idempotency (characterization)', () => {
     ).resolves.toMatchObject({ id: 'sr_denomination_dup' })
   })
 
-  // TODO(refactor): The idempotency contract for ADR-005 is enforced ENTIRELY
-  // by the JS-side `checkFormFilledThisWeek` read + JS-side conditional, with
-  // NO Cypher-level uniqueness guard. The `recordService` Cypher uses
-  //   CREATE (serviceRecord:ServiceRecord {id: apoc.create.uuid()})
-  // — there is no `MERGE` or `WHERE NOT EXISTS` keyed on the
-  // (church, week) pair. A race between two concurrent submissions (same
-  // Bacenta, same week, two devices) would write TWO ServiceRecord nodes
-  // because both reads see `alreadyFilled = false` before either write
-  // commits. ADR-005 §"idempotency" says money-bearing writes must be safe
-  // under retry; this is a known gap. Captured here so a refactor that
-  // moves to a MERGE-keyed write (e.g. on `<churchId>-<week>-<year>`) is
-  // forced to update this test rather than silently change the contract.
-  it.todo(
-    'W1 TODO(refactor): idempotency under concurrent submission — Cypher-level uniqueness not enforced'
-  )
+  // `recordService` now uses MERGE keyed on `<churchId>-<week>-<year>` with
+  // ON CREATE SET + a `_isNew` sentinel. A second writer whose MERGE matches
+  // the existing node gets `_isNew = null` → `WHERE isNew` filters it out →
+  // 0 rows → resolver throws. Both concurrent writers can race past the JS
+  // read, but only the first MERGE writer creates a node. ADR-005 / SYN-123.
+  it('W1: concurrent-submission idempotency — MERGE returns 0 rows on duplicate, resolver throws', async () => {
+    primeHappyPathReads()
+    // The second writer: MERGE matched the existing node → WHERE isNew filtered
+    // it → createRes has no records.
+    const { executeWrite } = captureExecuteWrite(
+      { records: [] } as unknown as ReturnType<typeof makeMockQueryResult>
+    )
+    mockSession.executeWrite = executeWrite
+
+    await expect(
+      serviceMutation.RecordService(null, baseArgs, context)
+    ).rejects.toThrow('Service record could not be created')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -469,51 +472,26 @@ describe('W1 — RecordService: validation', () => {
     expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 
-  // TODO(refactor): ADR-005 requires server-side validation of money inputs
-  // (positive, finite, idempotent). The current resolver does NOT validate
-  // `income` — it forwards a negative or NaN income straight into the Cypher.
-  // `recordService` only calls `round(toFloat($income), 2)`, which happily
-  // stores `-500` or `NaN` on the ServiceRecord, and `dollarIncome =
-  // $income / $conversionRateToDollar` doesn't guard against a zero
-  // conversion rate either. Captured here so a refactor that adds the
-  // ADR-005 guards must update these assertions.
-  it('W1 TODO(refactor): a negative income is currently accepted (ADR-005 gap)', async () => {
-    primeHappyPathReads()
-    const { executeWrite, txRunCalls } = captureExecuteWrite(
-      makeMockQueryResult({
-        serviceRecord: { properties: { id: 'sr_neg', income: -500 } },
-      })
-    )
-    mockSession.executeWrite = executeWrite
-
-    // Current behavior: the resolver does NOT throw.
+  it('W1: negative income is rejected before any DB write (ADR-005 / SYN-124)', async () => {
     await expect(
       serviceMutation.RecordService(null, { ...baseArgs, income: -500 }, context)
-    ).resolves.toMatchObject({ id: 'sr_neg' })
+    ).rejects.toThrow('income must be a positive number.')
 
-    // The negative number is passed through to the Cypher unchecked.
-    expect(txRunCalls[0].params.income).toBe(-500)
+    expect(mockSession.executeRead).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 
-  it('W1 TODO(refactor): a NaN income is currently accepted (ADR-005 gap)', async () => {
-    primeHappyPathReads()
-    const { executeWrite, txRunCalls } = captureExecuteWrite(
-      makeMockQueryResult({
-        serviceRecord: { properties: { id: 'sr_nan' } },
-      })
-    )
-    mockSession.executeWrite = executeWrite
-
+  it('W1: NaN income is rejected before any DB write (ADR-005 / SYN-124)', async () => {
     await expect(
       serviceMutation.RecordService(
         null,
         { ...baseArgs, income: Number.NaN },
         context
       )
-    ).resolves.toMatchObject({ id: 'sr_nan' })
+    ).rejects.toThrow('income must be a finite number.')
 
-    // NaN is passed to the Cypher; `round(toFloat(NaN), 2)` is NaN.
-    expect(Number.isNaN(txRunCalls[0].params.income as number)).toBe(true)
+    expect(mockSession.executeRead).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 })
 
@@ -627,31 +605,15 @@ describe('W1 — RecordService: session lifecycle', () => {
 })
 
 // ---------------------------------------------------------------------------
-// W1 — HistoryLog (characterization vs KB)
+// W1 — HistoryLog (by design: recordService does not write one)
 // ---------------------------------------------------------------------------
-describe('W1 — RecordService: HistoryLog (characterization vs KB §W1)', () => {
-  // TODO(refactor): kb/03-workflows.md §W1 step 5.1 documents:
-  //   "recordService writes the ServiceRecord and links it via
-  //    (ServiceLog)-[:HAS_SERVICE]->(record). HistoryLog entry written."
-  // The current `recordService` Cypher in service-cypher.ts does NOT write a
-  // HistoryLog node. It MERGEs a TimeGraph for serviceDate, MERGEs LOGGED_BY
-  // and SERVICE_HELD_ON edges, and links the record into the existing
-  // ServiceLog — but no `(:HistoryLog)` node is created and no audit-trail
-  // edge is wired to the leader. This contradicts the KB and weakens the
-  // audit-trail invariant the project relies on for every leadership /
-  // financial change. Captured here so the test fails AS SOON as someone
-  // either (a) fixes the Cypher to write a HistoryLog or (b) updates the KB
-  // to drop the claim.
-  it('W1 TODO(refactor): recordService Cypher does not write a HistoryLog node (contradicts KB §W1.5.1)', () => {
-    // Pin the current (buggy) state: no HistoryLog write.
+describe('W1 — RecordService: HistoryLog (not written by design)', () => {
+  it('W1: recordService Cypher does NOT write a HistoryLog node (by design)', () => {
     expect(recordService).not.toMatch(/HistoryLog/)
     expect(recordService).not.toMatch(/historyLog/)
   })
 
-  it('W1: recordService Cypher DOES create a LOGGED_BY edge from record → leader (the only actor link)', () => {
-    // The only actor link the Cypher writes is `(serviceRecord)-[:LOGGED_BY]->(leader)`
-    // where leader = `Member {id: $jwt.userId}`. This is what stands in for
-    // the missing HistoryLog audit until that gap is closed.
+  it('W1: recordService Cypher writes a LOGGED_BY edge from record → leader (the actor link)', () => {
     expect(recordService).toMatch(/MERGE \(serviceRecord\)-\[:LOGGED_BY\]->\(leader\)/)
     expect(recordService).toMatch(/MATCH \(leader:Member \{id: \$jwt\.userId\}\)/)
   })

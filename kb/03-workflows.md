@@ -24,7 +24,8 @@ collapse a step.
 4. Resolver auto-creates a `ServiceLog` for the Bacenta if missing.
 5. **Inside one atomic `session.executeWrite` transaction (ADR-005, ADR-014):**
    1. `recordService` writes the `ServiceRecord` and links it via
-      `(ServiceLog)-[:HAS_SERVICE]->(record)`. HistoryLog entry written.
+      `(ServiceLog)-[:HAS_SERVICE]->(record)`. No HistoryLog is written — the
+      `LOGGED_BY` edge on the `ServiceRecord` is the actor link.
    2. `absorbAllTransactions` folds any pending Paystack online giving
       into the new `ServiceRecord`'s income.
    3. `recomputeAggregateChainAfterServiceRecord` runs four `CALL { ... }`
@@ -52,7 +53,6 @@ collapse a step.
 - Bacenta has a new `ServiceRecord` for the week.
 - The week is no longer counted as a defaulter for that Bacenta.
 - Every level's weekly aggregate (leaf → Denomination) is up to date.
-- HistoryLog entry written.
 
 **Cancel path:** If no service was held, the leader files a `RecordCancelledService`
 mutation with `noServiceReason` instead of attendance/income.
