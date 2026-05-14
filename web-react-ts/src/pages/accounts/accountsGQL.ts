@@ -15,6 +15,7 @@ export const COUNCIL_ACCOUNT_DASHBOARD = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
   }
@@ -33,6 +34,7 @@ export const CAMPUS_ACCOUNT_DASHBOARD = gql`
         firstName
         lastName
         fullName
+        pictureUrl
       }
     }
   }
