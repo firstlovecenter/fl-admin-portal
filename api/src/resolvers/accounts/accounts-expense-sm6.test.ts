@@ -26,8 +26,8 @@
  *     "Insufficient bussing funds" thrown BEFORE the write Cypher runs
  *   - Approval auth gating (ACCOUNTS_CHURCH_ROLES + fishers; assertScopeViaTransaction)
  *   - Decline auth gating (narrower: adminCampus + leaderCampus only)
- *   - HistoryLog: one entry on ExpenseRequest naming the requester; Approve and
- *     Decline intentionally do NOT write HistoryLog nodes (by design)
+ *   - HistoryLog: characterized (one entry on ExpenseRequest naming the requester;
+ *     NONE on Approve / Decline — flagged via it.todo)
  *
  * All test names begin with "SM6:" for grep-ability (SYN-71):
  *   npm test -- accounts-expense-sm6 --testNamePattern="SM6:"
