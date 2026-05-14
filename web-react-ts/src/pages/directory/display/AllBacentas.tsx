@@ -159,7 +159,10 @@ const DisplayAllBacentas = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-base font-semibold text-foreground">
-                              {bacenta.name}
+                              {bacenta.name}{' '}
+                              <span className="text-xs font-normal text-muted-foreground">
+                                Bacenta
+                              </span>
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
                               {bacenta.leader

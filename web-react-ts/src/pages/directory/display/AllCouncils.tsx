@@ -183,7 +183,10 @@ const DisplayAllCouncils = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-base font-semibold text-foreground">
-                              {council.name}
+                              {council.name}{' '}
+                              <span className="text-xs font-normal text-muted-foreground">
+                                Council
+                              </span>
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
                               {council.leader

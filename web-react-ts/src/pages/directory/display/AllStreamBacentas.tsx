@@ -238,7 +238,10 @@ const GovernorshipSection = ({
           </Avatar>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-foreground">
-              {group.name}
+              {group.name}{' '}
+              <span className="text-xs font-normal text-muted-foreground">
+                Governorship
+              </span>
             </p>
             <p className="truncate text-xs text-muted-foreground">
               {leader?.nameWithTitle ||
@@ -291,7 +294,7 @@ const CouncilSection = ({
     <CardContent className="p-4 lg:p-5">
       <h2 className="mb-4 text-base font-semibold text-foreground">
         {council.name}{' '}
-        <span className="text-muted-foreground font-normal text-sm">Council</span>
+        <span className="text-xs font-normal text-muted-foreground">Council</span>
       </h2>
       <div className="space-y-6">
         {council.governorships.map((group) => (

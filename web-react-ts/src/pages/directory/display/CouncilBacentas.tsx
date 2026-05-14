@@ -233,7 +233,10 @@ const GovernorshipSection = ({
             </Avatar>
             <div className="min-w-0">
               <h2 className="truncate text-base font-semibold text-foreground">
-                {group.name}
+                {group.name}{' '}
+                <span className="text-xs font-normal text-muted-foreground">
+                  Governorship
+                </span>
               </h2>
               <p className="truncate text-xs text-muted-foreground">
                 {leader?.nameWithTitle ||

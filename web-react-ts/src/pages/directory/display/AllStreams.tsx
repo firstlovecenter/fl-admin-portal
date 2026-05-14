@@ -176,7 +176,10 @@ const DisplayAllStreams = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-base font-semibold text-foreground">
-                              {stream.name}
+                              {stream.name}{' '}
+                              <span className="text-xs font-normal text-muted-foreground">
+                                Stream
+                              </span>
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
                               {stream.leader

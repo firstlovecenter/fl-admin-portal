@@ -101,7 +101,10 @@ const GovernorshipCard = ({
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="truncate text-base font-semibold text-foreground">
-            {governorship.name}
+            {governorship.name}{' '}
+            <span className="text-xs font-normal text-muted-foreground">
+              Governorship
+            </span>
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {governorship.leader
@@ -168,7 +171,10 @@ const CouncilSection = ({
           </Avatar>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-foreground">
-              {council.name}
+              {council.name}{' '}
+              <span className="text-xs font-normal text-muted-foreground">
+                Council
+              </span>
             </p>
             <p className="truncate text-xs text-muted-foreground">{leaderName}</p>
           </div>
@@ -243,7 +249,10 @@ const StreamSection = ({
             </Avatar>
             <div className="min-w-0">
               <h2 className="truncate text-base font-semibold text-foreground">
-                {stream.name}
+                {stream.name}{' '}
+                <span className="text-xs font-normal text-muted-foreground">
+                  Stream
+                </span>
               </h2>
               <p className="truncate text-xs text-muted-foreground">
                 {streamLeaderName}
