@@ -398,7 +398,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
-        <div className="max-w-6xl mx-auto px-16 md:px-4 lg:px-6 py-3">
+        <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3">
           <Breadcrumb breadcrumb={props.breadcrumb} />
           <div className="flex items-center justify-between mt-1">
             <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
