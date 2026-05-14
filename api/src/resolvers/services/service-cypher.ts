@@ -49,8 +49,10 @@ RETURN serviceRecord
 `
 
 export const recordService = `
-      CREATE (serviceRecord:ServiceRecord {id: apoc.create.uuid()})
-        SET serviceRecord.createdAt = datetime(),
+      MERGE (serviceRecord:ServiceRecord {id: $churchId + '-' + toString(date($serviceDate).week) + '-' + toString(date($serviceDate).year)})
+      ON CREATE SET
+        serviceRecord._isNew = true,
+        serviceRecord.createdAt = datetime(),
         serviceRecord.attendance = $attendance,
         serviceRecord.income = round(toFloat($income), 2),
         serviceRecord.cash = round(toFloat($income), 2),
@@ -59,7 +61,10 @@ export const recordService = `
         serviceRecord.numberOfTithers = $numberOfTithers,
         serviceRecord.treasurerSelfie = $treasurerSelfie,
         serviceRecord.familyPicture = $familyPicture
-      WITH serviceRecord
+
+      WITH serviceRecord, serviceRecord._isNew AS isNew
+      REMOVE serviceRecord._isNew
+      WITH serviceRecord WHERE isNew
 
       MATCH (church {id: $churchId}) WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
       MATCH (church)-[current:CURRENT_HISTORY]->(log:ServiceLog)

@@ -1034,7 +1034,7 @@ type NoService implements Record @node{
 }
 
 type ServiceLog @node{
-  id: ID
+  id: ID!
   historyRecord: String #leader was transferred to
   createdAt: TimeGraph @relationship(type: "RECORDED_ON", direction: OUT)
   loggedBy: Member @relationship(type: "LOGGED_BY", direction: OUT)

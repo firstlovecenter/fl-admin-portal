@@ -10,6 +10,10 @@ import {
 } from '../utils/utils'
 import { assertChurchScope } from '../utils/scope-utils'
 import {
+  assertPositiveFiniteAmount,
+  MAX_OFFERING_CASH,
+} from '../utils/financial-utils'
+import {
   absorbAllTransactions,
   checkCurrentServiceLog,
   checkFormFilledThisWeek,
@@ -21,6 +25,7 @@ import {
   getHigherChurches,
   recordSpecialService,
 } from './service-cypher'
+
 const errorMessage = require('../texts.json').error
 
 type RecordServiceArgs = {
@@ -102,6 +107,9 @@ const serviceMutation = {
     context: Context
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    assertPositiveFiniteAmount(args.income, 'income', {
+      max: MAX_OFFERING_CASH,
+    })
     await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()

@@ -99,11 +99,17 @@ exports.createBacentaAggregationConstraints = async (driver) => {
       `CREATE INDEX time_graph_week_year IF NOT EXISTS 
        FOR (t:TimeGraph) ON (t.date.week, t.date.year)`,
 
-      `CREATE INDEX aggregate_bussing_month IF NOT EXISTS 
+      `CREATE INDEX aggregate_bussing_month IF NOT EXISTS
        FOR (a:AggregateBussingRecord) ON (a.month)`,
 
+      // HistoryLog paginated reads ORDER BY log.timeStamp DESC, log.id —
+      // without this index, the planner does a full label scan + in-memory
+      // sort per page. Matches the existing prod/dev index of the same name.
+      `CREATE INDEX history_log_timestamp IF NOT EXISTS
+       FOR (h:HistoryLog) ON (h.timeStamp)`,
+
       // Indexes to speed up relationship traversals
-      `CREATE INDEX bacenta_current_history IF NOT EXISTS 
+      `CREATE INDEX bacenta_current_history IF NOT EXISTS
        FOR ()-[r:CURRENT_HISTORY]->() ON (r.id)`,
 
       `CREATE INDEX bussing_record_bussed_on IF NOT EXISTS 
