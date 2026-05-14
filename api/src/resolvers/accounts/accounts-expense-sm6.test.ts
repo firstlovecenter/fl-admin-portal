@@ -1,0 +1,770 @@
+/**
+ * SM6 — Characterization tests for the account expense request state machine.
+ *
+ * SM6 (kb/04-state-machines.md):
+ *
+ *   draft (client) ─▶ pending approval ─┬─▶ success (paid)
+ *                                       └─▶ declined
+ *
+ * Resolvers under test (accounts-resolvers.ts):
+ *   - ExpenseRequest      — creates a transaction in 'pending approval'
+ *   - ApproveExpense      — pending approval → success (debits weekday;
+ *                           Bussing branch also credits Bussing Society)
+ *   - DeclineExpense      — pending approval → declined (no balance move)
+ *
+ * Cypher under test (accounts-cypher.ts):
+ *   - createExpenseRequest, approveExpense, approveBussingExpense,
+ *     declineExpense
+ *
+ * Coverage:
+ *   - Pending → Approved by gating role debits exactly the request amount
+ *   - Pending → Approved for Bussing branch: weekday debit + bussing credit
+ *   - Pending → Declined leaves balances untouched
+ *   - Double-approve idempotency (status guard at DB layer; resolver maps to a
+ *     friendly error and never re-debits)
+ *   - Negative balance guard: characterized as "Insufficient Funds" /
+ *     "Insufficient bussing funds" thrown BEFORE the write Cypher runs
+ *   - Approval auth gating (ACCOUNTS_CHURCH_ROLES + fishers; assertScopeViaTransaction)
+ *   - Decline auth gating (narrower: adminCampus + leaderCampus only)
+ *   - HistoryLog: characterized (one entry on ExpenseRequest naming the requester;
+ *     NONE on Approve / Decline — flagged via it.todo)
+ *
+ * All test names begin with "SM6:" for grep-ability (SYN-71):
+ *   npm test -- accounts-expense-sm6 --testNamePattern="SM6:"
+ */
+
+jest.mock('../secrets', () => ({
+  loadSecrets: jest.fn().mockResolvedValue({
+    ENVIRONMENT: 'development',
+    MNOTIFY_KEY: 'jest_mnotify_key',
+  }),
+}))
+
+jest.mock('../utils/scope-utils', () => ({
+  assertChurchScope: jest.fn().mockResolvedValue(undefined),
+  assertScopeViaTransaction: jest.fn().mockResolvedValue(undefined),
+}))
+
+jest.mock('../utils/utils', () => ({
+  ...jest.requireActual('../utils/utils'),
+  isAuth: jest.fn(),
+}))
+
+// sendBulkSMS is fire-and-forget in ApproveExpense; mock so the test
+// doesn't open the real axios call.  Resolves to a benign string.
+jest.mock('../utils/notify', () => ({
+  sendBulkSMS: jest.fn().mockResolvedValue('Message sent successfully'),
+}))
+
+import accountsMutations from './accounts-resolvers'
+import {
+  approveBussingExpense,
+  approveExpense,
+  createExpenseRequest,
+  declineExpense,
+} from './accounts-cypher'
+import type { Context } from '../utils/neo4j-types'
+import { isAuth } from '../utils/utils'
+import { sendBulkSMS } from '../utils/notify'
+
+// ---------------------------------------------------------------------------
+// Helpers — minimal mock surface that matches the shape `accounts-resolvers.ts`
+// asks of the driver: `result.records[i].get(key).properties`.
+// ---------------------------------------------------------------------------
+type Props = Record<string, unknown>
+
+const propRec = (entities: Record<string, Props>) => ({
+  get: (key: string) => ({ properties: entities[key] }),
+})
+
+const mockJwt = {
+  userId: 'user_admin_1',
+  sub: 'user_admin_1',
+  // Default to the maximally-permissive role set so the resolver's
+  // assertAccountsAccess(...) passes on the happy paths. Individual tests
+  // override to exercise role-gate negatives.
+  roles: ['leaderCouncil', 'fishers'] as const,
+  iss: 'test',
+  aud: ['test'],
+  iat: 0,
+  exp: 9999999999,
+  scope: 'openid',
+  azp: 'test',
+  permissions: ['leaderCouncil', 'fishers'] as const,
+}
+
+let mockSession: {
+  run: jest.Mock
+  executeRead: jest.Mock
+  executeWrite: jest.Mock
+  close: jest.Mock
+}
+let context: Context
+
+beforeEach(() => {
+  mockSession = {
+    run: jest.fn(),
+    executeRead: jest.fn(),
+    executeWrite: jest.fn(),
+    close: jest.fn().mockResolvedValue(undefined),
+  }
+  context = {
+    jwt: mockJwt,
+    executionContext: { session: jest.fn().mockReturnValue(mockSession) },
+  } as unknown as Context
+
+  // SYN-111 — accounts office-hours gate uses `getUTCHours() in [6, 15)`.
+  // ExpenseRequest checks this BEFORE the fishers exemption is read, so
+  // running tests at any wall-clock would be flaky. Pin to 10:00 UTC and
+  // accept the real exemption-path as a separate test below.
+  jest.useFakeTimers().setSystemTime(new Date('2026-05-14T10:00:00Z'))
+})
+
+afterEach(() => {
+  jest.useRealTimers()
+})
+
+// ---------------------------------------------------------------------------
+// ExpenseRequest — creates a pending transaction
+// ---------------------------------------------------------------------------
+describe('SM6 — ExpenseRequest: draft → pending approval', () => {
+  const requestArgs = {
+    councilId: 'council_1',
+    expenseAmount: 500,
+    expenseCategory: 'Ministry Expense',
+    accountType: 'Weekday Account',
+    description: 'Sound system repair',
+    clientTransactionId: 'ctx_1',
+  }
+
+  it('SM6: creates an AccountTransaction with status="pending approval" via createExpenseRequest Cypher', async () => {
+    mockSession.executeRead.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            weekdayBalance: 1000,
+            bussingSocietyBalance: 200,
+            hrAmount: 0,
+          },
+        }),
+      ],
+    })
+    mockSession.executeWrite.mockResolvedValueOnce({
+      records: [
+        propRec({
+          transaction: {
+            id: 'txn_new_1',
+            status: 'pending approval',
+            amount: -500,
+            category: 'Ministry Expense',
+          },
+          requester: {
+            id: 'user_admin_1',
+            firstName: 'Test',
+            lastName: 'Admin',
+          },
+        }),
+      ],
+    })
+
+    const result = await accountsMutations.ExpenseRequest(
+      null,
+      requestArgs,
+      context
+    )
+
+    // Cypher hit + write hit
+    expect(mockSession.executeRead).toHaveBeenCalledTimes(1)
+    expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
+
+    // Write was the createExpenseRequest Cypher
+    const fakeTx = { run: jest.fn().mockResolvedValue({ records: [] }) }
+    const writeCb = mockSession.executeWrite.mock.calls[0][0] as (
+      tx: typeof fakeTx
+    ) => Promise<unknown>
+    writeCb(fakeTx)
+    expect(fakeTx.run).toHaveBeenCalledWith(
+      createExpenseRequest,
+      expect.objectContaining({
+        councilId: 'council_1',
+        expenseAmount: 500,
+        expenseCategory: 'Ministry Expense',
+        accountType: 'Weekday Account',
+        description: 'Sound system repair',
+        clientTransactionId: 'ctx_1',
+        jwt: context.jwt,
+      })
+    )
+
+    expect(result).toMatchObject({
+      id: 'txn_new_1',
+      status: 'pending approval',
+    })
+  })
+
+  it('SM6: createExpenseRequest Cypher sets transaction.status = "pending approval"', () => {
+    expect(createExpenseRequest).toMatch(
+      /transaction\.status = 'pending approval'/
+    )
+  })
+
+  it('SM6: ExpenseRequest is idempotent — createExpenseRequest MERGE-keys on clientTransactionId (ADR-005)', () => {
+    expect(createExpenseRequest).toMatch(
+      /MERGE \(transaction:AccountTransaction \{clientTransactionId: \$clientTransactionId\}\)/
+    )
+  })
+
+  it('SM6: ExpenseRequest auth — assertAccountsAccess requires fishers + a church-scoped role', async () => {
+    // Strip the fishers role; the resolver should refuse before any DB hit.
+    const noFishers = {
+      ...context,
+      jwt: { ...mockJwt, roles: ['leaderCouncil'] as const },
+    } as Context
+
+    await expect(
+      accountsMutations.ExpenseRequest(null, requestArgs, noFishers)
+    ).rejects.toThrow(/fishers role/)
+    expect(mockSession.executeRead).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// ApproveExpense — pending → success, debit weekday by exactly the amount
+// ---------------------------------------------------------------------------
+describe('SM6 — ApproveExpense: pending → success', () => {
+  const approveArgs = { transactionId: 'txn_pending_1', charge: 0 }
+
+  const seedPendingRead = (overrides: Partial<Props> = {}) => {
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            weekdayBalance: 1000,
+            bussingSocietyBalance: 200,
+            ...overrides,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            // SM6: amount is stored negative; weekdayBalance -=
+            // (-1 * amount) - charge debits by `|amount|`.
+            amount: -500,
+            category: 'Ministry Expense',
+            description: 'Sound system repair',
+          },
+        }),
+      ],
+    })
+  }
+
+  const seedWriteSuccess = () => {
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'success',
+            amount: -500,
+            weekdayBalance: 500,
+          },
+          depositor: {
+            id: 'user_admin_1',
+            firstName: 'Test',
+            lastName: 'Admin',
+          },
+        }),
+      ],
+    })
+  }
+
+  it('SM6: approving a pending non-Bussing expense runs approveExpense and returns status=success', async () => {
+    seedPendingRead()
+    seedWriteSuccess()
+
+    const result = await accountsMutations.ApproveExpense(
+      null,
+      approveArgs,
+      context
+    )
+
+    expect(mockSession.run).toHaveBeenCalledTimes(2)
+    // 1st: getCouncilBalancesWithTransaction (status-gated read)
+    // 2nd: approveExpense (the write that actually flips status + debits)
+    expect(mockSession.run.mock.calls[1][0]).toBe(approveExpense)
+    expect(mockSession.run.mock.calls[1][1]).toMatchObject({
+      transactionId: 'txn_pending_1',
+      charge: 0,
+    })
+
+    expect(result).toMatchObject({
+      id: 'txn_pending_1',
+      status: 'success',
+    })
+  })
+
+  it('SM6: approveExpense Cypher debits weekdayBalance by exactly (-1 * transaction.amount) - charge', () => {
+    // SM6: `transaction.amount` is stored negative, so -1 * amount = |amount|.
+    expect(approveExpense).toMatch(
+      /council\.weekdayBalance = council\.weekdayBalance - \(-1 \* transaction\.amount\) - toFloat\(\$charge\)/
+    )
+  })
+
+  it('SM6: approving a Bussing expense routes through approveBussingExpense (single Cypher; atomic debit + mirror credit)', async () => {
+    // Status-gated read returns the pending Bussing transaction.
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            weekdayBalance: 1000,
+            bussingSocietyBalance: 200,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            amount: -300,
+            category: 'Bussing',
+            description: 'Bussing expense',
+          },
+        }),
+      ],
+    })
+    // approveBussingExpense write success.
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'success',
+            amount: -300,
+          },
+          depositor: {
+            id: 'user_admin_1',
+            firstName: 'Test',
+            lastName: 'Admin',
+          },
+        }),
+      ],
+    })
+
+    const result = await accountsMutations.ApproveExpense(
+      null,
+      approveArgs,
+      context
+    )
+
+    expect(mockSession.run.mock.calls[1][0]).toBe(approveBussingExpense)
+    expect(result).toMatchObject({ id: 'txn_pending_1', status: 'success' })
+  })
+
+  it('SM6: approveBussingExpense Cypher writes BOTH the debit and the mirror credit-leg in a single statement (SYN-94)', () => {
+    // Single Cypher string, parent debit + credit-leg MERGE in one shot.
+    expect(approveBussingExpense).toMatch(
+      /council\.bussingSocietyBalance = council\.bussingSocietyBalance \+ \(-1 \* transaction\.amount\)/
+    )
+    expect(approveBussingExpense).toMatch(
+      /council\.weekdayBalance = council\.weekdayBalance - \(-1 \* transaction\.amount\) - toFloat\(\$charge\)/
+    )
+    expect(approveBussingExpense).toMatch(
+      /'internal:credit-leg:' \+ \$transactionId AS creditLegKey/
+    )
+    expect(approveBussingExpense).toMatch(
+      /MERGE \(creditLeg:AccountTransaction \{clientTransactionId: creditLegKey\}\)/
+    )
+  })
+
+  it('SM6: approveExpense Cypher is status-gated to "pending approval" — DB layer enforces single-debit', () => {
+    expect(approveExpense).toMatch(
+      /WHERE transaction\.status = 'pending approval'/
+    )
+  })
+
+  it('SM6: approveBussingExpense Cypher is status-gated to "pending approval"', () => {
+    expect(approveBussingExpense).toMatch(
+      /WHERE transaction\.status = 'pending approval'/
+    )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// ApproveExpense — idempotency / double-approval (ADR-005, SYN-92)
+// ---------------------------------------------------------------------------
+describe('SM6 — ApproveExpense: double-approval does not double-debit', () => {
+  const approveArgs = { transactionId: 'txn_pending_1', charge: 0 }
+
+  it('SM6: a second approve where the read returns zero rows surfaces "no longer pending" — never touches balance', async () => {
+    // Status-gated read returns zero rows on the second pass (status is
+    // already 'success' from the first approve). Resolver must bail BEFORE
+    // running the write Cypher.
+    mockSession.run.mockResolvedValueOnce({ records: [] })
+
+    await expect(
+      accountsMutations.ApproveExpense(null, approveArgs, context)
+    ).rejects.toThrow(/no longer pending approval/)
+
+    // Only the read fired; the write was never reached.
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+  })
+
+  it('SM6: read succeeds (TOCTOU window) but write returns zero rows — resolver bails with the same friendly error', async () => {
+    // Read passes (concurrent writer hasn't flipped status yet) but the
+    // write loses the race and matches zero rows. Resolver must still bail
+    // before any SMS dispatch.
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            weekdayBalance: 1000,
+            bussingSocietyBalance: 200,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            amount: -500,
+            category: 'Ministry Expense',
+          },
+        }),
+      ],
+    })
+    mockSession.run.mockResolvedValueOnce({ records: [] })
+
+    await expect(
+      accountsMutations.ApproveExpense(null, approveArgs, context)
+    ).rejects.toThrow(/no longer pending approval/)
+
+    expect(mockSession.run).toHaveBeenCalledTimes(2)
+    // SMS dispatch is fire-and-forget AFTER the zero-row check, so it
+    // must not have been called on the loser side.
+    expect(sendBulkSMS).not.toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// ApproveExpense — negative-balance characterisation
+// ---------------------------------------------------------------------------
+describe('SM6 — ApproveExpense: negative-balance guard (characterised)', () => {
+  const approveArgs = { transactionId: 'txn_pending_1', charge: 0 }
+
+  it('SM6: non-Bussing — when weekdayBalance < |amount|, throws "Insufficient Funds" BEFORE the write Cypher', async () => {
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            // weekdayBalance < |transaction.amount| = 500 triggers the
+            // guard.
+            weekdayBalance: 100,
+            bussingSocietyBalance: 200,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            amount: -500,
+            category: 'Ministry Expense',
+          },
+        }),
+      ],
+    })
+
+    await expect(
+      accountsMutations.ApproveExpense(null, approveArgs, context)
+    ).rejects.toThrow(/Insufficient Funds/)
+
+    // Only the read fired; write skipped.
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+  })
+
+  it('SM6: Bussing — when weekdayBalance < |amount|, throws "Insufficient bussing funds" BEFORE the write Cypher', async () => {
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            // SM6 oddity (characterised, not invented): the Bussing branch
+            // gates on `council.weekdayBalance < transactionAmount`, NOT
+            // on bussingSocietyBalance — because the Bussing-category
+            // expense debits weekday and credits bussing society. The
+            // check guards the source-of-funds (weekday), not the
+            // destination (bussing).
+            weekdayBalance: 100,
+            bussingSocietyBalance: 200,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            amount: -500,
+            category: 'Bussing',
+          },
+        }),
+      ],
+    })
+
+    await expect(
+      accountsMutations.ApproveExpense(null, approveArgs, context)
+    ).rejects.toThrow(/Insufficient bussing funds/)
+
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+  })
+
+  // TODO(refactor): The negative-balance guard is enforced ONLY in JS
+  // (accounts-resolvers.ts), not in Cypher (approveExpense /
+  // approveBussingExpense). A concurrent approver who passes the JS check
+  // could still drive the council into a negative weekdayBalance between
+  // the read and the write because the WHERE clause on the write only
+  // verifies status, not solvency. Tracked as a latent race surface for
+  // the SYN-71 refactor — do not fix in this test PR.
+  it('SM6: approveExpense Cypher does NOT re-check solvency in its WHERE — characterising the JS-only guard', () => {
+    expect(approveExpense).not.toMatch(/weekdayBalance\s*[<>]=?\s*0/)
+    expect(approveExpense).not.toMatch(/Insufficient/i)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// DeclineExpense — pending → declined, no balance change
+// ---------------------------------------------------------------------------
+describe('SM6 — DeclineExpense: pending → declined', () => {
+  const declineArgs = { transactionId: 'txn_pending_1' }
+
+  beforeEach(() => {
+    // Build a fresh context with a narrowed role set; mutating the shared
+    // `mockJwt` would leak into later describes.
+    context = {
+      ...context,
+      jwt: { ...mockJwt, roles: ['adminCampus'] as const },
+    } as Context
+  })
+
+  it('SM6: declines via declineExpense Cypher and returns the transaction with status="declined"', async () => {
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'declined',
+            amount: -500,
+          },
+        }),
+      ],
+    })
+
+    const result = await accountsMutations.DeclineExpense(
+      null,
+      declineArgs,
+      context
+    )
+
+    expect(mockSession.run).toHaveBeenCalledWith(declineExpense, declineArgs)
+    expect(result).toMatchObject({ status: 'declined' })
+  })
+
+  it('SM6: declineExpense Cypher status-gates to "pending approval" — no silent re-flip of an already-approved row', () => {
+    expect(declineExpense).toMatch(
+      /WHERE transaction\.status = 'pending approval'/
+    )
+  })
+
+  it('SM6: declineExpense Cypher does NOT touch council.weekdayBalance or council.bussingSocietyBalance — declining leaves balances alone', () => {
+    expect(declineExpense).not.toMatch(/council\.weekdayBalance/)
+    expect(declineExpense).not.toMatch(/council\.bussingSocietyBalance/)
+  })
+
+  it('SM6: declining an already-approved/declined transaction returns zero rows — resolver surfaces "no longer pending"', async () => {
+    mockSession.run.mockResolvedValueOnce({ records: [] })
+
+    await expect(
+      accountsMutations.DeclineExpense(null, declineArgs, context)
+    ).rejects.toThrow(/no longer pending approval/)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Approval / decline auth gates — characterise the role matrix
+// ---------------------------------------------------------------------------
+describe('SM6 — Auth: who can approve and who can decline', () => {
+  it('SM6: ApproveExpense calls isAuth with the three church-scoped roles (leaderCouncil, leaderCampus, adminCampus)', async () => {
+    mockSession.run.mockResolvedValueOnce({ records: [] })
+
+    await accountsMutations
+      .ApproveExpense(
+        null,
+        { transactionId: 'txn_pending_1', charge: 0 },
+        context
+      )
+      .catch(() => {
+        /* zero-rows path; we only care that isAuth was called */
+      })
+
+    expect(isAuth).toHaveBeenCalledWith(
+      expect.arrayContaining(['leaderCouncil', 'leaderCampus', 'adminCampus']),
+      context.jwt.roles
+    )
+  })
+
+  it('SM6: ApproveExpense requires the fishers role IN ADDITION to a church-scoped role', async () => {
+    const noFishers = {
+      ...context,
+      jwt: { ...mockJwt, roles: ['leaderCouncil'] as const },
+    } as Context
+
+    await expect(
+      accountsMutations.ApproveExpense(
+        null,
+        { transactionId: 'txn_pending_1', charge: 0 },
+        noFishers
+      )
+    ).rejects.toThrow(/fishers role/)
+    expect(mockSession.run).not.toHaveBeenCalled()
+  })
+
+  it('SM6: ApproveExpense is blocked when isAuth rejects (non-accounts role)', async () => {
+    ;(isAuth as jest.Mock).mockImplementationOnce(() => {
+      throw new Error('You are not permitted to run this mutation')
+    })
+
+    await expect(
+      accountsMutations.ApproveExpense(
+        null,
+        { transactionId: 'txn_pending_1', charge: 0 },
+        context
+      )
+    ).rejects.toThrow(/not permitted/)
+  })
+
+  it('SM6: DeclineExpense gate is NARROWER — adminCampus + leaderCampus only, NOT leaderCouncil (SYN-96 preserved)', async () => {
+    // Build the expected role set from the resolver source-of-truth
+    // exposure: the DeclineExpense gate intentionally omits leaderCouncil.
+    mockSession.run.mockResolvedValueOnce({ records: [] })
+
+    await accountsMutations
+      .DeclineExpense(null, { transactionId: 'txn_pending_1' }, context)
+      .catch(() => {
+        /* zero-rows path; we only care that isAuth was called */
+      })
+
+    // Positive: adminCampus and leaderCampus must be in the list.
+    expect(isAuth).toHaveBeenCalledWith(
+      expect.arrayContaining(['adminCampus', 'leaderCampus']),
+      context.jwt.roles
+    )
+    // Negative: leaderCouncil MUST NOT be in the DeclineExpense role list.
+    const [passedRoles] = (isAuth as jest.Mock).mock.calls[0]
+    expect(passedRoles).not.toContain('leaderCouncil')
+  })
+
+  it('SM6: DeclineExpense does NOT require fishers — confirmed by the narrower SYN-96 gate (no assertAccountsAccess)', async () => {
+    // The decline path uses the narrow DECLINE_EXPENSE_ROLES list directly,
+    // not assertAccountsAccess. A caller with adminCampus but NO fishers
+    // should pass the gate; the write Cypher is what determines the
+    // ultimate outcome.
+    const adminNoFishers = {
+      ...context,
+      jwt: { ...mockJwt, roles: ['adminCampus'] as const },
+    } as Context
+
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'declined',
+            amount: -500,
+          },
+        }),
+      ],
+    })
+
+    const result = await accountsMutations.DeclineExpense(
+      null,
+      { transactionId: 'txn_pending_1' },
+      adminNoFishers
+    )
+
+    expect(result).toMatchObject({ status: 'declined' })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// HistoryLog characterisation — what the SM6 ticket asked for vs. reality
+// ---------------------------------------------------------------------------
+describe('SM6 — HistoryLog characterisation: append-on-state-change reality check', () => {
+  it('SM6: createExpenseRequest appends a HistoryLog naming the requester (only on first MERGE)', () => {
+    // FOREACH gates the HistoryLog write on isNew (first MERGE only) so a
+    // retry under the same clientTransactionId does NOT append a second log.
+    expect(createExpenseRequest).toMatch(/CREATE \(log:HistoryLog/)
+    expect(createExpenseRequest).toMatch(
+      /requester\.firstName \+ ' ' \+ requester\.lastName/
+    )
+    expect(createExpenseRequest).toMatch(
+      /FOREACH \(_ IN CASE WHEN isNew THEN \[1\] ELSE \[\] END/
+    )
+  })
+
+  // TODO(refactor): SM6 ticket says "HistoryLog: one entry per state change,
+  // naming the actor". Today the only state transition that writes a
+  // HistoryLog is draft → pending approval (in createExpenseRequest).
+  // The pending → success and pending → declined transitions write the
+  // status flip onto the AccountTransaction node (with `lastModified`)
+  // but DO NOT create a :HistoryLog node naming the approver/decliner.
+  // UndoBussingTransaction and UndoWeekdayTransaction DO create logs.
+  // The asymmetry is recorded here for SYN-71's refactor scope; do NOT
+  // fix in this test PR.
+  it('SM6: approveExpense Cypher does NOT create a HistoryLog (latent gap; ticket asks for one)', () => {
+    expect(approveExpense).not.toMatch(/CREATE \(log:HistoryLog/)
+  })
+
+  it('SM6: approveBussingExpense Cypher does NOT create a HistoryLog (latent gap; ticket asks for one)', () => {
+    expect(approveBussingExpense).not.toMatch(/CREATE \(log:HistoryLog/)
+  })
+
+  it('SM6: declineExpense Cypher does NOT create a HistoryLog (latent gap; ticket asks for one)', () => {
+    expect(declineExpense).not.toMatch(/CREATE \(log:HistoryLog/)
+  })
+
+  it.todo(
+    'SM6 TODO: ApproveExpense should append a HistoryLog naming the approver (per SYN-71 done-when criteria)'
+  )
+
+  it.todo(
+    'SM6 TODO: DeclineExpense should append a HistoryLog naming the decliner (per SYN-71 done-when criteria)'
+  )
+})
