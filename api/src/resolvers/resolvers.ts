@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql'
 import serviceNoIncomeMutations from './no-income/service-resolvers'
 import serviceMutation from './services/service-resolvers'
 import { Member } from './utils/types'
@@ -150,6 +151,28 @@ const resolvers = {
 
   Query: {
     ...shepherdingControlResolvers.Query,
+    // Returns the per-edge authority that `index.js` already computed and
+    // attached to `context.jwt`. No Cypher executes here — the cache
+    // round-trip happened at request-context construction. The FE calls
+    // this exactly once on login to populate `currentUser.authority`,
+    // which then drives `useCan` / `useCanViewChurch` everywhere else.
+    //
+    // Defensive: schema-level `@authentication` should reject unauthenticated
+    // callers before this resolver runs, but the context builder coerces a
+    // verifier-rejected token to `{}` (no userId), so the explicit guard
+    // here makes the resolver independently safe and surfaces a clear
+    // FORBIDDEN rather than an empty payload.
+    myAuthority: (_: unknown, __: unknown, context: Context) => {
+      if (!context?.jwt?.userId) {
+        throw new GraphQLError('You must be authenticated.', {
+          extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
+        })
+      }
+      return {
+        servantTrees: context.jwt.servantTrees ?? [],
+        allowedChurchIds: context.jwt.allowedChurchIds ?? [],
+      }
+    },
   },
 
   Member: {

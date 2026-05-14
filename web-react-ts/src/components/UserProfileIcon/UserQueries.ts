@@ -149,5 +149,21 @@ export const GET_LOGGED_IN_USER = gql`
         isManualBanking
       }
     }
+
+    # Per-edge authority + flat allowed id list, computed once per login
+    # on the BE from the user's Neo4j servant edges and cached for the
+    # JWT lifetime. Drives the useCan hook (action gating per church) and
+    # useCanViewChurch (breadcrumb / spine visibility) everywhere on the
+    # FE. See api/src/resolvers/utils/allowed-church-ids.ts.
+    myAuthority {
+      servantTrees {
+        type
+        level
+        churchId
+        churchName
+        reach
+      }
+      allowedChurchIds
+    }
   }
 `

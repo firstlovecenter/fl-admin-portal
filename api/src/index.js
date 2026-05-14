@@ -11,7 +11,7 @@ import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
 import { verifyJwt } from './resolvers/utils/verify-jwt'
-import { computeAllowedChurchIds } from './resolvers/utils/allowed-church-ids'
+import { computeUserAuthority } from './resolvers/utils/allowed-church-ids'
 import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 const startServer = async () => {
@@ -108,31 +108,46 @@ const startServer = async () => {
         // surface FORBIDDEN via `isAuth`, not a TypeError → 500.
         const jwt = verifyJwt(req.headers.authorization, SECRETS.JWT_SECRET)
 
-        // Enrich the JWT with a flat list of every church-spine id the user
-        // is permitted to read, computed from their servant edges. The
-        // `@churchScoped`/`@churchScopedVia` directives reference this as
-        // `$jwt.allowedChurchIds` in their authorization filters — collapsing
-        // what used to be a 4-deep `streams.some.councils.some.…` predicate
-        // into a single `id IN [...]` check. See `allowed-church-ids.ts`.
+        // Enrich the JWT with the caller's authority graph, computed once
+        // per login from their Neo4j servant edges and cached for the
+        // token's remaining lifetime. Two fields are attached:
+        //
+        //   - `servantTrees` — one entry per servant edge (LEADS,
+        //     IS_ADMIN_FOR, …) with the church it points at and the spine
+        //     descendants reachable from it. Consumed by `assertCan` /
+        //     `rolesAt` for per-instance action gating. The flat coarse
+        //     `roles` claim alone is insufficient; an oversight leader
+        //     holding `leaderOversight` for Africa West must not be able
+        //     to act on a Bacenta beneath Europe.
+        //
+        //   - `allowedChurchIds` — union of every `reach` plus every spine
+        //     ancestor of every tree root. The `@churchScoped` /
+        //     `@churchScopedVia` directives reference this as
+        //     `$jwt.allowedChurchIds` in their authorization filters,
+        //     collapsing what used to be a 4-deep `streams.some.councils.some.…`
+        //     predicate into a single `id IN [...]` check.
         //
         // The engine reads `context.jwt` directly when set
-        // (get-authorization-context.js:22–32 in @neo4j/graphql), so attaching
-        // allowedChurchIds here makes it visible to `$jwt.*` substitutions
-        // without touching the auth-service token format.
+        // (get-authorization-context.js:22–32 in @neo4j/graphql), so
+        // attaching these fields here makes them visible to `$jwt.*`
+        // substitutions without touching the auth-service token format.
+        let servantTrees = []
         let allowedChurchIds = []
         if (jwt?.userId) {
-          allowedChurchIds = await computeAllowedChurchIds(
+          const authority = await computeUserAuthority(
             driver,
             jwt.userId,
             jwt.iat,
             jwt.exp
           )
+          servantTrees = authority.servantTrees
+          allowedChurchIds = authority.allowedChurchIds
         }
 
         return {
           req,
           executionContext: driver,
-          jwt: jwt ? { ...jwt, allowedChurchIds } : {},
+          jwt: jwt ? { ...jwt, servantTrees, allowedChurchIds } : {},
         }
       },
     })

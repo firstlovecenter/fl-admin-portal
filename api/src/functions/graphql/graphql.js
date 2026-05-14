@@ -6,9 +6,7 @@ const { typeDefs } = require('./schema/graphql-schema')
 const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
 const { verifyJwt } = require('./resolvers/utils/verify-jwt')
-const {
-  computeAllowedChurchIds,
-} = require('./resolvers/utils/allowed-church-ids')
+const { computeUserAuthority } = require('./resolvers/utils/allowed-church-ids')
 const {
   isDownloadEvent,
   handleDownloadLambdaEvent,
@@ -144,8 +142,7 @@ exports.handler = async (event, context) => {
           'https://staging-synago.firstlovecenter.com',
         ]
 
-  const requestOrigin =
-    event.headers?.origin || event.headers?.Origin || null
+  const requestOrigin = event.headers?.origin || event.headers?.Origin || null
   const matchedOrigin = allowedOrigins.includes(requestOrigin)
     ? requestOrigin
     : null
@@ -231,25 +228,33 @@ exports.handler = async (event, context) => {
     // surface FORBIDDEN via `isAuth`, not a TypeError → 500.
     const verifiedJwt = verifyJwt(token, SECRETS?.JWT_SECRET)
 
-    // Enrich the JWT with the flat list of church-spine ids the user can
-    // read, computed from their Neo4j servant edges. The
-    // `@churchScoped`/`@churchScopedVia` filters reference this as
-    // `$jwt.allowedChurchIds`. Without this enrichment every spine read
-    // returns empty in prod — the filter's `id IN null` evaluates to null
-    // (false) in Cypher. Mirrors `api/src/index.js`'s Apollo context
-    // builder; both must stay in sync.
+    // Enrich the JWT with the caller's authority graph (servantTrees +
+    // allowedChurchIds), computed from their Neo4j servant edges. Without
+    // this enrichment in the Lambda path:
+    //   - `@churchScoped`/`@churchScopedVia` read filters return [] (the
+    //     filter is `id IN null` which evaluates false in Cypher).
+    //   - `assertCan` on mutations sees no servantTrees and FORBIDs every
+    //     action — banking + servant mutations stop working in prod.
+    //   - `myAuthority` returns empty arrays, so every breadcrumb on the
+    //     FE renders as non-clickable text.
+    // Mirrors `api/src/index.js`'s Apollo context builder; both must stay
+    // in sync. The cache inside `computeUserAuthority` is module-level so
+    // a warm Lambda instance reuses it across invocations.
+    let servantTrees = []
     let allowedChurchIds = []
     if (verifiedJwt?.userId) {
-      allowedChurchIds = await computeAllowedChurchIds(
+      const authority = await computeUserAuthority(
         driver,
         verifiedJwt.userId,
         verifiedJwt.iat,
         verifiedJwt.exp
       )
+      servantTrees = authority.servantTrees
+      allowedChurchIds = authority.allowedChurchIds
     }
 
     const jwt = verifiedJwt
-      ? { ...verifiedJwt, allowedChurchIds }
+      ? { ...verifiedJwt, servantTrees, allowedChurchIds }
       : {}
 
     const contextValue = {

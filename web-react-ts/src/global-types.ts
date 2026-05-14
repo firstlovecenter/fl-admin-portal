@@ -215,6 +215,36 @@ export type ServantTypeLowerCase =
   | 'arrivalsAdmin'
   | 'arrivalsCounter'
 
+// Servant-edge taxonomy on the FE. Mirrors `api/src/resolvers/utils/allowed-church-ids.ts`
+// `ServantEdgeType` (ADR-001). Sourced from `myAuthority { servantTrees }`.
+export type ServantEdgeType =
+  | 'LEADS'
+  | 'DEPUTY_LEADS'
+  | 'IS_ADMIN_FOR'
+  | 'DOES_ARRIVALS_FOR'
+  | 'COUNTS_ARRIVALS_FOR'
+  | 'IS_TELLER_FOR'
+  | 'IS_ARRIVALS_PAYER_FOR'
+
+// One per servant edge held by the user. `reach` is the church the edge
+// points at plus every spine descendant — used by `useCan` to answer
+// "do I hold this role AT this church?" without a network round-trip.
+export type ServantTree = {
+  type: ServantEdgeType
+  level: ChurchLevel
+  churchId: string
+  churchName: string
+  reach: string[]
+}
+
+// Authority payload populated at login from `GET_LOGGED_IN_USER` and stored
+// on `currentUser.authority`. Drives `useCan` (action gating per church)
+// and `useCanViewChurch` (breadcrumb / spine visibility).
+export type CurrentUserAuthority = {
+  servantTrees: ServantTree[]
+  allowedChurchIds: string[]
+}
+
 export type CurrentUser = {
   id: string
   roles: Role[]
@@ -235,6 +265,10 @@ export type CurrentUser = {
   noIncomeTracking?: boolean
   currency?: string
   conversionRateToDollar?: number
+  // Per-instance authority — see `CurrentUserAuthority`. Optional because
+  // it's loaded asynchronously by `SetPermissions`; the hooks treat absence
+  // as "no authority yet" (deny on action gates, hide on visibility gates).
+  authority?: CurrentUserAuthority
 }
 
 export type UserRole = {

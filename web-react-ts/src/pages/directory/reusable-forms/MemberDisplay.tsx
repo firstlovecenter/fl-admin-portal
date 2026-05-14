@@ -25,6 +25,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
 import useModal from 'hooks/useModal'
 import usePopup from 'hooks/usePopup'
+import useCanViewChurch from 'hooks/useCanViewChurch'
 import MemberDeleteDialog from 'pages/directory/reusable-forms/MemberDeleteDialog'
 import { Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
@@ -219,13 +220,24 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
     DISPLAY_MEMBER_CHURCH,
     { variables: { id: memberId } }
   )
+
+  // Per-instance scope check. The history-log → member-link drill exposes
+  // basic Member info (allowed cross-scope per the design call), but the
+  // sensitive sections — leadership / admin role lists, full church history
+  // timeline, click-through to the foreign Bacenta — must hide when the
+  // viewer holds no role at the target Member's Bacenta or any ancestor.
+  // `useCanViewChurch` returns false while authority is still loading,
+  // so the gated sections stay hidden during the fetch (deny-by-default).
+  const memberBacentaId = churchData?.members[0]?.bacenta?.id
+  const inScope = useCanViewChurch(memberBacentaId)
+
   const { data: leaderData, loading: leaderLoading } = useQuery(
     DISPLAY_MEMBER_LEADERSHIP,
-    { variables: { id: memberId } }
+    { variables: { id: memberId }, skip: !inScope || !memberId }
   )
   const { data: adminData, loading: adminLoading } = useQuery(
     DISPLAY_MEMBER_ADMIN,
-    { variables: { id: memberId } }
+    { variables: { id: memberId }, skip: !inScope || !memberId }
   )
 
   const loading = bioLoading || churchLoading || leaderLoading || adminLoading
@@ -579,26 +591,44 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                     </div>
                   ) : (
                     <>
-                      {memberChurch?.bacenta && (
-                        <button
-                          type="button"
-                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 active:bg-muted transition-colors min-h-[56px]"
-                          onClick={() => {
-                            clickCard(memberChurch?.bacenta)
-                            navigate('/bacenta/displaydetails')
-                          }}
-                        >
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs text-muted-foreground mb-0.5">
-                              Bacenta
-                            </p>
-                            <p className="text-sm font-medium text-foreground truncate">
-                              {memberChurch?.bacenta?.name}
-                            </p>
+                      {memberChurch?.bacenta &&
+                        (inScope ? (
+                          <button
+                            type="button"
+                            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 active:bg-muted transition-colors min-h-[56px]"
+                            onClick={() => {
+                              clickCard(memberChurch?.bacenta)
+                              navigate('/bacenta/displaydetails')
+                            }}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs text-muted-foreground mb-0.5">
+                                Bacenta
+                              </p>
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {memberChurch?.bacenta?.name}
+                              </p>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                          </button>
+                        ) : (
+                          // Out-of-scope: render as non-interactive text.
+                          // Drops the click target, the chevron, and the
+                          // hover/active affordances so the user has no
+                          // path to drill into a foreign Bacenta. Closes
+                          // the history-log → member-link → bacenta walk
+                          // (David Dag Vanderpuije exploit path 2).
+                          <div className="w-full flex items-center gap-3 px-4 py-3 min-h-[56px]">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs text-muted-foreground mb-0.5">
+                                Bacenta
+                              </p>
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {memberChurch?.bacenta?.name}
+                              </p>
+                            </div>
                           </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                        </button>
-                      )}
+                        ))}
                       {/* Basonta is informational — no navigation target */}
                       {memberChurch?.basonta && (
                         <div className="px-4 py-3">
@@ -724,41 +754,59 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               </div>
             </div>
 
-            {/* Leadership Roles — only rendered when member actually holds a role */}
-            {adminLoading || leaderLoading ? (
-              <div className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="px-4 py-2.5 border-b border-border bg-muted/30">
-                  <Skeleton className="h-3 w-28" />
+            {/* Leadership Roles — only rendered when:
+                 1. The viewer holds a role at the member's Bacenta or an
+                    ancestor (`inScope`). Cross-scope viewers must not see
+                    which streams / governorships a foreign member leads —
+                    that's the same drill-target enumeration the breadcrumb
+                    fix closes. The LEADERSHIP/ADMIN queries are `skip`-ed
+                    when `!inScope` so the data isn't even fetched.
+                 2. The member actually holds a role (`hasRoles`).
+                 Skeleton shows only when we're authorised AND fetching. */}
+            {inScope &&
+              (adminLoading || leaderLoading ? (
+                <div className="rounded-xl border border-border bg-card overflow-hidden">
+                  <div className="px-4 py-2.5 border-b border-border bg-muted/30">
+                    <Skeleton className="h-3 w-28" />
+                  </div>
+                  <div className="px-4 py-1">
+                    {[...Array(2)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="py-3 border-b border-border last:border-0"
+                      >
+                        <Skeleton className="h-2.5 w-24 mb-1.5" />
+                        <Skeleton className="h-4 w-36" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="px-4 py-1">
-                  {[...Array(2)].map((_, i) => (
-                    <div key={i} className="py-3 border-b border-border last:border-0">
-                      <Skeleton className="h-2.5 w-24 mb-1.5" />
-                      <Skeleton className="h-4 w-36" />
-                    </div>
-                  ))}
+              ) : hasRoles ? (
+                <div className="rounded-xl border border-border bg-card overflow-hidden">
+                  <div className="px-4 py-2.5 border-b border-border bg-muted/30">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Leadership Roles
+                    </p>
+                  </div>
+                  <div className="px-2 py-2">
+                    <MemberRoleList
+                      memberLeader={memberLeader}
+                      memberAdmin={memberAdmin}
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : hasRoles ? (
-              <div className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="px-4 py-2.5 border-b border-border bg-muted/30">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Leadership Roles
-                  </p>
-                </div>
-                <div className="px-2 py-2">
-                  <MemberRoleList
-                    memberLeader={memberLeader}
-                    memberAdmin={memberAdmin}
-                  />
-                </div>
-              </div>
-            ) : null}
+              ) : null)}
           </div>
         </div>
 
-        {/* ── Church history — mirrors top 2-column grid; left column is intentional negative space ── */}
-        {memberChurch?.history?.length > 0 && (
+        {/* ── Church history — mirrors top 2-column grid; left column is intentional negative space.
+             Gated by `inScope`: cross-scope viewers must not see another
+             member's church history (it reveals leadership changes, audit
+             timestamps, and other admin-shaped data the spine filter
+             otherwise keeps hidden). The history-log → member-link entry
+             point still works for basic Member info; this section is the
+             cliff-edge that closes drill-target enumeration. */}
+        {inScope && memberChurch?.history?.length > 0 && (
           <div className="mt-8 flex flex-col gap-6 lg:grid lg:grid-cols-[300px_1fr]">
             <div aria-hidden="true" className="hidden lg:block" />
             <div>

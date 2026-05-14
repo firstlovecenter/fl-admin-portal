@@ -86,6 +86,19 @@ const SetPermissions = ({ children }: { children: JSX.Element }) => {
           noIncomeTracking: campus?.noIncomeTracking,
           currency: campus?.currency,
           conversionRateToDollar: campus?.conversionRateToDollar,
+
+          // Per-instance authority — `myAuthority` returns the user's
+          // servant trees + flat allowed id list, computed once on the BE
+          // from their Neo4j servant edges. Drives `useCan` and
+          // `useCanViewChurch` everywhere else. Without this, action gates
+          // fall back to coarse roles only, re-opening the David Dag
+          // Vanderpuije breadcrumb-spine-walk class of exploit.
+          authority: data?.myAuthority
+            ? {
+                servantTrees: data.myAuthority.servantTrees ?? [],
+                allowedChurchIds: data.myAuthority.allowedChurchIds ?? [],
+              }
+            : undefined,
         }
 
         setCurrentUser(nextCurrentUser)

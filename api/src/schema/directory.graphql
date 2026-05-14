@@ -1146,6 +1146,7 @@ type Council implements Church @node
 }
 
 type Governorship implements Church @node
+  # @churchScoped(level: Governorship)
 {
   id: ID @id
   name: String!
@@ -1280,6 +1281,7 @@ type Governorship implements Church @node
 }
 
 type Bacenta implements Church @node
+  # @churchScoped(level: Bacenta)
 {
   id: ID @id
   name: String!

@@ -57,6 +57,29 @@ type JWT @jwt {
   allowedChurchIds: [String!]
 }
 
+# Per-edge authority record exposed to the FE via the `myAuthority` query.
+# One entry per servant edge the user holds — `reach` is the church the
+# edge points at plus every spine descendant, i.e. the set of churches at
+# which the user holds the coarse role implied by `(type, level)`.
+#
+# Declared WITHOUT `@node` so `@neo4j/graphql` v7 treats this as a plain
+# RPC response shape and does NOT auto-generate CRUD operations against a
+# Neo4j `ServantTree` label. The data is built in-memory from
+# `context.jwt.servantTrees` by the `myAuthority` resolver; nothing lives
+# in Neo4j under this name.
+type ServantTree {
+  type: String!
+  level: String!
+  churchId: String!
+  churchName: String!
+  reach: [String!]!
+}
+
+type Authority {
+  servantTrees: [ServantTree!]!
+  allowedChurchIds: [String!]!
+}
+
 type Query @node{
   currentUser(id: ID): Member!
     @cypher(
@@ -69,6 +92,14 @@ type Query @node{
       statement: "MATCH (member:Active:Member {email:$email}) RETURN member LIMIT 1"
       columnName: "member"
     )
+
+  # Caller's authority, sourced entirely from `context.jwt`. Returns the
+  # per-edge `servantTrees` (for per-instance action gating on the FE) and
+  # the flat `allowedChurchIds` (for breadcrumb / spine visibility). One
+  # round-trip on app boot — the resolver reads the cached payload off
+  # `context.jwt`; no Cypher runs behind this query. See
+  # `api/src/resolvers/resolvers.ts` for the implementation.
+  myAuthority: Authority!
 }
 
 type PresignedUrlResponse @node{

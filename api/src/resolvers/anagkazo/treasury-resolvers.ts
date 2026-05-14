@@ -7,6 +7,7 @@ import {
 } from '../utils/utils'
 import { MakeServant, RemoveServant } from '../directory/make-remove-servants'
 import { permitAdmin, permitTellerStream } from '../permissions'
+import { assertCan } from '../utils/assert-can'
 import { Context } from '../utils/neo4j-types'
 import anagkazo from './treasury-cypher'
 
@@ -26,9 +27,14 @@ const treasuryMutations = {
     args: { governorshipId: string },
     context: Context
   ): Promise<any> => {
-    isAuth(permitTellerStream(), context?.jwt.roles)
+    isAuth(permitTellerStream(), context?.jwt?.roles)
+    noEmptyArgsValidation([args.governorshipId])
+    // Per-instance check: the caller's `tellerStream` role must bind to a
+    // Stream whose reach includes this governorship. Without it any teller
+    // could confirm any governorship's banking (real money — IDOR class
+    // defect).
+    assertCan(context, permitTellerStream(), args.governorshipId)
     const session = context.executionContext.session()
-    noEmptyArgsValidation(['governorshipId'])
 
     // const today = new Date()
     // if (today.getDay() > 6) {
