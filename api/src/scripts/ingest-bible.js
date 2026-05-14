@@ -28,7 +28,6 @@
 const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
-const neo4j = require('neo4j-driver')
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
@@ -40,6 +39,7 @@ const {
   embedBatch,
   EMBEDDING_DIMS,
 } = require('./utils/llm-client')
+const { buildNeo4jDriver } = require('./utils/neo4j-driver')
 
 const args = process.argv.slice(2)
 const getFlag = (name, fallback = undefined) => {
@@ -152,15 +152,7 @@ async function main() {
     embedding: embeddings[i],
   }))
 
-  const uri =
-    SECRETS.NEO4J_ENCRYPTED === 'true'
-      ? SECRETS.NEO4J_URI?.replace('bolt://', 'neo4j+s://')
-      : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
-
-  const driver = neo4j.driver(
-    uri,
-    neo4j.auth.basic(SECRETS.NEO4J_USER || 'neo4j', SECRETS.NEO4J_PASSWORD || 'neo4j')
-  )
+  const driver = buildNeo4jDriver(SECRETS)
   const session = driver.session()
   try {
     let written = 0

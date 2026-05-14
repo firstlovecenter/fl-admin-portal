@@ -24,7 +24,6 @@
 const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
-const neo4j = require('neo4j-driver')
 const pdfParse = require('pdf-parse')
 const { EPub } = require('epub2')
 
@@ -38,6 +37,7 @@ const {
   embedBatch,
   EMBEDDING_DIMS,
 } = require('./utils/llm-client')
+const { buildNeo4jDriver } = require('./utils/neo4j-driver')
 
 const args = process.argv.slice(2)
 
@@ -114,21 +114,37 @@ const readPdf = async (file) => {
   return data.text
 }
 
-const readEpub = (file) =>
+// EPUB readers give us pre-split chapter files via `epub.flow`. We use those
+// directly instead of trying to re-split a concatenated string with a regex —
+// HTML-stripped EPUB text has no internal newlines, which breaks
+// chapter-heading detection. Returns an array of {title, body} chapters.
+const readEpubChapters = (file) =>
   new Promise((resolve, reject) => {
     const epub = new EPub(file)
     epub.on('error', reject)
     epub.on('end', async () => {
       try {
-        const parts = []
+        const chapters = []
+        let order = 1
         for (const chap of epub.flow) {
           const html = await new Promise((res, rej) => {
-            epub.getChapter(chap.id, (err, text) => (err ? rej(err) : res(text)))
+            epub.getChapter(chap.id, (err, text) =>
+              err ? rej(err) : res(text)
+            )
           })
-          // Strip HTML tags — crude but adequate for scripture/prose books.
-          parts.push(html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+          const body = html
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+          if (!body) continue
+          const title = (chap.title || chap.id || `Chapter ${order}`)
+            .toString()
+            .trim()
+            .slice(0, 120)
+          chapters.push({ title, order, body })
+          order += 1
         }
-        resolve(parts.join('\n\n'))
+        resolve(chapters)
       } catch (err) {
         reject(err)
       }
@@ -136,10 +152,12 @@ const readEpub = (file) =>
     epub.parse()
   })
 
-// Splits raw text into chapters using common heading patterns. If nothing
-// matches (e.g. plain-text PDF with no headings), returns a single chapter.
+// PDF/plain-text path. Cap heading match length so we don't swallow the rest
+// of a chapter that's been collapsed onto one line. Falls back to "Full Text"
+// when no headings are found.
 const splitIntoChapters = (text) => {
-  const headingRegex = /^\s*(CHAPTER|Chapter|chapter)\s+([A-Z0-9IVXLC]+|\d+)\b[^\n]*/gm
+  const headingRegex =
+    /^\s*(CHAPTER|Chapter|chapter)\s+([A-Z0-9IVXLC]+|\d+)\b[^\n]{0,80}/gm
   const matches = []
   let m
   while ((m = headingRegex.exec(text)) !== null) {
@@ -159,23 +177,39 @@ const splitIntoChapters = (text) => {
   return chapters
 }
 
+// Slice an over-long paragraph by characters with OVERLAP_CHARS overlap.
+// Used when a single paragraph (e.g. an EPUB chapter whose HTML stripped to a
+// single string of text) exceeds TARGET_CHARS — without this the greedy
+// concat below produces one chunk per chapter instead of dozens.
+const sliceLongParagraph = (text) => {
+  const out = []
+  let start = 0
+  while (start < text.length) {
+    const end = Math.min(start + TARGET_CHARS, text.length)
+    out.push(text.slice(start, end))
+    if (end >= text.length) break
+    start = end - OVERLAP_CHARS
+  }
+  return out
+}
+
 // Greedy paragraph-aware chunking with a sliding overlap. Paragraphs are
 // concatenated until adding the next would exceed TARGET_CHARS; the last
 // OVERLAP_CHARS of the previous chunk seeds the next so context isn't cut
-// mid-sentence.
+// mid-sentence. Paragraphs longer than TARGET_CHARS are pre-sliced.
 const chunkChapter = (body) => {
   if (!body.trim()) return []
   const paragraphs = body
     .split(/\n{2,}/)
     .map((p) => p.replace(/\s+/g, ' ').trim())
     .filter(Boolean)
+    .flatMap((p) => (p.length > TARGET_CHARS ? sliceLongParagraph(p) : [p]))
 
   const chunks = []
   let buffer = ''
   for (const para of paragraphs) {
     if ((buffer + ' ' + para).length > TARGET_CHARS && buffer.length > 0) {
       chunks.push(buffer.trim())
-      // Carry the tail forward as overlap.
       buffer = buffer.slice(-OVERLAP_CHARS) + ' ' + para
     } else {
       buffer = buffer ? buffer + ' ' + para : para
@@ -229,18 +263,20 @@ async function main() {
   console.log(`  File: ${absoluteFilePath}`)
 
   const ext = path.extname(absoluteFilePath).toLowerCase()
-  let raw
+  let chapters
   if (ext === '.pdf') {
-    raw = await readPdf(absoluteFilePath)
+    const raw = await readPdf(absoluteFilePath)
+    console.log(`  Extracted ${raw.length.toLocaleString()} chars of text.`)
+    chapters = splitIntoChapters(raw)
   } else if (ext === '.epub') {
-    raw = await readEpub(absoluteFilePath)
+    // EPUB structure already gives us per-chapter HTML files — use those.
+    chapters = await readEpubChapters(absoluteFilePath)
+    const totalChars = chapters.reduce((acc, c) => acc + c.body.length, 0)
+    console.log(`  Extracted ${totalChars.toLocaleString()} chars of text.`)
   } else {
     console.error(`Unsupported file extension: ${ext}. Use .pdf or .epub.`)
     process.exit(1)
   }
-  console.log(`  Extracted ${raw.length.toLocaleString()} chars of text.`)
-
-  const chapters = splitIntoChapters(raw)
   console.log(`  Detected ${chapters.length} chapter(s).`)
 
   // Build all passages flat so we can embed in one (batched) call before writing.
@@ -292,15 +328,7 @@ async function main() {
     p.embedding = embeddings[i]
   })
 
-  const uri =
-    SECRETS.NEO4J_ENCRYPTED === 'true'
-      ? SECRETS.NEO4J_URI?.replace('bolt://', 'neo4j+s://')
-      : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
-
-  const driver = neo4j.driver(
-    uri,
-    neo4j.auth.basic(SECRETS.NEO4J_USER || 'neo4j', SECRETS.NEO4J_PASSWORD || 'neo4j')
-  )
+  const driver = buildNeo4jDriver(SECRETS)
   const session = driver.session()
   try {
     await session.run(UPSERT_BOOK_CYPHER, {

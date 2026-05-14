@@ -42,6 +42,7 @@ const {
   buildAnthropic,
   embedBatch,
 } = require('./utils/llm-client')
+const { buildNeo4jDriver } = require('./utils/neo4j-driver')
 
 const {
   BACENTA_SERVICE_TREND_CYPHER,
@@ -241,18 +242,7 @@ async function main() {
   }
 
   const SECRETS = await loadSecrets()
-  const uri =
-    SECRETS.NEO4J_ENCRYPTED === 'true'
-      ? SECRETS.NEO4J_URI?.replace('bolt://', 'neo4j+s://')
-      : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
-
-  const driver = neo4j.driver(
-    uri,
-    neo4j.auth.basic(
-      SECRETS.NEO4J_USER || 'neo4j',
-      SECRETS.NEO4J_PASSWORD || 'neo4j'
-    )
-  )
+  const driver = buildNeo4jDriver(SECRETS)
 
   const session = driver.session()
   try {

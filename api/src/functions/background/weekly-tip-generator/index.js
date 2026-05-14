@@ -323,18 +323,28 @@ const handler = async (event = {}) => {
   const startedAt = Date.now()
 
   const SECRETS = await loadSecrets()
-  const uri =
-    SECRETS.NEO4J_ENCRYPTED === 'true'
-      ? SECRETS.NEO4J_URI?.replace('bolt://', 'neo4j+s://')
-      : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
-
+  // Match the main API's connection logic (api/src/index.js:23-50): use the
+  // URI as-is and toggle encryption config based on the scheme. The previous
+  // bolt:// → neo4j+s:// rewrite forced routing mode and failed against
+  // single-instance Neo4j with "No routing servers available".
+  const uri = SECRETS.NEO4J_URI || 'bolt://localhost:7687/'
+  const hasEncryptionInUri =
+    uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
+  const driverConfig = {
+    maxConnectionPoolSize: 10,
+    connectionTimeout: 30000,
+  }
+  if (!hasEncryptionInUri) {
+    driverConfig.encrypted = 'ENCRYPTION_ON'
+    driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
+  }
   const driver = neo4j.driver(
     uri,
     neo4j.auth.basic(
       SECRETS.NEO4J_USER || 'neo4j',
       SECRETS.NEO4J_PASSWORD || 'neo4j'
     ),
-    { maxConnectionPoolSize: 10, connectionTimeout: 30000 }
+    driverConfig
   )
   await driver.verifyConnectivity()
 

@@ -17,7 +17,6 @@
  *   node api/src/scripts/setup-vector-indexes.js
  */
 
-const neo4j = require('neo4j-driver')
 const path = require('path')
 const dotenv = require('dotenv')
 
@@ -26,6 +25,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') })
 const {
   loadSecrets,
 } = require('../functions/background/service-graph-aggregator/secrets')
+const { buildNeo4jDriver } = require('./utils/neo4j-driver')
 
 const STATEMENTS = [
   `CREATE VECTOR INDEX bookPassageEmbedding IF NOT EXISTS
@@ -43,19 +43,11 @@ const STATEMENTS = [
 
 async function main() {
   const SECRETS = await loadSecrets()
-
-  const uri =
-    SECRETS.NEO4J_ENCRYPTED === 'true'
-      ? SECRETS.NEO4J_URI?.replace('bolt://', 'neo4j+s://')
-      : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
-  const user = SECRETS.NEO4J_USER || 'neo4j'
-  const password = SECRETS.NEO4J_PASSWORD || 'neo4j'
-
-  const driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
+  const driver = buildNeo4jDriver(SECRETS)
   const session = driver.session()
 
   try {
-    console.log(`Connected to Neo4j at ${uri}`)
+    console.log(`Connected to Neo4j at ${SECRETS.NEO4J_URI}`)
     for (const stmt of STATEMENTS) {
       const result = await session.run(stmt)
       const summary = result.summary.counters.updates()
