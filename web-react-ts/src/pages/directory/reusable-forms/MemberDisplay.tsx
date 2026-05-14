@@ -574,7 +574,18 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
             </div>
 
             {/* Church membership */}
+            {/*
+              Prefer the scoped `bacenta` relationship when the viewer has
+              scope (richer data — leader, council). Fall back to the unscoped
+              `bacentaSummary` when `bacenta` is null (foreign-member case)
+              so the row still renders with the bacenta name as text. The
+              fallback is read-only — `useCanViewChurch` returns false for
+              the foreign bacenta id, so even if we wired a click it would
+              be denied. Keeping it as plain text makes the affordance match
+              the state.
+            */}
             {(memberChurch?.bacenta ||
+              memberChurch?.bacentaSummary ||
               memberChurch?.basonta ||
               churchLoading) && (
               <div className="border-t border-border">
@@ -591,44 +602,44 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                     </div>
                   ) : (
                     <>
-                      {memberChurch?.bacenta &&
-                        (inScope ? (
-                          <button
-                            type="button"
-                            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 active:bg-muted transition-colors min-h-[56px]"
-                            onClick={() => {
-                              clickCard(memberChurch?.bacenta)
-                              navigate('/bacenta/displaydetails')
-                            }}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs text-muted-foreground mb-0.5">
-                                Bacenta
-                              </p>
-                              <p className="text-sm font-medium text-foreground truncate">
-                                {memberChurch?.bacenta?.name}
-                              </p>
-                            </div>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                          </button>
-                        ) : (
-                          // Out-of-scope: render as non-interactive text.
-                          // Drops the click target, the chevron, and the
-                          // hover/active affordances so the user has no
-                          // path to drill into a foreign Bacenta. Closes
-                          // the history-log → member-link → bacenta walk
-                          // (David Dag Vanderpuije exploit path 2).
-                          <div className="w-full flex items-center gap-3 px-4 py-3 min-h-[56px]">
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs text-muted-foreground mb-0.5">
-                                Bacenta
-                              </p>
-                              <p className="text-sm font-medium text-foreground truncate">
-                                {memberChurch?.bacenta?.name}
-                              </p>
-                            </div>
+                      {memberChurch?.bacenta && inScope && (
+                        <button
+                          type="button"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 active:bg-muted transition-colors min-h-[56px]"
+                          onClick={() => {
+                            clickCard(memberChurch?.bacenta)
+                            navigate('/bacenta/displaydetails')
+                          }}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground mb-0.5">
+                              Bacenta
+                            </p>
+                            <p className="text-sm font-medium text-foreground truncate">
+                              {memberChurch?.bacenta?.name}
+                            </p>
                           </div>
-                        ))}
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        </button>
+                      )}
+                      {!inScope && memberChurch?.bacentaSummary?.name && (
+                        // Out-of-scope: name-only display via the unscoped
+                        // `bacentaSummary` @cypher field. No click target,
+                        // no chevron, no hover state — drilling into a
+                        // foreign Bacenta detail page stays blocked (the
+                        // David Dag Vanderpuije history-log → member →
+                        // bacenta walk).
+                        <div className="w-full flex items-center gap-3 px-4 py-3 min-h-[56px]">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground mb-0.5">
+                              Bacenta
+                            </p>
+                            <p className="text-sm font-medium text-foreground truncate">
+                              {memberChurch.bacentaSummary.name}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                       {/* Basonta is informational — no navigation target */}
                       {memberChurch?.basonta && (
                         <div className="px-4 py-3">

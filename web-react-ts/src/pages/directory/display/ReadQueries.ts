@@ -163,6 +163,15 @@ export const DISPLAY_MEMBER_CHURCH = gql`
           }
         }
       }
+      # Unscoped fallback so a cross-scope viewer (e.g. David Dag viewing a
+      # foreign member) still sees the member's bacenta name as text on the
+      # profile. The full \`bacenta\` relationship above is filtered to null
+      # by \`@churchScoped(Bacenta)\` for out-of-scope viewers; this provides
+      # the display-only summary without leaking the full Bacenta node.
+      bacentaSummary {
+        id
+        name
+      }
       basonta {
         id
         name

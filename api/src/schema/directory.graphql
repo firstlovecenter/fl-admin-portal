@@ -90,6 +90,20 @@ type Member @node{
     )
   loggedHistory: [HistoryLog!]! @relationship(type: "LOGGED_BY", direction: IN)
   bacenta: Bacenta @relationship(type: "BELONGS_TO", direction: OUT)
+  # Display-only summary of the member's bacenta — id + name only. Unscoped
+  # so a cross-scope viewer can still see "[Member] belongs to [Bacenta]"
+  # on the member profile for organisational context, even when the full
+  # `bacenta` relationship above is filtered to null by the Bacenta spine
+  # read-filter. No leader, members, history, services, or financials are
+  # exposed — those remain gated behind the scoped relationship and the
+  # spine read-filter. The frontend MUST treat this purely as text; the
+  # unscoped id is NOT a valid navigation target (`useCanViewChurch` will
+  # return false for an out-of-scope bacenta).
+  bacentaSummary: BacentaSummary
+    @cypher(
+      statement: "MATCH (this)-[:BELONGS_TO]->(b:Bacenta) RETURN { id: b.id, name: b.name } AS bacentaSummary LIMIT 1"
+      columnName: "bacentaSummary"
+    )
   basonta: Basonta @relationship(type: "BELONGS_TO", direction: OUT)
   leadsBacenta: [Bacenta!]! @relationship(type: "LEADS", direction: OUT)
   leadsBacentaCount: Int
@@ -263,6 +277,16 @@ type Member @node{
   #OTHER WORKS
   was_treasurer_for: [ServiceRecord!]!
     @relationship(type: "WAS_TREASURER_FOR", direction: OUT)
+}
+
+# Display-only summary of a Bacenta, returned by `Member.bacentaSummary`.
+# Declared WITHOUT `@node` so `@neo4j/graphql` v7 treats this as a plain
+# RPC response shape and does NOT auto-generate CRUD queries/mutations
+# against a Neo4j `BacentaSummary` label. Carries id + name only — the
+# full Bacenta node remains gated by the spine read-filter on Bacenta.
+type BacentaSummary {
+  id: String
+  name: String
 }
 
 type Gender @node{
