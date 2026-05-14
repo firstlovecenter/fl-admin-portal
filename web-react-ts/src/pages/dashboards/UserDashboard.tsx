@@ -40,6 +40,7 @@ import {
   getMonthlyStatAverage,
   getServiceGraphData,
 } from 'pages/services/graphs/graphs-utils'
+import WeeklyTipCard from 'components/dashboard/WeeklyTipCard'
 import useComponentQuery from './useComponentQuery'
 import TrendSpark from './TrendSpark'
 import { getHourlyGreeting } from './greetings'
@@ -619,6 +620,9 @@ const UserDashboard = () => {
                 </div>
               </div>
             </section>
+
+            {/* ── AI-generated tip of the week ── */}
+            <WeeklyTipCard churchId={selectedScope?.churchId} />
 
             {/* ── Bacenta weekly tasks ── */}
             {assessmentChurch?.__typename === 'Bacenta' && (

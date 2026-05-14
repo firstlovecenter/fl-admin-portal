@@ -495,3 +495,92 @@ attributed to X, even after the transfer.
   is the correct semantic for Model A.
 - `recomputedAt: datetime()` is now stamped on every aggregate write, giving
   ops a way to reason about how fresh a given aggregate is.
+
+## ADR-015 — AI Assistant knowledge base lives in Neo4j; RAG via vector indexes
+
+**Status:** Accepted, 2026-05-14.
+
+**Context:** Phase 1 of the AI Assistant ships a per-leader "tip of the
+week" widget on the unified dashboard. Each tip is grounded in (1) the
+founder's books, (2) Scripture, and (3) the leader's own 12-week trend
+data (attendance, bussing, income). We considered several storage
+options for the knowledge base — a separate vector DB (Pinecone /
+Weaviate), Postgres + pgvector, or extending the existing Neo4j store —
+before settling on Neo4j.
+
+**Decision:**
+1. **Knowledge base lives in the same Neo4j as the rest of the app.**
+   New labels: `:Book`, `:BookChapter`, `:BookPassage`, `:Verse`,
+   `:WeeklyTip`. Relationships are spelled out in
+   `kb/05-data-entities.md`.
+2. **Embeddings** are OpenAI `text-embedding-3-small` — 1536 dimensions,
+   cosine similarity. Stored as Neo4j `Float[]` on `:BookPassage` and
+   `:Verse`. Vector indexes are `bookPassageEmbedding` and
+   `verseEmbedding` (created via
+   `api/src/scripts/setup-vector-indexes.js`).
+3. **Tip generation** uses Anthropic Claude — `claude-haiku-4-5` as the
+   primary model with `claude-sonnet-4-6` as the JSON-recovery
+   fallback. Generation runs once per **church** per ISO week in a
+   background Lambda (`api/src/functions/background/weekly-tip-generator/`)
+   keyed `<churchId>-<year>-<week>` per ADR-014. The tip belongs to the
+   church — co-leaders share it, and a leader of multiple churches gets
+   one tip per church (the dashboard shows the tip for the currently
+   selected scope). The Lambda is idempotent — `MERGE … SET` on
+   `:WeeklyTip` — so re-runs are safe.
+4. **Bible translations** ingested are KJV and WEB (both public
+   domain). The model picks the more readable translation per quote.
+5. **Trends** are computed inline by the Lambda from the same raw
+   `ServiceRecord` / `BussingRecord` data the dashboard reads (Bacenta
+   level) or from stored `AggregateServiceRecord` / `AggregateBussingRecord`
+   nodes (Governorship+). The "trend brief" passed to the LLM is
+   numeric-only — no leader names, no PII.
+6. **Chat (Phase 2)** will be built with
+   [`@assistant-ui`](https://www.assistant-ui.com/) and will reuse the
+   same retrieval pipeline. A separate ADR will cover the streaming
+   transport choice when Phase 2 lands.
+
+**Why not a dedicated vector DB?**
+- The retrieval queries are graph-shaped — a passage is anchored to a
+  chapter, which is anchored to a book; a tip cites a verse and a
+  passage; future work will join retrieval against the leader's own
+  church spine. Keeping everything in one graph store is a meaningful
+  ergonomic win.
+- Neo4j 5's vector indexes are first-class — `db.index.vector.queryNodes`
+  returns nodes with cosine scores; we get HNSW-grade recall without
+  running a second service.
+- Operational cost: one DB to back up, one driver to maintain, one
+  network hop per request. Pinecone / Weaviate would add a per-token
+  cost and a separate failure mode.
+
+**Why OpenAI embeddings over Voyage?**
+- Voyage is the Anthropic-recommended pairing and would be the cleanest
+  single-vendor choice, but `text-embedding-3-small` is roughly 10× cheaper
+  per token, the dimension is well-supported (1536), and the quality gap
+  on doctrinal/scripture prose is small enough that the cost difference
+  dominates. Revisitable if Voyage pricing or quality changes.
+
+**Why pre-compute weekly tips?**
+- Predictable cost — one Claude call per leader per week instead of one
+  per dashboard load.
+- Predictable latency — the dashboard renders the tip in ~30 ms from a
+  cached Neo4j read, not 2–4 s waiting on an LLM.
+- Reviewable — a Denomination admin can inspect `WeeklyTip` nodes before
+  the week starts; "regenerate this tip" is a future affordance.
+- Failure-tolerant — a per-leader Lambda error skips one leader, not the
+  whole batch.
+
+**Consequences:**
+- New AWS secret keys: `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` live in
+  `dev/fl-admin-portal` and `prod/fl-admin-portal`, loaded via
+  `loadSecrets()` like every other external credential.
+- Prod must run `setup-vector-indexes.js` before the feature ships
+  (tracked under SYN-116 in Jira).
+- New ingestion scripts (`ingest-book.js`, `ingest-bible.js`) write
+  large amounts of data and are CLI-only — they are not exposed via
+  GraphQL. Re-running them is idempotent.
+- Vector indexes carry a real disk cost (~6 KB per 1536-dim row × tens
+  of thousands of verses + passages). Acceptable but worth monitoring.
+- `WeeklyTip` writes never store PII in the body — the system prompt
+  forbids leader names, and the trend brief passed to the model is
+  numeric-only.
+

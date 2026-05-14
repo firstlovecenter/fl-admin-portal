@@ -224,6 +224,27 @@ interface CouncilForAccounts extends Council {
 }
 ```
 
+## AI Assistant knowledge base (ADR-015)
+
+Phase 1 of the AI Assistant adds five node labels backing the dashboard
+"tip of the week" widget. Two of them carry 1536-dim vector embeddings
+(OpenAI `text-embedding-3-small`) and are reachable via the
+`bookPassageEmbedding` and `verseEmbedding` vector indexes.
+
+| Label | Keying | Notes |
+| --- | --- | --- |
+| `:Book` | `id` = slug of title | One per ingested founder book. Constraint: unique id. |
+| `:BookChapter` | `id` = `<bookId>-c<order>` | Linked `(Book)-[:HAS_CHAPTER]->(BookChapter)`. |
+| `:BookPassage` | `id` = `<chapterId>-p<order>` | Carries `text`, `embedding` (1536 floats), `citationLabel`, `order`, `tokenCount`. Linked `(BookChapter)-[:HAS_PASSAGE]->(BookPassage)` and `(BookPassage)-[:NEXT_PASSAGE]->(BookPassage)` for context expansion. Indexed by `bookPassageEmbedding`. |
+| `:Verse` | `id` = `<translation>-<abbrev>-<chapter>-<verse>` (e.g. `KJV-JHN-3-16`) | KJV + WEB ingested; both public domain. Carries `book`, `chapter`, `verse`, `translation`, `text`, `embedding`. Indexed by `verseEmbedding`. |
+| `:WeeklyTip` | `id` = `<churchId>-<year>-<week>` (ADR-014 keying) | Written by the weekly-tip-generator Lambda. **The tip belongs to the church, not the leader** — co-leaders of one church share a tip; a leader of multiple churches gets one tip per church and the dashboard shows the tip for the currently-selected scope. Outgoing edges: `(WeeklyTip)-[:CITES_SCRIPTURE]->(Verse)`, `(WeeklyTip)-[:QUOTES_PASSAGE]->(BookPassage)`, `(WeeklyTip)-[:RECOMMENDS_BOOK]->(Book)`. Inbound: `(Church)-[:HAS_WEEKLY_TIP]->(WeeklyTip)` where `Church` is the interface implemented by `:Bacenta`, `:Governorship`, `:Council`, `:Stream`, `:Campus`, `:Oversight`, `:Denomination` — the resolver's primary lookup edge. |
+
+Ingestion scripts live at `api/src/scripts/ingest-book.js` and
+`api/src/scripts/ingest-bible.js`. They are CLI-only and call OpenAI
+embeddings + write directly to Neo4j. The runtime resolver
+(`myWeeklyTip` in `api/src/resolvers/assistant/`) reads `WeeklyTip`
+nodes only — it never calls an LLM.
+
 ## Constants and validation
 
 Defined in `web-react-ts/src/global-utils.ts`:

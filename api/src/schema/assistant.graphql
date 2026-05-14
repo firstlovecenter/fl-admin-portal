@@ -1,0 +1,93 @@
+# AI Assistant — Phase 1 knowledge-base + weekly tip read surface.
+#
+# Writes (book / verse / tip ingestion) happen via CLI scripts + the
+# weekly-tip-generator Lambda — not via GraphQL mutations. The runtime
+# surface here is therefore declared with `@mutation(operations: [])` and
+# `@query(operations: [])` so `@neo4j/graphql` does NOT auto-generate root
+# CRUD operations against these labels — without these directives, any
+# authenticated user could run `weeklyTips { … }` / `books { … }` and harvest
+# the entire knowledge base or mutate it.
+#
+# A WeeklyTip belongs to a CHURCH, not a leader. Every leader of that church
+# (or admin attached to it) reads the same tip; a leader of multiple churches
+# fetches a separate tip per church via `weeklyTipForChurch(churchId)`. The
+# dashboard passes the current scope's churchId.
+#
+# The only public read surface is the custom `weeklyTipForChurch` resolver,
+# which gates on `permitLeaderAdmin('Bacenta')` AND verifies the caller has
+# the requested churchId in `$jwt.allowedChurchIds`. `WeeklyTip` additionally
+# carries an `@authorization` filter that scopes any read of the type to a
+# church the caller is allowed to see, in case future SDL changes reopen
+# root access.
+
+type Book
+  @node
+  @mutation(operations: [])
+  @query(operations: []) {
+  id: ID!
+  title: String!
+  author: String!
+  subtitle: String
+  publishedYear: Int
+}
+
+type BookChapter
+  @node
+  @mutation(operations: [])
+  @query(operations: []) {
+  id: ID!
+  title: String!
+  order: Int!
+}
+
+type BookPassage
+  @node
+  @mutation(operations: [])
+  @query(operations: []) {
+  id: ID!
+  text: String!
+  citationLabel: String!
+  order: Int!
+}
+
+type Verse
+  @node
+  @mutation(operations: [])
+  @query(operations: []) {
+  id: ID!
+  book: String!
+  chapter: Int!
+  verse: Int!
+  translation: String!
+  text: String!
+}
+
+type WeeklyTip
+  @node
+  @mutation(operations: [])
+  @query(operations: [])
+  @authorization(
+    filter: [
+      { where: { node: { church: { id_IN: "$jwt.allowedChurchIds" } } } }
+    ]
+  ) {
+  id: ID!
+  week: Int!
+  year: Int!
+  body: String!
+  generatedAt: DateTime!
+  church: Church @relationship(type: "HAS_WEEKLY_TIP", direction: IN)
+  scripture: Verse
+    @relationship(type: "CITES_SCRIPTURE", direction: OUT)
+  quotedPassage: BookPassage
+    @relationship(type: "QUOTES_PASSAGE", direction: OUT)
+  recommendedBook: Book
+    @relationship(type: "RECOMMENDS_BOOK", direction: OUT)
+}
+
+extend type Query {
+  # Returns the WeeklyTip generated for the current ISO week/year for the
+  # requested church, or null if none has been generated yet. The resolver
+  # rejects requests for churches not in the caller's `$jwt.allowedChurchIds`.
+  weeklyTipForChurch(churchId: ID!): WeeklyTip
+}

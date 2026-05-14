@@ -16,6 +16,7 @@ import MakeServantResolvers from './directory/make-servant-resolvers'
 import { reportsResolvers } from './reports/reports-resolvers'
 import shepherdingControlResolvers from './shepherding-control/shepherding-control-resolvers'
 import uploadMutations from './uploads/upload-resolvers'
+import assistantResolvers from './assistant/assistant-resolvers'
 
 const dotenv = require('dotenv')
 
@@ -151,6 +152,7 @@ const resolvers = {
 
   Query: {
     ...shepherdingControlResolvers.Query,
+    ...assistantResolvers.Query,
     // Returns the per-edge authority that `index.js` already computed and
     // attached to `context.jwt`. No Cypher executes here — the cache
     // round-trip happened at request-context construction. The FE calls
