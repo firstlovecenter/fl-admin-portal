@@ -91,29 +91,53 @@ const buildHigherLevelTrendBrief = (services, bussing, churchLevel) => {
   )} per week; income avg GHS ${avgInc.toFixed(0)} per week. Total bussing attendance over the window: ${bussingTotal}.`
 }
 
-const SYSTEM_PROMPT = `You are a pastoral assistant for First Love Center, a Pentecostal church based in Accra, Ghana. You write short, encouraging weekly tips for church leaders.
+// Role framing by level — describes WHO the leader leads and HOW to frame
+// advice. Book mentions are SOFT recommendations: use whichever supplied
+// passage best fits the question; the vector search has already filtered
+// to semantically relevant material. Never pick a book the retrieval did
+// not surface just because the level "should" use it.
+const levelGuidance = (churchLevel) => {
+  switch (churchLevel) {
+    case 'Bacenta':
+      return `The leader is a BACENTA LEADER — they shepherd members directly in a small group. Speak to them as a shepherd of sheep: direct, day-to-day pastoral care of their members. Bacenta leaders are often helped by "What it Means to Become a Shepherd" and "The Mega Church" — but only if those surface in the supplied passages.`
+    case 'Governorship':
+      return `The leader is a GOVERNOR — they lead Bacenta leaders (under-shepherds) within their Governorship. They are a shepherd of shepherds. FRAME advice as something they should TEACH their Bacenta leaders to do, not just apply themselves. Governors are often helped by "What it Means to Become a Shepherd" and "The Mega Church" — but only if those surface in the supplied passages.`
+    case 'Council':
+      return `The leader is a COUNCIL Bishop — they lead Governors who lead Bacenta leaders. Frame advice as strategic, big-picture moves. Where useful, suggest content they can pass DOWN as teaching for the Governors and Bacenta leaders under them. Bishops are often helped by "Church Growth" and "The Mega Church" — but only if those surface in the supplied passages.`
+    default:
+      return `The leader is a ${churchLevel} leader, operating at a level above Council. Frame advice as strategic, oversight-level guidance. Where useful, suggest content they can equip the leaders under them with. Use whichever supplied passages best fit — common touchstones at this level include "Church Growth", "The Mega Church" and "Many Are Called", but only when they surface in the retrieval.`
+  }
+}
 
-Your tips are grounded in:
-1. The leader's recent ministry trends (attendance, bussing, income) — provided as a brief numeric summary.
-2. Retrieved passages from the founder's books — provided with citation labels.
-3. Retrieved Bible verses — provided with book/chapter/verse and translation.
+const buildSystemPrompt = (churchLevel) => `You are a pastoral assistant for First Love Center, a Pentecostal church based in Accra, Ghana. You write very short, warm weekly tips for church leaders.
 
-Constraints:
-- Tips must be 80–150 words, warm, practical, and specific to the leader's situation.
-- Always quote one Bible verse and one founder's passage.
-- Recommend one book the leader could read next from the supplied passages' source books.
-- Output STRICT JSON only, no prose around it.
-- Never mention the leader's name (you don't have it).
+${levelGuidance(churchLevel)}
+
+The founder of the church is Bishop Dag Heward-Mills. Leaders affectionately call him "Prophet" or "Daddy". ALWAYS refer to him as Prophet or Daddy — NEVER as "the founder", "the author", or his full name (the book recommendation card displays his name separately).
+
+Output structure (HARD — the FE renders each field separately, so DO NOT cram them together):
+- body: ONE short sentence (15–25 words) — the actionable nudge for this week. Warm and direct, no preamble like "this week...". Do NOT include the scripture, the founder quote, or the prayer here — those go in their own fields.
+- scriptureSnippet: a short quote — a SUBSTRING of the supplied verse's text. Max ~25 words. Pick the most pastorally relevant phrase from the verse. If verses are empty, return an empty string.
+- passageSnippet: a short quote — a SUBSTRING of the supplied passage's text. Max ~25 words. Pick the sentence that most directly addresses this week's situation. If passages are empty, return an empty string.
+- prayerPrompt: ONE short sentence inviting the leader to pray about this specific situation. Mandatory for every tip.
+
+Other rules:
+- Never invent quotes — both snippets MUST be substrings of what's supplied.
 - Never repeat the numeric trend brief verbatim — interpret it.
+- Never mention the leader's name (you don't have it).
+- Recommend one book the leader could read next from the supplied passages' source books. If passages are empty, leave bookId and passageId as empty strings.
+- Output STRICT JSON only, no prose around it.
 
 Output JSON shape:
 {
-  "body": "plain-text tip suitable for a card UI",
-  "bodyMarkdown": "same tip with simple markdown (italics for scripture, bold for the book recommendation)",
-  "verseId": "id of the chosen verse from the verses list",
-  "passageId": "id of the chosen passage from the passages list",
-  "bookId": "id of the recommended book — must match the chosen passage's bookId",
-  "rationale": "one sentence on why this advice fits — internal-only, will not be shown"
+  "body": "...",
+  "scriptureSnippet": "...",
+  "passageSnippet": "...",
+  "prayerPrompt": "...",
+  "verseId": "id of the chosen verse from the verses list (empty if none)",
+  "passageId": "id of the chosen passage from the passages list (empty if none)",
+  "bookId": "id of the recommended book — must match the chosen passage's bookId (empty if none)",
+  "rationale": "one sentence on why this fits — internal-only, will not be shown"
 }`
 
 const buildUserPrompt = ({ churchLevel, churchName, trendBrief, passages, verses }) => {
@@ -246,11 +270,14 @@ const processChurchInner = async ({
     score: r.get('score'),
   }))
 
-  if (passages.length === 0 || verses.length === 0) {
+  // Skip only when BOTH knowledge bases are empty — a tip with passages and
+  // no verse (or vice versa) is still useful; the SDL declares both edges as
+  // optional. The prompt below tells the model to omit the missing block.
+  if (passages.length === 0 && verses.length === 0) {
     return {
       churchId: church.churchId,
       status: 'skipped',
-      reason: `Retrieval returned ${passages.length} passages and ${verses.length} verses — knowledge base may be empty.`,
+      reason: 'Retrieval returned 0 passages and 0 verses — knowledge base is empty.',
     }
   }
 
@@ -273,7 +300,7 @@ const processChurchInner = async ({
 
   // Generate the tip.
   const { parsed, model } = await generateTipJson(anthropic, {
-    system: SYSTEM_PROMPT,
+    system: buildSystemPrompt(church.churchLevel),
     user: buildUserPrompt({
       churchLevel: church.churchLevel,
       churchName: church.churchName,
@@ -284,10 +311,40 @@ const processChurchInner = async ({
   })
 
   // Defensive: ensure the model picked ids that actually exist in our supplied
-  // lists. Fall back to the top-scoring item if it hallucinated.
-  const verseId = verses.find((v) => v.id === parsed.verseId)?.id || verses[0].id
-  const passage = passages.find((p) => p.id === parsed.passageId) || passages[0]
-  const bookId = parsed.bookId === passage.bookId ? parsed.bookId : passage.bookId
+  // lists. Fall back to the top-scoring item if it hallucinated, but tolerate
+  // empty passage / verse lists (the skip rule only blocks BOTH being empty).
+  const verse = verses.find((v) => v.id === parsed.verseId) || verses[0] || null
+  const passage =
+    passages.find((p) => p.id === parsed.passageId) || passages[0] || null
+  const verseId = verse?.id ?? null
+  const passageId = passage?.id ?? null
+  const bookId = passage?.bookId ?? null
+
+  // Defensive snippet handling — clip to ~30 words and require substring of
+  // the relevant text. The prompt says "must be a substring"; this catches
+  // cases where the model paraphrased anyway.
+  const clipSnippet = (snippet, source) => {
+    if (!snippet || typeof snippet !== 'string') return null
+    const trimmed = snippet.trim().replace(/^["']|["']$/g, '')
+    if (!trimmed) return null
+    const words = trimmed.split(/\s+/).slice(0, 30).join(' ')
+    if (source && !source.toLowerCase().includes(words.toLowerCase())) {
+      // Not a substring — fall back to the first ~30 words of the source.
+      return source.split(/\s+/).slice(0, 30).join(' ')
+    }
+    return words
+  }
+
+  const scriptureSnippet = verse
+    ? clipSnippet(parsed.scriptureSnippet, verse.text)
+    : null
+  const passageSnippet = passage
+    ? clipSnippet(parsed.passageSnippet, passage.text)
+    : null
+  const prayerPrompt =
+    typeof parsed.prayerPrompt === 'string' && parsed.prayerPrompt.trim()
+      ? parsed.prayerPrompt.trim()
+      : 'Take a few minutes today to pray about this and ask the Lord for wisdom.'
 
   await session.run(UPSERT_WEEKLY_TIP_CYPHER, {
     churchId: church.churchId,
@@ -295,10 +352,13 @@ const processChurchInner = async ({
     week: neo4j.int(week),
     year: neo4j.int(year),
     body: parsed.body,
+    scriptureSnippet,
+    passageSnippet,
+    prayerPrompt,
     model,
     inputHash,
     verseId,
-    passageId: passage.id,
+    passageId,
     bookId,
   })
 

@@ -7,6 +7,9 @@ export const WEEKLY_TIP_FOR_CHURCH = gql`
       week
       year
       body
+      scriptureSnippet
+      passageSnippet
+      prayerPrompt
       generatedAt
       scripture {
         id
@@ -38,6 +41,9 @@ export type WeeklyTipForChurchResult = {
     week: number
     year: number
     body: string
+    scriptureSnippet: string | null
+    passageSnippet: string | null
+    prayerPrompt: string | null
     generatedAt: string
     scripture: {
       id: string

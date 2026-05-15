@@ -1,30 +1,115 @@
+import { useState } from 'react'
 import { useQuery } from '@apollo/client'
-import { motion } from 'motion/react'
-import { Sparkles, BookOpen, Quote, BookMarked } from 'lucide-react'
+import {
+  BookMarked,
+  BookOpen,
+  ChevronDown,
+  HandHeart,
+  Quote,
+  Sparkles,
+} from 'lucide-react'
 import { Skeleton } from 'components/ui/skeleton'
+import { cn } from 'components/lib/utils'
 import {
   WEEKLY_TIP_FOR_CHURCH,
   type WeeklyTipForChurchResult,
 } from 'pages/dashboards/userWeeklyTipQueries'
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 8 },
-  show: { opacity: 1, y: 0 },
-}
-
 type Props = {
   churchId: string | null | undefined
 }
 
+type Tip = NonNullable<WeeklyTipForChurchResult['weeklyTipForChurch']>
+
+const SectionHeader = () => (
+  <div className="flex items-center gap-2 border-b border-border px-4 py-2.5 lg:py-3">
+    <Sparkles
+      className="size-3.5 lg:size-4"
+      style={{ color: 'hsl(var(--arrivals))' }}
+    />
+    <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground lg:text-xs">
+      Tip of the week
+    </h3>
+  </div>
+)
+
+const ExpandedDetails = ({ tip }: { tip: Tip }) => {
+  const {
+    scripture,
+    scriptureSnippet,
+    quotedPassage,
+    passageSnippet,
+    prayerPrompt,
+  } = tip
+  const scriptureQuote = scriptureSnippet || scripture?.text
+  const passageQuote = passageSnippet || quotedPassage?.text
+
+  if (!scriptureQuote && !passageQuote && !prayerPrompt) return null
+
+  return (
+    <div className="space-y-3 border-t border-border/60 px-4 py-3 lg:py-4">
+      {scriptureQuote && scripture && (
+        <div className="flex gap-2.5">
+          <BookOpen
+            className="mt-0.5 size-3.5 shrink-0"
+            style={{ color: 'hsl(var(--arrivals))' }}
+          />
+          <div className="min-w-0 flex-1">
+            <blockquote className="text-xs italic leading-relaxed text-foreground">
+              &ldquo;{scriptureQuote}&rdquo;
+            </blockquote>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {scripture.book} {scripture.chapter}:{scripture.verse} (
+              {scripture.translation})
+            </p>
+          </div>
+        </div>
+      )}
+
+      {passageQuote && quotedPassage && (
+        <div className="flex gap-2.5">
+          <Quote
+            className="mt-0.5 size-3.5 shrink-0"
+            style={{ color: 'hsl(var(--arrivals))' }}
+          />
+          <div className="min-w-0 flex-1">
+            <blockquote className="text-xs leading-relaxed text-foreground">
+              &ldquo;{passageQuote}&rdquo;
+            </blockquote>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              Daddy
+              {tip.recommendedBook ? ` — ${tip.recommendedBook.title}` : ''}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {prayerPrompt && (
+        <div className="flex gap-2.5">
+          <HandHeart
+            className="mt-0.5 size-3.5 shrink-0"
+            style={{ color: 'hsl(var(--brand))' }}
+          />
+          <p className="text-xs leading-relaxed text-foreground">
+            {prayerPrompt}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /**
- * Renders the current week's tip for the church the leader has selected in
- * their scope picker. The tip belongs to the church, not the leader — a
- * leader of multiple churches sees a distinct tip per scope; co-leaders of
- * the same church see the same tip. Returns null when no churchId is
- * available (e.g. before the scope context has hydrated) or when the Lambda
- * hasn't produced this week's tip yet.
+ * Weekly-tip surface. Always renders as an inline card in the dashboard
+ * aside on every breakpoint — mobile uses tighter spacing + smaller type.
+ *
+ * Default state shows only the headline tip + book recommendation; a
+ * "View more" toggle reveals the scripture snippet, founder passage
+ * snippet, and prayer prompt. Hides the noise on the dashboard while
+ * keeping the deeper content one tap away.
  */
 const WeeklyTipCard = ({ churchId }: Props) => {
+  const [expanded, setExpanded] = useState(false)
   const { data, loading } = useQuery<WeeklyTipForChurchResult>(
     WEEKLY_TIP_FOR_CHURCH,
     {
@@ -38,17 +123,11 @@ const WeeklyTipCard = ({ churchId }: Props) => {
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-border bg-card p-6">
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-muted-foreground" />
-          <h2 className="text-base font-medium text-foreground">
-            Tip of the week
-          </h2>
-        </div>
-        <div className="mt-4 space-y-3">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-11/12" />
-          <Skeleton className="h-4 w-3/4" />
+      <section className="overflow-hidden rounded-2xl border border-border bg-card">
+        <SectionHeader />
+        <div className="space-y-2 p-4">
+          <Skeleton className="h-3.5 w-11/12 lg:h-4" />
+          <Skeleton className="h-3.5 w-3/4 lg:h-4" />
         </div>
       </section>
     )
@@ -57,89 +136,61 @@ const WeeklyTipCard = ({ churchId }: Props) => {
   const tip = data?.weeklyTipForChurch
   if (!tip) return null
 
-  const { scripture, quotedPassage, recommendedBook } = tip
+  const hasMore =
+    Boolean(tip.scripture || tip.quotedPassage || tip.prayerPrompt)
 
   return (
-    <motion.section
-      initial="hidden"
-      animate="show"
-      variants={fadeUp}
-      className="rounded-2xl border border-border bg-card p-6"
-    >
-      <div className="flex items-center gap-2">
-        <Sparkles
-          className="size-4"
-          style={{ color: 'hsl(var(--arrivals))' }}
-        />
-        <h2 className="text-base font-medium text-foreground">
-          Tip of the week
-        </h2>
+    <section className="overflow-hidden rounded-2xl border border-border bg-card">
+      <SectionHeader />
+
+      {/* Always-visible: body sentence + book recommendation */}
+      <div className="space-y-3 p-4">
+        <p className="text-xs font-medium leading-relaxed text-foreground lg:text-sm">
+          {tip.body}
+        </p>
+
+        {tip.recommendedBook && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/40 p-3">
+            <BookMarked
+              className="mt-0.5 size-3.5 shrink-0"
+              style={{ color: 'hsl(var(--arrivals))' }}
+            />
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Read next
+              </p>
+              <p className="mt-0.5 text-xs font-medium text-foreground">
+                {tip.recommendedBook.title}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {tip.recommendedBook.author}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-foreground">
-        {tip.body}
-      </p>
+      {/* Expanded: scripture + passage + prayer */}
+      {expanded && <ExpandedDetails tip={tip} />}
 
-      {scripture && (
-        <figure className="mt-5 rounded-xl border border-border/60 bg-muted/30 p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            <BookOpen className="size-3.5" />
-            Scripture
-          </div>
-          <blockquote className="mt-2 text-sm italic leading-relaxed text-foreground">
-            “{scripture.text}”
-          </blockquote>
-          <figcaption className="mt-2 text-xs text-muted-foreground">
-            {scripture.book} {scripture.chapter}:{scripture.verse} (
-            {scripture.translation})
-          </figcaption>
-        </figure>
-      )}
-
-      {quotedPassage && (
-        <figure className="mt-3 rounded-xl border border-border/60 bg-muted/30 p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            <Quote className="size-3.5" />
-            From the founder
-          </div>
-          <blockquote className="mt-2 text-sm leading-relaxed text-foreground">
-            {quotedPassage.text}
-          </blockquote>
-          <figcaption className="mt-2 text-xs text-muted-foreground">
-            {quotedPassage.citationLabel}
-            {recommendedBook ? ` — ${recommendedBook.title}` : ''}
-          </figcaption>
-        </figure>
-      )}
-
-      {recommendedBook && (
-        <div className="mt-4 flex items-start gap-3 rounded-xl border border-border/60 bg-muted/30 p-4">
-          <BookMarked
-            className="size-4 shrink-0"
-            style={{ color: 'hsl(var(--arrivals))' }}
-          />
-          <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Recommended reading
-            </p>
-            <p className="mt-1 text-sm font-medium text-foreground">
-              {recommendedBook.title}
-            </p>
-            {recommendedBook.subtitle && (
-              <p className="text-xs text-muted-foreground">
-                {recommendedBook.subtitle}
-              </p>
+      {/* Toggle */}
+      {hasMore && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="flex w-full items-center justify-center gap-1.5 border-t border-border/60 bg-muted/30 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          {expanded ? 'Show less' : 'View more'}
+          <ChevronDown
+            className={cn(
+              'size-3.5 transition-transform',
+              expanded && 'rotate-180'
             )}
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {recommendedBook.author}
-              {recommendedBook.publishedYear
-                ? ` · ${recommendedBook.publishedYear}`
-                : ''}
-            </p>
-          </div>
-        </div>
+          />
+        </button>
       )}
-    </motion.section>
+    </section>
   )
 }
 

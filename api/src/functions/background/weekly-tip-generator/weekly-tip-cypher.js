@@ -134,9 +134,13 @@ WHERE any(l IN labels(church) WHERE l IN [
   'Bacenta','Governorship','Council','Stream','Campus','Oversight','Denomination'
 ])
 MERGE (tip:WeeklyTip {id: $tipId})
-SET tip.week = $week,
+SET tip.churchId = $churchId,
+    tip.week = $week,
     tip.year = $year,
     tip.body = $body,
+    tip.scriptureSnippet = $scriptureSnippet,
+    tip.passageSnippet = $passageSnippet,
+    tip.prayerPrompt = $prayerPrompt,
     tip.generatedAt = datetime(),
     tip.model = $model,
     tip.inputHash = $inputHash

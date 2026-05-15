@@ -87,6 +87,18 @@ const embedBatch = async (openai, texts) => {
   return out
 }
 
+/**
+ * Embeds a single string. Convenience wrapper over `embedBatch` for the
+ * resolver-side chat path, mirroring the Lambda's `llm-client.js` export.
+ */
+const embedSingle = async (openai, text) => {
+  const [vec] = await embedBatch(openai, [text])
+  if (!vec) {
+    throw new Error('OpenAI embedding returned no vector')
+  }
+  return vec
+}
+
 module.exports = {
   EMBEDDING_MODEL,
   EMBEDDING_DIMS,
@@ -96,5 +108,6 @@ module.exports = {
   buildOpenAI,
   buildAnthropic,
   embedBatch,
+  embedSingle,
   summariseError,
 }

@@ -18,9 +18,12 @@ const loadSecrets = async () => {
 
   try {
     const client = new SecretsManagerClient({
-      region: process.env.AWS_REGION || 'us-east-1',
+      region: process.env.AWS_REGION || 'eu-west-2',
     })
-    const secretName = process.env.AWS_SECRET_NAME || 'fl-synago-secrets'
+    // The project's dev secret is named via AWS_SECRET_NAME (typically
+    // `dev/fl-admin-portal`); fall back to the same default the main API
+    // uses so the CLI runner doesn't drift from `api/src/resolvers/secrets.ts`.
+    const secretName = process.env.AWS_SECRET_NAME || 'secret'
     const response = await client.send(
       new GetSecretValueCommand({ SecretId: secretName })
     )

@@ -253,6 +253,7 @@ const resolvers = {
     ...serviceNoIncomeMutations,
     ...accountsMutations,
     ...uploadMutations,
+    ...assistantResolvers.Mutation,
   },
 }
 

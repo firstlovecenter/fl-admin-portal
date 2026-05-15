@@ -39,6 +39,8 @@ const STATEMENTS = [
   `CREATE CONSTRAINT book_chapter_id IF NOT EXISTS FOR (c:BookChapter) REQUIRE c.id IS UNIQUE`,
   `CREATE CONSTRAINT book_passage_id IF NOT EXISTS FOR (p:BookPassage) REQUIRE p.id IS UNIQUE`,
   `CREATE CONSTRAINT verse_id IF NOT EXISTS FOR (v:Verse) REQUIRE v.id IS UNIQUE`,
+  `CREATE CONSTRAINT chat_session_id IF NOT EXISTS FOR (s:ChatSession) REQUIRE s.id IS UNIQUE`,
+  `CREATE CONSTRAINT chat_message_id IF NOT EXISTS FOR (m:ChatMessage) REQUIRE m.id IS UNIQUE`,
 ]
 
 async function main() {

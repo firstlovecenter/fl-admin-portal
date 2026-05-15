@@ -114,6 +114,21 @@ const readPdf = async (file) => {
   return data.text
 }
 
+// Decode the common HTML entities EPUB content leaves behind after tag
+// stripping (&nbsp;, &amp;, &quot;, &#39;, &apos;, &lt;, &gt;). Without
+// this step passages end up with literal "&nbsp;" sprinkled through the
+// text, which the assistant happily quotes back at the leader.
+const decodeHtmlEntities = (text) =>
+  text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+
 // EPUB readers give us pre-split chapter files via `epub.flow`. We use those
 // directly instead of trying to re-split a concatenated string with a regex —
 // HTML-stripped EPUB text has no internal newlines, which breaks
@@ -132,8 +147,9 @@ const readEpubChapters = (file) =>
               err ? rej(err) : res(text)
             )
           })
-          const body = html
-            .replace(/<[^>]+>/g, ' ')
+          const body = decodeHtmlEntities(
+            html.replace(/<[^>]+>/g, ' ')
+          )
             .replace(/\s+/g, ' ')
             .trim()
           if (!body) continue

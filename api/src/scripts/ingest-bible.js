@@ -40,6 +40,7 @@ const {
   EMBEDDING_DIMS,
 } = require('./utils/llm-client')
 const { buildNeo4jDriver } = require('./utils/neo4j-driver')
+const { toParatext } = require('./utils/paratext')
 
 const args = process.argv.slice(2)
 const getFlag = (name, fallback = undefined) => {
@@ -68,7 +69,11 @@ Optional:
 
 const translation = getFlag('translation')
 const inputPath = getFlag('input')
-const writeBatchSize = parseInt(getFlag('batchSize', '500'), 10)
+// Default batch size dropped from 500 → 100 after dev Neo4j hit a critical
+// transaction error at 2k commands/batch with 1536-dim embedding payloads.
+// 100 verses × ~6KB embedding ≈ 600KB/transaction — comfortably within
+// Neo4j's commit limits on a single-instance dev box.
+const writeBatchSize = parseInt(getFlag('batchSize', '100'), 10)
 
 if (!translation || !inputPath) {
   console.error('Missing required flag. Run with --help for usage.')
@@ -94,30 +99,77 @@ SET v.book = row.book,
 RETURN count(v) AS upserted
 `
 
+/**
+ * Flattens the scrollmapper / bible_databases nested JSON shape:
+ *   [{ name: 'Genesis', chapters: [{ chapter: 1, verses: [{verse: 1, text: '...'}] }] }]
+ * into our flat verse-array shape with Paratext 3-letter abbreviations.
+ * Verses whose book name doesn't map to a known abbreviation are skipped
+ * with a warning (e.g. apocrypha that we don't ingest for Phase 1).
+ */
+function flattenScrollmapper(books) {
+  const out = []
+  const skipped = new Set()
+  for (const book of books) {
+    const abbreviation = toParatext(book.name)
+    if (!abbreviation) {
+      skipped.add(book.name)
+      continue
+    }
+    for (const chapter of book.chapters || []) {
+      for (const verse of chapter.verses || []) {
+        out.push({
+          book: book.name,
+          abbreviation,
+          chapter: chapter.chapter,
+          verse: verse.verse,
+          text: verse.text,
+        })
+      }
+    }
+  }
+  if (skipped.size) {
+    console.warn(
+      `  Skipped ${skipped.size} book(s) with no Paratext mapping: ${[...skipped].join(', ')}`
+    )
+  }
+  return out
+}
+
 async function main() {
   console.log(`Ingesting Bible: translation=${translation} input=${absoluteInputPath}`)
 
   const raw = fs.readFileSync(absoluteInputPath, 'utf-8')
-  let verses
+  let parsed
   try {
-    verses = JSON.parse(raw)
+    parsed = JSON.parse(raw)
   } catch (err) {
     console.error('Input file is not valid JSON:', err.message)
     process.exit(1)
   }
-  if (!Array.isArray(verses)) {
-    console.error('Input JSON must be a flat array of verse objects.')
+
+  // Accept either:
+  //   1. Flat array `[{book, abbreviation, chapter, verse, text}, ...]`
+  //   2. Scrollmapper nested `{ books: [{ name, chapters: [{ chapter, verses: [{verse, text}] }] }] }`
+  //   3. Same but at the top level (some scrollmapper variants).
+  let verses
+  if (Array.isArray(parsed)) {
+    verses = parsed
+  } else if (parsed && Array.isArray(parsed.books)) {
+    verses = flattenScrollmapper(parsed.books)
+  } else if (parsed && Array.isArray(parsed.chapters)) {
+    // Single-book form — rare but possible.
+    verses = flattenScrollmapper([parsed])
+  } else {
+    console.error(
+      'Unrecognised JSON shape. Expected flat verse array or scrollmapper `{ books: [...] }`.'
+    )
     process.exit(1)
   }
   console.log(`  Parsed ${verses.length.toLocaleString()} verse(s).`)
 
-  // Validate shape on a single record to fail before LLM calls.
-  const first = verses[0]
-  for (const key of ['book', 'abbreviation', 'chapter', 'verse', 'text']) {
-    if (first[key] === undefined) {
-      console.error(`First record missing required key: ${key}. Got: ${JSON.stringify(first)}`)
-      process.exit(1)
-    }
+  if (verses.length === 0) {
+    console.error('No verses produced from input. Aborting.')
+    process.exit(1)
   }
 
   const SECRETS = await loadSecrets()

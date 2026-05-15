@@ -621,9 +621,6 @@ const UserDashboard = () => {
               </div>
             </section>
 
-            {/* ── AI-generated tip of the week ── */}
-            <WeeklyTipCard churchId={selectedScope?.churchId} />
-
             {/* ── Bacenta weekly tasks ── */}
             {assessmentChurch?.__typename === 'Bacenta' && (
               <BacentaWeeklyTasks
@@ -766,6 +763,10 @@ const UserDashboard = () => {
             variants={fadeUp}
             className="space-y-4 lg:sticky lg:top-6"
           >
+            {/* AI-generated tip of the week — mobile renders as an icon
+                button (Dialog), desktop renders as an inline aside card. */}
+            <WeeklyTipCard churchId={selectedScope?.churchId} />
+
             {/* Quick actions: 2x2 grid on mobile, list rows on lg */}
             <section className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="border-b border-border px-4 py-3">
