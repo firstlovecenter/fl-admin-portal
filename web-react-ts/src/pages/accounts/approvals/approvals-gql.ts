@@ -6,7 +6,10 @@ export const GET_COUNCIL_PENDING_APPROVAL_TRANSACTIONS = gql`
       councils {
         id
         name
-        transactions(where: { status: { eq: "pending approval" } }) {
+        # Aliased so CouncilForAccounts.transactions / Approvals.tsx
+        # consumers stay unchanged. Server-side filtered + LIMIT 500 capped;
+        # see Council.pendingApprovalTransactions in api/src/schema/accounts.graphql.
+        transactions: pendingApprovalTransactions {
           id
           createdAt
           lastModified
