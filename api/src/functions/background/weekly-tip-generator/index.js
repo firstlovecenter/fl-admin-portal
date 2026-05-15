@@ -253,6 +253,9 @@ const processChurchInner = async ({
     bookId: r.get('bookId'),
     bookTitle: r.get('bookTitle'),
     bookAuthor: r.get('bookAuthor'),
+    chapterId: r.get('chapterId'),
+    chapterTitle: r.get('chapterTitle'),
+    chapterOrder: toNumber(r.get('chapterOrder')),
     score: r.get('score'),
   }))
 
@@ -319,6 +322,7 @@ const processChurchInner = async ({
   const verseId = verse?.id ?? null
   const passageId = passage?.id ?? null
   const bookId = passage?.bookId ?? null
+  const chapterId = passage?.chapterId ?? null
 
   // Defensive snippet handling — clip to ~30 words and require substring of
   // the relevant text. The prompt says "must be a substring"; this catches
@@ -360,6 +364,7 @@ const processChurchInner = async ({
     verseId,
     passageId,
     bookId,
+    chapterId,
   })
 
   return {

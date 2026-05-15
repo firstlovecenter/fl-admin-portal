@@ -31,6 +31,11 @@ export const WEEKLY_TIP_FOR_CHURCH = gql`
         subtitle
         publishedYear
       }
+      recommendedChapter {
+        id
+        title
+        order
+      }
     }
   }
 `
@@ -64,6 +69,11 @@ export type WeeklyTipForChurchResult = {
       author: string
       subtitle: string | null
       publishedYear: number | null
+    } | null
+    recommendedChapter: {
+      id: string
+      title: string
+      order: number
     } | null
   } | null
 }

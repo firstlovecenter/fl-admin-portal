@@ -91,7 +91,7 @@ const RETRIEVE_PASSAGES_CYPHER = `
 CALL db.index.vector.queryNodes('bookPassageEmbedding', $k, $vec)
 YIELD node, score
 WHERE score > 0.30
-MATCH (book:Book)-[:HAS_CHAPTER]->(:BookChapter)-[:HAS_PASSAGE]->(node)
+MATCH (book:Book)-[:HAS_CHAPTER]->(chapter:BookChapter)-[:HAS_PASSAGE]->(node)
 RETURN
   node.id AS id,
   node.text AS text,
@@ -99,6 +99,9 @@ RETURN
   book.id AS bookId,
   book.title AS bookTitle,
   book.author AS bookAuthor,
+  chapter.id AS chapterId,
+  chapter.title AS chapterTitle,
+  chapter.order AS chapterOrder,
   score
 ORDER BY score DESC
 `
@@ -155,6 +158,9 @@ DELETE oldQ
 WITH tip
 OPTIONAL MATCH (tip)-[oldR:RECOMMENDS_BOOK]->()
 DELETE oldR
+WITH tip
+OPTIONAL MATCH (tip)-[oldC:RECOMMENDS_CHAPTER]->()
+DELETE oldC
 
 WITH tip
 OPTIONAL MATCH (v:Verse {id: $verseId})
@@ -170,6 +176,11 @@ WITH tip
 OPTIONAL MATCH (b:Book {id: $bookId})
 FOREACH (_ IN CASE WHEN b IS NULL THEN [] ELSE [1] END |
   MERGE (tip)-[:RECOMMENDS_BOOK]->(b)
+)
+WITH tip
+OPTIONAL MATCH (ch:BookChapter {id: $chapterId})
+FOREACH (_ IN CASE WHEN ch IS NULL THEN [] ELSE [1] END |
+  MERGE (tip)-[:RECOMMENDS_CHAPTER]->(ch)
 )
 RETURN tip.id AS tipId
 `

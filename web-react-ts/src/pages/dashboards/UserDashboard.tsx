@@ -545,6 +545,11 @@ const UserDashboard = () => {
           )}
         </motion.header>
 
+        {/* ── Tip of the week — mobile only, right after the greeting ── */}
+        <motion.div variants={fadeUp} className="mt-6 lg:hidden">
+          <WeeklyTipCard churchId={selectedScope?.churchId} />
+        </motion.div>
+
         {/* ── Canonical 2-column grid: primary (1fr) + supporting (360px) on lg+ ── */}
         <motion.div
           variants={sectionStagger}
@@ -763,9 +768,11 @@ const UserDashboard = () => {
             variants={fadeUp}
             className="space-y-4 lg:sticky lg:top-6"
           >
-            {/* AI-generated tip of the week — mobile renders as an icon
-                button (Dialog), desktop renders as an inline aside card. */}
-            <WeeklyTipCard churchId={selectedScope?.churchId} />
+            {/* AI-generated tip of the week — desktop-only inline aside card.
+                Mobile version renders above the grid, right after the greeting. */}
+            <div className="hidden lg:block">
+              <WeeklyTipCard churchId={selectedScope?.churchId} />
+            </div>
 
             {/* Quick actions: 2x2 grid on mobile, list rows on lg */}
             <section className="overflow-hidden rounded-2xl border border-border bg-card">

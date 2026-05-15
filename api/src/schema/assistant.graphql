@@ -77,6 +77,8 @@ type WeeklyTip
     @relationship(type: "QUOTES_PASSAGE", direction: OUT)
   recommendedBook: Book
     @relationship(type: "RECOMMENDS_BOOK", direction: OUT)
+  recommendedChapter: BookChapter
+    @relationship(type: "RECOMMENDS_CHAPTER", direction: OUT)
 }
 
 # ---------------------------------------------------------------------------

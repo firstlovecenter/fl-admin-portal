@@ -165,6 +165,14 @@ const WeeklyTipCard = ({ churchId }: Props) => {
               <p className="text-[11px] text-muted-foreground">
                 {tip.recommendedBook.author}
               </p>
+              {tip.recommendedChapter && (
+                <p className="mt-1 text-[11px] font-medium text-muted-foreground">
+                  Ch. {tip.recommendedChapter.order}
+                  {tip.recommendedChapter.title
+                    ? ` — ${tip.recommendedChapter.title}`
+                    : ''}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -179,7 +187,7 @@ const WeeklyTipCard = ({ churchId }: Props) => {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="flex w-full items-center justify-center gap-1.5 border-t border-border/60 bg-muted/30 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="flex min-h-11 w-full items-center justify-center gap-1.5 border-t border-border/60 bg-muted/30 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:bg-muted active:text-foreground"
         >
           {expanded ? 'Show less' : 'View more'}
           <ChevronDown
