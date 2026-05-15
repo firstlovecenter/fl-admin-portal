@@ -104,11 +104,21 @@ extend type Campus {
   # 1000 is irrelevant — even an explicit `limit: 100000` returns at most
   # 200 rows. Sort uses the new RANGE INDEX on AccountTransaction(lastModified)
   # added by api/src/scripts/migrate-account-transaction-lastmodified-index.js.
+  # SYN-106: project @relationship fields inside the @cypher. v7 resolves
+  # each @relationship via a per-row driver round-trip; an inline projection
+  # collapses the N+1.
   transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
-      RETURN transaction ORDER BY transaction.lastModified DESC, transaction.id SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      MATCH (this)-[:HAS*2]->(c:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      WITH transaction, c
+      ORDER BY transaction.lastModified DESC, transaction.id
+      SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      RETURN transaction {
+        .*,
+        loggedBy: head([(transaction)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName, .fullName }]),
+        council: c { .id, .name, leader: head([(c)<-[:LEADS]-(l:Member) | l { .id, .firstName, .lastName, .fullName }]) }
+      }
       """
       columnName: "transaction"
     )
@@ -162,11 +172,19 @@ extend type Stream {
   # 1000 is irrelevant — even an explicit `limit: 100000` returns at most
   # 200 rows. Sort uses the new RANGE INDEX on AccountTransaction(lastModified)
   # added by api/src/scripts/migrate-account-transaction-lastmodified-index.js.
+  # SYN-106 — see Campus.transactions above. No FE consumer projects
+  # `council` off Stream.transactions today, so only `loggedBy` is inlined.
   transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
-      RETURN transaction ORDER BY transaction.lastModified DESC, transaction.id SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      WITH transaction
+      ORDER BY transaction.lastModified DESC, transaction.id
+      SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      RETURN transaction {
+        .*,
+        loggedBy: head([(transaction)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName, .fullName }])
+      }
       """
       columnName: "transaction"
     )
@@ -200,11 +218,20 @@ extend type Council {
   # 1000 is irrelevant — even an explicit `limit: 100000` returns at most
   # 200 rows. Sort uses the new RANGE INDEX on AccountTransaction(lastModified)
   # added by api/src/scripts/migrate-account-transaction-lastmodified-index.js.
+  # SYN-106 — see Campus.transactions above; `this` is already the Council,
+  # so the FE walks the Council parent directly and only `loggedBy` needs
+  # inlining.
   transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
-      RETURN transaction ORDER BY transaction.lastModified DESC, transaction.id SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      WITH transaction
+      ORDER BY transaction.lastModified DESC, transaction.id
+      SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      RETURN transaction {
+        .*,
+        loggedBy: head([(transaction)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName, .fullName }])
+      }
       """
       columnName: "transaction"
     )
@@ -215,6 +242,32 @@ extend type Council {
       RETURN count(DISTINCT transaction) AS total
       """
       columnName: "total"
+    )
+  # Dedicated read for the /accounts/campus/approvals page. The paginated
+  # `transactions(limit, offset)` field above clamps at 200 rows server-side,
+  # so client-side filtering would silently drop pending items behind a busy
+  # success ledger. A defensive `LIMIT 500` caps the worst case if an
+  # approval queue ever stalls (e.g. an admin on extended leave) — well
+  # above any realistic pending count, but bounds payload size.
+  #
+  # Council-level only by design — the FE walks `campuses → councils →
+  # pendingApprovalTransactions` and aggregates client-side. Add a Campus
+  # or Stream variant only when a higher-level approvals view is needed.
+  # SYN-106 — same inline loggedBy projection as Council.transactions above.
+  pendingApprovalTransactions: [AccountTransaction!]!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      WHERE transaction.status = 'pending approval'
+      WITH transaction
+      ORDER BY transaction.lastModified DESC, transaction.id
+      LIMIT 500
+      RETURN transaction {
+        .*,
+        loggedBy: head([(transaction)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName, .fullName }])
+      }
+      """
+      columnName: "transaction"
     )
 }
 
