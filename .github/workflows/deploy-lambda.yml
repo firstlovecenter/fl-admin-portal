@@ -44,7 +44,15 @@ jobs:
           # Copy TypeScript resolvers to the temp directory
           cp -r api/src/resolvers/* api/temp-compiled-resolvers/
 
-          # Create a tsconfig.json file for compilation
+          # Strip test files — they must not ship in the Lambda artifact
+          find api/temp-compiled-resolvers \
+            \( -name "*.test.ts" -o -name "*.test.js" \
+            -o -name "*.spec.ts" -o -name "*.spec.js" \) \
+            -type f -delete
+
+          # Create a tsconfig.json file for compilation.
+          # allowJs is false so pre-built CJS files (e.g. resolvers/utils/llm-client.js)
+          # pass through untouched instead of triggering TS5055 against outDir: "./".
           echo '{
             "compilerOptions": {
               "target": "es2018",
@@ -55,7 +63,7 @@ jobs:
               "outDir": "./",
               "strict": false,
               "declaration": false,
-              "allowJs": true,
+              "allowJs": false,
               "skipLibCheck": true
             },
             "include": ["./**/*"],
