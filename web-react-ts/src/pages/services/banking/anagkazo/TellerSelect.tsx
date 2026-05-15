@@ -6,19 +6,27 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { FunctionReturnsVoid, Member, Stream } from 'global-types'
 import React, { useContext, useState } from 'react'
-import { Button, Col, Container, Modal, Row, Spinner } from 'react-bootstrap'
+import * as Yup from 'yup'
+import { Form, Formik, FormikHelpers } from 'formik'
+import { alertMsg, throwToSentry } from 'global-utils'
+import NoDataComponent from 'pages/arrivals/CompNoData'
+import SearchMember from 'components/formik/SearchMember'
+import { Loader2 } from 'lucide-react'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import ModalSubmitButton from './ModalSubmitButton'
 import {
   MAKE_STREAM_TELLER,
   REMOVE_STREAM_TELLER,
   STREAM_BANK_TELLERS,
 } from './Treasury.gql'
 import './TellerSelect.css'
-import * as Yup from 'yup'
-import { Form, Formik, FormikHelpers } from 'formik'
-import ModalSubmitButton from './ModalSubmitButton'
-import { alertMsg, throwToSentry } from 'global-utils'
-import NoDataComponent from 'pages/arrivals/CompNoData'
-import SearchMember from 'components/formik/SearchMember'
 
 interface StreamWithTellers extends Stream {
   tellers: Member[]
@@ -79,86 +87,89 @@ const TellerSelect = () => {
     try {
       await MakeStreamTeller({
         variables: {
-          streamId: streamId,
+          streamId,
           tellerId: values.tellerSelect,
         },
       })
 
       handleClose()
       onSubmitProps.setSubmitting(false)
-      alert('Stream Teller has been added successfully')
+      alertMsg('Stream Teller has been added successfully')
     } catch (e: any) {
       onSubmitProps.setSubmitting(false)
       throwToSentry(e)
     }
     onSubmitProps.setSubmitting(false)
-    return
   }
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <HeadingPrimary>{`Select ${stream?.name} Tellers`}</HeadingPrimary>
         <HeadingSecondary>
           Use the buttons below to choose tellers
         </HeadingSecondary>
         <div>{`Number of Active Bacentas: ${stream?.activeBacentaCount}`}</div>
 
-        <Modal
-          contentClassName="dark"
-          show={show}
-          onHide={handleClose}
-          centered
+        <Dialog
+          open={show}
+          onOpenChange={(open) => (open ? handleOpen() : handleClose())}
         >
-          <Modal.Header closeButton>
-            <Modal.Title>Choose a Treasurer</Modal.Title>
-          </Modal.Header>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Choose a Treasurer</DialogTitle>
+            </DialogHeader>
 
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={onSubmit}
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              onSubmit={onSubmit}
+            >
+              {(formik) => (
+                <Form>
+                  <div className="form-row">
+                    <SearchMember
+                      name="tellerSelect"
+                      initialValue={initialValues?.tellerName}
+                      placeholder="Select a Name"
+                      setFieldValue={formik.setFieldValue}
+                      aria-describedby="Member Search"
+                      error={formik.errors.tellerSelect}
+                    />
+                  </div>
+                  <DialogFooter className="mt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleClose}
+                    >
+                      Close
+                    </Button>
+                    <ModalSubmitButton formik={formik} onClick={handleClose} />
+                  </DialogFooter>
+                </Form>
+              )}
+            </Formik>
+          </DialogContent>
+        </Dialog>
+
+        <div className="mt-5 grid gap-2">
+          <Button
+            size="lg"
+            onClick={handleOpen}
+            className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
           >
-            {(formik) => (
-              <Form>
-                <Modal.Body>
-                  <Row className="form-row">
-                    <Col>
-                      <SearchMember
-                        name="tellerSelect"
-                        initialValue={initialValues?.tellerName}
-                        placeholder="Select a Name"
-                        setFieldValue={formik.setFieldValue}
-                        aria-describedby="Member Search"
-                        error={formik.errors.tellerSelect}
-                      />
-                    </Col>
-                  </Row>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button variant="secondary" onClick={handleClose}>
-                    Close
-                  </Button>
-                  <ModalSubmitButton formik={formik} onClick={handleClose} />
-                </Modal.Footer>
-              </Form>
-            )}
-          </Formik>
-        </Modal>
-
-        <div className="d-grid gap-2 mt-5">
-          <Button variant="success" size="lg" onClick={handleOpen}>
             Choose Treasurers
           </Button>
         </div>
 
         {stream?.tellers?.map((teller: Member) => (
-          <div key={teller.id}>
+          <div key={teller.id} className="space-y-2">
             <MemberDisplayCard member={teller} />
-            <div className="d-grid gap-2">
+            <div className="grid gap-2">
               <Button
                 disabled={submitting}
-                variant="danger"
+                variant="destructive"
                 onClick={async () => {
                   const confirmBox = window.confirm(
                     `Do you want to delete ${teller.fullName} as a teller`
@@ -169,7 +180,7 @@ const TellerSelect = () => {
                     try {
                       await RemoveStreamTeller({
                         variables: {
-                          streamId: streamId,
+                          streamId,
                           tellerId: teller.id,
                         },
                       })
@@ -183,8 +194,8 @@ const TellerSelect = () => {
               >
                 {submitting ? (
                   <>
-                    <Spinner animation="grow" size="sm" />
-                    <span> Submitting</span>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Submitting</span>
                   </>
                 ) : (
                   'Delete'
@@ -197,7 +208,7 @@ const TellerSelect = () => {
         {!stream?.tellers?.length && (
           <NoDataComponent text="You have no Bank Tellers at this time" />
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

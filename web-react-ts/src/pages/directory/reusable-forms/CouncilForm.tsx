@@ -7,14 +7,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_COUNCIL_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -24,10 +16,18 @@ import SearchMember from 'components/formik/SearchMember'
 import SearchGovernorship from 'components/formik/SearchGovernorship'
 import { FormikInitialValues } from 'components/formik/formik-types'
 import { Governorship, Stream } from 'global-types'
-import { MOVE_GOVERNORSHIP_TO_COUNCIL } from '../update/UpdateMutations'
 import NoDataComponent from 'pages/arrivals/CompNoData'
-import { DISPLAY_COUNCIL, DISPLAY_STREAM } from '../display/ReadQueries'
 import BtnSubmitText from 'components/formik/BtnSubmitText'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { MOVE_GOVERNORSHIP_TO_COUNCIL } from '../update/UpdateMutations'
+import { DISPLAY_COUNCIL, DISPLAY_STREAM } from '../display/ReadQueries'
 
 export interface CouncilFormValues extends FormikInitialValues {
   stream?: Stream
@@ -78,21 +78,24 @@ const CouncilForm = ({
   })
 
   return (
-    <Container>
+    <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{initialValues.name + ' Council'}</HeadingSecondary>
-      <ButtonGroup className="mt-3">
+      <HeadingSecondary>{`${initialValues.name} Council`}</HeadingSecondary>
+      <div className="mt-3 inline-flex gap-2">
         {!newCouncil && (
           <>
             <Button onClick={() => setGovernorshipModal(true)}>
               Add Governorship
             </Button>
-            <Button variant="success" onClick={() => setCloseDown(true)}>
-              {`Close Down Council`}
+            <Button
+              className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+              onClick={() => setCloseDown(true)}
+            >
+              Close Down Council
             </Button>
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <Formik
         initialValues={initialValues}
@@ -101,21 +104,20 @@ const CouncilForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
-                  {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="mb-2 space-y-3">
                     <Input
                       name="name"
-                      label={`Name of Council`}
-                      placeholder={`Name of Council`}
+                      label="Name of Council"
+                      placeholder="Name of Council"
                     />
 
-                    <Row className="d-flex align-items-center mb-3">
+                    <div className="mb-3 flex items-center">
                       <RoleView roles={permitAdmin('Stream')}>
-                        <Col>
+                        <div className="flex-1">
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -125,139 +127,156 @@ const CouncilForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
-                    <div className="d-grid gap-2">
-                      {initialValues.governorships?.length && (
-                        <p className="fw-bold fs-5">Governorships</p>
-                      )}
+                    </div>
+                    <div className="grid gap-2">
+                      {initialValues.governorships?.length ? (
+                        <p className="text-lg font-semibold">Governorships</p>
+                      ) : null}
 
                       {initialValues.governorships?.map(
                         (governorship, index) => {
-                          if (!governorship && !index)
-                            return <NoDataComponent text="No Governorships" />
+                          if (!governorship && !index) {
+                            return (
+                              <NoDataComponent
+                                text="No Governorships"
+                                key="no"
+                              />
+                            )
+                          }
                           return (
-                            <Button variant="secondary" className="text-start">
+                            <Button
+                              key={governorship?.id ?? index}
+                              type="button"
+                              variant="secondary"
+                              className="justify-start text-left"
+                            >
                               {governorship.name} Governorship
                             </Button>
                           )
                         }
                       )}
                     </div>
-
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
-              <div className="text-center mt-5">
+              <div className="mt-5 text-center">
                 <SubmitButton formik={formik} />
               </div>
             </Form>
 
-            <Modal
-              show={governorshipModal}
-              onHide={() => setGovernorshipModal(false)}
-              centered
+            <Dialog
+              open={governorshipModal}
+              onOpenChange={setGovernorshipModal}
             >
-              <Modal.Header closeButton>Add A Governorship</Modal.Header>
-              <Modal.Body>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add A Governorship</DialogTitle>
+                </DialogHeader>
                 <p>Choose a governorship to move to this council</p>
                 <SearchGovernorship
-                  name={`governorship`}
+                  name="governorship"
                   placeholder="Governorship Name"
                   initialValue=""
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Governorship Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading || !formik.values.governorship}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await MoveGovernorshipToCouncil({
-                        variables: {
-                          governorshipId: formik.values.governorship?.id,
-                          historyRecord: `${formik.values.governorship?.name} Governorship has been moved to ${formik.values.name} Council from ${formik.values.governorship?.council.name} Council`,
-                          newCouncilId: councilId,
-                          oldCouncilId: formik.values.governorship?.council.id,
-                        },
-                      })
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+                    disabled={buttonLoading || !formik.values.governorship}
+                    onClick={async () => {
+                      try {
+                        setButtonLoading(true)
+                        const res = await MoveGovernorshipToCouncil({
+                          variables: {
+                            governorshipId: formik.values.governorship?.id,
+                            historyRecord: `${formik.values.governorship?.name} Governorship has been moved to ${formik.values.name} Council from ${formik.values.governorship?.council.name} Council`,
+                            newCouncilId: councilId,
+                            oldCouncilId:
+                              formik.values.governorship?.council.id,
+                          },
+                        })
 
-                      clickCard(res.data.MoveGovernorshipToCouncil)
-                      setGovernorshipModal(false)
-                    } catch (error) {
-                      throwToSentry(
-                        `There was an error moving this governorship to this council`,
-                        error
-                      )
-                    } finally {
-                      setButtonLoading(false)
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => setGovernorshipModal(false)}
-                >
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
+                        clickCard(res.data.MoveGovernorshipToCouncil)
+                        setGovernorshipModal(false)
+                      } catch (error) {
+                        throwToSentry(
+                          `There was an error moving this governorship to this council`,
+                          error
+                        )
+                      } finally {
+                        setButtonLoading(false)
+                      }
+                    }}
+                  >
+                    <BtnSubmitText loading={buttonLoading} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setGovernorshipModal(false)}
+                  >
+                    Close
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Council</Modal.Header>
-              <Modal.Body>
-                <p className="text-info">
+            <Dialog open={closeDown} onOpenChange={setCloseDown}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Close Down Council</DialogTitle>
+                </DialogHeader>
+                <p className="text-[hsl(var(--maps))]">
                   Are you sure you want to close down this council?
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await CloseDownCouncil({
-                        variables: {
-                          id: councilId,
-                          leaderId: initialValues.leaderId,
-                          adminId: initialValues?.adminId,
-                        },
-                      })
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+                    disabled={buttonLoading}
+                    onClick={async () => {
+                      try {
+                        setButtonLoading(true)
+                        const res = await CloseDownCouncil({
+                          variables: {
+                            id: councilId,
+                            leaderId: initialValues.leaderId,
+                            adminId: initialValues?.adminId,
+                          },
+                        })
 
-                      setButtonLoading(false)
-                      clickCard(res.data.CloseDownCouncil)
-                      setCloseDown(false)
-                      navigate(`/council/displayall`)
-                    } catch (error) {
-                      setButtonLoading(false)
-                      throwToSentry(
-                        `There was an error closing down this council`,
-                        error
-                      )
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
-                  No, take me back
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
+                        setButtonLoading(false)
+                        clickCard(res.data.CloseDownCouncil)
+                        setCloseDown(false)
+                        navigate(`/council/displayall`)
+                      } catch (error) {
+                        setButtonLoading(false)
+                        throwToSentry(
+                          `There was an error closing down this council`,
+                          error
+                        )
+                      }
+                    }}
+                  >
+                    <BtnSubmitText loading={buttonLoading} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCloseDown(false)}
+                  >
+                    No, take me back
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

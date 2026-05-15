@@ -1,5 +1,4 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { Button, Card, Container, Spinner, Table } from 'react-bootstrap'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
 import PlaceholderCustom from 'components/Placeholder'
@@ -9,15 +8,24 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Formik, Form, FormikHelpers } from 'formik'
 import { useNavigate } from 'react-router-dom'
 import usePopup from 'hooks/usePopup'
-import { CONFIRM_BANKING } from './Treasury.gql'
 import CloudinaryImage from 'components/CloudinaryImage'
 import { DISPLAY_AGGREGATE_SERVICE_RECORD } from 'pages/services/record-service/RecordServiceMutations'
 import { alertMsg, getWeekNumber, throwToSentry } from 'global-utils'
 import Popup from 'components/Popup/Popup'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import Input from 'components/formik/Input'
-import './TellerSelect.css'
 import { Church } from 'global-types'
+import { Loader2 } from 'lucide-react'
+import { Button } from 'components/ui/button'
+import { Card, CardFooter } from 'components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from 'components/ui/table'
+import { CONFIRM_BANKING } from './Treasury.gql'
+import './TellerSelect.css'
 
 type FormOptions = {
   defaulterSearch: string
@@ -81,6 +89,7 @@ const ConfirmAnagkazoBanking = () => {
 
   useEffect(() => {
     setDefaultersData(bankingDefaultersList)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [governorshipServices])
 
   const initialValues: FormOptions = {
@@ -88,12 +97,12 @@ const ConfirmAnagkazoBanking = () => {
   }
 
   return (
-    <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+    <div className="flex items-center justify-center">
+      <div className="mx-auto w-full max-w-screen-md px-4">
         <PlaceholderCustom xs={12} as="h1">
           <div className="text-center">
-            <h1 className="mb-0  page-header">{`${church?.name} ${churchType}`}</h1>
-            <p className={`menu-subheading`}>Receive Offering</p>
+            <h1 className="page-header mb-0">{`${church?.name} ${churchType}`}</h1>
+            <p className="menu-subheading">Receive Offering</p>
           </div>
         </PlaceholderCustom>
 
@@ -102,152 +111,148 @@ const ConfirmAnagkazoBanking = () => {
             <Formik initialValues={initialValues} onSubmit={onSubmit}>
               {() => (
                 <Form>
-                  <div>
-                    <Input
-                      className="form-control church-search search-center"
-                      name="defaulterSearch"
-                      placeholder="Search Churches"
-                      aria-describedby="Defaulter Search"
-                    />
-                  </div>
+                  <Input
+                    className="form-control church-search search-center"
+                    name="defaulterSearch"
+                    placeholder="Search Churches"
+                    aria-describedby="Defaulter Search"
+                  />
                 </Form>
               )}
             </Formik>
-            <div className="text-center mt-2 mb-3">Week {getWeekNumber()}</div>
-            <Container>
-              <div className="d-grid ">
-                {isOpen && (
-                  <Popup handleClose={togglePopup}>
-                    {governorshipServiceLoading ? (
-                      <div className="center-spinner">
-                        <Spinner animation="border" variant="secondary" />
-                      </div>
-                    ) : (
-                      <>
-                        <h3 className={` menu-subheading text-center`}>
-                          {selected?.name} {selected?.__typename}
-                        </h3>
-                        <h6 className="text-center">Confirm Offering?</h6>
-                        <Table striped bordered hover variant="dark">
-                          <tbody>
-                            <tr>
-                              <td>Income</td>
-                              <td className="text-break">{service?.income}</td>
-                            </tr>
-                            {service?.foreignCurrency && (
-                              <tr>
-                                <td>Foreign Currency</td>
-                                <td className="text-break">
-                                  {service?.foreignCurrency}
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </Table>
-                        <i className="text-danger">
-                          NB: You must only click this button if the amount the
-                          governorship is submitting is the same as what is
-                          displayed here
-                        </i>
-                        <div className="text-end mt-3">
-                          <Button
-                            variant="primary"
-                            type="submit"
-                            disabled={isSubmitting}
-                            onClick={async () => {
-                              setSubmitting(true)
-
-                              try {
-                                await ConfirmBanking({
-                                  variables: {
-                                    governorshipId: selected?.id,
-                                  },
-                                })
-                                togglePopup()
-                                alertMsg('Banking Confirmed Successfully')
-
-                                setSubmitting(false)
-                                refetch({ id: streamId })
-                                navigate('/anagkazo/receive-banking')
-                              } catch (error: any) {
-                                setSubmitting(false)
-                                throwToSentry(error)
-                              }
-                            }}
-                          >
-                            {isSubmitting ? (
-                              <>
-                                <Spinner animation="grow" size="sm" />
-                                <span> Submitting</span>
-                              </>
-                            ) : (
-                              `Yes, I'm sure`
-                            )}
-                          </Button>
-                          <Button variant="secondary" onClick={togglePopup}>
-                            No, take me back
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                  </Popup>
-                )}
-                {defaultersData?.map((defaulter: Defaulter, index: number) => (
-                  <Card key={index} className="confirm-banking-card mt-2">
-                    <div className="d-flex align-items-center">
-                      <div className="flex-shrink-0">
-                        <CloudinaryImage
-                          className="rounded-circle img-search"
-                          src={defaulter?.leader?.pictureUrl}
-                          alt={defaulter?.leader?.fullName}
-                        />
-                      </div>
-
-                      <div className="flex-grow-1 ms-3">
-                        <h6 className="fw-bold">{`${defaulter?.name} ${defaulter.__typename}`}</h6>
-                        <p className={`text-secondary mb-0 `}>
-                          <span>{defaulter?.leader?.fullName}</span>
-                        </p>
-                      </div>
+            <div className="mb-3 mt-2 text-center">Week {getWeekNumber()}</div>
+            <div className="grid gap-2">
+              {isOpen && (
+                <Popup handleClose={togglePopup}>
+                  {governorshipServiceLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
-                    <Card.Footer className="text-center">
-                      <Button
-                        disabled={governorshipServiceLoading}
-                        onClick={async () => {
-                          setDefaulterIndex(index)
-                          setSelected(defaulter)
-                          togglePopup()
-                          await getGovernorshipServiceRecordThisWeek({
-                            variables: {
-                              governorshipId: defaulter.id,
-                              week: getWeekNumber(),
-                            },
-                          })
-                        }}
-                        variant="info"
-                      >
-                        {governorshipServiceLoading &&
-                        index === defaulterIndex ? (
-                          <>
-                            <Spinner animation="border" size="sm" />{' '}
-                            <span>Loading...</span>
-                          </>
-                        ) : (
-                          'Confirm Offering'
-                        )}
-                      </Button>
-                    </Card.Footer>
-                  </Card>
-                ))}
-              </div>
+                  ) : (
+                    <>
+                      <h3 className="menu-subheading text-center">
+                        {selected?.name} {selected?.__typename}
+                      </h3>
+                      <h6 className="text-center">Confirm Offering?</h6>
+                      <Table className="border [&_td]:border [&_td]:border-border [&_tr:nth-child(even)]:bg-muted/40">
+                        <TableBody>
+                          <TableRow>
+                            <TableCell>Income</TableCell>
+                            <TableCell className="break-words">
+                              {service?.income}
+                            </TableCell>
+                          </TableRow>
+                          {service?.foreignCurrency && (
+                            <TableRow>
+                              <TableCell>Foreign Currency</TableCell>
+                              <TableCell className="break-words">
+                                {service?.foreignCurrency}
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                      <i className="text-destructive">
+                        NB: You must only click this button if the amount the
+                        governorship is submitting is the same as what is
+                        displayed here
+                      </i>
+                      <div className="mt-3 flex justify-end gap-2">
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          onClick={async () => {
+                            setSubmitting(true)
 
-              {!bankingDefaultersList?.length && !loading && (
-                <NoDataComponent text="There are no services to be confirmed" />
+                            try {
+                              await ConfirmBanking({
+                                variables: {
+                                  governorshipId: selected?.id,
+                                },
+                              })
+                              togglePopup()
+                              alertMsg('Banking Confirmed Successfully')
+
+                              setSubmitting(false)
+                              refetch({ id: streamId })
+                              navigate('/anagkazo/receive-banking')
+                            } catch (err: any) {
+                              setSubmitting(false)
+                              throwToSentry(err)
+                            }
+                          }}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Submitting</span>
+                            </>
+                          ) : (
+                            `Yes, I'm sure`
+                          )}
+                        </Button>
+                        <Button variant="outline" onClick={togglePopup}>
+                          No, take me back
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </Popup>
               )}
-            </Container>
+              {defaultersData?.map((defaulter: Defaulter, index: number) => (
+                <Card key={index} className="confirm-banking-card mt-2">
+                  <div className="flex items-center p-4">
+                    <CloudinaryImage
+                      className="img-search shrink-0 rounded-full"
+                      src={defaulter?.leader?.pictureUrl}
+                      alt={defaulter?.leader?.fullName}
+                    />
+
+                    <div className="ms-3 min-w-0 flex-1">
+                      <h6 className="font-bold">{`${defaulter?.name} ${defaulter.__typename}`}</h6>
+                      <p className="mb-0 text-sm text-muted-foreground">
+                        <span>{defaulter?.leader?.fullName}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <CardFooter className="justify-center pb-4">
+                    <Button
+                      disabled={governorshipServiceLoading}
+                      variant="default"
+                      className="bg-[hsl(var(--maps))] text-white hover:bg-[hsl(var(--maps))]/90"
+                      onClick={async () => {
+                        setDefaulterIndex(index)
+                        setSelected(defaulter)
+                        togglePopup()
+                        await getGovernorshipServiceRecordThisWeek({
+                          variables: {
+                            governorshipId: defaulter.id,
+                            week: getWeekNumber(),
+                          },
+                        })
+                      }}
+                    >
+                      {governorshipServiceLoading &&
+                      index === defaulterIndex ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />{' '}
+                          <span>Loading...</span>
+                        </>
+                      ) : (
+                        'Confirm Offering'
+                      )}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+
+            {!bankingDefaultersList?.length && !loading && (
+              <NoDataComponent text="There are no services to be confirmed" />
+            )}
           </div>
         </ApolloWrapper>
-      </Container>
+      </div>
     </div>
   )
 }

@@ -6,11 +6,10 @@ import PlaceholderCustom from 'components/Placeholder'
 import { getWeekNumber } from 'jd-date-utils'
 import useChurchLevel from 'hooks/useChurchLevel'
 import React from 'react'
-import { Container, Row, Col } from 'react-bootstrap'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import DefaulterCard from '../DefaulterCard'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from '../defaulters-types'
-import PullToRefresh from 'components/base-component/PullToRefresh'
 import {
   CAMPUS_STREAM_BANKED_LIST,
   DENOMINATION_STREAM_BANKED_LIST,
@@ -48,7 +47,7 @@ const StreamBanked = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div className="mx-auto w-full max-w-screen-md px-4">
           <HeadingPrimary
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
@@ -63,18 +62,17 @@ const StreamBanked = () => {
             <h6>{`Number Who Have Banked: ${church?.streamBankedThisWeek?.length}`}</h6>
           </PlaceholderCustom>
 
-          <Row>
+          <div className="grid gap-3">
             {church?.streamBankedThisWeek?.map((defaulter, i) => (
-              <Col key={i} xs={12} className="mb-3">
-                <DefaulterCard
-                  defaulter={defaulter}
-                  link="/stream/service-details"
-                />
-              </Col>
+              <DefaulterCard
+                key={i}
+                defaulter={defaulter}
+                link="/stream/service-details"
+              />
             ))}
             {!church && <PlaceholderDefaulterList />}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

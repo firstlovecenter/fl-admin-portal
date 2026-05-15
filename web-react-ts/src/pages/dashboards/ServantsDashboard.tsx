@@ -1,25 +1,24 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
-import './Dashboards.css'
 import { MemberContext } from 'contexts/MemberContext'
 import { useQuery } from '@apollo/client'
-import { SERVANT_CHURCH_LIST } from './DashboardQueries'
-import RoleCard from './RoleCard'
-import {
-  getServiceGraphData,
-  getMonthlyStatAverage,
-} from '../services/graphs/graphs-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import StatDisplay from 'pages/services/graphs/CompStatDisplay'
 import { isAuthorised } from 'global-utils'
 import { permitMe } from 'permission-utils'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Col, Row, Table, Container } from 'react-bootstrap'
-import Placeholder from '../../components/Placeholder'
+import { Role } from 'global-types'
+import Placeholder from 'components/Placeholder'
+import RoleCard from './RoleCard'
+import {
+  getServiceGraphData,
+  getMonthlyStatAverage,
+} from '../services/graphs/graphs-utils'
 import useComponentQuery from './useComponentQuery'
 import { getServantRoles } from './dashboard-utils'
-import { Role } from 'global-types'
+import { SERVANT_CHURCH_LIST } from './DashboardQueries'
+import './Dashboards.css'
 
 const ServantsDashboard = () => {
   const { memberId, currentUser } = useContext(MemberContext)
@@ -47,89 +46,84 @@ const ServantsDashboard = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-md space-y-3 px-4">
         <Placeholder loading={!servant?.fullName} as="p">
-          <p className="mb-0">{`Welcome to`}</p>
+          <p className="mb-0">Welcome to</p>
         </Placeholder>
         <Placeholder loading={!servant?.fullName} as="h5">
-          <h5 className="font-weight-bold roboto">{`${servant?.fullName}'s Dashboard`}</h5>
+          <h5 className="roboto text-lg font-semibold">{`${servant?.fullName}'s Dashboard`}</h5>
         </Placeholder>
 
         <div className="card-button-row">
-          <Table>
-            <tbody>
-              <tr /*className="row justify-content-start"*/>
-                {roles?.length ? (
-                  roles.map((role, i) => {
-                    return (
-                      <td
-                        className="col-auto p-0"
-                        key={i}
-                        onClick={() => {
-                          clickCard(servant)
-                          clickCard(role.church[0])
-                          navigate(role.link)
-                        }}
-                      >
-                        <RoleCard
-                          number={role.number}
-                          loading={!roles}
-                          authRoles={role.authRoles}
-                          role={role.name as Role}
-                        />
-                      </td>
-                    )
-                  })
-                ) : (
-                  <td className="col-auto pl-0">
-                    <RoleCard
-                      loading={!assessmentChurchData}
-                      number={''}
-                      authRoles=""
-                      role={'leaderBacenta'}
-                    />
-                  </td>
-                )}
-              </tr>
-            </tbody>
-          </Table>
+          <div className="-mx-1 flex flex-wrap items-stretch">
+            {roles?.length ? (
+              roles.map((role, i) => (
+                <div
+                  className="px-1"
+                  key={i}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    clickCard(servant)
+                    clickCard(role.church[0])
+                    navigate(role.link)
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      clickCard(servant)
+                      clickCard(role.church[0])
+                      navigate(role.link)
+                    }
+                  }}
+                >
+                  <RoleCard
+                    number={role.number}
+                    loading={!roles}
+                    authRoles={role.authRoles}
+                    role={role.name as Role}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="px-1">
+                <RoleCard
+                  loading={!assessmentChurchData}
+                  number=""
+                  authRoles=""
+                  role="leaderBacenta"
+                />
+              </div>
+            )}
+          </div>
         </div>
 
-        <>
-          <Row className="mt-3">
-            <Col>
-              <StatDisplay
-                title="Avg Weekly Attendance"
-                loading={!assessmentChurchData}
-                statistic={getMonthlyStatAverage(
-                  assessmentChurchData,
-                  'attendance'
-                )}
-              />
-            </Col>
-
-            <Col>
-              <StatDisplay
-                title={`Avg Weekly Income (${currentUser?.currency || 'GHS'})`}
-                loading={!assessmentChurchData}
-                statistic={getMonthlyStatAverage(
-                  assessmentChurchData,
-                  'income'
-                )}
-              />
-            </Col>
-          </Row>
-          <ChurchGraph
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <StatDisplay
+            title="Avg Weekly Attendance"
             loading={!assessmentChurchData}
-            stat1="attendance"
-            stat2="income"
-            church={assessmentChurch?.__typename.toLowerCase() || ''}
-            churchData={assessmentChurchData || []}
-            graphType="services"
-            secondaryTitle={`${assessmentChurch?.name} ${assessmentChurch?.__typename}`}
+            statistic={getMonthlyStatAverage(
+              assessmentChurchData,
+              'attendance'
+            )}
           />
-        </>
-      </Container>
+
+          <StatDisplay
+            title={`Avg Weekly Income (${currentUser?.currency || 'GHS'})`}
+            loading={!assessmentChurchData}
+            statistic={getMonthlyStatAverage(assessmentChurchData, 'income')}
+          />
+        </div>
+        <ChurchGraph
+          loading={!assessmentChurchData}
+          stat1="attendance"
+          stat2="income"
+          church={assessmentChurch?.__typename.toLowerCase() || ''}
+          churchData={assessmentChurchData || []}
+          graphType="services"
+          secondaryTitle={`${assessmentChurch?.name} ${assessmentChurch?.__typename}`}
+        />
+      </div>
     </ApolloWrapper>
   )
 }

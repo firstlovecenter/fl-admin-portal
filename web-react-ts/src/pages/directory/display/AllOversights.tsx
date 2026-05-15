@@ -1,14 +1,14 @@
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
-import { GET_DENOMINATION_OVERSIGHTS } from '../../../queries/ListQueries'
-import { ChurchContext } from '../../../contexts/ChurchContext'
-import RoleView from '../../../auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Container, Row, Col } from 'react-bootstrap'
 import { permitAdmin } from 'permission-utils'
 import AllChurchesSummary from 'components/AllChurchesSummary'
 import ChurchSearch from 'components/ChurchSearch'
+import { Button } from 'components/ui/button'
+import { GET_DENOMINATION_OVERSIGHTS } from '../../../queries/ListQueries'
+import { ChurchContext } from '../../../contexts/ChurchContext'
+import RoleView from '../../../auth/RoleView'
 
 const DisplayAllOversights = () => {
   const { clickCard, denominationId } = useContext(ChurchContext)
@@ -22,16 +22,16 @@ const DisplayAllOversights = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
-        <Row className="mb-2">
-          <Col>
+      <div className="mx-auto w-full max-w-screen-lg px-4">
+        <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
             <Link
               to="/oversight/displaydetails"
               onClick={() => {
                 clickCard(denomination)
               }}
             >
-              <h4 className="text-white">{`${denomination?.name} Denomination`}</h4>
+              <h4 className="text-base font-semibold text-foreground">{`${denomination?.name} Denomination`}</h4>
             </Link>
             <Link
               to="/member/displaydetails"
@@ -39,8 +39,10 @@ const DisplayAllOversights = () => {
                 clickCard(denomination?.leader)
               }}
             >
-              <h6 className="text-white text-small d-block ">
-                <span className="text-muted">Oversight Leader: </span>
+              <h6 className="block text-xs text-foreground">
+                <span className="text-muted-foreground">
+                  Oversight Leader:{' '}
+                </span>
                 {denomination?.leader
                   ? ` ${denomination.leader.fullName}`
                   : null}
@@ -48,25 +50,25 @@ const DisplayAllOversights = () => {
             </Link>
             {denomination?.admin ? (
               <Link
-                className="pb-4 text-white text-small"
+                className="pb-4 text-xs text-foreground"
                 to="/member/displaydetails"
                 onClick={() => {
                   clickCard(denomination?.admin)
                 }}
               >
-                <span className="text-muted">Admin :</span>{' '}
+                <span className="text-muted-foreground">Admin :</span>{' '}
                 {`${denomination?.admin?.fullName}`}
               </Link>
             ) : null}
-          </Col>
+          </div>
           <RoleView roles={permitAdmin('Denomination')} directoryLock>
-            <Col className="col-auto">
-              <Link to="/oversight/addoversight" className="btn btn-danger">
-                Add Oversight
-              </Link>
-            </Col>
+            <div className="shrink-0">
+              <Button asChild variant="destructive">
+                <Link to="/oversight/addoversight">Add Oversight</Link>
+              </Button>
+            </div>
           </RoleView>
-        </Row>
+        </div>
 
         <AllChurchesSummary
           church={oversights}
@@ -76,7 +78,7 @@ const DisplayAllOversights = () => {
           route="denomination"
         />
         <ChurchSearch data={oversights} churchType="Oversight" />
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

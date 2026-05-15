@@ -6,10 +6,8 @@ import { createApolloClient } from 'lib/createApolloClient'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import SimpleApp from './SimpleApp'
 
-// Custom CSS imports temporarily disabled to evaluate the dashboard with
-// only Tailwind + Shadcn driving the visuals. Keep `app.css` because it
-// is the Tailwind v4 entry point (and pulls in design tokens).
-// import 'bootstrap/dist/css/bootstrap.min.css'
+// Tailwind v4 entry (pulls in design tokens). The legacy color-theme.css and
+// index.css are still imported by individual component CSS files where needed.
 import './app.css'
 // import './color-theme.css'
 // import './index.css'

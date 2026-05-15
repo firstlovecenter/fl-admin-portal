@@ -3,10 +3,18 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import React, { useContext } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container, Table } from 'react-bootstrap'
-import { CAMPUS_BACENTA_SERVICES_THIS_WEEK } from './reportsServicesThisWeek'
 import { Bacenta, ServiceRecord } from 'global-types'
 import { CSVLink } from 'react-csv'
+import { Button } from 'components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from 'components/ui/table'
+import { CAMPUS_BACENTA_SERVICES_THIS_WEEK } from './reportsServicesThisWeek'
 
 const CampusBacentaServicesThisWeek = () => {
   const { campusId } = useContext(ChurchContext)
@@ -35,10 +43,10 @@ const CampusBacentaServicesThisWeek = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-lg space-y-4 px-4">
         <HeadingPrimary>{campus?.name} Campus Download Reports</HeadingPrimary>
 
-        <Button variant="outline-primary">
+        <Button asChild variant="outline">
           <CSVLink
             filename="Bacenta Services This Week"
             headers={csvHeaders}
@@ -48,29 +56,29 @@ const CampusBacentaServicesThisWeek = () => {
           </CSVLink>
         </Button>
 
-        <Table variant="dark" striped bordered hover>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Bacenta Name</th>
-              <th>Attendance</th>
-              <th>Income</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="border [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border [&_tr:nth-child(even)]:bg-muted/40">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Bacenta Name</TableHead>
+              <TableHead>Attendance</TableHead>
+              <TableHead>Income</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {campus?.servicesThisWeek.map((bacenta: Bacenta) =>
               bacenta?.services.map((service: ServiceRecord) => (
-                <tr key={service.id}>
-                  <td>{service.serviceDate.date}</td>
-                  <td>{bacenta.name}</td>
-                  <td>{service.attendance}</td>
-                  <td>{service.income}</td>
-                </tr>
+                <TableRow key={service.id}>
+                  <TableCell>{service.serviceDate.date}</TableCell>
+                  <TableCell>{bacenta.name}</TableCell>
+                  <TableCell>{service.attendance}</TableCell>
+                  <TableCell>{service.income}</TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
+          </TableBody>
         </Table>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

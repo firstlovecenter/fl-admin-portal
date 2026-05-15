@@ -1,8 +1,9 @@
 import React, { useContext } from 'react'
-import { Badge } from 'react-bootstrap'
+import { Badge } from 'components/ui/badge'
+import { cn } from 'components/lib/utils'
+import { MemberContext } from 'contexts/MemberContext'
 import '../QuickFacts.css'
 import { getPercentageChange } from './quick-fact-utils'
-import { MemberContext } from 'contexts/MemberContext'
 
 export interface IncomeDetailsInterface {
   churchType: string
@@ -28,27 +29,22 @@ const IncomeQuickFactsCard = (props: IncomeQuickFactsProps) => {
     details?.avgHigherLevelIncomeThisMonth as number
   )
 
-  const getBadgeBackground = () => {
-    if ((percentageRiseOrFall as number) >= 0) return 'green'
-    return 'red'
-  }
-
-  const getBadgeColor = () => {
-    if ((percentageRiseOrFall as number) >= 0) return 'badge-percentage-green'
-    return 'badge-percentage-red'
-  }
+  const isPositive = (percentageRiseOrFall as number) >= 0
 
   return (
-    <div className="w-100 text-center quick-fact-card" data-testid="incomeCard">
+    <div
+      className="quick-fact-card w-full text-center"
+      data-testid="incomeCard"
+    >
       <div className="church-text">{details?.churchType}</div>
-      <div className="stat-text ">
+      <div className="stat-text">
         {' '}
         Average Weekday <br />
         {details?.cardType}{' '}
       </div>
       <div className="leader-text">{details?.leadersName}</div>
       <div className="branch-text">
-        {details?.churchName + ' ' + details?.churchType}
+        {`${details?.churchName} ${details?.churchType}`}
       </div>
       <div className="income-number">
         <span className="currency">{currentUser.currency} </span>
@@ -58,10 +54,14 @@ const IncomeQuickFactsCard = (props: IncomeQuickFactsProps) => {
       </div>
       <div>
         <Badge
-          bg={`${getBadgeBackground()}`}
-          className={`${getBadgeColor()} mt-auto`}
+          className={cn(
+            'mt-auto',
+            isPositive
+              ? 'badge-percentage-green bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]'
+              : 'badge-percentage-red bg-destructive text-destructive-foreground hover:bg-destructive'
+          )}
         >
-          {(percentageRiseOrFall as number) >= 0 ? '+' : ''}
+          {isPositive ? '+' : ''}
           {percentageRiseOrFall}%
         </Badge>
       </div>

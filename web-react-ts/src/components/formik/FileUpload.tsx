@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { ErrorMessage } from 'formik'
 import { useMutation } from '@apollo/client'
-import TextError from './TextError/TextError'
-import { Container } from 'react-bootstrap'
-import './Formik.css'
-import { FormikComponentProps } from './formik-types'
 import { MoonLoader } from 'react-spinners'
 import { uploadToS3 } from 'utils/s3Upload'
+import { Button } from 'components/ui/button'
+import { cn } from 'components/lib/utils'
+import TextError from './TextError/TextError'
+import './Formik.css'
+import { FormikComponentProps } from './formik-types'
 import { GENERATE_PRESIGNED_URL } from './ImageUploadGQL'
 
 interface FileUploadProps extends FormikComponentProps {
@@ -43,7 +44,6 @@ const FileUpload = (props: FileUploadProps) => {
       setFile(fileUrl)
       setFieldValue(`${name}`, fileUrl)
     } catch (error: any) {
-      console.error('Upload error:', error)
       setUploadError(error.message || 'Failed to upload file')
     } finally {
       setLoading(false)
@@ -58,35 +58,37 @@ const FileUpload = (props: FileUploadProps) => {
         </label>
       ) : null}
       {loading && (
-        <Container className="my-3 img-container d-flex justify-content-center align-items-center border">
+        <div className="img-container mx-auto my-3 flex items-center justify-center rounded-md border border-border">
           <MoonLoader color="gray" />
-        </Container>
+        </div>
       )}
       {uploadError && (
-        <Container className="text-center text-danger my-2">
+        <div className="mx-auto my-2 text-center text-sm text-destructive">
           <small>{uploadError}</small>
-        </Container>
+        </div>
       )}
       {(file || initialValue) && !loading && (
-        <Container className="text-center img-container ">
+        <div className="img-container mx-auto flex items-center justify-center text-center">
           <img src={file || initialValue} className="img-preview" alt="" />
-        </Container>
+        </div>
       )}
       {!file && !initialValue && !loading && (
-        <Container className="text-center img-container border my-3"></Container>
+        <div className="img-container mx-auto my-3 rounded-md border border-border" />
       )}
-      <label className="w-100 text-center">
+      <label className="block w-full text-center">
         <input
           id={name}
           name={name}
-          style={{ display: 'none' }}
+          className="hidden"
           type="file"
           accept=".pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .jpg, .jpeg, .png, .gif, .mp3, .mp4, .mov, .avi, .wmv, .flv, .mkv, .zip, .rar, .gz, .tar, .7z"
           onChange={uploadFile}
           {...rest}
         />
 
-        <p className={`btn btn-primary px-5 file`}>{placeholder}</p>
+        <Button asChild className={cn('px-8 cursor-pointer')}>
+          <span>{placeholder}</span>
+        </Button>
       </label>
       {props.error && <TextError>{props.error}</TextError>}
       {!props.error ?? <ErrorMessage name={name} component={TextError} />}

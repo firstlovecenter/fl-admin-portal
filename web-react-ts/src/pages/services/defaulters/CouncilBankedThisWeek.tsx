@@ -3,16 +3,15 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { getWeekNumber } from 'jd-date-utils'
-import { Col, Container, Row } from 'react-bootstrap'
+import useChurchLevel from 'hooks/useChurchLevel'
+import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import PullToRefresh from 'components/base-component/PullToRefresh'
 import {
   CAMPUS_SERVICES_COUNCIL_JOINT_BANKED_LIST,
   STREAM_COUNCIL_JOINT_BANKED_LIST,
 } from './DefaultersQueries'
-import useChurchLevel from 'hooks/useChurchLevel'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PlaceholderDefaulterList from './PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from './defaulters-types'
-import PullToRefresh from 'components/base-component/PullToRefresh'
 import JointServiceDefaulterCard from './JointServiceDefaultersCard'
 
 const CouncilBankedThisWeek = () => {
@@ -35,7 +34,7 @@ const CouncilBankedThisWeek = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div className="mx-auto w-full max-w-screen-md px-4">
           <HeadingPrimary
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
@@ -48,18 +47,17 @@ const CouncilBankedThisWeek = () => {
             <h6>{`Services Which Banked This Week: ${church?.councilBankedThisWeek.length}`}</h6>
           </PlaceholderCustom>
 
-          <Row>
+          <div className="grid gap-3">
             {church?.councilBankedThisWeek.map((service, i) => (
-              <Col key={i} xs={12} className="mb-3">
-                <JointServiceDefaulterCard
-                  defaulter={service}
-                  link="/council/service-details"
-                />
-              </Col>
+              <JointServiceDefaulterCard
+                key={i}
+                defaulter={service}
+                link="/council/service-details"
+              />
             ))}
             {!church && <PlaceholderDefaulterList />}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

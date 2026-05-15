@@ -2,7 +2,6 @@ import MenuButton from 'components/buttons/MenuButton'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import { Church, UserRole } from 'global-types'
 import PlaceholderCustom from 'components/Placeholder'
@@ -14,19 +13,18 @@ const Churches = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="d-flex align-items-center justify-content-center ">
-      <Container>
+    <div className="flex items-center justify-center">
+      <div className="mx-auto w-full max-w-screen-md px-4">
         <div className="text-center">
           <PlaceholderCustom loading={!currentUser.fullName} xs={12} as="h1">
-            {' '}
-            <h1 className="mb-0 page-header">{`${currentUser.fullName}'s`}</h1>
+            <h1 className="page-header mb-0">{`${currentUser.fullName}'s`}</h1>
           </PlaceholderCustom>
           <PlaceholderCustom loading={!currentUser.fullName} as="p">
             <p className="text-secondary dark menu-caption">Churches</p>
           </PlaceholderCustom>
         </div>
 
-        <div className="d-grid gap-2 mt-5 text-left">
+        <div className="mt-5 grid gap-2 text-left">
           {userJobs.length ? (
             userJobs.map((job: UserRole) =>
               job.church.map((church: Church) => (
@@ -56,7 +54,7 @@ const Churches = () => {
             </>
           )}
         </div>
-      </Container>
+      </div>
     </div>
   )
 }

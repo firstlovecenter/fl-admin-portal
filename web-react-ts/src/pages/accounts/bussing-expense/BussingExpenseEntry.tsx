@@ -5,15 +5,23 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import useModal from 'hooks/useModal'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container, Modal } from 'react-bootstrap'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import { throwToSentry } from 'global-utils'
 import { newClientTransactionId } from 'lib/idempotency'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import { DEBIT_BUSSING_SOCIETY } from '../request-expense/expenseGQL'
 import { CouncilForAccounts } from '../accounts-types'
 
@@ -75,7 +83,7 @@ const BussingExpenseEntry = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <HeadingPrimary>{`${council?.name} ${council?.__typename} Expense Form`}</HeadingPrimary>
         <HeadingSecondary>
           Pls input the amount that was spent on bussing
@@ -87,76 +95,93 @@ const BussingExpenseEntry = () => {
         >
           {(formik) => (
             <Form>
-              <Container className="mb-4">
-                <div className="my-4">
-                  <Input
-                    name="amountSpent"
-                    label="How much are was spent on bussing today?"
-                    placeholder="Enter an amount"
-                  />
-                </div>
-
-                <Modal show={show} onHide={handleClose} centered scrollable>
-                  <Modal.Header closeButton>
-                    Please confirm the amount spent
-                  </Modal.Header>
-                  <Modal.Body>
-                    <p>
-                      Amount Spent:{' '}
-                      <span className="text-info">
-                        GHS{' '}
-                        {parseFloat(
-                          formik.values.amountSpent.toString()
-                        ).toLocaleString('en-US')}
-                      </span>
-                    </p>
-
-                    <p>
-                      Bussing Society Balance:{' '}
-                      <span className="text-info">
-                        GHS{' '}
-                        {parseFloat(
-                          council?.bussingSocietyBalance.toString()
-                        ).toLocaleString('en-US')}
-                      </span>
-                    </p>
-
-                    <p>
-                      Category: <span className="text-info">Bussing</span>
-                    </p>
-                    {council.bussingSocietyBalance <
-                      parseFloat(formik.values.amountSpent) && (
-                      <span className="text-danger fw-bold">
-                        Submitting this will send {council.name} Council balance
-                        into negative balance of{' '}
-                        {council.bussingSocietyBalance -
-                          parseFloat(formik.values.amountSpent)}{' '}
-                        GHS
-                      </span>
-                    )}
-                  </Modal.Body>
-
-                  <Modal.Footer>
-                    <SubmitButton
-                      onClick={formik.handleSubmit}
-                      formik={formik}
+              <Card>
+                <CardContent className="space-y-4 p-4">
+                  <div>
+                    <Input
+                      name="amountSpent"
+                      label="How much are was spent on bussing today?"
+                      placeholder="Enter an amount"
                     />
-                    <Button variant="primary" onClick={handleClose}>
-                      Close
-                    </Button>
-                  </Modal.Footer>
-                </Modal>
+                  </div>
 
-                <div className="text-center mt-5">
-                  <Button onClick={handleShow} className="px-5">
-                    Submit
-                  </Button>
-                </div>
-              </Container>
+                  <Dialog
+                    open={show}
+                    onOpenChange={(open) => (open ? handleShow() : handleClose())}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          Please confirm the amount spent
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-2 text-sm">
+                        <p>
+                          Amount Spent:{' '}
+                          <span className="text-[hsl(var(--maps))]">
+                            GHS{' '}
+                            {parseFloat(
+                              formik.values.amountSpent.toString()
+                            ).toLocaleString('en-US')}
+                          </span>
+                        </p>
+
+                        <p>
+                          Bussing Society Balance:{' '}
+                          <span className="text-[hsl(var(--maps))]">
+                            GHS{' '}
+                            {parseFloat(
+                              council?.bussingSocietyBalance.toString()
+                            ).toLocaleString('en-US')}
+                          </span>
+                        </p>
+
+                        <p>
+                          Category:{' '}
+                          <span className="text-[hsl(var(--maps))]">
+                            Bussing
+                          </span>
+                        </p>
+                        {council.bussingSocietyBalance <
+                          parseFloat(formik.values.amountSpent) && (
+                          <span className="font-semibold text-destructive">
+                            Submitting this will send {council.name} Council
+                            balance into negative balance of{' '}
+                            {council.bussingSocietyBalance -
+                              parseFloat(formik.values.amountSpent)}{' '}
+                            GHS
+                          </span>
+                        )}
+                      </div>
+
+                      <DialogFooter>
+                        <SubmitButton
+                          onClick={formik.handleSubmit}
+                          formik={formik}
+                        />
+                        <Button variant="outline" onClick={handleClose}>
+                          Close
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  <div className="mt-5 text-center">
+                    <Button
+                      type="button"
+                      onClick={handleShow}
+                      disabled={formik.isSubmitting}
+                      className="px-8"
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

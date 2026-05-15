@@ -1,8 +1,15 @@
 import React, { useEffect, useMemo } from 'react'
-import { Dropdown } from 'react-bootstrap'
+import { Button } from 'components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from 'components/ui/dropdown-menu'
+import { ChevronDown } from 'lucide-react'
+import { ChurchLevel } from 'global-types'
 import { GraphTypes, getServiceGraphData } from './graphs-utils'
 import './GraphDropdown.css'
-import { ChurchLevel } from 'global-types'
 
 type GraphDropdownProps = {
   setChurchData: React.Dispatch<React.SetStateAction<any>>
@@ -20,7 +27,6 @@ const GraphDropdown = ({
   const [selected, setSelected] = React.useState('Select Service')
   const churchLevel: ChurchLevel = data?.__typename
 
-
   const churchData = useMemo(
     () => getServiceGraphData(data, graphs),
     [data, graphs]
@@ -28,70 +34,75 @@ const GraphDropdown = ({
 
   useEffect(() => {
     setChurchData(churchData)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [churchData])
 
   return (
-    <Dropdown className="border-none">
-      <Dropdown.Toggle variant="danger">{selected}</Dropdown.Toggle>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="destructive">
+          {selected}
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
 
-      <Dropdown.Menu variant="dark">
+      <DropdownMenuContent align="start">
         {churchLevel === 'Bacenta' && (
-          <Dropdown.Item
+          <DropdownMenuItem
             className="py-3"
-            onClick={() => {
+            onSelect={() => {
               setSelected('Bussing')
               setGraphs('bussing')
             }}
           >
             Bussing
-          </Dropdown.Item>
+          </DropdownMenuItem>
         )}
 
-        <Dropdown.Item
+        <DropdownMenuItem
           className="py-3"
-          onClick={() => {
+          onSelect={() => {
             setSelected('Services')
             setGraphs('services')
           }}
         >
           {`${churchLevel} Services`}
-        </Dropdown.Item>
+        </DropdownMenuItem>
         {churchLevel !== 'Bacenta' && (
-          <Dropdown.Item
+          <DropdownMenuItem
             className="py-3"
-            onClick={() => {
+            onSelect={() => {
               setSelected('Bussing Total')
               setGraphs('bussingAggregate')
             }}
           >
             Bussing Total
-          </Dropdown.Item>
+          </DropdownMenuItem>
         )}
         {!['Bacenta', 'Oversight', 'Denomination'].includes(churchLevel) && (
-          <Dropdown.Item
+          <DropdownMenuItem
             className="py-3"
-            onClick={() => {
+            onSelect={() => {
               setSelected('Bacenta Total')
               setGraphs('serviceAggregate')
             }}
           >
             Weekday Total
-          </Dropdown.Item>
+          </DropdownMenuItem>
         )}
         {['Campus', 'Oversight', 'Denomination'].includes(churchLevel) && (
-          <Dropdown.Item
+          <DropdownMenuItem
             className="py-3"
-            onClick={() => {
+            onSelect={() => {
               setSelected('Services Total (USD)')
               setGraphs('serviceAggregateWithDollar')
             }}
           >
             Weekday Total (USD)
-          </Dropdown.Item>
+          </DropdownMenuItem>
         )}
-
-      </Dropdown.Menu>
-    </Dropdown>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

@@ -1,15 +1,17 @@
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
-import { Card, Button } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
 import { useNavigate } from 'react-router'
+import { Phone } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardHeader } from 'components/ui/card'
+import { MemberContext } from 'contexts/MemberContext'
 import {
   GovernorshipWithDefaulters,
   CouncilWithDefaulters,
 } from './defaulters-types'
 import './Defaulters.css'
-import { MemberContext } from 'contexts/MemberContext'
 
 type DefaulterCardProps = {
   defaulter: GovernorshipWithDefaulters | CouncilWithDefaulters
@@ -29,14 +31,14 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
     <Card>
       <PlaceholderCustom
         loading={!defaulter?.name}
-        className={`fw-bold large-number pb-3`}
+        className="large-number pb-3 font-bold"
       >
-        <Card.Header
+        <CardHeader
           onClick={() => {
             clickCard(defaulter)
             navigate(`/${defaulter?.__typename.toLowerCase()}/displaydetails`)
           }}
-          className="fw-bold"
+          className="cursor-pointer font-bold"
         >
           {`${defaulter?.name} ${defaulter?.__typename}`}
           <br />
@@ -47,54 +49,70 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
           {defaulter?.stream
             ? `${defaulter?.stream?.name} ${defaulter?.stream?.__typename}`
             : null}
-        </Card.Header>
-        <Card.Body>
+        </CardHeader>
+        <CardContent className="space-y-3 pb-4">
           <div
-            className="card-text"
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer text-sm"
             onClick={() => {
               clickCard(defaulter)
               clickCard(serviceDetails)
               navigate(
-                link || `/${defaulter?.__typename.toLowerCase()}/displaydetails`
+                link ||
+                  `/${defaulter?.__typename.toLowerCase()}/displaydetails`
               )
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                clickCard(defaulter)
+                clickCard(serviceDetails)
+                navigate(
+                  link ||
+                    `/${defaulter?.__typename.toLowerCase()}/displaydetails`
+                )
+              }
             }}
           >
             {defaulter?.leader?.fullName || 'No Leader'}
             {serviceDetails?.attendance && (
               <div>
-                <span className="text-muted">Attendance: </span>
+                <span className="text-muted-foreground">Attendance: </span>
                 {serviceDetails?.attendance}
               </div>
             )}
             {serviceDetails?.income && (
               <div>
-                <span className="text-muted">Income: </span>
+                <span className="text-muted-foreground">Income: </span>
                 {currentUser.currency} {serviceDetails?.income}
               </div>
             )}
             {serviceDetails?.noServiceReason && (
               <div>
-                <span className="text-muted">
+                <span className="text-muted-foreground">
                   Reason for Cancelled Service:{' '}
                 </span>
                 {serviceDetails?.noServiceReason}
               </div>
             )}
           </div>
-          <a href={`tel:${defaulter?.leader?.phoneNumber}`}>
-            <Button variant="primary">
-              <TelephoneFill /> Call
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild>
+              <a href={`tel:${defaulter?.leader?.phoneNumber}`}>
+                <Phone className="h-4 w-4" /> Call
+              </a>
             </Button>
-          </a>
-          <a
-            href={`https://wa.me/${defaulter?.leader?.whatsappNumber}`}
-            className="ms-3"
-          >
-            <Button variant="success">
-              <Whatsapp /> WhatsApp
+            <Button
+              asChild
+              className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+            >
+              <a href={`https://wa.me/${defaulter?.leader?.whatsappNumber}`}>
+                <FaWhatsapp className="h-4 w-4" /> WhatsApp
+              </a>
             </Button>
-          </a>
-        </Card.Body>
+          </div>
+        </CardContent>
       </PlaceholderCustom>
     </Card>
   )

@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import { ErrorMessage } from 'formik'
 import { useMutation } from '@apollo/client'
-import TextError from './TextError/TextError'
-import { Container } from 'react-bootstrap'
-import './Formik.css'
-import { FormikComponentProps } from './formik-types'
 import { MoonLoader } from 'react-spinners'
 import { uploadToS3 } from 'utils/s3Upload'
+import { Button } from 'components/ui/button'
+import TextError from './TextError/TextError'
+import './Formik.css'
+import { FormikComponentProps } from './formik-types'
 import { GENERATE_PRESIGNED_URL } from './ImageUploadGQL'
 
 interface ImageUploadProps extends FormikComponentProps {
@@ -33,11 +33,10 @@ const MultiImageUpload = (props: ImageUploadProps) => {
 
     try {
       setLoading(true)
-      setUploadError('') // Clear any previous errors
+      setUploadError('')
 
       const uploaded: string[] = [...uploadedImages]
 
-      // Upload all files to S3
       for (const file of files) {
         const imageUrl = await uploadToS3({
           file,
@@ -49,10 +48,6 @@ const MultiImageUpload = (props: ImageUploadProps) => {
       setUploadedImages(uploaded)
       setFieldValue(`${name}`, uploaded)
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Upload failed:', error)
-
-      // Set user-friendly error message
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to upload images'
       setUploadError(errorMessage)
@@ -69,39 +64,37 @@ const MultiImageUpload = (props: ImageUploadProps) => {
         </label>
       ) : null}
       {loading && (
-        <Container className="my-3 img-container d-flex justify-content-center align-items-center border">
+        <div className="img-container mx-auto my-3 flex items-center justify-center rounded-md border border-border">
           <MoonLoader color="gray" />
-        </Container>
+        </div>
       )}
 
-      <div className="container mb-4 card-button-row vw-75">
-        <table>
-          <tbody>
-            <tr>
-              {!uploadedImages.length && !initialValue && !loading && (
-                <p className="text-center img-container border my-3"></p>
-              )}
-              {uploadedImages?.map((image, index) => (
-                <td className="col-auto" key={index}>
-                  {(image || initialValue) && !loading && (
-                    <Container className="d-flex align-items-center justify-content-center text-center img-container">
-                      <img
-                        src={image || initialValue}
-                        className="img-preview"
-                        alt="on stage attendance"
-                      />
-                    </Container>
-                  )}
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
+      <div className="mx-auto mb-4 w-3/4 max-w-screen-md">
+        {!uploadedImages.length && !initialValue && !loading && (
+          <p className="img-container mx-auto my-3 rounded-md border border-border" />
+        )}
+        {uploadedImages.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {uploadedImages.map((image, index) => (
+              <div className="shrink-0" key={index}>
+                {(image || initialValue) && !loading && (
+                  <div className="img-container flex items-center justify-center text-center">
+                    <img
+                      src={image || initialValue}
+                      className="img-preview"
+                      alt="on stage attendance"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <label className="w-100 text-center">
+      <label className="block w-full text-center">
         <input
-          style={{ display: 'none' }}
+          className="hidden"
           type="file"
           accept="image/png, image/webp, image/jpg, image/jpeg"
           onChange={(e) => uploadImage(e)}
@@ -109,7 +102,9 @@ const MultiImageUpload = (props: ImageUploadProps) => {
           {...rest}
         />
 
-        <p className={`btn btn-primary image px-5`}>{placeholder}</p>
+        <Button asChild className="image px-8 cursor-pointer">
+          <span>{placeholder}</span>
+        </Button>
       </label>
       {uploadError && <TextError>{uploadError}</TextError>}
       {!uploadError &&

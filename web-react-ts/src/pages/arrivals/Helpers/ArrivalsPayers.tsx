@@ -6,19 +6,27 @@ import HeadingSecondary from 'components/HeadingSecondary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { FunctionReturnsVoid, Member, Council } from 'global-types'
 import React, { useContext, useState } from 'react'
-import { Button, Col, Container, Modal, Row, Spinner } from 'react-bootstrap'
-import {
-  MAKE_COUNCIL_ARRIVALSPAYER,
-  REMOVE_COUNCIL_ARRIVALSPAYER,
-  COUNCIL_ARRIVALSPAYERS,
-} from './ArrivalsHelpersGQL'
-import './ArrivalsHelpers.css'
 import * as Yup from 'yup'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { alertMsg, throwToSentry } from 'global-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import SearchMember from 'components/formik/SearchMember'
 import ModalSubmitButton from 'pages/services/banking/anagkazo/ModalSubmitButton'
+import { Loader2 } from 'lucide-react'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import {
+  MAKE_COUNCIL_ARRIVALSPAYER,
+  REMOVE_COUNCIL_ARRIVALSPAYER,
+  COUNCIL_ARRIVALSPAYERS,
+} from './ArrivalsHelpersGQL'
+import './ArrivalsHelpers.css'
 
 interface CouncilWithArrivalsPayers extends Council {
   arrivalsPayers: Member[]
@@ -82,88 +90,95 @@ const ArrivalsPayerSelect = () => {
     try {
       await MakeCouncilArrivalsPayer({
         variables: {
-          councilId: councilId,
+          councilId,
           arrivalsPayerId: values.arrivalsPayerSelect,
         },
       })
 
       handleClose()
       onSubmitProps.setSubmitting(false)
-      alert('Arrivals Payment Governorship Member has been added successfully!')
+      alertMsg(
+        'Arrivals Payment Governorship Member has been added successfully!'
+      )
     } catch (e: any) {
       onSubmitProps.setSubmitting(false)
       throwToSentry(e)
     }
     onSubmitProps.setSubmitting(false)
-    return
   }
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <HeadingPrimary>{`Select ${council?.name} Council Arrivals Payment Governorship Members`}</HeadingPrimary>
         <HeadingSecondary>
           Use the buttons below to choose Arrivals Payment Governorship Members
         </HeadingSecondary>
         <div>{`Number of Active Bacentas: ${council?.activeBacentaCount}`}</div>
 
-        <Modal
-          contentClassName="dark"
-          show={show}
-          onHide={handleClose}
-          centered
+        <Dialog
+          open={show}
+          onOpenChange={(open) => (open ? handleOpen() : handleClose())}
         >
-          <Modal.Header closeButton>
-            <Modal.Title>
-              Choose an Arrivals Payment Governorship Member
-            </Modal.Title>
-          </Modal.Header>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Choose an Arrivals Payment Governorship Member
+              </DialogTitle>
+            </DialogHeader>
 
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={onSubmit}
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              onSubmit={onSubmit}
+            >
+              {(formik) => (
+                <Form>
+                  <div className="form-row">
+                    <SearchMember
+                      name="arrivalsPayerSelect"
+                      initialValue={initialValues?.arrivalsPayerName}
+                      placeholder="Select a Name"
+                      setFieldValue={formik.setFieldValue}
+                      aria-describedby="Member Search"
+                      error={formik.errors.arrivalsPayerSelect}
+                    />
+                  </div>
+                  <DialogFooter className="mt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleClose}
+                    >
+                      Close
+                    </Button>
+                    <ModalSubmitButton
+                      formik={formik}
+                      onClick={handleClose}
+                    />
+                  </DialogFooter>
+                </Form>
+              )}
+            </Formik>
+          </DialogContent>
+        </Dialog>
+
+        <div className="mt-5 grid gap-2">
+          <Button
+            onClick={handleOpen}
+            className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
           >
-            {(formik) => (
-              <Form>
-                <Modal.Body>
-                  <Row className="form-row">
-                    <Col>
-                      <SearchMember
-                        name="arrivalsPayerSelect"
-                        initialValue={initialValues?.arrivalsPayerName}
-                        placeholder="Select a Name"
-                        setFieldValue={formik.setFieldValue}
-                        aria-describedby="Member Search"
-                        error={formik.errors.arrivalsPayerSelect}
-                      />
-                    </Col>
-                  </Row>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button variant="secondary" onClick={handleClose}>
-                    Close
-                  </Button>
-                  <ModalSubmitButton formik={formik} onClick={handleClose} />
-                </Modal.Footer>
-              </Form>
-            )}
-          </Formik>
-        </Modal>
-
-        <div className="d-grid gap-2 mt-5">
-          <Button variant="success" onClick={handleOpen}>
             Choose Arrivals Payment Governorship Members
           </Button>
         </div>
 
         {council?.arrivalsPayers?.map((arrivalsPayer: Member) => (
-          <div key={arrivalsPayer.id}>
+          <div key={arrivalsPayer.id} className="space-y-2">
             <MemberDisplayCard member={arrivalsPayer} />
-            <div className="d-grid gap-2">
+            <div className="grid gap-2">
               <Button
                 disabled={submitting}
-                variant="danger"
+                variant="destructive"
                 onClick={async () => {
                   const confirmBox = window.confirm(
                     `Do you want to delete ${arrivalsPayer.fullName} as a arrivalsPayer`
@@ -188,8 +203,8 @@ const ArrivalsPayerSelect = () => {
               >
                 {submitting ? (
                   <>
-                    <Spinner animation="grow" size="sm" />
-                    <span> Submitting</span>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Submitting</span>
                   </>
                 ) : (
                   'Delete'
@@ -202,7 +217,7 @@ const ArrivalsPayerSelect = () => {
         {!council?.arrivalsPayers?.length && (
           <NoDataComponent text="You have no Arrivals Payment Governorship Members at this time" />
         )}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -1,6 +1,10 @@
-import { MemberContext } from 'contexts/MemberContext'
-import React, { useContext } from 'react'
-import { Table } from 'react-bootstrap'
+import React from 'react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from 'components/ui/table'
 import PlaceholderCustom from '../Placeholder'
 import './TableFromArrays.css'
 
@@ -12,27 +16,25 @@ type TableFromArrayProps = {
 }
 
 const TableFromArrays = ({ tableArray, loading }: TableFromArrayProps) => {
-  const { theme } = useContext(MemberContext)
-
   return (
-    <Table variant={theme} striped bordered>
-      <tbody>
+    <Table className="border [&_td]:border [&_td]:border-border [&_tr:nth-child(even)]:bg-muted/40">
+      <TableBody>
         {tableArray?.map((row, i: number) => (
-          <tr key={i}>
+          <TableRow key={i}>
             {row.map((col, j: number) => (
-              <PlaceholderCustom
-                key={j}
-                as="td"
-                xs={12}
-                loading={loading && j % 2 === 0}
-                className="td-placeholder"
-              >
-                <td>{col}</td>
-              </PlaceholderCustom>
+              <TableCell key={j} className="td-placeholder">
+                <PlaceholderCustom
+                  as="span"
+                  xs={12}
+                  loading={loading && j % 2 === 0}
+                >
+                  {col}
+                </PlaceholderCustom>
+              </TableCell>
             ))}
-          </tr>
+          </TableRow>
         ))}
-      </tbody>
+      </TableBody>
     </Table>
   )
 }

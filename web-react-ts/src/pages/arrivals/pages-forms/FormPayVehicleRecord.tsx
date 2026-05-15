@@ -7,25 +7,33 @@ import { ServiceContext } from 'contexts/ServiceContext'
 import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext } from 'react'
-import { Button, Card, Col, Container, Modal, Row } from 'react-bootstrap'
-import { DISPLAY_VEHICLE_PAYMENT_RECORDS } from '../arrivalsQueries'
-import { SEND_VEHICLE_SUPPORT } from '../arrivalsMutation'
 import { useNavigate } from 'react-router'
 import SubmitButton from 'components/formik/SubmitButton'
 import { alertMsg } from 'global-utils'
-import { VehicleRecord } from '../arrivals-types'
 import Input from 'components/formik/Input'
 import CloudinaryImage from 'components/CloudinaryImage'
-import '../Arrivals.css'
 import CurrencySpan from 'components/CurrencySpan'
 import TableFromArrays from 'components/TableFromArrays/TableFromArrays'
 import useModal from 'hooks/useModal'
 import RadioButtons from 'components/formik/RadioButtons'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardFooter } from 'components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { DISPLAY_VEHICLE_PAYMENT_RECORDS } from '../arrivalsQueries'
+import { SEND_VEHICLE_SUPPORT } from '../arrivalsMutation'
+import { VehicleRecord } from '../arrivals-types'
 import {
   convertOutboundToBoolean,
   convertOutboundToString,
   OUTBOUND_OPTIONS,
 } from '../arrivals-utils'
+import '../Arrivals.css'
 
 type FormOptions = {
   momoNumber: string
@@ -72,11 +80,10 @@ const FormPayVehicleRecord = () => {
     const { setSubmitting } = onSubmitProps
     setSubmitting(true)
 
-    //If arrival time has been logged then send vehicle support
     try {
       const supportRes = await SendVehicleSupport({
         variables: {
-          vehicleRecordId: vehicleRecordId,
+          vehicleRecordId,
           momoNumber: values.momoNumber,
           momoName: values.momoName,
           vehicleTopUp: values.vehicleTopUp,
@@ -85,8 +92,7 @@ const FormPayVehicleRecord = () => {
       })
 
       alertMsg(
-        'Money Successfully Sent to ' +
-          supportRes.data.SendVehicleSupport.momoName
+        `Money Successfully Sent to ${supportRes.data.SendVehicleSupport.momoName}`
       )
       setSubmitting(false)
       navigate(`/bacenta/vehicle-details`)
@@ -107,65 +113,71 @@ const FormPayVehicleRecord = () => {
     ['Vehicle Type', vehicle?.vehicle || 0],
     [
       'In and Out',
-      <span className="yellow">
+      <span className="yellow" key="in-out">
         {convertOutboundToString(vehicle?.outbound) || 0}
       </span>,
     ],
     [
       'View Picture',
-      <span className="text-primary" onClick={() => handleShow()}>
+      <button
+        type="button"
+        className="text-primary underline-offset-4 hover:underline"
+        onClick={() => handleShow()}
+        key="view"
+      >
         Click Here
-      </span>,
+      </button>,
     ],
     [
       'Top Up From Church',
-      <CurrencySpan className="fw-bold good" number={vehicle?.vehicleTopUp} />,
+      <CurrencySpan
+        className="font-semibold text-[hsl(var(--success))]"
+        number={vehicle?.vehicleTopUp}
+        key="top-up"
+      />,
     ],
   ]
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <>
-        <Container>
-          <PlaceholderCustom as="h3" loading={loading}>
-            <HeadingPrimary>{`Vehicle Attendance Form`}</HeadingPrimary>
-          </PlaceholderCustom>
-        </Container>
+      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
+        <PlaceholderCustom as="h3" loading={loading}>
+          <HeadingPrimary>Vehicle Attendance Form</HeadingPrimary>
+        </PlaceholderCustom>
 
-        <Container className="my-4">
-          <Row>
-            <Col className="col-auto">
-              <CloudinaryImage
-                src={bacenta?.leader.pictureUrl}
-                className="avatar"
-              />
-            </Col>
-            <Col>
-              <div>{`${bacenta?.name} Bacenta`}</div>
-              <div className="text-secondary">{`Leader: ${bacenta?.leader.fullName}`}</div>
-            </Col>
-          </Row>
-          <Modal className="dark" show={show} onHide={handleClose} centered>
-            <Modal.Header>
-              <Modal.Title>{bacenta?.name} Bacenta Picture</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <CloudinaryImage
-                className="bus-picture"
-                src={vehicle?.picture}
-                size="respond"
-              />
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleClose}>
+        <div className="my-4 flex items-center gap-3">
+          <CloudinaryImage
+            src={bacenta?.leader.pictureUrl}
+            className="avatar"
+          />
+          <div>
+            <div>{`${bacenta?.name} Bacenta`}</div>
+            <div className="text-sm text-muted-foreground">{`Leader: ${bacenta?.leader.fullName}`}</div>
+          </div>
+        </div>
+        <Dialog
+          open={show}
+          onOpenChange={(open) => (open ? handleShow() : handleClose())}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{bacenta?.name} Bacenta Picture</DialogTitle>
+            </DialogHeader>
+            <CloudinaryImage
+              className="bus-picture"
+              src={vehicle?.picture}
+              size="respond"
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={handleClose}>
                 Close
               </Button>
-            </Modal.Footer>
-          </Modal>
-          <Row className="mt-4">
-            <TableFromArrays tableArray={detailRows} loading={loading} />
-          </Row>
-        </Container>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <div className="mt-4">
+          <TableFromArrays tableArray={detailRows} loading={loading} />
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -173,47 +185,45 @@ const FormPayVehicleRecord = () => {
           onSubmit={onSubmit}
         >
           {(formik) => (
-            <Container>
-              <Form>
-                <Input
-                  name="vehicleTopUp"
-                  label="Vehicle Top Up Amount*"
-                  placeholder={vehicle?.vehicleTopUp.toString()}
-                />
-                <Card border="warning" className="my-3">
-                  <Card.Body>
-                    <RadioButtons
-                      name="outbound"
-                      label="Are They Bussing Back?"
-                      options={OUTBOUND_OPTIONS}
-                    />
-                  </Card.Body>
-                </Card>
-                <Input
-                  name="momoNumber"
-                  label="Momo Number*"
-                  placeholder={vehicle?.momoNumber.toString()}
-                />
-                <Input
-                  name="momoName"
-                  label="Momo Name*"
-                  placeholder={vehicle?.momoName.toString()}
-                />
+            <Form className="space-y-3">
+              <Input
+                name="vehicleTopUp"
+                label="Vehicle Top Up Amount*"
+                placeholder={vehicle?.vehicleTopUp.toString()}
+              />
+              <Card className="my-3 border-[hsl(var(--warning))]/60">
+                <CardContent className="p-4">
+                  <RadioButtons
+                    name="outbound"
+                    label="Are They Bussing Back?"
+                    options={OUTBOUND_OPTIONS}
+                  />
+                </CardContent>
+              </Card>
+              <Input
+                name="momoNumber"
+                label="Momo Number*"
+                placeholder={vehicle?.momoNumber.toString()}
+              />
+              <Input
+                name="momoName"
+                label="Momo Name*"
+                placeholder={vehicle?.momoName.toString()}
+              />
 
-                <Card className="text-center mt-4">
-                  <Card.Body>
-                    I can confirm that the above data is correct and I approve
-                    the vehicle top up for this bacenta
-                  </Card.Body>
-                  <Card.Footer>
-                    <SubmitButton formik={formik} />
-                  </Card.Footer>
-                </Card>
-              </Form>
-            </Container>
+              <Card className="mt-4 text-center">
+                <CardContent className="p-4">
+                  I can confirm that the above data is correct and I approve the
+                  vehicle top up for this bacenta
+                </CardContent>
+                <CardFooter className="justify-center p-4 pt-0">
+                  <SubmitButton formik={formik} />
+                </CardFooter>
+              </Card>
+            </Form>
           )}
         </Formik>
-      </>
+      </div>
     </ApolloWrapper>
   )
 }

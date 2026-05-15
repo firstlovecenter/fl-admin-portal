@@ -1,8 +1,7 @@
 import { ChurchLevel } from 'global-types'
-import { BuildingsFill, MusicNoteBeamed } from 'react-bootstrap-icons'
 import { BiBuildingHouse } from 'react-icons/bi'
 import { BsBusFront, BsEyeFill } from 'react-icons/bs'
-import { FaCogs, FaHubspot, FaTrophy } from 'react-icons/fa'
+import { FaTrophy } from 'react-icons/fa'
 import { GiCampingTent, GiTreeBranch, GiWaterfall } from 'react-icons/gi'
 
 const SearchBadgeIcon = ({
@@ -14,7 +13,7 @@ const SearchBadgeIcon = ({
   size: number
 }) => {
   if (category === 'Denomination') {
-    return <FaTrophy />
+    return <FaTrophy {...rest} />
   }
 
   if (category === 'Oversight') {

@@ -1,17 +1,17 @@
 import { useQuery } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext, useEffect, useState } from 'react'
-import { OVERSIGHT_BY_CAMPUS_ACCOUNT } from './accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Button, Container } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { CampusForAccounts, StreamForAccounts } from './accounts-types'
 import HeadingSecondary from 'components/HeadingSecondary'
 import CurrencySpan from 'components/CurrencySpan'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import { Form, Formik, FormikHelpers } from 'formik'
 import Input from 'components/formik/Input'
 import { useNavigate } from 'react-router'
+import { Button } from 'components/ui/button'
+import { OVERSIGHT_BY_CAMPUS_ACCOUNT } from './accountsGQL'
+import { CampusForAccounts, StreamForAccounts } from './accounts-types'
 
 const CampusCouncilList = () => {
   const { oversightId, clickCard } = useContext(ChurchContext)
@@ -69,27 +69,24 @@ const CampusCouncilList = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <HeadingPrimary>{oversight?.name} Oversight Campuses</HeadingPrimary>
         <HeadingSecondary>{`${oversight?.name} ${oversight?.__typename}`}</HeadingSecondary>
 
         <Formik initialValues={initialValues} onSubmit={onSubmit}>
           {() => (
             <Form>
-              <div>
-                <Input
-                  className="form-control church-search search-center"
-                  name="councilSearch"
-                  placeholder="Search Councils or Leader"
-                  aria-describedby="Stream Search"
-                />
-              </div>
+              <Input
+                className="form-control church-search search-center"
+                name="councilSearch"
+                placeholder="Search Councils or Leader"
+                aria-describedby="Stream Search"
+              />
             </Form>
           )}
         </Formik>
 
         {oversight?.campuses.map((campus: CampusForAccounts) => {
-          // arrange in alphabetical order of stream.leader.fullName and stream.name
           const councils = [...campus.streams].sort(
             (a: StreamForAccounts, b: StreamForAccounts) => {
               if (a.leader.fullName < b.leader.fullName) {
@@ -107,10 +104,16 @@ const CampusCouncilList = () => {
           )
 
           return (
-            <div key={campus.id} className="d-grid gap-2">
-              <div className="fs-4 text-info">{campus.name} Campus</div>
+            <div key={campus.id} className="grid gap-2">
+              <div className="text-lg font-medium text-[hsl(var(--maps))]">
+                {campus.name} Campus
+              </div>
               {campus.streams.length === 0 && (
-                <Button className="text-start py-3" disabled>
+                <Button
+                  variant="secondary"
+                  className="justify-start py-3 text-left"
+                  disabled
+                >
                   There are no streams under this campus
                 </Button>
               )}
@@ -122,22 +125,35 @@ const CampusCouncilList = () => {
                     clickCard(campus)
                     navigate('/accounts/campus/dashboard')
                   }}
-                  className="d-grid"
+                  className="grid cursor-pointer gap-1"
                 >
-                  <Button className="text-start">
+                  <Button
+                    variant="default"
+                    className="h-auto justify-start whitespace-normal py-3 text-left"
+                  >
                     <MemberAvatarWithName member={stream.leader} />
-                    {stream.name} Stream
+                    <span className="ml-2">{stream.name} Stream</span>
                   </Button>
 
-                  <Button variant="outline-light" className="text-start">
-                    Weekday Account -{' '}
-                    <CurrencySpan number={stream.weekdayBalance} negative />
+                  <Button
+                    variant="outline"
+                    className="h-auto justify-start whitespace-normal py-3 text-left"
+                  >
                     <div>
-                      Bussing Society -{' '}
-                      <CurrencySpan
-                        number={stream.bussingSocietyBalance}
-                        negative
-                      />
+                      <div>
+                        Weekday Account -{' '}
+                        <CurrencySpan
+                          number={stream.weekdayBalance}
+                          negative
+                        />
+                      </div>
+                      <div>
+                        Bussing Society -{' '}
+                        <CurrencySpan
+                          number={stream.bussingSocietyBalance}
+                          negative
+                        />
+                      </div>
                     </div>
                   </Button>
                 </div>
@@ -145,7 +161,7 @@ const CampusCouncilList = () => {
             </div>
           )
         })}
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

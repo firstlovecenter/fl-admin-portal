@@ -4,9 +4,14 @@ import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import { Form, Formik, FormikHelpers } from 'formik'
 import React, { useContext, useState } from 'react'
-import { Button, Col, Container, Row, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router'
 import * as Yup from 'yup'
+import { MemberContext } from 'contexts/MemberContext'
+import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import { useMutation, useQuery } from '@apollo/client'
+import { throwToSentry } from 'global-utils'
+import { Loader2 } from 'lucide-react'
+import { Button } from 'components/ui/button'
 import {
   DELETE_MEMBER_TITLES,
   GET_MEMBER_TITLES,
@@ -14,10 +19,7 @@ import {
   UPDATE_MEMBER_CONSECRATION_DATE,
   UPDATE_MEMBER_ORDINATION_DATE,
 } from './MemberTitleGQL'
-import { MemberContext } from 'contexts/MemberContext'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { useMutation, useQuery } from '@apollo/client'
-import { throwToSentry } from 'global-utils'
+
 interface MemberTitleRelationship {
   date: string
   node: {
@@ -51,7 +53,7 @@ const parseData = (data: Data) => {
     bishopDate: '',
   }
 
-  const member = data.members[0] // Assuming there's only one member in the array
+  const member = data.members[0]
 
   member.titleConnection.edges.forEach((edge) => {
     const { date, node } = edge
@@ -161,7 +163,7 @@ const MemberTitleForm = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-md px-4">
         <HeadingPrimary>Member Title Form</HeadingPrimary>
         <HeadingSecondary>{member?.fullName}</HeadingSecondary>
         <Formik
@@ -172,10 +174,11 @@ const MemberTitleForm = () => {
           {(formik) => (
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <Button
-                      variant="danger"
+                      type="button"
+                      variant="destructive"
                       disabled={deleting}
                       onClick={async () => {
                         setDeleting(true)
@@ -193,32 +196,36 @@ const MemberTitleForm = () => {
                         }
                       }}
                     >
-                      {deleting ? <Spinner /> : 'Delete Title'}
+                      {deleting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        'Delete Title'
+                      )}
                     </Button>
                   </div>
 
-                  <Col>
+                  <div>
                     <Input
                       name="appointmentDate"
                       label="Pastoral Appointment Date"
                       type="date"
                     />
-                  </Col>
-                  <Col>
+                  </div>
+                  <div>
                     <Input
                       name="ordinationDate"
                       label="Ordination Date"
                       type="date"
                     />
-                  </Col>
-                  <Col>
+                  </div>
+                  <div>
                     <Input
                       name="consecrationDate"
                       label="Consecration Date"
                       type="date"
                     />
-                  </Col>
-                </Row>
+                  </div>
+                </div>
                 <div className="mt-5">
                   <SubmitButton formik={formik} />
                 </div>
@@ -226,7 +233,7 @@ const MemberTitleForm = () => {
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

@@ -2,24 +2,31 @@ import { useMutation, useQuery } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
-import { Button, Container, Modal } from 'react-bootstrap'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import useModal from 'hooks/useModal'
+import { throwToSentry } from 'global-utils'
+import { newClientTransactionId } from 'lib/idempotency'
+import RoleView from 'auth/RoleView'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import {
   DEPOSIT_INTO_COUNCIL_BUSSING_SOCIETY,
   DEPOSIT_INTO_COUNCIL_CURRENT_ACCOUNTS,
   SET_HR_AMOUNT,
 } from './depositGQL'
-import { throwToSentry } from 'global-utils'
-import { newClientTransactionId } from 'lib/idempotency'
-import RoleView from 'auth/RoleView'
 import { CouncilForAccounts } from '../accounts-types'
 
 const MakeDepositForm = () => {
@@ -88,7 +95,7 @@ const MakeDepositForm = () => {
         mutations.push(
           DepositIntoCouncilCurrentAccount({
             variables: {
-              councilId: councilId,
+              councilId,
               weekdayBalanceDepositAmount: parseFloat(
                 values.weekdayBalanceDepositAmount
               ),
@@ -102,7 +109,7 @@ const MakeDepositForm = () => {
         mutations.push(
           setHRAmount({
             variables: {
-              councilId: councilId,
+              councilId,
               amount: parseFloat(values.hrAmount),
             },
           })
@@ -116,7 +123,7 @@ const MakeDepositForm = () => {
         mutations.push(
           DepositIntoCouncilBussingSociety({
             variables: {
-              councilId: councilId,
+              councilId,
               bussingSocietyBalance: parseFloat(values.bussingSocietyBalance),
               clientTransactionId: newClientTransactionId(),
             },
@@ -156,7 +163,7 @@ const MakeDepositForm = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <HeadingPrimary>{`${council?.name} ${council?.__typename}`}</HeadingPrimary>
         <HeadingSecondary>{council?.leader.fullName}</HeadingSecondary>
 
@@ -167,7 +174,7 @@ const MakeDepositForm = () => {
         >
           {(formik) => (
             <Form>
-              <Container className="mb-4">
+              <div className="mb-4 space-y-4">
                 <RoleView roles={['adminCampus']}>
                   <Input
                     name="weekdayBalanceDepositAmount"
@@ -187,74 +194,88 @@ const MakeDepositForm = () => {
                     placeholder="Enter an amount"
                   />
                 </RoleView>
-                <Modal show={show} onHide={handleClose} centered scrollable>
-                  <Modal.Header closeButton>
-                    Please confirm the amounts to deposit
-                  </Modal.Header>
-                  <Modal.Body>
-                    <p>
-                      Weekday Income Amount:{' '}
-                      <span className="text-info">
-                        GHS{' '}
-                        {parseFloat(
-                          formik.values.weekdayBalanceDepositAmount
-                        ).toLocaleString('en-US')}
-                      </span>
-                    </p>
+                <Dialog
+                  open={show}
+                  onOpenChange={(open) =>
+                    open ? handleShow() : handleClose()
+                  }
+                >
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        Please confirm the amounts to deposit
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-2 text-sm">
+                      <p>
+                        Weekday Income Amount:{' '}
+                        <span className="text-[hsl(var(--maps))]">
+                          GHS{' '}
+                          {parseFloat(
+                            formik.values.weekdayBalanceDepositAmount
+                          ).toLocaleString('en-US')}
+                        </span>
+                      </p>
 
-                    <p>
-                      HR Amount:{' '}
-                      <span className="text-info">
-                        GHS{' '}
-                        {parseFloat(formik.values.hrAmount).toLocaleString(
-                          'en-US'
-                        )}
-                      </span>
-                    </p>
+                      <p>
+                        HR Amount:{' '}
+                        <span className="text-[hsl(var(--maps))]">
+                          GHS{' '}
+                          {parseFloat(formik.values.hrAmount).toLocaleString(
+                            'en-US'
+                          )}
+                        </span>
+                      </p>
 
-                    <p>
-                      Bussing Society Balance:{' '}
-                      <span className="text-info">
-                        GHS{' '}
-                        {parseFloat(
-                          formik.values.bussingSocietyBalance
-                        ).toLocaleString('en-US')}
-                      </span>
-                    </p>
-                  </Modal.Body>
+                      <p>
+                        Bussing Society Balance:{' '}
+                        <span className="text-[hsl(var(--maps))]">
+                          GHS{' '}
+                          {parseFloat(
+                            formik.values.bussingSocietyBalance
+                          ).toLocaleString('en-US')}
+                        </span>
+                      </p>
+                    </div>
 
-                  <Modal.Footer>
-                    <SubmitButton
-                      onClick={formik.handleSubmit}
-                      formik={formik}
-                    />
-                    <Button variant="primary" onClick={handleClose}>
-                      Close
-                    </Button>
-                  </Modal.Footer>
-                </Modal>
+                    <DialogFooter>
+                      <SubmitButton
+                        onClick={formik.handleSubmit}
+                        formik={formik}
+                      />
+                      <Button variant="outline" onClick={handleClose}>
+                        Close
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
-                <div className="text-center mt-5">
+                <div className="mt-5 text-center">
                   <Button
+                    type="button"
+                    disabled={formik.isSubmitting}
                     onClick={() => {
                       if (formik.values.bussingSocietyBalance === '') {
                         formik.setFieldValue('bussingSocietyBalance', '0')
                       }
                       if (formik.values.weekdayBalanceDepositAmount === '') {
-                        formik.setFieldValue('weekdayBalanceDepositAmount', '0')
+                        formik.setFieldValue(
+                          'weekdayBalanceDepositAmount',
+                          '0'
+                        )
                       }
                       handleShow()
                     }}
-                    className="px-5"
+                    className="px-8"
                   >
                     Submit
                   </Button>
                 </div>
-              </Container>
+              </div>
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

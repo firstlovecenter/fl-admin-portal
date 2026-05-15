@@ -1,18 +1,18 @@
 import React from 'react'
 import { useAuth } from 'contexts/AuthContext'
-import Popup from '../Popup/Popup'
-import { Button, Container, Spinner } from 'react-bootstrap'
 import usePopup from 'hooks/usePopup'
-import './AuthButton.css'
-import { BoxArrowRight } from 'react-bootstrap-icons'
+import { Loader2, LogIn, LogOut } from 'lucide-react'
+import { Button } from 'components/ui/button'
+import { cn } from 'components/lib/utils'
+import Popup from '../Popup/Popup'
 
 type AuthButtonPropsType = {
   mobileFullSize?: boolean
 }
-const AuthButton = (props: AuthButtonPropsType) => {
+
+const AuthButton = ({ mobileFullSize }: AuthButtonPropsType) => {
   const { logout, isAuthenticated } = useAuth()
   const { togglePopup, isOpen } = usePopup()
-  const { mobileFullSize } = props
 
   const handleLoginClick = () => {
     window.location.href = '/login'
@@ -20,46 +20,50 @@ const AuthButton = (props: AuthButtonPropsType) => {
 
   if (!isAuthenticated) {
     return (
-      <Container>
+      <div className="mx-auto flex items-center justify-center gap-3 px-4">
         <Button
-          variant="brand"
           size="lg"
-          className={`auth-button px-5 ${
-            !mobileFullSize && `d-none d-md-inline`
-          }`}
           onClick={handleLoginClick}
+          className={cn('px-8', !mobileFullSize && 'hidden md:inline-flex')}
         >
           Log In
         </Button>
         {!mobileFullSize && (
-          <i
-            className="fas fa-sign-in-alt fa-2x d-md-none px-5"
+          <Button
+            type="button"
+            size="icon-lg"
+            variant="ghost"
             onClick={handleLoginClick}
-          />
+            className="md:hidden"
+            aria-label="Log in"
+          >
+            <LogIn className="h-6 w-6" />
+          </Button>
         )}
-      </Container>
+      </div>
     )
   }
 
   if (isAuthenticated && location.pathname === '/') {
     return (
-      <div className="text-secondary text-center">
+      <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
         <p>Please wait while we log you in</p>
-        <Spinner animation="grow" />
+        <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     )
   }
 
   return (
-    <Container>
+    <div className="mx-auto flex items-center justify-center gap-3 px-4">
       <Button
-        variant="brand"
-        className={`auth-button text-nowrap ${
-          !mobileFullSize && `d-none d-md-inline`
-        }`}
         onClick={togglePopup}
+        className={cn(
+          'whitespace-nowrap px-6',
+          !mobileFullSize && 'hidden md:inline-flex'
+        )}
       >
-        Log Out <BoxArrowRight />
+        Log Out
+        <LogOut className="h-4 w-4" />
       </Button>
 
       {isOpen && (
@@ -68,11 +72,12 @@ const AuthButton = (props: AuthButtonPropsType) => {
             <b>Confirm Log Out</b>
             <p className="mt-2">Are you sure you want to Log Out?</p>
             <Button
-              className={`auth-button mt-3 ${
-                !mobileFullSize && `d-none d-md-inline`
-              }`}
+              className={cn(
+                'mt-3 px-6',
+                !mobileFullSize && 'hidden md:inline-flex'
+              )}
               onClick={() => {
-                logout() // clearAuth() handles all storage cleanup
+                logout()
                 togglePopup()
               }}
             >
@@ -83,12 +88,18 @@ const AuthButton = (props: AuthButtonPropsType) => {
       )}
 
       {!mobileFullSize && (
-        <i
-          className="fas fa-sign-out-alt fa-2x d-md-none"
+        <Button
+          type="button"
+          size="icon-lg"
+          variant="ghost"
           onClick={() => logout()}
-        />
+          className="md:hidden"
+          aria-label="Log out"
+        >
+          <LogOut className="h-6 w-6" />
+        </Button>
       )}
-    </Container>
+    </div>
   )
 }
 
