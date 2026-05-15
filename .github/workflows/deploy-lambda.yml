@@ -9,6 +9,7 @@ on:
     paths:
       - "api/**" # Only trigger when backend files change
       - "!api/src/functions/background/**" # Exclude background functions
+      - ".github/workflows/deploy-lambda.yml" # Also redeploy when this workflow changes
 
 jobs:
   deploy:
