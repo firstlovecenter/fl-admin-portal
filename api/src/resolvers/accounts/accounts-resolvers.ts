@@ -68,6 +68,15 @@ const assertAccountsAccess = (jwtRoles: Role[] | undefined) => {
 const TRANSACTION_NOT_PENDING_MESSAGE =
   'This transaction is no longer pending approval. Refresh to see the current status.'
 
+// SYN-120 — single message for both the JS pre-write guard and the post-
+// write loser path. Both branches of ApproveExpense debit weekday (a
+// Bussing expense moves money FROM weekday TO bussing society), so the
+// account being checked is always weekday. Previous wording
+// ('Insufficient bussing funds') misled users into thinking the bussing
+// society balance was the constraint.
+const INSUFFICIENT_WEEKDAY_FUNDS_MESSAGE =
+  'Insufficient weekday funds. Refresh to see the current balance.'
+
 // SYN-96 — preserved narrow gates from the lifted SDL @authentication
 // directives. SetCouncilHRAmount was adminCampus only; DeclineExpense
 // was adminCampus + leaderCampus. Refactor-only PR — no role widening.
@@ -358,6 +367,24 @@ export const accountsMutations = {
     // (see approveBussingExpense in accounts-cypher.ts).
     const session = context.executionContext.session()
 
+    // SYN-120 — diagnose a zero-row write. Best-effort hint only: a
+    // third actor between the failed write and this read can flip
+    // status, so the message could land on the wrong side of the
+    // status/solvency divide. The financial invariant (weekdayBalance
+    // never goes negative) is enforced by the write Cypher's WHERE
+    // regardless of which message the user sees.
+    const diagnoseLoserPath = async (): Promise<never> => {
+      const diagnostic = await session.run(
+        getCouncilBalancesWithTransaction,
+        { transactionId: args.transactionId }
+      )
+      throw badRequest(
+        diagnostic.records.length === 0
+          ? TRANSACTION_NOT_PENDING_MESSAGE
+          : INSUFFICIENT_WEEKDAY_FUNDS_MESSAGE
+      )
+    }
+
     try {
       const councilBalancesResult = await session.run(
         getCouncilBalancesWithTransaction,
@@ -381,8 +408,11 @@ export const accountsMutations = {
       const transactionAmount = transaction.amount * -1
 
       if (transaction.category === 'Bussing') {
-        if (council.weekdayBalance < transactionAmount) {
-          throw badRequest('Insufficient bussing funds')
+        // SYN-120 — guard now includes args.charge so the post-debit
+        // weekdayBalance never lands negative when charge > 0 and the
+        // pre-state is exactly equal to |amount|.
+        if (council.weekdayBalance < transactionAmount + args.charge) {
+          throw badRequest(INSUFFICIENT_WEEKDAY_FUNDS_MESSAGE)
         }
 
         const currentAmountRemaining =
@@ -406,12 +436,11 @@ export const accountsMutations = {
           jwt: context.jwt,
         })
 
-        // SYN-92 — TOCTOU defense for the narrow race between the read
-        // returning and the write firing. The read-side guard catches
-        // almost all cases; this exists so a future reader does not
-        // delete it as redundant.
+        // SYN-120 — write WHERE re-checks both status and solvency, so
+        // a zero-row write means EITHER status changed OR balance
+        // dropped. See diagnoseLoserPath above.
         if (debitRes.records.length === 0) {
-          throw badRequest(TRANSACTION_NOT_PENDING_MESSAGE)
+          await diagnoseLoserPath()
         }
 
         // Fire-and-forget — leader notification must not block or fail
@@ -430,8 +459,10 @@ export const accountsMutations = {
         }
       }
 
-      if (council.weekdayBalance < transactionAmount) {
-        throw badRequest('Insufficient Funds')
+      // SYN-120 — guard now includes args.charge; same rationale as the
+      // bussing branch above.
+      if (council.weekdayBalance < transactionAmount + args.charge) {
+        throw badRequest(INSUFFICIENT_WEEKDAY_FUNDS_MESSAGE)
       }
 
       const amountRemaining =
@@ -441,9 +472,9 @@ export const accountsMutations = {
       // SYN-102 — see bussing branch above for rationale.
       const debitRes = await session.run(approveExpense, args)
 
-      // SYN-92 — TOCTOU defense.
+      // SYN-120 — see bussing branch above.
       if (debitRes.records.length === 0) {
-        throw badRequest(TRANSACTION_NOT_PENDING_MESSAGE)
+        await diagnoseLoserPath()
       }
 
       // Fire-and-forget — see bussing branch.

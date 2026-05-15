@@ -33,12 +33,13 @@
  *   npm test -- accounts-expense-sm6 --testNamePattern="SM6:"
  */
 
-import accountsMutations from './accounts-resolvers'
+import { accountsMutations } from './accounts-resolvers'
 import {
   approveBussingExpense,
   approveExpense,
   createExpenseRequest,
   declineExpense,
+  getCouncilBalancesWithTransaction,
   undoBussingTransactionCypher,
   undoWeekdayTransactionCypher,
   getTransactionForUndo,
@@ -427,10 +428,12 @@ describe('SM6 — ApproveExpense: double-approval does not double-debit', () => 
     expect(mockSession.run).toHaveBeenCalledTimes(1)
   })
 
-  it('SM6: read succeeds (TOCTOU window) but write returns zero rows — resolver bails with the same friendly error', async () => {
+  it('SM6: read succeeds (TOCTOU window) but write returns zero rows AND status changed — surfaces "no longer pending"', async () => {
     // Read passes (concurrent writer hasn't flipped status yet) but the
-    // write loses the race and matches zero rows. Resolver must still bail
-    // before any SMS dispatch.
+    // write loses the race and matches zero rows. SYN-120: resolver now
+    // fires a diagnostic read against the status-gated query to tell
+    // status-loss and solvency-loss apart. Diagnostic returning zero
+    // rows means the row is no longer pending → status TOCTOU.
     mockSession.run.mockResolvedValueOnce({
       records: [
         propRec({
@@ -456,25 +459,99 @@ describe('SM6 — ApproveExpense: double-approval does not double-debit', () => 
       ],
     })
     mockSession.run.mockResolvedValueOnce({ records: [] })
+    mockSession.run.mockResolvedValueOnce({ records: [] })
 
     await expect(
       accountsMutations.ApproveExpense(null, approveArgs, context)
     ).rejects.toThrow(/no longer pending approval/)
 
-    expect(mockSession.run).toHaveBeenCalledTimes(2)
+    expect(mockSession.run).toHaveBeenCalledTimes(3)
+    // SYN-120: third call is the status-gated diagnostic; locks future
+    // refactors out of accidentally swapping in getCouncilBalances
+    // (which is NOT status-gated and would mis-classify the error).
+    expect(mockSession.run.mock.calls[2][0]).toBe(
+      getCouncilBalancesWithTransaction
+    )
     // SMS dispatch is fire-and-forget AFTER the zero-row check, so it
     // must not have been called on the loser side.
+    expect(sendBulkSMS).not.toHaveBeenCalled()
+  })
+
+  it('SM6: SYN-120 — read passes, write returns zero rows BUT status still pending → surfaces "Insufficient weekday funds"', async () => {
+    // TOCTOU on solvency: a competing approval in the gap between read
+    // and write debits enough to take the council below this expense's
+    // amount. The Cypher's WHERE rejects on solvency; the diagnostic
+    // read confirms the row is still pending → solvency must have
+    // tripped → user-facing "Insufficient weekday funds" message.
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            weekdayBalance: 1000,
+            bussingSocietyBalance: 200,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            amount: -500,
+            category: 'Ministry Expense',
+          },
+        }),
+      ],
+    })
+    mockSession.run.mockResolvedValueOnce({ records: [] })
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            weekdayBalance: 100,
+            bussingSocietyBalance: 200,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            amount: -500,
+            category: 'Ministry Expense',
+          },
+        }),
+      ],
+    })
+
+    await expect(
+      accountsMutations.ApproveExpense(null, approveArgs, context)
+    ).rejects.toThrow(/Insufficient weekday funds/)
+
+    expect(mockSession.run).toHaveBeenCalledTimes(3)
+    expect(mockSession.run.mock.calls[2][0]).toBe(
+      getCouncilBalancesWithTransaction
+    )
     expect(sendBulkSMS).not.toHaveBeenCalled()
   })
 })
 
 // ---------------------------------------------------------------------------
-// ApproveExpense — negative-balance characterisation
+// ApproveExpense — negative-balance guard (SYN-120: now in JS AND Cypher)
 // ---------------------------------------------------------------------------
-describe('SM6 — ApproveExpense: negative-balance guard (characterised)', () => {
+describe('SM6 — ApproveExpense: negative-balance guard', () => {
   const approveArgs = { transactionId: 'txn_pending_1', charge: 0 }
 
-  it('SM6: non-Bussing — when weekdayBalance < |amount|, throws "Insufficient Funds" BEFORE the write Cypher', async () => {
+  it('SM6: non-Bussing — when weekdayBalance < |amount|, throws "Insufficient weekday funds" BEFORE the write Cypher', async () => {
     mockSession.run.mockResolvedValueOnce({
       records: [
         propRec({
@@ -504,25 +581,24 @@ describe('SM6 — ApproveExpense: negative-balance guard (characterised)', () =>
 
     await expect(
       accountsMutations.ApproveExpense(null, approveArgs, context)
-    ).rejects.toThrow(/Insufficient Funds/)
+    ).rejects.toThrow(/Insufficient weekday funds/)
 
     // Only the read fired; write skipped.
     expect(mockSession.run).toHaveBeenCalledTimes(1)
   })
 
-  it('SM6: Bussing — when weekdayBalance < |amount|, throws "Insufficient bussing funds" BEFORE the write Cypher', async () => {
+  it('SM6: Bussing — when weekdayBalance < |amount|, throws "Insufficient weekday funds" BEFORE the write Cypher (SYN-120 — message corrected; the source-of-funds is weekday, not bussing)', async () => {
     mockSession.run.mockResolvedValueOnce({
       records: [
         propRec({
           council: {
             id: 'council_1',
             name: 'Test Council',
-            // SM6 oddity (characterised, not invented): the Bussing branch
-            // gates on `council.weekdayBalance < transactionAmount`, NOT
-            // on bussingSocietyBalance — because the Bussing-category
-            // expense debits weekday and credits bussing society. The
-            // check guards the source-of-funds (weekday), not the
-            // destination (bussing).
+            // The Bussing branch gates on `council.weekdayBalance <
+            // transactionAmount + charge`, NOT on bussingSocietyBalance
+            // — because the Bussing-category expense debits weekday and
+            // credits bussing society. The check guards the source-of-
+            // funds (weekday), not the destination (bussing).
             weekdayBalance: 100,
             bussingSocietyBalance: 200,
           },
@@ -544,21 +620,121 @@ describe('SM6 — ApproveExpense: negative-balance guard (characterised)', () =>
 
     await expect(
       accountsMutations.ApproveExpense(null, approveArgs, context)
-    ).rejects.toThrow(/Insufficient bussing funds/)
+    ).rejects.toThrow(/Insufficient weekday funds/)
 
     expect(mockSession.run).toHaveBeenCalledTimes(1)
   })
 
-  // TODO(refactor): The negative-balance guard is enforced ONLY in JS
-  // (accounts-resolvers.ts), not in Cypher (approveExpense /
-  // approveBussingExpense). A concurrent approver who passes the JS check
-  // could still drive the council into a negative weekdayBalance between
-  // the read and the write because the WHERE clause on the write only
-  // verifies status, not solvency. Tracked as a latent race surface for
-  // the SYN-71 refactor — do not fix in this test PR.
-  it('SM6: approveExpense Cypher does NOT re-check solvency in its WHERE — characterising the JS-only guard', () => {
-    expect(approveExpense).not.toMatch(/weekdayBalance\s*[<>]=?\s*0/)
-    expect(approveExpense).not.toMatch(/Insufficient/i)
+  it('SM6: SYN-120 — JS guard rejects when weekdayBalance < |amount| + charge (off-by-charge gap closed)', async () => {
+    // Pre-fix: JS guard ignored args.charge, so weekdayBalance == |amount|
+    // with charge > 0 passed JS and the post-state landed at -charge.
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            weekdayBalance: 500,
+            bussingSocietyBalance: 200,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            amount: -500,
+            category: 'Ministry Expense',
+          },
+        }),
+      ],
+    })
+
+    await expect(
+      accountsMutations.ApproveExpense(
+        null,
+        { transactionId: 'txn_pending_1', charge: 50 },
+        context
+      )
+    ).rejects.toThrow(/Insufficient weekday funds/)
+
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+  })
+
+  it('SM6: SYN-120 — JS guard ACCEPTS the boundary case weekdayBalance == |amount| + charge (proves threshold is exact)', async () => {
+    // Boundary check: with weekdayBalance = 550, |amount| = 500, charge = 50,
+    // post-state = 0 (non-negative). Guard must permit this case so that the
+    // threshold is correctly `< |amount| + charge`, not `<= |amount| + charge`.
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          council: {
+            id: 'council_1',
+            name: 'Test Council',
+            weekdayBalance: 550,
+            bussingSocietyBalance: 200,
+          },
+          leader: {
+            id: 'leader_1',
+            firstName: 'Lead',
+            lastName: 'Pastor',
+            phoneNumber: '0240000000',
+          },
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'pending approval',
+            amount: -500,
+            category: 'Ministry Expense',
+          },
+        }),
+      ],
+    })
+    mockSession.run.mockResolvedValueOnce({
+      records: [
+        propRec({
+          transaction: {
+            id: 'txn_pending_1',
+            status: 'success',
+            amount: -500,
+            weekdayBalance: 0,
+          },
+          depositor: {
+            id: 'user_admin_1',
+            firstName: 'Test',
+            lastName: 'Admin',
+          },
+        }),
+      ],
+    })
+
+    const result = await accountsMutations.ApproveExpense(
+      null,
+      { transactionId: 'txn_pending_1', charge: 50 },
+      context
+    )
+
+    expect(result).toMatchObject({ id: 'txn_pending_1', status: 'success' })
+    // Read + write — no diagnostic, no extra calls.
+    expect(mockSession.run).toHaveBeenCalledTimes(2)
+  })
+
+  // SYN-120 — the negative-balance guard is now enforced atomically in
+  // the write Cypher's WHERE clause as well, closing the TOCTOU window
+  // where a concurrent approver could pass the JS check but still drive
+  // the council into a negative weekdayBalance between read and write.
+  it('SM6: SYN-120 — approveExpense Cypher re-checks solvency atomically in its WHERE', () => {
+    expect(approveExpense).toMatch(
+      /AND council\.weekdayBalance >= \(-1 \* transaction\.amount\) \+ toFloat\(\$charge\)/
+    )
+  })
+
+  it('SM6: SYN-120 — approveBussingExpense Cypher re-checks solvency atomically in its WHERE', () => {
+    expect(approveBussingExpense).toMatch(
+      /AND council\.weekdayBalance >= \(-1 \* transaction\.amount\) \+ toFloat\(\$charge\)/
+    )
   })
 })
 

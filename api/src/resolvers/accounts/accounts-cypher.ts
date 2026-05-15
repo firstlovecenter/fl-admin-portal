@@ -67,9 +67,15 @@ RETURN transaction
 //
 // HAS_MIRROR_DEPOSIT links the credit leg back to the parent so
 // UndoBussingTransaction can DETACH DELETE both together.
+//
+// SYN-120 — solvency is re-checked atomically with the status guard.
+// Without this clause, two approvers passing the JS read in parallel
+// could both flip the row to 'success' and drive weekdayBalance
+// negative because the write only re-checked status. ADR-005 §3.
 export const approveBussingExpense = `
 MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
 WHERE transaction.status = 'pending approval'
+  AND council.weekdayBalance >= (-1 * transaction.amount) + toFloat($charge)
 MATCH (transaction)-[:LOGGED_BY]->(depositor:Member)
 MATCH (requester:Member {id: $jwt.userId})
 
@@ -106,9 +112,12 @@ RETURN council, transaction, depositor
 // SYN-92 — same precondition as approveBussingExpense above. Without
 // this guard a second ApproveExpense call (race or Apollo retry) would
 // re-debit the council weekdayBalance and re-apply the charge.
+//
+// SYN-120 — solvency clause mirrors approveBussingExpense above.
 export const approveExpense = `
 MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
 WHERE transaction.status = 'pending approval'
+  AND council.weekdayBalance >= (-1 * transaction.amount) + toFloat($charge)
 MATCH (transaction)-[:LOGGED_BY]->(depositor:Member)
   SET council.weekdayBalance = council.weekdayBalance - (-1 * transaction.amount) - toFloat($charge)
   SET transaction.charge = toFloat($charge) * -1
