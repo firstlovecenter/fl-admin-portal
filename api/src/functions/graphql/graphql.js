@@ -122,14 +122,14 @@ const initializeServer = async () => {
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false
 
-  // Initialize on cold start to ensure SECRETS are loaded
-  await initializeServer()
-
-  // Determine CORS origin based on environment. Production accepts both the
-  // main admin host and the staging-synago host; we reflect whichever origin
-  // the request came from so a single Lambda can serve both. On mismatch we
-  // omit Access-Control-Allow-Origin entirely so the browser blocks the
-  // response rather than seeing a misleading default.
+  // Compute CORS + handle OPTIONS preflight BEFORE initializeServer().
+  // Cold-start cost (secrets load, Neo4j verifyConnectivity, schema
+  // generation) can run several seconds or throw; if any of that lands
+  // on a preflight, API Gateway returns a non-2xx and the browser
+  // surfaces it as a CORS failure even though origins are valid.
+  // SECRETS may be unloaded here — optional chaining falls through to
+  // the production list, which also contains staging-synago, so the
+  // preflight resolves correctly on the first invocation.
   const allowedOrigins =
     SECRETS?.ENVIRONMENT === 'development'
       ? [
@@ -156,6 +156,20 @@ exports.handler = async (event, context) => {
     ...(matchedOrigin && { 'Access-Control-Allow-Origin': matchedOrigin }),
   }
 
+  if (
+    event.httpMethod === 'OPTIONS' ||
+    event.requestContext?.http?.method === 'OPTIONS'
+  ) {
+    return {
+      statusCode: 204,
+      headers: { ...corsHeaders },
+      body: null,
+    }
+  }
+
+  // Initialize on cold start to ensure SECRETS are loaded
+  await initializeServer()
+
   // Membership CSV downloads share this Lambda but do not go through Apollo
   // — they stream Cypher rows into a base64-encoded CSV body. Dispatched
   // here before the body-parsing path because GET requests have no body.
@@ -177,20 +191,6 @@ exports.handler = async (event, context) => {
     const safeEvent = { ...event, headers: safeHeaders }
     console.log('[Event Debug] Event keys:', Object.keys(event))
     console.log('[Event Debug] Event:', JSON.stringify(safeEvent, null, 2))
-
-    // Handle OPTIONS preflight request
-    if (
-      event.httpMethod === 'OPTIONS' ||
-      event.requestContext?.http?.method === 'OPTIONS'
-    ) {
-      return {
-        statusCode: 204,
-        headers: {
-          ...corsHeaders,
-        },
-        body: null,
-      }
-    }
 
     // Parse and validate request (handle both API Gateway v1 and v2 formats)
     const body = event.body || event.rawBody || event.requestBody
