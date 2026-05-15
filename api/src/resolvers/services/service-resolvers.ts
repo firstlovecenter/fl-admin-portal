@@ -100,6 +100,26 @@ export const checkServantHasCurrentHistory = async (
   }
 }
 
+// Service-recording auth contract (SYN-125).
+//
+// `permitLeaderAdmin('Bacenta')` — NOT `permitLeader('Bacenta')` — is the
+// intended gate for every service-recording mutation in this file
+// (RecordService / RecordSpecialService / RecordCancelledService).
+//
+// The set is the union returned by `permitLeader('Bacenta')` +
+// `permitAdmin('Bacenta')` in `api/src/resolvers/permissions.ts`:
+//   - Leaders: leaderBacenta, leaderGovernorship, leaderCouncil,
+//     leaderStream, leaderCampus, leaderOversight, leaderDenomination
+//   - Admins:  adminGovernorship, adminCouncil, adminStream, adminCampus,
+//     adminOversight, adminDenomination (no `adminBacenta` exists)
+//
+// The admin half is the deliberate part: church admins at Governorship and
+// above can record on a Bacenta's behalf when the leader is absent or stuck.
+// Same gate is used by `BankServiceOffering` (banking-resolver.ts:127) and
+// is the contract documented in `kb/02-user-roles.md` "What each role can do"
+// and `kb/03-workflows.md` W1 step 3. `permitLeader('Bacenta')` is
+// intentionally never used here; tightening would break the admin override.
+// Keep FE/BE permission helpers in sync (ADR-001).
 const serviceMutation = {
   RecordService: async (
     object: any,
