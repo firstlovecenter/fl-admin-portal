@@ -20,7 +20,7 @@ import READ_WEEKLY_TIP_FOR_CHURCH_CYPHER, {
 } from './assistant-cypher'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const llm = require('../../scripts/utils/llm-client')
+const llm = require('../utils/llm-client')
 
 const RETRIEVAL_K_PASSAGES = 6
 const RETRIEVAL_K_VERSES = 4

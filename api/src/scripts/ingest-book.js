@@ -36,7 +36,7 @@ const {
   buildOpenAI,
   embedBatch,
   EMBEDDING_DIMS,
-} = require('./utils/llm-client')
+} = require('../resolvers/utils/llm-client')
 const { buildNeo4jDriver } = require('./utils/neo4j-driver')
 
 const args = process.argv.slice(2)

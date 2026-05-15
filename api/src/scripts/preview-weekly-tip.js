@@ -41,7 +41,7 @@ const {
   buildOpenAI,
   buildAnthropic,
   embedBatch,
-} = require('./utils/llm-client')
+} = require('../resolvers/utils/llm-client')
 const { buildNeo4jDriver } = require('./utils/neo4j-driver')
 
 const {
