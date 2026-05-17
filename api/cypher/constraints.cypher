@@ -89,7 +89,7 @@
 // "AggregateMinistryMeetingRecord"
 
 CREATE CONSTRAINT uniqueServiceDay IF NOT EXISTS ON (s:ServiceDay) ASSERT s.day IS UNIQUE;
-CREATE CONSTRAINT uniqueTitle IF NOT EXISTS ON (t:Title) ASSERT t.title IS UNIQUE;
+CREATE CONSTRAINT uniqueTitle IF NOT EXISTS FOR (t:Title) REQUIRE t.name IS UNIQUE;
 CREATE CONSTRAINT uniqueMaritalStatus IF NOT EXISTS ON (m:MaritalStatus) ASSERT m.status IS UNIQUE;
 CREATE CONSTRAINT uniqueGender IF NOT EXISTS ON (g:Gender) ASSERT g.gender IS UNIQUE;
 CREATE CONSTRAINT uniqueMinistry IF NOT EXISTS ON (m:Ministry) ASSERT m.id IS UNIQUE;
