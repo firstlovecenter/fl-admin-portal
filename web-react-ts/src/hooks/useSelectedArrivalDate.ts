@@ -72,12 +72,15 @@ const addDaysYmd = (ymd: string, n: number): string => {
   return d.toISOString().slice(0, 10)
 }
 
-// Sunday of the week containing the given YMD (Sun-anchored, matching the
-// existing arrivals Sunday convention).
+// Monday of the church week containing the given YMD. Church weeks run
+// Monday → Sunday, so Sunday's bussing is the final day of the week, not
+// the first. Matches the ISO 8601 / Neo4j `date().week` convention used by
+// the weekly aggregators elsewhere in the app.
 const weekStartOf = (ymd: string): string => {
   const d = new Date(`${ymd}T00:00:00Z`)
-  const dow = d.getUTCDay()
-  if (dow !== 0) d.setUTCDate(d.getUTCDate() - dow)
+  const dow = d.getUTCDay() // 0 = Sunday … 6 = Saturday
+  const offsetFromMonday = (dow + 6) % 7 // Mon=0, Tue=1, … Sun=6
+  d.setUTCDate(d.getUTCDate() - offsetFromMonday)
   return d.toISOString().slice(0, 10)
 }
 
@@ -139,9 +142,9 @@ export type SelectedArrivalDate = {
   isCurrent: boolean
   /** Bussing dates within the visible week, ASC. Empty for weeks with no bussings. */
   daysInWeek: ArrivalDayChip[]
-  /** Step back one Sun-anchored calendar week. No-op when no earlier bussing exists. */
+  /** Step back one Mon→Sun church week. No-op when no earlier bussing exists. */
   prevWeek: () => void
-  /** Step forward one Sun-anchored calendar week. No-op past the current week. */
+  /** Step forward one Mon→Sun church week. No-op past the current week. */
   nextWeek: () => void
   /** True iff at least one bussing exists in an earlier week. False during cold load. */
   hasPrev: boolean
@@ -185,7 +188,11 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
     : lastSundayYmd()
 
   const arrivalDate = isValidIsoDate(dateParam) ? dateParam : fallback
-  const currentWeekStart = lastSundayYmd()
+  // "Current week" tracks the church week containing the most recent
+  // Sunday bussing. Pinning to today's Monday would mark Sunday's data as
+  // "last week" the moment midnight ticks over — pastors review Sunday
+  // night → Monday morning, so the most recent bussing must stay current.
+  const currentWeekStart = weekStartOf(lastSundayYmd())
   const weekStart = weekStartOf(arrivalDate)
   const weekEnd = addDaysYmd(weekStart, 6)
   const isCurrent = weekStart === currentWeekStart
@@ -276,9 +283,9 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
     navigateToDate(onlyDate)
   }, [daysInWeek, arrivalDate, navigateToDate])
 
-  // Step prev/next by Sun-anchored calendar week. When the destination week
+  // Step prev/next by Mon→Sun church week. When the destination week
   // contains bussings, land on the earliest bussing of that week so the
-  // dashboard renders data immediately; otherwise land on the Sunday so the
+  // dashboard renders data immediately; otherwise land on the Monday so the
   // empty-week state can render.
   const navigateToWeek = useCallback(
     (targetWeekStart: string) => {

@@ -118,6 +118,16 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
   (`accra-campus-weekly`, `outside-accra-weekly`); used by report logic, not by the
   schema. Outside-Accra timing uses the previous Sunday's date when fellowship-mode
   is active (see commit history).
+- **Church week** — **Monday → Sunday**, matching ISO 8601 / Neo4j's `date().week`.
+  Sunday is the **last** day of the church week, not the first. Sunday's bussing,
+  service record, and banking all belong to the week that ends on that Sunday.
+  Every week range surfaced in the UI (arrivals selector, reports, weekly
+  aggregates) must use this framing — do not introduce Sun→Sat ranges. The
+  canonical helpers are `getIsoWeek` / `toWeekKey` in
+  `web-react-ts/src/pages/reports/_shared/week-utils.ts`, `isoWeekMonday` in
+  `web-react-ts/src/hooks/useSelectedWeek.ts`, and the local `weekStartOf` in
+  `web-react-ts/src/hooks/useSelectedArrivalDate.ts`. Aggregate keys keyed by
+  week (`<churchId>-<week>-<year>`, ADR-014) use the same Mon→Sun boundary.
 - **Sabbath** — Mondays after 4am show the Sabbath splash screen
   (`web-react-ts/src/auth/Sabbath.tsx`, currently commented out in `index.tsx`).
 - **Maintenance mode** — manual flag; can be enabled by uncommenting in
