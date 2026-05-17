@@ -2,11 +2,15 @@
 //
 //   1. Returns ONE ROW per member (no `collect(...)`) so the driver can
 //      stream records into the CSV writer.
-//   2. Returns flat scalars in the column order used by the CSV header,
+//   2. Returns flat scalars whose names match the keys the handler reads,
 //      so the handler can write rows without per-record reshaping.
 //
-// Column order MUST stay in lockstep with `CSV_COLUMNS` in
-// `downloads-handler.ts`. Adding/removing columns is a two-file change.
+// Keys here MUST match the `ColumnDef.key` values produced by
+// `buildColumnsForLevels` / `IDENTITY_COLUMNS` in `downloads-handler.ts`
+// AND the parallel FE `TICKABLE_LEVELS` / `buildPreviewHeaders` in
+// `web-react-ts/.../DownloadMembershipList.tsx`. Adding a new column is a
+// three-file change. Removing a column from RETURN without removing the
+// matching FE/BE entry leaves blank cells in the CSV.
 
 import type { ChurchLevel } from '../utils/types'
 
@@ -31,16 +35,22 @@ const ROW_RETURN = `
 RETURN
   oversight.name AS oversight,
   trim(coalesce(oversightLeader.firstName, '') + ' ' + coalesce(oversightLeader.lastName, '')) AS oversightLeader,
+  oversightLeader.phoneNumber AS oversightLeaderPhone,
   campus.name AS campus,
   trim(coalesce(campusLeader.firstName, '') + ' ' + coalesce(campusLeader.lastName, '')) AS campusLeader,
+  campusLeader.phoneNumber AS campusLeaderPhone,
   stream.name AS stream,
   trim(coalesce(streamLeader.firstName, '') + ' ' + coalesce(streamLeader.lastName, '')) AS streamLeader,
+  streamLeader.phoneNumber AS streamLeaderPhone,
   council.name AS council,
   trim(coalesce(councilLeader.firstName, '') + ' ' + coalesce(councilLeader.lastName, '')) AS councilLeader,
+  councilLeader.phoneNumber AS councilLeaderPhone,
   governorship.name AS governorship,
   trim(coalesce(governorshipLeader.firstName, '') + ' ' + coalesce(governorshipLeader.lastName, '')) AS governorshipLeader,
+  governorshipLeader.phoneNumber AS governorshipLeaderPhone,
   bacenta.name AS bacenta,
   trim(coalesce(bacentaLeader.firstName, '') + ' ' + coalesce(bacentaLeader.lastName, '')) AS bacentaLeader,
+  bacentaLeader.phoneNumber AS bacentaLeaderPhone,
   member.firstName AS firstName,
   member.lastName AS lastName,
   member.phoneNumber AS phoneNumber,

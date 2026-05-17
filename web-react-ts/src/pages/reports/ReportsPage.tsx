@@ -13,7 +13,6 @@ import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { cn } from 'components/lib/utils'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
-import { getSubChurchLevel, plural } from 'global-utils'
 import type { ChurchLevel } from 'global-types'
 import { getMembershipDownloadPath } from './membership-paths'
 
@@ -162,10 +161,6 @@ const ReportsPage = () => {
   const membershipPath = getMembershipDownloadPath(churchType)
   // Bacenta is the leaf level; sub-church breakdowns don't apply at this scope.
   const hasSubChurches = reportsAvailable && churchType !== 'Bacenta'
-  const subChurchType = hasSubChurches
-    ? getSubChurchLevel(churchType as ChurchLevel)
-    : ''
-  const subChurchPlural = subChurchType ? plural(subChurchType) : ''
 
   const directoryPath =
     reportsAvailable && hasSubChurches ? '/reports/directory' : null
@@ -251,8 +246,8 @@ const ReportsPage = () => {
                 {hasSubChurches && (
                   <ReportCard
                     icon={<Network className="size-5" />}
-                    title={`${churchPrefix}${subChurchPlural} Directory`}
-                    description={`One row per ${subChurchType} in ${
+                    title={`${churchPrefix}Sub-Church Directory`}
+                    description={`One row per sub-church in ${
                       churchName || 'this church'
                     } — leader's name and phone number.`}
                     to={directoryPath}
@@ -287,8 +282,8 @@ const ReportsPage = () => {
                 {hasSubChurches && (
                   <ReportCard
                     icon={<Network className="size-5" />}
-                    title={`${churchPrefix}Bussing by ${subChurchType}`}
-                    description={`Per-week Sunday bussing totals broken down by each ${subChurchType} in ${
+                    title={`${churchPrefix}Bussing by Sub-Church`}
+                    description={`Per-week Sunday bussing totals broken down by each sub-church in ${
                       churchName || 'this church'
                     }.`}
                     to={bussingSubChurchesPath}
@@ -306,16 +301,14 @@ const ReportsPage = () => {
                   <ReportCard
                     icon={<AlertOctagon className="size-5" />}
                     title={`${churchPrefix}Defaulters Report`}
-                    description={`Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-${
-                      subChurchType || 'sub-church'
-                    } summary at Council and above.`}
+                    description="Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-sub-church summary at Council and above."
                     to={defaultersPath}
                   />
                   {defaultersSubChurchesAvailable && (
                     <ReportCard
                       icon={<Network className="size-5" />}
-                      title={`${churchPrefix}Defaulters by ${subChurchType}`}
-                      description={`One row per ${subChurchType} in ${
+                      title={`${churchPrefix}Defaulters by Sub-Church`}
+                      description={`One row per sub-church in ${
                         churchName || 'this church'
                       } — services filed, form defaulters, banked, banking defaulters, and cancelled.`}
                       to={defaultersSubChurchesPath}
@@ -334,16 +327,14 @@ const ReportsPage = () => {
                   <ReportCard
                     icon={<BusFront className="size-5" />}
                     title={`${churchPrefix}Arrivals Report`}
-                    description={`Per-Bacenta and per-vehicle bussing snapshot for any Sunday — attendance, leader declaration, vehicle counts, top-ups, and a per-${
-                      subChurchType || 'sub-church'
-                    } summary at Council and above.`}
+                    description="Per-Bacenta and per-vehicle bussing snapshot for any Sunday — attendance, leader declaration, vehicle counts, top-ups, and a per-sub-church summary at Council and above."
                     to={arrivalsPath}
                   />
                   {arrivalsSubChurchesAvailable && (
                     <ReportCard
                       icon={<Network className="size-5" />}
-                      title={`${churchPrefix}Arrivals by ${subChurchType}`}
-                      description={`One row per ${subChurchType} in ${
+                      title={`${churchPrefix}Arrivals by Sub-Church`}
+                      description={`One row per sub-church in ${
                         churchName || 'this church'
                       } — bacentas bussed, attendance, vehicles, cost, and top-up.`}
                       to={arrivalsSubChurchesPath}
@@ -379,8 +370,8 @@ const ReportsPage = () => {
                 {hasSubChurches && (
                   <ReportCard
                     icon={<Network className="size-5" />}
-                    title={`${churchPrefix}Weekday by ${subChurchType}`}
-                    description={`Per-week weekday service totals broken down by each ${subChurchType} in ${
+                    title={`${churchPrefix}Weekday by Sub-Church`}
+                    description={`Per-week weekday service totals broken down by each sub-church in ${
                       churchName || 'this church'
                     }.`}
                     to={weekdaySubChurchesPath}

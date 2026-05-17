@@ -541,6 +541,25 @@ export const getSubChurchLevel = (churchType: ChurchLevel) => {
   }
 }
 
+const CHURCH_HIERARCHY_DESCENDING: readonly ChurchLevel[] = [
+  'Denomination',
+  'Oversight',
+  'Campus',
+  'Stream',
+  'Council',
+  'Governorship',
+  'Bacenta',
+]
+
+// Levels strictly below the given scope, descending. E.g.
+// Oversight -> [Campus, Stream, Council, Governorship, Bacenta]
+// Bacenta   -> []
+export const getDescendantLevels = (scope: ChurchLevel): ChurchLevel[] => {
+  const idx = CHURCH_HIERARCHY_DESCENDING.indexOf(scope)
+  if (idx < 0) return []
+  return CHURCH_HIERARCHY_DESCENDING.slice(idx + 1)
+}
+
 export const randomOTPGenerator = () => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''

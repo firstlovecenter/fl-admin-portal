@@ -10,9 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from 'components/ui/table'
-import { Church, Member } from 'global-types'
-import { getHumanReadableDate } from 'global-utils'
+import { Church, ChurchLevel, Member } from 'global-types'
+import { getDescendantLevels, getHumanReadableDate } from 'global-utils'
 import { getAccessToken } from 'lib/auth-service'
+import AncestorLevelPicker from './AncestorLevelPicker'
 import {
   Check,
   ChevronDown,
@@ -56,19 +57,23 @@ const buildDisplayFilename = (churchName: string, churchType: string) => {
   return `${safeName} ${churchType} Membership - ${today}.csv`
 }
 
-const previewHeaders = [
-  { label: 'Oversight', key: 'oversight' },
-  { label: 'Oversight Leader', key: 'oversightLeader' },
-  { label: 'Campus', key: 'campus' },
-  { label: 'Campus Leader', key: 'campusLeader' },
-  { label: 'Stream', key: 'stream' },
-  { label: 'Stream Leader', key: 'streamLeader' },
-  { label: 'Council', key: 'council' },
-  { label: 'Council Leader', key: 'councilLeader' },
-  { label: 'Governorship', key: 'governorship' },
-  { label: 'Governorship Leader', key: 'governorshipLeader' },
-  { label: 'Bacenta', key: 'bacenta' },
-  { label: 'Bacenta Leader', key: 'bacentaLeader' },
+// Mirrors the backend's `ANCESTOR_LEVELS` order in
+// `api/src/resolvers/downloads/downloads-handler.ts`. Keep these two in
+// lockstep — adding a level here without a Cypher RETURN binding emits
+// blank columns; the reverse silently drops a column from the export.
+// Denomination is omitted because the Cypher RETURN doesn't expose it.
+const TICKABLE_LEVELS: ReadonlyArray<ChurchLevel> = [
+  'Oversight',
+  'Campus',
+  'Stream',
+  'Council',
+  'Governorship',
+  'Bacenta',
+]
+
+type ColumnDef = { key: string; label: string }
+
+const IDENTITY_COLUMNS: ReadonlyArray<ColumnDef> = [
   { label: 'First Name', key: 'firstName' },
   { label: 'Last Name', key: 'lastName' },
   { label: 'Phone Number', key: 'phoneNumber' },
@@ -79,10 +84,29 @@ const previewHeaders = [
   { label: 'Date of Birth', key: 'dateOfBirth' },
   { label: 'Visitation Area', key: 'visitationArea' },
   { label: 'Basonta', key: 'basonta' },
-] as const
+]
 
-type PreviewKey = (typeof previewHeaders)[number]['key']
-type PreviewRow = { id: string } & Record<PreviewKey, string>
+const lowerFirst = (s: string) =>
+  s.length === 0 ? s : s[0].toLowerCase() + s.slice(1)
+
+const ancestorColumnsFor = (level: ChurchLevel): ColumnDef[] => {
+  const k = lowerFirst(level)
+  return [
+    { key: k, label: level },
+    { key: `${k}Leader`, label: `${level} Leader` },
+    { key: `${k}LeaderPhone`, label: `${level} Leader Phone` },
+  ]
+}
+
+const buildPreviewHeaders = (selected: ChurchLevel[]): ColumnDef[] => {
+  const set = new Set(selected)
+  const ancestors = TICKABLE_LEVELS.filter((l) => set.has(l)).flatMap(
+    ancestorColumnsFor
+  )
+  return [...ancestors, ...IDENTITY_COLUMNS]
+}
+
+type PreviewRow = { id: string } & Record<string, string>
 
 const columnHelper = createColumnHelper<PreviewRow>()
 
@@ -99,16 +123,22 @@ const buildPreviewRows = (church: Church | undefined): PreviewRow[] =>
       id: member.id,
       oversight: oversight?.name ?? '',
       oversightLeader: oversight?.leader?.fullName ?? '',
+      oversightLeaderPhone: oversight?.leader?.phoneNumber ?? '',
       campus: campus?.name ?? '',
       campusLeader: campus?.leader?.fullName ?? '',
+      campusLeaderPhone: campus?.leader?.phoneNumber ?? '',
       stream: stream?.name ?? '',
       streamLeader: stream?.leader?.fullName ?? '',
+      streamLeaderPhone: stream?.leader?.phoneNumber ?? '',
       council: council?.name ?? '',
       councilLeader: council?.leader?.fullName ?? '',
+      councilLeaderPhone: council?.leader?.phoneNumber ?? '',
       governorship: governorship?.name ?? '',
       governorshipLeader: governorship?.leader?.fullName ?? '',
+      governorshipLeaderPhone: governorship?.leader?.phoneNumber ?? '',
       bacenta: bacenta?.name ?? '',
       bacentaLeader: bacenta?.leader?.fullName ?? '',
+      bacentaLeaderPhone: bacenta?.leader?.phoneNumber ?? '',
       firstName: member.firstName ?? '',
       lastName: member.lastName ?? '',
       phoneNumber: member.phoneNumber ?? '',
@@ -138,7 +168,11 @@ const filenameFromContentDisposition = (
   return plain?.[1]?.trim()
 }
 
-const buildDownloadUrl = (level: string, churchId: string): string => {
+const buildDownloadUrl = (
+  level: string,
+  churchId: string,
+  selectedLevels: ChurchLevel[]
+): string => {
   // Match the absolute fallback used in src/index.tsx so a dev without
   // VITE_SYNAGO_GRAPHQL_URI set still hits the API on :4001 and not the
   // Vite dev server on :3000. The download endpoint sits at the same host
@@ -146,9 +180,14 @@ const buildDownloadUrl = (level: string, churchId: string): string => {
   const graphqlUri =
     import.meta.env.VITE_SYNAGO_GRAPHQL_URI || 'http://localhost:4001/graphql'
   const apiBase = graphqlUri.replace(/\/graphql\/?$/, '')
-  return `${apiBase}/downloads/membership/${encodeURIComponent(
+  const base = `${apiBase}/downloads/membership/${encodeURIComponent(
     level
   )}/${encodeURIComponent(churchId)}.csv`
+  // Empty selection (Bacenta scope) becomes `?levels=` — handler treats
+  // that as "no ancestor columns" rather than falling back to the legacy
+  // default, which is what the user explicitly asked for via the picker.
+  const params = new URLSearchParams({ levels: selectedLevels.join(',') })
+  return `${base}?${params.toString()}`
 }
 
 const triggerBlobDownload = (blob: Blob, filename: string) => {
@@ -184,6 +223,19 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
   const [copied, setCopied] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
+  // Levels the user can tick = descendants of the current scope. Bacenta
+  // scope returns [], which collapses the picker and yields an
+  // identity-only CSV (no ancestor church columns). Each per-level page
+  // (DownloadOversightMembership, …) hardcodes its own churchType, so
+  // this initializer never reseeds on re-render — no resync effect
+  // needed.
+  const availableLevels = useMemo(
+    () => getDescendantLevels(churchType as ChurchLevel),
+    [churchType]
+  )
+  const [selectedLevels, setSelectedLevels] =
+    useState<ChurchLevel[]>(availableLevels)
+
   useEffect(() => {
     if (!copied) return undefined
     const t = setTimeout(() => setCopied(false), 1500)
@@ -197,6 +249,10 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
   const previewRows = useMemo(() => buildPreviewRows(church), [church])
   const total = church?.memberCount ?? 0
   const displayFilename = buildDisplayFilename(church?.name ?? '', churchType)
+  const previewHeaders = useMemo(
+    () => buildPreviewHeaders(selectedLevels),
+    [selectedLevels]
+  )
 
   const previewTableColumns = useMemo(
     () => [
@@ -220,7 +276,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
         })
       ),
     ],
-    []
+    [previewHeaders]
   )
 
   const memberTable = useReactTable({
@@ -251,9 +307,12 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
 
     setDownloading(true)
     try {
-      const res = await fetch(buildDownloadUrl(churchType, church.id), {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch(
+        buildDownloadUrl(churchType, church.id, selectedLevels),
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
       if (!res.ok) {
         const text = await res.text().catch(() => '')
         throw new Error(text || `Download failed (${res.status})`)
@@ -327,6 +386,12 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                       />
                     </div>
                   </section>
+
+                  <AncestorLevelPicker
+                    availableLevels={availableLevels}
+                    selectedLevels={selectedLevels}
+                    onChange={setSelectedLevels}
+                  />
 
                   <section className="rounded-xl border border-border bg-card p-4">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

@@ -3,9 +3,11 @@ import type { Driver } from 'neo4j-driver'
 import type { Express, Request, Response } from 'express'
 import cors from 'cors'
 import {
+  AncestorLevel,
   buildContentDisposition,
   DownloadError,
   handleMembershipDownload,
+  isAncestorLevel,
   isDownloadLevel,
 } from './downloads-handler'
 import {
@@ -34,6 +36,40 @@ const handleDownloadRequest =
       return
     }
 
+    // Comma-separated list of ancestor levels to include as columns.
+    //   missing            -> undefined -> handler picks the scope default
+    //                         (every level below scope; legacy behaviour)
+    //   `?levels=`         -> []        -> identity-only CSV (the Bacenta-
+    //                         scope shape, also reachable via the FE Clear
+    //                         button)
+    //   `?levels=Stream`   -> ['Stream'] etc.
+    // Unknown tokens are dropped silently rather than 400-ing so a stale
+    // FE never breaks the download. But if EVERY token is unknown (e.g.
+    // `?levels=garbage`) we fall back to the scope default rather than
+    // silently emitting an identity-only CSV — "I sent something but you
+    // understood none of it" is not the same intent as "I want nothing".
+    //
+    // 1KB cap on the raw string and 16-element cap on the split limit the
+    // worst-case allocation if a misbehaving client posts a giant value.
+    // Reverse proxies / API Gateway also bound URL length, so this is
+    // belt-and-braces.
+    const rawLevels = req.query.levels
+    const MAX_LEVELS_RAW = 1024
+    const MAX_LEVELS_COUNT = 16
+    let ancestorLevels: AncestorLevel[] | undefined
+    if (typeof rawLevels === 'string' && rawLevels.length <= MAX_LEVELS_RAW) {
+      if (rawLevels.length === 0) {
+        ancestorLevels = []
+      } else {
+        const parsed = rawLevels
+          .split(',', MAX_LEVELS_COUNT)
+          .map((s) => s.trim())
+          .filter(isAncestorLevel)
+        // All garbage -> defer to handler's default
+        ancestorLevels = parsed.length > 0 ? parsed : undefined
+      }
+    }
+
     // Lets the streaming loop bail when the client closes the tab / loses
     // signal mid-download, so we don't keep formatting rows for a socket
     // that nobody is reading.
@@ -47,6 +83,7 @@ const handleDownloadRequest =
         driver,
         level,
         churchId,
+        levels: ancestorLevels,
         roles: jwt.roles,
         userId: jwt.userId,
         output: res,

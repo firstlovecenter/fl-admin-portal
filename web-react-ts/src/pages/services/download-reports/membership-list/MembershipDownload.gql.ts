@@ -34,6 +34,7 @@ const PREVIEW_FIELDS = `
         firstName
         lastName
         fullName
+        phoneNumber
       }
       governorship {
         id
@@ -43,6 +44,7 @@ const PREVIEW_FIELDS = `
           firstName
           lastName
           fullName
+          phoneNumber
         }
         council {
           id
@@ -52,6 +54,7 @@ const PREVIEW_FIELDS = `
             firstName
             lastName
             fullName
+            phoneNumber
           }
           stream {
             id
@@ -61,6 +64,7 @@ const PREVIEW_FIELDS = `
               firstName
               lastName
               fullName
+              phoneNumber
             }
             campus {
               id
@@ -70,6 +74,7 @@ const PREVIEW_FIELDS = `
                 firstName
                 lastName
                 fullName
+                phoneNumber
               }
               oversight {
                 id
@@ -79,6 +84,7 @@ const PREVIEW_FIELDS = `
                   firstName
                   lastName
                   fullName
+                  phoneNumber
                 }
               }
             }

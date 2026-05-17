@@ -24,20 +24,40 @@ export const isDownloadLevel = (value: unknown): value is DownloadLevel =>
   typeof value === 'string' &&
   (DOWNLOAD_LEVELS as readonly string[]).includes(value)
 
-// Column order must match `ROW_RETURN` in downloads-cypher.ts.
-const CSV_COLUMNS: ReadonlyArray<{ key: string; label: string }> = [
-  { key: 'oversight', label: 'Oversight' },
-  { key: 'oversightLeader', label: 'Oversight Leader' },
-  { key: 'campus', label: 'Campus' },
-  { key: 'campusLeader', label: 'Campus Leader' },
-  { key: 'stream', label: 'Stream' },
-  { key: 'streamLeader', label: 'Stream Leader' },
-  { key: 'council', label: 'Council' },
-  { key: 'councilLeader', label: 'Council Leader' },
-  { key: 'governorship', label: 'Governorship' },
-  { key: 'governorshipLeader', label: 'Governorship Leader' },
-  { key: 'bacenta', label: 'Bacenta' },
-  { key: 'bacentaLeader', label: 'Bacenta Leader' },
+// Tickable ancestor levels — every level whose Name / Leader / Leader Phone
+// can appear as columns on a member row. The scope itself never appears here;
+// it's redundant on every row and is captured in the filename instead.
+// Denomination is excluded because the Cypher RETURN doesn't expose it.
+const ANCESTOR_LEVELS = [
+  'Oversight',
+  'Campus',
+  'Stream',
+  'Council',
+  'Governorship',
+  'Bacenta',
+] as const
+
+export type AncestorLevel = (typeof ANCESTOR_LEVELS)[number]
+
+export const isAncestorLevel = (value: unknown): value is AncestorLevel =>
+  typeof value === 'string' &&
+  (ANCESTOR_LEVELS as readonly string[]).includes(value)
+
+type ColumnDef = { key: string; label: string }
+
+const lowerFirst = (s: string): string =>
+  s.length === 0 ? s : s[0].toLowerCase() + s.slice(1)
+
+const ancestorColumns = (level: AncestorLevel): ColumnDef[] => {
+  const k = lowerFirst(level)
+  return [
+    { key: k, label: level },
+    { key: `${k}Leader`, label: `${level} Leader` },
+    { key: `${k}LeaderPhone`, label: `${level} Leader Phone` },
+  ]
+}
+
+const IDENTITY_COLUMNS: ReadonlyArray<ColumnDef> = [
   { key: 'firstName', label: 'First Name' },
   { key: 'lastName', label: 'Last Name' },
   { key: 'phoneNumber', label: 'Phone Number' },
@@ -50,7 +70,26 @@ const CSV_COLUMNS: ReadonlyArray<{ key: string; label: string }> = [
   { key: 'basonta', label: 'Basonta' },
 ]
 
-const CSV_HEADER = `${CSV_COLUMNS.map((c) => escapeCsv(c.label)).join(',')}\r\n`
+// Build the CSV column list for a given set of ticked ancestor levels.
+// Levels are emitted in canonical top-down order regardless of input order,
+// then identity columns are appended. Duplicates in the input are ignored.
+export function buildColumnsForLevels(levels: AncestorLevel[]): ColumnDef[] {
+  const set = new Set(levels)
+  const ancestors = ANCESTOR_LEVELS.filter((l) => set.has(l)).flatMap(
+    ancestorColumns
+  )
+  return [...ancestors, ...IDENTITY_COLUMNS]
+}
+
+// Default = every ancestor level strictly below the scope (inclusive of
+// Bacenta), in canonical descending order. Bacenta scope yields an empty
+// list, which produces an identity-only CSV (no per-row church columns,
+// since the only church is the scope itself).
+export function defaultLevelsForScope(scope: DownloadLevel): AncestorLevel[] {
+  const idx = ANCESTOR_LEVELS.indexOf(scope as AncestorLevel)
+  if (idx < 0) return [...ANCESTOR_LEVELS] // Denomination: all six
+  return ANCESTOR_LEVELS.slice(idx + 1) as AncestorLevel[]
+}
 
 const ILLEGAL_FILENAME_CHARS = /[/\\:*?"<>|]/g
 
@@ -75,12 +114,17 @@ function formatBirthday(iso: unknown): string {
   })
 }
 
-function formatRow(record: Record<string, unknown>): string {
-  return `${CSV_COLUMNS.map(({ key }) => {
-    const raw = record[key]
-    if (key === 'dateOfBirth') return escapeCsv(formatBirthday(raw))
-    return escapeCsv(raw)
-  }).join(',')}\r\n`
+function formatRow(
+  record: Record<string, unknown>,
+  columns: ReadonlyArray<ColumnDef>
+): string {
+  return `${columns
+    .map(({ key }) => {
+      const raw = record[key]
+      if (key === 'dateOfBirth') return escapeCsv(formatBirthday(raw))
+      return escapeCsv(raw)
+    })
+    .join(',')}\r\n`
 }
 
 export function buildFilename(
@@ -121,6 +165,11 @@ export type HandleMembershipDownloadParams = {
   driver: Driver
   level: DownloadLevel
   churchId: string
+  // Subset of ancestor levels whose Name / Leader / Leader Phone columns
+  // should appear on each row. If omitted, every ancestor level below the
+  // scope is included (matches the legacy "everything" behaviour). An empty
+  // array yields an identity-only CSV with no ancestor columns.
+  levels?: AncestorLevel[]
   roles: Role[] | undefined
   userId: string | undefined
   output: Writable
@@ -137,6 +186,10 @@ export async function handleMembershipDownload(
 ): Promise<{ rowCount: number; filename: string }> {
   const { driver, level, churchId, roles, userId, output, hooks, abort } =
     params
+  const columns = buildColumnsForLevels(
+    params.levels ?? defaultLevelsForScope(level)
+  )
+  const headerLine = `${columns.map((c) => escapeCsv(c.label)).join(',')}\r\n`
 
   // Fail fast on missing identifiers BEFORE any role check — a token
   // without a userId should never have reached this endpoint, and we
@@ -176,7 +229,7 @@ export async function handleMembershipDownload(
     hooks.onPrepared(filename)
 
     // 2. Header row.
-    output.write(CSV_HEADER)
+    output.write(headerLine)
 
     // 3. Stream member rows via the driver's async-iterator API. `for await`
     //    pauses Cypher consumption naturally between rows, so awaiting the
@@ -196,7 +249,7 @@ export async function handleMembershipDownload(
       for (const key of record.keys) {
         row[key as string] = record.get(key)
       }
-      if (!output.write(formatRow(row))) {
+      if (!output.write(formatRow(row, columns))) {
         await new Promise<void>((resolve) => {
           output.once('drain', resolve)
         })
