@@ -372,17 +372,15 @@ export const arrivalsMutation = {
   ConfirmVehicleByAdmin: async (
     object: never,
     args: {
-      bacentaId: string
-      bussingRecordId: string
-      leaderDeclaration: number
+      vehicleRecordId: string
       attendance: number
       vehicle: 'Urvan' | 'Sprinter' | 'Car'
-      picture: string
+      comments: string | null
     },
     context: Context
   ) => {
     isAuth(permitArrivalsCounter(), context.jwt.roles)
-    await assertChurchScope(context, args.bacentaId)
+    await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
     const recordResponse = rearrangeCypherObject(
@@ -391,10 +389,12 @@ export const arrivalsMutation = {
 
     const {
       arrivalEndTime,
+      bacentaId,
       numberOfVehicles,
       totalAttendance,
     }: {
       arrivalEndTime: string
+      bacentaId: string
       numberOfVehicles: neonumber
       totalAttendance: neonumber
       leaderPhoneNumber: string
@@ -456,7 +456,7 @@ export const arrivalsMutation = {
         serviceLog: {
           bacenta: [
             {
-              id: args.bacentaId,
+              id: bacentaId,
               stream_name: response.stream_name,
               bussing: [
                 {
