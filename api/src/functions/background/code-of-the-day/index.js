@@ -1,6 +1,7 @@
 const neo4j = require('neo4j-driver')
 const { default: axios } = require('axios')
 const { loadSecrets } = require('./secrets')
+const { CODE_WORDS } = require('./codeWords')
 
 const setCodeOfTheDay = `
  MATCH (arr:ArrivalsCodeOfTheDay)
@@ -35,33 +36,45 @@ const executeQuery = async (neoDriver) => {
   ]
 
   try {
-    await session.executeWrite(async (tx) => {
-      console.log('Setting code of the day for date ', new Date())
-      // console.log('Code of the day', codeOfTheDay)
+    console.log('Setting code of the day for date ', new Date())
 
-      const pad = (n) => (n < 10 ? `0${n}` : n)
+    const pad = (n) => (n < 10 ? `0${n}` : n)
 
-      const today = new Date()
-      const day = today.getDate()
-      const month = today.getMonth() + 1
-      const year = today.getFullYear()
-      const date = `${year}-${pad(month)}-${pad(day)}`
+    const today = new Date()
+    const day = today.getDate()
+    const month = today.getMonth() + 1
+    const year = today.getFullYear()
+    const date = `${year}-${pad(month)}-${pad(day)}`
 
-      const code = codeOfTheDay.filter((item) => item.date === date).pop()
+    const dateMatch = codeOfTheDay.filter((item) => item.date === date).pop()
 
+    // Pick the code BEFORE opening the write transaction so a slow
+    // axios fallback can't hold a Neo4j write tx open. Date-pinned
+    // codes win; otherwise pick from the curated list; otherwise fall
+    // back to the random-word API.
+    let chosenCode
+    if (dateMatch?.code) {
+      chosenCode = dateMatch.code
+    } else if (CODE_WORDS.length > 0) {
+      chosenCode = CODE_WORDS[Math.floor(Math.random() * CODE_WORDS.length)]
+    } else {
+      console.warn(
+        'Curated word list is empty, falling back to random-word-api'
+      )
       const res = await axios({
         method: 'get',
         url: 'https://random-word-api.herokuapp.com/word',
       })
+      // Match the natural mixed case of the curated list so downstream
+      // consumers see consistent shape regardless of which branch wins.
+      ;[chosenCode] = res.data
+    }
 
-      const dictionaryCode = res.data[0].toUpperCase()
+    console.log('code', chosenCode)
 
-      console.log('code', code?.code ?? dictionaryCode)
-
-      return tx.run(setCodeOfTheDay, {
-        code: code?.code ?? dictionaryCode,
-      })
-    })
+    await session.executeWrite((tx) =>
+      tx.run(setCodeOfTheDay, { code: chosenCode })
+    )
   } catch (error) {
     console.error('Error setting code of the day', error)
   } finally {

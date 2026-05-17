@@ -40,6 +40,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from 'components/ui/dialog'
+import { Input } from 'components/ui/input'
+import { Label } from 'components/ui/label'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,7 +63,11 @@ import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
 import { permitAdmin, permitArrivals, permitLeaderAdmin } from 'permission-utils'
 
 import { CAMPUS_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
-import { MAKE_CAMPUSARRIVALS_ADMIN, SET_SWELL_DATE } from '../arrivalsMutation'
+import {
+  MAKE_CAMPUSARRIVALS_ADMIN,
+  SET_CODE_OF_THE_DAY,
+  SET_SWELL_DATE,
+} from '../arrivalsMutation'
 import { formatAmount } from '../arrivals-utils'
 import { AdminFormOptions } from './DashboardGovernorship'
 import {
@@ -89,6 +95,8 @@ const CampusDashboard = () => {
   const { arrivalDate, campusId } = useContext(ChurchContext)
   const [adminDialogOpen, setAdminDialogOpen] = useState(false)
   const [swellDialogOpen, setSwellDialogOpen] = useState(false)
+  const [codeDialogOpen, setCodeDialogOpen] = useState(false)
+  const [codeValue, setCodeValue] = useState('')
   const today = new Date().toISOString().slice(0, 10)
   const effectiveDate = arrivalDate || today
 
@@ -116,6 +124,8 @@ const CampusDashboard = () => {
 
   const [MakeCampusArrivalsAdmin] = useMutation(MAKE_CAMPUSARRIVALS_ADMIN)
   const [SetSwellDate, { loading: swellLoading }] = useMutation(SET_SWELL_DATE)
+  const [SetCodeOfTheDay, { loading: codeLoading }] =
+    useMutation(SET_CODE_OF_THE_DAY)
   const campus = data?.campuses?.[0]
   const timeGraph = data?.timeGraphs?.[0]
   const updatedLabel = useUpdatedAt(data)
@@ -188,6 +198,39 @@ const CampusDashboard = () => {
   const canSetSwell =
     networkStatus === NetworkStatus.ready &&
     (!data?.timeGraphs?.length || !timeGraph?.swell)
+
+  // The dashboard route gates entry by `permitLeaderAdminArrivals
+  // ('Campus')` — i.e. a Campus-level Leader, Admin, or Arrivals role
+  // (note: pure `leaderCampus` qualifies even without an arrivals role).
+  // The Code of the Day override is additionally restricted to fishers
+  // — checked here on the FE and enforced server-side by the
+  // `SetCodeOfTheDay` mutation's @authentication directive, which
+  // requires `fishers` AND one of the arrivals-dashboard roles.
+  const canSetCodeOfDay = isAuthorised(['fishers'])
+  const isCampusAdmin = isAuthorised(permitAdmin('Campus'))
+  const showSettingsMenu = isCampusAdmin || canSetCodeOfDay
+
+  const handleSetCodeOfTheDay = async () => {
+    const code = codeValue.trim()
+    if (!code) {
+      toast.error('Please enter a code')
+      return
+    }
+    try {
+      const result = await SetCodeOfTheDay({ variables: { code } })
+      if (result.errors?.length) {
+        toast.error(String(result.errors[0].message ?? 'Update failed'))
+        return
+      }
+      toast.success(
+        `Code of the day set to "${result.data?.SetCodeOfTheDay ?? code}"`
+      )
+      setCodeValue('')
+      setCodeDialogOpen(false)
+    } catch (e) {
+      throwToSentry('Failed to set Code of the Day', e)
+    }
+  }
 
   const bacentaTiles: BacentaTile[] = [
     {
@@ -274,8 +317,9 @@ const CampusDashboard = () => {
                   )}
                 </div>
 
-                {/* Settings dropdown */}
-                <RoleView roles={permitAdmin('Campus')}>
+                {/* Settings dropdown — visible to Campus admins and to
+                    fishers (who only see the Code of the Day item). */}
+                {showSettingsMenu && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -291,21 +335,30 @@ const CampusDashboard = () => {
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>Settings</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={() => setAdminDialogOpen(true)}
-                      >
-                        Change Arrivals Admin
-                      </DropdownMenuItem>
-                      {canSetSwell && (
+                      {isCampusAdmin && (
+                        <DropdownMenuItem
+                          onSelect={() => setAdminDialogOpen(true)}
+                        >
+                          Change Arrivals Admin
+                        </DropdownMenuItem>
+                      )}
+                      {isCampusAdmin && canSetSwell && (
                         <DropdownMenuItem
                           onSelect={() => setSwellDialogOpen(true)}
                         >
                           Set Today as Swell
                         </DropdownMenuItem>
                       )}
+                      {canSetCodeOfDay && (
+                        <DropdownMenuItem
+                          onSelect={() => setCodeDialogOpen(true)}
+                        >
+                          Set Code of the Day
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </RoleView>
+                )}
               </div>
 
             </div>
@@ -578,6 +631,52 @@ const CampusDashboard = () => {
                       <Loader2 className="size-4 animate-spin" />
                     )}
                     Set as Swell
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* ── Set Code of the Day dialog ── */}
+            <Dialog open={codeDialogOpen} onOpenChange={setCodeDialogOpen}>
+              <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>Set Code of the Day</DialogTitle>
+                  <DialogDescription>
+                    Override today&apos;s Code of the Day. The new value
+                    replaces whatever was set this morning until the next
+                    daily run.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2 py-2">
+                  <Label htmlFor="code-of-the-day-input">Code</Label>
+                  <Input
+                    id="code-of-the-day-input"
+                    autoFocus
+                    value={codeValue}
+                    onChange={(e) => setCodeValue(e.target.value)}
+                    placeholder="e.g. Anointing"
+                    disabled={codeLoading}
+                  />
+                </div>
+                <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCodeDialogOpen(false)}
+                    disabled={codeLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSetCodeOfTheDay}
+                    disabled={codeLoading || !codeValue.trim()}
+                    className="gap-2"
+                  >
+                    {codeLoading && (
+                      <Loader2 className="size-4 animate-spin" />
+                    )}
+                    Save Code
                   </Button>
                 </DialogFooter>
               </DialogContent>

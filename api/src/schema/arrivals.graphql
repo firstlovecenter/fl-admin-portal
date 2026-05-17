@@ -1232,12 +1232,43 @@ extend type Mutation {
       """
       columnName: "code"
     )
+  # Manual override for the Code of the Day. Requires the user to hold the
+  # `fishers` marker AND at least one role that grants Arrivals dashboard
+  # access — fishers alone (which gates the Accounts page) is not enough.
+  #
+  # The inner `OR:` list mirrors permitLeaderAdmin(*) ∪ permitArrivals(*) ∪
+  # permitArrivalsHelpers(*) across every level (see permission-utils.ts).
+  # If a new role is added to the system that should be able to set the
+  # Code of the Day, keep this list and `permission-utils.ts` in sync
+  # (ADR-001).
   SetCodeOfTheDay(code: String!): String!
     @authentication(
       jwt: {
-        OR: [
-          { roles: { includes: "adminCampus" } }
-          { roles: { includes: "arrivalsAdminCampus" } }
+        AND: [
+          { roles: { includes: "fishers" } }
+          {
+            OR: [
+              { roles: { includes: "arrivalsAdminCampus" } }
+              { roles: { includes: "arrivalsAdminStream" } }
+              { roles: { includes: "arrivalsAdminCouncil" } }
+              { roles: { includes: "arrivalsAdminGovernorship" } }
+              { roles: { includes: "arrivalsCounterStream" } }
+              { roles: { includes: "arrivalsPayerCouncil" } }
+              { roles: { includes: "adminDenomination" } }
+              { roles: { includes: "adminOversight" } }
+              { roles: { includes: "adminCampus" } }
+              { roles: { includes: "adminStream" } }
+              { roles: { includes: "adminCouncil" } }
+              { roles: { includes: "adminGovernorship" } }
+              { roles: { includes: "leaderDenomination" } }
+              { roles: { includes: "leaderOversight" } }
+              { roles: { includes: "leaderCampus" } }
+              { roles: { includes: "leaderStream" } }
+              { roles: { includes: "leaderCouncil" } }
+              { roles: { includes: "leaderGovernorship" } }
+              { roles: { includes: "leaderBacenta" } }
+            ]
+          }
         ]
       }
     )
