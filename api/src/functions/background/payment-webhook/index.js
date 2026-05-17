@@ -88,6 +88,11 @@ const whitelistIPs = (event) => {
 // 'send OTP' as a source as well as 'pending' so a webhook that lands before
 // the OTP-submission write hits Neo4j is not lost. UNION subqueries let each
 // label leg use its own unique index on transactionReference.
+//
+// ServiceRecord transitions also append a BankingHistoryLog audit row for
+// the webhook-driven settlement. Transaction and RehearsalRecord legs skip
+// the audit (no banking-history semantics on those types) via the FOREACH-
+// on-label trick.
 const updateTransactionStatusCypher = `
   CALL {
     MATCH (r:ServiceRecord {transactionReference: $reference})
@@ -103,6 +108,18 @@ const updateTransactionStatusCypher = `
     RETURN r
   }
   SET r.transactionStatus = $status
+
+  WITH r
+  FOREACH (_ IN CASE WHEN r:ServiceRecord THEN [1] ELSE [] END |
+    CREATE (r)-[:HAS_BANKING_HISTORY]->(:BankingHistoryLog {
+      id: randomUUID(),
+      method: 'webhook',
+      fromStatus: null,
+      toStatus: $status,
+      message: 'Paystack webhook settled ' + $status,
+      ts: datetime()
+    })
+  )
   RETURN r AS record
 `
 

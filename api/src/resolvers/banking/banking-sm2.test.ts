@@ -1,3 +1,5 @@
+/* eslint-disable import/first -- jest.mock() must precede the imports it
+   targets so babel-jest hoists mocks before module resolution. */
 /**
  * SM2 — Characterization tests for banking proof presence in banking-resolver.ts
  *
@@ -41,8 +43,7 @@ jest.mock('../utils/financial-utils', () => ({
   }),
 }))
 
-import { checkIfLastServiceBanked } from './banking-resolver'
-import bankingMutation from './banking-resolver'
+import bankingMutation, { checkIfLastServiceBanked } from './banking-resolver'
 import {
   submitBankingSlip,
   manuallyConfirmOfferingPayment as manuallyConfirmCypher,
@@ -112,7 +113,9 @@ describe('SM2 — checkIfLastServiceBanked: proof presence', () => {
 
   it('SM2: returns true when the prior service has bankingSlip set', async () => {
     mockSession.run.mockResolvedValueOnce(
-      makeLastServiceResult({ bankingSlip: 'https://res.cloudinary.com/slip.jpg' })
+      makeLastServiceResult({
+        bankingSlip: 'https://res.cloudinary.com/slip.jpg',
+      })
     )
     const result = await checkIfLastServiceBanked('sr_test', context)
     expect(result).toBe(true)
@@ -128,7 +131,9 @@ describe('SM2 — checkIfLastServiceBanked: proof presence', () => {
 
   it('SM2: returns true when the prior service has tellerConfirmationTime set', async () => {
     mockSession.run.mockResolvedValueOnce(
-      makeLastServiceResult({ tellerConfirmationTime: '2024-01-07T10:00:00.000Z' })
+      makeLastServiceResult({
+        tellerConfirmationTime: '2024-01-07T10:00:00.000Z',
+      })
     )
     const result = await checkIfLastServiceBanked('sr_test', context)
     expect(result).toBe(true)
@@ -160,7 +165,11 @@ describe('SM2 — ManuallyConfirmOfferingPayment: auth', () => {
         makeMockQueryResult({ service: { properties: { id: 'sr_test' } } })
       )
 
-    await bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, context)
+    await bankingMutation.ManuallyConfirmOfferingPayment(
+      null,
+      confirmArgs,
+      context
+    )
 
     expect(isAuth).toHaveBeenCalledWith(
       expect.arrayContaining(['fishers']),
@@ -189,7 +198,30 @@ describe('SM2 — ManuallyConfirmOfferingPayment: auth', () => {
     })
 
     await expect(
-      bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, tellerContext)
+      bankingMutation.ManuallyConfirmOfferingPayment(
+        null,
+        confirmArgs,
+        tellerContext
+      )
+    ).rejects.toThrow('not allowed to manually confirm')
+  })
+
+  it('SM2: fishers role is also blocked when the church is not Stream+ (church-level guard applies to all callers)', async () => {
+    const fishersContext = {
+      ...context,
+      jwt: { ...mockJwt, roles: ['fishers'] },
+    } as unknown as Context
+
+    mockSession.executeRead.mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue(['Bacenta']) }],
+    })
+
+    await expect(
+      bankingMutation.ManuallyConfirmOfferingPayment(
+        null,
+        confirmArgs,
+        fishersContext
+      )
     ).rejects.toThrow('not allowed to manually confirm')
   })
 
@@ -209,7 +241,35 @@ describe('SM2 — ManuallyConfirmOfferingPayment: auth', () => {
       )
 
     await expect(
-      bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, tellerContext)
+      bankingMutation.ManuallyConfirmOfferingPayment(
+        null,
+        confirmArgs,
+        tellerContext
+      )
+    ).resolves.toMatchObject({ id: 'sr_test' })
+  })
+
+  it('SM2: fishers role IS allowed when the church is a Stream+', async () => {
+    const fishersContext = {
+      ...context,
+      jwt: { ...mockJwt, roles: ['fishers'] },
+    } as unknown as Context
+
+    mockSession.executeRead.mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
+    })
+    mockSession.run
+      .mockResolvedValueOnce({ records: [] })
+      .mockResolvedValueOnce(
+        makeMockQueryResult({ service: { properties: { id: 'sr_test' } } })
+      )
+
+    await expect(
+      bankingMutation.ManuallyConfirmOfferingPayment(
+        null,
+        confirmArgs,
+        fishersContext
+      )
     ).resolves.toMatchObject({ id: 'sr_test' })
   })
 })
@@ -228,21 +288,46 @@ describe('SM2 — ManuallyConfirmOfferingPayment: behavior', () => {
       .mockResolvedValueOnce({ records: [] })
       .mockResolvedValueOnce(
         makeMockQueryResult({
-          service: { properties: { id: 'sr_test', tellerConfirmationTime: '2024-01-07T10:00:00Z' } },
+          service: {
+            properties: {
+              id: 'sr_test',
+              tellerConfirmationTime: '2024-01-07T10:00:00Z',
+            },
+          },
         })
       )
 
-    const result = await bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, context)
+    const result = await bankingMutation.ManuallyConfirmOfferingPayment(
+      null,
+      confirmArgs,
+      context
+    )
 
     expect(result).toMatchObject({ id: 'sr_test' })
     expect(mockSession.run).toHaveBeenCalledTimes(2)
   })
 
+  it('SM2: throws "already confirmed" when the SM2 atomic guard returns zero rows', async () => {
+    mockSession.executeRead.mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
+    })
+    mockSession.run
+      .mockResolvedValueOnce({ records: [] }) // checkIfLastServiceBanked
+      .mockResolvedValueOnce({ records: [] }) // confirmOfferingPayment Cypher — zero rows = race lost
+
+    await expect(
+      bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, context)
+    ).rejects.toThrow(
+      'This offering has already been confirmed by another teller.'
+    )
+  })
+
   // TODO (SM2): ManuallyConfirmOfferingPayment does not append a HistoryLog node.
   // Current behaviour: sets tellerConfirmationTime + CONFIRMED_BANKING_FOR relationship only.
   // The Jira ticket (SYN-67) flags a HistoryLog entry as desired; characterised here per ADR-013 §3.1.
+  // Phase 4 of the banking-flows audit adds this via BankingHistoryLog + appendBankingHistoryLog.
   it.todo(
-    'SM2 TODO: ManuallyConfirmOfferingPayment appends a HistoryLog entry naming the confirming teller (not yet implemented)'
+    'SM2 TODO: ManuallyConfirmOfferingPayment appends a BankingHistoryLog entry naming the confirming teller (Phase 4)'
   )
 })
 
@@ -258,12 +343,19 @@ describe('SM2 — SubmitBankingSlip: auth', () => {
   it('SM2: isAuth is called with permitAdmin(Campus) roles', async () => {
     mockSession.run
       .mockResolvedValueOnce({ records: [] })
-      .mockResolvedValueOnce(makeMockQueryResult({ record: { properties: { id: 'sr_test' } } }))
+      .mockResolvedValueOnce(
+        makeMockQueryResult({ record: { properties: { id: 'sr_test' } } })
+      )
 
     await bankingMutation.SubmitBankingSlip(null, slipArgs, context)
 
-    const { permitAdmin } = jest.requireActual('../permissions') as typeof import('../permissions')
-    expect(isAuth).toHaveBeenCalledWith(permitAdmin('Campus'), context.jwt.roles)
+    const { permitAdmin } = jest.requireActual(
+      '../permissions'
+    ) as typeof import('../permissions')
+    expect(isAuth).toHaveBeenCalledWith(
+      permitAdmin('Campus'),
+      context.jwt.roles
+    )
   })
 
   it('SM2: throws when isAuth rejects the caller (non-campus-admin role)', async () => {
@@ -299,15 +391,33 @@ describe("SM2 — submitBankingSlip Cypher: blocks 'pending' and 'success' state
 })
 
 // ---------------------------------------------------------------------------
-// manuallyConfirmOfferingPayment Cypher — permissive by design (SM2)
+// manuallyConfirmOfferingPayment Cypher — SM2 atomic guard
 // ---------------------------------------------------------------------------
-describe('SM2 — manuallyConfirmOfferingPayment Cypher: permissive by design', () => {
-  it('SM2: no transactionStatus WHERE guard — teller confirmation is accepted in any state', () => {
-    expect(manuallyConfirmCypher).not.toMatch(/transactionStatus/)
+describe('SM2 — manuallyConfirmOfferingPayment Cypher: atomic idempotency guard', () => {
+  it('SM2: WHERE guard restricts the write to tellerConfirmationTime IS NULL (no double-confirm race)', () => {
+    expect(manuallyConfirmCypher).toMatch(
+      /WHERE service\.tellerConfirmationTime IS NULL/
+    )
+  })
+
+  it('SM2: WHERE guard appears before any SET clause (no write can bypass)', () => {
+    const wherePos = manuallyConfirmCypher.search(/WHERE/)
+    const setPos = manuallyConfirmCypher.search(/\nSET/)
+    expect(wherePos).toBeGreaterThan(-1)
+    expect(setPos).toBeGreaterThan(wherePos)
+  })
+
+  it('SM2: does NOT guard on transactionStatus — teller confirmation is independent of the self-bank state machine', () => {
+    // The Cypher should still confirm a record that is also in 'pending'
+    // self-bank state (rare but valid: teller takes cash while a self-bank
+    // attempt is in flight). Only tellerConfirmationTime gates this write.
+    expect(manuallyConfirmCypher).not.toMatch(/service\.transactionStatus\s+IN/)
   })
 
   it('SM2: sets tellerConfirmationTime on the service record', () => {
-    expect(manuallyConfirmCypher).toMatch(/service\.tellerConfirmationTime = datetime\(\)/)
+    expect(manuallyConfirmCypher).toMatch(
+      /service\.tellerConfirmationTime = datetime\(\)/
+    )
   })
 
   it('SM2: creates CONFIRMED_BANKING_FOR relationship for audit trail', () => {

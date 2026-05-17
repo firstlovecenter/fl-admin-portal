@@ -1,4 +1,5 @@
 import {
+  permitAdmin,
   permitLeaderAdmin,
   permitLeaderAdminArrivals,
   permitMe,
@@ -165,7 +166,7 @@ export const services: LazyRouteTypes[] = [
   {
     path: '/bacenta/banking-slip/submission',
     element: BacentaBankingSlipSubmission,
-    roles: permitLeaderAdmin('Campus'),
+    roles: permitAdmin('Campus'),
     placeholder: true,
   },
   {
@@ -189,19 +190,19 @@ export const services: LazyRouteTypes[] = [
   {
     path: '/governorship/banking-slip/submission',
     element: GovernorshipBankingSlipSubmission,
-    roles: permitLeaderAdmin('Campus'),
+    roles: permitAdmin('Campus'),
     placeholder: true,
   },
   {
     path: '/council/banking-slip/submission',
     element: CouncilBankingSlipSubmission,
-    roles: permitLeaderAdmin('Campus'),
+    roles: permitAdmin('Campus'),
     placeholder: true,
   },
   {
     path: '/stream/banking-slip/submission',
     element: StreamBankingSlipSubmission,
-    roles: permitLeaderAdmin('Campus'),
+    roles: permitAdmin('Campus'),
   },
 
 ]

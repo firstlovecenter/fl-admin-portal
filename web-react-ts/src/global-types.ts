@@ -363,6 +363,17 @@ export type ServiceRecord = {
   bankingSlipUploader: Member
   offeringBankedBy: Member
   bankingConfirmer: Member
+  bankingHistory?: BankingHistoryLog[]
+}
+
+export type BankingHistoryLog = {
+  id: string
+  method: 'self' | 'recovery' | 'webhook' | 'slip' | 'teller'
+  fromStatus: string | null
+  toStatus: string
+  message: string | null
+  ts: string
+  loggedBy?: Member | null
 }
 
 export type AggregateServiceRecord = {

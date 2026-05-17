@@ -1,4 +1,24 @@
+/* eslint-disable fl-cypher/no-interpolated-cypher --
+   confirmBanking composes the markRecordTellerConfirmed STATIC helper
+   fragment from banking-cypher.ts. The only interpolated expression
+   takes hardcoded literal variable names ('record', 'teller') and
+   returns a static Cypher string — no user input flows through. All
+   runtime values bind via $jwt.userId, $governorshipId, $bh_method,
+   $bh_fromStatus, $bh_toStatus, $bh_message. ADR-012 satisfied. */
+import { markRecordTellerConfirmed } from '../banking/banking-cypher'
+
 const anagkazo = {
+  // SM2 atomic batch confirm. The WHERE clause filters to records that
+  // (a) had a service held, (b) have not been banked by any of the three
+  // proof paths, (c) have not yet been teller-confirmed. Two concurrent
+  // tellers serialize via Neo4j's per-node write locks; the loser's run
+  // sees tellerConfirmationTime already set on every record and the WHERE
+  // clause excludes them all, so the loser writes nothing.
+  //
+  // The query returns DISTINCT affectedCount so the resolver can tell a
+  // genuine zero-affect (already-confirmed-by-someone-else, OR no
+  // governorship matched) from a successful batch. We no longer rely on
+  // the racy bankingDefaulersCount read-then-write precheck.
   confirmBanking: `
       MATCH (governorship:Governorship {id:$governorshipId})
       WITH date() as today, governorship
@@ -18,15 +38,19 @@ const anagkazo = {
           AND record.tellerConfirmationTime IS NULL
 
 
+    // Scope check via semi-join (EXISTS) — the previous MATCH variant
+    // fanned the row stream out N times per record (once per :ServiceLog
+    // ancestor), causing duplicate BankingHistoryLog audit rows to be
+    // CREATEd per single banking action. EXISTS short-circuits at the
+    // first match and keeps one row per (record, governorship).
     WITH governorship, record
-    MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)<-[:HAS*0..1]-(governorship)
-    SET record.tellerConfirmationTime = datetime()
-
-    WITH governorship, record
-    
-    MATCH  (teller:Active:Member {id: $jwt.userId})
-    MERGE (teller)-[:CONFIRMED_BANKING_FOR]->(record)
-    RETURN governorship
+    WHERE EXISTS {
+      MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)<-[:HAS*0..1]-(governorship)
+    }
+    MATCH (teller:Active:Member {id: $jwt.userId})
+    ${markRecordTellerConfirmed('record', 'teller')}
+    WITH governorship, count(DISTINCT record) AS affectedCount
+    RETURN governorship, affectedCount
     `,
 
   formDefaultersCount: `
@@ -72,27 +96,6 @@ const anagkazo = {
 
        RETURN COUNT(DISTINCT defaulters) as defaulters, collect(defaulters.name) AS defaultersNames
       `,
-  bankingDefaulersCount: `
-    MATCH (this:Governorship {id: $governorshipId})
-    WITH date() as today, this
-    WITH  today.weekDay as theDay, today, this
-    WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
-    WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
-
-    MATCH (date:TimeGraph)
-    USING INDEX date:TimeGraph(date)
-    WHERE date.date IN dates
-    MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
-
-    WITH DISTINCT record, this
-      WHERE record.noServiceReason IS NULL
-        AND record.bankingSlip IS NULL
-        AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
-        AND record.tellerConfirmationTime IS NULL
-    MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas)<-[:HAS]-(this)
-
-    RETURN COUNT(DISTINCT this) as bankingDefaulters
-  `,
 }
 
 export default anagkazo

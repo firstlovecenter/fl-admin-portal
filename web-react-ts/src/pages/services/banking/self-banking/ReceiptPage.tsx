@@ -6,7 +6,6 @@ import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
-import { MemberContext } from 'contexts/MemberContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import { Form, Formik } from 'formik'
 import { capitalise, throwToSentry } from 'global-utils'
@@ -28,7 +27,7 @@ import { useNavigate } from 'react-router'
 import {
   CONFIRM_OFFERING_PAYMENT,
   SELF_BANKING_RECEIPT,
-  SET_TRANSACTION_REFERENCE,
+  SET_TRANSACTION_REFERENCE_MANUALLY,
 } from './bankingQueries'
 import ButtonConfirmPayment from './components/button/ConfirmPayment'
 
@@ -92,12 +91,13 @@ const Row = ({
 
 const ReceiptPage = () => {
   const { serviceRecordId } = useContext(ServiceContext)
-  const { currentUser } = useContext(MemberContext)
 
   const { data, loading, error, refetch } = useQuery(SELF_BANKING_RECEIPT, {
     variables: { id: serviceRecordId },
   })
-  const [SetTransactionReference] = useMutation(SET_TRANSACTION_REFERENCE)
+  const [SetTransactionReferenceManually] = useMutation(
+    SET_TRANSACTION_REFERENCE_MANUALLY
+  )
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
 
   const navigate = useNavigate()
@@ -108,10 +108,9 @@ const ReceiptPage = () => {
   const submitTransactionReference = async (values: any) => {
     const { transactionReference } = values
     try {
-      await SetTransactionReference({
+      await SetTransactionReferenceManually({
         variables: {
           serviceRecordId,
-          currentUserId: currentUser.id,
           transactionReference,
         },
       })

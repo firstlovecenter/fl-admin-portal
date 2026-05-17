@@ -33,7 +33,8 @@ import {
   FileUp,
   Trash2,
 } from 'lucide-react'
-import { permitAdmin, permitTellerStream } from 'permission-utils'
+import { permitAdmin, permitLeader, permitTellerStream } from 'permission-utils'
+import BankingHistorySection from './BankingHistorySection'
 import {
   Fragment,
   type ReactNode,
@@ -506,10 +507,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                       {showAdminBankingActions && (
                         <>
                           <RoleView
-                            roles={[
-                              ...permitAdmin('Oversight'),
-                              ...permitTellerStream(),
-                            ]}
+                            roles={['fishers', ...permitTellerStream()]}
                           >
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
@@ -603,6 +601,27 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                     </div>
                   </div>
                 )}
+
+                {/* Banking history — audit-trail audience:
+                      - leaders of the owning church and above (they have a
+                        legitimate need to see who took the money on records
+                        for their church),
+                      - Stream-level admins and above (govern banking
+                        operations for their stream's services),
+                      - tellers (they ARE the actors that produce 'teller'
+                        rows; they should see their own work and that of
+                        their peers on records they processed). */}
+                <RoleView
+                  roles={[
+                    ...permitLeader('Bacenta'),
+                    ...permitAdmin('Stream'),
+                    ...permitTellerStream(),
+                  ]}
+                >
+                  <BankingHistorySection
+                    bankingHistory={service.bankingHistory}
+                  />
+                </RoleView>
 
                 {/* Photos card — below actions, images height-capped */}
                 {((trackIncome && service.treasurerSelfie) ||

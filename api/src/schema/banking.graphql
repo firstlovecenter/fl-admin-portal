@@ -17,6 +17,10 @@ extend type Mutation {
   ConfirmOfferingPayment(serviceRecordId: ID!): ServiceRecord!
   SubmitBankingSlip(serviceRecordId: ID!, bankingSlip: String!): ServiceRecord!
   ManuallyConfirmOfferingPayment(serviceRecordId: ID!): ServiceRecord!
+  SetTransactionReferenceManually(
+    serviceRecordId: ID!
+    transactionReference: ID!
+  ): ServiceRecord!
 }
 
 extend type ServiceRecord {
@@ -29,6 +33,42 @@ extend type ServiceRecord {
   transactionTime: DateTime
 }
 
+# Append-only audit trail of every banking-related state transition on a
+# ServiceRecord. Distinct from the directory HistoryLog (which tracks
+# servant changes etc.) so banking events don't bury the directory timeline.
+# Method discriminates the path that produced the transition:
+#   - 'self'     — Paystack self-banking attempt (BankServiceOffering, OTP)
+#   - 'recovery' — admin pasted a Paystack reference (SetTransactionReferenceManually)
+#   - 'webhook'  — Paystack webhook flipped pending → success/failed
+#   - 'slip'     — admin uploaded a banking slip (SubmitBankingSlip)
+#   - 'teller'   — teller manually confirmed (ManuallyConfirmOfferingPayment + Anagkazo batch)
+# Auto-gen mutations suppressed — only the banking resolvers (and the
+# payment-webhook Lambda) ever write these nodes.
+#
+# Auto-gen root queries also suppressed — the audit log is read exclusively
+# via the ServiceRecord.bankingHistory relationship traversal, which inherits
+# the scope check of whatever resolver loaded the ServiceRecord. Without
+# this suppression any authenticated user could run
+# `query { bankingHistoryLogs { method message loggedBy { ... } } }` and
+# scrape the entire org's banking audit trail bypassing scope.
+type BankingHistoryLog
+  @node
+  @mutation(operations: [])
+  @query(read: false, aggregate: false) {
+  id: ID!
+  method: String!
+  fromStatus: String
+  toStatus: String!
+  message: String
+  ts: DateTime!
+  loggedBy: Member @relationship(type: "LOGGED_BANKING", direction: IN)
+}
+
+extend type ServiceRecord {
+  bankingHistory: [BankingHistoryLog!]!
+    @relationship(type: "HAS_BANKING_HISTORY", direction: OUT)
+}
+
 extend type ServiceRecord {
   transactionTime: DateTime
   transactionReference: ID
@@ -36,6 +76,7 @@ extend type ServiceRecord {
   transactionStatus: String
   transactionError: String
   confirmedBy: ID!
+  bankingSlipUploadedAt: DateTime
   bankingProof: Boolean
     @cypher(
       statement: """

@@ -25,6 +25,7 @@ import {
   setTransactionStatusReversed,
   setTransactionStatusSuccess,
   setRecordTransactionReference,
+  setRecordTransactionReferenceManually,
   setRecordTransactionReferenceWithOTP,
   submitBankingSlip,
   manuallyConfirmOfferingPayment,
@@ -62,6 +63,24 @@ const throwClean = (userMessage: string, error: unknown): never => {
   console.error(`[banking] ${userMessage}`, scrubError(error))
   throw new Error(userMessage)
 }
+
+// Banking-history audit-log params consumed by appendBankingHistoryLog
+// (see banking-cypher.ts). Every banking write that mutates SM1/SM2 state
+// must pass these so the BankingHistoryLog timeline on the ServiceRecord
+// stays complete.
+type BankingMethod = 'self' | 'recovery' | 'webhook' | 'slip' | 'teller'
+
+const bhParams = (
+  method: BankingMethod,
+  toStatus: string,
+  fromStatus: string | null,
+  message: string
+) => ({
+  bh_method: method,
+  bh_fromStatus: fromStatus,
+  bh_toStatus: toStatus,
+  bh_message: message,
+})
 
 export const checkIfLastServiceBanked = async (
   serviceRecordId: string,
@@ -209,6 +228,12 @@ const bankingMutation = {
             tx.run(initiateServiceRecordTransaction, {
               jwt: context.jwt,
               ...args,
+              ...bhParams(
+                'self',
+                'pending',
+                transactionStatus ?? null,
+                `Self-bank initiated via ${args.mobileNetwork}`
+              ),
             })
           )
           .catch((error: any) =>
@@ -447,6 +472,12 @@ const bankingMutation = {
               reference,
               status: otpResponse.data.data.status,
               error: otpResponse.data.data.gateway_response,
+              ...bhParams(
+                'self',
+                'failed',
+                'send OTP',
+                'OTP submission failed at Paystack'
+              ),
             })
             .catch((error: any) =>
               throwClean(
@@ -547,6 +578,12 @@ const bankingMutation = {
               ...args,
               status: 'failed',
               error: 'No Transaction Reference',
+              ...bhParams(
+                'self',
+                'failed',
+                record.transactionStatus ?? null,
+                'Confirm rejected: no transactionReference on record'
+              ),
             })
             .catch((error: any) =>
               throwClean(
@@ -587,6 +624,12 @@ const bankingMutation = {
               .run(setTransactionStatusSuccess, {
                 ...args,
                 status: confirmationResponse.data.data.status,
+                ...bhParams(
+                  'self',
+                  'success',
+                  record.transactionStatus ?? null,
+                  'Paystack verify reported success'
+                ),
               })
               .catch((error: any) =>
                 throwClean(
@@ -621,6 +664,12 @@ const bankingMutation = {
                 ...args,
                 status: confirmationResponse.data.data.status,
                 error: confirmationResponse.data.data.gateway_response,
+                ...bhParams(
+                  'self',
+                  confirmationResponse.data.data.status,
+                  record.transactionStatus ?? null,
+                  `Paystack verify reported ${confirmationResponse.data.data.status}`
+                ),
               })
               .catch((error: any) =>
                 throwClean(
@@ -652,6 +701,12 @@ const bankingMutation = {
               .run(setTransactionStatusReversed, {
                 ...args,
                 error: confirmationResponse.data.data.gateway_response,
+                ...bhParams(
+                  'self',
+                  'reversed',
+                  record.transactionStatus ?? null,
+                  'Paystack verify reported reversed (refund to customer)'
+                ),
               })
               .catch((error: any) =>
                 throwClean(
@@ -686,6 +741,12 @@ const bankingMutation = {
                   ...args,
                   status: 'failed',
                   error: 'Transaction reference not found at Paystack',
+                  ...bhParams(
+                    'self',
+                    'failed',
+                    record?.transactionStatus ?? null,
+                    'Paystack verify returned transaction_not_found'
+                  ),
                 })
               )
               .catch((cypherErr: any) =>
@@ -742,7 +803,11 @@ const bankingMutation = {
 
     const submissionResponse = rearrangeCypherObject(
       await session
-        .run(submitBankingSlip, { ...args, jwt: context.jwt })
+        .run(submitBankingSlip, {
+          ...args,
+          jwt: context.jwt,
+          ...bhParams('slip', 'slip-uploaded', null, 'Banking slip uploaded'),
+        })
         .catch((error: any) =>
           throwClean(
             'We could not upload your banking slip. Please try again.',
@@ -773,8 +838,12 @@ const bankingMutation = {
     )
     const churchLabels: string[] = churchRes.records[0].get('churchLabels')
 
+    // Manual confirmation is a Stream-level (or higher) action by design —
+    // it's the teller flow for streams with bankAccount === 'manual', not
+    // a generic per-record override. Restrict every caller (both
+    // tellerStream and fishers) to records that hang off a Stream+ church.
+    // Bacenta-level records go through self-banking or slip upload.
     if (
-      context.jwt.roles.includes('tellerStream') &&
       !['Stream', 'Campus', 'Oversight', 'Denomination'].some((churchLevel) =>
         churchLabels.includes(churchLevel)
       )
@@ -795,7 +864,16 @@ const bankingMutation = {
 
     const submissionResponse = rearrangeCypherObject(
       await session
-        .run(manuallyConfirmOfferingPayment, { ...args, jwt: context.jwt })
+        .run(manuallyConfirmOfferingPayment, {
+          ...args,
+          jwt: context.jwt,
+          ...bhParams(
+            'teller',
+            'teller-confirmed',
+            null,
+            'Teller manually confirmed offering'
+          ),
+        })
         .catch((error: any) =>
           throwClean(
             'We could not confirm this offering payment. Please try again.',
@@ -804,7 +882,86 @@ const bankingMutation = {
         )
     )
 
+    // SM2 atomic guard returned no rows — another teller confirmed first.
+    // Don't clobber the existing tellerConfirmationTime or re-attribute the
+    // CONFIRMED_BANKING_FOR edge.
+    if (!submissionResponse?.service) {
+      throw new Error(
+        'This offering has already been confirmed by another teller. Refresh to see the latest banking state.'
+      )
+    }
+
     return submissionResponse.service.properties
+  },
+
+  // Admin recovery path: an SM1 transition from {null, failed} back to
+  // 'pending' when a Stream admin pastes a Paystack reference the system
+  // lost track of (e.g. webhook never arrived, ConfirmOfferingPayment saw
+  // no reference). 'send OTP' is intentionally NOT a legal source — the
+  // Paystack OTP is bound to the original reference and overwriting it
+  // would orphan the in-flight charge. Gated to Stream-level admins to
+  // match the FE RoleView at ReceiptPage.tsx:251 (the recovery form is
+  // only rendered to permitAdmin('Stream')).
+  SetTransactionReferenceManually: async (
+    object: any,
+    args: { serviceRecordId: string; transactionReference: string },
+    context: Context
+  ) => {
+    isAuth(permitAdmin('Stream'), context.jwt.roles)
+
+    const reference = args.transactionReference?.trim() ?? ''
+    if (!reference) {
+      throw new Error('Enter a valid transaction reference.')
+    }
+    // Paystack references are alphanumeric with optional dashes/
+    // underscores. Reject anything else server-side so a typo can't
+    // poison reconciliation downstream.
+    if (!/^[A-Za-z0-9_-]{1,100}$/.test(reference)) {
+      throw new Error(
+        'Transaction reference must be alphanumeric (with optional dashes or underscores), max 100 characters.'
+      )
+    }
+
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
+    const session = context.executionContext.session()
+    try {
+      const cypherResponse = rearrangeCypherObject(
+        await session
+          .executeWrite((tx) =>
+            tx.run(setRecordTransactionReferenceManually, {
+              serviceRecordId: args.serviceRecordId,
+              transactionReference: reference,
+              jwt: context.jwt,
+              ...bhParams(
+                'recovery',
+                'pending',
+                null,
+                'Admin manually set Paystack reference and re-armed pending state'
+              ),
+            })
+          )
+          .catch((error: any) =>
+            throwClean(
+              'We could not save the transaction reference. Please try again.',
+              error
+            )
+          )
+      )
+
+      // SM1 atomic guard returned no rows — record is in 'pending',
+      // 'send OTP', 'success', or 'reversed' and must not be overwritten.
+      // Same shape covers the (extremely unlikely) "record not found"
+      // case, in which the scope check above would already have thrown.
+      if (!cypherResponse?.record) {
+        throw new Error(
+          'This service record cannot accept a manual reference right now. It is either in progress, already successful, or has been reversed.'
+        )
+      }
+
+      return cypherResponse.record
+    } finally {
+      await session.close()
+    }
   },
 }
 

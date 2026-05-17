@@ -38,17 +38,18 @@ describe('SM3 — membershipAttendanceDefaultersCount: :Active:Bacenta constrain
 })
 
 // ---------------------------------------------------------------------------
-// bankingDefaulersCount — banking defaulters
+// confirmBanking — vacation Bacentas cannot appear in the batch write
 // ---------------------------------------------------------------------------
-describe('SM3 — bankingDefaulersCount: vacation Bacentas cannot appear', () => {
-  it('SM3: bankingDefaulersCount counts unbanked service records — vacation Bacentas cannot have service records (SM3 service-recording guard)', () => {
-    // bankingDefaulersCount traverses ServiceRecord nodes, not Bacenta nodes directly.
-    // Vacation Bacentas have no service records (RecordService/RecordServiceNoIncome refuse them),
-    // so they cannot appear in the banking defaulter count by construction.
-    // The positive assertion confirms the ServiceRecord path is present.
-    expect(anagkazo.bankingDefaulersCount).toMatch(/ServiceRecord/)
-    // The negative assertion confirms no independent unconstrained Bacenta MATCH
-    // exists that could re-introduce vacation Bacentas through a parallel path.
-    expect(anagkazo.bankingDefaulersCount).not.toMatch(/\(bacenta:Bacenta\)/)
+// SM3 invariant inherited from the deleted bankingDefaulersCount precheck:
+// the write-side Cypher traverses ServiceRecord nodes directly, not Bacenta
+// nodes. Vacation Bacentas have no service records (RecordService /
+// RecordServiceNoIncome refuse them), so they cannot be teller-confirmed by
+// construction. The precheck was removed in Phase 2 of the banking-flows
+// audit because it was racy; the same invariant is enforced by the actual
+// write Cypher below.
+describe('SM3 — confirmBanking: vacation Bacentas cannot appear', () => {
+  it('SM3: confirmBanking traverses ServiceRecord, not Bacenta directly', () => {
+    expect(anagkazo.confirmBanking).toMatch(/ServiceRecord/)
+    expect(anagkazo.confirmBanking).not.toMatch(/\(bacenta:Bacenta\)/)
   })
 })

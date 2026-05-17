@@ -43,6 +43,8 @@ const treasuryMutations = {
 
     //  implement checks to make sure that all the bacentas have filled their offering
 
+    // Form-defaulter precheck is a pure read with no write side, so the
+    // read-then-throw pattern is safe (no race with the write below).
     const formDefaultersResponse = rearrangeCypherObject(
       await session
         .run(anagkazo.formDefaultersCount, args)
@@ -62,40 +64,45 @@ const treasuryMutations = {
       )
     }
 
-    const checkAlreadyConfirmedResponse = rearrangeCypherObject(
-      await session
-        .run(anagkazo.bankingDefaulersCount, args)
-        .catch((error: any) =>
-          throwToSentry('There was an error running cypher', error)
-        )
-    )
-
-    const checkAlreadyConfirmed =
-      checkAlreadyConfirmedResponse.bankingDefaulters.low
-
-    if (checkAlreadyConfirmed < 1) {
-      throw new Error("This governorship's offering has already been banked!")
-    }
-
+    // Removed the bankingDefaulersCount read-then-write precheck: two
+    // tellers could both read non-zero and both fire confirmBanking. The
+    // Cypher itself is now the source of truth — it returns affectedCount
+    // and we throw "already banked" when zero records were updated.
     try {
       const response = await session.executeWrite((tx) =>
         tx.run(anagkazo.confirmBanking, {
           ...args,
           jwt: context.jwt,
+          bh_method: 'teller',
+          bh_fromStatus: null,
+          bh_toStatus: 'teller-confirmed',
+          bh_message: `Teller batch-confirmed banking for governorship ${args.governorshipId}`,
         })
       )
       const confirmationResponse = rearrangeCypherObject(response)
 
-      if (typeof confirmationResponse === 'string') {
-        return confirmationResponse
+      if (
+        !confirmationResponse?.governorship ||
+        !confirmationResponse.affectedCount ||
+        confirmationResponse.affectedCount.low === 0
+      ) {
+        throw new Error("This governorship's offering has already been banked!")
       }
 
-      // return confirmationResponse.governorship.properties
       return {
         ...confirmationResponse.governorship.properties,
         banked: true,
       }
     } catch (error: any) {
+      // Preserve the explicit "already banked" message — re-throw it raw
+      // rather than wrapping it in "There was a problem…" so the user UI
+      // can show the precise reason.
+      if (
+        typeof error?.message === 'string' &&
+        error.message.includes('already been banked')
+      ) {
+        throw error
+      }
       throw new Error(`There was a problem confirming the banking ${error}`)
     } finally {
       await session.close()

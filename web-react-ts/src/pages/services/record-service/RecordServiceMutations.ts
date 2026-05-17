@@ -216,6 +216,20 @@ export const DISPLAY_BACENTA_SERVICE = gql`
         fullName
         pictureUrl
       }
+      bankingHistory {
+        id
+        method
+        fromStatus
+        toStatus
+        message
+        ts
+        loggedBy {
+          id
+          firstName
+          lastName
+          fullName
+        }
+      }
     }
     bacentas(where: { id: { eq: $bacentaId } }) {
       id
@@ -278,6 +292,20 @@ export const DISPLAY_GOVERNORSHIP_SERVICE = gql`
         fullName
         pictureUrl
       }
+      bankingHistory {
+        id
+        method
+        fromStatus
+        toStatus
+        message
+        ts
+        loggedBy {
+          id
+          firstName
+          lastName
+          fullName
+        }
+      }
     }
     governorships(where: { id: { eq: $governorshipId } }) {
       id
@@ -336,6 +364,20 @@ export const DISPLAY_COUNCIL_SERVICE = gql`
         lastName
         fullName
         pictureUrl
+      }
+      bankingHistory {
+        id
+        method
+        fromStatus
+        toStatus
+        message
+        ts
+        loggedBy {
+          id
+          firstName
+          lastName
+          fullName
+        }
       }
     }
     councils(where: { id: { eq: $councilId } }) {
@@ -400,6 +442,20 @@ export const DISPLAY_STREAM_SERVICE = gql`
         fullName
         pictureUrl
       }
+      bankingHistory {
+        id
+        method
+        fromStatus
+        toStatus
+        message
+        ts
+        loggedBy {
+          id
+          firstName
+          lastName
+          fullName
+        }
+      }
     }
     streams(where: { id: { eq: $streamId } }) {
       id
@@ -456,6 +512,20 @@ export const DISPLAY_CAMPUS_SERVICE = gql`
         lastName
         fullName
         pictureUrl
+      }
+      bankingHistory {
+        id
+        method
+        fromStatus
+        toStatus
+        message
+        ts
+        loggedBy {
+          id
+          firstName
+          lastName
+          fullName
+        }
       }
     }
     campuses(where: { id: { eq: $campusId } }) {
