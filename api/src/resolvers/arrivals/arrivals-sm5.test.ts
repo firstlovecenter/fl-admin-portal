@@ -151,13 +151,10 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
     } as unknown as Context)
 
   const confirmArgs = {
-    bacentaId: 'bacenta_1',
-    bussingRecordId: 'br_1',
     vehicleRecordId: 'vr_1',
-    leaderDeclaration: 20,
     attendance: 25,
     vehicle: 'Sprinter' as const,
-    picture: 'https://img.jpg',
+    comments: '',
   }
 
   it('SM5: isAuth is called with permitArrivalsCounter() === [arrivalsCounterStream]', async () => {
@@ -166,6 +163,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
       .mockResolvedValueOnce(
         makeMockQueryResult({
           arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
+          bacentaId: 'bacenta_1',
           numberOfVehicles: 0,
           totalAttendance: 0,
           leaderPhoneNumber: '0240000000',
@@ -223,6 +221,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
       .mockResolvedValueOnce(
         makeMockQueryResult({
           arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
+          bacentaId: 'bacenta_1',
           numberOfVehicles: 0,
           totalAttendance: 0,
           leaderPhoneNumber: '0240000000',
@@ -260,7 +259,37 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
       attendance: 25,
       vehicle: 'Sprinter',
       arrivalTime: '2024-01-07T08:00:00Z',
+      bussingRecord: {
+        serviceLog: {
+          bacenta: [{ id: 'bacenta_1', stream_name: 'Stream A' }],
+        },
+      },
     })
+  })
+
+  it('SM5: already-counted vehicle (cypher returns no rows) is rejected', async () => {
+    mockSession.run
+      .mockResolvedValueOnce(
+        makeMockQueryResult({
+          arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
+          bacentaId: 'bacenta_1',
+          numberOfVehicles: 0,
+          totalAttendance: 0,
+          leaderPhoneNumber: '0240000000',
+          leaderFirstName: 'Kofi',
+          bacentaName: 'Bacenta 1',
+        })
+      )
+      // confirmVehicleByAdmin — WHERE arrivalTime IS NULL filtered the row out
+      .mockResolvedValueOnce(makeMockQueryResult({}))
+
+    await expect(
+      arrivalsMutation.ConfirmVehicleByAdmin(
+        null as never,
+        confirmArgs,
+        counterContext()
+      )
+    ).rejects.toThrow('This vehicle has already been counted.')
   })
 
   it('SM5: attendance below 8 is coerced to vehicle=Car (small-bus rule)', async () => {
@@ -268,6 +297,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
       .mockResolvedValueOnce(
         makeMockQueryResult({
           arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
+          bacentaId: 'bacenta_1',
           numberOfVehicles: 0,
           totalAttendance: 0,
           leaderPhoneNumber: '0240000000',
@@ -318,6 +348,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
     mockSession.run.mockResolvedValueOnce(
       makeMockQueryResult({
         arrivalEndTime: PAST_TIME,
+        bacentaId: 'bacenta_1',
         numberOfVehicles: 0,
         totalAttendance: 0,
         leaderPhoneNumber: '0240000000',
