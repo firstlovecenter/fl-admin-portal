@@ -28,7 +28,7 @@ const BACENTA_CONTEXT = `
   MATCH (bacenta)<-[:HAS]-(governorship:Governorship)
   OPTIONAL MATCH (governorship)<-[:HAS]-(council:Council)
   OPTIONAL MATCH (council)<-[:HAS]-(stream:Stream)
-  OPTIONAL MATCH (bacenta)<-[:LEADS]-(leader:Member)
+  OPTIONAL MATCH (bacenta)<-[:LEADS]-(leader:Active:Member)
   OPTIONAL MATCH (bacenta)-[:MEETS_ON]->(meetingDay:ServiceDay)
 `
 
@@ -199,7 +199,7 @@ const CHILD_BUCKETS = `
        totalLeaderDeclaration, totalSprinters, totalUrvans, totalCars,
        totalBussingTopUp, totalBussingCost,
        child.name AS childName,
-       head([(child)<-[:LEADS]-(m:Member) | m.firstName + ' ' + m.lastName]) AS childLeader
+       head([(child)<-[:LEADS]-(m:Active:Member) | m.firstName + ' ' + m.lastName]) AS childLeader
 `
 
 export const councilSummaryByGovernorship = `

@@ -56,7 +56,7 @@ const BACENTA_CONTEXT = `
   MATCH (bacenta)<-[:HAS]-(governorship:Governorship)
   OPTIONAL MATCH (governorship)<-[:HAS]-(council:Council)
   OPTIONAL MATCH (council)<-[:HAS]-(stream:Stream)
-  OPTIONAL MATCH (bacenta)<-[:LEADS]-(leader:Member)
+  OPTIONAL MATCH (bacenta)<-[:LEADS]-(leader:Active:Member)
   OPTIONAL MATCH (bacenta)-[:MEETS_ON]->(meetingDay:ServiceDay)
 `
 
@@ -195,7 +195,7 @@ export const councilSummaryByGovernorship = `
   ${CHILD_BACENTA_BUCKETS}
   WITH child, bacentas, servicesFiled, cancelled, banked, bankingDefaulters,
        child.name AS childName,
-       head([(child)<-[:LEADS]-(m:Member) | m.firstName + ' ' + m.lastName]) AS childLeader
+       head([(child)<-[:LEADS]-(m:Active:Member) | m.firstName + ' ' + m.lastName]) AS childLeader
   ${SUMMARY_RETURN}
 `
 
@@ -209,7 +209,7 @@ export const streamSummaryByCouncil = `
   ${CHILD_BACENTA_BUCKETS}
   WITH child, bacentas, servicesFiled, cancelled, banked, bankingDefaulters,
        child.name AS childName,
-       head([(child)<-[:LEADS]-(m:Member) | m.firstName + ' ' + m.lastName]) AS childLeader
+       head([(child)<-[:LEADS]-(m:Active:Member) | m.firstName + ' ' + m.lastName]) AS childLeader
   ${SUMMARY_RETURN}
 `
 
@@ -223,7 +223,7 @@ export const campusSummaryByStream = `
   ${CHILD_BACENTA_BUCKETS}
   WITH child, bacentas, servicesFiled, cancelled, banked, bankingDefaulters,
        child.name AS childName,
-       head([(child)<-[:LEADS]-(m:Member) | m.firstName + ' ' + m.lastName]) AS childLeader
+       head([(child)<-[:LEADS]-(m:Active:Member) | m.firstName + ' ' + m.lastName]) AS childLeader
   ${SUMMARY_RETURN}
 `
 
