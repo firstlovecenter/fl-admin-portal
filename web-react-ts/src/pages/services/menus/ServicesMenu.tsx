@@ -301,7 +301,7 @@ const ServicesMenu = () => {
                   accent="bg-banking/10 text-banking"
                   title="Add Stream Tellers"
                   description="Assign tellers for midweek offerings"
-                  onClick={() => navigate('/anagkazo/treasurer-select')}
+                  onClick={() => navigate('/manual-banking/teller-select')}
                 />
               </RoleView>
               <RoleView roles={permitTellerStream()}>
@@ -310,7 +310,7 @@ const ServicesMenu = () => {
                   accent="bg-banking/10 text-banking"
                   title="Receive Midweek Offering"
                   description="Record offerings handed in by Bacentas"
-                  onClick={() => navigate('/anagkazo/receive-banking')}
+                  onClick={() => navigate('/manual-banking/receive-banking')}
                 />
               </RoleView>
             </>

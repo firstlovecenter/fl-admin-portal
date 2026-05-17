@@ -11,7 +11,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { alertMsg, throwToSentry } from 'global-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import SearchMember from 'components/formik/SearchMember'
-import ModalSubmitButton from 'pages/services/banking/anagkazo/ModalSubmitButton'
+import ModalSubmitButton from 'pages/services/banking/manual-banking/ModalSubmitButton'
 import { Loader2 } from 'lucide-react'
 import { Button } from 'components/ui/button'
 import {

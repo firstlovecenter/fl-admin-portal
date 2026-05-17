@@ -2,7 +2,7 @@ import { GraphQLError } from 'graphql'
 import serviceNoIncomeMutations from './no-income/service-resolvers'
 import serviceMutation from './services/service-resolvers'
 import { Member } from './utils/types'
-import treasuryMutations from './anagkazo/treasury-resolvers'
+import treasuryMutations from './manual-banking/treasury-resolvers'
 import directoryMutation from './directory/directory-resolvers'
 import {
   arrivalsMutation,

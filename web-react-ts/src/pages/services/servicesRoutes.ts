@@ -6,7 +6,7 @@ import {
   permitTellerStream,
 } from 'permission-utils'
 import { banking } from './banking/self-banking/selfBankingRoutes'
-import { anagkazoRoutes } from './banking/anagkazo/anagkazoBankingRoutes'
+import { manualBankingRoutes } from './banking/manual-banking/manualBankingRoutes'
 import { LazyRouteTypes } from 'global-types'
 import { lazy } from 'react'
 import { downloadReports } from './download-reports/downloadReportsRoutes'
@@ -146,7 +146,7 @@ const BacentaBankingSlipView = lazy(
 export const services: LazyRouteTypes[] = [
   ...downloadReports,
   ...streamServicesRoutes,
-  ...anagkazoRoutes,
+  ...manualBankingRoutes,
   ...banking,
   {
     path: '/services',

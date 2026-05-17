@@ -175,7 +175,7 @@ const ConfirmAnagkazoBanking = () => {
 
                               setSubmitting(false)
                               refetch({ id: streamId })
-                              navigate('/anagkazo/receive-banking')
+                              navigate('/manual-banking/receive-banking')
                             } catch (err: any) {
                               setSubmitting(false)
                               throwToSentry(err)
