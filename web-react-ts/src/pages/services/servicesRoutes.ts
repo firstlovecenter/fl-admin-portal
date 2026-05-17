@@ -1,6 +1,7 @@
 import {
   permitLeaderAdmin,
   permitLeaderAdminArrivals,
+  permitMe,
   permitTellerStream,
 } from 'permission-utils'
 import { banking } from './banking/self-banking/selfBankingRoutes'
@@ -209,7 +210,10 @@ export const graphs: LazyRouteTypes[] = [
   {
     path: '/trends',
     element: TrendsMenu,
-    roles: ['all'],
+    // Trends is meaningless for single-purpose roles (e.g. Stream Arrivals
+    // Counter) — gate URL access to the same operational set as the rest
+    // of the dashboard chrome.
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {

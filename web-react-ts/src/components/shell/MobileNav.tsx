@@ -14,7 +14,7 @@ import { primaryNav, secondaryNav, type NavItem } from './navigation-config'
 import { useAuth as useAuthContext } from 'contexts/AuthContext'
 import useAuth from 'auth/useAuth'
 import { MemberContext } from 'contexts/MemberContext'
-import { isArrivalsCounterOnly } from 'permission-utils'
+import { hasOnlyRolesFrom } from 'permission-utils'
 import { useTheme } from './ThemeProvider'
 import {
   DropdownMenu,
@@ -105,15 +105,17 @@ export const MobileNav = ({
     .map((n) => n[0])
     .slice(0, 2)
     .join('')
-  const counterOnly = isArrivalsCounterOnly(currentUser?.roles)
+  const userRoles = currentUser?.roles
 
   // Filter upstream rather than wrapping each item in <RoleView>: hidden
   // <RoleView> children would still occupy slots in the staggerChildren
   // index below, leaving visible gaps.
   const visibilityFor = (item: NavItem) => {
-    if (item.hideForArrivalsCounterOnly && counterOnly) return false
+    if (item.hideForRoles && hasOnlyRolesFrom(userRoles, item.hideForRoles))
+      return false
     if (item.roles && !isAuthorised(item.roles)) return false
-    if (item.additionalRoles && !isAuthorised(item.additionalRoles)) return false
+    if (item.additionalRoles && !isAuthorised(item.additionalRoles))
+      return false
     return true
   }
   const visiblePrimary = primaryNav.filter(visibilityFor)

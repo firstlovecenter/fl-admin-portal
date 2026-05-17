@@ -4,16 +4,18 @@ import { cn } from 'components/lib/utils'
 import { primaryNav } from './navigation-config'
 import useAuth from 'auth/useAuth'
 import { MemberContext } from 'contexts/MemberContext'
-import { isArrivalsCounterOnly } from 'permission-utils'
+import { hasOnlyRolesFrom } from 'permission-utils'
 
 export const BottomNav = () => {
   const { isAuthorised } = useAuth()
   const { currentUser } = useContext(MemberContext)
-  const counterOnly = isArrivalsCounterOnly(currentUser?.roles)
+  const userRoles = currentUser?.roles
   const visibleItems = primaryNav.filter((item) => {
-    if (item.hideForArrivalsCounterOnly && counterOnly) return false
+    if (item.hideForRoles && hasOnlyRolesFrom(userRoles, item.hideForRoles))
+      return false
     if (item.roles && !isAuthorised(item.roles)) return false
-    if (item.additionalRoles && !isAuthorised(item.additionalRoles)) return false
+    if (item.additionalRoles && !isAuthorised(item.additionalRoles))
+      return false
     return true
   })
   return (

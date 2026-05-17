@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Role } from 'global-types'
 import {
+  permitArrivalsCounter,
   permitArrivalsHelpers,
   permitMe,
   permitShepherdingControl,
@@ -35,11 +36,11 @@ export interface NavItem {
    */
   additionalRoles?: Role[]
   /**
-   * Hide this item for users whose only operational role is Stream Arrivals
-   * Counter. Their dashboard is scoped to a single responsibility (counting
-   * arrivals) so unrelated surfaces add noise rather than utility.
+   * Hide this item when the user's only operational role intersects this list.
+   * Used to keep single-purpose roles (e.g. Stream Arrivals Counter) on a
+   * focused chrome — unrelated surfaces add noise rather than utility.
    */
-  hideForArrivalsCounterOnly?: boolean
+  hideForRoles?: Role[]
 }
 
 /** Primary nav (sidebar + bottom nav top slots) */
@@ -50,13 +51,14 @@ export const primaryNav: NavItem[] = [
     to: '/directory/members',
     icon: UserCheck,
     accentClass: 'text-members',
+    hideForRoles: permitArrivalsCounter(),
   },
   {
     name: 'Services',
     to: '/services',
     icon: ClipboardList,
     accentClass: 'text-churches',
-    hideForArrivalsCounterOnly: true,
+    hideForRoles: permitArrivalsCounter(),
   },
   {
     name: 'Arrivals',
@@ -86,7 +88,7 @@ export const primaryNav: NavItem[] = [
       'leaderCampus',
       'adminCampus',
     ],
-    hideForArrivalsCounterOnly: true,
+    hideForRoles: permitArrivalsCounter(),
   },
 ]
 
@@ -97,13 +99,14 @@ export const secondaryNav: NavItem[] = [
     to: '/reports',
     icon: Download,
     accentClass: 'text-banking',
-    hideForArrivalsCounterOnly: true,
+    hideForRoles: permitArrivalsCounter(),
   },
   {
     name: 'Trends',
     to: '/trends',
     icon: TrendingUp,
     accentClass: 'text-churches',
+    hideForRoles: permitArrivalsCounter(),
   },
   {
     name: 'Maps',
@@ -122,7 +125,7 @@ export const secondaryNav: NavItem[] = [
     name: 'AI Assistant',
     to: '/ai-assistant',
     icon: Bot,
-    hideForArrivalsCounterOnly: true,
+    hideForRoles: permitArrivalsCounter(),
   },
   {
     name: 'Settings',

@@ -37,9 +37,6 @@ const UserProfileEditPage = lazy(
 )
 const CreateMember = lazy(() => import('pages/directory/create/CreateMember'))
 const UpdateMember = lazy(() => import('pages/directory/update/UpdateMember'))
-const MemberTitleForm = lazy(
-  () => import('pages/directory/reusable-forms/MemberTitleForm')
-)
 const CouncilMembers = lazy(
   () => import('pages/directory/grids/CouncilMembers')
 )
@@ -164,7 +161,10 @@ export const memberDirectory: LazyRouteTypes[] = [
   {
     path: '/directory/members',
     element: ChurchLevelMembers,
-    roles: ['all'],
+    // Member directory is irrelevant to single-purpose roles (e.g. Stream
+    // Arrivals Counter) — gate URL access to the same operational set as
+    // the rest of the dashboard chrome.
+    roles: permitMe('Bacenta'),
   },
 ]
 
@@ -312,13 +312,6 @@ export const directory: LazyRouteTypes[] = [
     roles: [...permitLeaderAdmin('Bacenta')],
     placeholder: true,
   },
-  {
-    path: '/member/title-form',
-    element: MemberTitleForm,
-    roles: [...permitAdmin('Denomination')],
-    placeholder: false,
-  },
-
   //Display Church Details
 
   {

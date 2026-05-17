@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { ChevronRight, ListChecks } from 'lucide-react'
@@ -15,45 +15,17 @@ import {
 } from 'pages/services/graphs/graphs-utils'
 import useComponentQuery from './useComponentQuery'
 import TrendSpark from './TrendSpark'
-import { getHourlyGreeting } from './greetings'
+import {
+  fadeUp,
+  filterRecentRecords,
+  formatChurchLevel,
+  getRoleRelationLabel,
+  highlightName,
+  sectionStagger,
+  useHourlyGreeting,
+} from './dashboard-shared'
 
 const TREND_HISTORY_WEEKS = 24
-const HOUR_MS = 60 * 60 * 1000
-
-const sectionStagger = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.09, delayChildren: 0.06 },
-  },
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { type: 'spring' as const, stiffness: 260, damping: 22 },
-  },
-}
-
-const formatChurchLevel = (churchType?: string) => {
-  if (!churchType) return ''
-  return churchType.replace(/([a-z])([A-Z])/g, '$1 $2')
-}
-
-const highlightName = (text: string, name: string): React.ReactNode => {
-  if (!name) return text
-  const idx = text.indexOf(name)
-  if (idx === -1) return text
-  return (
-    <>
-      {text.slice(0, idx)}
-      <span className="text-brand">{name}</span>
-      {text.slice(idx + name.length)}
-    </>
-  )
-}
 
 const ArrivalsCounterDashboard = () => {
   const { currentUser } = useContext(MemberContext)
@@ -75,27 +47,7 @@ const ArrivalsCounterDashboard = () => {
   const isLoading = !currentUser?.fullName
   const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
   const userKey = currentUser?.fullName ?? firstName
-
-  // Re-render at the top of every hour so the greeting rotates without a reload.
-  const [hourTick, setHourTick] = useState(() =>
-    Math.floor(Date.now() / HOUR_MS)
-  )
-  useEffect(() => {
-    const msToNextHour = HOUR_MS - (Date.now() % HOUR_MS) + 1000
-    const timer = window.setTimeout(() => {
-      setHourTick(Math.floor(Date.now() / HOUR_MS))
-    }, msToNextHour)
-    return () => window.clearTimeout(timer)
-  }, [hourTick])
-  const greeting = useMemo(
-    () =>
-      getHourlyGreeting({
-        firstName,
-        userKey,
-        now: new Date(hourTick * HOUR_MS),
-      }),
-    [firstName, userKey, hourTick]
-  )
+  const greeting = useHourlyGreeting(firstName, userKey)
 
   const hasBussingAggregateField =
     !!assessmentChurch && 'aggregateBussingRecords' in assessmentChurch
@@ -106,22 +58,7 @@ const ArrivalsCounterDashboard = () => {
         TREND_HISTORY_WEEKS
       ) || []
     : []
-
-  // Drop stale records: counter's stream may carry old aggregates from
-  // dormant weeks. Mirrors the recency filter in UserDashboard.
-  const currentYear = new Date().getFullYear()
-  const recentBussingData = bussingData.filter(
-    (record: { year?: number | null; date?: string | null }) => {
-      if (typeof record?.year === 'number' && Number.isFinite(record.year)) {
-        return record.year >= currentYear - 1
-      }
-      if (record?.date) {
-        const recordYear = new Date(record.date).getFullYear()
-        if (Number.isFinite(recordYear)) return recordYear >= currentYear - 1
-      }
-      return false
-    }
-  )
+  const recentBussingData = filterRecentRecords(bussingData)
 
   const avgBussingAttendance = getMonthlyStatAverage(
     recentBussingData,
@@ -139,7 +76,10 @@ const ArrivalsCounterDashboard = () => {
   // never sees non-bussing points — so bars are inert by design.
   const handleTrendBarClick = () => undefined
 
-  const scopeRoleLabel = 'Arrivals Counter'
+  const scopeRoleLabel = getRoleRelationLabel(
+    selectedScope?.authRole,
+    'Arrivals Counter'
+  )
   const churchName = selectedScope?.churchName ?? assessmentChurch?.name
 
   return (

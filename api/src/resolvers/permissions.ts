@@ -186,11 +186,20 @@ export const permitArrivalsCounter = (): Role[] => {
 // to scope the dashboard + sidebar around counting; BE keeps it in sync so
 // future authorization paths can branch on the same predicate.
 // Empty roles → false; counter-only must be an affirmative claim.
-export const isArrivalsCounterOnly = (roles?: Role[] | null): boolean => {
-  if (!roles?.length) return false
+export const isArrivalsCounterOnly = (roles?: Role[] | null): boolean =>
+  hasOnlyRolesFrom(roles, permitArrivalsCounter())
+
+// Generic version of isArrivalsCounterOnly: true when every operational role
+// the user holds is in `allowed`. `fishers` is treated as non-operational;
+// empty roles → false. Mirrors web-react-ts/src/permission-utils.ts.
+export const hasOnlyRolesFrom = (
+  roles: Role[] | null | undefined,
+  allowed: Role[]
+): boolean => {
+  if (!roles?.length || !allowed.length) return false
   const operational = roles.filter((r) => r !== 'fishers')
   if (!operational.length) return false
-  return operational.every((r) => r === 'arrivalsCounterStream')
+  return operational.every((r) => allowed.includes(r))
 }
 export const permitArrivalsPayer = (): Role[] => {
   return ['arrivalsPayerCouncil']
