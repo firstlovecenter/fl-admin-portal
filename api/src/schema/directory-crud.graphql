@@ -292,13 +292,13 @@ extend type Mutation {
       columnName: "member"
     )
 
-  DeleteMemberTitles(id: ID!): Member!
+  RemoveMemberTitle(id: ID!, title: String!): Member!
     @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
-      OPTIONAL MATCH (member)-[r:HAS_TITLE]->()
-       DELETE r
+      OPTIONAL MATCH (member)-[r:HAS_TITLE]->(:Title {name: $title})
+      DELETE r
       RETURN member
       """
       columnName: "member"

@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import {
   BadgePlus,
   Loader2,
@@ -12,7 +12,6 @@ import {
   Trash2,
   User,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import { BackButton } from 'components/shell/BackButton'
 import {
   GENDER_OPTIONS,
@@ -43,6 +42,7 @@ import usePopup from 'hooks/usePopup'
 import { CreateMemberFormOptions } from '../create/CreateMember'
 import MemberAvatarUpload from './MemberAvatarUpload'
 import MemberDeleteDialog from './MemberDeleteDialog'
+import MemberTitleDialog from './MemberTitleDialog'
 
 type MemberFormProps = {
   initialValues: CreateMemberFormOptions
@@ -91,7 +91,7 @@ const FieldMessage = ({ name }: { name: string }) => (
 const FormSkeleton = () => (
   <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
     <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-6">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 py-3 pl-4 pr-16 md:pr-4 lg:px-6">
         <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
         <div className="min-w-0 space-y-1">
           <Skeleton className="h-3 w-16" />
@@ -122,8 +122,8 @@ const MemberForm = ({
 }: MemberFormProps) => {
   const { currentUser } = useContext(MemberContext)
   const { campusId } = useContext(ChurchContext)
-  const navigate = useNavigate()
   const { isOpen, togglePopup } = usePopup()
+  const [titleDialogOpen, setTitleDialogOpen] = useState(false)
 
   const { data: basontasData, loading: basontasLoading } = useQuery(
     GET_CAMPUS_BASONTAS,
@@ -183,7 +183,7 @@ const MemberForm = ({
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           {/* Sticky top action bar */}
           <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 lg:px-6">
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-4 pr-16 md:pr-4 lg:px-6">
               <div className="flex min-w-0 items-center gap-1">
                 <BackButton className="-ml-2 shrink-0" />
                 <div className="min-w-0">
@@ -212,7 +212,7 @@ const MemberForm = ({
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => navigate('/member/title-form')}
+                      onClick={() => setTitleDialogOpen(true)}
                       className="min-h-[44px] gap-1.5"
                     >
                       <BadgePlus className="h-4 w-4" aria-hidden="true" />
@@ -604,6 +604,11 @@ const MemberForm = ({
             memberFirstName={initialValues.firstName}
             memberLastName={initialValues.lastName}
             bacentaId={initialValues.bacenta?.id}
+          />
+
+          <MemberTitleDialog
+            open={titleDialogOpen}
+            onClose={() => setTitleDialogOpen(false)}
           />
         </div>
       )}
