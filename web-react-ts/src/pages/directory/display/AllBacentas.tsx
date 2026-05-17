@@ -78,6 +78,7 @@ const DisplayAllBacentas = () => {
   return (
     <ApolloWrapper loading={loading} data={data} error={error}>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        {/* TODO(SYN-145): migrate to <StickyPageHeader> */}
         <div className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
           <header>
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 lg:px-6">

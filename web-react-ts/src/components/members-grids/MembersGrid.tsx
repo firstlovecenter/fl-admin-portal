@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from 'components/ui/sheet'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import Filters from './Filters'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
@@ -145,44 +146,40 @@ const MembersGrid = ({
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="px-4 pt-4 pb-3 max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            {loading || !heading ? (
-              <Skeleton className="h-8 w-48 rounded" />
-            ) : (
-              <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
-                {heading}
-              </h1>
-            )}
-            {!loading && (
-              <span className="text-sm tabular-nums shrink-0 ml-2">
-                <span className="font-semibold text-members">
-                  {displayCount}
-                </span>
-                <span className="text-muted-foreground">
-                  {isFiltering ? ' matches' : ' members'}
-                </span>
+      <StickyPageHeader innerClassName="space-y-3">
+        <div className="flex items-center justify-between">
+          {loading || !heading ? (
+            <Skeleton className="h-8 w-48 rounded" />
+          ) : (
+            <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
+              {heading}
+            </h1>
+          )}
+          {!loading && (
+            <span className="text-sm tabular-nums shrink-0 ml-2">
+              <span className="font-semibold text-members">
+                {displayCount}
               </span>
-            )}
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="search"
-              placeholder="Search members…"
-              className="h-11 w-full rounded-lg border border-input bg-muted/40 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-          </div>
+              <span className="text-muted-foreground">
+                {isFiltering ? ' matches' : ' members'}
+              </span>
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-4 pb-3 max-w-6xl mx-auto">
-          <RoleView
-            roles={[...permitLeaderAdmin('Bacenta')]}
-          >
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="search"
+            placeholder="Search members…"
+            className="h-11 w-full rounded-lg border border-input bg-muted/40 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
+          <RoleView roles={[...permitLeaderAdmin('Bacenta')]}>
             <Link to="/member/addmember">
               <Button
                 variant="outline"
@@ -227,7 +224,7 @@ const MembersGrid = ({
             </Button>
           </div>
         </div>
-      </div>
+      </StickyPageHeader>
 
       <div className="max-w-6xl mx-auto">
         <MemberTable

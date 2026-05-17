@@ -298,15 +298,41 @@ above every page: the sidebar / `MobileNav` toggle at `right-3 top-3`
 
 Page-level header actions (Settings dropdown, Edit button, More menu,
 kebab) placed in the top-right of the page header MUST offset on mobile
-so they don't collide with the floating sidebar toggle. Three accepted
-fixes:
+so they don't collide with the floating sidebar toggle.
 
-1. `pr-14 md:pr-0` on the page-header flex row — simplest; pushes the
-   right-aligned action 56 px left on mobile.
+**Preferred — `<StickyPageHeader>` for `sticky top-0` headers.** Any
+sticky page header that sits at `top-0` must use
+`components/shell/StickyPageHeader.tsx`. The component bakes in the
+canonical chrome (`sticky top-0 z-10 border-b border-border
+bg-background/85 backdrop-blur`) and the `pr-16 md:pr-4 lg:px-6` right-
+edge reservation, so the offset cannot be forgotten. Pair it with
+`<StickyPageHeaderActions>` for right-aligned action groups.
+
+```tsx
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
+
+<StickyPageHeader>
+  <div className="flex items-center justify-between gap-3">
+    <h1>…</h1>
+    <StickyPageHeaderActions>
+      <Button>Edit</Button>
+    </StickyPageHeaderActions>
+  </div>
+</StickyPageHeader>
+```
+
+For non-sticky headers or one-off layouts that can't use the component,
+fall back to one of these manual fixes on the header flex row:
+
+1. `pr-14 md:pr-0` — simplest; pushes the right-aligned action 56 px
+   left on mobile.
 2. `flex flex-col gap-3 md:flex-row md:items-start md:justify-between`
-   on the header — stacks the action below the title on mobile.
-3. `max-md:hidden` on the action and surface the same options inside the
-   page body — for large action sets.
+   — stacks the action below the title on mobile.
+3. `max-md:hidden` on the action and surface the same options inside
+   the page body — for large action sets.
 
 Top-left actions follow the same rule against the BackButton. Desktop
 (`md+`) is unaffected — both shell toggles are `md:hidden`.

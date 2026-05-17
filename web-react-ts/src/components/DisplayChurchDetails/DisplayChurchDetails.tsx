@@ -49,6 +49,10 @@ import {
 } from './AdminMutations'
 import EditButton from 'components/buttons/EditButton'
 import CloseDownBacentaButton from 'components/buttons/CloseDownBacentaButton'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import Last3WeeksCard, {
@@ -397,32 +401,29 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3">
-          <Breadcrumb breadcrumb={props.breadcrumb} />
-          <div className="flex items-center justify-between mt-1">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              {props.name}{' '}
-              <span className="text-members">{props.churchType}</span>
-            </h1>
-            {directoryLock(currentUser, props.churchType) && (
-              <RoleView roles={props.editPermitted} directoryLock>
-                <div className="flex items-center gap-2">
-                  <EditButton link={props.editlink} />
-                  {props.churchType === 'Bacenta' && props.leader?.id && (
-                    <CloseDownBacentaButton
-                      bacentaId={props.churchId}
-                      bacentaName={props.name}
-                      leaderId={props.leader.id}
-                    />
-                  )}
-                </div>
-              </RoleView>
-            )}
-          </div>
-
+      <StickyPageHeader>
+        <Breadcrumb breadcrumb={props.breadcrumb} />
+        <div className="flex items-center justify-between mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+            {props.name}{' '}
+            <span className="text-members">{props.churchType}</span>
+          </h1>
+          {directoryLock(currentUser, props.churchType) && (
+            <RoleView roles={props.editPermitted} directoryLock>
+              <StickyPageHeaderActions>
+                <EditButton link={props.editlink} />
+                {props.churchType === 'Bacenta' && props.leader?.id && (
+                  <CloseDownBacentaButton
+                    bacentaId={props.churchId}
+                    bacentaName={props.name}
+                    leaderId={props.leader.id}
+                  />
+                )}
+              </StickyPageHeaderActions>
+            </RoleView>
+          )}
         </div>
-      </div>
+      </StickyPageHeader>
 
       {/* Bus payment details dialog */}
       {props.churchType === 'Bacenta' && (

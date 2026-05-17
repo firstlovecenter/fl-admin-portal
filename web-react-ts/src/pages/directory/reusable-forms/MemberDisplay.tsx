@@ -36,6 +36,10 @@ import { displayError, isPermissionError } from 'utils/errorHandler'
 import RoleView from 'auth/RoleView'
 import EditButton from 'components/buttons/EditButton'
 import ViewAll from 'components/buttons/ViewAll'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Button } from 'components/ui/button'
 import {
@@ -412,8 +416,8 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
       {/* ── Top action bar — full width, sticky ──
           Height: py-3 (24px) + min-h-[44px] button + border-b (1px) = 69px.
           Left aside uses lg:top-[69px] to match. */}
-      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 flex items-center justify-between">
+      <StickyPageHeader>
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <RoleView
               roles={[
@@ -439,18 +443,20 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
           </div>
 
           <RoleView roles={['all']} verifyNotId={member?.id}>
-            <Button
-              variant="outline"
-              onClick={handleShow}
-              disabled={bioLoading}
-              className="min-h-[44px] gap-1.5"
-            >
-              <StickyNote className="h-3.5 w-3.5" aria-hidden="true" />
-              Add Sticky Note
-            </Button>
+            <StickyPageHeaderActions>
+              <Button
+                variant="outline"
+                onClick={handleShow}
+                disabled={bioLoading}
+                className="min-h-[44px] gap-1.5"
+              >
+                <StickyNote className="h-3.5 w-3.5" aria-hidden="true" />
+                Add Sticky Note
+              </Button>
+            </StickyPageHeaderActions>
           </RoleView>
         </div>
-      </div>
+      </StickyPageHeader>
 
       {/* ── Page body ── */}
       <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-8">

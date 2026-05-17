@@ -14,6 +14,10 @@ import {
 } from 'lucide-react'
 import { BackButton } from 'components/shell/BackButton'
 import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
+import {
   GENDER_OPTIONS,
   isAuthorised,
   makeSelectOptions,
@@ -90,15 +94,15 @@ const FieldMessage = ({ name }: { name: string }) => (
 
 const FormSkeleton = () => (
   <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-    <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 py-3 pl-4 pr-16 md:pr-4 lg:px-6">
+    <StickyPageHeader>
+      <div className="flex items-center gap-3">
         <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
         <div className="min-w-0 space-y-1">
           <Skeleton className="h-3 w-16" />
           <Skeleton className="h-7 w-52" />
         </div>
       </div>
-    </header>
+    </StickyPageHeader>
     <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-8">
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[300px_1fr]">
         <Skeleton className="h-80 rounded-xl" />
@@ -182,8 +186,8 @@ const MemberForm = ({
       {(formik) => (
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           {/* Sticky top action bar */}
-          <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-4 pr-16 md:pr-4 lg:px-6">
+          <StickyPageHeader>
+            <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-1">
                 <BackButton className="-ml-2 shrink-0" />
                 <div className="min-w-0">
@@ -207,7 +211,7 @@ const MemberForm = ({
               </div>
 
               {update && (
-                <div className="flex items-center gap-2 shrink-0">
+                <StickyPageHeaderActions>
                   <RoleView roles={permitAdmin('Denomination')}>
                     <Button
                       type="button"
@@ -230,10 +234,10 @@ const MemberForm = ({
                       <span className="hidden sm:inline">Delete</span>
                     </Button>
                   </RoleView>
-                </div>
+                </StickyPageHeaderActions>
               )}
             </div>
-          </header>
+          </StickyPageHeader>
 
           {/* Body */}
           <Form>
