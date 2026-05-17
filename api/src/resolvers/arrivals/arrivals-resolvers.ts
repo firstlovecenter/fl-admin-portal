@@ -19,6 +19,7 @@ import {
   permitArrivals,
   permitArrivalsCounter,
   permitArrivalsHelpers,
+  permitArrivalsPayer,
 } from '../permissions'
 import { MakeServant, RemoveServant } from '../directory/make-remove-servants'
 import {
@@ -409,6 +410,7 @@ export const arrivalsMutation = {
         bacentaId,
         numberOfVehicles,
         totalAttendance,
+        isToday,
       }: {
         arrivalEndTime: string
         bacentaId: string
@@ -417,7 +419,14 @@ export const arrivalsMutation = {
         leaderPhoneNumber: string
         leaderFirstName: string
         bacentaName: string
+        isToday: boolean
       } = recordResponse
+
+      if (!isToday) {
+        throw new Error(
+          'This bussing record is not for today. You can only count vehicles for today.'
+        )
+      }
 
       const today = new Date()
 
@@ -459,7 +468,10 @@ export const arrivalsMutation = {
       await session
         .run(aggregateVehicleBussingRecordData, adjustedArgs)
         .catch((error: any) =>
-          throwToSentry('Error Running aggregateVehicleBussingRecordData', error)
+          throwToSentry(
+            'Error Running aggregateVehicleBussingRecordData',
+            error
+          )
         )
 
       const vehicleRecord = response.vehicleRecord.properties
@@ -649,7 +661,7 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitArrivalsHelpers('Stream'), context.jwt.roles)
+    isAuth(permitArrivalsPayer(), context.jwt.roles)
     await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
@@ -659,6 +671,13 @@ export const arrivalsMutation = {
           tx.run(checkTransactionReference, args)
         )
       )
+
+      if (!recordResponse?.isToday) {
+        throw new Error(
+          'This bussing record is not for today. You can only pay for vehicles bussed today.'
+        )
+      }
+
       const { auth } = await getStreamFinancials(
         recordResponse.stream.properties
       )

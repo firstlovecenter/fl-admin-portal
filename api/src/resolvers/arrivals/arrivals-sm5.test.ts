@@ -13,13 +13,16 @@
  *    approved  (SetVehicleSupport — arrivalsHelpers — counter OR payer)
  *        │  vehicleTopUp computed and written
  *        ▼
- *    paid      (SendVehicleSupport — arrivalsHelpers — counter OR payer)
+ *    paid      (SendVehicleSupport — permitArrivalsPayer — payer only)
  *               transactionStatus set from Paystack response
  *
  * The ticket (SYN-70) names the payer/teller for the approved/paid edges.
- * The code today uses permitArrivalsHelpers('Stream'), which expands to
- * BOTH 'arrivalsCounterStream' AND 'arrivalsPayerCouncil' for those edges,
- * and uses ONLY 'arrivalsCounterStream' for the counted edge. tellerStream
+ * The approved edge (SetVehicleSupport) uses permitArrivalsHelpers('Stream')
+ * — both counter and payer — because the counter triggers SetVehicleSupport
+ * as part of confirming attendance. The paid edge (SendVehicleSupport, which
+ * initiates the Paystack payout) is tightened to permitArrivalsPayer() only:
+ * counters must never be able to trigger real-money transfers. The counted
+ * edge (ConfirmVehicleByAdmin) uses ONLY 'arrivalsCounterStream'. tellerStream
  * has no role in the vehicle/bussing flow at all (it is the banking-side
  * confirmer per SM2). Tests below pin the actual behaviour per ADR-013 §4.
  *
@@ -89,7 +92,11 @@ import {
 } from './arrivals-cypher'
 import type { Context } from '../utils/neo4j-types'
 import { isAuth } from '../utils/utils'
-import { permitArrivalsCounter, permitArrivalsHelpers } from '../permissions'
+import {
+  permitArrivalsCounter,
+  permitArrivalsHelpers,
+  permitArrivalsPayer,
+} from '../permissions'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -169,6 +176,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
           leaderPhoneNumber: '0240000000',
           leaderFirstName: 'Kofi',
           bacentaName: 'Bacenta 1',
+          isToday: true,
         })
       )
       // confirmVehicleByAdmin
@@ -227,6 +235,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
           leaderPhoneNumber: '0240000000',
           leaderFirstName: 'Kofi',
           bacentaName: 'Bacenta 1',
+          isToday: true,
         })
       )
       .mockResolvedValueOnce(
@@ -278,6 +287,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
           leaderPhoneNumber: '0240000000',
           leaderFirstName: 'Kofi',
           bacentaName: 'Bacenta 1',
+          isToday: true,
         })
       )
       // confirmVehicleByAdmin — WHERE arrivalTime IS NULL filtered the row out
@@ -303,6 +313,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
           leaderPhoneNumber: '0240000000',
           leaderFirstName: 'Kofi',
           bacentaName: 'Bacenta 1',
+          isToday: true,
         })
       )
       .mockResolvedValueOnce(
@@ -354,6 +365,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
         leaderPhoneNumber: '0240000000',
         leaderFirstName: 'Kofi',
         bacentaName: 'Bacenta 1',
+        isToday: true,
       })
     )
 
@@ -675,13 +687,13 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
     outbound: false,
   }
 
-  const counterContext = (): Context =>
+  const payerContext = (): Context =>
     ({
       ...context,
-      jwt: { ...mockJwt, roles: ['arrivalsCounterStream'] },
+      jwt: { ...mockJwt, roles: ['arrivalsPayerCouncil'] },
     } as unknown as Context)
 
-  it('SM5: isAuth is called with permitArrivalsHelpers(Stream) — counter OR payer can pay', async () => {
+  it('SM5: isAuth is called with permitArrivalsPayer() — payer only (counters cannot trigger payouts)', async () => {
     // Configure axios for the transfer call only (no recipientCode path).
     mockSession.executeRead.mockResolvedValueOnce(
       makeMockQueryResult({
@@ -700,6 +712,7 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
         },
         stream: { properties: { bankAccount: 'fle_account' } },
         bacenta: { properties: { id: 'b_1', name: 'Bacenta 1' } },
+        isToday: true,
         leader: {
           properties: {
             id: 'm_1',
@@ -724,12 +737,12 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
     await arrivalsMutation.SendVehicleSupport(
       null as never,
       sendArgs,
-      counterContext()
+      payerContext()
     )
 
     expect(isAuth).toHaveBeenCalledWith(
-      permitArrivalsHelpers('Stream'),
-      counterContext().jwt.roles
+      permitArrivalsPayer(),
+      payerContext().jwt.roles
     )
   })
 
@@ -751,6 +764,7 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
         },
         stream: { properties: { bankAccount: 'fle_account' } },
         bacenta: { properties: { id: 'b_1', name: 'Bacenta 1' } },
+        isToday: true,
         leader: {
           properties: {
             id: 'm_1',
@@ -809,6 +823,7 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
         },
         stream: { properties: { bankAccount: 'fle_account' } },
         bacenta: { properties: { id: 'b_1', name: 'Bacenta 1' } },
+        isToday: true,
         leader: {
           properties: {
             id: 'm_1',
@@ -865,6 +880,7 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
           },
           stream: { properties: { bankAccount: 'fle_account' } },
           bacenta: { properties: { id: 'b_1', name: 'Bacenta 1' } },
+          isToday: true,
           leader: {
             properties: {
               id: 'm_1',
@@ -898,6 +914,7 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
           },
           stream: { properties: { bankAccount: 'fle_account' } },
           bacenta: { properties: { id: 'b_1', name: 'Bacenta 1' } },
+          isToday: true,
           leader: {
             properties: {
               id: 'm_1',
@@ -931,6 +948,7 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
           },
           stream: { properties: { bankAccount: 'fle_account' } },
           bacenta: { properties: { id: 'b_1', name: 'Bacenta 1' } },
+          isToday: true,
           leader: {
             properties: {
               id: 'm_1',
@@ -964,6 +982,7 @@ describe('SM5 — approved → paid: SendVehicleSupport (Paystack)', () => {
           },
           stream: { properties: { bankAccount: 'fle_account' } },
           bacenta: { properties: { id: 'b_1', name: 'Bacenta 1' } },
+          isToday: true,
           leader: {
             properties: {
               id: 'm_1',

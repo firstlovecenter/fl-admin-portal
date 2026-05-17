@@ -47,13 +47,14 @@ labels(date) AS dateLabels
 `
 
 export const checkTransactionReference = `
-MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)
+MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)
 MATCH (bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
 MATCH (bacenta)<-[:LEADS]-(leader:Active:Member)
-WITH record, bacenta, leader, stream
+MATCH (bussing)-[:BUSSED_ON]->(bussingDate:TimeGraph)
+WITH DISTINCT record, bacenta, leader, stream, bussingDate
 
 
-RETURN record, stream, bacenta, leader
+RETURN record, stream, bacenta, leader, bussingDate.date AS bussedOnDate, date() = date(bussingDate.date) AS isToday
 `
 
 export const checkArrivalTimes = `
@@ -70,14 +71,17 @@ RETURN bussing.mobilisationPicture IS NOT NULL AS status
 export const checkArrivalTimeFromVehicle = `
 MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
 MATCH (bacenta)<-[:LEADS]-(leader:Active:Member)
+MATCH (bussing)-[:BUSSED_ON]->(bussingDate:TimeGraph)
+WITH DISTINCT record, bussing, bacenta, leader, stream, bussingDate
 OPTIONAL MATCH (bussing)-[:INCLUDES_RECORD]->(records:VehicleRecord) WHERE records.arrivalTime IS NOT NULL
-RETURN stream.arrivalEndTime AS arrivalEndTime, 
-bacenta.id AS bacentaId, 
-COUNT(DISTINCT records) AS numberOfVehicles, 
-SUM(records.attendance) AS totalAttendance, 
+RETURN stream.arrivalEndTime AS arrivalEndTime,
+bacenta.id AS bacentaId,
+COUNT(DISTINCT records) AS numberOfVehicles,
+SUM(records.attendance) AS totalAttendance,
 leader.phoneNumber AS leaderPhoneNumber,
-leader.firstName AS leaderFirstName, 
-bacenta.name AS bacentaName
+leader.firstName AS leaderFirstName,
+bacenta.name AS bacentaName,
+date() = date(bussingDate.date) AS isToday
 `
 
 export const setSwellDate = `

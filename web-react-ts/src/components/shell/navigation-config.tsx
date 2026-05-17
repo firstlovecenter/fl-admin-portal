@@ -14,7 +14,6 @@ import {
 } from 'lucide-react'
 import { Role } from 'global-types'
 import {
-  permitArrivalsCounter,
   permitArrivalsHelpers,
   permitMe,
   permitShepherdingControl,
@@ -51,14 +50,14 @@ export const primaryNav: NavItem[] = [
     to: '/directory/members',
     icon: UserCheck,
     accentClass: 'text-members',
-    hideForRoles: permitArrivalsCounter(),
+    hideForRoles: permitArrivalsHelpers('Stream'),
   },
   {
     name: 'Services',
     to: '/services',
     icon: ClipboardList,
     accentClass: 'text-churches',
-    hideForRoles: permitArrivalsCounter(),
+    hideForRoles: permitArrivalsHelpers('Stream'),
   },
   {
     name: 'Arrivals',
@@ -88,7 +87,7 @@ export const primaryNav: NavItem[] = [
       'leaderCampus',
       'adminCampus',
     ],
-    hideForRoles: permitArrivalsCounter(),
+    hideForRoles: permitArrivalsHelpers('Stream'),
   },
 ]
 
@@ -99,14 +98,14 @@ export const secondaryNav: NavItem[] = [
     to: '/reports',
     icon: Download,
     accentClass: 'text-banking',
-    hideForRoles: permitArrivalsCounter(),
+    hideForRoles: permitArrivalsHelpers('Stream'),
   },
   {
     name: 'Trends',
     to: '/trends',
     icon: TrendingUp,
     accentClass: 'text-churches',
-    hideForRoles: permitArrivalsCounter(),
+    hideForRoles: permitArrivalsHelpers('Stream'),
   },
   {
     name: 'Maps',
@@ -125,7 +124,7 @@ export const secondaryNav: NavItem[] = [
     name: 'AI Assistant',
     to: '/ai-assistant',
     icon: Bot,
-    hideForRoles: permitArrivalsCounter(),
+    hideForRoles: permitArrivalsHelpers('Stream'),
   },
   {
     name: 'Settings',

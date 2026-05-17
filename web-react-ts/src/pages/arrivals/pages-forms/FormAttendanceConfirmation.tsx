@@ -9,12 +9,15 @@ import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
+import { isToday } from 'jd-date-utils'
+import { AlertTriangle } from 'lucide-react'
 import SubmitButton from 'components/formik/SubmitButton'
 import { alertMsg, throwToSentry } from 'global-utils'
 import Input from 'components/formik/Input'
 import Textarea from 'components/formik/Textarea'
 import CloudinaryImage from 'components/CloudinaryImage'
 import Select from 'components/formik/Select'
+import { Alert, AlertDescription } from 'components/ui/alert'
 import { Card, CardContent, CardFooter } from 'components/ui/card'
 import { DISPLAY_VEHICLE_RECORDS } from '../arrivalsQueries'
 import {
@@ -44,6 +47,7 @@ const FormAttendanceConfirmation = () => {
 
   const vehicle: VehicleRecord = data?.vehicleRecords[0]
   const bacenta: BacentaWithArrivals = data?.bacentas[0]
+  const isRecordFromToday = !!vehicle?.createdAt && isToday(vehicle.createdAt)
 
   const initialValues: FormOptions = {
     attendance: '',
@@ -77,6 +81,14 @@ const FormAttendanceConfirmation = () => {
     onSubmitProps: FormikHelpers<FormOptions>
   ) => {
     const { setSubmitting } = onSubmitProps
+
+    if (!isRecordFromToday) {
+      alertMsg(
+        'This bussing record is not for today. You can only count vehicles bussed today.'
+      )
+      return
+    }
+
     setSubmitting(true)
 
     const res = await ConfirmVehicleByAdmin({
@@ -126,6 +138,16 @@ const FormAttendanceConfirmation = () => {
           <p>{`Picture Submitted by ${vehicle?.created_by.fullName}`}</p>
         </PlaceholderCustom>
 
+        {!loading && vehicle && !isRecordFromToday && (
+          <Alert variant="destructive">
+            <AlertTriangle className="size-4" />
+            <AlertDescription>
+              This bussing record is not for today. You can only count vehicles
+              bussed today.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Card>
           <CardContent className="space-y-2 p-4">
             <CloudinaryImage
@@ -168,7 +190,7 @@ const FormAttendanceConfirmation = () => {
                   vehicle top up for this bacenta
                 </CardContent>
                 <CardFooter className="justify-center p-4 pt-0">
-                  <SubmitButton formik={formik} />
+                  <SubmitButton formik={formik} disabled={!isRecordFromToday} />
                 </CardFooter>
               </Card>
             </Form>

@@ -10,9 +10,16 @@ type SubmitButtonProps = {
   children?: React.ReactNode
   onClick?: () => void
   className?: string
+  disabled?: boolean
 }
 
-const SubmitButton = ({ formik, children, onClick, className }: SubmitButtonProps) => (
+const SubmitButton = ({
+  formik,
+  children,
+  onClick,
+  className,
+  disabled,
+}: SubmitButtonProps) => (
   <Button
     type="submit"
     size="lg"
@@ -21,7 +28,7 @@ const SubmitButton = ({ formik, children, onClick, className }: SubmitButtonProp
       !formik.isValid && 'opacity-65',
       className
     )}
-    disabled={formik.isSubmitting}
+    disabled={formik.isSubmitting || disabled}
     onClick={onClick}
   >
     {formik.isSubmitting ? (

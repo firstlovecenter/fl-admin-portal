@@ -8,6 +8,8 @@ import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
+import { isToday } from 'jd-date-utils'
+import { AlertTriangle } from 'lucide-react'
 import SubmitButton from 'components/formik/SubmitButton'
 import { alertMsg } from 'global-utils'
 import Input from 'components/formik/Input'
@@ -16,6 +18,7 @@ import CurrencySpan from 'components/CurrencySpan'
 import TableFromArrays from 'components/TableFromArrays/TableFromArrays'
 import useModal from 'hooks/useModal'
 import RadioButtons from 'components/formik/RadioButtons'
+import { Alert, AlertDescription } from 'components/ui/alert'
 import { Button } from 'components/ui/button'
 import { Card, CardContent, CardFooter } from 'components/ui/card'
 import {
@@ -55,6 +58,7 @@ const FormPayVehicleRecord = () => {
 
   const vehicle: VehicleRecord = data?.vehicleRecords[0]
   const bacenta = data?.bacentas[0]
+  const isRecordFromToday = !!vehicle?.createdAt && isToday(vehicle.createdAt)
 
   const initialValues: FormOptions = {
     momoName: vehicle?.momoName,
@@ -78,6 +82,14 @@ const FormPayVehicleRecord = () => {
     onSubmitProps: FormikHelpers<FormOptions>
   ) => {
     const { setSubmitting } = onSubmitProps
+
+    if (!isRecordFromToday) {
+      alertMsg(
+        'This bussing record is not for today. You can only pay for vehicles bussed today.'
+      )
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -144,6 +156,16 @@ const FormPayVehicleRecord = () => {
         <PlaceholderCustom as="h3" loading={loading}>
           <HeadingPrimary>Vehicle Attendance Form</HeadingPrimary>
         </PlaceholderCustom>
+
+        {!loading && vehicle && !isRecordFromToday && (
+          <Alert variant="destructive">
+            <AlertTriangle className="size-4" />
+            <AlertDescription>
+              This bussing record is not for today. You can only pay for
+              vehicles bussed today.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="my-4 flex items-center gap-3">
           <CloudinaryImage
@@ -217,7 +239,7 @@ const FormPayVehicleRecord = () => {
                   vehicle top up for this bacenta
                 </CardContent>
                 <CardFooter className="justify-center p-4 pt-0">
-                  <SubmitButton formik={formik} />
+                  <SubmitButton formik={formik} disabled={!isRecordFromToday} />
                 </CardFooter>
               </Card>
             </Form>

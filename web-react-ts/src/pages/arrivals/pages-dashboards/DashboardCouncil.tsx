@@ -10,12 +10,14 @@ import {
   Banknote,
   BusFront,
   CheckCircle2,
+  ChevronRight,
   CreditCard,
   Loader2,
   Megaphone,
   Settings2,
   Users,
   UsersRound,
+  Wallet,
 } from 'lucide-react'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -28,8 +30,9 @@ import ArrivalsHeader from '../ArrivalsHeader'
 import DownloadArrivalsButton from '../DownloadArrivalsButton'
 
 import { Alert, AlertDescription } from 'components/ui/alert'
+import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
-import { Card } from 'components/ui/card'
+import { Card, CardContent } from 'components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -89,6 +92,12 @@ type BacentaTile = {
 const COUNCIL_ADMIN_ROLES = [
   ...permitAdmin('Council'),
   ...permitArrivals('Stream'),
+]
+
+const PAYMENT_VISIBLE_ROLES = [
+  ...permitArrivalsPayer(),
+  ...permitLeaderAdmin('Council'),
+  ...permitArrivals('Campus'),
 ]
 
 const CouncilDashboard = () => {
@@ -296,6 +305,53 @@ const CouncilDashboard = () => {
                 />
               )
 
+              const vehiclesToBePaidCount = council?.vehiclesToBePaidCount ?? 0
+
+              const quickActionsBlock = (
+                <RoleView roles={PAYMENT_VISIBLE_ROLES}>
+                  <section className="space-y-2">
+                    <SectionLabel>Quick Actions</SectionLabel>
+                    <Card
+                      className="cursor-pointer transition hover:border-banking/40 hover:bg-banking/5"
+                      onClick={() =>
+                        navigate('/arrivals/vehicles-to-be-paid')
+                      }
+                    >
+                      <CardContent className="flex items-center gap-4 p-4">
+                        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-banking/10 text-banking">
+                          <Wallet className="size-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-foreground">
+                              Pay Vehicles
+                            </p>
+                            {vehiclesToBePaidCount > 0 && (
+                              <Badge
+                                variant="outline"
+                                className="border-banking/30 bg-banking/10 text-banking tabular-nums"
+                              >
+                                {vehiclesToBePaidCount}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {vehiclesToBePaidCount === 0
+                              ? 'No vehicles awaiting payment'
+                              : `${vehiclesToBePaidCount} ${
+                                  vehiclesToBePaidCount === 1
+                                    ? 'vehicle'
+                                    : 'vehicles'
+                                } awaiting payment`}
+                          </p>
+                        </div>
+                        <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+                      </CardContent>
+                    </Card>
+                  </section>
+                </RoleView>
+              )
+
               const bacentaStatusBlock = (
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
@@ -324,13 +380,7 @@ const CouncilDashboard = () => {
               )
 
               const financialDataBlock = (
-                <RoleView
-                  roles={[
-                    ...permitArrivals('Campus'),
-                    ...permitLeaderAdmin('Council'),
-                    ...permitArrivalsPayer(),
-                  ]}
-                >
+                <RoleView roles={PAYMENT_VISIBLE_ROLES}>
                   <section className="space-y-2">
                     <SectionLabel>
                       Financial Data
@@ -430,18 +480,13 @@ const CouncilDashboard = () => {
                   <div className="lg:hidden">
                     {metaRow}
                     <ArrivalsHeader />
+                    <div className="mb-3">{quickActionsBlock}</div>
                     <Tabs defaultValue="bacentas">
                       <TabsList className="grid h-11 w-full grid-cols-3">
                         <TabsTrigger value="bacentas" className="text-xs">
                           Bacentas
                         </TabsTrigger>
-                        <RoleView
-                          roles={[
-                            ...permitArrivals('Campus'),
-                            ...permitLeaderAdmin('Council'),
-                            ...permitArrivalsPayer(),
-                          ]}
-                        >
+                        <RoleView roles={PAYMENT_VISIBLE_ROLES}>
                           <TabsTrigger value="financial" className="text-xs">
                             Financial
                           </TabsTrigger>
@@ -467,6 +512,7 @@ const CouncilDashboard = () => {
                   <div className="hidden gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
                     <div className="space-y-4">
                       {metaRow}
+                      {quickActionsBlock}
                       {bacentaStatusBlock}
                       {financialDataBlock}
                     </div>

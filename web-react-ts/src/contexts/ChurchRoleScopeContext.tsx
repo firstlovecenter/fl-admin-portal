@@ -52,6 +52,7 @@ const dashboardScopeSupportedRoles: Role[] = [
   'arrivalsAdminStream',
   'arrivalsAdminCampus',
   'arrivalsCounterStream',
+  'arrivalsPayerCouncil',
   'tellerStream',
 ]
 
@@ -83,6 +84,10 @@ const buildRoleDisplayName = (
 
   if (authRole.startsWith('arrivalsCounter')) {
     return `${levelLabel} Arrivals Counter`
+  }
+
+  if (authRole.startsWith('arrivalsPayer')) {
+    return `${levelLabel} Arrivals Payer`
   }
 
   if (authRole.startsWith('teller')) {
