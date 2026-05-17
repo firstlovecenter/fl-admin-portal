@@ -1,7 +1,5 @@
 import { useContext, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft,
   CheckCircle2,
   Compass,
   Filter,
@@ -72,7 +70,6 @@ const ListSkeleton = () => (
 )
 
 const StateBacentasToCount = () => {
-  const navigate = useNavigate()
   const { clickCard } = useContext(ChurchContext)
   const {
     church,
@@ -144,12 +141,12 @@ const StateBacentasToCount = () => {
         if (bacenta.bussingThisWeek) clickCard(bacenta.bussingThisWeek)
       }}
     >
-      <CardContent className="space-y-3 p-4">
+      <CardContent className="space-y-2.5 p-3 lg:space-y-3 lg:p-4">
         <div>
           <p className="text-sm font-semibold text-foreground">
             {bacenta.name} Bacenta
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground lg:text-xs">
             {bacenta.leader?.nameWithTitle ?? bacenta.leader?.fullName ?? ''}
           </p>
         </div>
@@ -195,43 +192,32 @@ const StateBacentasToCount = () => {
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="-ml-2 mb-4 min-h-11 gap-1 text-muted-foreground hover:text-foreground"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="size-4" />
-              Back
-            </Button>
-
-            <header className="mb-6 space-y-2 lg:mb-8">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-arrivals">
+            <header className="mb-4 space-y-1.5 lg:mb-8 lg:space-y-2">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-arrivals lg:text-xs lg:tracking-[0.18em]">
                 <ListChecks className="size-3.5" />
                 <span>Arrivals Counter</span>
               </div>
               {loading && !church ? (
-                <Skeleton className="h-9 w-72" />
+                <Skeleton className="h-7 w-56 lg:h-9 lg:w-72" />
               ) : (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-3xl">
                   {church?.name ?? churchName ?? ''}{' '}
                   <span className="text-arrivals">To Count</span>
                 </h1>
               )}
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground lg:text-sm">
                 Vehicles awaiting confirmation at the centre.
               </p>
             </header>
 
             {!isScopeSupported && (
-              <Card className="mb-6 border-warning/40 bg-warning/5">
-                <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
-                  <Compass className="size-8 text-warning" />
-                  <p className="text-base font-semibold text-foreground">
+              <Card className="mb-4 border-warning/40 bg-warning/5 lg:mb-6">
+                <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">
+                  <Compass className="size-7 text-warning lg:size-8" />
+                  <p className="text-sm font-semibold text-foreground lg:text-base">
                     {hasScope ? 'Pick a higher church' : 'Pick a church in focus'}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground lg:text-sm">
                     {hasScope
                       ? 'Counting is tracked at the Governorship, Council, Stream, or Campus level.'
                       : 'Choose a church from the Church in Focus selector to start counting.'}
@@ -241,7 +227,47 @@ const StateBacentasToCount = () => {
             )}
 
             {isScopeSupported && (
-              <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_280px] lg:items-start">
+              <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[1fr_280px] lg:items-start lg:gap-6">
+                <aside className="space-y-2 lg:order-2 lg:sticky lg:top-6 lg:space-y-3">
+                  <SectionLabel>Summary</SectionLabel>
+                  <Card>
+                    <CardContent className="space-y-3 p-4 lg:space-y-4 lg:p-5">
+                      <div>
+                        {loading && !church ? (
+                          <Skeleton className="h-9 w-14 lg:h-10 lg:w-16" />
+                        ) : (
+                          <p className="text-3xl font-bold tabular-nums tracking-tight text-arrivals lg:text-4xl">
+                            {visibleVehicleCount}
+                          </p>
+                        )}
+                        <p className="mt-0.5 text-xs text-muted-foreground lg:mt-1 lg:text-sm">
+                          {visibleVehicleCount === 1 ? 'vehicle' : 'vehicles'}{' '}
+                          pending
+                        </p>
+                      </div>
+
+                      {church && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className="border-arrivals/30 bg-arrivals/10 text-arrivals"
+                          >
+                            {church?.__typename}
+                          </Badge>
+                          <span className="text-sm font-medium text-foreground">
+                            {church?.name}
+                          </span>
+                        </div>
+                      )}
+
+                      <p className="text-[11px] text-muted-foreground lg:text-xs">
+                        Vehicles disappear from this list once you confirm
+                        their arrival time.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </aside>
+
                 <section className="space-y-4 lg:order-1">
                   <div className="space-y-3">
                     <div className="relative">
@@ -259,19 +285,31 @@ const StateBacentasToCount = () => {
                     <div className="flex flex-wrap gap-2">
                       <Button
                         type="button"
-                        variant={seeBusses ? 'default' : 'outline'}
+                        variant="ghost"
                         size="sm"
+                        aria-pressed={seeBusses}
                         onClick={() => setSeeBusses((v) => !v)}
-                        className={cn('min-h-11', !seeBusses && 'opacity-60')}
+                        className={cn(
+                          'min-h-9 rounded-full border px-4 text-sm transition-colors',
+                          seeBusses
+                            ? 'border-transparent bg-arrivals text-white hover:bg-arrivals/90 hover:text-white'
+                            : 'border-arrivals/30 bg-arrivals/10 text-arrivals hover:bg-arrivals/15 hover:text-arrivals'
+                        )}
                       >
                         Sprinter & Urvan
                       </Button>
                       <Button
                         type="button"
-                        variant={seeCars ? 'default' : 'outline'}
+                        variant="ghost"
                         size="sm"
+                        aria-pressed={seeCars}
                         onClick={() => setSeeCars((v) => !v)}
-                        className={cn('min-h-11', !seeCars && 'opacity-60')}
+                        className={cn(
+                          'min-h-9 rounded-full border px-4 text-sm transition-colors',
+                          seeCars
+                            ? 'border-transparent bg-arrivals text-white hover:bg-arrivals/90 hover:text-white'
+                            : 'border-arrivals/30 bg-arrivals/10 text-arrivals hover:bg-arrivals/15 hover:text-arrivals'
+                        )}
                       >
                         Car & Uber
                       </Button>
@@ -291,12 +329,12 @@ const StateBacentasToCount = () => {
 
                   {baseEmpty && (
                     <Card className="border-success/40 bg-success/5">
-                      <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
-                        <CheckCircle2 className="size-8 text-success" />
-                        <p className="text-base font-semibold text-foreground">
+                      <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">
+                        <CheckCircle2 className="size-7 text-success lg:size-8" />
+                        <p className="text-sm font-semibold text-foreground lg:text-base">
                           Nothing to count
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground lg:text-sm">
                           Every vehicle has been confirmed.
                         </p>
                       </CardContent>
@@ -305,12 +343,12 @@ const StateBacentasToCount = () => {
 
                   {searchEmpty && (
                     <Card>
-                      <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
-                        <Search className="size-8 text-muted-foreground" />
-                        <p className="text-base font-semibold text-foreground">
+                      <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">
+                        <Search className="size-7 text-muted-foreground lg:size-8" />
+                        <p className="text-sm font-semibold text-foreground lg:text-base">
                           No matches
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground lg:text-sm">
                           No bacentas or leaders match your search.
                         </p>
                       </CardContent>
@@ -319,12 +357,12 @@ const StateBacentasToCount = () => {
 
                   {filtersEmpty && (
                     <Card>
-                      <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
-                        <Filter className="size-8 text-muted-foreground" />
-                        <p className="text-base font-semibold text-foreground">
+                      <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">
+                        <Filter className="size-7 text-muted-foreground lg:size-8" />
+                        <p className="text-sm font-semibold text-foreground lg:text-base">
                           All vehicles hidden
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground lg:text-sm">
                           Toggle Sprinter &amp; Urvan or Car &amp; Uber back on
                           to see pending vehicles.
                         </p>
@@ -380,46 +418,6 @@ const StateBacentasToCount = () => {
                       </Accordion>
                     )}
                 </section>
-
-                <aside className="space-y-3 lg:sticky lg:top-6 lg:order-2">
-                  <SectionLabel>Summary</SectionLabel>
-                  <Card>
-                    <CardContent className="space-y-4 p-5">
-                      <div>
-                        {loading && !church ? (
-                          <Skeleton className="h-10 w-16" />
-                        ) : (
-                          <p className="text-4xl font-bold tabular-nums tracking-tight text-arrivals">
-                            {visibleVehicleCount}
-                          </p>
-                        )}
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {visibleVehicleCount === 1 ? 'vehicle' : 'vehicles'}{' '}
-                          pending
-                        </p>
-                      </div>
-
-                      {church && (
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className="border-arrivals/30 bg-arrivals/10 text-arrivals"
-                          >
-                            {church?.__typename}
-                          </Badge>
-                          <span className="text-sm font-medium text-foreground">
-                            {church?.name}
-                          </span>
-                        </div>
-                      )}
-
-                      <p className="text-xs text-muted-foreground">
-                        Vehicles disappear from this list once you confirm
-                        their arrival time.
-                      </p>
-                    </CardContent>
-                  </Card>
-                </aside>
               </div>
             )}
           </main>
