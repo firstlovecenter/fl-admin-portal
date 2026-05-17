@@ -399,103 +399,107 @@ export const arrivalsMutation = {
 
     const session = context.executionContext.session()
 
-    const recordResponse = rearrangeCypherObject(
-      await session.run(checkArrivalTimeFromVehicle, args)
-    )
-
-    const {
-      arrivalEndTime,
-      bacentaId,
-      numberOfVehicles,
-      totalAttendance,
-    }: {
-      arrivalEndTime: string
-      bacentaId: string
-      numberOfVehicles: neonumber
-      totalAttendance: neonumber
-      leaderPhoneNumber: string
-      leaderFirstName: string
-      bacentaName: string
-    } = recordResponse
-
-    const today = new Date()
-
-    if (today > arrivalEndTimeCalculator(arrivalEndTime)) {
-      throw new Error('It is now past the time for arrivals. Thank you!')
-    }
-
-    const adjustedArgs = args
-
-    if (args.vehicle !== 'Car') {
-      if (parseNeoNumber(numberOfVehicles) < 1 && args.attendance < 8) {
-        // No arrived vehicles and attendance is less than 8
-        adjustedArgs.attendance = 0
-      } else if (
-        parseNeoNumber(numberOfVehicles) >= 1 &&
-        args.attendance < 8 &&
-        parseNeoNumber(totalAttendance) < 8
-      ) {
-        // One arrived vehicle but the combined attendance is less than 8
-        adjustedArgs.attendance = 0
-      }
-    }
-
-    if (args.attendance < 8) {
-      adjustedArgs.vehicle = 'Car'
-    }
-
-    const response = rearrangeCypherObject(
-      await session.run(confirmVehicleByAdmin, {
-        ...adjustedArgs,
-        jwt: context.jwt,
-      })
-    )
-
-    if (!response?.vehicleRecord) {
-      throw new Error('This vehicle has already been counted.')
-    }
-
-    await session
-      .run(aggregateVehicleBussingRecordData, adjustedArgs)
-      .catch((error: any) =>
-        throwToSentry('Error Running aggregateVehicleBussingRecordData', error)
+    try {
+      const recordResponse = rearrangeCypherObject(
+        await session.run(checkArrivalTimeFromVehicle, args)
       )
 
-    const vehicleRecord = response.vehicleRecord.properties
-    const date = new Date().toISOString().slice(0, 10)
+      const {
+        arrivalEndTime,
+        bacentaId,
+        numberOfVehicles,
+        totalAttendance,
+      }: {
+        arrivalEndTime: string
+        bacentaId: string
+        numberOfVehicles: neonumber
+        totalAttendance: neonumber
+        leaderPhoneNumber: string
+        leaderFirstName: string
+        bacentaName: string
+      } = recordResponse
 
-    const returnToCache = {
-      id: vehicleRecord.id,
-      leaderDeclaration: vehicleRecord.leaderDeclaration,
-      attendance: vehicleRecord.attendance,
-      vehicle: vehicleRecord.vehicle,
-      picture: vehicleRecord.picture,
-      outbound: vehicleRecord.outbound,
-      arrivalTime: vehicleRecord.arrivalTime,
-      bussingRecord: {
-        serviceLog: {
-          bacenta: [
-            {
-              id: bacentaId,
-              stream_name: response.stream_name,
-              bussing: [
-                {
-                  id: vehicleRecord.id,
-                  serviceDate: {
-                    date,
+      const today = new Date()
+
+      if (today > arrivalEndTimeCalculator(arrivalEndTime)) {
+        throw new Error('It is now past the time for arrivals. Thank you!')
+      }
+
+      const adjustedArgs = args
+
+      if (args.vehicle !== 'Car') {
+        if (parseNeoNumber(numberOfVehicles) < 1 && args.attendance < 8) {
+          // No arrived vehicles and attendance is less than 8
+          adjustedArgs.attendance = 0
+        } else if (
+          parseNeoNumber(numberOfVehicles) >= 1 &&
+          args.attendance < 8 &&
+          parseNeoNumber(totalAttendance) < 8
+        ) {
+          // One arrived vehicle but the combined attendance is less than 8
+          adjustedArgs.attendance = 0
+        }
+      }
+
+      if (args.attendance < 8) {
+        adjustedArgs.vehicle = 'Car'
+      }
+
+      const response = rearrangeCypherObject(
+        await session.run(confirmVehicleByAdmin, {
+          ...adjustedArgs,
+          jwt: context.jwt,
+        })
+      )
+
+      if (!response?.vehicleRecord) {
+        throw new Error('This vehicle has already been counted.')
+      }
+
+      await session
+        .run(aggregateVehicleBussingRecordData, adjustedArgs)
+        .catch((error: any) =>
+          throwToSentry('Error Running aggregateVehicleBussingRecordData', error)
+        )
+
+      const vehicleRecord = response.vehicleRecord.properties
+      const date = new Date().toISOString().slice(0, 10)
+
+      const returnToCache = {
+        id: vehicleRecord.id,
+        leaderDeclaration: vehicleRecord.leaderDeclaration,
+        attendance: vehicleRecord.attendance,
+        vehicle: vehicleRecord.vehicle,
+        picture: vehicleRecord.picture,
+        outbound: vehicleRecord.outbound,
+        arrivalTime: vehicleRecord.arrivalTime,
+        bussingRecord: {
+          serviceLog: {
+            bacenta: [
+              {
+                id: bacentaId,
+                stream_name: response.stream_name,
+                bussing: [
+                  {
+                    id: vehicleRecord.id,
+                    serviceDate: {
+                      date,
+                    },
+                    week: response.week,
+                    vehicle: vehicleRecord.vehicle,
+                    picture: vehicleRecord.picture,
+                    outbound: vehicleRecord.outbound,
                   },
-                  week: response.week,
-                  vehicle: vehicleRecord.vehicle,
-                  picture: vehicleRecord.picture,
-                  outbound: vehicleRecord.outbound,
-                },
-              ],
-            },
-          ],
+                ],
+              },
+            ],
+          },
         },
-      },
+      }
+      return returnToCache
+    } finally {
+      await session.close()
     }
-    return returnToCache
   },
 
   SetVehicleSupport: async (
