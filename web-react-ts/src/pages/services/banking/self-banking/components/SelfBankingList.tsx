@@ -12,6 +12,7 @@ import {
 import { Skeleton } from 'components/ui/skeleton'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceRecord } from 'global-types'
+import { TRANSACTION_STATUS } from '../../banking-constants'
 import { capitalise, throwToSentry } from 'global-utils'
 import { parseDate } from 'jd-date-utils'
 import {
@@ -60,15 +61,15 @@ type StatusVariant = 'pending' | 'success' | 'failed' | 'new'
 
 const statusForService = (service: ServiceRecord): StatusVariant => {
   if (
-    service.transactionStatus === 'pending' ||
-    service.transactionStatus === 'send OTP'
+    service.transactionStatus === TRANSACTION_STATUS.PENDING ||
+    service.transactionStatus === TRANSACTION_STATUS.SEND_OTP
   ) {
     return 'pending'
   }
-  if (service.transactionStatus === 'success') return 'success'
+  if (service.transactionStatus === TRANSACTION_STATUS.SUCCESS) return 'success'
   if (
-    service.transactionStatus === 'failed' ||
-    service.transactionStatus === 'abandoned'
+    service.transactionStatus === TRANSACTION_STATUS.FAILED ||
+    service.transactionStatus === TRANSACTION_STATUS.ABANDONED
   ) {
     return 'failed'
   }

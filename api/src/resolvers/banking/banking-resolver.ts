@@ -36,6 +36,7 @@ import {
   SendPaymentOTP,
 } from './banking-types'
 import { loadSecrets } from '../secrets'
+import { TRANSACTION_STATUS } from './banking-constants'
 
 // Banking-scoped error helper. Logs a scrubbed forensic record (status,
 // gateway code, message) for ops but throws only a curated user-facing
@@ -111,7 +112,7 @@ export const checkIfLastServiceBanked = async (
   if (
     !(
       'bankingSlip' in lastService ||
-      lastService.transactionStatus === 'success' ||
+      lastService.transactionStatus === TRANSACTION_STATUS.SUCCESS ||
       'tellerConfirmationTime' in lastService
     )
   ) {
@@ -193,15 +194,15 @@ const bankingMutation = {
       await checkIfLastServiceBanked(args.serviceRecordId, context)
 
       const transactionStatus = transactionResponse.record?.transactionStatus
-      if (transactionStatus === 'success') {
+      if (transactionStatus === TRANSACTION_STATUS.SUCCESS) {
         throw new Error('Banking has already been done for this service')
       }
-      if (transactionStatus === 'pending') {
+      if (transactionStatus === TRANSACTION_STATUS.PENDING) {
         throw new Error(
           'Please confirm your previous payment attempt before starting a new one.'
         )
       }
-      if (transactionStatus === 'send OTP') {
+      if (transactionStatus === TRANSACTION_STATUS.SEND_OTP) {
         throw new Error(
           'Please submit the OTP for your previous payment attempt before starting a new one.'
         )
@@ -229,7 +230,7 @@ const bankingMutation = {
               ...args,
               ...bhParams(
                 'self',
-                'pending',
+                TRANSACTION_STATUS.PENDING,
                 `Self-bank initiated via ${args.mobileNetwork}`
               ),
             })
@@ -398,7 +399,10 @@ const bankingMutation = {
           'This service record is not linked to a Stream and cannot accept OTP submission.'
         )
       }
-      if (transactionResponse.record.transactionStatus !== 'send OTP') {
+      if (
+        transactionResponse.record.transactionStatus !==
+        TRANSACTION_STATUS.SEND_OTP
+      ) {
         throw new Error(
           'No OTP is pending for this payment. Refresh and try again.'
         )
@@ -472,7 +476,7 @@ const bankingMutation = {
               error: otpResponse.data.data.gateway_response,
               ...bhParams(
                 'self',
-                'failed',
+                TRANSACTION_STATUS.FAILED,
                 'OTP submission failed at Paystack'
               ),
             })
@@ -493,13 +497,13 @@ const bankingMutation = {
         )
         return {
           id: args.serviceRecordId,
-          transactionStatus: 'success',
+          transactionStatus: TRANSACTION_STATUS.SUCCESS,
         }
       }
 
       return {
         id: args.serviceRecordId,
-        transactionStatus: 'send OTP',
+        transactionStatus: TRANSACTION_STATUS.SEND_OTP,
       }
     } finally {
       await session.close()
@@ -577,7 +581,7 @@ const bankingMutation = {
               error: 'No Transaction Reference',
               ...bhParams(
                 'self',
-                'failed',
+                TRANSACTION_STATUS.FAILED,
                 'Confirm rejected: no transactionReference on record'
               ),
             })
@@ -622,7 +626,7 @@ const bankingMutation = {
                 status: confirmationResponse.data.data.status,
                 ...bhParams(
                   'self',
-                  'success',
+                  TRANSACTION_STATUS.SUCCESS,
                   'Paystack verify reported success'
                 ),
               })
@@ -642,7 +646,7 @@ const bankingMutation = {
             console.warn(
               `setTransactionStatusSuccess no-op for ${args.serviceRecordId}; webhook already settled`
             )
-            record = { ...record, transactionStatus: 'success' }
+            record = { ...record, transactionStatus: TRANSACTION_STATUS.SUCCESS }
           }
         }
 
@@ -680,7 +684,7 @@ const bankingMutation = {
             console.warn(
               `setTransactionStatusFailed no-op for ${args.serviceRecordId}; record already success, verify said ${confirmationResponse.data.data.status}`
             )
-            record = { ...record, transactionStatus: 'success' }
+            record = { ...record, transactionStatus: TRANSACTION_STATUS.SUCCESS }
           }
         }
 
@@ -697,7 +701,7 @@ const bankingMutation = {
                 error: confirmationResponse.data.data.gateway_response,
                 ...bhParams(
                   'self',
-                  'reversed',
+                  TRANSACTION_STATUS.REVERSED,
                   'Paystack verify reported reversed (refund to customer)'
                 ),
               })
@@ -714,7 +718,7 @@ const bankingMutation = {
             console.warn(
               `setTransactionStatusReversed no-op for ${args.serviceRecordId}; record in unexpected state`
             )
-            record = { ...record, transactionStatus: 'reversed' }
+            record = { ...record, transactionStatus: TRANSACTION_STATUS.REVERSED }
           }
         }
 
@@ -736,7 +740,7 @@ const bankingMutation = {
                   error: 'Transaction reference not found at Paystack',
                   ...bhParams(
                     'self',
-                    'failed',
+                    TRANSACTION_STATUS.FAILED,
                     'Paystack verify returned transaction_not_found'
                   ),
                 })
@@ -925,7 +929,7 @@ const bankingMutation = {
               jwt: context.jwt,
               ...bhParams(
                 'recovery',
-                'pending',
+                TRANSACTION_STATUS.PENDING,
                 'Admin manually set Paystack reference and re-armed pending state'
               ),
             })

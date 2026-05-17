@@ -30,13 +30,24 @@ import {
   SET_TRANSACTION_REFERENCE_MANUALLY,
 } from './bankingQueries'
 import ButtonConfirmPayment from './components/button/ConfirmPayment'
+import { TRANSACTION_STATUS } from '../banking-constants'
 
 type StatusVariant = 'success' | 'pending' | 'failed' | 'unknown'
 
 const variantFor = (status: string | undefined): StatusVariant => {
-  if (status === 'success') return 'success'
-  if (status === 'pending' || status === 'send OTP') return 'pending'
-  if (status === 'failed' || status === 'abandoned') return 'failed'
+  if (status === TRANSACTION_STATUS.SUCCESS) return 'success'
+  if (
+    status === TRANSACTION_STATUS.PENDING ||
+    status === TRANSACTION_STATUS.SEND_OTP
+  ) {
+    return 'pending'
+  }
+  if (
+    status === TRANSACTION_STATUS.FAILED ||
+    status === TRANSACTION_STATUS.ABANDONED
+  ) {
+    return 'failed'
+  }
   return 'unknown'
 }
 
@@ -248,9 +259,8 @@ const ReceiptPage = () => {
               </Card>
 
               <RoleView roles={permitAdmin('Stream')}>
-                {!['success', 'pending'].includes(
-                  service.transactionStatus
-                ) && (
+                {service.transactionStatus !== TRANSACTION_STATUS.SUCCESS &&
+                  service.transactionStatus !== TRANSACTION_STATUS.PENDING && (
                   <Card>
                     <CardContent className="space-y-4 p-5">
                       <div className="space-y-1">
@@ -289,7 +299,7 @@ const ReceiptPage = () => {
                   <h3 className="text-sm font-semibold text-foreground">
                     Next steps
                   </h3>
-                  {service.transactionStatus === 'pending' && (
+                  {service.transactionStatus === TRANSACTION_STATUS.PENDING && (
                     <ButtonConfirmPayment
                       refetch={refetch}
                       service={{ id: serviceRecordId }}
@@ -299,7 +309,7 @@ const ReceiptPage = () => {
                     type="button"
                     size="lg"
                     variant={
-                      service.transactionStatus === 'pending'
+                      service.transactionStatus === TRANSACTION_STATUS.PENDING
                         ? 'outline'
                         : 'default'
                     }

@@ -30,6 +30,7 @@ import { ServiceContext } from 'contexts/ServiceContext'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { Bacenta } from 'global-types'
 import { MOMO_NUM_REGEX, throwToSentry } from 'global-utils'
+import { TRANSACTION_STATUS } from '../banking-constants'
 import useModal from 'hooks/useModal'
 import usePopup from 'hooks/usePopup'
 import { parseDate } from 'jd-date-utils'
@@ -97,7 +98,7 @@ const PayOffering = (props: PayOfferingProps) => {
   }
 
   useEffect(() => {
-    if (service?.transactionStatus === 'send OTP') {
+    if (service?.transactionStatus === TRANSACTION_STATUS.SEND_OTP) {
       handleShow()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,7 +136,8 @@ const PayOffering = (props: PayOfferingProps) => {
         throw new Error(paymentRes.errors[0]?.message)
       }
       if (
-        paymentRes.data?.BankServiceOffering.transactionStatus === 'send OTP'
+        paymentRes.data?.BankServiceOffering.transactionStatus ===
+        TRANSACTION_STATUS.SEND_OTP
       ) {
         handleShow()
       } else {
