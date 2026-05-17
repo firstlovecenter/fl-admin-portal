@@ -166,7 +166,8 @@ WITH bussingRecord, bacenta, serviceDate,  date($serviceDate).week AS week
 `
 
 export const confirmVehicleByAdmin = `
-MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId}) 
+MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId})
+  WHERE vehicleRecord.arrivalTime IS NULL
     SET vehicleRecord.attendance = $attendance,
       vehicleRecord.vehicle = $vehicle,
       vehicleRecord.comments = $comments,

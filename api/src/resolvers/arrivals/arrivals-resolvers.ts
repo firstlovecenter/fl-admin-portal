@@ -435,6 +435,10 @@ export const arrivalsMutation = {
       })
     )
 
+    if (!response?.vehicleRecord) {
+      throw new Error('This vehicle has already been counted.')
+    }
+
     await session
       .run(aggregateVehicleBussingRecordData, adjustedArgs)
       .catch((error: any) =>

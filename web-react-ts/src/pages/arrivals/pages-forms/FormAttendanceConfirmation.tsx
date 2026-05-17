@@ -90,7 +90,12 @@ const FormAttendanceConfirmation = () => {
       throwToSentry('There was an error confirming vehicle', err)
     )
 
-    const vehicleData = res?.data.ConfirmVehicleByAdmin
+    const vehicleData = res?.data?.ConfirmVehicleByAdmin
+
+    if (!vehicleData) {
+      setSubmitting(false)
+      return
+    }
 
     await SetVehicleSupport({
       variables: {

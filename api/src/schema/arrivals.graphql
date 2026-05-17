@@ -1350,21 +1350,6 @@ extend type Mutation {
     comments: String
   ): VehicleRecord!
     @authentication(jwt: { roles: { includes: "arrivalsCounterStream" } })
-    @cypher(
-      statement: """
-      MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId}) WHERE vehicleRecord.arrivalTime IS NULL
-        SET vehicleRecord.attendance = $attendance,
-        vehicleRecord.vehicle = $vehicle,
-        vehicleRecord.comments = $comments
-
-         WITH vehicleRecord
-          MATCH (admin:Member {id: $jwt.userId})
-          MERGE (vehicleRecord)-[:COUNTED_BY]->(admin)
-
-      RETURN vehicleRecord
-      """
-      columnName: "vehicleRecord"
-    )
 
   SetSwellDate(date: String!): TimeGraph!
   SendVehicleSupport(
