@@ -75,18 +75,27 @@ Never take "trust me, it's merged" at face value.
 To Do → In Progress → Review → Done
 ```
 
-| Status | Transition ID (known) |
+| Target status | Transition ID |
 | --- | --- |
-| To Do | `10637` |
-| In Progress | `10638` |
-| Review | `10738` |
-| Done | retrieve dynamically (varies) |
+| To Do | `11` |
+| In Progress | `21` |
+| Review | `2` |
+| Done | `31` |
 
-These IDs are stable for the SYN board today, but transitions are
-**state-dependent** — a transition that exists from `To Do → In Progress`
-may not exist from `Review → In Progress`. Always confirm via
-`getTransitionsForJiraIssue` before applying anything except the two known
-forward moves below.
+These four transitions are all marked `isGlobal: true` on the SYN board, which
+means each one is callable from any current status — so e.g. `To Do → Review`
+works directly with `id: "2"` and no In-Progress hop is required. Verified
+2026-05-17 against `SYN-146`.
+
+**Do not confuse transition IDs with status IDs.** The MCP's
+`transition.id` field takes the transition ID (`2`, `11`, `21`, `31`); the
+five-digit numbers you see in `status.id` (`10637` To Do / `10638` In
+Progress / `10738` Review / `10639` Done) are the destination status IDs
+and will be rejected if passed as `transition.id`.
+
+If a transition fails with `Transition id 'X' is not valid for this issue`,
+the board's workflow has been edited — fall back to
+`getTransitionsForJiraIssue` and use the freshly fetched ID.
 
 ## Procedure
 
@@ -134,7 +143,11 @@ Output exactly one short line before firing the transition. Examples:
 - `Implementation looks done — moving SYN-123 to Review.`
 - `Marking SYN-123 Done now that it's merged into staging.`
 
-### 5. Fetch available transitions (always for Done; optional for known IDs)
+### 5. Fetch available transitions (only as a fallback)
+
+The four IDs in the table above are global on the SYN board and can be used
+without a fetch. Only fall back to the dynamic fetch when an apply step
+fails with `Transition id 'X' is not valid for this issue`:
 
 ```
 mcp__atlassian__getTransitionsForJiraIssue with:
@@ -142,11 +155,8 @@ mcp__atlassian__getTransitionsForJiraIssue with:
   issueIdOrKey: "SYN-123"
 ```
 
-Pick the transition whose `to.name` matches the target column. Required for
-**Done** (ID is not pre-known) and any backward move. For forward moves into
-**In Progress** or **Review** the known IDs (`10638`, `10738`) can be used
-without a fetch — but if the apply step fails with an "invalid transition"
-error, fall back to fetching.
+Pick the transition whose `to.name` matches the target column and use its
+`id` as `transition.id` in the next step.
 
 ### 6. Apply the transition
 
