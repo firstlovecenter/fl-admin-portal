@@ -208,6 +208,14 @@ const ReportsPage = () => {
   // Bacenta is the leaf level; sub-church breakdowns don't apply at this scope.
   const hasSubChurches = reportsAvailable && churchType !== 'Bacenta'
 
+  // The metric "by Sub-Church" reports (Bussing/Weekday/Defaulters/Arrivals)
+  // pick a target row level from the aggregate-backed set {Campus, Stream,
+  // Council, Governorship}. Governorship scope's only descendant is Bacenta,
+  // which is excluded by policy — so Governorship has no valid metric
+  // sub-church target and we hide those cards there. (Directory sub-church
+  // card is unaffected and still appears.)
+  const hasMetricSubChurches = hasSubChurches && churchType !== 'Governorship'
+
   const directoryPath =
     reportsAvailable && hasSubChurches ? '/reports/directory' : null
   // Defaulters export is gated to Governorship+ on the route. The card stays
@@ -216,11 +224,11 @@ const ReportsPage = () => {
     reportsAvailable &&
     ['Governorship', 'Council', 'Stream', 'Campus'].includes(churchType)
   const defaultersPath = defaultersAvailable ? '/reports/defaulters' : null
-  // By-sub-church breakdown only matters when there *is* a sub-church layer
-  // between the scope and the Bacenta detail — so Council+ (skip Governorship
-  // where the sub-church IS the Bacenta and the main workbook covers it).
+  // By-sub-church breakdown picks an aggregate-backed target — Bacenta is
+  // out, so Governorship scope (whose only descendant is Bacenta) has no
+  // valid target and the card is hidden.
   const defaultersSubChurchesAvailable =
-    defaultersAvailable && hasSubChurches
+    defaultersAvailable && hasMetricSubChurches
   const defaultersSubChurchesPath = defaultersSubChurchesAvailable
     ? '/reports/defaulters/sub-churches'
     : null
@@ -232,8 +240,9 @@ const ReportsPage = () => {
     ? '/reports/arrivals/sub-churches'
     : null
   const bussingPath = reportsAvailable ? '/reports/bussing' : null
-  const bussingSubChurchesPath =
-    reportsAvailable && hasSubChurches ? '/reports/bussing/sub-churches' : null
+  const bussingSubChurchesPath = hasMetricSubChurches
+    ? '/reports/bussing/sub-churches'
+    : null
   // At Bacenta scope the Weekday card drills into per-service-record detail
   // (no-service reasons, treasurers, photo URLs, banking proof). Above
   // Bacenta the detail set explodes, so higher levels stay on the weekly
@@ -243,8 +252,9 @@ const ReportsPage = () => {
       ? '/reports/weekday/services'
       : '/reports/weekday'
     : null
-  const weekdaySubChurchesPath =
-    reportsAvailable && hasSubChurches ? '/reports/weekday/sub-churches' : null
+  const weekdaySubChurchesPath = hasMetricSubChurches
+    ? '/reports/weekday/sub-churches'
+    : null
 
   const tocSections: TocSection[] = [
     { id: 'directory', label: 'Directory' },
@@ -325,7 +335,7 @@ const ReportsPage = () => {
                   }
                   to={bussingPath}
                 />
-                {hasSubChurches && (
+                {hasMetricSubChurches && (
                   <Card
                     icon={<Network className="size-5" />}
                     title={`${churchPrefix}Bussing by Sub-Church`}
@@ -413,7 +423,7 @@ const ReportsPage = () => {
                   }
                   to={weekdayPath}
                 />
-                {hasSubChurches && (
+                {hasMetricSubChurches && (
                   <Card
                     icon={<Network className="size-5" />}
                     title={`${churchPrefix}Weekday by Sub-Church`}

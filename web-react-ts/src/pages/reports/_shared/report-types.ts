@@ -74,6 +74,67 @@ export type WeeklyChurchReportEntry = {
   bussingTopUp: number | null
 }
 
+// Scope levels whose `subChurchesReportAtLevel` resolver is wired on the
+// backend. Governorship is excluded because Bacenta is its only descendant
+// and Bacenta-as-target is not supported (raw-record aggregation is too
+// heavy for that path).
+export type SubChurchesAtLevelScope = 'Council' | 'Stream' | 'Campus' | 'Oversight'
+
+// Aggregate-backed levels valid as a row-granularity target.
+export type SubChurchesTargetLevel =
+  | 'Governorship'
+  | 'Council'
+  | 'Stream'
+  | 'Campus'
+
+// Top-down canonical order. Used to derive default ticks, pick the deepest
+// ticked level as the row-granularity target, and order ancestor columns.
+export const SUB_CHURCH_TARGETS_ORDERED: readonly SubChurchesTargetLevel[] = [
+  'Campus',
+  'Stream',
+  'Council',
+  'Governorship',
+]
+
+// Valid targets per scope. Mirrors backend `IN_BETWEEN` keys in
+// `api/src/resolvers/reports/weekly-report-cypher.ts`.
+export const TARGETS_BY_SCOPE: Record<
+  SubChurchesAtLevelScope,
+  readonly SubChurchesTargetLevel[]
+> = {
+  Oversight: ['Campus', 'Stream', 'Council', 'Governorship'],
+  Campus: ['Stream', 'Council', 'Governorship'],
+  Stream: ['Council', 'Governorship'],
+  Council: ['Governorship'],
+}
+
+const SUB_CHURCH_SCOPES: ReadonlySet<string> = new Set<SubChurchesAtLevelScope>([
+  'Council',
+  'Stream',
+  'Campus',
+  'Oversight',
+])
+
+export const isSubChurchScope = (
+  value: string | undefined
+): value is SubChurchesAtLevelScope =>
+  value !== undefined && SUB_CHURCH_SCOPES.has(value)
+
+export type WeeklyChurchReportAncestor = {
+  level: SubChurchesTargetLevel
+  name: string | null
+  leaderFirstName: string | null
+  leaderLastName: string | null
+  leaderPhone: string | null
+}
+
+export type WeeklyChurchReportEntryWithAncestors = WeeklyChurchReportEntry & {
+  targetLeaderFirstName: string | null
+  targetLeaderLastName: string | null
+  targetLeaderPhone: string | null
+  ancestors: WeeklyChurchReportAncestor[]
+}
+
 export type ServiceTreasurerEntry = {
   id: string
   name: string

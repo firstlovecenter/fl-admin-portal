@@ -40,6 +40,48 @@ type WeeklyChurchReportEntry @node{
   bussingTopUp: Float
 }
 
+"""
+A church ancestor surfaced as a decorator on `WeeklyChurchReportEntryWithAncestors`.
+One per level between the scope and the target row's level (exclusive of both).
+"""
+type WeeklyChurchReportAncestor @node{
+  level: String!
+  name: String
+  leaderFirstName: String
+  leaderLastName: String
+  leaderPhone: String
+}
+
+"""
+Sub-church report variant whose rows live at any aggregate-backed level
+(Campus / Stream / Council / Governorship) below the scope. Each row carries
+the in-between ancestor chain as a decorator so the FE can flatten it into
+columns. Bacenta is intentionally NOT a valid target level — the per-Bacenta
+view requires raw-record aggregation that's too heavy for this code path.
+"""
+type WeeklyChurchReportEntryWithAncestors @node{
+  id: ID!
+  churchId: ID!
+  churchName: String!
+  churchLevel: String!
+  week: Int!
+  year: Int!
+  serviceAttendance: Int
+  serviceIncome: Float
+  serviceDollarIncome: Float
+  numberOfServices: Int
+  bussingAttendance: Int
+  bussingLeaderDeclaration: Int
+  numberOfSprinters: Int
+  numberOfUrvans: Int
+  numberOfCars: Int
+  bussingTopUp: Float
+  targetLeaderFirstName: String
+  targetLeaderLastName: String
+  targetLeaderPhone: String
+  ancestors: [WeeklyChurchReportAncestor!]!
+}
+
 type ServiceTreasurerEntry @node{
   id: ID!
   name: String!
@@ -131,6 +173,11 @@ extend type Council {
     startWeekKey: Int!
     endWeekKey: Int!
   ): [WeeklyChurchReportEntry!]!
+  subChurchesReportAtLevel(
+    startWeekKey: Int!
+    endWeekKey: Int!
+    targetLevel: String!
+  ): [WeeklyChurchReportEntryWithAncestors!]!
 }
 
 extend type Stream {
@@ -147,6 +194,11 @@ extend type Stream {
     startWeekKey: Int!
     endWeekKey: Int!
   ): [WeeklyChurchReportEntry!]!
+  subChurchesReportAtLevel(
+    startWeekKey: Int!
+    endWeekKey: Int!
+    targetLevel: String!
+  ): [WeeklyChurchReportEntryWithAncestors!]!
 }
 
 extend type Campus {
@@ -163,6 +215,11 @@ extend type Campus {
     startWeekKey: Int!
     endWeekKey: Int!
   ): [WeeklyChurchReportEntry!]!
+  subChurchesReportAtLevel(
+    startWeekKey: Int!
+    endWeekKey: Int!
+    targetLevel: String!
+  ): [WeeklyChurchReportEntryWithAncestors!]!
 }
 
 extend type Oversight {
@@ -179,4 +236,9 @@ extend type Oversight {
     startWeekKey: Int!
     endWeekKey: Int!
   ): [WeeklyChurchReportEntry!]!
+  subChurchesReportAtLevel(
+    startWeekKey: Int!
+    endWeekKey: Int!
+    targetLevel: String!
+  ): [WeeklyChurchReportEntryWithAncestors!]!
 }

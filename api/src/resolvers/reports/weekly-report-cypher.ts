@@ -375,3 +375,218 @@ export const oversightSubChurchesReport = buildChildrenWeeklyCypher(
   'Oversight',
   'Campus'
 )
+
+/**
+ * Generalised "sub-churches at a deeper target level" report. For any
+ * (scope, target) pair where target is an aggregate-backed descendant of
+ * scope (Campus / Stream / Council / Governorship — never Bacenta), return
+ * one row per (target, week) with the in-between ancestor chain attached
+ * as decorator entries.
+ *
+ * The picker on the FE lets the user choose `target` (deepest tick) and
+ * which ancestor levels' columns to display; the cypher always projects
+ * every in-between level so the response shape is stable per (scope,
+ * target) and the FE drops what it doesn't want.
+ *
+ * Bacenta is intentionally excluded as a target — bacenta aggregates are
+ * never written, so a Bacenta target would have to fall back to raw
+ * `ServiceRecord`/`BussingRecord` aggregation, which is too heavy for this
+ * code path. Bacenta-level CSVs remain available via the existing
+ * `subChurchesReport` (Governorship scope) and the per-Bacenta drill-down.
+ */
+type AggregateLevel = 'Campus' | 'Stream' | 'Council' | 'Governorship'
+type ScopeLevel = 'Oversight' | 'Campus' | 'Stream' | 'Council'
+
+// In-between ancestor chain for each (scope -> target) walk. Top-down,
+// EXCLUSIVE of both endpoints. Empty list means scope -> target is one
+// HAS edge away.
+const IN_BETWEEN: Record<
+  ScopeLevel,
+  Partial<Record<AggregateLevel, AggregateLevel[]>>
+> = {
+  Oversight: {
+    Campus: [],
+    Stream: ['Campus'],
+    Council: ['Campus', 'Stream'],
+    Governorship: ['Campus', 'Stream', 'Council'],
+  },
+  Campus: {
+    Stream: [],
+    Council: ['Stream'],
+    Governorship: ['Stream', 'Council'],
+  },
+  Stream: {
+    Council: [],
+    Governorship: ['Council'],
+  },
+  Council: {
+    Governorship: [],
+  },
+}
+
+// Build JS identifier names (not Cypher) used by the template generator
+// below. `prefer-template` wants template literals, but the Cypher lint
+// rule then misfires on these as if they were Cypher fragments — so we
+// silence the Cypher rule on the line that uses interpolation.
+const churchVar = (level: string) => level.toLowerCase()
+const leaderVar = (level: string) =>
+  // eslint-disable-next-line fl-cypher/no-interpolated-cypher
+  `${level.toLowerCase()}Leader`
+
+/* eslint-disable fl-cypher/no-interpolated-cypher --
+ * Every `${...}` in this template is sourced from one of:
+ *   - compile-time `ChurchLevel` literals validated by the `ScopeLevel` /
+ *     `AggregateLevel` discriminated unions above, OR
+ *   - identifiers derived from those literals via `churchVar` / `leaderVar`.
+ * None come from request payloads, so the ADR-012 hazard (user-controlled
+ * interpolation) does not apply. Tx-level params ($id, $startWeekKey,
+ * $endWeekKey) still pass as bindings. */
+const buildSubChurchesAtLevelCypher = (
+  scope: ScopeLevel,
+  target: AggregateLevel
+): string => {
+  const between = IN_BETWEEN[scope]?.[target]
+  if (!between) {
+    throw new Error(`Invalid sub-churches walk: ${scope} -> ${target}`)
+  }
+
+  const scopeVar = churchVar(scope)
+  const targetVar = 'target'
+  const chain = [scope, ...between, target]
+  const walk = chain
+    .map((lvl, i) => {
+      if (i === 0) return `(${scopeVar}:${scope} {id: $id})`
+      const v = lvl === target ? targetVar : churchVar(lvl)
+      return `-[:HAS]->(${v}:${lvl})`
+    })
+    .join('')
+
+  const leaderMatches = [target, ...between]
+    .map(
+      (lvl) =>
+        `OPTIONAL MATCH (${
+          lvl === target ? targetVar : churchVar(lvl)
+        })<-[:LEADS]-(${leaderVar(lvl)}:Active:Member)`
+    )
+    .join('\n  ')
+
+  const ancestorList =
+    between.length === 0
+      ? '[]'
+      : `[${between
+          .map(
+            (lvl) =>
+              `{level: '${lvl}', name: ${churchVar(
+                lvl
+              )}.name, leaderFirstName: ${leaderVar(
+                lvl
+              )}.firstName, leaderLastName: ${leaderVar(
+                lvl
+              )}.lastName, leaderPhone: ${leaderVar(lvl)}.phoneNumber}`
+          )
+          .join(', ')}]`
+
+  const passthroughVars = [
+    ...between.map(churchVar),
+    targetVar,
+    ...[target, ...between].map(leaderVar),
+  ].join(', ')
+
+  return `
+  MATCH ${walk}
+  ${leaderMatches}
+
+  CALL {
+    WITH ${targetVar}
+    OPTIONAL MATCH (${targetVar})-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(serviceAgg:AggregateServiceRecord)
+    WHERE (serviceAgg.year * 100 + serviceAgg.week) >= $startWeekKey
+      AND (serviceAgg.year * 100 + serviceAgg.week) <= $endWeekKey
+    WITH serviceAgg
+    ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
+    WITH serviceAgg.week AS week, serviceAgg.year AS year, head(collect(serviceAgg)) AS serviceAgg
+    WITH week, year, serviceAgg
+    WHERE serviceAgg IS NOT NULL
+    RETURN collect({week: week, year: year, serviceAgg: serviceAgg}) AS serviceRows
+  }
+
+  CALL {
+    WITH ${targetVar}
+    OPTIONAL MATCH (${targetVar})-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(bussingAgg:AggregateBussingRecord)
+    WHERE (bussingAgg.year * 100 + bussingAgg.week) >= $startWeekKey
+      AND (bussingAgg.year * 100 + bussingAgg.week) <= $endWeekKey
+    WITH bussingAgg
+    ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
+    WITH bussingAgg.week AS week, bussingAgg.year AS year, head(collect(bussingAgg)) AS bussingAgg
+    WITH week, year, bussingAgg
+    WHERE bussingAgg IS NOT NULL
+    RETURN collect({week: week, year: year, bussingAgg: bussingAgg}) AS bussingRows
+  }
+
+  WITH ${passthroughVars}, serviceRows, bussingRows
+  WITH ${passthroughVars},
+       [r IN serviceRows | r.year * 100 + r.week] +
+       [r IN bussingRows | r.year * 100 + r.week] AS allKeys,
+       serviceRows, bussingRows
+  UNWIND allKeys AS weekKey
+  WITH ${passthroughVars}, weekKey, serviceRows, bussingRows
+  WITH ${passthroughVars}, weekKey,
+       head([r IN serviceRows WHERE r.year * 100 + r.week = weekKey | r.serviceAgg]) AS serviceAgg,
+       head([r IN bussingRows WHERE r.year * 100 + r.week = weekKey | r.bussingAgg]) AS bussingAgg
+  WITH DISTINCT ${passthroughVars}, weekKey, serviceAgg, bussingAgg
+  ORDER BY ${targetVar}.name ASC, weekKey DESC
+
+  WITH collect({
+    id: ${targetVar}.id + '-' + coalesce(serviceAgg.year, bussingAgg.year) + '-' + coalesce(serviceAgg.week, bussingAgg.week),
+    churchId: ${targetVar}.id,
+    churchName: ${targetVar}.name,
+    churchLevel: '${target}',
+    week: coalesce(serviceAgg.week, bussingAgg.week),
+    year: coalesce(serviceAgg.year, bussingAgg.year),
+    serviceAttendance: serviceAgg.attendance,
+    serviceIncome: serviceAgg.income,
+    serviceDollarIncome: serviceAgg.dollarIncome,
+    numberOfServices: serviceAgg.numberOfServices,
+    bussingAttendance: bussingAgg.attendance,
+    bussingLeaderDeclaration: bussingAgg.leaderDeclaration,
+    numberOfSprinters: bussingAgg.numberOfSprinters,
+    numberOfUrvans: bussingAgg.numberOfUrvans,
+    numberOfCars: bussingAgg.numberOfCars,
+    bussingTopUp: bussingAgg.bussingTopUp,
+    targetLeaderFirstName: ${leaderVar(target)}.firstName,
+    targetLeaderLastName: ${leaderVar(target)}.lastName,
+    targetLeaderPhone: ${leaderVar(target)}.phoneNumber,
+    ancestors: ${ancestorList}
+  }) AS entries
+  RETURN entries
+`
+}
+/* eslint-enable fl-cypher/no-interpolated-cypher */
+
+// Pre-build all 10 templates at module load — fail fast on any (scope,
+// target) typo rather than waiting for a user to hit a bad route.
+export const SUB_CHURCHES_AT_LEVEL: Record<
+  ScopeLevel,
+  Partial<Record<AggregateLevel, string>>
+> = {
+  Oversight: {
+    Campus: buildSubChurchesAtLevelCypher('Oversight', 'Campus'),
+    Stream: buildSubChurchesAtLevelCypher('Oversight', 'Stream'),
+    Council: buildSubChurchesAtLevelCypher('Oversight', 'Council'),
+    Governorship: buildSubChurchesAtLevelCypher('Oversight', 'Governorship'),
+  },
+  Campus: {
+    Stream: buildSubChurchesAtLevelCypher('Campus', 'Stream'),
+    Council: buildSubChurchesAtLevelCypher('Campus', 'Council'),
+    Governorship: buildSubChurchesAtLevelCypher('Campus', 'Governorship'),
+  },
+  Stream: {
+    Council: buildSubChurchesAtLevelCypher('Stream', 'Council'),
+    Governorship: buildSubChurchesAtLevelCypher('Stream', 'Governorship'),
+  },
+  Council: {
+    Governorship: buildSubChurchesAtLevelCypher('Council', 'Governorship'),
+  },
+}
+
+export type SubChurchesScope = ScopeLevel
+export type SubChurchesTarget = AggregateLevel

@@ -1,5 +1,9 @@
 import { gql } from '@apollo/client'
-import { LEVEL_COLLECTION_KEY, type ReportLevel } from './report-types'
+import {
+  LEVEL_COLLECTION_KEY,
+  type ReportLevel,
+  type SubChurchesAtLevelScope,
+} from './report-types'
 
 export type { ReportLevel }
 
@@ -132,6 +136,67 @@ export const BUSSING_SUB_CHURCHES_QUERIES = buildLevelMap(
   'BussingSubChurches',
   BUSSING_FIELDS
 )
+
+// Sub-churches-at-level: ancestor-decorated rows whose granularity is
+// picked at request time via `targetLevel`. The ancestor shape is always
+// returned in full; the FE picks which ancestor columns to display.
+const ANCESTOR_FIELDS = `
+  targetLeaderFirstName
+  targetLeaderLastName
+  targetLeaderPhone
+  ancestors {
+    level
+    name
+    leaderFirstName
+    leaderLastName
+    leaderPhone
+  }
+`
+
+const buildSubChurchesAtLevelQuery = (
+  scope: SubChurchesAtLevelScope,
+  alias: string,
+  metricFields: string
+) => {
+  const collection = LEVEL_COLLECTION_KEY[scope]
+  return gql`
+    query ${alias}${scope}(
+      $id: ID!
+      $startWeekKey: Int!
+      $endWeekKey: Int!
+      $targetLevel: String!
+    ) {
+      ${collection}(where: { id: { eq: $id } }) {
+        id
+        name
+        subChurchesReportAtLevel(
+          startWeekKey: $startWeekKey
+          endWeekKey: $endWeekKey
+          targetLevel: $targetLevel
+        ) {
+          ${metricFields}
+          ${ANCESTOR_FIELDS}
+        }
+      }
+    }
+  `
+}
+
+const buildSubChurchesAtLevelMap = (
+  alias: string,
+  selection: string
+): Record<SubChurchesAtLevelScope, ReturnType<typeof gql>> => ({
+  Council: buildSubChurchesAtLevelQuery('Council', alias, selection),
+  Stream: buildSubChurchesAtLevelQuery('Stream', alias, selection),
+  Campus: buildSubChurchesAtLevelQuery('Campus', alias, selection),
+  Oversight: buildSubChurchesAtLevelQuery('Oversight', alias, selection),
+})
+
+export const BUSSING_SUB_CHURCHES_AT_LEVEL_QUERIES =
+  buildSubChurchesAtLevelMap('BussingSubChurchesAtLevel', BUSSING_FIELDS)
+
+export const WEEKDAY_SUB_CHURCHES_AT_LEVEL_QUERIES =
+  buildSubChurchesAtLevelMap('WeekdaySubChurchesAtLevel', WEEKDAY_FIELDS)
 
 export const BACENTA_SERVICE_RECORDS_QUERY = gql`
   query BacentaWeekdayServiceRecords(

@@ -23,6 +23,9 @@ import {
   streamSubChurchesReport,
   campusSubChurchesReport,
   oversightSubChurchesReport,
+  SUB_CHURCHES_AT_LEVEL,
+  SubChurchesScope,
+  SubChurchesTarget,
 } from './weekly-report-cypher'
 import { bacentaServiceRecordsReport } from './service-records-cypher'
 
@@ -30,6 +33,20 @@ type WeekRangeArgs = {
   startWeekKey: number
   endWeekKey: number
 }
+
+type SubChurchesAtLevelArgs = WeekRangeArgs & {
+  targetLevel: string
+}
+
+const VALID_SUB_CHURCH_TARGETS: ReadonlySet<string> = new Set([
+  'Campus',
+  'Stream',
+  'Council',
+  'Governorship',
+])
+
+const isSubChurchTarget = (value: string): value is SubChurchesTarget =>
+  VALID_SUB_CHURCH_TARGETS.has(value)
 
 const createDirectoryResolver =
   (cypherQuery: string, permissionLevel: ChurchLevel) =>
@@ -71,6 +88,54 @@ const createWeeklyReportResolver =
     } catch (error) {
       throwToSentry(
         `Error getting ${permissionLevel} ${reportName} report`,
+        error
+      )
+    } finally {
+      await session.close()
+    }
+
+    return []
+  }
+
+const createSubChurchesAtLevelResolver =
+  (scope: SubChurchesScope) =>
+  async (
+    object: { id: string },
+    args: SubChurchesAtLevelArgs,
+    context: Context
+  ) => {
+    isAuth(permitLeaderAdmin(scope), context.jwt.roles)
+
+    // Validate targetLevel against the whitelist before reaching Cypher.
+    // A bogus level either trips this guard or surfaces as a 0-row return
+    // from the cypher map — we prefer the guard so callers get a useful
+    // error.
+    if (!isSubChurchTarget(args.targetLevel)) {
+      throw new Error(`Unknown targetLevel: ${args.targetLevel}`)
+    }
+    const cypher = SUB_CHURCHES_AT_LEVEL[scope]?.[args.targetLevel]
+    if (!cypher) {
+      // Should be unreachable given the SDL targets are a subset of
+      // SUB_CHURCHES_AT_LEVEL keys per scope, but guard so a future SDL
+      // edit doesn't silently break this resolver.
+      throw new Error(
+        `Sub-church target ${args.targetLevel} is not valid from scope ${scope}`
+      )
+    }
+
+    const session = context.executionContext.session()
+    try {
+      const result = await session.executeRead((tx) =>
+        tx.run(cypher, {
+          id: object.id,
+          startWeekKey: args.startWeekKey,
+          endWeekKey: args.endWeekKey,
+        })
+      )
+      return result.records[0]?.get('entries') ?? []
+    } catch (error) {
+      throwToSentry(
+        `Error getting ${scope} sub-churches @ ${args.targetLevel}`,
         error
       )
     } finally {
@@ -142,6 +207,7 @@ export const reportsResolvers = {
       'Council',
       'sub-churches'
     ),
+    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Council'),
   },
   Stream: {
     directoryReport: createDirectoryResolver(streamDirectoryReport, 'Stream'),
@@ -160,6 +226,7 @@ export const reportsResolvers = {
       'Stream',
       'sub-churches'
     ),
+    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Stream'),
   },
   Campus: {
     directoryReport: createDirectoryResolver(campusDirectoryReport, 'Campus'),
@@ -178,6 +245,7 @@ export const reportsResolvers = {
       'Campus',
       'sub-churches'
     ),
+    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Campus'),
   },
   Oversight: {
     directoryReport: createDirectoryResolver(
@@ -199,5 +267,6 @@ export const reportsResolvers = {
       'Oversight',
       'sub-churches'
     ),
+    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Oversight'),
   },
 }
