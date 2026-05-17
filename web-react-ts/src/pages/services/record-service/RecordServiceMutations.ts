@@ -216,6 +216,8 @@ export const DISPLAY_BACENTA_SERVICE = gql`
         fullName
         pictureUrl
       }
+      bankingMethod
+      bankingSlipUploadedAt
       bankingHistory {
         id
         method
@@ -292,6 +294,8 @@ export const DISPLAY_GOVERNORSHIP_SERVICE = gql`
         fullName
         pictureUrl
       }
+      bankingMethod
+      bankingSlipUploadedAt
       bankingHistory {
         id
         method
@@ -365,6 +369,8 @@ export const DISPLAY_COUNCIL_SERVICE = gql`
         fullName
         pictureUrl
       }
+      bankingMethod
+      bankingSlipUploadedAt
       bankingHistory {
         id
         method
@@ -442,6 +448,8 @@ export const DISPLAY_STREAM_SERVICE = gql`
         fullName
         pictureUrl
       }
+      bankingMethod
+      bankingSlipUploadedAt
       bankingHistory {
         id
         method
@@ -513,6 +521,8 @@ export const DISPLAY_CAMPUS_SERVICE = gql`
         fullName
         pictureUrl
       }
+      bankingMethod
+      bankingSlipUploadedAt
       bankingHistory {
         id
         method

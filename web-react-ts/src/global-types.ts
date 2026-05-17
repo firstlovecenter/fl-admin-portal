@@ -359,6 +359,8 @@ export type ServiceRecord = {
   bankingProof: boolean
   tellerConfirmationTime: string
   bankingSlip: string
+  bankingSlipUploadedAt?: string
+  bankingMethod?: 'self' | 'slip' | 'teller' | null
   transactionStatus: 'pending' | 'success' | 'failed' | 'send OTP'
   bankingSlipUploader: Member
   offeringBankedBy: Member

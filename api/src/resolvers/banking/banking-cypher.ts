@@ -246,6 +246,7 @@ SET record.transactionStatus = 'success'
 
 WITH record, bh_fromStatus
 FOREACH (_ IN CASE WHEN record:ServiceRecord THEN [1] ELSE [] END |
+  SET record.bankingMethod = 'self'
 ${appendBankingHistoryLog('record', null)}
 )
 RETURN record
@@ -300,7 +301,8 @@ WHERE record.transactionStatus IS NULL
 OR NOT record.transactionStatus IN ['pending', 'success']
 WITH record, record.transactionStatus AS bh_fromStatus
 SET record.bankingSlip = $bankingSlip,
-    record.bankingSlipUploadedAt = datetime()
+    record.bankingSlipUploadedAt = datetime(),
+    record.bankingMethod = 'slip'
 WITH record, bh_fromStatus
 MATCH (banker:Member {id: $jwt.userId})
 MERGE (banker)-[:UPLOADED_SLIP_FOR]->(record)
@@ -336,7 +338,8 @@ export const markRecordTellerConfirmed = (
   recordVar: string,
   actorVar: string
 ): string => `
-SET ${recordVar}.tellerConfirmationTime = datetime()
+SET ${recordVar}.tellerConfirmationTime = datetime(),
+    ${recordVar}.bankingMethod = 'teller'
 MERGE (${recordVar})<-[:CONFIRMED_BANKING_FOR]-(${actorVar})
 ${appendBankingHistoryLog(recordVar, actorVar)}
 `

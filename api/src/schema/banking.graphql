@@ -77,6 +77,10 @@ extend type ServiceRecord {
   transactionError: String
   confirmedBy: ID!
   bankingSlipUploadedAt: DateTime
+  # 'self' | 'slip' | 'teller' — stamped on the record at confirmation
+  # time so the FE can render a badge without inferring from which proof
+  # field happens to be set. Null on records that haven't been banked.
+  bankingMethod: String
   bankingProof: Boolean
     @cypher(
       statement: """

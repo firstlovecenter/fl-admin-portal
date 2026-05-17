@@ -112,6 +112,15 @@ const updateTransactionStatusCypher = `
   WITH r, r.transactionStatus AS bh_fromStatus
   SET r.transactionStatus = $status
 
+  // Stamp bankingMethod = 'self' on ServiceRecord settlements that the
+  // webhook flips to 'success' — same value the FE-driven success path
+  // writes, so the bankingMethod field is consistent regardless of
+  // whether Paystack's webhook or our verify call settled the record.
+  WITH r, bh_fromStatus
+  FOREACH (_ IN CASE WHEN r:ServiceRecord AND $status = 'success' THEN [1] ELSE [] END |
+    SET r.bankingMethod = 'self'
+  )
+
   WITH r, bh_fromStatus
   FOREACH (_ IN CASE WHEN r:ServiceRecord THEN [1] ELSE [] END |
     CREATE (r)-[:HAS_BANKING_HISTORY]->(:BankingHistoryLog {
