@@ -189,6 +189,18 @@ export const permitArrivals = (churchLevel: ChurchLevel): Role[] => {
 export const permitArrivalsCounter = (): Role[] => {
   return ['arrivalsCounterStream']
 }
+
+// True when the user's only operational role is Stream Arrivals Counter.
+// `fishers` is ignored because it gates the Accounts page only and does not
+// imply any church-leadership / dashboard responsibility — counters commonly
+// also carry the `fishers` marker.
+// Empty roles → false; counter-only must be an affirmative claim.
+export const isArrivalsCounterOnly = (roles?: Role[] | null): boolean => {
+  if (!roles?.length) return false
+  const operational = roles.filter((r) => r !== 'fishers')
+  if (!operational.length) return false
+  return operational.every((r) => r === 'arrivalsCounterStream')
+}
 export const permitArrivalsPayer = (): Role[] => {
   return ['arrivalsPayerCouncil']
 }

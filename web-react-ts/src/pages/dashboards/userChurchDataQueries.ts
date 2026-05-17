@@ -645,6 +645,13 @@ export const SERVANTS_STREAM_ARRIVALS_COUNTER = gql`
           lastName
           fullName
         }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
       }
     }
   }

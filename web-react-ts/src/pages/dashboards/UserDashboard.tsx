@@ -22,7 +22,9 @@ import { getWeekNumber, getISOWeekYear } from 'global-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
+import { isArrivalsCounterOnly } from 'permission-utils'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
+import ArrivalsCounterDashboard from './ArrivalsCounterDashboard'
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
 import { Badge } from 'components/ui/badge'
@@ -152,7 +154,7 @@ const highlightName = (text: string, name: string): React.ReactNode => {
   )
 }
 
-const UserDashboard = () => {
+const FullUserDashboard = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
@@ -1173,6 +1175,17 @@ const WeeklyTaskCard = ({
       )}
     </div>
   )
+}
+
+const UserDashboard = () => {
+  const { currentUser } = useContext(MemberContext)
+  // Counter-only users have a single operational responsibility (counting
+  // arrivals at the centre). Render a dashboard scoped to that — no record
+  // service / add member / bank service surfaces.
+  if (isArrivalsCounterOnly(currentUser?.roles)) {
+    return <ArrivalsCounterDashboard />
+  }
+  return <FullUserDashboard />
 }
 
 export default UserDashboard

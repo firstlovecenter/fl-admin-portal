@@ -1,15 +1,28 @@
+import { useContext } from 'react'
 import { NavLink } from 'react-router-dom'
 import { cn } from 'components/lib/utils'
 import { primaryNav } from './navigation-config'
+import useAuth from 'auth/useAuth'
+import { MemberContext } from 'contexts/MemberContext'
+import { isArrivalsCounterOnly } from 'permission-utils'
 
 export const BottomNav = () => {
+  const { isAuthorised } = useAuth()
+  const { currentUser } = useContext(MemberContext)
+  const counterOnly = isArrivalsCounterOnly(currentUser?.roles)
+  const visibleItems = primaryNav.filter((item) => {
+    if (item.hideForArrivalsCounterOnly && counterOnly) return false
+    if (item.roles && !isAuthorised(item.roles)) return false
+    if (item.additionalRoles && !isAuthorised(item.additionalRoles)) return false
+    return true
+  })
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur-md"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <ul className="flex items-stretch justify-around">
-        {primaryNav.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon
           return (
             <li key={item.to} className="flex-1">
