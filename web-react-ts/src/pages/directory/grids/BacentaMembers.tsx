@@ -12,7 +12,14 @@ const BacentaMembers = () => {
       parentId={bacentaId}
       parentTypename="Bacenta"
       pluckParent={(data) => data?.bacentas?.[0]}
-      getHeading={(parent) => (parent ? `${parent.name} Bacenta` : null)}
+      getHeading={(parent) =>
+        parent ? (
+          <>
+            {parent.name}{' '}
+            <span className="text-members">Bacenta</span>
+          </>
+        ) : null
+      }
     />
   )
 }

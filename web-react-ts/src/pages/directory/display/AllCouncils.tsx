@@ -1,6 +1,7 @@
 import { useQuery } from '@apollo/client'
 import RoleView from 'auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
@@ -76,30 +77,27 @@ const DisplayAllCouncils = () => {
   return (
     <ApolloWrapper loading={loading} data={data} error={error}>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        {/* TODO(SYN-145): migrate to <StickyPageHeader> */}
-        <div className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
-          <header>
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 lg:px-6">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Directory
-                </p>
-                <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {stream?.name ? `${stream.name} ` : ''}
-                  <span className="text-members">Councils</span>
-                </h1>
-              </div>
-              <RoleView roles={permitAdmin('Stream')} directoryLock>
-                <Link to="/council/addcouncil" className="shrink-0">
-                  <Button size="sm" className="h-11 gap-2">
-                    <Plus className="size-4" />
-                    <span className="hidden sm:inline">Add Council</span>
-                    <span className="sm:hidden">Add</span>
-                  </Button>
-                </Link>
-              </RoleView>
+        <StickyPageHeader bare>
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 pr-16 md:pr-4 lg:px-6">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Directory
+              </p>
+              <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {stream?.name ? `${stream.name} ` : ''}
+                <span className="text-members">Councils</span>
+              </h1>
             </div>
-          </header>
+            <RoleView roles={permitAdmin('Stream')} directoryLock>
+              <Link to="/council/addcouncil" className="shrink-0">
+                <Button size="sm" className="h-11 gap-2">
+                  <Plus className="size-4" />
+                  <span className="hidden sm:inline">Add Council</span>
+                  <span className="sm:hidden">Add</span>
+                </Button>
+              </Link>
+            </RoleView>
+          </div>
           <div className="border-t border-border lg:hidden">
             <div className="mx-auto max-w-6xl px-4 py-2">
               <div className="relative">
@@ -115,7 +113,7 @@ const DisplayAllCouncils = () => {
               </div>
             </div>
           </div>
-        </div>
+        </StickyPageHeader>
 
         <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">

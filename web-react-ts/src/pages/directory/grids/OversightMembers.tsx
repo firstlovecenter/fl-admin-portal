@@ -12,7 +12,14 @@ const OversightMembers = () => {
       parentId={oversightId}
       parentTypename="Oversight"
       pluckParent={(data) => data?.oversights?.[0]}
-      getHeading={(parent) => (parent ? parent.name : null)}
+      getHeading={(parent) =>
+        parent ? (
+          <>
+            {parent.name}{' '}
+            <span className="text-members">Members</span>
+          </>
+        ) : null
+      }
     />
   )
 }

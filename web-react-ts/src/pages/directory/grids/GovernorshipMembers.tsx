@@ -12,7 +12,14 @@ export const GovernorshipMembers = () => {
       parentId={governorshipId}
       parentTypename="Governorship"
       pluckParent={(data) => data?.governorships?.[0]}
-      getHeading={(parent) => (parent ? `${parent.name} Governorship` : null)}
+      getHeading={(parent) =>
+        parent ? (
+          <>
+            {parent.name}{' '}
+            <span className="text-members">Governorship</span>
+          </>
+        ) : null
+      }
     />
   )
 }

@@ -29,6 +29,7 @@ import { cn } from 'components/lib/utils'
 import AssistantMessageContent from './AssistantMessageContent'
 import ChatHistorySidebar from './ChatHistorySidebar'
 import TodaysTipBanner from './TodaysTipBanner'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import {
   CHAT_SESSION_BY_ID,
   MY_CHAT_SESSIONS,
@@ -197,33 +198,34 @@ const AiAssistant = () => {
   return (
     <div className="flex h-svh flex-col bg-background pb-[env(safe-area-inset-bottom)]">
       {/* ── Header (sticky, mobile-first) ─────────────────────────────── */}
-      {/* TODO(SYN-145): migrate to <StickyPageHeader> */}
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/90 px-4 py-3 pr-14 backdrop-blur md:pr-6">
-        <MobileHistoryTrigger
-          open={mobileHistoryOpen}
-          onOpenChange={setMobileHistoryOpen}
-          sidebar={
-            <ChatHistorySidebar
-              sessions={sessions}
-              loading={sessionsLoading}
-              activeSessionId={sessionId}
-              churchId={churchId}
-              onSelectSession={handleSelectSession}
-              onSessionDeleted={handleSessionDeleted}
-            />
-          }
-        />
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            AI <span className="text-arrivals">Assistant</span>
-          </h1>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {selectedScope?.churchName
-              ? `Anchored to ${selectedScope.churchName}.`
-              : 'Pick a church scope to anchor the conversation.'}
-          </p>
+      <StickyPageHeader bare className="bg-background/90">
+        <div className="flex items-center gap-3 px-4 py-3 pr-16 md:pr-4">
+          <MobileHistoryTrigger
+            open={mobileHistoryOpen}
+            onOpenChange={setMobileHistoryOpen}
+            sidebar={
+              <ChatHistorySidebar
+                sessions={sessions}
+                loading={sessionsLoading}
+                activeSessionId={sessionId}
+                churchId={churchId}
+                onSelectSession={handleSelectSession}
+                onSessionDeleted={handleSessionDeleted}
+              />
+            }
+          />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              AI <span className="text-arrivals">Assistant</span>
+            </h1>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {selectedScope?.churchName
+                ? `Anchored to ${selectedScope.churchName}.`
+                : 'Pick a church scope to anchor the conversation.'}
+            </p>
+          </div>
         </div>
-      </header>
+      </StickyPageHeader>
 
       {/* ── Body ──────────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden lg:grid lg:grid-cols-[280px_1fr]">

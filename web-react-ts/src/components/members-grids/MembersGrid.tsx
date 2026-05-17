@@ -179,7 +179,7 @@ const MembersGrid = ({
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <RoleView roles={[...permitLeaderAdmin('Bacenta')]}>
+          <RoleView roles={permitLeaderAdmin('Bacenta')}>
             <Link to="/member/addmember">
               <Button
                 variant="outline"

@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
@@ -431,31 +432,28 @@ const CouncilBacentas = () => {
   return (
     <ApolloWrapper loading={loading} data={data} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        {/* TODO(SYN-145): migrate to <StickyPageHeader> */}
-        <div className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
-          <header>
-            <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 lg:px-6">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-11 shrink-0"
-                asChild
-              >
-                <Link to="/council/displaydetails" aria-label="Back to council">
-                  <ArrowLeft className="size-5" />
-                </Link>
-              </Button>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Directory
-                </p>
-                <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {council?.name ? `${council.name} ` : ''}
-                  <span className="text-members">Bacentas</span>
-                </h1>
-              </div>
+        <StickyPageHeader bare>
+          <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 pr-16 md:pr-4 lg:px-6">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-11 shrink-0"
+              asChild
+            >
+              <Link to="/council/displaydetails" aria-label="Back to council">
+                <ArrowLeft className="size-5" />
+              </Link>
+            </Button>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Directory
+              </p>
+              <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {council?.name ? `${council.name} ` : ''}
+                <span className="text-members">Bacentas</span>
+              </h1>
             </div>
-          </header>
+          </div>
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
               <BreadcrumbList className="text-xs">
@@ -484,7 +482,7 @@ const CouncilBacentas = () => {
               </div>
             </div>
           </div>
-        </div>
+        </StickyPageHeader>
 
         <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">

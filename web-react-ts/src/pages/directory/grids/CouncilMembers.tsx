@@ -12,7 +12,14 @@ const CouncilMembers = () => {
       parentId={councilId}
       parentTypename="Council"
       pluckParent={(data) => data?.councils?.[0]}
-      getHeading={(parent) => (parent ? `${parent.name} Council` : null)}
+      getHeading={(parent) =>
+        parent ? (
+          <>
+            {parent.name}{' '}
+            <span className="text-members">Council</span>
+          </>
+        ) : null
+      }
     />
   )
 }

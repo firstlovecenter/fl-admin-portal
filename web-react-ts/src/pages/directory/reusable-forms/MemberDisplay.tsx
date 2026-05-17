@@ -413,9 +413,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
         </DialogContent>
       </Dialog>
 
-      {/* ── Top action bar — full width, sticky ──
-          Height: py-3 (24px) + min-h-[44px] button + border-b (1px) = 69px.
-          Left aside uses lg:top-[69px] to match. */}
+      {/* ── Top action bar — full width, sticky ── */}
       <StickyPageHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

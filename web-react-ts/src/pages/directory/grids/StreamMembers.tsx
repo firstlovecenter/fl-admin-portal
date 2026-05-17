@@ -12,7 +12,14 @@ const StreamMembers = () => {
       parentId={streamId}
       parentTypename="Stream"
       pluckParent={(data) => data?.streams?.[0]}
-      getHeading={(parent) => (parent ? `${parent.name} Stream` : null)}
+      getHeading={(parent) =>
+        parent ? (
+          <>
+            {parent.name}{' '}
+            <span className="text-members">Stream</span>
+          </>
+        ) : null
+      }
     />
   )
 }

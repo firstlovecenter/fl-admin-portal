@@ -16,6 +16,9 @@ import { cn } from 'components/lib/utils'
  * it adds the `shrink-0` + `flex items-center gap-2` defaults so the
  * actions never wrap mid-icon.
  *
+ * The chrome uses `z-10` so it stays *below* the `z-20` floating shell
+ * controls (sidebar toggle, PWA BackButton). Do not raise the z-index.
+ *
  * For multi-row headers (search bars, breadcrumbs above titles, etc.) just
  * render multiple rows as children — the chrome and right-side reservation
  * still apply. If a consumer truly needs full control over the inner
