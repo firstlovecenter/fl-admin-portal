@@ -28,7 +28,26 @@
       "@typescript-eslint/no-explicit-any": "off",
       "no-relative-import-paths/no-relative-import-paths": "off",
       "fl-cypher/no-interpolated-cypher": "error"
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "src/resolvers/downloads/downloads-cypher.ts"
+        ],
+        "rules": {
+          "fl-cypher/no-interpolated-cypher": [
+            "error",
+            {
+              "allowedIdentifiers": [
+                "COMMON_OPTIONALS",
+                "LEADER_OPTIONALS",
+                "ROW_RETURN"
+              ]
+            }
+          ]
+        }
+      }
+    ]
   },
   "lint-staged": {
     "*.{ts, js}": [

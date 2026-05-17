@@ -11,6 +11,16 @@
 // `web-react-ts/.../DownloadMembershipList.tsx`. Adding a new column is a
 // three-file change. Removing a column from RETURN without removing the
 // matching FE/BE entry leaves blank cells in the CSV.
+//
+// The 7 per-level templates below compose three static Cypher fragments
+// (`LEADER_OPTIONALS`, `COMMON_OPTIONALS`, `ROW_RETURN`) via `${…}` so the
+// column list and the leader join live in one place each. `fl-cypher/
+// no-interpolated-cypher` (ADR-012) is configured in `api/package.json` with
+// an `allowedIdentifiers` override that exempts exactly these three
+// identifiers in exactly this file — see the rule's docblock for why bare
+// `Identifier` references to compile-time `const FOO = `…`` fragments carry
+// no injection risk. Any new `${…}` introduced here MUST be a reference to
+// a fragment that is also listed in the override, or it will be flagged.
 
 import type { ChurchLevel } from '../utils/types'
 
@@ -201,52 +211,76 @@ export const ROWS_BY_LEVEL: Record<DownloadLevel, string> = {
 // `LEADS`. A 0-row return surfaces as the existing 404 path in the
 // handler so we don't leak whether the id exists vs is out-of-scope.
 //
-// Statements are written out per-level (rather than composed via a
-// shared fragment) because `fl-cypher/no-interpolated-cypher` (ADR-012)
-// forbids `${}` interpolation inside Cypher and `prefer-template`
-// forbids string concatenation as the workaround. Duplication is the
-// honest tradeoff.
+// The authority check is split into two adjacent `EXISTS` blocks instead
+// of `EXISTS { … WHERE scoped = n OR (scoped)-[:HAS*1..6]->(n) }`. The
+// previous single-block form left the Cypher 5 planner free to evaluate
+// the variable-length walk eagerly even when the direct branch was true,
+// because the planner doesn't always short-circuit `OR` across pattern
+// variants. Splitting forces a strict-OR shape: the direct lookup is a
+// plain `:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR` index hit with zero traversal,
+// and the spine-walk variant only runs when the direct check fails.
+//
+// Each level's statement is written out longhand because the `MATCH (n:
+// <Label> {id: $id})` line is the only piece that varies per level and
+// `fl-cypher/no-interpolated-cypher` (ADR-012) forbids `${}` for the
+// label. The two `EXISTS` blocks are identical text across levels and
+// could be lifted to a shared fragment under the file's static-fragment
+// override, but the duplication is local and obvious — keep it inline.
 export const NAME_QUERY_BY_LEVEL: Record<DownloadLevel, string> = {
   Bacenta: `MATCH (n:Bacenta {id: $id})
     WHERE EXISTS {
+      MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(n)
+    } OR EXISTS {
       MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(scoped)
-      WHERE scoped = n OR (scoped)-[:HAS*1..6]->(n)
+      WHERE (scoped)-[:HAS*1..6]->(n)
     }
     RETURN n.name AS name`,
   Governorship: `MATCH (n:Governorship {id: $id})
     WHERE EXISTS {
+      MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(n)
+    } OR EXISTS {
       MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(scoped)
-      WHERE scoped = n OR (scoped)-[:HAS*1..6]->(n)
+      WHERE (scoped)-[:HAS*1..6]->(n)
     }
     RETURN n.name AS name`,
   Council: `MATCH (n:Council {id: $id})
     WHERE EXISTS {
+      MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(n)
+    } OR EXISTS {
       MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(scoped)
-      WHERE scoped = n OR (scoped)-[:HAS*1..6]->(n)
+      WHERE (scoped)-[:HAS*1..6]->(n)
     }
     RETURN n.name AS name`,
   Stream: `MATCH (n:Stream {id: $id})
     WHERE EXISTS {
+      MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(n)
+    } OR EXISTS {
       MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(scoped)
-      WHERE scoped = n OR (scoped)-[:HAS*1..6]->(n)
+      WHERE (scoped)-[:HAS*1..6]->(n)
     }
     RETURN n.name AS name`,
   Campus: `MATCH (n:Campus {id: $id})
     WHERE EXISTS {
+      MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(n)
+    } OR EXISTS {
       MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(scoped)
-      WHERE scoped = n OR (scoped)-[:HAS*1..6]->(n)
+      WHERE (scoped)-[:HAS*1..6]->(n)
     }
     RETURN n.name AS name`,
   Oversight: `MATCH (n:Oversight {id: $id})
     WHERE EXISTS {
+      MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(n)
+    } OR EXISTS {
       MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(scoped)
-      WHERE scoped = n OR (scoped)-[:HAS*1..6]->(n)
+      WHERE (scoped)-[:HAS*1..6]->(n)
     }
     RETURN n.name AS name`,
   Denomination: `MATCH (n:Denomination {id: $id})
     WHERE EXISTS {
+      MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(n)
+    } OR EXISTS {
       MATCH (caller:Active:Member {id: $userId})-[:LEADS|DEPUTY_LEADS|IS_ADMIN_FOR]->(scoped)
-      WHERE scoped = n OR (scoped)-[:HAS*1..6]->(n)
+      WHERE (scoped)-[:HAS*1..6]->(n)
     }
     RETURN n.name AS name`,
 }

@@ -37,6 +37,28 @@ type Member @node{
       columnName: "stream_name"
     )
   # Church Details
+  #
+  # SECURITY NOTE — self-only gate
+  # ------------------------------
+  # `members` and `memberCount` below are gated on `this.id = $jwt.userId`,
+  # i.e. only the queried Member may be the caller. This was tightened in
+  # the SYN-95 / directory-read hardening pass to close a cross-tier PII
+  # bypass: previously, ANY caller could query
+  # `Member(id: "<other-member>") { members { … } }` and receive that
+  # member's leadership tree.
+  #
+  # The intended product semantic was "members under the leaders I lead or
+  # admin." The current rule is mechanically safe but broader than that —
+  # it makes the field unusable for legitimate org-chart traversals where
+  # the caller IS a servant of `this` but is not `this` themselves
+  # (e.g. an admin viewing a leader's downline).
+  #
+  # SYN-146 item 5 (TODO) — replace `this.id = $jwt.userId` with a
+  # per-target authority predicate: the caller must hold any servant edge
+  # (`LEADS`, `DEPUTY_LEADS`, `IS_ADMIN_FOR`) that reaches `this`'s spine
+  # root via `[:HAS*0..6]`. No FE caller is broken by the current gate —
+  # `MembersGrid` does not consume these fields — so the v2 rollout can
+  # happen on its own schedule.
   members(
     limit: Int! = 1000
     offset: Int! = 0
@@ -468,8 +490,14 @@ type Denomination implements Church @node
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'adminDenomination'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -630,8 +658,14 @@ type Oversight implements Church @node
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'adminDenomination', 'adminOversight'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -791,8 +825,14 @@ type Campus implements Church @node
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'adminDenomination', 'adminOversight', 'adminCampus'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -971,8 +1011,14 @@ type Stream implements Church @node
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -1124,8 +1170,14 @@ type Council implements Church @node
   pastorCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -1264,8 +1316,14 @@ type Governorship implements Church @node
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -1425,8 +1483,14 @@ type Bacenta implements Church @node
   pastorCount: Int!
     @cypher(
       statement: """
-      MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderBacenta', 'leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
+        THEN COUNT {
+          MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )

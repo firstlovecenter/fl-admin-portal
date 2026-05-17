@@ -206,6 +206,21 @@ MERGE (log)-[:RECORDED_ON]->(today)
 DETACH DELETE member
 `
 
+// `Member.basonta` (= `(:Member)-[:BELONGS_TO]->(:Basonta)`) is modelled
+// as 1:1 (SYN-147). Every write path in this repo that creates such a
+// rel MUST first delete any pre-existing one from the same member, even
+// when the path "knows" it shouldn't have one. The reference template is
+// `UpdateMemberBasonta` in `api/src/schema/directory-crud.graphql` —
+// `OPTIONAL MATCH (member)-[previous:BELONGS_TO]->(:Basonta) DELETE
+// previous` BEFORE `MERGE (member)-[:BELONGS_TO]->(basonta)`. Neo4j 5
+// has no native "single rel between two nodes" constraint, so this
+// discipline at the write site is the guard.
+//
+// `createMember` below skips the explicit pre-delete because it CREATEs
+// a brand-new `member` node in the same transaction — that node cannot
+// hold any prior rels. Any future refactor that turns the CREATE into a
+// MATCH/MERGE on a re-used Member id MUST add the OPTIONAL MATCH +
+// DELETE pattern before the basonta MERGE.
 export const createMember = `
 MATCH (bacenta:Bacenta {id: $bacenta})
 CREATE (member:Active:Member:IDL:Deer:User {whatsappNumber:$whatsappNumber})
@@ -276,13 +291,24 @@ CREATE (member:Active:Member:IDL:Deer:User {whatsappNumber:$whatsappNumber})
             bacenta:bacenta{.id,governorship:governorship{.id}}}
       `
 
+// SYN-147: Inactive members may carry a stale `:Basonta` BELONGS_TO rel
+// from before they were made inactive. Without the OPTIONAL MATCH +
+// DELETE below, the basonta CALL block further down (which MERGEs the
+// new basonta) would produce a duplicate `(:Member)-[:BELONGS_TO]->
+// (:Basonta)` for the reactivated member — the same root cause behind
+// the 22 duplicates discovered on prod in 2026-05.
 export const activateInactiveMember = `
 MATCH (member:Inactive:Member {id: $id})
 MATCH (bacenta:Bacenta {id: $bacenta})
 MATCH (member)-[r1:BELONGS_TO]->(oldChurch) WHERE oldChurch:Bacenta OR oldChurch:ClosedBacenta
 MATCH (member)-[r2:HAS_MARITAL_STATUS]-> (maritalStatus)
 MATCH  (member)-[r3:WAS_BORN_ON]->(date)
-DELETE r1, r2, r3
+// MUST stay in its own OPTIONAL MATCH clause: Cypher only enforces
+// relationship-isomorphism within a single MATCH, so collapsing this into
+// the r1 clause above would let the planner bind r1 == r4 and silently
+// skip the Basonta cleanup. SYN-147.
+OPTIONAL MATCH (member)-[r4:BELONGS_TO]->(:Basonta)
+DELETE r1, r2, r3, r4
 
 WITH member, bacenta
   SET

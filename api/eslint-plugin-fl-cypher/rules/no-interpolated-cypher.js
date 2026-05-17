@@ -12,6 +12,33 @@
  * characters inside the string, not template expressions, so the rule never
  * flags them.
  *
+ * ## Static-fragment allowlist
+ *
+ * The optional `allowedIdentifiers` rule option exempts template expressions
+ * whose only contents are Identifier references to a configured list of
+ * compile-time Cypher fragments (e.g. `${ROW_RETURN}`). Such fragments are
+ * declared once as `const FOO = `…``, contain NO interpolation themselves, and
+ * are composed into per-query templates purely to avoid duplicating long
+ * static SQL/Cypher blocks. They are equivalent to inlining and carry no
+ * injection risk — but `prefer-template` blocks plain string concatenation as
+ * the workaround, so we let the rule reason about them explicitly.
+ *
+ * Configure per-file in `.eslintrc` / package.json `overrides`:
+ *
+ *   {
+ *     "files": ["src/foo/bar-cypher.ts"],
+ *     "rules": {
+ *       "fl-cypher/no-interpolated-cypher": [
+ *         "error",
+ *         { "allowedIdentifiers": ["ROW_RETURN", "LEADER_OPTIONALS"] }
+ *       ]
+ *     }
+ *   }
+ *
+ * A template is only exempted when EVERY interpolated expression is a bare
+ * Identifier listed in the allowlist. Any non-Identifier expression (member
+ * access, call, ternary, even a parenthesised identifier) re-arms the rule.
+ *
  * ADR-012: Cypher is parameterised; raw string interpolation is forbidden.
  * @see api/eslint-plugin-fl-cypher/
  */
@@ -46,17 +73,44 @@ module.exports = {
         'Pass values through $param bindings and the tx.run() params object ' +
         'instead (ADR-012).',
     },
-    schema: [],
+    schema: [
+      {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          allowedIdentifiers: {
+            type: 'array',
+            items: { type: 'string' },
+            uniqueItems: true,
+          },
+        },
+      },
+    ],
   },
 
   create(context) {
     const filename = context.getFilename()
     const inCypherFile = isCypherFile(filename)
+    const [options = {}] = context.options || []
+    const allowedIdentifiers = new Set(options.allowedIdentifiers || [])
 
     return {
       TemplateLiteral(node) {
         // No expressions → no interpolation, nothing to flag.
         if (node.expressions.length === 0) return
+
+        // Allow templates whose interpolations are exclusively references to
+        // configured static-fragment identifiers. These are equivalent to
+        // inlining the fragment text and cannot carry user input.
+        if (
+          allowedIdentifiers.size > 0 &&
+          node.expressions.every(
+            (expr) =>
+              expr.type === 'Identifier' && allowedIdentifiers.has(expr.name),
+          )
+        ) {
+          return
+        }
 
         const rawText = joinQuasis(node)
 

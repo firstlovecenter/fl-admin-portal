@@ -89,6 +89,28 @@ tester.run('no-interpolated-cypher', rule, {
       filename: NORMAL_FILE,
       code: "const err = `SET operation failed for id: ${id}`",
     },
+
+    // 8. allowedIdentifiers exempts a Cypher template whose interpolations
+    //    are all bare references to configured static fragments.
+    {
+      filename: CYPHER_FILE,
+      code: `
+        const ROW_RETURN = \`RETURN m.id\`
+        const q = \`MATCH (m:Member) \${ROW_RETURN}\`
+      `,
+      options: [{ allowedIdentifiers: ['ROW_RETURN'] }],
+    },
+
+    // 9. allowedIdentifiers exempts a multi-fragment composition.
+    {
+      filename: CYPHER_FILE,
+      code: `
+        const LEADERS = \`OPTIONAL MATCH (l:Leader) RETURN l\`
+        const ROWS = \`RETURN m\`
+        const q = \`MATCH (m:Member) \${LEADERS} \${ROWS}\`
+      `,
+      options: [{ allowedIdentifiers: ['LEADERS', 'ROWS'] }],
+    },
   ],
 
   // -------------------------------------------------------------------------
@@ -158,6 +180,42 @@ tester.run('no-interpolated-cypher', rule, {
     {
       filename: CYPHER_FILE,
       code: 'const q = `some text ${dynamic} value`',
+      errors: [{ messageId: 'noCypherInterpolation' }],
+    },
+
+    // 9. allowedIdentifiers does NOT exempt a non-Identifier expression
+    //    (e.g. property access) even when allowlisted name appears.
+    {
+      filename: CYPHER_FILE,
+      code: `
+        const obj = { ROW_RETURN: 'RETURN m' }
+        const q = \`MATCH (m:Member) \${obj.ROW_RETURN}\`
+      `,
+      options: [{ allowedIdentifiers: ['ROW_RETURN'] }],
+      errors: [{ messageId: 'noCypherInterpolation' }],
+    },
+
+    // 10. allowedIdentifiers does NOT exempt a non-allowlisted identifier.
+    {
+      filename: CYPHER_FILE,
+      code: `
+        const userInput = 'ANY THING'
+        const q = \`MATCH (m:Member {id: \${userInput}}) RETURN m\`
+      `,
+      options: [{ allowedIdentifiers: ['ROW_RETURN'] }],
+      errors: [{ messageId: 'noCypherInterpolation' }],
+    },
+
+    // 11. allowedIdentifiers requires ALL expressions to be allowlisted —
+    //     a mix of an allowlisted fragment and an unsafe identifier flags.
+    {
+      filename: CYPHER_FILE,
+      code: `
+        const ROW_RETURN = 'RETURN m'
+        const unsafe = 'ANY THING'
+        const q = \`MATCH (m:Member {id: \${unsafe}}) \${ROW_RETURN}\`
+      `,
+      options: [{ allowedIdentifiers: ['ROW_RETURN'] }],
       errors: [{ messageId: 'noCypherInterpolation' }],
     },
   ],
