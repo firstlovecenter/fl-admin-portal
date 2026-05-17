@@ -95,7 +95,10 @@ Bacenta-scope Weekday detail report — higher levels stay on the weekly
 aggregate shape (`WeeklyChurchReportEntry`) because per-record granularity
 explodes the row count.
 """
-type ServiceRecordDetail @node{
+# ServiceRecordDetail is a denormalised report projection (income, cash,
+# onlineGiving). The aggregation job writes it via custom Cypher. Suppress
+# auto-gen mutations so a logged-in user cannot fabricate report rows.
+type ServiceRecordDetail @node @mutation(operations: []) {
   id: ID!
   churchId: ID!
   churchName: String!

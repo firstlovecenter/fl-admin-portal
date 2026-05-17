@@ -1,4 +1,11 @@
-type AggregateServiceRecord implements HadService @node{
+# Aggregate*Record nodes are model-A snapshots written exclusively by the
+# weekly aggregation background jobs (ADR-008 / ADR-014). The Cypher write
+# is idempotent (MERGE … SET, keyed on church-week-year). Suppress the
+# auto-gen create/update/delete mutations so a logged-in user cannot
+# fabricate or overwrite aggregate income/attendance figures.
+type AggregateServiceRecord implements HadService
+  @node
+  @mutation(operations: []) {
   id: ID!
   week: Int!
   year: Int!
@@ -8,7 +15,7 @@ type AggregateServiceRecord implements HadService @node{
   numberOfServices: Int
 }
 
-type AggregateBussingRecord @node{
+type AggregateBussingRecord @node @mutation(operations: []) {
   id: ID!
   week: Int!
   year: Int!
@@ -274,7 +281,7 @@ extend type Denomination {
     )
 }
 
-type AggregateStageAttendanceRecord @node{
+type AggregateStageAttendanceRecord @node @mutation(operations: []) {
   id: ID!
   week: Int!
   year: Int!

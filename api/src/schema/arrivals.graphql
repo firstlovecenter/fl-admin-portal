@@ -1083,7 +1083,11 @@ extend type Bacenta {
   code: Int!
 }
 
-type BussingRecord implements Record @node{
+# BussingRecord carries money (bussingTopUp, momoNumber, vehicleTopUp) and
+# is written exclusively through custom resolvers (RecordBussing,
+# StartBussing, BussingPaymentInitiation, …). Suppress auto-gen mutations
+# so a logged-in user cannot overwrite arrivals payout fields directly.
+type BussingRecord implements Record @node @mutation(operations: []) {
   id: ID!
 
   week: Int!

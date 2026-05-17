@@ -372,7 +372,13 @@ type TimeGraph implements TimeGraphNode @node{
   bussingDate: [BussingRecord!]! @relationship(type: "BUSSED_ON", direction: IN)
 }
 
-type HistoryLog @node{
+# Directory audit log — written exclusively by the servant factory and a
+# handful of other custom resolvers when leadership / membership state
+# changes. The whole point of an audit log is that no end-user can
+# fabricate or rewrite entries — suppress auto-gen mutations to enforce
+# that invariant. Reads stay open: anyone authorised to see a church can
+# see its directory history via the relationship traversal.
+type HistoryLog @node @mutation(operations: []) {
   id: ID! @id
   timeStamp: DateTime
   historyRecord: String #leader was transferred to
