@@ -7,6 +7,7 @@ export const MEMBERSHIP_DOWNLOAD_PATHS = {
   Stream: '/download-reports/stream/membership',
   Campus: '/download-reports/campus/membership',
   Oversight: '/download-reports/oversight/membership',
+  Denomination: '/download-reports/denomination/membership',
 } as const
 
 export type MembershipDownloadLevel = keyof typeof MEMBERSHIP_DOWNLOAD_PATHS

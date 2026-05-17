@@ -6,18 +6,20 @@ import {
   GET_BACENTA_MEMBERS,
   GET_CAMPUS_MEMBERS,
   GET_COUNCIL_MEMBERS,
+  GET_DENOMINATION_MEMBERS,
   GET_GOVERNORSHIP_MEMBERS,
   GET_OVERSIGHT_MEMBERS,
   GET_STREAM_MEMBERS,
 } from './GridQueries'
 
 type SupportedChurchType =
-  | 'Bacenta'
-  | 'Governorship'
-  | 'Council'
-  | 'Stream'
-  | 'Campus'
+  | 'Denomination'
   | 'Oversight'
+  | 'Campus'
+  | 'Stream'
+  | 'Council'
+  | 'Governorship'
+  | 'Bacenta'
 
 type LevelConfig = {
   query: DocumentNode
@@ -26,35 +28,40 @@ type LevelConfig = {
 }
 
 const LEVEL_CONFIGS: Record<SupportedChurchType, LevelConfig> = {
-  Bacenta: {
-    query: GET_BACENTA_MEMBERS,
-    pluckKey: 'bacentas',
-    parentTypename: 'Bacenta',
+  Denomination: {
+    query: GET_DENOMINATION_MEMBERS,
+    pluckKey: 'denominations',
+    parentTypename: 'Denomination',
   },
-  Governorship: {
-    query: GET_GOVERNORSHIP_MEMBERS,
-    pluckKey: 'governorships',
-    parentTypename: 'Governorship',
-  },
-  Council: {
-    query: GET_COUNCIL_MEMBERS,
-    pluckKey: 'councils',
-    parentTypename: 'Council',
-  },
-  Stream: {
-    query: GET_STREAM_MEMBERS,
-    pluckKey: 'streams',
-    parentTypename: 'Stream',
+  Oversight: {
+    query: GET_OVERSIGHT_MEMBERS,
+    pluckKey: 'oversights',
+    parentTypename: 'Oversight',
   },
   Campus: {
     query: GET_CAMPUS_MEMBERS,
     pluckKey: 'campuses',
     parentTypename: 'Campus',
   },
-  Oversight: {
-    query: GET_OVERSIGHT_MEMBERS,
-    pluckKey: 'oversights',
-    parentTypename: 'Oversight',
+  Stream: {
+    query: GET_STREAM_MEMBERS,
+    pluckKey: 'streams',
+    parentTypename: 'Stream',
+  },
+  Council: {
+    query: GET_COUNCIL_MEMBERS,
+    pluckKey: 'councils',
+    parentTypename: 'Council',
+  },
+  Governorship: {
+    query: GET_GOVERNORSHIP_MEMBERS,
+    pluckKey: 'governorships',
+    parentTypename: 'Governorship',
+  },
+  Bacenta: {
+    query: GET_BACENTA_MEMBERS,
+    pluckKey: 'bacentas',
+    parentTypename: 'Bacenta',
   },
 }
 

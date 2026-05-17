@@ -16,8 +16,23 @@ import type { ChurchLevel } from '../utils/types'
 // imported into spreadsheets that can sort downstream. The 5-row preview
 // (rendered via the GraphQL `members(limit: 5)` field on each level) does
 // have an ORDER BY because it's bounded.
+//
+// Every export emits the full upward hierarchy from Oversight down to
+// Bacenta so a Denomination/Oversight/Campus/Stream/Council CSV is
+// self-describing — the consumer can see which Council a Bacenta belongs
+// to without joining against another sheet. Higher-level columns are
+// repeated for every member row (denormalised on purpose for spreadsheet
+// use).
 const ROW_RETURN = `
 RETURN
+  oversight.name AS oversight,
+  oversightLeader.firstName + ' ' + oversightLeader.lastName AS oversightLeader,
+  campus.name AS campus,
+  campusLeader.firstName + ' ' + campusLeader.lastName AS campusLeader,
+  stream.name AS stream,
+  streamLeader.firstName + ' ' + streamLeader.lastName AS streamLeader,
+  council.name AS council,
+  councilLeader.firstName + ' ' + councilLeader.lastName AS councilLeader,
   governorship.name AS governorship,
   governorshipLeader.firstName + ' ' + governorshipLeader.lastName AS governorshipLeader,
   bacenta.name AS bacenta,
@@ -34,10 +49,10 @@ RETURN
   basonta.name AS basonta
 `
 
-// All four are OPTIONAL: legacy used required MATCH and silently dropped
-// members whose profile was incomplete (no marital status / gender / dob /
-// basonta). That is silent data loss in the export — switching to OPTIONAL
-// surfaces those members with blank cells instead.
+// All OPTIONAL: legacy used required MATCH and silently dropped members
+// whose profile was incomplete (no marital status / gender / dob / basonta).
+// That is silent data loss in the export — switching to OPTIONAL surfaces
+// those members with blank cells instead.
 const COMMON_OPTIONALS = `
 OPTIONAL MATCH (member)-[:HAS_MARITAL_STATUS]->(maritalStatus:MaritalStatus)
 OPTIONAL MATCH (member)-[:HAS_GENDER]->(gender:Gender)
@@ -45,58 +60,83 @@ OPTIONAL MATCH (member)-[:WAS_BORN_ON]->(dob:TimeGraph)
 OPTIONAL MATCH (member)-[:BELONGS_TO]->(basonta:Basonta)
 `
 
+// Leader matches for every hierarchy level. OPTIONAL so a missing leader
+// at any level yields a blank cell instead of dropping the member from
+// the export. Assumes every level variable (oversight, campus, stream,
+// council, governorship, bacenta) is already bound — each per-level query
+// guarantees that via its entry MATCH + upward walk.
+const LEADER_OPTIONALS = `
+OPTIONAL MATCH (oversight)<-[:LEADS]-(oversightLeader:Member)
+OPTIONAL MATCH (campus)<-[:LEADS]-(campusLeader:Member)
+OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Member)
+OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Member)
+OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Member)
+OPTIONAL MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Member)
+`
+
 export const bacentaDownloadRows = `
 MATCH (bacenta:Bacenta {id: $id})<-[:BELONGS_TO]-(member:Active:Member)
-MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Member)
-MATCH (bacenta)<-[:HAS]-(governorship:Governorship)
-MATCH (governorship)<-[:LEADS]-(governorshipLeader:Member)
+OPTIONAL MATCH (bacenta)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(council:Council)<-[:HAS]-(stream:Stream)<-[:HAS]-(campus:Campus)<-[:HAS]-(oversight:Oversight)
+${LEADER_OPTIONALS}
 ${COMMON_OPTIONALS}
 ${ROW_RETURN}
 `
 
 export const governorshipDownloadRows = `
 MATCH (governorship:Governorship {id: $id})-[:HAS]->(bacenta:Bacenta)<-[:BELONGS_TO]-(member:Active:Member)
-MATCH (governorship)<-[:LEADS]-(governorshipLeader:Member)
-MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Member)
+OPTIONAL MATCH (governorship)<-[:HAS]-(council:Council)<-[:HAS]-(stream:Stream)<-[:HAS]-(campus:Campus)<-[:HAS]-(oversight:Oversight)
+${LEADER_OPTIONALS}
 ${COMMON_OPTIONALS}
 ${ROW_RETURN}
 `
 
 export const councilDownloadRows = `
 MATCH (council:Council {id: $id})-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)<-[:BELONGS_TO]-(member:Active:Member)
-MATCH (governorship)<-[:LEADS]-(governorshipLeader:Member)
-MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Member)
+OPTIONAL MATCH (council)<-[:HAS]-(stream:Stream)<-[:HAS]-(campus:Campus)<-[:HAS]-(oversight:Oversight)
+${LEADER_OPTIONALS}
 ${COMMON_OPTIONALS}
 ${ROW_RETURN}
 `
 
 export const streamDownloadRows = `
 MATCH (stream:Stream {id: $id})-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)<-[:BELONGS_TO]-(member:Active:Member)
-MATCH (governorship)<-[:LEADS]-(governorshipLeader:Member)
-MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Member)
+OPTIONAL MATCH (stream)<-[:HAS]-(campus:Campus)<-[:HAS]-(oversight:Oversight)
+${LEADER_OPTIONALS}
 ${COMMON_OPTIONALS}
 ${ROW_RETURN}
 `
 
 export const campusDownloadRows = `
 MATCH (campus:Campus {id: $id})-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)<-[:BELONGS_TO]-(member:Active:Member)
-MATCH (governorship)<-[:LEADS]-(governorshipLeader:Member)
-MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Member)
+OPTIONAL MATCH (campus)<-[:HAS]-(oversight:Oversight)
+${LEADER_OPTIONALS}
 ${COMMON_OPTIONALS}
 ${ROW_RETURN}
 `
 
 export const oversightDownloadRows = `
 MATCH (oversight:Oversight {id: $id})-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)<-[:BELONGS_TO]-(member:Active:Member)
-MATCH (governorship)<-[:LEADS]-(governorshipLeader:Member)
-MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Member)
+${LEADER_OPTIONALS}
+${COMMON_OPTIONALS}
+${ROW_RETURN}
+`
+
+export const denominationDownloadRows = `
+MATCH (denomination:Denomination {id: $id})-[:HAS]->(oversight:Oversight)-[:HAS]->(campus:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)<-[:BELONGS_TO]-(member:Active:Member)
+${LEADER_OPTIONALS}
 ${COMMON_OPTIONALS}
 ${ROW_RETURN}
 `
 
 export type DownloadLevel = Extract<
   ChurchLevel,
-  'Bacenta' | 'Governorship' | 'Council' | 'Stream' | 'Campus' | 'Oversight'
+  | 'Bacenta'
+  | 'Governorship'
+  | 'Council'
+  | 'Stream'
+  | 'Campus'
+  | 'Oversight'
+  | 'Denomination'
 >
 
 export const ROWS_BY_LEVEL: Record<DownloadLevel, string> = {
@@ -106,6 +146,7 @@ export const ROWS_BY_LEVEL: Record<DownloadLevel, string> = {
   Stream: streamDownloadRows,
   Campus: campusDownloadRows,
   Oversight: oversightDownloadRows,
+  Denomination: denominationDownloadRows,
 }
 
 // Used to populate the Content-Disposition filename. Kept as a separate
@@ -117,4 +158,5 @@ export const NAME_QUERY_BY_LEVEL: Record<DownloadLevel, string> = {
   Stream: `MATCH (n:Stream {id: $id}) RETURN n.name AS name`,
   Campus: `MATCH (n:Campus {id: $id}) RETURN n.name AS name`,
   Oversight: `MATCH (n:Oversight {id: $id}) RETURN n.name AS name`,
+  Denomination: `MATCH (n:Denomination {id: $id}) RETURN n.name AS name`,
 }

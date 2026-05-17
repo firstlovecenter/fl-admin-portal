@@ -20,6 +20,9 @@ const DownloadCampusMembership = lazy(
 const DownloadOversightMembership = lazy(
   () => import('./membership-list/DownloadOversightMembership')
 )
+const DownloadDenominationMembership = lazy(
+  () => import('./membership-list/DownloadDenominationMembership')
+)
 const CampusBacentaServicesThisWeek = lazy(
   () => import('./services-this-week/CampusBacentaServicesThisWeek')
 )
@@ -54,6 +57,11 @@ export const downloadReports: LazyRouteTypes[] = [
     path: '/download-reports/oversight/membership',
     element: DownloadOversightMembership,
     roles: permitLeaderAdmin('Oversight'),
+  },
+  {
+    path: '/download-reports/denomination/membership',
+    element: DownloadDenominationMembership,
+    roles: permitLeaderAdmin('Denomination'),
   },
   {
     path: '/campus/download-fellowship-services',

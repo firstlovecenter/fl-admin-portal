@@ -44,6 +44,46 @@ const PREVIEW_FIELDS = `
           lastName
           fullName
         }
+        council {
+          id
+          name
+          leader {
+            id
+            firstName
+            lastName
+            fullName
+          }
+          stream {
+            id
+            name
+            leader {
+              id
+              firstName
+              lastName
+              fullName
+            }
+            campus {
+              id
+              name
+              leader {
+                id
+                firstName
+                lastName
+                fullName
+              }
+              oversight {
+                id
+                name
+                leader {
+                  id
+                  firstName
+                  lastName
+                  fullName
+                }
+              }
+            }
+          }
+        }
       }
     }
     basonta {
@@ -111,6 +151,17 @@ export const CAMPUS_MEMBERSHIP_DOWNLOAD = gql`
 export const OVERSIGHT_MEMBERSHIP_DOWNLOAD = gql`
   query OversightMembershipDownload($id: ID!) {
     oversights(where: { id: { eq: $id } }) {
+      id
+      name
+      memberCount
+      ${PREVIEW_FIELDS}
+    }
+  }
+`
+
+export const DENOMINATION_MEMBERSHIP_DOWNLOAD = gql`
+  query DenominationMembershipDownload($id: ID!) {
+    denominations(where: { id: { eq: $id } }) {
       id
       name
       memberCount

@@ -17,6 +17,7 @@ const DOWNLOAD_LEVELS: ReadonlyArray<DownloadLevel> = [
   'Stream',
   'Campus',
   'Oversight',
+  'Denomination',
 ]
 
 export const isDownloadLevel = (value: unknown): value is DownloadLevel =>
@@ -25,6 +26,14 @@ export const isDownloadLevel = (value: unknown): value is DownloadLevel =>
 
 // Column order must match `ROW_RETURN` in downloads-cypher.ts.
 const CSV_COLUMNS: ReadonlyArray<{ key: string; label: string }> = [
+  { key: 'oversight', label: 'Oversight' },
+  { key: 'oversightLeader', label: 'Oversight Leader' },
+  { key: 'campus', label: 'Campus' },
+  { key: 'campusLeader', label: 'Campus Leader' },
+  { key: 'stream', label: 'Stream' },
+  { key: 'streamLeader', label: 'Stream Leader' },
+  { key: 'council', label: 'Council' },
+  { key: 'councilLeader', label: 'Council Leader' },
   { key: 'governorship', label: 'Governorship' },
   { key: 'governorshipLeader', label: 'Governorship Leader' },
   { key: 'bacenta', label: 'Bacenta' },

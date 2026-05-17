@@ -82,6 +82,70 @@ export const GET_FEDERAL_MEMBERS = gql`
   }
 `
 
+export const GET_DENOMINATION_MEMBERS = gql`
+  query getDenominationMembers(
+    $id: ID!
+    $offset: Int!
+    $limit: Int!
+    $search: String
+    $genders: [String!]
+    $maritalStatuses: [String!]
+    $leaderTitles: [String!]
+    $basontas: [String!]
+    $leaderRanks: [String!]
+  ) {
+    denominations(where: { id: { eq: $id } }) {
+      id
+      name
+      memberCount
+      members(
+        limit: $limit
+        offset: $offset
+        search: $search
+        genders: $genders
+        maritalStatuses: $maritalStatuses
+        leaderTitles: $leaderTitles
+        basontas: $basontas
+        leaderRanks: $leaderRanks
+      ) {
+        ${MEMBER_FIELDS}
+      }
+    }
+  }
+`
+
+export const GET_OVERSIGHT_MEMBERS = gql`
+  query getOversightMembers(
+    $id: ID!
+    $offset: Int!
+    $limit: Int!
+    $search: String
+    $genders: [String!]
+    $maritalStatuses: [String!]
+    $leaderTitles: [String!]
+    $basontas: [String!]
+    $leaderRanks: [String!]
+  ) {
+    oversights(where: { id: { eq: $id } }) {
+      id
+      name
+      memberCount
+      members(
+        limit: $limit
+        offset: $offset
+        search: $search
+        genders: $genders
+        maritalStatuses: $maritalStatuses
+        leaderTitles: $leaderTitles
+        basontas: $basontas
+        leaderRanks: $leaderRanks
+      ) {
+        ${MEMBER_FIELDS}
+      }
+    }
+  }
+`
+
 export const GET_CAMPUS_MEMBERS = gql`
   query getGatheringMembers(
     $id: ID!
@@ -127,38 +191,6 @@ export const GET_STREAM_MEMBERS = gql`
     $leaderRanks: [String!]
   ) {
     streams(where: { id: { eq: $id } }) {
-      id
-      name
-      memberCount
-      members(
-        limit: $limit
-        offset: $offset
-        search: $search
-        genders: $genders
-        maritalStatuses: $maritalStatuses
-        leaderTitles: $leaderTitles
-        basontas: $basontas
-        leaderRanks: $leaderRanks
-      ) {
-        ${MEMBER_FIELDS}
-      }
-    }
-  }
-`
-
-export const GET_OVERSIGHT_MEMBERS = gql`
-  query getOversightMembers(
-    $id: ID!
-    $offset: Int!
-    $limit: Int!
-    $search: String
-    $genders: [String!]
-    $maritalStatuses: [String!]
-    $leaderTitles: [String!]
-    $basontas: [String!]
-    $leaderRanks: [String!]
-  ) {
-    oversights(where: { id: { eq: $id } }) {
       id
       name
       memberCount

@@ -57,6 +57,14 @@ const buildDisplayFilename = (churchName: string, churchType: string) => {
 }
 
 const previewHeaders = [
+  { label: 'Oversight', key: 'oversight' },
+  { label: 'Oversight Leader', key: 'oversightLeader' },
+  { label: 'Campus', key: 'campus' },
+  { label: 'Campus Leader', key: 'campusLeader' },
+  { label: 'Stream', key: 'stream' },
+  { label: 'Stream Leader', key: 'streamLeader' },
+  { label: 'Council', key: 'council' },
+  { label: 'Council Leader', key: 'councilLeader' },
   { label: 'Governorship', key: 'governorship' },
   { label: 'Governorship Leader', key: 'governorshipLeader' },
   { label: 'Bacenta', key: 'bacenta' },
@@ -79,23 +87,40 @@ type PreviewRow = { id: string } & Record<PreviewKey, string>
 const columnHelper = createColumnHelper<PreviewRow>()
 
 const buildPreviewRows = (church: Church | undefined): PreviewRow[] =>
-  church?.members?.map((member: Member) => ({
-    id: member.id,
-    governorship: member.bacenta?.governorship?.name ?? '',
-    governorshipLeader: member.bacenta?.governorship?.leader?.fullName ?? '',
-    bacenta: member.bacenta?.name ?? '',
-    bacentaLeader: member.bacenta?.leader?.fullName ?? '',
-    firstName: member.firstName ?? '',
-    lastName: member.lastName ?? '',
-    phoneNumber: member.phoneNumber ?? '',
-    whatsappNumber: member.whatsappNumber ?? '',
-    email: member.email ?? '',
-    maritalStatus: member.maritalStatus?.status ?? '',
-    gender: member.gender?.gender ?? '',
-    dateOfBirth: formatBirthday(member.dob?.date),
-    visitationArea: member.visitationArea ?? '',
-    basonta: member.basonta?.name ?? '',
-  })) ?? []
+  church?.members?.map((member: Member) => {
+    const { bacenta } = member
+    const governorship = bacenta?.governorship
+    const council = governorship?.council
+    const stream = council?.stream
+    const campus = stream?.campus
+    const oversight = campus?.oversight
+
+    return {
+      id: member.id,
+      oversight: oversight?.name ?? '',
+      oversightLeader: oversight?.leader?.fullName ?? '',
+      campus: campus?.name ?? '',
+      campusLeader: campus?.leader?.fullName ?? '',
+      stream: stream?.name ?? '',
+      streamLeader: stream?.leader?.fullName ?? '',
+      council: council?.name ?? '',
+      councilLeader: council?.leader?.fullName ?? '',
+      governorship: governorship?.name ?? '',
+      governorshipLeader: governorship?.leader?.fullName ?? '',
+      bacenta: bacenta?.name ?? '',
+      bacentaLeader: bacenta?.leader?.fullName ?? '',
+      firstName: member.firstName ?? '',
+      lastName: member.lastName ?? '',
+      phoneNumber: member.phoneNumber ?? '',
+      whatsappNumber: member.whatsappNumber ?? '',
+      email: member.email ?? '',
+      maritalStatus: member.maritalStatus?.status ?? '',
+      gender: member.gender?.gender ?? '',
+      dateOfBirth: formatBirthday(member.dob?.date),
+      visitationArea: member.visitationArea ?? '',
+      basonta: member.basonta?.name ?? '',
+    }
+  }) ?? []
 
 const filenameFromContentDisposition = (
   header: string | null

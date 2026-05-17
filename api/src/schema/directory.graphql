@@ -388,6 +388,7 @@ interface Church {
 }
 
 type Denomination implements Church @node
+  # @churchScoped(level: Denomination)
 {
   id: ID! @id
   name: String!
@@ -430,6 +431,8 @@ type Denomination implements Church @node
   ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE 'leaderDenomination' IN jwt.roles OR 'adminDenomination' IN jwt.roles
       MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -454,8 +457,11 @@ type Denomination implements Church @node
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN 'leaderDenomination' IN $jwt.roles OR 'adminDenomination' IN $jwt.roles
+        THEN COUNT { (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
