@@ -381,6 +381,22 @@ export const arrivalsMutation = {
   ) => {
     isAuth(permitArrivalsCounter(), context.jwt.roles)
     await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
+
+    // TS types are erased at runtime; the SDL only enforces Int! / String!.
+    // Reject negative/NaN/absurdly-large counts and unknown vehicle labels
+    // so neither the VehicleRecord write nor the downstream aggregation can
+    // be poisoned by tampered client input.
+    if (
+      !Number.isInteger(args.attendance) ||
+      args.attendance < 0 ||
+      args.attendance > 200
+    ) {
+      throw new Error('Attendance must be a whole number between 0 and 200.')
+    }
+    if (!['Urvan', 'Sprinter', 'Car'].includes(args.vehicle)) {
+      throw new Error('Vehicle must be Urvan, Sprinter, or Car.')
+    }
+
     const session = context.executionContext.session()
 
     const recordResponse = rearrangeCypherObject(
