@@ -240,7 +240,10 @@ const AiAssistant = () => {
 
         {/* Chat column */}
         <main className="flex min-w-0 flex-1 flex-col">
-          <TodaysTipBanner churchId={churchId} />
+          <TodaysTipBanner
+            churchId={churchId}
+            authRole={selectedScope?.authRole}
+          />
           <AssistantRuntimeProvider runtime={runtime}>
             <ChatThread disabled={!churchId} />
           </AssistantRuntimeProvider>

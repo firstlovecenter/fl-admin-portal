@@ -8,6 +8,8 @@ import {
   Quote,
   Sparkles,
 } from 'lucide-react'
+import type { Role } from 'global-types'
+import { isLeaderOrAdminRole } from 'permission-utils'
 import { Skeleton } from 'components/ui/skeleton'
 import { cn } from 'components/lib/utils'
 import {
@@ -17,6 +19,7 @@ import {
 
 type Props = {
   churchId: string | null | undefined
+  authRole: Role | null | undefined
 }
 
 type Tip = NonNullable<WeeklyTipForChurchResult['weeklyTipForChurch']>
@@ -108,18 +111,19 @@ const ExpandedDetails = ({ tip }: { tip: Tip }) => {
  * snippet, and prayer prompt. Hides the noise on the dashboard while
  * keeping the deeper content one tap away.
  */
-const WeeklyTipCard = ({ churchId }: Props) => {
+const WeeklyTipCard = ({ churchId, authRole }: Props) => {
   const [expanded, setExpanded] = useState(false)
+  const permitted = isLeaderOrAdminRole(authRole)
   const { data, loading } = useQuery<WeeklyTipForChurchResult>(
     WEEKLY_TIP_FOR_CHURCH,
     {
       variables: { churchId: churchId ?? '' },
-      skip: !churchId,
+      skip: !churchId || !permitted,
       fetchPolicy: 'cache-first',
     }
   )
 
-  if (!churchId) return null
+  if (!churchId || !permitted) return null
 
   if (loading) {
     return (

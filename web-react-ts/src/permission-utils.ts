@@ -126,6 +126,13 @@ export const permitLeaderAdmin = (churchLevel: ChurchLevel): Role[] => {
   return [...permitLeader(churchLevel), ...permitAdmin(churchLevel)]
 }
 
+// Coarse "is this a leader/admin role?" check used by FE surfaces that mirror
+// the BE `permitLeaderAdmin('Bacenta')` gate (e.g. weeklyTipForChurch).
+// Sourced from the helper itself so the FE set cannot drift from the BE set.
+export const isLeaderOrAdminRole = (
+  authRole: Role | null | undefined
+): boolean => !!authRole && permitLeaderAdmin('Bacenta').includes(authRole)
+
 export const permitMe = (churchLevel: ChurchLevel): Role[] => {
   return [
     ...permitLeaderAdmin(churchLevel),

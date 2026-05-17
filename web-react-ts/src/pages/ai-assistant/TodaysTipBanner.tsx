@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@apollo/client'
 import { ChevronDown, Sparkles } from 'lucide-react'
+import type { Role } from 'global-types'
+import { isLeaderOrAdminRole } from 'permission-utils'
 import { cn } from 'components/lib/utils'
 import { Skeleton } from 'components/ui/skeleton'
 import {
@@ -10,6 +12,7 @@ import {
 
 type Props = {
   churchId: string | null | undefined
+  authRole: Role | null | undefined
 }
 
 /**
@@ -18,18 +21,19 @@ type Props = {
  * + scripture + book recommendation in a compact rendering — without the
  * full WeeklyTipCard's separate framed sections.
  */
-const TodaysTipBanner = ({ churchId }: Props) => {
+const TodaysTipBanner = ({ churchId, authRole }: Props) => {
   const [open, setOpen] = useState(false)
+  const permitted = isLeaderOrAdminRole(authRole)
   const { data, loading } = useQuery<WeeklyTipForChurchResult>(
     WEEKLY_TIP_FOR_CHURCH,
     {
       variables: { churchId: churchId ?? '' },
-      skip: !churchId,
+      skip: !churchId || !permitted,
       fetchPolicy: 'cache-first',
     }
   )
 
-  if (!churchId) return null
+  if (!churchId || !permitted) return null
   if (loading) {
     return (
       <div className="border-b border-border bg-card px-4 py-3">
