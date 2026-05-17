@@ -104,12 +104,12 @@ CALL {
 // council, governorship, bacenta) is already bound — each per-level query
 // guarantees that via its entry MATCH + upward walk.
 const LEADER_OPTIONALS = `
-OPTIONAL MATCH (oversight)<-[:LEADS]-(oversightLeader:Member)
-OPTIONAL MATCH (campus)<-[:LEADS]-(campusLeader:Member)
-OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Member)
-OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Member)
-OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Member)
-OPTIONAL MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Member)
+OPTIONAL MATCH (oversight)<-[:LEADS]-(oversightLeader:Active:Member)
+OPTIONAL MATCH (campus)<-[:LEADS]-(campusLeader:Active:Member)
+OPTIONAL MATCH (stream)<-[:LEADS]-(streamLeader:Active:Member)
+OPTIONAL MATCH (council)<-[:LEADS]-(councilLeader:Active:Member)
+OPTIONAL MATCH (governorship)<-[:LEADS]-(governorshipLeader:Active:Member)
+OPTIONAL MATCH (bacenta)<-[:LEADS]-(bacentaLeader:Active:Member)
 `
 
 export const bacentaDownloadRows = `
