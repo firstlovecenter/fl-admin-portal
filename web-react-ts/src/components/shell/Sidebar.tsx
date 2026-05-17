@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
@@ -16,6 +16,8 @@ import SynagoLogo from 'components/SynagoLogo'
 import { primaryNav, secondaryNav, type NavItem } from './navigation-config'
 import { useAuth as useAuthContext } from 'contexts/AuthContext'
 import useAuth from 'auth/useAuth'
+import { MemberContext } from 'contexts/MemberContext'
+import { isArrivalsCounterOnly } from 'permission-utils'
 import { useTheme } from './ThemeProvider'
 import { ChurchRoleScopePicker } from './ChurchRoleScopePicker'
 import { ChurchScopeNavItem } from './ChurchScopeNavItem'
@@ -95,19 +97,23 @@ export const Sidebar = ({
   const shortcut = isMacLike() ? '⌘K' : 'Ctrl K'
   const { logout } = useAuthContext()
   const { isAuthorised } = useAuth()
+  const { currentUser } = useContext(MemberContext)
   const { theme, toggleTheme } = useTheme()
   const isDarkMode = theme === 'dark'
   const accountName = userName?.trim() || 'Account'
+  const counterOnly = isArrivalsCounterOnly(currentUser?.roles)
 
   // Filter upstream rather than wrapping each item in <RoleView>: hidden
   // <RoleView> children would still occupy slots in framer-motion's
   // staggerChildren index in MobileNav, leaving visible gaps.
-  const visiblePrimary = primaryNav.filter(
-    (item) => !item.roles || isAuthorised(item.roles)
-  )
-  const visibleSecondary = secondaryNav.filter(
-    (item) => !item.roles || isAuthorised(item.roles)
-  )
+  const visibilityFor = (item: NavItem) => {
+    if (item.hideForArrivalsCounterOnly && counterOnly) return false
+    if (item.roles && !isAuthorised(item.roles)) return false
+    if (item.additionalRoles && !isAuthorised(item.additionalRoles)) return false
+    return true
+  }
+  const visiblePrimary = primaryNav.filter(visibilityFor)
+  const visibleSecondary = secondaryNav.filter(visibilityFor)
 
   const initials = accountName
     .split(' ')

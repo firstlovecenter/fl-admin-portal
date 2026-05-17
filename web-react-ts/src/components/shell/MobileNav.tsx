@@ -1,3 +1,4 @@
+import { useContext } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { ChevronDown, LogOut, Moon, Search, Sun } from 'lucide-react'
@@ -12,6 +13,8 @@ import SynagoLogo from 'components/SynagoLogo'
 import { primaryNav, secondaryNav, type NavItem } from './navigation-config'
 import { useAuth as useAuthContext } from 'contexts/AuthContext'
 import useAuth from 'auth/useAuth'
+import { MemberContext } from 'contexts/MemberContext'
+import { isArrivalsCounterOnly } from 'permission-utils'
 import { useTheme } from './ThemeProvider'
 import {
   DropdownMenu,
@@ -93,6 +96,7 @@ export const MobileNav = ({
 }: MobileNavProps) => {
   const { logout } = useAuthContext()
   const { isAuthorised } = useAuth()
+  const { currentUser } = useContext(MemberContext)
   const { theme, toggleTheme } = useTheme()
   const isDarkMode = theme === 'dark'
   const accountName = userName?.trim() || 'Account'
@@ -101,16 +105,19 @@ export const MobileNav = ({
     .map((n) => n[0])
     .slice(0, 2)
     .join('')
+  const counterOnly = isArrivalsCounterOnly(currentUser?.roles)
 
   // Filter upstream rather than wrapping each item in <RoleView>: hidden
   // <RoleView> children would still occupy slots in the staggerChildren
   // index below, leaving visible gaps.
-  const visiblePrimary = primaryNav.filter(
-    (item) => !item.roles || isAuthorised(item.roles)
-  )
-  const visibleSecondary = secondaryNav.filter(
-    (item) => !item.roles || isAuthorised(item.roles)
-  )
+  const visibilityFor = (item: NavItem) => {
+    if (item.hideForArrivalsCounterOnly && counterOnly) return false
+    if (item.roles && !isAuthorised(item.roles)) return false
+    if (item.additionalRoles && !isAuthorised(item.additionalRoles)) return false
+    return true
+  }
+  const visiblePrimary = primaryNav.filter(visibilityFor)
+  const visibleSecondary = secondaryNav.filter(visibilityFor)
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>

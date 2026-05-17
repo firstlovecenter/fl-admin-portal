@@ -13,7 +13,11 @@ import {
   Wallet,
 } from 'lucide-react'
 import { Role } from 'global-types'
-import { permitMe, permitShepherdingControl } from 'permission-utils'
+import {
+  permitArrivalsHelpers,
+  permitMe,
+  permitShepherdingControl,
+} from 'permission-utils'
 
 export interface NavItem {
   name: string
@@ -23,6 +27,19 @@ export interface NavItem {
   accentClass?: string
   /** When set, the item is only rendered if the user's roles intersect this list (or the list contains 'all'). */
   roles?: Role[]
+  /**
+   * When set, the user must ALSO have at least one of these roles in addition
+   * to satisfying `roles`. Used to express AND across two independent role
+   * dimensions (e.g. Accounts requires `fishers` AND a Council/Campus-level
+   * role).
+   */
+  additionalRoles?: Role[]
+  /**
+   * Hide this item for users whose only operational role is Stream Arrivals
+   * Counter. Their dashboard is scoped to a single responsibility (counting
+   * arrivals) so unrelated surfaces add noise rather than utility.
+   */
+  hideForArrivalsCounterOnly?: boolean
 }
 
 /** Primary nav (sidebar + bottom nav top slots) */
@@ -39,12 +56,23 @@ export const primaryNav: NavItem[] = [
     to: '/services',
     icon: ClipboardList,
     accentClass: 'text-churches',
+    hideForArrivalsCounterOnly: true,
   },
   {
     name: 'Arrivals',
     to: '/arrivals',
     icon: Bus,
     accentClass: 'text-arrivals',
+    roles: [
+      ...permitMe('Bacenta').filter(
+        (role) =>
+          role !== 'leaderDenomination' &&
+          role !== 'adminDenomination' &&
+          role !== 'leaderOversight' &&
+          role !== 'adminOversight'
+      ),
+      ...permitArrivalsHelpers('Stream'),
+    ],
   },
   {
     name: 'Accounts',
@@ -52,6 +80,13 @@ export const primaryNav: NavItem[] = [
     icon: Wallet,
     accentClass: 'text-banking',
     roles: ['fishers'],
+    additionalRoles: [
+      'leaderCouncil',
+      'adminCouncil',
+      'leaderCampus',
+      'adminCampus',
+    ],
+    hideForArrivalsCounterOnly: true,
   },
 ]
 
@@ -62,6 +97,7 @@ export const secondaryNav: NavItem[] = [
     to: '/reports',
     icon: Download,
     accentClass: 'text-banking',
+    hideForArrivalsCounterOnly: true,
   },
   {
     name: 'Trends',
@@ -86,6 +122,7 @@ export const secondaryNav: NavItem[] = [
     name: 'AI Assistant',
     to: '/ai-assistant',
     icon: Bot,
+    hideForArrivalsCounterOnly: true,
   },
   {
     name: 'Settings',
