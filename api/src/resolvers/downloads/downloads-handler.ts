@@ -122,6 +122,7 @@ export type HandleMembershipDownloadParams = {
   level: DownloadLevel
   churchId: string
   roles: Role[] | undefined
+  userId: string | undefined
   output: Writable
   hooks: DownloadHooks
   // Set to true by the caller (e.g. on HTTP `req.close`) to abort the
@@ -134,7 +135,15 @@ export type HandleMembershipDownloadParams = {
 export async function handleMembershipDownload(
   params: HandleMembershipDownloadParams
 ): Promise<{ rowCount: number; filename: string }> {
-  const { driver, level, churchId, roles, output, hooks, abort } = params
+  const { driver, level, churchId, roles, userId, output, hooks, abort } =
+    params
+
+  // Fail fast on missing identifiers BEFORE any role check — a token
+  // without a userId should never have reached this endpoint, and we
+  // don't want isAuth's role decision to be the first thing a malformed
+  // token interacts with.
+  if (!userId) throw new DownloadError(401, 'Unauthorized')
+  if (!churchId) throw new DownloadError(400, 'Missing churchId')
 
   // Throws a `FORBIDDEN` Error if the user lacks the role for this level.
   // Caller maps that to HTTP 403. `permitLeaderAdmin` (not `permitMe`)
@@ -144,16 +153,19 @@ export async function handleMembershipDownload(
   // `arrivalsCounterStream`, `arrivalsPayerCouncil`, and `tellerStream`.
   isAuth(permitLeaderAdmin(level), roles)
 
-  if (!churchId) throw new DownloadError(400, 'Missing churchId')
-
   // READ mode lets a clustered Neo4j route us to a follower / read replica
   // and skip the leader, which keeps bulk exports off the write path.
   const session = driver.session({ defaultAccessMode: 'READ' })
   try {
     // 1. Look up the church name first — also serves as a 404 probe and
     //    feeds the Content-Disposition filename before any rows are written.
+    //    The query also gates on the caller having a `:LEADS` or
+    //    `:IS_ADMIN_FOR` edge that reaches this church (the per-instance
+    //    IDOR check on top of the role check above). 0 rows = either the
+    //    church doesn't exist or the caller has no authority to reach it —
+    //    both surface as the same 404 so we don't leak existence.
     const nameResult = await session.executeRead((tx) =>
-      tx.run(NAME_QUERY_BY_LEVEL[level], { id: churchId })
+      tx.run(NAME_QUERY_BY_LEVEL[level], { id: churchId, userId })
     )
     const churchName: string = nameResult.records[0]?.get('name') ?? ''
     if (!churchName) {

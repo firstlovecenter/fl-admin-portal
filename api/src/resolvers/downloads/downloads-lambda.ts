@@ -155,6 +155,7 @@ const handleMembershipLambda = async (
       level,
       churchId,
       roles: jwt.roles,
+      userId: jwt.userId,
       output,
       abort,
       hooks: {

@@ -49,6 +49,8 @@ type Member @node{
   ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt, CASE WHEN $limit > 1000 THEN 1000 ELSE $limit END AS effectiveLimit
+      WHERE this.id = jwt.userId
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -65,7 +67,7 @@ type Member @node{
         ))
       RETURN DISTINCT members AS members
       ORDER BY toLower(members.firstName), toLower(members.lastName)
-      SKIP $offset LIMIT $limit
+      SKIP $offset LIMIT effectiveLimit
       """
       columnName: "members"
     )
@@ -73,8 +75,11 @@ type Member @node{
   memberCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN this.id = $jwt.userId
+        THEN COUNT { (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
@@ -291,23 +296,18 @@ type BacentaSummary {
 
 type Gender @node{
   gender: String
-  members: [Member!]! @relationship(type: "HAS_GENDER", direction: IN)
 }
 
 type MaritalStatus @node{
   status: String
-  members: [Member!]! @relationship(type: "HAS_MARITAL_STATUS", direction: IN)
 }
 
 type Occupation @node{
   occupation: String
-  members: [Member!]! @relationship(type: "HAS_OCCUPATION", direction: IN)
 }
 
 type Title @node{
   name: String! #Pastor, Reverend, Apostle, Bishop (Mother)
-  members: [Member!]!
-    @relationship(type: "HAS_TITLE", properties: "HasTitle", direction: IN)
 }
 
 type HasTitle @relationshipProperties {
@@ -432,7 +432,7 @@ type Denomination implements Church @node
     @cypher(
       statement: """
       WITH this, $jwt AS jwt
-      WHERE 'leaderDenomination' IN jwt.roles OR 'adminDenomination' IN jwt.roles
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'adminDenomination'])
       MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -458,7 +458,7 @@ type Denomination implements Church @node
     @cypher(
       statement: """
       RETURN CASE
-        WHEN 'leaderDenomination' IN $jwt.roles OR 'adminDenomination' IN $jwt.roles
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'adminDenomination'])
         THEN COUNT { (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
         ELSE 0
       END AS memberCount
@@ -593,6 +593,8 @@ type Oversight implements Church @node
   ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'adminDenomination', 'adminOversight'])
       MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -617,8 +619,11 @@ type Oversight implements Church @node
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'adminDenomination', 'adminOversight'])
+        THEN COUNT { (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
@@ -749,6 +754,8 @@ type Campus implements Church @node
   ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'adminDenomination', 'adminOversight', 'adminCampus'])
       MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -773,8 +780,11 @@ type Campus implements Church @node
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'adminDenomination', 'adminOversight', 'adminCampus'])
+        THEN COUNT { (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
@@ -925,6 +935,8 @@ type Stream implements Church @node
   ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream'])
       MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -948,8 +960,11 @@ type Stream implements Church @node
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream'])
+        THEN COUNT { (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
@@ -1073,6 +1088,8 @@ type Council implements Church @node
   ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil'])
       MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -1096,8 +1113,11 @@ type Council implements Church @node
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil'])
+        THEN COUNT { (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
@@ -1208,6 +1228,8 @@ type Governorship implements Church @node
   ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
       MATCH (this)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -1231,8 +1253,11 @@ type Governorship implements Church @node
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
+        THEN COUNT { (this)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
@@ -1364,6 +1389,8 @@ type Bacenta implements Church @node
   ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderBacenta', 'leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE
         ($search IS NULL OR
@@ -1387,8 +1414,11 @@ type Bacenta implements Church @node
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderBacenta', 'leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
+        THEN COUNT { (this)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )

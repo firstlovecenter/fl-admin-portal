@@ -48,6 +48,7 @@ const handleDownloadRequest =
         level,
         churchId,
         roles: jwt.roles,
+        userId: jwt.userId,
         output: res,
         abort,
         hooks: {
