@@ -92,7 +92,9 @@ const whitelistIPs = (event) => {
 // ServiceRecord transitions also append a BankingHistoryLog audit row for
 // the webhook-driven settlement. Transaction and RehearsalRecord legs skip
 // the audit (no banking-history semantics on those types) via the FOREACH-
-// on-label trick.
+// on-label trick. The pre-SET WITH captures the record's transactionStatus
+// into bh_fromStatus so the audit row records the actual prior state
+// ('pending' vs 'send OTP') rather than always-null.
 const updateTransactionStatusCypher = `
   CALL {
     MATCH (r:ServiceRecord {transactionReference: $reference})
@@ -107,14 +109,15 @@ const updateTransactionStatusCypher = `
     WHERE r.transactionStatus IN ['pending', 'send OTP']
     RETURN r
   }
+  WITH r, r.transactionStatus AS bh_fromStatus
   SET r.transactionStatus = $status
 
-  WITH r
+  WITH r, bh_fromStatus
   FOREACH (_ IN CASE WHEN r:ServiceRecord THEN [1] ELSE [] END |
     CREATE (r)-[:HAS_BANKING_HISTORY]->(:BankingHistoryLog {
       id: randomUUID(),
       method: 'webhook',
-      fromStatus: null,
+      fromStatus: bh_fromStatus,
       toStatus: $status,
       message: 'Paystack webhook settled ' + $status,
       ts: datetime()

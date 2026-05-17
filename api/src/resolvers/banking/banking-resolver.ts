@@ -67,17 +67,16 @@ const throwClean = (userMessage: string, error: unknown): never => {
 // Banking-history audit-log params consumed by appendBankingHistoryLog
 // (see banking-cypher.ts). Every banking write that mutates SM1/SM2 state
 // must pass these so the BankingHistoryLog timeline on the ServiceRecord
-// stays complete.
+// stays complete. The Cypher itself captures the real prior status into
+// the in-scope `bh_fromStatus` variable — callers no longer pass it.
 type BankingMethod = 'self' | 'recovery' | 'webhook' | 'slip' | 'teller'
 
 const bhParams = (
   method: BankingMethod,
   toStatus: string,
-  fromStatus: string | null,
   message: string
 ) => ({
   bh_method: method,
-  bh_fromStatus: fromStatus,
   bh_toStatus: toStatus,
   bh_message: message,
 })
@@ -231,7 +230,6 @@ const bankingMutation = {
               ...bhParams(
                 'self',
                 'pending',
-                transactionStatus ?? null,
                 `Self-bank initiated via ${args.mobileNetwork}`
               ),
             })
@@ -475,7 +473,6 @@ const bankingMutation = {
               ...bhParams(
                 'self',
                 'failed',
-                'send OTP',
                 'OTP submission failed at Paystack'
               ),
             })
@@ -581,7 +578,6 @@ const bankingMutation = {
               ...bhParams(
                 'self',
                 'failed',
-                record.transactionStatus ?? null,
                 'Confirm rejected: no transactionReference on record'
               ),
             })
@@ -627,7 +623,6 @@ const bankingMutation = {
                 ...bhParams(
                   'self',
                   'success',
-                  record.transactionStatus ?? null,
                   'Paystack verify reported success'
                 ),
               })
@@ -667,7 +662,6 @@ const bankingMutation = {
                 ...bhParams(
                   'self',
                   confirmationResponse.data.data.status,
-                  record.transactionStatus ?? null,
                   `Paystack verify reported ${confirmationResponse.data.data.status}`
                 ),
               })
@@ -704,7 +698,6 @@ const bankingMutation = {
                 ...bhParams(
                   'self',
                   'reversed',
-                  record.transactionStatus ?? null,
                   'Paystack verify reported reversed (refund to customer)'
                 ),
               })
@@ -744,7 +737,6 @@ const bankingMutation = {
                   ...bhParams(
                     'self',
                     'failed',
-                    record?.transactionStatus ?? null,
                     'Paystack verify returned transaction_not_found'
                   ),
                 })
@@ -806,7 +798,7 @@ const bankingMutation = {
         .run(submitBankingSlip, {
           ...args,
           jwt: context.jwt,
-          ...bhParams('slip', 'slip-uploaded', null, 'Banking slip uploaded'),
+          ...bhParams('slip', 'slip-uploaded', 'Banking slip uploaded'),
         })
         .catch((error: any) =>
           throwClean(
@@ -870,7 +862,6 @@ const bankingMutation = {
           ...bhParams(
             'teller',
             'teller-confirmed',
-            null,
             'Teller manually confirmed offering'
           ),
         })
@@ -935,7 +926,6 @@ const bankingMutation = {
               ...bhParams(
                 'recovery',
                 'pending',
-                null,
                 'Admin manually set Paystack reference and re-armed pending state'
               ),
             })

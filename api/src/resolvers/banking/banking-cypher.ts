@@ -16,12 +16,19 @@
 // query — pass actorVar=null for the Paystack webhook which has no JWT.
 // Parameters consumed: $bh_method, $bh_fromStatus (nullable), $bh_toStatus,
 // $bh_message. Callers must supply all four on the session.run call.
+// fromStatus is read from the in-scope `bh_fromStatus` variable (NOT a
+// $bh_fromStatus param) so every caller is forced to capture the real
+// prior status — `WITH <vars>, record.transactionStatus AS bh_fromStatus`
+// — instead of passing null as a lazy placeholder. method, toStatus, and
+// message remain $params because they are server-controlled literals
+// that don't depend on the record's current state.
+//
+// bhlog is freshly CREATEd one line above, so the actor edge can never
+// match an existing pattern — use CREATE not MERGE for clarity.
 export const appendBankingHistoryLog = (
   recordVar: string,
   actorVar: string | null
 ): string => {
-  // bhlog is freshly CREATEd one line above, so the actor edge can never
-  // match an existing pattern — use CREATE not MERGE for clarity.
   const actorLine = actorVar
     ? `CREATE (${actorVar})-[:LOGGED_BANKING]->(bhlog)`
     : ''
@@ -29,7 +36,7 @@ export const appendBankingHistoryLog = (
 CREATE (${recordVar})-[:HAS_BANKING_HISTORY]->(bhlog:BankingHistoryLog {
   id: randomUUID(),
   method: $bh_method,
-  fromStatus: $bh_fromStatus,
+  fromStatus: bh_fromStatus,
   toStatus: $bh_toStatus,
   message: $bh_message,
   ts: datetime()
@@ -66,7 +73,12 @@ MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
 // producing duplicate audit entries for a single banking action. The SET
 // writes are idempotent on value but the CREATE is not. Verified against
 // dev: ~3% of ServiceRecord ids resolve to 2-3 :ServiceLog ancestors.
-WITH DISTINCT record, church, churchLevel, author, date
+//
+// Capture the prior transactionStatus into bh_fromStatus before the SET so
+// the BankingHistoryLog records the real source state (null or 'failed'
+// per the WHERE clause above, not always-null).
+WITH DISTINCT record, church, churchLevel, author, date,
+     record.transactionStatus AS bh_fromStatus
 
 SET record.sourceNumber = $mobileNumber,
     record.sourceNetwork = $mobileNetwork,
@@ -118,6 +130,7 @@ WHERE record.transactionStatus IS NULL
    OR record.transactionStatus = 'failed'
 MATCH (author:Member {id: $jwt.userId})
 
+WITH record, author, record.transactionStatus AS bh_fromStatus
 SET record.transactionReference = $transactionReference,
     record.transactionStatus = 'pending',
     record.transactionTime = datetime()
@@ -182,21 +195,33 @@ RETURN record {
 // defensive ConfirmOfferingPayment "no transactionReference" branch can
 // still mark a never-banked record as failed.
 //
-// Only applies to ServiceRecord; for the RehearsalRecord branch the
-// BankingHistoryLog tail would be misplaced (no banking semantics on
-// rehearsals), so the log fragment is conditionally appended via the
-// FOREACH-on-label trick: only ServiceRecord nodes get the audit row.
+// UNION-of-labels rather than unlabeled `MATCH (record {id: $serviceRecordId})
+// WHERE record:ServiceRecord OR record:RehearsalRecord` — the disjunction
+// pattern defeats the per-label unique-id index and falls through to
+// AllNodesScan in the v5 planner. CALL { UNION } lets each branch use its
+// own NodeUniqueIndexSeek.
+//
+// fromStatus is captured BEFORE the SET via `WITH record, record.transactionStatus
+// AS bh_fromStatus` so the audit log records the actual prior state of the
+// SM rather than always-null. Only ServiceRecord nodes get the audit row —
+// FOREACH-on-label keeps the RehearsalRecord branch silent.
 export const setTransactionStatusFailed = `
-MATCH (record {id: $serviceRecordId})
-WHERE (record:ServiceRecord OR record:RehearsalRecord)
-  AND (
-    record.transactionStatus IS NULL
-    OR record.transactionStatus IN ['pending', 'send OTP', 'failed']
-  )
+CALL {
+  MATCH (record:ServiceRecord {id: $serviceRecordId})
+  WHERE record.transactionStatus IS NULL
+     OR record.transactionStatus IN ['pending', 'send OTP', 'failed']
+  RETURN record
+  UNION
+  MATCH (record:RehearsalRecord {id: $serviceRecordId})
+  WHERE record.transactionStatus IS NULL
+     OR record.transactionStatus IN ['pending', 'send OTP', 'failed']
+  RETURN record
+}
+WITH record, record.transactionStatus AS bh_fromStatus
 SET record.transactionStatus = $status,
     record.transactionError = $error
 
-WITH record
+WITH record, bh_fromStatus
 FOREACH (_ IN CASE WHEN record:ServiceRecord THEN [1] ELSE [] END |
 ${appendBankingHistoryLog('record', null)}
 )
@@ -207,12 +232,19 @@ RETURN record
 // 'send OTP'. Prevents a stale ConfirmOfferingPayment from reviving a
 // failed/abandoned record after the user's mobile money declined.
 export const setTransactionStatusSuccess = `
-MATCH (record {id: $serviceRecordId})
-WHERE (record:ServiceRecord OR record:RehearsalRecord)
-  AND record.transactionStatus IN ['pending', 'send OTP']
+CALL {
+  MATCH (record:ServiceRecord {id: $serviceRecordId})
+  WHERE record.transactionStatus IN ['pending', 'send OTP']
+  RETURN record
+  UNION
+  MATCH (record:RehearsalRecord {id: $serviceRecordId})
+  WHERE record.transactionStatus IN ['pending', 'send OTP']
+  RETURN record
+}
+WITH record, record.transactionStatus AS bh_fromStatus
 SET record.transactionStatus = 'success'
 
-WITH record
+WITH record, bh_fromStatus
 FOREACH (_ IN CASE WHEN record:ServiceRecord THEN [1] ELSE [] END |
 ${appendBankingHistoryLog('record', null)}
 )
@@ -224,13 +256,20 @@ RETURN record
 // 'success' — the money was settled, then returned. Distinct from 'failed'
 // so accounting can tell a never-settled charge apart from a refund.
 export const setTransactionStatusReversed = `
-MATCH (record {id: $serviceRecordId})
-WHERE (record:ServiceRecord OR record:RehearsalRecord)
-  AND record.transactionStatus IN ['pending', 'send OTP', 'failed', 'success']
+CALL {
+  MATCH (record:ServiceRecord {id: $serviceRecordId})
+  WHERE record.transactionStatus IN ['pending', 'send OTP', 'failed', 'success']
+  RETURN record
+  UNION
+  MATCH (record:RehearsalRecord {id: $serviceRecordId})
+  WHERE record.transactionStatus IN ['pending', 'send OTP', 'failed', 'success']
+  RETURN record
+}
+WITH record, record.transactionStatus AS bh_fromStatus
 SET record.transactionStatus = 'reversed',
     record.transactionError = $error
 
-WITH record
+WITH record, bh_fromStatus
 FOREACH (_ IN CASE WHEN record:ServiceRecord THEN [1] ELSE [] END |
 ${appendBankingHistoryLog('record', null)}
 )
@@ -259,9 +298,10 @@ export const submitBankingSlip = `
 MATCH (record:ServiceRecord {id: $serviceRecordId})
 WHERE record.transactionStatus IS NULL
 OR NOT record.transactionStatus IN ['pending', 'success']
+WITH record, record.transactionStatus AS bh_fromStatus
 SET record.bankingSlip = $bankingSlip,
     record.bankingSlipUploadedAt = datetime()
-WITH record
+WITH record, bh_fromStatus
 MATCH (banker:Member {id: $jwt.userId})
 MERGE (banker)-[:UPLOADED_SLIP_FOR]->(record)
 ${appendBankingHistoryLog('record', 'banker')}
@@ -287,6 +327,11 @@ RETURN record
 // to teller-flow semantics (new fields, edge labels) lands in one place.
 // The appendBankingHistoryLog fragment is included so callers get the audit
 // row for free.
+// Callers must put `bh_fromStatus` in scope before invoking this fragment —
+// typically via `WITH <carry-forward vars>, ${recordVar}.transactionStatus
+// AS bh_fromStatus`. Keeping the projection at the call site lets each
+// caller control which surrounding variables (governorship, week, etc.)
+// survive past the audit-log CREATE.
 export const markRecordTellerConfirmed = (
   recordVar: string,
   actorVar: string
@@ -301,6 +346,7 @@ MATCH (service:ServiceRecord {id: $serviceRecordId})
 WHERE service.tellerConfirmationTime IS NULL
 MATCH (author:Member {id: $jwt.userId})
 
+WITH service, author, service.transactionStatus AS bh_fromStatus
 ${markRecordTellerConfirmed('service', 'author')}
 RETURN service
 `

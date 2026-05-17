@@ -372,12 +372,16 @@ describe('Phase 4 — appendBankingHistoryLog Cypher fragment', () => {
     expect(frag).not.toMatch(/LOGGED_BANKING/)
   })
 
-  it('reads method, fromStatus, toStatus, message from $bh_* parameters (no string interpolation of user input)', () => {
+  it('reads method/toStatus/message from $bh_* params, fromStatus from in-scope variable', () => {
     const frag = appendBankingHistoryLog('record', 'author')
     expect(frag).toMatch(/method: \$bh_method/)
-    expect(frag).toMatch(/fromStatus: \$bh_fromStatus/)
     expect(frag).toMatch(/toStatus: \$bh_toStatus/)
     expect(frag).toMatch(/message: \$bh_message/)
+    // fromStatus is read from the in-scope variable so each caller is
+    // forced to capture record.transactionStatus AS bh_fromStatus before
+    // the SET, instead of passing null as a lazy placeholder.
+    expect(frag).toMatch(/fromStatus: bh_fromStatus/)
+    expect(frag).not.toMatch(/fromStatus: \$bh_fromStatus/)
   })
 
   it.each([

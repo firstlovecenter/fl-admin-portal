@@ -48,6 +48,7 @@ const anagkazo = {
       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)<-[:HAS*0..1]-(governorship)
     }
     MATCH (teller:Active:Member {id: $jwt.userId})
+    WITH governorship, record, teller, record.transactionStatus AS bh_fromStatus
     ${markRecordTellerConfirmed('record', 'teller')}
     WITH governorship, count(DISTINCT record) AS affectedCount
     RETURN governorship, affectedCount

@@ -23,7 +23,9 @@ describe('SM3 — formDefaultersCount: :Active:Bacenta constraint', () => {
   })
 
   it('SM3: defaulters-match in formDefaultersCount uses :Active:Bacenta (both sides of the exclusion check are Active-scoped)', () => {
-    const activeMatches = (anagkazo.formDefaultersCount.match(/:Active:Bacenta/g) ?? []).length
+    const activeMatches = (
+      anagkazo.formDefaultersCount.match(/:Active:Bacenta/g) ?? []
+    ).length
     expect(activeMatches).toBeGreaterThanOrEqual(2)
   })
 })
@@ -33,7 +35,9 @@ describe('SM3 — formDefaultersCount: :Active:Bacenta constraint', () => {
 // ---------------------------------------------------------------------------
 describe('SM3 — membershipAttendanceDefaultersCount: :Active:Bacenta constraint', () => {
   it('SM3: membershipAttendanceDefaultersCount uses :Active:Bacenta', () => {
-    expect(anagkazo.membershipAttendanceDefaultersCount).toMatch(/:Active:Bacenta/)
+    expect(anagkazo.membershipAttendanceDefaultersCount).toMatch(
+      /:Active:Bacenta/
+    )
   })
 })
 

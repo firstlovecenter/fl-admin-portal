@@ -73,8 +73,9 @@ const treasuryMutations = {
         tx.run(anagkazo.confirmBanking, {
           ...args,
           jwt: context.jwt,
+          // bh_fromStatus is captured in-scope by the Cypher
+          // (record.transactionStatus AS bh_fromStatus before the SET).
           bh_method: 'teller',
-          bh_fromStatus: null,
           bh_toStatus: 'teller-confirmed',
           bh_message: `Teller batch-confirmed banking for governorship ${args.governorshipId}`,
         })

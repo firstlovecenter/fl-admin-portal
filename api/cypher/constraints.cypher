@@ -192,3 +192,22 @@ CREATE CONSTRAINT uniqueClosedHubCouncil IF NOT EXISTS ON (c:ClosedHubCouncil) A
 CREATE CONSTRAINT uniqueStageAttendanceRecord IF NOT EXISTS ON (s:StageAttendanceRecord) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueAggregateStageAttendanceRecord IF NOT EXISTS ON (a:AggregateStageAttendanceRecord) ASSERT a.id IS UNIQUE;
 CREATE CONSTRAINT uniqueAggregateMinistryMeetingRecord IF NOT EXISTS ON (a:AggregateMinistryMeetingRecord) ASSERT a.id IS UNIQUE;
+
+// The Paystack webhook (api/src/functions/background/payment-webhook/index.js)
+// UNIONs three label-scoped MATCHes on `transactionReference`. ServiceRecord
+// and Transaction are already covered above; RehearsalRecord falls through
+// to NodeByLabelScan + property filter without this index, which degrades
+// linearly with the RehearsalRecord population.
+CREATE INDEX rehearsalRecordTransactionReference IF NOT EXISTS
+FOR (r:RehearsalRecord) ON (r.transactionReference);
+
+// BankingHistoryLog (api/src/schema/banking.graphql) is the append-only
+// money audit log. Uniqueness on the auto-generated UUID protects against
+// duplicate inserts from a Cypher re-run within a transaction. The ts
+// RANGE INDEX powers the ORDER BY ts DESC the FE BankingHistorySection
+// uses on every ServiceDetails render.
+CREATE CONSTRAINT uniqueBankingHistoryLog IF NOT EXISTS
+FOR (b:BankingHistoryLog) REQUIRE b.id IS UNIQUE;
+
+CREATE INDEX bankingHistoryLogTs IF NOT EXISTS
+FOR (b:BankingHistoryLog) ON (b.ts);
