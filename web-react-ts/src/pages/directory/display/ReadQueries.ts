@@ -39,17 +39,14 @@ export const DISPLAY_MEMBER_LEADERSHIP = gql`
       leadsBacenta {
         id
         name
-        stream_name
       }
       leadsGovernorship {
         id
         name
-        stream_name
       }
       leadsCouncil {
         id
         name
-        stream_name
       }
       leadsStream {
         id
@@ -128,12 +125,10 @@ export const DISPLAY_MEMBER_ADMIN = gql`
       isAdminForCouncil {
         id
         name
-        stream_name
       }
       isAdminForGovernorship {
         id
         name
-        stream_name
       }
 
     }
@@ -192,7 +187,6 @@ export const DISPLAY_MEMBER_CHURCH = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -220,7 +214,6 @@ export const DISPLAY_BACENTA_HISTORY = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -248,12 +241,10 @@ export const DISPLAY_BACENTA = gql`
       urvanTopUp
 
       momoNumber
-      stream_name
 
       governorship {
         id
         name
-        stream_name
         council {
           id
           name
@@ -294,7 +285,6 @@ export const DISPLAY_GOVERNORSHIP = gql`
     governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
-      stream_name
       bacentaCount
       vacationBacentaCount
       bacentas(limit: 5) {
@@ -334,7 +324,6 @@ export const DISPLAY_GOVERNORSHIP = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -625,7 +614,6 @@ export const DISPLAY_COUNCIL = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -683,7 +671,6 @@ export const DISPLAY_STREAM = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -713,7 +700,6 @@ export const DISPLAY_CAMPUS = gql`
       streams(limit: 5) {
         id
         name
-        stream_name
       }
 
       admin {
@@ -741,7 +727,6 @@ export const DISPLAY_CAMPUS = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -798,7 +783,6 @@ export const DISPLAY_OVERSIGHT = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -849,7 +833,6 @@ export const DISPLAY_DENOMINATION = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
