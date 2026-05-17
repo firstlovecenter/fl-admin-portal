@@ -2,7 +2,7 @@ import { useMutation } from '@apollo/client'
 import RoleView from 'auth/RoleView'
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { alertMsg } from 'global-utils'
+import { alertMsg, throwToSentry } from 'global-utils'
 import { permitLeaderAdmin } from 'permission-utils'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
@@ -10,6 +10,17 @@ import { Phone, RotateCcw } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
 import { Button } from 'components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from 'components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from 'components/ui/alert-dialog'
 import { MemberContext } from 'contexts/MemberContext'
 import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
@@ -129,30 +140,54 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             </Button>
             {serviceDetails?.noServiceReason && (
               <RoleView roles={permitLeaderAdmin('Governorship')}>
-                <Button
-                  className="bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90"
-                  onClick={() => {
-                    const confirmBox = window.confirm(
-                      'Do you want to undo the cancellation of this service?'
-                    )
-
-                    if (confirmBox === true) {
-                      UndoCancelledService({
-                        variables: { serviceRecordId: serviceDetails.id },
-                      }).then(() => {
-                        alertMsg(
-                          'Leader can now fill the form again. Thank you!'
-                        )
-                        clickCard(defaulter)
-                        navigate(
-                          `/${defaulter?.__typename.toLowerCase()}/displaydetails`
-                        )
-                      })
-                    }
-                  }}
-                >
-                  <RotateCcw className="h-4 w-4" /> Undo
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button className="bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90">
+                      <RotateCcw className="h-4 w-4" /> Undo
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Undo cancelled service?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Do you want to undo the cancellation of this service?
+                        The leader will be able to fill the form again.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="min-h-11">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        className="min-h-11"
+                        onClick={async (event) => {
+                          event.preventDefault()
+                          try {
+                            await UndoCancelledService({
+                              variables: { serviceRecordId: serviceDetails.id },
+                            })
+                            alertMsg(
+                              'Leader can now fill the form again. Thank you!'
+                            )
+                            clickCard(defaulter)
+                            navigate(
+                              `/${defaulter?.__typename.toLowerCase()}/displaydetails`
+                            )
+                          } catch (error) {
+                            throwToSentry(
+                              'Error undoing cancelled service',
+                              error
+                            )
+                          }
+                        }}
+                      >
+                        Undo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </RoleView>
             )}
           </div>

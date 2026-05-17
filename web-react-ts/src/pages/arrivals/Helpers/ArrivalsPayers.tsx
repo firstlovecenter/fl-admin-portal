@@ -22,6 +22,16 @@ import {
   DialogTitle,
 } from 'components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from 'components/ui/alert-dialog'
+import {
   MAKE_COUNCIL_ARRIVALSPAYER,
   REMOVE_COUNCIL_ARRIVALSPAYER,
   COUNCIL_ARRIVALSPAYERS,
@@ -45,6 +55,7 @@ const ArrivalsPayerSelect = () => {
   })
   const [submitting, setSubmitting] = useState(false)
   const [show, setShow] = useState(false)
+  const [payerToDelete, setPayerToDelete] = useState<Member | null>(null)
   const handleOpen: FunctionReturnsVoid = () => setShow(true)
   const handleClose: FunctionReturnsVoid = () => setShow(false)
 
@@ -70,6 +81,26 @@ const ArrivalsPayerSelect = () => {
       ],
     }
   )
+
+  const confirmDeletePayer = async () => {
+    if (!payerToDelete) return
+    const payer = payerToDelete
+    setSubmitting(true)
+    try {
+      await RemoveCouncilArrivalsPayer({
+        variables: {
+          councilId,
+          arrivalsPayerId: payer.id,
+        },
+      })
+      alertMsg(`${payer.fullName} Deleted Successfully`)
+    } catch (error: any) {
+      throwToSentry('', error)
+    } finally {
+      setSubmitting(false)
+      setPayerToDelete(null)
+    }
+  }
 
   const initialValues: FormOptions = {
     arrivalsPayerName: '',
@@ -179,27 +210,7 @@ const ArrivalsPayerSelect = () => {
               <Button
                 disabled={submitting}
                 variant="destructive"
-                onClick={async () => {
-                  const confirmBox = window.confirm(
-                    `Do you want to delete ${arrivalsPayer.fullName} as a arrivalsPayer`
-                  )
-
-                  if (confirmBox === true) {
-                    setSubmitting(true)
-                    try {
-                      await RemoveCouncilArrivalsPayer({
-                        variables: {
-                          councilId,
-                          arrivalsPayerId: arrivalsPayer.id,
-                        },
-                      })
-                      setSubmitting(false)
-                      alertMsg(`${arrivalsPayer.fullName} Deleted Successfully`)
-                    } catch (error: any) {
-                      throwToSentry('', error)
-                    }
-                  }
-                }}
+                onClick={() => setPayerToDelete(arrivalsPayer)}
               >
                 {submitting ? (
                   <>
@@ -217,6 +228,41 @@ const ArrivalsPayerSelect = () => {
         {!council?.arrivalsPayers?.length && (
           <NoDataComponent text="You have no Arrivals Payment Governorship Members at this time" />
         )}
+
+        <AlertDialog
+          open={payerToDelete !== null}
+          onOpenChange={(open) => {
+            if (!open && !submitting) setPayerToDelete(null)
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Remove this Arrivals Payment Governorship Member?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {payerToDelete
+                  ? `Do you want to delete ${payerToDelete.fullName} as an Arrivals Payment Governorship Member?`
+                  : ''}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={submitting} className="min-h-11">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                disabled={submitting}
+                onClick={(event) => {
+                  event.preventDefault()
+                  confirmDeletePayer()
+                }}
+                className="min-h-11 bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/30"
+              >
+                {submitting ? 'Deleting…' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </ApolloWrapper>
   )

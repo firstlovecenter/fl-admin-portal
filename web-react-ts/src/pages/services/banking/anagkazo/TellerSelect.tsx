@@ -20,6 +20,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from 'components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from 'components/ui/alert-dialog'
 import ModalSubmitButton from './ModalSubmitButton'
 import {
   MAKE_STREAM_TELLER,
@@ -45,6 +55,7 @@ const TellerSelect = () => {
   })
   const [submitting, setSubmitting] = useState(false)
   const [show, setShow] = useState(false)
+  const [tellerToDelete, setTellerToDelete] = useState<Member | null>(null)
   const handleOpen: FunctionReturnsVoid = () => setShow(true)
   const handleClose: FunctionReturnsVoid = () => setShow(false)
 
@@ -67,6 +78,26 @@ const TellerSelect = () => {
       },
     ],
   })
+
+  const confirmDeleteTeller = async () => {
+    if (!tellerToDelete) return
+    const teller = tellerToDelete
+    setSubmitting(true)
+    try {
+      await RemoveStreamTeller({
+        variables: {
+          streamId,
+          tellerId: teller.id,
+        },
+      })
+      alertMsg(`${teller.fullName} Deleted Successfully`)
+    } catch (error: any) {
+      throwToSentry('', error)
+    } finally {
+      setSubmitting(false)
+      setTellerToDelete(null)
+    }
+  }
 
   const initialValues: FormOptions = {
     tellerName: '',
@@ -170,27 +201,7 @@ const TellerSelect = () => {
               <Button
                 disabled={submitting}
                 variant="destructive"
-                onClick={async () => {
-                  const confirmBox = window.confirm(
-                    `Do you want to delete ${teller.fullName} as a teller`
-                  )
-
-                  if (confirmBox === true) {
-                    setSubmitting(true)
-                    try {
-                      await RemoveStreamTeller({
-                        variables: {
-                          streamId,
-                          tellerId: teller.id,
-                        },
-                      })
-                      setSubmitting(false)
-                      alertMsg(`${teller.fullName} Deleted Successfully`)
-                    } catch (error: any) {
-                      throwToSentry('', error)
-                    }
-                  }
-                }}
+                onClick={() => setTellerToDelete(teller)}
               >
                 {submitting ? (
                   <>
@@ -208,6 +219,39 @@ const TellerSelect = () => {
         {!stream?.tellers?.length && (
           <NoDataComponent text="You have no Bank Tellers at this time" />
         )}
+
+        <AlertDialog
+          open={tellerToDelete !== null}
+          onOpenChange={(open) => {
+            if (!open && !submitting) setTellerToDelete(null)
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove this teller?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {tellerToDelete
+                  ? `Do you want to delete ${tellerToDelete.fullName} as a teller?`
+                  : ''}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={submitting} className="min-h-11">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                disabled={submitting}
+                onClick={(event) => {
+                  event.preventDefault()
+                  confirmDeleteTeller()
+                }}
+                className="min-h-11 bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/30"
+              >
+                {submitting ? 'Deleting…' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </ApolloWrapper>
   )

@@ -194,7 +194,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
 
   const today = new Date().toISOString().slice(0, 10)
   const generatedOn = getHumanReadableDate(today) ?? today
-  const previewRows = buildPreviewRows(church)
+  const previewRows = useMemo(() => buildPreviewRows(church), [church])
   const total = church?.memberCount ?? 0
   const displayFilename = buildDisplayFilename(church?.name ?? '', churchType)
 

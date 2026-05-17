@@ -1,4 +1,5 @@
 import { ApolloError } from '@apollo/client'
+import { toast } from 'sonner'
 import {
   ChurchLevel,
   CurrentUser,
@@ -170,6 +171,10 @@ export const MINISTRY_ACCOUNT_OPTIONS: FormikSelectOptions = [
   { key: 'Accra Film Stars', value: 'accra_film_stars' },
 ]
 
+const surfaceErrorToast = (text: string) => {
+  toast.error(text, { duration: 10000 })
+}
+
 export const throwToSentry = (
   message: string,
   error?: Error | ApolloError | unknown
@@ -178,36 +183,29 @@ export const throwToSentry = (
     return
   }
 
-  const user = JSON.parse(sessionStorage.getItem('currentUser') || '{}')
-
   if (!error) {
     // eslint-disable-next-line no-console
     console.error(message)
-    // eslint-disable-next-line no-alert
-    // alert(`${message}`)
-    // window.open('/', '_self')
     return
   }
 
   if (!message) {
     // eslint-disable-next-line no-console
     console.error(error)
-    // eslint-disable-next-line no-alert
-    alert(`${error}`)
+    surfaceErrorToast(`${error}`)
     return
   }
 
   // eslint-disable-next-line no-console
   console.error(error)
-  // eslint-disable-next-line no-alert
-  alert(`${message} ${error}`)
+  surfaceErrorToast(`${message} ${error}`)
 }
 
 export const showUserReportDialog = () => {}
 
 export const alertMsg = (error: unknown) => {
   const message = error instanceof Error ? error.message : String(error)
-  import('sonner').then(({ toast }) => toast.error(message, { duration: 10000 }))
+  surfaceErrorToast(message)
 }
 
 export const isAuthorised = (permittedRoles: Role[], userRoles: Role[]) => {

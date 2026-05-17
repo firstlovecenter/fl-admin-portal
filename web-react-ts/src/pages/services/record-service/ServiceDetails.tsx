@@ -511,40 +511,69 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                               ...permitTellerStream(),
                             ]}
                           >
-                            <Button
-                              className="w-full min-h-11 gap-2"
-                              disabled={submitting}
-                              onClick={async () => {
-                                setSubmitting(true)
-                                const confirmed = window.confirm(
-                                  'Do you want to confirm banking for this service?'
-                                )
-                                if (confirmed) {
-                                  try {
-                                    const res =
-                                      await ManuallyConfirmOfferingPayment({
-                                        variables: {
-                                          serviceRecordId: service.id,
-                                        },
-                                      })
-                                    if (res.errors)
-                                      throw new Error(res.errors[0].message)
-                                    alertMsg(
-                                      'Offering Payment has been confirmed. Thank you!'
-                                    )
-                                  } catch (error) {
-                                    throwToSentry('', error)
-                                  } finally {
-                                    setSubmitting(false)
-                                  }
-                                } else {
-                                  setSubmitting(false)
-                                }
-                              }}
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                              {submitting ? 'Confirming…' : 'Confirm Offering'}
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  className="w-full min-h-11 gap-2"
+                                  disabled={submitting}
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                  {submitting
+                                    ? 'Confirming…'
+                                    : 'Confirm Offering'}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Confirm offering banking?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Do you want to confirm banking for this
+                                    service?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel
+                                    disabled={submitting}
+                                    className="min-h-11"
+                                  >
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    disabled={submitting}
+                                    className="min-h-11"
+                                    onClick={async (event) => {
+                                      event.preventDefault()
+                                      setSubmitting(true)
+                                      try {
+                                        const res =
+                                          await ManuallyConfirmOfferingPayment({
+                                            variables: {
+                                              serviceRecordId: service.id,
+                                            },
+                                          })
+                                        if (res.errors)
+                                          throw new Error(
+                                            res.errors[0].message
+                                          )
+                                        alertMsg(
+                                          'Offering Payment has been confirmed. Thank you!'
+                                        )
+                                      } catch (error) {
+                                        throwToSentry('', error)
+                                      } finally {
+                                        setSubmitting(false)
+                                      }
+                                    }}
+                                  >
+                                    {submitting
+                                      ? 'Confirming…'
+                                      : 'Confirm Offering'}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </RoleView>
                           <RoleView roles={permitAdmin('Stream')}>
                             <Button

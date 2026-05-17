@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { parsePhoneNum, throwToSentry } from '../../../global-utils'
@@ -7,6 +7,18 @@ import { ChurchContext } from '../../../contexts/ChurchContext'
 import MemberForm from '../reusable-forms/MemberForm'
 import { Bacenta } from 'global-types'
 import { FormikHelpers } from 'formik'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from 'components/ui/alert-dialog'
+
+const REQUEST_MEMBER_URL = 'https://airtable.com/shrw3wTXx5q8kbHwP'
 
 export type CreateMemberFormOptions = {
   firstName: string
@@ -44,6 +56,9 @@ const CreateMember = () => {
   }
 
   const { clickCard } = useContext(ChurchContext)
+  const [duplicateDialogMessage, setDuplicateDialogMessage] = useState<
+    string | null
+  >(null)
 
   //All of the Hooks!
 
@@ -87,37 +102,11 @@ const CreateMember = () => {
       resetForm()
       navigate('/member/displaydetails')
     } catch (error: any) {
-      if (error.message.toLowerCase().includes('email')) {
-        const confirmBox = window.confirm(
-          'There was an error creating the member profile\n' +
-            error +
-            '\n\nWould you like to request for the member?'
+      const message = error?.message?.toLowerCase?.() ?? ''
+      if (message.includes('email') || message.includes('whatsapp')) {
+        setDuplicateDialogMessage(
+          `There was an error creating the member profile\n${error}\n\nWould you like to request for the member?`
         )
-
-        if (confirmBox === true) {
-          window.open(
-            'https://airtable.com/shrw3wTXx5q8kbHwP',
-            '_blank',
-            'noopener,noreferrer'
-          )
-        }
-
-        setSubmitting(false)
-      } else if (error.message.toLowerCase().includes('whatsapp')) {
-        const confirmBox = window.confirm(
-          'There was an error creating the member profile\n' +
-            error +
-            '\n\nWould you like to request for the member?'
-        )
-
-        if (confirmBox === true) {
-          window.open(
-            'https://airtable.com/shrw3wTXx5q8kbHwP',
-            '_blank',
-            'noopener,noreferrer'
-          )
-        }
-
         setSubmitting(false)
       } else {
         setSubmitting(false)
@@ -133,6 +122,33 @@ const CreateMember = () => {
         loading={false}
         onSubmit={onSubmit}
       />
+      <AlertDialog
+        open={duplicateDialogMessage !== null}
+        onOpenChange={(open) => {
+          if (!open) setDuplicateDialogMessage(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Member already exists</AlertDialogTitle>
+            <AlertDialogDescription className="whitespace-pre-line">
+              {duplicateDialogMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="min-h-11">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="min-h-11"
+              onClick={() => {
+                window.open(REQUEST_MEMBER_URL, '_blank', 'noopener,noreferrer')
+                setDuplicateDialogMessage(null)
+              }}
+            >
+              Request Member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
