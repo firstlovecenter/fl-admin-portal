@@ -1275,7 +1275,11 @@ extend type Mutation {
     @cypher(
       statement: """
       MATCH (arr:ArrivalsCodeOfTheDay)
-      SET arr.code = $code
+      SET arr.code = $code,
+          arr.usedWords = CASE
+            WHEN $code IN coalesce(arr.usedWords, []) THEN arr.usedWords
+            ELSE coalesce(arr.usedWords, []) + $code
+          END
       RETURN arr.code
       """
       columnName: "code"
