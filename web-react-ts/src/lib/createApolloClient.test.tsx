@@ -2,19 +2,19 @@
  * createApolloClient.test.tsx — SYN-79
  *
  * Locks in the Apollo Client link-chain behaviour: auth header, retry
- * count, error-link snackbar dedupe, and errorPolicy: 'all'. These
- * tests guard against silent regressions in src/lib/createApolloClient.tsx
- * during future link-config changes.
+ * policy (5xx retried, 4xx not retried), error-link surface (one toast
+ * per query — error link sits outside the retry boundary), and
+ * errorPolicy: 'all'. These tests guard against silent regressions in
+ * src/lib/createApolloClient.tsx during future link-config changes.
  *
  * Stack: Vitest + MSW (per ADR-013). MSW intercepts fetch and lets us
  * return deterministic 5xx / 4xx / partial-success responses without a
  * real Apollo server.
  *
  * Notes:
- *   - The production app surfaces errors via sonner (`toast.error`),
- *     not notistack. Sonner already dedupes by the `id` option per call
- *     site; the test asserts that exactly one toast is emitted across
- *     all retry attempts, regardless of the underlying mechanism.
+ *   - The production app surfaces errors via sonner (`toast.error`).
+ *     errorLink sits outside the retry boundary so the user sees one
+ *     toast per failed query — not one per retry attempt.
  *   - The auth token source in production is AuthContext, which itself
  *     reads localStorage. Tests pass a synchronous resolver directly to
  *     the factory — the link only cares that it gets a string back.
@@ -22,7 +22,6 @@
  *     path in AuthContext.test.tsx.
  */
 
-import React from 'react'
 import {
   describe,
   it,
@@ -36,8 +35,15 @@ import {
 import { gql } from '@apollo/client'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
+import { toast } from 'sonner'
+import {
+  createApolloClient,
+  RETRY_LINK_MAX_ATTEMPTS,
+} from 'lib/createApolloClient'
 
-// Mock sonner BEFORE importing the factory so the error link picks up the spy.
+// Mock sonner so the error link's toast.error calls land on a spy. vi.mock
+// is hoisted by Vitest above all imports, so the order of import statements
+// above doesn't matter — the mock is in place before `toast` is resolved.
 vi.mock('sonner', () => ({
   toast: {
     error: vi.fn(),
@@ -45,12 +51,6 @@ vi.mock('sonner', () => ({
     message: vi.fn(),
   },
 }))
-
-import { toast } from 'sonner'
-import {
-  createApolloClient,
-  RETRY_LINK_MAX_ATTEMPTS,
-} from 'lib/createApolloClient'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -216,15 +216,7 @@ describe('createApolloClient — retry link', () => {
     expect(counter.calls).toBe(RETRY_LINK_MAX_ATTEMPTS)
   }, 20000)
 
-  // TODO(refactor): SYN-79 ticket asks for "4xx is NOT retried". The current
-  // RetryLink config has no `retryIf` filter, so it retries every failure —
-  // including 401 / 403 / 404. This is a real bug (auth/permission errors
-  // should not loop) but characterization tests pin REALITY, not the wish.
-  // Fix: add `attempts.retryIf = (error) => !error?.statusCode ||
-  //                                error.statusCode >= 500`
-  // in createApolloClient. When that lands, flip these `.toBe(5)` assertions
-  // back to `.toBe(1)`.
-  it('CURRENT BUG: retries a 401 the full RETRY_LINK_MAX_ATTEMPTS (should be 1)', async () => {
+  it('does NOT retry a 401 — auth errors must not loop', async () => {
     const counter = installStatusHandler(401)
     const client = createApolloClient({
       getAccessTokenSilently: tokenResolver('tok'),
@@ -235,10 +227,10 @@ describe('createApolloClient — retry link', () => {
       client.query({ query: PING_QUERY, fetchPolicy: 'no-cache' })
     ).rejects.toBeDefined()
 
-    expect(counter.calls).toBe(RETRY_LINK_MAX_ATTEMPTS)
-  }, 20000)
+    expect(counter.calls).toBe(1)
+  })
 
-  it('CURRENT BUG: retries a 403 the full RETRY_LINK_MAX_ATTEMPTS (should be 1)', async () => {
+  it('does NOT retry a 403 — permission errors must not loop', async () => {
     const counter = installStatusHandler(403)
     const client = createApolloClient({
       getAccessTokenSilently: tokenResolver('tok'),
@@ -249,8 +241,22 @@ describe('createApolloClient — retry link', () => {
       client.query({ query: PING_QUERY, fetchPolicy: 'no-cache' })
     ).rejects.toBeDefined()
 
-    expect(counter.calls).toBe(RETRY_LINK_MAX_ATTEMPTS)
-  }, 20000)
+    expect(counter.calls).toBe(1)
+  })
+
+  it('does NOT retry a 404 — missing resource is not transient', async () => {
+    const counter = installStatusHandler(404)
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    await expect(
+      client.query({ query: PING_QUERY, fetchPolicy: 'no-cache' })
+    ).rejects.toBeDefined()
+
+    expect(counter.calls).toBe(1)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -308,25 +314,54 @@ describe('createApolloClient — error link', () => {
     expect(toast.error).not.toHaveBeenCalled()
   })
 
-  it('uses a stable `id` per error message so sonner dedupes to ONE visible toast across retries', async () => {
-    // The error link fires per retry attempt — every 5xx triggers both a
-    // graphQLErrors toast and a networkError toast in the current
-    // implementation. This is NOT a "snackbar storm" from the user's
-    // perspective because every call passes a stable `id` (derived from
-    // message + path), so sonner deduplicates to a single visible toast
-    // per unique error.
+  it('fires exactly once on a 5xx that retries to exhaustion (no snackbar storm)', async () => {
+    // errorLink sits OUTSIDE the retry boundary, so the user sees exactly
+    // ONE error toast per query — not one per retry attempt. Locking in
+    // this contract: if anyone ever reorders the link chain (or moves the
+    // error link inside retryLink), this test fails immediately.
     //
-    // The contract we lock in: every toast.error call MUST include an `id`.
-    // If the dedupe key is ever dropped, the user really does see a storm,
-    // and this assertion catches it.
-    //
-    // TODO(refactor): SYN-79's "exactly once per query" wording suggests
-    // the error link should also short-circuit on retry attempts (e.g.
-    // suppress toasts until the final failure). If/when that lands, this
-    // test should tighten from "id is stable" to
-    // `expect(toast.error).toHaveBeenCalledTimes(1)`. Until then, we pin
-    // current behaviour: many calls, but all with the same `id`.
-    installStatusHandler(500)
+    // The handler returns a plain-text 500 (no parseable `errors` body)
+    // so the surface is purely a networkError — the realistic shape of a
+    // crashed origin, gateway timeout, or load-balancer 5xx.
+    const counter = { calls: 0 }
+    server.use(
+      http.post(GRAPHQL_URL, async () => {
+        counter.calls += 1
+        return new HttpResponse('Internal Server Error', { status: 500 })
+      })
+    )
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    await client
+      .query({ query: PING_QUERY, fetchPolicy: 'no-cache' })
+      .catch(() => undefined)
+
+    // RetryLink burned all attempts under the hood.
+    expect(counter.calls).toBe(RETRY_LINK_MAX_ATTEMPTS)
+    // But the error link only fired ONCE — exactly once per query.
+    expect(toast.error).toHaveBeenCalledTimes(1)
+    expect(toast.error).toHaveBeenCalledWith(
+      'Network Error',
+      expect.objectContaining({ id: expect.stringMatching(/^network:/) })
+    )
+  }, 20000)
+
+  it('every toast.error call includes a stable `id` for sonner dedupe', async () => {
+    // Second line of defence — even if the link order ever regressed and
+    // the error link fired per attempt, sonner would still dedupe to a
+    // single user-visible toast as long as `id` is stable. This test
+    // pins the dedupe seam itself.
+    server.use(
+      http.post(GRAPHQL_URL, async () =>
+        HttpResponse.json({
+          data: null,
+          errors: [{ message: 'boom', path: ['ping'] }],
+        })
+      )
+    )
     const client = createApolloClient({
       getAccessTokenSilently: tokenResolver('tok'),
       uri: GRAPHQL_URL,
@@ -337,22 +372,10 @@ describe('createApolloClient — error link', () => {
       .catch(() => undefined)
 
     const calls = vi.mocked(toast.error).mock.calls
-    expect(calls.length).toBeGreaterThan(0)
-
-    // Every call passes a stable `id` — this is the actual dedupe seam.
-    const ids = new Set(
-      calls.map(([, opts]) => (opts as { id?: string } | undefined)?.id)
-    )
-    for (const id of ids) {
-      expect(id).toBeTruthy()
+    for (const [, opts] of calls) {
+      expect((opts as { id?: string } | undefined)?.id).toBeTruthy()
     }
-
-    // The id set size is the count of UNIQUE user-visible toasts. A 500
-    // produces at most 2 unique ids (one graphql-error, one network-error
-    // with HTTP-500 message). Critically it is NOT RETRY_LINK_MAX_ATTEMPTS
-    // unique ids — which is the regression we are pinning against.
-    expect(ids.size).toBeLessThanOrEqual(2)
-  }, 20000)
+  })
 })
 
 // ---------------------------------------------------------------------------

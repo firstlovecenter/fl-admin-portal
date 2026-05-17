@@ -22,6 +22,8 @@ import { onError } from '@apollo/client/link/error'
 import {
   ApolloClient,
   NormalizedCacheObject,
+  ServerError,
+  ServerParseError,
   createHttpLink,
   from,
 } from '@apollo/client'
@@ -102,6 +104,19 @@ export function createApolloClient({
     },
     attempts: {
       max: RETRY_LINK_MAX_ATTEMPTS,
+      // 4xx responses are client errors — auth / permission / validation.
+      // Looping them is harmful (token-expiry storms, lock-out cascades), so
+      // only retry on transport failures (no statusCode) and 5xx responses.
+      // HttpLink rejects with ServerError or ServerParseError on HTTP-status
+      // failures (both carry statusCode); transport failures (DNS, abort,
+      // network drop) reject with a plain Error with no statusCode.
+      retryIf: (
+        error: ServerError | ServerParseError | Error | undefined
+      ): boolean => {
+        if (!error) return false
+        if (!('statusCode' in error)) return true
+        return error.statusCode >= 500
+      },
     },
   })
 
@@ -139,9 +154,14 @@ export function createApolloClient({
 
   const errorPolicy = 'all'
 
+  // Link order matters. errorLink sits OUTSIDE the retry boundary so a
+  // GraphQL or network error surfaces a toast exactly once per query —
+  // regardless of how many attempts retryLink burned underneath. The retry
+  // boundary then wraps authLink + httpLink so each attempt picks up a fresh
+  // Authorization header (token rotation between attempts is supported).
   return new ApolloClient({
     uri: resolvedUri,
-    link: from([retryLink, errorLink, authLink.concat(httpLink)]),
+    link: from([errorLink, retryLink, authLink.concat(httpLink)]),
     cache: buildApolloCache(),
     connectToDevTools: true,
     defaultOptions: {
