@@ -1,4 +1,10 @@
-import { useEffect, useState, type MouseEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useState,
+  useTransition,
+  type MouseEvent,
+  type ReactNode,
+} from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertOctagon,
@@ -6,6 +12,7 @@ import {
   BusFront,
   CalendarRange,
   Download,
+  Loader2,
   Network,
   Users,
 } from 'lucide-react'
@@ -113,24 +120,36 @@ type ReportCardProps = {
   title: string
   description: string
   to: string | null
+  pending: boolean
+  onActivate: (to: string) => void
 }
 
-const ReportCard = ({ icon, title, description, to }: ReportCardProps) => {
-  const navigate = useNavigate()
+const ReportCard = ({
+  icon,
+  title,
+  description,
+  to,
+  pending,
+  onActivate,
+}: ReportCardProps) => {
   const unavailable = to === null
+  const isLoading = pending && !unavailable
 
   return (
     <button
       type="button"
-      disabled={unavailable}
+      disabled={unavailable || isLoading}
+      aria-busy={isLoading || undefined}
       onClick={() => {
-        if (to) navigate(to)
+        if (to) onActivate(to)
       }}
       className={cn(
         'flex w-full items-start gap-4 rounded-xl border border-border bg-card p-5 text-left transition-[transform,box-shadow,background-color] duration-200',
-        unavailable
-          ? 'cursor-not-allowed opacity-50'
-          : 'hover:bg-accent/40 motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md active:scale-[0.99]'
+        unavailable && 'cursor-not-allowed opacity-50',
+        isLoading && 'cursor-progress',
+        !unavailable &&
+          !isLoading &&
+          'hover:bg-accent/40 motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md active:scale-[0.99]'
       )}
     >
       <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-banking/10 text-banking">
@@ -138,22 +157,49 @@ const ReportCard = ({ icon, title, description, to }: ReportCardProps) => {
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-foreground">{title}</p>
-        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          {isLoading ? 'Opening…' : description}
+        </p>
         {unavailable && (
           <p className="mt-1 text-xs text-muted-foreground/70">
             Not available for your current church scope
           </p>
         )}
       </div>
-      {!unavailable && (
-        <Download className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-      )}
+      {!unavailable &&
+        (isLoading ? (
+          <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-banking" />
+        ) : (
+          <Download className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+        ))}
     </button>
   )
 }
 
 const ReportsPage = () => {
   const { selectedScope } = useChurchRoleScope()
+  const navigate = useNavigate()
+  // `pendingTarget` gives the just-clicked card its own spinner so the
+  // user gets immediate feedback while the lazy chunk + Suspense
+  // fallback for the destination page resolve. `useTransition` keeps
+  // ReportsPage mounted across the navigation so we have somewhere to
+  // render that pending state — without it React would unmount us as
+  // soon as `navigate()` runs and the user would just see a blank
+  // screen until LoadingScreen takes over.
+  const [isPending, startTransition] = useTransition()
+  const [pendingTarget, setPendingTarget] = useState<string | null>(null)
+  const handleCardActivate = (to: string) => {
+    setPendingTarget(to)
+    startTransition(() => navigate(to))
+  }
+  // Tiny wrapper so each card site doesn't have to thread pending/onActivate.
+  const Card = (props: Omit<ReportCardProps, 'pending' | 'onActivate'>) => (
+    <ReportCard
+      {...props}
+      pending={isPending && pendingTarget !== null && pendingTarget === props.to}
+      onActivate={handleCardActivate}
+    />
+  )
   const churchType = selectedScope?.churchType ?? ''
   const churchName = selectedScope?.churchName ?? ''
   const churchPrefix = churchName ? `${churchName} ` : ''
@@ -234,7 +280,7 @@ const ReportsPage = () => {
                 <RoleView
                   roles={permitLeaderAdmin(churchType as ChurchLevel)}
                 >
-                  <ReportCard
+                  <Card
                     icon={<Users className="size-5" />}
                     title={`${churchPrefix}Membership List`}
                     description={`Every member in ${
@@ -244,7 +290,7 @@ const ReportsPage = () => {
                   />
                 </RoleView>
                 {hasSubChurches && (
-                  <ReportCard
+                  <Card
                     icon={<Network className="size-5" />}
                     title={`${churchPrefix}Sub-Church Directory`}
                     description={`One row per sub-church in ${
@@ -261,7 +307,7 @@ const ReportsPage = () => {
                 Bussing
               </p>
               <div className="space-y-3">
-                <ReportCard
+                <Card
                   icon={<Bus className="size-5" />}
                   title={
                     churchType === 'Bacenta'
@@ -280,7 +326,7 @@ const ReportsPage = () => {
                   to={bussingPath}
                 />
                 {hasSubChurches && (
-                  <ReportCard
+                  <Card
                     icon={<Network className="size-5" />}
                     title={`${churchPrefix}Bussing by Sub-Church`}
                     description={`Per-week Sunday bussing totals broken down by each sub-church in ${
@@ -298,14 +344,14 @@ const ReportsPage = () => {
                   Defaulters
                 </p>
                 <div className="space-y-3">
-                  <ReportCard
+                  <Card
                     icon={<AlertOctagon className="size-5" />}
                     title={`${churchPrefix}Defaulters Report`}
                     description="Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-sub-church summary at Council and above."
                     to={defaultersPath}
                   />
                   {defaultersSubChurchesAvailable && (
-                    <ReportCard
+                    <Card
                       icon={<Network className="size-5" />}
                       title={`${churchPrefix}Defaulters by Sub-Church`}
                       description={`One row per sub-church in ${
@@ -324,14 +370,14 @@ const ReportsPage = () => {
                   Arrivals
                 </p>
                 <div className="space-y-3">
-                  <ReportCard
+                  <Card
                     icon={<BusFront className="size-5" />}
                     title={`${churchPrefix}Arrivals Report`}
                     description="Per-Bacenta and per-vehicle bussing snapshot for any Sunday — attendance, leader declaration, vehicle counts, top-ups, and a per-sub-church summary at Council and above."
                     to={arrivalsPath}
                   />
                   {arrivalsSubChurchesAvailable && (
-                    <ReportCard
+                    <Card
                       icon={<Network className="size-5" />}
                       title={`${churchPrefix}Arrivals by Sub-Church`}
                       description={`One row per sub-church in ${
@@ -349,7 +395,7 @@ const ReportsPage = () => {
                 Weekday
               </p>
               <div className="space-y-3">
-                <ReportCard
+                <Card
                   icon={<CalendarRange className="size-5" />}
                   title={
                     churchType === 'Bacenta'
@@ -368,7 +414,7 @@ const ReportsPage = () => {
                   to={weekdayPath}
                 />
                 {hasSubChurches && (
-                  <ReportCard
+                  <Card
                     icon={<Network className="size-5" />}
                     title={`${churchPrefix}Weekday by Sub-Church`}
                     description={`Per-week weekday service totals broken down by each sub-church in ${
