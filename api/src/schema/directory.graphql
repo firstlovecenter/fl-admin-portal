@@ -1319,7 +1319,7 @@ type Governorship implements Church @node
       RETURN CASE
         WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
         THEN COUNT {
-          MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          MATCH (this)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
           RETURN DISTINCT pastors
         }
         ELSE 0
