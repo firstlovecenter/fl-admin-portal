@@ -100,7 +100,6 @@ export interface BacentaWithArrivals extends Bacenta {
   urvanTopUp: number
   bussing: BussingRecord[]
   bussingThisWeek: BussingRecord
-  governorship?: { id: string; name: string } | null
 }
 
 export interface HigherChurchWithArrivals extends Church {
