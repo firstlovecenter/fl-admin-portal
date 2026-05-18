@@ -27,7 +27,13 @@
 // match an existing pattern — use CREATE not MERGE for clarity.
 export const appendBankingHistoryLog = (
   recordVar: string,
-  actorVar: string | null
+  actorVar: string | null,
+  // Optional Cypher expression for the message. Defaults to the $bh_message
+  // param so existing callers (the single-record paths) are unchanged. The
+  // batch-confirm path overrides this so it can interpolate the actual
+  // governorship/council name into the audit row instead of just the UUID.
+  // MUST be a literal Cypher expression — never user input.
+  messageExpr = '$bh_message'
 ): string => {
   const actorLine = actorVar
     ? `CREATE (${actorVar})-[:LOGGED_BANKING]->(bhlog)`
@@ -38,7 +44,7 @@ CREATE (${recordVar})-[:HAS_BANKING_HISTORY]->(bhlog:BankingHistoryLog {
   method: $bh_method,
   fromStatus: bh_fromStatus,
   toStatus: $bh_toStatus,
-  message: $bh_message,
+  message: ${messageExpr},
   ts: datetime()
 })
 ${actorLine}
@@ -336,12 +342,16 @@ RETURN record
 // survive past the audit-log CREATE.
 export const markRecordTellerConfirmed = (
   recordVar: string,
-  actorVar: string
+  actorVar: string,
+  // Optional Cypher expression for the audit-log message. Forwards to
+  // appendBankingHistoryLog — see that helper for the contract (must be a
+  // literal Cypher expression, never user input).
+  messageExpr = '$bh_message'
 ): string => `
 SET ${recordVar}.tellerConfirmationTime = datetime(),
     ${recordVar}.bankingMethod = 'teller'
 MERGE (${recordVar})<-[:CONFIRMED_BANKING_FOR]-(${actorVar})
-${appendBankingHistoryLog(recordVar, actorVar)}
+${appendBankingHistoryLog(recordVar, actorVar, messageExpr)}
 `
 
 export const manuallyConfirmOfferingPayment = `

@@ -46,8 +46,10 @@ const treasury = {
       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(council)
     }
     MATCH (teller:Active:Member {id: $jwt.userId})
-    WITH council, record, teller, record.transactionStatus AS bh_fromStatus
-    ${markRecordTellerConfirmed('record', 'teller')}
+    WITH council, record, teller,
+         record.transactionStatus AS bh_fromStatus,
+         'Teller batch-confirmed banking for ' + coalesce(council.name, council.id) + ' Council' AS bh_msg
+    ${markRecordTellerConfirmed('record', 'teller', 'bh_msg')}
     WITH council, count(DISTINCT record) AS affectedCount
     RETURN council, affectedCount
     `,
@@ -81,8 +83,10 @@ const treasury = {
       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)<-[:HAS*0..1]-(governorship)
     }
     MATCH (teller:Active:Member {id: $jwt.userId})
-    WITH governorship, record, teller, record.transactionStatus AS bh_fromStatus
-    ${markRecordTellerConfirmed('record', 'teller')}
+    WITH governorship, record, teller,
+         record.transactionStatus AS bh_fromStatus,
+         'Teller batch-confirmed banking for ' + coalesce(governorship.name, governorship.id) + ' Governorship' AS bh_msg
+    ${markRecordTellerConfirmed('record', 'teller', 'bh_msg')}
     WITH governorship, count(DISTINCT record) AS affectedCount
     RETURN governorship, affectedCount
     `,

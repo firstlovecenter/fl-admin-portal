@@ -3,8 +3,8 @@ import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { useQuery, useMutation, useLazyQuery } from '@apollo/client'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import CloudinaryImage from 'components/CloudinaryImage'
+import ErrorScreen from 'components/base-component/ErrorScreen'
+import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { DISPLAY_AGGREGATE_SERVICE_RECORD } from 'pages/services/record-service/RecordServiceMutations'
 import { alertMsg, getWeekNumber, throwToSentry } from 'global-utils'
 import { Church, UserJobs } from 'global-types'
@@ -290,7 +290,15 @@ const ConfirmManualBanking = () => {
         <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
           {/* ── Left column ── */}
           <div className="space-y-4">
-            <ApolloWrapper data={data} loading={loading} error={error}>
+            {error && !data ? (
+              <ErrorScreen error={error} />
+            ) : loading && !data ? (
+              // First-load skeleton — mirrors the actual content shape so
+              // the transition to real data doesn't reflow the layout. A
+              // generic <LoadingScreen/> spinner was here previously and
+              // looked broken on this dense page.
+              <LoadingSkeleton />
+            ) : (
               <>
                 {showSearch && (
                   <div className="relative">
@@ -315,7 +323,7 @@ const ConfirmManualBanking = () => {
                       page={councilPage}
                       totalPages={councilTotalPages}
                     />
-                    {councilDefaulters.length === 0 && !loading ? (
+                    {councilDefaulters.length === 0 ? (
                       <EmptyStateNoMatch
                         search={debouncedSearch}
                         onClear={() => setSearchInput('')}
@@ -351,7 +359,7 @@ const ConfirmManualBanking = () => {
                       page={govPage}
                       totalPages={govTotalPages}
                     />
-                    {governorshipDefaulters.length === 0 && !loading ? (
+                    {governorshipDefaulters.length === 0 ? (
                       <EmptyStateNoMatch
                         search={debouncedSearch}
                         onClear={() => setSearchInput('')}
@@ -379,21 +387,18 @@ const ConfirmManualBanking = () => {
                 )}
 
                 {/* ── Empty states ── */}
-                {!streamId && !loading && <EmptyStateNoScope />}
-                {streamId && !loading && totalPending === 0 && !debouncedSearch && (
+                {!streamId && <EmptyStateNoScope />}
+                {streamId && totalPending === 0 && !debouncedSearch && (
                   <EmptyStateAllConfirmed />
                 )}
-                {streamId &&
-                  !loading &&
-                  totalPending === 0 &&
-                  debouncedSearch && (
-                    <EmptyStateNoMatch
-                      search={debouncedSearch}
-                      onClear={() => setSearchInput('')}
-                    />
-                  )}
+                {streamId && totalPending === 0 && debouncedSearch && (
+                  <EmptyStateNoMatch
+                    search={debouncedSearch}
+                    onClear={() => setSearchInput('')}
+                  />
+                )}
               </>
-            </ApolloWrapper>
+            )}
           </div>
 
           {/* ── Right column — intentional negative space on desktop ── */}
@@ -429,11 +434,11 @@ const ConfirmManualBanking = () => {
           </DialogHeader>
 
           {serviceLoading ? (
-            <div className="flex flex-col items-center gap-3 py-8">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">
-                Loading the latest figure…
-              </p>
+            <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <Skeleton className="h-3 w-14" />
+                <Skeleton className="h-8 w-32" />
+              </div>
             </div>
           ) : (
             <>
@@ -572,6 +577,43 @@ const Pager = ({ page, totalPages, onPage }: PagerProps) => (
   </div>
 )
 
+const LoadingSkeleton = () => (
+  <>
+    {/* Search bar placeholder */}
+    <Skeleton className="h-11 w-full rounded-md" />
+
+    {/* Section heading placeholder */}
+    <div className="flex items-baseline justify-between gap-2">
+      <Skeleton className="h-4 w-40" />
+    </div>
+
+    {/* Card placeholders — three rows mirrors the typical first-page size */}
+    <div className="space-y-3">
+      {[0, 1, 2].map((i) => (
+        <DefaulterCardSkeleton key={i} />
+      ))}
+    </div>
+  </>
+)
+
+const DefaulterCardSkeleton = () => (
+  <Card className="overflow-hidden border border-border">
+    <CardContent className="flex items-center gap-4 p-4">
+      <Skeleton className="size-12 shrink-0 rounded-full" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-40 max-w-[60%]" />
+          <Skeleton className="h-4 w-16 rounded-full" />
+        </div>
+        <Skeleton className="h-3 w-32" />
+      </div>
+    </CardContent>
+    <CardFooter className="border-t border-border bg-muted/20 px-4 py-3">
+      <Skeleton className="ml-auto h-9 w-36 rounded-md" />
+    </CardFooter>
+  </Card>
+)
+
 interface DefaulterCardProps {
   defaulter: Defaulter
   onConfirm: () => void
@@ -584,14 +626,19 @@ const DefaulterCard = ({
   isLoading,
 }: DefaulterCardProps) => {
   const isCouncil = defaulter.__typename === 'Council'
+  const leader = defaulter?.leader
+  const initials = `${leader?.firstName?.[0] ?? ''}${
+    leader?.lastName?.[0] ?? ''
+  }`.toUpperCase()
   return (
     <Card className="overflow-hidden border border-border transition-colors hover:border-banking/40">
       <CardContent className="flex items-center gap-4 p-4">
-        <CloudinaryImage
-          className="size-12 shrink-0 rounded-full object-cover ring-2 ring-border"
-          src={defaulter?.leader?.pictureUrl}
-          alt={defaulter?.leader?.fullName}
-        />
+        <Avatar className="size-12 shrink-0 ring-2 ring-border">
+          <AvatarImage src={leader?.pictureUrl} alt={leader?.fullName} />
+          <AvatarFallback className="bg-muted text-sm font-medium text-muted-foreground">
+            {initials || '—'}
+          </AvatarFallback>
+        </Avatar>
         <div className="min-w-0 flex-1 space-y-0.5">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <p className="truncate text-base font-semibold text-foreground">
@@ -609,9 +656,9 @@ const DefaulterCard = ({
               {formatChurchLevel(defaulter.__typename)}
             </Badge>
           </div>
-          {defaulter?.leader?.fullName && (
+          {leader?.fullName && (
             <p className="truncate text-xs text-muted-foreground">
-              {defaulter.leader.fullName}
+              {leader.fullName}
             </p>
           )}
         </div>

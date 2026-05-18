@@ -73,11 +73,13 @@ const treasuryMutations = {
         tx.run(treasury.confirmBanking, {
           ...args,
           jwt: context.jwt,
-          // bh_fromStatus is captured in-scope by the Cypher
-          // (record.transactionStatus AS bh_fromStatus before the SET).
+          // bh_fromStatus and bh_msg are captured in-scope by the Cypher:
+          //   record.transactionStatus AS bh_fromStatus,
+          //   'Teller batch-confirmed banking for ' + governorship.name AS bh_msg
+          // so the audit row carries the human-readable Governorship name
+          // instead of the raw UUID.
           bh_method: 'teller',
           bh_toStatus: 'teller-confirmed',
-          bh_message: `Teller batch-confirmed banking for governorship ${args.governorshipId}`,
         })
       )
       const confirmationResponse = rearrangeCypherObject(response)
@@ -126,9 +128,10 @@ const treasuryMutations = {
         tx.run(treasury.confirmCouncilBanking, {
           ...args,
           jwt: context.jwt,
+          // bh_msg is built in-Cypher with the Council's actual name so the
+          // audit row reads as a sentence instead of a UUID.
           bh_method: 'teller',
           bh_toStatus: 'teller-confirmed',
-          bh_message: `Teller batch-confirmed Council-level banking for council ${args.councilId}`,
         })
       )
       const confirmationResponse = rearrangeCypherObject(response)
