@@ -4,6 +4,7 @@ import { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import { useMutation } from '@apollo/client'
 import { XCircle } from 'lucide-react'
+import { getMondayThisWeek } from 'jd-date-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Church } from 'global-types'
 import { throwToSentry } from 'global-utils'
@@ -32,14 +33,20 @@ const CancelledServiceForm = ({
 
   const [RecordCancelledService] = useMutation(RECORD_CANCELLED_SERVICE)
 
+  const today = new Date()
+  const mondayThisWeek = getMondayThisWeek(today)
+  const todayIso = today.toISOString().slice(0, 10)
+  const mondayThisWeekIso = mondayThisWeek.toISOString().slice(0, 10)
+
   const initialValues: FormOptionsType = {
-    serviceDate: new Date().toISOString().slice(0, 10),
+    serviceDate: todayIso,
     noServiceReason: '',
   }
 
   const validationSchema = Yup.object({
     serviceDate: Yup.date()
-      .max(new Date(), 'Service could not possibly have happened after today')
+      .max(today, 'Service could not possibly have happened after today')
+      .min(mondayThisWeek, 'You can only fill forms for this week')
       .required('Date is a required field'),
     noServiceReason: Yup.string().required('You must give a reason'),
   })
@@ -104,6 +111,8 @@ const CancelledServiceForm = ({
                       label="Date of Service"
                       placeholder="dd/mm/yyyy"
                       aria-describedby="dateofservice"
+                      min={mondayThisWeekIso}
+                      max={todayIso}
                     />
                     <Input
                       name="noServiceReason"

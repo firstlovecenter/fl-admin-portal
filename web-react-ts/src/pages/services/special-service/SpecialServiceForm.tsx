@@ -59,8 +59,13 @@ const SpecialServiceForm = ({
   const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
 
+  const today = new Date()
+  const mondayThisWeek = getMondayThisWeek(today)
+  const todayIso = today.toISOString().slice(0, 10)
+  const mondayThisWeekIso = mondayThisWeek.toISOString().slice(0, 10)
+
   const initialValues: FormOptions = {
-    serviceDate: new Date().toISOString().slice(0, 10),
+    serviceDate: todayIso,
     cediIncome: '',
     foreignCurrency: '',
     numberOfTithers: '',
@@ -72,23 +77,14 @@ const SpecialServiceForm = ({
     serviceDescription: '',
   }
 
-  const todayStartOfDay = new Date()
-  const lastWeek = new Date()
-  lastWeek.setDate(lastWeek.getDate() - 7)
-
   const validationSchema = Yup.object({
     serviceName: Yup.string().required('Service name is a required field'),
     serviceDescription: Yup.string().required(
       'Service description is a required field'
     ),
     serviceDate: Yup.date()
-      .max(new Date(), 'Service could not possibly have happened after today')
-      .min(
-        currentUser.roles.includes('fishers')
-          ? lastWeek
-          : getMondayThisWeek(todayStartOfDay),
-        'You can only fill forms for this week'
-      )
+      .max(today, 'Service could not possibly have happened after today')
+      .min(mondayThisWeek, 'You can only fill forms for this week')
       .required('Date is a required field'),
     cediIncome: Yup.number()
       .typeError('Please enter a valid number')
@@ -185,6 +181,8 @@ const SpecialServiceForm = ({
                   type="date"
                   placeholder="dd/mm/yyyy"
                   aria-describedby="dateofservice"
+                  min={mondayThisWeekIso}
+                  max={todayIso}
                 />
                 <Input name="attendance" label="Attendance*" />
                 <Input

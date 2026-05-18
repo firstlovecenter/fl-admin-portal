@@ -35,18 +35,21 @@ const ServiceForm = ({
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
 
+  const today = new Date()
+  const mondayThisWeek = getMondayThisWeek(today)
+  const todayIso = today.toISOString().slice(0, 10)
+  const mondayThisWeekIso = mondayThisWeek.toISOString().slice(0, 10)
+
   const initialValues: FormOptions = {
-    serviceDate: new Date().toISOString().slice(0, 10),
+    serviceDate: todayIso,
     attendance: '',
     familyPicture: '',
   }
 
-  const today = new Date()
-
   const validationSchema = Yup.object({
     serviceDate: Yup.date()
-      .max(new Date(), 'Service could not possibly have happened after today')
-      .min(getMondayThisWeek(today), 'You can only fill forms for this week')
+      .max(today, 'Service could not possibly have happened after today')
+      .min(mondayThisWeek, 'You can only fill forms for this week')
       .required('Date is a required field'),
     attendance: Yup.number()
       .typeError('Please enter a valid number')
@@ -120,6 +123,8 @@ const ServiceForm = ({
                       name="serviceDate"
                       type="date"
                       label="Date of Service"
+                      min={mondayThisWeekIso}
+                      max={todayIso}
                     />
                     <Input name="attendance" label="Attendance" />
                   </div>
