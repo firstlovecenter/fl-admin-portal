@@ -119,6 +119,10 @@ bacentasHaveArrived
 bacentasNotCounted = arrived but counter never logged attendance
 ```
 
+`tellerStream` is **not** an SM5 actor. It belongs to SM1 / SM2 (banking
+confirmation for offerings). Arrivals payouts run through `arrivalsPayerCouncil`
+on Paystack Transfers, not through tellers.
+
 | Field | Set by | Notes |
 | --- | --- | --- |
 | `mobilisationPicture` | Bacenta leader | Required to leave `noActivity` |
@@ -127,8 +131,21 @@ bacentasNotCounted = arrived but counter never logged attendance
 | `attendance` | `arrivalsCounterStream` | Counted at arrival |
 | `counted_by` | `arrivalsCounterStream` | Set with `attendance` |
 | `arrivalTime` | Counter | Server-side time |
-| `transactionReference` / `transactionStatus` (vehicle) | `arrivalsPayerCouncil` | Momo payout |
+| `vehicleTopUp` | `arrivalsCounterStream` \| `arrivalsPayerCouncil` | Approved payout amount; see actor matrix below |
+| `transactionReference` / `transactionStatus` (vehicle) | `arrivalsPayerCouncil` | Momo payout — payer only |
 | `outbound: true` | Same flow, marks return journey | Separate set of VehicleRecords |
+
+### Actor matrix (resolver-level)
+
+| Transition | Resolver | Permission gate | Notes |
+| --- | --- | --- | --- |
+| onTheWay → counted (records attendance) | `ConfirmVehicleByAdmin` | `permitArrivalsCounter()` = counter only | Sets `attendance`, `counted_by`, `arrivalTime`. |
+| counted → approved (sets `vehicleTopUp`) | `SetVehicleSupport` | `permitArrivalsHelpers('Stream')` = counter + payer | Either the Stream Counter or the Council Payer can confirm the eligible top-up. Approving is a calculation, not a money move. |
+| approved → paid (Paystack Transfer) | `SendVehicleSupport` | `permitArrivalsPayer()` = payer only | **Separation of duties.** The person who confirms attendance cannot also release momo. Tightened in commit `6d972eb1` (May 2026) — the resolver previously inherited the helpers gate. |
+
+If a future change wants to merge the approval + payment transitions back
+into a single role, update this table and add a regression test pinning
+`arrivalsCounterStream` out of `SendVehicleSupport`.
 
 ## SM6 — Account expense request
 

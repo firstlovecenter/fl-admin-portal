@@ -649,6 +649,11 @@ export const arrivalsMutation = {
 
     return vehicleRecord?.record.properties
   },
+  // SM5 approved → paid. Separation of duties: this resolver is restricted
+  // to `permitArrivalsPayer()` (Council Payer) only. The Stream Counter can
+  // record attendance and approve the eligible top-up via SetVehicleSupport,
+  // but cannot release momo from the Paystack stream account — that authority
+  // sits with the Council Payer. See kb/04-state-machines.md SM5 actor matrix.
   SendVehicleSupport: async (
     object: any,
     // eslint-disable-next-line camelcase
