@@ -108,7 +108,7 @@ CREATE CONSTRAINT uniqueUser IF NOT EXISTS ON (u:User) ASSERT u.id IS UNIQUE;
 CREATE CONSTRAINT uniqueOccupation IF NOT EXISTS ON (o:Occupation) ASSERT o.id IS UNIQUE;
 CREATE CONSTRAINT uniqueServiceLog IF NOT EXISTS ON (s:ServiceLog) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueServiceRecord IF NOT EXISTS ON (s:ServiceRecord) ASSERT s.id IS UNIQUE;
-CREATE CONSTRAINT uniqueServiceRecordTransaction IF NOT EXISTS ON (s:ServiceRecord) ASSERT s.transactionReference IS UNIQUE;
+CREATE CONSTRAINT uniqueServiceRecordTransactionRef IF NOT EXISTS FOR (s:ServiceRecord) REQUIRE s.transactionReference IS UNIQUE;
 CREATE CONSTRAINT uniqueAggregateServiceRecord IF NOT EXISTS ON (a:AggregateServiceRecord) ASSERT a.id IS UNIQUE;
 CREATE CONSTRAINT uniqueAggregateBussingRecord IF NOT EXISTS ON (a:AggregateBussingRecord) ASSERT a.id IS UNIQUE;
 CREATE CONSTRAINT uniqueAggregateRehearsalRecord IF NOT EXISTS ON (a:AggregateRehearsalRecord) ASSERT a.id IS UNIQUE;
@@ -136,6 +136,7 @@ CREATE CONSTRAINT uniqueSwellDate IF NOT EXISTS ON (s:SwellDate) ASSERT s.date I
 CREATE CONSTRAINT uniqueArchived IF NOT EXISTS ON (a:Archived) ASSERT a.id IS UNIQUE;
 CREATE CONSTRAINT uniqueSheep IF NOT EXISTS ON (s:Sheep) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueDeer IF NOT EXISTS ON (d:Deer) ASSERT d.id IS UNIQUE;
+CREATE CONSTRAINT uniqueDeerWhatsapp IF NOT EXISTS FOR (d:Deer) REQUIRE d.whatsappNumber IS UNIQUE;
 CREATE CONSTRAINT uniqueDenomination IF NOT EXISTS ON (d:Denomination) ASSERT d.id IS UNIQUE;
 CREATE CONSTRAINT uniqueGoat IF NOT EXISTS ON (g:Goat) ASSERT g.id IS UNIQUE;
 CREATE CONSTRAINT uniqueClosedCouncil IF NOT EXISTS ON (c:ClosedCouncil) ASSERT c.id IS UNIQUE;
