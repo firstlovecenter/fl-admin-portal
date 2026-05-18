@@ -11,10 +11,12 @@ import {
   handleDefaultersDownload,
   isDefaultersDownloadLevel,
 } from './defaulters-handler'
+import { isDefaultersTargetLevel } from './defaulters-cypher'
 import {
   handleArrivalsDownload,
   isArrivalsDownloadLevel,
 } from './arrivals-handler'
+import { isArrivalsTargetLevel } from './arrivals-cypher'
 import { JwtPayload, verifyJwt } from '../utils/verify-jwt'
 
 // API Gateway response body limit (10 MB for REST APIs, 6 MB for the
@@ -219,12 +221,21 @@ const handleDefaultersLambda = async (
       ? rawWeekStart
       : null
 
+  // Picker target — defaulters-cypher.ts:isDefaultersTargetLevel validates,
+  // see downloads-express.ts for the mirrored Express parser.
+  const rawTarget = eventQuery(event, 'targetLevel')
+  const targetLevel =
+    typeof rawTarget === 'string' && isDefaultersTargetLevel(rawTarget)
+      ? rawTarget
+      : null
+
   try {
     const payload = await handleDefaultersDownload({
       driver,
       level,
       churchId,
       weekStart,
+      targetLevel,
       roles: jwt.roles,
       userId: jwt.userId,
     })
@@ -261,6 +272,11 @@ const handleArrivalsLambda = async (
   }
 
   const arrivalDate = eventQuery(event, 'arrivalDate') ?? ''
+  const rawTarget = eventQuery(event, 'targetLevel')
+  const targetLevel =
+    typeof rawTarget === 'string' && isArrivalsTargetLevel(rawTarget)
+      ? rawTarget
+      : null
 
   try {
     const payload = await handleArrivalsDownload({
@@ -268,6 +284,7 @@ const handleArrivalsLambda = async (
       level,
       churchId,
       arrivalDate,
+      targetLevel,
       roles: jwt.roles,
       userId: jwt.userId,
     })

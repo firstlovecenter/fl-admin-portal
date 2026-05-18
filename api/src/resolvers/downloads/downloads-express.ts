@@ -14,10 +14,12 @@ import {
   handleDefaultersDownload,
   isDefaultersDownloadLevel,
 } from './defaulters-handler'
+import { isDefaultersTargetLevel } from './defaulters-cypher'
 import {
   handleArrivalsDownload,
   isArrivalsDownloadLevel,
 } from './arrivals-handler'
+import { isArrivalsTargetLevel } from './arrivals-cypher'
 import { verifyJwt } from '../utils/verify-jwt'
 
 const handleDownloadRequest =
@@ -148,12 +150,22 @@ const handleDefaultersRequest =
         ? rawWeekStart
         : null
 
+    // Optional picker target. Unknown values silently fall back to `null`
+    // so the handler returns the legacy `summary` shape — keeps stale
+    // FE bundles working through deploys.
+    const rawTarget = req.query.targetLevel
+    const targetLevel =
+      typeof rawTarget === 'string' && isDefaultersTargetLevel(rawTarget)
+        ? rawTarget
+        : null
+
     try {
       const payload = await handleDefaultersDownload({
         driver,
         level,
         churchId,
         weekStart,
+        targetLevel,
         roles: jwt.roles,
         userId: jwt.userId,
       })
@@ -206,12 +218,19 @@ const handleArrivalsRequest =
         ? rawArrivalDate
         : ''
 
+    const rawTarget = req.query.targetLevel
+    const targetLevel =
+      typeof rawTarget === 'string' && isArrivalsTargetLevel(rawTarget)
+        ? rawTarget
+        : null
+
     try {
       const payload = await handleArrivalsDownload({
         driver,
         level,
         churchId,
         arrivalDate,
+        targetLevel,
         roles: jwt.roles,
         userId: jwt.userId,
       })

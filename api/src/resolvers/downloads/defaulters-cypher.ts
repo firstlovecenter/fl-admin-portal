@@ -255,3 +255,211 @@ export const DEFAULTERS_NAME_QUERY_BY_LEVEL: Record<
   Stream: `MATCH (n:Stream {id: $id}) RETURN n.name AS name`,
   Campus: `MATCH (n:Campus {id: $id}) RETURN n.name AS name`,
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Sub-church summary "at level" — pick row granularity + ancestor columns.
+// Mirrors the GraphQL `subChurchesReportAtLevel` shape used by Bussing /
+// Weekday (see `weekly-report-cypher.ts`). Bacenta is intentionally NOT a
+// valid target — Bacenta-level detail is already in the per-Bacenta `detail`
+// rows on this same payload, so emitting it here would just duplicate work.
+// ────────────────────────────────────────────────────────────────────────────
+
+export type DefaultersScopeLevel = Extract<
+  DefaultersDownloadLevel,
+  'Campus' | 'Stream' | 'Council'
+>
+
+export type DefaultersTargetLevel = Extract<
+  ChurchLevel,
+  'Stream' | 'Council' | 'Governorship'
+>
+
+// In-between ancestor chain for each (scope -> target) walk. Top-down,
+// EXCLUSIVE of both endpoints. Empty list means scope -> target is one
+// HAS edge away.
+const DEF_IN_BETWEEN: Record<
+  DefaultersScopeLevel,
+  Partial<Record<DefaultersTargetLevel, DefaultersTargetLevel[]>>
+> = {
+  Council: {
+    Governorship: [],
+  },
+  Stream: {
+    Council: [],
+    Governorship: ['Council'],
+  },
+  Campus: {
+    Stream: [],
+    Council: ['Stream'],
+    Governorship: ['Stream', 'Council'],
+  },
+}
+
+const churchVarFor = (level: string) => level.toLowerCase()
+const leaderVarFor = (level: string) =>
+  // eslint-disable-next-line fl-cypher/no-interpolated-cypher
+  `${level.toLowerCase()}Leader`
+
+/* eslint-disable fl-cypher/no-interpolated-cypher --
+ * Every `${...}` is sourced from compile-time ChurchLevel literals validated
+ * by the `DefaultersScopeLevel` / `DefaultersTargetLevel` discriminated
+ * unions above, OR identifier names derived from those literals via
+ * `churchVarFor` / `leaderVarFor`. No user input reaches the template. The
+ * runtime params ($id, $weekStart) still pass as bindings. */
+const buildDefaultersSummaryAtLevelCypher = (
+  scope: DefaultersScopeLevel,
+  target: DefaultersTargetLevel
+): string => {
+  const between = DEF_IN_BETWEEN[scope]?.[target]
+  if (!between) {
+    throw new Error(`Invalid defaulters walk: ${scope} -> ${target}`)
+  }
+
+  // Path: scope -> [...between] -> target -> ... -> Governorship -> Bacenta
+  // The bacenta tail varies: it's always exactly enough HAS edges to reach
+  // an `Active:Bacenta` from the target.
+  const targetVar = 'target'
+  const intermediates = [scope, ...between]
+  const upperWalk = intermediates
+    .map((lvl, i) => {
+      if (i === 0) return `(${churchVarFor(lvl)}:${lvl} {id: $id})`
+      return `-[:HAS]->(${churchVarFor(lvl)}:${lvl})`
+    })
+    .concat([`-[:HAS]->(${targetVar}:${target})`])
+    .join('')
+
+  // From `target` down to Bacenta — the chain depends on what target is.
+  // Governorship -> Bacenta (1 hop). Council -> Governorship -> Bacenta (2).
+  // Stream -> Council -> Governorship -> Bacenta (3).
+  const TAIL_BY_TARGET: Record<DefaultersTargetLevel, string> = {
+    Governorship: `(${targetVar})-[:HAS]->(bacenta:Active:Bacenta)`,
+    Council: `(${targetVar})-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Active:Bacenta)`,
+    Stream: `(${targetVar})-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Active:Bacenta)`,
+  }
+
+  const leaderMatches = [target, ...between]
+    .map(
+      (lvl) =>
+        `OPTIONAL MATCH (${
+          lvl === target ? targetVar : churchVarFor(lvl)
+        })<-[:LEADS]-(${leaderVarFor(lvl)}:Active:Member)`
+    )
+    .join('\n  ')
+
+  const ancestorList =
+    between.length === 0
+      ? '[]'
+      : `[${between
+          .map(
+            (lvl) =>
+              `{level: '${lvl}', name: ${churchVarFor(
+                lvl
+              )}.name, leaderFirstName: ${leaderVarFor(
+                lvl
+              )}.firstName, leaderLastName: ${leaderVarFor(
+                lvl
+              )}.lastName, leaderPhone: ${leaderVarFor(lvl)}.phoneNumber}`
+          )
+          .join(', ')}]`
+
+  // Variables threaded through the bacenta-bucket WITH steps. We need to
+  // keep the target + its leader + every in-between church + its leader
+  // available all the way to the RETURN map.
+  const decoratorVars = [
+    ...between.map(churchVarFor),
+    ...[target, ...between].map(leaderVarFor),
+  ]
+  const passthroughVars = [targetVar, ...decoratorVars].join(', ')
+
+  // The bacenta-bucket logic mirrors `CHILD_BACENTA_BUCKETS` above. Date
+  // math lives inside the CALL subquery so the outer chain doesn't need
+  // to thread `dates` through every `WITH` (which would otherwise force
+  // us to repeat every decorator variable on each WITH step).
+  return `
+  MATCH ${upperWalk}
+  ${leaderMatches}
+
+  CALL {
+    WITH ${targetVar}
+    WITH ${targetVar}, coalesce(date($weekStart), date()) AS today
+    WITH ${targetVar}, today, today.weekDay AS theDay
+    WITH ${targetVar}, today, date(today) - duration({days: (theDay - 2)}) AS startDate
+    WITH ${targetVar}, [day IN range(0, 5) | startDate + duration({days: day})] AS dates
+    OPTIONAL MATCH ${TAIL_BY_TARGET[target]}
+    OPTIONAL MATCH (bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+    WITH bacenta, collect(DISTINCT record) AS records
+    WITH bacenta,
+         [r IN records WHERE r.attendance IS NOT NULL][0] AS filledRecord,
+         [r IN records WHERE r.noServiceReason IS NOT NULL][0] AS cancelRecord
+    WITH
+      count(DISTINCT bacenta) AS activeBacentas,
+      count(filledRecord) AS servicesFiled,
+      count(cancelRecord) AS cancelled,
+      count(CASE
+        WHEN filledRecord IS NOT NULL AND (
+          filledRecord.bankingSlip IS NOT NULL
+          OR filledRecord.transactionStatus = 'success'
+          OR filledRecord.tellerConfirmationTime IS NOT NULL
+        ) THEN 1 END) AS banked,
+      count(CASE
+        WHEN filledRecord IS NOT NULL
+          AND filledRecord.bankingSlip IS NULL
+          AND (filledRecord.transactionStatus IS NULL OR filledRecord.transactionStatus <> 'success')
+          AND filledRecord.tellerConfirmationTime IS NULL THEN 1 END) AS bankingDefaulters
+    RETURN activeBacentas, servicesFiled, cancelled, banked, bankingDefaulters
+  }
+
+  WITH ${passthroughVars}, activeBacentas, servicesFiled, cancelled, banked, bankingDefaulters
+  ORDER BY ${targetVar}.name ASC
+  RETURN
+    ${targetVar}.id AS targetId,
+    ${targetVar}.name AS targetName,
+    '${target}' AS targetLevel,
+    ${leaderVarFor(target)}.firstName AS targetLeaderFirstName,
+    ${leaderVarFor(target)}.lastName AS targetLeaderLastName,
+    ${leaderVarFor(target)}.phoneNumber AS targetLeaderPhone,
+    activeBacentas,
+    servicesFiled,
+    cancelled,
+    banked,
+    bankingDefaulters,
+    activeBacentas - servicesFiled - cancelled AS formDefaulters,
+    ${ancestorList} AS ancestors
+`
+}
+/* eslint-enable fl-cypher/no-interpolated-cypher */
+
+// Pre-built map for all 6 (scope, target) combos. Failure at module load
+// rather than runtime if any combo is wired wrong.
+export const DEFAULTERS_SUMMARY_AT_LEVEL: Record<
+  DefaultersScopeLevel,
+  Partial<Record<DefaultersTargetLevel, string>>
+> = {
+  Council: {
+    Governorship: buildDefaultersSummaryAtLevelCypher(
+      'Council',
+      'Governorship'
+    ),
+  },
+  Stream: {
+    Council: buildDefaultersSummaryAtLevelCypher('Stream', 'Council'),
+    Governorship: buildDefaultersSummaryAtLevelCypher('Stream', 'Governorship'),
+  },
+  Campus: {
+    Stream: buildDefaultersSummaryAtLevelCypher('Campus', 'Stream'),
+    Council: buildDefaultersSummaryAtLevelCypher('Campus', 'Council'),
+    Governorship: buildDefaultersSummaryAtLevelCypher('Campus', 'Governorship'),
+  },
+}
+
+export const isDefaultersScopeLevel = (
+  value: string
+): value is DefaultersScopeLevel =>
+  value === 'Council' || value === 'Stream' || value === 'Campus'
+
+export const isDefaultersTargetLevel = (
+  value: string
+): value is DefaultersTargetLevel =>
+  value === 'Stream' || value === 'Council' || value === 'Governorship'

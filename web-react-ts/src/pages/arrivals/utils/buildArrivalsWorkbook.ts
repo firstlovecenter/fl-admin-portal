@@ -74,6 +74,37 @@ export type ArrivalsSummaryRow = {
   [key: string]: unknown
 }
 
+// Picker-shaped row returned alongside `summary` when the caller passes
+// `?targetLevel=`. Rows live at the chosen target level (Stream / Council
+// / Governorship). Each carries the in-between ancestor chain so the FE
+// can flatten it into columns.
+export type ArrivalsAncestorRow = {
+  level: 'Stream' | 'Council' | 'Governorship'
+  name?: string | null
+  leaderFirstName?: string | null
+  leaderLastName?: string | null
+  leaderPhone?: string | null
+}
+
+export type ArrivalsSummaryAtLevelRow = {
+  targetId: string
+  targetName: string
+  targetLevel: 'Stream' | 'Council' | 'Governorship'
+  targetLeaderFirstName?: string | null
+  targetLeaderLastName?: string | null
+  targetLeaderPhone?: string | null
+  activeBacentas: number
+  bacentasWithBussing: number
+  totalAttendance: number
+  totalLeaderDeclaration: number
+  totalSprinters: number
+  totalUrvans: number
+  totalCars: number
+  totalBussingTopUp: number
+  totalBussingCost: number
+  ancestors: ArrivalsAncestorRow[]
+}
+
 export type ArrivalsExportPayload = {
   level: ArrivalsDownloadLevel
   churchId: string
@@ -82,6 +113,8 @@ export type ArrivalsExportPayload = {
   detail: ArrivalsDetailRow[]
   vehicles: ArrivalsVehicleRow[]
   summary: ArrivalsSummaryRow[] | null
+  summaryAtLevel?: ArrivalsSummaryAtLevelRow[]
+  targetLevel?: 'Stream' | 'Council' | 'Governorship'
 }
 
 type Column<Row> = {

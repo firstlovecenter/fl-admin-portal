@@ -8,9 +8,14 @@ import { assertChurchScope } from '../utils/scope-utils'
 import {
   ARRIVALS_DETAIL_BY_LEVEL,
   ARRIVALS_NAME_QUERY_BY_LEVEL,
+  ARRIVALS_SUMMARY_AT_LEVEL,
   ARRIVALS_SUMMARY_BY_LEVEL,
   ARRIVALS_VEHICLE_BY_LEVEL,
   ArrivalsDownloadLevel,
+  ArrivalsScopeLevel,
+  ArrivalsTargetLevel,
+  isArrivalsScopeLevel,
+  isArrivalsTargetLevel,
 } from './arrivals-cypher'
 import { DownloadError } from './downloads-handler'
 
@@ -70,6 +75,10 @@ export type ArrivalsExportPayload = {
   vehicles: Array<Record<string, unknown>>
   // `null` for Governorship — the bacenta is the leaf.
   summary: Array<Record<string, unknown>> | null
+  // Picker-shaped rollup; mirrors DefaultersExportPayload. See
+  // defaulters-handler.ts for the full writeup.
+  summaryAtLevel?: Array<Record<string, unknown>>
+  targetLevel?: ArrivalsTargetLevel
 }
 
 export type HandleArrivalsDownloadParams = {
@@ -77,6 +86,7 @@ export type HandleArrivalsDownloadParams = {
   level: ArrivalsDownloadLevel
   churchId: string
   arrivalDate: string
+  targetLevel: ArrivalsTargetLevel | null
   roles: Role[] | undefined
   userId: string | undefined
 }
@@ -84,7 +94,8 @@ export type HandleArrivalsDownloadParams = {
 export async function handleArrivalsDownload(
   params: HandleArrivalsDownloadParams
 ): Promise<ArrivalsExportPayload> {
-  const { driver, level, churchId, arrivalDate, roles, userId } = params
+  const { driver, level, churchId, arrivalDate, targetLevel, roles, userId } =
+    params
 
   // PII + finance gate: leader phone numbers, vehicle top-ups, masked momo
   // numbers, transaction status. Same gate as membership and defaulters
@@ -138,6 +149,24 @@ export async function handleArrivalsDownload(
       summary = summaryResult.records.map(recordToObject)
     }
 
+    let summaryAtLevel: Array<Record<string, unknown>> | undefined
+    let echoedTarget: ArrivalsTargetLevel | undefined
+    if (
+      targetLevel &&
+      isArrivalsTargetLevel(targetLevel) &&
+      isArrivalsScopeLevel(level)
+    ) {
+      const scopedMap = ARRIVALS_SUMMARY_AT_LEVEL[level as ArrivalsScopeLevel]
+      const atLevelQuery = scopedMap?.[targetLevel]
+      if (atLevelQuery) {
+        const atLevelResult = await session.executeRead((tx) =>
+          tx.run(atLevelQuery, { id: churchId, arrivalDate })
+        )
+        summaryAtLevel = atLevelResult.records.map(recordToObject)
+        echoedTarget = targetLevel
+      }
+    }
+
     return {
       level,
       churchId,
@@ -146,6 +175,8 @@ export async function handleArrivalsDownload(
       detail,
       vehicles,
       summary,
+      summaryAtLevel,
+      targetLevel: echoedTarget,
     }
   } finally {
     await session.close()

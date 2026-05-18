@@ -8,8 +8,13 @@ import { assertChurchScope } from '../utils/scope-utils'
 import {
   DEFAULTERS_DETAIL_BY_LEVEL,
   DEFAULTERS_NAME_QUERY_BY_LEVEL,
+  DEFAULTERS_SUMMARY_AT_LEVEL,
   DEFAULTERS_SUMMARY_BY_LEVEL,
   DefaultersDownloadLevel,
+  DefaultersScopeLevel,
+  DefaultersTargetLevel,
+  isDefaultersScopeLevel,
+  isDefaultersTargetLevel,
 } from './defaulters-cypher'
 import { DownloadError } from './downloads-handler'
 
@@ -61,6 +66,14 @@ export type DefaultersExportPayload = {
   detail: Array<Record<string, unknown>>
   // `null` for Governorship — it has no children to roll up.
   summary: Array<Record<string, unknown>> | null
+  // Populated only when the caller passes `targetLevel`. Ancestor-
+  // decorated rows where each row lives at the chosen target level
+  // (Stream / Council / Governorship). Lets the picker UI render the
+  // same dataset at any depth without a separate endpoint.
+  summaryAtLevel?: Array<Record<string, unknown>>
+  // Echo back the target level so callers don't have to track it in
+  // their own state.
+  targetLevel?: DefaultersTargetLevel
 }
 
 export type HandleDefaultersDownloadParams = {
@@ -68,6 +81,12 @@ export type HandleDefaultersDownloadParams = {
   level: DefaultersDownloadLevel
   churchId: string
   weekStart: string | null
+  // Optional. When provided AND `level` is one of Council / Stream /
+  // Campus, the handler ALSO queries the (scope, target) cypher and
+  // returns `summaryAtLevel`. The legacy `summary` field stays untouched
+  // so DownloadDefaultersButton (the multi-sheet xlsx flow) doesn't have
+  // to change.
+  targetLevel: DefaultersTargetLevel | null
   roles: Role[] | undefined
   userId: string | undefined
 }
@@ -82,7 +101,8 @@ const isValidIsoDate = (value: string): boolean => {
 export async function handleDefaultersDownload(
   params: HandleDefaultersDownloadParams
 ): Promise<DefaultersExportPayload> {
-  const { driver, level, churchId, weekStart, roles, userId } = params
+  const { driver, level, churchId, weekStart, targetLevel, roles, userId } =
+    params
 
   // Same auth gate as membership exports — these contain leader phone numbers
   // and per-Bacenta financial data, so the broader "any servant in the
@@ -137,6 +157,33 @@ export async function handleDefaultersDownload(
       summary = summaryResult.records.map(recordToObject)
     }
 
+    // Picker-shaped per-target rollup. Only fires when (a) the caller
+    // asked for it and (b) the scope/target pair is actually wired in
+    // DEFAULTERS_SUMMARY_AT_LEVEL. Anything else falls back silently to
+    // `summary === legacy` — the legacy multi-sheet xlsx flow expects
+    // that shape so we don't replace it.
+    let summaryAtLevel: Array<Record<string, unknown>> | undefined
+    let echoedTarget: DefaultersTargetLevel | undefined
+    if (
+      targetLevel &&
+      isDefaultersTargetLevel(targetLevel) &&
+      isDefaultersScopeLevel(level)
+    ) {
+      const scopedMap =
+        DEFAULTERS_SUMMARY_AT_LEVEL[level as DefaultersScopeLevel]
+      const atLevelQuery = scopedMap?.[targetLevel]
+      if (atLevelQuery) {
+        const atLevelResult = await session.executeRead((tx) =>
+          tx.run(atLevelQuery, {
+            id: churchId,
+            weekStart: weekStart || null,
+          })
+        )
+        summaryAtLevel = atLevelResult.records.map(recordToObject)
+        echoedTarget = targetLevel
+      }
+    }
+
     return {
       level,
       churchId,
@@ -144,6 +191,8 @@ export async function handleDefaultersDownload(
       weekStart: weekStart || null,
       detail,
       summary,
+      summaryAtLevel,
+      targetLevel: echoedTarget,
     }
   } finally {
     await session.close()

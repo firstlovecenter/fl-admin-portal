@@ -7,16 +7,22 @@ import {
   ArrivalsExportPayload,
 } from './buildArrivalsWorkbook'
 
+// Target levels the picker page can request. Mirrors backend
+// `isArrivalsTargetLevel` in api/src/resolvers/downloads/arrivals-cypher.ts.
+export type ArrivalsTargetLevel = 'Stream' | 'Council' | 'Governorship'
+
 const buildDownloadUrl = (
   level: ArrivalsDownloadLevel,
   churchId: string,
-  arrivalDate: string
+  arrivalDate: string,
+  targetLevel: ArrivalsTargetLevel | null
 ): string => {
   const graphqlUri =
     import.meta.env.VITE_SYNAGO_GRAPHQL_URI || 'http://localhost:4001/graphql'
   const apiBase = graphqlUri.replace(/\/graphql\/?$/, '')
   const params = new URLSearchParams()
   params.set('arrivalDate', arrivalDate)
+  if (targetLevel) params.set('targetLevel', targetLevel)
   return `${apiBase}/downloads/arrivals/${encodeURIComponent(
     level
   )}/${encodeURIComponent(churchId)}.json?${params.toString()}`
@@ -26,14 +32,18 @@ export const fetchArrivalsExport = async (
   level: ArrivalsDownloadLevel,
   churchId: string,
   arrivalDate: string,
+  targetLevel: ArrivalsTargetLevel | null = null,
   signal?: AbortSignal
 ): Promise<ArrivalsExportPayload> => {
   const token = getAccessToken()
   if (!token) throw new Error('Sign in expired. Please sign in again.')
-  const res = await fetch(buildDownloadUrl(level, churchId, arrivalDate), {
-    headers: { Authorization: `Bearer ${token}` },
-    signal,
-  })
+  const res = await fetch(
+    buildDownloadUrl(level, churchId, arrivalDate, targetLevel),
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      signal,
+    }
+  )
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as {
       error?: string
@@ -54,7 +64,10 @@ type UseArrivalsExportResult = {
 const useArrivalsExport = (
   level: ArrivalsDownloadLevel | null,
   churchId: string | undefined,
-  arrivalDate: string
+  arrivalDate: string,
+  // Picker target. `null` (default) keeps pre-picker behaviour for the
+  // legacy multi-sheet xlsx button.
+  targetLevel: ArrivalsTargetLevel | null = null
 ): UseArrivalsExportResult => {
   const [payload, setPayload] = useState<ArrivalsExportPayload | null>(null)
   const [loading, setLoading] = useState(false)
@@ -75,7 +88,13 @@ const useArrivalsExport = (
     const controller = new AbortController()
     setLoading(true)
     setError(null)
-    fetchArrivalsExport(level, churchId, arrivalDate, controller.signal)
+    fetchArrivalsExport(
+      level,
+      churchId,
+      arrivalDate,
+      targetLevel,
+      controller.signal
+    )
       .then((result) => {
         if (requestIdRef.current !== requestId) return
         setPayload(result)
@@ -95,7 +114,7 @@ const useArrivalsExport = (
       requestIdRef.current += 1
       controller.abort()
     }
-  }, [level, churchId, arrivalDate])
+  }, [level, churchId, arrivalDate, targetLevel])
 
   return { payload, loading, error }
 }

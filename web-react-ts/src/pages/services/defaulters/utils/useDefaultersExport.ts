@@ -7,19 +7,25 @@ import {
   DefaultersExportPayload,
 } from './buildDefaultersWorkbook'
 
+// Target levels the picker page can request. Mirrors backend
+// `isDefaultersTargetLevel` in api/src/resolvers/downloads/defaulters-cypher.ts.
+export type DefaultersTargetLevel = 'Stream' | 'Council' | 'Governorship'
+
 // Mirrors DownloadDefaultersButton: omit `weekStart` for the current week so
 // the server uses `date()` directly and matches the dashboard queries.
 const buildDownloadUrl = (
   level: DefaultersDownloadLevel,
   churchId: string,
   weekStart: string,
-  isCurrent: boolean
+  isCurrent: boolean,
+  targetLevel: DefaultersTargetLevel | null
 ): string => {
   const graphqlUri =
     import.meta.env.VITE_SYNAGO_GRAPHQL_URI || 'http://localhost:4001/graphql'
   const apiBase = graphqlUri.replace(/\/graphql\/?$/, '')
   const params = new URLSearchParams()
   if (!isCurrent) params.set('weekStart', weekStart)
+  if (targetLevel) params.set('targetLevel', targetLevel)
   const qs = params.toString()
   return `${apiBase}/downloads/defaulters/${encodeURIComponent(
     level
@@ -31,12 +37,13 @@ export const fetchDefaultersExport = async (
   churchId: string,
   weekStart: string,
   isCurrent: boolean,
+  targetLevel: DefaultersTargetLevel | null = null,
   signal?: AbortSignal
 ): Promise<DefaultersExportPayload> => {
   const token = getAccessToken()
   if (!token) throw new Error('Sign in expired. Please sign in again.')
   const res = await fetch(
-    buildDownloadUrl(level, churchId, weekStart, isCurrent),
+    buildDownloadUrl(level, churchId, weekStart, isCurrent, targetLevel),
     {
       headers: { Authorization: `Bearer ${token}` },
       signal,
@@ -63,7 +70,12 @@ const useDefaultersExport = (
   level: DefaultersDownloadLevel | null,
   churchId: string | undefined,
   weekStart: string,
-  isCurrent: boolean
+  isCurrent: boolean,
+  // Picker target. When set, the response carries `summaryAtLevel` rows
+  // at that depth (and the legacy `summary` is still populated for the
+  // DownloadDefaultersButton xlsx flow). `null` (the default) preserves
+  // pre-picker behaviour.
+  targetLevel: DefaultersTargetLevel | null = null
 ): UseDefaultersExportResult => {
   const [payload, setPayload] = useState<DefaultersExportPayload | null>(null)
   const [loading, setLoading] = useState(false)
@@ -89,6 +101,7 @@ const useDefaultersExport = (
       churchId,
       weekStart,
       isCurrent,
+      targetLevel,
       controller.signal
     )
       .then((result) => {
@@ -110,7 +123,7 @@ const useDefaultersExport = (
       requestIdRef.current += 1
       controller.abort()
     }
-  }, [level, churchId, weekStart, isCurrent])
+  }, [level, churchId, weekStart, isCurrent, targetLevel])
 
   return { payload, loading, error }
 }

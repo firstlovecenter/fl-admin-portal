@@ -256,3 +256,187 @@ export const ARRIVALS_NAME_QUERY_BY_LEVEL: Record<
   Stream: `MATCH (n:Stream {id: $id}) RETURN n.name AS name`,
   Campus: `MATCH (n:Campus {id: $id}) RETURN n.name AS name`,
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Sub-church summary "at level" — pick row granularity + ancestor columns.
+// Same shape as DEFAULTERS_SUMMARY_AT_LEVEL, see comment block in
+// defaulters-cypher.ts. Bacenta is not a valid target (per-Bacenta detail
+// is already on the existing `detail` rows in this same payload).
+// ────────────────────────────────────────────────────────────────────────────
+
+export type ArrivalsScopeLevel = Extract<
+  ArrivalsDownloadLevel,
+  'Campus' | 'Stream' | 'Council'
+>
+
+export type ArrivalsTargetLevel = Extract<
+  ChurchLevel,
+  'Stream' | 'Council' | 'Governorship'
+>
+
+const ARR_IN_BETWEEN: Record<
+  ArrivalsScopeLevel,
+  Partial<Record<ArrivalsTargetLevel, ArrivalsTargetLevel[]>>
+> = {
+  Council: {
+    Governorship: [],
+  },
+  Stream: {
+    Council: [],
+    Governorship: ['Council'],
+  },
+  Campus: {
+    Stream: [],
+    Council: ['Stream'],
+    Governorship: ['Stream', 'Council'],
+  },
+}
+
+const arrChurchVarFor = (level: string) => level.toLowerCase()
+const arrLeaderVarFor = (level: string) =>
+  // eslint-disable-next-line fl-cypher/no-interpolated-cypher
+  `${level.toLowerCase()}Leader`
+
+/* eslint-disable fl-cypher/no-interpolated-cypher --
+ * Every `${...}` is sourced from compile-time ChurchLevel literals validated
+ * by the `ArrivalsScopeLevel` / `ArrivalsTargetLevel` discriminated unions,
+ * OR identifier names derived from those literals via `arrChurchVarFor` /
+ * `arrLeaderVarFor`. No user input reaches the template. Runtime params
+ * ($id, $arrivalDate) still pass as bindings. */
+const buildArrivalsSummaryAtLevelCypher = (
+  scope: ArrivalsScopeLevel,
+  target: ArrivalsTargetLevel
+): string => {
+  const between = ARR_IN_BETWEEN[scope]?.[target]
+  if (!between) {
+    throw new Error(`Invalid arrivals walk: ${scope} -> ${target}`)
+  }
+
+  const targetVar = 'target'
+  const intermediates = [scope, ...between]
+  const upperWalk = intermediates
+    .map((lvl, i) => {
+      if (i === 0) return `(${arrChurchVarFor(lvl)}:${lvl} {id: $id})`
+      return `-[:HAS]->(${arrChurchVarFor(lvl)}:${lvl})`
+    })
+    .concat([`-[:HAS]->(${targetVar}:${target})`])
+    .join('')
+
+  const TAIL_BY_TARGET: Record<ArrivalsTargetLevel, string> = {
+    Governorship: `(${targetVar})-[:HAS]->(bacenta:Active:Bacenta)`,
+    Council: `(${targetVar})-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Active:Bacenta)`,
+    Stream: `(${targetVar})-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Active:Bacenta)`,
+  }
+
+  const leaderMatches = [target, ...between]
+    .map(
+      (lvl) =>
+        `OPTIONAL MATCH (${
+          lvl === target ? targetVar : arrChurchVarFor(lvl)
+        })<-[:LEADS]-(${arrLeaderVarFor(lvl)}:Active:Member)`
+    )
+    .join('\n  ')
+
+  const ancestorList =
+    between.length === 0
+      ? '[]'
+      : `[${between
+          .map(
+            (lvl) =>
+              `{level: '${lvl}', name: ${arrChurchVarFor(
+                lvl
+              )}.name, leaderFirstName: ${arrLeaderVarFor(
+                lvl
+              )}.firstName, leaderLastName: ${arrLeaderVarFor(
+                lvl
+              )}.lastName, leaderPhone: ${arrLeaderVarFor(lvl)}.phoneNumber}`
+          )
+          .join(', ')}]`
+
+  const decoratorVars = [
+    ...between.map(arrChurchVarFor),
+    ...[target, ...between].map(arrLeaderVarFor),
+  ]
+  const passthroughVars = [targetVar, ...decoratorVars].join(', ')
+
+  // Bacenta-bucket logic mirrors CHILD_BUCKETS above. We inline the
+  // dedup `collect(DISTINCT bussing)[0]` so duplicate bussing nodes
+  // (schema doesn't enforce uniqueness on (bacenta, date)) don't
+  // double-count attendance / top-up.
+  return `
+  MATCH ${upperWalk}
+  ${leaderMatches}
+
+  CALL {
+    WITH ${targetVar}
+    OPTIONAL MATCH ${TAIL_BY_TARGET[target]}
+    OPTIONAL MATCH (bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(bussingDate:TimeGraph)
+      WHERE date(bussingDate.date) = date($arrivalDate)
+    WITH bacenta, collect(DISTINCT bussing)[0] AS bussing
+    WITH
+      count(DISTINCT bacenta) AS activeBacentas,
+      count(bussing) AS bacentasWithBussing,
+      sum(coalesce(bussing.attendance, 0)) AS totalAttendance,
+      sum(coalesce(bussing.leaderDeclaration, 0)) AS totalLeaderDeclaration,
+      sum(coalesce(bussing.numberOfSprinters, 0)) AS totalSprinters,
+      sum(coalesce(bussing.numberOfUrvans, 0)) AS totalUrvans,
+      sum(coalesce(bussing.numberOfCars, 0)) AS totalCars,
+      sum(coalesce(bussing.bussingTopUp, 0)) AS totalBussingTopUp,
+      sum(coalesce(bussing.bussingCost, 0)) AS totalBussingCost
+    RETURN activeBacentas, bacentasWithBussing, totalAttendance,
+           totalLeaderDeclaration, totalSprinters, totalUrvans, totalCars,
+           totalBussingTopUp, totalBussingCost
+  }
+
+  WITH ${passthroughVars}, activeBacentas, bacentasWithBussing,
+       totalAttendance, totalLeaderDeclaration, totalSprinters,
+       totalUrvans, totalCars, totalBussingTopUp, totalBussingCost
+  ORDER BY ${targetVar}.name ASC
+  RETURN
+    ${targetVar}.id AS targetId,
+    ${targetVar}.name AS targetName,
+    '${target}' AS targetLevel,
+    ${arrLeaderVarFor(target)}.firstName AS targetLeaderFirstName,
+    ${arrLeaderVarFor(target)}.lastName AS targetLeaderLastName,
+    ${arrLeaderVarFor(target)}.phoneNumber AS targetLeaderPhone,
+    activeBacentas,
+    bacentasWithBussing,
+    totalAttendance,
+    totalLeaderDeclaration,
+    totalSprinters,
+    totalUrvans,
+    totalCars,
+    totalBussingTopUp,
+    totalBussingCost,
+    ${ancestorList} AS ancestors
+`
+}
+/* eslint-enable fl-cypher/no-interpolated-cypher */
+
+export const ARRIVALS_SUMMARY_AT_LEVEL: Record<
+  ArrivalsScopeLevel,
+  Partial<Record<ArrivalsTargetLevel, string>>
+> = {
+  Council: {
+    Governorship: buildArrivalsSummaryAtLevelCypher('Council', 'Governorship'),
+  },
+  Stream: {
+    Council: buildArrivalsSummaryAtLevelCypher('Stream', 'Council'),
+    Governorship: buildArrivalsSummaryAtLevelCypher('Stream', 'Governorship'),
+  },
+  Campus: {
+    Stream: buildArrivalsSummaryAtLevelCypher('Campus', 'Stream'),
+    Council: buildArrivalsSummaryAtLevelCypher('Campus', 'Council'),
+    Governorship: buildArrivalsSummaryAtLevelCypher('Campus', 'Governorship'),
+  },
+}
+
+export const isArrivalsScopeLevel = (
+  value: string
+): value is ArrivalsScopeLevel =>
+  value === 'Council' || value === 'Stream' || value === 'Campus'
+
+export const isArrivalsTargetLevel = (
+  value: string
+): value is ArrivalsTargetLevel =>
+  value === 'Stream' || value === 'Council' || value === 'Governorship'

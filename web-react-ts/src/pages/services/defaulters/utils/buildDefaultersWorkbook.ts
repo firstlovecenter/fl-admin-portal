@@ -52,6 +52,34 @@ export type DefaultersSummaryRow = {
   [key: string]: unknown
 }
 
+// Picker-shaped row returned alongside (not instead of) `summary` when the
+// caller passes `?targetLevel=`. Rows live at the chosen target level
+// (Stream / Council / Governorship). Each carries the in-between ancestor
+// chain so the FE can flatten it into columns.
+export type DefaultersAncestorRow = {
+  level: 'Stream' | 'Council' | 'Governorship'
+  name?: string | null
+  leaderFirstName?: string | null
+  leaderLastName?: string | null
+  leaderPhone?: string | null
+}
+
+export type DefaultersSummaryAtLevelRow = {
+  targetId: string
+  targetName: string
+  targetLevel: 'Stream' | 'Council' | 'Governorship'
+  targetLeaderFirstName?: string | null
+  targetLeaderLastName?: string | null
+  targetLeaderPhone?: string | null
+  activeBacentas: number
+  servicesFiled: number
+  cancelled: number
+  banked: number
+  bankingDefaulters: number
+  formDefaulters: number
+  ancestors: DefaultersAncestorRow[]
+}
+
 export type DefaultersExportPayload = {
   level: DefaultersDownloadLevel
   churchId: string
@@ -59,6 +87,8 @@ export type DefaultersExportPayload = {
   weekStart: string | null
   detail: DefaultersDetailRow[]
   summary: DefaultersSummaryRow[] | null
+  summaryAtLevel?: DefaultersSummaryAtLevelRow[]
+  targetLevel?: 'Stream' | 'Council' | 'Governorship'
 }
 
 type Column<Row> = {
