@@ -51,6 +51,17 @@ let mockSession: {
 }
 let context: Context
 
+// Pin "now" to the same ISO week as the test fixtures' serviceDate
+// (2024-01-07 is the Sunday in Mon Jan 1 → Sun Jan 7). Without this the
+// server-side current-week guard rejects every test fixture.
+beforeAll(() => {
+  jest.useFakeTimers().setSystemTime(new Date('2024-01-07T12:00:00Z'))
+})
+
+afterAll(() => {
+  jest.useRealTimers()
+})
+
 beforeEach(() => {
   mockSession = {
     executeRead: jest.fn(),
@@ -70,6 +81,7 @@ describe('SM3 — RecordServiceNoIncome: vacation refusal', () => {
   const noIncomeArgs = {
     id: 'bacenta_1',
     churchId: 'bacenta_1',
+    serviceDate: '2024-01-07',
   }
 
   it('SM3: RecordServiceNoIncome throws when checkFormFilledThisWeek labels include Vacation', async () => {

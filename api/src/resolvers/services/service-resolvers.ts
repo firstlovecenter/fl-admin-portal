@@ -13,6 +13,7 @@ import {
   assertPositiveFiniteAmount,
   MAX_OFFERING_CASH,
 } from '../utils/financial-utils'
+import { assertServiceDateInCurrentWeek } from '../utils/date-utils'
 import {
   absorbAllTransactions,
   checkCurrentServiceLog,
@@ -127,6 +128,7 @@ const serviceMutation = {
     context: Context
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    assertServiceDateInCurrentWeek(args.serviceDate)
     assertPositiveFiniteAmount(args.income, 'income', {
       max: MAX_OFFERING_CASH,
     })
@@ -227,6 +229,7 @@ const serviceMutation = {
     context: Context
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    assertServiceDateInCurrentWeek(args.serviceDate)
     await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -305,6 +308,7 @@ const serviceMutation = {
     context: Context
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    assertServiceDateInCurrentWeek(args.serviceDate)
     await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
 

@@ -150,6 +150,17 @@ const primeHappyPathReads = (
     .mockResolvedValueOnce(makeMockQueryResult({}))
 }
 
+// Pin "now" to the same week as the test fixtures' serviceDate (2024-01-07
+// is a Sunday in the Mon Jan 1 → Sun Jan 7 ISO week). Without this the
+// server-side current-week guard rejects every test fixture.
+beforeAll(() => {
+  jest.useFakeTimers().setSystemTime(new Date('2024-01-07T12:00:00Z'))
+})
+
+afterAll(() => {
+  jest.useRealTimers()
+})
+
 beforeEach(() => {
   mockSession = {
     executeRead: jest.fn(),

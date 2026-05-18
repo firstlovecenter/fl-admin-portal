@@ -67,6 +67,17 @@ let mockSession: {
 }
 let context: Context
 
+// Pin "now" to the same ISO week as the test fixtures' serviceDate
+// (2024-01-07 is the Sunday in Mon Jan 1 → Sun Jan 7). Without this the
+// server-side current-week guard rejects every test fixture.
+beforeAll(() => {
+  jest.useFakeTimers().setSystemTime(new Date('2024-01-07T12:00:00Z'))
+})
+
+afterAll(() => {
+  jest.useRealTimers()
+})
+
 beforeEach(() => {
   mockSession = {
     executeRead: jest.fn(),

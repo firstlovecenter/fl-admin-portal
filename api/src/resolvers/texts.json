@@ -11,7 +11,9 @@
     "vacation_cannot_fill_service": "You cannnot have service if you are on vacation. Please conntact your admin!",
     "no_double_form_filling": "You have already filled your service form this week!",
     "no_duplicate_email_or_whatsapp": "A member with this email address/whatsapp number already exists in the database",
-    "not_stream_service_day": "You cannot fill this form today. It is not your stream service day"
+    "not_stream_service_day": "You cannot fill this form today. It is not your stream service day",
+    "service_date_out_of_week": "You can only fill forms for this week",
+    "service_date_required": "Service date is required"
   },
   "arrivalsSMS": {
     "less_than_8": "Proverbs 27:23 (KJV)\n\nBe thou diligent to know the state of thy flocks,and look well to thy herds.\n\nToday's bussing will not merit a top up. Your attendance was ",
