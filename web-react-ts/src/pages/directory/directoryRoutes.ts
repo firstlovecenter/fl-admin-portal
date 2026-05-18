@@ -168,65 +168,73 @@ export const memberDirectory: LazyRouteTypes[] = [
   },
 ]
 
+// Quick-facts attendance pages are leader/admin surfaces — arrivals helpers
+// (counter, payer), arrivals admins, and tellers have no business reading
+// per-church attendance summaries. Gate at permitLeaderAdmin so MembersDirectoryRoute's
+// fallback ladder (also permitLeaderAdmin) consistently rejects helpers.
 export const quickFacts: LazyRouteTypes[] = [
   {
     path: '/quick-facts/this-month/bacenta',
     element: BacentaAvgWeekdayQuickFacts,
-    roles: permitMe('Bacenta'),
+    roles: permitLeaderAdmin('Bacenta'),
   },
   {
     path: '/quick-facts/this-month/governorship',
     element: GovernorshipAvgWeekdayQuickFacts,
-    roles: permitMe('Governorship'),
+    roles: permitLeaderAdmin('Governorship'),
   },
   {
     path: '/quick-facts/this-month/stream',
     element: StreamAvgWeekdayQuickFacts,
-    roles: permitMe('Stream'),
+    roles: permitLeaderAdmin('Stream'),
   },
   {
     path: '/quick-facts/this-month/council',
     element: CouncilAvgWeekdayQuickFacts,
-    roles: permitMe('Council'),
+    roles: permitLeaderAdmin('Council'),
   },
   {
     path: '/quick-facts/this-month/campus',
     element: CampusAvgWeekdayQuickFacts,
-    roles: permitMe('Campus'),
+    roles: permitLeaderAdmin('Campus'),
   },
 ]
 
+// Member-grid routes also gate on permitLeaderAdmin so arrivals helpers
+// cannot URL-bypass into a per-level members list (which would otherwise
+// match because permitArrivalsHelpers('Stream') folds counter+payer into
+// permitMe('Stream')).
 export const memberGrids: LazyRouteTypes[] = [
   {
     path: '/oversight/members',
     element: OversightMembers,
-    roles: permitMe('Campus'),
+    roles: permitLeaderAdmin('Oversight'),
   },
   {
     path: '/campus/members',
     element: CampusMembers,
-    roles: permitMe('Campus'),
+    roles: permitLeaderAdmin('Campus'),
   },
   {
     path: '/stream/members',
     element: StreamMembers,
-    roles: permitMe('Stream'),
+    roles: permitLeaderAdmin('Stream'),
   },
   {
     path: '/council/members',
     element: CouncilMembers,
-    roles: permitMe('Council'),
+    roles: permitLeaderAdmin('Council'),
   },
   {
     path: '/governorship/members',
     element: GovernorshipMembers,
-    roles: permitMe('Governorship'),
+    roles: permitLeaderAdmin('Governorship'),
   },
 
   {
     path: '/bacenta/members',
     element: BacentaMembers,
-    roles: permitMe('Bacenta'),
+    roles: permitLeaderAdmin('Bacenta'),
   },
 ]
 
@@ -246,46 +254,50 @@ export const directory: LazyRouteTypes[] = [
     roles: permitMe('Bacenta'),
   },
   // Member Display and Edit Pages
+  // Profile + history pages are operational-leader surfaces; arrivals
+  // helpers (counter, payer) should not reach them by URL. Gate at
+  // permitMe('Bacenta') to match /ai-assistant, /trends, /directory/members
+  // — keeps every leader/admin/arrivals-admin/teller, drops the helpers.
   {
     path: '/user-profile',
     element: UserDisplayPage,
-    roles: ['all'],
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {
     path: '/member/history',
     element: MemberHistory,
-    roles: ['all'],
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {
     path: '/stream/history',
     element: StreamHistory,
-    roles: ['all'],
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {
     path: '/council/history',
     element: CouncilHistory,
-    roles: ['all'],
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {
     path: '/governorship/history',
     element: GovernorshipHistory,
-    roles: ['all'],
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {
     path: '/bacenta/history',
     element: BacentaHistory,
-    roles: ['all'],
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {
     path: '/campus/history',
     element: CampusHistory,
-    roles: ['all'],
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {
@@ -297,7 +309,7 @@ export const directory: LazyRouteTypes[] = [
   {
     path: '/user-profile/edit',
     element: UserProfileEditPage,
-    roles: ['all'],
+    roles: permitMe('Bacenta'),
     placeholder: true,
   },
   {
