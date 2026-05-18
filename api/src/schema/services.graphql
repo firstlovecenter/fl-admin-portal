@@ -969,7 +969,7 @@ interface HadService {
 # goes through a custom resolver (RecordService, BankServiceOffering,
 # SendPaymentOTP, ConfirmOfferingPayment, SubmitBankingSlip,
 # ManuallyConfirmOfferingPayment, SetTransactionReferenceManually,
-# anagkazo ConfirmBanking) that enforces auth + scope + SM1 atomic guards.
+# teller ConfirmBanking) that enforces auth + scope + SM1 atomic guards.
 # Leaving the auto-generated mutations exposed is an IDOR (any logged-in
 # user could flip transactionStatus, cash, bankingSlip, noServiceReason,
 # etc. on any record they know the id for, bypassing every guard).

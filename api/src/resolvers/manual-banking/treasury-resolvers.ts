@@ -9,7 +9,7 @@ import { MakeServant, RemoveServant } from '../directory/make-remove-servants'
 import { permitAdmin, permitTellerStream } from '../permissions'
 import { assertCan } from '../utils/assert-can'
 import { Context } from '../utils/neo4j-types'
-import anagkazo from './treasury-cypher'
+import treasury from './treasury-cypher'
 
 const treasuryMutations = {
   MakeStreamTeller: async (object: never, args: never, context: Context) =>
@@ -47,7 +47,7 @@ const treasuryMutations = {
     // read-then-throw pattern is safe (no race with the write below).
     const formDefaultersResponse = rearrangeCypherObject(
       await session
-        .run(anagkazo.formDefaultersCount, args)
+        .run(treasury.formDefaultersCount, args)
         .catch((error: any) =>
           throwToSentry('There was an error running cypher', error)
         )
@@ -70,7 +70,7 @@ const treasuryMutations = {
     // and we throw "already banked" when zero records were updated.
     try {
       const response = await session.executeWrite((tx) =>
-        tx.run(anagkazo.confirmBanking, {
+        tx.run(treasury.confirmBanking, {
           ...args,
           jwt: context.jwt,
           // bh_fromStatus is captured in-scope by the Cypher
@@ -98,6 +98,54 @@ const treasuryMutations = {
       // Preserve the explicit "already banked" message — re-throw it raw
       // rather than wrapping it in "There was a problem…" so the user UI
       // can show the precise reason.
+      if (
+        typeof error?.message === 'string' &&
+        error.message.includes('already been banked')
+      ) {
+        throw error
+      }
+      throw new Error(`There was a problem confirming the banking ${error}`)
+    } finally {
+      await session.close()
+    }
+  },
+  ConfirmCouncilBanking: async (
+    object: never,
+    args: { councilId: string },
+    context: Context
+  ): Promise<any> => {
+    isAuth(permitTellerStream(), context?.jwt?.roles)
+    noEmptyArgsValidation([args.councilId])
+    // Per-instance: teller must hold IS_TELLER_FOR on a Stream whose
+    // reach covers this Council. Mirrors the ConfirmBanking IDOR fix.
+    assertCan(context, permitTellerStream(), args.councilId)
+    const session = context.executionContext.session()
+
+    try {
+      const response = await session.executeWrite((tx) =>
+        tx.run(treasury.confirmCouncilBanking, {
+          ...args,
+          jwt: context.jwt,
+          bh_method: 'teller',
+          bh_toStatus: 'teller-confirmed',
+          bh_message: `Teller batch-confirmed Council-level banking for council ${args.councilId}`,
+        })
+      )
+      const confirmationResponse = rearrangeCypherObject(response)
+
+      if (
+        !confirmationResponse?.council ||
+        !confirmationResponse.affectedCount ||
+        confirmationResponse.affectedCount.low === 0
+      ) {
+        throw new Error("This council's offering has already been banked!")
+      }
+
+      return {
+        ...confirmationResponse.council.properties,
+        banked: true,
+      }
+    } catch (error: any) {
       if (
         typeof error?.message === 'string' &&
         error.message.includes('already been banked')

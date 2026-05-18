@@ -41,7 +41,7 @@ extend type ServiceRecord {
 #   - 'recovery' — admin pasted a Paystack reference (SetTransactionReferenceManually)
 #   - 'webhook'  — Paystack webhook flipped pending → success/failed
 #   - 'slip'     — admin uploaded a banking slip (SubmitBankingSlip)
-#   - 'teller'   — teller manually confirmed (ManuallyConfirmOfferingPayment + Anagkazo batch)
+#   - 'teller'   — teller manually confirmed (ManuallyConfirmOfferingPayment + manual-banking batch)
 # Auto-gen mutations suppressed — only the banking resolvers (and the
 # payment-webhook Lambda) ever write these nodes.
 #

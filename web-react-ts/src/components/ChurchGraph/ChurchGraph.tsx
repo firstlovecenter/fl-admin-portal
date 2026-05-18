@@ -233,10 +233,11 @@ const ChurchGraph = (props: ChurchGraphProps) => {
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
 
-  const sortedData = useMemo(
-    () => [...(churchData ?? [])].reverse(),
-    [churchData]
-  )
+  // Input is expected ascending (oldest → newest) — see `getServiceGraphData`
+  // and the shepherding-control `sliceWindowedRecords`. Recharts renders the
+  // array left-to-right verbatim, so ASC input = oldest-on-left, which is
+  // what the FL dashboards have always promised.
+  const sortedData = useMemo(() => [...(churchData ?? [])], [churchData])
 
   const dataMax = useMemo(() => {
     const safeMax = (key: string) => {

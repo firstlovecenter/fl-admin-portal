@@ -2,7 +2,7 @@ import { LazyRouteTypes } from 'global-types'
 import { lazy } from 'react'
 import { Navigate } from 'react-router'
 
-const ConfirmAnagkazoBanking = lazy(() => import('./ConfirmAnagkazoBanking'))
+const ConfirmManualBanking = lazy(() => import('./ConfirmManualBanking'))
 const TellerSelect = lazy(() => import('./TellerSelect'))
 
 // Legacy /anagkazo/* URLs are kept as permanent redirects for one or two
@@ -26,7 +26,7 @@ export const manualBankingRoutes: LazyRouteTypes[] = [
   },
   {
     path: '/manual-banking/receive-banking',
-    element: ConfirmAnagkazoBanking,
+    element: ConfirmManualBanking,
     roles: ['tellerStream'],
     placeholder: false,
   },

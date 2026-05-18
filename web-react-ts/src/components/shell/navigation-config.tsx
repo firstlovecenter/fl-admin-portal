@@ -17,7 +17,17 @@ import {
   permitArrivalsHelpers,
   permitMe,
   permitShepherdingControl,
+  permitTellerStream,
 } from 'permission-utils'
+
+// Tellers + arrivals helpers (Stream Counter, Council Payer) all hold a
+// single focused operational role. The sidebar/bottom-nav surfaces below
+// would be noise for any of them — they share the same "narrow chrome"
+// gate. Keep this list together so hiding stays consistent across items.
+const focusedSpecialistRoles = [
+  ...permitArrivalsHelpers('Stream'),
+  ...permitTellerStream(),
+]
 
 export interface NavItem {
   name: string
@@ -50,7 +60,7 @@ export const primaryNav: NavItem[] = [
     to: '/directory/members',
     icon: UserCheck,
     accentClass: 'text-members',
-    hideForRoles: permitArrivalsHelpers('Stream'),
+    hideForRoles: focusedSpecialistRoles,
   },
   {
     name: 'Services',
@@ -70,7 +80,8 @@ export const primaryNav: NavItem[] = [
           role !== 'leaderDenomination' &&
           role !== 'adminDenomination' &&
           role !== 'leaderOversight' &&
-          role !== 'adminOversight'
+          role !== 'adminOversight' &&
+          role !== 'tellerStream'
       ),
       ...permitArrivalsHelpers('Stream'),
     ],
@@ -87,7 +98,7 @@ export const primaryNav: NavItem[] = [
       'leaderCampus',
       'adminCampus',
     ],
-    hideForRoles: permitArrivalsHelpers('Stream'),
+    hideForRoles: focusedSpecialistRoles,
   },
 ]
 
@@ -98,21 +109,21 @@ export const secondaryNav: NavItem[] = [
     to: '/reports',
     icon: Download,
     accentClass: 'text-banking',
-    hideForRoles: permitArrivalsHelpers('Stream'),
+    hideForRoles: focusedSpecialistRoles,
   },
   {
     name: 'Trends',
     to: '/trends',
     icon: TrendingUp,
     accentClass: 'text-churches',
-    hideForRoles: permitArrivalsHelpers('Stream'),
+    hideForRoles: focusedSpecialistRoles,
   },
   {
     name: 'Maps',
     to: '/maps',
     icon: Map,
     accentClass: 'text-maps',
-    roles: permitMe('Bacenta'),
+    roles: permitMe('Bacenta').filter((role) => role !== 'tellerStream'),
   },
   {
     name: 'Shepherding Control',
@@ -124,7 +135,7 @@ export const secondaryNav: NavItem[] = [
     name: 'AI Assistant',
     to: '/ai-assistant',
     icon: Bot,
-    hideForRoles: permitArrivalsHelpers('Stream'),
+    hideForRoles: focusedSpecialistRoles,
   },
   {
     name: 'Settings',

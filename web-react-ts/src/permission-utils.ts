@@ -198,6 +198,13 @@ export const permitArrivalsCounter = (): Role[] => {
 export const isArrivalsCounterOnly = (roles?: Role[] | null): boolean =>
   hasOnlyRolesFrom(roles, permitArrivalsCounter())
 
+// True when the user's only operational role is Stream Teller. Tellers
+// confirm manual bank deposits handed in by governorships and have no
+// other responsibility — the FE renders a focused dashboard for them
+// when this returns true. Mirrors `isArrivalsCounterOnly` semantics.
+export const isTellerStreamOnly = (roles?: Role[] | null): boolean =>
+  hasOnlyRolesFrom(roles, permitTellerStream())
+
 // Generic version of isArrivalsCounterOnly: true when every operational role
 // the user holds is in `allowed`. Used by nav items that want to hide for a
 // single-purpose role set (e.g. `hideForRoles: permitArrivalsCounter()`).

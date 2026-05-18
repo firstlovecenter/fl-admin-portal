@@ -234,9 +234,32 @@ export const getServiceGraphData = (
     ]
   }
 
-  if (data.length <= windowSize) {
-    return data
+  // Source @cypher fields return ORDER BY year DESC, week DESC. We sort
+  // ascending here so every consumer gets "oldest → newest" left-to-right.
+  // `.slice(length - windowSize, length)` then keeps the newest `windowSize`
+  // records, which is what every *Graphs page actually wants to chart.
+  const sorted = [...data].sort((a, b) => {
+    const aYear = Number(a?.year ?? 0)
+    const bYear = Number(b?.year ?? 0)
+    if (Number.isFinite(aYear) && Number.isFinite(bYear) && aYear !== bYear) {
+      return aYear - bYear
+    }
+    const aWeek = Number(a?.week ?? 0)
+    const bWeek = Number(b?.week ?? 0)
+    if (Number.isFinite(aWeek) && Number.isFinite(bWeek) && aWeek !== bWeek) {
+      return aWeek - bWeek
+    }
+    const aDate = a?.date ? Date.parse(a.date) : NaN
+    const bDate = b?.date ? Date.parse(b.date) : NaN
+    if (Number.isFinite(aDate) && Number.isFinite(bDate)) {
+      return aDate - bDate
+    }
+    return 0
+  })
+
+  if (sorted.length <= windowSize) {
+    return sorted
   }
 
-  return data.slice(data.length - windowSize, data.length)
+  return sorted.slice(sorted.length - windowSize, sorted.length)
 }

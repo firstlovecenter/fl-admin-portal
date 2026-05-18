@@ -189,6 +189,14 @@ export const permitArrivalsCounter = (): Role[] => {
 export const isArrivalsCounterOnly = (roles?: Role[] | null): boolean =>
   hasOnlyRolesFrom(roles, permitArrivalsCounter())
 
+// True when the user's only operational role is Stream Teller. Tellers
+// confirm manual bank deposits handed in by governorships and have no
+// other responsibility — the FE renders a focused dashboard for them.
+// Mirrors `isArrivalsCounterOnly` semantics so authorization paths on
+// the BE can branch on the same predicate later (ADR-001).
+export const isTellerStreamOnly = (roles?: Role[] | null): boolean =>
+  hasOnlyRolesFrom(roles, permitTellerStream())
+
 // Generic version of isArrivalsCounterOnly: true when every operational role
 // the user holds is in `allowed`. `fishers` is treated as non-operational;
 // empty roles → false. Mirrors web-react-ts/src/permission-utils.ts.

@@ -12,19 +12,19 @@
  *   npm test -- treasury-sm3 --testNamePattern="SM3:"
  */
 
-import anagkazo from './treasury-cypher'
+import treasury from './treasury-cypher'
 
 // ---------------------------------------------------------------------------
 // formDefaultersCount — form submission defaulters
 // ---------------------------------------------------------------------------
 describe('SM3 — formDefaultersCount: :Active:Bacenta constraint', () => {
   it('SM3: service-match in formDefaultersCount uses :Active:Bacenta — vacation Bacentas with no service are not counted', () => {
-    expect(anagkazo.formDefaultersCount).toMatch(/:Active:Bacenta/)
+    expect(treasury.formDefaultersCount).toMatch(/:Active:Bacenta/)
   })
 
   it('SM3: defaulters-match in formDefaultersCount uses :Active:Bacenta (both sides of the exclusion check are Active-scoped)', () => {
     const activeMatches = (
-      anagkazo.formDefaultersCount.match(/:Active:Bacenta/g) ?? []
+      treasury.formDefaultersCount.match(/:Active:Bacenta/g) ?? []
     ).length
     expect(activeMatches).toBeGreaterThanOrEqual(2)
   })
@@ -35,7 +35,7 @@ describe('SM3 — formDefaultersCount: :Active:Bacenta constraint', () => {
 // ---------------------------------------------------------------------------
 describe('SM3 — membershipAttendanceDefaultersCount: :Active:Bacenta constraint', () => {
   it('SM3: membershipAttendanceDefaultersCount uses :Active:Bacenta', () => {
-    expect(anagkazo.membershipAttendanceDefaultersCount).toMatch(
+    expect(treasury.membershipAttendanceDefaultersCount).toMatch(
       /:Active:Bacenta/
     )
   })
@@ -53,7 +53,7 @@ describe('SM3 — membershipAttendanceDefaultersCount: :Active:Bacenta constrain
 // write Cypher below.
 describe('SM3 — confirmBanking: vacation Bacentas cannot appear', () => {
   it('SM3: confirmBanking traverses ServiceRecord, not Bacenta directly', () => {
-    expect(anagkazo.confirmBanking).toMatch(/ServiceRecord/)
-    expect(anagkazo.confirmBanking).not.toMatch(/\(bacenta:Bacenta\)/)
+    expect(treasury.confirmBanking).toMatch(/ServiceRecord/)
+    expect(treasury.confirmBanking).not.toMatch(/\(bacenta:Bacenta\)/)
   })
 })

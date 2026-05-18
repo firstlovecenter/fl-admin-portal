@@ -325,7 +325,7 @@ RETURN record
 // error so the second teller knows their click was a no-op.
 // Cypher fragment: stamp the teller-confirmation marker and the actor edge.
 // Shared between the single-record path (manuallyConfirmOfferingPayment)
-// and the Anagkazo batch path (anagkazo.confirmBanking) so a future change
+// and the teller batch path (treasury.confirmBanking) so a future change
 // to teller-flow semantics (new fields, edge labels) lands in one place.
 // The appendBankingHistoryLog fragment is included so callers get the audit
 // row for free.

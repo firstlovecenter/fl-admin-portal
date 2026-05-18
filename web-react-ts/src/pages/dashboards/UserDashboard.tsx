@@ -22,9 +22,10 @@ import { getWeekNumber, getISOWeekYear } from 'global-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
-import { isArrivalsCounterOnly } from 'permission-utils'
+import { isArrivalsCounterOnly, isTellerStreamOnly } from 'permission-utils'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
 import ArrivalsCounterDashboard from './ArrivalsCounterDashboard'
+import StreamTellerDashboard from './StreamTellerDashboard'
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
 import { Badge } from 'components/ui/badge'
@@ -1112,6 +1113,12 @@ const UserDashboard = () => {
   // service / add member / bank service surfaces.
   if (isArrivalsCounterOnly(currentUser?.roles)) {
     return <ArrivalsCounterDashboard />
+  }
+  // Teller-only users only confirm manual bankings handed in by
+  // governorships. Their dashboard greys out when the stream isn't on
+  // manual banking — they have no other operational responsibility.
+  if (isTellerStreamOnly(currentUser?.roles)) {
+    return <StreamTellerDashboard />
   }
   return <FullUserDashboard />
 }

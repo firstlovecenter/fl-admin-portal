@@ -1,5 +1,5 @@
 import { ReactNode, useContext, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
 import {
   BarChart3,
@@ -18,6 +18,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import RoleView from 'auth/RoleView'
 import {
+  isTellerStreamOnly,
   permitAdmin,
   permitLeaderAdmin,
   permitTellerStream,
@@ -112,6 +113,21 @@ const isInCurrentISOWeek = (dateString?: string | null) => {
 }
 
 const ServicesMenu = () => {
+  const { currentUser } = useContext(MemberContext)
+
+  // Teller-only users have one job here: confirm bankings handed in by
+  // governorships. Skip the multi-option menu and land them straight on
+  // the confirm view — the dashboard CTA and Services nav both funnel
+  // through this redirect. Declarative <Navigate> so we never render
+  // the menu (or fire its queries) for tellers, even for one frame.
+  if (isTellerStreamOnly(currentUser?.roles)) {
+    return <Navigate replace to="/manual-banking/receive-banking" />
+  }
+
+  return <ServicesMenuInner />
+}
+
+const ServicesMenuInner = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope } = useChurchRoleScope()

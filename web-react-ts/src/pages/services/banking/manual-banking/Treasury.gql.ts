@@ -54,3 +54,81 @@ export const CONFIRM_BANKING = gql`
     }
   }
 `
+
+export const CONFIRM_COUNCIL_BANKING = gql`
+  mutation ConfirmCouncilBanking($councilId: ID!) {
+    ConfirmCouncilBanking(councilId: $councilId) {
+      id
+    }
+  }
+`
+
+export const STREAM_BANKING_DEFAULTERS_THIS_WEEK = gql`
+  query streamBankingDefaultersThisWeek(
+    $id: ID!
+    $searchKey: String
+    $govSkip: Int! = 0
+    $govLimit: Int! = 10
+    $councilSkip: Int! = 0
+    $councilLimit: Int! = 10
+  ) {
+    streams(where: { id: { eq: $id } }) {
+      id
+      name
+      governorshipBankingDefaultersThisWeekCount(searchKey: $searchKey)
+      councilBankingDefaultersThisWeekCount(searchKey: $searchKey)
+      governorshipBankingDefaultersThisWeek(
+        searchKey: $searchKey
+        skip: $govSkip
+        limit: $govLimit
+      ) {
+        id
+        name
+        __typename
+        leader {
+          id
+          firstName
+          lastName
+          fullName
+          phoneNumber
+          whatsappNumber
+          pictureUrl
+        }
+      }
+      councilBankingDefaultersThisWeek(
+        searchKey: $searchKey
+        skip: $councilSkip
+        limit: $councilLimit
+      ) {
+        id
+        name
+        __typename
+        leader {
+          id
+          firstName
+          lastName
+          fullName
+          phoneNumber
+          whatsappNumber
+          pictureUrl
+        }
+      }
+    }
+  }
+`
+
+export const DISPLAY_COUNCIL_AGGREGATE_SERVICE_RECORD = gql`
+  query councilAggregateServiceRecordForWeek($councilId: ID!, $week: Int!) {
+    councils(where: { id: { eq: $councilId } }) {
+      id
+      aggregateServiceRecordForWeek(week: $week) {
+        id
+        attendance
+        income
+        foreignCurrency
+        week
+        year
+      }
+    }
+  }
+`

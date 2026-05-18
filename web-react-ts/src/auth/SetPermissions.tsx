@@ -35,18 +35,28 @@ const SetPermissions = ({ children }: { children: JSX.Element }) => {
         const streamName = memberData.stream_name
         const memberPicture = memberData?.pictureUrl || ''
 
+        // Specialist roles (e.g. tellerStream) may have no home bacenta —
+        // the user is a Member who only carries an IS_TELLER_FOR edge to a
+        // Stream. Chain every step so the null-bacenta case doesn't throw
+        // before we ever populate `currentUser` / `userJobs`. For tellers
+        // we fall back to `isTellerForStream[0].id` as the streamId so the
+        // confirm-banking page reads the right stream from ChurchContext.
         const denominationId =
-          memberData?.bacenta.governorship?.council.stream.campus?.oversight
-            ?.denomination.id
+          memberData?.bacenta?.governorship?.council?.stream?.campus?.oversight
+            ?.denomination?.id
 
         const oversightId =
-          memberData?.bacenta.governorship?.council.stream.campus?.oversight.id
+          memberData?.bacenta?.governorship?.council?.stream?.campus?.oversight
+            ?.id
         const campusId =
-          memberData?.bacenta.governorship?.council.stream.campus?.id
-        const campus = memberData?.bacenta.governorship?.council?.stream.campus
-        const streamId = memberData?.bacenta.governorship?.council.stream.id
-        const councilId = memberData?.bacenta.governorship?.council.id
-        const governorshipId = memberData?.bacenta.governorship?.id
+          memberData?.bacenta?.governorship?.council?.stream?.campus?.id
+        const campus = memberData?.bacenta?.governorship?.council?.stream?.campus
+        const tellerStreamFallback = memberData?.isTellerForStream?.[0]
+        const streamId =
+          memberData?.bacenta?.governorship?.council?.stream?.id ??
+          tellerStreamFallback?.id
+        const councilId = memberData?.bacenta?.governorship?.council?.id
+        const governorshipId = memberData?.bacenta?.governorship?.id
 
         doNotUse.setDenominationId(
           sessionStorage.getItem('denominationId') ?? denominationId
@@ -72,7 +82,7 @@ const SetPermissions = ({ children }: { children: JSX.Element }) => {
           nameWithTitle: memberData.nameWithTitle,
 
           // Bacenta Levels
-          bacenta: memberData?.bacenta.id,
+          bacenta: memberData?.bacenta?.id,
           governorship: governorshipId,
           council: councilId,
           stream: streamId,
