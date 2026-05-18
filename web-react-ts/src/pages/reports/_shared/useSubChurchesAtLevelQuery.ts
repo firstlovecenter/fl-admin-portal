@@ -1,8 +1,8 @@
 import { type DocumentNode, useQuery } from '@apollo/client'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { getHumanReadableDate } from 'global-utils'
-import { defaultRangeIsoStrings, parseDateInput, toWeekKey } from './week-utils'
+import { parseDateInput, toWeekKey } from './week-utils'
 import {
   LEVEL_COLLECTION_KEY,
   TARGETS_BY_SCOPE,
@@ -20,13 +20,14 @@ type Args = {
   // the scope's allowed targets in `TARGETS_BY_SCOPE`. When invalid the
   // hook skips the network request and returns empty entries.
   targetLevel: SubChurchesTargetLevel | null
+  // ISO yyyy-mm-dd. The hook is a pure read on these — pages own the
+  // state so they can implement Apply-style gating (only call the query
+  // when the user commits the form).
+  startDate: string
+  endDate: string
 }
 
 type State = {
-  startDate: string
-  endDate: string
-  setStartDate: (value: string) => void
-  setEndDate: (value: string) => void
   loading: boolean
   error: ReturnType<typeof useQuery>['error']
   entries: WeeklyChurchReportEntryWithAncestors[]
@@ -39,6 +40,8 @@ type State = {
 export const useSubChurchesAtLevelQuery = ({
   queriesByScope,
   targetLevel,
+  startDate,
+  endDate,
 }: Args): State => {
   const { selectedScope } = useChurchRoleScope()
   const scope = isSubChurchScope(selectedScope?.churchType)
@@ -46,10 +49,6 @@ export const useSubChurchesAtLevelQuery = ({
     : undefined
   const churchId = selectedScope?.churchId
   const churchName = selectedScope?.churchName ?? ''
-
-  const defaults = useMemo(() => defaultRangeIsoStrings(), [])
-  const [startDate, setStartDate] = useState(defaults.start)
-  const [endDate, setEndDate] = useState(defaults.end)
 
   const startDateObj = parseDateInput(startDate)
   const endDateObj = parseDateInput(endDate)
@@ -95,10 +94,6 @@ export const useSubChurchesAtLevelQuery = ({
       : null
 
   return {
-    startDate,
-    endDate,
-    setStartDate,
-    setEndDate,
     loading,
     error,
     entries,

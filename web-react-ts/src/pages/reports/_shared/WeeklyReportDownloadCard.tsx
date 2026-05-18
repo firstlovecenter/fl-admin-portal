@@ -63,6 +63,16 @@ const SortIcon = ({ sorted }: { sorted: 'asc' | 'desc' | false }) => {
   return <ChevronsUpDown className="size-3.5 shrink-0 opacity-40" />
 }
 
+// Extracted so the cell renderer keeps a stable reference across renders
+// — inlining it inside `columns.map(...).cell` re-created the function on
+// every render, invalidating TanStack Table's internal memoisation and
+// cascading into render storms on the heavier sub-church pages.
+const PreviewCell = ({ value }: { value: unknown }) => {
+  if (value === undefined || value === null || value === '')
+    return <span className="text-muted-foreground">—</span>
+  return <>{value as string | number}</>
+}
+
 const WeeklyReportDownloadCard = ({
   title,
   description,
@@ -76,22 +86,23 @@ const WeeklyReportDownloadCard = ({
   emptyMessage = 'No records in the selected date range.',
   notice,
 }: WeeklyReportDownloadCardProps) => {
-  const previewRows = rows.slice(0, 5)
   const [sorting, setSorting] = useState<SortingState>([])
+  const previewRows = useMemo(() => rows.slice(0, 5), [rows])
   const columns = useMemo<ColumnDef<Record<string, string | number>>[]>(
     () =>
       previewColumns.map((col) => ({
         accessorKey: col.key,
         header: col.label,
-        cell: ({ getValue }) => {
-          const value = getValue()
-          if (value === undefined || value === '')
-            return <span className="text-muted-foreground">—</span>
-          return value as string | number
-        },
+        cell: ({ getValue }) => <PreviewCell value={getValue()} />,
       })),
     [previewColumns]
   )
+  // CSVLink mutates the array it's handed in some code paths, so we
+  // can't pass the prop directly. Spread into a memoised copy so the
+  // reference stays stable across renders that don't touch headers —
+  // the previous `[...headers]` inline spread rebuilt the data URI on
+  // every render.
+  const csvHeaders = useMemo(() => [...headers], [headers])
   const table = useReactTable({
     data: previewRows,
     columns,
@@ -102,12 +113,70 @@ const WeeklyReportDownloadCard = ({
   })
 
   if (loading) {
+    // Mirror the real layout so the page doesn't reflow when data lands —
+    // 380px left action panel + flex preview table on lg, stacked on
+    // smaller screens. The skeleton row count (5) matches what the
+    // preview eventually renders.
     return (
-      <section className="space-y-4">
-        <Skeleton className="h-32 w-full rounded-xl" />
-        <Skeleton className="mx-auto h-12 w-full rounded-md sm:w-64" />
-        <Skeleton className="h-48 w-full rounded-xl" />
-      </section>
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start lg:gap-6">
+        {/* LEFT — action panel skeleton */}
+        <div className="flex flex-col gap-6">
+          <section className="rounded-xl border border-border bg-card p-5">
+            <div className="flex items-start gap-4">
+              <Skeleton className="size-12 shrink-0 rounded-full" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <Skeleton className="h-[68px] rounded-lg" />
+              <Skeleton className="h-[68px] rounded-lg" />
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-border bg-card p-4 space-y-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-4 w-full" />
+          </section>
+
+          <Skeleton className="h-12 w-full rounded-md" />
+        </div>
+
+        {/* RIGHT — preview table skeleton */}
+        <section className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <div className="divide-y divide-border">
+            {/* Table header row */}
+            <div className="grid grid-cols-[1fr_1fr_60px_60px_1fr_1fr] gap-3 bg-muted/40 px-4 py-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-3" />
+              ))}
+            </div>
+            {/* 5 body rows — widths jittered to feel less mechanical */}
+            {[
+              ['w-32', 'w-28', 'w-10', 'w-8', 'w-20', 'w-14'],
+              ['w-28', 'w-32', 'w-12', 'w-8', 'w-24', 'w-12'],
+              ['w-36', 'w-24', 'w-10', 'w-10', 'w-20', 'w-16'],
+              ['w-24', 'w-32', 'w-12', 'w-8', 'w-24', 'w-14'],
+              ['w-32', 'w-28', 'w-10', 'w-8', 'w-20', 'w-12'],
+            ].map((widths, rowIdx) => (
+              <div
+                key={rowIdx}
+                className="grid grid-cols-[1fr_1fr_60px_60px_1fr_1fr] items-center gap-3 px-4 py-3"
+              >
+                {widths.map((w, colIdx) => (
+                  <Skeleton key={colIdx} className={`h-4 ${w} max-w-full`} />
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
     )
   }
 
@@ -176,7 +245,7 @@ const WeeklyReportDownloadCard = ({
         >
           <CSVLink
             data={rows}
-            headers={[...headers]}
+            headers={csvHeaders}
             filename={filename}
             target="_self"
           >

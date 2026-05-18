@@ -106,25 +106,38 @@ const SubChurchLevelPicker = ({
         {availableLevels.map((level) => {
           const isOn = selected.has(level)
           const isLastTick = isOn && selected.size === 1
+          // The whole row is the click target — wrapping a Radix Checkbox
+          // (which renders as <button>) inside a <label> does NOT forward
+          // label clicks the way a native <input type="checkbox"> would,
+          // so users could only hit the tiny 16px square. Render the row
+          // as a button instead and let the Checkbox be a visual-only
+          // indicator (aria-hidden + tabIndex=-1 so it doesn't get its
+          // own focus stop).
           return (
             <li key={level}>
-              <label
+              <button
+                type="button"
+                onClick={() => toggle(level)}
+                disabled={isLastTick}
+                aria-pressed={isOn}
+                aria-label={`Include ${level} as row or ancestor column`}
                 className={
                   isLastTick
-                    ? 'flex min-h-11 cursor-not-allowed items-center gap-3 rounded-md border border-transparent px-3 py-2 opacity-60'
-                    : 'flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-transparent px-3 py-2 transition-colors hover:border-border hover:bg-accent/40'
+                    ? 'flex w-full min-h-11 cursor-not-allowed items-center gap-3 rounded-md border border-transparent px-3 py-2 text-left opacity-60'
+                    : 'flex w-full min-h-11 cursor-pointer items-center gap-3 rounded-md border border-transparent px-3 py-2 text-left transition-colors hover:border-border hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
                 }
               >
                 <Checkbox
                   checked={isOn}
                   disabled={isLastTick}
-                  onCheckedChange={() => toggle(level)}
-                  aria-label={`Include ${level} as row or ancestor column`}
+                  tabIndex={-1}
+                  aria-hidden
+                  className="pointer-events-none"
                 />
                 <span className="text-sm font-medium text-foreground">
                   {level}
                 </span>
-              </label>
+              </button>
             </li>
           )
         })}

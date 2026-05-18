@@ -89,18 +89,30 @@ const AncestorLevelPicker = ({
       >
         {availableLevels.map((level) => {
           const isOn = selected.has(level)
+          // Whole row is the click target. A native <label> would not
+          // forward clicks to a Radix Checkbox (which renders <button>,
+          // not <input>), so users could only hit the tiny 16px square.
+          // Render the row as a button and let the Checkbox be a
+          // visual-only indicator.
           return (
             <li key={level}>
-              <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-transparent px-3 py-2 transition-colors hover:border-border hover:bg-accent/40">
+              <button
+                type="button"
+                onClick={() => toggle(level)}
+                aria-pressed={isOn}
+                aria-label={`Include ${level} columns`}
+                className="flex w-full min-h-11 cursor-pointer items-center gap-3 rounded-md border border-transparent px-3 py-2 text-left transition-colors hover:border-border hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <Checkbox
                   checked={isOn}
-                  onCheckedChange={() => toggle(level)}
-                  aria-label={`Include ${level} columns`}
+                  tabIndex={-1}
+                  aria-hidden
+                  className="pointer-events-none"
                 />
                 <span className="text-sm font-medium text-foreground">
                   {level}
                 </span>
-              </label>
+              </button>
             </li>
           )
         })}
