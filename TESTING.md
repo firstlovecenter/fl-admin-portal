@@ -222,9 +222,52 @@ Coverage is reported per-PR but is **not a merge gate** (ADR-013 §7). A "100% c
 
 ## CI
 
-**Not yet live.** Today there is no CI test job — `.github/workflows/` only runs deploy workflows. The target state, tracked by [SYN-83](https://codefoundry.atlassian.net/browse/SYN-83), is GitHub Actions jobs `test-frontend` and `test-backend` running on every PR, with `test:integration` on manual dispatch. Until SYN-83 lands, run the suites locally before pushing and quote the output in the PR description.
+Three GitHub Actions workflows run the test suites (delivered by [SYN-83](https://codefoundry.atlassian.net/browse/SYN-83)):
 
-AWS Amplify continues to handle the FE build; it does not and will not run tests.
+| Workflow | File | Trigger | What it does |
+| --- | --- | --- | --- |
+| `test-frontend` | `.github/workflows/test-frontend.yml` | PR → `deploy` / `dev` / `staging`, push to `dev` / `staging` | `npm run test:coverage` in `web-react-ts/`. Coverage uploaded as artifact; PR comment via `davelosert/vitest-coverage-report-action`. |
+| `test-backend` | `.github/workflows/test-backend.yml` | Same triggers as above | `npm run test:coverage` in `api/`. Coverage uploaded as artifact; PR comment via `MishaKav/jest-coverage-comment`. |
+| `test-backend-integration` | `.github/workflows/test-backend-integration.yml` | `workflow_dispatch` **or** a PR labelled `run-integration` | `npm run test:integration` in `api/`. Loads Neo4j credentials from `dev/fl-admin-portal` (AWS Secrets Manager). Hits dev Neo4j only. |
+
+**Path filtering.** On `pull_request` events, each workflow uses
+`dorny/paths-filter` to decide whether to actually run tests. The job
+always reports a check (green) so branch protection works, but the
+expensive steps are skipped when no relevant files changed:
+
+- `test-frontend` runs when `web-react-ts/**`, `kb/**`, root
+  `package.json` / `package-lock.json`, or the workflow file itself
+  changed.
+- `test-backend` runs when `api/**`, `lib/**`, `kb/**`, root manifest, or
+  the workflow file itself changed.
+
+On `push` events to `dev` / `staging`, both workflows run unconditionally
+— a merged PR may include cross-cutting changes.
+
+**Required checks.** The two stable check names are
+`test-frontend / vitest` and `test-backend / jest`. Configure branch
+protection on `deploy` (and `dev` / `staging` if desired) to require
+both. The integration check is not required — it is on-demand only.
+
+**Coverage is signal, not a gate** (ADR-013 §7). The PR comment shows
+what the diff exercised; reviewers read it for shape, not a threshold.
+
+**Type-check and lint are still local-only.** `tsc --noEmit` and `eslint
+--max-warnings=0` run via lint-staged on commit. Adding them as CI gates
+is a follow-up — promoting them now would surface pre-existing drift
+unrelated to the change under review (e.g. missing `@types/cors` on the
+api package), which is best cleaned up in its own ticket.
+
+**Running the integration suite from CI.** Add the `run-integration`
+label to a PR — the job picks it up on the next push (or immediately on
+label add). Alternatively, trigger it from the Actions tab → "Run
+workflow". Both paths require `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
+and `AWS_REGION` to be configured as repo secrets (already in place for
+the existing deploy workflows). The runner must have IAM permission to
+read `dev/fl-admin-portal`.
+
+AWS Amplify continues to handle the FE build; it does not and will not
+run tests.
 
 ## E2E
 

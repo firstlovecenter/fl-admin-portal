@@ -25,5 +25,5 @@ module.exports = {
     '!src/scripts/**',
     '!src/functions/**',
   ],
-  coverageReporters: ['text', 'html'],
+  coverageReporters: ['text', 'html', 'json-summary', 'lcov'],
 }
