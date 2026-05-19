@@ -18,7 +18,7 @@ on:
         required: false
         default: ''
   pull_request:
-    types: [labeled, synchronize]
+    types: [opened, reopened, labeled, synchronize]
     branches: [deploy, dev, staging]
 
 permissions:
@@ -44,7 +44,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          # On pull_request, default to the PR head SHA so the gate tests
+          # the proposed change rather than the base branch. workflow_dispatch
+          # uses inputs.ref when provided, otherwise the workflow ref's commit.
+          ref: ${{ inputs.ref || github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
