@@ -1,5 +1,6 @@
 import { useContext, useMemo, useState } from 'react'
 import {
+  ArrowLeftRight,
   CheckCircle2,
   Compass,
   Filter,
@@ -20,10 +21,19 @@ import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Input } from 'components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from 'components/ui/select'
 import { Skeleton } from 'components/ui/skeleton'
 
 import { cn } from 'components/lib/utils'
 import { ChurchContext } from 'contexts/ChurchContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
+import { formatChurchLevel } from 'lib/scope-display'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
 
 import { BacentaWithArrivals, VehicleRecord } from '../arrivals-types'
@@ -71,6 +81,8 @@ const ListSkeleton = () => (
 
 const StateBacentasToCount = () => {
   const { clickCard } = useContext(ChurchContext)
+  const { roleChurchOptions, selectedScopeKey, setSelectedScopeKey } =
+    useChurchRoleScope()
   const {
     church,
     churchType,
@@ -88,6 +100,22 @@ const StateBacentasToCount = () => {
   const [search, setSearch] = useState('')
   const [seeBusses, setSeeBusses] = useState(true)
   const [seeCars, setSeeCars] = useState(true)
+
+  // Counters often work the bussing centre for several streams in one shift —
+  // filter to arrivals-counter scopes so they can hop between streams without
+  // opening the sidebar. Other roles on this account (leader, admin, etc.)
+  // belong in the global sidebar picker, not this in-page shortcut.
+  const counterScopes = useMemo(
+    () =>
+      roleChurchOptions.filter((option) =>
+        option.authRole.startsWith('arrivalsCounter')
+      ),
+    [roleChurchOptions]
+  )
+  const canSwitchScope = counterScopes.length > 1
+  const counterScopeSelected = counterScopes.some(
+    (option) => option.key === selectedScopeKey
+  )
 
   const allBacentas: BacentaWithArrivals[] = church?.bacentasNotCounted ?? []
   const trimmedSearch = search.trim()
@@ -208,6 +236,32 @@ const StateBacentasToCount = () => {
               <p className="text-xs text-muted-foreground lg:text-sm">
                 Vehicles awaiting confirmation at the centre.
               </p>
+              {canSwitchScope && (
+                <div className="pt-2 lg:pt-3">
+                  <Select
+                    value={counterScopeSelected ? selectedScopeKey : ''}
+                    onValueChange={setSelectedScopeKey}
+                  >
+                    <SelectTrigger
+                      className="h-11 w-full max-w-sm border-arrivals/30 bg-arrivals/10 text-arrivals data-placeholder:text-arrivals/70 [&_svg]:text-arrivals"
+                      aria-label="Switch arrivals counter stream"
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        <ArrowLeftRight className="size-4 shrink-0" />
+                        <SelectValue placeholder="Switch stream" />
+                      </span>
+                    </SelectTrigger>
+                    <SelectContent align="start" className="max-h-80">
+                      {counterScopes.map((option) => (
+                        <SelectItem key={option.key} value={option.key}>
+                          {option.churchName} ·{' '}
+                          {formatChurchLevel(option.churchType)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </header>
 
             {!isScopeSupported && (
