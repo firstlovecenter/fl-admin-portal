@@ -199,7 +199,7 @@ const AiAssistant = () => {
     <div className="flex h-svh flex-col bg-background pb-[env(safe-area-inset-bottom)]">
       {/* ── Header (sticky, mobile-first) ─────────────────────────────── */}
       <StickyPageHeader bare className="bg-background/90">
-        <div className="flex items-center gap-3 px-4 py-3 pr-16 md:pr-4">
+        <div className="flex items-center gap-3 py-3 pl-16 pr-16 md:px-4">
           <MobileHistoryTrigger
             open={mobileHistoryOpen}
             onOpenChange={setMobileHistoryOpen}

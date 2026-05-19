@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
-import { BackButton } from 'components/shell/BackButton'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
@@ -399,8 +398,7 @@ const AllStreamBacentas = () => {
     <ApolloWrapper loading={loading} data={data} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader bare>
-          <div className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-3 pr-16 md:pr-4 lg:px-6">
-            <BackButton className="-ml-2 shrink-0" />
+          <div className="mx-auto flex max-w-6xl items-center gap-1 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Directory

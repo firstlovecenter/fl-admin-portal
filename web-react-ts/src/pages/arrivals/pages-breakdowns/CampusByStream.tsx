@@ -80,7 +80,7 @@ const CampusByStream = () => {
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6">
             {/* Page heading */}
-            <div className="mb-5 pr-14 md:pr-0">
+            <div className="mb-5 pl-14 pr-14 md:px-0">
               {loading && !campus ? (
                 <Skeleton className="h-9 w-72" />
               ) : (

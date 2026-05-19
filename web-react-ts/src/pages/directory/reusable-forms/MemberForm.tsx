@@ -12,7 +12,6 @@ import {
   Trash2,
   User,
 } from 'lucide-react'
-import { BackButton } from 'components/shell/BackButton'
 import {
   StickyPageHeader,
   StickyPageHeaderActions,
@@ -96,7 +95,6 @@ const FormSkeleton = () => (
   <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
     <StickyPageHeader>
       <div className="flex items-center gap-3">
-        <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
         <div className="min-w-0 space-y-1">
           <Skeleton className="h-3 w-16" />
           <Skeleton className="h-7 w-52" />
@@ -189,7 +187,6 @@ const MemberForm = ({
           <StickyPageHeader>
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-1">
-                <BackButton className="-ml-2 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Directory

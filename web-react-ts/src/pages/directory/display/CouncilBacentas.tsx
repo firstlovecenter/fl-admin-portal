@@ -433,7 +433,7 @@ const CouncilBacentas = () => {
     <ApolloWrapper loading={loading} data={data} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader bare>
-          <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 pr-16 md:pr-4 lg:px-6">
+          <div className="mx-auto flex max-w-6xl items-center gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <Button
               size="icon"
               variant="ghost"

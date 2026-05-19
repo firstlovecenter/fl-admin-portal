@@ -52,7 +52,7 @@ export const BackButton = ({ className }: BackButtonProps) => {
       aria-label="Go back"
       className={cn('h-11 w-11 rounded-full', className)}
     >
-      <ChevronLeft className="size-5" />
+      <ChevronLeft className="size-4" />
     </Button>
   )
 }

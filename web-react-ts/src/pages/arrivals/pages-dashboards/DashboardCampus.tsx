@@ -287,7 +287,8 @@ const CampusDashboard = () => {
           <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {/* ── Page header ── */}
             <div className="mb-3 lg:mb-6">
-              <div className="flex items-start justify-between gap-4 pr-14 md:pr-0">
+              {/* pl-14/pr-14 reserve space for AppShell's floating BackButton + sidebar toggle on mobile */}
+              <div className="flex items-start justify-between gap-4 pl-14 pr-14 md:px-0">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   {loading && !campus ? (
                     <Skeleton className="h-9 w-72" />

@@ -168,7 +168,7 @@ const ExpenseForm = () => {
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-2 pr-14 md:pr-0">
+          <header className="space-y-2 pl-14 pr-14 md:px-0">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {council?.name ? (
                 <>{council.name} </>

@@ -222,7 +222,7 @@ const GovernorshipDashboard = () => {
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {/* ── Header ── */}
-            <header className="mb-3 flex items-start justify-between gap-4 pr-14 md:pr-0 lg:mb-6">
+            <header className="mb-3 flex items-start justify-between gap-4 pl-14 pr-14 md:px-0 lg:mb-6">
               <div className="min-w-0 flex-1">
                 {loading && !governorship ? (
                   <Skeleton className="h-9 w-72" />
