@@ -9,14 +9,13 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
     "@apollo/client": "^3.8.9",
-    "@apollo/server": "^4.10.0",
-    "@as-integrations/aws-lambda": "^2.0.1",
-    "@aws-sdk/client-lambda": "^3.879.0",
-    "@aws-sdk/client-secrets-manager": "^3.777.0",
+    "@apollo/server": "^4.13.0",
+    "@as-integrations/aws-lambda": "^3.1.0",
+    "@aws-sdk/client-lambda": "^3.900.0",
+    "@aws-sdk/client-secrets-manager": "^3.900.0",
     "@neo4j/graphql": "^7.5.1",
-    "apollo-server-lambda": "^3.12.0",
-    "axios": "^0.27.2",
-    "body-parser": "^1.20.2",
+    "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "csv-parse": "^5.0.3",
     "dotenv": "^16.4.7",
@@ -26,5 +25,13 @@
     "node-fetch": "^3.3.2",
     "openai": "^4.77.0",
     "serverless-http": "^3.2.0"
+  },
+  "overrides": {
+    "form-data": "^4.0.4",
+    "fast-xml-parser": "^4.5.3",
+    "sha.js": "^2.4.12",
+    "@apollo/federation-internals": "^2.11.2",
+    "tmp": "^0.2.4",
+    "npm": "^11.14.1"
   }
 }
