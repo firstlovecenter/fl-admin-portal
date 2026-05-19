@@ -34,6 +34,8 @@ export const BackButton = ({ className }: BackButtonProps) => {
   const navigate = useNavigate()
 
   if (!isStandalone) return null
+  // Home page has nowhere meaningful to go back to.
+  if (location.pathname === '/') return null
 
   const handleClick = () => {
     if (location.key === 'default') {
