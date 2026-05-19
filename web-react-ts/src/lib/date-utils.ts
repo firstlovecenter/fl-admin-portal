@@ -16,9 +16,13 @@ export const setTime = (timeArray: number[]): Date => {
 }
 
 export const parseTimeToDate = (timeString: string): string => {
-  const datetime = setTime(
-    timeString.split(':').map((element) => parseInt(element, 10))
-  )
+  // Upstream `jd-date-utils@1.0.9` appended a trailing `0` to the parsed
+  // array before passing it to `setTime` so milliseconds are always
+  // zeroed when the input is `HH:MM`. Preserve that behaviour exactly —
+  // without the `0` a two-part input becomes `setMilliseconds(undefined)`
+  // → NaN.
+  const numArray = timeString.split(':').map((element) => parseInt(element, 10))
+  const datetime = setTime([...numArray, 0])
   return datetime.toISOString()
 }
 
@@ -102,6 +106,14 @@ export const last3Weeks = (): number[] => {
 
 export const isToday = (date: string): boolean => parseDate(date) === 'Today'
 
+// Intentional drift from upstream: the published `jd-date-utils@1.0.9`
+// signature was `(string) => string` but its body optional-chained the
+// argument, so a missing input would concatenate the literal string
+// "undefined" onto the ISO date and yield an invalid `new Date(...)` at
+// every callsite that passes an optional-chained value (which all of
+// them do). The `?? ''` fallback here returns the bare `YYYY-MM-DD`
+// instead — a saner default that none of the callers depend on
+// distinguishing.
 export const getTodayTime = (timeString?: string): string =>
   new Date().toISOString().slice(0, 10) + (timeString?.slice(10) ?? '')
 
