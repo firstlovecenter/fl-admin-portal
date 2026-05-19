@@ -13,7 +13,7 @@ import {
   ReceiptText,
   Wallet,
 } from 'lucide-react'
-import { getTodayTime } from 'jd-date-utils'
+import { getTodayTime } from 'lib/date-utils'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Button } from 'components/ui/button'

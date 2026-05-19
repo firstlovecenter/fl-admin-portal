@@ -5,7 +5,7 @@ import CloudinaryImage from 'components/CloudinaryImage'
 import CurrencySpan from 'components/CurrencySpan'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceContext } from 'contexts/ServiceContext'
-import { getHumanReadableDate, getTime, parseNeoTime } from 'jd-date-utils'
+import { getHumanReadableDate, getTime, parseNeoTime } from 'lib/date-utils'
 import {
   permitAdminArrivals,
   permitArrivalsCounter,

@@ -13,7 +13,7 @@ import {
   getHumanReadableDate,
   parseDate,
   parseNeoTime,
-} from 'jd-date-utils'
+} from 'lib/date-utils'
 import {
   AlertCircle,
   CheckCircle2,

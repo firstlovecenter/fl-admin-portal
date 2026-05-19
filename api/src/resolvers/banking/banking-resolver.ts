@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getHumanReadableDate } from 'jd-date-utils'
+import { getHumanReadableDate } from '../utils/date-utils'
 import { Context } from '../utils/neo4j-types'
 import {
   permitAdmin,

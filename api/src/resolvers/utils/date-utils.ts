@@ -4,6 +4,23 @@ const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export const toIsoDate = (date: Date): string => date.toISOString().slice(0, 10)
 
+// Inlined from the (now-removed) `jd-date-utils` dep — same algorithm,
+// just colocated here so we don't drag the whole npm CLI tree back in
+// (SYN-61).
+export function getHumanReadableDate(
+  date: string | undefined,
+  weekday?: true
+): string | undefined {
+  if (!date) return undefined
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }
+  if (weekday) options.weekday = 'long'
+  return new Date(date).toLocaleDateString('en-gb', options)
+}
+
 // UTC math throughout. The downstream Cypher uses `date($serviceDate).week`
 // which is timezone-free, so the guard must agree. Mixing local-time week
 // math (jd-date-utils' `getMondayThisWeek` uses local `getDay`) with UTC ISO

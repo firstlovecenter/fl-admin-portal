@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getHumanReadableDate } from 'jd-date-utils'
+import { getHumanReadableDate } from '../utils/date-utils'
 import { Integer, int } from 'neo4j-driver'
 import { getStreamFinancials } from '../utils/financial-utils'
 import { Context } from '../utils/neo4j-types'

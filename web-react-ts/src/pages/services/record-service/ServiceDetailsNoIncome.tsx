@@ -7,7 +7,7 @@ import {
 import { Skeleton } from 'components/ui/skeleton'
 import CurrencySpan from 'components/CurrencySpan'
 import { Church, ServiceRecord } from 'global-types'
-import { parseNeoTime } from 'jd-date-utils'
+import { parseNeoTime } from 'lib/date-utils'
 import { type ReactNode, useEffect } from 'react'
 import { VisuallyHidden } from 'radix-ui'
 import { useNavigate } from 'react-router'

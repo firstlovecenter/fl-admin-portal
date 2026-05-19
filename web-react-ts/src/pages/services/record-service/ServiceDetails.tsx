@@ -25,7 +25,7 @@ import CurrencySpan from 'components/CurrencySpan'
 import { MemberContext } from 'contexts/MemberContext'
 import { Church, Member, Role, ServiceRecord } from 'global-types'
 import { alertMsg, throwToSentry } from 'global-utils'
-import { parseNeoTime } from 'jd-date-utils'
+import { parseNeoTime } from 'lib/date-utils'
 import {
   AlertTriangle,
   Banknote,

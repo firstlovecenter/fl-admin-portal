@@ -14,7 +14,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceRecord } from 'global-types'
 import { TRANSACTION_STATUS } from '../../banking-constants'
 import { capitalise, throwToSentry } from 'global-utils'
-import { parseDate } from 'jd-date-utils'
+import { parseDate } from 'lib/date-utils'
 import {
   AlertCircle,
   Banknote,

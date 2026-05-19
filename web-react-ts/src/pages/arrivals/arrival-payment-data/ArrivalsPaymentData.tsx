@@ -12,7 +12,7 @@ import {
 import useInfiniteScroll from 'hooks/useInfiniteScroll'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { getHumanReadableDate } from 'jd-date-utils'
+import { getHumanReadableDate } from 'lib/date-utils'
 import { Skeleton } from 'components/ui/skeleton'
 import { Button } from 'components/ui/button'
 import ErrorScreen from 'components/base-component/ErrorScreen'

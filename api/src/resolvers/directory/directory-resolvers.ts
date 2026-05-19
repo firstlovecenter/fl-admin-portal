@@ -1,4 +1,4 @@
-import { getHumanReadableDate } from 'jd-date-utils'
+import { getHumanReadableDate } from '../utils/date-utils'
 import { Context } from '../utils/neo4j-types'
 import { Member } from '../utils/types'
 import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'

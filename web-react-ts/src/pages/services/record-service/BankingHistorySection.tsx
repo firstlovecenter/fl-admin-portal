@@ -7,7 +7,7 @@ import {
 import { Badge } from 'components/ui/badge'
 import { Card, CardContent } from 'components/ui/card'
 import { BankingHistoryLog } from 'global-types'
-import { parseDate, parseNeoTime } from 'jd-date-utils'
+import { parseDate, parseNeoTime } from 'lib/date-utils'
 import { History } from 'lucide-react'
 
 const METHOD_LABEL: Record<BankingHistoryLog['method'], string> = {

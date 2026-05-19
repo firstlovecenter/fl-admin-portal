@@ -7,7 +7,7 @@ import {
   ChevronRight,
   Users,
 } from 'lucide-react'
-import { getHumanReadableDate } from 'jd-date-utils'
+import { getHumanReadableDate } from 'lib/date-utils'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceContext } from 'contexts/ServiceContext'

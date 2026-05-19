@@ -3,7 +3,7 @@ import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext, useState } from 'react'
 import { toast } from 'sonner'
-import { parseNeoTime } from 'jd-date-utils'
+import { parseNeoTime } from 'lib/date-utils'
 import {
   AlertTriangle,
   BellRing,
@@ -83,9 +83,9 @@ const TIME_SLOTS: TimeSlot[] = [
   },
 ]
 
-// `jd-date-utils.parseTimeToDate` sets hours/minutes/ms but not seconds, so
-// the current second leaks into the saved ISO string. We only care about
-// HH:MM here — zero seconds and ms explicitly.
+// `parseTimeToDate` (from `lib/date-utils`) sets hours/minutes/ms but not
+// seconds, so the current second leaks into the saved ISO string. We only
+// care about HH:MM here — zero seconds and ms explicitly.
 const timeStringToIso = (value: string): string => {
   const [h, m] = value.split(':').map((n) => parseInt(n, 10))
   const d = new Date()

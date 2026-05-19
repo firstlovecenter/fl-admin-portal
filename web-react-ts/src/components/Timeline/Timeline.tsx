@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { parseDate, parseNeoTime } from 'jd-date-utils'
+import { parseDate, parseNeoTime } from 'lib/date-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { HistoryLog } from 'global-types'
 import {

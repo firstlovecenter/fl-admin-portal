@@ -15,7 +15,7 @@ import {
   parseForeignCurrency,
   throwToSentry,
 } from 'global-utils'
-import { getMondayThisWeek } from 'jd-date-utils'
+import { getMondayThisWeek } from 'lib/date-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Church, ChurchLevel } from 'global-types'
 import { MutationFunction } from '@apollo/client'

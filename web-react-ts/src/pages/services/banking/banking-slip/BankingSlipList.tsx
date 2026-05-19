@@ -6,7 +6,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { ServiceRecord } from 'global-types'
 import { throwToSentry } from 'global-utils'
-import { parseDate } from 'jd-date-utils'
+import { parseDate } from 'lib/date-utils'
 import {
   Banknote,
   CheckCircle2,

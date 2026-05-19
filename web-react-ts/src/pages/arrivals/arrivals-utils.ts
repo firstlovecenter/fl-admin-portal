@@ -1,5 +1,5 @@
 import { FormikSelectOptions, convertNeoWeekdayToJSWeekday } from 'global-utils'
-import { addMinutes, getTodayTime, isToday } from 'jd-date-utils'
+import { addMinutes, getTodayTime, isToday } from 'lib/date-utils'
 import {
   BacentaWithArrivals,
   BussingRecord,

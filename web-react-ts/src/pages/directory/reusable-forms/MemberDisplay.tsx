@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import Timeline from 'components/Timeline/Timeline'
 import MemberRoleList, { getRank } from 'components/MemberRoleList'
 import { throwToSentry, USER_PLACEHOLDER } from 'global-utils'
-import { getMemberDob } from 'jd-date-utils'
+import { getMemberDob } from 'lib/date-utils'
 import {
   DISPLAY_MEMBER_ADMIN,
   DISPLAY_MEMBER_BIO,

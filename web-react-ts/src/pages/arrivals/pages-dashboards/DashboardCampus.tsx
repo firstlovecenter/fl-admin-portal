@@ -4,7 +4,7 @@ import * as Yup from 'yup'
 import { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { getHumanReadableDate } from 'jd-date-utils'
+import { getHumanReadableDate } from 'lib/date-utils'
 import {
   AlertOctagon,
   AlertTriangle,

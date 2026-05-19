@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { useQuery } from '@apollo/client'
 import { MemberContext } from 'contexts/MemberContext'
-import { getMemberDob } from 'jd-date-utils'
+import { getMemberDob } from 'lib/date-utils'
 import Timeline from 'components/Timeline/Timeline'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import {
