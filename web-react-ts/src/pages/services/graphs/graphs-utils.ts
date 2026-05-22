@@ -160,18 +160,27 @@ export const getServiceGraphData = (
   }
   let data: any[] = []
 
+  const currentYear = new Date().getFullYear()
+
   const pushIntoData = (array: any[]) => {
     if (!array || array?.length === 0) {
       return
     }
 
     array.forEach((record) => {
+      const week = record.week
+      const year = record.year
+      const yearSuffix =
+        typeof year === 'number' && year !== currentYear
+          ? `'${String(year).slice(-2)}`
+          : ''
       data.push({
         id: record?.id,
         category,
         date: record?.serviceDate?.date || record.date,
-        week: record.week,
-        year: record.year,
+        week,
+        year,
+        weekLabel: week ? `W${week}${yearSuffix}` : null,
         attendance: record.attendance,
         income: record.income?.toFixed(2),
         numberOfServices: record?.numberOfServices,

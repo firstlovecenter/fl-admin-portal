@@ -124,12 +124,28 @@ export const BacentaGraphs = () => {
     setWindowEnd(null)
   }
 
-  const validWeeks = windowedData
-    .map((d: { week?: number | string }) => Number(d.week ?? 0))
-    .filter((n: number) => Number.isFinite(n) && n > 0)
-  const weekRangeLabel = validWeeks.length
-    ? `Weeks ${Math.min(...validWeeks)} – ${Math.max(...validWeeks)}`
-    : 'No service data'
+  const weekRangeLabel = useMemo(() => {
+    const validEntries = windowedData
+      .map((d: { week?: number | string; year?: number | string }) => ({
+        week: Number(d.week ?? 0),
+        year: Number(d.year ?? 0),
+      }))
+      .filter((e) => Number.isFinite(e.week) && e.week > 0)
+    if (!validEntries.length) return 'No service data'
+
+    const sorted = [...validEntries].sort(
+      (a, b) => a.year * 100 + a.week - (b.year * 100 + b.week)
+    )
+    const first = sorted[0]
+    const last = sorted[sorted.length - 1]
+    const formatWeekYear = (w: number, y: number) =>
+      y ? `W${w}'${String(y).slice(-2)}` : `W${w}`
+
+    if (first.year === last.year) {
+      return `Weeks ${first.week} – ${last.week} (${first.year})`
+    }
+    return `${formatWeekYear(first.week, first.year)} – ${formatWeekYear(last.week, last.year)}`
+  }, [windowedData])
 
   const showIncomeBar =
     graphs !== 'bussing' && !!getMonthlyStatAverage(weekdayData, 'income')

@@ -171,7 +171,7 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   return (
     <div className="min-w-44 rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label ? `Week ${label}` : ''}
+        {label || ''}
       </p>
       <div className="mt-2 space-y-1.5">
         {payload.map((entry) => (
@@ -333,7 +333,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
               />
 
               <XAxis
-                dataKey="week"
+                dataKey="weekLabel"
                 tickLine={false}
                 axisLine={false}
                 tick={{
@@ -342,7 +342,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   fontWeight: 500,
                 }}
                 interval={0}
-                tickFormatter={(week) => (week ? `W${week}` : '—')}
+                tickFormatter={(label) => label || '—'}
               />
               <YAxis
                 hide
