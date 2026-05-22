@@ -151,6 +151,8 @@ type TooltipEntry = {
   name?: string
   color?: string
   payload?: {
+    week?: number
+    year?: number
     numberOfServices?: number
     numberOfUrvans?: number
     numberOfSprinters?: number
@@ -167,11 +169,17 @@ type ChartTooltipProps = {
 const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   if (!active || !payload?.length) return null
   const meta = payload[0]?.payload ?? {}
+  const headerLabel =
+    meta.week && meta.year
+      ? `Week ${meta.week}, ${meta.year}`
+      : meta.week
+      ? `Week ${meta.week}`
+      : label || ''
 
   return (
     <div className="min-w-44 rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label || ''}
+        {headerLabel}
       </p>
       <div className="mt-2 space-y-1.5">
         {payload.map((entry) => (
