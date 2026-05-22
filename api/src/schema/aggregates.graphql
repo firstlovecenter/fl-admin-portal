@@ -58,7 +58,7 @@ extend type Bacenta {
         dollarIncome: dollarIncome,
         numberOfServices: numberOfServices
       } AS aggregate
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (aggregate.year * 100 + aggregate.week) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -89,7 +89,7 @@ extend type Bacenta {
         numberOfCars: numberOfCars,
         bussingTopUp: bussingTopUp
       } AS aggregate
-      RETURN aggregate ORDER BY aggregate.year DESC, aggregate.week DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (aggregate.year * 100 + aggregate.week) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -106,7 +106,7 @@ extend type Governorship {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -120,7 +120,7 @@ extend type Governorship {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -137,7 +137,7 @@ extend type Council {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -151,7 +151,7 @@ extend type Council {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -168,7 +168,7 @@ extend type Stream {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -182,7 +182,7 @@ extend type Stream {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -199,7 +199,7 @@ extend type Campus {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -213,7 +213,7 @@ extend type Campus {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -230,7 +230,7 @@ extend type Oversight {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -244,7 +244,7 @@ extend type Oversight {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -261,7 +261,7 @@ extend type Denomination {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -275,7 +275,7 @@ extend type Denomination {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
