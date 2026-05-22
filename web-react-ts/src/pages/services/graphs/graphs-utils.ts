@@ -168,8 +168,25 @@ export const getServiceGraphData = (
     }
 
     array.forEach((record) => {
+      const recordDate = record?.serviceDate?.date || record.date
       const week = record.week
-      const year = record.year
+      // Per-record types (ServiceRecord, BussingRecord) expose `week` but
+      // not `year`. Derive year from the record date so cross-year datasets
+      // sort and label correctly — without this, week 51/2025 and week 20/2026
+      // get sorted purely by week number.
+      let year: number | undefined =
+        typeof record.year === 'number' && Number.isFinite(record.year)
+          ? record.year
+          : undefined
+      if (year === undefined && recordDate) {
+        // `serviceDate.date` arrives as `"YYYY-MM-DD"`. `new Date(...)` would
+        // parse it as UTC midnight and `getFullYear()` then converts to local
+        // time, which can shift Jan 1 back a year for users outside UTC+0.
+        const parsed = new Date(recordDate).getUTCFullYear()
+        if (Number.isFinite(parsed)) {
+          year = parsed
+        }
+      }
       const yearSuffix =
         typeof year === 'number' && year !== currentYear
           ? `'${String(year).slice(-2)}`
@@ -177,7 +194,7 @@ export const getServiceGraphData = (
       data.push({
         id: record?.id,
         category,
-        date: record?.serviceDate?.date || record.date,
+        date: recordDate,
         week,
         year,
         weekLabel: week ? `W${week}${yearSuffix}` : null,
