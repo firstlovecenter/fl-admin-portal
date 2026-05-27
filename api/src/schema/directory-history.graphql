@@ -260,6 +260,46 @@ extend type Mutation {
       columnName: "denomination"
     )
 
+  # Narrow replacement for the auto-generated `updateMembers` carve-out that
+  # the FE used to call from `pages/directory/reusable-forms/MemberDisplay.tsx`.
+  # Restricted to a single scalar field on a single member ID so an
+  # authenticated user cannot overwrite PII, reattach relationships, or
+  # escalate privilege. Scope-gated to the caller's `allowedChurchIds` (the
+  # caller must hold a servant edge over the target's bacenta or one of its
+  # ancestors) — without this filter, a bacenta leader in one council can
+  # deface or harass any pastor anywhere in the denomination because the
+  # sticky note is rendered verbatim on the member detail page. Pairs with
+  # `LogMemberHistory` — the FE issues both in one document.
+  SetMemberStickyNote(memberId: ID!, stickyNote: String!): Member!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "leaderBacenta" } }
+          { roles: { includes: "leaderGovernorship" } }
+          { roles: { includes: "leaderCouncil" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "leaderDenomination" } }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
+    @cypher(
+      statement: """
+      MATCH (member:Active:Member {id: $memberId})-[:BELONGS_TO]->(bacenta:Bacenta)
+      WHERE bacenta.id IN $jwt.allowedChurchIds
+      SET member.stickyNote = $stickyNote
+      RETURN member
+      """
+      columnName: "member"
+    )
+
   LogMemberHistory(ids: [ID], historyRecord: String!): Member
     @authentication(
       jwt: {

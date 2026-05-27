@@ -8,6 +8,9 @@ const resolvers = require('./resolvers/resolvers').default
 const { verifyJwt } = require('./resolvers/utils/verify-jwt')
 const { computeUserAuthority } = require('./resolvers/utils/allowed-church-ids')
 const {
+  requireAuthForMutationsPlugin,
+} = require('./resolvers/utils/require-auth-for-mutations')
+const {
   isDownloadEvent,
   handleDownloadLambdaEvent,
 } = require('./resolvers/downloads/downloads-lambda')
@@ -98,6 +101,7 @@ const initializeServer = async () => {
       schema,
       status400ForVariableCoercionErrors: true,
       includeStacktraceInErrorResponses: process.env.NODE_ENV !== 'production',
+      plugins: [requireAuthForMutationsPlugin],
       formatResponse: (response) => {
         console.log('[Response] Formatting GraphQL response')
         return {

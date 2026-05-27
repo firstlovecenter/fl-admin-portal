@@ -1,4 +1,4 @@
-type DirectoryAncestorEntry @node{
+type DirectoryAncestorEntry @node @mutation(operations: []) {
   id: ID!
   level: String!
   name: String!
@@ -8,7 +8,7 @@ type DirectoryAncestorEntry @node{
   leaderWhatsApp: String
 }
 
-type DirectoryReportEntry @node{
+type DirectoryReportEntry @node @mutation(operations: []) {
   id: ID!
   level: String!
   name: String!
@@ -21,7 +21,7 @@ type DirectoryReportEntry @node{
   longitude: Float
 }
 
-type WeeklyChurchReportEntry @node{
+type WeeklyChurchReportEntry @node @mutation(operations: []) {
   id: ID!
   churchId: ID!
   churchName: String!
@@ -44,7 +44,7 @@ type WeeklyChurchReportEntry @node{
 A church ancestor surfaced as a decorator on `WeeklyChurchReportEntryWithAncestors`.
 One per level between the scope and the target row's level (exclusive of both).
 """
-type WeeklyChurchReportAncestor @node{
+type WeeklyChurchReportAncestor @node @mutation(operations: []) {
   level: String!
   name: String
   leaderFirstName: String
@@ -59,7 +59,7 @@ the in-between ancestor chain as a decorator so the FE can flatten it into
 columns. Bacenta is intentionally NOT a valid target level — the per-Bacenta
 view requires raw-record aggregation that's too heavy for this code path.
 """
-type WeeklyChurchReportEntryWithAncestors @node{
+type WeeklyChurchReportEntryWithAncestors @node @mutation(operations: []) {
   id: ID!
   churchId: ID!
   churchName: String!
@@ -82,7 +82,7 @@ type WeeklyChurchReportEntryWithAncestors @node{
   ancestors: [WeeklyChurchReportAncestor!]!
 }
 
-type ServiceTreasurerEntry @node{
+type ServiceTreasurerEntry @node @mutation(operations: []) {
   id: ID!
   name: String!
   phone: String

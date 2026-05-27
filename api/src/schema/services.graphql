@@ -1,4 +1,4 @@
-type ServiceDay @node{
+type ServiceDay @node @mutation(operations: []) {
   day: String!
   dayNumber: Int!
   bacenta: Bacenta @relationship(type: "MEETS_ON", direction: IN)
@@ -1025,7 +1025,7 @@ type ServiceRecord implements Record @node @mutation(operations: []){
     )
 }
 
-type NoService implements Record @node{
+type NoService implements Record @node @mutation(operations: []) {
   id: ID!
   createdAt: DateTime!
   created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
@@ -1042,7 +1042,7 @@ type NoService implements Record @node{
   noServiceReason: String!
 }
 
-type ServiceLog @node{
+type ServiceLog @node @mutation(operations: []) {
   id: ID!
   historyRecord: String #leader was transferred to
   createdAt: TimeGraph @relationship(type: "RECORDED_ON", direction: OUT)

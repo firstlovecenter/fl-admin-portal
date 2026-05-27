@@ -1,4 +1,4 @@
-type SwellDate implements TimeGraphNode @node{
+type SwellDate implements TimeGraphNode @node @mutation(operations: []) {
   id: ID!
     @cypher(
       statement: """
@@ -1142,7 +1142,7 @@ type BussingRecord implements Record @node @mutation(operations: []) {
   serviceLog: ServiceLog @relationship(type: "HAS_BUSSING", direction: IN)
 }
 
-type VehicleRecord @node{
+type VehicleRecord @node @mutation(operations: []) {
   id: ID!
   created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
   createdAt: DateTime! #mobilisation time is the time the record was created
@@ -1476,7 +1476,7 @@ extend type Mutation {
     )
 }
 
-type ArrivalsSheetData @node{
+type ArrivalsSheetData @node @mutation(operations: []) {
   date: Date
   stream: String
   councilHead: String

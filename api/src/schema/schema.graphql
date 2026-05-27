@@ -102,7 +102,7 @@ type Query @node{
   myAuthority: Authority!
 }
 
-type PresignedUrlResponse @node{
+type PresignedUrlResponse @node @mutation(operations: []) {
   presignedUrl: String!
   publicUrl: String!
   key: String!
