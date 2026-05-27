@@ -28,16 +28,16 @@ const texts = require('../texts.json')
  */
 const validateAuthAndPermissions = (
   permittedRoles: Role[],
-  userRoles: string[]
+  userRoles: string[] | undefined
 ): void => {
-  isAuth(permittedRoles, userRoles as Role[])
+  isAuth(permittedRoles, userRoles as Role[] | undefined)
 }
 
 const validateDirectoryLock = (
-  userRoles: string[],
+  userRoles: string[] | undefined,
   servantType: string
 ): void => {
-  if (directoryLock(userRoles) && servantType !== 'arrivalsCounter') {
+  if (directoryLock(userRoles ?? []) && servantType !== 'arrivalsCounter') {
     throw new Error('Directory is locked till next Tuesday')
   }
 }
@@ -90,8 +90,8 @@ const validateMutation = (params: {
   // `isAuth` runs first so unauthenticated callers get a clean FORBIDDEN
   // and never see the directory-lock state ("Directory is locked till next
   // Tuesday") as an information leak.
-  validateAuthAndPermissions(permittedRoles, context.jwt.roles)
-  validateDirectoryLock(context.jwt.roles, servantLower)
+  validateAuthAndPermissions(permittedRoles, context.jwt?.roles)
+  validateDirectoryLock(context.jwt?.roles, servantLower)
   validateArguments(churchLower, churchId, servantLower, servantId)
   // Per-instance authorization — `isAuth` only confirms the caller holds
   // one of the permitted coarse roles SOMEWHERE in the church spine, but

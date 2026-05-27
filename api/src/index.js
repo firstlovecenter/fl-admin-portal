@@ -107,9 +107,14 @@ const startServer = async () => {
     json(),
     expressMiddleware(server, {
       context: async ({ req }) => {
-        // Coerce a verifier-rejected token to {} so resolvers that read
-        // `context.jwt.roles` directly (no optional chaining, ~80 sites)
-        // surface FORBIDDEN via `isAuth`, not a TypeError → 500.
+        // Leave `context.jwt` undefined on a verifier-rejected or absent
+        // token. `@neo4j/graphql`'s `getAuthorizationContext` does
+        // `if (context.jwt)` — a truthy sentinel like `{}` makes the
+        // library treat the request as authenticated and silently bypasses
+        // schema-level `@authentication` (the 2026-05-26 incident).
+        // Resolvers read claims with `context.jwt?.roles` /
+        // `context.jwt?.userId`; `isAuth(...)` already returns FORBIDDEN
+        // on undefined roles.
         const jwt = verifyJwt(req.headers.authorization, SECRETS.JWT_SECRET)
 
         // Enrich the JWT with the caller's authority graph, computed once
@@ -151,7 +156,7 @@ const startServer = async () => {
         return {
           req,
           executionContext: driver,
-          jwt: jwt ? { ...jwt, servantTrees, allowedChurchIds } : {},
+          jwt: jwt ? { ...jwt, servantTrees, allowedChurchIds } : undefined,
         }
       },
     })

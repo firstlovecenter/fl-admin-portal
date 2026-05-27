@@ -37,7 +37,7 @@ type WeeklyTipArgs = {
 }
 
 const ensureChurchAccess = (context: Context, churchId: string) => {
-  const allowed = context.jwt.allowedChurchIds ?? []
+  const allowed = context.jwt?.allowedChurchIds ?? []
   if (!allowed.includes(churchId)) {
     throw new GraphQLError(
       'You are not permitted to access this church.',
@@ -51,7 +51,7 @@ const weeklyTipForChurch = async (
   args: WeeklyTipArgs,
   context: Context
 ) => {
-  isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+  isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
   ensureChurchAccess(context, args.churchId)
 
   const now = new Date()
@@ -258,10 +258,10 @@ const myChatSessions = async (
   args: MyChatSessionsArgs,
   context: Context
 ) => {
-  isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+  isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
   ensureChurchAccess(context, args.churchId)
 
-  if (!context.jwt.userId) {
+  if (!context.jwt?.userId) {
     throw new GraphQLError('Authenticated user required.', {
       extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
     })
@@ -271,7 +271,7 @@ const myChatSessions = async (
   try {
     const result = await session.executeRead((tx) =>
       tx.run(LIST_CHAT_SESSIONS_CYPHER, {
-        leaderId: context.jwt.userId,
+        leaderId: context.jwt?.userId,
         churchId: args.churchId,
         limit: neo4j.int(Math.max(1, Math.min(args.limit ?? 30, 100))),
       })
@@ -303,9 +303,9 @@ const chatSessionById = async (
   args: ChatSessionByIdArgs,
   context: Context
 ) => {
-  isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+  isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
 
-  if (!context.jwt.userId) {
+  if (!context.jwt?.userId) {
     throw new GraphQLError('Authenticated user required.', {
       extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
     })
@@ -316,7 +316,7 @@ const chatSessionById = async (
     const result = await session.executeRead((tx) =>
       tx.run(GET_CHAT_SESSION_CYPHER, {
         sessionId: args.sessionId,
-        leaderId: context.jwt.userId,
+        leaderId: context.jwt?.userId,
       })
     )
     const record = result.records[0]
@@ -353,10 +353,10 @@ const sendChatMessage = async (
   { input }: { input: SendChatMessageInput },
   context: Context
 ) => {
-  isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+  isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
   ensureChurchAccess(context, input.churchId)
 
-  if (!context.jwt.userId) {
+  if (!context.jwt?.userId) {
     throw new GraphQLError('Authenticated user required.', {
       extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
     })
@@ -397,7 +397,7 @@ const sendChatMessage = async (
       const countRes = await session.executeRead((tx) =>
         tx.run(COUNT_SESSION_MESSAGES_CYPHER, {
           sessionId,
-          leaderId: context.jwt.userId,
+          leaderId: context.jwt?.userId,
         })
       )
       if (countRes.records.length === 0) {
@@ -412,7 +412,7 @@ const sendChatMessage = async (
         tx.run(CREATE_CHAT_SESSION_CYPHER, {
           sessionId,
           churchId: input.churchId,
-          leaderId: context.jwt.userId,
+          leaderId: context.jwt?.userId,
           title: 'New conversation',
         })
       )
@@ -423,7 +423,7 @@ const sendChatMessage = async (
     await session.executeWrite((tx) =>
       tx.run(APPEND_CHAT_MESSAGE_CYPHER, {
         sessionId,
-        leaderId: context.jwt.userId,
+        leaderId: context.jwt?.userId,
         messageId: randomUUID(),
         role: 'user',
         text: userText,
@@ -444,7 +444,7 @@ const sendChatMessage = async (
             await titleSession.executeWrite((tx) =>
               tx.run(UPDATE_CHAT_SESSION_TITLE_CYPHER, {
                 sessionId,
-                leaderId: context.jwt.userId,
+                leaderId: context.jwt?.userId,
                 title,
               })
             )
@@ -473,7 +473,7 @@ const sendChatMessage = async (
     const historyResult = await session.executeRead((tx) =>
       tx.run(READ_SESSION_HISTORY_CYPHER, {
         sessionId,
-        leaderId: context.jwt.userId,
+        leaderId: context.jwt?.userId,
       })
     )
 
@@ -553,7 +553,7 @@ const sendChatMessage = async (
     const persistResult = await session.executeWrite((tx) =>
       tx.run(APPEND_CHAT_MESSAGE_CYPHER, {
         sessionId,
-        leaderId: context.jwt.userId,
+        leaderId: context.jwt?.userId,
         messageId: assistantMessageId,
         role: 'assistant',
         text: assistantText,
@@ -594,8 +594,8 @@ const deleteChatSession = async (
   args: DeleteChatSessionArgs,
   context: Context
 ) => {
-  isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
-  if (!context.jwt.userId) {
+  isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+  if (!context.jwt?.userId) {
     throw new GraphQLError('Authenticated user required.', {
       extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
     })
@@ -605,7 +605,7 @@ const deleteChatSession = async (
     const result = await session.executeWrite((tx) =>
       tx.run(DELETE_CHAT_SESSION_CYPHER, {
         sessionId: args.sessionId,
-        leaderId: context.jwt.userId,
+        leaderId: context.jwt?.userId,
       })
     )
     return toJSNumber(result.records[0]?.get('deleted')) > 0

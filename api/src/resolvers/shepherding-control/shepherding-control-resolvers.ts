@@ -15,7 +15,7 @@ const shepherdingScopeCheck = async (
   args: ScopeCheckArgs,
   context: Context
 ): Promise<boolean> => {
-  isAuth(permitShepherdingControl(), context.jwt.roles)
+  isAuth(permitShepherdingControl(), context.jwt?.roles)
 
   const cypher = SHEPHERDING_SCOPE_CHECK_CYPHER[args.level]
   if (!cypher) {
@@ -28,7 +28,7 @@ const shepherdingScopeCheck = async (
   const session = context.executionContext.session()
   try {
     const result = await session.executeRead((tx) =>
-      tx.run(cypher, { id: args.id, userId: context.jwt.userId })
+      tx.run(cypher, { id: args.id, userId: context.jwt?.userId })
     )
     return Boolean(result.records[0]?.get('allowed'))
   } catch (error) {

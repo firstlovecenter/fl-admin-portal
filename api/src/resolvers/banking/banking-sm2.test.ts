@@ -173,7 +173,7 @@ describe('SM2 — ManuallyConfirmOfferingPayment: auth', () => {
 
     expect(isAuth).toHaveBeenCalledWith(
       expect.arrayContaining(['fishers']),
-      context.jwt.roles
+      context.jwt?.roles
     )
   })
 
@@ -354,7 +354,7 @@ describe('SM2 — SubmitBankingSlip: auth', () => {
     ) as typeof import('../permissions')
     expect(isAuth).toHaveBeenCalledWith(
       permitAdmin('Campus'),
-      context.jwt.roles
+      context.jwt?.roles
     )
   })
 

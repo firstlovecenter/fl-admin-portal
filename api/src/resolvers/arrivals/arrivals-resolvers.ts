@@ -51,7 +51,8 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const checkIfSelf = (servantId: string, auth: string) => {
+const checkIfSelf = (servantId: string, auth: string | undefined) => {
+  if (!auth) return
   if (servantId === auth.replace('auth0|', '')) {
     throw new Error('Sorry! You cannot make yourself an arrivals counter')
   }
@@ -152,7 +153,7 @@ export const arrivalsMutation = {
     args: { arrivalsCounterId: string; streamId: string },
     context: Context
   ) => {
-    checkIfSelf(args.arrivalsCounterId, context.jwt.userId)
+    checkIfSelf(args.arrivalsCounterId, context.jwt?.userId)
 
     return MakeServant(
       context,
@@ -209,7 +210,7 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(['leaderBacenta'], context.jwt.roles)
+    isAuth(['leaderBacenta'], context.jwt?.roles)
     await assertChurchScope(context, args.bacentaId)
 
     const recordResponse = rearrangeCypherObject(
@@ -297,7 +298,7 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(['leaderBacenta'], context.jwt.roles)
+    isAuth(['leaderBacenta'], context.jwt?.roles)
     await assertChurchScope(context, args.bacentaId)
     const session = context.executionContext.session()
 
@@ -380,7 +381,7 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitArrivalsCounter(), context.jwt.roles)
+    isAuth(permitArrivalsCounter(), context.jwt?.roles)
     await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
 
     // TS types are erased at runtime; the SDL only enforces Int! / String!.
@@ -519,7 +520,7 @@ export const arrivalsMutation = {
     args: { vehicleRecordId: string },
     context: Context
   ) => {
-    isAuth(permitArrivalsHelpers('Stream'), context.jwt.roles)
+    isAuth(permitArrivalsHelpers('Stream'), context.jwt?.roles)
     await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
@@ -666,7 +667,7 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitArrivalsPayer(), context.jwt.roles)
+    isAuth(permitArrivalsPayer(), context.jwt?.roles)
     await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
@@ -802,7 +803,7 @@ export const arrivalsMutation = {
     return null
   },
   SetSwellDate: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdminArrivals('Campus'), context.jwt.roles)
+    isAuth(permitAdminArrivals('Campus'), context.jwt?.roles)
 
     const session = context.executionContext.session()
 
@@ -817,7 +818,7 @@ export const arrivalsMutation = {
     args: { firstName: string; phoneNumber: string; otp: string },
     context: Context
   ) => {
-    isAuth(['leaderBacenta'], context.jwt.roles)
+    isAuth(['leaderBacenta'], context.jwt?.roles)
 
     const response = await sendBulkSMS(
       [args.phoneNumber],
@@ -833,7 +834,7 @@ const getArrivalsPaymentData = async (
   args: { arrivalsDate: string; limit: number; offset: number },
   context: Context
 ) => {
-  isAuth(permitAdminArrivals('Stream'), context.jwt.roles)
+  isAuth(permitAdminArrivals('Stream'), context.jwt?.roles)
 
   const session = context.executionContext.session()
 
@@ -855,7 +856,7 @@ const getArrivalsPaymentCount = async (
   args: { arrivalsDate: string },
   context: Context
 ) => {
-  isAuth(permitAdminArrivals('Stream'), context.jwt.roles)
+  isAuth(permitAdminArrivals('Stream'), context.jwt?.roles)
 
   const session = context.executionContext.session()
 

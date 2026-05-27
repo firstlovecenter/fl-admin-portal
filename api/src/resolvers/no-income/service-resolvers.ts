@@ -25,7 +25,7 @@ const serviceNoIncomeMutations = {
     args: RecordServiceNoIncomeArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
     assertServiceDateInCurrentWeek(args.serviceDate)
     const session = context.executionContext.session()
 

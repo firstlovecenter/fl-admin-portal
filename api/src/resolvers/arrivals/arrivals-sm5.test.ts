@@ -431,7 +431,7 @@ describe('SM5 — submitted: RecordVehicleFromBacenta (leaderBacenta)', () => {
       context
     )
 
-    expect(isAuth).toHaveBeenCalledWith(['leaderBacenta'], context.jwt.roles)
+    expect(isAuth).toHaveBeenCalledWith(['leaderBacenta'], context.jwt?.roles)
   })
 
   it('SM5: RecordVehicleFromBacenta IS idempotent — Cypher uses MERGE on (vehicle, outbound) composite key (ADR-005, SYN-117)', () => {

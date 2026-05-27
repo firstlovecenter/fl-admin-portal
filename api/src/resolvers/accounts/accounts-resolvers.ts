@@ -136,7 +136,7 @@ export const accountsMutations = {
     args: { councilId: string; amount: number },
     context: Context
   ) => {
-    isAuth(SET_COUNCIL_HR_ROLES, context.jwt.roles)
+    isAuth(SET_COUNCIL_HR_ROLES, context.jwt?.roles)
     assertPositiveFiniteAmount(args.amount, 'amount', {
       max: MAX_ACCOUNTS_EXPENSE,
       allowZero: true,
@@ -170,7 +170,7 @@ export const accountsMutations = {
     args: { transactionId: string },
     context: Context
   ) => {
-    isAuth(DECLINE_EXPENSE_ROLES, context.jwt.roles)
+    isAuth(DECLINE_EXPENSE_ROLES, context.jwt?.roles)
     await assertScopeViaTransaction(context, args.transactionId)
     const session = context.executionContext.session()
 
@@ -199,7 +199,7 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
-    assertAccountsAccess(context.jwt.roles)
+    assertAccountsAccess(context.jwt?.roles)
     assertPositiveFiniteAmount(
       args.weekdayBalanceDepositAmount,
       'weekdayBalanceDepositAmount',
@@ -274,7 +274,7 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
-    assertAccountsAccess(context.jwt.roles)
+    assertAccountsAccess(context.jwt?.roles)
     // SYN-93 — bussingSocietyBalance is the NEW account total, not a
     // delta, so zero is legitimate (zeroing the account). The downstream
     // Debit branch (depositAmount < 0) is itself a valid path.
@@ -349,7 +349,7 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
-    assertAccountsAccess(context.jwt.roles)
+    assertAccountsAccess(context.jwt?.roles)
     // SYN-93 — closes the negative-charge self-credit primitive.
     // approveExpense's cypher computes
     //   weekdayBalance - (-1 * transaction.amount) - toFloat($charge)
@@ -511,14 +511,14 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
-    assertAccountsAccess(context.jwt.roles)
+    assertAccountsAccess(context.jwt?.roles)
     // SYN-111 — server-side enforcement of the office-hours window.
     // FE blocks submission, but a direct API call would otherwise
     // bypass the gate. fishers role exempt (matches FE behaviour).
     // Hoisted above assertChurchScope so a closed-window call never
     // reaches the scope DB read; an attacker probing councilIds out
     // of hours sees the hours error, not "Council not found".
-    assertAccountsWindowOpen(context.jwt.roles)
+    assertAccountsWindowOpen(context.jwt?.roles)
     // SYN-93 — replaces the inline finite/positive check that lived
     // here. Adds a paranoia ceiling.
     assertPositiveFiniteAmount(args.expenseAmount, 'expenseAmount', {
@@ -619,7 +619,7 @@ export const accountsMutations = {
     args: { transactionId: string },
     context: Context
   ) => {
-    assertAccountsAccess(context.jwt.roles)
+    assertAccountsAccess(context.jwt?.roles)
     await assertScopeViaTransaction(context, args.transactionId)
 
     const session = context.executionContext.session()
@@ -676,7 +676,7 @@ export const accountsMutations = {
     args: { transactionId: string },
     context: Context
   ) => {
-    assertAccountsAccess(context.jwt.roles)
+    assertAccountsAccess(context.jwt?.roles)
     await assertScopeViaTransaction(context, args.transactionId)
 
     const session = context.executionContext.session()
@@ -733,7 +733,7 @@ export const accountsMutations = {
     },
     context: Context
   ) => {
-    assertAccountsAccess(context.jwt.roles)
+    assertAccountsAccess(context.jwt?.roles)
     // SYN-93 — closes the negative-expenseAmount audit-trail laundering
     // primitive. debitBussingSociety's cypher computes
     //   transaction.amount = -1 * $expenseAmount

@@ -143,7 +143,7 @@ const bankingMutation = {
     context: Context
   ) => {
     const SECRETS = await loadSecrets()
-    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
 
     if (!isValidNetwork(args.mobileNetwork)) {
@@ -370,7 +370,7 @@ const bankingMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitMe('Bacenta'), context.jwt.roles)
+    isAuth(permitMe('Bacenta'), context.jwt?.roles)
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
 
     // Paystack mobile-money OTPs are always 4 or 6 digits.
@@ -516,7 +516,7 @@ const bankingMutation = {
     args: { serviceRecordId: string },
     context: Context
   ) => {
-    isAuth(permitMe('Bacenta'), context.jwt.roles)
+    isAuth(permitMe('Bacenta'), context.jwt?.roles)
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
@@ -784,7 +784,7 @@ const bankingMutation = {
     args: { serviceRecordId: string; bankingSlip: string },
     context: Context
   ) => {
-    isAuth(permitAdmin('Campus'), context.jwt.roles)
+    isAuth(permitAdmin('Campus'), context.jwt?.roles)
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
@@ -820,7 +820,7 @@ const bankingMutation = {
     args: { serviceRecordId: string; bankingSlip: string },
     context: Context
   ) => {
-    isAuth(['fishers', ...permitTellerStream()], context.jwt.roles)
+    isAuth(['fishers', ...permitTellerStream()], context.jwt?.roles)
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
@@ -902,7 +902,7 @@ const bankingMutation = {
     args: { serviceRecordId: string; transactionReference: string },
     context: Context
   ) => {
-    isAuth(permitAdmin('Stream'), context.jwt.roles)
+    isAuth(permitAdmin('Stream'), context.jwt?.roles)
 
     const reference = args.transactionReference?.trim() ?? ''
     if (!reference) {

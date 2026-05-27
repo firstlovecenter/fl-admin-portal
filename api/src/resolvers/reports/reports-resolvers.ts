@@ -51,7 +51,7 @@ const isSubChurchTarget = (value: string): value is SubChurchesTarget =>
 const createDirectoryResolver =
   (cypherQuery: string, permissionLevel: ChurchLevel) =>
   async (object: { id: string }, _args: unknown, context: Context) => {
-    isAuth(permitLeaderAdmin(permissionLevel), context.jwt.roles)
+    isAuth(permitLeaderAdmin(permissionLevel), context.jwt?.roles)
     const session = context.executionContext.session()
 
     try {
@@ -72,7 +72,7 @@ const createDirectoryResolver =
 const createWeeklyReportResolver =
   (cypherQuery: string, permissionLevel: ChurchLevel, reportName: string) =>
   async (object: { id: string }, args: WeekRangeArgs, context: Context) => {
-    isAuth(permitLeaderAdmin(permissionLevel), context.jwt.roles)
+    isAuth(permitLeaderAdmin(permissionLevel), context.jwt?.roles)
     const session = context.executionContext.session()
 
     try {
@@ -104,7 +104,7 @@ const createSubChurchesAtLevelResolver =
     args: SubChurchesAtLevelArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin(scope), context.jwt.roles)
+    isAuth(permitLeaderAdmin(scope), context.jwt?.roles)
 
     // Validate targetLevel against the whitelist before reaching Cypher.
     // A bogus level either trips this guard or surfaces as a 0-row return

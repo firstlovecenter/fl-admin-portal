@@ -252,11 +252,11 @@ export const permitShepherdingControl = (): Role[] => [
 // These mirror `web-react-ts/src/permission-utils.ts` (ADR-001) — any change
 // here MUST land in the FE file in the same PR and vice-versa.
 //
-// The flat `context.jwt.roles` claim is coarse and unbound — holding
+// The flat `context.jwt?.roles` claim is coarse and unbound — holding
 // `adminStream` says nothing about WHICH stream. The per-instance helpers
 // answer "at THIS church, does the user hold a role that satisfies this
 // permitX(level) set?" by walking the user's servant trees from
-// `context.jwt.servantTrees`.
+// `context.jwt?.servantTrees`.
 // ─────────────────────────────────────────────────────────────────────────
 
 // Maps a servant edge `(type, level)` to the coarse Role name produced by

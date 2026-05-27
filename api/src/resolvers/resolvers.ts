@@ -171,8 +171,8 @@ const resolvers = {
         })
       }
       return {
-        servantTrees: context.jwt.servantTrees ?? [],
-        allowedChurchIds: context.jwt.allowedChurchIds ?? [],
+        servantTrees: context.jwt?.servantTrees ?? [],
+        allowedChurchIds: context.jwt?.allowedChurchIds ?? [],
       }
     },
   },
