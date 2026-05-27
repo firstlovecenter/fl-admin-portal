@@ -1,4 +1,16 @@
-type Member @node{
+type Member @node @mutation(operations: []) {
+  # All auto-generated CRUD is disabled. Writes go through narrow custom
+  # mutations that each enforce role gating + audit logging:
+  #   - CreateMember            (directory-resolvers.ts)
+  #   - MakeMemberInactive      (directory-resolvers.ts)
+  #   - UpdateMemberBacenta     (directory-resolvers.ts)
+  #   - SetMemberStickyNote     (directory-history.graphql)
+  #   - LogMemberHistory        (directory-history.graphql)
+  # Leaving the auto-gen `updateMembers` exposed (even with `@authentication`)
+  # lets any logged-in user overwrite arbitrary member PII or connect
+  # themselves to leader/admin relationships — privilege escalation. Keep
+  # this directive at `operations: []` and add a narrow mutation if the FE
+  # needs a new field.
   id: ID! @id
   firstName: String #@search
   middleName: String
@@ -316,19 +328,19 @@ type BacentaSummary {
   name: String
 }
 
-type Gender @node{
+type Gender @node @mutation(operations: []) {
   gender: String
 }
 
-type MaritalStatus @node{
+type MaritalStatus @node @mutation(operations: []) {
   status: String
 }
 
-type Occupation @node{
+type Occupation @node @mutation(operations: []) {
   occupation: String
 }
 
-type Title @node{
+type Title @node @mutation(operations: []) {
   name: String! #Pastor, Reverend, Apostle, Bishop (Mother)
 }
 
@@ -340,7 +352,7 @@ interface TimeGraphNode {
   date: Date
 }
 
-type TimeGraph implements TimeGraphNode @node{
+type TimeGraph implements TimeGraphNode @node @mutation(operations: []) {
   id: ID
     @cypher(
       statement: """
@@ -415,7 +427,7 @@ interface Church {
   services(limit: Int!, skip: Int): [ServiceRecord!]!
 }
 
-type Denomination implements Church @node
+type Denomination implements Church @node @mutation(operations: [])
   # @churchScoped(level: Denomination)
 {
   id: ID! @id
@@ -586,7 +598,7 @@ type Denomination implements Church @node
     )
 }
 
-type Oversight implements Church @node
+type Oversight implements Church @node @mutation(operations: [])
   # @churchScoped(level: Oversight)
 {
   id: ID @id
@@ -754,7 +766,7 @@ type Oversight implements Church @node
     )
 }
 
-type Campus implements Church @node
+type Campus implements Church @node @mutation(operations: [])
   # @churchScoped(level: Campus)
 {
   id: ID @id
@@ -916,7 +928,7 @@ type Campus implements Church @node
     )
 }
 
-type Stream implements Church @node
+type Stream implements Church @node @mutation(operations: [])
   # @churchScoped(level: Stream)
 {
   id: ID @id
@@ -1099,7 +1111,7 @@ type Stream implements Church @node
     )
 }
 
-type Council implements Church @node
+type Council implements Church @node @mutation(operations: [])
   # @churchScoped(level: Council)
 {
   id: ID @id
@@ -1253,7 +1265,7 @@ type Council implements Church @node
     )
 }
 
-type Governorship implements Church @node
+type Governorship implements Church @node @mutation(operations: [])
   # @churchScoped(level: Governorship)
 {
   id: ID @id
@@ -1399,7 +1411,7 @@ type Governorship implements Church @node
     )
 }
 
-type Bacenta implements Church @node
+type Bacenta implements Church @node @mutation(operations: [])
   # @churchScoped(level: Bacenta)
 {
   id: ID @id
@@ -1558,7 +1570,7 @@ type Bacenta implements Church @node
 
 }
 
-type Basonta @node{
+type Basonta @node @mutation(operations: []) {
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)

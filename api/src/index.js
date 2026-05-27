@@ -12,6 +12,7 @@ import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
 import { verifyJwt } from './resolvers/utils/verify-jwt'
 import { computeUserAuthority } from './resolvers/utils/allowed-church-ids'
+import { requireAuthForMutationsPlugin } from './resolvers/utils/require-auth-for-mutations'
 import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 const startServer = async () => {
@@ -92,7 +93,10 @@ const startServer = async () => {
   const server = new ApolloServer({
     introspection: true,
     schema,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      requireAuthForMutationsPlugin,
+    ],
   })
 
   await server.start()

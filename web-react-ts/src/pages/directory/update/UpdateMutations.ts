@@ -62,18 +62,13 @@ export const UPDATE_MEMBER_MUTATION = gql`
 export const UPDATE_MEMBER_STICKY_NOTE = gql`
   mutation UpdateMemberStickyNote(
     $id: ID!
-    $stickyNote: String
+    $stickyNote: String!
     $ids: [ID]
     $historyRecord: String!
   ) {
-    updateMembers(
-      where: { id: { eq: $id } }
-      update: { stickyNote: { set: $stickyNote } }
-    ) {
-      members {
-        id
-        stickyNote
-      }
+    SetMemberStickyNote(memberId: $id, stickyNote: $stickyNote) {
+      id
+      stickyNote
     }
     LogMemberHistory(ids: $ids, historyRecord: $historyRecord) {
       id

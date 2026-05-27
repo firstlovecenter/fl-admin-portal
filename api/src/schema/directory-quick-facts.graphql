@@ -10,12 +10,12 @@ extend type ServiceRecord {
     )
 }
 
-type Stats @node{
+type Stats @node @mutation(operations: []) {
   attendance: Float
   income: Float
 }
 
-type MemberConversion @node{
+type MemberConversion @node @mutation(operations: []) {
   howYouJoined: String
   percentage: Float!
   number: Int!

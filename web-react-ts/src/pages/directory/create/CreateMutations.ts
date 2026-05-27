@@ -51,38 +51,6 @@ export const CREATE_MEMBER_MUTATION = gql`
   }
 `
 
-export const ADD_MEMBER_TITLE_MUTATION = gql`
-  mutation AddMemberTitle(
-    $memberId: ID!
-    $title: String # $status: Boolean # $date: String
-    $date: Date
-  ) {
-    updateMembers(
-      where: { id: { eq: $memberId } }
-      connect: {
-        title: { where: { node: { name: { eq: $title } } }, edge: { date: { eq: $date } } }
-      }
-    ) {
-      members {
-        id
-        firstName
-        lastName
-        title {
-          name
-        }
-        titleConnection {
-          edges {
-            date
-            node {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`
-
 export const CREATE_BACENTA_MUTATION = gql`
   mutation CreateBacenta(
     $name: String!
