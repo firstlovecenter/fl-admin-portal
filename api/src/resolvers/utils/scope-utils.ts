@@ -99,10 +99,12 @@ const forbidden = (message: string): GraphQLError =>
   })
 
 // Accept the narrow Context shape the existing resolvers use; only the
-// session() factory and a JWT-with-userId are needed here.
+// session() factory and a JWT-with-userId are needed here. `jwt` is
+// optional because the Apollo bootstraps leave it undefined on rejected
+// tokens — see `neo4j-types.ts` for the rationale.
 type ScopeContext = {
   executionContext: { session: () => Session }
-  jwt: { userId?: string }
+  jwt?: { userId?: string }
 }
 
 const runAssert = async (

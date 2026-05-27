@@ -329,7 +329,7 @@ describe('SM1 — SetTransactionReferenceManually: admin recovery', () => {
 
     expect(isAuth).toHaveBeenCalledWith(
       permitAdmin('Stream'),
-      context.jwt.roles
+      context.jwt?.roles
     )
   })
 

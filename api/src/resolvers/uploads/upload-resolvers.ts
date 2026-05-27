@@ -51,7 +51,7 @@ const uploadMutations = {
 
       const currentUserResult = await session.run(
         'MATCH (member:Active:Member {id: $id}) RETURN member',
-        { id: context.jwt.userId }
+        { id: context.jwt?.userId }
       )
 
       if (currentUserResult.records.length === 0) {

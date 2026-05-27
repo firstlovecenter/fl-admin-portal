@@ -68,13 +68,13 @@ describe('isAuth', () => {
     })
   })
 
-  describe('trust boundary — context.jwt.roles is the only source of truth', () => {
-    // The resolver convention is: isAuth(permit*(level), context.jwt.roles).
+  describe('trust boundary — context.jwt?.roles is the only source of truth', () => {
+    // The resolver convention is: isAuth(permit*(level), context.jwt?.roles).
     // Anything the client supplies via args is never forwarded as the second
-    // argument. This test pins that calling with context.jwt.roles (which
+    // argument. This test pins that calling with context.jwt?.roles (which
     // lacks the required role) still denies, regardless of what the client
     // might claim in args.
-    it('denies when context.jwt.roles lacks the required role, regardless of what a client might supply', () => {
+    it('denies when context.jwt?.roles lacks the required role, regardless of what a client might supply', () => {
       const contextJwt = makeJwt(['leaderBacenta']) // real JWT: only Bacenta leader
       // Client could claim adminDenomination in args — but isAuth never sees args.roles
       expect(() =>
@@ -82,7 +82,7 @@ describe('isAuth', () => {
       ).toThrow(GraphQLError)
     })
 
-    it('allows when context.jwt.roles contains the required role', () => {
+    it('allows when context.jwt?.roles contains the required role', () => {
       const contextJwt = makeJwt(['adminDenomination'])
       expect(() =>
         isAuth(['adminDenomination'], contextJwt.roles)
@@ -92,12 +92,12 @@ describe('isAuth', () => {
 
   describe('resolver guard — removing the isAuth call causes these tests to fail', () => {
     // Minimal stub that mirrors every custom resolver body:
-    //   isAuth(permit*(level), context.jwt.roles)   ← first line, always
+    //   isAuth(permit*(level), context.jwt?.roles)   ← first line, always
     //   return data
     const guardedResolver = (
       context: { jwt: { roles?: Role[] } }
     ): string => {
-      isAuth(['leaderBacenta', 'leaderGovernorship'], context.jwt.roles)
+      isAuth(['leaderBacenta', 'leaderGovernorship'], context.jwt?.roles)
       return 'ok'
     }
 
@@ -108,10 +108,24 @@ describe('isAuth', () => {
     })
 
     // Expired / unsigned tokens → verifyJwt returns null → index.js sets
-    // context.jwt = {}.  context.jwt.roles is therefore undefined and must
-    // not pass the gate silently.
+    // context.jwt = undefined.  context.jwt?.roles is therefore undefined
+    // and must not pass the gate silently.
     it('throws FORBIDDEN when jwt is empty (models an expired or unsigned token)', () => {
       expect(() => guardedResolver({ jwt: {} })).toThrow(GraphQLError)
+    })
+
+    // Defends the post-incident bootstrap contract: jwt MUST be undefined
+    // (not {}) when the verifier rejects the token. If a future refactor
+    // re-introduces the `{}` sentinel, `@neo4j/graphql`'s schema-level
+    // `@authentication` (which does `if (context.jwt)`) silently passes
+    // anonymous mutations. See `neo4j-types.ts` for the full rationale.
+    it('throws FORBIDDEN when jwt is undefined (models an anonymous request)', () => {
+      const r = (context: { jwt?: { roles?: Role[] } }): string => {
+        isAuth(['leaderBacenta'], context.jwt?.roles)
+        return 'ok'
+      }
+      expect(() => r({ jwt: undefined })).toThrow(GraphQLError)
+      expect(() => r({})).toThrow(GraphQLError)
     })
 
     it('allows through when the caller holds the correct role', () => {

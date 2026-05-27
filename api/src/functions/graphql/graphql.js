@@ -227,9 +227,13 @@ exports.handler = async (event, context) => {
     })
 
     const token = headers.authorization || headers.Authorization
-    // Coerce a verifier-rejected token to {} so resolvers that read
-    // `context.jwt.roles` directly (no optional chaining, ~80 sites)
-    // surface FORBIDDEN via `isAuth`, not a TypeError → 500.
+    // Leave `context.jwt` undefined on a verifier-rejected or absent
+    // token. `@neo4j/graphql`'s `getAuthorizationContext` does
+    // `if (context.jwt)` — a truthy sentinel like `{}` makes the library
+    // treat the request as authenticated and silently bypasses
+    // schema-level `@authentication` (the 2026-05-26 incident).
+    // Resolvers read claims with `context.jwt?.roles` / `context.jwt?.userId`;
+    // `isAuth(...)` already returns FORBIDDEN on undefined roles.
     const verifiedJwt = verifyJwt(token, SECRETS?.JWT_SECRET)
 
     // Enrich the JWT with the caller's authority graph (servantTrees +
@@ -259,7 +263,7 @@ exports.handler = async (event, context) => {
 
     const jwt = verifiedJwt
       ? { ...verifiedJwt, servantTrees, allowedChurchIds }
-      : {}
+      : undefined
 
     const contextValue = {
       req: event,

@@ -195,7 +195,7 @@ describe('W4 — UploadMobilisationPicture (leaderBacenta)', () => {
       context
     )
 
-    expect(isAuth).toHaveBeenCalledWith(['leaderBacenta'], context.jwt.roles)
+    expect(isAuth).toHaveBeenCalledWith(['leaderBacenta'], context.jwt?.roles)
   })
 
   it('W4: UploadMobilisationPicture returns a BussingRecord with the mobilisationPicture URL', async () => {

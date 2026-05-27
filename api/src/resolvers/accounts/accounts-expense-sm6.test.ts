@@ -815,7 +815,7 @@ describe('SM6 — Auth: who can approve and who can decline', () => {
 
     expect(isAuth).toHaveBeenCalledWith(
       expect.arrayContaining(['leaderCouncil', 'leaderCampus', 'adminCampus']),
-      context.jwt.roles
+      context.jwt?.roles
     )
   })
 
@@ -863,7 +863,7 @@ describe('SM6 — Auth: who can approve and who can decline', () => {
     // Positive: adminCampus and leaderCampus must be in the list.
     expect(isAuth).toHaveBeenCalledWith(
       expect.arrayContaining(['adminCampus', 'leaderCampus']),
-      context.jwt.roles
+      context.jwt?.roles
     )
     // Negative: leaderCouncil MUST NOT be in the DeclineExpense role list.
     const [passedRoles] = (isAuth as jest.Mock).mock.calls[0]

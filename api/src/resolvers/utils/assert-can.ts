@@ -10,13 +10,13 @@ import { ServantTree } from './allowed-church-ids'
  * `assertCan` checks "does the user hold one of these roles AT THIS exact
  * church?".
  *
- * Reads the user's per-edge authority from `context.jwt.servantTrees`
+ * Reads the user's per-edge authority from `context.jwt?.servantTrees`
  * (populated at request time by `index.js` from `computeUserAuthority`).
  * No Cypher runs here — the trees are cached for the JWT's lifetime.
  *
  * Wire in custom resolvers immediately after `isAuth(...)`:
  *
- *   isAuth(permitAdmin('Stream'), context.jwt.roles)
+ *   isAuth(permitAdmin('Stream'), context.jwt?.roles)
  *   assertCan(context, permitAdmin('Stream'), args.streamId)
  *
  * Throws FORBIDDEN if the caller does not hold a permitted role at the

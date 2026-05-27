@@ -190,7 +190,7 @@ describe('W1 — RecordService: auth gate', () => {
 
     expect(isAuth).toHaveBeenCalledWith(
       permitLeaderAdmin('Bacenta'),
-      context.jwt.roles
+      context.jwt?.roles
     )
   })
 

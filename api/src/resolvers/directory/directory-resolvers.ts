@@ -30,10 +30,7 @@ const texts = require('../texts.json')
 
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
-    isAuth(
-      permitLeaderAdmin('Bacenta'),
-      context?.jwt.roles
-    )
+    isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
     const session = context.executionContext.session()
     const inactiveMemberResponse = rearrangeCypherObject(
       await session.executeRead((tx) =>
@@ -59,7 +56,7 @@ const directoryMutation = {
           basonta: args?.basonta ?? '',
           visitationArea: args?.visitationArea ?? '',
           pictureUrl: args?.pictureUrl ?? '',
-          userId: context.jwt.userId,
+          userId: context.jwt?.userId,
         })
       )
 
@@ -110,7 +107,7 @@ const directoryMutation = {
         basonta: args?.basonta ?? '',
         visitationArea: args?.visitationArea ?? '',
         pictureUrl: args?.pictureUrl ?? '',
-        userId: context.jwt.userId,
+        userId: context.jwt?.userId,
       })
     )
 
@@ -129,7 +126,7 @@ const directoryMutation = {
     // looser `permitMe('Bacenta')` — which lets `arrivalsCounterStream`,
     // `arrivalsPayerCouncil`, and `tellerStream` reorganise the membership
     // graph via direct API calls. Tighten to match the FE gate.
-    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
 
     const session = context.executionContext.session()
 
@@ -152,7 +149,7 @@ const directoryMutation = {
     },
     context: Context
   ) => {
-    isAuth([...permitLeaderAdmin('Governorship')], context.jwt.roles)
+    isAuth([...permitLeaderAdmin('Governorship')], context.jwt?.roles)
     const session = context.executionContext.session()
 
     try {
@@ -190,7 +187,7 @@ const directoryMutation = {
     }
   },
   CloseDownBacenta: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdminArrivals('Governorship'), context.jwt.roles)
+    isAuth(permitAdminArrivals('Governorship'), context.jwt?.roles)
 
     const session = context.executionContext.session()
 
@@ -233,7 +230,7 @@ const directoryMutation = {
     }
   },
   CloseDownGovernorship: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Council'), context.jwt.roles)
+    isAuth(permitAdmin('Council'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -319,7 +316,7 @@ const directoryMutation = {
   },
 
   CloseDownCouncil: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Stream'), context.jwt.roles)
+    isAuth(permitAdmin('Stream'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -403,7 +400,7 @@ const directoryMutation = {
   },
 
   CloseDownStream: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Campus'), context.jwt.roles)
+    isAuth(permitAdmin('Campus'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -493,7 +490,7 @@ const directoryMutation = {
   },
 
   CloseDownCampus: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Oversight'), context.jwt.roles)
+    isAuth(permitAdmin('Oversight'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -577,7 +574,7 @@ const directoryMutation = {
   },
 
   CloseDownOversight: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Denomination'), context.jwt.roles)
+    isAuth(permitAdmin('Denomination'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -678,7 +675,7 @@ const directoryMutation = {
         ...permitAdmin('Campus'),
         ...permitAdminArrivals('Campus'),
       ],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -734,7 +731,7 @@ const directoryMutation = {
         ...permitAdmin('Stream'),
         ...permitAdmin('Council'),
       ],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -783,7 +780,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitAdmin('Campus'), ...permitAdmin('Stream')],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -833,7 +830,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitAdmin('Campus'), ...permitAdmin('Oversight')],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -886,7 +883,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitAdmin('Oversight'), ...permitAdmin('Denomination')],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -935,7 +932,7 @@ const directoryMutation = {
     },
     context: Context
   ) => {
-    isAuth([...permitAdmin('Denomination')], context.jwt.roles)
+    isAuth([...permitAdmin('Denomination')], context.jwt?.roles)
 
     const session = context.executionContext.session()
 

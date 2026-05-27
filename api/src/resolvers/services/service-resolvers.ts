@@ -127,7 +127,7 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
     assertServiceDateInCurrentWeek(args.serviceDate)
     assertPositiveFiniteAmount(args.income, 'income', {
       max: MAX_OFFERING_CASH,
@@ -228,7 +228,7 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
     assertServiceDateInCurrentWeek(args.serviceDate)
     await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
@@ -307,7 +307,7 @@ const serviceMutation = {
     args: RecordCancelledServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
     assertServiceDateInCurrentWeek(args.serviceDate)
     await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
