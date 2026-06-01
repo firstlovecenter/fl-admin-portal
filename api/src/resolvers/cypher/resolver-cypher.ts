@@ -102,11 +102,11 @@ export const matchChurchQuery = `
 
 export const getChurchDataQuery = `
   MATCH (church {id:$id})
-  WHERE church:Bacenta OR church:Constituency OR church:Council OR church:Stream
+  WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
   OR church:Campus OR church:Oversight OR church:Denomination
   OR church:Ministry
 
-  MATCH (church)-[:HAS_HISTORY]->(:SERVICE_LOG)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
+  MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
   WHERE date.date >= date() - duration('P8W')
   
   OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)

@@ -1,0 +1,16 @@
+# Local state (until an S3 backend is configured)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Sensitive variable files — never commit
+secrets.auto.tfvars
+*.auto.tfvars
+!*.auto.tfvars.example
+
+# Placeholder build artifact
+build/
+
+# Plan output
+*.tfplan

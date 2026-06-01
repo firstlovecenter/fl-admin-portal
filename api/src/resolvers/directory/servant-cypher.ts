@@ -170,7 +170,7 @@ const servantCypher = {
   connectServiceLog: `
    MATCH (church {id: $churchId})
    WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
-   OR church:Campus OR church:Oversight
+   OR church:Campus OR church:Oversight OR church:Denomination
    OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
    MATCH (currentUser:Member {id: $jwt.userId})
@@ -206,7 +206,7 @@ const servantCypher = {
   connectHistoryLog: `
    MATCH (church {id:$churchId})
    WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
-   OR church:Campus OR church:Oversight
+   OR church:Campus OR church:Oversight OR church:Denomination
    OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
    MATCH (currentUser:Member {id: $jwt.userId})
