@@ -530,7 +530,7 @@ MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (campus)-[:HAS_HISTORY]->(log)
 MERGE (leader)-[:HAS_HISTORY]->(log)
 
-RETURN campus {.id, .name}, leader {.id, .firstName, .lastName, .email}, oversight {.id, .name}
+RETURN campus {.id, .name, .noIncomeTracking, .currency, .conversionRateToDollar}, leader {.id, .firstName, .lastName, .email}, oversight {.id, .name}
 `
 
 export const createOversight = `
