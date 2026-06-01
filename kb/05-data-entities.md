@@ -208,6 +208,21 @@ keep this true — see ADR-016 and the monitor query in
 still real and reachable only via `HAS_HISTORY`; any aggregation backfill or
 completeness check must account for them (ADR-016).
 
+**Aggregate keying (ADR-014).** `AggregateServiceRecord` / `AggregateBussingRecord`
+(and the rehearsal / ministry-meeting / stage-attendance variants) are keyed
+`<church.id>-<week>-<year>` and written `MERGE … SET` (Model-A snapshots; only the
+current week is recomputed). Legacy nodes used `<week>-<year>-<uuid>`; the SYN-149
+migrations (`api/src/scripts/migrate-aggregate-*-record-ids.js`) rekey/dedupe them.
+FE graphs dedupe by `(week, year)` taking the latest `recomputedAt` (NULLS LAST), so
+duplicate keys are tolerated at read time but should be migrated for hygiene. **Prod
+bussing-aggregate dedup completed 2026-06-01 (legacy 54,137 → 2,688).** The residual
+2,688 are deliberately-skipped edge cases: **185 *divergent-attendance* groups** (same
+church-week, conflicting non-null numbers, no `recomputedAt` to break the tie) and
+**~2,941 *multi-church-reachable*** aggregates (one node reachable via >1 church key
+after leadership/structure changes) — both await a human conflict-resolution
+decision. When deduping, never let a null-`recomputedAt` legacy overwrite an existing
+canonical (use a strict-`<` freshness guard).
+
 ## EquipmentRecord
 
 ```ts

@@ -165,3 +165,21 @@ binary data through the GraphQL endpoint.
    (`higherChurchName` → history string, `serviceLogRes.id` → step 3) *inside*
    the callback between `tx.run` calls, and wrap the whole thing in one outer
    `catch` → `throwToSentry`.
+- ❌ Omitting a ServiceLog-owning church level from the `WHERE church:… OR …`
+   label gate in `connectServiceLog` / `connectHistoryLog`
+   (`directory/servant-cypher.ts`). Every level that owns a ServiceLog —
+   Bacenta, Governorship, Council, Stream, Campus, Oversight, **Denomination** —
+   must be listed, or that level's leader change silently creates no
+   `CURRENT_HISTORY`, exactly the SYN-153 orphan above, and the level's
+   aggregates go blank. Denomination was missing until 2026-06-01. Keep this
+   list in sync with `LEADER_CHURCH_PREDICATE` in
+   `api/src/scripts/repair-missing-current-history.js` and `setPriorityLevel`
+   in `directory/utils.ts`.
+- ❌ Gating a servant mutation on `['fishers']` alone. `fishers` maps to no
+   servant edge, so `assertCan` (per-instance, via `canDoAt`/`rolesAt`/
+   `edgeToRole`) can **never** grant it — the mutation is permanently
+   FORBIDDEN. `fishers` only ever passes the coarse `isAuth`. To require it,
+   call `isAuth(['fishers'], context.jwt?.roles)` separately **and** return a
+   real edge-backed role set for the per-instance gate. The Denomination leader
+   path is the reference: `isAuth(['fishers'])` + `permitAdmin('Denomination')`
+   (fixed 2026-06-01; was dead before). See `kb/02-user-roles.md` `fishers` row.
