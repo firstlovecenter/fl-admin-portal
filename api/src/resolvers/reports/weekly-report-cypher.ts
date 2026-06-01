@@ -67,7 +67,7 @@ const buildSelfWeeklyCypher = (level: string, label: string) => `
     WHERE (serviceAgg.year * 100 + serviceAgg.week) >= $startWeekKey
       AND (serviceAgg.year * 100 + serviceAgg.week) <= $endWeekKey
     WITH serviceAgg
-    ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
+    ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(serviceAgg.attendance, 0) DESC
     WITH serviceAgg.week AS week, serviceAgg.year AS year, head(collect(serviceAgg)) AS serviceAgg
     WITH week, year, serviceAgg
     WHERE serviceAgg IS NOT NULL
@@ -80,7 +80,7 @@ const buildSelfWeeklyCypher = (level: string, label: string) => `
     WHERE (bussingAgg.year * 100 + bussingAgg.week) >= $startWeekKey
       AND (bussingAgg.year * 100 + bussingAgg.week) <= $endWeekKey
     WITH bussingAgg
-    ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
+    ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(bussingAgg.attendance, 0) DESC
     WITH bussingAgg.week AS week, bussingAgg.year AS year, head(collect(bussingAgg)) AS bussingAgg
     WITH week, year, bussingAgg
     WHERE bussingAgg IS NOT NULL
@@ -224,7 +224,7 @@ const buildChildrenWeeklyCypher = (parentLevel: string, childLevel: string) => `
     WHERE (serviceAgg.year * 100 + serviceAgg.week) >= $startWeekKey
       AND (serviceAgg.year * 100 + serviceAgg.week) <= $endWeekKey
     WITH serviceAgg
-    ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
+    ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(serviceAgg.attendance, 0) DESC
     WITH serviceAgg.week AS week, serviceAgg.year AS year, head(collect(serviceAgg)) AS serviceAgg
     WITH week, year, serviceAgg
     WHERE serviceAgg IS NOT NULL
@@ -237,7 +237,7 @@ const buildChildrenWeeklyCypher = (parentLevel: string, childLevel: string) => `
     WHERE (bussingAgg.year * 100 + bussingAgg.week) >= $startWeekKey
       AND (bussingAgg.year * 100 + bussingAgg.week) <= $endWeekKey
     WITH bussingAgg
-    ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
+    ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(bussingAgg.attendance, 0) DESC
     WITH bussingAgg.week AS week, bussingAgg.year AS year, head(collect(bussingAgg)) AS bussingAgg
     WITH week, year, bussingAgg
     WHERE bussingAgg IS NOT NULL
@@ -502,7 +502,7 @@ const buildSubChurchesAtLevelCypher = (
     WHERE (serviceAgg.year * 100 + serviceAgg.week) >= $startWeekKey
       AND (serviceAgg.year * 100 + serviceAgg.week) <= $endWeekKey
     WITH serviceAgg
-    ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
+    ORDER BY coalesce(serviceAgg.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(serviceAgg.attendance, 0) DESC
     WITH serviceAgg.week AS week, serviceAgg.year AS year, head(collect(serviceAgg)) AS serviceAgg
     WITH week, year, serviceAgg
     WHERE serviceAgg IS NOT NULL
@@ -515,7 +515,7 @@ const buildSubChurchesAtLevelCypher = (
     WHERE (bussingAgg.year * 100 + bussingAgg.week) >= $startWeekKey
       AND (bussingAgg.year * 100 + bussingAgg.week) <= $endWeekKey
     WITH bussingAgg
-    ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC
+    ORDER BY coalesce(bussingAgg.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(bussingAgg.attendance, 0) DESC
     WITH bussingAgg.week AS week, bussingAgg.year AS year, head(collect(bussingAgg)) AS bussingAgg
     WITH week, year, bussingAgg
     WHERE bussingAgg IS NOT NULL

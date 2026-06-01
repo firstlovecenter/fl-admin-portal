@@ -12,6 +12,7 @@
 import { Context } from '../utils/neo4j-types'
 import { Member, Role } from '../utils/types'
 import { permitAdmin, permitAdminArrivals } from '../permissions'
+import { isAuth } from '../utils/utils'
 import { MakeServant, RemoveServant } from './make-remove-servants'
 import { ServantMutationConfig, SERVANT_MUTATIONS } from './servant-config'
 
@@ -23,13 +24,19 @@ const createServantResolver = (
   context: Context,
   args: Member
 ) => {
+  // Denomination Leader make/remove is gated on adminDenomination at the
+  // target church (the returned permitAdmin('Denomination') drives
+  // validateMutation's isAuth + assertCan) PLUS the broad `fishers` marker.
+  // `fishers` is coarse-only (maps to no servant edge), so it is asserted
+  // separately below rather than returned here. Mirrors the FE gate (ADR-001):
+  // DenominationForm's <RoleView roles={['fishers']}> + the
+  // permitAdmin('Denomination') editdenomination route.
+  const isDenominationLeader =
+    config.churchType === 'Denomination' && config.servantType === 'Leader'
+
   const getPermittedRoles = (): Role[] => {
-    // Special case: Denomination Leaders use 'fishers' role
-    if (
-      config.churchType === 'Denomination' &&
-      config.servantType === 'Leader'
-    ) {
-      return ['fishers']
+    if (isDenominationLeader) {
+      return permitAdmin('Denomination')
     }
 
     // Arrivals Counter uses special permission
@@ -39,6 +46,12 @@ const createServantResolver = (
 
     // Standard permission hierarchy
     return permitAdmin(config.requiredPermissionLevel)
+  }
+
+  // Coarse `fishers` guard (JWT-only), layered on top of the adminDenomination
+  // gate. Throws FORBIDDEN before any handler/DB work runs.
+  if (isDenominationLeader) {
+    isAuth(['fishers'], context.jwt?.roles)
   }
 
   const isRemoval = config.action === 'remove'

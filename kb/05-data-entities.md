@@ -193,6 +193,36 @@ type HistoryLog = {
 Linked to every Church node. Append-only. Never delete entries; they are the audit
 trail for servant changes, banking confirmations, etc.
 
+A `:ServiceLog` is a `:HistoryLog` that also carries weekly records and
+aggregates. A church reaches its logs two ways: `HAS_HISTORY` (permanent, every
+log it has ever had) and `CURRENT_HISTORY` (exactly the latest). Both also point
+from the leading `:Member`. The aggregation Lambdas and `recordService` read via
+`CURRENT_HISTORY`, the FE graphs read via `HAS_HISTORY`.
+
+**Invariant:** a church with a `:LEADS` leader has **exactly one**
+`(church)-[:CURRENT_HISTORY]->(:ServiceLog)`. Zero = orphan (invisible to
+aggregation and `recordService`); more than one = duplicate (income inflation,
+SYN-57/59/60). Leadership writes go through `makeServantCypher` atomically to
+keep this true — see ADR-016 and the monitor query in
+`api/kb/02-graphql-and-cypher.md`. Records on *rotated-away* ServiceLogs are
+still real and reachable only via `HAS_HISTORY`; any aggregation backfill or
+completeness check must account for them (ADR-016).
+
+**Aggregate keying (ADR-014).** `AggregateServiceRecord` / `AggregateBussingRecord`
+(and the rehearsal / ministry-meeting / stage-attendance variants) are keyed
+`<church.id>-<week>-<year>` and written `MERGE … SET` (Model-A snapshots; only the
+current week is recomputed). Legacy nodes used `<week>-<year>-<uuid>`; the SYN-149
+migrations (`api/src/scripts/migrate-aggregate-*-record-ids.js`) rekey/dedupe them.
+FE graphs dedupe by `(week, year)` taking the latest `recomputedAt` (NULLS LAST), so
+duplicate keys are tolerated at read time but should be migrated for hygiene. **Prod
+bussing-aggregate dedup completed 2026-06-01 (legacy 54,137 → 2,688).** The residual
+2,688 are deliberately-skipped edge cases: **185 *divergent-attendance* groups** (same
+church-week, conflicting non-null numbers, no `recomputedAt` to break the tie) and
+**~2,941 *multi-church-reachable*** aggregates (one node reachable via >1 church key
+after leadership/structure changes) — both await a human conflict-resolution
+decision. When deduping, never let a null-`recomputedAt` legacy overwrite an existing
+canonical (use a strict-`<` freshness guard).
+
 ## EquipmentRecord
 
 ```ts
