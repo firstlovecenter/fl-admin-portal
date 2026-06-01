@@ -413,18 +413,29 @@ attributed to X, even after the transfer.
    (church, week, year), so the relationship is fan-in rather than a duplicate.
 
 3. **FE @cypher resolvers in `aggregates.graphql` dedup by `(week, year)`
-   using `recomputedAt DESC NULLS LAST`.** Pattern:
+   with a three-key sort (recency → populated → canonical).** Pattern:
    ```cypher
    MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
    WHERE aggregate.year = date().year OR aggregate.year = date().year - 1
-   WITH aggregate ORDER BY aggregate.recomputedAt DESC NULLS LAST
+   WITH this, aggregate ORDER BY
+     coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC,
+     coalesce(aggregate.attendance, 0) DESC,
+     (aggregate.id STARTS WITH this.id) DESC
    WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-   RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+   RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
    ```
-   New aggregates carry `recomputedAt: datetime()`; legacy old-format
-   aggregates do not, so they always lose to fresh writes. This means the
-   re-keying does NOT require a data migration to take effect — old nodes
-   coexist harmlessly until they're cleaned up (or never).
+   New aggregates carry `recomputedAt: datetime()` and lose to nothing — but
+   **backfilled / pre-migration nodes have a null `recomputedAt`**, and when both
+   the legacy `<week>-<year>-<log.id>` node and the canonical
+   `<church.id>-<week>-<year>` node are null, a `recomputedAt`-only sort is
+   non-deterministic. That let an empty duplicate shadow real data and surface 0
+   (the denomination bussing read returned all zeros despite 213 real weeks). The
+   two extra keys make it deterministic: after recency, prefer the **populated**
+   node (`attendance DESC`), then the **canonical** church-owned id. The re-keying
+   still needs no data migration to be safe; the durable cleanup is to dedup the
+   conflicting null-`recomputedAt` nodes. `weekly-report-cypher.ts` mirrors this
+   (recency + `attendance`; omits the canonical key as it spans multiple owner
+   vars).
 
 4. **All aggregate writes use `SET` (overwrite), never `+= / append`.**
    The old additive form-time write is removed from `recordService`,

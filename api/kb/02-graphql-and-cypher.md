@@ -218,19 +218,30 @@ Rules:
 - **`(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(:AggregateXxxRecord)` is preserved.**
   Multiple ServiceLogs (one per leader tenure) fan in to the same aggregate
   node. Historical drill-down via a specific ServiceLog still works.
-- **FE-facing `@cypher` blocks dedup by `(week, year)` using
-  `recomputedAt`:**
+- **FE-facing `@cypher` blocks dedup by `(week, year)` with a three-key sort:**
   ```cypher
   MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:Aggregate…Record)
   WHERE aggregate.year = date().year OR aggregate.year = date().year - 1
-  WITH aggregate ORDER BY aggregate.recomputedAt DESC NULLS LAST
+  WITH this, aggregate ORDER BY
+    coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC,
+    coalesce(aggregate.attendance, 0) DESC,
+    (aggregate.id STARTS WITH this.id) DESC
   WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-  RETURN aggregate ORDER BY y DESC, w DESC SKIP $skip LIMIT $limit
+  RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
   ```
-  Newly written nodes carry a `recomputedAt` timestamp; legacy
-  `<week>-<year>-<log.id>`-keyed nodes do not. `DESC NULLS LAST` ranks the
-  fresh nodes first, so they always win. This dedup is what makes the
-  re-keying safe to ship without a data migration.
+  When two id formats coexist for the same `(church, week, year)` — the legacy
+  `<week>-<year>-<log.id>` node and the ADR-014 canonical `<church.id>-<week>-<year>`
+  node — a `recomputedAt`-only tiebreak is **non-deterministic when both have a
+  null `recomputedAt`** (true for nodes written by the dev backfill / pre-migration
+  runs). That non-determinism let an empty duplicate shadow the real figures and
+  show 0 (SYN: denomination bussing read returned all zeros despite 213 real
+  weeks). The fix: after recency, prefer the **populated** node
+  (`attendance DESC`), then the **canonical** church-owned id as a final
+  tiebreak. The durable remediation is to dedup the conflicting null-`recomputedAt`
+  nodes in the data; until then this ordering is deterministic and correct in both
+  prod (canonical populated) and dev (legacy populated). The weekly-report dedup in
+  `resolvers/reports/weekly-report-cypher.ts` mirrors this (recency + `attendance`;
+  it spans multiple owner variables so it omits the canonical final key).
 - **Lambda recomputes only the current week.** Historical aggregates are
   frozen Model-A snapshots; transfers do not retroactively rewrite them.
 - **Synchronous immediate-parent recompute** runs inside the same
