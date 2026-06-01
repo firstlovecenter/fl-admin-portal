@@ -1,0 +1,12 @@
+# Background Functions Deploy Trigger
+
+The deploy workflow (.github/workflows/deploy-background-functions.yml) only
+runs on pushes to `main` that change a file under
+`api/src/functions/background/**`. Touch this file and push to force a redeploy
+of all background Lambda functions without changing any function source.
+
+The deploy job iterates over directories only, so this top-level file is
+ignored when packaging — it serves purely as a trigger.
+
+## Redeploy log
+- 2026-06-01 — manual redeploy of all background functions
