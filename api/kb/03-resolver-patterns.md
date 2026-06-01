@@ -152,3 +152,16 @@ binary data through the GraphQL endpoint.
 - ❌ String-interpolating user input into Cypher. Always `$param`.
 - ❌ Removing `tellerConfirmationTime` to "let the user re-bank". The audit
    trail must stay.
+- ❌ Splitting a church-leadership change across multiple auto-commit
+   `session.run(...)` calls. The leader connect + `createHistoryLog` +
+   `makeHistoryServiceLog`/`connectServiceLog` (or `connectHistoryLog`) MUST run
+   inside ONE `session.executeWrite(async (tx) => { ... })` so they commit or
+   roll back together. A partial commit leaves a church with a `:LEADS` leader
+   but no `(church)-[:CURRENT_HISTORY]->(:ServiceLog)` — an orphan that is
+   invisible to the aggregation Lambdas and to `recordService`, and silently
+   drops the church out of its parent's income/bussing graphs. This was the
+   SYN-153 root cause; `makeServantCypher` in `directory/utils.ts` is the
+   reference implementation. Compute the inter-step data dependencies
+   (`higherChurchName` → history string, `serviceLogRes.id` → step 3) *inside*
+   the callback between `tx.run` calls, and wrap the whole thing in one outer
+   `catch` → `throwToSentry`.

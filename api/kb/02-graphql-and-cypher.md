@@ -249,6 +249,86 @@ The migration script `api/cypher/migrate-aggregate-ids.cypher` is now
 constraints in `constraints.cypher` to be applicable, or to reclaim disk
 space from orphaned old-format nodes.
 
+## Backfilling and verifying aggregation completeness
+
+The Lambda only ever computes the **current week** (Model A). Any week it
+missed — the church was a `CURRENT_HISTORY` orphan that week, a leadership
+rotation, a Lambda error — stays permanently absent until backfilled. There is
+no prod historical backfill job (`aggregate-dev-history.js` is dev-gated). This
+is what produced the SYN-153 incomplete/missing income graphs.
+
+**The trap that bites every completeness check (SYN-153):** the Lambdas descend
+into Bacentas via `CURRENT_HISTORY` only. When a Bacenta's leadership rotates,
+its old `ServiceRecord`/`BussingRecord`s stay on the **old** `:ServiceLog`,
+reachable only via `HAS_HISTORY`. So a backfill — *and any verification* — that
+mirrors the Lambda's `CURRENT_HISTORY`-only descent is **blind to records on
+rotated-away Bacenta logs**. If you measure the gap with the same blind path you
+used to fill it, you will get a false "0 remaining".
+
+> Rule: verify aggregation completeness with a **`HAS_HISTORY`-inclusive
+> Bacenta source**, never the Lambda's `CURRENT_HISTORY`-only path.
+
+Correct source paths (the `*2..N` bound is 3=Gov, 4=Council, 5=Stream,
+6=Campus, 7=Oversight, 8=Denomination):
+
+```cypher
+// SERVICE — flexible descent, HAS_HISTORY added to the Lambda's alternation
+MATCH (c:Governorship)-[:CURRENT_HISTORY|HAS_HISTORY|HAS_SERVICE|HAS*2..3]
+      ->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(d:TimeGraph)
+WHERE NOT record:NoService
+
+// BUSSING — explicit Bacenta descent, sourced via CURRENT_HISTORY|HAS_HISTORY
+MATCH (c:Governorship)-[:HAS]->(:Bacenta)-[:CURRENT_HISTORY|HAS_HISTORY]
+      ->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(d:TimeGraph)
+```
+
+A `(church, week, year)` bucket is **missing** when records exist (above) but
+no aggregate does:
+
+```cypher
+WITH DISTINCT c, d.date.week AS wk, d.date.year AS yr
+WHERE NOT EXISTS {
+  (c)-[:CURRENT_HISTORY|HAS_HISTORY]->(:ServiceLog)
+     -[:HAS_BUSSING_AGGREGATE]->(a) WHERE a.week = wk AND a.year = yr
+}
+RETURN count(*) AS missing      // one aggregation per query — see below
+```
+
+Backfill rules (mirror `service-cypher.js` / `bacenta-cypher.js` exactly, but):
+
+- **Fill-only.** Guard with the `NOT EXISTS { … HAS_*_AGGREGATE … }` above so
+  existing Model-A snapshots are never overwritten (they were correct at
+  compute time; only never-computed weeks are filled).
+- **Bucket by the record's own `(week, year)`**, not `date()`. The bussing
+  Lambda hard-codes `MATCH (serviceDate:TimeGraph {date: date()})` — that is
+  current-week-only and must NOT be copied into a backfill.
+- **Derive `month` via `min(d.date.month)`** so an ISO week spanning a month
+  boundary can't split one bucket into two `MERGE`s.
+- **Attach to the church's `CURRENT_HISTORY` log** (every higher church's
+  current log is also `HAS_HISTORY`-linked, so the FE `@cypher` read sees it).
+- **Money fields use `round(<sum>, 2)`** to match the Lambda.
+- Idempotent: re-running is safe (fill-only + `MERGE … SET`).
+
+**MCP gotcha:** a `UNION` of `count(*)` sub-queries returns `[]` over the Neo4j
+MCP tool. Run each aggregation count as its own single-`RETURN` query.
+
+The reusable repair for the related failure mode (a church with a `:LEADS`
+leader but **no** `CURRENT_HISTORY`, which also drops it from aggregation) is
+`api/src/scripts/repair-missing-current-history.js` (prod-gated `--allow-prod`).
+
+**Invariant to monitor** (both must be 0): for every service-level church,
+`count { (c)-[:CURRENT_HISTORY]->(:ServiceLog) }` is exactly 1 when a leader
+exists.
+
+```cypher
+MATCH (c) WHERE c:Bacenta OR c:Governorship OR c:Council OR c:Stream
+   OR c:Campus OR c:Oversight OR c:Denomination
+WITH c, count { (c)-[:CURRENT_HISTORY]->(:ServiceLog) } AS ch,
+     EXISTS { (:Member)-[:LEADS]->(c) } AS led
+RETURN sum(CASE WHEN ch>1 THEN 1 ELSE 0 END) AS duplicates,
+       sum(CASE WHEN led AND ch=0 THEN 1 ELSE 0 END) AS orphans
+```
+
 ## Validating a change locally
 
 1. `cd api && npm run start:dev` — watches files, rebuilds schema on save.

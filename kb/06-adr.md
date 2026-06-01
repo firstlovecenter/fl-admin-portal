@@ -584,3 +584,71 @@ before settling on Neo4j.
   forbids leader names, and the trend brief passed to the model is
   numeric-only.
 
+## ADR-016 — Aggregation completeness: backfill, rotated-log verification, and orphan recurrence
+
+**Status:** Accepted (2026-06-01). Refines ADR-014 and ADR-006. Born out of
+SYN-153 ("Partial/missing income graphs").
+
+**Context:** ADR-014 made aggregates Model-A snapshots written only for the
+**current week**. The unstated corollary is that any week the Lambda *didn't*
+run for a church is permanently empty — there is no prod historical backfill
+(`aggregate-dev-history.js` is dev-gated). Two failure modes fed SYN-153's
+missing higher-level income/bussing graphs:
+
+1. **Churches with a leader but no `CURRENT_HISTORY`.** A church with an
+   incoming `(:Member)-[:LEADS]->(church)` but no
+   `(church)-[:CURRENT_HISTORY]->(:ServiceLog)` is invisible to the aggregation
+   Lambdas (they `MATCH (church)-[:CURRENT_HISTORY]->(:ServiceLog)`) and to
+   `recordService`. 166 prod churches were in this state.
+
+2. **Records on rotated-away Bacenta logs.** When a Bacenta's leadership
+   rotates, its existing `ServiceRecord`/`BussingRecord`s stay attached to the
+   **old** `:ServiceLog`, reachable only via `HAS_HISTORY`. The Lambda's rollup
+   descends into Bacentas via `CURRENT_HISTORY` only, so those records were
+   never aggregated into the parent for the weeks the parent was missing an
+   aggregate. ~12.5k higher-level `(church, week, year)` buckets were affected.
+
+**Decision:**
+
+1. **Aggregation completeness MUST be verified with a `HAS_HISTORY`-inclusive
+   Bacenta source**, never the Lambda's `CURRENT_HISTORY`-only descent.
+   Measuring the gap with the same blind path used to fill it yields a false
+   "0 remaining" — this is exactly how an earlier SYN-153 pass wrongly reported
+   the work complete. The correct source paths and the fill-only backfill
+   recipe live in `api/kb/02-graphql-and-cypher.md` →
+   "Backfilling and verifying aggregation completeness".
+
+2. **Backfills are fill-only and bucket by the record's own `(week, year)`.**
+   Existing Model-A snapshots were correct at compute time and are never
+   overwritten (ADR-014). The bussing Lambda's `MATCH (serviceDate:TimeGraph
+   {date: date()})` is current-week-only and must not be copied into a backfill;
+   derive `month` via `min(d.date.month)` so a week crossing a month boundary
+   can't split a bucket; attach the new aggregate to the church's
+   `CURRENT_HISTORY` log (also `HAS_HISTORY`-linked, so FE-visible); round money
+   to 2 dp to match the Lambda.
+
+3. **Leadership writes are atomic (closes the orphan recurrence).** The four
+   writes in `makeServantCypher` (`directory/utils.ts`) — leader connect,
+   `createHistoryLog`, then `makeHistoryServiceLog`+`connectServiceLog` (Leader)
+   or `connectHistoryLog` — now run inside a single `session.executeWrite`
+   transaction. Previously they were separate auto-commit `session.run` calls,
+   so a partial failure orphaned the church. See the P3/anti-pattern note in
+   `api/kb/03-resolver-patterns.md`.
+
+4. **The orphan invariant is monitorable, not constraint-enforced.** No DB
+   constraint can express "a leaderful church has exactly one
+   `CURRENT_HISTORY`". The standing check (both must be 0) is in
+   `api/kb/02-graphql-and-cypher.md`; wiring it into a scheduled job is the
+   open follow-up. The repair tool for existing orphans is
+   `api/src/scripts/repair-missing-current-history.js` (prod-gated).
+
+**Consequences:**
+- Backfilled data lands in prod immediately, but the **graphs only render after
+  the reading code path deploys to `main`** (SYN-153 #1) — data presence and
+  feature visibility are decoupled.
+- The duplicate-`CURRENT_HISTORY` income-inflation bug (SYN-57/59/60, commit
+  `168e2909`) and the orphan failure mode are distinct; both are now at 0 in
+  prod, but only the duplicate side had a code fix prior to this ADR.
+- Any future "are the aggregates complete?" question must be answered with the
+  rotated-log-aware queries, or it will re-measure the same blind spot.
+
