@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-/* eslint-disable no-await-in-loop, no-console, no-restricted-syntax */
+/* eslint-disable no-await-in-loop, no-console, no-restricted-syntax, fl-cypher/no-interpolated-cypher --
+ * Dev-only CLI utility. The only Cypher interpolations are compile-time
+ * constants (a fixed WHERE-clause ternary); all values flow through $param
+ * bindings, so the ADR-012 hazard does not apply. */
 
 /**
  * One-off: aggregate ServiceRecord + BussingRecord history on the dev Neo4j.
@@ -51,6 +54,8 @@ const {
   aggregateBussingOnDenominationQuery,
   zeroAllNullBussingRecordsCypher,
 } = require('../functions/background/bacenta-graph-aggregator/bacenta-cypher')
+
+const { remediate } = require('./remediate-pre-creation-aggregates')
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') })
 
@@ -117,7 +122,8 @@ async function discoverTuples(session) {
     return [{ year: onlyYear, week: onlyWeek }]
   }
 
-  const res = await session.run(`
+  const res = await session.run(
+    `
     MATCH (d:TimeGraph)
     WHERE EXISTS { (r:ServiceRecord)-[:SERVICE_HELD_ON]->(d) WHERE NOT r:NoService }
        OR EXISTS { (r:BussingRecord)-[:BUSSED_ON]->(d) }
@@ -125,7 +131,9 @@ async function discoverTuples(session) {
     ${onlyYear !== null ? 'WHERE year = $onlyYear' : ''}
     RETURN year, week
     ORDER BY year, week
-  `, onlyYear !== null ? { onlyYear: int(onlyYear) } : {})
+  `,
+    onlyYear !== null ? { onlyYear: int(onlyYear) } : {}
+  )
 
   return res.records.map((r) => ({
     year: r.get('year').toNumber ? r.get('year').toNumber() : r.get('year'),
@@ -190,7 +198,9 @@ async function main() {
     const summaries = []
     for (let i = 0; i < tuples.length; i += 1) {
       const t = tuples[i]
-      const tag = `[${i + 1}/${tuples.length}] ${t.year}-W${String(t.week).padStart(2, '0')}`
+      const tag = `[${i + 1}/${tuples.length}] ${t.year}-W${String(
+        t.week
+      ).padStart(2, '0')}`
       process.stdout.write(`${tag} ... `)
       const start = Date.now()
       const summary = await runForTuple(session, t)
@@ -202,7 +212,21 @@ async function main() {
     console.log('\nZeroing null bussing aggregates...')
     const zRes = await session.run(zeroAllNullBussingRecordsCypher)
     const zeroed = zRes.records[0].get('aggregateCount')
-    console.log(`Zeroed ${zeroed?.toNumber ? zeroed.toNumber() : zeroed} aggregates.`)
+    console.log(
+      `Zeroed ${zeroed?.toNumber ? zeroed.toNumber() : zeroed} aggregates.`
+    )
+
+    // Self-heal: the roll-up queries walk the CURRENT topology, so any church
+    // created after the start of the data window picks up its descendants'
+    // pre-creation records as phantom aggregates. Delete those whose week
+    // predates the church's earliest HistoryLog. Idempotent and safe to re-run.
+    console.log('\nRemoving aggregates that predate their church...')
+    // Only reached after the --dry-run early-return above, so deleting here is
+    // intentional (a dry run never gets this far).
+    const { rows, deleted } = await remediate(session, { dryRun: false })
+    console.log(
+      `Removed ${deleted} pre-creation aggregate(s) across ${rows.length} (church, week) rows.`
+    )
 
     console.log('\nPer-week summary:')
     console.table(
