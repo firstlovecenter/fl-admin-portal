@@ -1,16 +1,33 @@
 const neo4j = require('neo4j-driver')
 const { default: axios } = require('axios')
 const { getSecrets } = require('./gsecrets.js')
-const { clearGSheet, writeToGsheet } = require('./utils/writeToGSheet.js')
+const {
+  clearGSheet,
+  clearGSheetRange,
+  writeToGsheet,
+} = require('./utils/writeToGSheet.js')
 const { campusList } = require('./query-exec/campusList.js')
 const campusAttendanceIncome = require('./query-exec/campusAttendanceIncome.js')
 const campusBankedIncome = require('./query-exec/campusBankedIncome.js')
 const campusNotBankedIncome = require('./query-exec/campusNotBankedIncome.js')
-const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceIncome.js')
 const weekdayBankedIncome = require('./query-exec/weekdayBankedIncome.js')
 const weekdayNotBankedIncome = require('./query-exec/weekdayNotBankedIncome.js')
-const { notifyBaseURL, getLastSunday } = require('./utils/constants.js')
-const { generateCSV } = require('./utils/generateCSV.js')
+const {
+  notifyBaseURL,
+  getLastSunday,
+  toLocalIsoDateString,
+} = require('./utils/constants.js')
+const {
+  generateCombinedCSV,
+  generateSundayServicesCSV,
+  generateFellowshipCSV,
+} = require('./utils/generateCSV.js')
+
+const REPORT_MODES = {
+  COMBINED: 'combined',
+  FELLOWSHIP: 'fellowship',
+  SUNDAY: 'sunday',
+}
 
 /**
  * Helper function to get the ISO week number for a given date
@@ -18,75 +35,336 @@ const { generateCSV } = require('./utils/generateCSV.js')
  * @returns {number} - ISO week number
  */
 const getWeekNumber = (date = new Date()) => {
-  // Create a copy of the date to avoid modifying the input
   const targetDate = new Date(date.getTime())
-
-  // Set hours to avoid daylight saving time issues
   targetDate.setHours(0, 0, 0, 0)
 
-  // ISO week starts on Monday, so adjust the day number
   const dayNum = targetDate.getDay() || 7
-
-  // Set to nearest Thursday (to match ISO 8601 definition)
   targetDate.setDate(targetDate.getDate() + 4 - dayNum)
 
-  // Get first day of the year
   const yearStart = new Date(targetDate.getFullYear(), 0, 1)
-
-  // Calculate week number: Week 1 is the week with the year's first Thursday
   const weekNumber = Math.ceil(((targetDate - yearStart) / 86400000 + 1) / 7)
 
   return weekNumber
+}
+
+const parseIsoDateString = (isoDateString) => {
+  const [year, month, day] = String(isoDateString)
+    .split('-')
+    .map((value) => Number(value))
+
+  return new Date(year, month - 1, day)
+}
+
+const normalizeInputDate = (value) => {
+  if (value instanceof Date) {
+    return new Date(value.getTime())
+  }
+
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return parseIsoDateString(value)
+  }
+
+  return new Date(value)
+}
+
+const parseBodyParams = (event = {}) => {
+  if (!event.body) return {}
+
+  if (typeof event.body === 'string') {
+    try {
+      return JSON.parse(event.body)
+    } catch (error) {
+      console.warn(
+        'Invalid JSON body received. Falling back to empty body params.'
+      )
+      return {}
+    }
+  }
+
+  return event.body
+}
+
+const normalizeReportMode = (mode, reportDate) => {
+  const requestedMode = String(mode || '')
+    .trim()
+    .toLowerCase()
+
+  if (
+    requestedMode === REPORT_MODES.FELLOWSHIP ||
+    requestedMode === 'weekday' ||
+    requestedMode === 'fellowship-only'
+  ) {
+    return REPORT_MODES.FELLOWSHIP
+  }
+
+  if (
+    requestedMode === REPORT_MODES.SUNDAY ||
+    requestedMode === 'sunday-services' ||
+    requestedMode === 'sunday-only'
+  ) {
+    return REPORT_MODES.SUNDAY
+  }
+
+  if (requestedMode) {
+    return REPORT_MODES.COMBINED
+  }
+
+  // No mode specified — auto-detect from day of week.
+  // Saturday runs report fellowship data; other days report the full combined set.
+  if (reportDate && reportDate.getDay() === 6) {
+    return REPORT_MODES.FELLOWSHIP
+  }
+
+  return REPORT_MODES.COMBINED
+}
+
+const buildEmailTemplate = ({
+  title,
+  weekNumber,
+  reportDateString,
+  description,
+  sections,
+}) => {
+  const sectionMarkup = sections
+    .map((section) => `<li style="margin-bottom:8px;">${section}</li>`)
+    .join('')
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${title}</title>
+  </head>
+  <body style="background:#f4f4f5;padding:24px;font-family:Arial,Helvetica,sans-serif;">
+    <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border-radius:10px;padding:28px;">
+      <tr>
+        <td>
+          <h1 style="margin:0 0 10px 0;color:#991b1b;font-size:26px;">${title}</h1>
+          <p style="margin:0 0 6px 0;color:#334155;font-size:15px;">Week ${weekNumber} - ${reportDateString}</p>
+          <p style="margin:0 0 16px 0;color:#475569;font-size:14px;line-height:1.5;">${description}</p>
+          <div style="background:#f8fafc;border-radius:8px;padding:16px;">
+            <p style="margin:0 0 10px 0;font-weight:700;color:#0f172a;">Included in this report:</p>
+            <ul style="margin:0;padding-left:20px;color:#334155;font-size:14px;line-height:1.45;">
+              ${sectionMarkup}
+            </ul>
+          </div>
+          <p style="margin:20px 0 0 0;color:#64748b;font-size:12px;">First Love Church - Outside Accra Business Intelligence Team</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+  `
+}
+
+const getModeConfig = (mode, weekNumber, reportDateString) => {
+  if (mode === REPORT_MODES.FELLOWSHIP) {
+    return {
+      smsLabel: 'Fellowship',
+      subject: `Outside Accra Fellowship Weekly Report - Week ${weekNumber}, ${reportDateString}`,
+      filenamePrefix: 'outside-accra-fellowship-week',
+      description:
+        'This report contains only fellowship (weekday) attendance and income metrics for Outside Accra campuses.',
+      sections: [
+        'Campus list (context)',
+        'Fellowship attendance and income',
+        'Weekday banked income',
+        'Weekday not banked income',
+      ],
+    }
+  }
+
+  if (mode === REPORT_MODES.SUNDAY) {
+    return {
+      smsLabel: 'Sunday Services',
+      subject: `Outside Accra Sunday Services Weekly Report - Week ${weekNumber}, ${reportDateString}`,
+      filenamePrefix: 'outside-accra-sunday-services-week',
+      description:
+        'This report contains only Sunday service attendance and income metrics for Outside Accra campuses.',
+      sections: [
+        'Campus list (context)',
+        'Campus attendance and income',
+        'Campus banked income',
+        'Campus not banked income',
+      ],
+    }
+  }
+
+  return {
+    smsLabel: 'Combined',
+    subject: `Outside Accra Weekly Report - Week ${weekNumber}, ${reportDateString}`,
+    filenamePrefix: 'outside-accra-week',
+    description:
+      'This report contains Sunday service and fellowship (weekday) performance and income metrics for Outside Accra campuses.',
+    sections: [
+      'Campus list',
+      'Sunday attendance and income',
+      'Sunday banked and not banked income',
+      'Fellowship attendance and income',
+      'Weekday banked and not banked income',
+    ],
+  }
+}
+
+const writeDataToSheet = async (mode, outsideAccraSheet, datasets) => {
+  const {
+    campusListData,
+    campusAttendanceIncomeData,
+    campusBankedIncomeData,
+    campusNotBankedIncomeData,
+    fellowshipAttendanceIncomeData,
+    weekdayBankedIncomeData,
+    weekdayNotBankedIncomeData,
+  } = datasets
+
+  if (mode === REPORT_MODES.FELLOWSHIP) {
+    await Promise.all([
+      clearGSheetRange(outsideAccraSheet, 'A:D'),
+      clearGSheetRange(outsideAccraSheet, 'J:M'),
+    ])
+
+    await Promise.all([
+      writeToGsheet(campusListData, outsideAccraSheet, 'A:D'),
+      writeToGsheet(fellowshipAttendanceIncomeData, outsideAccraSheet, 'J:K'),
+      writeToGsheet(weekdayBankedIncomeData, outsideAccraSheet, 'L:L'),
+      writeToGsheet(weekdayNotBankedIncomeData, outsideAccraSheet, 'M:M'),
+    ])
+
+    return
+  }
+
+  if (mode === REPORT_MODES.SUNDAY) {
+    await Promise.all([
+      clearGSheetRange(outsideAccraSheet, 'A:D'),
+      clearGSheetRange(outsideAccraSheet, 'E:H'),
+    ])
+
+    await Promise.all([
+      writeToGsheet(campusListData, outsideAccraSheet, 'A:D'),
+      writeToGsheet(campusAttendanceIncomeData, outsideAccraSheet, 'E:F'),
+      writeToGsheet(campusBankedIncomeData, outsideAccraSheet, 'G:G'),
+      writeToGsheet(campusNotBankedIncomeData, outsideAccraSheet, 'H:H'),
+    ])
+
+    return
+  }
+
+  await clearGSheet(outsideAccraSheet)
+
+  await Promise.all([
+    writeToGsheet(campusListData, outsideAccraSheet, 'A:D'),
+    writeToGsheet(campusAttendanceIncomeData, outsideAccraSheet, 'E:F'),
+    writeToGsheet(campusBankedIncomeData, outsideAccraSheet, 'G:G'),
+    writeToGsheet(campusNotBankedIncomeData, outsideAccraSheet, 'H:H'),
+    writeToGsheet(fellowshipAttendanceIncomeData, outsideAccraSheet, 'J:K'),
+    writeToGsheet(weekdayBankedIncomeData, outsideAccraSheet, 'L:L'),
+    writeToGsheet(weekdayNotBankedIncomeData, outsideAccraSheet, 'M:M'),
+  ])
+}
+
+const generateCsvForMode = (mode, datasets) => {
+  const {
+    campusListData,
+    campusAttendanceIncomeData,
+    campusBankedIncomeData,
+    campusNotBankedIncomeData,
+    fellowshipAttendanceIncomeData,
+    weekdayBankedIncomeData,
+    weekdayNotBankedIncomeData,
+  } = datasets
+
+  if (mode === REPORT_MODES.FELLOWSHIP) {
+    return generateFellowshipCSV(
+      campusListData,
+      fellowshipAttendanceIncomeData,
+      weekdayBankedIncomeData,
+      weekdayNotBankedIncomeData
+    )
+  }
+
+  if (mode === REPORT_MODES.SUNDAY) {
+    return generateSundayServicesCSV(
+      campusListData,
+      campusAttendanceIncomeData,
+      campusBankedIncomeData,
+      campusNotBankedIncomeData
+    )
+  }
+
+  return generateCombinedCSV(
+    campusListData,
+    campusAttendanceIncomeData,
+    campusBankedIncomeData,
+    campusNotBankedIncomeData,
+    fellowshipAttendanceIncomeData,
+    weekdayBankedIncomeData,
+    weekdayNotBankedIncomeData
+  )
 }
 
 /**
  * Main handler for the Outside Accra Weekly data update
  * Compatible with AWS Lambda
  *
- * Accepts query parameters:
+ * Accepts query/body parameters:
  * - date: ISO date string (YYYY-MM-DD) to generate report for (defaults to today)
- * - week: ISO week number override (if provided, date parameter is ignored)
+ * - mode: combined | fellowship | sunday
  */
 const handler = async (event = {}, targetDate = null) => {
-  // Parse date from query parameters or use provided targetDate
-  let reportDate = targetDate
+  let reportDate = targetDate ? normalizeInputDate(targetDate) : null
 
-  // Extract parameters from Lambda event - check multiple sources
   const queryParams = event.queryStringParameters || {}
-  const bodyParams =
-    (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) || {}
+  const bodyParams = parseBodyParams(event)
   const params = { ...queryParams, ...bodyParams, ...event }
 
   if (!reportDate && params.date) {
-    // Parse the provided date string
-    const parsedDate = new Date(params.date)
+    const parsedDate = normalizeInputDate(params.date)
     if (!isNaN(parsedDate.getTime())) {
       reportDate = parsedDate
     }
   }
 
-  // Default to today if no date provided
   if (!reportDate) {
     reportDate = new Date()
   }
 
-  // Calculate lastSunday from the reportDate
+  const mode = normalizeReportMode(
+    params.mode || params.reportMode || params.serviceType,
+    reportDate
+  )
   const lastSunday = getLastSunday(reportDate)
+  const reportDateQueryString = toLocalIsoDateString(reportDate)
+  // Fellowship mode uses the current week; combined uses the same week as lastSunday
+  const fellowshipQueryDate =
+    mode === REPORT_MODES.FELLOWSHIP ? reportDateQueryString : lastSunday
+  const labelQueryDate =
+    mode === REPORT_MODES.FELLOWSHIP ? fellowshipQueryDate : lastSunday
+  const labelDate = parseIsoDateString(labelQueryDate)
+  const outsideAccraSheet = 'OA Campus'
+
   console.log('Running function for date', reportDate.toISOString())
-  console.log('Using lastSunday:', lastSunday)
+  console.log('Day of week:', reportDate.getDay(), '(0=Sun, 6=Sat)')
+  console.log('Using lastSunday (Sunday services):', lastSunday)
+  console.log(
+    'Using fellowshipQueryDate (fellowship/weekday services):',
+    fellowshipQueryDate
+  )
+  console.log('Label source date:', labelQueryDate)
+  console.log('Report mode:', mode)
+
+  let driver
 
   try {
-    // Load secrets using AWS Secrets Manager
     const SECRETS = await getSecrets()
 
-    // Configure encrypted connection if required (for AWS)
     const uri =
       SECRETS.NEO4J_ENCRYPTED === 'true'
         ? SECRETS.NEO4J_URI?.replace('bolt://', 'neo4j+s://')
         : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
 
-    // Create Neo4j driver
-    const driver = neo4j.driver(
+    driver = neo4j.driver(
       uri,
       neo4j.auth.basic(
         SECRETS.NEO4J_USER || 'neo4j',
@@ -94,76 +372,67 @@ const handler = async (event = {}, targetDate = null) => {
       )
     )
 
-    // Verify connection
     await driver.verifyConnectivity()
     console.log('[Neo4j] Connection established successfully')
 
-    const response = await Promise.all([
-      campusList(driver),
-      campusAttendanceIncome(driver, lastSunday),
-      campusBankedIncome(driver, lastSunday),
-      campusNotBankedIncome(driver, lastSunday),
-      fellowshipAttendanceIncome(driver, lastSunday),
-      weekdayBankedIncome(driver, lastSunday),
-      weekdayNotBankedIncome(driver, lastSunday),
-    ]).catch((error) => {
-      console.error('Database query failed to complete\n', error.message)
-      throw error
-    })
+    const campusListData = await campusList(driver)
 
-    const campusListData = response[0]
-    const campusAttendanceIncomeData = response[1]
-    const campusBankedIncomeData = response[2]
-    const campusNotBankedIncomeData = response[3]
-    const fellowshipAttendanceIncomeData = response[4]
-    const weekdayBankedIncomeData = response[5]
-    const weekdayNotBankedIncomeData = response[6]
+    let campusAttendanceIncomeData = []
+    let campusBankedIncomeData = []
+    let campusNotBankedIncomeData = []
+    let fellowshipAttendanceIncomeData = []
+    let weekdayBankedIncomeData = []
+    let weekdayNotBankedIncomeData = []
 
-    const outsideAccraSheet = 'OA Campus'
+    if (mode === REPORT_MODES.COMBINED || mode === REPORT_MODES.SUNDAY) {
+      ;[
+        campusAttendanceIncomeData,
+        campusBankedIncomeData,
+        campusNotBankedIncomeData,
+      ] = await Promise.all([
+        campusAttendanceIncome(driver, lastSunday),
+        campusBankedIncome(driver, lastSunday),
+        campusNotBankedIncome(driver, lastSunday),
+      ])
+    }
 
-    await clearGSheet(outsideAccraSheet)
+    if (mode === REPORT_MODES.COMBINED || mode === REPORT_MODES.FELLOWSHIP) {
+      ;[weekdayBankedIncomeData, weekdayNotBankedIncomeData] = await Promise.all([
+        weekdayBankedIncome(driver, fellowshipQueryDate),
+        weekdayNotBankedIncome(driver, fellowshipQueryDate),
+      ])
+    }
 
-    // Generate CSV from all collected data
-    const csvContent = generateCSV(
+    const datasets = {
       campusListData,
       campusAttendanceIncomeData,
       campusBankedIncomeData,
       campusNotBankedIncomeData,
       fellowshipAttendanceIncomeData,
       weekdayBankedIncomeData,
-      weekdayNotBankedIncomeData
-    )
+      weekdayNotBankedIncomeData,
+    }
 
-    // Convert CSV to base64 for email attachment
-    const csvBase64 = Buffer.from(csvContent).toString('base64')
+    const weekNumber = getWeekNumber(labelDate)
+    const reportDateString = labelDate.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
 
-    const weekNumber = getWeekNumber(reportDate) - 1
-    const reportDateString = reportDate
-      .toLocaleString('en-GB', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-      .split('T')[0]
-
-    // Write to Google Sheets
-    await Promise.all([
-      writeToGsheet(campusListData, outsideAccraSheet, 'A:D'),
-      writeToGsheet(campusAttendanceIncomeData, outsideAccraSheet, 'E:F'),
-      writeToGsheet(campusBankedIncomeData, outsideAccraSheet, 'G:G'),
-      writeToGsheet(campusNotBankedIncomeData, outsideAccraSheet, 'H:H'),
-      writeToGsheet(fellowshipAttendanceIncomeData, outsideAccraSheet, 'J:K'),
-      writeToGsheet(weekdayBankedIncomeData, outsideAccraSheet, 'L:L'),
-      writeToGsheet(weekdayNotBankedIncomeData, outsideAccraSheet, 'M:M'),
-    ]).catch((error) => {
+    await writeDataToSheet(mode, outsideAccraSheet, datasets).catch((error) => {
       throw new Error(
         `Error writing to google sheet\n${error.message}\n${error.stack}`
       )
     })
 
-    console.log('[Google Sheets] All sheets updated successfully')
+    console.log('[Google Sheets] Sheets updated successfully')
 
-    // Send notification SMS
+    const csvContent = generateCsvForMode(mode, datasets)
+    const csvBase64 = Buffer.from(csvContent).toString('base64')
+
+    const modeConfig = getModeConfig(mode, weekNumber, reportDateString)
+
     await axios({
       method: 'post',
       baseURL: notifyBaseURL,
@@ -173,12 +442,9 @@ const handler = async (event = {}, targetDate = null) => {
         'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
       },
       data: {
-        recipient: [
-          '233592219407', // Latisha
-          '233263995059', // Abigail Tay
-        ],
+        recipient: ['233592219407', '233263995059'],
         sender: 'FLC Admin',
-        message: `WEEK ${weekNumber} UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${reportDateString}`,
+        message: `WEEK ${weekNumber} ${modeConfig.smsLabel.toUpperCase()} UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${reportDateString}`,
       },
     }).catch((error) => {
       console.error(
@@ -195,7 +461,14 @@ const handler = async (event = {}, targetDate = null) => {
 
     console.log('[SMS] Notification sent successfully')
 
-    // Send email with CSV attachment
+    const html = buildEmailTemplate({
+      title: modeConfig.subject.split(' - Week')[0],
+      weekNumber,
+      reportDateString,
+      description: modeConfig.description,
+      sections: modeConfig.sections,
+    })
+
     await axios({
       method: 'post',
       baseURL: notifyBaseURL,
@@ -206,258 +479,11 @@ const handler = async (event = {}, targetDate = null) => {
       },
       data: {
         to: ['john-dag@firstlovecenter.com', 'flcexpense22@gmail.com'],
-        subject: `Outside Accra Weekly Report - Week ${weekNumber}, ${reportDateString}`,
-        html: `
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html dir="ltr" lang="en">
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <meta name="x-apple-disable-message-reformatting" />
-  </head>
-  <body
-    style='background-color:rgb(243,244,246);font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";padding-top:40px;padding-bottom:40px'>
-    <!--$-->
-    <div
-      style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0"
-      data-skip-in-text="true">
-      Outside Accra Weekly Report - Week ${weekNumber}, ${reportDate}
-      <div>
-         ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿
-      </div>
-    </div>
-    <table
-      align="center"
-      width="100%"
-      border="0"
-      cellpadding="0"
-      cellspacing="0"
-      role="presentation"
-      style="background-color:rgb(255,255,255);margin-left:auto;margin-right:auto;padding-left:40px;padding-right:40px;padding-top:32px;padding-bottom:32px;max-width:600px;border-radius:8px">
-      <tbody>
-        <tr style="width:100%">
-          <td>
-            <table
-              align="center"
-              width="100%"
-              border="0"
-              cellpadding="0"
-              cellspacing="0"
-              role="presentation"
-              style="text-align:center;margin-bottom:32px">
-              <tbody>
-                <tr>
-                  <td>
-                    <div
-                      class="from-red-600 to-red-900"
-                      style="background-image:linear-gradient(to right, rgb(220,38,38), rgb(127,29,29));padding-left:24px;padding-right:24px;padding-top:20px;padding-bottom:20px;border-radius:8px;margin-bottom:24px">
-                      <h1
-                        style="color:rgb(255,255,255);font-size:28px;font-weight:700;margin:0px;line-height:1.2">
-                        Outside Accra Weekly Report
-                      </h1>
-                    </div>
-                    <p
-                      style="color:rgb(153,27,27);font-size:18px;font-weight:600;margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
-                      Week ${weekNumber} - ${reportDateString}
-                    </p>
-                    <p
-                      style="color:rgb(75,85,99);font-size:14px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                      Business Intelligence Summary
-                    </p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <hr
-              style="border-color:rgb(229,231,235);margin-top:24px;margin-bottom:24px;width:100%;border:none;border-top:1px solid #eaeaea" />
-            <table
-              align="center"
-              width="100%"
-              border="0"
-              cellpadding="0"
-              cellspacing="0"
-              role="presentation"
-              style="margin-bottom:32px">
-              <tbody>
-                <tr>
-                  <td>
-                    <p
-                      style="color:rgb(55,65,81);font-size:16px;line-height:1.6;margin-bottom:16px;margin-top:16px">
-                      Please find attached the comprehensive weekly report for
-                      Outside Accra campuses. This report provides detailed
-                      insights into campus performance and financial metrics.
-                    </p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table
-              align="center"
-              width="100%"
-              border="0"
-              cellpadding="0"
-              cellspacing="0"
-              role="presentation"
-              style="margin-bottom:32px">
-              <tbody>
-                <tr>
-                  <td>
-                    <h1
-                      style="color:rgb(153,27,27);font-size:20px;font-weight:700;margin-bottom:16px;border-left-width:4px;border-color:rgb(220,38,38);padding-left:16px">
-                      Report Contents
-                    </h1>
-                    <div
-                      style="background-color:rgb(249,250,251);border-radius:8px;padding:20px">
-                      <div style="display:grid;gap:12px">
-                        <div style="display:flex;align-items:flex-start">
-                          <div
-                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
-                          <p
-                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                            <span style="font-weight:600;color:rgb(153,27,27)"
-                              >Campus List</span
-                            >
-                            - Complete directory of all active campuses
-                          </p>
-                        </div>
-                        <div style="display:flex;align-items:flex-start">
-                          <div
-                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
-                          <p
-                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                            <span style="font-weight:600;color:rgb(153,27,27)"
-                              >Campus Attendance &amp; Income</span
-                            >
-                            - Weekly performance metrics
-                          </p>
-                        </div>
-                        <div style="display:flex;align-items:flex-start">
-                          <div
-                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
-                          <p
-                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                            <span style="font-weight:600;color:rgb(153,27,27)"
-                              >Campus Banked Income</span
-                            >
-                            - Processed financial transactions
-                          </p>
-                        </div>
-                        <div style="display:flex;align-items:flex-start">
-                          <div
-                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
-                          <p
-                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                            <span style="font-weight:600;color:rgb(153,27,27)"
-                              >Campus Not Banked Income</span
-                            >
-                            - Pending financial transactions
-                          </p>
-                        </div>
-                        <div style="display:flex;align-items:flex-start">
-                          <div
-                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
-                          <p
-                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                            <span style="font-weight:600;color:rgb(153,27,27)"
-                              >Fellowship Attendance &amp; Income</span
-                            >
-                            - Community engagement data
-                          </p>
-                        </div>
-                        <div style="display:flex;align-items:flex-start">
-                          <div
-                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
-                          <p
-                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                            <span style="font-weight:600;color:rgb(153,27,27)"
-                              >Weekday Banked Income</span
-                            >
-                            - Processed weekday transactions
-                          </p>
-                        </div>
-                        <div style="display:flex;align-items:flex-start">
-                          <div
-                            style="width:8px;height:8px;background-color:rgb(220,38,38);border-radius:9999px;margin-top:8px;margin-right:12px;flex-shrink:0"></div>
-                          <p
-                            style="color:rgb(55,65,81);font-size:15px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                            <span style="font-weight:600;color:rgb(153,27,27)"
-                              >Weekday Not Banked Income</span
-                            >
-                            - Pending weekday transactions
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table
-              align="center"
-              width="100%"
-              border="0"
-              cellpadding="0"
-              cellspacing="0"
-              role="presentation"
-              style="margin-bottom:32px">
-              <tbody>
-                <tr>
-                  <td>
-                    <div
-                      style="background-color:rgb(240,253,244);border-left-width:4px;border-color:rgb(34,197,94);padding:16px;border-top-right-radius:8px;border-bottom-right-radius:8px">
-                      <p
-                        style="color:rgb(22,101,52);font-size:15px;font-weight:600;margin:0px;margin-bottom:4px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
-                        ✓ System Update Complete
-                      </p>
-                      <p
-                        style="color:rgb(21,128,61);font-size:14px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                        The Google Sheets have been updated successfully with
-                        the latest data.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <hr
-              style="border-color:rgb(229,231,235);margin-top:24px;margin-bottom:24px;width:100%;border:none;border-top:1px solid #eaeaea" />
-            <table
-              align="center"
-              width="100%"
-              border="0"
-              cellpadding="0"
-              cellspacing="0"
-              role="presentation"
-              style="text-align:center">
-              <tbody>
-                <tr>
-                  <td>
-                    <p
-                      style="color:rgb(107,114,128);font-size:12px;margin:0px;margin-bottom:8px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
-                      First Love Church - Outside Accra Business Intelligence Team
-                    </p>
-                    <p
-                      style="color:rgb(107,114,128);font-size:12px;margin:0px;margin-bottom:16px;line-height:24px;margin-top:0px;margin-left:0px;margin-right:0px">
-                      Accra, Ghana
-                    </p>
-                    <p
-                      style="color:rgb(156,163,175);font-size:11px;margin:0px;line-height:24px;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">
-                      © 2026 First Love Church. All rights reserved.
-                    </p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <!--/$-->
-  </body>
-</html>
-          `,
+        subject: modeConfig.subject,
+        html,
         attachments: [
           {
-            filename: `outside-accra-week-${weekNumber}-${reportDateString}.csv`,
+            filename: `${modeConfig.filenamePrefix}-${weekNumber}-${reportDateString}.csv`,
             content: csvBase64,
             encoding: 'base64',
           },
@@ -478,13 +504,10 @@ const handler = async (event = {}, targetDate = null) => {
 
     console.log('[Email] Notification sent successfully')
 
-    // Close the Neo4j driver when done
-    await driver.close()
-
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: 'Outside Accra Campus data updated successfully',
+        message: `Outside Accra Campus data updated successfully (${mode})`,
       }),
     }
   } catch (error) {
@@ -497,11 +520,34 @@ const handler = async (event = {}, targetDate = null) => {
         error: error.message,
       }),
     }
+  } finally {
+    if (driver) {
+      await driver.close()
+    }
   }
 }
 
-// Export for AWS Lambda
+const withModeInEvent = (mode, event = {}) => ({
+  ...event,
+  mode,
+  queryStringParameters: {
+    ...(event.queryStringParameters || {}),
+    mode,
+  },
+})
+
+// Export default and mode-specific handlers for AWS Lambda
 exports.handler = async (event) => {
   console.log('AWS Lambda handler invoked', { event })
   return handler(event)
+}
+
+exports.fellowshipHandler = async (event = {}) => {
+  console.log('AWS Lambda fellowship handler invoked', { event })
+  return handler(withModeInEvent(REPORT_MODES.FELLOWSHIP, event))
+}
+
+exports.sundayServicesHandler = async (event = {}) => {
+  console.log('AWS Lambda sunday services handler invoked', { event })
+  return handler(withModeInEvent(REPORT_MODES.SUNDAY, event))
 }

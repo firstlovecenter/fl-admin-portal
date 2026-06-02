@@ -4,28 +4,76 @@ const numberOfWeeks = 4
 
 export const getMonthlyStatAverage = (
   data?: {
+    id?: string
     attendance: string
     income: string
     gatheringAttendance: string
     rehearsalAttendance: string
+    week?: number | string
+    year?: number | string
+    date?: string
   }[],
-  stat?: 'attendance' | 'income' | 'gatheringAttendance' | 'rehearsalAttendance'
+  stat?:
+    | 'attendance'
+    | 'income'
+    | 'gatheringAttendance'
+    | 'rehearsalAttendance',
+  windowSize: number = numberOfWeeks
 ) => {
   if (!data || !stat) {
     return
   }
 
-  const statArray = data.map((service) =>
-    parseFloat(service[`${stat || 'attendance'}`])
-  )
+  const sortedData = [...data]
+    .map((service, index) => ({ service, index }))
+    .sort((aItem, bItem) => {
+      const a = aItem.service
+      const b = bItem.service
+      const aYear = Number(a.year ?? 0)
+      const bYear = Number(b.year ?? 0)
+      const aWeek = Number(a.week ?? 0)
+      const bWeek = Number(b.week ?? 0)
 
-  //filter and remove all zeros
-  const nonZeroArray = statArray.filter((value) => {
-    return value > 0
-  })
+      if (
+        Number.isFinite(aYear) &&
+        Number.isFinite(bYear) &&
+        (aYear !== 0 || bYear !== 0)
+      ) {
+        if (bYear !== aYear) {
+          return bYear - aYear
+        }
+        return bWeek - aWeek
+      }
 
-  //Calculate average of the last four weeks of service
-  return average(nonZeroArray.slice(-numberOfWeeks))?.toFixed(2)
+      const aDate = a.date ? Date.parse(a.date) : NaN
+      const bDate = b.date ? Date.parse(b.date) : NaN
+
+      if (Number.isFinite(aDate) && Number.isFinite(bDate)) {
+        return bDate - aDate
+      }
+
+      if (Number.isFinite(aWeek) && Number.isFinite(bWeek)) {
+        return bWeek - aWeek
+      }
+
+      if (a.id && b.id && a.id !== b.id) {
+        return String(b.id).localeCompare(String(a.id))
+      }
+
+      return aItem.index - bItem.index
+    })
+    .map(({ service }) => service)
+
+  const latestValues = sortedData
+    .slice(0, windowSize)
+    .map((service) => Number(service[stat]))
+    .filter((value) => Number.isFinite(value))
+
+  // Ignore zero values within the window so a single missed week doesn't drag
+  // the average to zero.
+  const nonZeroArray = latestValues.filter((value) => value > 0)
+
+  return average(nonZeroArray)?.toFixed(2)
 }
 
 export const sortingFunction = (key: string, order = 'asc') => {
@@ -53,13 +101,27 @@ export const sortingFunction = (key: string, order = 'asc') => {
   }
 }
 
-const extractServiceDataWithDollars = (arr: any[]) =>
-  arr.map(({ id, attendance, dollarIncome: income, week }) => ({
-    id,
-    attendance,
-    income,
-    week,
-  }))
+const extractServiceDataWithDollars = (arr: any[] | undefined) => {
+  if (!arr || arr.length === 0) return []
+  return arr.map(
+    ({
+      id,
+      attendance,
+      dollarIncome: income,
+      week,
+      year,
+      date,
+      serviceDate,
+    }) => ({
+      id,
+      attendance,
+      income,
+      week,
+      year,
+      date: serviceDate?.date || date,
+    })
+  )
+}
 
 export type GraphTypes =
   | 'bussing'
@@ -90,12 +152,15 @@ export const getServiceGraphData = (
         swellBussingRecords: any[]
       }
     | undefined,
-  category: GraphTypes
+  category: GraphTypes,
+  windowSize = numberOfWeeks
 ) => {
   if (!church) {
     return
   }
   let data: any[] = []
+
+  const currentYear = new Date().getFullYear()
 
   const pushIntoData = (array: any[]) => {
     if (!array || array?.length === 0) {
@@ -103,11 +168,36 @@ export const getServiceGraphData = (
     }
 
     array.forEach((record) => {
+      const recordDate = record?.serviceDate?.date || record.date
+      const week = record.week
+      // Per-record types (ServiceRecord, BussingRecord) expose `week` but
+      // not `year`. Derive year from the record date so cross-year datasets
+      // sort and label correctly — without this, week 51/2025 and week 20/2026
+      // get sorted purely by week number.
+      let year: number | undefined =
+        typeof record.year === 'number' && Number.isFinite(record.year)
+          ? record.year
+          : undefined
+      if (year === undefined && recordDate) {
+        // `serviceDate.date` arrives as `"YYYY-MM-DD"`. `new Date(...)` would
+        // parse it as UTC midnight and `getFullYear()` then converts to local
+        // time, which can shift Jan 1 back a year for users outside UTC+0.
+        const parsed = new Date(recordDate).getUTCFullYear()
+        if (Number.isFinite(parsed)) {
+          year = parsed
+        }
+      }
+      const yearSuffix =
+        typeof year === 'number' && year !== currentYear
+          ? `'${String(year).slice(-2)}`
+          : ''
       data.push({
         id: record?.id,
         category,
-        date: record?.serviceDate?.date || record.date,
-        week: record.week,
+        date: recordDate,
+        week,
+        year,
+        weekLabel: week ? `W${week}${yearSuffix}` : null,
         attendance: record.attendance,
         income: record.income?.toFixed(2),
         numberOfServices: record?.numberOfServices,
@@ -170,9 +260,32 @@ export const getServiceGraphData = (
     ]
   }
 
-  if (data.length <= 3) {
-    return data
+  // Source @cypher fields return ORDER BY year DESC, week DESC. We sort
+  // ascending here so every consumer gets "oldest → newest" left-to-right.
+  // `.slice(length - windowSize, length)` then keeps the newest `windowSize`
+  // records, which is what every *Graphs page actually wants to chart.
+  const sorted = [...data].sort((a, b) => {
+    const aYear = Number(a?.year ?? 0)
+    const bYear = Number(b?.year ?? 0)
+    if (Number.isFinite(aYear) && Number.isFinite(bYear) && aYear !== bYear) {
+      return aYear - bYear
+    }
+    const aWeek = Number(a?.week ?? 0)
+    const bWeek = Number(b?.week ?? 0)
+    if (Number.isFinite(aWeek) && Number.isFinite(bWeek) && aWeek !== bWeek) {
+      return aWeek - bWeek
+    }
+    const aDate = a?.date ? Date.parse(a.date) : NaN
+    const bDate = b?.date ? Date.parse(b.date) : NaN
+    if (Number.isFinite(aDate) && Number.isFinite(bDate)) {
+      return aDate - bDate
+    }
+    return 0
+  })
+
+  if (sorted.length <= windowSize) {
+    return sorted
   }
 
-  return data.slice(data.length - numberOfWeeks, data.length)
+  return sorted.slice(sorted.length - windowSize, sorted.length)
 }

@@ -1,0 +1,50 @@
+# Test accounts
+
+**Password for all accounts: `password`**
+
+Use these when testing with Chrome DevTools (MCP `chrome-devtools`) or any e2e
+flow. All data returned is live dev-database data — no mocks needed.
+
+---
+
+## Bacenta
+
+| Role | Email | Ready |
+| --- | --- | --- |
+| Fellowship Leader | fellowshipleader@test.com | ✅ |
+| Bacenta Leader | bacentaleader@test.com | ✅ |
+| Governor | governor@test.com | ✅ |
+| Council Leader | councilleader@test.com | ✅ |
+| Stream Leader | streamleader@test.com | ✅ |
+| Campus Leader | campusleader@test.com | ✅ |
+| Oversight Leader | oversightleader@test.com | ✅ |
+| Denomination Leader | denominationleader@test.com | ✅ |
+| Governorship Admin | governorshipadmin@test.com | ✅ |
+| Council Admin | counciladmin@test.com | ✅ |
+| Stream Admin | streamadmin@test.com | ✅ |
+| Campus Admin | campusadmin@test.com | ✅ |
+| Oversight Admin | oversightadmin@test.com | ✅ |
+| Denomination Admin | denominationadmin@test.com | — |
+
+## Ministry
+
+| Role | Email | Ready |
+| --- | --- | --- |
+| Ministry Leader | ministryleader@test.com | ✅ |
+| Ministry Admin | ministryadmin@test.com | ✅ |
+
+## Arrivals
+
+| Role | Email | Ready |
+| --- | --- | --- |
+| Stream Arrivals Counter | streamarrivalscounter@test.com | ✅ |
+| Council Arrivals Payer | councilarrivalspayer@test.com | ✅ |
+| Campus Arrivals Admin | campusarrivalsadmin@test.com | — |
+| Stream Arrivals Admin | streamarrivalsadmin@test.com | ✅ |
+| Council Arrivals Admin | councilarrivalsadmin@test.com | ✅ |
+
+## Manual Banking
+
+| Role | Email | Ready |
+| --- | --- | --- |
+| Stream Teller | streamteller@test.com | ✅ |

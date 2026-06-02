@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Formik, Form, FormikHelpers } from 'formik'
+import { Church, ChurchLevel, HigherChurch } from 'global-types'
+import Input from './formik/Input'
 import ChurchList from './DisplayChurchList'
 import './ChurchSearch.css'
-import { Container } from 'react-bootstrap'
-import Input from './formik/Input'
-import { Church, ChurchLevel, HigherChurch } from 'global-types'
 
 type ChurchSearchProps = {
   data: Church[]
@@ -48,22 +47,20 @@ const ChurchSearch = (props: ChurchSearchProps) => {
 
   return (
     <div>
-      <Container className="mt-3">
+      <div className="mx-auto mt-3 max-w-screen-md px-4">
         <Formik initialValues={initialValues} onSubmit={onSubmit}>
           {() => (
             <Form>
-              <div>
-                <Input
-                  className="form-control church-search search-center"
-                  name="churchSearch"
-                  placeholder="Search Churches or Leader"
-                  aria-describedby="Church Search"
-                />
-              </div>
+              <Input
+                className="form-control church-search search-center"
+                name="churchSearch"
+                placeholder="Search Churches or Leader"
+                aria-describedby="Church Search"
+              />
             </Form>
           )}
         </Formik>
-      </Container>
+      </div>
 
       <ChurchList
         data={churchData as unknown as HigherChurch[]}

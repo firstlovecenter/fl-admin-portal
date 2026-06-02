@@ -1,14 +1,15 @@
 import { useQuery } from '@apollo/client'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { useContext } from 'react'
-import { Button, Container } from 'react-bootstrap'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import HeadingSecondary from 'components/HeadingSecondary'
-import './accounts-colors.css'
 import { useNavigate } from 'react-router'
+import { Button } from 'components/ui/button'
+import { Separator } from 'components/ui/separator'
 import AccountBalanceCard from './components/AccountBalanceCard'
 import { OVERSIGHT_ACCOUNT_DASHBOARD } from './accountsGQL'
+import './accounts-colors.css'
 
 const OversightDashboard = () => {
   const { oversightId } = useContext(ChurchContext)
@@ -24,25 +25,25 @@ const OversightDashboard = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <Container>
+      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <HeadingPrimary>{`${oversight?.name} ${oversight?.__typename}`}</HeadingPrimary>
         <HeadingSecondary>{oversight?.leader.fullName}</HeadingSecondary>
 
         <AccountBalanceCard church={oversight} variant="current-balance" />
         <AccountBalanceCard church={oversight} variant="bussing-society" />
 
-        <hr />
+        <Separator />
 
-        <div className="d-grid gap-2">
+        <div className="grid gap-2">
           <Button
             variant="secondary"
-            className="text-start py-3"
+            className="h-auto justify-start py-3 text-left"
             onClick={() => navigate('/accounts/oversight/view-campuses')}
           >
             View Campuses
           </Button>
         </div>
-      </Container>
+      </div>
     </ApolloWrapper>
   )
 }

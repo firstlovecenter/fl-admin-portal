@@ -2,27 +2,35 @@ import { useMutation } from '@apollo/client'
 import RoleView from 'auth/RoleView'
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { alertMsg } from 'global-utils'
+import { alertMsg, throwToSentry } from 'global-utils'
 import { permitLeaderAdmin } from 'permission-utils'
 import { useContext } from 'react'
-import { Card, Button } from 'react-bootstrap'
-import {
-  ArrowCounterclockwise,
-  TelephoneFill,
-  Whatsapp,
-} from 'react-bootstrap-icons'
 import { useNavigate } from 'react-router'
+import { Phone, RotateCcw } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader } from 'components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from 'components/ui/alert-dialog'
+import { MemberContext } from 'contexts/MemberContext'
 import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
   BacentaWithDefaulters,
-  HubWithDefaulters,
   StreamWithDefaulters,
 } from './defaulters-types'
 import './Defaulters.css'
-import { MemberContext } from 'contexts/MemberContext'
 
 type DefaulterCardProps = {
-  defaulter: BacentaWithDefaulters | StreamWithDefaulters | HubWithDefaulters
+  defaulter: BacentaWithDefaulters | StreamWithDefaulters
   link?: string
 }
 
@@ -36,115 +44,155 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
 
   if ('services' in defaulter && defaulter.services?.length) {
     serviceDetails = defaulter.services[0]
-  } else if ('rehearsals' in defaulter && defaulter.rehearsals?.length) {
-    serviceDetails = defaulter.rehearsals[0]
   }
 
   return (
     <Card>
       <PlaceholderCustom
         loading={!defaulter?.name}
-        className={`fw-bold large-number pb-3`}
+        className="large-number pb-3 font-bold"
       >
-        <Card.Header
+        <CardHeader
           onClick={() => {
             clickCard(defaulter)
             navigate(`/${defaulter?.__typename.toLowerCase()}/displaydetails`)
           }}
-          className="fw-bold"
+          className="cursor-pointer font-bold"
         >
           {`${defaulter?.name} ${defaulter?.__typename}`}
           <br />
 
           {defaulter?.__typename === 'Bacenta' &&
             defaulter?.governorship?.name && (
-              <span className="text-secondary">
+              <span className="text-muted-foreground">
                 {`${defaulter?.governorship?.name} ${defaulter?.governorship?.__typename}`}
               </span>
             )}
 
           {defaulter?.__typename === 'Stream' && defaulter?.campus && (
-            <>
-              <span className="text-secondary">
-                {`${defaulter?.campus?.name} ${defaulter?.campus?.__typename}`}
-              </span>
-            </>
+            <span className="text-muted-foreground">
+              {`${defaulter?.campus?.name} ${defaulter?.campus?.__typename}`}
+            </span>
           )}
-        </Card.Header>
-        <Card.Body>
-          <Card.Text
+        </CardHeader>
+        <CardContent className="space-y-3 pb-4">
+          <div
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer text-sm"
             onClick={() => {
               clickCard(defaulter)
               clickCard(serviceDetails)
               navigate(
-                link || `/${defaulter?.__typename.toLowerCase()}/displaydetails`
+                link ||
+                  `/${defaulter?.__typename.toLowerCase()}/displaydetails`
               )
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                clickCard(defaulter)
+                clickCard(serviceDetails)
+                navigate(
+                  link ||
+                    `/${defaulter?.__typename.toLowerCase()}/displaydetails`
+                )
+              }
             }}
           >
             {defaulter?.leader?.fullName || 'No Leader'}
             {serviceDetails?.attendance && (
               <div>
-                <span className="text-muted">Attendance: </span>
+                <span className="text-muted-foreground">Attendance: </span>
                 {serviceDetails?.attendance}
               </div>
             )}
             {serviceDetails?.income && (
               <div>
-                <span className="text-muted">Income: </span>
+                <span className="text-muted-foreground">Income: </span>
                 {currentUser.currency} {serviceDetails?.income}
               </div>
             )}
             {serviceDetails?.noServiceReason && (
               <div>
-                <span className="text-muted">
+                <span className="text-muted-foreground">
                   Reason for Cancelled Service:{' '}
                 </span>
                 {serviceDetails?.noServiceReason}
               </div>
             )}
-          </Card.Text>
-          <a href={`tel:${defaulter?.leader?.phoneNumber}`}>
-            <Button variant="primary">
-              <TelephoneFill /> Call
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild>
+              <a href={`tel:${defaulter?.leader?.phoneNumber}`}>
+                <Phone className="h-4 w-4" /> Call
+              </a>
             </Button>
-          </a>
-          <a
-            href={`https://wa.me/${defaulter?.leader?.whatsappNumber}`}
-            className="ms-3"
-          >
-            <Button variant="success">
-              <Whatsapp /> WhatsApp
-            </Button>
-          </a>
-          {serviceDetails?.noServiceReason && (
-            <RoleView roles={permitLeaderAdmin('Governorship')}>
-              <Button
-                className="ms-3"
-                variant="warning"
-                onClick={() => {
-                  const confirmBox = window.confirm(
-                    'Do you want to undo the cancellation of this service?'
-                  )
-
-                  if (confirmBox === true) {
-                    UndoCancelledService({
-                      variables: { serviceRecordId: serviceDetails.id },
-                    }).then(() => {
-                      alertMsg('Leader can now fill the form again. Thank you!')
-                      clickCard(defaulter)
-                      navigate(
-                        `/${defaulter?.__typename.toLowerCase()}/displaydetails`
-                      )
-                    })
-                  }
-                }}
+            <Button
+              asChild
+              className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+            >
+              <a
+                href={`whatsapp://send?phone=${defaulter?.leader?.whatsappNumber}`}
               >
-                <ArrowCounterclockwise /> Undo
-              </Button>
-            </RoleView>
-          )}
-        </Card.Body>
-        <Card.Footer className="text-muted">{`Meeting Day: ${defaulter?.meetingDay?.day}`}</Card.Footer>
+                <FaWhatsapp className="h-4 w-4" /> WhatsApp
+              </a>
+            </Button>
+            {serviceDetails?.noServiceReason && (
+              <RoleView roles={permitLeaderAdmin('Governorship')}>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button className="bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90">
+                      <RotateCcw className="h-4 w-4" /> Undo
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Undo cancelled service?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Do you want to undo the cancellation of this service?
+                        The leader will be able to fill the form again.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="min-h-11">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        className="min-h-11"
+                        onClick={async (event) => {
+                          event.preventDefault()
+                          try {
+                            await UndoCancelledService({
+                              variables: { serviceRecordId: serviceDetails.id },
+                            })
+                            alertMsg(
+                              'Leader can now fill the form again. Thank you!'
+                            )
+                            clickCard(defaulter)
+                            navigate(
+                              `/${defaulter?.__typename.toLowerCase()}/displaydetails`
+                            )
+                          } catch (error) {
+                            throwToSentry(
+                              'Error undoing cancelled service',
+                              error
+                            )
+                          }
+                        }}
+                      >
+                        Undo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </RoleView>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter className="text-muted-foreground">{`Meeting Day: ${defaulter?.meetingDay?.day}`}</CardFooter>
       </PlaceholderCustom>
     </Card>
   )

@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const STREAM_ARRIVALS_HELPERS = gql`
   query StreamArrivalsHelpers($id: ID!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -22,7 +22,7 @@ export const STREAM_ARRIVALS_HELPERS = gql`
         }
       }
 
-      activeBacentaICCount
+      activeBacentaCount
     }
   }
 `
@@ -58,7 +58,7 @@ export const REMOVE_STREAMARRIVALS_COUNTER = gql`
 
 export const COUNCIL_ARRIVALSPAYERS = gql`
   query councilArrivalsPayers($id: ID!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 

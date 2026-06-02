@@ -1,0 +1,334 @@
+extend type Stream {
+  tellers: [Member!]! @relationship(type: "IS_TELLER_FOR", direction: IN)
+}
+
+extend type ServiceRecord {
+  tellerConfirmationTime: DateTime
+  bankingConfirmer: Member
+    @relationship(type: "CONFIRMED_BANKING_FOR", direction: IN)
+}
+
+extend type Member {
+  isTellerForStream: [Stream!]!
+    @relationship(type: "IS_TELLER_FOR", direction: OUT)
+}
+
+extend type Mutation {
+  MakeStreamTeller(streamId: ID!, tellerId: ID!): Member!
+  RemoveStreamTeller(streamId: ID!, tellerId: ID!): Member!
+  ConfirmBanking(governorshipId: ID!): Governorship!
+  ConfirmCouncilBanking(councilId: ID!): Council!
+}
+
+extend type Stream {
+  governorshipBankingDefaultersThisWeek(
+    searchKey: String
+    limit: Int! = 10
+    skip: Int! = 0
+  ): [Governorship!]!
+    @cypher(
+      statement: """
+      MATCH (this)
+      WITH date() as today, this
+      WITH  today.weekDay as theDay, today, this
+      WITH date(today) - duration({days: (theDay - 1)}) AS startDate, this
+      WITH [day in range(0, 6) | startDate + duration({days: day})] AS dates, this
+
+      MATCH (date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+      MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
+
+       WITH DISTINCT record, this
+        WHERE record.noServiceReason IS NULL
+          AND record.bankingSlip IS NULL
+          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+          AND record.tellerConfirmationTime IS NULL
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY|HAS*1..2]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
+
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WHERE $searchKey IS NULL
+          OR $searchKey = ''
+          OR toLower(governorships.name) CONTAINS toLower($searchKey)
+
+      WITH DISTINCT governorships
+      ORDER BY toLower(governorships.name) ASC
+      SKIP toInteger($skip) LIMIT toInteger($limit)
+      RETURN governorships AS governorshipBankingDefaultersThisWeek
+      """
+      columnName: "governorshipBankingDefaultersThisWeek"
+    )
+  governorshipBankingDefaultersThisWeekCount(searchKey: String): Int
+    @cypher(
+      statement: """
+      MATCH (this)
+      WITH date() as today, this
+      WITH  today.weekDay as theDay, today, this
+      WITH date(today) - duration({days: (theDay - 1)}) AS startDate, this
+      WITH [day in range(0, 6) | startDate + duration({days: day})] AS dates, this
+
+      MATCH (date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+      MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
+
+       WITH DISTINCT record, this
+        WHERE record.noServiceReason IS NULL
+          AND record.bankingSlip IS NULL
+          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+          AND record.tellerConfirmationTime IS NULL
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY|HAS*1..2]-(governorships) WHERE governorships:Governorship OR governorships:ClosedGovernorship
+
+       WITH DISTINCT governorships, this
+       MATCH (governorships)<-[:HAS]-(:Council)<-[:HAS]-(this)
+       WHERE $searchKey IS NULL
+          OR $searchKey = ''
+          OR toLower(governorships.name) CONTAINS toLower($searchKey)
+
+      RETURN COUNT(DISTINCT governorships) AS governorshipBankingDefaultersThisWeekCount
+      """
+      columnName: "governorshipBankingDefaultersThisWeekCount"
+    )
+
+  # Council-level joint services still need confirmation by the teller —
+  # the governorshipBankingDefaultersThisWeek field walks down only as
+  # far as Bacenta (1-2 hops from Governorship), so a record held at the
+  # Council itself never surfaces there. This sibling field returns every
+  # Council under the stream that has at least one pending Council-direct
+  # service for the current ISO week (Mon-Sun).
+  councilBankingDefaultersThisWeek(
+    searchKey: String
+    limit: Int! = 10
+    skip: Int! = 0
+  ): [Council!]!
+    @cypher(
+      statement: """
+      MATCH (this)
+      WITH date() as today, this
+      WITH  today.weekDay as theDay, today, this
+      WITH date(today) - duration({days: (theDay - 1)}) AS startDate, this
+      WITH [day in range(0, 6) | startDate + duration({days: day})] AS dates, this
+
+      MATCH (date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+      MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
+
+       WITH DISTINCT record, this
+        WHERE record.noServiceReason IS NULL
+          AND record.bankingSlip IS NULL
+          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+          AND record.tellerConfirmationTime IS NULL
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(councils) WHERE councils:Council OR councils:ClosedCouncil
+
+       WITH DISTINCT councils, this
+       MATCH (councils)<-[:HAS]-(this)
+       WHERE $searchKey IS NULL
+          OR $searchKey = ''
+          OR toLower(councils.name) CONTAINS toLower($searchKey)
+
+      WITH DISTINCT councils
+      ORDER BY toLower(councils.name) ASC
+      SKIP toInteger($skip) LIMIT toInteger($limit)
+      RETURN councils AS councilBankingDefaultersThisWeek
+      """
+      columnName: "councilBankingDefaultersThisWeek"
+    )
+  councilBankingDefaultersThisWeekCount(searchKey: String): Int
+    @cypher(
+      statement: """
+      MATCH (this)
+      WITH date() as today, this
+      WITH  today.weekDay as theDay, today, this
+      WITH date(today) - duration({days: (theDay - 1)}) AS startDate, this
+      WITH [day in range(0, 6) | startDate + duration({days: day})] AS dates, this
+
+      MATCH (date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+      MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
+
+       WITH DISTINCT record, this
+        WHERE record.noServiceReason IS NULL
+          AND record.bankingSlip IS NULL
+          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+          AND record.tellerConfirmationTime IS NULL
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(councils) WHERE councils:Council OR councils:ClosedCouncil
+
+       WITH DISTINCT councils, this
+       MATCH (councils)<-[:HAS]-(this)
+       WHERE $searchKey IS NULL
+          OR $searchKey = ''
+          OR toLower(councils.name) CONTAINS toLower($searchKey)
+
+      RETURN COUNT(DISTINCT councils) AS councilBankingDefaultersThisWeekCount
+      """
+      columnName: "councilBankingDefaultersThisWeekCount"
+    )
+}
+
+extend type AggregateServiceRecord {
+  foreignCurrency: [String!]
+}
+
+extend type Governorship {
+  aggregateServiceRecordForWeek(week: Int!): AggregateServiceRecord!
+    @cypher(
+      statement: """
+      WITH this, date() AS today
+      WITH this, [day IN range(0, 6) | date(today) - duration({days: (today.weekDay - 1)}) + duration({days: day})] AS dates
+
+      MATCH (dateNode:TimeGraph)
+      USING INDEX dateNode:TimeGraph(date)
+      WHERE dateNode.date IN dates
+      OPTIONAL MATCH (dateNode)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:CURRENT_HISTORY]-(this)
+      WHERE record.noServiceReason IS NULL
+        AND record.bankingSlip IS NULL
+        AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+        AND record.tellerConfirmationTime IS NULL
+      WITH this, dates, collect(DISTINCT record) AS ownRecords
+
+      MATCH (dateNode2:TimeGraph)
+      USING INDEX dateNode2:TimeGraph(date)
+      WHERE dateNode2.date IN dates
+      OPTIONAL MATCH (dateNode2)<-[:SERVICE_HELD_ON]-(record2:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:CURRENT_HISTORY]-(:Bacenta)<-[:HAS]-(this)
+      WHERE record2.noServiceReason IS NULL
+        AND record2.bankingSlip IS NULL
+        AND (record2.transactionStatus IS NULL OR record2.transactionStatus <> 'success')
+        AND record2.tellerConfirmationTime IS NULL
+      // Split into two WITH clauses so Neo4j 5's strict grouping check doesn't
+      // see `ownRecords + collect(...)` as mixing a grouping key with an
+      // aggregation — bind the aggregation to its own variable first.
+      WITH this, ownRecords, collect(DISTINCT record2) AS bacentaRecords
+      WITH this, ownRecords + bacentaRecords AS allRecords
+
+      WITH this,
+      [r IN allRecords WHERE r.foreignCurrency IS NOT NULL | r.foreignCurrency] AS list,
+      round(coalesce(reduce(s = 0.0, r IN allRecords | s + coalesce(r.income, r.cash, 0)), 0), 2) AS income,
+      toInteger(coalesce(reduce(s = 0, r IN allRecords | s + coalesce(r.attendance, 0)), 0)) AS attendance
+
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
+      WHERE agg.week = $week AND agg.year = date().year
+
+      WITH this, list, income, attendance, agg ORDER BY coalesce(agg.recomputedAt, datetime({epochSeconds: 0})) DESC
+      WITH this, list, income, attendance, head(collect(agg)) AS agg
+
+      RETURN {
+        id: coalesce(agg.id, this.id + '-' + toString($week) + '-' + toString(date().year)),
+        attendance: attendance,
+        income: income,
+        week: $week,
+        year: date().year,
+        foreignCurrency: list
+      } AS aggregateServiceRecordForWeek
+      """
+      columnName: "aggregateServiceRecordForWeek"
+    )
+  banked: Boolean!
+    @cypher(
+      statement: """
+      MATCH (this)
+      WITH date() as today, this
+      WITH  today.weekDay as theDay, today, this
+      WITH date(today) - duration({days: (theDay - 1)}) AS startDate, this
+      WITH [day in range(0, 6) | startDate + duration({days: day})] AS dates, this
+
+      MATCH (date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+      MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
+
+      WITH DISTINCT record, this
+        WHERE record.noServiceReason IS NULL
+          AND record.bankingSlip IS NULL
+          AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+          AND record.tellerConfirmationTime IS NULL
+      MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
+
+      WITH DISTINCT bacentas, this
+      MATCH (bacentas)<-[:HAS]-(this)
+
+      WITH COUNT(DISTINCT bacentas) as bankingDefaulters
+      RETURN
+      CASE bankingDefaulters
+      WHEN 0 THEN true
+      ELSE false
+      END AS banked
+      """
+      columnName: "banked"
+    )
+
+  bankedBy: Member
+    @cypher(
+      statement: """
+      MATCH (this)
+      WITH date() as today, this
+      WITH  today.weekDay as theDay, today, this
+      WITH date(today) - duration({days: (theDay - 1)}) AS startDate, this
+      WITH [day in range(0, 6) | startDate + duration({days: day})] AS dates, this
+
+      MATCH (date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+      MATCH (date)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)
+
+       WITH DISTINCT record, this
+        WHERE record.noServiceReason IS NULL
+        AND (record.bankingSlip IS NOT NULL OR record.transactionStatus ='success' OR record.tellerConfirmationTime IS NOT NULL)
+       MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas) WHERE bacentas:Bacenta OR bacentas:ClosedBacenta
+
+
+      WITH DISTINCT  this, record
+      MATCH (teller:Member)-[:CONFIRMED_BANKING_FOR]->(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacentas)<-[:HAS]-(this)
+
+
+      RETURN DISTINCT teller AS bankedBy
+      """
+      columnName: "bankedBy"
+    )
+}
+
+# Council-level versions of the same banking helpers. Used when a Council
+# itself holds a joint service that the teller must confirm — the
+# Governorship variants above only see Governorship/Bacenta records.
+extend type Council {
+  aggregateServiceRecordForWeek(week: Int!): AggregateServiceRecord!
+    @cypher(
+      statement: """
+      WITH this, date() AS today
+      WITH this, [day IN range(0, 6) | date(today) - duration({days: (today.weekDay - 1)}) + duration({days: day})] AS dates
+
+      MATCH (dateNode:TimeGraph)
+      USING INDEX dateNode:TimeGraph(date)
+      WHERE dateNode.date IN dates
+      OPTIONAL MATCH (dateNode)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:CURRENT_HISTORY]-(this)
+      WHERE record.noServiceReason IS NULL
+        AND record.bankingSlip IS NULL
+        AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+        AND record.tellerConfirmationTime IS NULL
+      WITH this, collect(DISTINCT record) AS ownRecords
+
+      WITH this,
+      [r IN ownRecords WHERE r.foreignCurrency IS NOT NULL | r.foreignCurrency] AS list,
+      round(coalesce(reduce(s = 0.0, r IN ownRecords | s + coalesce(r.income, r.cash, 0)), 0), 2) AS income,
+      toInteger(coalesce(reduce(s = 0, r IN ownRecords | s + coalesce(r.attendance, 0)), 0)) AS attendance
+
+      OPTIONAL MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
+      WHERE agg.week = $week AND agg.year = date().year
+
+      WITH this, list, income, attendance, agg ORDER BY coalesce(agg.recomputedAt, datetime({epochSeconds: 0})) DESC
+      WITH this, list, income, attendance, head(collect(agg)) AS agg
+
+      RETURN {
+        id: coalesce(agg.id, this.id + '-' + toString($week) + '-' + toString(date().year)),
+        attendance: attendance,
+        income: income,
+        week: $week,
+        year: date().year,
+        foreignCurrency: list
+      } AS aggregateServiceRecordForWeek
+      """
+      columnName: "aggregateServiceRecordForWeek"
+    )
+}

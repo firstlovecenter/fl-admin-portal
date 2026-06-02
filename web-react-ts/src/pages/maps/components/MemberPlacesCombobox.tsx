@@ -1,27 +1,37 @@
 import { useContext, useEffect, useState } from 'react'
-import Autosuggest from 'react-autosuggest'
-import { FormikComponentProps } from '../../../components/formik/formik-types'
-import 'components/formik/Formik.css'
-import 'components/formik/react-autosuggest.css'
+import { FormikComponentProps } from 'components/formik/formik-types'
+import SearchCombobox from 'components/formik/SearchCombobox'
+import { useSearchInitialValue } from 'components/formik/search-utils'
 import { LazyQueryExecFunction, OperationVariables } from '@apollo/client'
 import { MemberContext } from 'contexts/MemberContext'
 import { DEBOUNCE_TIMER } from 'global-utils'
-import { PlaceType } from './MapComponent'
+import { PlaceType } from '../types'
 
 interface ComboBoxProps extends FormikComponentProps {
   initialValue: string
   setCentre: (position: PlaceType) => void
-  memberSearch: LazyQueryExecFunction<any, OperationVariables>
   placesSearchByName: LazyQueryExecFunction<any, OperationVariables>
   handleClose: () => void
 }
 
-const getName = (place: any) => {
+type PlaceSuggestion = {
+  id: string
+  name?: string
+  firstName?: string
+  lastName?: string
+  typename: PlaceType['typename']
+  description?: string
+  picture?: string
+  latitude: string
+  longitude: string
+}
+
+const getName = (place: PlaceSuggestion) => {
   if (place.name) {
-    return place.typename + ': ' + place.name
+    return `${place.typename}: ${place.name}`
   }
   if (place.firstName) {
-    return place.typename + ': ' + place.firstName + ' ' + place.lastName
+    return `${place.typename}: ${place.firstName} ${place.lastName ?? ''}`.trim()
   }
   return ''
 }
@@ -37,105 +47,53 @@ const MemberPlacesCombobox = (props: ComboBoxProps) => {
   } = props
   const { currentUser } = useContext(MemberContext)
 
-  const [searchString, setSearchString] = useState(initialValue ?? '')
-  const [suggestions, setSuggestions] = useState<any[]>([])
-
-  // TODO: Suggestions are generated after the first keystroke.  This is not ideal.
-  // They should be generated before the first keystroke.
-
-  const searchFunctions = async () => {
-    const placesResults = await placesSearchByName({
-      variables: {
-        id: currentUser.id,
-        key: searchString.trim(),
-      },
-    })
-
-    if (placesResults.data.members[0].placesSearchByName.length === 0) {
-      return
-    }
-
-    setSuggestions(placesResults.data.members[0].placesSearchByName)
-  }
+  const [searchString, setSearchString] = useSearchInitialValue(initialValue)
+  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([])
 
   useEffect(() => {
-    const timerId = setTimeout(() => {
-      searchFunctions()
+    const timerId = setTimeout(async () => {
+      const results = await placesSearchByName({
+        variables: {
+          id: currentUser.id,
+          key: searchString.trim(),
+        },
+      })
+
+      setSuggestions(results.data?.members?.[0]?.placesSearchByName ?? [])
     }, DEBOUNCE_TIMER)
 
-    return () => {
-      clearTimeout(timerId)
-    }
+    return () => clearTimeout(timerId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchString])
 
   return (
-    <div>
-      {label ? (
-        <label className="label" htmlFor={name}>
-          {label}
-        </label>
-      ) : null}
-      <Autosuggest
-        inputProps={{
-          placeholder: placeholder,
-          id: name,
-          autoComplete: 'off',
-          value: searchString,
-          name: name,
-          className: 'form-control',
-          onChange: (_event: any, { newValue }: any) => {
-            setSearchString(newValue)
-          },
-        }}
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={async ({ value }: any) => {
-          try {
-          } catch {
-            setSuggestions([])
-          }
-        }}
-        onSuggestionsClearRequested={() => {
-          setSuggestions([])
-        }}
-        onSuggestionSelected={(event, { suggestion, method }: any) => {
-          if (method === 'enter') {
-            event.preventDefault()
-          }
-
-          const location: google.maps.LatLngLiteral = {
-            lat: parseFloat(suggestion.latitude),
-            lng: parseFloat(suggestion.longitude),
-          }
-
-          props.setCentre({
-            id: suggestion.id,
-            name: suggestion.name,
-            typename: suggestion.typename,
-            description: suggestion.description,
-            picture: suggestion.picture,
-            position: location,
-          })
-          handleClose()
-
-          setSearchString(getName(suggestion))
-        }}
-        getSuggestionValue={(suggestion: any) => {
-          if (suggestion?.name) {
-            return `${suggestion.typename}: ${suggestion.name}`
-          }
-
-          if (suggestion?.firstName) {
-            return `${suggestion.typename}: ${suggestion.firstName} ${suggestion.lastName}`
-          }
-
-          return ''
-        }}
-        highlightFirstSuggestion={true}
-        renderSuggestion={(suggestion: any) => {
-          return <div className="combobox-control">{getName(suggestion)}</div>
-        }}
-      />
-    </div>
+    <SearchCombobox<PlaceSuggestion>
+      label={label}
+      name={name}
+      id={name}
+      placeholder={placeholder}
+      value={searchString}
+      onValueChange={setSearchString}
+      suggestions={suggestions}
+      getItemKey={(s) => s.id}
+      getItemValue={getName}
+      onSelect={(suggestion) => {
+        const location: google.maps.LatLngLiteral = {
+          lat: parseFloat(suggestion.latitude),
+          lng: parseFloat(suggestion.longitude),
+        }
+        props.setCentre({
+          id: suggestion.id,
+          name: suggestion.name ?? '',
+          typename: suggestion.typename,
+          description: suggestion.description,
+          picture: suggestion.picture,
+          position: location,
+        })
+        handleClose()
+        setSearchString(getName(suggestion))
+      }}
+    />
   )
 }
 

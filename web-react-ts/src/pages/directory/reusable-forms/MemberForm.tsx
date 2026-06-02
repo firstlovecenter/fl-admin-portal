@@ -1,37 +1,51 @@
-import { useMutation, useQuery } from '@apollo/client'
-import { Form, Formik, FormikHelpers } from 'formik'
+import { useQuery } from '@apollo/client'
+import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import React, { useContext } from 'react'
+import { useContext, useState } from 'react'
 import {
-  alertMsg,
-  DELETE_MEMBER_CATEGORY_OPTIONS,
+  BadgePlus,
+  Loader2,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Trash2,
+  User,
+} from 'lucide-react'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
+import {
   GENDER_OPTIONS,
   isAuthorised,
   makeSelectOptions,
   MARITAL_STATUS_OPTIONS,
   PHONE_NUM_REGEX,
-  throwToSentry,
 } from 'global-utils'
 import { GET_CAMPUS_BASONTAS } from 'queries/ListQueries'
-import ErrorScreen from 'components/base-component/ErrorScreen'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import { Button, ButtonGroup, Col, Container, Row } from 'react-bootstrap'
-import LoadingScreen from 'components/base-component/LoadingScreen'
 import { permitAdmin, permitLeaderAdmin } from 'permission-utils'
-import SubmitButton from 'components/formik/SubmitButton'
-import { MemberContext } from 'contexts/MemberContext'
-import { CreateMemberFormOptions } from '../create/CreateMember'
-import Input from 'components/formik/Input'
-import ImageUpload from 'components/formik/ImageUpload'
-import Select from 'components/formik/Select'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { MAKE_MEMBER_INACTIVE } from '../update/UpdateMutations'
-import usePopup from 'hooks/usePopup'
-import Popup from 'components/Popup/Popup'
-import { useNavigate } from 'react-router'
+import { MemberContext } from 'contexts/MemberContext'
 import RoleView from 'auth/RoleView'
-import RadioButtons from 'components/formik/RadioButtons'
 import SearchBacenta from 'components/formik/SearchBacenta'
+import { Button } from 'components/ui/button'
+import { Input } from 'components/ui/input'
+import { Label } from 'components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from 'components/ui/select'
+import { Skeleton } from 'components/ui/skeleton'
+import { cn } from 'components/lib/utils'
+import usePopup from 'hooks/usePopup'
+import { CreateMemberFormOptions } from '../create/CreateMember'
+import MemberAvatarUpload from './MemberAvatarUpload'
+import MemberDeleteDialog from './MemberDeleteDialog'
+import MemberTitleDialog from './MemberTitleDialog'
 
 type MemberFormProps = {
   initialValues: CreateMemberFormOptions
@@ -39,94 +53,88 @@ type MemberFormProps = {
     values: CreateMemberFormOptions,
     onSubmitProps: FormikHelpers<CreateMemberFormOptions>
   ) => void
-  title: string
   loading: boolean
   update?: boolean
 }
 
-type DeleteMemberProp = {
-  reason: string
-  reasonCategory: string
+// ── Section card ─────────────────────────────────────────────────────────────
+
+type SectionProps = {
+  title: string
+  icon: React.ReactNode
+  children: React.ReactNode
 }
+
+const Section = ({ title, icon, children }: SectionProps) => (
+  <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="px-4 lg:px-5 py-3 border-b border-border flex items-center gap-2">
+      <span className="text-muted-foreground" aria-hidden="true">
+        {icon}
+      </span>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {title}
+      </h3>
+    </div>
+    <div className="p-4 lg:p-5 space-y-4">{children}</div>
+  </div>
+)
+
+const FieldMessage = ({ name }: { name: string }) => (
+  <ErrorMessage name={name}>
+    {(msg) => (
+      <p className="text-xs text-destructive" role="alert">
+        {msg}
+      </p>
+    )}
+  </ErrorMessage>
+)
+
+// ── Loading skeleton ─────────────────────────────────────────────────────────
+
+const FormSkeleton = () => (
+  <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+    <StickyPageHeader>
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 space-y-1">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-7 w-52" />
+        </div>
+      </div>
+    </StickyPageHeader>
+    <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-8">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[300px_1fr]">
+        <Skeleton className="h-80 rounded-xl" />
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-56 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+// ── MemberForm ───────────────────────────────────────────────────────────────
 
 const MemberForm = ({
   initialValues,
   onSubmit,
-  title,
   loading,
   update,
 }: MemberFormProps) => {
-  const { currentUser, memberId } = useContext(MemberContext)
-  const { campusId, clickCard } = useContext(ChurchContext)
-  const {
-    data: basontasData,
-    loading: basontasLoading,
-    error: basontasError,
-  } = useQuery(GET_CAMPUS_BASONTAS, {
-    variables: {
-      id: campusId,
-    },
-  })
-
-  const [MakeMemberInactive] = useMutation(MAKE_MEMBER_INACTIVE)
+  const { currentUser } = useContext(MemberContext)
+  const { campusId } = useContext(ChurchContext)
   const { isOpen, togglePopup } = usePopup()
+  const [titleDialogOpen, setTitleDialogOpen] = useState(false)
 
-  const navigate = useNavigate()
-
-  const deleteValidationSchema = Yup.object({
-    reasonCategory: Yup.string().required(),
-    reason: Yup.string().required(
-      "Please provide the reason you're deleting this member"
-    ),
-  })
-
-  const reasonInitialValues: DeleteMemberProp = {
-    reason: '',
-    reasonCategory: '',
-  }
-
-  const onDelete = async (
-    values: DeleteMemberProp,
-    onSubmitProps: FormikHelpers<DeleteMemberProp>
-  ) => {
-    const { setSubmitting } = onSubmitProps
-
-    setSubmitting(true)
-    try {
-      await MakeMemberInactive({
-        variables: {
-          memberId: memberId,
-          reason: `${initialValues.firstName} ${initialValues.lastName} was deleted: ${values.reasonCategory} - ${values.reason}`,
-        },
-      })
-
-      clickCard({
-        __typename: 'Bacenta',
-        id: initialValues.bacenta.id,
-      })
-
-      togglePopup()
-      alertMsg('Member has been deleted successfully')
-      navigate('/bacenta/displaydetails')
-    } catch (e) {
-      throwToSentry('Cannot delete member', e)
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  const { data: basontasData, loading: basontasLoading } = useQuery(
+    GET_CAMPUS_BASONTAS,
+    { variables: { id: campusId } }
+  )
 
   const canChangeUniques = () => {
-    if (!update) {
-      return true
-    }
-    if (
-      update &&
-      isAuthorised(permitAdmin('Governorship'), currentUser.roles)
-    ) {
-      return true
-    }
-
-    return false
+    if (!update) return true
+    return isAuthorised(permitAdmin('Governorship'), currentUser.roles)
   }
 
   const validationSchema = Yup.object({
@@ -156,249 +164,457 @@ const MemberForm = ({
   })
 
   if (basontasLoading || loading) {
-    return <LoadingScreen />
-  } else if (basontasData) {
-    const basontaArray =
-      makeSelectOptions(basontasData.campuses[0]?.basontas) || []
-    const basontaOptions = [{ key: 'None', value: 'None' }, ...basontaArray]
+    return <FormSkeleton />
+  }
 
-    return (
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={onSubmit}
-        validateOnMount
-      >
-        {(formik) => (
-          <Container>
-            {isOpen && (
-              <Popup handleClose={togglePopup}>
-                <b>Deleting A Member</b>
-                <p>
-                  Are you sure you want to delete this member? Please enter your
-                  reason below
-                </p>
-                <Formik
-                  initialValues={reasonInitialValues}
-                  validationSchema={deleteValidationSchema}
-                  onSubmit={onDelete}
-                >
-                  {(formik) => (
-                    <Form>
-                      <Row className="form-row">
-                        <Col>
-                          <RadioButtons
-                            name="reasonCategory"
-                            options={DELETE_MEMBER_CATEGORY_OPTIONS}
-                          />
-                          <Input name="reason" placeholder="Reason" />
-                          <SubmitButton formik={formik} />
-                        </Col>
-                      </Row>
-                    </Form>
-                  )}
-                </Formik>
-              </Popup>
-            )}
-            <h3 className="my-3 text-center">{title}</h3>
-            <Form className="form-group">
-              <Row className="row-cols-1">
-                {/* <!-- Basic Info Div --> */}
-                {/* Photo Upload with Cloudinary */}
-                <Col className="my-3">
-                  <ImageUpload
-                    name="pictureUrl"
-                    initialValue={initialValues.pictureUrl}
-                    error={formik.errors.pictureUrl}
-                    placeholder="Upload New Picture"
-                    setFieldValue={formik.setFieldValue}
-                    aria-describedby="ImageUpload"
-                  />
-                  <p className="text-center text-danger">
-                    <small>
-                      Please note that * are required to submit the form
-                    </small>
+  const basontaArray =
+    makeSelectOptions(basontasData?.campuses?.[0]?.basontas) || []
+  const basontaOptions = [{ key: 'None', value: 'None' }, ...basontaArray]
+  const initials = `${(initialValues.firstName?.[0] ?? '').toUpperCase()}${(
+    initialValues.lastName?.[0] ?? ''
+  ).toUpperCase()}`
+
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={onSubmit}
+      validateOnMount
+    >
+      {(formik) => (
+        <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          {/* Sticky top action bar */}
+          <StickyPageHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-1">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Directory
                   </p>
-
-                  <div className="form-row row-cols-1 row-cols-md-2 justify-content-center">
-                    <HeadingPrimary>Basic Info</HeadingPrimary>
-                    <ButtonGroup className="my-2 mb-4">
-                      {update && (
-                        <>
-                          {' '}
-                          <RoleView roles={permitAdmin('Denomination')}>
-                            <Button
-                              variant="success"
-                              onClick={() => navigate('/member/title-form')}
-                            >
-                              Add Title
-                            </Button>
-                          </RoleView>
-                          <RoleView roles={permitLeaderAdmin('Governorship')}>
-                            <Button
-                              onClick={() => togglePopup()}
-                              variant="danger"
-                            >
-                              Delete Member
-                            </Button>
-                          </RoleView>
-                        </>
-                      )}
-                    </ButtonGroup>
-                    {canChangeUniques() && (
+                  <h1 className="truncate text-2xl font-bold tracking-tight text-foreground">
+                    {update ? (
                       <>
-                        <Col sm={10}>
-                          <Input
-                            label="First Name*"
-                            name="firstName"
-                            placeholder="First Name"
-                            aria-describedby="firstNameHelp"
-                          />
-                        </Col>
-                        <Col sm={10}>
-                          <Input
-                            label="Middle Name"
-                            name="middleName"
-                            placeholder="Other Names"
-                            aria-describedby="middleNameHelp"
-                          />
-                        </Col>
-                        <Col sm={10}>
-                          <Input
-                            label="Last Name*"
-                            name="lastName"
-                            placeholder="Last Name"
-                            aria-describedby="lastNameHelp"
-                          />
-                        </Col>
-                        <Col sm={10}>
-                          <Select
-                            label="Gender*"
-                            name="gender"
-                            placeholder="Gender"
-                            options={GENDER_OPTIONS}
-                            defaultOption="Gender"
-                          />
-                        </Col>{' '}
-                        <Col sm={10}>
-                          <Input
-                            label="Phone Number*"
-                            placeholder="Eg. +233 241 23 456"
-                            name="phoneNumber"
-                          />
-                        </Col>
-                        <Col sm={10}>
-                          <Input
-                            label="WhatsApp Number*"
-                            placeholder="Eg. +233 241 23 456"
-                            name="whatsappNumber"
-                          />
-                        </Col>
+                        Edit{' '}
+                        <span className="text-members">Member</span>
+                      </>
+                    ) : (
+                      <>
+                        Register a New{' '}
+                        <span className="text-members">Member</span>
                       </>
                     )}
-                  </div>
+                  </h1>
+                </div>
+              </div>
 
-                  <div className="form-row row-cols-1 row-cols-md-2 justify-content-center">
-                    <Col sm={10}>
-                      <Select
-                        label="Marital Status*"
-                        name="maritalStatus"
-                        placeholder="Marital Status"
-                        options={MARITAL_STATUS_OPTIONS}
-                        defaultOption="Marital Status"
-                      />
-                    </Col>
-                    <Col sm={10}>
-                      <Input
-                        label="Occupation"
-                        name="occupation"
-                        placeholder="Occupation"
-                        aria-describedby="occupationHelp"
-                      />
-                    </Col>
-                  </div>
+              {update && (
+                <StickyPageHeaderActions>
+                  <RoleView roles={permitAdmin('Denomination')}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setTitleDialogOpen(true)}
+                      className="min-h-[44px] gap-1.5"
+                    >
+                      <BadgePlus className="h-4 w-4" aria-hidden="true" />
+                      <span className="hidden sm:inline">Add Title</span>
+                    </Button>
+                  </RoleView>
+                  <RoleView roles={permitLeaderAdmin('Governorship')}>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={togglePopup}
+                      className="min-h-[44px] gap-1.5"
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      <span className="hidden sm:inline">Delete</span>
+                    </Button>
+                  </RoleView>
+                </StickyPageHeaderActions>
+              )}
+            </div>
+          </StickyPageHeader>
 
-                  <div className="form-row justify-content-center">
-                    {canChangeUniques() && (
-                      <>
-                        <Col sm={10}>
-                          <Input
-                            label={`Email Address ${
-                              !update ? '(Optional)' : '*'
-                            }`}
-                            name="email"
-                            placeholder="Enter Email Address"
-                            aria-describedby="emailHelp"
+          {/* Body */}
+          <Form>
+            <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-8">
+              <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[300px_1fr] lg:items-start">
+                <MemberAvatarUpload
+                  name="pictureUrl"
+                  value={formik.values.pictureUrl}
+                  initials={initials}
+                  error={
+                    formik.touched.pictureUrl
+                      ? (formik.errors.pictureUrl as string | undefined)
+                      : undefined
+                  }
+                  setFieldValue={formik.setFieldValue}
+                />
+
+                <div className="space-y-4">
+                  {canChangeUniques() && (
+                    <Section
+                      title="Basic Information"
+                      icon={<User className="h-4 w-4" />}
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="firstName">
+                            First Name{' '}
+                            <span className="text-destructive">*</span>
+                          </Label>
+                          <Field
+                            as={Input}
+                            id="firstName"
+                            name="firstName"
+                            placeholder="First name"
+                            autoComplete="given-name"
+                            aria-invalid={
+                              !!(
+                                formik.touched.firstName &&
+                                formik.errors.firstName
+                              )
+                            }
                           />
-                        </Col>
-                        <Col sm={10}>
-                          <small className="form-text ">
-                            Date of Birth*{' '}
-                            <i className="text-secondary">(Day/Month/Year)</i>
-                          </small>
-                          <Input
+                          <FieldMessage name="firstName" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="lastName">
+                            Last Name{' '}
+                            <span className="text-destructive">*</span>
+                          </Label>
+                          <Field
+                            as={Input}
+                            id="lastName"
+                            name="lastName"
+                            placeholder="Last name"
+                            autoComplete="family-name"
+                            aria-invalid={
+                              !!(
+                                formik.touched.lastName &&
+                                formik.errors.lastName
+                              )
+                            }
+                          />
+                          <FieldMessage name="lastName" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="middleName">Middle Name</Label>
+                        <Field
+                          as={Input}
+                          id="middleName"
+                          name="middleName"
+                          placeholder="Other names"
+                          autoComplete="additional-name"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="gender">
+                            Gender{' '}
+                            <span className="text-destructive">*</span>
+                          </Label>
+                          <Select
+                            value={formik.values.gender}
+                            onValueChange={(v) =>
+                              formik.setFieldValue('gender', v)
+                            }
+                          >
+                            <SelectTrigger
+                              id="gender"
+                              className="w-full"
+                              aria-invalid={
+                                !!(
+                                  formik.touched.gender && formik.errors.gender
+                                )
+                              }
+                            >
+                              <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {GENDER_OPTIONS.map((o) => (
+                                <SelectItem key={o.value} value={o.value}>
+                                  {o.key}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FieldMessage name="gender" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="dob">
+                            Date of Birth{' '}
+                            <span className="text-destructive">*</span>
+                          </Label>
+                          <Field
+                            as={Input}
+                            id="dob"
                             name="dob"
                             type="date"
-                            placeholder="dd/mm/yyyy"
-                            aria-describedby="dateofbirth"
+                            aria-invalid={
+                              !!(formik.touched.dob && formik.errors.dob)
+                            }
                           />
-                        </Col>{' '}
-                      </>
-                    )}
-                  </div>
-                </Col>
-                {/* <!--End of Basic Info Section--> */}
+                          <FieldMessage name="dob" />
+                        </div>
+                      </div>
+                    </Section>
+                  )}
 
-                {/* <!-- Beginning of Church Info Section--> */}
-                <div className="col my-4">
-                  <HeadingPrimary>Church Info</HeadingPrimary>
-                  <div className="form-row row-cols-1 row-cols-md-2 justify-content-center">
-                    {!update && (
-                      <Col sm={10}>
-                        <Input
-                          label="Home/Campus Location * (for IDL)"
-                          name="visitationArea"
-                          placeholder="Enter the location for IDL Visitaion"
-                          aria-describedby="visitationArea"
+                  {canChangeUniques() && (
+                    <Section
+                      title="Contact"
+                      icon={<Phone className="h-4 w-4" />}
+                    >
+                      <div className="space-y-1.5">
+                        <Label htmlFor="phoneNumber">
+                          <span className="inline-flex items-center gap-1.5">
+                            <Phone className="h-3.5 w-3.5 text-arrivals" />
+                            Phone Number
+                            <span className="text-destructive">*</span>
+                          </span>
+                        </Label>
+                        <Field
+                          as={Input}
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          placeholder="+233 24 123 4567"
+                          className="font-mono"
+                          aria-invalid={
+                            !!(
+                              formik.touched.phoneNumber &&
+                              formik.errors.phoneNumber
+                            )
+                          }
                         />
-                      </Col>
+                        <FieldMessage name="phoneNumber" />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="whatsappNumber">
+                          <span className="inline-flex items-center gap-1.5">
+                            <MessageCircle className="h-3.5 w-3.5 text-banking" />
+                            WhatsApp Number
+                            <span className="text-destructive">*</span>
+                          </span>
+                        </Label>
+                        <Field
+                          as={Input}
+                          id="whatsappNumber"
+                          name="whatsappNumber"
+                          type="tel"
+                          inputMode="tel"
+                          placeholder="+233 24 123 4567"
+                          className="font-mono"
+                          aria-invalid={
+                            !!(
+                              formik.touched.whatsappNumber &&
+                              formik.errors.whatsappNumber
+                            )
+                          }
+                        />
+                        <FieldMessage name="whatsappNumber" />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="email">
+                          <span className="inline-flex items-center gap-1.5">
+                            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                            Email Address
+                            <span className="text-muted-foreground text-xs font-normal">
+                              {update ? '*' : '(Optional)'}
+                            </span>
+                          </span>
+                        </Label>
+                        <Field
+                          as={Input}
+                          id="email"
+                          name="email"
+                          type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          placeholder="name@example.com"
+                          aria-invalid={
+                            !!(formik.touched.email && formik.errors.email)
+                          }
+                        />
+                        <FieldMessage name="email" />
+                      </div>
+                    </Section>
+                  )}
+
+                  <Section
+                    title="Personal"
+                    icon={<User className="h-4 w-4" />}
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="maritalStatus">
+                          Marital Status{' '}
+                          <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={formik.values.maritalStatus}
+                          onValueChange={(v) =>
+                            formik.setFieldValue('maritalStatus', v)
+                          }
+                        >
+                          <SelectTrigger
+                            id="maritalStatus"
+                            className="w-full"
+                            aria-invalid={
+                              !!(
+                                formik.touched.maritalStatus &&
+                                formik.errors.maritalStatus
+                              )
+                            }
+                          >
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MARITAL_STATUS_OPTIONS.map((o) => (
+                              <SelectItem key={o.value} value={o.value}>
+                                {o.key}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FieldMessage name="maritalStatus" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="occupation">Occupation</Label>
+                        <Field
+                          as={Input}
+                          id="occupation"
+                          name="occupation"
+                          placeholder="e.g. Software Engineer"
+                        />
+                      </div>
+                    </div>
+                  </Section>
+
+                  <Section
+                    title="Church Membership"
+                    icon={<MapPin className="h-4 w-4" />}
+                  >
+                    {!update && (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="visitationArea">
+                          Home / Campus Location{' '}
+                          <span className="text-destructive">*</span>
+                          <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+                            Used for IDL visitation
+                          </span>
+                        </Label>
+                        <Field
+                          as={Input}
+                          id="visitationArea"
+                          name="visitationArea"
+                          placeholder="Enter the location for IDL visitation"
+                          aria-invalid={
+                            !!(
+                              formik.touched.visitationArea &&
+                              formik.errors.visitationArea
+                            )
+                          }
+                        />
+                        <FieldMessage name="visitationArea" />
+                      </div>
                     )}
 
-                    <Col sm={10}>
+                    <div className="space-y-1.5">
                       <SearchBacenta
                         name="bacenta"
-                        label="Bacenta*"
-                        placeholder="Start Typing"
+                        label="Bacenta *"
+                        placeholder="Start typing to search"
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="Bacenta Name"
                         initialValue={initialValues?.bacenta?.name || null}
-                        error={formik.errors.bacenta && formik.errors.bacenta}
+                        error={
+                          formik.errors.bacenta &&
+                          (formik.errors.bacenta as string)
+                        }
                       />
-                    </Col>
-                    <Col sm={10}>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="basonta">Basonta</Label>
                       <Select
-                        label="Basonta"
-                        name="basonta"
-                        options={basontaOptions}
-                        defaultOption="Basonta"
-                      />
-                    </Col>
+                        value={formik.values.basonta || ''}
+                        onValueChange={(v) =>
+                          formik.setFieldValue('basonta', v)
+                        }
+                      >
+                        <SelectTrigger id="basonta" className="w-full">
+                          <SelectValue placeholder="Select basonta" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {basontaOptions.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>
+                              {o.key}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </Section>
+
+                  {/* Submit */}
+                  <div className="rounded-xl border border-border bg-card p-4 lg:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      Fields marked{' '}
+                      <span className="text-destructive font-medium">*</span>{' '}
+                      are required.
+                    </p>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      disabled={formik.isSubmitting}
+                      className={cn(
+                        'min-h-[48px] w-full sm:w-auto px-8 gap-2',
+                        !formik.isValid && 'opacity-60'
+                      )}
+                    >
+                      {formik.isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Submitting…
+                        </>
+                      ) : update ? (
+                        'Save Changes'
+                      ) : (
+                        'Register Member'
+                      )}
+                    </Button>
                   </div>
                 </div>
-                <Col>
-                  <div className="text-center">
-                    <SubmitButton formik={formik} />
-                  </div>
-                </Col>
-              </Row>
-            </Form>
-          </Container>
-        )}
-      </Formik>
-    )
-  } else {
-    return <ErrorScreen error={basontasError} />
-  }
+              </div>
+            </div>
+          </Form>
+
+          <MemberDeleteDialog
+            open={isOpen}
+            onClose={togglePopup}
+            memberFirstName={initialValues.firstName}
+            memberLastName={initialValues.lastName}
+            bacentaId={initialValues.bacenta?.id}
+          />
+
+          <MemberTitleDialog
+            open={titleDialogOpen}
+            onClose={() => setTitleDialogOpen(false)}
+          />
+        </div>
+      )}
+    </Formik>
+  )
 }
 
 export default MemberForm

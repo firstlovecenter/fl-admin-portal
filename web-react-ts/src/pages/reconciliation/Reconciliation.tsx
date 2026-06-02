@@ -1,13 +1,12 @@
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import React from 'react'
-import { Container } from 'react-bootstrap'
 
 const Reconciliation = () => {
   return (
-    <Container>
+    <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>Reconciliation</HeadingPrimary>
       The Reconciliation Feature is still being worked on. Will update soon!
-    </Container>
+    </div>
   )
 }
 

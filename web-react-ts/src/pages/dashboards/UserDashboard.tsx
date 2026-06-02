@@ -1,139 +1,1126 @@
-import { useContext } from 'react'
-import { useNavigate } from 'react-router'
-import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
-import './Dashboards.css'
+import { useContext, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
+import {
+  Bus,
+  Check,
+  ChevronRight,
+  ClipboardCheck,
+  Palmtree,
+  PencilLine,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react'
+import {
+  IconBusStop,
+  IconClipboardCheck,
+  IconUsersPlus,
+  IconBuildingBank,
+  type Icon as TablerIcon,
+} from '@tabler/icons-react'
+import { getWeekNumber, getISOWeekYear } from 'global-utils'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
-import RoleCard from './RoleCard'
+import { isArrivalsCounterOnly, isTellerStreamOnly } from 'permission-utils'
+import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
+import ArrivalsCounterDashboard from './ArrivalsCounterDashboard'
+import StreamTellerDashboard from './StreamTellerDashboard'
+import { Button } from 'components/ui/button'
+import { Skeleton } from 'components/ui/skeleton'
+import { Badge } from 'components/ui/badge'
+import { Separator } from 'components/ui/separator'
+import { cn } from 'components/lib/utils'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
 import {
   GraphTypes,
   getMonthlyStatAverage,
   getServiceGraphData,
-} from '../services/graphs/graphs-utils'
-import StatDisplay from 'pages/services/graphs/CompStatDisplay'
-import { Col, Row, Table, Container } from 'react-bootstrap'
-import Placeholder from '../../components/Placeholder'
-import { ChurchContext } from 'contexts/ChurchContext'
+} from 'pages/services/graphs/graphs-utils'
+import WeeklyTipCard from 'components/dashboard/WeeklyTipCard'
 import useComponentQuery from './useComponentQuery'
-import { Role, UserJobs } from 'global-types'
-import useSetUserChurch from 'hooks/useSetUserChurch'
+import TrendSpark from './TrendSpark'
+import {
+  fadeUp,
+  filterRecentRecords,
+  formatChurchLevel,
+  getRoleRelationLabel,
+  highlightName,
+  sectionStagger,
+  useHourlyGreeting,
+} from './dashboard-shared'
 
-const UserDashboard = () => {
+const TREND_HISTORY_WEEKS = 24
+
+interface QuickAction {
+  label: string
+  icon: TablerIcon
+  onPress: () => void
+  accent: string
+}
+
+const formatCurrency = (amount: number, currencyCode?: unknown) => {
+  const normalizedCurrency =
+    typeof currencyCode === 'string' ? currencyCode.trim().toUpperCase() : ''
+  const currency = normalizedCurrency || 'GHS'
+
+  try {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  } catch {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency: 'GHS',
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+}
+
+const getNeoWeekdayToday = () => {
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Accra',
+    weekday: 'short',
+  }).format(new Date())
+
+  const accraWeekdayMap: Record<string, number> = {
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+    Sun: 7,
+  }
+
+  if (accraWeekdayMap[weekday]) {
+    return accraWeekdayMap[weekday]
+  }
+
+  const jsDay = new Date().getDay()
+  return jsDay === 0 ? 7 : jsDay
+}
+
+const hasMeetingDayStarted = (dayNumber?: number) => {
+  if (!dayNumber) return true
+  return getNeoWeekdayToday() >= dayNumber
+}
+
+const FullUserDashboard = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
-  const { setUserChurch } = useSetUserChurch()
+  const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
-  const { assessmentChurch } = useComponentQuery()
+  const [trendMode, setTrendMode] = useState<'weekday' | 'bussing'>('bussing')
+  const [recordDialogOpen, setRecordDialogOpen] = useState(false)
+  const routeSlug = (
+    selectedScope?.churchType ?? roleChurchOptions[0]?.churchType
+  )?.toLowerCase()
+
+  const isSelectedScopeManualBanking = useMemo(() => {
+    const scopeChurchId = selectedScope?.churchId
+    if (!scopeChurchId || !userJobs) return false
+    for (const job of userJobs as any[]) {
+      const found = (job.church as any[])?.find(
+        (c: any) => c?.id === scopeChurchId
+      )
+      if (found) return !!found.isManualBanking
+    }
+    return false
+  }, [selectedScope?.churchId, userJobs])
+
+  const quickActions: QuickAction[] = [
+    {
+      label: 'Record service',
+      icon: IconClipboardCheck,
+      accent: 'hsl(var(--arrivals))',
+      onPress: () => {
+        if (!selectedScope) return
+        if (routeSlug === 'bacenta') {
+          setRecordDialogOpen(true)
+        } else {
+          clickCard({
+            id: selectedScope.churchId,
+            name: selectedScope.churchName,
+            __typename: selectedScope.churchType,
+          })
+          navigate(`/${routeSlug}/record-service`)
+        }
+      },
+    },
+    {
+      label: 'Fill bussing',
+      icon: IconBusStop,
+      accent: 'hsl(var(--brand))',
+      onPress: () => navigate('/arrivals'),
+    },
+    {
+      label: 'Add member',
+      icon: IconUsersPlus,
+      accent: 'hsl(var(--members))',
+      onPress: () => navigate('/member/addmember'),
+    },
+    ...(isSelectedScopeManualBanking
+      ? []
+      : [
+          {
+            label: 'Bank service',
+            icon: IconBuildingBank,
+            accent: 'hsl(var(--banking))',
+            onPress: () =>
+              navigate(`/services/${routeSlug ?? 'bacenta'}/self-banking`),
+          },
+        ]),
+  ]
+
+  const { assessmentChurch } = useComponentQuery(
+    selectedScope
+      ? {
+          servant: undefined,
+          scope: {
+            authRole: selectedScope.authRole,
+            churchId: selectedScope.churchId,
+          },
+        }
+      : undefined
+  )
 
   let graphType: GraphTypes = 'serviceAggregate'
 
   if (assessmentChurch?.__typename === 'Bacenta') {
-    graphType = 'services'
-  }
-  if (assessmentChurch?.__typename === 'Hub') {
-    graphType = 'rehearsals'
+    graphType = 'serviceAggregate'
   }
 
-  if (assessmentChurch && 'aggregateBussingRecords' in assessmentChurch) {
+  const hasRehearsalAggregateField =
+    !!assessmentChurch && 'aggregateRehearsalRecords' in assessmentChurch
+
+  const hasServiceAggregateField =
+    !!assessmentChurch && 'aggregateServiceRecords' in assessmentChurch
+
+  const hasBussingAggregateField =
+    !!assessmentChurch && 'aggregateBussingRecords' in assessmentChurch
+
+  if (hasRehearsalAggregateField) {
+    graphType = 'rehearsalAggregate'
+  } else if (hasBussingAggregateField && !hasServiceAggregateField) {
     graphType = 'bussingAggregate'
   }
 
-  if (assessmentChurch && 'aggregateRehearsalRecords' in assessmentChurch) {
-    graphType = 'rehearsalAggregate'
+  const isBacentaScope = assessmentChurch?.__typename === 'Bacenta'
+  const weekdayGraphType: GraphTypes = isBacentaScope ? 'services' : graphType
+  const bussingGraphType: GraphTypes = isBacentaScope
+    ? 'bussing'
+    : 'bussingAggregate'
+
+  const weekdayData =
+    getServiceGraphData(
+      assessmentChurch,
+      weekdayGraphType,
+      TREND_HISTORY_WEEKS
+    ) || []
+  const bussingData = hasBussingAggregateField
+    ? getServiceGraphData(
+        assessmentChurch,
+        bussingGraphType,
+        TREND_HISTORY_WEEKS
+      ) || []
+    : []
+  const recentBussingData = filterRecentRecords(bussingData)
+  const hasBussingDataField = hasBussingAggregateField
+  const hasWeekdayDataField =
+    hasServiceAggregateField || hasRehearsalAggregateField
+  const canToggleTrendMode = hasWeekdayDataField && hasBussingDataField
+  const shouldForceBussingMode = hasBussingDataField && !hasWeekdayDataField
+  const activeTrendMode = shouldForceBussingMode
+    ? 'bussing'
+    : canToggleTrendMode
+    ? trendMode
+    : 'weekday'
+  const trendData =
+    activeTrendMode === 'bussing' ? recentBussingData : weekdayData
+
+  const avgBussingAttendance = getMonthlyStatAverage(
+    recentBussingData,
+    'attendance'
+  )
+  const avgAttendance = getMonthlyStatAverage(weekdayData, 'attendance')
+  const avgIncome = getMonthlyStatAverage(weekdayData, 'income')
+
+  const activeRoles = userJobs?.length ?? 0
+  const selectedScopeCurrency =
+    typeof selectedScope?.currency === 'string'
+      ? selectedScope.currency.trim().toUpperCase()
+      : ''
+  const currentUserCurrency =
+    typeof currentUser?.currency === 'string'
+      ? currentUser.currency.trim().toUpperCase()
+      : ''
+  const dashboardCurrency = selectedScopeCurrency || currentUserCurrency
+  const selectedScopeSummary = selectedScope
+    ? `${selectedScope.churchName} · ${formatChurchLevel(
+        selectedScope.churchType
+      )} · ${getRoleRelationLabel(
+        selectedScope.authRole,
+        selectedScope.roleName
+      )}`
+    : null
+
+  const isLoading = !currentUser?.fullName
+  const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
+  const userKey = currentUser?.fullName ?? firstName
+  const greeting = useHourlyGreeting(firstName, userKey)
+  const selectedScopeIncomeTracked =
+    typeof selectedScope?.noIncomeTracking === 'boolean'
+      ? !selectedScope.noIncomeTracking
+      : undefined
+  const incomeTracked =
+    selectedScopeIncomeTracked ?? !currentUser?.noIncomeTracking
+  const trendIncomeTracked =
+    activeTrendMode === 'weekday' ? incomeTracked : false
+
+  const hasAttendance = !!avgAttendance && avgAttendance !== 'NaN'
+  const hasBussingAttendance =
+    !!avgBussingAttendance && avgBussingAttendance !== 'NaN'
+  const hasIncome = incomeTracked && !!avgIncome && avgIncome !== 'NaN'
+  const fmtBussingAttendance = hasBussingAttendance
+    ? Number(avgBussingAttendance).toLocaleString('en-GH', {
+        maximumFractionDigits: 0,
+      })
+    : '—'
+  const fmtAttendance = hasAttendance
+    ? Number(avgAttendance).toLocaleString('en-GH', {
+        maximumFractionDigits: 0,
+      })
+    : '—'
+  const fmtIncome = hasIncome
+    ? formatCurrency(Number(avgIncome), dashboardCurrency)
+    : '—'
+
+  const currentWeek = getWeekNumber()
+  const currentISOWeekYear = getISOWeekYear()
+  const recentServices =
+    assessmentChurch && 'services' in assessmentChurch
+      ? (
+          assessmentChurch as unknown as {
+            services?: Array<{
+              id?: string
+              createdAt?: string
+              week?: string | number
+              noServiceReason?: string
+              bankingProof?: boolean
+              transactionStatus?: string
+              serviceDate?: { date?: string } | null
+            }>
+          }
+        ).services ?? []
+      : []
+  const thisWeekServices = recentServices.filter(
+    (service) =>
+      service.week !== undefined &&
+      Number(service.week) === currentWeek &&
+      !service.noServiceReason &&
+      (!service.serviceDate?.date ||
+        getISOWeekYear(service.serviceDate.date) === currentISOWeekYear)
+  )
+  const thisWeekServiceForNavigation = [...thisWeekServices].sort((a, b) => {
+    const aDate = a.createdAt ? Date.parse(a.createdAt) : NaN
+    const bDate = b.createdAt ? Date.parse(b.createdAt) : NaN
+    if (Number.isFinite(aDate) && Number.isFinite(bDate)) return bDate - aDate
+    return 0
+  })[0]
+  const hasFilledServiceForWeek = thisWeekServices.length > 0
+  const hasUnbankedServiceForWeek = thisWeekServices.some(
+    (service) =>
+      !(service.bankingProof || service.transactionStatus === 'success')
+  )
+  const serviceAwaitingBanking =
+    hasFilledServiceForWeek &&
+    hasUnbankedServiceForWeek &&
+    !isSelectedScopeManualBanking
+  const canViewCurrentWeekService = !!thisWeekServiceForNavigation?.id
+
+  const handleViewCurrentWeekService = () => {
+    if (!assessmentChurch || !thisWeekServiceForNavigation?.id) return
+    clickCard(assessmentChurch)
+    clickCard({
+      id: thisWeekServiceForNavigation.id,
+      __typename: 'ServiceRecord',
+    })
+    navigate('/bacenta/service-details')
   }
 
-  const assessmentData = getServiceGraphData(assessmentChurch, graphType) || []
+  const handleTrendBarClick = (point: {
+    id?: string
+    category?: string
+    week: number | null
+    year: number | null
+  }) => {
+    if (!point?.id || !selectedScope || !point.category) return
+
+    const isBussingPoint = point.category.includes('bussing')
+    const serviceDetailRoutes: Record<string, string> = {
+      Bacenta: '/bacenta/service-details',
+      Governorship: '/governorship/service-details',
+      Council: '/council/service-details',
+      Stream: '/stream/service-details',
+      Campus: '/campus/service-details',
+    }
+
+    const targetRoute = isBussingPoint
+      ? selectedScope.churchType === 'Bacenta'
+        ? '/bacenta/bussing-details'
+        : undefined
+      : serviceDetailRoutes[selectedScope.churchType]
+
+    if (!targetRoute) return
+
+    clickCard({
+      id: selectedScope.churchId,
+      __typename: selectedScope.churchType,
+      name: selectedScope.churchName,
+    })
+    clickCard({
+      id: point.id,
+      week: point.week,
+      year: point.year,
+      __typename: isBussingPoint ? 'BussingRecord' : 'ServiceRecord',
+    })
+    navigate(targetRoute)
+  }
+
+  const scopeVacationStatus = (
+    assessmentChurch as unknown as { vacationStatus?: string } | undefined
+  )?.vacationStatus
+  const isScopeOnVacation = scopeVacationStatus === 'Vacation'
+  const scopeRoleLabel = selectedScope
+    ? getRoleRelationLabel(selectedScope.authRole, selectedScope.roleName)
+    : ''
 
   return (
-    <>
-      <Container>
-        <Placeholder loading={!currentUser?.fullName} as="p">
-          <p className="mb-0">{`Welcome to`}</p>
-        </Placeholder>
-        <Placeholder loading={!currentUser?.fullName} as="h5">
-          <h5 className="font-weight-bold roboto">{`${currentUser?.fullName}'s Dashboard`}</h5>
-        </Placeholder>
-        <div className="card-button-row">
-          <Table>
-            <tbody>
-              <tr>
-                {userJobs ? (
-                  userJobs?.map((role: UserJobs, i: number) => (
-                    <td
-                      className="col-auto p-0"
-                      key={i}
-                      onClick={() => {
-                        clickCard(currentUser)
-                        setUserChurch(role.church[0])
-                        clickCard(role.church[0])
-                        navigate(role.link)
-                      }}
-                    >
-                      <RoleCard
-                        number={role.number}
-                        authRoles={role.authRoles}
-                        role={role.name as Role}
-                        loading={!userJobs}
-                      />
-                    </td>
-                  ))
-                ) : (
-                  <td className="col-auto pl-0">
-                    <RoleCard
-                      loading={!userJobs}
-                      number={''}
-                      authRoles=""
-                      role={'leaderFellowship'}
-                    />
-                  </td>
+    <div className="min-h-full bg-background">
+      <motion.div
+        variants={sectionStagger}
+        initial="hidden"
+        animate="show"
+        className="mx-auto max-w-6xl px-4 pt-4 pb-10 sm:px-6 md:pt-8 lg:px-10 lg:pt-10 lg:pb-14"
+      >
+        {/* ── Header band — full width above the grid ── */}
+        <motion.header
+          variants={fadeUp}
+          className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+        >
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {new Date().toLocaleDateString('en-GB', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              })}
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              {isLoading ? (
+                <Skeleton className="h-10 w-56 max-w-full" />
+              ) : (
+                <>{highlightName(greeting, firstName)}</>
+              )}
+            </h1>
+            {selectedScopeSummary ? (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <Badge
+                  variant="secondary"
+                  className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                >
+                  {selectedScope?.churchName}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
+                >
+                  {formatChurchLevel(selectedScope?.churchType)}
+                </Badge>
+                {scopeRoleLabel && (
+                  <Badge
+                    variant="outline"
+                    className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
+                  >
+                    {scopeRoleLabel}
+                  </Badge>
                 )}
-              </tr>
-            </tbody>
-          </Table>
-        </div>
-        <>
-          <Row className="mt-3">
-            <Col>
-              <StatDisplay
-                title="Avg Weekly Attendance"
-                loading={!assessmentData[0]}
-                statistic={getMonthlyStatAverage(assessmentData, 'attendance')}
-              />
-            </Col>
-            <Col>
-              <StatDisplay
-                title="Avg Weekly Income (GH₵)"
-                loading={!assessmentData[0]}
-                statistic={getMonthlyStatAverage(assessmentData, 'income')}
-              />
-            </Col>
-          </Row>
-          {!currentUser.noIncomeTracking ? (
-            <ChurchGraph
-              loading={!assessmentChurch}
-              stat1="attendance"
-              stat2="income"
-              income={true}
-              graphType={graphType}
-              church={assessmentChurch?.__typename.toLowerCase() || ''}
-              churchData={assessmentData}
-              secondaryTitle={`${assessmentChurch?.name} ${assessmentChurch?.__typename}`}
-            />
-          ) : (
-            <ChurchGraph
-              loading={!assessmentChurch}
-              stat1="attendance"
-              income={false}
-              graphType={graphType}
-              church={assessmentChurch?.__typename.toLowerCase() || ''}
-              churchData={assessmentData}
-              secondaryTitle={`${assessmentChurch?.name} ${assessmentChurch?.__typename}`}
-              stat2={null}
-            />
+                {isScopeOnVacation && (
+                  <Badge className="gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 dark:bg-warning/20">
+                    <Palmtree className="size-3" />
+                    On vacation
+                  </Badge>
+                )}
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {activeRoles
+                  ? 'Select a church in focus to view role context.'
+                  : 'No roles assigned yet.'}
+              </p>
+            )}
+          </div>
+          {roleChurchOptions.length > 0 && (
+            <div className="w-full shrink-0 sm:w-64">
+              <ChurchRoleScopePicker />
+            </div>
           )}
-        </>
-      </Container>
-    </>
+        </motion.header>
+
+        {/* ── Tip of the week — mobile only, right after the greeting ── */}
+        <motion.div variants={fadeUp} className="mt-6 lg:hidden">
+          <WeeklyTipCard
+            churchId={selectedScope?.churchId}
+            authRole={selectedScope?.authRole}
+          />
+        </motion.div>
+
+        {/* ── Canonical 2-column grid: primary (1fr) + supporting (360px) on lg+ ── */}
+        <motion.div
+          variants={sectionStagger}
+          className="mt-8 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start"
+        >
+          {/* ── Primary column ── */}
+          <motion.div variants={fadeUp} className="min-w-0 space-y-6">
+            {/* ── Metrics — asymmetric: primary stat + two secondaries ── */}
+            <section className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="flex items-stretch">
+                <div
+                  className={cn(
+                    'w-1 shrink-0 rounded-l-2xl',
+                    !hasBussingAttendance && !isLoading && 'opacity-30'
+                  )}
+                  style={{ background: 'hsl(var(--brand))' }}
+                />
+                <div className="flex-1 px-6 py-5">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Avg. weekly bussing attendance
+                  </p>
+                  {isLoading ? (
+                    <Skeleton className="mt-3 h-12 w-32" />
+                  ) : (
+                    <p
+                      className={cn(
+                        'mt-1.5 font-semibold tracking-tight',
+                        hasBussingAttendance
+                          ? 'text-5xl tracking-tighter tabular-nums text-foreground'
+                          : 'text-2xl text-muted-foreground/40'
+                      )}
+                    >
+                      {hasBussingAttendance
+                        ? fmtBussingAttendance
+                        : 'No recent bussing'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+              <div className="grid grid-cols-2 divide-x divide-border">
+                <div className="px-6 py-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Avg. attendance
+                  </p>
+                  {isLoading ? (
+                    <Skeleton className="mt-2 h-7 w-20" />
+                  ) : (
+                    <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums text-foreground">
+                      {fmtAttendance}
+                    </p>
+                  )}
+                </div>
+                <div className="px-6 py-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Avg. income
+                  </p>
+                  {isLoading ? (
+                    <Skeleton className="mt-2 h-7 w-24" />
+                  ) : (
+                    <p
+                      className={cn(
+                        'mt-1 text-2xl font-semibold tracking-tight tabular-nums',
+                        !incomeTracked
+                          ? 'text-muted-foreground/40'
+                          : 'text-foreground'
+                      )}
+                    >
+                      {incomeTracked ? fmtIncome : 'Not tracked'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* ── Bacenta weekly tasks ── */}
+            {assessmentChurch?.__typename === 'Bacenta' && (
+              <BacentaWeeklyTasks
+                vacationStatus={scopeVacationStatus}
+                services={
+                  (
+                    assessmentChurch as unknown as {
+                      services?: Array<{
+                        week?: number | string
+                        serviceDate?: { date?: string } | null
+                      }>
+                    }
+                  ).services ?? []
+                }
+                bussing={
+                  (
+                    assessmentChurch as unknown as {
+                      bussing?: Array<{
+                        week?: number | string
+                        serviceDate?: { date?: string } | null
+                      }>
+                    }
+                  ).bussing ?? []
+                }
+                serviceMeetingDay={
+                  (
+                    assessmentChurch as unknown as {
+                      meetingDay?: { day?: string; dayNumber?: number }
+                    }
+                  ).meetingDay
+                }
+                bussingMeetingDay={
+                  (
+                    assessmentChurch as unknown as {
+                      governorship?: {
+                        council?: {
+                          stream?: {
+                            meetingDay?: { day?: string; dayNumber?: number }
+                          }
+                        }
+                      }
+                    }
+                  ).governorship?.council?.stream?.meetingDay
+                }
+                onRecordService={() => setRecordDialogOpen(true)}
+                onViewService={handleViewCurrentWeekService}
+                canViewService={canViewCurrentWeekService}
+                onRecordBussing={() => navigate('/arrivals')}
+                serviceAwaitingBanking={serviceAwaitingBanking}
+              />
+            )}
+
+            {/* ── Trend chart ── */}
+            <section className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-base font-medium text-foreground">
+                    Weekly trend
+                  </h2>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {assessmentChurch?.name
+                      ? `${assessmentChurch.name} · ${assessmentChurch.__typename}`
+                      : 'Across your churches'}
+                  </p>
+
+                  {canToggleTrendMode && (
+                    <div
+                      className="mt-3 inline-flex w-full max-w-sm rounded-lg border border-border p-1 sm:w-auto"
+                      role="group"
+                      aria-label="Trend data mode"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setTrendMode('weekday')}
+                        aria-pressed={activeTrendMode === 'weekday'}
+                        className={cn(
+                          'min-h-11 flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:min-h-11 sm:flex-none',
+                          activeTrendMode === 'weekday'
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        Weekday service
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTrendMode('bussing')}
+                        aria-pressed={activeTrendMode === 'bussing'}
+                        className={cn(
+                          'min-h-11 flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:min-h-11 sm:flex-none',
+                          activeTrendMode === 'bussing'
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        Sunday bussing
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:justify-end">
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      className="size-1.5 rounded-full"
+                      style={{
+                        backgroundColor:
+                          activeTrendMode === 'bussing'
+                            ? 'hsl(var(--destructive))'
+                            : 'hsl(var(--arrivals))',
+                      }}
+                    />
+                    {activeTrendMode === 'bussing'
+                      ? 'Bussing'
+                      : 'Weekday attendance'}
+                  </span>
+                  {trendIncomeTracked && (
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className="size-1.5 rounded-full"
+                        style={{ backgroundColor: 'hsl(var(--success))' }}
+                      />
+                      Income
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-6">
+                <TrendSpark
+                  data={trendData}
+                  incomeTracked={trendIncomeTracked}
+                  mode={activeTrendMode}
+                  onBarClick={handleTrendBarClick}
+                />
+              </div>
+            </section>
+          </motion.div>
+
+          {/* ── Supporting column ── */}
+          <motion.aside
+            variants={fadeUp}
+            className="space-y-4 lg:sticky lg:top-6"
+          >
+            {/* AI-generated tip of the week — desktop-only inline aside card.
+                Mobile version renders above the grid, right after the greeting. */}
+            <div className="hidden lg:block">
+              <WeeklyTipCard
+                churchId={selectedScope?.churchId}
+                authRole={selectedScope?.authRole}
+              />
+            </div>
+
+            {/* Quick actions: 2x2 grid on mobile, list rows on lg */}
+            <section className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="border-b border-border px-4 py-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Quick actions
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-4 lg:grid-cols-1 lg:gap-0 lg:divide-y lg:divide-border lg:p-0">
+                {quickActions.map((action) => {
+                  const Icon = action.icon
+                  return (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={action.onPress}
+                      className={cn(
+                        'group flex min-h-11 items-center gap-3 text-left transition-colors',
+                        // mobile: card tile
+                        'flex-col items-start rounded-xl border border-border bg-card p-4 hover:bg-accent active:translate-y-px active:scale-[0.98]',
+                        // desktop: list row
+                        'lg:flex-row lg:items-center lg:rounded-none lg:border-0 lg:bg-transparent lg:px-4 lg:py-3 lg:hover:bg-accent/60 lg:active:scale-100'
+                      )}
+                    >
+                      <div
+                        className="flex size-9 shrink-0 items-center justify-center rounded-xl"
+                        style={{
+                          background: `color-mix(in srgb, ${action.accent} 12%, transparent)`,
+                          color: action.accent,
+                        }}
+                      >
+                        <Icon className="size-4" stroke={2} />
+                      </div>
+                      <span className="flex-1 text-sm font-medium leading-tight text-foreground">
+                        {action.label}
+                      </span>
+                      <ChevronRight className="hidden size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 lg:block" />
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+
+            {/* Current focus card — shows scope detail with visual identity */}
+            {selectedScope && (
+              <section className="overflow-hidden rounded-2xl border border-border bg-card">
+                <div className="border-b border-border px-4 py-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Current focus
+                  </h3>
+                </div>
+                <div className="space-y-3 p-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Church</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
+                      {selectedScope.churchName}
+                    </p>
+                  </div>
+                  <Separator />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Level</p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
+                        {formatChurchLevel(selectedScope.churchType)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Role</p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
+                        {scopeRoleLabel || '—'}
+                      </p>
+                    </div>
+                  </div>
+                  {(isScopeOnVacation || dashboardCurrency) && (
+                    <>
+                      <Separator />
+                      <div className="flex flex-wrap gap-1.5">
+                        {dashboardCurrency && (
+                          <Badge
+                            variant="outline"
+                            className="rounded-full px-2.5 py-0.5 text-xs font-normal"
+                          >
+                            {dashboardCurrency}
+                          </Badge>
+                        )}
+                        {!incomeTracked && (
+                          <Badge
+                            variant="outline"
+                            className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
+                          >
+                            No income tracking
+                          </Badge>
+                        )}
+                        {isScopeOnVacation && (
+                          <Badge className="gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 dark:bg-warning/20">
+                            <Palmtree className="size-3" />
+                            On vacation
+                          </Badge>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </section>
+            )}
+          </motion.aside>
+        </motion.div>
+      </motion.div>
+
+      <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Record this week&apos;s service</DialogTitle>
+            <DialogDescription>
+              Did the service take place this week?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                if (!selectedScope) return
+                clickCard({
+                  id: selectedScope.churchId,
+                  name: selectedScope.churchName,
+                  __typename: selectedScope.churchType,
+                })
+                setRecordDialogOpen(false)
+                navigate('/bacenta/record-service')
+              }}
+              className="group flex min-h-[64px] w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99]"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-members/10 text-members">
+                <PencilLine className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  Record Service
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  We met this week — fill the service form
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (!selectedScope) return
+                clickCard({
+                  id: selectedScope.churchId,
+                  name: selectedScope.churchName,
+                  __typename: selectedScope.churchType,
+                })
+                setRecordDialogOpen(false)
+                navigate('/services/bacenta/no-service')
+              }}
+              className="group flex min-h-[64px] w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99]"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                <XCircle className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  I Cancelled My Service
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  No service this week — give a reason
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
+}
+
+interface BacentaWeeklyTasksProps {
+  vacationStatus?: string
+  services: Array<{ week?: number | string; serviceDate?: { date?: string } | null }>
+  bussing: Array<{ week?: number | string; serviceDate?: { date?: string } | null }>
+  serviceMeetingDay?: { day?: string; dayNumber?: number }
+  bussingMeetingDay?: { day?: string; dayNumber?: number }
+  onRecordService: () => void
+  onViewService?: () => void
+  canViewService?: boolean
+  onRecordBussing: () => void
+  serviceAwaitingBanking?: boolean
+}
+
+const BacentaWeeklyTasks = ({
+  vacationStatus,
+  services,
+  bussing,
+  serviceMeetingDay,
+  bussingMeetingDay,
+  onRecordService,
+  onViewService,
+  canViewService = false,
+  onRecordBussing,
+  serviceAwaitingBanking = false,
+}: BacentaWeeklyTasksProps) => {
+  const currentWeek = getWeekNumber()
+  const currentISOWeekYear = getISOWeekYear()
+  const onVacation = vacationStatus === 'Vacation'
+  const matchesCurrentWeek = (
+    w?: number | string,
+    date?: string | null
+  ) => {
+    if (w === undefined || w === null || Number(w) !== currentWeek) return false
+    if (date) return getISOWeekYear(date) === currentISOWeekYear
+    return true
+  }
+  const serviceDone = services.some((s) =>
+    matchesCurrentWeek(s.week, s.serviceDate?.date)
+  )
+  const bussingDone = bussing.some((b) =>
+    matchesCurrentWeek(b.week, b.serviceDate?.date)
+  )
+  const serviceDueNow = hasMeetingDayStarted(serviceMeetingDay?.dayNumber)
+  const bussingDueNow = hasMeetingDayStarted(bussingMeetingDay?.dayNumber)
+
+  const serviceUpcoming = !onVacation && !serviceDone && !serviceDueNow
+  const bussingUpcoming = !onVacation && !bussingDone && !bussingDueNow
+  const serviceAction = serviceDone
+    ? canViewService
+      ? onViewService || onRecordService
+      : onRecordService
+    : onRecordService
+  const serviceActionDisabled = serviceDone && !canViewService
+
+  return (
+    <section>
+      <div className="flex items-end justify-between mb-3">
+        <div>
+          <h2 className="text-sm font-medium text-foreground">
+            Week {currentWeek}
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {onVacation
+              ? 'Bacenta is on vacation. No records required.'
+              : `Service on ${
+                  serviceMeetingDay?.day || 'Bacenta meeting day'
+                }, bussing on ${
+                  bussingMeetingDay?.day || 'Stream meeting day'
+                }.`}
+          </p>
+        </div>
+        {onVacation && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-3 py-1 text-xs font-medium text-warning dark:bg-warning/20">
+            <Palmtree className="size-3.5" />
+            On vacation
+          </span>
+        )}
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <WeeklyTaskCard
+          icon={ClipboardCheck}
+          label="Record service"
+          done={serviceDone}
+          awaitingBanking={serviceAwaitingBanking}
+          upcoming={serviceUpcoming}
+          waived={onVacation}
+          actionLabel={
+            serviceDone
+              ? canViewService
+                ? 'View service'
+                : 'Recorded'
+              : 'Record now'
+          }
+          onAction={serviceAction}
+          actionDisabled={serviceActionDisabled}
+        />
+        <WeeklyTaskCard
+          icon={Bus}
+          label="Record bussing"
+          done={bussingDone}
+          upcoming={bussingUpcoming}
+          waived={onVacation}
+          actionLabel={bussingDone ? 'View bussing' : 'Record now'}
+          onAction={onRecordBussing}
+        />
+      </div>
+    </section>
+  )
+}
+
+interface WeeklyTaskCardProps {
+  icon: LucideIcon
+  label: string
+  done: boolean
+  awaitingBanking?: boolean
+  upcoming: boolean
+  waived: boolean
+  actionLabel: string
+  onAction: () => void
+  actionDisabled?: boolean
+}
+
+const WeeklyTaskCard = ({
+  icon: Icon,
+  label,
+  done,
+  awaitingBanking = false,
+  upcoming,
+  waived,
+  actionLabel,
+  onAction,
+  actionDisabled = false,
+}: WeeklyTaskCardProps) => {
+  const status = waived
+    ? 'Waived'
+    : awaitingBanking
+    ? 'Bank pending'
+    : done
+    ? 'Done'
+    : upcoming
+    ? 'Upcoming'
+    : 'Due'
+  const statusClass = waived
+    ? 'bg-muted text-muted-foreground'
+    : awaitingBanking
+    ? 'bg-warning/22 text-foreground ring-1 ring-warning/45'
+    : done
+    ? 'bg-success/15 text-success dark:bg-success/20'
+    : upcoming
+    ? 'bg-muted text-muted-foreground'
+    : 'bg-destructive/10 text-destructive dark:bg-destructive/20'
+
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-4 rounded-2xl border p-4 transition-colors',
+        waived
+          ? 'border-border bg-muted/40'
+          : awaitingBanking
+          ? 'border-warning/45 bg-warning/12'
+          : done
+          ? 'border-success/30 bg-success/5'
+          : upcoming
+          ? 'border-border bg-muted/30'
+          : 'border-border bg-card'
+      )}
+    >
+      <div
+        className={cn(
+          'flex size-10 shrink-0 items-center justify-center rounded-xl',
+          awaitingBanking
+            ? 'border border-warning/45 bg-warning/22 text-foreground'
+            : done && !waived
+            ? 'bg-success text-white'
+            : 'bg-muted text-muted-foreground'
+        )}
+      >
+        {done && !waived && !awaitingBanking ? (
+          <Check className="size-5" />
+        ) : (
+          <Icon className="size-5" />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <span
+          className={cn(
+            'mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider',
+            statusClass
+          )}
+        >
+          {status}
+        </span>
+      </div>
+      {!waived && (
+        <Button
+          size="sm"
+          disabled={actionDisabled}
+          variant={done ? 'outline' : 'default'}
+          onClick={onAction}
+          className={cn(
+            'shrink-0',
+            done
+              ? 'border-border bg-background text-foreground hover:bg-accent'
+              : upcoming
+              ? 'bg-brand/50 text-foreground hover:bg-brand/60 dark:bg-brand/20 dark:hover:bg-brand/30'
+              : 'bg-brand text-brand-foreground hover:bg-brand/90'
+          )}
+        >
+          {upcoming ? 'Not due yet' : actionLabel}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+const UserDashboard = () => {
+  const { currentUser } = useContext(MemberContext)
+  // Counter-only users have a single operational responsibility (counting
+  // arrivals at the centre). Render a dashboard scoped to that — no record
+  // service / add member / bank service surfaces.
+  if (isArrivalsCounterOnly(currentUser?.roles)) {
+    return <ArrivalsCounterDashboard />
+  }
+  // Teller-only users only confirm manual bankings handed in by
+  // governorships. Their dashboard greys out when the stream isn't on
+  // manual banking — they have no other operational responsibility.
+  if (isTellerStreamOnly(currentUser?.roles)) {
+    return <StreamTellerDashboard />
+  }
+  return <FullUserDashboard />
 }
 
 export default UserDashboard

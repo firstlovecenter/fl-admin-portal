@@ -5,20 +5,28 @@ import {
   getServantAndChurch as getServantAndChurchCypher,
 } from '../services/service-cypher'
 import { Context } from '../utils/neo4j-types'
-import { Member } from '../utils/types'
 import { permitLeaderAdmin } from '../permissions'
 import { makeServantCypher } from '../directory/utils'
+import { assertServiceDateInCurrentWeek } from '../utils/date-utils'
 import recordService from './service-cypher'
 
 const errorMessage = require('../texts.json').error
 
+type RecordServiceNoIncomeArgs = {
+  churchId: string
+  serviceDate: string
+  attendance: number
+  familyPicture: string
+}
+
 const serviceNoIncomeMutations = {
   RecordServiceNoIncome: async (
     object: any,
-    args: Member,
+    args: RecordServiceNoIncomeArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+    assertServiceDateInCurrentWeek(args.serviceDate)
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(

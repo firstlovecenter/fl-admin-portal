@@ -1,10 +1,10 @@
 import React from 'react'
-import { Card } from 'react-bootstrap'
+import { Card, CardContent } from 'components/ui/card'
 
 const NoDataComponent = ({ text }: { text: string }) => {
   return (
     <Card className="mt-2 py-3">
-      <Card.Body>{text}</Card.Body>
+      <CardContent className="p-4">{text}</CardContent>
     </Card>
   )
 }

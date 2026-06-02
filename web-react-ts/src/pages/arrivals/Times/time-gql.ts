@@ -27,7 +27,7 @@ export const SET_STREAM_ARRIVAL_TIMES = gql`
 
 export const GET_ARRIVAL_TIMES = gql`
   query getStreamArrivalTimes($id: ID!) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       name
       mobilisationStartTime

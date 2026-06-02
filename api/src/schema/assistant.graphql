@@ -1,0 +1,173 @@
+# AI Assistant — Phase 1 knowledge-base + weekly tip + persistent chat.
+#
+# Writes (book / verse / tip ingestion, chat persistence) happen via custom
+# resolvers + scripts/Lambdas. Root CRUD on these labels is suppressed via
+# `@mutation(operations: [])` + `@query(read: false, aggregate: false)` so
+# @neo4j/graphql does NOT auto-generate harvest-able root queries. The only
+# public read/write surface is the custom resolvers below, each of which
+# verifies the caller's `$jwt.allowedChurchIds`.
+#
+# `churchId` is denormalized onto WeeklyTip and ChatSession so future
+# authorization gates can filter on a scalar without traversing an
+# interface relationship through `Church`.
+
+type Book
+  @node
+  @mutation(operations: [])
+  @query(read: false, aggregate: false) {
+  id: ID!
+  title: String!
+  author: String!
+  subtitle: String
+  publishedYear: Int
+}
+
+type BookChapter
+  @node
+  @mutation(operations: [])
+  @query(read: false, aggregate: false) {
+  id: ID!
+  title: String!
+  order: Int!
+}
+
+type BookPassage
+  @node
+  @mutation(operations: [])
+  @query(read: false, aggregate: false) {
+  id: ID!
+  text: String!
+  citationLabel: String!
+  order: Int!
+}
+
+type Verse
+  @node
+  @mutation(operations: [])
+  @query(read: false, aggregate: false) {
+  id: ID!
+  book: String!
+  chapter: Int!
+  verse: Int!
+  translation: String!
+  text: String!
+}
+
+type WeeklyTip
+  @node
+  @mutation(operations: [])
+  @query(read: false, aggregate: false) {
+  id: ID!
+  churchId: String!
+  week: Int!
+  year: Int!
+  # `body` is a single short sentence — the actionable nudge for the leader.
+  body: String!
+  # Short snippets the Lambda picks from the cited verse / passage so the FE
+  # can render quote-card style without showing the full verse or passage.
+  # Both must be direct substrings of the relevant Verse.text / BookPassage.text.
+  scriptureSnippet: String
+  passageSnippet: String
+  # Single-sentence prayer encouragement — mandatory for every tip.
+  prayerPrompt: String
+  generatedAt: DateTime!
+  scripture: Verse
+    @relationship(type: "CITES_SCRIPTURE", direction: OUT)
+  quotedPassage: BookPassage
+    @relationship(type: "QUOTES_PASSAGE", direction: OUT)
+  recommendedBook: Book
+    @relationship(type: "RECOMMENDS_BOOK", direction: OUT)
+  recommendedChapter: BookChapter
+    @relationship(type: "RECOMMENDS_CHAPTER", direction: OUT)
+}
+
+# ---------------------------------------------------------------------------
+# Chat persistence — a ChatSession represents one conversation thread for
+# one leader at one church. Messages within the session are ordered by
+# `createdAt`. The session's `title` is auto-summarised by a parallel Claude
+# call on the first user turn (~6 words); subsequent turns leave the title
+# alone unless the FE explicitly renames it (out of Phase 1 scope).
+# `sendChatMessage` replaces the older fire-and-forget `askAssistant` —
+# the FE should call only the persistent mutation going forward.
+# ---------------------------------------------------------------------------
+
+type ChatSession
+  @node
+  @mutation(operations: [])
+  @query(read: false, aggregate: false) {
+  id: ID!
+  churchId: String!
+  leaderId: String!
+  title: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ChatMessage
+  @node
+  @mutation(operations: [])
+  @query(read: false, aggregate: false) {
+  id: ID!
+  role: String!
+  text: String!
+  createdAt: DateTime!
+}
+
+# Compact list-item shape for the FE sidebar. `preview` is the first ~80
+# characters of the most recent assistant message; the FE renders it
+# beneath the title.
+type ChatSessionPreview {
+  id: ID!
+  title: String!
+  churchId: String!
+  updatedAt: DateTime!
+  preview: String!
+}
+
+type ChatSessionMessageView {
+  id: ID!
+  role: String!
+  text: String!
+  createdAt: DateTime!
+  # Human-readable citation labels (e.g. "Daddy writes in *Church Growth* —
+  # Ch. 3, passage 5"). Stored as a string array on the node since Neo4j
+  # property types don't support nested objects.
+  citations: [String!]!
+}
+
+type ChatSessionDetail {
+  id: ID!
+  title: String!
+  churchId: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  messages: [ChatSessionMessageView!]!
+}
+
+input SendChatMessageInput {
+  # If provided, append to this existing session. Otherwise start a new one.
+  sessionId: ID
+  churchId: ID!
+  text: String!
+}
+
+type SendChatMessageResponse {
+  sessionId: ID!
+  title: String!
+  message: ChatSessionMessageView!
+}
+
+extend type Query {
+  weeklyTipForChurch(churchId: ID!): WeeklyTip
+  # Recent chat sessions for the caller (their `:LEADS` church scope).
+  myChatSessions(churchId: ID!, limit: Int = 30): [ChatSessionPreview!]!
+  chatSessionById(sessionId: ID!): ChatSessionDetail
+}
+
+extend type Mutation {
+  # Sends a chat turn. Creates a session on the first call (no sessionId)
+  # and parallel-summarises a title. Subsequent calls pass the sessionId
+  # to append to the existing conversation.
+  sendChatMessage(input: SendChatMessageInput!): SendChatMessageResponse!
+  deleteChatSession(sessionId: ID!): Boolean!
+}

@@ -10,7 +10,6 @@ import {
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { Col, Container, Row } from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
 import {
@@ -18,7 +17,7 @@ import {
   parseForeignCurrency,
   throwToSentry,
 } from 'global-utils'
-import { getMondayThisWeek } from 'jd-date-utils'
+import { getMondayThisWeek } from 'lib/date-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Church, ChurchLevel } from 'global-types'
 import { MutationFunction } from '@apollo/client'
@@ -54,16 +53,19 @@ const SpecialServiceForm = ({
   church,
   churchId,
   churchType,
-  event,
   RecordServiceMutation,
-  recordType,
 }: ServiceFormProps) => {
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
 
+  const today = new Date()
+  const mondayThisWeek = getMondayThisWeek(today)
+  const todayIso = today.toISOString().slice(0, 10)
+  const mondayThisWeekIso = mondayThisWeek.toISOString().slice(0, 10)
+
   const initialValues: FormOptions = {
-    serviceDate: new Date().toISOString().slice(0, 10),
+    serviceDate: todayIso,
     cediIncome: '',
     foreignCurrency: '',
     numberOfTithers: '',
@@ -75,23 +77,14 @@ const SpecialServiceForm = ({
     serviceDescription: '',
   }
 
-  const todayStartOfDay = new Date()
-  const lastWeek = new Date()
-  lastWeek.setDate(lastWeek.getDate() - 7)
-
   const validationSchema = Yup.object({
     serviceName: Yup.string().required('Service name is a required field'),
     serviceDescription: Yup.string().required(
       'Service description is a required field'
     ),
     serviceDate: Yup.date()
-      .max(new Date(), 'Service could not possibly have happened after today')
-      .min(
-        currentUser.roles.includes('fishers')
-          ? lastWeek
-          : getMondayThisWeek(todayStartOfDay),
-        'You can only fill forms for this week'
-      )
+      .max(today, 'Service could not possibly have happened after today')
+      .min(mondayThisWeek, 'You can only fill forms for this week')
       .required('Date is a required field'),
     cediIncome: Yup.number()
       .typeError('Please enter a valid number')
@@ -128,27 +121,26 @@ const SpecialServiceForm = ({
       throwToSentry('You cannot choose the same treasurer twice!')
       setSubmitting(false)
       return
-    } else {
-      try {
-        const res = await RecordServiceMutation({
-          variables: {
-            ...values,
-            churchId,
-            attendance: parseInt(values.attendance),
-            income: parseFloat(values.cediIncome),
-            foreignCurrency: parseForeignCurrency(values.foreignCurrency),
-            numberOfTithers: parseInt(values.numberOfTithers),
-          },
-        })
+    }
+    try {
+      const res = await RecordServiceMutation({
+        variables: {
+          ...values,
+          churchId,
+          attendance: parseInt(values.attendance, 10),
+          income: parseFloat(values.cediIncome),
+          foreignCurrency: parseForeignCurrency(values.foreignCurrency),
+          numberOfTithers: parseInt(values.numberOfTithers, 10),
+        },
+      })
 
-        clickCard(res.data?.RecordSpecialService)
-        navigate(`/${churchType.toLowerCase()}/service-details`)
-      } catch (error) {
-        setSubmitting(false)
-        throwToSentry('', error)
-      } finally {
-        setSubmitting(false)
-      }
+      clickCard(res.data?.RecordSpecialService)
+      navigate(`/${churchType.toLowerCase()}/service-details`)
+    } catch (error) {
+      setSubmitting(false)
+      throwToSentry('', error)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -160,123 +152,112 @@ const SpecialServiceForm = ({
       validateOnMount
     >
       {(formik) => (
-        <Container>
+        <div className="mx-auto w-full max-w-screen-md px-4">
           <HeadingPrimary>Record Your Special Service Details</HeadingPrimary>
-          <h5 className="text-secondary">{`${church?.name} ${church?.__typename}`}</h5>
+          <h5 className="text-sm text-muted-foreground">{`${church?.name} ${church?.__typename}`}</h5>
 
           <Form className="form-group">
-            <Row className="row-cols-1 row-cols-md-2">
-              {/* <!-- Service Form--> */}
-              <Col className="mb-2">
-                <div className="form-row d-flex justify-content-center">
-                  <Col>
-                    <hr />
-                    <Input
-                      name="serviceName"
-                      label="Service Name*"
-                      placeholder="e.g. Tsalach Night"
-                    />
-                    <Textarea
-                      name="serviceDescription"
-                      label="Service Description*"
-                      placeholder="eg. It was a watchnight service for the year 2023"
-                      rows={3}
-                    />
-                    <hr />
-                    <small className="form-text label">
-                      Date of Service*
-                      <i className="text-secondary">(Day/Month/Year)</i>
-                    </small>
-                    <Input
-                      name="serviceDate"
-                      type="date"
-                      placeholder="dd/mm/yyyy"
-                      aria-describedby="dateofservice"
-                    />
-                    <Input name="attendance" label="Attendance*" />
-                    <Input
-                      name="cediIncome"
-                      label={`Income (in ${currentUser.currency})*`}
-                    />
-                    <Textarea
-                      name="foreignCurrency"
-                      label="Foreign Currency (if any) (Optional)"
-                      rows={2}
-                    />
-                    <Input name="numberOfTithers" label="Number of Tithers*" />
-                    <small className="label">Treasurers (minimum of 2)</small>
-                    <FieldArray name="treasurers">
-                      {(fieldArrayProps: FieldArrayRenderProps) => {
-                        const { push, remove, form } = fieldArrayProps
-                        const { values } = form
-                        const { treasurers }: { treasurers: string[] } = values
+            <div className="mb-2 space-y-3">
+              <div className="form-row flex flex-col gap-3">
+                <hr className="border-border" />
+                <Input
+                  name="serviceName"
+                  label="Service Name*"
+                  placeholder="e.g. Tsalach Night"
+                />
+                <Textarea
+                  name="serviceDescription"
+                  label="Service Description*"
+                  placeholder="eg. It was a watchnight service for the year 2023"
+                  rows={3}
+                />
+                <hr className="border-border" />
+                <small className="form-text label">
+                  Date of Service*
+                  <i className="text-muted-foreground">(Day/Month/Year)</i>
+                </small>
+                <Input
+                  name="serviceDate"
+                  type="date"
+                  placeholder="dd/mm/yyyy"
+                  aria-describedby="dateofservice"
+                  min={mondayThisWeekIso}
+                  max={todayIso}
+                />
+                <Input name="attendance" label="Attendance*" />
+                <Input
+                  name="cediIncome"
+                  label={`Income (in ${currentUser.currency})*`}
+                />
+                <Textarea
+                  name="foreignCurrency"
+                  label="Foreign Currency (if any) (Optional)"
+                  rows={2}
+                />
+                <Input name="numberOfTithers" label="Number of Tithers*" />
+                <small className="label">Treasurers (minimum of 2)</small>
+                <FieldArray name="treasurers">
+                  {(fieldArrayProps: FieldArrayRenderProps) => {
+                    const { push, remove, form } = fieldArrayProps
+                    const { values } = form
+                    const { treasurers }: { treasurers: string[] } = values
 
-                        return (
-                          <>
-                            {treasurers.map((treasurer, index) => (
-                              <Row key={index} className="form-row">
-                                <Col>
-                                  <SearchMember
-                                    name={`treasurers[${index}]`}
-                                    placeholder="Start typing"
-                                    setFieldValue={formik.setFieldValue}
-                                    creativeArts={[
-                                      'CreativeArts',
-                                      'Ministry',
-                                      'HubCouncil',
-                                      'Hub',
-                                    ].includes(churchType)}
-                                    aria-describedby="Member List"
-                                    error={
-                                      !Array.isArray(formik.errors.treasurers)
-                                        ? formik.errors.treasurers
-                                        : formik.errors.treasurers &&
-                                          formik.errors.treasurers[index]
-                                    }
-                                  />
-                                </Col>
+                    return (
+                      <>
+                        {treasurers.map((treasurer, index) => (
+                          <div key={index} className="form-row flex gap-2">
+                            <div className="flex-1">
+                              <SearchMember
+                                name={`treasurers[${index}]`}
+                                placeholder="Start typing"
+                                setFieldValue={formik.setFieldValue}
+                                aria-describedby="Member List"
+                                error={
+                                  !Array.isArray(formik.errors.treasurers)
+                                    ? formik.errors.treasurers
+                                    : formik.errors.treasurers &&
+                                      formik.errors.treasurers[index]
+                                }
+                              />
+                            </div>
 
-                                <Col className="col-auto d-flex">
-                                  <PlusSign onClick={() => push('')} />
-                                  {index > 0 && (
-                                    <MinusSign onClick={() => remove(index)} />
-                                  )}
-                                </Col>
-                              </Row>
-                            ))}
-                          </>
-                        )
-                      }}
-                    </FieldArray>
-                    <Col className="my-2 mt-2">
-                      <small>Upload Treasurer Selfie*</small>
-                      <ImageUpload
-                        name="treasurerSelfie"
-                        placeholder="Choose"
-                        setFieldValue={formik.setFieldValue}
-                        aria-describedby="ImageUpload"
-                      />
-                    </Col>
-                    <Col className="my-2">
-                      <small className="mb-3">
-                        Upload Your Family Picture*
-                      </small>
-                      <ImageUpload
-                        name="familyPicture"
-                        placeholder="Choose"
-                        setFieldValue={formik.setFieldValue}
-                        aria-describedby="UploadfamilyPicture"
-                      />
-                    </Col>
-                    <div className="d-flex justify-content-center mt-3">
-                      <SubmitButton formik={formik} />
-                    </div>
-                  </Col>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <PlusSign onClick={() => push('')} />
+                              {index > 0 && (
+                                <MinusSign onClick={() => remove(index)} />
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )
+                  }}
+                </FieldArray>
+                <div className="my-2 mt-2">
+                  <small>Upload Treasurer Selfie*</small>
+                  <ImageUpload
+                    name="treasurerSelfie"
+                    placeholder="Choose"
+                    setFieldValue={formik.setFieldValue}
+                    aria-describedby="ImageUpload"
+                  />
                 </div>
-              </Col>
-            </Row>
+                <div className="my-2">
+                  <small className="mb-3">Upload Your Family Picture*</small>
+                  <ImageUpload
+                    name="familyPicture"
+                    placeholder="Choose"
+                    setFieldValue={formik.setFieldValue}
+                    aria-describedby="UploadfamilyPicture"
+                  />
+                </div>
+                <div className="mt-3 flex justify-center">
+                  <SubmitButton formik={formik} />
+                </div>
+              </div>
+            </div>
           </Form>
-        </Container>
+        </div>
       )}
     </Formik>
   )

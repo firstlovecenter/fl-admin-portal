@@ -12,14 +12,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_STREAM_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -28,16 +20,20 @@ import Input from 'components/formik/Input'
 import SearchMember from 'components/formik/SearchMember'
 import SearchCouncil from 'components/formik/SearchCouncil'
 import { FormikInitialValues } from 'components/formik/formik-types'
-import { Council, Campus, VacationStatusOptions, Ministry } from 'global-types'
+import { Council, Campus, VacationStatusOptions } from 'global-types'
 import NoDataComponent from 'pages/arrivals/CompNoData'
-import { DISPLAY_STREAM, DISPLAY_CAMPUS } from '../display/ReadQueries'
 import Select from 'components/formik/Select'
-import {
-  MOVE_COUNCIL_TO_STREAM,
-  MOVE_MINISTRY_TO_STREAM,
-} from '../update/UpdateMutations'
 import BtnSubmitText from 'components/formik/BtnSubmitText'
-import SearchMinistry from 'components/formik/SearchMinistry'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { DISPLAY_STREAM, DISPLAY_CAMPUS } from '../display/ReadQueries'
+import { MOVE_COUNCIL_TO_STREAM } from '../update/UpdateMutations'
 
 export interface StreamFormValues extends FormikInitialValues {
   campus?: Campus
@@ -58,8 +54,6 @@ export interface StreamFormValues extends FormikInitialValues {
   vacationStatus: VacationStatusOptions
   councils?: Council[]
   council?: Council
-  ministry?: Ministry
-  ministries?: Ministry[]
 }
 
 type StreamFormProps = {
@@ -80,7 +74,6 @@ const StreamForm = ({
 }: StreamFormProps) => {
   const { clickCard, streamId } = useContext(ChurchContext)
   const [councilModal, setCouncilModal] = useState(false)
-  const [ministryModal, setMinistryModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
   const navigate = useNavigate()
@@ -93,10 +86,6 @@ const StreamForm = ({
   const [MoveCouncilToStream] = useMutation(MOVE_COUNCIL_TO_STREAM, {
     refetchQueries: [{ query: DISPLAY_STREAM, variables: { id: streamId } }],
   })
-  const [MoveMinistryToStream] = useMutation(MOVE_MINISTRY_TO_STREAM, {
-    refetchQueries: [{ query: DISPLAY_STREAM, variables: { id: streamId } }],
-  })
-
   const validationSchema = Yup.object({
     name: Yup.string().required(`Stream Name is a required field`),
     leaderId: Yup.string().required(
@@ -109,22 +98,22 @@ const StreamForm = ({
   })
 
   return (
-    <Container>
+    <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{initialValues.name + ' Stream'}</HeadingSecondary>
-      <ButtonGroup className="mt-3">
+      <HeadingSecondary>{`${initialValues.name} Stream`}</HeadingSecondary>
+      <div className="mt-3 inline-flex gap-2">
         {!newStream && (
           <>
             <Button onClick={() => setCouncilModal(true)}>Add Council</Button>
-            <Button variant="warning" onClick={() => setMinistryModal(true)}>
-              Add Ministry
-            </Button>
-            <Button variant="success" onClick={() => setCloseDown(true)}>
-              {`Close Down Stream`}
+            <Button
+              className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+              onClick={() => setCloseDown(true)}
+            >
+              Close Down Stream
             </Button>
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <Formik
         initialValues={initialValues}
@@ -133,16 +122,15 @@ const StreamForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
-                  {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="mb-2 space-y-3">
                     <Input
                       name="name"
-                      label={`Name of Stream`}
-                      placeholder={`Name of Stream`}
+                      label="Name of Stream"
+                      placeholder="Name of Stream"
                     />
 
                     <Select
@@ -163,9 +151,9 @@ const StreamForm = ({
                       options={STREAM_ACCOUNT_OPTIONS}
                     />
 
-                    <Row className="d-flex align-items-center mb-3">
+                    <div className="mb-3 flex items-center">
                       <RoleView roles={permitAdmin('Campus')}>
-                        <Col>
+                        <div className="flex-1">
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -175,203 +163,144 @@ const StreamForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
-                    <div className="d-grid gap-2">
-                      {initialValues.councils?.length && (
-                        <p className="fw-bold fs-5">Councils</p>
-                      )}
+                    </div>
+                    <div className="grid gap-2">
+                      {initialValues.councils?.length ? (
+                        <p className="text-lg font-semibold">Councils</p>
+                      ) : null}
                       {initialValues.councils?.map((council, index) => {
-                        if (!council && !index)
-                          return <NoDataComponent text="No Councils" />
+                        if (!council && !index) {
+                          return <NoDataComponent text="No Councils" key="no" />
+                        }
                         return (
-                          <Button variant="secondary" className="text-start">
+                          <Button
+                            key={council?.id ?? index}
+                            type="button"
+                            variant="secondary"
+                            className="justify-start text-left"
+                          >
                             {council.name} Council
                           </Button>
                         )
                       })}
                     </div>
-
-                    <div className="d-grid gap-2 mt-3">
-                      {initialValues.ministries?.length && (
-                        <p className="fw-bold fs-5">Ministries</p>
-                      )}
-
-                      {initialValues.ministries?.map((ministry, index) => {
-                        if (!ministry && !index)
-                          return <NoDataComponent text="No Ministries" />
-                        return (
-                          <Button variant="secondary" className="text-start">
-                            {ministry.name} Ministry
-                          </Button>
-                        )
-                      })}
-                    </div>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
-              <div className="text-center mt-5">
+              <div className="mt-5 text-center">
                 <SubmitButton formik={formik} />
               </div>
             </Form>
 
-            <Modal
-              show={councilModal}
-              onHide={() => setCouncilModal(false)}
-              centered
-            >
-              <Modal.Header closeButton>Add A Council</Modal.Header>
-              <Modal.Body>
+            <Dialog open={councilModal} onOpenChange={setCouncilModal}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add A Council</DialogTitle>
+                </DialogHeader>
                 <p>Choose a council to move to this stream</p>
                 <SearchCouncil
-                  name={`council`}
+                  name="council"
                   placeholder="Council Name"
                   initialValue=""
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Council Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading || !formik.values.council}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await MoveCouncilToStream({
-                        variables: {
-                          councilId: formik.values.council?.id,
-                          historyRecord: `${formik.values.council?.name} Council has been moved to ${formik.values.name} Stream from ${formik.values.council?.stream.name} Stream`,
-                          newStreamId: streamId,
-                          oldStreamId: formik.values.council?.stream.id,
-                        },
-                      })
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+                    disabled={buttonLoading || !formik.values.council}
+                    onClick={async () => {
+                      try {
+                        setButtonLoading(true)
+                        const res = await MoveCouncilToStream({
+                          variables: {
+                            councilId: formik.values.council?.id,
+                            historyRecord: `${formik.values.council?.name} Council has been moved to ${formik.values.name} Stream from ${formik.values.council?.stream.name} Stream`,
+                            newStreamId: streamId,
+                            oldStreamId: formik.values.council?.stream.id,
+                          },
+                        })
 
-                      clickCard(res.data.MoveCouncilToStream)
-                      setCouncilModal(false)
-                    } catch (error) {
-                      throwToSentry(
-                        `There was an error moving this council to this stream`,
-                        error
-                      )
-                    } finally {
-                      setButtonLoading(false)
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => setCouncilModal(false)}
-                >
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
+                        clickCard(res.data.MoveCouncilToStream)
+                        setCouncilModal(false)
+                      } catch (error) {
+                        throwToSentry(
+                          `There was an error moving this council to this stream`,
+                          error
+                        )
+                      } finally {
+                        setButtonLoading(false)
+                      }
+                    }}
+                  >
+                    <BtnSubmitText loading={buttonLoading} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCouncilModal(false)}
+                  >
+                    Close
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
-            <Modal show={ministryModal} onHide={() => setMinistryModal(false)}>
-              <Modal.Header closeButton>Add A Ministry</Modal.Header>
-              <Modal.Body>
-                <p>Choose a ministry to move to this stream</p>
-                <SearchMinistry
-                  name={`ministry`}
-                  placeholder="Ministry Name"
-                  initialValue=""
-                  setFieldValue={formik.setFieldValue}
-                  aria-describedby="Ministry Name"
-                />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading || !formik.values.ministry}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await MoveMinistryToStream({
-                        variables: {
-                          ministryId: formik.values.ministry?.id,
-                          historyRecord: `${formik.values.ministry?.name} Ministry has been moved to ${formik.values.name} Stream from ${formik.values.ministry?.stream.name} Stream`,
-                          newStreamId: streamId,
-                          oldStreamId: formik.values.ministry?.stream.id,
-                        },
-                      })
-
-                      clickCard(res.data.MoveMinistryToStream)
-                      setMinistryModal(false)
-                    } catch (error) {
-                      throwToSentry(
-                        `There was an error moving this ministry to this stream`,
-                        error
-                      )
-                    } finally {
-                      setButtonLoading(false)
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => setMinistryModal(false)}
-                >
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
-
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Stream</Modal.Header>
-              <Modal.Body>
-                <p className="text-info">
+            <Dialog open={closeDown} onOpenChange={setCloseDown}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Close Down Stream</DialogTitle>
+                </DialogHeader>
+                <p className="text-[hsl(var(--maps))]">
                   Are you sure you want to close down this stream?
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await CloseDownStream({
-                        variables: {
-                          id: streamId,
-                          leaderId: initialValues.leaderId,
-                          adminId: initialValues?.adminId,
-                        },
-                      })
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+                    disabled={buttonLoading}
+                    onClick={async () => {
+                      try {
+                        setButtonLoading(true)
+                        const res = await CloseDownStream({
+                          variables: {
+                            id: streamId,
+                            leaderId: initialValues.leaderId,
+                            adminId: initialValues?.adminId,
+                          },
+                        })
 
-                      setButtonLoading(false)
-                      clickCard(res.data.CloseDownStream)
-                      setCloseDown(false)
-                      navigate(`/council/displayall`)
-                    } catch (error) {
-                      setButtonLoading(false)
-                      throwToSentry(
-                        `There was an error closing down this stream`,
-                        error
-                      )
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
-                  No, take me back
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
+                        setButtonLoading(false)
+                        clickCard(res.data.CloseDownStream)
+                        setCloseDown(false)
+                        navigate(`/council/displayall`)
+                      } catch (error) {
+                        setButtonLoading(false)
+                        throwToSentry(
+                          `There was an error closing down this stream`,
+                          error
+                        )
+                      }
+                    }}
+                  >
+                    <BtnSubmitText loading={buttonLoading} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCloseDown(false)}
+                  >
+                    No, take me back
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

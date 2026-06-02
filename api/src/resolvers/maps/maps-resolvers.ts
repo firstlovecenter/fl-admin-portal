@@ -13,14 +13,14 @@ import {
   memberLoadCouncilUnvisitedMembers,
 } from './maps-cypher'
 import {
-  createFellowshipDescription,
+  createBacentaDescription,
   createMemberDescription,
   createVenueDescription,
 } from './maps-utils'
 import { Context } from '../utils/neo4j-types'
 
-interface FellowshipResultShape {
-  fellowship: Node<
+interface BacentaResultShape {
+  bacenta: Node<
     Integer,
     {
       id: string
@@ -30,7 +30,7 @@ interface FellowshipResultShape {
     }
   >
 
-  fellowshipLeader: {
+  bacentaLeader: {
     id: string
     firstName: string
     lastName: string
@@ -70,7 +70,7 @@ interface PeopleResultShape {
       description: string
     }
   >
-  fellowship: {
+  bacenta: {
     id: string
     name: string
     location: Point
@@ -106,7 +106,7 @@ interface OutreachVenueResultShape {
 }
 
 const parseMapData = (
-  place: FellowshipResultShape | OutreachVenueResultShape | PeopleResultShape
+  place: BacentaResultShape | OutreachVenueResultShape | PeopleResultShape
 ) => {
   if ('member' in place) {
     return {
@@ -120,7 +120,7 @@ const parseMapData = (
       picture: place.member.properties.pictureUrl,
       description: createMemberDescription({
         member: place.member.properties,
-        fellowship: place.fellowship,
+        bacenta: place.bacenta,
         council: place.council,
         pastor: place.pastor,
         phone: place.member.properties.phoneNumber,
@@ -129,19 +129,19 @@ const parseMapData = (
     }
   }
 
-  if ('fellowship' in place) {
+  if ('bacenta' in place && 'bacentaLeader' in place) {
     return {
-      id: place.fellowship.properties.id,
-      name: place.fellowship.properties.name,
-      typename: 'Fellowship',
-      picture: place.fellowshipLeader?.pictureUrl,
-      location: place.fellowship.properties.location,
-      latitude: place.fellowship.properties.location.y,
-      longitude: place.fellowship.properties.location.x,
+      id: place.bacenta.properties.id,
+      name: place.bacenta.properties.name,
+      typename: 'Bacenta',
+      picture: place.bacentaLeader?.pictureUrl,
+      location: place.bacenta.properties.location,
+      latitude: place.bacenta.properties.location.y,
+      longitude: place.bacenta.properties.location.x,
       distance: place.distance,
-      description: createFellowshipDescription({
-        fellowshipLeader: place.fellowshipLeader,
-        fellowship: place.fellowship.properties,
+      description: createBacentaDescription({
+        bacentaLeader: place.bacentaLeader,
+        bacenta: place.bacenta.properties,
         council: place.council,
         councilLeader: place.councilLeader,
       }),
@@ -244,7 +244,7 @@ export const mapsResolvers = {
           true
         )
 
-        const fellowshipsRes: FellowshipResultShape[] = rearrangeCypherObject(
+        const bacentasRes: BacentaResultShape[] = rearrangeCypherObject(
           res[1],
           true
         )
@@ -257,7 +257,7 @@ export const mapsResolvers = {
         // merge the two arrays and order by distance in ascending order
         const places = [
           ...peopleRes,
-          ...fellowshipsRes,
+          ...bacentasRes,
           ...indoorVenuesRes,
           ...outdoorVenuesRes,
         ].sort((a, b) => a.distance - b.distance)
@@ -335,7 +335,7 @@ export const mapsResolvers = {
           res[0],
           true
         )
-        const fellowshipsRes: FellowshipResultShape[] = rearrangeCypherObject(
+        const bacentasRes: BacentaResultShape[] = rearrangeCypherObject(
           res[1],
           true
         )
@@ -347,7 +347,7 @@ export const mapsResolvers = {
         // merge the  arrays and order by distance in ascending order
         const places = [
           ...peopleRes,
-          ...fellowshipsRes,
+          ...bacentasRes,
           ...indoorVenuesRes,
           ...outdoorVenuesRes,
         ].sort((a, b) => a.distance - b.distance)

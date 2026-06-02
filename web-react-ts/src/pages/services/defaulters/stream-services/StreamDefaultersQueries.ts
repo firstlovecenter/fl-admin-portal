@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const CAMPUS_BY_STREAM = gql`
   query defaultersCampusByStreamForStreamServices($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
       streams {
@@ -29,7 +29,7 @@ export const CAMPUS_BY_STREAM = gql`
 
 export const OVERSIGHT_BY_CAMPUS = gql`
   query defaultersOversightByCampusForStreamServices($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
       campuses {
@@ -69,7 +69,7 @@ export const OVERSIGHT_BY_CAMPUS = gql`
 
 export const DENOMINATION_BY_OVERSIGHT = gql`
   query defaultersDeominationByOversightForStreamServices($id: ID!) {
-    denominations(where: { id: $id }) {
+    denominations(where: { id: { eq: $id } }) {
       id
       name
       oversights {
@@ -102,7 +102,7 @@ export const DENOMINATION_BY_OVERSIGHT = gql`
 
 export const CAMPUS_STREAM_SERVICES_LIST = gql`
   query campusStreamsThisWeek($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
 
@@ -139,7 +139,7 @@ export const CAMPUS_STREAM_SERVICES_LIST = gql`
 
 export const CAMPUS_STREAM_CANCELLED_SERVICES_LIST = gql`
   query campusStreamCancelledServicesThisWeek($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
 
@@ -172,7 +172,7 @@ export const CAMPUS_STREAM_CANCELLED_SERVICES_LIST = gql`
 
 export const CAMPUS_STREAM_FORM_DEFAULTERS_LIST = gql`
   query campusStreamFormDefaulters($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
 
@@ -201,7 +201,7 @@ export const CAMPUS_STREAM_FORM_DEFAULTERS_LIST = gql`
 
 export const CAMPUS_STREAM_BANKING_DEFAULTERS_LIST = gql`
   query campusStreamBankingDefaulters($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
 
@@ -235,7 +235,7 @@ export const CAMPUS_STREAM_BANKING_DEFAULTERS_LIST = gql`
 
 export const CAMPUS_STREAM_BANKED_LIST = gql`
   query campusStreamBanked($id: ID!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       name
 
@@ -269,7 +269,7 @@ export const CAMPUS_STREAM_BANKED_LIST = gql`
 
 export const OVERSIGHT_STREAM_SERVICES_LIST = gql`
   query oversightStreamsThisWeek($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
 
@@ -306,7 +306,7 @@ export const OVERSIGHT_STREAM_SERVICES_LIST = gql`
 
 export const OVERSIGHT_STREAM_CANCELLED_SERVICES_LIST = gql`
   query oversightStreamCancelledServicesThisWeek($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
 
@@ -339,7 +339,7 @@ export const OVERSIGHT_STREAM_CANCELLED_SERVICES_LIST = gql`
 
 export const OVERSIGHT_STREAM_FORM_DEFAULTERS_LIST = gql`
   query oversightStreamFormDefaulters($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
 
@@ -368,7 +368,7 @@ export const OVERSIGHT_STREAM_FORM_DEFAULTERS_LIST = gql`
 
 export const OVERSIGHT_STREAM_BANKING_DEFAULTERS_LIST = gql`
   query oversightStreamBankingDefaulters($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
 
@@ -402,7 +402,7 @@ export const OVERSIGHT_STREAM_BANKING_DEFAULTERS_LIST = gql`
 
 export const OVERSIGHT_STREAM_BANKED_LIST = gql`
   query oversightStreamBanked($id: ID!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       name
 
@@ -436,7 +436,7 @@ export const OVERSIGHT_STREAM_BANKED_LIST = gql`
 
 export const DENOMINATION_STREAM_SERVICES_LIST = gql`
   query denominationStreamsThisWeek($id: ID!) {
-    denominations(where: { id: $id }) {
+    denominations(where: { id: { eq: $id } }) {
       id
       name
 
@@ -473,7 +473,7 @@ export const DENOMINATION_STREAM_SERVICES_LIST = gql`
 
 export const DENOMINATION_STREAM_CANCELLED_SERVICES_LIST = gql`
   query denominationStreamCancelledServicesThisWeek($id: ID!) {
-    denominations(where: { id: $id }) {
+    denominations(where: { id: { eq: $id } }) {
       id
       name
 
@@ -506,7 +506,7 @@ export const DENOMINATION_STREAM_CANCELLED_SERVICES_LIST = gql`
 
 export const DENOMINATION_STREAM_FORM_DEFAULTERS_LIST = gql`
   query denominationStreamFormDefaulters($id: ID!) {
-    denominations(where: { id: $id }) {
+    denominations(where: { id: { eq: $id } }) {
       id
       name
 
@@ -535,7 +535,7 @@ export const DENOMINATION_STREAM_FORM_DEFAULTERS_LIST = gql`
 
 export const DENOMINATION_STREAM_BANKING_DEFAULTERS_LIST = gql`
   query denominationStreamBankingDefaulters($id: ID!) {
-    denominations(where: { id: $id }) {
+    denominations(where: { id: { eq: $id } }) {
       id
       name
 
@@ -569,7 +569,7 @@ export const DENOMINATION_STREAM_BANKING_DEFAULTERS_LIST = gql`
 
 export const DENOMINATION_STREAM_BANKED_LIST = gql`
   query denominationStreamBanked($id: ID!) {
-    denominations(where: { id: $id }) {
+    denominations(where: { id: { eq: $id } }) {
       id
       name
 

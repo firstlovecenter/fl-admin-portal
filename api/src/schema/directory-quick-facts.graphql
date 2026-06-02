@@ -3,139 +3,45 @@ extend type ServiceRecord {
     @cypher(
       statement: """
       MATCH (this)<-[:HAS_SERVICE]-(:ServiceLog:HistoryLog)<-[:HAS_HISTORY]-(church)
-      WHERE church:Fellowship OR church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
+      WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
       RETURN church.name
       """
       columnName: "church_name"
     )
 }
 
-type Stats {
+type Stats @node @mutation(operations: []) {
   attendance: Float
   income: Float
 }
 
-type MemberConversion {
+type MemberConversion @node @mutation(operations: []) {
   howYouJoined: String
   percentage: Float!
   number: Int!
 }
 
-extend type Fellowship {
-  avgWeekdayStats(days: Int!): Stats!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record) WHERE NOT (record:NoService)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      MATCH (date)
-      WHERE date.date > date() - duration({days: $days})
-      RETURN {
-        attendance: toInteger(round(avg(record.attendance))),
-        income: round(avg(record.income), 2)
-        }
-      """
-      columnName: "avgWeekdayStats"
-    )
-
-  peakFellowshipAttendance(days: Int!): ServiceRecord
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      WITH date, record, this
-            MATCH (date)
-            WHERE date.date > date() - duration({days: $days})
-      WITH  max(record.attendance) as max, this
-      MATCH (fellowship)-[:HAS_HISTORY]->(s:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      WHERE record.attendance = max
-      RETURN  record LIMIT 1
-      """
-      columnName: "record"
-    )
-
-  peakFellowshipIncome(days: Int!): ServiceRecord
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      WITH date, record, this
-            MATCH (date)
-            WHERE date.date > date() - duration({days: $days})
-      WITH  max(record.income) as max, this
-      MATCH (fellowship)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      WHERE record.income = max
-      RETURN record LIMIT 1
-      """
-      columnName: "record"
-    )
-  aggregateMemberConversion: [MemberConversion!]!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      WITH this,COUNT(DISTINCT members) AS total
-
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-
-      WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
-      WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
-      WITH COLLECT({howYouJoined:howYouJoined, percentage:conversion_percent, number: numberOfMembers}) AS data
-      UNWIND data as row
-      RETURN DISTINCT row
-      """
-      columnName: "row"
-    )
-}
-
 extend type Bacenta {
-  peakFellowshipAttendance(days: Int!): ServiceRecord!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS]->(fellowship) WHERE fellowship:Fellowship OR fellowship:ClosedFellowship
-      MATCH (fellowship)-[:HAS_HISTORY]-(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-            MATCH (date)
-            WHERE date.date > date() - duration({days: $days})
-      WITH  max(record.attendance) as max, record
-      MATCH (record)
-      WHERE record.attendance = max
-      RETURN record ORDER BY record.attendance DESC LIMIT 1
-      """
-      columnName: "record"
-    )
-
-  peakFellowshipIncome(days: Int!): ServiceRecord!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS]->(fellowship) WHERE fellowship:Fellowship OR fellowship:ClosedFellowship
-      MATCH (fellowship)-[:HAS_HISTORY]-(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-            MATCH (date)
-            WHERE date.date > date() - duration({days: $days})
-      WITH  max(record.income) as max, record
-      MATCH (record)
-      WHERE record.income = max
-      RETURN  record ORDER BY record.income DESC LIMIT 1
-      """
-      columnName: "record"
-    )
-
+  # Bacenta has no per-Bacenta AggregateServiceRecord (writers only roll
+  # data UP to Governorship+). Read raw ServiceRecord via TimeGraph and
+  # average the per-week totals over the requested window.
   avgWeekdayStats(days: Int!): Stats!
     @cypher(
       statement: """
       MATCH (this)
       WITH date() as today, this
-      WITH date(today) - duration({days: $days}) AS startDate, this
-      WITH  range(date(startDate).week, date().week) as weeks, this
+      WITH date(today) - duration({days: $days}) AS startDate, today, this
 
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
-      MATCH (agg)
-      WHERE agg.week IN weeks
-      WITH sum(agg.attendance) AS attendance, sum(agg.income) as income, this, agg.week as weeknumber
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(t:TimeGraph)
+      WHERE NOT record:NoService AND t.date >= startDate AND t.date <= today
+      WITH DISTINCT this, t.date.year AS year, t.date.week AS week, record
+      WITH this, year, week,
+           sum(coalesce(record.attendance, 0)) AS weeklyAttendance,
+           sum(coalesce(record.income, 0)) AS weeklyIncome
       RETURN  {
-        attendance: round(avg(attendance)),
-        income: round(avg(income), 2)
-        }
+        attendance: round(avg(weeklyAttendance)),
+        income: round(avg(weeklyIncome), 2)
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -157,10 +63,10 @@ extend type Bacenta {
   aggregateMemberConversion: [MemberConversion!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       WITH this,COUNT(DISTINCT members) AS total
 
-      MATCH (this)-[:HAS]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
+      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
 
       WITH total, members.howYouJoined as howYouJoined, COUNT(DISTINCT members) AS numberOfMembers
       WITH total, howYouJoined, ROUND(100.0*numberOfMembers/total,2)  AS conversion_percent, numberOfMembers
@@ -188,24 +94,26 @@ extend type Governorship {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
 
+  # Per-Bacenta bussing totals — read raw BussingRecord via TimeGraph
+  # because no writer maintains Bacenta-level AggregateBussingRecord.
   avgBacentaBussingAttendance(days: Int!): Float
     @cypher(
       statement: """
-       MATCH (this)
+      MATCH (this)
       WITH date() as today, this
-      WITH date(today) - duration({days: $days}) AS startDate, this
-      WITH  range(date(startDate).week, date().week) as weeks, this
+      WITH date(today) - duration({days: $days}) AS startDate, today, this
 
-      MATCH (this)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(agg:AggregateBussingRecord)
-      MATCH (agg)
-      WHERE agg.week IN weeks and agg.year = date().year
-      WITH  agg.attendance as attendance, bacenta, agg.week as weeknumber
-       RETURN round(avg(attendance)) AS average
+      MATCH (this)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
+      WHERE record.attendance IS NOT NULL AND t.date >= startDate AND t.date <= today
+      WITH DISTINCT bacenta, t.date.year AS year, t.date.week AS week, record
+      WITH bacenta, year, week,
+           sum(coalesce(record.attendance, 0)) AS weeklyAttendance
+      RETURN round(avg(weeklyAttendance)) AS average
       """
       columnName: "average"
     )
@@ -245,41 +153,25 @@ extend type Governorship {
 }
 
 extend type Council {
-  avgFellowshipWeekdayStats(days: Int!): Stats!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(:Bacenta)-[:HAS]->(fellowship)
-          WHERE fellowship:Fellowship OR fellowship:ClosedFellowship
-      MATCH (fellowship)-[:HAS_HISTORY]-(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)
-      MATCH (record) WHERE NOT (record:NoService)
-      MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      MATCH (date)
-      WHERE date.date > date() - duration({days: $days})
-      WITH sum(record.attendance) AS attendance, sum(record.income) as income, fellowship, date(date.date).week as weeknumber
-      RETURN {
-        attendance: toInteger(round(avg(attendance))),
-        income: round(avg(income), 2)
-        }
-      """
-      columnName: "avgFellowshipWeekdayStats"
-    )
-
+  # Per-Bacenta service totals — read raw ServiceRecord via TimeGraph
+  # because no writer maintains Bacenta-level AggregateServiceRecord.
   avgBacentaWeekdayStats(days: Int!): Stats!
     @cypher(
       statement: """
       MATCH (this)
       WITH date() as today, this
-      WITH date(today) - duration({days: $days}) AS startDate, this
-      WITH  range(date(startDate).week, date().week) as weeks, this
+      WITH date(today) - duration({days: $days}) AS startDate, today, this
 
-      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg:AggregateServiceRecord)
-      MATCH (agg)
-      WHERE agg.week IN weeks and agg.year = date().year
-      WITH sum(agg.attendance) AS attendance, sum(agg.income) as income, bacenta, agg.week as weeknumber
+      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(t:TimeGraph)
+      WHERE NOT record:NoService AND t.date >= startDate AND t.date <= today
+      WITH DISTINCT bacenta, t.date.year AS year, t.date.week AS week, record
+      WITH bacenta, year, week,
+           sum(coalesce(record.attendance, 0)) AS weeklyAttendance,
+           sum(coalesce(record.income, 0)) AS weeklyIncome
       RETURN  {
-        attendance: round(avg(attendance)),
-        income: round(avg(income), 2)
-        }
+        attendance: round(avg(weeklyAttendance)),
+        income: round(avg(weeklyIncome), 2)
+        } AS avgBacentaWeekdayStats
       """
       columnName: "avgBacentaWeekdayStats"
     )
@@ -299,7 +191,7 @@ extend type Council {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgGovernorshipWeekdayStats
       """
       columnName: "avgGovernorshipWeekdayStats"
     )
@@ -319,24 +211,26 @@ extend type Council {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
 
+  # Per-Bacenta bussing totals — read raw BussingRecord via TimeGraph
+  # because no writer maintains Bacenta-level AggregateBussingRecord.
   avgBacentaBussingAttendance(days: Int!): Float
     @cypher(
       statement: """
       MATCH (this)
       WITH date() as today, this
-      WITH date(today) - duration({days: $days}) AS startDate, this
-      WITH  range(date(startDate).week, date().week) as weeks, this
+      WITH date(today) - duration({days: $days}) AS startDate, today, this
 
-      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(agg:AggregateBussingRecord)
-      MATCH (agg)
-      WHERE agg.week IN weeks and agg.year = date().year
-      WITH sum(agg.attendance) AS attendance, bacenta, agg.week as weeknumber
-      RETURN round(avg(attendance)) AS average
+      MATCH (this)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
+      WHERE record.attendance IS NOT NULL AND t.date >= startDate AND t.date <= today
+      WITH DISTINCT bacenta, t.date.year AS year, t.date.week AS week, record
+      WITH bacenta, year, week,
+           sum(coalesce(record.attendance, 0)) AS weeklyAttendance
+      RETURN round(avg(weeklyAttendance)) AS average
       """
       columnName: "average"
     )
@@ -409,7 +303,7 @@ extend type Stream {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -429,7 +323,7 @@ extend type Stream {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgCouncilWeekdayStats
       """
       columnName: "avgCouncilWeekdayStats"
     )
@@ -518,7 +412,7 @@ extend type Campus {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgGovernorshipWeekdayStats
       """
       columnName: "avgGovernorshipWeekdayStats"
     )
@@ -555,7 +449,7 @@ extend type Campus {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgStreamWeekdayStats
       """
       columnName: "avgStreamWeekdayStats"
     )
@@ -609,7 +503,7 @@ extend type Campus {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgWeekdayStats
       """
       columnName: "avgWeekdayStats"
     )
@@ -647,7 +541,7 @@ extend type Oversight {
       RETURN  {
         attendance: round(avg(attendance)),
         income: round(avg(income), 2)
-        }
+        } AS avgCampusWeekdayStats
       """
       columnName: "avgCampusWeekdayStats"
     )

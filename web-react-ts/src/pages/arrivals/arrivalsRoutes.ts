@@ -55,7 +55,6 @@ const CouncilByGovernorship = lazy(
 const StateBacentasToCount = lazy(
   () => import('./pages-state-of-arrivals/StateBacentasToCount')
 )
-const SetArrivalsTime = lazy(() => import('./Times/SetArrivalsTimes'))
 const ArrivalTimes = lazy(() => import('./Times/ArrivalTimes'))
 const ArrivalsCounters = lazy(() => import('./Helpers/ArrivalsCounters'))
 const ArrivalsPayerSelect = lazy(() => import('./Helpers/ArrivalsPayers'))
@@ -256,12 +255,6 @@ export const arrivals: LazyRouteTypes[] = [
     path: '/stream/arrival-times',
     roles: permitAdminArrivals('Stream'),
     element: ArrivalTimes,
-    placeholder: false,
-  },
-  {
-    path: '/stream/set-arrivals-time',
-    roles: permitAdminArrivals('Stream'),
-    element: SetArrivalsTime,
     placeholder: false,
   },
 

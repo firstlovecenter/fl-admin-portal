@@ -89,7 +89,7 @@
 // "AggregateMinistryMeetingRecord"
 
 CREATE CONSTRAINT uniqueServiceDay IF NOT EXISTS ON (s:ServiceDay) ASSERT s.day IS UNIQUE;
-CREATE CONSTRAINT uniqueTitle IF NOT EXISTS ON (t:Title) ASSERT t.title IS UNIQUE;
+CREATE CONSTRAINT uniqueTitle IF NOT EXISTS FOR (t:Title) REQUIRE t.name IS UNIQUE;
 CREATE CONSTRAINT uniqueMaritalStatus IF NOT EXISTS ON (m:MaritalStatus) ASSERT m.status IS UNIQUE;
 CREATE CONSTRAINT uniqueGender IF NOT EXISTS ON (g:Gender) ASSERT g.gender IS UNIQUE;
 CREATE CONSTRAINT uniqueMinistry IF NOT EXISTS ON (m:Ministry) ASSERT m.id IS UNIQUE;
@@ -100,7 +100,7 @@ CREATE CONSTRAINT uniqueMemberEmail IF NOT EXISTS ON (m:Member) ASSERT m.email I
 CREATE CONSTRAINT uniqueTimeGraph IF NOT EXISTS ON (t:TimeGraph) ASSERT t.date IS UNIQUE;
 CREATE CONSTRAINT uniqueCampus IF NOT EXISTS ON (c:Campus) ASSERT c.id IS UNIQUE;
 CREATE CONSTRAINT uniqueTown IF NOT EXISTS ON (t:Town) ASSERT t.id IS UNIQUE;
-// CREATE CONSTRAINT uniqueBacenta IF NOT EXISTS ON (b:Bacenta) ASSERT b.id IS UNIQUE;
+CREATE CONSTRAINT uniqueBacenta IF NOT EXISTS FOR (b:Bacenta) REQUIRE b.id IS UNIQUE;
 CREATE CONSTRAINT uniqueSonta IF NOT EXISTS ON (s:Sonta) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueBasonta IF NOT EXISTS ON (b:Basonta) ASSERT b.id IS UNIQUE;
 CREATE CONSTRAINT uniqueHistoryLog IF NOT EXISTS ON (h:HistoryLog) ASSERT h.id IS UNIQUE;
@@ -108,7 +108,12 @@ CREATE CONSTRAINT uniqueUser IF NOT EXISTS ON (u:User) ASSERT u.id IS UNIQUE;
 CREATE CONSTRAINT uniqueOccupation IF NOT EXISTS ON (o:Occupation) ASSERT o.id IS UNIQUE;
 CREATE CONSTRAINT uniqueServiceLog IF NOT EXISTS ON (s:ServiceLog) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueServiceRecord IF NOT EXISTS ON (s:ServiceRecord) ASSERT s.id IS UNIQUE;
-CREATE CONSTRAINT uniqueServiceRecordTransaction IF NOT EXISTS ON (s:ServiceRecord) ASSERT s.transactionReference IS UNIQUE;
+CREATE CONSTRAINT uniqueServiceRecordTransactionRef IF NOT EXISTS FOR (s:ServiceRecord) REQUIRE s.transactionReference IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateServiceRecord IF NOT EXISTS ON (a:AggregateServiceRecord) ASSERT a.id IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateBussingRecord IF NOT EXISTS ON (a:AggregateBussingRecord) ASSERT a.id IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateRehearsalRecord IF NOT EXISTS ON (a:AggregateRehearsalRecord) ASSERT a.id IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateMinistryMeetingRecord IF NOT EXISTS ON (a:AggregateMinistryMeetingRecord) ASSERT a.id IS UNIQUE;
+CREATE CONSTRAINT uniqueAggregateStageAttendanceRecord IF NOT EXISTS ON (a:AggregateStageAttendanceRecord) ASSERT a.id IS UNIQUE;
 
 CREATE CONSTRAINT uniqueClosedBacenta IF NOT EXISTS ON (c:ClosedBacenta) ASSERT c.id IS UNIQUE;
 CREATE CONSTRAINT uniqueNoService IF NOT EXISTS ON (n:NoService) ASSERT n.id IS UNIQUE;
@@ -131,6 +136,7 @@ CREATE CONSTRAINT uniqueSwellDate IF NOT EXISTS ON (s:SwellDate) ASSERT s.date I
 CREATE CONSTRAINT uniqueArchived IF NOT EXISTS ON (a:Archived) ASSERT a.id IS UNIQUE;
 CREATE CONSTRAINT uniqueSheep IF NOT EXISTS ON (s:Sheep) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueDeer IF NOT EXISTS ON (d:Deer) ASSERT d.id IS UNIQUE;
+CREATE CONSTRAINT uniqueDeerWhatsapp IF NOT EXISTS FOR (d:Deer) REQUIRE d.whatsappNumber IS UNIQUE;
 CREATE CONSTRAINT uniqueDenomination IF NOT EXISTS ON (d:Denomination) ASSERT d.id IS UNIQUE;
 CREATE CONSTRAINT uniqueGoat IF NOT EXISTS ON (g:Goat) ASSERT g.id IS UNIQUE;
 CREATE CONSTRAINT uniqueClosedCouncil IF NOT EXISTS ON (c:ClosedCouncil) ASSERT c.id IS UNIQUE;
@@ -187,3 +193,22 @@ CREATE CONSTRAINT uniqueClosedHubCouncil IF NOT EXISTS ON (c:ClosedHubCouncil) A
 CREATE CONSTRAINT uniqueStageAttendanceRecord IF NOT EXISTS ON (s:StageAttendanceRecord) ASSERT s.id IS UNIQUE;
 CREATE CONSTRAINT uniqueAggregateStageAttendanceRecord IF NOT EXISTS ON (a:AggregateStageAttendanceRecord) ASSERT a.id IS UNIQUE;
 CREATE CONSTRAINT uniqueAggregateMinistryMeetingRecord IF NOT EXISTS ON (a:AggregateMinistryMeetingRecord) ASSERT a.id IS UNIQUE;
+
+// The Paystack webhook (api/src/functions/background/payment-webhook/index.js)
+// UNIONs three label-scoped MATCHes on `transactionReference`. ServiceRecord
+// and Transaction are already covered above; RehearsalRecord falls through
+// to NodeByLabelScan + property filter without this index, which degrades
+// linearly with the RehearsalRecord population.
+CREATE INDEX rehearsalRecordTransactionReference IF NOT EXISTS
+FOR (r:RehearsalRecord) ON (r.transactionReference);
+
+// BankingHistoryLog (api/src/schema/banking.graphql) is the append-only
+// money audit log. Uniqueness on the auto-generated UUID protects against
+// duplicate inserts from a Cypher re-run within a transaction. The ts
+// RANGE INDEX powers the ORDER BY ts DESC the FE BankingHistorySection
+// uses on every ServiceDetails render.
+CREATE CONSTRAINT uniqueBankingHistoryLog IF NOT EXISTS
+FOR (b:BankingHistoryLog) REQUIRE b.id IS UNIQUE;
+
+CREATE INDEX bankingHistoryLogTs IF NOT EXISTS
+FOR (b:BankingHistoryLog) ON (b.ts);

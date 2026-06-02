@@ -87,26 +87,26 @@ RETURN member {
 `
 
 export const matchChurchQuery = `
-  MATCH (church {id:$id}) 
+  MATCH (church {id:$id})
   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus OR church:Oversight OR church:Denomination
-  OR church:ClosedBacenta 
-  OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
+  OR church:ClosedBacenta
+  OR church:Ministry
 
-  WITH church, labels(church) as labels 
-  UNWIND labels AS label 
-  WITH church, label WHERE label IN ['Fellowship','Bacenta', 'Governorship', 'Council', 
-  'Stream', 'Campus', 'Oversight', 'Denomination', 'ClosedFellowship', 'ClosedBacenta', 'CreativeArts', 'Ministry', 'HubCouncil', 'Hub']
+  WITH church, labels(church) as labels
+  UNWIND labels AS label
+  WITH church, label WHERE label IN ['Bacenta', 'Governorship', 'Council',
+  'Stream', 'Campus', 'Oversight', 'Denomination', 'ClosedBacenta', 'Ministry']
 
   RETURN church.id AS id, church.name AS name, church.firstName AS firstName, church.lastName AS lastName, label AS type
   `
 
 export const getChurchDataQuery = `
-  MATCH (church {id:$id}) 
-  WHERE church:Fellowship OR church:Bacenta OR church:Constituency OR church:Council OR church:Stream 
+  MATCH (church {id:$id})
+  WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
   OR church:Campus OR church:Oversight OR church:Denomination
-  OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
+  OR church:Ministry
 
-  MATCH (church)-[:HAS_HISTORY]->(:SERVICE_LOG)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
+  MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
   WHERE date.date >= date() - duration('P8W')
   
   OPTIONAL MATCH (church)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
@@ -144,10 +144,16 @@ OR member.whatsappNumber = $whatsappNumber
 RETURN member IS NOT NULL AS predicate, member AS member
 `
 
+// Closed-Hub-tree labels (ClosedHub, ClosedHubCouncil, ClosedCreativeArts) are
+// still excluded even though those tiers were removed from the active SDL —
+// dev/prod still hold historical LEADS edges to those closed nodes, and
+// without the excludes a member with old leadership history would be falsely
+// blocked from deactivation.
 export const checkMemberHasNoActiveRelationships = `
 MATCH p=(member:Member {id:$id})-[:LEADS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|COUNTS_ARRIVALS_FOR|IS_TELLER_FOR]->(church)
-WHERE NOT church:ClosedFellowship AND NOT church:ClosedBacenta AND NOT church:ClosedGovernorship AND NOT church:ClosedCouncil AND NOT church:ClosedStream AND NOT church:ClosedCampus AND NOT church:ClosedOversight AND NOT church:ClosedDenomination 
-AND NOT church:ClosedCreativeArts AND NOT church:ClosedMinistry AND NOT church:ClosedHubCouncil AND NOT church:ClosedHub
+WHERE NOT church:ClosedBacenta AND NOT church:ClosedGovernorship AND NOT church:ClosedCouncil AND NOT church:ClosedStream AND NOT church:ClosedCampus AND NOT church:ClosedOversight AND NOT church:ClosedDenomination
+AND NOT church:ClosedMinistry
+AND NOT church:ClosedHub AND NOT church:ClosedHubCouncil AND NOT church:ClosedCreativeArts
 RETURN COUNT(p) as relationshipCount
 `
 
@@ -200,6 +206,21 @@ MERGE (log)-[:RECORDED_ON]->(today)
 DETACH DELETE member
 `
 
+// `Member.basonta` (= `(:Member)-[:BELONGS_TO]->(:Basonta)`) is modelled
+// as 1:1 (SYN-147). Every write path in this repo that creates such a
+// rel MUST first delete any pre-existing one from the same member, even
+// when the path "knows" it shouldn't have one. The reference template is
+// `UpdateMemberBasonta` in `api/src/schema/directory-crud.graphql` —
+// `OPTIONAL MATCH (member)-[previous:BELONGS_TO]->(:Basonta) DELETE
+// previous` BEFORE `MERGE (member)-[:BELONGS_TO]->(basonta)`. Neo4j 5
+// has no native "single rel between two nodes" constraint, so this
+// discipline at the write site is the guard.
+//
+// `createMember` below skips the explicit pre-delete because it CREATEs
+// a brand-new `member` node in the same transaction — that node cannot
+// hold any prior rels. Any future refactor that turns the CREATE into a
+// MATCH/MERGE on a re-used Member id MUST add the OPTIONAL MATCH +
+// DELETE pattern before the basonta MERGE.
 export const createMember = `
 MATCH (bacenta:Bacenta {id: $bacenta})
 CREATE (member:Active:Member:IDL:Deer:User {whatsappNumber:$whatsappNumber})
@@ -270,13 +291,24 @@ CREATE (member:Active:Member:IDL:Deer:User {whatsappNumber:$whatsappNumber})
             bacenta:bacenta{.id,governorship:governorship{.id}}}
       `
 
+// SYN-147: Inactive members may carry a stale `:Basonta` BELONGS_TO rel
+// from before they were made inactive. Without the OPTIONAL MATCH +
+// DELETE below, the basonta CALL block further down (which MERGEs the
+// new basonta) would produce a duplicate `(:Member)-[:BELONGS_TO]->
+// (:Basonta)` for the reactivated member — the same root cause behind
+// the 22 duplicates discovered on prod in 2026-05.
 export const activateInactiveMember = `
 MATCH (member:Inactive:Member {id: $id})
 MATCH (bacenta:Bacenta {id: $bacenta})
 MATCH (member)-[r1:BELONGS_TO]->(oldChurch) WHERE oldChurch:Bacenta OR oldChurch:ClosedBacenta
 MATCH (member)-[r2:HAS_MARITAL_STATUS]-> (maritalStatus)
 MATCH  (member)-[r3:WAS_BORN_ON]->(date)
-DELETE r1, r2, r3
+// MUST stay in its own OPTIONAL MATCH clause: Cypher only enforces
+// relationship-isomorphism within a single MATCH, so collapsing this into
+// the r1 clause above would let the planner bind r1 == r4 and silently
+// skip the Basonta cleanup. SYN-147.
+OPTIONAL MATCH (member)-[r4:BELONGS_TO]->(:Basonta)
+DELETE r1, r2, r3, r4
 
 WITH member, bacenta
   SET
@@ -327,7 +359,7 @@ WITH member, bacenta
       CALL {
           WITH member
           WITH member  WHERE $basonta IS NOT NULL
-          MATCH (basonta:CreativeArts {id:$basonta})
+          MATCH (basonta:Basonta {id:$basonta})
           MERGE (member)-[:BELONGS_TO]-> (basonta)
           RETURN count(member) AS member_basonta
           }
@@ -349,6 +381,7 @@ export const createBacenta = `
 MATCH (lastCode:LastBankingCode)
 CREATE (bacenta:Bacenta:Red:Active {name:$name, location: point({latitude:toFloat($venueLatitude), longitude:toFloat($venueLongitude), crs:'WGS-84'})})
   SET	bacenta.id = apoc.create.uuid(),
+  bacenta.createdAt = datetime(),
   bacenta.sprinterTopUp = 0,
   bacenta.urvanTopUp = 0,
   bacenta.outbound = false,
@@ -382,7 +415,8 @@ RETURN bacenta {.id, .name}, leader {.id, .firstName, .lastName, .email}, govern
 
 export const createGovernorship = `
 CREATE (governorship:Governorship {name: $name})
-  SET	governorship.id = apoc.create.uuid()
+  SET	governorship.id = apoc.create.uuid(),
+  governorship.createdAt = datetime()
 
 WITH governorship
 CREATE (log:HistoryLog)
@@ -411,7 +445,8 @@ RETURN governorship {.id, .name}, leader {.id, .firstName, .lastName, .email}, c
 
 export const createCouncil = `
 CREATE (council:Council {id:apoc.create.uuid(), name:$name})
-  SET council.weekdayBalance  = 0.0,
+  SET council.createdAt = datetime(),
+    council.weekdayBalance  = 0.0,
     council.bussingSocietyBalance = 0.0,
     council.hrAmount = 0.0,
     council.bussingAmount = 0.0
@@ -442,7 +477,8 @@ RETURN council {.id, .name}, leader {.id, .firstName, .lastName, .email}, stream
 
 export const createStream = `
 CREATE (stream:Active:Stream {id:apoc.create.uuid(), name: $name})
-  SET stream.bankAccount = $bankAccount
+  SET stream.bankAccount = $bankAccount,
+    stream.createdAt = datetime()
 
 WITH stream
 CREATE (log:HistoryLog:ServiceLog)
@@ -474,7 +510,8 @@ RETURN stream {.id, .name}, leader {.id, .firstName, .lastName, .email}, campus 
 
 export const createCampus = `
 CREATE (campus:Campus {id:apoc.create.uuid(), name:$name})
-  SET campus.noIncomeTracking = $noIncomeTracking,
+  SET campus.createdAt = datetime(),
+  campus.noIncomeTracking = $noIncomeTracking,
   campus.currency = $currency,
   campus.conversionRateToDollar = $conversionRateToDollar
 
@@ -498,11 +535,12 @@ MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (campus)-[:HAS_HISTORY]->(log)
 MERGE (leader)-[:HAS_HISTORY]->(log)
 
-RETURN campus {.id, .name}, leader {.id, .firstName, .lastName, .email}, oversight {.id, .name}
+RETURN campus {.id, .name, .noIncomeTracking, .currency, .conversionRateToDollar}, leader {.id, .firstName, .lastName, .email}, oversight {.id, .name}
 `
 
 export const createOversight = `
 CREATE (oversight:Oversight {id:apoc.create.uuid(), name:$name})
+  SET oversight.createdAt = datetime()
 
 WITH oversight
 MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL

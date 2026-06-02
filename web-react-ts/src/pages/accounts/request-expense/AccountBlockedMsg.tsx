@@ -1,28 +1,37 @@
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import React from 'react'
-import { Card, Container } from 'react-bootstrap'
+import { Card, CardContent } from 'components/ui/card'
+import { Lock } from 'lucide-react'
 
 const AccountBlockedMsg = () => {
   return (
-    <Container>
-      <HeadingPrimary className="text-danger">
-        Account Is Locked!
-      </HeadingPrimary>
-      <div className="font-primary">
-        <p className="fs-6 mt-5">
-          If you are seeing this, it means that you are trying to request
-          expenses at a time when you shouldn't be doing so.
-        </p>
+    <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <main className="mx-auto max-w-2xl px-4 py-5 lg:px-6 lg:py-8">
+        <header className="space-y-3 pl-14 pr-14 md:px-0">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Account is{' '}
+            <span className="text-destructive">Locked</span>
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Expense requests can only be submitted while accounts are open.
+          </p>
+        </header>
 
-        <p className="mb-5">Please try on any of the following days:</p>
-      </div>
-      <Card>
-        <Card.Body>
-          <p className="fs-5">Accounts are open daily from 6am to 3pm</p>
-        </Card.Body>
-      </Card>
-      <p className="mt-2 text-end fw-bold fs-3">Thank You!</p>
-    </Container>
+        <Card className="mt-6 overflow-hidden">
+          <CardContent className="flex items-start gap-3 p-5">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+              <Lock className="size-5 text-destructive" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                Accounts are open daily from 6 a.m. to 3 p.m.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Come back during those hours to submit a new expense request.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
   )
 }
 

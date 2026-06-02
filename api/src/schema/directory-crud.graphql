@@ -37,16 +37,6 @@ extend type Mutation {
   RemoveBacentaAdminOnly(adminId: ID!, bacentaId: ID!): Member
 
   #Pastoral Roles
-  MakeFellowshipLeader(
-    leaderId: ID!
-    fellowshipId: ID!
-    oldLeaderId: ID
-  ): Member!
-  RemoveFellowshipLeader(
-    leaderId: ID!
-    newLeaderId: ID!
-    fellowshipId: ID!
-  ): Member
   MakeBacentaLeader(leaderId: ID!, bacentaId: ID!, oldLeaderId: ID): Member!
   RemoveBacentaLeader(leaderId: ID!, newLeaderId: ID!, bacentaId: ID!): Member
   MakeGovernorshipLeader(
@@ -113,32 +103,6 @@ extend type Mutation {
 
 #### GO ON VACATION AND COME BACK ###
 extend type Mutation {
-  #Set Fellowship to be 'OnVacation
-  SetVacationFellowship(fellowshipId: ID!): Fellowship!
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id:$fellowshipId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = fellowship.name + ' Fellowship went on vacation mode'
-
-      WITH log,fellowship
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-      MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-      SET fellowship:Vacation
-      REMOVE fellowship:Active, fellowship:Online
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
   #Set Bacenta to be 'OnVacation
   SetVacationBacenta(bacentaId: ID!): Bacenta!
     @cypher(
@@ -165,7 +129,7 @@ extend type Mutation {
       """
       columnName: "bacenta"
     )
-  SetVacationStream(streamId: ID!): Fellowship!
+  SetVacationStream(streamId: ID!): Stream!
     @cypher(
       statement: """
       MATCH (stream:Stream {id:$streamId})
@@ -191,7 +155,6 @@ extend type Mutation {
       columnName: "stream"
     )
 
-  #Set Fellowship to be 'Active
   SetActiveStream(streamId: ID!): Stream!
     @cypher(
       statement: """
@@ -217,109 +180,6 @@ extend type Mutation {
       """
       columnName: "stream"
     )
-  SetActiveFellowship(fellowshipId: ID!): Fellowship!
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id:$fellowshipId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = fellowship.name + ' Fellowship was made active again'
-
-      WITH log,fellowship
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-      MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-      SET fellowship:Active:Fellowship
-      REMOVE fellowship:Vacation, fellowship:Online
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
-  SetActiveHub(hubId: ID!): Hub!
-    @cypher(
-      statement: """
-      MATCH (hub:Hub {id:$hubId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = hub.name + ' Hub was made active again'
-
-      WITH log,hub
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (hub)<-[:HAS]-(fellowship:HubCouncil)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (hub)-[:HAS_HISTORY]->(log)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-
-      SET hub:Active:Hub
-      REMOVE hub:Vacation, hub:Online
-
-      RETURN hub
-      """
-      columnName: "hub"
-    )
-  SetVacationHub(hubId: ID!): Hub!
-    @cypher(
-      statement: """
-      MATCH (hub:Hub {id:$hubId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = hub.name + ' Hub went on vacation mode'
-
-      WITH log,hub
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (hub)<-[:HAS]-(hubCouncil:HubCouncil)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (hub)-[:HAS_HISTORY]->(log)
-      MERGE (hubCouncil)-[:HAS_HISTORY]->(log)
-
-      SET hub:Vacation
-      REMOVE hub:Active, hub:Online
-
-      RETURN hub
-      """
-      columnName: "hub"
-    )
-
-  # Set fellowship to be 'Online'
-  SetOnlineFellowship(fellowshipId: ID!): Fellowship!
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id:$fellowshipId})
-
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = fellowship.name + ' Fellowship was made an online fellowship'
-
-      WITH log,fellowship
-      MATCH (admin:Active:Member {id: $jwt.userId})
-      MATCH (fellowship)<-[:HAS]-(bacenta:Bacenta)
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (fellowship)-[:HAS_HISTORY]->(log)
-      MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-      SET fellowship:Online
-      REMOVE fellowship:Active, fellowship:Vacation
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
-
   #Set Bacenta to be 'Active
   SetActiveBacenta(bacentaId: ID!): Bacenta
     @cypher(
@@ -398,54 +258,12 @@ extend type Mutation {
     venueLatitude: Float
   ): Bacenta!
 
-  CreateFellowship(
-    name: String!
-    bacentaId: ID!
-    leaderId: ID!
-    meetingDay: String!
-    venueLongitude: Float
-    venueLatitude: Float
-  ): Fellowship!
-    @authentication(
-      jwt: {
-        OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminGovernorship" }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-      MATCH (leader:Active:Member {id:$leaderId}) WHERE leader.email IS NOT NULL
-      MATCH (lastCode:LastBankingCode)
-      CREATE (fellowship:Fellowship:Active {name:$name,location: point({latitude:toFloat($venueLatitude), longitude:toFloat($venueLongitude), crs:'WGS-84'})})
-         	SET
-      	fellowship.id = apoc.create.uuid(),
-        fellowship.bankingCode = lastCode.number + 1,
-        lastCode.number = fellowship.bankingCode
-
-
-      WITH fellowship, leader
-      MATCH (bacenta:Bacenta {id: $bacentaId})
-      MATCH (currentUser:Active:Member {id:$jwt.userId})
-      MATCH (meetingDay:ServiceDay {day: $meetingDay})
-
-      MERGE (bacenta)-[:HAS]->(fellowship)
-      MERGE (leader)-[:LEADS]->(fellowship)
-      MERGE (fellowship)-[:MEETS_ON]->(meetingDay)
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
 }
 
 ### UPDATE OPERATIONS ###
 extend type Mutation {
   UpdateMemberAppointmentDate(id: ID!, appointmentDate: String): Member!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -460,7 +278,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberOrdinationDate(id: ID!, ordinationDate: String!): Member!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -475,7 +293,7 @@ extend type Mutation {
       columnName: "member"
     )
   UpdateMemberConsecrationDate(id: ID!, consecrationDate: String!): Member!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
@@ -490,13 +308,13 @@ extend type Mutation {
       columnName: "member"
     )
 
-  DeleteMemberTitles(id: ID!): Member!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+  RemoveMemberTitle(id: ID!, title: String!): Member!
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $id})
-      OPTIONAL MATCH (member)-[r:HAS_TITLE]->()
-       DELETE r
+      OPTIONAL MATCH (member)-[r:HAS_TITLE]->(:Title {name: $title})
+      DELETE r
       RETURN member
       """
       columnName: "member"
@@ -504,6 +322,7 @@ extend type Mutation {
   UpdateMemberBacenta(memberId: ID!, bacentaId: ID!): Member!
 
   UpdateMemberBasonta(memberId: ID!, basontaId: ID!): Member!
+    @authentication
     @cypher(
       statement: """
       MATCH (member:Active:Member {id: $memberId})
@@ -512,13 +331,13 @@ extend type Mutation {
 
       WITH member
       CALL {
-      	WITH member
-      	WITH member  WHERE $basontaId <> 'None'
-        MATCH (ministry:Basonta {id: $basontaId})
-        MERGE (member)-[:BELONGS_TO]->(ministry)
+        WITH member
+        WITH member WHERE $basontaId <> 'None'
+        MATCH (basonta:Basonta {id: $basontaId})
+        MERGE (member)-[:BELONGS_TO]->(basonta)
 
         RETURN count(member) AS memberCount
-        }
+      }
 
       RETURN member
       """
@@ -611,7 +430,7 @@ extend type Mutation {
     )
 
   UpdateDenominationDetails(denominationId: ID!, name: String!): Denomination
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (denomination:Denomination {id: $denominationId})
@@ -622,7 +441,7 @@ extend type Mutation {
       columnName: "denomination"
     )
   UpdateOversightDetails(oversightId: ID!, name: String!): Oversight!
-    @authentication(jwt: { roles_INCLUDES: "adminDenomination" })
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (oversight:Oversight {id: $oversightId})
@@ -643,8 +462,8 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "adminDenomination" }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
         ]
       }
     )
@@ -669,9 +488,9 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "adminDenomination" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
         ]
       }
     )
@@ -700,10 +519,10 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "adminDenomination" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
         ]
       }
     )
@@ -721,9 +540,9 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCouncil" } }
         ]
       }
     )
@@ -746,13 +565,13 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminDenomination" }
-          { roles_INCLUDES: "adminOversight" }
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminGovernorship" }
-          { roles_INCLUDES: "arrivalsAdminGovernorship" }
+          { roles: { includes: "adminDenomination" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "arrivalsAdminGovernorship" } }
         ]
       }
     )
@@ -778,52 +597,12 @@ extend type Mutation {
       columnName: "bacenta"
     )
 
-  UpdateFellowshipDetails(
-    id: ID!
-    name: String!
-    meetingDay: String
-    venueLongitude: Float
-    venueLatitude: Float
-  ): Fellowship
-    @authentication(
-      jwt: {
-        OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCouncil" }
-          { roles_INCLUDES: "adminGovernorship" }
-          { roles_INCLUDES: "leaderFellowship" }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-               MATCH (fellowship:Fellowship {id: $id})
-               	SET fellowship.name = $name
-              	SET fellowship.location = point({latitude:toFloat($venueLatitude), longitude:toFloat($venueLongitude), crs:'WGS-84'})
-
-               WITH fellowship
-                    CALL {
-                     	WITH fellowship
-                      WITH fellowship WHERE $meetingDay IS NOT NULL
-                      MATCH (meetingDay:ServiceDay {day: $meetingDay})
-                      OPTIONAL MATCH (fellowship)-[r:MEETS_ON]->()
-                      DELETE r
-                      MERGE (fellowship)-[:MEETS_ON]->(meetingDay)
-                     	RETURN count(fellowship)
-                     	}
-
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
 }
 
 ### DELETE OPERATIONS (MAKE INACTIVE) ###
 extend type Mutation {
   # In the context of church data we never delete, we only render inactive
   MakeMemberInactive(id: ID!, reason: String!): Member
-  CloseDownFellowship(fellowshipId: ID!, leaderId: ID!): Bacenta!
   CloseDownBacenta(bacentaId: ID!, leaderId: ID!): Governorship!
   CloseDownGovernorship(
     governorshipId: ID!
@@ -843,205 +622,197 @@ extend type Mutation {
     oversightId: ID!
     denominationId: ID!
   ): Oversight!
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (oversight:Oversight {id: $oversightId})
       MATCH (denomination:Denomination {id: $denominationId})
-      OPTIONAL MATCH (oversight)<-[r:HAS]-(:Denomination)
-      DELETE r
+      OPTIONAL MATCH (oversight)<-[r:HAS]-(oldDenomination:Denomination)
+      WITH oversight, denomination, oldDenomination, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldDenomination.id,
+        log.movedTo = denomination.id,
+        log.historyRecord = oversight.name + ' Oversight was moved from ' + coalesce(oldDenomination.name, 'no Denomination') + ' to ' + denomination.name + ' Denomination'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (oversight)-[:HAS_HISTORY]->(log)
+
+      WITH oversight, denomination, r
+      DELETE r
       MERGE (denomination)-[:HAS]->(oversight)
       RETURN oversight
       """
       columnName: "oversight"
     )
 
+  # Gate mirrors permitAdmin('Denomination') (FE OversightForm RoleView).
   MoveCampusToOversight(campusId: ID!, oversightId: ID!): Campus!
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (campus:Campus {id: $campusId})
       MATCH (oversight:Oversight {id: $oversightId})
-      OPTIONAL MATCH (campus)<-[r:HAS]-(:Oversight)
-      DELETE r
+      OPTIONAL MATCH (campus)<-[r:HAS]-(oldOversight:Oversight)
+      WITH campus, oversight, oldOversight, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldOversight.id,
+        log.movedTo = oversight.id,
+        log.historyRecord = campus.name + ' Campus was moved from ' + coalesce(oldOversight.name, 'no Oversight') + ' to ' + oversight.name + ' Oversight'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (campus)-[:HAS_HISTORY]->(log)
+
+      WITH campus, oversight, r
+      DELETE r
       MERGE (oversight)-[:HAS]->(campus)
       RETURN campus
       """
       columnName: "campus"
     )
 
+  # Gate mirrors permitAdmin('Oversight') (FE CampusForm RoleView).
   MoveStreamToCampus(streamId: ID!, campusId: ID!): Stream!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (stream:Stream {id: $streamId})
       MATCH (campus:Campus {id: $campusId})
-      OPTIONAL MATCH (stream)<-[r:HAS]-(:Campus)
-      DELETE r
+      OPTIONAL MATCH (stream)<-[r:HAS]-(oldCampus:Campus)
+      WITH stream, campus, oldCampus, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldCampus.id,
+        log.movedTo = campus.id,
+        log.historyRecord = stream.name + ' Stream was moved from ' + coalesce(oldCampus.name, 'no Campus') + ' to ' + campus.name + ' Campus'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (stream)-[:HAS_HISTORY]->(log)
+
+      WITH stream, campus, r
+      DELETE r
       MERGE (campus)-[:HAS]->(stream)
       RETURN stream
       """
       columnName: "stream"
     )
 
+  # Gate mirrors permitAdmin('Campus') (FE StreamForm RoleView).
   MoveCouncilToStream(councilId: ID!, streamId: ID!): Council!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
       MATCH (stream:Stream {id: $streamId})
-      OPTIONAL MATCH (council)<-[r:HAS]-(:Stream)
-      DELETE r
+      OPTIONAL MATCH (council)<-[r:HAS]-(oldStream:Stream)
+      WITH council, stream, oldStream, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldStream.id,
+        log.movedTo = stream.id,
+        log.historyRecord = council.name + ' Council was moved from ' + coalesce(oldStream.name, 'no Stream') + ' to ' + stream.name + ' Stream'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (council)-[:HAS_HISTORY]->(log)
+
+      WITH council, stream, r
+      DELETE r
       MERGE (stream)-[:HAS]->(council)
       RETURN council
       """
       columnName: "council"
     )
 
+  # Gate mirrors permitAdmin('Stream') (FE CouncilForm RoleView).
   MoveGovernorshipToCouncil(governorshipId: ID!, councilId: ID!): Governorship!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (governorship:Governorship {id: $governorshipId})
       MATCH (council:Council {id: $councilId})
-      OPTIONAL MATCH (governorship)<-[r:HAS]-(:Council)
-      DELETE r
+      OPTIONAL MATCH (governorship)<-[r:HAS]-(oldCouncil:Council)
+      WITH governorship, council, oldCouncil, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldCouncil.id,
+        log.movedTo = council.id,
+        log.historyRecord = governorship.name + ' Governorship was moved from ' + coalesce(oldCouncil.name, 'no Council') + ' to ' + council.name + ' Council'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (governorship)-[:HAS_HISTORY]->(log)
+
+      WITH governorship, council, r
+      DELETE r
       MERGE (council)-[:HAS]->(governorship)
       RETURN governorship
       """
       columnName: "governorship"
     )
+  # Gate mirrors permitAdmin('Council') (FE GovernorshipForm RoleView).
   MoveBacentaToGovernorship(bacentaId: ID!, governorshipId: ID!): Bacenta!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})
       MATCH (governorship:Governorship {id: $governorshipId})
-      OPTIONAL MATCH (bacenta)<-[r:HAS]-(:Governorship)
-      DELETE r
+      OPTIONAL MATCH (bacenta)<-[r:HAS]-(oldGovernorship:Governorship)
+      WITH bacenta, governorship, oldGovernorship, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldGovernorship.id,
+        log.movedTo = governorship.id,
+        log.historyRecord = bacenta.name + ' Bacenta was moved from ' + coalesce(oldGovernorship.name, 'no Governorship') + ' to ' + governorship.name + ' Governorship'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (bacenta)-[:HAS_HISTORY]->(log)
+
+      WITH bacenta, governorship, r
+      DELETE r
       MERGE (governorship)-[:HAS]->(bacenta)
       RETURN bacenta
       """
       columnName: "bacenta"
     )
 
-  MoveFellowshipToBacenta(fellowshipId: ID!, bacentaId: ID!): Fellowship!
-    @cypher(
-      statement: """
-      MATCH (fellowship:Fellowship {id: $fellowshipId})
-      MATCH (bacenta:Bacenta {id: $bacentaId})
-      OPTIONAL MATCH (fellowship)<-[r:HAS]-(:Bacenta)
-      DELETE r
-
-      MERGE (bacenta)-[:HAS]->(fellowship)
-      RETURN fellowship
-      """
-      columnName: "fellowship"
-    )
-
-  MoveCreativeArtsToCampus(creativeArtsId: ID!, campusId: ID!): CreativeArts!
-    @cypher(
-      statement: """
-      MATCH (creativeArts:CreativeArts {id: $creativeArtsId})
-      MATCH (campus:Campus {id: $campusId})
-      OPTIONAL MATCH (creativeArts)<-[r:HAS_MINISTRY]-(:Campus)
-      DELETE r
-
-      MERGE (campus)-[:HAS_MINISTRY]->(creativeArts)
-      RETURN creativeArts
-      """
-      columnName: "creativeArts"
-    )
-
-  MoveMinistryToCreativeArts(ministryId: ID!, creativeArtsId: ID!): Ministry!
-    @cypher(
-      statement: """
-      MATCH (ministry:Ministry {id: $ministryId})
-      MATCH (creativeArts:CreativeArts {id: $creativeArtsId})
-      OPTIONAL MATCH (ministry)<-[r:HAS]-(:CreativeArts)
-      DELETE r
-
-      MERGE (creativeArts)-[:HAS]->(ministry)
-      RETURN ministry
-      """
-      columnName: "ministry"
-    )
-  MoveMinistryToStream(ministryId: ID!, streamId: ID!): Ministry!
-    @cypher(
-      statement: """
-      MATCH (ministry:Ministry {id: $ministryId})
-      MATCH (stream:Stream {id: $streamId})
-      OPTIONAL MATCH (ministry)<-[r:HAS_MINISTRY]-(:Stream)
-      DELETE r
-
-      MERGE (stream)-[:HAS_MINISTRY]->(ministry)
-      RETURN ministry
-      """
-      columnName: "ministry"
-    )
-  MoveHubCouncilToMinistry(hubCouncilId: ID!, ministryId: ID!): HubCouncil!
-    @cypher(
-      statement: """
-      MATCH (hubCouncil:HubCouncil {id: $hubCouncilId})
-      MATCH (ministry:Ministry {id: $ministryId})
-      OPTIONAL MATCH (hubCouncil)<-[r:HAS]-(:Ministry)
-      DELETE r
-
-      MERGE (ministry)-[:HAS]->(hubCouncil)
-      RETURN hubCouncil
-      """
-      columnName: "hubCouncil"
-    )
-  MoveHubCouncilToCouncil(hubCouncilId: ID!, councilId: ID!): HubCouncil!
-    @cypher(
-      statement: """
-      MATCH (hubCouncil:HubCouncil {id: $hubCouncilId})
-      MATCH (council:Council {id: $councilId})
-      OPTIONAL MATCH (hubCouncil)<-[r:HAS_MINISTRY]-(:Council)
-      DELETE r
-
-      MERGE (council)-[:HAS_MINISTRY]->(hubCouncil)
-      RETURN hubCouncil
-      """
-      columnName: "hubCouncil"
-    )
-  MoveHubToHubCouncil(hubId: ID!, hubCouncilId: ID!): Hub!
-    @cypher(
-      statement: """
-      MATCH (hub:Hub {id: $hubId})
-      MATCH (hubCouncil:HubCouncil {id: $hubCouncilId})
-      OPTIONAL MATCH (hub)<-[r:HAS]-(:HubCouncil)
-      DELETE r
-
-      MERGE (hubCouncil)-[:HAS]->(hub)
-      RETURN hub
-      """
-      columnName: "hub"
-    )
-  MoveHubToGovernorship(hubId: ID!, governorshipId: ID!): Hub!
-    @cypher(
-      statement: """
-      MATCH (hub:Hub {id: $hubId})
-      MATCH (governorship:Governorship {id: $governorshipId})
-      OPTIONAL MATCH (hub)<-[r:HAS_MINISTRY]-(:Governorship)
-      DELETE r
-
-      MERGE (governorship)-[:HAS_MINISTRY]->(hub)
-      RETURN hub
-      """
-      columnName: "hub"
-    )
-  MoveHubFellowshipToHub(hubFellowshipId: ID!, hubId: ID!): HubFellowship!
-    @cypher(
-      statement: """
-      MATCH (hubFellowship:HubFellowship {id: $hubFellowshipId})
-      MATCH (hub:Hub {id: $hubId})
-      OPTIONAL MATCH (hubFellowship)<-[r:HAS]-(:Hub)
-      DELETE r
-
-      MERGE (hub)-[:HAS]->(hubFellowship)
-      RETURN hubFellowship
-      """
-      columnName: "hubFellowship"
-    )
 }

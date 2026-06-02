@@ -4,10 +4,12 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import useSetUserChurch from 'hooks/useSetUserChurch'
 import React, { useContext } from 'react'
-import { Card, Col, Row, Button, Container } from 'react-bootstrap'
-import { TelephoneFill, Whatsapp } from 'react-bootstrap-icons'
+import { Phone } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
 import { useNavigate } from 'react-router'
-import PullToRefresh from 'react-simple-pull-to-refresh'
+import PullToRefresh from 'components/base-component/PullToRefresh'
+import { Button } from 'components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader } from 'components/ui/card'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import { COUNCIL_BY_GOVERNORSHIP } from '../DefaultersQueries'
@@ -27,116 +29,132 @@ const CouncilByGovernorship = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
-        <Container>
+        <div className="mx-auto w-full max-w-screen-md px-4">
           <HeadingPrimary
             loading={!data}
           >{`${data?.councils[0].name} Council By Governorship`}</HeadingPrimary>
-          <Row>
+          <div className="grid gap-3">
             {data ? (
               data?.councils[0].governorships.map(
                 (governorship: HigherChurchWithDefaulters, i: number) => (
-                  <Col key={i} xs={12} className="mb-3">
-                    <Card>
-                      <Card.Header className="fw-bold">
-                        <div>{`${governorship.name} Governorship`}</div>
-                        <div className="text-secondary">
-                          {governorship.leader.fullName}
-                        </div>
-                      </Card.Header>
-                      <Card.Body
-                        onClick={() => {
+                  <Card key={i}>
+                    <CardHeader className="font-bold">
+                      <div>{`${governorship.name} Governorship`}</div>
+                      <div className="text-muted-foreground">
+                        {governorship.leader.fullName}
+                      </div>
+                    </CardHeader>
+                    <CardContent
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => {
+                        clickCard(governorship)
+                        setUserChurch(governorship)
+                        navigate('/services/defaulters/dashboard')
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
                           clickCard(governorship)
                           setUserChurch(governorship)
-
                           navigate('/services/defaulters/dashboard')
-                        }}
+                        }
+                      }}
+                      className="cursor-pointer space-y-1"
+                    >
+                      <div className="font-bold">
+                        Active Bacentas {governorship.activeBacentaCount}
+                      </div>
+                      <div className="good">
+                        Services This Week{' '}
+                        {governorship.servicesThisWeekCount}
+                      </div>
+                      <div
+                        className={
+                          governorship.formDefaultersThisWeekCount
+                            ? 'bad'
+                            : 'good'
+                        }
                       >
-                        <div className="fw-bold">
-                          Active Bacentas {governorship.activeBacentaCount}
-                        </div>
-                        <div className="good">
-                          Services This Week{' '}
-                          {governorship.servicesThisWeekCount}
-                        </div>
-                        <div
-                          className={
-                            governorship.formDefaultersThisWeekCount
-                              ? 'bad'
-                              : 'good'
-                          }
-                        >
-                          Form Not Filled This Week{' '}
-                          {governorship.formDefaultersThisWeekCount}
-                        </div>
+                        Form Not Filled This Week{' '}
+                        {governorship.formDefaultersThisWeekCount}
+                      </div>
 
-                        <div
-                          className={
-                            governorship.bankedThisWeekCount ===
-                            governorship.servicesThisWeekCount
-                              ? 'good'
-                              : governorship.bankedThisWeekCount > 0
-                              ? 'yellow'
-                              : 'bad'
-                          }
-                        >
-                          Banked This Week {governorship.bankedThisWeekCount}
+                      <div
+                        className={
+                          governorship.bankedThisWeekCount ===
+                          governorship.servicesThisWeekCount
+                            ? 'good'
+                            : governorship.bankedThisWeekCount > 0
+                            ? 'yellow'
+                            : 'bad'
+                        }
+                      >
+                        Banked This Week {governorship.bankedThisWeekCount}
+                      </div>
+                      <div
+                        className={
+                          governorship.bankingDefaultersThisWeekCount
+                            ? 'bad'
+                            : 'good'
+                        }
+                      >
+                        Not Banked This Week{' '}
+                        {governorship.bankingDefaultersThisWeekCount}
+                      </div>
+                      <div
+                        className={
+                          governorship.cancelledServicesThisWeekCount
+                            ? 'bad'
+                            : 'good'
+                        }
+                      >
+                        Cancelled Services This Week{' '}
+                        {governorship.cancelledServicesThisWeekCount}
+                      </div>
+                    </CardContent>
+                    <CardFooter className="flex flex-col items-start gap-2">
+                      {governorship?.bankedBy && (
+                        <div className="text-[hsl(var(--warning))]">
+                          Offering Received By:{' '}
+                          {`${governorship.bankedBy.firstName} ${governorship.bankedBy.lastName}`}
                         </div>
-                        <div
-                          className={
-                            governorship.bankingDefaultersThisWeekCount
-                              ? 'bad'
-                              : 'good'
-                          }
+                      )}
+                      <div className="mb-2">
+                        Contact Admin: {governorship?.admin?.fullName}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button asChild>
+                          <a
+                            href={`tel:${governorship?.admin?.phoneNumber}`}
+                          >
+                            <Phone className="h-4 w-4" /> Call
+                          </a>
+                        </Button>
+                        <Button
+                          asChild
+                          className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
                         >
-                          Not Banked This Week{' '}
-                          {governorship.bankingDefaultersThisWeekCount}
-                        </div>
-                        <div
-                          className={
-                            governorship.cancelledServicesThisWeekCount
-                              ? 'bad'
-                              : 'good'
-                          }
-                        >
-                          Cancelled Services This Week{' '}
-                          {governorship.cancelledServicesThisWeekCount}
-                        </div>
-                      </Card.Body>
-                      <Card.Footer>
-                        {governorship?.bankedBy && (
-                          <div className="text-warning">
-                            Offering Received By:{' '}
-                            {`${governorship.bankedBy.firstName} ${governorship.bankedBy.lastName}`}
-                          </div>
-                        )}
-                        <div className="mb-2">
-                          Contact Admin: {governorship?.admin?.fullName}
-                        </div>
-                        <a href={`tel:${governorship?.admin?.phoneNumber}`}>
-                          <Button variant="primary">
-                            <TelephoneFill /> Call
-                          </Button>
-                        </a>
-                        <a
-                          href={`https://wa.me/${
-                            governorship?.admin?.whatsappNumber
-                          }?text=${messageForAdminsOfDefaulters(governorship)}`}
-                          className="ms-3"
-                        >
-                          <Button variant="success">
-                            <Whatsapp /> WhatsApp
-                          </Button>
-                        </a>
-                      </Card.Footer>
-                    </Card>
-                  </Col>
+                          <a
+                            href={`https://wa.me/${
+                              governorship?.admin?.whatsappNumber
+                            }?text=${messageForAdminsOfDefaulters(
+                              governorship
+                            )}`}
+                          >
+                            <FaWhatsapp className="h-4 w-4" /> WhatsApp
+                          </a>
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
                 )
               )
             ) : (
               <PlaceholderDefaulterList />
             )}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

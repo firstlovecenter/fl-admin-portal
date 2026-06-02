@@ -1,4 +1,7 @@
-type AccountTransaction {
+type AccountTransaction @node
+  @mutation(operations: [])
+  # @churchScopedVia(field: council, level: Council)
+{
   id: ID!
   createdAt: DateTime!
   lastModified: DateTime!
@@ -13,8 +16,8 @@ type AccountTransaction {
   momoName: String
   invoiceUrl: String
 
-  council: Council! @relationship(type: "HAS_TRANSACTION", direction: IN)
-  loggedBy: Member! @relationship(type: "LOGGED_BY", direction: OUT)
+  council: Council @relationship(type: "HAS_TRANSACTION", direction: IN)
+  loggedBy: Member @relationship(type: "LOGGED_BY", direction: OUT)
 
   bussingSocietyBalance: Float!
   weekdayBalance: Float!
@@ -25,15 +28,21 @@ extend type Oversight {
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(council:Council)
-      RETURN SUM(council.hrAmount)
+      RETURN SUM(council.hrAmount) AS hrAmount
       """
       columnName: "hrAmount"
     )
+  # SYN-99: compute from the AccountTransaction ledger so the value
+  # reflects total bussing spend (net of reversals), not whatever the
+  # most-recent debit happened to be. Bussing expenses store amount
+  # negative, reversals store positive, so `-amount` flips spend back
+  # to positive and reversals net to zero.
   bussingAmount: Float!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(council:Council)
-      RETURN SUM(council.bussingAmount)
+      MATCH (this)-[:HAS*3]->(council:Council)-[:HAS_TRANSACTION]->(t:AccountTransaction)
+      WHERE t.category = 'Bussing' AND t.status = 'success'
+      RETURN coalesce(SUM(-t.amount), 0) AS bussingAmount
       """
       columnName: "bussingAmount"
     )
@@ -64,11 +73,13 @@ extend type Campus {
       """
       columnName: "hrAmount"
     )
+  # SYN-99 — see Oversight.bussingAmount above.
   bussingAmount: Float!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(council:Council)
-      RETURN SUM(council.bussingAmount) AS bussingAmount
+      MATCH (this)-[:HAS*2]->(council:Council)-[:HAS_TRANSACTION]->(t:AccountTransaction)
+      WHERE t.category = 'Bussing' AND t.status = 'success'
+      RETURN coalesce(SUM(-t.amount), 0) AS bussingAmount
       """
       columnName: "bussingAmount"
     )
@@ -88,15 +99,36 @@ extend type Campus {
       """
       columnName: "bussingSocietyBalance"
     )
-  transactions: [AccountTransaction!]!
+  # SYN-105: $limit is server-clamped to <=200 inside the @cypher LIMIT
+  # clause (CASE WHEN $limit > 200 THEN 200 ELSE $limit END). The default
+  # 1000 is irrelevant — even an explicit `limit: 100000` returns at most
+  # 200 rows. Sort uses the new RANGE INDEX on AccountTransaction(lastModified)
+  # added by api/src/scripts/migrate-account-transaction-lastmodified-index.js.
+  # SYN-106: project @relationship fields inside the @cypher. v7 resolves
+  # each @relationship via a per-row driver round-trip; an inline projection
+  # collapses the N+1.
+  transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(council:Council)
-      MATCH (council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
-
-      RETURN transaction ORDER BY transaction.lastModified DESC
+      MATCH (this)-[:HAS*2]->(c:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      WITH transaction, c
+      ORDER BY transaction.lastModified DESC, transaction.id
+      SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      RETURN transaction {
+        .*,
+        loggedBy: head([(transaction)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName, .fullName }]),
+        council: c { .id, .name, leader: head([(c)<-[:LEADS]-(l:Member) | l { .id, .firstName, .lastName, .fullName }]) }
+      }
       """
       columnName: "transaction"
+    )
+  transactionCount: Int!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS*2]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN count(DISTINCT transaction) AS total
+      """
+      columnName: "total"
     )
 }
 
@@ -109,11 +141,13 @@ extend type Stream {
       """
       columnName: "hrAmount"
     )
+  # SYN-99 — see Oversight.bussingAmount above.
   bussingAmount: Float!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(council:Council)
-      RETURN SUM(council.bussingAmount) AS bussingAmount
+      MATCH (this)-[:HAS]->(council:Council)-[:HAS_TRANSACTION]->(t:AccountTransaction)
+      WHERE t.category = 'Bussing' AND t.status = 'success'
+      RETURN coalesce(SUM(-t.amount), 0) AS bussingAmount
       """
       columnName: "bussingAmount"
     )
@@ -133,46 +167,125 @@ extend type Stream {
       """
       columnName: "bussingSocietyBalance"
     )
-  transactions: [AccountTransaction!]!
+  # SYN-105: $limit is server-clamped to <=200 inside the @cypher LIMIT
+  # clause (CASE WHEN $limit > 200 THEN 200 ELSE $limit END). The default
+  # 1000 is irrelevant — even an explicit `limit: 100000` returns at most
+  # 200 rows. Sort uses the new RANGE INDEX on AccountTransaction(lastModified)
+  # added by api/src/scripts/migrate-account-transaction-lastmodified-index.js.
+  # SYN-106 — see Campus.transactions above. No FE consumer projects
+  # `council` off Stream.transactions today, so only `loggedBy` is inlined.
+  transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS]->(council:Council)
-      MATCH (council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
-
-      RETURN transaction ORDER BY transaction.lastModified DESC
+      MATCH (this)-[:HAS]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      WITH transaction
+      ORDER BY transaction.lastModified DESC, transaction.id
+      SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      RETURN transaction {
+        .*,
+        loggedBy: head([(transaction)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName, .fullName }])
+      }
       """
       columnName: "transaction"
+    )
+  transactionCount: Int!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS]->(council:Council)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN count(DISTINCT transaction) AS total
+      """
+      columnName: "total"
     )
 }
 
 extend type Council {
   hrAmount: Float
-  bussingAmount: Float
+  # SYN-99 — see Oversight.bussingAmount above. Council is the leaf — its
+  # transactions live one HAS_TRANSACTION hop away.
+  bussingAmount: Float!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_TRANSACTION]->(t:AccountTransaction)
+      WHERE t.category = 'Bussing' AND t.status = 'success'
+      RETURN coalesce(SUM(-t.amount), 0) AS bussingAmount
+      """
+      columnName: "bussingAmount"
+    )
   weekdayBalance: Float!
   bussingSocietyBalance: Float
-  transactions: [AccountTransaction!]!
-    @relationship(type: "HAS_TRANSACTION", direction: OUT)
+  # SYN-105: $limit is server-clamped to <=200 inside the @cypher LIMIT
+  # clause (CASE WHEN $limit > 200 THEN 200 ELSE $limit END). The default
+  # 1000 is irrelevant — even an explicit `limit: 100000` returns at most
+  # 200 rows. Sort uses the new RANGE INDEX on AccountTransaction(lastModified)
+  # added by api/src/scripts/migrate-account-transaction-lastmodified-index.js.
+  # SYN-106 — see Campus.transactions above; `this` is already the Council,
+  # so the FE walks the Council parent directly and only `loggedBy` needs
+  # inlining.
+  transactions(limit: Int! = 1000, offset: Int! = 0): [AccountTransaction!]!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      WITH transaction
+      ORDER BY transaction.lastModified DESC, transaction.id
+      SKIP $offset LIMIT (CASE WHEN $limit > 200 THEN 200 ELSE $limit END)
+      RETURN transaction {
+        .*,
+        loggedBy: head([(transaction)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName, .fullName }])
+      }
+      """
+      columnName: "transaction"
+    )
+  transactionCount: Int!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      RETURN count(DISTINCT transaction) AS total
+      """
+      columnName: "total"
+    )
+  # Dedicated read for the /accounts/campus/approvals page. The paginated
+  # `transactions(limit, offset)` field above clamps at 200 rows server-side,
+  # so client-side filtering would silently drop pending items behind a busy
+  # success ledger. A defensive `LIMIT 500` caps the worst case if an
+  # approval queue ever stalls (e.g. an admin on extended leave) — well
+  # above any realistic pending count, but bounds payload size.
+  #
+  # Council-level only by design — the FE walks `campuses → councils →
+  # pendingApprovalTransactions` and aggregates client-side. Add a Campus
+  # or Stream variant only when a higher-level approvals view is needed.
+  # SYN-106 — same inline loggedBy projection as Council.transactions above.
+  pendingApprovalTransactions: [AccountTransaction!]!
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_TRANSACTION]->(transaction:AccountTransaction)
+      WHERE transaction.status = 'pending approval'
+      WITH transaction
+      ORDER BY transaction.lastModified DESC, transaction.id
+      LIMIT 500
+      RETURN transaction {
+        .*,
+        loggedBy: head([(transaction)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName, .fullName }])
+      }
+      """
+      columnName: "transaction"
+    )
 }
 
 extend type Mutation {
+  # SYN-96 — lifted to imperative resolver (accountsMutations) so the
+  # role gate, cross-campus scope check, and amount validation run
+  # before any write. Roles preserved at adminCampus only.
   SetCouncilHRAmount(councilId: ID!, amount: Float!): Council!
-    @authentication(jwt: { roles_INCLUDES: "adminCampus" })
-    @cypher(
-      statement: """
-      MATCH (council:Council {id: $councilId})
-        SET council.hrAmount = $amount
-      RETURN council
-      """
-      columnName: "council"
-    )
   DepositIntoCouncilCurrentAccount(
     councilId: ID!
     weekdayBalanceDepositAmount: Float!
+    clientTransactionId: ID!
   ): AccountTransaction!
 
   DepositIntoCouncilBussingSociety(
     councilId: ID!
     bussingSocietyBalance: Float!
+    clientTransactionId: ID!
   ): AccountTransaction!
 
   ExpenseRequest(
@@ -180,93 +293,24 @@ extend type Mutation {
     expenseAmount: Float!
     expenseCategory: String!
     accountType: String!
-    description: String! #momoNumber: String! #momoName: String! #invoiceUrl: String!
+    description: String!
+    clientTransactionId: ID!
   ): AccountTransaction!
-    # @authentication(
-    #   jwt: {
-    #     OR: [
-    #       { roles_INCLUDES: "leaderCouncil" }
-    #       { roles_INCLUDES: "adminCampus" }
-    #     ]
-    #   }
-    # )
-    @cypher(
-      statement: """
-      MATCH (council:Council {id: $councilId})
-      MATCH (requester:Member {id: $jwt.userId})
-
-      WITH council, requester
-
-      CREATE (transaction:AccountTransaction {id: randomUUID()})
-        SET transaction.description = $description,
-        transaction.amount = $expenseAmount *  -1,
-        transaction.account = $accountType,
-        transaction.category = $expenseCategory,
-        transaction.status = 'pending approval',
-        transaction.createdAt = datetime(),
-        transaction.lastModified = datetime(),
-        transaction.bussingSocietyBalance = council.bussingSocietyBalance,
-        transaction.weekdayBalance = council.weekdayBalance
-        // transaction.momoNumber = $momoNumber,
-        // transaction.momoName = $momoName,
-        // transaction.invoiceUrl = $invoiceUrl
-
-      MERGE (council)-[:HAS_TRANSACTION]->(transaction)
-      MERGE (requester)<-[:LOGGED_BY]-(transaction)
-
-      RETURN transaction
-      """
-      columnName: "transaction"
-    )
 
   ApproveExpense(transactionId: ID!, charge: Float!): AccountTransaction!
 
+  # SYN-96 — lifted to imperative resolver. Adds the SYN-92 status
+  # precondition so an already-approved transaction cannot be silently
+  # re-flipped to 'declined'. Roles preserved at adminCampus +
+  # leaderCampus.
   DeclineExpense(transactionId: ID!): AccountTransaction!
-    @authentication(
-      jwt: {
-        OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "leaderCampus" }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-      MATCH (transaction:AccountTransaction {id: $transactionId})
-        SET transaction.status = 'declined'
-
-      RETURN transaction
-      """
-      columnName: "transaction"
-    )
   UndoBussingTransaction(transactionId: ID!): Council!
-    @cypher(
-      statement: """
-      MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
-
-        SET council.bussingSocietyBalance = council.bussingSocietyBalance - transaction.amount
-      DETACH DELETE transaction
-
-      RETURN council
-      """
-      columnName: "council"
-    )
   UndoWeekdayTransaction(transactionId: ID!): Council!
-    @cypher(
-      statement: """
-      MATCH (transaction:AccountTransaction {id: $transactionId})<-[:HAS_TRANSACTION]-(council:Council)
-
-        SET council.weekdayBalance = council.weekdayBalance - transaction.amount
-      DETACH DELETE transaction
-
-      RETURN council
-      """
-      columnName: "council"
-    )
 
   DebitBussingSociety(
     councilId: ID!
     expenseAmount: Float!
     expenseCategory: String!
+    clientTransactionId: ID!
   ): AccountTransaction!
 }

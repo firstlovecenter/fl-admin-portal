@@ -30,8 +30,6 @@ export interface BussingRecord {
   bussingTopUp: number
   counted_by: [Member]
 
-  comments: string
-  arrivalTime: Date
   transactionId: number
   arrival_confirmed_by: Member
 
@@ -44,6 +42,7 @@ export interface BussingRecord {
 export type AggregateBussingRecords = {
   id: string
   week: number
+  year: number
   attendance: number
   leaderDeclaration: number
   numberOfSprinters: number
@@ -108,7 +107,7 @@ export interface HigherChurchWithArrivals extends Church {
   stream_name?: StreamOptions
   stream: Stream
   arrivalsAdmin: Member
-  activeBacentaICCount: number
+  activeBacentaCount: number
   bacentasNoActivity: BacentaWithArrivals[]
   bacentasMobilising: BacentaWithArrivals[]
   bacentasOnTheWay: BacentaWithArrivals[]

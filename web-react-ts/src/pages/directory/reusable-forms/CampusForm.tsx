@@ -7,14 +7,6 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MAKE_CAMPUS_INACTIVE } from 'pages/directory/update/CloseChurchMutations'
 import { useNavigate } from 'react-router'
 import RoleView from 'auth/RoleView'
-import {
-  Button,
-  Container,
-  Row,
-  Col,
-  ButtonGroup,
-  Modal,
-} from 'react-bootstrap'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -23,23 +15,25 @@ import Input from 'components/formik/Input'
 import SearchMember from 'components/formik/SearchMember'
 import SearchStream from 'components/formik/SearchStream'
 import { FormikInitialValues } from 'components/formik/formik-types'
-import { CreativeArts, Oversight, Stream } from 'global-types'
-import {
-  MOVE_CREATIVEARTS_TO_CAMPUS,
-  MOVE_STREAM_TO_CAMPUS,
-} from '../update/UpdateMutations'
+import { Oversight, Stream } from 'global-types'
 import NoDataComponent from 'pages/arrivals/CompNoData'
-import { DISPLAY_CAMPUS, DISPLAY_OVERSIGHT } from '../display/ReadQueries'
 import Select from 'components/formik/Select'
 import BtnSubmitText from 'components/formik/BtnSubmitText'
-import SearchCreativeArts from 'components/formik/SearchCreativeArts'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { MOVE_STREAM_TO_CAMPUS } from '../update/UpdateMutations'
+import { DISPLAY_CAMPUS, DISPLAY_OVERSIGHT } from '../display/ReadQueries'
 
 export interface CampusFormValues extends FormikInitialValues {
   oversight?: Oversight
   streams?: Stream[]
   stream?: Stream
-  creativeArt?: CreativeArts
-  creativeArts?: CreativeArts[]
   incomeTracking: 'Yes' | 'No'
   currency: 'GHS' | 'USD' | 'GBP' | 'EUR'
   conversionRateToDollar: number
@@ -63,7 +57,6 @@ const CampusForm = ({
 }: CampusFormProps) => {
   const { clickCard, campusId } = useContext(ChurchContext)
   const [streamModal, setStreamModal] = useState(false)
-  const [creativeArtModal, setCreativeArtModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
 
   const navigate = useNavigate()
@@ -79,10 +72,6 @@ const CampusForm = ({
   const [MoveStreamToCampus] = useMutation(MOVE_STREAM_TO_CAMPUS, {
     refetchQueries: [{ query: DISPLAY_CAMPUS, variables: { id: campusId } }],
   })
-  const [MoveCreativeArtsToCampus] = useMutation(MOVE_CREATIVEARTS_TO_CAMPUS, {
-    refetchQueries: [{ query: DISPLAY_CAMPUS, variables: { id: campusId } }],
-  })
-
   const validationSchema = Yup.object({
     name: Yup.string().required(`Campus Name is a required field`),
     leaderId: Yup.string().required(
@@ -91,22 +80,22 @@ const CampusForm = ({
   })
 
   return (
-    <Container>
+    <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{initialValues.name + ' Campus'}</HeadingSecondary>
-      <ButtonGroup className="mt-3">
+      <HeadingSecondary>{`${initialValues.name} Campus`}</HeadingSecondary>
+      <div className="mt-3 inline-flex gap-2">
         {!newCampus && (
           <>
             <Button onClick={() => setStreamModal(true)}>Add Stream</Button>
-            <Button variant="warning" onClick={() => setCreativeArtModal(true)}>
-              Add Creative Arts
-            </Button>
-            <Button variant="success" onClick={() => setCloseDown(true)}>
-              {`Close Down Campus`}
+            <Button
+              className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+              onClick={() => setCloseDown(true)}
+            >
+              Close Down Campus
             </Button>
           </>
         )}
-      </ButtonGroup>
+      </div>
 
       <Formik
         initialValues={initialValues}
@@ -115,16 +104,15 @@ const CampusForm = ({
         validateOnMount
       >
         {(formik) => (
-          <Container className="py-4">
+          <div className="py-4">
             <Form>
               <div className="form-group">
-                <Row className="row-cols-1 row-cols-md-2">
-                  {/* <!-- Basic Info Div --> */}
-                  <Col className="mb-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="mb-2 space-y-3">
                     <Input
                       name="name"
-                      label={`Name of Campus`}
-                      placeholder={`Name of Campus`}
+                      label="Name of Campus"
+                      placeholder="Name of Campus"
                     />
 
                     <Select
@@ -143,13 +131,13 @@ const CampusForm = ({
 
                     <Input
                       name="conversionRateToDollar"
-                      label={`Dollar Conversion Rate (How Much Is $1 In Currency)`}
-                      placeholder={`Dollar Conversion Rate`}
+                      label="Dollar Conversion Rate (How Much Is $1 In Currency)"
+                      placeholder="Dollar Conversion Rate"
                     />
 
-                    <Row className="d-flex align-items-center mb-3">
+                    <div className="mb-3 flex items-center">
                       <RoleView roles={permitAdmin('Oversight')}>
-                        <Col>
+                        <div className="flex-1">
                           <SearchMember
                             name="leaderId"
                             label="Choose a Leader"
@@ -159,206 +147,144 @@ const CampusForm = ({
                             aria-describedby="Member Search Box"
                             error={formik.errors.leaderId}
                           />
-                        </Col>
+                        </div>
                       </RoleView>
-                    </Row>
-                    <div className="d-grid gap-2">
-                      {initialValues.streams?.length && (
-                        <p className="fw-bold fs-5">Streams</p>
-                      )}
+                    </div>
+                    <div className="grid gap-2">
+                      {initialValues.streams?.length ? (
+                        <p className="text-lg font-semibold">Streams</p>
+                      ) : null}
                       {initialValues.streams?.map((stream, index) => {
-                        if (!stream && !index)
-                          return <NoDataComponent text="No Streams" />
+                        if (!stream && !index) {
+                          return <NoDataComponent text="No Streams" key="no" />
+                        }
                         return (
-                          <Button variant="secondary" className="text-start">
+                          <Button
+                            key={stream?.id ?? index}
+                            type="button"
+                            variant="secondary"
+                            className="justify-start text-left"
+                          >
                             {stream.name} Stream
                           </Button>
                         )
                       })}
                     </div>
-
-                    <div className="d-grid gap-2 mt-3">
-                      {initialValues.creativeArts?.length && (
-                        <p className="fw-bold fs-5">Creative Arts</p>
-                      )}
-
-                      {initialValues.creativeArts?.map(
-                        (creativeArts, index) => {
-                          if (!creativeArts && !index)
-                            return <NoDataComponent text="No Creative Arts" />
-                          return (
-                            <Button variant="secondary" className="text-start">
-                              {creativeArts.name} Creative Arts
-                            </Button>
-                          )
-                        }
-                      )}
-                    </div>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </div>
 
-              <div className="text-center mt-5">
+              <div className="mt-5 text-center">
                 <SubmitButton formik={formik} />
               </div>
             </Form>
 
-            <Modal
-              show={streamModal}
-              onHide={() => setStreamModal(false)}
-              centered
-            >
-              <Modal.Header closeButton>Add A Stream</Modal.Header>
-              <Modal.Body>
+            <Dialog open={streamModal} onOpenChange={setStreamModal}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add A Stream</DialogTitle>
+                </DialogHeader>
                 <p>Choose a stream to move to this campus</p>
                 <SearchStream
-                  name={`stream`}
+                  name="stream"
                   placeholder="Stream Name"
                   initialValue=""
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Stream Name"
                 />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading || !formik.values.stream}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await MoveStreamToCampus({
-                        variables: {
-                          streamId: formik.values.stream?.id,
-                          historyRecord: `${formik.values.stream?.name} Stream has been moved to ${formik.values.name} Campus from ${formik.values.stream?.campus.name} Campus`,
-                          newCampusId: campusId,
-                          oldCampusId: formik.values.stream?.campus.id,
-                        },
-                      })
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+                    disabled={buttonLoading || !formik.values.stream}
+                    onClick={async () => {
+                      try {
+                        setButtonLoading(true)
+                        const res = await MoveStreamToCampus({
+                          variables: {
+                            streamId: formik.values.stream?.id,
+                            historyRecord: `${formik.values.stream?.name} Stream has been moved to ${formik.values.name} Campus from ${formik.values.stream?.campus.name} Campus`,
+                            newCampusId: campusId,
+                            oldCampusId: formik.values.stream?.campus.id,
+                          },
+                        })
 
-                      clickCard(res.data.MoveStreamToCampus)
-                      setStreamModal(false)
-                    } catch (error) {
-                      throwToSentry(
-                        `There was an error moving this stream to this campus`,
-                        error
-                      )
-                    } finally {
-                      setButtonLoading(false)
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button variant="primary" onClick={() => setStreamModal(false)}>
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
+                        clickCard(res.data.MoveStreamToCampus)
+                        setStreamModal(false)
+                      } catch (error) {
+                        throwToSentry(
+                          `There was an error moving this stream to this campus`,
+                          error
+                        )
+                      } finally {
+                        setButtonLoading(false)
+                      }
+                    }}
+                  >
+                    <BtnSubmitText loading={buttonLoading} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setStreamModal(false)}
+                  >
+                    Close
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
-            <Modal
-              show={creativeArtModal}
-              onHide={() => setCreativeArtModal(false)}
-              centered
-            >
-              <Modal.Header closeButton>Add A Creative Arts</Modal.Header>
-              <Modal.Body>
-                <p>Choose a creative arts to move to this campus</p>
-                <SearchCreativeArts
-                  name={`creativeArt`}
-                  placeholder="Creative Arts Name"
-                  initialValue=""
-                  setFieldValue={formik.setFieldValue}
-                  aria-describedby="Creative Arts Name"
-                />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading || !formik.values.creativeArt}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await MoveCreativeArtsToCampus({
-                        variables: {
-                          creativeArtsId: formik.values.creativeArt?.id,
-                          historyRecord: `${formik.values.creativeArt?.name} Creative Arts has been moved to ${formik.values.name} Campus from ${formik.values.creativeArt?.campus.name} Campus`,
-                          newCampusId: campusId,
-                          oldCampusId: formik.values.creativeArt?.campus.id,
-                        },
-                      })
-
-                      clickCard(res.data.MoveCreativeArtsToCampus)
-                      setCreativeArtModal(false)
-                    } catch (error) {
-                      throwToSentry(
-                        `There was an error moving this creative arts to this campus`,
-                        error
-                      )
-                    } finally {
-                      setButtonLoading(false)
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => setCreativeArtModal(false)}
-                >
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
-
-            <Modal show={closeDown} onHide={() => setCloseDown(false)} centered>
-              <Modal.Header closeButton>Close Down Campus</Modal.Header>
-              <Modal.Body>
-                <p className="text-info">
+            <Dialog open={closeDown} onOpenChange={setCloseDown}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Close Down Campus</DialogTitle>
+                </DialogHeader>
+                <p className="text-[hsl(var(--maps))]">
                   Are you sure you want to close down this campus?
                 </p>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="success"
-                  type="submit"
-                  disabled={buttonLoading}
-                  onClick={async () => {
-                    try {
-                      setButtonLoading(true)
-                      const res = await CloseDownCampus({
-                        variables: {
-                          id: campusId,
-                          leaderId: initialValues.leaderId,
-                          adminId: initialValues?.adminId,
-                        },
-                      })
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+                    disabled={buttonLoading}
+                    onClick={async () => {
+                      try {
+                        setButtonLoading(true)
+                        const res = await CloseDownCampus({
+                          variables: {
+                            id: campusId,
+                            leaderId: initialValues.leaderId,
+                            adminId: initialValues?.adminId,
+                          },
+                        })
 
-                      setButtonLoading(false)
-                      clickCard(res.data.CloseDownCampus)
-                      setCloseDown(false)
-                      navigate(`/stream/displayall`)
-                    } catch (error) {
-                      setButtonLoading(false)
-                      throwToSentry(
-                        `There was an error closing down this campus`,
-                        error
-                      )
-                    }
-                  }}
-                >
-                  <BtnSubmitText loading={buttonLoading} />
-                </Button>
-                <Button variant="primary" onClick={() => setCloseDown(false)}>
-                  No, take me back
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </Container>
+                        setButtonLoading(false)
+                        clickCard(res.data.CloseDownCampus)
+                        setCloseDown(false)
+                        navigate(`/stream/displayall`)
+                      } catch (error) {
+                        setButtonLoading(false)
+                        throwToSentry(
+                          `There was an error closing down this campus`,
+                          error
+                        )
+                      }
+                    }}
+                  >
+                    <BtnSubmitText loading={buttonLoading} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCloseDown(false)}
+                  >
+                    No, take me back
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </Formik>
-    </Container>
+    </div>
   )
 }
 

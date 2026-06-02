@@ -1,4 +1,4 @@
-import { PlaceType } from './MapComponent'
+import { PlaceType } from '../types'
 
 type MapIconType = google.maps.Icon
 export type Neo4jLocation = { x: number; y: number }
@@ -18,7 +18,7 @@ export const getMapIcon = (place: PlaceType) => {
       scaledSize: new google.maps.Size(40, 40),
     } as MapIconType
   }
-  if (place.typename === 'Fellowship') {
+  if (place.typename === 'Bacenta') {
     return {
       url: 'https://res.cloudinary.com/firstlovecenter/image/upload/v1678533889/map-icons/bible-fellowship-service_hlpo0d.png',
       scaledSize: new google.maps.Size(40, 40),
@@ -52,8 +52,8 @@ export const getMapIconClass = (place: PlaceType) => {
     return 'member-label'
   }
 
-  if (place.typename === 'Fellowship') {
-    return 'fellowship-label'
+  if (place.typename === 'Bacenta') {
+    return 'bacenta-label'
   }
   if (place.typename === 'IndoorVenue') {
     return 'indoor-venue-label'

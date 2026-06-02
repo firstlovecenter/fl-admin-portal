@@ -18,12 +18,6 @@ import {
   matchMemberQuery,
   matchMemberTellerQuery,
 } from '../cypher/resolver-cypher'
-import {
-  matchMemberCreativeArtsQuery,
-  matchMemberHubCouncilQuery,
-  matchMemberHubQuery,
-  matchMemberMinistryQuery,
-} from '../cypher/ministry-directory-cypher'
 
 export const setPriorityLevel = (churchType: ChurchLevel) => {
   let priority = 0
@@ -38,23 +32,16 @@ export const setPriorityLevel = (churchType: ChurchLevel) => {
       priority = 3
       break
     case 'Stream':
-    case 'CreativeArts':
       priority = 4
       break
     case 'Council':
-    case 'Ministry':
       priority = 5
       break
-    case 'HubCouncil':
     case 'Governorship':
       priority = 6
       break
-    case 'Hub':
     case 'Bacenta':
       priority = 7
-      break
-    case 'Fellowship':
-      priority = 8
       break
     default:
       priority = 0
@@ -103,23 +90,6 @@ export const formatting = (
   }
   if (churchType === 'Denomination') {
     memberQuery = matchMemberDenominationQuery
-  }
-
-  if (churchType === 'CreativeArts') {
-    churchLower = 'creativeArts'
-    memberQuery = matchMemberCreativeArtsQuery
-  }
-  if (churchType === 'Ministry') {
-    churchLower = 'ministry'
-    memberQuery = matchMemberMinistryQuery
-  }
-  if (churchType === 'HubCouncil') {
-    churchLower = 'hubCouncil'
-    memberQuery = matchMemberHubCouncilQuery
-  }
-  if (churchType === 'Hub') {
-    churchLower = 'hub'
-    memberQuery = matchMemberHubQuery
   }
 
   const priority = setPriorityLevel(churchType)
@@ -215,72 +185,70 @@ export const makeServantCypher = async ({
   const session = context.executionContext.session()
 
   try {
-    // Connect Leader to Church
-
-    const connectedChurchRes = rearrangeCypherObject(
-      await session
-        .run(servantCypher[`connectChurch${servantType}`], {
+    // One transaction: leader connect + history log + ServiceLog/CURRENT_HISTORY
+    // must commit or roll back together. A partial commit would leave a church
+    // with a :LEADS leader but no CURRENT_HISTORY — invisible to the aggregation
+    // Lambdas and recordService (the SYN-153 orphan failure mode).
+    await session.executeWrite(async (tx) => {
+      // 1. Connect leader to church (returns the higher church name used to
+      //    build the history record string).
+      const connectedChurchRes = rearrangeCypherObject(
+        await tx.run(servantCypher[`connectChurch${servantType}`], {
           [`${servantLower}Id`]: servant.id,
           churchId: church.id,
           jwt: context.jwt,
         })
-        .catch((e: any) =>
-          throwToSentry(`Error Connecting Church${servantType}`, e)
-        )
-    )
+      )
 
-    const historyRecordStringArgs: HistoryRecordArgs = {
-      servant,
-      servantType,
-      oldServant,
-      church,
-      churchType,
-      removed: false,
-      args,
-      higherChurch: {
-        type: nextHigherChurch(churchType),
-        name: connectedChurchRes?.higherChurchName,
-      },
-    }
+      const historyRecordStringArgs: HistoryRecordArgs = {
+        servant,
+        servantType,
+        oldServant,
+        church,
+        churchType,
+        removed: false,
+        args,
+        higherChurch: {
+          type: nextHigherChurch(churchType),
+          name: connectedChurchRes?.higherChurchName,
+        },
+      }
 
-    const serviceLogRes = rearrangeCypherObject(
-      await session
-        .run(servantCypher.createHistoryLog, {
+      // 2. Create the history log.
+      const serviceLogRes = rearrangeCypherObject(
+        await tx.run(servantCypher.createHistoryLog, {
           id: servant.id,
           churchType,
           historyRecord: historyRecordString(historyRecordStringArgs),
         })
-        .catch((e: any) => throwToSentry(`Error Creating History Log`, e))
-    )
-    if (servantType === 'Leader') {
-      await session
-        .run(servantCypher.makeHistoryServiceLog, {
+      )
+
+      // 3. Leaders get a ServiceLog + CURRENT_HISTORY; everyone else just the
+      //    history log connection.
+      if (servantType === 'Leader') {
+        await tx.run(servantCypher.makeHistoryServiceLog, {
           logId: serviceLogRes.id,
           priority,
         })
-        .catch((e: any) =>
-          throwToSentry(`Error Converting History to Service Log`, e)
-        )
-      await session
-        .run(servantCypher.connectServiceLog, {
+        await tx.run(servantCypher.connectServiceLog, {
           churchId: church.id,
           servantId: servant.id,
           oldServantId: oldServant?.id ?? '',
           logId: serviceLogRes.id,
           jwt: context.jwt,
         })
-        .catch((e: any) => throwToSentry(`Error Connecting Service Log`, e))
-    } else {
-      await session
-        .run(servantCypher.connectHistoryLog, {
+      } else {
+        await tx.run(servantCypher.connectHistoryLog, {
           churchId: church.id,
           servantId: servant.id,
           oldServantId: oldServant?.id ?? '',
           logId: serviceLogRes.id,
           jwt: context.jwt,
         })
-        .catch((e: any) => throwToSentry(`Error Connecting History Log`, e))
-    }
+      }
+    })
+  } catch (e: any) {
+    throwToSentry(`Error Making Servant${servantType}`, e)
   } finally {
     await session.close()
   }

@@ -36,7 +36,6 @@ export const CREATE_MEMBER_MUTATION = gql`
       id
       firstName
       lastName
-      stream_name
 
       bacenta {
         id
@@ -47,68 +46,6 @@ export const CREATE_MEMBER_MUTATION = gql`
             id
           }
         }
-      }
-    }
-  }
-`
-
-export const ADD_MEMBER_TITLE_MUTATION = gql`
-  mutation AddMemberTitle(
-    $memberId: ID!
-    $title: String # $status: Boolean # $date: String
-    $date: Date
-  ) {
-    updateMembers(
-      where: { id: $memberId }
-      connect: {
-        title: { where: { node: { name: $title } }, edge: { date: $date } }
-      }
-    ) {
-      members {
-        id
-        firstName
-        lastName
-        title {
-          name
-        }
-        titleConnection {
-          edges {
-            date
-            node {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`
-
-export const CREATE_FELLOWSHIP_MUTATION = gql`
-  mutation CreateFellowship(
-    $name: String!
-    $bacentaId: ID!
-    $leaderId: ID!
-    $meetingDay: String!
-    $venueLongitude: Float
-    $venueLatitude: Float
-  ) {
-    CreateFellowship(
-      name: $name
-      bacentaId: $bacentaId
-      leaderId: $leaderId
-      meetingDay: $meetingDay
-      venueLongitude: $venueLongitude
-      venueLatitude: $venueLatitude
-    ) {
-      id
-      name
-      stream_name
-      council {
-        id
-      }
-      bacenta {
-        id
       }
     }
   }
@@ -133,7 +70,6 @@ export const CREATE_BACENTA_MUTATION = gql`
     ) {
       id
       name
-      stream_name
       governorship {
         id
         bacentas {
@@ -160,7 +96,6 @@ export const CREATE_GOVERNORSHIP_MUTATION = gql`
     ) {
       id
       name
-      stream_name
       council {
         id
         governorships {
@@ -177,7 +112,6 @@ export const CREATE_COUNCIL_MUTATION = gql`
     CreateCouncil(name: $name, leaderId: $leaderId, streamId: $streamId) {
       id
       name
-      stream_name
       stream {
         id
         councils {
@@ -281,69 +215,3 @@ export const CREATE_OVERSIGHT_MUTATION = gql`
   }
 `
 
-export const CREATE_CREATIVEARTS_MUTATION = gql`
-  mutation CreateCreativeArts($name: String!, $leaderId: ID!, $campusId: ID!) {
-    CreateCreativeArts(name: $name, leaderId: $leaderId, campusId: $campusId) {
-      id
-      name
-    }
-  }
-`
-
-export const CREATE_MINISTRY_MUTATION = gql`
-  mutation CreateMinistry(
-    $creativeArtsId: ID!
-    $leaderId: ID!
-    $streamId: ID!
-    $bankAccount: String!
-  ) {
-    CreateMinistry(
-      creativeArtsId: $creativeArtsId
-      leaderId: $leaderId
-      streamId: $streamId
-      bankAccount: $bankAccount
-    ) {
-      id
-      name
-      bankAccount
-    }
-  }
-`
-
-export const CREATE_HUBCOUNCIL_MUTATION = gql`
-  mutation CreateHubCouncil($leaderId: ID!, $ministryId: ID!, $councilId: ID!) {
-    CreateHubCouncil(
-      leaderId: $leaderId
-      ministryId: $ministryId
-      councilId: $councilId
-    ) {
-      id
-      name
-    }
-  }
-`
-
-export const CREATE_HUB_MUTATION = gql`
-  mutation CreateHub(
-    $name: String!
-    $leaderId: ID!
-    $hubCouncilId: ID!
-    $governorshipId: ID!
-    $meetingDay: String!
-    $venueLongitude: Float
-    $venueLatitude: Float
-  ) {
-    CreateHub(
-      name: $name
-      leaderId: $leaderId
-      hubCouncilId: $hubCouncilId
-      governorshipId: $governorshipId
-      meetingDay: $meetingDay
-      venueLongitude: $venueLongitude
-      venueLatitude: $venueLatitude
-    ) {
-      id
-      name
-    }
-  }
-`

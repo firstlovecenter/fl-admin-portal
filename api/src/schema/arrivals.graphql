@@ -1,4 +1,4 @@
-type SwellDate implements TimeGraphNode {
+type SwellDate implements TimeGraphNode @node @mutation(operations: []) {
   id: ID!
     @cypher(
       statement: """
@@ -1068,10 +1068,26 @@ extend type Bacenta {
       """
       columnName: "bussingThisWeek"
     )
+  # Single bussing record for the exact arrival date (or null). Mirrors
+  # `Bacenta.serviceRecordForWeek` but day-scoped instead of week-scoped —
+  # arrivals are anchored to a specific Sunday/swell day, not a week range.
+  bussingRecordForDate(arrivalDate: String!): BussingRecord
+    @cypher(
+      statement: """
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph)
+      WHERE date(date.date) = date($arrivalDate)
+      RETURN bussing AS bussing ORDER BY date.date DESC LIMIT 1
+      """
+      columnName: "bussing"
+    )
   code: Int!
 }
 
-type BussingRecord implements Record {
+# BussingRecord carries money (bussingTopUp, momoNumber, vehicleTopUp) and
+# is written exclusively through custom resolvers (RecordBussing,
+# StartBussing, BussingPaymentInitiation, …). Suppress auto-gen mutations
+# so a logged-in user cannot overwrite arrivals payout fields directly.
+type BussingRecord implements Record @node @mutation(operations: []) {
   id: ID!
 
   week: Int!
@@ -1084,9 +1100,9 @@ type BussingRecord implements Record {
     )
   # Mobilisation
   createdAt: DateTime! #mobilisation time is the time the record was created
-  serviceDate: TimeGraph! @relationship(type: "BUSSED_ON", direction: OUT)
+  serviceDate: TimeGraph @relationship(type: "BUSSED_ON", direction: OUT)
   mobilisationPicture: String!
-  created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)
+  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
 
   #On The Way
   attendance: Int
@@ -1123,12 +1139,12 @@ type BussingRecord implements Record {
 
   vehicleRecords: [VehicleRecord!]!
     @relationship(type: "INCLUDES_RECORD", direction: OUT)
-  serviceLog: ServiceLog! @relationship(type: "HAS_BUSSING", direction: IN)
+  serviceLog: ServiceLog @relationship(type: "HAS_BUSSING", direction: IN)
 }
 
-type VehicleRecord {
+type VehicleRecord @node @mutation(operations: []) {
   id: ID!
-  created_by: Member! @relationship(type: "LOGGED_BY", direction: OUT)
+  created_by: Member @relationship(type: "LOGGED_BY", direction: OUT)
   createdAt: DateTime! #mobilisation time is the time the record was created
   leaderDeclaration: Int!
   attendance: Int
@@ -1151,7 +1167,7 @@ type VehicleRecord {
   transactionReference: String
   outbound: Boolean!
 
-  bussingRecord: BussingRecord!
+  bussingRecord: BussingRecord
     @relationship(type: "INCLUDES_RECORD", direction: IN)
 }
 
@@ -1206,9 +1222,9 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -1220,19 +1236,54 @@ extend type Mutation {
       """
       columnName: "code"
     )
+  # Manual override for the Code of the Day. Requires the user to hold the
+  # `fishers` marker AND at least one role that grants Arrivals dashboard
+  # access — fishers alone (which gates the Accounts page) is not enough.
+  #
+  # The inner `OR:` list mirrors permitLeaderAdmin(*) ∪ permitArrivals(*) ∪
+  # permitArrivalsHelpers(*) across every level (see permission-utils.ts).
+  # If a new role is added to the system that should be able to set the
+  # Code of the Day, keep this list and `permission-utils.ts` in sync
+  # (ADR-001).
   SetCodeOfTheDay(code: String!): String!
     @authentication(
       jwt: {
-        OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+        AND: [
+          { roles: { includes: "fishers" } }
+          {
+            OR: [
+              { roles: { includes: "arrivalsAdminCampus" } }
+              { roles: { includes: "arrivalsAdminStream" } }
+              { roles: { includes: "arrivalsAdminCouncil" } }
+              { roles: { includes: "arrivalsAdminGovernorship" } }
+              { roles: { includes: "arrivalsCounterStream" } }
+              { roles: { includes: "arrivalsPayerCouncil" } }
+              { roles: { includes: "adminDenomination" } }
+              { roles: { includes: "adminOversight" } }
+              { roles: { includes: "adminCampus" } }
+              { roles: { includes: "adminStream" } }
+              { roles: { includes: "adminCouncil" } }
+              { roles: { includes: "adminGovernorship" } }
+              { roles: { includes: "leaderDenomination" } }
+              { roles: { includes: "leaderOversight" } }
+              { roles: { includes: "leaderCampus" } }
+              { roles: { includes: "leaderStream" } }
+              { roles: { includes: "leaderCouncil" } }
+              { roles: { includes: "leaderGovernorship" } }
+              { roles: { includes: "leaderBacenta" } }
+            ]
+          }
         ]
       }
     )
     @cypher(
       statement: """
       MATCH (arr:ArrivalsCodeOfTheDay)
-      SET arr.code = $code
+      SET arr.code = $code,
+          arr.usedWords = CASE
+            WHEN $code IN coalesce(arr.usedWords, []) THEN arr.usedWords
+            ELSE coalesce(arr.usedWords, []) + $code
+          END
       RETURN arr.code
       """
       columnName: "code"
@@ -1247,10 +1298,10 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
         ]
       }
     )
@@ -1288,7 +1339,7 @@ extend type Mutation {
     momoName: String!
     momoNumber: String!
   ): Bacenta!
-    @authentication(jwt: { roles_INCLUDES: "leaderBacenta" })
+    @authentication(jwt: { roles: { includes: "leaderBacenta" } })
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})
@@ -1337,22 +1388,7 @@ extend type Mutation {
     vehicle: String!
     comments: String
   ): VehicleRecord!
-    @authentication(jwt: { roles_INCLUDES: "arrivalsCounterStream" })
-    @cypher(
-      statement: """
-      MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId}) WHERE vehicleRecord.arrivalTime IS NULL
-        SET vehicleRecord.attendance = $attendance,
-        vehicleRecord.vehicle = $vehicle,
-        vehicleRecord.comments = $comments
-
-         WITH vehicleRecord
-          MATCH (admin:Member {id: $jwt.userId})
-          MERGE (vehicleRecord)-[:COUNTED_BY]->(admin)
-
-      RETURN vehicleRecord
-      """
-      columnName: "vehicleRecord"
-    )
+    @authentication(jwt: { roles: { includes: "arrivalsCounterStream" } })
 
   SetSwellDate(date: String!): TimeGraph!
   SendVehicleSupport(
@@ -1386,10 +1422,10 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
@@ -1431,16 +1467,16 @@ extend type Mutation {
     @authentication(
       jwt: {
         OR: [
-          { roles_INCLUDES: "adminStream" }
-          { roles_INCLUDES: "arrivalsAdminStream" }
-          { roles_INCLUDES: "adminCampus" }
-          { roles_INCLUDES: "arrivalsAdminCampus" }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "arrivalsAdminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
         ]
       }
     )
 }
 
-type ArrivalsSheetData {
+type ArrivalsSheetData @node @mutation(operations: []) {
   date: Date
   stream: String
   councilHead: String
@@ -1463,5 +1499,53 @@ type ArrivalsSheetData {
 }
 
 extend type Stream {
-  arrivalsPaymentData(arrivalsDate: String): [ArrivalsSheetData!]!
+  arrivalsPaymentData(
+    arrivalsDate: String
+    limit: Int! = 1000
+    offset: Int! = 0
+  ): [ArrivalsSheetData!]!
+  arrivalsPaymentCount(arrivalsDate: String): Int!
+}
+
+extend type Query {
+  # Distinct dates (YYYY-MM-DD) on which any BussingRecord exists, most-recent
+  # first. Capped at 104 (≈ two years of Sundays). Anchored on BussingRecord
+  # — the smaller label — rather than TimeGraph (the universal date dimension).
+  # PROFILE on dev: ~377 DbHits / ~44ms.
+  bussingDates: [String!]!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "leaderBacenta" } }
+          { roles: { includes: "leaderGovernorship" } }
+          { roles: { includes: "leaderCouncil" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "leaderDenomination" } }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+          { roles: { includes: "arrivalsAdminGovernorship" } }
+          { roles: { includes: "arrivalsAdminCouncil" } }
+          { roles: { includes: "arrivalsAdminStream" } }
+          { roles: { includes: "arrivalsAdminCampus" } }
+          { roles: { includes: "arrivalsCounterStream" } }
+          { roles: { includes: "arrivalsPayerCouncil" } }
+        ]
+      }
+    )
+    @cypher(
+      statement: """
+      MATCH (:BussingRecord)-[:BUSSED_ON]->(t:TimeGraph)
+      WITH DISTINCT t.date AS d
+      ORDER BY d DESC
+      LIMIT 104
+      RETURN toString(d) AS bussingDate
+      """
+      columnName: "bussingDate"
+    )
 }

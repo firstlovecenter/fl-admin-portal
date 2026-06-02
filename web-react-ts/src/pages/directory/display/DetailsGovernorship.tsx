@@ -1,15 +1,17 @@
 import React, { useContext } from 'react'
 import { useQuery } from '@apollo/client'
-import DisplayChurchDetails from '../../../components/DisplayChurchDetails/DisplayChurchDetails'
+import { useNavigate } from 'react-router-dom'
+import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 
 import { DISPLAY_GOVERNORSHIP } from './ReadQueries'
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { permitAdminArrivals } from 'permission-utils'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsGovernorship = () => {
-  const { governorshipId } = useContext(ChurchContext)
+  const { governorshipId, setFilters } = useContext(ChurchContext)
+  const navigate = useNavigate()
 
   const { data, loading, error } = useQuery(DISPLAY_GOVERNORSHIP, {
     variables: { id: governorshipId },
@@ -23,18 +25,27 @@ const DetailsGovernorship = () => {
       link: `/${governorship?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
-    { title: 'Target', number: governorship?.target, link: '#' },
+    {
+      title: 'Pastors',
+      number: governorship?.pastorCount || '0',
+      link: '/governorship/members',
+      onClick: () => {
+        setFilters({
+          gender: [],
+          maritalStatus: [],
+          occupation: '',
+          leaderTitle: ['Pastor'],
+          leaderRank: [],
+          basonta: [],
+        })
+        navigate('/governorship/members')
+      },
+    },
     {
       title: 'Bacentas',
       number: governorship?.bacentaCount || 0,
       link: `/bacenta/displayall`,
-      vacationCount: governorship?.vacationGraduatedBacentaCount,
-    },
-    {
-      title: 'Hubs',
-      number: governorship?.hubCount,
-      link: '/governorship/hubs',
-      creativearts: true,
+      vacationCount: governorship?.vacationBacentaCount,
     },
   ]
 
@@ -51,7 +62,6 @@ const DetailsGovernorship = () => {
         churchType={`Governorship`}
         subChurch={`Bacenta`}
         buttons={data?.governorships[0]?.bacentas}
-        buttonsSecondRow={data?.governorships[0]?.hubFellowships}
         editlink="/governorship/editgovernorship"
         editPermitted={permitAdminArrivals('Council')}
         history={
@@ -59,7 +69,6 @@ const DetailsGovernorship = () => {
           data?.governorships[0]?.history
         }
         breadcrumb={[data?.governorships[0]?.council, data?.governorships[0]]}
-        vacationCount={governorship?.vacationBacentaCount}
       />
     </ApolloWrapper>
   )

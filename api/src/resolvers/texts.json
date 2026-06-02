@@ -11,7 +11,9 @@
     "vacation_cannot_fill_service": "You cannnot have service if you are on vacation. Please conntact your admin!",
     "no_double_form_filling": "You have already filled your service form this week!",
     "no_duplicate_email_or_whatsapp": "A member with this email address/whatsapp number already exists in the database",
-    "not_stream_service_day": "You cannot fill this form today. It is not your stream service day"
+    "not_stream_service_day": "You cannot fill this form today. It is not your stream service day",
+    "service_date_out_of_week": "You can only fill forms for this week",
+    "service_date_required": "Service date is required"
   },
   "arrivalsSMS": {
     "less_than_8": "Proverbs 27:23 (KJV)\n\nBe thou diligent to know the state of thy flocks,and look well to thy herds.\n\nToday's bussing will not merit a top up. Your attendance was ",
@@ -26,13 +28,10 @@
     "bacenta_graduated_p2": " has just graduated from Red status to Green status. Keep on working for the Lord!"
   },
   "equipment": {
-    "notify_fellowship_leaders_sms": "Hi Fellowship Leader,\nNote: Equipment Campaign Data Collection is ongoing. You are required to fill forms on the State of the Flock Admin Portal. Check your mail for more info.",
     "notify_governorship_overseers_sms": "Hi CO,\nNote: Equipment Campaign Data Collection is ongoing. You are required to fill forms on the State of the Flock Admin Portal. Check your mail for more info.",
-    "notify_governorship_overseers_email": "Please be informed that it is time for another Equipment Campaign Data Collection! Please ensure that you and your fellowship leaders have filled the appropirate forms. The deadline for filling these forms is",
+    "notify_governorship_overseers_email": "Please be informed that it is time for another Equipment Campaign Data Collection! Please ensure that you and your bacenta leaders have filled the appropriate forms. The deadline for filling these forms is",
     "notify_email_p1": "<br/><br/>When you log in, please go to Campaigns on your menu bar and follow the prompts to fill your details as a ",
     "notify_email_p2": " for equipment campaign.<br/><br/>We encourage you to ensure that all forms are filled <b>by the deadline</b>. Thank you!</p>",
-    "notify_fellowship_leaders_email": "Please be informed that it is time for another Equipment Campaign Data Collection! Please ensure that you have filled the appropirate forms. The deadline for filling these forms is",
-    "overseer_text": "Governorship Overseer",
-    "fellowship_text": "Fellowship Leader"
+    "overseer_text": "Governorship Overseer"
   }
 }

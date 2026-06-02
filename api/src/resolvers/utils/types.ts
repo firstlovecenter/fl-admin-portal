@@ -9,7 +9,6 @@ export type RearragedCypherResponse = {
   }
 }
 export type ChurchLevel =
-  | 'Fellowship'
   | 'Bacenta'
   | 'Governorship'
   | 'Council'
@@ -17,23 +16,14 @@ export type ChurchLevel =
   | 'Campus'
   | 'Oversight'
   | 'Denomination'
-  | 'HubCouncil'
-  | 'Hub'
-  | 'Ministry'
-  | 'CreativeArts'
 
-export type ChurchLevelWithClosed = 'ClosedFellowship' | 'ClosedBacenta'
+export type ChurchLevelWithClosed = 'ClosedBacenta'
 
 export type Role =
-  | 'leaderFellowship'
   | 'leaderBacenta'
   | 'leaderGovernorship'
   | 'leaderCouncil'
   | 'leaderStream'
-  | 'leaderHub'
-  | 'leaderHubCouncil'
-  | 'leaderMinistry'
-  | 'leaderCreativeArts'
   | 'leaderCampus'
   | 'leaderOversight'
   | 'leaderDenomination'
@@ -43,8 +33,6 @@ export type Role =
   | 'adminCampus'
   | 'adminOversight'
   | 'adminDenomination'
-  | 'adminMinistry'
-  | 'adminCreativeArts'
   | 'arrivalsAdminCampus'
   | 'arrivalsAdminStream'
   | 'arrivalsAdminCouncil'
@@ -135,6 +123,32 @@ export type ChurchIdAndName = {
   name: string
 }
 
+export type ChurchScopeKey =
+  | 'leadsBacentaOf'
+  | 'leadsGovernorshipOf'
+  | 'leadsCouncilOf'
+  | 'leadsStreamOf'
+  | 'leadsCampusOf'
+  | 'leadsOversightOf'
+  | 'leadsDenominationOf'
+  | 'isAdminForGovernorshipOf'
+  | 'isAdminForCouncilOf'
+  | 'isAdminForStreamOf'
+  | 'isAdminForCampusOf'
+  | 'isAdminForOversightOf'
+  | 'isAdminForDenominationOf'
+  | 'isArrivalsAdminForStreamOf'
+  | 'isArrivalsAdminForCampusOf'
+  | 'isArrivalsAdminForCouncilOf'
+  | 'isArrivalsCounterForStreamOf'
+  | 'isArrivalsPayerCouncilOf'
+  | 'isTellerForStreamOf'
+  | 'isSheepSeekerForStreamOf'
+
+export type ChurchScopes = {
+  [K in ChurchScopeKey]?: ChurchIdAndName
+}
+
 export interface Record {
   id: string
   attendance: number
@@ -152,28 +166,10 @@ export type ServiceRecord = {
   noServiceReason: string
   bankingProof: boolean
   bankingSlip: string
-  transactionStatus: 'pending' | 'success' | 'failed'
+  transactionStatus: 'pending' | 'send OTP' | 'success' | 'failed' | 'reversed'
   serviceDate: {
     date: string
   }
 }
 
-interface ChurchesForAggregateion {
-  typename: string
-  labels: string[]
-  properties: {
-    [key: string]: string | number | boolean | string[]
-  }
-}
-interface SontaHigherChurchesForAgggregation extends ChurchesForAggregateion {
-  rehearsalCypher: string
-  ministryMeetingCypher: string
-  ministryStagePerformanceCypher: string
-}
 
-export type SontaHigherChurches = {
-  hub?: SontaHigherChurchesForAgggregation
-  hubCouncil?: SontaHigherChurchesForAgggregation
-  ministry?: SontaHigherChurchesForAgggregation
-  creativeArts?: SontaHigherChurchesForAgggregation
-}

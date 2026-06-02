@@ -1,10 +1,86 @@
 #Query Definitions
 extend schema @authentication
 type JWT @jwt {
+  userId: String
+  email: String
   roles: [String!]!
+
+  # Flat church-scope id claims, mapped from the nested `churchScopes` object
+  # the auth service emits. Declaring each path explicitly lets `@authorization`
+  # rules reference `$jwt.<key>Id` to gate reads/writes by hierarchy.
+  leadsBacentaOfId: String @jwtClaim(path: "churchScopes.leadsBacentaOf.id")
+  leadsGovernorshipOfId: String
+    @jwtClaim(path: "churchScopes.leadsGovernorshipOf.id")
+  leadsCouncilOfId: String @jwtClaim(path: "churchScopes.leadsCouncilOf.id")
+  leadsStreamOfId: String @jwtClaim(path: "churchScopes.leadsStreamOf.id")
+  leadsCampusOfId: String @jwtClaim(path: "churchScopes.leadsCampusOf.id")
+  leadsOversightOfId: String @jwtClaim(path: "churchScopes.leadsOversightOf.id")
+  leadsDenominationOfId: String
+    @jwtClaim(path: "churchScopes.leadsDenominationOf.id")
+
+  isAdminForGovernorshipOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForGovernorshipOf.id")
+  isAdminForCouncilOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForCouncilOf.id")
+  isAdminForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForStreamOf.id")
+  isAdminForCampusOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForCampusOf.id")
+  isAdminForOversightOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForOversightOf.id")
+  isAdminForDenominationOfId: String
+    @jwtClaim(path: "churchScopes.isAdminForDenominationOf.id")
+
+  isArrivalsAdminForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsAdminForStreamOf.id")
+  isArrivalsAdminForCampusOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsAdminForCampusOf.id")
+  isArrivalsAdminForCouncilOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsAdminForCouncilOf.id")
+  isArrivalsCounterForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsCounterForStreamOf.id")
+  isArrivalsPayerCouncilOfId: String
+    @jwtClaim(path: "churchScopes.isArrivalsPayerCouncilOf.id")
+  isTellerForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isTellerForStreamOf.id")
+  isSheepSeekerForStreamOfId: String
+    @jwtClaim(path: "churchScopes.isSheepSeekerForStreamOf.id")
+
+  # Flat list of every church-spine node id the caller can read, computed
+  # server-side from the user's Neo4j servant edges (LEADS, IS_ADMIN_FOR,
+  # DOES_ARRIVALS_FOR, …) and merged into `context.jwt` before the engine
+  # reads it. The `@churchScoped` / `@churchScopedVia` directives gate
+  # spine-type reads via `node.id IN $jwt.allowedChurchIds` — a single
+  # ID-set lookup that replaces the multiplicative deep-some predicate
+  # that caused the v6/v7 auth-filter hang. See
+  # `api/src/resolvers/utils/allowed-church-ids.ts`.
+  allowedChurchIds: [String!]
 }
 
-type Query {
+# Per-edge authority record exposed to the FE via the `myAuthority` query.
+# One entry per servant edge the user holds — `reach` is the church the
+# edge points at plus every spine descendant, i.e. the set of churches at
+# which the user holds the coarse role implied by `(type, level)`.
+#
+# Declared WITHOUT `@node` so `@neo4j/graphql` v7 treats this as a plain
+# RPC response shape and does NOT auto-generate CRUD operations against a
+# Neo4j `ServantTree` label. The data is built in-memory from
+# `context.jwt.servantTrees` by the `myAuthority` resolver; nothing lives
+# in Neo4j under this name.
+type ServantTree {
+  type: String!
+  level: String!
+  churchId: String!
+  churchName: String!
+  reach: [String!]!
+}
+
+type Authority {
+  servantTrees: [ServantTree!]!
+  allowedChurchIds: [String!]!
+}
+
+type Query @node{
   currentUser(id: ID): Member!
     @cypher(
       statement: "MATCH (member:Active:Member {id: $jwt.userId}) RETURN member"
@@ -16,16 +92,24 @@ type Query {
       statement: "MATCH (member:Active:Member {email:$email}) RETURN member LIMIT 1"
       columnName: "member"
     )
+
+  # Caller's authority, sourced entirely from `context.jwt`. Returns the
+  # per-edge `servantTrees` (for per-instance action gating on the FE) and
+  # the flat `allowedChurchIds` (for breadcrumb / spine visibility). One
+  # round-trip on app boot — the resolver reads the cached payload off
+  # `context.jwt`; no Cypher runs behind this query. See
+  # `api/src/resolvers/resolvers.ts` for the implementation.
+  myAuthority: Authority!
 }
 
-type PresignedUrlResponse {
+type PresignedUrlResponse @node @mutation(operations: []) {
   presignedUrl: String!
   publicUrl: String!
   key: String!
   expiresIn: Int!
 }
 
-type Mutation {
+type Mutation @node{
   generatePresignedUrl(
     fileName: String!
     fileType: String!

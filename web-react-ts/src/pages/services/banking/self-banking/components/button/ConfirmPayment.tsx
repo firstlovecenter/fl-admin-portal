@@ -1,18 +1,24 @@
 import { ApolloQueryResult, useMutation } from '@apollo/client'
+import { Button } from 'components/ui/button'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { alertMsg } from 'global-utils'
+import { alertMsg, throwToSentry } from 'global-utils'
+import { Loader2 } from 'lucide-react'
 import { useContext, useState } from 'react'
-import { Button } from 'react-bootstrap'
 import { useLocation, useNavigate } from 'react-router'
 import {
   CONFIRM_OFFERING_PAYMENT,
   SELF_BANKING_RECEIPT,
 } from '../../bankingQueries'
-import { DotLoader } from 'react-spinners'
 
 export type ConfirmPaymentServiceType = {
   id: string
-  transactionStatus?: 'success' | 'pending' | 'failed' | 'abandoned'
+  transactionStatus?:
+    | 'pending'
+    | 'send OTP'
+    | 'success'
+    | 'failed'
+    | 'abandoned'
+    | 'reversed'
 } | null
 
 type ButtonConfirmPaymentProps = {
@@ -24,9 +30,6 @@ type ButtonConfirmPaymentProps = {
           bacentaId?: string
           governorshipId?: string
           councilId?: string
-
-          hubId?: string
-          hubCouncilId?: string
           ministryId?: string
         }>
       | undefined
@@ -34,29 +37,24 @@ type ButtonConfirmPaymentProps = {
   service: ConfirmPaymentServiceType
   disabled?: boolean
   handleClose?: () => void
+  className?: string
 }
 
 const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
-  const { refetch, service, handleClose, ...rest } = props
+  const { refetch, service, handleClose, disabled, className } = props
   const [sending, setSending] = useState(false)
   const navigate = useNavigate()
-  const {
-    bacentaId,
-    governorshipId,
-    councilId,
-    hubId,
-    hubCouncilId,
-    ministryId,
-    clickCard,
-  } = useContext(ChurchContext)
+  const { bacentaId, governorshipId, councilId, ministryId, clickCard } =
+    useContext(ChurchContext)
   const [ConfirmOfferingPayment] = useMutation(CONFIRM_OFFERING_PAYMENT)
   const location = useLocation()
 
   return (
     <Button
-      variant="warning"
-      className="mt-3"
-      {...rest}
+      type="button"
+      size="lg"
+      disabled={disabled || sending}
+      className={className ?? 'w-full gap-2'}
       onClick={async () => {
         setSending(true)
 
@@ -65,8 +63,6 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
             bacentaId,
             governorshipId,
             councilId,
-            hubId,
-            hubCouncilId,
             ministryId,
           })
 
@@ -92,16 +88,6 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
             )
           } else if (res.data?.councils) {
             serviceRecord = res.data?.councils[0].services.find(
-              (serviceFromList: ConfirmPaymentServiceType) =>
-                serviceFromList?.id === service?.id
-            )
-          } else if (res.data?.hubs) {
-            serviceRecord = res.data?.hubs[0].rehearsals.find(
-              (serviceFromList: ConfirmPaymentServiceType) =>
-                serviceFromList?.id === service?.id
-            )
-          } else if (res.data?.hubCouncils) {
-            serviceRecord = res.data?.hubCouncils[0].rehearsals.find(
               (serviceFromList: ConfirmPaymentServiceType) =>
                 serviceFromList?.id === service?.id
             )
@@ -157,6 +143,25 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               alertMsg('Payment Confirmed Successfully 😊')
               return
             }
+
+            if (
+              confirmationRes.data.ConfirmOfferingPayment?.transactionStatus ===
+              'reversed'
+            ) {
+              navigate('/services/bacenta/self-banking')
+              alertMsg(
+                'This payment was reversed by the mobile money provider. Please try again.'
+              )
+              return
+            }
+          }
+
+          if (serviceRecord.transactionStatus === 'reversed') {
+            navigate('/services/bacenta/self-banking')
+            alertMsg(
+              'This payment was reversed by the mobile money provider. Please try again.'
+            )
+            return
           }
 
           if (
@@ -174,7 +179,8 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
           }
         } catch (error: any) {
           navigate('/services/bacenta/self-banking')
-          alert('Something went wrong 😞' + JSON.stringify(error))
+          alertMsg(error?.message ?? 'Something went wrong 😞')
+          throwToSentry('Error confirming offering payment', error)
         } finally {
           if (handleClose) {
             handleClose()
@@ -186,7 +192,8 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
         }
       }}
     >
-      {sending && <DotLoader size={23} />} Confirm Transaction
+      {sending && <Loader2 className="size-4 animate-spin" />}
+      {sending ? 'Confirming…' : 'Confirm Transaction'}
     </Button>
   )
 }

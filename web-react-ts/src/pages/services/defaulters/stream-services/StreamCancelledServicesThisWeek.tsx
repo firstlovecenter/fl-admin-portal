@@ -2,15 +2,14 @@ import { useLazyQuery } from '@apollo/client'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
-import { getWeekNumber } from 'jd-date-utils'
+import { getWeekNumber } from 'lib/date-utils'
 import React from 'react'
-import { Col, Container, Row } from 'react-bootstrap'
-import DefaulterCard from '../DefaulterCard'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import useChurchLevel from 'hooks/useChurchLevel'
+import PullToRefresh from 'components/base-component/PullToRefresh'
+import DefaulterCard from '../DefaulterCard'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from '../defaulters-types'
-import PullToRefresh from 'react-simple-pull-to-refresh'
 import {
   CAMPUS_STREAM_CANCELLED_SERVICES_LIST,
   DENOMINATION_STREAM_CANCELLED_SERVICES_LIST,
@@ -46,7 +45,7 @@ const StreamCancelledServicesThisWeek = () => {
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <Container>
+        <div className="mx-auto w-full max-w-screen-md px-4">
           <HeadingPrimary
             loading={!church}
           >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
@@ -59,15 +58,13 @@ const StreamCancelledServicesThisWeek = () => {
             <h6>{`Number of Cancelled Services: ${church?.streamCancelledServicesThisWeek?.length}`}</h6>
           </PlaceholderCustom>
 
-          <Row>
+          <div className="grid gap-3">
             {church?.streamCancelledServicesThisWeek?.map((service, i) => (
-              <Col key={i} xs={12} className="mb-3">
-                <DefaulterCard defaulter={service} />
-              </Col>
+              <DefaulterCard key={i} defaulter={service} />
             ))}
             {!church && <PlaceholderDefaulterList />}
-          </Row>
-        </Container>
+          </div>
+        </div>
       </ApolloWrapper>
     </PullToRefresh>
   )

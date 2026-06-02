@@ -3,12 +3,14 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DISPLAY_CAMPUS } from './ReadQueries'
 import { permitAdmin } from 'permission-utils'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsCampus = () => {
-  const { campusId } = useContext(ChurchContext)
+  const { campusId, setFilters } = useContext(ChurchContext)
+  const navigate = useNavigate()
 
   const { data, loading, error } = useQuery(DISPLAY_CAMPUS, {
     variables: { id: campusId },
@@ -24,8 +26,22 @@ const DetailsCampus = () => {
       link: `/${gathering?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
-    { title: 'Target', number: gathering?.target, link: '#' },
-    { title: 'Pastors', number: gathering?.pastorCount || '0', link: '#' },
+    {
+      title: 'Pastors',
+      number: gathering?.pastorCount || '0',
+      link: '/campus/members',
+      onClick: () => {
+        setFilters({
+          gender: [],
+          maritalStatus: [],
+          occupation: '',
+          leaderTitle: ['Pastor'],
+          leaderRank: [],
+          basonta: [],
+        })
+        navigate('/campus/members')
+      },
+    },
 
     {
       title: 'Streams',
@@ -35,7 +51,7 @@ const DetailsCampus = () => {
     {
       title: 'Councils',
       number: gathering?.councilCount,
-      link: `#`,
+      link: `/campus/councils`,
     },
     {
       title: 'Governorships',
@@ -43,22 +59,10 @@ const DetailsCampus = () => {
       link: `/campus/governorships`,
     },
     {
-      title: 'Greens',
-      number: gathering?.activeGraduatedBacentaCount,
-      vacationCount: gathering?.vacationGraduatedBacentaCount,
-      link: `#`,
-    },
-    {
-      title: 'Reds',
-      number: gathering?.activeIcBacentaCount,
-      vacationCount: gathering?.vacationIcBacentaCount,
+      title: 'Bacentas',
+      number: gathering?.bacentaCount || 0,
+      vacationCount: gathering?.vacationBacentaCount,
       link: '#',
-    },
-    {
-      title: 'Creative Arts',
-      number: gathering?.creativeArtsCount,
-      link: '/campus/creativearts',
-      creativearts: true,
     },
     {
       title: 'Income Tracking',

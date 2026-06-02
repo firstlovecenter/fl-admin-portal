@@ -1,36 +1,8 @@
 import { gql } from '@apollo/client'
 
-export const FELLOWSHIP_GRAPHS = gql`
-  query fellowshipGraphs($fellowshipId: ID) {
-    fellowships(where: { id: $fellowshipId }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        pictureUrl
-        nameWithTitle
-      }
-      services(limit: 4) {
-        id
-        createdAt
-        attendance
-        income
-        week
-        serviceDate {
-          date
-        }
-      }
-      memberCount
-    }
-  }
-`
-
 export const BACENTA_GRAPHS = gql`
   query bacentaGraphs($id: ID!, $limit: Int = 4, $skip: Int = 0) {
-    bacentas(where: { id: $id }) {
+    bacentas(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -47,11 +19,13 @@ export const BACENTA_GRAPHS = gql`
         income
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -83,7 +57,7 @@ export const BACENTA_GRAPHS = gql`
 
 export const GOVERNORSHIP_GRAPHS = gql`
   query governorshipGraphs($id: ID!, $limit: Int = 4, $skip: Int = 0) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       name
       leader {
@@ -100,11 +74,13 @@ export const GOVERNORSHIP_GRAPHS = gql`
         income
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -127,7 +103,7 @@ export const GOVERNORSHIP_GRAPHS = gql`
 
 export const COUNCIL_GRAPHS = gql`
   query councilGraphs($councilId: ID!, $limit: Int = 4, $skip: Int = 0) {
-    councils(where: { id: $councilId }) {
+    councils(where: { id: { eq: $councilId } }) {
       id
       name
       leader {
@@ -144,11 +120,13 @@ export const COUNCIL_GRAPHS = gql`
         income
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -171,7 +149,7 @@ export const COUNCIL_GRAPHS = gql`
 
 export const STREAM_GRAPHS = gql`
   query streamGraphs($streamId: ID!, $limit: Int = 4, $skip: Int = 0) {
-    streams(where: { id: $streamId }) {
+    streams(where: { id: { eq: $streamId } }) {
       id
       name
       leader {
@@ -188,11 +166,13 @@ export const STREAM_GRAPHS = gql`
         income
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -215,7 +195,7 @@ export const STREAM_GRAPHS = gql`
 
 export const CAMPUS_GRAPHS = gql`
   query campusGraphs($campusId: ID!, $limit: Int = 4, $skip: Int = 0) {
-    campuses(where: { id: $campusId }) {
+    campuses(where: { id: { eq: $campusId } }) {
       id
       name
       leader {
@@ -233,11 +213,13 @@ export const CAMPUS_GRAPHS = gql`
         dollarIncome
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -260,7 +242,7 @@ export const CAMPUS_GRAPHS = gql`
 
 export const OVERSIGHT_GRAPHS = gql`
   query oversightGraphs($oversightId: ID!, $limit: Int = 4, $skip: Int = 0) {
-    oversights(where: { id: $oversightId }) {
+    oversights(where: { id: { eq: $oversightId } }) {
       id
       name
       leader {
@@ -278,11 +260,13 @@ export const OVERSIGHT_GRAPHS = gql`
         dollarIncome
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -309,7 +293,7 @@ export const DENOMINATION_GRAPHS = gql`
     $limit: Int = 4
     $skip: Int = 0
   ) {
-    denominations(where: { id: $denominationId }) {
+    denominations(where: { id: { eq: $denominationId } }) {
       id
       name
       leader {
@@ -327,11 +311,13 @@ export const DENOMINATION_GRAPHS = gql`
         dollarIncome
         numberOfServices
         week
+        year
       }
       aggregateBussingRecords(limit: $limit, skip: $skip) {
         id
         attendance
         week
+        year
         numberOfSprinters
         numberOfUrvans
         numberOfCars
@@ -342,162 +328,3 @@ export const DENOMINATION_GRAPHS = gql`
   }
 `
 
-export const HUB_GRAPHS = gql`
-  query hubGraphs($hubId: ID!) {
-    hubs(where: { id: $hubId }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        nameWithTitle
-        pictureUrl
-      }
-      aggregateServiceRecords(limit: 4) {
-        id
-        attendance
-        income
-        numberOfServices
-        week
-      }
-
-      rehearsals(limit: 4) {
-        id
-        createdAt
-        attendance
-        income
-        week
-        serviceDate {
-          date
-        }
-      }
-
-      memberCount
-    }
-  }
-`
-
-export const HUBCOUNCIL_GRAPHS = gql`
-  query hubCouncilGraphs($hubCouncilId: ID!) {
-    hubCouncils(where: { id: $hubCouncilId }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        nameWithTitle
-        pictureUrl
-      }
-      aggregateServiceRecords(limit: 4) {
-        id
-        attendance
-        income
-        numberOfServices
-        week
-      }
-      aggregateRehearsalRecords(limit: 4) {
-        id
-        attendance
-        income
-        numberOfServices
-        week
-      }
-
-      rehearsals(limit: 4) {
-        id
-        createdAt
-        attendance
-        income
-        week
-        serviceDate {
-          date
-        }
-      }
-
-      memberCount
-    }
-  }
-`
-
-export const MINISTRY_GRAPHS = gql`
-  query ministryGraphs($ministryId: ID!) {
-    ministries(where: { id: $ministryId }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        pictureUrl
-        nameWithTitle
-      }
-      onStageAttendanceRecords(limit: 4) {
-        id
-        attendance
-        week
-      }
-      aggregateServiceRecords(limit: 4) {
-        id
-        attendance
-        income
-        numberOfServices
-        week
-      }
-
-      aggregateRehearsalRecords(limit: 4) {
-        id
-        attendance
-        income
-        numberOfServices
-        week
-      }
-
-      memberCount
-    }
-  }
-`
-
-export const CREATIVEARTS_GRAPHS = gql`
-  query creativeArtsGraphs($creativeArtsId: ID!) {
-    creativeArts(where: { id: $creativeArtsId }) {
-      id
-      name
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        pictureUrl
-        nameWithTitle
-      }
-      aggregateServiceRecords(limit: 4) {
-        id
-        attendance
-        income
-        numberOfServices
-        week
-      }
-
-      aggregateRehearsalRecords(limit: 4) {
-        id
-        attendance
-        income
-        numberOfServices
-        week
-      }
-      aggregateStageAttendanceRecords(limit: 4) {
-        id
-        attendance
-        numberOfServices
-        week
-      }
-
-      memberCount
-    }
-  }
-`

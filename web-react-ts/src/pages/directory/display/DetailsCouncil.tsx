@@ -4,13 +4,15 @@ import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchD
 import { ChurchContext } from 'contexts/ChurchContext'
 import { permitAdmin } from 'permission-utils'
 import React, { useContext, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DISPLAY_COUNCIL } from './ReadQueries'
 import useClickCard from 'hooks/useClickCard'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsCouncil = () => {
-  const { councilId } = useContext(ChurchContext)
+  const { councilId, setFilters } = useContext(ChurchContext)
   const { setChurch } = useClickCard()
+  const navigate = useNavigate()
   const { data, loading, error } = useQuery(DISPLAY_COUNCIL, {
     variables: { id: councilId },
   })
@@ -33,31 +35,27 @@ const DetailsCouncil = () => {
       number: council?.governorshipCount || 0,
       link: `/${`Governorship`.toLowerCase()}/displayall`,
     },
-    { title: 'Target', number: council?.target, link: '#' },
-    { title: 'Pastors', number: council?.pastorCount, link: '#' },
     {
-      title: 'Greens',
-      number: council?.activeGraduatedBacentaCount,
-      vacationCount: council?.vacationGraduatedBacentaCount,
-      link: `#`,
+      title: 'Bacentas',
+      number: council?.bacentaCount || 0,
+      vacationCount: council?.vacationBacentaCount,
+      link: '/council/bacentas',
     },
     {
-      title: 'Reds',
-      number: council?.activeIcBacentaCount,
-      vacationCount: council?.vacationIcBacentaCount,
-      link: '#',
-    },
-    {
-      title: 'Hub Councils',
-      number: council?.hubCouncilCount,
-      link: `/council/hubcouncils`,
-      creativearts: true,
-    },
-    {
-      title: 'Hubs',
-      number: council?.hubCount,
-      link: '#',
-      creativearts: true,
+      title: 'Pastors',
+      number: council?.pastorCount ?? 0,
+      link: '/council/members',
+      onClick: () => {
+        setFilters({
+          gender: [],
+          maritalStatus: [],
+          occupation: '',
+          leaderTitle: ['Pastor'],
+          leaderRank: [],
+          basonta: [],
+        })
+        navigate('/council/members')
+      },
     },
   ]
 

@@ -1,178 +1,268 @@
-import React, { useContext, useState, useCallback, useEffect } from 'react'
-
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { useContext, useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
+import { Link } from 'react-router-dom'
+import {
+  Bus,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  Users,
+  Wallet,
+} from 'lucide-react'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { MemberContext } from 'contexts/MemberContext'
+
+import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
+import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
+import { Button } from 'components/ui/button'
+import { Card, CardContent } from 'components/ui/card'
+import { Tabs, TabsList, TabsTrigger } from 'components/ui/tabs'
+import { StatCard } from 'components/ui/stat-card'
+
+import { BACENTA_GRAPHS } from './GraphsQueries'
 import {
   getServiceGraphData,
   getMonthlyStatAverage,
   GraphTypes,
 } from './graphs-utils'
-import ChurchGraph from '../../../components/ChurchGraph/ChurchGraph'
-import { BACENTA_GRAPHS } from './GraphsQueries'
-import MembershipCard from './CompMembershipCard'
-import StatDisplay from './CompStatDisplay'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { Col, Container, Row, Button, Spinner } from 'react-bootstrap'
-import GraphDropdown from './GraphDropdown'
-import { MemberContext } from 'contexts/MemberContext'
-import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
-import { isIncomeGraph } from 'global-utils'
-import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons'
+
+const TREND_HISTORY_WEEKS = 24
+const WINDOW_SIZE = 4
+
+const BACENTA_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
+  { value: 'bussing', label: 'Bussing' },
+  { value: 'services', label: 'Services' },
+]
+
+const formatStat = (value: string | undefined) =>
+  value && value !== 'NaN'
+    ? Number(value).toLocaleString('en-GH', { maximumFractionDigits: 0 })
+    : '—'
 
 export const BacentaGraphs = () => {
   const { bacentaId } = useContext(ChurchContext)
-  const [graphs, setGraphs] = useState<GraphTypes>('bussing')
-  const [skip, setSkip] = useState(0)
-  const [isNavigating, setIsNavigating] = useState(false)
-  const limit = 4
   const { currentUser } = useContext(MemberContext)
+  const [graphs, setGraphs] = useState<GraphTypes>('bussing')
+  const [windowEnd, setWindowEnd] = useState<number | null>(null)
 
-  const [churchData, setChurchData] = useState<any[] | undefined>([])
-  const { data, loading, error, refetch } = useQuery(BACENTA_GRAPHS, {
-    variables: { id: bacentaId, limit, skip },
-    onCompleted: (data) => {
-      if (!setChurchData) return
-      setChurchData(getServiceGraphData(data?.bacentas[0], graphs))
-      setIsNavigating(false)
-    },
+  const { data, loading, error } = useQuery(BACENTA_GRAPHS, {
+    variables: { id: bacentaId, limit: TREND_HISTORY_WEEKS, skip: 0 },
   })
 
-  // Reset skip when graph type changes
-  useEffect(() => {
-    setSkip(0)
-    if (data?.bacentas[0]) {
-      setChurchData(getServiceGraphData(data?.bacentas[0], graphs))
-      refetch({ id: bacentaId, limit, skip: 0 })
+  const bacenta = data?.bacentas?.[0]
+  const incomeTracked = !currentUser?.noIncomeTracking
+
+  const weekdayData = useMemo(
+    () => getServiceGraphData(bacenta, 'services', TREND_HISTORY_WEEKS) || [],
+    [bacenta]
+  )
+  const bussingData = useMemo(
+    () => getServiceGraphData(bacenta, 'bussing', TREND_HISTORY_WEEKS) || [],
+    [bacenta]
+  )
+
+  const recentBussingData = useMemo(() => {
+    const currentYear = new Date().getFullYear()
+    return bussingData.filter(
+      (record: { year?: number | null; date?: string | null }) => {
+        if (typeof record?.year === 'number' && Number.isFinite(record.year)) {
+          return record.year >= currentYear - 1
+        }
+        if (record?.date) {
+          const recordYear = new Date(record.date).getFullYear()
+          if (Number.isFinite(recordYear)) return recordYear >= currentYear - 1
+        }
+        return false
+      }
+    )
+  }, [bussingData])
+
+  const activeDataset = graphs === 'bussing' ? recentBussingData : weekdayData
+  const datasetLength = activeDataset.length
+  const effectiveWindowEnd = windowEnd ?? datasetLength
+  const clampedWindowEnd = Math.min(
+    Math.max(effectiveWindowEnd, WINDOW_SIZE),
+    datasetLength
+  )
+  const windowStart = Math.max(0, clampedWindowEnd - WINDOW_SIZE)
+  const windowedData = activeDataset.slice(windowStart, clampedWindowEnd)
+
+  // Active tab's averages reflect the visible window so they stay in sync with
+  // what's drawn on the chart. Inactive tab's averages stay at the latest
+  // 4 weeks of their full dataset.
+  const isBussingActive = graphs === 'bussing'
+  const avgBussing = formatStat(
+    getMonthlyStatAverage(
+      isBussingActive ? windowedData : recentBussingData,
+      'attendance'
+    )
+  )
+  const avgAttendance = formatStat(
+    getMonthlyStatAverage(
+      isBussingActive ? weekdayData : windowedData,
+      'attendance'
+    )
+  )
+  const avgIncome = formatStat(
+    getMonthlyStatAverage(
+      isBussingActive ? weekdayData : windowedData,
+      'income'
+    )
+  )
+
+  const canGoOlder = windowStart > 0
+  const canGoNewer = clampedWindowEnd < datasetLength
+
+  const handleOlder = () =>
+    setWindowEnd(Math.max(WINDOW_SIZE, clampedWindowEnd - WINDOW_SIZE))
+  const handleNewer = () =>
+    setWindowEnd(Math.min(datasetLength, clampedWindowEnd + WINDOW_SIZE))
+
+  const handleTabChange = (value: string) => {
+    setGraphs(value as GraphTypes)
+    setWindowEnd(null)
+  }
+
+  const weekRangeLabel = useMemo(() => {
+    const validEntries = windowedData
+      .map((d: { week?: number | string; year?: number | string }) => ({
+        week: Number(d.week ?? 0),
+        year: Number(d.year ?? 0),
+      }))
+      .filter((e) => Number.isFinite(e.week) && e.week > 0)
+    if (!validEntries.length) return 'No service data'
+
+    const sorted = [...validEntries].sort(
+      (a, b) => a.year * 100 + a.week - (b.year * 100 + b.week)
+    )
+    const first = sorted[0]
+    const last = sorted[sorted.length - 1]
+    const formatWeekYear = (w: number, y: number) =>
+      y ? `W${w}'${String(y).slice(-2)}` : `W${w}`
+
+    if (first.year === last.year) {
+      return `Weeks ${first.week} – ${last.week} (${first.year})`
     }
-  }, [graphs, bacentaId, refetch])
+    return `${formatWeekYear(first.week, first.year)} – ${formatWeekYear(last.week, last.year)}`
+  }, [windowedData])
 
-  const handlePrevious = useCallback(() => {
-    const newSkip = Math.max(0, skip - limit)
-    setSkip(newSkip)
-    setIsNavigating(true)
-    refetch({ id: bacentaId, limit, skip: newSkip })
-  }, [skip, limit, bacentaId, refetch])
-
-  const handleNext = useCallback(() => {
-    const newSkip = skip + limit
-    setSkip(newSkip)
-    setIsNavigating(true)
-    refetch({ id: bacentaId, limit, skip: newSkip })
-  }, [skip, limit, bacentaId, refetch])
-
-  const canGoBack = skip > 0
-  const canGoForward = churchData && churchData.length === limit
+  const showIncomeBar =
+    graphs !== 'bussing' && !!getMonthlyStatAverage(weekdayData, 'income')
 
   return (
-    <ApolloWrapper loading={loading} error={error} data={data}>
-      <Container>
-        <LeaderAvatar
-          leader={data?.bacentas[0].leader}
-          leaderTitle="Bacenta Leader"
-        />
+    <ApolloWrapper loading={loading} error={error} data={data} placeholder>
+      <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <main className="mx-auto max-w-5xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
+          <header className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {bacenta?.name ?? 'Bacenta'}{' '}
+              <span className="text-churches">Trends</span>
+            </h1>
+          </header>
 
-        <Row className="row-cols-2">
-          <Col>
-            <MembershipCard
-              link="/bacenta/members"
-              title="Membership"
-              count={data?.bacentas[0].memberCount}
-            />
-          </Col>
-          <Col>
-            <GraphDropdown
-              graphs={graphs}
-              setGraphs={setGraphs}
-              setChurchData={setChurchData}
-              data={data?.bacentas[0]}
-            />
-          </Col>
-        </Row>
-
-        <Row className="mt-3">
-          <Col>
-            <StatDisplay
-              title={`Avg Weekly ${
-                graphs === 'bussing' ? 'Bussing' : 'Attendance'
-              }`}
-              statistic={getMonthlyStatAverage(churchData, 'attendance')}
-            />
-          </Col>
-          <Col>
-            {isIncomeGraph(graphs, currentUser) && (
-              <StatDisplay
-                title="Avg Weekly Income"
-                statistic={getMonthlyStatAverage(churchData, 'income')}
+          <Card>
+            <CardContent className="px-4 py-3 sm:px-5">
+              <LeaderAvatar
+                leader={bacenta?.leader}
+                leaderTitle="Bacenta Leader"
+                loading={!bacenta}
               />
-            )}
-          </Col>
-        </Row>
+            </CardContent>
+          </Card>
 
-        {!currentUser.noIncomeTracking ? (
-          <ChurchGraph
-            stat1="attendance"
-            stat2={!isIncomeGraph(graphs, currentUser) ? null : 'income'}
-            churchData={churchData || []}
-            church="bacenta"
-            graphType={graphs}
-            income={true}
-          />
-        ) : (
-          <ChurchGraph
-            stat1="attendance"
-            stat2={null}
-            churchData={churchData || []}
-            church="bacenta"
-            graphType={graphs}
-            income={false}
-          />
-        )}
+          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <Link
+              to="/bacenta/members"
+              className="block h-full rounded-xl outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.99]"
+            >
+              <StatCard
+                compact
+                label="Membership"
+                value={bacenta?.memberCount ?? 0}
+                icon={Users}
+                accent="members"
+                hint="Tap to view"
+                loading={!bacenta}
+              />
+            </Link>
 
-        {/* Navigation Controls */}
-        <Row className="mt-3 justify-content-center">
-          <Col xs="auto">
-            <div className="d-flex align-items-center gap-3">
+            <StatCard
+              compact
+              label="Avg Weekly Bussing"
+              value={avgBussing}
+              icon={Bus}
+              accent="defaulters"
+              loading={loading && !bacenta}
+            />
+
+            <StatCard
+              compact
+              label="Avg Weekly Attendance"
+              value={avgAttendance}
+              icon={TrendingUp}
+              accent="churches"
+              loading={loading && !bacenta}
+            />
+
+            <StatCard
+              compact
+              label="Avg Weekly Income"
+              value={incomeTracked ? avgIncome : 'Not tracked'}
+              icon={Wallet}
+              accent="banking"
+              loading={loading && !bacenta}
+            />
+          </section>
+
+          <Tabs value={graphs} onValueChange={handleTabChange}>
+            <TabsList className="grid h-12 w-full grid-cols-2">
+              {BACENTA_GRAPH_OPTIONS.map((option) => (
+                <TabsTrigger key={option.value} value={option.value}>
+                  {option.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
+          <Card>
+            <CardContent className="px-3 pb-2 pt-4 sm:px-5 sm:pt-5">
+              <ChurchGraph
+                stat1="attendance"
+                stat2={showIncomeBar && incomeTracked ? 'income' : null}
+                churchData={windowedData}
+                church="bacenta"
+                graphType={graphs}
+              />
+            </CardContent>
+            <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-3 sm:px-5">
               <Button
-                variant="outline-secondary"
-                size="sm"
-                onClick={handleNext}
-                disabled={!canGoForward || loading || isNavigating}
-                className="d-flex align-items-center"
+                variant="outline"
+                onClick={handleOlder}
+                disabled={!canGoOlder}
+                className="min-h-[44px] flex-1 sm:flex-none"
               >
-                {isNavigating ? (
-                  <Spinner size="sm" className="me-1" />
-                ) : (
-                  <ChevronLeft size={16} className="me-1" />
-                )}
-                Previous
+                <ChevronLeft className="size-4" />
+                Older
               </Button>
 
-              <span className="text-muted small">
-                {churchData && churchData.length > 0
-                  ? `Weeks ${Math.min(
-                      ...churchData.map((d) => d.week || 0)
-                    )} - ${Math.max(...churchData.map((d) => d.week || 0))}`
-                  : `Weeks ${skip + 1} - ${skip + (churchData?.length || 0)}`}
+              <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                {weekRangeLabel}
               </span>
 
               <Button
-                variant="outline-secondary"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={!canGoBack || loading || isNavigating}
-                className="d-flex align-items-center"
+                variant="outline"
+                onClick={handleNewer}
+                disabled={!canGoNewer}
+                className="min-h-[44px] flex-1 sm:flex-none"
               >
-                {isNavigating ? (
-                  <Spinner size="sm" className="ms-1" />
-                ) : (
-                  <ChevronRight size={16} className="ms-1" />
-                )}
-                Next
+                Newer
+                <ChevronRight className="size-4" />
               </Button>
             </div>
-          </Col>
-        </Row>
-      </Container>
+          </Card>
+        </main>
+      </div>
     </ApolloWrapper>
   )
 }

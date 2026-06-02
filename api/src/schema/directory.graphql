@@ -1,4 +1,16 @@
-type Member {
+type Member @node @mutation(operations: []) {
+  # All auto-generated CRUD is disabled. Writes go through narrow custom
+  # mutations that each enforce role gating + audit logging:
+  #   - CreateMember            (directory-resolvers.ts)
+  #   - MakeMemberInactive      (directory-resolvers.ts)
+  #   - UpdateMemberBacenta     (directory-resolvers.ts)
+  #   - SetMemberStickyNote     (directory-history.graphql)
+  #   - LogMemberHistory        (directory-history.graphql)
+  # Leaving the auto-gen `updateMembers` exposed (even with `@authentication`)
+  # lets any logged-in user overwrite arbitrary member PII or connect
+  # themselves to leader/admin relationships — privilege escalation. Keep
+  # this directive at `operations: []` and add a narrow mutation if the FE
+  # needs a new field.
   id: ID! @id
   firstName: String #@search
   middleName: String
@@ -20,13 +32,12 @@ type Member {
   pictureUrl: String
   visitationArea: String
   location: Point
-  gender: Gender! @relationship(type: "HAS_GENDER", direction: OUT)
-  maritalStatus: MaritalStatus!
+  gender: Gender @relationship(type: "HAS_GENDER", direction: OUT)
+  maritalStatus: MaritalStatus
     @relationship(type: "HAS_MARITAL_STATUS", direction: OUT)
   dob: TimeGraph @relationship(type: "WAS_BORN_ON", direction: OUT)
   title: [Title!]!
     @relationship(type: "HAS_TITLE", properties: "HasTitle", direction: OUT)
-  basonta: Basonta @relationship(type: "BELONGS_TO", direction: OUT)
   stickyNote: String
   occupation: Occupation @relationship(type: "HAS_OCCUPATION", direction: OUT)
   stream_name: String
@@ -38,11 +49,59 @@ type Member {
       columnName: "stream_name"
     )
   # Church Details
-  members: [Member!]!
+  #
+  # SECURITY NOTE — self-only gate
+  # ------------------------------
+  # `members` and `memberCount` below are gated on `this.id = $jwt.userId`,
+  # i.e. only the queried Member may be the caller. This was tightened in
+  # the SYN-95 / directory-read hardening pass to close a cross-tier PII
+  # bypass: previously, ANY caller could query
+  # `Member(id: "<other-member>") { members { … } }` and receive that
+  # member's leadership tree.
+  #
+  # The intended product semantic was "members under the leaders I lead or
+  # admin." The current rule is mechanically safe but broader than that —
+  # it makes the field unusable for legitimate org-chart traversals where
+  # the caller IS a servant of `this` but is not `this` themselves
+  # (e.g. an admin viewing a leader's downline).
+  #
+  # SYN-146 item 5 (TODO) — replace `this.id = $jwt.userId` with a
+  # per-target authority predicate: the caller must hold any servant edge
+  # (`LEADS`, `DEPUTY_LEADS`, `IS_ADMIN_FOR`) that reaches `this`'s spine
+  # root via `[:HAS*0..6]`. No FE caller is broken by the current gate —
+  # `MembersGrid` does not consume these fields — so the v2 rollout can
+  # happen on its own schedule.
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE this.id = jwt.userId
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -50,45 +109,41 @@ type Member {
   memberCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN this.id = $jwt.userId
+        THEN COUNT { (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
-  basontaMembers: [Member!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: """
-      MATCH (this)-[:LEADS|HAS|IS_ADMIN_FOR*1..5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      MATCH (members)-[:BELONGS_TO]->(:Basonta)
-      RETURN DISTINCT members AS basontaMembers ORDER BY toLower(basontaMembers.firstName), toLower(basontaMembers.lastName)
-      """
-      columnName: "basontaMembers"
-    )
-  basontaMembershipCount: Int
-    @cypher(
-      statement: """
-      MATCH (this)-[:LEADS|HAS|IS_ADMIN_FOR*1..5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      MATCH (members)-[:BELONGS_TO]->(:Basonta)
-      RETURN COUNT(DISTINCT members) AS basontaMembershipCount
-      """
-      columnName: "basontaMembershipCount"
-    )
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   loggedHistory: [HistoryLog!]! @relationship(type: "LOGGED_BY", direction: IN)
   bacenta: Bacenta @relationship(type: "BELONGS_TO", direction: OUT)
-  leadsFellowship: [Fellowship!]! @relationship(type: "LEADS", direction: OUT)
-  leadsFellowshipCount: Int
+  # Display-only summary of the member's bacenta — id + name only. Unscoped
+  # so a cross-scope viewer can still see "[Member] belongs to [Bacenta]"
+  # on the member profile for organisational context, even when the full
+  # `bacenta` relationship above is filtered to null by the Bacenta spine
+  # read-filter. No leader, members, history, services, or financials are
+  # exposed — those remain gated behind the scoped relationship and the
+  # spine read-filter. The frontend MUST treat this purely as text; the
+  # unscoped id is NOT a valid navigation target (`useCanViewChurch` will
+  # return false for an out-of-scope bacenta).
+  bacentaSummary: BacentaSummary
     @cypher(
-      statement: """
-      MATCH (this)-[:LEADS]->(fellowships:Fellowship)
-      RETURN COUNT(fellowships) AS leadsFellowshipCount
-      """
-      columnName: "leadsFellowshipCount"
+      statement: "MATCH (this)-[:BELONGS_TO]->(b:Bacenta) RETURN { id: b.id, name: b.name } AS bacentaSummary LIMIT 1"
+      columnName: "bacentaSummary"
     )
+  basonta: Basonta @relationship(type: "BELONGS_TO", direction: OUT)
   leadsBacenta: [Bacenta!]! @relationship(type: "LEADS", direction: OUT)
   leadsBacentaCount: Int
     @cypher(
@@ -99,11 +154,6 @@ type Member {
       columnName: "leadsBacentaCount"
     )
 
-  ### CREATIVE ARTS WORK ###
-  leadsCreativeArts: [CreativeArts!]!
-    @relationship(type: "LEADS", direction: OUT)
-  leadsMinistry: [Ministry!]! @relationship(type: "LEADS", direction: OUT)
-  leadsHub: [Hub!]! @relationship(type: "LEADS", direction: OUT)
   leadsGovernorship: [Governorship!]!
     @relationship(type: "LEADS", direction: OUT)
   leadsGovernorshipCount: Int
@@ -268,25 +318,30 @@ type Member {
     @relationship(type: "WAS_TREASURER_FOR", direction: OUT)
 }
 
-type Gender {
+# Display-only summary of a Bacenta, returned by `Member.bacentaSummary`.
+# Declared WITHOUT `@node` so `@neo4j/graphql` v7 treats this as a plain
+# RPC response shape and does NOT auto-generate CRUD queries/mutations
+# against a Neo4j `BacentaSummary` label. Carries id + name only — the
+# full Bacenta node remains gated by the spine read-filter on Bacenta.
+type BacentaSummary {
+  id: String
+  name: String
+}
+
+type Gender @node @mutation(operations: []) {
   gender: String
-  members: [Member!]! @relationship(type: "HAS_GENDER", direction: IN)
 }
 
-type MaritalStatus {
+type MaritalStatus @node @mutation(operations: []) {
   status: String
-  members: [Member!]! @relationship(type: "HAS_MARITAL_STATUS", direction: IN)
 }
 
-type Occupation {
+type Occupation @node @mutation(operations: []) {
   occupation: String
-  members: [Member!]! @relationship(type: "HAS_OCCUPATION", direction: IN)
 }
 
-type Title {
+type Title @node @mutation(operations: []) {
   name: String! #Pastor, Reverend, Apostle, Bishop (Mother)
-  members: [Member!]!
-    @relationship(type: "HAS_TITLE", properties: "HasTitle", direction: IN)
 }
 
 type HasTitle @relationshipProperties {
@@ -297,7 +352,7 @@ interface TimeGraphNode {
   date: Date
 }
 
-type TimeGraph implements TimeGraphNode {
+type TimeGraph implements TimeGraphNode @node @mutation(operations: []) {
   id: ID
     @cypher(
       statement: """
@@ -329,20 +384,21 @@ type TimeGraph implements TimeGraphNode {
   bussingDate: [BussingRecord!]! @relationship(type: "BUSSED_ON", direction: IN)
 }
 
-type HistoryLog {
-  id: ID @id
+# Directory audit log — written exclusively by the servant factory and a
+# handful of other custom resolvers when leadership / membership state
+# changes. The whole point of an audit log is that no end-user can
+# fabricate or rewrite entries — suppress auto-gen mutations to enforce
+# that invariant. Reads stay open: anyone authorised to see a church can
+# see its directory history via the relationship traversal.
+type HistoryLog @node @mutation(operations: []) {
+  id: ID! @id
   timeStamp: DateTime
   historyRecord: String #leader was transferred to
   createdAt: TimeGraph @relationship(type: "RECORDED_ON", direction: OUT)
   loggedBy: Member @relationship(type: "LOGGED_BY", direction: OUT)
   leaders: [Member!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  fellowship: [Fellowship!]! @relationship(type: "HAS_HISTORY", direction: IN)
   bacenta: [Bacenta!]! @relationship(type: "HAS_HISTORY", direction: IN)
   governorship: [Governorship!]!
-    @relationship(type: "HAS_HISTORY", direction: IN)
-  ministry: [Ministry!]! @relationship(type: "HAS_HISTORY", direction: IN)
-  hub: Hub! @relationship(type: "HAS_HISTORY", direction: IN)
-  creativeArt: [CreativeArts!]!
     @relationship(type: "HAS_HISTORY", direction: IN)
 }
 
@@ -351,17 +407,29 @@ interface Church {
   id: ID
   name: String!
   leader: Member @declareRelationship
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
   memberSearch(key: String!, limit: Int!): [Member!]!
   memberCount: Int!
   pastorCount: Int
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
+  historyCount: Int!
 
   serviceLogs: [ServiceLog!]! @declareRelationship
   services(limit: Int!, skip: Int): [ServiceRecord!]!
 }
 
-type Denomination implements Church {
+type Denomination implements Church @node @mutation(operations: [])
+  # @churchScoped(level: Denomination)
+{
   id: ID! @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
@@ -391,11 +459,37 @@ type Denomination implements Church {
       statement: "MATCH (this)-[:HAS*6]->(bacentas:Bacenta) RETURN bacentas"
       columnName: "bacentas"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*7]->(:Fellowship)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'adminDenomination'])
+      MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -403,16 +497,25 @@ type Denomination implements Church {
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'adminDenomination'])
+        THEN COUNT { (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'adminDenomination'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*6]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -472,16 +575,16 @@ type Denomination implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  adminCount: Int
+  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
-      columnName: "adminCount"
-    )
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -495,7 +598,9 @@ type Denomination implements Church {
     )
 }
 
-type Oversight implements Church {
+type Oversight implements Church @node @mutation(operations: [])
+  # @churchScoped(level: Oversight)
+{
   id: ID @id
   name: String!
   noIncomeTracking: Boolean
@@ -522,11 +627,37 @@ type Oversight implements Church {
       statement: "MATCH (this)-[:HAS*5]->(bacentas:Bacenta) RETURN bacentas"
       columnName: "bacentas"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'adminDenomination', 'adminOversight'])
       MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -534,16 +665,25 @@ type Oversight implements Church {
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'adminDenomination', 'adminOversight'])
+        THEN COUNT { (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'adminDenomination', 'adminOversight'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -603,16 +743,16 @@ type Oversight implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  adminCount: Int
+  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
-      columnName: "adminCount"
-    )
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -626,7 +766,9 @@ type Oversight implements Church {
     )
 }
 
-type Campus implements Church {
+type Campus implements Church @node @mutation(operations: [])
+  # @churchScoped(level: Campus)
+{
   id: ID @id
   name: String!
   noIncomeTracking: Boolean!
@@ -634,11 +776,9 @@ type Campus implements Church {
   conversionRateToDollar: Float!
 
   leader: Member @relationship(type: "LEADS", direction: IN)
-  oversight: Oversight! @relationship(type: "HAS", direction: IN)
+  oversight: Oversight @relationship(type: "HAS", direction: IN)
   streams: [Stream!]! @relationship(type: "HAS", direction: OUT)
-  creativeArts: [CreativeArts!]!
-    @relationship(type: "HAS_MINISTRY", direction: OUT)
-
+  basontas: [Basonta!]! @relationship(type: "HAS_MINISTRY", direction: OUT)
   councils: [Council!]!
     @cypher(
       statement: "MATCH (this)-[:HAS*2]->(councils:Council) RETURN councils"
@@ -654,11 +794,37 @@ type Campus implements Church {
       statement: "MATCH (this)-[:HAS*4]->(bacentas:Bacenta) RETURN bacentas"
       columnName: "bacentas"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'adminDenomination', 'adminOversight', 'adminCampus'])
       MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
@@ -666,16 +832,25 @@ type Campus implements Church {
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'adminDenomination', 'adminOversight', 'adminCampus'])
+        THEN COUNT { (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'adminDenomination', 'adminOversight', 'adminCampus'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -730,16 +905,16 @@ type Campus implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  adminCount: Int
+  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
-      columnName: "adminCount"
-    )
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
@@ -753,7 +928,9 @@ type Campus implements Church {
     )
 }
 
-type Stream implements Church {
+type Stream implements Church @node @mutation(operations: [])
+  # @churchScoped(level: Stream)
+{
   id: ID @id
   name: String!
   bankAccount: String!
@@ -778,8 +955,7 @@ type Stream implements Church {
   leader: Member @relationship(type: "LEADS", direction: IN)
   councils: [Council!]! @relationship(type: "HAS", direction: OUT)
   campus: Campus @relationship(type: "HAS", direction: IN)
-  ministries: [Ministry!]! @relationship(type: "HAS_MINISTRY", direction: OUT)
-  meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
+  meetingDay: ServiceDay @relationship(type: "MEETS_ON", direction: OUT)
 
   stream_name: String
     @cypher(
@@ -805,27 +981,62 @@ type Stream implements Church {
       columnName: "ics"
     )
 
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream'])
       MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream'])
+        THEN COUNT { (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -875,16 +1086,16 @@ type Stream implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  adminCount: Int
+  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
-      columnName: "adminCount"
-    )
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -900,7 +1111,9 @@ type Stream implements Church {
     )
 }
 
-type Council implements Church {
+type Council implements Church @node @mutation(operations: [])
+  # @churchScoped(level: Council)
+{
   id: ID @id
   name: String!
   leader: Member @relationship(type: "LEADS", direction: IN)
@@ -927,27 +1140,62 @@ type Council implements Church {
       columnName: "bacentas"
     )
   governorships: [Governorship!]! @relationship(type: "HAS", direction: OUT)
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil'])
       MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil'])
+        THEN COUNT { (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
   pastorCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil'])
+        THEN COUNT {
+          MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -992,16 +1240,16 @@ type Council implements Church {
       columnName: "vacationGraduatedBacentaCount"
     )
 
-  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  adminCount: Int
+  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
-      columnName: "adminCount"
-    )
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -1017,7 +1265,9 @@ type Council implements Church {
     )
 }
 
-type Governorship implements Church {
+type Governorship implements Church @node @mutation(operations: [])
+  # @churchScoped(level: Governorship)
+{
   id: ID @id
   name: String!
   isManualBanking: Boolean!
@@ -1036,27 +1286,62 @@ type Governorship implements Church {
       """
       columnName: "stream_name"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
       MATCH (this)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
+        THEN COUNT { (this)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
   pastorCount: Int
     @cypher(
       statement: """
-      MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
+        THEN COUNT {
+          MATCH (this)-[:HAS]->(:Bacenta)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
@@ -1101,16 +1386,16 @@ type Governorship implements Church {
   leader: Member @relationship(type: "LEADS", direction: IN)
   council: Council @relationship(type: "HAS", direction: IN)
 
-  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  adminCount: Int
+  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
-      columnName: "adminCount"
-    )
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC  LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceRecord: [ServiceRecord!]!
     @relationship(type: "HAS_SERVICE", direction: OUT)
@@ -1126,7 +1411,9 @@ type Governorship implements Church {
     )
 }
 
-type Bacenta implements Church {
+type Bacenta implements Church @node @mutation(operations: [])
+  # @churchScoped(level: Bacenta)
+{
   id: ID @id
   name: String!
   bankingCode: Int
@@ -1139,7 +1426,7 @@ type Bacenta implements Church {
       """
       columnName: "isManualBanking"
     )
-  meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
+  meetingDay: ServiceDay @relationship(type: "MEETS_ON", direction: OUT)
   stream_name: String
     @cypher(
       statement: """
@@ -1158,7 +1445,7 @@ type Bacenta implements Church {
       """
       columnName: "status"
     )
-  labels: [String]
+  labels: [String!]
     @cypher(
       statement: """
       MATCH (this)
@@ -1166,44 +1453,79 @@ type Bacenta implements Church {
       """
       columnName: "labels"
     )
-  members: [Member!]!
+  members(
+    limit: Int! = 1000
+    offset: Int! = 0
+    search: String
+    genders: [String!]
+    maritalStatuses: [String!]
+    leaderTitles: [String!]
+    basontas: [String!]
+    leaderRanks: [String!]
+  ): [Member!]!
     @cypher(
       statement: """
+      WITH this, $jwt AS jwt
+      WHERE ANY(role IN jwt.roles WHERE role IN ['leaderBacenta', 'leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
+      WHERE
+        ($search IS NULL OR
+         toLower(coalesce(members.firstName, '') + ' ' + coalesce(members.lastName, '')) CONTAINS toLower($search) OR
+         (size($search) >= 4 AND coalesce(members.phoneNumber, '') CONTAINS $search))
+        AND ($genders IS NULL OR EXISTS { MATCH (members)-[:HAS_GENDER]->(g:Gender) WHERE g.gender IN $genders })
+        AND ($maritalStatuses IS NULL OR EXISTS { MATCH (members)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) WHERE ms.status IN $maritalStatuses })
+        AND ($leaderTitles IS NULL OR EXISTS { MATCH (members)-[:HAS_TITLE]->(t:Title) WHERE t.name IN $leaderTitles })
+        AND ($basontas IS NULL OR EXISTS { MATCH (members)-[:BELONGS_TO]->(bs:Basonta) WHERE bs.name IN $basontas })
+        AND ($leaderRanks IS NULL OR (
+          ('Bacenta Leader' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Bacenta) }) OR
+          ('CO' IN $leaderRanks AND EXISTS { MATCH (members)-[:LEADS]->(:Governorship) }) OR
+          ('Admin' IN $leaderRanks AND (EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Council) } OR EXISTS { MATCH (members)-[:IS_ADMIN_FOR]->(:Governorship) }))
+        ))
+      RETURN DISTINCT members AS members
+      ORDER BY toLower(members.firstName), toLower(members.lastName)
+      SKIP $offset LIMIT $limit
       """
       columnName: "members"
     )
   memberCount: Int!
     @cypher(
       statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderBacenta', 'leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
+        THEN COUNT { (this)<-[:BELONGS_TO]-(:Active:Member) }
+        ELSE 0
+      END AS memberCount
       """
       columnName: "memberCount"
     )
   pastorCount: Int!
     @cypher(
       statement: """
-      MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
+      RETURN CASE
+        WHEN ANY(role IN $jwt.roles WHERE role IN ['leaderBacenta', 'leaderDenomination', 'leaderOversight', 'leaderCampus', 'leaderStream', 'leaderCouncil', 'leaderGovernorship', 'adminDenomination', 'adminOversight', 'adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'])
+        THEN COUNT {
+          MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
+          RETURN DISTINCT pastors
+        }
+        ELSE 0
+      END AS pastorCount
       """
       columnName: "pastorCount"
     )
   leader: Member @relationship(type: "LEADS", direction: IN)
-  admins: [Member!]! @relationship(type: "IS_ADMIN_FOR", direction: IN)
-  adminCount: Int
-    @cypher(
-      statement: "MATCH (this)<-[:IS_ADMIN_FOR]-(admin:Member) RETURN COUNT(admin) AS adminCount"
-      columnName: "adminCount"
-    )
+  admin: Member @relationship(type: "IS_ADMIN_FOR", direction: IN)
   deputyLeader: Member @relationship(type: "DEPUTY_LEADS", direction: IN)
 
   governorship: Governorship @relationship(type: "HAS", direction: IN)
-  history(limit: Int! = 3): [HistoryLog!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
+    )
+  historyCount: Int!
+    @cypher(
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
   serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
   services(limit: Int! = 12, skip: Int = 0): [ServiceRecord!]!
@@ -1214,6 +1536,22 @@ type Bacenta implements Church {
       RETURN services AS services ORDER BY date.date DESC SKIP $skip LIMIT $limit
       """
       columnName: "services"
+    )
+
+  serviceRecordForWeek(weekStart: Date): ServiceRecord
+    @cypher(
+      statement: """
+      MATCH (this)
+      WITH coalesce(date($weekStart), date()) AS today, this
+      WITH  today.weekDay as theDay, today, this
+      WITH date(today) - duration({days: (theDay - 2)}) AS startDate, this
+      WITH [day in range(0, 5) | startDate + duration({days: day})] AS dates, this
+      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(record:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
+      USING INDEX date:TimeGraph(date)
+      WHERE date.date IN dates
+      RETURN record AS record ORDER BY date.date DESC LIMIT 1
+      """
+      columnName: "record"
     )
 
   council: Council
@@ -1230,156 +1568,20 @@ type Bacenta implements Church {
       columnName: "stream"
     )
 
-  hubs: [Hub!]!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*2]-(council:Council)-[:HAS_MINISTRY]->(hubs:Hub)
-      RETURN hubs AS hubs
-      """
-      columnName: "hubs"
-    )
 }
 
-# Shared Units: Fellowship, Fellowship
-type Fellowship implements Church {
+type Basonta @node @mutation(operations: []) {
   id: ID @id
-  bankingCode: Int
   name: String!
-  location: Point
-  stream_name: String
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*4]-(stream:Stream)
-      RETURN DISTINCT toLower(stream.name) AS stream_name
-      """
-      columnName: "stream_name"
-    )
-  vacationStatus: String!
-    @cypher(
-      statement: """
-      MATCH (this)
-      UNWIND labels(this) AS status
-      WITH status WHERE status = 'Active' OR status = 'Vacation' OR status = 'Online'
-      RETURN status
-      """
-      columnName: "status"
-    )
-  hubStatus: Boolean!
-    @cypher(
-      statement: "MATCH (this) RETURN EXISTS((this)<-[:HAS]-(:Hub)) AS hubStatus"
-      columnName: "hubStatus"
-    )
-  bacenta: Bacenta @relationship(type: "HAS", direction: IN)
   leader: Member @relationship(type: "LEADS", direction: IN)
-  members: [Member!]!
+  history(limit: Int! = 3, offset: Int! = 0): [HistoryLog!]!
     @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN DISTINCT members AS members ORDER BY toLower(members.firstName), toLower(members.lastName)
-      """
-      columnName: "members"
-    )
-  memberCount: Int!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
-      RETURN COUNT(DISTINCT members) AS memberCount
-      """
-      columnName: "memberCount"
-    )
-  ministryMemberCount: Int
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)-[:BELONGS_TO]->(:Ministry)
-      RETURN COUNT(DISTINCT members) AS ministryMemberCount
-      """
-      columnName: "ministryMemberCount"
-    )
-  pastorCount: Int
-    @cypher(
-      statement: """
-      MATCH (this)<-[:BELONGS_TO]-(pastors:Active:Member)-[:HAS_TITLE]->(:Title)
-      RETURN COUNT(DISTINCT pastors) AS pastorCount
-      """
-      columnName: "pastorCount"
-    )
-  meetingDay: ServiceDay! @relationship(type: "MEETS_ON", direction: OUT)
-  history(limit: Int! = 3): [HistoryLog!]!
-    @cypher(
-      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN log AS history ORDER BY log.timeStamp DESC LIMIT $limit"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN DISTINCT log AS history ORDER BY log.timeStamp DESC, log.id SKIP $offset LIMIT $limit"
       columnName: "history"
     )
-  serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
-  services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
+  historyCount: Int!
     @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      WITH DISTINCT records,date
-      RETURN records AS services ORDER BY date.date DESC SKIP $skip LIMIT $limit
-      """
-      columnName: "services"
+      statement: "MATCH (this)-[:HAS_HISTORY|OLD_HISTORY]->(log:HistoryLog) RETURN count(DISTINCT log) AS total"
+      columnName: "total"
     )
-  labels: [String]
-    @cypher(
-      statement: """
-      MATCH (this)
-      RETURN labels(this) AS labels
-      """
-      columnName: "labels"
-    )
-
-  council: Council
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*3]-(council:Council)
-      RETURN council AS council
-      """
-      columnName: "council"
-    )
-}
-type ClosedFellowship {
-  id: ID @id
-  bankingCode: Int
-  name: String
-  location: Point
-  stream_name: String
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*4]-(stream:Stream)
-      RETURN DISTINCT toLower(stream.name) AS stream_name
-      """
-      columnName: "stream_name"
-    )
-  bacenta: Bacenta @relationship(type: "HAS", direction: IN)
-  leader: Member @relationship(type: "LEADS", direction: IN)
-  members: [Member!]! @relationship(type: "BELONGS_TO", direction: IN)
-  meetingDay: ServiceDay @relationship(type: "MEETS_ON", direction: OUT)
-  history: [HistoryLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
-  serviceLogs: [ServiceLog!]! @relationship(type: "HAS_HISTORY", direction: OUT)
-  services(limit: Int!, skip: Int = 0): [ServiceRecord!]!
-    @cypher(
-      statement: """
-      MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE]->(records:ServiceRecord)-[:SERVICE_HELD_ON]->(date:TimeGraph)
-      WITH DISTINCT records, date
-      RETURN records AS services ORDER BY date.date DESC SKIP $skip LIMIT $limit
-      """
-      columnName: "services"
-    )
-  labels: [String]
-    @cypher(
-      statement: """
-      MATCH (this)
-      RETURN labels(this) AS labels
-      """
-      columnName: "labels"
-    )
-  council: Council
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*3]-(council:Council)
-      RETURN council AS council
-      """
-      columnName: "council"
-    )
-  hub: Hub! @relationship(type: "HAS", direction: IN)
 }

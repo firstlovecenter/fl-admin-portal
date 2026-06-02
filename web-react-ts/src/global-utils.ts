@@ -1,5 +1,5 @@
 import { ApolloError } from '@apollo/client'
-import { last3Weeks } from '@jaedag/admin-portal-types'
+import { toast } from 'sonner'
 import {
   ChurchLevel,
   CurrentUser,
@@ -171,6 +171,10 @@ export const MINISTRY_ACCOUNT_OPTIONS: FormikSelectOptions = [
   { key: 'Accra Film Stars', value: 'accra_film_stars' },
 ]
 
+const surfaceErrorToast = (text: string) => {
+  toast.error(text, { duration: 10000 })
+}
+
 export const throwToSentry = (
   message: string,
   error?: Error | ApolloError | unknown
@@ -179,36 +183,29 @@ export const throwToSentry = (
     return
   }
 
-  const user = JSON.parse(sessionStorage.getItem('currentUser') || '{}')
-
   if (!error) {
     // eslint-disable-next-line no-console
     console.error(message)
-    // eslint-disable-next-line no-alert
-    // alert(`${message}`)
-    // window.open('/', '_self')
     return
   }
 
   if (!message) {
     // eslint-disable-next-line no-console
     console.error(error)
-    // eslint-disable-next-line no-alert
-    alert(`${error}`)
+    surfaceErrorToast(`${error}`)
     return
   }
 
   // eslint-disable-next-line no-console
   console.error(error)
-  // eslint-disable-next-line no-alert
-  alert(`${message} ${error}`)
+  surfaceErrorToast(`${message} ${error}`)
 }
 
 export const showUserReportDialog = () => {}
 
-export const alertMsg = (message: string) => {
-  // eslint-disable-next-line no-alert
-  alert(message)
+export const alertMsg = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error)
+  surfaceErrorToast(message)
 }
 
 export const isAuthorised = (permittedRoles: Role[], userRoles: Role[]) => {
@@ -232,6 +229,68 @@ export const authorisedLink = (
 
 export const convertNeoWeekdayToJSWeekday = (neoWeekday: number): number => {
   return neoWeekday === 7 ? 0 : neoWeekday
+}
+
+export const getWeekNumber = (date?: Date | string): number => {
+  const target = typeof date === 'string' ? new Date(date) : date || new Date()
+  target.setHours(0, 0, 0, 0)
+  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7))
+  const firstThursday = new Date(target.getFullYear(), 0, 4)
+  return (
+    1 +
+    Math.ceil(
+      ((target.getTime() - firstThursday.getTime()) / 86400000 -
+        3 +
+        ((firstThursday.getDay() + 6) % 7)) /
+        7
+    )
+  )
+}
+
+// Returns the ISO 8601 week-year, which can differ from the calendar year
+// for dates in late December (when ISO week 1 has already started) or early January.
+export const getISOWeekYear = (date?: Date | string): number => {
+  const target = typeof date === 'string' ? new Date(date) : date ? new Date(date) : new Date()
+  target.setHours(0, 0, 0, 0)
+  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7))
+  return target.getFullYear()
+}
+
+export const last3Weeks = (): number[] => {
+  const oneWeekAgo = new Date(Date.now() - 604800000).toString()
+  const twoWeeksAgo = new Date(Date.now() - 1209600000).toString()
+  return [getWeekNumber(), getWeekNumber(oneWeekAgo), getWeekNumber(twoWeeksAgo)]
+}
+
+export const getHumanReadableDate = (
+  date: string,
+  weekday?: true
+): string | undefined => {
+  if (!date) return undefined
+  if (weekday) {
+    return new Date(date).toLocaleDateString('en-gb', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    })
+  }
+  return new Date(date).toLocaleDateString('en-gb', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+export const getHumanReadableDateTime = (date: string): string | undefined => {
+  if (!date) return undefined
+  return new Date(date).toLocaleString('en-gb', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+  })
 }
 
 export const capitalise = (str: string) => {
@@ -278,24 +337,6 @@ export const plural = (church: ChurchLevel | string) => {
       return 'bacentas'
     case 'Bacenta':
       return 'Bacentas'
-    case 'hub':
-      return 'hubs'
-    case 'Hub':
-      return 'Hubs'
-    case 'HubCouncil':
-      return 'Hub Councils'
-    case 'hubCouncil':
-      return 'hub councils'
-    case 'ministry':
-      return 'ministries'
-    case 'Ministry':
-      return 'Ministries'
-    case 'CreativeArts':
-      return 'Creative Arts'
-    case 'fellowship':
-      return 'fellowships'
-    case 'Fellowship':
-      return 'Fellowships'
     default:
       return church
   }
@@ -374,7 +415,6 @@ export const parseMemberCount = (number: number) => {
 interface MemberWithChurchCount extends Member {
   memberCount: number
   basontaMembershipCount: number
-  leadsFellowshipCount: number
   leadsBacentaCount: number
   leadsAdminsCouncilCount: number
   leadsAdminsGovernorshipCount: number
@@ -382,9 +422,7 @@ interface MemberWithChurchCount extends Member {
   leadsAdminsOversightCount: number
 
   //sonta
-  leadsHubCount: number
   leadsAdminsMinistryCount: number
-  leadsAdminsCreativeArtsCount: number
 }
 export const getMemberCount = (servant: MemberWithChurchCount) => {
   if (!servant?.memberCount) {
@@ -466,38 +504,6 @@ export const getChurchCount = (servant: MemberWithChurchCount) => {
     }
   }
 
-  if (servant?.leadsFellowshipCount) {
-    if (churchesCount) {
-      churchesCount += ','
-
-      if (servant.leadsFellowshipCount === 1) {
-        churchesCount = `${churchesCount} ${servant.leadsFellowshipCount} Fellowship`
-      } else {
-        churchesCount = `${churchesCount} ${servant.leadsFellowshipCount} Fellowships`
-      }
-    } else if (servant.leadsFellowshipCount === 1) {
-      churchesCount = `${servant.leadsFellowshipCount} Fellowship`
-    } else {
-      churchesCount = `${servant.leadsFellowshipCount} Fellowships`
-    }
-  }
-
-  if (servant?.leadsHubCount) {
-    if (churchesCount) {
-      churchesCount += ','
-
-      if (servant.leadsHubCount === 1) {
-        churchesCount = `${churchesCount} ${servant.leadsHubCount} Hub`
-      } else {
-        churchesCount = `${churchesCount} ${servant.leadsHubCount} Hubs`
-      }
-    } else if (servant.leadsHubCount === 1) {
-      churchesCount = `${servant.leadsHubCount} Hub`
-    } else {
-      churchesCount = `${servant.leadsHubCount} Hubs`
-    }
-  }
-
   if (servant?.leadsAdminsMinistryCount) {
     if (churchesCount) {
       churchesCount += ','
@@ -511,22 +517,6 @@ export const getChurchCount = (servant: MemberWithChurchCount) => {
       churchesCount = `${servant.leadsAdminsMinistryCount} Ministry`
     } else {
       churchesCount = `${servant.leadsAdminsMinistryCount} Ministries`
-    }
-  }
-
-  if (servant?.leadsAdminsCreativeArtsCount) {
-    if (churchesCount) {
-      churchesCount += ','
-
-      if (servant.leadsAdminsCreativeArtsCount === 1) {
-        churchesCount = `${churchesCount} ${servant.leadsAdminsCreativeArtsCount} Creative Arts`
-      } else {
-        churchesCount = `${churchesCount} ${servant.leadsAdminsCreativeArtsCount} Creative Arts`
-      }
-    } else if (servant.leadsAdminsCreativeArtsCount === 1) {
-      churchesCount = `${servant.leadsAdminsCreativeArtsCount} Creative Arts`
-    } else {
-      churchesCount = `${servant.leadsAdminsCreativeArtsCount} Creative Arts`
     }
   }
 
@@ -545,16 +535,29 @@ export const getSubChurchLevel = (churchType: ChurchLevel) => {
       return 'Stream'
     case 'Oversight':
       return 'Campus'
-    case 'CreativeArts':
-      return 'Ministry'
-    case 'Ministry':
-      return 'HubCouncil'
-    case 'HubCouncil':
-      return 'Hub'
 
     default:
       return 'Bacenta'
   }
+}
+
+const CHURCH_HIERARCHY_DESCENDING: readonly ChurchLevel[] = [
+  'Denomination',
+  'Oversight',
+  'Campus',
+  'Stream',
+  'Council',
+  'Governorship',
+  'Bacenta',
+]
+
+// Levels strictly below the given scope, descending. E.g.
+// Oversight -> [Campus, Stream, Council, Governorship, Bacenta]
+// Bacenta   -> []
+export const getDescendantLevels = (scope: ChurchLevel): ChurchLevel[] => {
+  const idx = CHURCH_HIERARCHY_DESCENDING.indexOf(scope)
+  if (idx < 0) return []
+  return CHURCH_HIERARCHY_DESCENDING.slice(idx + 1)
 }
 
 export const randomOTPGenerator = () => {
@@ -661,8 +664,6 @@ export const firstDayOfThisYear = new Date(new Date().getFullYear(), 0, 1)
 
 export const check = (bacenta: any) => {
   let serviceType: 'services' | 'rehearsals' = 'services'
-  if (bacenta.__typename === 'Hub') serviceType = 'rehearsals'
-
   const lastFilled = bacenta?.[serviceType].map(
     ({
       bankingProof,

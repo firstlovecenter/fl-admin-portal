@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const OVERSIGHT_BACENTA_SEARCH = gql`
   query oversightBacentaSearch($id: ID!, $key: String!) {
-    oversights(where: { id: $id }) {
+    oversights(where: { id: { eq: $id } }) {
       id
       bacentaSearch(key: $key, limit: 5) {
         id
@@ -14,7 +14,7 @@ export const OVERSIGHT_BACENTA_SEARCH = gql`
 
 export const CAMPUS_BACENTA_SEARCH = gql`
   query gatheringBacentaSearch($id: ID!, $key: String!) {
-    campuses(where: { id: $id }) {
+    campuses(where: { id: { eq: $id } }) {
       id
       bacentaSearch(key: $key, limit: 5) {
         id
@@ -26,7 +26,7 @@ export const CAMPUS_BACENTA_SEARCH = gql`
 
 export const STREAM_BACENTA_SEARCH = gql`
   query streamBacentaSearch($id: ID!, $key: String!) {
-    streams(where: { id: $id }) {
+    streams(where: { id: { eq: $id } }) {
       id
       bacentaSearch(key: $key, limit: 5) {
         id
@@ -38,7 +38,7 @@ export const STREAM_BACENTA_SEARCH = gql`
 
 export const COUNCIL_BACENTA_SEARCH = gql`
   query councilBacentaSearch($id: ID!, $key: String!) {
-    councils(where: { id: $id }) {
+    councils(where: { id: { eq: $id } }) {
       id
       bacentaSearch(key: $key, limit: 5) {
         id
@@ -50,7 +50,7 @@ export const COUNCIL_BACENTA_SEARCH = gql`
 
 export const GOVERNORSHIP_BACENTA_SEARCH = gql`
   query governorshipBacentaSearch($id: ID!, $key: String!) {
-    governorships(where: { id: $id }) {
+    governorships(where: { id: { eq: $id } }) {
       id
       bacentaSearch(key: $key, limit: 5) {
         id
@@ -61,7 +61,7 @@ export const GOVERNORSHIP_BACENTA_SEARCH = gql`
 `
 export const MEMBER_BACENTA_SEARCH = gql`
   query memberBacentaSearch($id: ID!, $key: String!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       bacentaSearch(key: $key) {
         id

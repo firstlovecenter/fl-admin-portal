@@ -9,75 +9,8 @@ import {
 import { authorisedLink, plural } from 'global-utils'
 import { churchLevels } from 'pages/directory/update/directory-utils'
 import {
-  permitArrivals,
-  permitArrivalsHelpers,
-  permitLeaderAdmin,
-  permitLeaderAdminArrivals,
   permitMe,
-  permitTellerStream,
 } from 'permission-utils'
-
-type MenuItem = {
-  name: string
-  to: string
-  roles: Role[]
-  exact?: 'true'
-}
-
-export const arrayDiff = (membersIn: any[], notIn: any[]) => {
-  return membersIn.filter((i) => notIn.indexOf(i) < 0)
-}
-
-export const menuItems: MenuItem[] = [
-  { name: 'Home', to: '/', roles: ['all'] },
-  {
-    name: 'Directory',
-    exact: 'true',
-    to: '/directory',
-    roles: [...permitMe('Bacenta'), ...permitMe('Hub')],
-  },
-  {
-    name: 'Services',
-    to: '/services/church-list',
-    roles: [
-      ...permitLeaderAdmin('Bacenta'),
-      ...permitTellerStream(),
-      ...permitLeaderAdmin('Hub'),
-    ],
-  },
-  {
-    name: 'Arrivals',
-    to: '/arrivals',
-    roles: arrayDiff(
-      [
-        ...permitLeaderAdmin('Bacenta'),
-        ...permitArrivals('Bacenta'),
-        ...permitArrivalsHelpers('Stream'),
-      ],
-      [...permitLeaderAdminArrivals('Oversight')]
-    ),
-  },
-  {
-    name: 'Accounts',
-    to: '/accounts',
-    roles: [
-      'fishers',
-      'adminOversight',
-      'adminCampus',
-      'leaderCouncil',
-      'leaderStream',
-      'leaderCampus',
-    ],
-  },
-  {
-    name: 'Maps',
-    to: '/maps',
-    roles: [
-      ...permitLeaderAdminArrivals('Bacenta'),
-      ...permitLeaderAdmin('Hub'),
-    ],
-  },
-]
 
 export const roles: {
   [key in ChurchLevel]: VerbTypes[]
@@ -95,10 +28,6 @@ export const roles: {
   Campus: ['leads', 'isAdminFor', 'isArrivalsAdminFor'],
   Oversight: ['leads', 'isAdminFor'],
   Denomination: ['leads', 'isAdminFor'],
-  Hub: ['leads'],
-  HubCouncil: ['leads'],
-  Ministry: ['leads', 'isAdminFor'],
-  CreativeArts: ['leads', 'isAdminFor'],
 }
 
 export const parseRoles = (role: VerbTypes): VerbTypes => {
@@ -153,7 +82,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
     servantType === 'isArrivalsPayerFor' ||
     servantType === 'isArrivalsCounterFor'
   ) {
-    const adminsOneChurch = servant[`${verb}`]?.length === 1 ?? false
+    const adminsOneChurch = servant[`${verb}`]?.length === 1
     userroles.push({
       name: adminsOneChurch
         ? churchType + ' ' + parseRoles(servantType)
@@ -168,7 +97,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
   }
 
   if (servantType === 'isTellerFor') {
-    const adminsOneChurch = servant[`${verb}`]?.length === 1 ?? false
+    const adminsOneChurch = servant[`${verb}`]?.length === 1
     userroles.push({
       authRoles,
       name: adminsOneChurch
@@ -183,7 +112,7 @@ const setServantRoles = (args: ServantRolesArgs) => {
   }
 
   if (servantType === 'isAdminFor' || servantType === 'isArrivalsAdminFor') {
-    const adminsOneChurch = servant[`${verb}`]?.length === 1 ?? false
+    const adminsOneChurch = servant[`${verb}`]?.length === 1
     userroles.push({
       authRoles,
       name: adminsOneChurch
@@ -195,16 +124,14 @@ const setServantRoles = (args: ServantRolesArgs) => {
       link: authorisedLink(
         servant,
         permittedForLink,
-        adminsOneChurch
-          ? `/${churchType.toLowerCase()}/displaydetails`
-          : `/servants/church-list`
+        `/${churchType.toLowerCase()}/displaydetails`
       ),
     })
 
     return
   }
 
-  const leadsOneChurch = servant[`${verb}`]?.length === 1 ?? false
+  const leadsOneChurch = servant[`${verb}`]?.length === 1
 
   userroles.push({
     authRoles,
@@ -214,13 +141,13 @@ const setServantRoles = (args: ServantRolesArgs) => {
     link: authorisedLink(
       servant,
       permittedForLink,
-      leadsOneChurch
-        ? `/${churchType.toLowerCase()}/displaydetails`
-        : `/servants/church-list`
+      `/${churchType.toLowerCase()}/displaydetails`
     ),
   })
 }
 
+// The `link` field below satisfies the UserJobs type but is never read for
+// navigation — ChurchRoleScopeContext owns routing for multi-church users.
 export const getUserServantRoles = (servant: Servant) => {
   let userroles: UserJobs[] = []
 
@@ -252,20 +179,6 @@ export const getServantRoles = (servant: MemberWithChurches) => {
   const userroles: UserJobs[] = []
   const roleTitles: Role[] = []
 
-  if (servant?.leadsFellowship?.length) {
-    roleTitles.push('leaderFellowship')
-    userroles.push({
-      authRoles: 'leaderFellowship',
-      name: 'Fellowship',
-      church: servant?.leadsFellowship,
-      number: servant?.leadsFellowship?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('Bacenta'),
-        '/fellowship/displaydetails'
-      ),
-    })
-  }
   if (servant?.leadsBacenta?.length) {
     roleTitles.push('leaderBacenta')
     userroles.push({
@@ -277,73 +190,6 @@ export const getServantRoles = (servant: MemberWithChurches) => {
         servant,
         permitMe('Bacenta'),
         '/bacenta/displaydetails'
-      ),
-    })
-  }
-
-  if (servant?.leadsHub?.length) {
-    roleTitles.push('leaderHub')
-    userroles.push({
-      authRoles: 'leaderHub',
-      name: 'Hub',
-      church: servant?.leadsHub,
-      number: servant?.leadsHub?.length,
-      link: authorisedLink(servant, permitMe('Hub'), '/hub/displaydetails'),
-    })
-  }
-  if (servant?.leadsMinistry?.length) {
-    roleTitles.push('leaderMinistry')
-    userroles.push({
-      authRoles: 'leaderMinistry',
-      name: 'Ministry',
-      church: servant?.leadsMinistry,
-      number: servant?.leadsMinistry?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('Ministry'),
-        '/ministry/displaydetails'
-      ),
-    })
-  }
-  if (servant?.isAdminForMinistry?.length) {
-    roleTitles.push('adminMinistry')
-    userroles.push({
-      authRoles: 'adminMinistry',
-      name: 'Ministry Admin',
-      church: servant?.isAdminForMinistry,
-      number: servant?.isAdminForMinistry?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('Ministry'),
-        '/ministry/displaydetails'
-      ),
-    })
-  }
-  if (servant?.leadsCreativeArts?.length) {
-    roleTitles.push('leaderCreativeArts')
-    userroles.push({
-      authRoles: 'leaderCreativeArts',
-      name: 'Creative Arts',
-      church: servant?.leadsCreativeArts,
-      number: servant?.leadsCreativeArts?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('CreativeArts'),
-        '/creativearts/displaydetails'
-      ),
-    })
-  }
-  if (servant?.isAdminForCreativeArts?.length) {
-    roleTitles.push('adminCreativeArts')
-    userroles.push({
-      authRoles: 'adminCreativeArts',
-      name: 'Creative Arts Admin',
-      church: servant?.isAdminForCreativeArts,
-      number: servant?.isAdminForCreativeArts?.length,
-      link: authorisedLink(
-        servant,
-        permitMe('CreativeArts'),
-        '/creativearts/displaydetails'
       ),
     })
   }

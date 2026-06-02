@@ -22,12 +22,6 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: Setup npm authentication
-        run: |
-          echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.PAT_TOKEN }}" >> .npmrc
-        working-directory: ./api
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -46,6 +40,17 @@ jobs:
 
           # Copy all background function files directly to the compiled directory
           cp -r api/src/functions/background/* api/temp-compiled-background/
+
+          # Strip test files — they are dev-only and must not be deployed to
+          # Lambda. They also break the tsc step below: the compiler picks them
+          # up as .ts inputs, and with allowJs + outDir "./" it drags in the
+          # sibling .js modules they import and tries to emit them over their
+          # own source (TS5055: would overwrite input file).
+          find api/temp-compiled-background \
+            \( -name "*.test.ts" -o -name "*.test.js" \
+               -o -name "*.integration.test.ts" -o -name "*.integration.test.js" \
+               -o -name "*.spec.ts" -o -name "*.spec.js" \) \
+            -type f -not -path "*/node_modules/*" -delete
 
           # Debug: List files in the compiled directory
           echo "Files copied to temp-compiled-background:"

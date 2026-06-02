@@ -11,6 +11,7 @@ import {
   sendServantRemovalEmail,
 } from '../utils/notify'
 import { Context } from '../utils/neo4j-types'
+import { assertCan } from '../utils/assert-can'
 import { matchChurchQuery } from '../cypher/resolver-cypher'
 import {
   churchInEmail,
@@ -27,25 +28,25 @@ const texts = require('../texts.json')
  */
 const validateAuthAndPermissions = (
   permittedRoles: Role[],
-  userRoles: string[]
+  userRoles: string[] | undefined
 ): void => {
-  isAuth(permittedRoles, userRoles as Role[])
+  isAuth(permittedRoles, userRoles as Role[] | undefined)
 }
 
 const validateDirectoryLock = (
-  userRoles: string[],
+  userRoles: string[] | undefined,
   servantType: string
 ): void => {
-  if (directoryLock(userRoles) && servantType !== 'arrivalsCounter') {
+  if (directoryLock(userRoles ?? []) && servantType !== 'arrivalsCounter') {
     throw new Error('Directory is locked till next Tuesday')
   }
 }
 
 const validateArguments = (
   churchLower: string,
-  churchId: any,
+  churchId: string,
   servantLower: string,
-  servantId: any
+  servantId: string
 ): void => {
   noEmptyArgsValidation([
     `${churchLower}Id`,
@@ -74,8 +75,8 @@ const validateMutation = (params: {
   context: Context
   churchLower: string
   servantLower: string
-  servantId: any
-  churchId: any
+  servantId: string
+  churchId: string
 }): void => {
   const {
     permittedRoles,
@@ -86,9 +87,20 @@ const validateMutation = (params: {
     churchId,
   } = params
 
-  validateDirectoryLock(context.jwt.roles, servantLower)
-  validateAuthAndPermissions(permittedRoles, context.jwt.roles)
+  // `isAuth` runs first so unauthenticated callers get a clean FORBIDDEN
+  // and never see the directory-lock state ("Directory is locked till next
+  // Tuesday") as an information leak.
+  validateAuthAndPermissions(permittedRoles, context.jwt?.roles)
+  validateDirectoryLock(context.jwt?.roles, servantLower)
   validateArguments(churchLower, churchId, servantLower, servantId)
+  // Per-instance authorization — `isAuth` only confirms the caller holds
+  // one of the permitted coarse roles SOMEWHERE in the church spine, but
+  // does not bind that role to the specific target church. Without this
+  // gate, a `leaderOversight` for Africa West could mutate servants on a
+  // Bacenta beneath Europe (the David Dag Vanderpuije exploit). The
+  // `servantTrees` cache on `context.jwt` lets us answer "does the user
+  // hold a permitted role AT $churchId?" in O(trees * reach.length).
+  assertCan(context, permittedRoles, churchId)
 }
 
 /**

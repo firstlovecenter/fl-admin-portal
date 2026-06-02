@@ -1,13 +1,17 @@
-import React, { Suspense, useState } from 'react'
-import { Routes, BrowserRouter as Router, Route } from 'react-router-dom'
-import { MemberContext, SearchContext } from './contexts/MemberContext'
+import React, { Suspense, useContext, useState } from 'react'
+import {
+  Routes,
+  BrowserRouter as Router,
+  Route,
+  Outlet,
+} from 'react-router-dom'
+import { MemberContext } from './contexts/MemberContext'
+import { AppShell } from 'components/shell/AppShell'
 import { ChurchContext } from './contexts/ChurchContext'
 import ProtectedRoute from './auth/ProtectedRoute'
 import ProtectedRouteHome from './auth/ProtectedRouteHome'
-import ServantsChurchList from 'pages/dashboards/ServantsChurchList'
 import { ServiceContext } from 'contexts/ServiceContext'
 import MembersDirectoryRoute from './pages/directory/MembersDirectoryRoute'
-import Navigation from 'pages/dashboards/Navigation'
 import { dashboards } from 'pages/dashboards/dashboardRoutes'
 import {
   directory,
@@ -26,18 +30,73 @@ import { useAuth } from 'contexts/AuthContext'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
-import PageContainer from 'components/base-component/PageContainer'
 import { accountsRoutes } from 'pages/accounts/accountsRoutes'
-
-type AppPropsType = {
-  token: string
-}
+import { aiAssistant } from 'pages/ai-assistant/aiAssistantRoutes'
+import {
+  shepherdingControl,
+  shepherdingControlProjector,
+} from 'pages/shepherding-control/shepherdingControlRoutes'
+import { settings } from 'pages/settings/settingsRoutes'
+import { reportsRoutes } from 'pages/reports/reportsRoutes'
+import { ThemeProvider } from 'components/shell/ThemeProvider'
+import { Toaster } from 'components/ui/sonner'
+import { ChurchRoleScopeProvider } from 'contexts/ChurchRoleScopeContext'
 
 const ServantsDashboard = React.lazy(
   () => import('pages/dashboards/ServantsDashboard')
 )
 
-const AppWithContext = (props: AppPropsType) => {
+const ShellLayout = () => {
+  const { currentUser } = useContext(MemberContext)
+  return (
+    <AppShell
+      userName={currentUser?.fullName}
+      userImageUrl={currentUser?.picture || currentUser?.pictureUrl}
+    >
+      {/* Suspense lives INSIDE the shell so lazy route transitions
+          don't unmount the sidebar — only the page content swaps. */}
+      <Suspense fallback={<LoadingScreen />}>
+        <Outlet />
+      </Suspense>
+    </AppShell>
+  )
+}
+
+const getInitialCurrentUser = (
+  user?: {
+    id?: string
+    firstName?: string
+    lastName?: string
+    email?: string
+    roles?: string[]
+  } | null
+) => {
+  const fallbackUser = {
+    __typename: 'Member',
+    id: user?.id || '',
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    fullName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+    picture: '',
+    pictureUrl: '',
+    email: user?.email || '',
+    roles: user?.roles || [],
+  }
+
+  const storedCurrentUser = sessionStorage.getItem('currentUser')
+
+  if (!storedCurrentUser) {
+    return fallbackUser
+  }
+
+  try {
+    return JSON.parse(storedCurrentUser)
+  } catch {
+    return fallbackUser
+  }
+}
+
+const AppWithContext = () => {
   const {
     clickCard,
     church,
@@ -49,11 +108,6 @@ const AppWithContext = (props: AppPropsType) => {
     councilId,
     governorshipId,
     bacentaId,
-    fellowshipId,
-    hubId,
-    hubCouncilId,
-    ministryId,
-    creativeArtsId,
     bussingRecordId,
     serviceRecordId,
     vehicleRecordId,
@@ -70,10 +124,6 @@ const AppWithContext = (props: AppPropsType) => {
     setStreamId,
     setCouncilId,
     setGovernorshipId,
-    setHubId,
-    setHubCouncilId,
-    setMinistryId,
-    setCreativeArtsId,
     setArrivalDate,
   } = useClickCard()
 
@@ -85,32 +135,16 @@ const AppWithContext = (props: AppPropsType) => {
     setStreamId,
     setCouncilId,
     setGovernorshipId,
-    setHubId,
-    setHubCouncilId,
-    setMinistryId,
-    setCreativeArtsId,
   }
 
   const { user } = useAuth()
 
-  const [currentUser, setCurrentUser] = useState(
-    sessionStorage.getItem('currentUser')
-      ? JSON.parse(sessionStorage.getItem('currentUser') || '{}')
-      : {
-          __typename: 'Member',
-          id: user?.id || '',
-          firstName: user?.firstName || '',
-          lastName: user?.lastName || '',
-          fullName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
-          picture: '',
-          email: user?.email || '',
-          roles: user?.roles || [],
-        }
+  const [currentUser, setCurrentUser] = useState(() =>
+    getInitialCurrentUser(user)
   )
 
   const [userJobs, setUserJobs] = useState()
 
-  const [searchKey, setSearchKey] = useState('')
   const [filters, setFilters] = useState({
     gender: [],
     maritalStatus: [],
@@ -121,130 +155,132 @@ const AppWithContext = (props: AppPropsType) => {
   })
 
   return (
-    <Router>
-      <ChurchContext.Provider
-        value={{
-          clickCard,
-          filters,
-          setFilters,
-          church,
-          memberId,
-          campusId,
-          streamId,
-          councilId,
-          governorshipId,
-          bacentaId,
-          fellowshipId,
-          hubId,
-          hubCouncilId,
-          ministryId,
-          creativeArtsId,
-          oversightId,
-          denominationId,
-          doNotUse,
-          arrivalDate,
-          setArrivalDate,
-          transactionId,
-        }}
-      >
-        <MemberContext.Provider
+    <ThemeProvider>
+      <Toaster />
+      <Router>
+        <ChurchContext.Provider
           value={{
+            clickCard,
+            filters,
+            setFilters,
+            church,
             memberId,
-            currentUser,
-            setCurrentUser,
-            userJobs,
-            setUserJobs,
+            campusId,
+            streamId,
+            councilId,
+            governorshipId,
+            bacentaId,
+            oversightId,
+            denominationId,
+            doNotUse,
+            arrivalDate,
+            setArrivalDate,
+            transactionId,
           }}
         >
-          <SearchContext.Provider value={{ searchKey, setSearchKey }}>
-            <ServiceContext.Provider
-              value={{
-                serviceRecordId,
-                bussingRecordId,
-                vehicleRecordId,
-                multiplicationRecordId,
-              }}
-            >
-              <SetPermissions token={props.token}>
-                <>
-                  {user && <Navigation />}
-                  <Suspense fallback={<LoadingScreen />}>
-                    <PageContainer>
-                      <Routes>
+          <MemberContext.Provider
+            value={{
+              memberId,
+              currentUser,
+              setCurrentUser,
+              userJobs,
+              setUserJobs,
+            }}
+          >
+            <ChurchRoleScopeProvider>
+              <ServiceContext.Provider
+                value={{
+                  serviceRecordId,
+                  bussingRecordId,
+                  vehicleRecordId,
+                  multiplicationRecordId,
+                }}
+              >
+                <SetPermissions>
+                  <Routes>
+                    <Route
+                      path="/setup-password"
+                      element={<SetupPasswordPage />}
+                    />
+                    {/* Projector window runs full-bleed — deliberately
+                        mounted outside ShellLayout so the external
+                        monitor shows only the slide, no sidebar / nav. */}
+                    {shepherdingControlProjector.map((route, i) => (
+                      <Route
+                        key={`shepherding-projector-${i}`}
+                        path={route.path}
+                        element={
+                          <ProtectedRoute roles={route.roles ?? ['all']}>
+                            <Suspense fallback={<LoadingScreen />}>
+                              <route.element />
+                            </Suspense>
+                          </ProtectedRoute>
+                        }
+                      />
+                    ))}
+                    <Route element={<ShellLayout />}>
+                      {[
+                        ...dashboards,
+                        ...directory,
+                        ...services,
+                        ...arrivals,
+                        ...reconciliation,
+                        ...graphs,
+                        ...maps,
+                        ...accountsRoutes,
+                        ...aiAssistant,
+                        ...shepherdingControl,
+                        ...settings,
+                        ...reportsRoutes,
+                      ].map((route, i) => (
                         <Route
-                          path="/setup-password"
-                          element={<SetupPasswordPage />}
-                        />
-                        {[
-                          ...dashboards,
-                          ...directory,
-                          ...services,
-                          ...arrivals,
-                          ...reconciliation,
-                          ...graphs,
-                          ...maps,
-                          ...accountsRoutes,
-                        ].map((route, i) => (
-                          <Route
-                            key={i}
-                            path={route.path}
-                            element={
-                              <ProtectedRoute
-                                roles={route.roles ?? ['all']}
-                                placeholder={route.placeholder}
-                              >
-                                <route.element />
-                              </ProtectedRoute>
-                            }
-                          />
-                        ))}
-                        {[
-                          ...memberDirectory,
-                          ...memberGrids,
-                          ...quickFacts,
-                        ].map((route, i) => (
-                          <Route
-                            key={i}
-                            path={route.path}
-                            element={
-                              <MembersDirectoryRoute roles={route.roles}>
-                                <route.element />
-                              </MembersDirectoryRoute>
-                            }
-                          />
-                        ))}
-
-                        <Route
-                          path="/dashboard/servants"
-                          element={
-                            <ProtectedRouteHome
-                              roles={permitMe('Bacenta')}
-                              component={<ServantsDashboard />}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/servants/church-list"
+                          key={i}
+                          path={route.path}
                           element={
                             <ProtectedRoute
-                              roles={permitMe('Bacenta')}
-                              placeholder
+                              roles={route.roles ?? ['all']}
+                              placeholder={route.placeholder}
                             >
-                              <ServantsChurchList />
+                              <route.element />
                             </ProtectedRoute>
                           }
                         />
-                        <Route path="*" element={<PageNotFound />} />
-                      </Routes>
-                    </PageContainer>
-                  </Suspense>
-                </>
-              </SetPermissions>
-            </ServiceContext.Provider>
-          </SearchContext.Provider>
-        </MemberContext.Provider>
-      </ChurchContext.Provider>
-    </Router>
+                      ))}
+                      {[
+                        ...memberDirectory,
+                        ...memberGrids,
+                        ...quickFacts,
+                      ].map((route, i) => (
+                        <Route
+                          key={i}
+                          path={route.path}
+                          element={
+                            <MembersDirectoryRoute roles={route.roles}>
+                              <route.element />
+                            </MembersDirectoryRoute>
+                          }
+                        />
+                      ))}
+
+                      <Route
+                        path="/dashboard/servants"
+                        element={
+                          <ProtectedRouteHome
+                            roles={permitMe('Bacenta')}
+                            component={<ServantsDashboard />}
+                          />
+                        }
+                      />
+                      <Route path="*" element={<PageNotFound />} />
+                    </Route>
+                  </Routes>
+                </SetPermissions>
+              </ServiceContext.Provider>
+            </ChurchRoleScopeProvider>
+          </MemberContext.Provider>
+        </ChurchContext.Provider>
+      </Router>
+    </ThemeProvider>
   )
 }
 

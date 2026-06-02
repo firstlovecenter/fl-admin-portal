@@ -3,14 +3,14 @@ import { ChurchIdAndName } from '../utils/types'
 
 export const createMemberDescription = ({
   member,
-  fellowship,
+  bacenta,
   council,
   pastor,
   phone,
   WhatsApp,
 }: {
   member: { firstName: string; lastName: string }
-  fellowship: ChurchIdAndName
+  bacenta: ChurchIdAndName
   council: ChurchIdAndName
   pastor: { firstName: string; lastName: string }
   phone: string
@@ -18,27 +18,27 @@ export const createMemberDescription = ({
 }) =>
   JSON.stringify({
     member,
-    fellowship,
+    bacenta,
     council,
     pastor,
     phoneNumber: phone,
     whatsappNumber: WhatsApp,
   })
 
-export const createFellowshipDescription = ({
-  fellowshipLeader,
-  fellowship,
+export const createBacentaDescription = ({
+  bacentaLeader,
+  bacenta,
   council,
   councilLeader,
 }: {
-  fellowshipLeader: { firstName: string; lastName: string }
-  fellowship: ChurchIdAndName
+  bacentaLeader: { firstName: string; lastName: string }
+  bacenta: ChurchIdAndName
   council: ChurchIdAndName
   councilLeader: { firstName: string; lastName: string }
 }) =>
   JSON.stringify({
-    fellowshipLeader,
-    fellowship,
+    bacentaLeader,
+    bacenta,
     council,
     councilLeader,
   })

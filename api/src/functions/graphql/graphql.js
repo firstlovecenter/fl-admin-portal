@@ -2,10 +2,18 @@ const { Neo4jGraphQL } = require('@neo4j/graphql')
 const { ApolloServer } = require('@apollo/server')
 // Removed startServerAndCreateLambdaHandler import
 const neo4j = require('neo4j-driver')
-const { jwtDecode } = require('jwt-decode')
 const { typeDefs } = require('./schema/graphql-schema')
 const { loadSecrets } = require('./resolvers/secrets')
 const resolvers = require('./resolvers/resolvers').default
+const { verifyJwt } = require('./resolvers/utils/verify-jwt')
+const { computeUserAuthority } = require('./resolvers/utils/allowed-church-ids')
+const {
+  requireAuthForMutationsPlugin,
+} = require('./resolvers/utils/require-auth-for-mutations')
+const {
+  isDownloadEvent,
+  handleDownloadLambdaEvent,
+} = require('./resolvers/downloads/downloads-lambda')
 
 // Server state
 let isInitialized = false
@@ -93,6 +101,7 @@ const initializeServer = async () => {
       schema,
       status400ForVariableCoercionErrors: true,
       includeStacktraceInErrorResponses: process.env.NODE_ENV !== 'production',
+      plugins: [requireAuthForMutationsPlugin],
       formatResponse: (response) => {
         console.log('[Response] Formatting GraphQL response')
         return {
@@ -117,41 +126,75 @@ const initializeServer = async () => {
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false
 
+  // Compute CORS + handle OPTIONS preflight BEFORE initializeServer().
+  // Cold-start cost (secrets load, Neo4j verifyConnectivity, schema
+  // generation) can run several seconds or throw; if any of that lands
+  // on a preflight, API Gateway returns a non-2xx and the browser
+  // surfaces it as a CORS failure even though origins are valid.
+  // SECRETS may be unloaded here — optional chaining falls through to
+  // the production list, which also contains staging-synago, so the
+  // preflight resolves correctly on the first invocation.
+  const allowedOrigins =
+    SECRETS?.ENVIRONMENT === 'development'
+      ? [
+          'https://dev-synago.firstlovecenter.com',
+          'https://staging-synago.firstlovecenter.com',
+        ]
+      : [
+          'https://admin.firstlovecenter.com',
+          'https://synago.firstlovecenter.com',
+          'https://staging-synago.firstlovecenter.com',
+        ]
+
+  const requestOrigin = event.headers?.origin || event.headers?.Origin || null
+  const matchedOrigin = allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : null
+
+  console.log('[CORS Debug] Matched origin:', matchedOrigin)
+
+  const corsHeaders = {
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    Vary: 'Origin',
+    ...(matchedOrigin && { 'Access-Control-Allow-Origin': matchedOrigin }),
+  }
+
+  if (
+    event.httpMethod === 'OPTIONS' ||
+    event.requestContext?.http?.method === 'OPTIONS'
+  ) {
+    return {
+      statusCode: 204,
+      headers: { ...corsHeaders },
+      body: null,
+    }
+  }
+
   // Initialize on cold start to ensure SECRETS are loaded
   await initializeServer()
 
-  // Determine CORS origin based on environment
-  const allowedOrigin =
-    SECRETS?.ENVIRONMENT === 'development'
-      ? 'https://dev-synago.firstlovecenter.com'
-      : 'https://admin.firstlovecenter.com'
-
-  console.log('[CORS Debug] Allowed origin:', allowedOrigin)
-
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  // Membership CSV downloads share this Lambda but do not go through Apollo
+  // — they stream Cypher rows into a base64-encoded CSV body. Dispatched
+  // here before the body-parsing path because GET requests have no body.
+  if (isDownloadEvent(event)) {
+    return handleDownloadLambdaEvent(
+      event,
+      driver,
+      corsHeaders,
+      SECRETS?.JWT_SECRET
+    )
   }
 
   try {
-    // Log event structure for debugging
+    // Log event structure for debugging — redact Authorization so we don't
+    // dump signed bearer tokens into CloudWatch on every authenticated call.
+    const safeHeaders = { ...(event.headers || {}) }
+    if (safeHeaders.authorization) safeHeaders.authorization = '[redacted]'
+    if (safeHeaders.Authorization) safeHeaders.Authorization = '[redacted]'
+    const safeEvent = { ...event, headers: safeHeaders }
     console.log('[Event Debug] Event keys:', Object.keys(event))
-    console.log('[Event Debug] Event:', JSON.stringify(event, null, 2))
-
-    // Handle OPTIONS preflight request
-    if (
-      event.httpMethod === 'OPTIONS' ||
-      event.requestContext?.http?.method === 'OPTIONS'
-    ) {
-      return {
-        statusCode: 204,
-        headers: {
-          ...corsHeaders,
-        },
-        body: null,
-      }
-    }
+    console.log('[Event Debug] Event:', JSON.stringify(safeEvent, null, 2))
 
     // Parse and validate request (handle both API Gateway v1 and v2 formats)
     const body = event.body || event.rawBody || event.requestBody
@@ -183,30 +226,49 @@ exports.handler = async (event, context) => {
       headers: Object.keys(headers),
     })
 
-    // Handle JWT authentication properly
     const token = headers.authorization || headers.Authorization
-    let jwt = null
+    // Leave `context.jwt` undefined on a verifier-rejected or absent
+    // token. `@neo4j/graphql`'s `getAuthorizationContext` does
+    // `if (context.jwt)` — a truthy sentinel like `{}` makes the library
+    // treat the request as authenticated and silently bypasses
+    // schema-level `@authentication` (the 2026-05-26 incident).
+    // Resolvers read claims with `context.jwt?.roles` / `context.jwt?.userId`;
+    // `isAuth(...)` already returns FORBIDDEN on undefined roles.
+    const verifiedJwt = verifyJwt(token, SECRETS?.JWT_SECRET)
 
-    if (token) {
-      try {
-        const cleanToken = token.replace(/^Bearer\s+/i, '')
-        console.log('[Auth] Decoding JWT token')
-        jwt = jwtDecode(cleanToken)
-        console.log('[Auth] JWT decoded successfully', {
-          roles: jwt?.roles,
-        })
-      } catch (error) {
-        console.error('[Auth] Invalid token:', error)
-      }
+    // Enrich the JWT with the caller's authority graph (servantTrees +
+    // allowedChurchIds), computed from their Neo4j servant edges. Without
+    // this enrichment in the Lambda path:
+    //   - `@churchScoped`/`@churchScopedVia` read filters return [] (the
+    //     filter is `id IN null` which evaluates false in Cypher).
+    //   - `assertCan` on mutations sees no servantTrees and FORBIDs every
+    //     action — banking + servant mutations stop working in prod.
+    //   - `myAuthority` returns empty arrays, so every breadcrumb on the
+    //     FE renders as non-clickable text.
+    // Mirrors `api/src/index.js`'s Apollo context builder; both must stay
+    // in sync. The cache inside `computeUserAuthority` is module-level so
+    // a warm Lambda instance reuses it across invocations.
+    let servantTrees = []
+    let allowedChurchIds = []
+    if (verifiedJwt?.userId) {
+      const authority = await computeUserAuthority(
+        driver,
+        verifiedJwt.userId,
+        verifiedJwt.iat,
+        verifiedJwt.exp
+      )
+      servantTrees = authority.servantTrees
+      allowedChurchIds = authority.allowedChurchIds
     }
 
-    // Build context for GraphQL operation
+    const jwt = verifiedJwt
+      ? { ...verifiedJwt, servantTrees, allowedChurchIds }
+      : undefined
+
     const contextValue = {
       req: event,
       executionContext: driver,
-      jwt: {
-        ...jwt,
-      },
+      jwt,
     }
 
     // Execute GraphQL operation

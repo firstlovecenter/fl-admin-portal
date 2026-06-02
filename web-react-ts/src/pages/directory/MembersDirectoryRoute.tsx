@@ -2,8 +2,9 @@ import React, { useContext } from 'react'
 import { MemberContext } from '../../contexts/MemberContext'
 import { ChurchContext } from '../../contexts/ChurchContext'
 import { isAuthorised } from '../../global-utils'
-import { permitMe } from 'permission-utils'
+import { permitLeaderAdmin } from 'permission-utils'
 import { Role } from 'global-types'
+import { UnauthMsg } from 'auth/UnauthMsg'
 
 const CampusMembers = React.lazy(
   () => import('pages/directory/grids/CampusMembers')
@@ -34,26 +35,28 @@ const MembersDirectoryRoute = ({
   if (isAuthorised(roles, currentUser.roles)) {
     //if the user has permission to access the route
     return children
-  } else if (isAuthorised(permitMe('Campus'), currentUser.roles)) {
-    //if the user does not have permission but is a Bishop's Admin
+  }
+  // Fallback ladder is `permitLeaderAdmin` (not `permitMe`) so arrivals
+  // helpers — counters and payers — fall through to UnauthMsg. They have
+  // no business in the member directory.
+  if (isAuthorised(permitLeaderAdmin('Campus'), currentUser.roles)) {
     return <CampusMembers />
-  } else if (isAuthorised(permitMe('Stream'), currentUser.roles)) {
-    //if the user does not have permission but is a Bishop's Admin
+  }
+  if (isAuthorised(permitLeaderAdmin('Stream'), currentUser.roles)) {
     return <StreamMembers />
-  } else if (isAuthorised(permitMe('Council'), currentUser.roles)) {
-    //if the user does not have permission but is a Bishop's Admin
+  }
+  if (isAuthorised(permitLeaderAdmin('Council'), currentUser.roles)) {
     return <CouncilMembers />
-  } else if (isAuthorised(permitMe('Governorship'), currentUser.roles)) {
-    //If the user does not have permission but is a CO or CO Admin
+  }
+  if (isAuthorised(permitLeaderAdmin('Governorship'), currentUser.roles)) {
     church.setGovernorshipId(currentUser.governorship)
     return <GovernorshipMembers />
-  } else if (isAuthorised(permitMe('Bacenta'), currentUser.roles)) {
-    //If the user does not have permission but is a Bacenta Leader
+  }
+  if (isAuthorised(permitLeaderAdmin('Bacenta'), currentUser.roles)) {
     church.setBacentaId(currentUser.bacenta)
     return <BacentaMembers />
-  } else {
-    return <BacentaMembers />
   }
+  return <UnauthMsg />
 }
 
 export default MembersDirectoryRoute

@@ -1,42 +1,37 @@
 import PlaceholderCustom from 'components/Placeholder'
 import React from 'react'
-import { Card, Col } from 'react-bootstrap'
+import { Card, CardContent, CardFooter, CardHeader } from 'components/ui/card'
 import './Defaulters.css'
 
 const PlaceholderDefaulterList = () => {
   return (
     <>
       {[1, 2, 3].map((placeholder, i) => (
-        <Col key={i} xs={12} className="mb-3">
-          <Card>
-            <Card.Header className="fw-bold">
-              <PlaceholderCustom
-                loading={true}
-                className="fw-bold"
-              ></PlaceholderCustom>
-            </Card.Header>
-            <Card.Body>
-              <PlaceholderCustom loading={true} as="div" />
-              <PlaceholderCustom loading={true} as="div" />
-              <PlaceholderCustom loading={true} as="div" />
-              <PlaceholderCustom loading={true} as="div" />
-            </Card.Body>
-            <Card.Footer>
-              <PlaceholderCustom
-                variant="primary"
-                loading={true}
-                className="btn-call"
-                button="true"
-              />
-              <PlaceholderCustom
-                variant="success"
-                className="placeholder"
-                loading={true}
-                button="true"
-              />
-            </Card.Footer>
-          </Card>
-        </Col>
+        <Card key={i} className="mb-3">
+          <CardHeader className="font-bold">
+            <PlaceholderCustom loading className="font-bold" />
+          </CardHeader>
+          <CardContent>
+            <PlaceholderCustom loading as="div" />
+            <PlaceholderCustom loading as="div" />
+            <PlaceholderCustom loading as="div" />
+            <PlaceholderCustom loading as="div" />
+          </CardContent>
+          <CardFooter>
+            <PlaceholderCustom
+              variant="primary"
+              loading
+              className="btn-call"
+              button="true"
+            />
+            <PlaceholderCustom
+              variant="success"
+              className="placeholder"
+              loading
+              button="true"
+            />
+          </CardFooter>
+        </Card>
       ))}
     </>
   )

@@ -1,0 +1,247 @@
+type DirectoryAncestorEntry @node @mutation(operations: []) {
+  id: ID!
+  level: String!
+  name: String!
+  leaderFirstName: String
+  leaderLastName: String
+  leaderPhone: String
+  leaderWhatsApp: String
+}
+
+type DirectoryReportEntry @node @mutation(operations: []) {
+  id: ID!
+  level: String!
+  name: String!
+  leaderFirstName: String
+  leaderLastName: String
+  leaderPhone: String
+  leaderWhatsApp: String
+  ancestors: [DirectoryAncestorEntry!]!
+  latitude: Float
+  longitude: Float
+}
+
+type WeeklyChurchReportEntry @node @mutation(operations: []) {
+  id: ID!
+  churchId: ID!
+  churchName: String!
+  churchLevel: String!
+  week: Int!
+  year: Int!
+  serviceAttendance: Int
+  serviceIncome: Float
+  serviceDollarIncome: Float
+  numberOfServices: Int
+  bussingAttendance: Int
+  bussingLeaderDeclaration: Int
+  numberOfSprinters: Int
+  numberOfUrvans: Int
+  numberOfCars: Int
+  bussingTopUp: Float
+}
+
+"""
+A church ancestor surfaced as a decorator on `WeeklyChurchReportEntryWithAncestors`.
+One per level between the scope and the target row's level (exclusive of both).
+"""
+type WeeklyChurchReportAncestor @node @mutation(operations: []) {
+  level: String!
+  name: String
+  leaderFirstName: String
+  leaderLastName: String
+  leaderPhone: String
+}
+
+"""
+Sub-church report variant whose rows live at any aggregate-backed level
+(Campus / Stream / Council / Governorship) below the scope. Each row carries
+the in-between ancestor chain as a decorator so the FE can flatten it into
+columns. Bacenta is intentionally NOT a valid target level — the per-Bacenta
+view requires raw-record aggregation that's too heavy for this code path.
+"""
+type WeeklyChurchReportEntryWithAncestors @node @mutation(operations: []) {
+  id: ID!
+  churchId: ID!
+  churchName: String!
+  churchLevel: String!
+  week: Int!
+  year: Int!
+  serviceAttendance: Int
+  serviceIncome: Float
+  serviceDollarIncome: Float
+  numberOfServices: Int
+  bussingAttendance: Int
+  bussingLeaderDeclaration: Int
+  numberOfSprinters: Int
+  numberOfUrvans: Int
+  numberOfCars: Int
+  bussingTopUp: Float
+  targetLeaderFirstName: String
+  targetLeaderLastName: String
+  targetLeaderPhone: String
+  ancestors: [WeeklyChurchReportAncestor!]!
+}
+
+type ServiceTreasurerEntry @node @mutation(operations: []) {
+  id: ID!
+  name: String!
+  phone: String
+  whatsapp: String
+}
+
+"""
+One row per `ServiceRecord` (including `:NoService` markers). Used by the
+Bacenta-scope Weekday detail report — higher levels stay on the weekly
+aggregate shape (`WeeklyChurchReportEntry`) because per-record granularity
+explodes the row count.
+"""
+# ServiceRecordDetail is a denormalised report projection (income, cash,
+# onlineGiving). The aggregation job writes it via custom Cypher. Suppress
+# auto-gen mutations so a logged-in user cannot fabricate report rows.
+type ServiceRecordDetail @node @mutation(operations: []) {
+  id: ID!
+  churchId: ID!
+  churchName: String!
+  serviceDate: String
+  week: Int
+  year: Int
+  attendance: Int
+  income: Float
+  cash: Float
+  onlineGiving: Float
+  numberOfTithers: Int
+  dollarIncome: Float
+  foreignCurrency: String
+  noServiceReason: String
+  createdAt: String
+  recordedByName: String
+  recordedByPhone: String
+  treasurers: [ServiceTreasurerEntry!]!
+  familyPicture: String
+  treasurerSelfie: String
+  bankingSlip: String
+  transactionStatus: String
+  bankingProof: Boolean
+  bankedByName: String
+  bankedByPhone: String
+}
+
+extend type Bacenta {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayServiceRecordsReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [ServiceRecordDetail!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+}
+
+extend type Governorship {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+}
+
+extend type Council {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReportAtLevel(
+    startWeekKey: Int!
+    endWeekKey: Int!
+    targetLevel: String!
+  ): [WeeklyChurchReportEntryWithAncestors!]!
+}
+
+extend type Stream {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReportAtLevel(
+    startWeekKey: Int!
+    endWeekKey: Int!
+    targetLevel: String!
+  ): [WeeklyChurchReportEntryWithAncestors!]!
+}
+
+extend type Campus {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReportAtLevel(
+    startWeekKey: Int!
+    endWeekKey: Int!
+    targetLevel: String!
+  ): [WeeklyChurchReportEntryWithAncestors!]!
+}
+
+extend type Oversight {
+  directoryReport: [DirectoryReportEntry!]!
+  servicesHeldReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  weekdayIncomeBussingReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReport(
+    startWeekKey: Int!
+    endWeekKey: Int!
+  ): [WeeklyChurchReportEntry!]!
+  subChurchesReportAtLevel(
+    startWeekKey: Int!
+    endWeekKey: Int!
+    targetLevel: String!
+  ): [WeeklyChurchReportEntryWithAncestors!]!
+}

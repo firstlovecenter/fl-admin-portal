@@ -8,18 +8,24 @@ import {
   rearrangeCypherObject,
   throwToSentry,
 } from '../utils/utils'
+import { assertChurchScope } from '../utils/scope-utils'
+import {
+  assertPositiveFiniteAmount,
+  MAX_OFFERING_CASH,
+} from '../utils/financial-utils'
+import { assertServiceDateInCurrentWeek } from '../utils/date-utils'
 import {
   absorbAllTransactions,
   checkCurrentServiceLog,
   checkFormFilledThisWeek,
   getCurrency,
   getServantAndChurch as getServantAndChurchCypher,
+  recomputeAggregateChainAfterServiceRecord,
   recordCancelledService,
   recordService,
   getHigherChurches,
   recordSpecialService,
 } from './service-cypher'
-import { recordCancelledService as cancelRehearsal } from './rehearsal-cypher'
 
 const errorMessage = require('../texts.json').error
 
@@ -95,13 +101,38 @@ export const checkServantHasCurrentHistory = async (
   }
 }
 
+// Service-recording auth contract (SYN-125).
+//
+// `permitLeaderAdmin('Bacenta')` — NOT `permitLeader('Bacenta')` — is the
+// intended gate for every service-recording mutation in this file
+// (RecordService / RecordSpecialService / RecordCancelledService).
+//
+// The set is the union returned by `permitLeader('Bacenta')` +
+// `permitAdmin('Bacenta')` in `api/src/resolvers/permissions.ts`:
+//   - Leaders: leaderBacenta, leaderGovernorship, leaderCouncil,
+//     leaderStream, leaderCampus, leaderOversight, leaderDenomination
+//   - Admins:  adminGovernorship, adminCouncil, adminStream, adminCampus,
+//     adminOversight, adminDenomination (no `adminBacenta` exists)
+//
+// The admin half is the deliberate part: church admins at Governorship and
+// above can record on a Bacenta's behalf when the leader is absent or stuck.
+// Same gate is used by `BankServiceOffering` (banking-resolver.ts:127) and
+// is the contract documented in `kb/02-user-roles.md` "What each role can do"
+// and `kb/03-workflows.md` W1 step 3. `permitLeader('Bacenta')` is
+// intentionally never used here; tightening would break the admin override.
+// Keep FE/BE permission helpers in sync (ADR-001).
 const serviceMutation = {
   RecordService: async (
     object: any,
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+    assertServiceDateInCurrentWeek(args.serviceDate)
+    assertPositiveFiniteAmount(args.income, 'income', {
+      max: MAX_OFFERING_CASH,
+    })
+    await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -138,32 +169,46 @@ const serviceMutation = {
         throw new Error(errorMessage.vacation_cannot_fill_service)
       }
 
+      // All four writes (record + absorb + leaf-recompute + parent-recompute)
+      // run in a single transaction so a failure mid-flow rolls everything
+      // back. ADR-005 idempotency for money-bearing flows.
       const cypherResponse = await session
-        .executeWrite((tx) =>
-          tx.run(recordService, {
+        .executeWrite(async (tx) => {
+          const createRes = await tx.run(recordService, {
             ...args,
             conversionRateToDollar: currencyCheck.conversionRateToDollar,
             jwt: context.jwt,
           })
-        )
-        .catch((error: any) => throwToSentry('Error Recording Service', error))
 
-      if (!cypherResponse.records || cypherResponse.records.length === 0) {
-        throw new Error(
-          'Service record could not be created. Please ensure the church is a Bacenta, Governorship, Council, or Stream.'
-        )
-      }
+          if (!createRes.records || createRes.records.length === 0) {
+            throw new Error(
+              'Service record could not be created. Please ensure the church is a Bacenta, Governorship, Council, or Stream.'
+            )
+          }
 
-      const serviceRecordId =
-        cypherResponse.records[0].get('serviceRecord').properties.id
+          const serviceRecordId =
+            createRes.records[0].get('serviceRecord').properties.id
 
-      await session.executeWrite((tx) =>
-        tx.run(absorbAllTransactions, {
-          ...args,
-          conversionRateToDollar: currencyCheck.conversionRateToDollar,
-          serviceRecordId,
+          await tx.run(absorbAllTransactions, {
+            ...args,
+            conversionRateToDollar: currencyCheck.conversionRateToDollar,
+            serviceRecordId,
+          })
+
+          // Sync recompute: ONLY the immediate parent of the submitting
+          // church (Bacenta→Gov, Gov→Council, Council→Stream, Stream→Campus).
+          // Each subquery is gated on the exact submitting label and is a
+          // no-op otherwise. The lambda remains the primary writer for
+          // general aggregation — this exists purely so the parent
+          // dashboard updates live without waiting for the next lambda run.
+          await tx.run(recomputeAggregateChainAfterServiceRecord, {
+            churchId: args.churchId,
+            serviceRecordId,
+          })
+
+          return createRes
         })
-      )
+        .catch((error: any) => throwToSentry('Error Recording Service', error))
 
       const serviceDetails = rearrangeCypherObject(cypherResponse)
 
@@ -183,7 +228,9 @@ const serviceMutation = {
     args: RecordServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Fellowship'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+    assertServiceDateInCurrentWeek(args.serviceDate)
+    await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
     const sessionThree = context.executionContext.session()
@@ -211,25 +258,36 @@ const serviceMutation = {
       }
 
       const cypherResponse = await session
-        .executeWrite((tx) =>
-          tx.run(recordSpecialService, {
+        .executeWrite(async (tx) => {
+          const createRes = await tx.run(recordSpecialService, {
             ...args,
             conversionRateToDollar: currencyCheck.conversionRateToDollar,
             jwt: context.jwt,
           })
-        )
-        .catch((error: any) => throwToSentry('Error Recording Service', error))
 
-      const serviceRecordId =
-        cypherResponse.records[0].get('serviceRecord').properties.id
+          if (!createRes.records || createRes.records.length === 0) {
+            throw new Error(
+              'Special service record could not be created. Please ensure the church is a Bacenta, Governorship, Council, or Stream.'
+            )
+          }
 
-      await session.executeWrite((tx) =>
-        tx.run(absorbAllTransactions, {
-          ...args,
-          conversionRateToDollar: currencyCheck.conversionRateToDollar,
-          serviceRecordId,
+          const serviceRecordId =
+            createRes.records[0].get('serviceRecord').properties.id
+
+          await tx.run(absorbAllTransactions, {
+            ...args,
+            conversionRateToDollar: currencyCheck.conversionRateToDollar,
+            serviceRecordId,
+          })
+
+          await tx.run(recomputeAggregateChainAfterServiceRecord, {
+            churchId: args.churchId,
+            serviceRecordId,
+          })
+
+          return createRes
         })
-      )
+        .catch((error: any) => throwToSentry('Error Recording Service', error))
 
       const serviceDetails = rearrangeCypherObject(cypherResponse)
 
@@ -249,7 +307,9 @@ const serviceMutation = {
     args: RecordCancelledServiceArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+    assertServiceDateInCurrentWeek(args.serviceDate)
+    await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
 
     const relationshipCheck = rearrangeCypherObject(
@@ -295,14 +355,8 @@ const serviceMutation = {
       throw new Error(errorMessage.vacation_cannot_fill_service)
     }
 
-    let cypher = recordCancelledService
-
-    if (serviceCheck.labels?.includes('Hub')) {
-      cypher = cancelRehearsal
-    }
-
     const cypherResponse = await session.executeWrite((tx) =>
-      tx.run(cypher, {
+      tx.run(recordCancelledService, {
         ...args,
         jwt: context.jwt,
       })

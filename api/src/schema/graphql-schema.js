@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs')
 const path = require('path')
+const { expandChurchScopedMarkers } = require('./church-scoped-directive')
 /*
  * Check for GRAPHQL_SCHEMA environment variable to specify schema file
  * fallback to schema.graphql if GRAPHQL_SCHEMA environment variable is not set
@@ -35,9 +36,6 @@ const services = fs
 const servicesNoIncome = fs.readFileSync(
   path.join(__dirname, 'services-no-income.graphql')
 )
-const servicesCreativeArts = fs.readFileSync(
-  path.join(__dirname, 'services-creativearts.graphql')
-)
 
 const banking = fs
   .readFileSync(path.join(__dirname, './banking.graphql'))
@@ -58,12 +56,8 @@ const quickFacts = fs
   .readFileSync(path.join(__dirname, './directory-quick-facts.graphql'))
   .toString('utf-8')
 
-const bankingAnagkazo = fs
-  .readFileSync(path.join(__dirname, './banking-anagkazo.graphql'))
-  .toString('utf-8')
-
-const creativeartsChurches = fs
-  .readFileSync(path.join(__dirname, './directory-creativearts.graphql'))
+const manualBanking = fs
+  .readFileSync(path.join(__dirname, './manual-banking.graphql'))
   .toString('utf-8')
 
 const maps = fs
@@ -74,8 +68,16 @@ const accounts = fs
   .readFileSync(path.join(__dirname, './accounts.graphql'))
   .toString('utf-8')
 
-const downloadMembership = fs
-  .readFileSync(path.join(__dirname, './download-credits.graphql'))
+const reports = fs
+  .readFileSync(path.join(__dirname, './reports.graphql'))
+  .toString('utf-8')
+
+const shepherdingControl = fs
+  .readFileSync(path.join(__dirname, './shepherding-control.graphql'))
+  .toString('utf-8')
+
+const assistant = fs
+  .readFileSync(path.join(__dirname, './assistant.graphql'))
   .toString('utf-8')
 
 const array = [
@@ -86,20 +88,35 @@ const array = [
   directorySearch,
   services,
   banking,
-  bankingAnagkazo,
+  manualBanking,
   arrivals,
   arrivalsPayment,
   aggregates,
   quickFacts,
   servicesNoIncome,
-  servicesCreativeArts,
-  creativeartsChurches,
   maps,
   accounts,
-  downloadMembership,
+  reports,
+  shepherdingControl,
+  assistant,
 ]
 
-const combinedSchema = array.join(' ')
+const combinedSchema = expandChurchScopedMarkers(array.join(' '))
+
+// Fail fast at boot if a `# @churchScoped*` marker survives the expander —
+// otherwise the type ships with NO authorization filter and we'd believe it
+// was protected. The most common cause is a marker placed on a header shape
+// the regex doesn't recognise (e.g. via-marker on an `implements` header, or
+// a typo like `@chuchScoped`).
+const leftover = combinedSchema.match(/#\s*@churchScoped[A-Za-z]*/g)
+if (leftover) {
+  throw new Error(
+    `church-scoped-directive: ${leftover.length} marker(s) survived expansion: ` +
+      `${leftover.join(', ')}. The annotated type would ship with no ` +
+      `authorization filter — refusing to boot. Check the marker placement ` +
+      `against the header pattern in church-scoped-directive.js.`
+  )
+}
 
 // Write the combined schema to a file
 // const outputPath = path.join(__dirname, 'combined-schema.gql')

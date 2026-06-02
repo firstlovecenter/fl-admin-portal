@@ -89,7 +89,6 @@ const UserProfileEditPage = () => {
       data={memberData}
     >
       <MemberForm
-        title="Edit Your Details"
         initialValues={initialValues}
         onSubmit={onSubmit}
         loading={memberLoading}

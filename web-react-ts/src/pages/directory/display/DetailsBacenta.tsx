@@ -15,10 +15,8 @@ export type DetailsArray = {
   number: number | string
   link: string
   width?: number
-  creativearts?: boolean
   vacationCount?: number
-  activeIcBacentaCount?: number
-  vacationIcBacentaCount?: number
+  onClick?: () => void
 }[]
 
 const convertToString = (value: string | boolean) => {
@@ -65,11 +63,6 @@ const DetailsBacenta = () => {
       link: '#',
     },
 
-    // {
-    //   title: 'Target',
-    //   number: bacenta?.target,
-    //   link: '#',
-    // },
     {
       title: 'Code',
       number: bacenta?.bankingCode,

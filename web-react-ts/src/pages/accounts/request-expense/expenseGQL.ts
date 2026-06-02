@@ -7,6 +7,7 @@ export const EXPENSE_REQUEST = gql`
     $expenseCategory: String!
     $description: String!
     $accountType: String!
+    $clientTransactionId: ID!
   ) {
     ExpenseRequest(
       councilId: $councilId
@@ -14,6 +15,7 @@ export const EXPENSE_REQUEST = gql`
       expenseCategory: $expenseCategory
       description: $description
       accountType: $accountType
+      clientTransactionId: $clientTransactionId
     ) {
       id
       createdAt
@@ -38,11 +40,13 @@ export const DEBIT_BUSSING_SOCIETY = gql`
     $councilId: ID!
     $expenseAmount: Float!
     $expenseCategory: String!
+    $clientTransactionId: ID!
   ) {
     DebitBussingSociety(
       councilId: $councilId
       expenseAmount: $expenseAmount
       expenseCategory: $expenseCategory
+      clientTransactionId: $clientTransactionId
     ) {
       id
       createdAt

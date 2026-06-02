@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getHumanReadableDate } from 'jd-date-utils'
+import { getHumanReadableDate } from '../utils/date-utils'
 import { Context } from '../utils/neo4j-types'
 import {
   permitAdmin,
@@ -10,22 +10,25 @@ import {
 import {
   getMobileCode,
   getStreamFinancials,
+  isValidNetwork,
+  MAX_OFFERING_CASH,
+  MOMO_NUM_REGEX,
   Network,
 } from '../utils/financial-utils'
-import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'
-
+import { isAuth, rearrangeCypherObject } from '../utils/utils'
+import { assertScopeViaServiceRecord } from '../utils/scope-utils'
 import {
   checkTransactionReference,
   getLastServiceRecord,
   initiateServiceRecordTransaction,
   setTransactionStatusFailed,
+  setTransactionStatusReversed,
   setTransactionStatusSuccess,
   setRecordTransactionReference,
+  setRecordTransactionReferenceManually,
   setRecordTransactionReferenceWithOTP,
   submitBankingSlip,
-  checkIfIMCLNotFilled,
   manuallyConfirmOfferingPayment,
-  checkRehearsalTransactionReference,
 } from './banking-cypher'
 import {
   DebitDataBody,
@@ -33,30 +36,71 @@ import {
   SendPaymentOTP,
 } from './banking-types'
 import { loadSecrets } from '../secrets'
+import { TRANSACTION_STATUS } from './banking-constants'
+
+// Banking-scoped error helper. Logs a scrubbed forensic record (status,
+// gateway code, message) for ops but throws only a curated user-facing
+// message so Paystack response codes, axios stack traces, and Neo4j
+// driver text never reach a church leader's UI. The full axios error
+// also carries error.config.data — the request body we sent Paystack,
+// which includes the depositor's momo number and email. Never log that
+// (CLAUDE.md: "Don't log full JWTs, momo numbers, or PII").
+const scrubError = (error: unknown) => {
+  const e = error as any
+  if (e?.response) {
+    return {
+      status: e.response.status,
+      code: e.response.data?.code,
+      message: e.response.data?.message,
+    }
+  }
+  if (e instanceof Error) {
+    return { name: e.name, message: e.message }
+  }
+  return { message: String(e) }
+}
+
+const throwClean = (userMessage: string, error: unknown): never => {
+  console.error(`[banking] ${userMessage}`, scrubError(error))
+  throw new Error(userMessage)
+}
+
+// Banking-history audit-log params consumed by appendBankingHistoryLog
+// (see banking-cypher.ts). Every banking write that mutates SM1/SM2 state
+// must pass these so the BankingHistoryLog timeline on the ServiceRecord
+// stays complete. The Cypher itself captures the real prior status into
+// the in-scope `bh_fromStatus` variable — callers no longer pass it.
+type BankingMethod = 'self' | 'recovery' | 'webhook' | 'slip' | 'teller'
+
+const bhParams = (
+  method: BankingMethod,
+  toStatus: string,
+  message: string
+) => ({
+  bh_method: method,
+  bh_toStatus: toStatus,
+  bh_message: message,
+})
 
 export const checkIfLastServiceBanked = async (
   serviceRecordId: string,
   context: Context
 ) => {
   const session = context.executionContext.session()
-  const sessionTwo = context.executionContext.session()
 
   // this checks if the person has banked their last offering
-  const lastServiceResponse = await Promise.all([
-    session.run(getLastServiceRecord, {
+  const lastServiceResponse = await session
+    .run(getLastServiceRecord, {
       serviceRecordId,
       jwt: context.jwt,
-    }),
-    sessionTwo.run(checkIfIMCLNotFilled, {
-      serviceRecordId,
-      jwt: context.jwt,
-    }),
-  ]).catch((error: any) =>
-    throwToSentry('There was a problem checking the lastService', error)
-  )
-  const lastServiceRecord: any = rearrangeCypherObject(lastServiceResponse[0])
-  // const imclNotFilled: boolean =
-  //   lastServiceResponse[1].records[0]?.get('imclNotFilled')
+    })
+    .catch((error: any) =>
+      throwClean(
+        'We could not check your previous service banking. Please try again.',
+        error
+      )
+    )
+  const lastServiceRecord: any = rearrangeCypherObject(lastServiceResponse)
 
   if (!('lastService' in lastServiceRecord)) return true
 
@@ -68,7 +112,7 @@ export const checkIfLastServiceBanked = async (
   if (
     !(
       'bankingSlip' in lastService ||
-      lastService.transactionStatus === 'success' ||
+      lastService.transactionStatus === TRANSACTION_STATUS.SUCCESS ||
       'tellerConfirmationTime' in lastService
     )
   ) {
@@ -85,12 +129,6 @@ export const checkIfLastServiceBanked = async (
   //   )
   // }
 
-  // if (imclNotFilled) {
-  //   throw new Error(
-  //     'Please fill the IMCL form on the Poimen App before you will be allowed to bank your offering'
-  //   )
-  // }
-
   return true
 }
 
@@ -98,73 +136,121 @@ const bankingMutation = {
   BankServiceOffering: async (
     object: any,
     args: {
-      // eslint-disable-next-line camelcase
       serviceRecordId: string
       mobileNetwork: Network
       mobileNumber: string
-      momoName: string
     },
     context: Context
   ) => {
     const SECRETS = await loadSecrets()
-    isAuth(permitLeaderAdmin('Bacenta'), context.jwt.roles)
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
+
+    if (!isValidNetwork(args.mobileNetwork)) {
+      throw new Error(
+        'Invalid mobile network. Choose MTN, Vodafone, AirtelTigo, Airtel, or Tigo.'
+      )
+    }
+    if (!MOMO_NUM_REGEX.test(args.mobileNumber)) {
+      throw new Error(
+        'Enter a valid mobile money number (10 digits, e.g. 02XXXXXXXX).'
+      )
+    }
 
     const session = context.executionContext.session()
-    // This code checks if there has already been a successful transaction
-    const transactionResponse = rearrangeCypherObject(
-      await session
-        .run(checkTransactionReference, args)
-        .catch((error: any) =>
-          throwToSentry(
-            'There was a problem checking the transactionReference',
-            error
-          )
-        )
-    )
-
     try {
-      const { auth, subaccount } = await getStreamFinancials(
-        transactionResponse?.stream
+      const transactionResponse = rearrangeCypherObject(
+        await session
+          .run(checkTransactionReference, args)
+          .catch((error: any) =>
+            throwClean(
+              'We could not look up your service record. Please try again.',
+              error
+            )
+          )
       )
 
-      if (!subaccount && SECRETS.TEST_ENV !== 'true') {
+      if (!transactionResponse?.stream) {
         throw new Error(
-          `There was an error with the payment. Please email admin@firstlovecenter.com ${JSON.stringify(
-            {
-              transactionResponse,
-              args,
-              subaccount,
-            }
-          )}`
+          'This service record is not linked to a Stream and cannot be banked via self-banking. Contact your admin.'
+        )
+      }
+
+      const { auth, subaccount } = await getStreamFinancials(
+        transactionResponse.stream
+      )
+
+      // In development the merchant uses Paystack test keys with no
+      // subaccount split — the charge goes to the main merchant account so
+      // local payments can complete end-to-end. In production a missing
+      // subaccount is a configuration error and must fail loudly.
+      const environment = SECRETS.ENVIRONMENT || 'production'
+      if (!subaccount && environment !== 'development') {
+        throw new Error(
+          'There was an error with the payment. Please email admin@firstlovecenter.com.'
         )
       }
 
       await checkIfLastServiceBanked(args.serviceRecordId, context)
 
-      const transactionStatus = transactionResponse?.record.transactionStatus
-      if (transactionStatus === 'success') {
+      const transactionStatus = transactionResponse.record?.transactionStatus
+      if (transactionStatus === TRANSACTION_STATUS.SUCCESS) {
         throw new Error('Banking has already been done for this service')
       }
-
-      if (transactionStatus === 'pending') {
+      if (transactionStatus === TRANSACTION_STATUS.PENDING) {
         throw new Error(
-          'Please confirm your initial payment before attempting another one'
+          'Please confirm your previous payment attempt before starting a new one.'
+        )
+      }
+      if (transactionStatus === TRANSACTION_STATUS.SEND_OTP) {
+        throw new Error(
+          'Please submit the OTP for your previous payment attempt before starting a new one.'
+        )
+      }
+
+      // Validate cash up-front so a zero/invalid record never trips the
+      // atomic Cypher guard and strands itself in 'pending'.
+      const cash = Number(transactionResponse.record?.cash)
+      if (!Number.isFinite(cash) || cash <= 0) {
+        throw new Error(
+          'Cannot bank a zero offering. Please record the cash amount on the service before banking.'
+        )
+      }
+      if (cash > MAX_OFFERING_CASH) {
+        throw new Error(
+          `Recorded cash (GHS ${cash.toLocaleString()}) exceeds the GHS ${MAX_OFFERING_CASH.toLocaleString()} safety check. Edit the service record if the amount is wrong, or contact your admin if it is correct.`
         )
       }
 
       const cypherResponse = rearrangeCypherObject(
         await session
-          .run(initiateServiceRecordTransaction, {
-            jwt: context.jwt,
-            ...args,
-          })
+          .executeWrite((tx) =>
+            tx.run(initiateServiceRecordTransaction, {
+              jwt: context.jwt,
+              ...args,
+              ...bhParams(
+                'self',
+                TRANSACTION_STATUS.PENDING,
+                `Self-bank initiated via ${args.mobileNetwork}`
+              ),
+            })
+          )
           .catch((error: any) =>
-            throwToSentry(
-              'There was an error setting serviceRecordTransactionReference',
+            throwClean(
+              'We could not start the payment. Please try again.',
               error
             )
           )
       )
+
+      // SM1 atomic guard in initiateServiceRecordTransaction returned no
+      // rows — another concurrent attempt has already moved the record out
+      // of {null, failed}.
+      if (!cypherResponse?.record) {
+        throw new Error(
+          'Another payment attempt is in progress for this service. Please refresh and try again.'
+        )
+      }
 
       const serviceRecord = cypherResponse.record.properties
 
@@ -177,7 +263,7 @@ const bankingMutation = {
           Authorization: auth,
         },
         data: {
-          amount: Math.round((serviceRecord.cash / (1 - 0.0195) + 0.01) * 100),
+          amount: Math.round((cash / (1 - 0.0195) + 0.01) * 100),
           email: cypherResponse.author.email,
           currency: 'GHS',
           subaccount,
@@ -213,284 +299,214 @@ const bankingMutation = {
         },
       }
 
-      const paymentResponse = await axios(payOffering)
-
-      axios(updatePaystackCustomer)
-
-      const paymentCypherRes = rearrangeCypherObject(
-        await session.executeWrite((tx) =>
-          tx.run(setRecordTransactionReference, {
-            id: serviceRecord.id,
-            reference: paymentResponse.data.data.reference,
-          })
+      const paymentResponse = await axios(payOffering).catch((error: any) =>
+        throwClean(
+          'Your mobile money charge could not be started. Check the number and network, then try again.',
+          error
         )
       )
 
-      if (paymentResponse.data.data.status === 'send_otp') {
-        const otpCypherRes = rearrangeCypherObject(
-          await session.run(setRecordTransactionReferenceWithOTP, {
-            id: serviceRecord.id,
-          })
+      axios(updatePaystackCustomer).catch((err: any) => {
+        // Don't log err.response.data — Paystack echoes the request body
+        // (member email, phone) on validation errors.
+        console.error(
+          'Paystack customer update failed (non-fatal):',
+          err?.response?.status,
+          err?.response?.data?.message || err?.message
         )
+      })
 
-        return otpCypherRes.record
-      }
-
-      return paymentCypherRes.record
-    } catch (error: any) {
-      throw new Error(`There was an error processing your payment ${error}`)
-    } finally {
-      await session.close()
-    }
-  },
-
-  BankRehearsalOffering: async (
-    object: any,
-    args: {
-      rehearsalRecordId: string
-      mobileNetwork: Network
-      mobileNumber: string
-      momoName: string
-    },
-    context: Context
-  ) => {
-    isAuth(permitLeaderAdmin('Hub'), context.jwt.roles)
-
-    const session = context.executionContext.session()
-    // This code checks if there has already been a successful transaction
-    const transactionResponse = rearrangeCypherObject(
-      await session
-        .run(checkRehearsalTransactionReference, args)
-        .catch((error: any) =>
-          throwToSentry(
-            'There was a problem checking the transactionReference',
-            error
-          )
-        )
-    )
-
-    const bankAccountChurch = transactionResponse?.ministry?.bankAccount
-      ? transactionResponse?.ministry
-      : transactionResponse?.stream
-
-    try {
-      const { auth, subaccount } = await getStreamFinancials(bankAccountChurch)
-
-      if (!subaccount) {
-        throw new Error(
-          `There was an error with the payment. Please email admin@firstlovecenter.com ${JSON.stringify(
-            {
-              transactionResponse,
-              args,
-              subaccount,
-            }
-          )}`
-        )
-      }
-
-      await checkIfLastServiceBanked(args.rehearsalRecordId, context)
-
-      const transactionStatus = transactionResponse?.record.transactionStatus
-      if (transactionStatus === 'success') {
-        throw new Error('Banking has already been done for this service')
-      }
-
-      if (transactionStatus === 'pending') {
-        throw new Error(
-          'Please confirm your initial payment before attempting another one'
-        )
-      }
-
-      const cypherResponse = rearrangeCypherObject(
+      const paymentCypherRes = rearrangeCypherObject(
         await session
-          .run(initiateServiceRecordTransaction, {
-            jwt: context.jwt,
-            ...args,
-            serviceRecordId: args.rehearsalRecordId,
-          })
+          .executeWrite((tx) =>
+            tx.run(setRecordTransactionReference, {
+              id: serviceRecord.id,
+              reference: paymentResponse.data.data.reference,
+            })
+          )
           .catch((error: any) =>
-            throwToSentry(
-              'There was an error setting serviceRecordTransactionReference',
+            throwClean(
+              'We could not save your payment reference. Please try again.',
               error
             )
           )
       )
 
-      const serviceRecord = cypherResponse.record.properties
-
-      const payOffering: DebitDataBody = {
-        method: 'post',
-        baseURL: 'https://api.paystack.co/',
-        url: `/charge`,
-        headers: {
-          'content-type': 'application/json',
-          Authorization: auth,
-        },
-        data: {
-          amount: Math.round((serviceRecord.cash / (1 - 0.0195) + 0.01) * 100),
-          email: cypherResponse.author.email,
-          currency: 'GHS',
-          subaccount,
-          mobile_money: {
-            phone: args.mobileNumber,
-            provider: getMobileCode(args.mobileNetwork),
-          },
-          metadata: {
-            custom_fields: [
-              {
-                church_name: cypherResponse.churchName,
-                church_level: cypherResponse.churchLevel,
-                depositor_firstname: cypherResponse.author.firstName,
-                depositor_lastname: cypherResponse.author.lastName,
-              },
-            ],
-          },
-        },
-      }
-
-      const updatePaystackCustomer = {
-        method: 'put',
-        baseURL: 'https://api.paystack.co/',
-        url: `/customer/${cypherResponse.author.email}`,
-        headers: {
-          'content-type': 'application/json',
-          Authorization: auth ?? '',
-        },
-        data: {
-          first_name: cypherResponse.author.firstName,
-          last_name: cypherResponse.author.lastName,
-          phone: cypherResponse.author.phoneNumber,
-        },
-      }
-
-      const paymentResponse = await axios(payOffering)
-
-      axios(updatePaystackCustomer)
-
-      const paymentCypherRes = rearrangeCypherObject(
-        await session.executeWrite((tx) =>
-          tx.run(setRecordTransactionReference, {
-            id: serviceRecord.id,
-            reference: paymentResponse.data.data.reference,
-          })
-        )
-      )
-
       if (paymentResponse.data.data.status === 'send_otp') {
         const otpCypherRes = rearrangeCypherObject(
-          await session.run(setRecordTransactionReferenceWithOTP, {
-            id: serviceRecord.id,
-          })
+          await session
+            .run(setRecordTransactionReferenceWithOTP, {
+              id: serviceRecord.id,
+            })
+            .catch((error: any) =>
+              throwClean(
+                'We could not save your OTP status. Please try again.',
+                error
+              )
+            )
         )
 
-        return otpCypherRes.record
+        if (otpCypherRes?.record) {
+          return otpCypherRes.record
+        }
+        // SM1 guard refused — webhook beat us to a terminal state. Return the
+        // post-charge reference write; the FE will navigate to confirm-payment.
+        console.warn(
+          `setRecordTransactionReferenceWithOTP no-op for ${serviceRecord.id}; status precluded the OTP transition`
+        )
       }
 
       return paymentCypherRes.record
-    } catch (error: any) {
-      throwToSentry('There was an error processing your payment', error)
     } finally {
       await session.close()
     }
-    return transactionResponse.record
   },
 
   SendPaymentOTP: async (
     object: any,
     args: {
       serviceRecordId: string
-      reference: string
       otp: string
     },
     context: Context
   ) => {
-    isAuth(permitMe('Fellowship'), context.jwt.roles)
+    isAuth(permitMe('Bacenta'), context.jwt?.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
 
-    const session = context.executionContext.session()
-
-    const transactionResponse = rearrangeCypherObject(
-      await session
-        .run(checkTransactionReference, args)
-        .catch((error: any) =>
-          throwToSentry(
-            'There was a problem checking the transactionReference',
-            error
-          )
-        )
-    )
-
-    const { auth } = await getStreamFinancials(
-      transactionResponse?.stream.bankAccount
-    )
-
-    const sendOtp: SendPaymentOTP = {
-      method: 'post',
-      baseURL: 'https://api.paystack.co/',
-      url: `/charge/submit_otp`,
-      headers: {
-        'content-type': 'application/json',
-        Authorization: auth,
-      },
-      data: {
-        otp: args.otp,
-        reference: args.reference,
-      },
+    // Paystack mobile-money OTPs are always 4 or 6 digits.
+    if (!/^(\d{4}|\d{6})$/.test(args.otp)) {
+      throw new Error('Enter a valid OTP (4 or 6 digits).')
     }
 
-    const otpResponse = await axios(sendOtp).catch(async (error) => {
-      if (error.response.data.message === 'Charge attempted') {
-        console.log('OTP was already sent and charge attempted')
+    const session = context.executionContext.session()
+    try {
+      const transactionResponse = rearrangeCypherObject(
+        await session
+          .run(checkTransactionReference, args)
+          .catch((error: any) =>
+            throwClean(
+              'We could not look up your payment. Please try again.',
+              error
+            )
+          )
+      )
 
+      if (!transactionResponse?.record) {
+        throw new Error('Service record not found.')
+      }
+      if (!transactionResponse.stream) {
+        throw new Error(
+          'This service record is not linked to a Stream and cannot accept OTP submission.'
+        )
+      }
+      if (
+        transactionResponse.record.transactionStatus !==
+        TRANSACTION_STATUS.SEND_OTP
+      ) {
+        throw new Error(
+          'No OTP is pending for this payment. Refresh and try again.'
+        )
+      }
+
+      // Trust the reference stored on the record, not the one the client
+      // sent — defence in depth on top of assertScopeViaServiceRecord.
+      const reference = transactionResponse.record.transactionReference
+      if (!reference) {
+        throw new Error(
+          'No transaction reference on this record. Restart the payment.'
+        )
+      }
+
+      const { auth } = await getStreamFinancials(transactionResponse.stream)
+
+      const sendOtp: SendPaymentOTP = {
+        method: 'post',
+        baseURL: 'https://api.paystack.co/',
+        url: `/charge/submit_otp`,
+        headers: {
+          'content-type': 'application/json',
+          Authorization: auth,
+        },
+        data: {
+          otp: args.otp,
+          reference,
+        },
+      }
+
+      const otpResponse = await axios(sendOtp).catch(async (error) => {
+        if (error?.response?.data?.message === 'Charge attempted') {
+          console.log('OTP was already sent and charge attempted')
+
+          return {
+            data: { data: { status: 'pay_offline' } },
+          }
+        }
+
+        return throwClean(
+          'We could not submit your OTP. Please request a fresh OTP and try again.',
+          error
+        )
+      })
+
+      if (otpResponse.data.data.status === 'pay_offline') {
+        const paymentCypherRes = rearrangeCypherObject(
+          await session
+            .run(setRecordTransactionReference, {
+              id: args.serviceRecordId,
+              reference,
+            })
+            .catch((error: any) =>
+              throwClean(
+                'We could not save your payment status. Please try again.',
+                error
+              )
+            )
+        )
+        return paymentCypherRes.record
+      }
+      if (otpResponse.data.data.status === 'failed') {
+        // setTransactionStatusFailed's MATCH is on $serviceRecordId, not $id —
+        // pre-existing param-name mismatch that silently failed every call.
+        const paymentCypherRes = rearrangeCypherObject(
+          await session
+            .run(setTransactionStatusFailed, {
+              serviceRecordId: args.serviceRecordId,
+              reference,
+              status: otpResponse.data.data.status,
+              error: otpResponse.data.data.gateway_response,
+              ...bhParams(
+                'self',
+                TRANSACTION_STATUS.FAILED,
+                'OTP submission failed at Paystack'
+              ),
+            })
+            .catch((error: any) =>
+              throwClean(
+                'We could not save your payment status. Please try again.',
+                error
+              )
+            )
+        )
+        if (paymentCypherRes?.record) {
+          return paymentCypherRes.record
+        }
+        // SM1 guard refused — the webhook already marked the record as
+        // success between OTP submission and now. Don't clobber it.
+        console.warn(
+          `setTransactionStatusFailed no-op for ${args.serviceRecordId}; webhook likely settled to success`
+        )
         return {
-          data: {
-            data: {
-              status: 'pay_offline',
-            },
-          },
+          id: args.serviceRecordId,
+          transactionStatus: TRANSACTION_STATUS.SUCCESS,
         }
       }
 
-      return throwToSentry('There was an error sending OTP', error)
-    })
-
-    if (otpResponse.data.data.status === 'pay_offline') {
-      const paymentCypherRes = rearrangeCypherObject(
-        await session
-          .run(setRecordTransactionReference, {
-            id: args.serviceRecordId,
-            reference: args.reference,
-          })
-          .catch((error: any) =>
-            throwToSentry(
-              'There was an error setting transaction reference',
-              error
-            )
-          )
-      )
-      return paymentCypherRes.record
-    }
-    if (otpResponse.data.data.status === 'failed') {
-      const paymentCypherRes = rearrangeCypherObject(
-        await session
-          .run(setTransactionStatusFailed, {
-            id: args.serviceRecordId,
-            reference: args.reference,
-            status: otpResponse.data.data.status,
-            error: otpResponse.data.data.gateway_response,
-          })
-          .catch((error: any) =>
-            throwToSentry(
-              'There was an error setting transaction reference',
-              error
-            )
-          )
-      )
-      return paymentCypherRes.record
-    }
-
-    return {
-      id: args.serviceRecordId,
-      transactionStatus: 'send OTP',
+      return {
+        id: args.serviceRecordId,
+        transactionStatus: TRANSACTION_STATUS.SEND_OTP,
+      }
+    } finally {
+      await session.close()
     }
   },
 
@@ -500,138 +516,267 @@ const bankingMutation = {
     args: { serviceRecordId: string },
     context: Context
   ) => {
-    isAuth(permitMe('Bacenta'), context.jwt.roles)
+    isAuth(permitMe('Bacenta'), context.jwt?.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
-    const transactionResponse = rearrangeCypherObject(
-      await session
-        .run(checkTransactionReference, args)
-        .catch((error: any) =>
-          throwToSentry(
-            'There was an error checking transaction reference',
-            error
-          )
-        )
-    )
-
-    let record = transactionResponse?.record
-    const banker = transactionResponse?.banker
-    const stream = transactionResponse?.stream
-    const { auth } = await getStreamFinancials(stream)
-
-    // if transactionTime is within the last 1 minute then return the record
-    if (
-      record?.transactionTime &&
-      new Date().getTime() - new Date(record?.transactionTime).getTime() <
-        180000
-    ) {
-      console.log('transactionTime is within the last 2 minutes')
-      return {
-        id: record.id,
-        cash: record.cash,
-        transactionReference: record.transactionReference,
-        transactionStatus: record.transactionStatus,
-        offeringBankedBy: {
-          id: banker.id,
-          firstName: banker.firstName,
-          lastName: banker.lastName,
-          fullName: `${banker.firstName} ${banker.fullName}`,
-        },
-      }
-    }
-
-    if (!record?.transactionReference) {
-      record = rearrangeCypherObject(
+    try {
+      const transactionResponse = rearrangeCypherObject(
         await session
-          .run(setTransactionStatusFailed, {
-            ...args,
-            status: 'failed',
-            error: 'No Transaction Reference',
-          })
+          .run(checkTransactionReference, args)
           .catch((error: any) =>
-            throwToSentry('There was an error setting the transaction', error)
+            throwClean(
+              'We could not look up your payment. Please try again.',
+              error
+            )
           )
       )
 
-      record = record.record.properties
-      return record
-    }
+      let record = transactionResponse?.record
+      const banker = transactionResponse?.banker
+      const stream = transactionResponse?.stream
 
-    const confirmPaymentBody: PayStackRequestBody = {
-      method: 'get',
-      baseURL: 'https://api.paystack.co/',
-      url: `/transaction/verify/${record.transactionReference}`,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: auth,
-      },
-    }
+      if (!record) {
+        throw new Error('Service record not found.')
+      }
+      if (!stream) {
+        throw new Error(
+          'This service record is not linked to a Stream and cannot be confirmed via self-banking.'
+        )
+      }
 
-    let confirmationResponse
-    try {
-      confirmationResponse = await axios(confirmPaymentBody)
+      const buildBankerShape = () =>
+        banker
+          ? {
+              id: banker.id,
+              firstName: banker.firstName,
+              lastName: banker.lastName,
+              fullName: `${banker.firstName} ${banker.lastName}`,
+            }
+          : null
 
-      if (confirmationResponse.data.data.status === 'success') {
-        record = rearrangeCypherObject(
+      // Throttle: within 3 minutes of the last attempt return the cached
+      // state instead of re-hitting Paystack's verify endpoint.
+      if (
+        record.transactionTime &&
+        new Date().getTime() - new Date(record.transactionTime).getTime() <
+          180000
+      ) {
+        console.log('transactionTime is within the last 3 minutes')
+        return {
+          id: record.id,
+          cash: record.cash,
+          transactionReference: record.transactionReference,
+          transactionStatus: record.transactionStatus,
+          offeringBankedBy: buildBankerShape(),
+        }
+      }
+
+      if (!record.transactionReference) {
+        const failedRes = rearrangeCypherObject(
           await session
-            .run(setTransactionStatusSuccess, {
+            .run(setTransactionStatusFailed, {
               ...args,
-              status: confirmationResponse.data.data.status,
+              status: 'failed',
+              error: 'No Transaction Reference',
+              ...bhParams(
+                'self',
+                TRANSACTION_STATUS.FAILED,
+                'Confirm rejected: no transactionReference on record'
+              ),
             })
             .catch((error: any) =>
-              throwToSentry(
-                'There was an error setting the successful transaction',
+              throwClean(
+                'We could not save your payment status. Please try again.',
                 error
               )
             )
         )
-        record = record.record.properties
+        if (failedRes?.record) {
+          return failedRes.record.properties
+        }
+        // SM1 guard refused — record is already in 'success'. Return the
+        // current state instead of crashing on a missing failedRes.
+        console.warn(
+          `setTransactionStatusFailed no-op for ${args.serviceRecordId} (no-reference branch); already terminal`
+        )
+        return { ...record, offeringBankedBy: buildBankerShape() }
       }
 
-      if (
-        confirmationResponse.data.data.status === 'failed' ||
-        confirmationResponse.data.data.status === 'abandoned'
-      ) {
-        record = rearrangeCypherObject(
-          await session
-            .run(setTransactionStatusFailed, {
-              ...args,
-              status: confirmationResponse.data.data.status,
-              error: confirmationResponse.data.data.gateway_response,
-            })
-            .catch((error: any) =>
-              throwToSentry('There was an error setting the transaction', error)
-            )
-        )
-        record = record.record.properties
+      const { auth } = await getStreamFinancials(stream)
+
+      const confirmPaymentBody: PayStackRequestBody = {
+        method: 'get',
+        baseURL: 'https://api.paystack.co/',
+        url: `/transaction/verify/${record.transactionReference}`,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: auth,
+        },
       }
-    } catch (error: any) {
-      if (error.response?.data?.code === 'transaction_not_found') {
-        record = rearrangeCypherObject(
-          await session.executeWrite((tx) =>
-            tx.run(setTransactionStatusFailed, {
-              ...args,
-              status: error.response.data.status,
-              error: error.response.data.message,
-            })
+
+      try {
+        const confirmationResponse = await axios(confirmPaymentBody)
+
+        if (confirmationResponse.data.data.status === 'success') {
+          const successRes = rearrangeCypherObject(
+            await session
+              .run(setTransactionStatusSuccess, {
+                ...args,
+                status: confirmationResponse.data.data.status,
+                ...bhParams(
+                  'self',
+                  TRANSACTION_STATUS.SUCCESS,
+                  'Paystack verify reported success'
+                ),
+              })
+              .catch((error: any) =>
+                throwClean(
+                  'We could not save your successful payment. Please try again.',
+                  error
+                )
+              )
           )
+          if (successRes?.record) {
+            record = successRes.record.properties
+          } else {
+            // SM1 guard refused — current state is not in {pending, send OTP}.
+            // Webhook already settled this record; reflect that on the local
+            // copy so the response carries the truth.
+            console.warn(
+              `setTransactionStatusSuccess no-op for ${args.serviceRecordId}; webhook already settled`
+            )
+            record = { ...record, transactionStatus: TRANSACTION_STATUS.SUCCESS }
+          }
+        }
+
+        // 'failed' and 'abandoned' both mean money never settled in our
+        // subaccount. SM1 forbids overwriting 'success' here — that path is
+        // handled by the 'reversed' branch below.
+        if (
+          confirmationResponse.data.data.status === 'failed' ||
+          confirmationResponse.data.data.status === 'abandoned'
+        ) {
+          const failedRes = rearrangeCypherObject(
+            await session
+              .run(setTransactionStatusFailed, {
+                ...args,
+                status: confirmationResponse.data.data.status,
+                error: confirmationResponse.data.data.gateway_response,
+                ...bhParams(
+                  'self',
+                  confirmationResponse.data.data.status,
+                  `Paystack verify reported ${confirmationResponse.data.data.status}`
+                ),
+              })
+              .catch((error: any) =>
+                throwClean(
+                  'We could not save your payment status. Please try again.',
+                  error
+                )
+              )
+          )
+          if (failedRes?.record) {
+            record = failedRes.record.properties
+          } else {
+            // SM1 guard refused — record is already 'success'. Paystack verify
+            // disagrees with the webhook (rare) — webhook event wins per SM1.
+            console.warn(
+              `setTransactionStatusFailed no-op for ${args.serviceRecordId}; record already success, verify said ${confirmationResponse.data.data.status}`
+            )
+            record = { ...record, transactionStatus: TRANSACTION_STATUS.SUCCESS }
+          }
+        }
+
+        // 'reversed' is special: the charge settled, then Paystack returned
+        // the money to the customer. The record was previously 'success'.
+        // SM1 grants 'reversed' an exception to the success-is-terminal rule
+        // so accounting reflects the refund instead of silently re-asserting
+        // success.
+        if (confirmationResponse.data.data.status === 'reversed') {
+          const reversedRes = rearrangeCypherObject(
+            await session
+              .run(setTransactionStatusReversed, {
+                ...args,
+                error: confirmationResponse.data.data.gateway_response,
+                ...bhParams(
+                  'self',
+                  TRANSACTION_STATUS.REVERSED,
+                  'Paystack verify reported reversed (refund to customer)'
+                ),
+              })
+              .catch((error: any) =>
+                throwClean(
+                  'We could not save the reversed payment status. Please try again.',
+                  error
+                )
+              )
+          )
+          if (reversedRes?.record) {
+            record = reversedRes.record.properties
+          } else {
+            console.warn(
+              `setTransactionStatusReversed no-op for ${args.serviceRecordId}; record in unexpected state`
+            )
+            record = { ...record, transactionStatus: TRANSACTION_STATUS.REVERSED }
+          }
+        }
+
+        // Non-terminal Paystack statuses (ongoing, pending, processing, queued)
+        // intentionally fall through — the record stays in its current state
+        // for the client to retry verification later.
+      } catch (error: any) {
+        // Paystack reports 'transaction_not_found' when the reference never
+        // succeeded — write failed and return the updated record. For any
+        // other error (network, 5xx) surface to Sentry without overwriting
+        // local state.
+        if (error.response?.data?.code === 'transaction_not_found') {
+          const failedRes = rearrangeCypherObject(
+            await session
+              .executeWrite((tx) =>
+                tx.run(setTransactionStatusFailed, {
+                  ...args,
+                  status: 'failed',
+                  error: 'Transaction reference not found at Paystack',
+                  ...bhParams(
+                    'self',
+                    TRANSACTION_STATUS.FAILED,
+                    'Paystack verify returned transaction_not_found'
+                  ),
+                })
+              )
+              .catch((cypherErr: any) =>
+                throwClean(
+                  'We could not save your payment status. Please try again.',
+                  cypherErr
+                )
+              )
+          )
+          if (failedRes?.record) {
+            return {
+              ...failedRes.record.properties,
+              offeringBankedBy: buildBankerShape(),
+            }
+          }
+          // SM1 guard refused — already success. Don't clobber.
+          console.warn(
+            `setTransactionStatusFailed no-op for ${args.serviceRecordId} (transaction_not_found branch); already terminal`
+          )
+          return { ...record, offeringBankedBy: buildBankerShape() }
+        }
+
+        throwClean(
+          'We could not confirm your payment. Please try again in a few minutes.',
+          error
         )
       }
 
-      throwToSentry(
-        'There was an error confirming transaction - ',
-        JSON.stringify(error.response?.data || error.message)
-      )
-    }
-
-    return {
-      ...record,
-      offeringBankedBy: {
-        id: banker.id,
-        firstName: banker.firstName,
-        lastName: banker.lastName,
-        fullName: `${banker.firstName} ${banker.fullName}`,
-      },
+      return {
+        ...record,
+        offeringBankedBy: buildBankerShape(),
+      }
+    } finally {
+      await session.close()
     }
   },
   SubmitBankingSlip: async (
@@ -639,13 +784,14 @@ const bankingMutation = {
     args: { serviceRecordId: string; bankingSlip: string },
     context: Context
   ) => {
-    isAuth(permitAdmin('Campus'), context.jwt.roles)
+    isAuth(permitAdmin('Campus'), context.jwt?.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
     await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
       (error: any) => {
-        throwToSentry(
-          'There was an error checking if last service banked',
+        throwClean(
+          'We could not check your previous service banking. Please try again.',
           error
         )
       }
@@ -653,9 +799,16 @@ const bankingMutation = {
 
     const submissionResponse = rearrangeCypherObject(
       await session
-        .run(submitBankingSlip, { ...args, jwt: context.jwt })
+        .run(submitBankingSlip, {
+          ...args,
+          jwt: context.jwt,
+          ...bhParams('slip', 'slip-uploaded', 'Banking slip uploaded'),
+        })
         .catch((error: any) =>
-          throwToSentry('There was an error submitting banking slip', error)
+          throwClean(
+            'We could not upload your banking slip. Please try again.',
+            error
+          )
         )
     )
 
@@ -667,7 +820,8 @@ const bankingMutation = {
     args: { serviceRecordId: string; bankingSlip: string },
     context: Context
   ) => {
-    isAuth(['fishers', ...permitTellerStream()], context.jwt.roles)
+    isAuth(['fishers', ...permitTellerStream()], context.jwt?.roles)
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
     const churchRes = await session.executeRead((tx) =>
@@ -680,8 +834,12 @@ const bankingMutation = {
     )
     const churchLabels: string[] = churchRes.records[0].get('churchLabels')
 
+    // Manual confirmation is a Stream-level (or higher) action by design —
+    // it's the teller flow for streams with bankAccount === 'manual', not
+    // a generic per-record override. Restrict every caller (both
+    // tellerStream and fishers) to records that hang off a Stream+ church.
+    // Bacenta-level records go through self-banking or slip upload.
     if (
-      context.jwt.roles.includes('tellerStream') &&
       !['Stream', 'Campus', 'Oversight', 'Denomination'].some((churchLevel) =>
         churchLabels.includes(churchLevel)
       )
@@ -693,8 +851,8 @@ const bankingMutation = {
 
     await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
       (error: any) => {
-        throwToSentry(
-          'There was an error checking if last service banked',
+        throwClean(
+          'We could not check the previous service banking. Please try again.',
           error
         )
       }
@@ -702,13 +860,102 @@ const bankingMutation = {
 
     const submissionResponse = rearrangeCypherObject(
       await session
-        .run(manuallyConfirmOfferingPayment, { ...args, jwt: context.jwt })
+        .run(manuallyConfirmOfferingPayment, {
+          ...args,
+          jwt: context.jwt,
+          ...bhParams(
+            'teller',
+            'teller-confirmed',
+            'Teller manually confirmed offering'
+          ),
+        })
         .catch((error: any) =>
-          throwToSentry('There was an error confirming offering payment', error)
+          throwClean(
+            'We could not confirm this offering payment. Please try again.',
+            error
+          )
         )
     )
 
+    // SM2 atomic guard returned no rows — another teller confirmed first.
+    // Don't clobber the existing tellerConfirmationTime or re-attribute the
+    // CONFIRMED_BANKING_FOR edge.
+    if (!submissionResponse?.service) {
+      throw new Error(
+        'This offering has already been confirmed by another teller. Refresh to see the latest banking state.'
+      )
+    }
+
     return submissionResponse.service.properties
+  },
+
+  // Admin recovery path: an SM1 transition from {null, failed} back to
+  // 'pending' when a Stream admin pastes a Paystack reference the system
+  // lost track of (e.g. webhook never arrived, ConfirmOfferingPayment saw
+  // no reference). 'send OTP' is intentionally NOT a legal source — the
+  // Paystack OTP is bound to the original reference and overwriting it
+  // would orphan the in-flight charge. Gated to Stream-level admins to
+  // match the FE RoleView at ReceiptPage.tsx:251 (the recovery form is
+  // only rendered to permitAdmin('Stream')).
+  SetTransactionReferenceManually: async (
+    object: any,
+    args: { serviceRecordId: string; transactionReference: string },
+    context: Context
+  ) => {
+    isAuth(permitAdmin('Stream'), context.jwt?.roles)
+
+    const reference = args.transactionReference?.trim() ?? ''
+    if (!reference) {
+      throw new Error('Enter a valid transaction reference.')
+    }
+    // Paystack references are alphanumeric with optional dashes/
+    // underscores. Reject anything else server-side so a typo can't
+    // poison reconciliation downstream.
+    if (!/^[A-Za-z0-9_-]{1,100}$/.test(reference)) {
+      throw new Error(
+        'Transaction reference must be alphanumeric (with optional dashes or underscores), max 100 characters.'
+      )
+    }
+
+    await assertScopeViaServiceRecord(context, args.serviceRecordId)
+    const session = context.executionContext.session()
+    try {
+      const cypherResponse = rearrangeCypherObject(
+        await session
+          .executeWrite((tx) =>
+            tx.run(setRecordTransactionReferenceManually, {
+              serviceRecordId: args.serviceRecordId,
+              transactionReference: reference,
+              jwt: context.jwt,
+              ...bhParams(
+                'recovery',
+                TRANSACTION_STATUS.PENDING,
+                'Admin manually set Paystack reference and re-armed pending state'
+              ),
+            })
+          )
+          .catch((error: any) =>
+            throwClean(
+              'We could not save the transaction reference. Please try again.',
+              error
+            )
+          )
+      )
+
+      // SM1 atomic guard returned no rows — record is in 'pending',
+      // 'send OTP', 'success', or 'reversed' and must not be overwritten.
+      // Same shape covers the (extremely unlikely) "record not found"
+      // case, in which the scope check above would already have thrown.
+      if (!cypherResponse?.record) {
+        throw new Error(
+          'This service record cannot accept a manual reference right now. It is either in progress, already successful, or has been reversed.'
+        )
+      }
+
+      return cypherResponse.record
+    } finally {
+      await session.close()
+    }
   },
 }
 

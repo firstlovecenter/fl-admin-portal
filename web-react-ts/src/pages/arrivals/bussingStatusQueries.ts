@@ -3,7 +3,7 @@ import { gql } from '@apollo/client'
 // No Activity Queries
 export const GOVERNORSHIP_BACENTAS_NO_ACTIVITY = gql`
   query governorshipBacentasNoActivity($id: ID!, $arrivalDate: String!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -27,13 +27,17 @@ export const GOVERNORSHIP_BACENTAS_NO_ACTIVITY = gql`
 
 export const COUNCIL_BACENTAS_NO_ACTIVITY = gql`
   query councilBacentasNoActivity($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
       bacentasNoActivity(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -51,7 +55,7 @@ export const COUNCIL_BACENTAS_NO_ACTIVITY = gql`
 
 export const STREAM_BACENTAS_NO_ACTIVITY = gql`
   query streamBacentasNoActivity($id: ID!, $arrivalDate: String!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -75,7 +79,7 @@ export const STREAM_BACENTAS_NO_ACTIVITY = gql`
 
 export const CAMPUS_BACENTAS_NO_ACTIVITY = gql`
   query gatheringBacentasNoActivity($id: ID!, $arrivalDate: String!) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -99,7 +103,7 @@ export const CAMPUS_BACENTAS_NO_ACTIVITY = gql`
 
 export const GOVERNORSHIP_BACENTAS_MOBILISING = gql`
   query governorshipBacentasMobilising($id: ID!, $arrivalDate: String!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -126,13 +130,17 @@ export const GOVERNORSHIP_BACENTAS_MOBILISING = gql`
 
 export const COUNCIL_BACENTAS_MOBILISING = gql`
   query councilBacentasMobilising($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
       bacentasMobilising(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -153,7 +161,7 @@ export const COUNCIL_BACENTAS_MOBILISING = gql`
 
 export const STREAM_BACENTAS_MOBILISING = gql`
   query streamBacentasMobilising($id: ID!, $arrivalDate: String!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -180,7 +188,7 @@ export const STREAM_BACENTAS_MOBILISING = gql`
 
 export const CAMPUS_BACENTAS_MOBILISING = gql`
   query gatheringBacentasMobilising($id: ID!, $arrivalDate: String!) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -207,7 +215,7 @@ export const CAMPUS_BACENTAS_MOBILISING = gql`
 
 export const GOVERNORSHIP_BACENTAS_ON_THE_WAY = gql`
   query governorshipBacentasOnTheWay($id: ID!, $arrivalDate: String!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -234,13 +242,17 @@ export const GOVERNORSHIP_BACENTAS_ON_THE_WAY = gql`
 
 export const COUNCIL_BACENTAS_ON_THE_WAY = gql`
   query councilBacentasOnTheWay($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
       bacentasOnTheWay(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -260,7 +272,7 @@ export const COUNCIL_BACENTAS_ON_THE_WAY = gql`
 `
 export const STREAM_BACENTAS_ON_THE_WAY = gql`
   query streamBacentasOnTheWay($id: ID!, $arrivalDate: String!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -287,7 +299,7 @@ export const STREAM_BACENTAS_ON_THE_WAY = gql`
 
 export const CAMPUS_BACENTAS_ON_THE_WAY = gql`
   query gatheringBacentasOnTheWay($id: ID!, $arrivalDate: String!) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -314,7 +326,7 @@ export const CAMPUS_BACENTAS_ON_THE_WAY = gql`
 
 export const GOVERNORSHIP_BACENTAS_TO_COUNT = gql`
   query governorshipBacentasToCount($id: ID!, $arrivalDate: String!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -341,13 +353,17 @@ export const GOVERNORSHIP_BACENTAS_TO_COUNT = gql`
 
 export const COUNCIL_BACENTAS_TO_COUNT = gql`
   query councilBacentasToCount($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
       bacentasNotCounted(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -368,13 +384,17 @@ export const COUNCIL_BACENTAS_TO_COUNT = gql`
 
 export const COUNCIL_VEHICLES_TO_BE_PAID = gql`
   query councilVehiclesToBePaid($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
       bacentasToBePaid(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -386,7 +406,7 @@ export const COUNCIL_VEHICLES_TO_BE_PAID = gql`
           whatsappNumber
         }
         bussingThisWeek(limit: 1, bussingDate: $arrivalDate) {
-          vehicleRecords(where: { arrivalTime_NOT: null, vehicleTopUp_GT: 0 }) {
+          vehicleRecords(where: { NOT: { arrivalTime: { eq: null } }, vehicleTopUp: { gt: 0 } }) {
             id
             attendance
             vehicle
@@ -403,7 +423,7 @@ export const COUNCIL_VEHICLES_TO_BE_PAID = gql`
 
 export const STREAM_BACENTAS_TO_COUNT = gql`
   query streamBacentasToCount($id: ID!, $arrivalDate: String!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -421,7 +441,7 @@ export const STREAM_BACENTAS_TO_COUNT = gql`
           whatsappNumber
         }
         bussingThisWeek(limit: 1, bussingDate: $arrivalDate) {
-          vehicleRecords(where: { arrivalTime: null }) {
+          vehicleRecords(where: { arrivalTime: { eq: null } }) {
             id
             attendance
             vehicle
@@ -435,7 +455,7 @@ export const STREAM_BACENTAS_TO_COUNT = gql`
 
 export const CAMPUS_BACENTAS_TO_COUNT = gql`
   query gatheringBacentasToCount($id: ID!, $arrivalDate: String!) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -462,7 +482,7 @@ export const CAMPUS_BACENTAS_TO_COUNT = gql`
 
 export const GOVERNORSHIP_BACENTAS_ARRIVED = gql`
   query governorshipBacentasArrived($id: ID!, $arrivalDate: String!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -490,13 +510,17 @@ export const GOVERNORSHIP_BACENTAS_ARRIVED = gql`
 
 export const COUNCIL_BACENTAS_ARRIVED = gql`
   query councilBacentasArrived($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
       bacentasHaveArrived(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -518,7 +542,7 @@ export const COUNCIL_BACENTAS_ARRIVED = gql`
 
 export const STREAM_BACENTAS_ARRIVED = gql`
   query streamBacentasArrived($id: ID!, $arrivalDate: String!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -546,7 +570,7 @@ export const STREAM_BACENTAS_ARRIVED = gql`
 
 export const CAMPUSES_BACENTAS_ARRIVED = gql`
   query gatheringBacentasArrived($id: ID!, $arrivalDate: String!) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -574,7 +598,7 @@ export const CAMPUSES_BACENTAS_ARRIVED = gql`
 
 export const GOVERNORSHIP_BACENTAS_BELOW_8 = gql`
   query governorshipBacentasBelow8($id: ID!, $arrivalDate: String!) {
-    governorships(where: { id: $id }, options: { limit: 1 }) {
+    governorships(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -602,13 +626,17 @@ export const GOVERNORSHIP_BACENTAS_BELOW_8 = gql`
 
 export const COUNCIL_BACENTAS_BELOW_8 = gql`
   query councilBacentasBelow8($id: ID!, $arrivalDate: String!) {
-    councils(where: { id: $id }, options: { limit: 1 }) {
+    councils(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
       bacentasBelow8(arrivalDate: $arrivalDate) {
         id
         name
+        governorship {
+          id
+          name
+        }
         leader {
           id
           firstName
@@ -630,7 +658,7 @@ export const COUNCIL_BACENTAS_BELOW_8 = gql`
 
 export const STREAM_BACENTAS_BELOW_8 = gql`
   query streamBacentasBelow8($id: ID!, $arrivalDate: String!) {
-    streams(where: { id: $id }, options: { limit: 1 }) {
+    streams(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 
@@ -658,7 +686,7 @@ export const STREAM_BACENTAS_BELOW_8 = gql`
 
 export const CAMPUS_BACENTAS_BELOW_8 = gql`
   query gatheringBacentasBelow8($id: ID!, $arrivalDate: String!) {
-    campuses(where: { id: $id }, options: { limit: 1 }) {
+    campuses(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 

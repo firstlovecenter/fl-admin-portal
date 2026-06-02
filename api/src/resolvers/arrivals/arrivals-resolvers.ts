@@ -1,6 +1,6 @@
 import axios from 'axios'
-import { getHumanReadableDate } from 'jd-date-utils'
-import { Integer } from 'neo4j-driver'
+import { getHumanReadableDate } from '../utils/date-utils'
+import { Integer, int } from 'neo4j-driver'
 import { getStreamFinancials } from '../utils/financial-utils'
 import { Context } from '../utils/neo4j-types'
 import {
@@ -10,11 +10,16 @@ import {
   throwToSentry,
 } from '../utils/utils'
 import {
+  assertChurchScope,
+  assertScopeViaVehicleRecord,
+} from '../utils/scope-utils'
+import {
   permitAdmin,
   permitAdminArrivals,
   permitArrivals,
   permitArrivalsCounter,
   permitArrivalsHelpers,
+  permitArrivalsPayer,
 } from '../permissions'
 import { MakeServant, RemoveServant } from '../directory/make-remove-servants'
 import {
@@ -26,6 +31,7 @@ import {
   checkTransactionReference,
   confirmVehicleByAdmin,
   getArrivalsPaymentDataCypher,
+  getArrivalsPaymentCountCypher,
   getVehicleRecordWithDate,
   noVehicleTopUp,
   recordVehicleFromBacenta,
@@ -45,7 +51,8 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const checkIfSelf = (servantId: string, auth: string) => {
+const checkIfSelf = (servantId: string, auth: string | undefined) => {
+  if (!auth) return
   if (servantId === auth.replace('auth0|', '')) {
     throw new Error('Sorry! You cannot make yourself an arrivals counter')
   }
@@ -146,7 +153,7 @@ export const arrivalsMutation = {
     args: { arrivalsCounterId: string; streamId: string },
     context: Context
   ) => {
-    checkIfSelf(args.arrivalsCounterId, context.jwt.userId)
+    checkIfSelf(args.arrivalsCounterId, context.jwt?.userId)
 
     return MakeServant(
       context,
@@ -203,7 +210,8 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     const session = context.executionContext.session()
-    isAuth(['leaderBacenta'], context.jwt.roles)
+    isAuth(['leaderBacenta'], context.jwt?.roles)
+    await assertChurchScope(context, args.bacentaId)
 
     const recordResponse = rearrangeCypherObject(
       await session.run(checkArrivalTimes, args)
@@ -290,177 +298,221 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(['leaderBacenta'], context.jwt.roles)
+    isAuth(['leaderBacenta'], context.jwt?.roles)
+    await assertChurchScope(context, args.bacentaId)
     const session = context.executionContext.session()
 
-    const recordResponse = rearrangeCypherObject(
-      await session.run(checkArrivalTimes, args)
-    )
+    try {
+      const recordResponse = rearrangeCypherObject(
+        await session.run(checkArrivalTimes, args)
+      )
 
-    const stream = recordResponse.stream.properties
-    const bacenta = recordResponse.bacenta.properties
-    const arrivalEndTime = new Date(
-      new Date().toISOString().slice(0, 10) +
-        new Date(stream.arrivalEndTime).toISOString().slice(10)
-    )
-    const today = new Date()
+      const stream = recordResponse.stream.properties
+      const bacenta = recordResponse.bacenta.properties
+      const arrivalEndTime = new Date(
+        new Date().toISOString().slice(0, 10) +
+          new Date(stream.arrivalEndTime).toISOString().slice(10)
+      )
+      const today = new Date()
 
-    if (today > arrivalEndTime) {
-      throw new Error('It is past the time to fill your forms. Thank you!')
-    }
+      if (today > arrivalEndTime) {
+        throw new Error('It is past the time to fill your forms. Thank you!')
+      }
 
-    const response = rearrangeCypherObject(
-      await session.run(recordVehicleFromBacenta, {
-        ...args,
-        recipientCode: bacenta.recipientCode,
-        momoNumber: bacenta.momoNumber ?? '',
-        mobileNetwork: bacenta.mobileNetwork ?? '',
-        outbound: bacenta.outbound,
-        jwt: context.jwt,
-      })
-    )
+      const response = rearrangeCypherObject(
+        await session.run(recordVehicleFromBacenta, {
+          ...args,
+          recipientCode: bacenta.recipientCode,
+          momoNumber: bacenta.momoNumber ?? '',
+          mobileNetwork: bacenta.mobileNetwork ?? '',
+          outbound: bacenta.outbound,
+          jwt: context.jwt,
+        })
+      )
 
-    const vehicleRecord = response.vehicleRecord.properties
-    const date = new Date().toISOString().slice(0, 10)
+      const vehicleRecord = response.vehicleRecord.properties
+      const date = new Date().toISOString().slice(0, 10)
 
-    const returnToCache = {
-      id: vehicleRecord.id,
-      leaderDeclaration: vehicleRecord.leaderDeclaration,
-      attendance: vehicleRecord.attendance,
-      vehicle: vehicleRecord.vehicle,
-      picture: vehicleRecord.picture,
-      outbound: vehicleRecord.outbound,
-      bussingRecord: {
-        serviceLog: {
-          bacenta: [
-            {
-              id: args.bacentaId,
-              stream_name: response.stream_name,
-              bussing: [
-                {
-                  id: vehicleRecord.id,
-                  serviceDate: {
-                    date,
+      return {
+        id: vehicleRecord.id,
+        leaderDeclaration: vehicleRecord.leaderDeclaration,
+        attendance: vehicleRecord.attendance,
+        vehicle: vehicleRecord.vehicle,
+        picture: vehicleRecord.picture,
+        outbound: vehicleRecord.outbound,
+        bussingRecord: {
+          serviceLog: {
+            bacenta: [
+              {
+                id: args.bacentaId,
+                stream_name: response.stream_name,
+                bussing: [
+                  {
+                    id: vehicleRecord.id,
+                    serviceDate: {
+                      date,
+                    },
+                    week: response.week,
+                    vehicle: vehicleRecord.vehicle,
+                    picture: vehicleRecord.picture,
+                    outbound: vehicleRecord.outbound,
                   },
-                  week: response.week,
-                  vehicle: vehicleRecord.vehicle,
-                  picture: vehicleRecord.picture,
-                  outbound: vehicleRecord.outbound,
-                },
-              ],
-            },
-          ],
+                ],
+              },
+            ],
+          },
         },
-      },
+      }
+    } catch (error: any) {
+      throwToSentry('RecordVehicleFromBacenta failed', error)
+    } finally {
+      await session.close()
     }
-    return returnToCache
+
+    return null
   },
   ConfirmVehicleByAdmin: async (
     object: never,
     args: {
-      bacentaId: string
-      bussingRecordId: string
-      leaderDeclaration: number
+      vehicleRecordId: string
       attendance: number
       vehicle: 'Urvan' | 'Sprinter' | 'Car'
-      picture: string
+      comments: string | null
     },
     context: Context
   ) => {
-    isAuth(permitArrivalsCounter(), context.jwt.roles)
+    isAuth(permitArrivalsCounter(), context.jwt?.roles)
+    await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
+
+    // TS types are erased at runtime; the SDL only enforces Int! / String!.
+    // Reject negative/NaN/absurdly-large counts and unknown vehicle labels
+    // so neither the VehicleRecord write nor the downstream aggregation can
+    // be poisoned by tampered client input.
+    if (
+      !Number.isInteger(args.attendance) ||
+      args.attendance < 0 ||
+      args.attendance > 200
+    ) {
+      throw new Error('Attendance must be a whole number between 0 and 200.')
+    }
+    if (!['Urvan', 'Sprinter', 'Car'].includes(args.vehicle)) {
+      throw new Error('Vehicle must be Urvan, Sprinter, or Car.')
+    }
+
     const session = context.executionContext.session()
 
-    const recordResponse = rearrangeCypherObject(
-      await session.run(checkArrivalTimeFromVehicle, args)
-    )
-
-    const {
-      arrivalEndTime,
-      numberOfVehicles,
-      totalAttendance,
-    }: {
-      arrivalEndTime: string
-      numberOfVehicles: neonumber
-      totalAttendance: neonumber
-      leaderPhoneNumber: string
-      leaderFirstName: string
-      bacentaName: string
-    } = recordResponse
-
-    const today = new Date()
-
-    if (today > arrivalEndTimeCalculator(arrivalEndTime)) {
-      throw new Error('It is now past the time for arrivals. Thank you!')
-    }
-
-    const adjustedArgs = args
-
-    if (args.vehicle !== 'Car') {
-      if (parseNeoNumber(numberOfVehicles) < 1 && args.attendance < 8) {
-        // No arrived vehicles and attendance is less than 8
-        adjustedArgs.attendance = 0
-      } else if (
-        parseNeoNumber(numberOfVehicles) >= 1 &&
-        args.attendance < 8 &&
-        parseNeoNumber(totalAttendance) < 8
-      ) {
-        // One arrived vehicle but the combined attendance is less than 8
-        adjustedArgs.attendance = 0
-      }
-    }
-
-    if (args.attendance < 8) {
-      adjustedArgs.vehicle = 'Car'
-    }
-
-    const response = rearrangeCypherObject(
-      await session.run(confirmVehicleByAdmin, {
-        ...adjustedArgs,
-        jwt: context.jwt,
-      })
-    )
-
-    await session
-      .run(aggregateVehicleBussingRecordData, adjustedArgs)
-      .catch((error: any) =>
-        throwToSentry('Error Running aggregateVehicleBussingRecordData', error)
+    try {
+      const recordResponse = rearrangeCypherObject(
+        await session.run(checkArrivalTimeFromVehicle, args)
       )
 
-    const vehicleRecord = response.vehicleRecord.properties
-    const date = new Date().toISOString().slice(0, 10)
+      const {
+        arrivalEndTime,
+        bacentaId,
+        numberOfVehicles,
+        totalAttendance,
+        isToday,
+      }: {
+        arrivalEndTime: string
+        bacentaId: string
+        numberOfVehicles: neonumber
+        totalAttendance: neonumber
+        leaderPhoneNumber: string
+        leaderFirstName: string
+        bacentaName: string
+        isToday: boolean
+      } = recordResponse
 
-    const returnToCache = {
-      id: vehicleRecord.id,
-      leaderDeclaration: vehicleRecord.leaderDeclaration,
-      attendance: vehicleRecord.attendance,
-      vehicle: vehicleRecord.vehicle,
-      picture: vehicleRecord.picture,
-      outbound: vehicleRecord.outbound,
-      arrivalTime: vehicleRecord.arrivalTime,
-      bussingRecord: {
-        serviceLog: {
-          bacenta: [
-            {
-              id: args.bacentaId,
-              stream_name: response.stream_name,
-              bussing: [
-                {
-                  id: vehicleRecord.id,
-                  serviceDate: {
-                    date,
+      if (!isToday) {
+        throw new Error(
+          'This bussing record is not for today. You can only count vehicles for today.'
+        )
+      }
+
+      const today = new Date()
+
+      if (today > arrivalEndTimeCalculator(arrivalEndTime)) {
+        throw new Error('It is now past the time for arrivals. Thank you!')
+      }
+
+      const adjustedArgs = args
+
+      if (args.vehicle !== 'Car') {
+        if (parseNeoNumber(numberOfVehicles) < 1 && args.attendance < 8) {
+          // No arrived vehicles and attendance is less than 8
+          adjustedArgs.attendance = 0
+        } else if (
+          parseNeoNumber(numberOfVehicles) >= 1 &&
+          args.attendance < 8 &&
+          parseNeoNumber(totalAttendance) < 8
+        ) {
+          // One arrived vehicle but the combined attendance is less than 8
+          adjustedArgs.attendance = 0
+        }
+      }
+
+      if (args.attendance < 8) {
+        adjustedArgs.vehicle = 'Car'
+      }
+
+      const response = rearrangeCypherObject(
+        await session.run(confirmVehicleByAdmin, {
+          ...adjustedArgs,
+          jwt: context.jwt,
+        })
+      )
+
+      if (!response?.vehicleRecord) {
+        throw new Error('This vehicle has already been counted.')
+      }
+
+      await session
+        .run(aggregateVehicleBussingRecordData, adjustedArgs)
+        .catch((error: any) =>
+          throwToSentry(
+            'Error Running aggregateVehicleBussingRecordData',
+            error
+          )
+        )
+
+      const vehicleRecord = response.vehicleRecord.properties
+      const date = new Date().toISOString().slice(0, 10)
+
+      const returnToCache = {
+        id: vehicleRecord.id,
+        leaderDeclaration: vehicleRecord.leaderDeclaration,
+        attendance: vehicleRecord.attendance,
+        vehicle: vehicleRecord.vehicle,
+        picture: vehicleRecord.picture,
+        outbound: vehicleRecord.outbound,
+        arrivalTime: vehicleRecord.arrivalTime,
+        bussingRecord: {
+          serviceLog: {
+            bacenta: [
+              {
+                id: bacentaId,
+                stream_name: response.stream_name,
+                bussing: [
+                  {
+                    id: vehicleRecord.id,
+                    serviceDate: {
+                      date,
+                    },
+                    week: response.week,
+                    vehicle: vehicleRecord.vehicle,
+                    picture: vehicleRecord.picture,
+                    outbound: vehicleRecord.outbound,
                   },
-                  week: response.week,
-                  vehicle: vehicleRecord.vehicle,
-                  picture: vehicleRecord.picture,
-                  outbound: vehicleRecord.outbound,
-                },
-              ],
-            },
-          ],
+                ],
+              },
+            ],
+          },
         },
-      },
+      }
+      return returnToCache
+    } finally {
+      await session.close()
     }
-    return returnToCache
   },
 
   SetVehicleSupport: async (
@@ -468,6 +520,8 @@ export const arrivalsMutation = {
     args: { vehicleRecordId: string },
     context: Context
   ) => {
+    isAuth(permitArrivalsHelpers('Stream'), context.jwt?.roles)
+    await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
     type responseType = {
@@ -522,7 +576,6 @@ export const arrivalsMutation = {
 
       return 0
     }
-    console.log('🚀 ~ file: arrivals-resolvers.ts:544 ~ response:', response)
     const vehicleTopUp = calculateVehicleTopUp(response)
 
     if (response.vehicle === 'Car') {
@@ -597,6 +650,11 @@ export const arrivalsMutation = {
 
     return vehicleRecord?.record.properties
   },
+  // SM5 approved → paid. Separation of duties: this resolver is restricted
+  // to `permitArrivalsPayer()` (Council Payer) only. The Stream Counter can
+  // record attendance and approve the eligible top-up via SetVehicleSupport,
+  // but cannot release momo from the Paystack stream account — that authority
+  // sits with the Council Payer. See kb/04-state-machines.md SM5 actor matrix.
   SendVehicleSupport: async (
     object: any,
     // eslint-disable-next-line camelcase
@@ -609,7 +667,8 @@ export const arrivalsMutation = {
     },
     context: Context
   ) => {
-    isAuth(permitArrivalsHelpers('Stream'), context.jwt.roles)
+    isAuth(permitArrivalsPayer(), context.jwt?.roles)
+    await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
     try {
@@ -618,6 +677,13 @@ export const arrivalsMutation = {
           tx.run(checkTransactionReference, args)
         )
       )
+
+      if (!recordResponse?.isToday) {
+        throw new Error(
+          'This bussing record is not for today. You can only pay for vehicles bussed today.'
+        )
+      }
+
       const { auth } = await getStreamFinancials(
         recordResponse.stream.properties
       )
@@ -727,10 +793,9 @@ export const arrivalsMutation = {
 
       return vehicleRecord
     } catch (error: any) {
-      throwToSentry(
-        `Money could not be sent! ${error.response.data.message}`,
-        error
-      )
+      const message =
+        error?.response?.data?.message ?? error?.message ?? String(error)
+      throwToSentry(`Money could not be sent! ${message}`, error)
     } finally {
       await session.close()
     }
@@ -738,7 +803,7 @@ export const arrivalsMutation = {
     return null
   },
   SetSwellDate: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdminArrivals('Campus'), context.jwt.roles)
+    isAuth(permitAdminArrivals('Campus'), context.jwt?.roles)
 
     const session = context.executionContext.session()
 
@@ -753,7 +818,7 @@ export const arrivalsMutation = {
     args: { firstName: string; phoneNumber: string; otp: string },
     context: Context
   ) => {
-    isAuth(['leaderBacenta'], context.jwt.roles)
+    isAuth(['leaderBacenta'], context.jwt?.roles)
 
     const response = await sendBulkSMS(
       [args.phoneNumber],
@@ -766,11 +831,10 @@ export const arrivalsMutation = {
 
 const getArrivalsPaymentData = async (
   object: any,
-  // eslint-disable-next-line camelcase
-  args: { arrivalsDate: string },
+  args: { arrivalsDate: string; limit: number; offset: number },
   context: Context
 ) => {
-  isAuth(permitAdminArrivals('Stream'), context.jwt.roles)
+  isAuth(permitAdminArrivals('Stream'), context.jwt?.roles)
 
   const session = context.executionContext.session()
 
@@ -778,6 +842,8 @@ const getArrivalsPaymentData = async (
     await session.run(getArrivalsPaymentDataCypher, {
       streamId: object.id,
       date: args.arrivalsDate,
+      limit: int(args.limit),
+      offset: int(args.offset),
     }),
     true
   )
@@ -785,12 +851,34 @@ const getArrivalsPaymentData = async (
   return cypherResponse
 }
 
+const getArrivalsPaymentCount = async (
+  object: any,
+  args: { arrivalsDate: string },
+  context: Context
+) => {
+  isAuth(permitAdminArrivals('Stream'), context.jwt?.roles)
+
+  const session = context.executionContext.session()
+
+  const result = await session.run(getArrivalsPaymentCountCypher, {
+    streamId: object.id,
+    date: args.arrivalsDate,
+  })
+
+  return result.records[0]?.get('total')?.toNumber?.() ?? 0
+}
+
 export const arrivalsResolvers = {
   Stream: {
     arrivalsPaymentData: async (
       object: any,
-      args: { arrivalsDate: string },
+      args: { arrivalsDate: string; limit: number; offset: number },
       context: Context
     ) => getArrivalsPaymentData(object, args, context),
+    arrivalsPaymentCount: async (
+      object: any,
+      args: { arrivalsDate: string },
+      context: Context
+    ) => getArrivalsPaymentCount(object, args, context),
   },
 }

@@ -44,15 +44,9 @@ const DetailsDenomination = () => {
       link: `/campus/governorships`,
     },
     {
-      title: 'Greens',
-      number: denomination?.activeGraduatedBacentaCount,
-      vacationCount: denomination?.vacationGraduatedBacentaCount,
-      link: `#`,
-    },
-    {
-      title: 'Reds',
-      number: denomination?.activeIcBacentaCount,
-      vacationCount: denomination?.vacationIcBacentaCount,
+      title: 'Bacentas',
+      number: denomination?.bacentaCount || 0,
+      vacationCount: denomination?.vacationBacentaCount,
       link: '#',
     },
   ]

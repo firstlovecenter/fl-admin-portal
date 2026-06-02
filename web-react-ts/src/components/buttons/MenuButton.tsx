@@ -2,7 +2,7 @@ import CloudinaryImage from 'components/CloudinaryImage'
 import PlaceholderCustom from 'components/Placeholder'
 import { capitalise } from 'global-utils'
 import React from 'react'
-import { Button, Col, Row } from 'react-bootstrap'
+import { cn } from 'components/lib/utils'
 import './MenuButton.css'
 
 type MenuButtonProps = {
@@ -24,15 +24,18 @@ const MenuButton = (props: MenuButtonProps) => {
   const icon = props.icon || props.iconComponent || props.avatar || props.number
 
   return (
-    <Button
+    <button
+      type="button"
       onClick={props.onClick}
-      size="lg"
-      variant="secondary"
-      className={`${props.color} menu-buttons`}
+      className={cn(
+        'menu-buttons w-full rounded-md border bg-secondary text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+        props.color,
+        props.className
+      )}
     >
-      <Row>
+      <div className="flex w-full items-center">
         {icon && (
-          <Col xs="auto" className="btn-left-col my-auto">
+          <div className="btn-left-col my-auto shrink-0">
             <PlaceholderCustom className="rounded-circle menu" as="div">
               <div
                 className={
@@ -52,16 +55,18 @@ const MenuButton = (props: MenuButtonProps) => {
                 {props.iconComponent && (
                   <div className={`${props.color}`}>{props.iconComponent}</div>
                 )}
-                {props.number && <div className="fw-bold">{props.number}</div>}
+                {props.number && (
+                  <div className="font-bold">{props.number}</div>
+                )}
               </div>
               {props.iconCaption && (
-                <small className={`icon-caption`}>{props.iconCaption}</small>
+                <small className="icon-caption">{props.iconCaption}</small>
               )}
             </PlaceholderCustom>
-          </Col>
+          </div>
         )}
 
-        <Col className="btn-right-col">
+        <div className="btn-right-col min-w-0 flex-1">
           <PlaceholderCustom loading={!props.title} as="div" xs={10}>
             <span>{capitalise(props?.title ?? '')}</span>
           </PlaceholderCustom>
@@ -72,9 +77,9 @@ const MenuButton = (props: MenuButtonProps) => {
               </small>
             </PlaceholderCustom>
           )}
-        </Col>
-      </Row>
-    </Button>
+        </div>
+      </div>
+    </button>
   )
 }
 

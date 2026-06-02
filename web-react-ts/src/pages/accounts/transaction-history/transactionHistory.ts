@@ -1,11 +1,16 @@
 import { gql } from '@apollo/client'
 
 export const GET_CAMPUS_TRANSACTION_HISTORY = gql`
-  query getCampusTransactionHistory($campusId: ID!) {
-    campuses(where: { id: $campusId }) {
+  query getCampusTransactionHistory(
+    $campusId: ID!
+    $offset: Int!
+    $limit: Int!
+  ) {
+    campuses(where: { id: { eq: $campusId } }) {
       id
       name
-      transactions {
+      transactionCount
+      transactions(limit: $limit, offset: $offset) {
         id
         council {
           id
@@ -41,11 +46,16 @@ export const GET_CAMPUS_TRANSACTION_HISTORY = gql`
 `
 
 export const GET_COUNCIL_TRANSACTION_HISTORY = gql`
-  query getCouncilTransactionHistory($councilId: ID!) {
-    councils(where: { id: $councilId }) {
+  query getCouncilTransactionHistory(
+    $councilId: ID!
+    $offset: Int!
+    $limit: Int!
+  ) {
+    councils(where: { id: { eq: $councilId } }) {
       id
       name
-      transactions(options: { sort: { lastModified: DESC } }) {
+      transactionCount
+      transactions(limit: $limit, offset: $offset) {
         id
         createdAt
         lastModified
@@ -72,7 +82,7 @@ export const GET_COUNCIL_TRANSACTION_HISTORY = gql`
 
 export const GET_TRANSACTION_DETAILS = gql`
   query getTransactionDetails($id: ID!) {
-    accountTransactions(where: { id: $id }) {
+    accountTransactions(where: { id: { eq: $id } }) {
       id
       createdAt
       lastModified

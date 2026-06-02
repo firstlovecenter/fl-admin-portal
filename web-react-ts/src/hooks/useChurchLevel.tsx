@@ -62,6 +62,34 @@ const useChurchLevel = (props: useChurchLevelProps) => {
         return props.councilRefetch
     }
   }
+
+  const refetch = async () => {
+    const fn = chooseRefetch()
+    if (!fn) return
+    setLoading(true)
+    try {
+      const res = await fn()
+      if (res.error) setError(res.error)
+      const pick = (key: string) => {
+        const value = res.data?.[key]?.[0]
+        if (value != null) setChurch(value)
+      }
+      switch (churchLevel) {
+        case 'Governorship': pick('governorships'); break
+        case 'Council': pick('councils'); break
+        case 'Stream': pick('streams'); break
+        case 'Campus': pick('campuses'); break
+        case 'Oversight': pick('oversights'); break
+        case 'Denomination': pick('denominations'); break
+        default: break
+      }
+    } catch (e) {
+      if (e instanceof ApolloError) setError(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     const whichQuery = async () => {
       switch (churchLevel) {
@@ -162,7 +190,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
     whichQuery()
   }, [setChurch])
 
-  return { church, subChurchLevel, loading, error, refetch: chooseRefetch() }
+  return { church, subChurchLevel, loading, error, refetch }
 }
 
 export default useChurchLevel

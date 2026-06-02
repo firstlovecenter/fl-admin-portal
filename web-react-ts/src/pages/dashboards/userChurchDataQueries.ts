@@ -1,38 +1,16 @@
 import { gql } from '@apollo/client'
 
-export const SERVANT_FELLOWSHIP_LEADER = gql`
-  query fellowshipLeader($id: ID!) {
-    members(where: { id: $id }) {
-      id
-      leadsFellowship {
-        id
-        name
-        stream_name
-        memberCount
-        vacationStatus
-
-        services(limit: 4) {
-          createdAt
-          attendance
-          income
-          week
-          serviceDate {
-            date
-          }
-        }
-      }
-    }
-  }
-`
-
 export const SERVANT_BACENTA_LEADER = gql`
   query bacentaLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsBacenta {
         id
         name
-        stream_name
+        meetingDay {
+          day
+          dayNumber
+        }
 
         vacationStatus
 
@@ -40,14 +18,53 @@ export const SERVANT_BACENTA_LEADER = gql`
           id
           council {
             id
+            stream {
+              id
+              meetingDay {
+                day
+                dayNumber
+              }
+            }
           }
         }
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          createdAt
+          attendance
+          income
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
+          serviceDate {
+            date
+          }
+        }
+
+        bussing(limit: 24) {
+          id
+          createdAt
+          attendance
+          week
+          serviceDate {
+            date
+          }
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
         }
       }
     }
@@ -56,21 +73,36 @@ export const SERVANT_BACENTA_LEADER = gql`
 
 export const SERVANT_GOVERNORSHIP_LEADER = gql`
   query governorshipLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsGovernorship {
         id
         name
-        stream_name
 
         council {
           id
         }
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -79,18 +111,33 @@ export const SERVANT_GOVERNORSHIP_LEADER = gql`
 
 export const SERVANT_COUNCIL_LEADER = gql`
   query councilLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsCouncil {
         id
         name
-        stream_name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -99,17 +146,33 @@ export const SERVANT_COUNCIL_LEADER = gql`
 
 export const SERVANT_STREAM_LEADER = gql`
   query streamLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsStream {
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -118,17 +181,36 @@ export const SERVANT_STREAM_LEADER = gql`
 
 export const SERVANT_CAMPUS_LEADER = gql`
   query campusLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsCampus {
         id
         name
+        currency
+        noIncomeTracking
+        conversionRateToDollar
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -137,17 +219,33 @@ export const SERVANT_CAMPUS_LEADER = gql`
 
 export const SERVANT_OVERSIGHT_LEADER = gql`
   query oversightLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsOversight {
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -156,17 +254,33 @@ export const SERVANT_OVERSIGHT_LEADER = gql`
 
 export const SERVANT_DENOMINATION_LEADER = gql`
   query denominationLeader($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       leadsDenomination {
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -175,13 +289,12 @@ export const SERVANT_DENOMINATION_LEADER = gql`
 
 export const SERVANT_GOVERNORSHIP_ADMIN = gql`
   query governorshipAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForGovernorship {
         id
         name
-        stream_name
         leader {
           id
           firstName
@@ -191,11 +304,27 @@ export const SERVANT_GOVERNORSHIP_ADMIN = gql`
         council {
           id
         }
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -204,13 +333,12 @@ export const SERVANT_GOVERNORSHIP_ADMIN = gql`
 
 export const SERVANT_COUNCIL_ADMIN = gql`
   query councilAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForCouncil {
         id
         name
-        stream_name
 
         leader {
           id
@@ -218,11 +346,27 @@ export const SERVANT_COUNCIL_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -231,7 +375,7 @@ export const SERVANT_COUNCIL_ADMIN = gql`
 
 export const SERVANTS_STREAM_ADMIN = gql`
   query streamAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForStream {
@@ -244,11 +388,27 @@ export const SERVANTS_STREAM_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -257,19 +417,38 @@ export const SERVANTS_STREAM_ADMIN = gql`
 
 export const SERVANTS_CAMPUS_ADMIN = gql`
   query campusAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForCampus {
         id
         name
+        currency
+        noIncomeTracking
+        conversionRateToDollar
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           dollarIncome
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -278,19 +457,35 @@ export const SERVANTS_CAMPUS_ADMIN = gql`
 
 export const SERVANTS_OVERSIGHT_ADMIN = gql`
   query oversightAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForOversight {
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           dollarIncome
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -299,19 +494,35 @@ export const SERVANTS_OVERSIGHT_ADMIN = gql`
 
 export const SERVANTS_DENOMINATION_ADMIN = gql`
   query denominationAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isAdminForDenomination {
         id
         name
 
-        aggregateServiceRecords(limit: 4) {
+        aggregateServiceRecords(limit: 24) {
           id
           attendance
           income
           dollarIncome
           week
+          year
+        }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
+
+        services(limit: 24) {
+          id
+          week
+          noServiceReason
+          bankingProof
+          transactionStatus
         }
       }
     }
@@ -320,7 +531,7 @@ export const SERVANTS_DENOMINATION_ADMIN = gql`
 
 export const SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN = gql`
   query governorshipArrivalsAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsAdminForGovernorship {
@@ -333,10 +544,11 @@ export const SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateBussingRecords(limit: 4) {
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -345,13 +557,12 @@ export const SERVANTS_GOVERNORSHIP_ARRIVALS_ADMIN = gql`
 
 export const SERVANTS_COUNCIL_ARRIVALS_ADMIN = gql`
   query councilArrivalsAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsAdminForCouncil {
         id
         name
-        stream_name
 
         leader {
           id
@@ -359,10 +570,11 @@ export const SERVANTS_COUNCIL_ARRIVALS_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateBussingRecords(limit: 4) {
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -371,7 +583,7 @@ export const SERVANTS_COUNCIL_ARRIVALS_ADMIN = gql`
 
 export const SERVANTS_STREAM_ARRIVALS_ADMIN = gql`
   query streamArrivalsAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsAdminForStream {
@@ -384,10 +596,11 @@ export const SERVANTS_STREAM_ARRIVALS_ADMIN = gql`
           lastName
           fullName
         }
-        aggregateBussingRecords(limit: 4) {
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -396,17 +609,21 @@ export const SERVANTS_STREAM_ARRIVALS_ADMIN = gql`
 
 export const SERVANTS_CAMPUS_ARRIVALS_ADMIN = gql`
   query campusArrivalsAdmin($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsAdminForCampus {
         id
         name
+        currency
+        noIncomeTracking
+        conversionRateToDollar
 
-        aggregateBussingRecords(limit: 4) {
+        aggregateBussingRecords(limit: 24) {
           id
           attendance
           week
+          year
         }
       }
     }
@@ -415,7 +632,7 @@ export const SERVANTS_CAMPUS_ARRIVALS_ADMIN = gql`
 
 export const SERVANTS_STREAM_ARRIVALS_COUNTER = gql`
   query streamArrivalsCounter($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isArrivalsCounterForStream {
@@ -428,6 +645,13 @@ export const SERVANTS_STREAM_ARRIVALS_COUNTER = gql`
           lastName
           fullName
         }
+
+        aggregateBussingRecords(limit: 24) {
+          id
+          attendance
+          week
+          year
+        }
       }
     }
   }
@@ -435,13 +659,12 @@ export const SERVANTS_STREAM_ARRIVALS_COUNTER = gql`
 
 export const SERVANTS_STREAM_TELLER = gql`
   query streamArrivalsTeller($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
 
       isTellerForStream {
         id
         name
-        stream_name
 
         leader {
           id
@@ -454,121 +677,3 @@ export const SERVANTS_STREAM_TELLER = gql`
   }
 `
 
-export const SERVANTS_HUB_LEADER = gql`
-  query hubLeader($id: ID!) {
-    members(where: { id: $id }) {
-      id
-      leadsHub {
-        id
-        name
-
-        rehearsals(limit: 4) {
-          id
-          createdAt
-          attendance
-          income
-          week
-          serviceDate {
-            date
-          }
-        }
-      }
-    }
-  }
-`
-
-export const SERVANTS_HUBCOUNCIL_LEADER = gql`
-  query hubCouncilLeader($id: ID!) {
-    members(where: { id: $id }) {
-      id
-      leadsHubCouncil {
-        id
-        name
-
-        aggregateRehearsalRecords(limit: 4) {
-          id
-          attendance
-          income
-          week
-        }
-      }
-    }
-  }
-`
-
-export const SERVANTS_MINISTRY_LEADER = gql`
-  query ministryLeader($id: ID!) {
-    members(where: { id: $id }) {
-      id
-      leadsMinistry {
-        id
-        name
-
-        aggregateRehearsalRecords(limit: 4) {
-          id
-          attendance
-          income
-          week
-        }
-      }
-    }
-  }
-`
-
-export const SERVANTS_CREATIVEARTS_LEADER = gql`
-  query creativeArtsLeader($id: ID!) {
-    members(where: { id: $id }) {
-      id
-      leadsCreativeArts {
-        id
-        name
-
-        aggregateRehearsalRecords(limit: 4) {
-          id
-          attendance
-          income
-          week
-        }
-      }
-    }
-  }
-`
-export const SERVANTS_MINISTRY_ADMIN = gql`
-  query ministryAdmin($id: ID!) {
-    members(where: { id: $id }) {
-      id
-
-      isAdminForMinistry {
-        id
-        name
-
-        aggregateRehearsalRecords(limit: 4) {
-          id
-          attendance
-          income
-          week
-        }
-      }
-    }
-  }
-`
-
-export const SERVANTS_CREATIVEARTS_ADMIN = gql`
-  query creativeArtsAdmin($id: ID!) {
-    members(where: { id: $id }) {
-      id
-
-      isAdminForCreativeArts {
-        id
-        name
-
-        aggregateRehearsalRecords(limit: 4) {
-          id
-          attendance
-          income
-          week
-        }
-      }
-    }
-  }
-`

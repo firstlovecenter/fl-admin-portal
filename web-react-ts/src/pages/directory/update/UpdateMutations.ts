@@ -62,15 +62,13 @@ export const UPDATE_MEMBER_MUTATION = gql`
 export const UPDATE_MEMBER_STICKY_NOTE = gql`
   mutation UpdateMemberStickyNote(
     $id: ID!
-    $stickyNote: String
+    $stickyNote: String!
     $ids: [ID]
     $historyRecord: String!
   ) {
-    updateMembers(where: { id: $id }, update: { stickyNote: $stickyNote }) {
-      members {
-        id
-        stickyNote
-      }
+    SetMemberStickyNote(memberId: $id, stickyNote: $stickyNote) {
+      id
+      stickyNote
     }
     LogMemberHistory(ids: $ids, historyRecord: $historyRecord) {
       id
@@ -86,23 +84,8 @@ export const UPDATE_MEMBER_STICKY_NOTE = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
-      }
-    }
-  }
-`
-
-export const UPDATE_MEMBER_BASONTA = gql`
-  mutation UpdateMemberBasonta($memberId: ID!, $basontaId: ID!) {
-    UpdateMemberBasonta(memberId: $memberId, basontaId: $basontaId) {
-      id
-      firstName
-      lastName
-      basonta {
-        id
-        name
       }
     }
   }
@@ -124,7 +107,6 @@ export const LOG_MEMBER_HISTORY = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -162,13 +144,27 @@ export const UPDATE_MEMBER_BACENTA = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
     }
   }
 `
+
+export const UPDATE_MEMBER_BASONTA = gql`
+  mutation UpdateMemberBasonta($memberId: ID!, $basontaId: ID!) {
+    UpdateMemberBasonta(memberId: $memberId, basontaId: $basontaId) {
+      id
+      firstName
+      lastName
+      basonta {
+        id
+        name
+      }
+    }
+  }
+`
+
 export const UPDATE_STREAM_MUTATION = gql`
   mutation UpdateStream(
     $streamId: ID!
@@ -197,7 +193,6 @@ export const UPDATE_STREAM_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -248,7 +243,6 @@ export const UPDATE_OVERSIGHT_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -293,7 +287,6 @@ export const UPDATE_DENOMINATION_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -359,7 +352,6 @@ export const UPDATE_CAMPUS_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -410,7 +402,6 @@ export const UPDATE_COUNCIL_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -461,7 +452,6 @@ export const UPDATE_GOVERNORSHIP_MUTATION = gql`
         lastName
         bacenta {
           id
-          stream_name
         }
       }
       leader {
@@ -541,61 +531,6 @@ export const UPDATE_BACENTA_MUTATION = gql`
   }
 `
 
-export const UPDATE_FELLOWSHIP = gql`
-  mutation UpdateFellowship(
-    $id: ID!
-    $name: String!
-    $meetingDay: String
-    $venueLatitude: Float
-    $venueLongitude: Float
-  ) {
-    UpdateFellowshipDetails(
-      id: $id
-      name: $name
-      meetingDay: $meetingDay
-      venueLatitude: $venueLatitude
-      venueLongitude: $venueLongitude
-    ) {
-      id
-      labels
-      stream_name
-      bankingCode
-      name
-      memberCount
-      location {
-        longitude
-        latitude
-      }
-      meetingDay {
-        day
-        dayNumber
-      }
-
-      leader {
-        id
-        firstName
-        lastName
-        fullName
-        pictureUrl
-      }
-
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
 export const MAKE_MEMBER_INACTIVE = gql`
   mutation MakeMemberInactive($memberId: ID!, $reason: String!) {
     MakeMemberInactive(id: $memberId, reason: $reason) {
@@ -646,7 +581,6 @@ export const MOVE_OVERSIGHT_TO_DENOMINATION = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -691,7 +625,6 @@ export const MOVE_CAMPUS_TO_OVERSIGHT = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -736,7 +669,6 @@ export const MOVE_STREAM_TO_CAMPUS = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -781,7 +713,6 @@ export const MOVE_COUNCIL_TO_STREAM = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -829,7 +760,6 @@ export const MOVE_GOVERNORSHIP_TO_COUNCIL = gql`
           id
           firstName
           lastName
-          stream_name
         }
         historyRecord
       }
@@ -875,382 +805,6 @@ export const MOVE_BACENTA_TO_GOVERNORSHIP = gql`
         }
         loggedBy {
           id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_CREATIVEARTS_TO_CAMPUS = gql`
-  mutation MoveCreativeArtsToCampus(
-    $creativeArtsId: ID!
-    $newCampusId: ID!
-    $oldCampusId: ID!
-    $historyRecord: String!
-  ) {
-    MoveCreativeArtsToCampus(
-      creativeArtsId: $creativeArtsId
-      campusId: $newCampusId
-    ) {
-      id
-      name
-      campus {
-        id
-        name
-        creativeArts {
-          id
-          name
-        }
-      }
-    }
-    LogCreativeArtsHistory(
-      creativeArtsId: $creativeArtsId
-      historyRecord: $historyRecord
-      oldCampusId: $oldCampusId
-      newCampusId: $newCampusId
-    ) {
-      id
-      name
-      campus {
-        id
-        name
-        creativeArts {
-          id
-          name
-        }
-      }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          stream_name
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_MINISTRY_TO_CREATIVEARTS = gql`
-  mutation MoveMinistryToCreativeArts(
-    $ministryId: ID!
-    $newCreativeArtsId: ID!
-    $oldCreativeArtsId: ID!
-    $historyRecord: String!
-  ) {
-    MoveMinistryToCreativeArts(
-      ministryId: $ministryId
-      creativeArtsId: $newCreativeArtsId
-    ) {
-      id
-      name
-      hubCouncils {
-        id
-        name
-        hubs {
-          id
-          name
-        }
-      }
-    }
-    LogMinistryHistory(
-      ministryId: $ministryId
-      historyRecord: $historyRecord
-      oldCreativeArtsId: $oldCreativeArtsId
-      newCreativeArtsId: $newCreativeArtsId
-    ) {
-      id
-      name
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          firstName
-          lastName
-          stream_name
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_MINISTRY_TO_STREAM = gql`
-  mutation MoveMinistryToStream(
-    $ministryId: ID!
-    $newStreamId: ID!
-    $oldStreamId: ID!
-    $historyRecord: String!
-  ) {
-    MoveMinistryToStream(ministryId: $ministryId, streamId: $newStreamId) {
-      id
-      name
-      stream {
-        id
-        name
-        ministries {
-          id
-          name
-        }
-      }
-    }
-    LogMinistryHistoryWithStream(
-      ministryId: $ministryId
-      historyRecord: $historyRecord
-      oldStreamId: $oldStreamId
-      newStreamId: $newStreamId
-    ) {
-      id
-      name
-      stream {
-        id
-        name
-        ministries {
-          id
-          name
-        }
-      }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          stream_name
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_HUBCOUNCIL_TO_MINISTRY = gql`
-  mutation MoveHubCouncilToMinistry(
-    $hubCouncilId: ID!
-    $newMinistryId: ID!
-    $oldMinistryId: ID!
-    $historyRecord: String!
-  ) {
-    MoveHubCouncilToMinistry(
-      hubCouncilId: $hubCouncilId
-      ministryId: $newMinistryId
-    ) {
-      id
-      name
-      ministry {
-        id
-        name
-        hubCouncils {
-          id
-          name
-        }
-      }
-    }
-    LogHubCouncilHistory(
-      hubCouncilId: $hubCouncilId
-      historyRecord: $historyRecord
-      oldMinistryId: $oldMinistryId
-      newMinistryId: $newMinistryId
-    ) {
-      id
-      name
-      ministry {
-        id
-        name
-        hubCouncils {
-          id
-          name
-        }
-      }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          stream_name
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_HUBCOUNCIL_TO_COUNCIL = gql`
-  mutation MoveHubCouncilToCouncil(
-    $hubCouncilId: ID!
-    $newCouncilId: ID!
-    $oldCouncilId: ID!
-    $historyRecord: String!
-  ) {
-    MoveHubCouncilToCouncil(
-      hubCouncilId: $hubCouncilId
-      councilId: $newCouncilId
-    ) {
-      id
-      name
-      council {
-        id
-        name
-        hubCouncils {
-          id
-          name
-        }
-      }
-    }
-    LogHubCouncilHistoryWithCouncil(
-      hubCouncilId: $hubCouncilId
-      historyRecord: $historyRecord
-      oldCouncilId: $oldCouncilId
-      newCouncilId: $newCouncilId
-    ) {
-      id
-      name
-      council {
-        id
-        name
-        hubCouncils {
-          id
-          name
-        }
-      }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          stream_name
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_HUB_TO_HUBCOUNCIL = gql`
-  mutation MoveHubsToHubCouncils(
-    $hubId: ID!
-    $newHubCouncilId: ID!
-    $oldHubCouncilId: ID!
-    $historyRecord: String!
-  ) {
-    MoveHubToHubCouncil(hubId: $hubId, hubCouncilId: $newHubCouncilId) {
-      id
-      name
-      hubCouncil {
-        id
-        name
-        hubs {
-          id
-          name
-        }
-      }
-    }
-    LogHubHistory(
-      hubId: $hubId
-      historyRecord: $historyRecord
-      oldHubCouncilId: $oldHubCouncilId
-      newHubCouncilId: $newHubCouncilId
-    ) {
-      id
-      name
-      hubCouncil {
-        id
-        name
-        hubs {
-          id
-          name
-        }
-      }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          stream_name
-          firstName
-          lastName
-        }
-        historyRecord
-      }
-    }
-  }
-`
-
-export const MOVE_HUB_TO_GOVERNORSHIP = gql`
-  mutation MoveHubToGovernorship(
-    $hubId: ID!
-    $newGovernorshipId: ID!
-    $oldGovernorshipId: ID!
-    $historyRecord: String!
-  ) {
-    MoveHubToGovernorship(hubId: $hubId, governorshipId: $newGovernorshipId) {
-      id
-      name
-      governorship {
-        id
-        name
-        hubs {
-          id
-          name
-        }
-      }
-    }
-    LogHubHistoryWithGovernorship(
-      hubId: $hubId
-      historyRecord: $historyRecord
-      oldGovernorshipId: $oldGovernorshipId
-      newGovernorshipId: $newGovernorshipId
-    ) {
-      id
-      name
-      governorship {
-        id
-        name
-        hubs {
-          id
-          name
-        }
-      }
-      history(limit: 5) {
-        id
-        timeStamp
-        createdAt {
-          date
-        }
-        loggedBy {
-          id
-          stream_name
           firstName
           lastName
         }

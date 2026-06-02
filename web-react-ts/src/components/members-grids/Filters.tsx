@@ -6,10 +6,10 @@ import {
 } from 'global-utils'
 import React, { useContext } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Formik, Form, FormikHelpers } from 'formik'
+import { Formik, Form, FormikHelpers, FormikState } from 'formik'
 import { GET_CAMPUS_BASONTAS } from 'queries/ListQueries'
-import { Col, Row, Button } from 'react-bootstrap'
-import './Filters.css'
+import { Button } from 'components/ui/button'
+import { Separator } from 'components/ui/separator'
 import CheckboxGroup from 'components/formik/CheckboxGroup'
 import CheckboxWithQuery from 'components/formik/CheckboxWithQuery'
 
@@ -22,15 +22,14 @@ type FormOptions = {
   basonta: string[]
 }
 
-const Filters = ({
-  ToggleAccordion,
-}: {
-  [x: string]: any
-  children: any
-  eventKey: any
-}) => {
-  const { setFilters, filters, campusId } = useContext(ChurchContext)
+const LEADER_OPTIONS = [
+  { key: 'CO', value: 'CO' },
+  { key: 'Bacenta Leader', value: 'Bacenta Leader' },
+  { key: 'Admin', value: 'Admin' },
+]
 
+const Filters = ({ onClose }: { onClose?: () => void }) => {
+  const { setFilters, filters, campusId } = useContext(ChurchContext)
   const location = useLocation()
   const atPastors = location.pathname === '/pastors'
 
@@ -43,106 +42,96 @@ const Filters = ({
     basonta: filters.basonta || [],
   }
 
-  const LEADER_OPTIONS = [
-    { key: 'CO', value: 'CO' },
-    { key: 'Bacenta Leader', value: 'Bacenta Leader' },
-    { key: 'Fellowship Leader', value: 'Fellowship Leader' },
-    { key: 'Hub Fellowship Leader', value: 'Hub Fellowship Leader' },
-    { key: 'Hub Leader', value: 'Hub Leader' },
-    { key: 'Hub Council Leader', value: 'Hub Council Leader' },
-    { key: 'Ministry Leader', value: 'Ministry Leader' },
-    { key: 'Creative Arts Overseer', value: 'Creative Arts Overseer' },
-    { key: 'Admin', value: 'Admin' },
-  ]
-
   const onSubmit = (
     values: FormOptions,
     onSubmitProps: FormikHelpers<FormOptions>
   ) => {
-    onSubmitProps.setSubmitting(true)
     setFilters(values)
     onSubmitProps.setSubmitting(false)
+    onClose?.()
+  }
+
+  const handleReset = (
+    resetForm: (nextState?: Partial<FormikState<FormOptions>>) => void
+  ) => {
+    const emptyValues: FormOptions = {
+      gender: [],
+      maritalStatus: [],
+      occupation: '',
+      leaderTitle: [],
+      leaderRank: [],
+      basonta: [],
+    }
+    setFilters(emptyValues)
+    resetForm({ values: emptyValues })
   }
 
   return (
     <Formik initialValues={initialValues} onSubmit={onSubmit}>
       {(formik) => (
         <Form>
-          <div className="form-group ">
-            <Row xs={1} md={2}>
-              {/* <!-- Basic Info Div --> */}
-              <Col className="filter-col">
-                <CheckboxGroup
-                  label="Gender"
-                  name="gender"
-                  options={GENDER_OPTIONS}
-                />
-              </Col>
-              <Col className="filter-col">
-                <CheckboxGroup
-                  label="Marital Status"
-                  name="maritalStatus"
-                  options={MARITAL_STATUS_OPTIONS}
-                />
-              </Col>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <CheckboxGroup
+                label="Gender"
+                name="gender"
+                options={GENDER_OPTIONS}
+              />
+            </div>
+            <div>
+              <CheckboxGroup
+                label="Marital Status"
+                name="maritalStatus"
+                options={MARITAL_STATUS_OPTIONS}
+              />
+            </div>
+            <div>
+              <CheckboxWithQuery
+                name="basonta"
+                modifier="filter"
+                optionsQuery={GET_CAMPUS_BASONTAS}
+                queryVariable="id"
+                initialValue=""
+                dataset=""
+                varValue={campusId}
+                nestedDataset={['campuses', 'basontas']}
+                label="Select a Ministry"
+              />
+            </div>
+            <div>
+              <CheckboxGroup
+                label="Leader Rank"
+                name="leaderRank"
+                options={LEADER_OPTIONS}
+              />
+            </div>
+            <div>
+              <CheckboxGroup
+                label="Leader Title"
+                name="leaderTitle"
+                options={TITLE_OPTIONS}
+              />
+            </div>
+          </div>
 
-              <Col className="filter-col">
-                <CheckboxWithQuery
-                  name="basonta"
-                  modifier="filter"
-                  optionsQuery={GET_CAMPUS_BASONTAS}
-                  queryVariable="id"
-                  initialValue=""
-                  dataset=""
-                  varValue={campusId}
-                  nestedDataset={['campuses', 'basontas']}
-                  label="Select a Ministry"
-                />
-              </Col>
+          <Separator className="my-5" />
 
-              <Col className="filter-col">
-                <CheckboxGroup
-                  label="Leader Rank"
-                  name="leaderRank"
-                  options={LEADER_OPTIONS}
-                />
-              </Col>
-              <Col className="filter-col">
-                <CheckboxGroup
-                  label="Leader Title"
-                  name="leaderTitle"
-                  options={TITLE_OPTIONS}
-                />
-              </Col>
-            </Row>
+          <div className="flex gap-3">
             <Button
-              variant="primary"
-              type="reset"
-              className={`btn-secondary px-5`}
-              onClick={() => {
-                setFilters({
-                  gender: [],
-                  maritalStatus: [],
-                  occupation: '',
-                  leaderTitle: [],
-                  leaderRank: [],
-                  basonta: [],
-                })
-              }}
+              type="button"
+              variant="outline"
+              className="flex-1 text-foreground"
+              onClick={() => handleReset(formik.resetForm)}
             >
-              Reset Filters
+              Reset
             </Button>
-
-            <ToggleAccordion>
-              <Button
-                variant="success"
-                type="submit"
-                className={`px-5`}
-                disabled={!formik.isValid || formik.isSubmitting}
-              >
-                Apply Filters
-              </Button>
-            </ToggleAccordion>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={!formik.isValid || formik.isSubmitting}
+            >
+              Apply Filters
+            </Button>
           </div>
         </Form>
       )}

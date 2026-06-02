@@ -1,10 +1,15 @@
-import { Field, ErrorMessage } from 'formik'
-import { makeSelectOptions } from '../../global-utils'
-import TextError from './TextError/TextError'
+import React from 'react'
 import { useQuery } from '@apollo/client'
+import { ErrorMessage, Field, useField } from 'formik'
 import { useAuth } from 'contexts/AuthContext'
 import PlaceholderCustom from 'components/Placeholder'
+import { Label } from 'components/ui/label'
+import { cn } from 'components/lib/utils'
+import { makeSelectOptions } from '../../global-utils'
+import TextError from './TextError/TextError'
+import { selectClassName, SelectShell } from './Select'
 import { FormikSelectWithApollo } from './formik-types'
+import './Formik.css'
 
 function SelectWithQuery(props: FormikSelectWithApollo) {
   const {
@@ -16,6 +21,7 @@ function SelectWithQuery(props: FormikSelectWithApollo) {
     varValue,
     dataset,
     defaultOption,
+    className,
     ...rest
   } = props
 
@@ -25,6 +31,8 @@ function SelectWithQuery(props: FormikSelectWithApollo) {
     },
   })
   const { isAuthenticated } = useAuth()
+  const [, meta] = useField(name)
+  const showError = Boolean(meta.touched && meta.error)
 
   let options
   if (data?.governorships?.length) {
@@ -34,35 +42,34 @@ function SelectWithQuery(props: FormikSelectWithApollo) {
   }
 
   return (
-    <div>
+    <div className="space-y-1.5">
       {label ? (
         <PlaceholderCustom loading={!isAuthenticated}>
-          <label className="label" htmlFor={name}>
-            {label}
-          </label>
+          <Label htmlFor={name}>{label}</Label>
         </PlaceholderCustom>
       ) : null}
-      <Field
-        as="select"
-        id={name}
-        name={name}
-        className="form-control"
-        {...rest}
-      >
-        <option value="" disabled defaultValue="true">
-          {defaultOption}
-        </option>
-        {options?.map((option) => {
-          return (
+      <SelectShell>
+        <Field
+          as="select"
+          id={name}
+          name={name}
+          aria-invalid={showError || undefined}
+          className={cn(selectClassName, className)}
+          {...rest}
+        >
+          <option value="" disabled>
+            {defaultOption}
+          </option>
+          {options?.map((option) => (
             <option
               key={option.value}
               value={modifier === 'filter' ? option.key : option.value}
             >
               {option.key}
             </option>
-          )
-        })}
-      </Field>
+          ))}
+        </Field>
+      </SelectShell>
       <ErrorMessage name={name} component={TextError} />
     </div>
   )

@@ -27,12 +27,15 @@ const UpdateBacenta = () => {
 
   const initialValues: BacentaFormValues = {
     name: bacenta?.name,
-    leaderName: bacenta?.leader?.firstName + ' ' + bacenta?.leader?.lastName,
+    leaderName:
+      bacenta?.leader?.firstName && bacenta?.leader?.lastName
+        ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
+        : '',
     leaderId: bacenta?.leader?.id || '',
     leaderEmail: bacenta?.leader?.email ?? '',
     governorship: bacenta?.governorship,
     vacationStatus: bacenta?.vacationStatus,
-    meetingDay: bacenta.meetingDay.day,
+    meetingDay: bacenta?.meetingDay?.day ?? '',
     venueLatitude: repackDecimals(bacenta?.location?.latitude) ?? '',
     venueLongitude: repackDecimals(bacenta?.location?.longitude) ?? '',
     adminId: bacenta?.admins?.[0]?.id || '',
@@ -240,7 +243,6 @@ const UpdateBacenta = () => {
         initialValues={initialValues}
         onSubmit={onSubmit}
         title="Update Bacenta Form"
-        newBacenta={false}
       />
     </ApolloWrapper>
   )

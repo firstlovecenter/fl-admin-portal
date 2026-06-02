@@ -1,5 +1,4 @@
-import { Member } from '@jaedag/admin-portal-types'
-import { Council } from 'global-types'
+import { Council, Member } from 'global-types'
 
 export interface AccountTransaction {
   id: string

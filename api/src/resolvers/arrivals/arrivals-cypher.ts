@@ -47,13 +47,14 @@ labels(date) AS dateLabels
 `
 
 export const checkTransactionReference = `
-MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)
+MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)
 MATCH (bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
 MATCH (bacenta)<-[:LEADS]-(leader:Active:Member)
-WITH record, bacenta, leader, stream
+MATCH (bussing)-[:BUSSED_ON]->(bussingDate:TimeGraph)
+WITH DISTINCT record, bacenta, leader, stream, bussingDate
 
 
-RETURN record, stream, bacenta, leader
+RETURN record, stream, bacenta, leader, bussingDate.date AS bussedOnDate, date() = date(bussingDate.date) AS isToday
 `
 
 export const checkArrivalTimes = `
@@ -70,14 +71,17 @@ RETURN bussing.mobilisationPicture IS NOT NULL AS status
 export const checkArrivalTimeFromVehicle = `
 MATCH (record:VehicleRecord {id: $vehicleRecordId})<-[:INCLUDES_RECORD]-(bussing:BussingRecord)<-[:HAS_BUSSING]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Bacenta)<-[:HAS]-(:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(stream:Stream)
 MATCH (bacenta)<-[:LEADS]-(leader:Active:Member)
+MATCH (bussing)-[:BUSSED_ON]->(bussingDate:TimeGraph)
+WITH DISTINCT record, bussing, bacenta, leader, stream, bussingDate
 OPTIONAL MATCH (bussing)-[:INCLUDES_RECORD]->(records:VehicleRecord) WHERE records.arrivalTime IS NOT NULL
-RETURN stream.arrivalEndTime AS arrivalEndTime, 
-bacenta.id AS bacentaId, 
-COUNT(DISTINCT records) AS numberOfVehicles, 
-SUM(records.attendance) AS totalAttendance, 
+RETURN stream.arrivalEndTime AS arrivalEndTime,
+bacenta.id AS bacentaId,
+COUNT(DISTINCT records) AS numberOfVehicles,
+SUM(records.attendance) AS totalAttendance,
 leader.phoneNumber AS leaderPhoneNumber,
-leader.firstName AS leaderFirstName, 
-bacenta.name AS bacentaName
+leader.firstName AS leaderFirstName,
+bacenta.name AS bacentaName,
+date() = date(bussingDate.date) AS isToday
 `
 
 export const setSwellDate = `
@@ -118,10 +122,16 @@ WHERE church:Stream
 OPTIONAL MATCH (church)<-[oldHelpers:COUNTS_ARRIVALS_FOR|CONFIRMS_ARRIVALS_FOR]-(admin:Member)
 DELETE oldHelpers
 
-WITH church, admin
+WITH DISTINCT church
 
-MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)<-[oldAdminHistory:CURRENT_HISTORY]-(admin)
-DELETE oldHistory, oldAdminHistory
+OPTIONAL MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)
+DELETE oldHistory
+
+WITH church
+OPTIONAL MATCH (church)<-[:COUNTS_ARRIVALS_FOR|CONFIRMS_ARRIVALS_FOR]-(admin:Member)
+WITH DISTINCT admin
+OPTIONAL MATCH (admin)-[oldAdminHistory:CURRENT_HISTORY]->(:ServiceLog)
+DELETE oldAdminHistory
 
 
 RETURN church
@@ -160,7 +170,8 @@ WITH bussingRecord, bacenta, serviceDate,  date($serviceDate).week AS week
 `
 
 export const confirmVehicleByAdmin = `
-MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId}) 
+MATCH (vehicleRecord:VehicleRecord {id: $vehicleRecordId})
+  WHERE vehicleRecord.arrivalTime IS NULL
     SET vehicleRecord.attendance = $attendance,
       vehicleRecord.vehicle = $vehicle,
       vehicleRecord.comments = $comments,
@@ -201,27 +212,20 @@ RETURN vehicleRecord {
 `
 
 export const recordVehicleFromBacenta = `
-CREATE (vehicleRecord:VehicleRecord  {id: apoc.create.uuid()})
-
-WITH vehicleRecord
 MATCH (bussingRecord:BussingRecord {id: $bussingRecordId})
-MERGE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord)
-
+MATCH (leader:Member {id: $jwt.userId})
+// ADR-005: MERGE on composite key prevents a duplicate VehicleRecord on re-submission
+MERGE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord:VehicleRecord {vehicle: $vehicle, outbound: $outbound})
+ON CREATE SET vehicleRecord.id = apoc.create.uuid(), vehicleRecord.createdAt = datetime()
+MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
 SET vehicleRecord.leaderDeclaration = $leaderDeclaration,
-vehicleRecord.createdAt = datetime(),
-vehicleRecord.vehicle = $vehicle,
-vehicleRecord.picture =  $picture,
-vehicleRecord.outbound = $outbound,
+vehicleRecord.picture = $picture,
 vehicleRecord.momoNumber = $momoNumber,
 vehicleRecord.mobileNetwork = $mobileNetwork
 
 WITH vehicleRecord, bussingRecord
-MATCH (leader:Member {id: $jwt.userId})
-MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
-
-WITH vehicleRecord, bussingRecord
-MATCH (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecords)
-WITH vehicleRecord, bussingRecord, sum(vehicleRecords.leaderDeclaration) as summedLeaderDeclaration 
+MATCH (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecords:VehicleRecord)
+WITH vehicleRecord, bussingRecord, sum(vehicleRecords.leaderDeclaration) as summedLeaderDeclaration
 SET bussingRecord.leaderDeclaration = summedLeaderDeclaration
 
 RETURN vehicleRecord, bussingRecord, date().week AS week
@@ -231,12 +235,18 @@ export const getArrivalsPaymentDataCypher = `
 MATCH (stream:Stream {id:$streamId})-[:HAS]->(council:Council)-[:HAS]->(governorship:Governorship)-[:HAS]->(bacenta:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(date:TimeGraph {date:date($date)})
 MATCH (leader:Member)-[:LEADS]->(bacenta)
 MATCH (councilHead:Member)-[:LEADS]->(council)
-MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7 
+MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7
 OPTIONAL MATCH (governorship)-[:IS_SUPPORTED_BY]->(society:BussingSociety)
-RETURN DISTINCT date.date as date, stream.name as stream, (councilHead.firstName+ " "+ councilHead.lastName) as councilHead, bacenta.name as bacenta, (stream.arrivalsPrefix+toString(bacenta.code)) as bacentaCode, record.leaderDeclaration as attendance, record.attendance as confirmedAttendance, record.vehicle as vehicle, 
-(CASE 
+RETURN DISTINCT date.date as date, stream.name as stream, (councilHead.firstName+ " "+ councilHead.lastName) as councilHead, bacenta.name as bacenta, (stream.arrivalsPrefix+toString(bacenta.code)) as bacentaCode, record.leaderDeclaration as attendance, record.attendance as confirmedAttendance, record.vehicle as vehicle,
+(CASE
     WHEN record.outbound = true THEN 'In and Out'
     WHEN record.outbound = false THEN 'In Only'
-    END) as outbound, 
-round(toFloat(record.vehicleTopUp), 2) as topUp, record.vehicleCost as vehicleCost, record.momoNumber as momoNumber, record.comments as comments, record.arrivalTime as arrivalTime, (leader.firstName+ " "+ leader.lastName) as leader, council.name as council, governorship.name as governorship, record.momoName as momoName, society.society as society ORDER BY toInteger(society) ASC
+    END) as outbound,
+round(toFloat(record.vehicleTopUp), 2) as topUp, record.vehicleCost as vehicleCost, record.momoNumber as momoNumber, record.comments as comments, record.arrivalTime as arrivalTime, (leader.firstName+ " "+ leader.lastName) as leader, council.name as council, governorship.name as governorship, record.momoName as momoName, society.society as society, record.id as recordId ORDER BY toInteger(society) ASC, recordId ASC SKIP $offset LIMIT $limit
+`
+
+export const getArrivalsPaymentCountCypher = `
+MATCH (stream:Stream {id:$streamId})-[:HAS*3]->(:Bacenta)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(bussing:BussingRecord)-[:BUSSED_ON]->(:TimeGraph {date:date($date)})
+MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7
+RETURN count(DISTINCT record) AS total
 `

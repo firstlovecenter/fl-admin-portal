@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -qE '(package-lock\\.json|yarn\\.lock|pnpm-lock\\.yaml|bun\\.lockb|Gemfile\\.lock|poetry\\.lock|composer\\.lock|Cargo\\.lock|go\\.sum)$' && { echo 'Refusing to edit lock files directly — use the package manager (npm install / npm uninstall / npm update) so the lockfile and node_modules stay in sync.' >&2; exit 2; } || exit 0"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -qE '(^|/)(\\.env|\\.env\\.[^/]+|secrets\\.json|credentials\\.json)$' && { echo 'Refusing to edit env / secret files. If you need to change a secret, update it in AWS Secrets Manager (prod/fl-admin-portal or dev/fl-admin-portal) and have the user pull it locally.' >&2; exit 2; } || exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); case \"$FILE\" in *web-react-ts/*.ts|*web-react-ts/*.tsx) cd \"$CLAUDE_PROJECT_DIR/web-react-ts\" && timeout 20 npx tsc -p tsconfig.json --noEmit 2>&1 | tail -n 20 ;; *api/src/resolvers/*.ts) cd \"$CLAUDE_PROJECT_DIR/api/src/resolvers\" && timeout 20 npx tsc -p tsconfig.json --noEmit 2>&1 | tail -n 20 ;; esac"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx) cd \"$CLAUDE_PROJECT_DIR\" && timeout 20 npx eslint \"$FILE\" --max-warnings=0 2>&1 | tail -n 20 ;; esac"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "TodoWrite",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(jq:*)",
+      "Bash(echo:*)",
+      "Bash(pwd)",
+      "Bash(which:*)",
+      "Bash(node:*)",
+      "Bash(npm install)",
+      "Bash(npm install --save:*)",
+      "Bash(npm install --save-dev:*)",
+      "Bash(npm install -D:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm update:*)",
+      "Bash(npm ci)",
+      "Bash(npm run build:*)",
+      "Bash(npm run start:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run aggregate-bacenta:*)",
+      "Bash(npm run clean:git)",
+      "Bash(npm run generate-build-version)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx vite:*)",
+      "Bash(git status)",
+      "Bash(git status:*)",
+      "Bash(git diff)",
+      "Bash(git diff:*)",
+      "Bash(git log)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch)",
+      "Bash(git branch:*)",
+      "Bash(git remote:*)",
+      "Bash(git fetch)",
+      "Bash(git fetch:*)",
+      "Bash(git pull)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git stash)",
+      "Bash(git stash:*)",
+      "Bash(git restore:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh api:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker ps)",
+      "Bash(docker logs:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(sudo:*)",
+      "Bash(chmod 777:*)",
+      "Bash(chmod -R 777:*)",
+      "Bash(curl * | sh)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | sh)",
+      "Bash(wget * | bash)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin deploy:*)",
+      "Bash(git push * main)",
+      "Bash(git push * deploy)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git clean -fdx:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git branch -d:*)",
+      "Bash(git checkout -- .)",
+      "Bash(git restore .)",
+      "Bash(git restore --staged --worktree .)",
+      "Bash(git rebase -i:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git update-ref -d:*)",
+      "Bash(git config --global:*)",
+      "Bash(git config user.email:*)",
+      "Bash(git config user.name:*)",
+      "Bash(npm publish:*)",
+      "Bash(npm run release:*)",
+      "Bash(npm run release:major)",
+      "Bash(npm run release:minor)",
+      "Bash(npm run release:patch)",
+      "Bash(aws s3 rm:*)",
+      "Bash(aws s3 sync --delete:*)",
+      "Bash(aws lambda update-function-code:*)",
+      "Bash(aws lambda delete-function:*)",
+      "Bash(aws secretsmanager:*)",
+      "Bash(aws amplify start-deployment:*)",
+      "Bash(aws amplify start-job:*)",
+      "Bash(aws amplify delete:*)",
+      "Bash(aws cloudformation delete-stack:*)",
+      "Bash(amplify push:*)",
+      "Bash(amplify publish:*)",
+      "Bash(amplify delete:*)",
+      "Bash(serverless deploy:*)",
+      "Bash(sls deploy:*)",
+      "Bash(serverless remove:*)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets.json)",
+      "Read(**/credentials.json)",
+      "Edit(package-lock.json)",
+      "Edit(**/package-lock.json)",
+      "Edit(**/yarn.lock)",
+      "Edit(**/pnpm-lock.yaml)",
+      "Write(package-lock.json)",
+      "Write(**/package-lock.json)",
+      "Write(**/yarn.lock)",
+      "Write(**/pnpm-lock.yaml)"
+    ]
+  }
+}

@@ -1,6 +1,5 @@
-import React from 'react'
 import { ApolloError } from '@apollo/client'
-import { enqueueSnackbar } from 'notistack'
+import { toast } from 'sonner'
 
 /**
  * Extracts the first meaningful error message from a GraphQL error
@@ -44,19 +43,14 @@ export const getGraphQLErrorMessage = (error: unknown): string => {
 export const displayError = (
   title: string,
   error: unknown,
-  autoHideDuration = 15000
+  duration = 15000
 ) => {
   const errorMessage = getGraphQLErrorMessage(error)
-  const fullMessage = `${title}: ${errorMessage}`
 
-  enqueueSnackbar(fullMessage, {
-    variant: 'error',
-    autoHideDuration,
-    anchorOrigin: {
-      vertical: 'bottom',
-      horizontal: 'right',
-    },
-    preventDuplicate: true,
+  toast.error(title, {
+    id: `${title}:${errorMessage}`,
+    description: errorMessage,
+    duration,
   })
 }
 

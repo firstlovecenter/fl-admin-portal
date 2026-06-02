@@ -6,6 +6,7 @@ import {
 } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { ChurchLevel } from 'global-types'
 import { getSubChurchLevel } from 'global-utils'
 import { HigherChurchWithArrivals } from 'pages/arrivals/arrivals-types'
@@ -25,25 +26,25 @@ type useSontaLevelProps = {
   oversightRefetch?: () => Promise<ApolloQueryResult<any>>
   denominationFunction?: LazyQueryExecFunction<any, OperationVariables>
   denominationRefetch?: () => Promise<ApolloQueryResult<any>>
-
-  hubFunction?: LazyQueryExecFunction<any, OperationVariables>
-  hubRefetch: () => Promise<ApolloQueryResult<any>>
-  hubCouncilFunction?: LazyQueryExecFunction<any, OperationVariables>
-  hubCouncilRefetch: () => Promise<ApolloQueryResult<any>>
-  ministryFunction?: LazyQueryExecFunction<any, OperationVariables>
-  ministryRefetch: () => Promise<ApolloQueryResult<any>>
-  creativeArtsFunction?: LazyQueryExecFunction<any, OperationVariables>
-  creativeArtsRefetch: () => Promise<ApolloQueryResult<any>>
+  /** Optional ISO `YYYY-MM-DD` Monday for week-scoped queries (defaulters). */
+  weekStart?: string
 }
 
 const useSontaLevel = (props: useSontaLevelProps) => {
   const { currentUser } = useContext(MemberContext)
+  const { selectedScope } = useChurchRoleScope()
 
-  const currentChurch = currentUser?.currentChurch
-  const churchLevel: ChurchLevel = currentUser?.currentChurch?.__typename
-  const subChurchLevel: ChurchLevel = getSubChurchLevel(
-    currentChurch?.__typename
-  )
+  // "Church in Focus" picker is the source of truth when set; fall back to
+  // the user's primary `currentChurch` for legacy / pre-scope flows.
+  const focusChurch = selectedScope
+    ? {
+        id: selectedScope.churchId,
+        __typename: selectedScope.churchType as ChurchLevel,
+      }
+    : currentUser?.currentChurch
+  const currentChurch = focusChurch
+  const churchLevel: ChurchLevel = focusChurch?.__typename
+  const subChurchLevel: ChurchLevel = getSubChurchLevel(focusChurch?.__typename)
 
   const [church, setChurch] = useState<
     HigherChurchWithDefaulters | HigherChurchWithArrivals | null
@@ -55,14 +56,6 @@ const useSontaLevel = (props: useSontaLevelProps) => {
 
   const chooseRefetch = () => {
     switch (churchLevel) {
-      case 'CreativeArts':
-        return props.creativeArtsRefetch
-      case 'Ministry':
-        return props.ministryRefetch
-      case 'HubCouncil':
-        return props.hubCouncilRefetch
-      case 'Hub':
-        return props.hubRefetch
       case 'Governorship':
         return props.governorshipRefetch
       case 'Council':
@@ -79,70 +72,48 @@ const useSontaLevel = (props: useSontaLevelProps) => {
         return props.councilRefetch
     }
   }
+
+  const refetch = async () => {
+    const fn = chooseRefetch()
+    if (!fn) return
+    setLoading(true)
+    try {
+      const res = await fn()
+      if (res.error) setError(res.error)
+      const pick = (key: string) => {
+        const value = res.data?.[key]?.[0]
+        if (value != null) setChurch(value)
+      }
+      switch (churchLevel) {
+        case 'Governorship': pick('governorships'); break
+        case 'Council': pick('councils'); break
+        case 'Stream': pick('streams'); break
+        case 'Campus': pick('campuses'); break
+        case 'Oversight': pick('oversights'); break
+        case 'Denomination': pick('denominations'); break
+        default: break
+      }
+    } catch (e) {
+      if (e instanceof ApolloError) setError(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
+    if (!currentChurch?.id || !churchLevel) {
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    // Clear the previous church snapshot so consumers' `!church` skeleton
+    // branches fire while the refetch is in flight. Without this, switching
+    // the week (or changing scope) silently keeps showing stale rows until
+    // the new query resolves — there is no visual cue that work is happening.
+    setChurch(null)
+
     const whichQuery = async () => {
       switch (churchLevel) {
-        case 'CreativeArts':
-          {
-            if (!props.creativeArtsFunction) break
-            const res = await props.creativeArtsFunction({
-              variables: {
-                id: currentChurch?.id,
-                arrivalDate: arrivalDate,
-              },
-            })
-
-            setChurch(res?.data?.creativeArts[0])
-            setLoading(res.loading)
-            setError(res.error)
-          }
-          break
-        case 'Ministry':
-          {
-            if (!props.ministryFunction) break
-            const res = await props.ministryFunction({
-              variables: {
-                id: currentChurch?.id,
-                arrivalDate: arrivalDate,
-              },
-            })
-
-            setChurch(res?.data?.ministries[0])
-            setLoading(res.loading)
-            setError(res.error)
-          }
-          break
-        case 'HubCouncil':
-          {
-            if (!props.hubCouncilFunction) break
-            const res = await props.hubCouncilFunction({
-              variables: {
-                id: currentChurch?.id,
-                arrivalDate: arrivalDate,
-              },
-            })
-
-            setChurch(res?.data?.hubCouncils[0])
-            setLoading(res.loading)
-            setError(res.error)
-          }
-          break
-        case 'Hub':
-          {
-            if (!props.hubFunction) break
-
-            const res = await props.hubFunction({
-              variables: {
-                id: currentChurch?.id,
-                arrivalDate: arrivalDate,
-              },
-            })
-
-            setChurch(res?.data?.hubs[0])
-            setLoading(res.loading)
-            setError(res.error)
-          }
-          break
         case 'Governorship':
           {
             if (!props.governorshipFunction) break
@@ -150,6 +121,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -165,6 +137,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -181,6 +154,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
             setChurch(res?.data?.streams[0])
@@ -196,6 +170,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -211,6 +186,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -226,6 +202,7 @@ const useSontaLevel = (props: useSontaLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                weekStart: props.weekStart,
               },
             })
 
@@ -235,14 +212,17 @@ const useSontaLevel = (props: useSontaLevelProps) => {
           }
           break
         default:
+          // Unknown level — exit loading so the UI doesn't hang.
+          setLoading(false)
           break
       }
     }
 
     whichQuery()
-  }, [setChurch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentChurch?.id, churchLevel, props.weekStart])
 
-  return { church, subChurchLevel, loading, error, refetch: chooseRefetch() }
+  return { church, subChurchLevel, loading, error, refetch }
 }
 
 export default useSontaLevel

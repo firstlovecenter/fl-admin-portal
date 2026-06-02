@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+      - staging
       - dev
     paths:
       - "api/**" # Only trigger when backend files change
       - "!api/src/functions/background/**" # Exclude background functions
+      - ".github/workflows/deploy-lambda.yml" # Also redeploy when this workflow changes
 
 jobs:
   deploy:
@@ -23,12 +25,6 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-
-      - name: Setup npm authentication
-        run: |
-          echo "@jaedag:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.PAT_TOKEN }}" >> .npmrc
-        working-directory: ./api
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -49,7 +45,15 @@ jobs:
           # Copy TypeScript resolvers to the temp directory
           cp -r api/src/resolvers/* api/temp-compiled-resolvers/
 
-          # Create a tsconfig.json file for compilation
+          # Strip test files — they must not ship in the Lambda artifact
+          find api/temp-compiled-resolvers \
+            \( -name "*.test.ts" -o -name "*.test.js" \
+            -o -name "*.spec.ts" -o -name "*.spec.js" \) \
+            -type f -delete
+
+          # Create a tsconfig.json file for compilation.
+          # allowJs is false so pre-built CJS files (e.g. resolvers/utils/llm-client.js)
+          # pass through untouched instead of triggering TS5055 against outDir: "./".
           echo '{
             "compilerOptions": {
               "target": "es2018",
@@ -60,11 +64,11 @@ jobs:
               "outDir": "./",
               "strict": false,
               "declaration": false,
-              "allowJs": true,
+              "allowJs": false,
               "skipLibCheck": true
             },
             "include": ["./**/*"],
-            "exclude": ["node_modules"]
+            "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts"]
           }' > api/temp-compiled-resolvers/tsconfig.json
 
           # Install TypeScript if not already available
@@ -107,6 +111,9 @@ jobs:
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "function-name=arn:aws:lambda:eu-west-2:871777052000:function:fl-synago-graphql" >> $GITHUB_OUTPUT
             echo "environment=Production" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            echo "function-name=arn:aws:lambda:eu-west-2:871777052000:function:staging-fl-synago-graphql" >> $GITHUB_OUTPUT
+            echo "environment=Staging" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/dev" ]; then
             echo "function-name=arn:aws:lambda:eu-west-2:871777052000:function:dev-fl-synago-graphql" >> $GITHUB_OUTPUT
             echo "environment=Development" >> $GITHUB_OUTPUT
@@ -129,5 +136,8 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: "🚀 Synago GraphQL API Lambda Deployment - ${{ steps.target.outputs.environment }}"
-          SLACK_MESSAGE: "Commit: ${{ github.event.head_commit.message }} - Deploying GraphQL API to AWS Lambda [${{ steps.target.outputs.environment }}] ${{ job.status }}"
+          SLACK_TITLE: "🚀 Synago GraphQL API Lambda Deployment - ${{
+            steps.target.outputs.environment }}"
+          SLACK_MESSAGE: "Commit: ${{ github.event.head_commit.message }} - Deploying
+            GraphQL API to AWS Lambda [${{ steps.target.outputs.environment }}]
+            ${{ job.status }}"

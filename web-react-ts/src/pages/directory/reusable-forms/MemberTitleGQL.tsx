@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const GET_MEMBER_TITLES = gql`
   query GetMemberTitles($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       firstName
       lastName
@@ -10,7 +10,9 @@ export const GET_MEMBER_TITLES = gql`
       nameWithTitle
       titleConnection {
         edges {
-          date
+          properties {
+            date
+          }
           node {
             name
           }
@@ -20,18 +22,19 @@ export const GET_MEMBER_TITLES = gql`
   }
 `
 
-export const DELETE_MEMBER_TITLES = gql`
-  mutation DeleteMemberTitles($id: ID!) {
-    DeleteMemberTitles(id: $id) {
+export const REMOVE_MEMBER_TITLE = gql`
+  mutation RemoveMemberTitle($id: ID!, $title: String!) {
+    RemoveMemberTitle(id: $id, title: $title) {
       id
-
       firstName
       lastName
       fullName
       nameWithTitle
       titleConnection {
         edges {
-          date
+          properties {
+            date
+          }
           node {
             name
           }
@@ -50,7 +53,9 @@ export const UPDATE_MEMBER_APPOINTMENT_DATE = gql`
       nameWithTitle
       titleConnection {
         edges {
-          date
+          properties {
+            date
+          }
           node {
             name
           }
@@ -69,7 +74,9 @@ export const UPDATE_MEMBER_ORDINATION_DATE = gql`
       nameWithTitle
       titleConnection {
         edges {
-          date
+          properties {
+            date
+          }
           node {
             name
           }
@@ -88,7 +95,9 @@ export const UPDATE_MEMBER_CONSECRATION_DATE = gql`
       nameWithTitle
       titleConnection {
         edges {
-          date
+          properties {
+            date
+          }
           node {
             name
           }

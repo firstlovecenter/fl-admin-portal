@@ -1,9 +1,9 @@
+import { GraphQLError } from 'graphql'
 import serviceNoIncomeMutations from './no-income/service-resolvers'
 import serviceMutation from './services/service-resolvers'
 import { Member } from './utils/types'
-import treasuryMutations from './anagkazo/treasury-resolvers'
+import treasuryMutations from './manual-banking/treasury-resolvers'
 import directoryMutation from './directory/directory-resolvers'
-import directoryCreativeArtsMutation from './directory/directory-creativearts-resolvers'
 import {
   arrivalsMutation,
   arrivalsResolvers,
@@ -11,12 +11,12 @@ import {
 import bankingMutation from './banking/banking-resolver'
 import { accountsMutations } from './accounts/accounts-resolvers'
 import { mapsResolvers } from './maps/maps-resolvers'
-import SontaServiceMutation from './services/rehearsal-resolver'
 import { Context } from './utils/neo4j-types'
 import MakeServantResolvers from './directory/make-servant-resolvers'
-import { downloadMembershipResolvers } from './download-credits/download-credits-resolvers'
+import { reportsResolvers } from './reports/reports-resolvers'
+import shepherdingControlResolvers from './shepherding-control/shepherding-control-resolvers'
 import uploadMutations from './uploads/upload-resolvers'
-import { adminManagementResolvers } from './directory/admin-management-resolvers'
+import assistantResolvers from './assistant/assistant-resolvers'
 
 const dotenv = require('dotenv')
 
@@ -150,6 +150,33 @@ const resolvers = {
   // Context: Context object, database connection, API, etc
   // GraphQLResolveInfo
 
+  Query: {
+    ...shepherdingControlResolvers.Query,
+    ...assistantResolvers.Query,
+    // Returns the per-edge authority that `index.js` already computed and
+    // attached to `context.jwt`. No Cypher executes here — the cache
+    // round-trip happened at request-context construction. The FE calls
+    // this exactly once on login to populate `currentUser.authority`,
+    // which then drives `useCan` / `useCanViewChurch` everywhere else.
+    //
+    // Defensive: schema-level `@authentication` should reject unauthenticated
+    // callers before this resolver runs, but the context builder coerces a
+    // verifier-rejected token to `{}` (no userId), so the explicit guard
+    // here makes the resolver independently safe and surfaces a clear
+    // FORBIDDEN rather than an empty payload.
+    myAuthority: (_: unknown, __: unknown, context: Context) => {
+      if (!context?.jwt?.userId) {
+        throw new GraphQLError('You must be authenticated.', {
+          extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
+        })
+      }
+      return {
+        servantTrees: context.jwt?.servantTrees ?? [],
+        allowedChurchIds: context.jwt?.allowedChurchIds ?? [],
+      }
+    },
+  },
+
   Member: {
     fullName: (source: Member) => `${source.firstName} ${source.lastName}`,
     nameWithTitle: async (source: Member, args: unknown, context: Context) => {
@@ -193,30 +220,27 @@ const resolvers = {
     ...mapsResolvers.Member,
   },
 
-  Fellowship: {
-    ...downloadMembershipResolvers.Fellowship,
-  },
   Bacenta: {
-    ...downloadMembershipResolvers.Bacenta,
+    ...reportsResolvers.Bacenta,
   },
   Governorship: {
-    ...downloadMembershipResolvers.Governorship,
+    ...reportsResolvers.Governorship,
   },
   Council: {
-    ...downloadMembershipResolvers.Council,
+    ...reportsResolvers.Council,
   },
   Campus: {
-    ...downloadMembershipResolvers.Campus,
+    ...reportsResolvers.Campus,
     streams: loadCampusStreams,
   },
   Stream: {
     meetingDay: loadStreamMeetingDay,
     campus: loadStreamCampus,
     ...arrivalsResolvers.Stream,
-    ...downloadMembershipResolvers.Stream,
+    ...reportsResolvers.Stream,
   },
   Oversight: {
-    ...downloadMembershipResolvers.Oversight,
+    ...reportsResolvers.Oversight,
   },
 
   Mutation: {
@@ -227,11 +251,9 @@ const resolvers = {
     ...bankingMutation,
     ...treasuryMutations,
     ...serviceNoIncomeMutations,
-    ...SontaServiceMutation,
     ...accountsMutations,
-    ...directoryCreativeArtsMutation,
     ...uploadMutations,
-    ...adminManagementResolvers,
+    ...assistantResolvers.Mutation,
   },
 }
 

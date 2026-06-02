@@ -49,12 +49,6 @@ OPTIONAL MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord)
 RETURN  DISTINCT  pastor.firstName, pastor.lastName,  SUM(record.attendance) AS bussingAttendance ORDER BY pastor.firstName, pastor.lastName
 `
 
-const activeVacationFellowshipsQuery = `
-MATCH (oversight:Oversight {name: $campusName })-[:HAS]->(gs:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)<-[:LEADS]-(pastor:Member)
-OPTIONAL MATCH (council)-[:HAS*3]->(active:Active:Fellowship)
-OPTIONAL MATCH (council)-[:HAS*3]->(vacation:Vacation:Fellowship) 
-RETURN  DISTINCT  stream.name, pastor.firstName, pastor.lastName,COUNT(DISTINCT active) AS Active, COUNT(DISTINCT vacation)  AS Vacation ORDER BY pastor.firstName, pastor.lastName
-`
 
 const servicesThisWeekQuery = `
 MATCH (oversight:Oversight {name: $campusName })-[:HAS]->(gs:Campus)-[:HAS]->(stream:Stream)-[:HAS]->(council:Council)<-[:LEADS]-(pastor:Member)
@@ -151,7 +145,6 @@ module.exports = {
   bacentasThatDidntBusQuery,
   numberOfBussesQuery,
   bussingAttendanceQuery,
-  activeVacationFellowshipsQuery,
   servicesThisWeekQuery,
   servicesNotBankedQuery,
   weekdayIncomeAttendanceQuery,

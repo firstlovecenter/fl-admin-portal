@@ -15,9 +15,6 @@ const {
   default: bussingAttendance,
 } = require('./query-exec/bussingAttendance.js')
 const {
-  default: activeVacationFellowships,
-} = require('./query-exec/activeVacationFellowships.js')
-const {
   default: servicesThisWeek,
 } = require('./query-exec/servicesThisWeek.js')
 const {
@@ -96,7 +93,6 @@ const handler = async () => {
       bacentasThatDidntBus(driver),
       numberOfBusses(driver),
       bussingAttendance(driver),
-      activeVacationFellowships(driver),
       servicesThisWeek(driver),
       servicesNotBanked(driver),
       weekdayIncomeAttendance(driver),
@@ -115,15 +111,14 @@ const handler = async () => {
     const bacentasThatDidntBusData = response[2]
     const numberOfBussesData = response[3]
     const bussingAttendanceData = response[4]
-    const activeVacationFellowshipsData = response[5]
-    const servicesThisWeekData = response[6]
-    const servicesNotBankedData = response[7]
-    const weekdayIncomeAttendanceData = response[8]
-    const amountNotBankedData = response[9]
-    // const anagkazoIncomeAttendanceData = response[10]
-    // const anagkazoAmountNotBankedData = response[11]
-    const amountBankedData = response[12]
-    // const anagkazoAmountBankedData = response[13]
+    const servicesThisWeekData = response[5]
+    const servicesNotBankedData = response[6]
+    const weekdayIncomeAttendanceData = response[7]
+    const amountNotBankedData = response[8]
+    // const anagkazoIncomeAttendanceData = response[9]
+    // const anagkazoAmountNotBankedData = response[10]
+    const amountBankedData = response[11]
+    // const anagkazoAmountBankedData = response[12]
 
     const accraSheet = 'ALL Accra Graph Data'
 
@@ -135,7 +130,6 @@ const handler = async () => {
       writeToGsheet(bacentasThatBussedData, accraSheet, 'H2:H'),
       writeToGsheet(numberOfBussesData, accraSheet, 'I2:I'),
       writeToGsheet(bussingAttendanceData, accraSheet, 'J2:J'),
-      writeToGsheet(activeVacationFellowshipsData, accraSheet, 'M2:N'),
       writeToGsheet(servicesThisWeekData, accraSheet, 'O2:O'),
       writeToGsheet(servicesNotBankedData, accraSheet, 'P2:P'),
       writeToGsheet(weekdayIncomeAttendanceData, accraSheet, 'R2:S'),

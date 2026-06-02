@@ -1,9 +1,8 @@
 const servantCypher = {
   disconnectChurchLeader: `
-   MATCH (church {id: $churchId}) 
-   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
+   MATCH (church {id: $churchId})
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
    OR church:Campus OR church:Oversight OR church:Denomination
-   OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    MATCH (church)<-[oldLeads:LEADS]-(leader:Member)
    DELETE oldLeads
    
@@ -12,19 +11,22 @@ const servantCypher = {
    OPTIONAL MATCH (bacenta:Bacenta {id: $churchId})
    REMOVE bacenta.momoNumber, bacenta.momoName, bacenta.mobileNetwork, bacenta.recipientCode
 
-   WITH church,leader
-   
-   OPTIONAL MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)<-[oldLeaderHistory:CURRENT_HISTORY]-(leader)
-   DELETE oldHistory, oldLeaderHistory
-   
+   WITH church, leader
+
+   OPTIONAL MATCH (church)-[oldHistory:CURRENT_HISTORY]->(:ServiceLog)
+   DELETE oldHistory
+
+   WITH DISTINCT church, leader
+   OPTIONAL MATCH (leader)-[oldLeaderHistory:CURRENT_HISTORY]->(:ServiceLog)
+   DELETE oldLeaderHistory
+
    RETURN leader.id AS id,  leader.firstName AS firstName, leader.lastName AS lastName
    `,
 
   disconnectChurchAdmin: `
-   MATCH (church {id: $churchId}) 
-   WHERE church:Governorship OR church:Council OR church:Stream 
-   OR church:Campus OR church:Oversight OR church:Denomination 
-   OR church:CreativeArts OR church:Ministry
+   MATCH (church {id: $churchId})
+   WHERE church:Governorship OR church:Council OR church:Stream
+   OR church:Campus OR church:Oversight OR church:Denomination
    MATCH (church)<-[oldAdmin:IS_ADMIN_FOR]-(admin:Member)
    DELETE oldAdmin
    
@@ -32,10 +34,9 @@ const servantCypher = {
    RETURN admin.id AS id,  admin.firstName AS firstName, admin.lastName AS lastName
    `,
   disconnectChurchArrivalsAdmin: `
-   MATCH (church {id: $churchId}) 
-   WHERE church:Governorship OR church:Council OR church:Stream 
-   OR church:Campus OR church:Oversight 
-   OR church:CreativeArts OR church:Ministry
+   MATCH (church {id: $churchId})
+   WHERE church:Governorship OR church:Council OR church:Stream
+   OR church:Campus OR church:Oversight
    MATCH (church)<-[oldAdmin:DOES_ARRIVALS_FOR]-(admin:Member)
    DELETE oldAdmin
    
@@ -80,9 +81,8 @@ const servantCypher = {
   // Create Church Leader Connection
   connectChurchLeader: `
    MATCH (church {id: $churchId})
-   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
    OR church:Campus OR church:Oversight OR church:Denomination
-   OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
    MATCH (leader:Member {id:$leaderId})
       
    MERGE (leader)-[:LEADS]->(church)
@@ -94,9 +94,8 @@ const servantCypher = {
    `,
   connectChurchAdmin: `
    MATCH (church {id:$churchId})
-   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
    OR church:Campus OR church:Oversight OR church:Denomination
-   OR church:CreativeArts OR church:Ministry
    MATCH (admin:Member {id:$adminId})
    MERGE (admin)-[:IS_ADMIN_FOR]->(church)
 
@@ -169,13 +168,12 @@ const servantCypher = {
 
   // Connect log  leader, new church, and old leader
   connectServiceLog: `
-   MATCH (church {id: $churchId}) 
-   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
-   OR church:Campus OR church:Oversight 
-   OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
-   OR church:ClosedFellowship OR church:ClosedBacenta
+   MATCH (church {id: $churchId})
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
+   OR church:Campus OR church:Oversight OR church:Denomination
+   OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
-   MATCH (currentUser:Member {id: $jwt.userId}) 
+   MATCH (currentUser:Member {id: $jwt.userId})
    MATCH (log:ServiceLog {id: $logId})
    
    MERGE (date:TimeGraph {date: date()})
@@ -206,13 +204,12 @@ const servantCypher = {
   // Connect log to leader, new church, and old leader
   // First Connection
   connectHistoryLog: `
-   MATCH (church {id:$churchId}) 
-   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream 
-   OR church:Campus OR church:Oversight 
-   OR church:CreativeArts OR church:Ministry OR church:HubCouncil OR church:Hub
-   OR church:ClosedFellowship OR church:ClosedBacenta
+   MATCH (church {id:$churchId})
+   WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream
+   OR church:Campus OR church:Oversight OR church:Denomination
+   OR church:ClosedBacenta
    MATCH (leader:Member {id: $servantId})
-   MATCH (currentUser:Member {id: $jwt.userId}) 
+   MATCH (currentUser:Member {id: $jwt.userId})
    MATCH (log:HistoryLog {id: $logId})
    
    MERGE (date:TimeGraph {date: date()})

@@ -1,4 +1,4 @@
-import { getHumanReadableDate } from 'jd-date-utils'
+import { getHumanReadableDate } from '../utils/date-utils'
 import { Context } from '../utils/neo4j-types'
 import { Member } from '../utils/types'
 import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'
@@ -6,8 +6,6 @@ import {
   permitAdmin,
   permitLeaderAdmin,
   permitAdminArrivals,
-  permitLeader,
-  permitMe,
 } from '../permissions'
 import { RemoveServant } from './make-remove-servants'
 
@@ -32,10 +30,7 @@ const texts = require('../texts.json')
 
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
-    isAuth(
-      [...permitLeaderAdmin('Fellowship'), ...permitLeader('Hub')],
-      context?.jwt.roles
-    )
+    isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
     const session = context.executionContext.session()
     const inactiveMemberResponse = rearrangeCypherObject(
       await session.executeRead((tx) =>
@@ -61,7 +56,7 @@ const directoryMutation = {
           basonta: args?.basonta ?? '',
           visitationArea: args?.visitationArea ?? '',
           pictureUrl: args?.pictureUrl ?? '',
-          userId: context.jwt.userId,
+          userId: context.jwt?.userId,
         })
       )
 
@@ -112,7 +107,7 @@ const directoryMutation = {
         basonta: args?.basonta ?? '',
         visitationArea: args?.visitationArea ?? '',
         pictureUrl: args?.pictureUrl ?? '',
-        userId: context.jwt.userId,
+        userId: context.jwt?.userId,
       })
     )
 
@@ -126,7 +121,12 @@ const directoryMutation = {
     args: { memberId: string; bacentaId: string },
     context: Context
   ) => {
-    isAuth([...permitMe('Bacenta'), ...permitMe('Hub')], context.jwt.roles)
+    // Defense-in-depth: the FE route to UpdateMember is already gated on
+    // `permitLeaderAdmin('Bacenta')`, but the resolver itself was on the
+    // looser `permitMe('Bacenta')` — which lets `arrivalsCounterStream`,
+    // `arrivalsPayerCouncil`, and `tellerStream` reorganise the membership
+    // graph via direct API calls. Tighten to match the FE gate.
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
 
     const session = context.executionContext.session()
 
@@ -149,7 +149,7 @@ const directoryMutation = {
     },
     context: Context
   ) => {
-    isAuth([...permitLeaderAdmin('Governorship')], context.jwt.roles)
+    isAuth([...permitLeaderAdmin('Governorship')], context.jwt?.roles)
     const session = context.executionContext.session()
 
     try {
@@ -186,81 +186,8 @@ const directoryMutation = {
       await session.close()
     }
   },
-  CloseDownFellowship: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Governorship'), context.jwt.roles)
-
-    const session = context.executionContext.session()
-    const sessionTwo = context.executionContext.session()
-
-    try {
-      const res: any = await Promise.all([
-        session.executeRead((tx) =>
-          tx.run(closeChurchCypher.checkFellowshipHasNoMembers, args)
-        ),
-        sessionTwo.executeRead((tx) =>
-          tx.run(closeChurchCypher.getLastServiceRecord, {
-            churchId: args.fellowshipId,
-          })
-        ),
-      ])
-
-      const fellowshipCheck = rearrangeCypherObject(res[0])
-      const lastServiceRecord = rearrangeCypherObject(res[1])
-
-      if (fellowshipCheck.memberCount > 0) {
-        throw new Error(
-          `${fellowshipCheck?.name} Fellowship has ${fellowshipCheck?.memberCount} members. Please transfer all members and try again.`
-        )
-      }
-
-      const record = lastServiceRecord.lastService?.properties ?? {
-        bankingSlip: null,
-      }
-
-      if (
-        !(
-          'bankingSlip' in record ||
-          record.transactionStatus === 'success' ||
-          'tellerConfirmationTime' in record
-        )
-      ) {
-        throw new Error(
-          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
-            record.createdAt
-          )} before attempting to close down this fellowship`
-        )
-      }
-
-      // Fellowship Leader must be removed since the fellowship is being closed down
-      await RemoveServant(
-        context,
-        args,
-        ['adminCampus', 'adminStream', 'adminCouncil', 'adminGovernorship'],
-        'Fellowship',
-        'Leader',
-        true
-      )
-
-      const closeFellowshipResponse = await session.executeWrite((tx) =>
-        tx.run(closeChurchCypher.closeDownFellowship, {
-          jwt: context.jwt,
-          fellowshipId: args.fellowshipId,
-        })
-      )
-
-      const fellowshipResponse = rearrangeCypherObject(closeFellowshipResponse)
-      return fellowshipResponse.bacenta
-    } catch (error: any) {
-      throwToSentry('Error closing down fellowship', error)
-      throw error
-    } finally {
-      await session.close()
-      await sessionTwo.close()
-    }
-  },
-
   CloseDownBacenta: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdminArrivals('Governorship'), context.jwt.roles)
+    isAuth(permitAdminArrivals('Governorship'), context.jwt?.roles)
 
     const session = context.executionContext.session()
 
@@ -303,7 +230,7 @@ const directoryMutation = {
     }
   },
   CloseDownGovernorship: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Council'), context.jwt.roles)
+    isAuth(permitAdmin('Council'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -326,11 +253,6 @@ const directoryMutation = {
       if (governorshipCheck.bacentaCount.toNumber()) {
         throw new Error(
           `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
-        )
-      }
-      if (governorshipCheck.hubCount.toNumber()) {
-        throw new Error(
-          `${governorshipCheck?.name} Governorship has ${governorshipCheck?.hubCount} active hubs. Please close down all hubs and try again.`
         )
       }
 
@@ -394,7 +316,7 @@ const directoryMutation = {
   },
 
   CloseDownCouncil: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Stream'), context.jwt.roles)
+    isAuth(permitAdmin('Stream'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -417,12 +339,6 @@ const directoryMutation = {
       if (councilCheck.governorshipCount.toNumber()) {
         throw new Error(
           `${councilCheck?.name} Council has ${councilCheck?.governorshipCount} active governorships. Please close down all governorships and try again.`
-        )
-      }
-
-      if (councilCheck.hubCouncilLeaderCount.toNumber()) {
-        throw new Error(
-          `${councilCheck?.name} Council has ${councilCheck?.hubCouncilCount} active hub councils. Please close down all hub councils and try again.`
         )
       }
 
@@ -484,7 +400,7 @@ const directoryMutation = {
   },
 
   CloseDownStream: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Campus'), context.jwt.roles)
+    isAuth(permitAdmin('Campus'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -574,7 +490,7 @@ const directoryMutation = {
   },
 
   CloseDownCampus: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Oversight'), context.jwt.roles)
+    isAuth(permitAdmin('Oversight'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -597,12 +513,6 @@ const directoryMutation = {
       if (campusCheck.memberCount > 0) {
         throw new Error(
           `${campusCheck?.name} Campus has ${campusCheck?.streamCount} active streams. Please close down all streams and try again.`
-        )
-      }
-
-      if (campusCheck.leaderCount > 0) {
-        throw new Error(
-          `${campusCheck?.name} Campus has ${campusCheck?.creativeArtsCount} active creativeArts. Please close down all creativeArts and try again.`
         )
       }
 
@@ -664,7 +574,7 @@ const directoryMutation = {
   },
 
   CloseDownOversight: async (object: any, args: any, context: Context) => {
-    isAuth(permitAdmin('Denomination'), context.jwt.roles)
+    isAuth(permitAdmin('Denomination'), context.jwt?.roles)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -765,7 +675,7 @@ const directoryMutation = {
         ...permitAdmin('Campus'),
         ...permitAdminArrivals('Campus'),
       ],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -821,7 +731,7 @@ const directoryMutation = {
         ...permitAdmin('Stream'),
         ...permitAdmin('Council'),
       ],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -870,7 +780,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitAdmin('Campus'), ...permitAdmin('Stream')],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -920,7 +830,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitAdmin('Campus'), ...permitAdmin('Oversight')],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -973,7 +883,7 @@ const directoryMutation = {
   ) => {
     isAuth(
       [...permitAdmin('Oversight'), ...permitAdmin('Denomination')],
-      context.jwt.roles
+      context.jwt?.roles
     )
 
     const session = context.executionContext.session()
@@ -1022,7 +932,7 @@ const directoryMutation = {
     },
     context: Context
   ) => {
-    isAuth([...permitAdmin('Denomination')], context.jwt.roles)
+    isAuth([...permitAdmin('Denomination')], context.jwt?.roles)
 
     const session = context.executionContext.session()
 

@@ -1,76 +1,195 @@
-import React, { useContext } from 'react'
-import PlaceholderCustom from 'components/Placeholder'
+import { ReactNode, useContext } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { BarChart3, ChevronRight, Download, Sparkles } from 'lucide-react'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
-import { Container } from 'react-bootstrap'
-import { useNavigate } from 'react-router'
-import MenuButton from 'components/buttons/MenuButton'
-import Stars from 'assets/icons/Stars'
-import Charts from 'assets/icons/Charts'
-import { Download } from 'react-bootstrap-icons'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
+import { cn } from 'components/lib/utils'
+import { ChurchIdAndName } from 'global-types'
+
+const GRAPHS_TYPES = new Set<string>([
+  'Bacenta',
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+  'Oversight',
+  'Denomination',
+])
+
+const QUICK_FACTS_TYPES = new Set<string>([
+  'Bacenta',
+  'Governorship',
+  'Stream',
+  'Council',
+  'Campus',
+])
+
+const DOWNLOAD_MEMBERSHIP_TYPES = new Set<string>([
+  'Bacenta',
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+  'Oversight',
+])
 
 const TrendsMenu = () => {
-  const { currentUser, theme } = useContext(MemberContext)
   const navigate = useNavigate()
+  const location = useLocation()
+  const { clickCard } = useContext(ChurchContext)
+  const { currentUser } = useContext(MemberContext)
+  const { selectedScope } = useChurchRoleScope()
 
-  const church = currentUser.currentChurch
-  const churchType = currentUser.currentChurch?.__typename
+  const rawState = location.state as Record<string, unknown> | null
+  const rawOverride = rawState?.overrideChurch as ChurchIdAndName | undefined
+  const navOverride: ChurchIdAndName | null =
+    rawOverride &&
+    typeof rawOverride.id === 'string' &&
+    typeof rawOverride.__typename === 'string'
+      ? rawOverride
+      : null
+
+  const fallbackChurch = currentUser?.currentChurch
+  const focusChurch: ChurchIdAndName | null =
+    navOverride ??
+    (selectedScope
+      ? {
+          id: selectedScope.churchId,
+          name: selectedScope.churchName,
+          __typename: selectedScope.churchType,
+        }
+      : fallbackChurch?.id && fallbackChurch?.__typename
+      ? {
+          id: fallbackChurch.id,
+          name: fallbackChurch.name,
+          __typename: fallbackChurch.__typename,
+        }
+      : null)
+
+  const churchType = focusChurch?.__typename
+  const routeSlug = churchType?.toLowerCase()
+
+  const handleNavigate = (path: string) => {
+    if (!focusChurch) return
+    clickCard(focusChurch)
+    navigate(path)
+  }
+
+  const showGraphs = !!churchType && GRAPHS_TYPES.has(churchType)
+  const showQuickFacts = !!churchType && QUICK_FACTS_TYPES.has(churchType)
+  const showDownload = !!churchType && DOWNLOAD_MEMBERSHIP_TYPES.has(churchType)
 
   return (
-    <div className="d-flex align-items-center justify-content-center ">
-      <Container>
-        <PlaceholderCustom xs={12} as="h1">
-          <div className="text-center">
-            <h1 className="mb-0  page-header">{`${church?.name} ${churchType}`}</h1>
-            <p className={`${theme} menu-subheading`}>Trends Page</p>
-          </div>
-        </PlaceholderCustom>
-        <div className="d-grid gap-2 mt-5 text-left">
-          <MenuButton
-            iconComponent={<Charts />}
-            title="Last 4 Weeks"
-            color="members"
-            onClick={() => navigate(`/${churchType.toLowerCase()}/graphs`)}
-            caption={'Income and Attendance Graphs'}
-          />
-          <MenuButton
-            iconComponent={<Stars />}
-            title="Quick Facts"
-            color="quick-facts"
-            onClick={() =>
-              navigate(
-                `/quick-facts/this-month/${church.__typename.toLowerCase()}`
-              )
-            }
-            caption={'Quick facts about your church'}
-          />
-          {[
-            'Fellowship',
-            'Bacenta',
-            'Governorship',
-            'Council',
-            'Stream',
-            'Campus',
-            'Oversight',
-          ].includes(churchType) && (
-            <RoleView roles={permitLeaderAdmin('Bacenta')}>
-              <MenuButton
-                title="Download Membership"
-                color="green"
-                iconComponent={<Download />}
-                onClick={() =>
-                  navigate(
-                    `/download-reports/${church.__typename.toLowerCase()}/membership`
-                  )
-                }
-                caption={'Download membership list as CSV'}
-              />
-            </RoleView>
+    <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+        <header className="mb-6 space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {focusChurch && `${focusChurch.name} `}
+            <span className="text-churches">Trends</span>
+          </h1>
+          {focusChurch && (
+            <p className="text-sm text-muted-foreground">
+              Trends for the church currently in focus.
+            </p>
           )}
+        </header>
+
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
+          {/* Left — menu list */}
+          <div>
+            {!focusChurch ? (
+              <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+                No church in focus. Pick one from the Church in Focus selector
+                to view trends.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {showGraphs && (
+                  <MenuCard
+                    icon={<BarChart3 className="h-5 w-5" />}
+                    accent="bg-churches/10 text-churches"
+                    title="Last 4 Weeks"
+                    description="Income and attendance graphs"
+                    onClick={() => handleNavigate(`/${routeSlug}/graphs`)}
+                  />
+                )}
+
+                {showQuickFacts && (
+                  <MenuCard
+                    icon={<Sparkles className="h-5 w-5" />}
+                    accent="bg-campaigns/10 text-campaigns"
+                    title="Quick Facts"
+                    description="Quick facts about your church"
+                    onClick={() =>
+                      handleNavigate(`/quick-facts/this-month/${routeSlug}`)
+                    }
+                  />
+                )}
+
+                {showDownload && (
+                  <RoleView roles={permitLeaderAdmin('Bacenta')}>
+                    <MenuCard
+                      icon={<Download className="h-5 w-5" />}
+                      accent="bg-banking/10 text-banking"
+                      title="Download Membership"
+                      description="Download membership list as CSV"
+                      onClick={() =>
+                        handleNavigate(
+                          `/download-reports/${routeSlug}/membership`
+                        )
+                      }
+                    />
+                  </RoleView>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right — intentional negative space */}
+          <div className="hidden lg:block" aria-hidden="true" />
         </div>
-      </Container>
+      </main>
     </div>
   )
 }
+
+type MenuCardProps = {
+  icon: ReactNode
+  accent: string
+  title: string
+  description: string
+  onClick: () => void
+}
+
+const MenuCard = ({
+  icon,
+  accent,
+  title,
+  description,
+  onClick,
+}: MenuCardProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="group flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99] min-h-[64px]"
+  >
+    <div
+      className={cn(
+        'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+        accent
+      )}
+    >
+      {icon}
+    </div>
+    <div className="min-w-0 flex-1">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <p className="text-xs text-muted-foreground truncate">{description}</p>
+    </div>
+    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+  </button>
+)
+
 export default TrendsMenu

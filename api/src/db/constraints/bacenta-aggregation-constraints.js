@@ -44,10 +44,22 @@ exports.createBacentaAggregationConstraints = async (driver) => {
       `CREATE CONSTRAINT bussing_record_id_unique IF NOT EXISTS 
        FOR (r:BussingRecord) REQUIRE r.id IS UNIQUE`,
 
-      `CREATE CONSTRAINT aggregate_bussing_record_id_unique IF NOT EXISTS 
+      `CREATE CONSTRAINT aggregate_bussing_record_id_unique IF NOT EXISTS
        FOR (a:AggregateBussingRecord) REQUIRE a.id IS UNIQUE`,
 
-      `CREATE CONSTRAINT time_graph_date_unique IF NOT EXISTS 
+      `CREATE CONSTRAINT aggregate_service_record_id_unique IF NOT EXISTS
+       FOR (a:AggregateServiceRecord) REQUIRE a.id IS UNIQUE`,
+
+      `CREATE CONSTRAINT aggregate_rehearsal_record_id_unique IF NOT EXISTS
+       FOR (a:AggregateRehearsalRecord) REQUIRE a.id IS UNIQUE`,
+
+      `CREATE CONSTRAINT aggregate_ministry_meeting_record_id_unique IF NOT EXISTS
+       FOR (a:AggregateMinistryMeetingRecord) REQUIRE a.id IS UNIQUE`,
+
+      `CREATE CONSTRAINT aggregate_stage_attendance_record_id_unique IF NOT EXISTS
+       FOR (a:AggregateStageAttendanceRecord) REQUIRE a.id IS UNIQUE`,
+
+      `CREATE CONSTRAINT time_graph_date_unique IF NOT EXISTS
        FOR (t:TimeGraph) REQUIRE t.date IS UNIQUE`,
     ]
 
@@ -55,17 +67,49 @@ exports.createBacentaAggregationConstraints = async (driver) => {
     const indexes = [
       `CREATE INDEX bacenta_name_index IF NOT EXISTS FOR (b:Bacenta) ON (b.name)`,
 
+      // id lookups — mirror the IS UNIQUE constraints already in place for
+      // sibling entities (Bacenta, Council, ServiceLog, etc.). Promotion to
+      // UNIQUE is low risk since these ids are UUIDs.
+      `CREATE INDEX service_record_id_index IF NOT EXISTS
+       FOR (r:ServiceRecord) ON (r.id)`,
+
+      `CREATE INDEX rehearsal_record_id_index IF NOT EXISTS
+       FOR (r:RehearsalRecord) ON (r.id)`,
+
+      // transactionReference seek indexes — payment-webhook MATCHes on
+      // transactionReference across these three labels (UNION) and would
+      // otherwise full-scan each label. Promote to UNIQUE in a follow-up
+      // PR once prod data has been audited with:
+      //   MATCH (r) WHERE r.transactionReference IS NOT NULL
+      //   WITH r.transactionReference AS ref, count(*) AS c WHERE c > 1
+      //   RETURN ref, c
+      // across each of the three labels.
+      `CREATE INDEX service_record_transaction_reference_index IF NOT EXISTS
+       FOR (r:ServiceRecord) ON (r.transactionReference)`,
+
+      `CREATE INDEX rehearsal_record_transaction_reference_index IF NOT EXISTS
+       FOR (r:RehearsalRecord) ON (r.transactionReference)`,
+
+      `CREATE INDEX transaction_reference_index IF NOT EXISTS
+       FOR (t:Transaction) ON (t.transactionReference)`,
+
       `CREATE INDEX aggregate_bussing_week_year IF NOT EXISTS 
        FOR (a:AggregateBussingRecord) ON (a.week, a.year)`,
 
       `CREATE INDEX time_graph_week_year IF NOT EXISTS 
        FOR (t:TimeGraph) ON (t.date.week, t.date.year)`,
 
-      `CREATE INDEX aggregate_bussing_month IF NOT EXISTS 
+      `CREATE INDEX aggregate_bussing_month IF NOT EXISTS
        FOR (a:AggregateBussingRecord) ON (a.month)`,
 
+      // HistoryLog paginated reads ORDER BY log.timeStamp DESC, log.id —
+      // without this index, the planner does a full label scan + in-memory
+      // sort per page. Matches the existing prod/dev index of the same name.
+      `CREATE INDEX history_log_timestamp IF NOT EXISTS
+       FOR (h:HistoryLog) ON (h.timeStamp)`,
+
       // Indexes to speed up relationship traversals
-      `CREATE INDEX bacenta_current_history IF NOT EXISTS 
+      `CREATE INDEX bacenta_current_history IF NOT EXISTS
        FOR ()-[r:CURRENT_HISTORY]->() ON (r.id)`,
 
       `CREATE INDEX bussing_record_bussed_on IF NOT EXISTS 

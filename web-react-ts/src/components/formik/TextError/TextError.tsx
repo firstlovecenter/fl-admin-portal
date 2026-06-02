@@ -1,7 +1,18 @@
 import React from 'react'
 
-const TextError = (props: any) => {
-  return <small className="error">{props.children}</small>
+type TextErrorProps = {
+  children?: React.ReactNode
+}
+
+const TextError = ({ children }: TextErrorProps) => {
+  return (
+    <small
+      className="error block text-xs font-medium text-destructive"
+      role="alert"
+    >
+      {children}
+    </small>
+  )
 }
 
 export default TextError

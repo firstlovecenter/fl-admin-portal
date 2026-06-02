@@ -38,10 +38,6 @@ export const GET_LOGGED_IN_USER = gql`
       }
 
       # Servant leadership relationships
-      leadsFellowship {
-        id
-        name
-      }
       leadsBacenta {
         id
         name
@@ -79,25 +75,6 @@ export const GET_LOGGED_IN_USER = gql`
         id
         name
       }
-      leadsHub {
-        id
-        name
-        vacationStatus
-      }
-      leadsHubCouncil {
-        id
-        name
-      }
-      leadsMinistry {
-        id
-        name
-        vacationStatus
-      }
-      leadsCreativeArts {
-        id
-        name
-      }
-
       # Administrative relationships
       isAdminForGovernorship {
         id
@@ -130,16 +107,6 @@ export const GET_LOGGED_IN_USER = gql`
         id
         name
       }
-      isAdminForMinistry {
-        id
-        name
-        vacationStatus
-      }
-      isAdminForCreativeArts {
-        id
-        name
-      }
-
       # Arrivals admin relationships
       isArrivalsAdminForGovernorship {
         id
@@ -158,6 +125,9 @@ export const GET_LOGGED_IN_USER = gql`
       isArrivalsAdminForCampus {
         id
         name
+        currency
+        conversionRateToDollar
+        noIncomeTracking
       }
 
       # Arrivals counter and payer relationships
@@ -178,6 +148,22 @@ export const GET_LOGGED_IN_USER = gql`
         bankAccount
         isManualBanking
       }
+    }
+
+    # Per-edge authority + flat allowed id list, computed once per login
+    # on the BE from the user's Neo4j servant edges and cached for the
+    # JWT lifetime. Drives the useCan hook (action gating per church) and
+    # useCanViewChurch (breadcrumb / spine visibility) everywhere on the
+    # FE. See api/src/resolvers/utils/allowed-church-ids.ts.
+    myAuthority {
+      servantTrees {
+        type
+        level
+        churchId
+        churchName
+        reach
+      }
+      allowedChurchIds
     }
   }
 `

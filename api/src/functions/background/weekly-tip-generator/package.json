@@ -1,0 +1,15 @@
+{
+  "name": "weekly-tip-generator",
+  "version": "0.0.1",
+  "description": "Generates per-leader weekly tips for the AI Assistant home-page widget using OpenAI embeddings + Anthropic Claude.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@aws-sdk/client-secrets-manager": "^3.388.0",
+    "neo4j-driver": "^5.28.1",
+    "openai": "^4.77.0"
+  }
+}

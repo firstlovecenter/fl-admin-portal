@@ -27,24 +27,14 @@ export type ChurchLevel =
   | 'Campus'
   | 'Oversight'
   | 'Denomination'
-  | 'Ministry'
-  | 'HubCouncil'
-  | 'Hub'
-  | 'HubCouncil'
-  | 'CreativeArts'
 
 export type ChurchLevelLower =
-  | 'fellowship'
   | 'bacenta'
   | 'governorship'
   | 'council'
   | 'stream'
   | 'campus'
   | 'oversight'
-  | 'creativeArts'
-  | 'ministry'
-  | 'hubCouncil'
-  | 'hub'
 
 export type VacationStatusOptions = 'Vacation' | 'Active'
 
@@ -63,18 +53,16 @@ export type HistoryLog = {
 export interface Church {
   id: string
   name: string
-  downloadMembership: Member[]
   vacationStatus?: VacationStatusOptions
   stream_name?: StreamOptions
   leader: MemberWithoutBioData
-  admins?: MemberWithoutBioData[]
-  adminCount?: number
-  hubs?: Church[]
+  admin?: MemberWithoutBioData
   lowerChurch?: Church[]
   memberCount: number
   members: Member[]
   history: HistoryLog[]
   __typename: ChurchLevel
+  isManualBanking?: boolean
 }
 
 export interface Bacenta extends Church {
@@ -82,6 +70,7 @@ export interface Bacenta extends Church {
   governorship: Governorship
   council: Council
   bankingCode: number
+  location?: { latitude: number; longitude: number }
   services: ServiceRecord[]
   vacationStatus: VacationStatusOptions
   meetingDay: {
@@ -115,7 +104,6 @@ export interface Campus extends Church {
   __typename: 'Campus'
   streams?: Stream[]
   oversight: Oversight
-  creativeArts?: CreativeArts[]
 }
 
 export interface Stream extends Church {
@@ -126,7 +114,6 @@ export interface Stream extends Church {
   meetingDay: { day: 'Friday' | 'Saturday' | 'Sunday' }
   stream_name?: StreamOptions
   campus: Campus
-  ministries?: Ministry[]
   councils?: Council[]
 }
 export interface Governorship extends Church {
@@ -138,50 +125,7 @@ export interface Governorship extends Church {
 export interface Council extends Church {
   __typename: 'Council'
   stream: Stream
-  hubCouncils?: HubCouncil[]
   governorships?: Governorship[]
-  hubCouncilsFromMinistry?: HubCouncil[]
-}
-
-export interface CreativeArts extends Church {
-  __typename: 'CreativeArts'
-  campus: Campus
-  ministries?: Ministry[]
-}
-
-export interface Ministry extends HigherChurch {
-  id: string
-  __typename: 'Ministry'
-  bankAccount: string
-  name: string
-  creativeArts: CreativeArts
-  stream: Stream
-  councils: Council[]
-  hubCouncils?: HubCouncil[]
-}
-
-export interface HubCouncil extends Church {
-  __typename: 'HubCouncil'
-  hub: Hub
-  council: Council
-  ministry: Ministry
-}
-
-export interface Hub extends Church {
-  __typename: 'Hub'
-  location: {
-    latitude: number
-    longitude: number
-  }
-  activeHubFellowshipCount: number
-  vacationHubFellowshipCount: number
-  hubCouncil: HubCouncil
-  governorship: Governorship
-  creativeArts: Campus
-  vacationStatus: VacationStatusOptions
-  meetingDay: {
-    day: 'Wednesday' | 'Friday' | 'Saturday'
-  }
 }
 
 //MEMBERSHIP
@@ -223,10 +167,6 @@ export interface Member {
   gender: { gender: 'Male' | 'Female' }
   occupation: { occupation: string }
   bacenta: Bacenta
-  fellowship: {
-    id: string
-    name: string
-  }
   basonta: {
     id: string
     name: string
@@ -235,18 +175,10 @@ export interface Member {
 
 export interface MemberWithChurches extends Member {
   roles?: Role[]
-  leadsFellowship: Church[]
   leadsBacenta: Church[]
   leadsGovernorship: Church[]
   leadsCouncil: Church[]
   leadsStream: Church[]
-
-  leadsHub: Church[]
-  leadsHubCouncil: Church[]
-  leadsMinistry: Church[]
-  leadsCreativeArts: Church[]
-  isAdminForMinistry: Church[]
-  isAdminForCreativeArts: Church[]
 
   leadsCampus: Church[]
   leadsOversight: Church[]
@@ -283,9 +215,60 @@ export type ServantTypeLowerCase =
   | 'arrivalsAdmin'
   | 'arrivalsCounter'
 
+// Servant-edge taxonomy on the FE. Mirrors `api/src/resolvers/utils/allowed-church-ids.ts`
+// `ServantEdgeType` (ADR-001). Sourced from `myAuthority { servantTrees }`.
+export type ServantEdgeType =
+  | 'LEADS'
+  | 'DEPUTY_LEADS'
+  | 'IS_ADMIN_FOR'
+  | 'DOES_ARRIVALS_FOR'
+  | 'COUNTS_ARRIVALS_FOR'
+  | 'IS_TELLER_FOR'
+  | 'IS_ARRIVALS_PAYER_FOR'
+
+// One per servant edge held by the user. `reach` is the church the edge
+// points at plus every spine descendant — used by `useCan` to answer
+// "do I hold this role AT this church?" without a network round-trip.
+export type ServantTree = {
+  type: ServantEdgeType
+  level: ChurchLevel
+  churchId: string
+  churchName: string
+  reach: string[]
+}
+
+// Authority payload populated at login from `GET_LOGGED_IN_USER` and stored
+// on `currentUser.authority`. Drives `useCan` (action gating per church)
+// and `useCanViewChurch` (breadcrumb / spine visibility).
+export type CurrentUserAuthority = {
+  servantTrees: ServantTree[]
+  allowedChurchIds: string[]
+}
+
 export type CurrentUser = {
   id: string
   roles: Role[]
+  firstName?: string
+  lastName?: string
+  fullName?: string
+  picture?: string
+  pictureUrl?: string
+  nameWithTitle?: string
+  bacenta?: string
+  governorship?: string
+  council?: string
+  stream?: string
+  campus?: string
+  oversight?: string
+  denomination?: string
+  stream_name?: string
+  noIncomeTracking?: boolean
+  currency?: string
+  conversionRateToDollar?: number
+  // Per-instance authority — see `CurrentUserAuthority`. Optional because
+  // it's loaded asynchronously by `SetPermissions`; the hooks treat absence
+  // as "no authority yet" (deny on action gates, hide on visibility gates).
+  authority?: CurrentUserAuthority
 }
 
 export type UserRole = {
@@ -311,15 +294,10 @@ export interface LazyRouteTypes {
 }
 
 export type Role =
-  | 'leaderFellowship'
   | 'leaderBacenta'
   | 'leaderGovernorship'
   | 'leaderCouncil'
   | 'leaderStream'
-  | 'leaderHub'
-  | 'leaderHubCouncil'
-  | 'leaderMinistry'
-  | 'leaderCreativeArts'
   | 'leaderCampus'
   | 'leaderOversight'
   | 'leaderDenomination'
@@ -329,8 +307,6 @@ export type Role =
   | 'adminCampus'
   | 'adminOversight'
   | 'adminDenomination'
-  | 'adminMinistry'
-  | 'adminCreativeArts'
   | 'arrivalsAdminCampus'
   | 'arrivalsAdminStream'
   | 'arrivalsAdminCouncil'
@@ -383,10 +359,23 @@ export type ServiceRecord = {
   bankingProof: boolean
   tellerConfirmationTime: string
   bankingSlip: string
+  bankingSlipUploadedAt?: string
+  bankingMethod?: 'self' | 'slip' | 'teller' | null
   transactionStatus: 'pending' | 'success' | 'failed' | 'send OTP'
   bankingSlipUploader: Member
   offeringBankedBy: Member
   bankingConfirmer: Member
+  bankingHistory?: BankingHistoryLog[]
+}
+
+export type BankingHistoryLog = {
+  id: string
+  method: 'self' | 'recovery' | 'webhook' | 'slip' | 'teller'
+  fromStatus: string | null
+  toStatus: string
+  message: string | null
+  ts: string
+  loggedBy?: Member | null
 }
 
 export type AggregateServiceRecord = {
@@ -402,7 +391,6 @@ export type EquipmentChurch = {
   id: string
   name: string
   equipmentRecord: EquipmentRecord
-  fellowshipEquipmentFilledCount: number
   governorshipEquipmentFilledCount: number
 }
 
@@ -416,7 +404,6 @@ export interface HigherChurch extends Church {
   stream_name: StreamOptions
   vacationStatus?: VacationStatusOptions
   admin: MemberWithoutBioData
-  fellowshipCount: number
   bacentaCount: number
   governorshipCount: number
   councilCount: number
@@ -424,5 +411,4 @@ export interface HigherChurch extends Church {
   memberCount: number
   hubCount: number
   ministryCount: number
-  target?: number
 }

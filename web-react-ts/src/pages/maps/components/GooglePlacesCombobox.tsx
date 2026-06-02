@@ -1,19 +1,19 @@
-import { useEffect, useState } from 'react'
-import Autosuggest from 'react-autosuggest'
-import { FormikComponentProps } from '../../../components/formik/formik-types'
-import 'components/formik/Formik.css'
-import 'components/formik/react-autosuggest.css'
+import { useState } from 'react'
+import { FormikComponentProps } from 'components/formik/formik-types'
+import SearchCombobox from 'components/formik/SearchCombobox'
 import usePlacesAutocomplete, {
   getGeocode,
   getLatLng,
 } from 'use-places-autocomplete'
-import { PlaceType } from './MapComponent'
+import { PlaceType } from '../types'
 
 interface ComboBoxProps extends FormikComponentProps {
   initialValue: string
   setCentre: (position: PlaceType) => void
   handleClose: () => void
 }
+
+type Place = { description: string; place_id: string; name: string }
 
 const GooglePlacesCombobox = (props: ComboBoxProps) => {
   const { label, name, placeholder, initialValue, handleClose, setCentre } =
@@ -22,19 +22,21 @@ const GooglePlacesCombobox = (props: ComboBoxProps) => {
   const {
     ready,
     setValue,
-    suggestions: { status, data },
+    suggestions: { data },
     clearSuggestions,
   } = usePlacesAutocomplete()
 
   const [searchString, setSearchString] = useState(initialValue ?? '')
-  const [suggestions, setSuggestions] = useState<any[]>([])
 
-  // TODO: Suggestions are generated after the first keystroke.  This is not ideal.
-  // They should be generated before the first keystroke.
+  const places: Place[] = data
+    .slice(0, 7)
+    .map((s) => ({
+      description: s.description,
+      place_id: s.place_id,
+      name: s.description,
+    }))
 
-  useEffect(() => {}, [searchString])
-
-  const handleSelect = async (val: { description: string; name: string }) => {
+  const handleSelect = async (val: Place) => {
     setValue(val.description, false)
     clearSuggestions()
 
@@ -49,79 +51,26 @@ const GooglePlacesCombobox = (props: ComboBoxProps) => {
   }
 
   return (
-    <div>
-      {label ? (
-        <label className="label" htmlFor={name}>
-          {label}
-        </label>
-      ) : null}
-      <Autosuggest
-        inputProps={{
-          placeholder: placeholder,
-          id: name,
-          autoComplete: 'off',
-          value: searchString,
-          name: name,
-          className: 'form-control',
-          onChange: (_event: any, { newValue }: any) => {
-            !ready && clearSuggestions()
-
-            setSearchString(newValue)
-            setValue(newValue)
-          },
-        }}
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={async ({ value }: any) => {
-          if (!status) {
-            clearSuggestions()
-          }
-
-          const places = data.map(
-            (
-              suggestion: { description: any; place_id: any },
-              index: number
-            ) => {
-              if (index > 6) return null
-              return {
-                description: suggestion.description,
-                place_id: suggestion.place_id,
-                name: suggestion.description,
-              }
-            }
-          )
-          try {
-            setSuggestions(places)
-          } catch {
-            clearSuggestions()
-          }
-        }}
-        onSuggestionsClearRequested={clearSuggestions}
-        onSuggestionSelected={(event, { suggestion, method }: any) => {
-          if (method === 'enter') {
-            event.preventDefault()
-          }
-
-          setSearchString(suggestion.description)
-          handleSelect(suggestion)
-          handleClose()
-        }}
-        getSuggestionValue={(suggestion: any) => {
-          if (suggestion.name) {
-            return suggestion.name
-          }
-
-          if (suggestion.firstName) {
-            return suggestion.firstName + ' ' + suggestion.lastName
-          }
-
-          if (suggestion) return
-        }}
-        highlightFirstSuggestion={true}
-        renderSuggestion={(suggestion: any) => {
-          return <div className="combobox-control">{suggestion.name}</div>
-        }}
-      />
-    </div>
+    <SearchCombobox<Place>
+      label={label}
+      name={name}
+      id={name}
+      placeholder={placeholder}
+      value={searchString}
+      onValueChange={(value) => {
+        if (!ready) clearSuggestions()
+        setSearchString(value)
+        setValue(value)
+      }}
+      suggestions={places}
+      getItemKey={(p) => p.place_id}
+      getItemValue={(p) => p.name}
+      onSelect={(suggestion) => {
+        setSearchString(suggestion.description)
+        handleSelect(suggestion)
+        handleClose()
+      }}
+    />
   )
 }
 

@@ -1,4 +1,4 @@
-import { ChurchLevel, Role } from 'global-types'
+import { ChurchLevel, Role, ServantEdgeType, ServantTree } from 'global-types'
 
 // Permissions Things
 export const permitLeader = (churchLevel: ChurchLevel) => {
@@ -13,8 +13,6 @@ export const permitLeader = (churchLevel: ChurchLevel) => {
         'leaderCouncil',
         'leaderGovernorship',
         'leaderBacenta',
-        'adminMinistry',
-        'adminCreativeArts',
       ]
       break
     case 'governorship':
@@ -25,8 +23,6 @@ export const permitLeader = (churchLevel: ChurchLevel) => {
         'leaderStream',
         'leaderCouncil',
         'leaderGovernorship',
-        'adminMinistry',
-        'adminCreativeArts',
       ]
       break
     case 'council':
@@ -36,9 +32,6 @@ export const permitLeader = (churchLevel: ChurchLevel) => {
         'leaderCampus',
         'leaderStream',
         'leaderCouncil',
-        'leaderHubCouncil',
-        'adminMinistry',
-        'adminCreativeArts',
       ]
       break
     case 'stream':
@@ -47,9 +40,6 @@ export const permitLeader = (churchLevel: ChurchLevel) => {
         'leaderOversight',
         'leaderCampus',
         'leaderStream',
-        'leaderMinistry',
-        'adminMinistry',
-        'adminCreativeArts',
       ]
       break
     case 'campus':
@@ -57,8 +47,6 @@ export const permitLeader = (churchLevel: ChurchLevel) => {
         'leaderDenomination',
         'leaderOversight',
         'leaderCampus',
-        'leaderCreativeArts',
-        'adminCreativeArts',
       ]
       break
     case 'oversight':
@@ -66,37 +54,6 @@ export const permitLeader = (churchLevel: ChurchLevel) => {
       break
     case 'denomination':
       permittedFor = ['leaderDenomination']
-      break
-    case 'creativearts':
-      permittedFor = ['leaderCampus', 'leaderCreativeArts']
-      break
-    case 'ministry':
-      permittedFor = [
-        'leaderCampus',
-        'leaderStream',
-        'leaderCreativeArts',
-        'leaderMinistry',
-      ]
-      break
-    case 'hubcouncil':
-      permittedFor = [
-        'leaderCampus',
-        'leaderCreativeArts',
-        'leaderStream',
-        'leaderMinistry',
-        'leaderHubCouncil',
-        'leaderHub',
-      ]
-      break
-    case 'hub':
-      permittedFor = [
-        'leaderCampus',
-        'leaderCreativeArts',
-        'leaderStream',
-        'leaderMinistry',
-        'leaderHubCouncil',
-        'leaderHub',
-      ]
       break
     default:
       permittedFor = []
@@ -110,10 +67,7 @@ export const permitAdmin = (churchLevel: ChurchLevel) => {
   let permittedFor: Role[] = []
   switch (churchLevel) {
     case 'Bacenta':
-    case 'Hub':
       permittedFor = [
-        'adminMinistry',
-        'adminCreativeArts',
         'adminGovernorship',
         'adminCouncil',
         'adminStream',
@@ -159,35 +113,6 @@ export const permitAdmin = (churchLevel: ChurchLevel) => {
     case 'Denomination':
       permittedFor = ['adminDenomination']
       break
-    case 'CreativeArts':
-      permittedFor = [
-        'adminDenomination',
-        'adminOversight',
-        'adminCampus',
-        'adminCreativeArts',
-      ]
-      break
-    case 'Ministry':
-      permittedFor = [
-        'adminDenomination',
-        'adminOversight',
-        'adminCampus',
-        'adminStream',
-        'adminCreativeArts',
-        'adminMinistry',
-      ]
-      break
-    case 'HubCouncil':
-      permittedFor = [
-        'adminDenomination',
-        'adminOversight',
-        'adminCampus',
-        'adminStream',
-        'adminCouncil',
-        'adminCreativeArts',
-        'adminMinistry',
-      ]
-      break
 
     default:
       permittedFor = []
@@ -200,6 +125,13 @@ export const permitAdmin = (churchLevel: ChurchLevel) => {
 export const permitLeaderAdmin = (churchLevel: ChurchLevel): Role[] => {
   return [...permitLeader(churchLevel), ...permitAdmin(churchLevel)]
 }
+
+// Coarse "is this a leader/admin role?" check used by FE surfaces that mirror
+// the BE `permitLeaderAdmin('Bacenta')` gate (e.g. weeklyTipForChurch).
+// Sourced from the helper itself so the FE set cannot drift from the BE set.
+export const isLeaderOrAdminRole = (
+  authRole: Role | null | undefined
+): boolean => !!authRole && permitLeaderAdmin('Bacenta').includes(authRole)
 
 export const permitMe = (churchLevel: ChurchLevel): Role[] => {
   return [
@@ -257,6 +189,35 @@ export const permitArrivals = (churchLevel: ChurchLevel): Role[] => {
 export const permitArrivalsCounter = (): Role[] => {
   return ['arrivalsCounterStream']
 }
+
+// True when the user's only operational role is Stream Arrivals Counter.
+// `fishers` is ignored because it gates the Accounts page only and does not
+// imply any church-leadership / dashboard responsibility — counters commonly
+// also carry the `fishers` marker.
+// Empty roles → false; counter-only must be an affirmative claim.
+export const isArrivalsCounterOnly = (roles?: Role[] | null): boolean =>
+  hasOnlyRolesFrom(roles, permitArrivalsCounter())
+
+// True when the user's only operational role is Stream Teller. Tellers
+// confirm manual bank deposits handed in by governorships and have no
+// other responsibility — the FE renders a focused dashboard for them
+// when this returns true. Mirrors `isArrivalsCounterOnly` semantics.
+export const isTellerStreamOnly = (roles?: Role[] | null): boolean =>
+  hasOnlyRolesFrom(roles, permitTellerStream())
+
+// Generic version of isArrivalsCounterOnly: true when every operational role
+// the user holds is in `allowed`. Used by nav items that want to hide for a
+// single-purpose role set (e.g. `hideForRoles: permitArrivalsCounter()`).
+// `fishers` is treated as non-operational; empty roles → false.
+export const hasOnlyRolesFrom = (
+  roles: Role[] | null | undefined,
+  allowed: Role[]
+): boolean => {
+  if (!roles?.length || !allowed.length) return false
+  const operational = roles.filter((r) => r !== 'fishers')
+  if (!operational.length) return false
+  return operational.every((r) => allowed.includes(r))
+}
 export const permitArrivalsPayer = (): Role[] => {
   return ['arrivalsPayerCouncil']
 }
@@ -279,3 +240,149 @@ export const permitAdminArrivals = (churchLevel: ChurchLevel): Role[] => {
 export const permitTellerStream = (): Role[] => {
   return ['tellerStream']
 }
+
+export const permitShepherdingControl = (): Role[] => [
+  'leaderGovernorship',
+  'leaderCouncil',
+  'leaderStream',
+  'leaderCampus',
+  'leaderOversight',
+  'leaderDenomination',
+  'adminGovernorship',
+  'adminCouncil',
+  'adminStream',
+  'adminCampus',
+  'adminOversight',
+  'adminDenomination',
+]
+
+// ─────────────────────────────────────────────────────────────────────────
+// Per-instance authority helpers.
+//
+// These mirror `api/src/resolvers/permissions.ts` exactly (ADR-001). Any
+// change here MUST land in the BE file in the same PR and vice-versa.
+//
+// The flat `currentUser.roles` claim is coarse and unbound — holding
+// `adminStream` says nothing about WHICH stream. The per-instance helpers
+// answer "at THIS church, does the user hold a role that satisfies this
+// permitX(level) set?" by walking the user's servant trees, populated at
+// login by `GET_LOGGED_IN_USER { myAuthority { servantTrees } }`.
+// ─────────────────────────────────────────────────────────────────────────
+
+// Maps a servant edge `(type, level)` to the coarse Role name produced by
+// the auth service. Pairing follows the existing permitX helpers:
+//   LEADS / DEPUTY_LEADS  →  leader<Level>
+//   IS_ADMIN_FOR          →  admin<Level>
+//   DOES_ARRIVALS_FOR     →  arrivalsAdmin<Level>
+//   COUNTS_ARRIVALS_FOR   →  arrivalsCounterStream
+//   IS_TELLER_FOR         →  tellerStream
+//   IS_ARRIVALS_PAYER_FOR →  arrivalsPayerCouncil
+//
+// Returns `null` for combinations the Role enum does not cover (e.g.
+// IS_ADMIN_FOR + Bacenta — Bacenta has no admin edge in the SDL).
+export const edgeToRole = (
+  type: ServantEdgeType,
+  level: ChurchLevel
+): Role | null => {
+  switch (type) {
+    case 'LEADS':
+    case 'DEPUTY_LEADS': {
+      switch (level) {
+        case 'Bacenta':
+          return 'leaderBacenta'
+        case 'Governorship':
+          return 'leaderGovernorship'
+        case 'Council':
+          return 'leaderCouncil'
+        case 'Stream':
+          return 'leaderStream'
+        case 'Campus':
+          return 'leaderCampus'
+        case 'Oversight':
+          return 'leaderOversight'
+        case 'Denomination':
+          return 'leaderDenomination'
+        default:
+          return null
+      }
+    }
+    case 'IS_ADMIN_FOR': {
+      switch (level) {
+        case 'Governorship':
+          return 'adminGovernorship'
+        case 'Council':
+          return 'adminCouncil'
+        case 'Stream':
+          return 'adminStream'
+        case 'Campus':
+          return 'adminCampus'
+        case 'Oversight':
+          return 'adminOversight'
+        case 'Denomination':
+          return 'adminDenomination'
+        default:
+          return null
+      }
+    }
+    case 'DOES_ARRIVALS_FOR': {
+      switch (level) {
+        case 'Governorship':
+          return 'arrivalsAdminGovernorship'
+        case 'Council':
+          return 'arrivalsAdminCouncil'
+        case 'Stream':
+          return 'arrivalsAdminStream'
+        case 'Campus':
+          return 'arrivalsAdminCampus'
+        default:
+          return null
+      }
+    }
+    case 'COUNTS_ARRIVALS_FOR':
+      return level === 'Stream' ? 'arrivalsCounterStream' : null
+    case 'IS_TELLER_FOR':
+      return level === 'Stream' ? 'tellerStream' : null
+    case 'IS_ARRIVALS_PAYER_FOR':
+      return level === 'Council' ? 'arrivalsPayerCouncil' : null
+    default:
+      return null
+  }
+}
+
+// Returns the coarse roles the user holds AT this specific church. Because
+// each tree's `reach` already contains the tree root plus every spine
+// descendant, a higher-level edge cascades down by construction — e.g.
+// `LEADS` on Oversight X yields `leaderOversight` for every Bacenta below X.
+export const rolesAt = (
+  trees: ServantTree[] | undefined | null,
+  churchId: string | undefined | null
+): Role[] => {
+  if (!churchId || !trees || trees.length === 0) return []
+  const hits: Role[] = []
+  for (const tree of trees) {
+    if (!tree.reach.includes(churchId)) continue
+    const role = edgeToRole(tree.type, tree.level)
+    if (role && !hits.includes(role)) hits.push(role)
+  }
+  return hits
+}
+
+// True iff the user holds any role at `churchId` that satisfies a
+// permitX(level) set.
+export const canDoAt = (
+  trees: ServantTree[] | undefined | null,
+  permittedRoles: Role[],
+  churchId: string | undefined | null
+): boolean => {
+  if (!permittedRoles || permittedRoles.length === 0) return false
+  const held = rolesAt(trees, churchId)
+  return held.some((r) => permittedRoles.includes(r))
+}
+
+// Spine visibility — separate from action authority. A user can see a
+// crumb's ancestors so the breadcrumb chain renders, but holds no role
+// there.
+export const isViewable = (
+  viewable: string[] | undefined | null,
+  churchId: string | undefined | null
+): boolean => !!churchId && !!viewable && viewable.includes(churchId)

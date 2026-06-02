@@ -1,0 +1,74 @@
+name: test-frontend
+
+on:
+  pull_request:
+    branches: [deploy, dev, staging]
+  push:
+    branches: [dev, staging]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: test-frontend-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: vitest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-react-ts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect relevant changes
+        if: github.event_name == 'pull_request'
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            relevant:
+              - 'web-react-ts/**'
+              - 'kb/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/test-frontend.yml'
+
+      - name: Skip — no frontend-relevant changes
+        if: github.event_name == 'pull_request' && steps.changes.outputs.relevant != 'true'
+        run: echo "No web-react-ts/, kb/, or root manifest changes — frontend tests skipped."
+
+      - name: Setup Node.js
+        if: github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web-react-ts/package-lock.json
+
+      - name: Install dependencies
+        if: github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true'
+        run: npm ci
+
+      - name: Vitest with coverage
+        if: github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true'
+        run: npm run test:coverage
+
+      - name: Upload coverage artifact
+        if: always() && (github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true')
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: web-react-ts/coverage
+          if-no-files-found: ignore
+
+      - name: Coverage PR comment
+        if: github.event_name == 'pull_request' && steps.changes.outputs.relevant == 'true'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: web-react-ts
+          name: frontend

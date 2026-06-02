@@ -52,20 +52,6 @@ const useClickCard = () => {
     sessionStorage.getItem('multiplicationRecordId') ?? ''
   )
 
-  const [hubFellowshipId, setHubFellowshipId] = useState(
-    sessionStorage.getItem('hubFellowshipId') ?? ''
-  )
-  const [hubId, setHubId] = useState(sessionStorage.getItem('hubId') ?? '')
-  const [hubCouncilId, setHubCouncilId] = useState(
-    sessionStorage.getItem('hubCouncilId') ?? ''
-  )
-  const [ministryId, setMinistryId] = useState(
-    sessionStorage.getItem('ministryId') ?? ''
-  )
-  const [creativeArtsId, setCreativeArtsId] = useState(
-    sessionStorage.getItem('creativeArtsId') ?? ''
-  )
-
   const [arrivalDate, setArrivalDate] = useState(
     sessionStorage.getItem('arrivaldate') ??
       new Date().toISOString().slice(0, 10)
@@ -161,12 +147,6 @@ const useClickCard = () => {
         if (card.id) {
           setCouncilId(card.id)
           sessionStorage.setItem('councilId', card.id)
-        }
-        break
-      case 'Ministry':
-        if (card.id) {
-          setMinistryId(card.id)
-          sessionStorage.setItem('ministryId', card.id)
         }
         break
       default:
@@ -349,28 +329,6 @@ const useClickCard = () => {
         sessionStorage.setItem('memberId', card.id)
         break
 
-      case 'HubFellowship':
-        setHubFellowshipId(card.id)
-        sessionStorage.setItem('hubFellowshipId', card.id)
-        break
-
-      case 'Hub':
-        setHubId(card.id)
-        sessionStorage.setItem('hubId', card.id)
-        break
-      case 'HubCouncil':
-        setHubCouncilId(card.id)
-        sessionStorage.setItem('hubCouncilId', card.id)
-        break
-      case 'Ministry':
-        setMinistryId(card.id)
-        sessionStorage.setItem('ministryId', card.id)
-        break
-
-      case 'CreativeArts':
-        setCreativeArtsId(card.id)
-        sessionStorage.setItem('creativeArtsId', card.id)
-        break
       case 'Fellowship':
         setFellowshipId(card.id)
         sessionStorage.setItem('fellowshipId', card.id)
@@ -416,10 +374,6 @@ const useClickCard = () => {
         setServiceRecordId(card.id)
         sessionStorage.setItem('serviceRecordId', card.id)
         break
-      case 'MinistryAttendanceRecord':
-        setServiceRecordId(card.id)
-        sessionStorage.setItem('serviceRecordId', card.id)
-        break
       case 'StageAttendanceRecord':
         setServiceRecordId(card.id)
         sessionStorage.setItem('serviceRecordId', card.id)
@@ -456,11 +410,6 @@ const useClickCard = () => {
     governorshipId,
     bacentaId,
     fellowshipId,
-    hubFellowshipId,
-    hubId,
-    hubCouncilId,
-    ministryId,
-    creativeArtsId,
     bussingRecordId,
     vehicleRecordId,
     serviceRecordId,
@@ -476,11 +425,6 @@ const useClickCard = () => {
     setStreamId,
     setCouncilId,
     setGovernorshipId,
-    setHubFellowshipId,
-    setHubId,
-    setHubCouncilId,
-    setMinistryId,
-    setCreativeArtsId,
     setArrivalDate,
     setTransactionId,
   }

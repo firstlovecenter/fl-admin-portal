@@ -2,13 +2,12 @@ import { gql } from '@apollo/client'
 
 export const BACENTA_BANKING_SLIP_QUERIES = gql`
   query bacentaServices($bacentaId: ID!, $skip: Int) {
-    bacentas(where: { id: $bacentaId }) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
       bankingCode
       name
       services(limit: 10, skip: $skip) {
         id
-        stream_name
         noServiceReason
         createdAt
         serviceDate {
@@ -66,13 +65,12 @@ export const BANKING_SLIP_SUBMISSION = gql`
 
 export const GOVERNORSHIP_BANKING_SLIP_QUERIES = gql`
   query governorshipServices($governorshipId: ID!) {
-    governorships(where: { id: $governorshipId }) {
+    governorships(where: { id: { eq: $governorshipId } }) {
       id
 
       name
       services(limit: 20) {
         id
-        stream_name
         noServiceReason
         createdAt
         serviceDate {
@@ -109,13 +107,12 @@ export const GOVERNORSHIP_BANKING_SLIP_QUERIES = gql`
 
 export const STREAM_BANKING_SLIP_QUERIES = gql`
   query streamServices($streamId: ID!) {
-    streams(where: { id: $streamId }) {
+    streams(where: { id: { eq: $streamId } }) {
       id
 
       name
       services(limit: 20) {
         id
-        stream_name
         noServiceReason
         createdAt
         serviceDate {
@@ -152,13 +149,12 @@ export const STREAM_BANKING_SLIP_QUERIES = gql`
 
 export const COUNCIL_BANKING_SLIP_QUERIES = gql`
   query councilServices($councilId: ID!) {
-    councils(where: { id: $councilId }) {
+    councils(where: { id: { eq: $councilId } }) {
       id
 
       name
       services(limit: 20) {
         id
-        stream_name
         noServiceReason
         createdAt
         serviceDate {
@@ -195,7 +191,7 @@ export const COUNCIL_BANKING_SLIP_QUERIES = gql`
 
 export const BACENTA_SERVICE_RECORDS = gql`
   query BacentaServiceRecords($serviceId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       serviceLog {
         bacenta {
@@ -224,7 +220,7 @@ export const BACENTA_SERVICE_RECORDS = gql`
 
 export const GOVERNORSHIP_SERVICE_RECORDS = gql`
   query GovernorshipServiceRecords($serviceId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       serviceLog {
         governorship {
@@ -252,7 +248,7 @@ export const GOVERNORSHIP_SERVICE_RECORDS = gql`
 
 export const COUNCIL_SERVICE_RECORDS = gql`
   query CouncilServiceRecords($serviceId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       serviceLog {
         council {
@@ -280,7 +276,7 @@ export const COUNCIL_SERVICE_RECORDS = gql`
 
 export const STREAM_SERVICE_RECORDS = gql`
   query streamServiceRecords($serviceId: ID!) {
-    serviceRecords(where: { id: $serviceId }) {
+    serviceRecords(where: { id: { eq: $serviceId } }) {
       id
       serviceLog {
         stream {
@@ -306,46 +302,71 @@ export const STREAM_SERVICE_RECORDS = gql`
   }
 `
 
-export const HUB_BANKING_SLIP_QUERIES = gql`
-  query hubMeetings($hubId: ID!, $skip: Int) {
-    hubs(where: { id: $hubId }) {
+export const LATEST_SERVICE_FOR_BACENTA = gql`
+  query LatestServiceForBacenta($bacentaId: ID!) {
+    bacentas(where: { id: { eq: $bacentaId } }) {
       id
-      name
-      rehearsals(limit: 10, skip: $skip) {
+      services(limit: 1) {
         id
-        stream_name
-        noServiceReason
-        createdAt
         serviceDate {
           date
         }
-        created_by {
-          id
-          firstName
-          lastName
-          fullName
+      }
+    }
+  }
+`
+
+export const LATEST_SERVICE_FOR_STREAM = gql`
+  query LatestServiceForStream($streamId: ID!) {
+    streams(where: { id: { eq: $streamId } }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
         }
-        bankingProof
-        bankingSlip
-        bankingSlipUploader {
-          id
-          firstName
-          lastName
-          fullName
+      }
+    }
+  }
+`
+
+export const LATEST_SERVICE_FOR_COUNCIL = gql`
+  query LatestServiceForCouncil($councilId: ID!) {
+    councils(where: { id: { eq: $councilId } }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
         }
-        offeringBankedBy {
-          id
-          firstName
-          lastName
-          fullName
+      }
+    }
+  }
+`
+
+export const LATEST_SERVICE_FOR_GOVERNORSHIP = gql`
+  query LatestServiceForGovernorship($governorshipId: ID!) {
+    governorships(where: { id: { eq: $governorshipId } }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
         }
-        income
-        cash
-        numberOfTithers
-        foreignCurrency
-        transactionId
-        transactionReference
-        transactionStatus
+      }
+    }
+  }
+`
+
+export const LATEST_SERVICE_FOR_CAMPUS = gql`
+  query LatestServiceForCampus($campusId: ID!) {
+    campuses(where: { id: { eq: $campusId } }) {
+      id
+      services(limit: 1) {
+        id
+        serviceDate {
+          date
+        }
       }
     }
   }

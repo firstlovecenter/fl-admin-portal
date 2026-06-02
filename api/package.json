@@ -4,7 +4,9 @@
   "description": "API app for First Love Church Admin Portal",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest --config jest.integration.config.js",
     "start:dev": "./node_modules/.bin/nodemon --watch src --ext js,ts,graphql --delay 3 --exec DEBUG=@neo4j/graphql:auth babel-node  src/index.js --extensions '.js,.ts'",
     "prebuild": " cd src/resolvers && tsc",
     "build": "babel src --out-dir build && shx cp .env build 2>/dev/null || : && shx cp -r src/schema build",
@@ -17,14 +19,35 @@
     "plugins": [
       "@typescript-eslint",
       "no-relative-import-paths",
-      "import"
+      "import",
+      "fl-cypher"
     ],
     "rules": {
       "import/no-unresolved": "off",
       "no-console": "off",
       "@typescript-eslint/no-explicit-any": "off",
-      "no-relative-import-paths/no-relative-import-paths": "off"
-    }
+      "no-relative-import-paths/no-relative-import-paths": "off",
+      "fl-cypher/no-interpolated-cypher": "error"
+    },
+    "overrides": [
+      {
+        "files": [
+          "src/resolvers/downloads/downloads-cypher.ts"
+        ],
+        "rules": {
+          "fl-cypher/no-interpolated-cypher": [
+            "error",
+            {
+              "allowedIdentifiers": [
+                "COMMON_OPTIONALS",
+                "LEADER_OPTIONALS",
+                "ROW_RETURN"
+              ]
+            }
+          ]
+        }
+      }
+    ]
   },
   "lint-staged": {
     "*.{ts, js}": [
@@ -34,31 +57,28 @@
     ]
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
     "@apollo/client": "^3.8.9",
-    "@apollo/server": "^4.10.0",
-    "@as-integrations/aws-lambda": "^2.0.1",
-    "@aws-sdk/client-s3": "^3.879.0",
-    "@aws-sdk/client-secrets-manager": "^3.777.0",
-    "@aws-sdk/client-lambda": "^3.879.0",
-    "@aws-sdk/s3-request-presigner": "^3.879.0",
-    "@jaedag/admin-portal-api-core": "^2.2.2",
-    "@jaedag/admin-portal-types": "^1.5.16",
-    "@neo4j/graphql": "^6.3.0",
-    "@netlify/functions": "^1.2.0",
-    "apollo-server-lambda": "^3.12.0",
-    "axios": "^0.27.2",
-    "body-parser": "^1.20.2",
+    "@apollo/server": "^4.13.0",
+    "@aws-sdk/client-lambda": "^3.900.0",
+    "@aws-sdk/client-s3": "^3.900.0",
+    "@aws-sdk/client-secrets-manager": "^3.900.0",
+    "@aws-sdk/s3-request-presigner": "^3.900.0",
+    "@neo4j/graphql": "^7.5.1",
+    "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "csv-parse": "^5.0.3",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "firebase-admin": "^11.8.0",
+    "dotenv": "^16.4.7",
+    "epub2": "^3.0.2",
+    "express": "^4.22.2",
+    "firebase-admin": "^13.0.2",
     "googleapis": "^131.0.0",
     "graphql": "^16.8.1",
-    "jd-date-utils": "^1.0.9",
-    "jwt-decode": "^4.0.0",
     "neo4j-driver": "^5.28.1",
     "node-fetch": "^3.3.2",
+    "openai": "^4.77.0",
+    "pdf-parse": "^1.1.1",
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
@@ -73,13 +93,31 @@
     "@babel/preset-typescript": "^7.16.7",
     "@babel/register": "^7.17.7",
     "@babel/runtime-corejs3": "^7.9.2",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.13.14",
+    "babel-jest": "^29.7.0",
     "babel-plugin-auto-import": "^1.0.5",
     "babel-plugin-module-resolver": "^4.0.0",
     "cross-env": "^7.0.2",
-    "nodemon": "^2.0.15",
+    "eslint-plugin-fl-cypher": "file:eslint-plugin-fl-cypher",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.10",
     "shx": "^0.3.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"
+  },
+  "overrides": {
+    "form-data": "^4.0.4",
+    "fast-xml-parser": "^4.5.3",
+    "sha.js": "^2.4.12",
+    "@apollo/federation-internals": "^2.11.2",
+    "tmp": "^0.2.4",
+    "@babel/plugin-transform-modules-systemjs": "^7.29.4",
+    "brace-expansion": "^2.0.2",
+    "lodash": "^4.18.1",
+    "minimatch": "^9.0.9",
+    "picomatch": "^4.0.2",
+    "path-to-regexp": "^0.1.13",
+    "jws": "^3.2.3"
   }
 }

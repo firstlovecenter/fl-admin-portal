@@ -1,32 +1,37 @@
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import HeadingSecondary from 'components/HeadingSecondary'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import React, { useContext } from 'react'
-import { Container } from 'react-bootstrap'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useQuery } from '@apollo/client'
-import Timeline from 'components/Timeline/Timeline'
+import { HistoryLog } from 'global-types'
+import ChurchHistoryView from './ChurchHistoryView'
 import { CAMPUS_HISTORY } from './HistoryQueries'
 
-function CampusHistory() {
-  const { campusId } = useContext(ChurchContext)
-  const { data, loading, error } = useQuery(CAMPUS_HISTORY, {
-    variables: { id: campusId },
-  })
+type CampusHistoryData = {
+  campuses: Array<{
+    id: string
+    name: string
+    historyCount: number
+    history: HistoryLog[]
+  }>
+}
 
-  const campus = data?.campuses[0]
+const CampusHistory = () => {
+  const { campusId } = useContext(ChurchContext)
+
   return (
-    <ApolloWrapper loading={loading} error={error} data={data}>
-      <>
-        <div className="text-center mb-5">
-          <HeadingPrimary>{`${campus?.name} ${campus?.__typename}`}</HeadingPrimary>
-          <HeadingSecondary>Campus History</HeadingSecondary>
-        </div>
-        <Container>
-          <Timeline record={campus?.history} limit={100} />
-        </Container>
-      </>
-    </ApolloWrapper>
+    <ChurchHistoryView<CampusHistoryData>
+      parentTypename="Campus"
+      parentId={campusId}
+      query={CAMPUS_HISTORY}
+      pluckParent={(d) => {
+        const c = d?.campuses?.[0]
+        if (!c) return undefined
+        return {
+          displayName: c.name,
+          historyCount: c.historyCount,
+          history: c.history,
+        }
+      }}
+      headingSuffix="History"
+    />
   )
 }
 

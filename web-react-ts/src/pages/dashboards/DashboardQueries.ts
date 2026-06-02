@@ -6,34 +6,9 @@ export const REMOVE_USER_ROLE = gql`
   }
 `
 
-export const FELLOWSHIP_LEADER_DASHBOARD = gql`
-  query fellowshipLeaderDashboard($fellowshipId: ID!) {
-    fellowships(where: { id: $fellowshipId }) {
-      id
-      name
-      leader {
-        id
-        fullName
-      }
-      serviceLogs {
-        id
-        historyRecord
-        serviceRecords {
-          createdAt
-          attendance
-          income
-          serviceDate {
-            date
-          }
-        }
-      }
-    }
-  }
-`
-
 export const SERVANT_CHURCH_LIST = gql`
   query churchList($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       firstName
       lastName
@@ -146,54 +121,19 @@ export const SERVANT_CHURCH_LIST = gql`
         name
       }
 
-      leadsHub {
-        id
-        name
-        vacationStatus
-      }
-
-      leadsHubCouncil {
-        id
-        name
-      }
-
-      leadsMinistry {
-        id
-        name
-        vacationStatus
-      }
-
-      leadsCreativeArts {
-        id
-        name
-      }
-      isAdminForMinistry {
-        id
-        name
-        vacationStatus
-      }
-      isAdminForCreativeArts {
-        id
-        name
-      }
     }
   }
 `
 
 export const SERVANT_CHURCHES_COUNT = gql`
   query churchesLed($id: ID!) {
-    members(where: { id: $id }) {
+    members(where: { id: { eq: $id } }) {
       id
       memberCount
-      basontaMembershipCount
-      leadsFellowshipCount
       leadsBacentaCount
       leadsAdminsGovernorshipCount
       leadsAdminsCouncilCount
       leadsAdminsCampusCount
-      leadsHubCount
-      leadsAdminsMinistryCount
-      leadsAdminsCreativeArtsCount
     }
   }
 `

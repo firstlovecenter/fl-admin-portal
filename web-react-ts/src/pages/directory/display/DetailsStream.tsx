@@ -3,12 +3,14 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DISPLAY_STREAM } from './ReadQueries'
 import { permitAdmin } from 'permission-utils'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsStream = () => {
-  const { streamId } = useContext(ChurchContext)
+  const { streamId, setFilters } = useContext(ChurchContext)
+  const navigate = useNavigate()
 
   const { data, loading, error } = useQuery(DISPLAY_STREAM, {
     variables: { id: streamId },
@@ -43,43 +45,32 @@ const DetailsStream = () => {
       number: stream?.councilCount || 0,
       link: `/${`Council`.toLowerCase()}/displayall`,
     },
-    { title: 'Target', number: stream?.target, link: '#' },
-    { title: 'Pastors', number: stream?.pastorCount || '0', link: '#' },
+    {
+      title: 'Pastors',
+      number: stream?.pastorCount || '0',
+      link: '/stream/members',
+      onClick: () => {
+        setFilters({
+          gender: [],
+          maritalStatus: [],
+          occupation: '',
+          leaderTitle: ['Pastor'],
+          leaderRank: [],
+          basonta: [],
+        })
+        navigate('/stream/members')
+      },
+    },
     {
       title: 'Governorships',
       number: stream?.governorshipCount,
       link: `/stream/governorships`,
     },
     {
-      title: 'Greens',
-      number: stream?.activeGraduatedBacentaCount,
-      vacationCount: stream?.vacationGraduatedBacentaCount,
-      link: `#`,
-    },
-    {
-      title: 'Reds',
-      number: stream?.activeIcBacentaCount,
-      vacationCount: stream?.vacationIcBacentaCount,
-      link: '#',
-    },
-
-    {
-      title: 'Ministries',
-      number: stream?.ministryCount,
-      link: `/stream/ministries`,
-      creativearts: true,
-    },
-    {
-      title: 'Hubs',
-      number: stream?.hubCount || 0,
-      link: `/stream/hubs`,
-      creativearts: true,
-    },
-    {
-      title: 'Hub Fellowships',
-      number: stream?.hubFellowshipCount || 0,
-      link: `#`,
-      creativearts: true,
+      title: 'Bacentas',
+      number: stream?.bacentaCount || 0,
+      vacationCount: stream?.vacationBacentaCount,
+      link: '/stream/bacentas',
     },
   ]
 

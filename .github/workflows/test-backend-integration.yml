@@ -1,0 +1,68 @@
+name: test-backend-integration
+
+# Backend integration tests hit dev Neo4j (dev-neo4j.firstlovecenter.com) via
+# credentials loaded from AWS Secrets Manager (`dev/fl-admin-portal`). They are
+# slow and stateful, so this workflow is **gated** — it runs only on:
+#   - manual dispatch from the Actions tab, or
+#   - a PR labelled `run-integration` (re-runs on subsequent pushes while the
+#     label is still attached; remove the label to stop).
+#
+# Production data is NEVER touched. The setup script in
+# `api/jest.integration.globalSetup.js` reads `dev/fl-admin-portal` only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch / SHA to test (defaults to the workflow ref)'
+        required: false
+        default: ''
+  pull_request:
+    types: [opened, reopened, labeled, synchronize]
+    branches: [deploy, dev, staging]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: test-backend-integration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: jest-integration
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'run-integration')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # On pull_request, default to the PR head SHA so the gate tests
+          # the proposed change rather than the base branch. workflow_dispatch
+          # uses inputs.ref when provided, otherwise the workflow ref's commit.
+          ref: ${{ inputs.ref || github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests against dev Neo4j
+        run: npm run test:integration
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_SECRET_NAME: dev/fl-admin-portal

@@ -58,22 +58,7 @@
   border: 5px solid var(--chakra-colors-blue-200) !important;
 }
 
-.badge.creativearts {
-  background-color: var(--chakra-colors-yellow-800) !important;
-  border: 5px solid var(--chakra-colors-yellow-200) !important;
-}
-
 .badge.ministry {
   background-color: var(--chakra-colors-cyan-800) !important;
   border: 5px solid var(--chakra-colors-cyan-200) !important;
-}
-
-.badge.hubcouncil {
-  background-color: var(--chakra-colors-whatsapp-800) !important;
-  border: 5px solid var(--chakra-colors-whatsapp-200) !important;
-}
-
-.badge.hub {
-  background-color: var(--chakra-colors-pink-800) !important;
-  border: 5px solid var(--chakra-colors-pink-200) !important;
 }

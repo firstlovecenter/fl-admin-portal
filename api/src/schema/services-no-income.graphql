@@ -7,24 +7,3 @@ extend type Mutation {
   ): ServiceRecord!
 }
 
-extend type Fellowship {
-  noIncomeTracking: Boolean!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*5]-(campus:Campus)
-      RETURN campus.noIncomeTracking
-      """
-      columnName: "noIncomeTracking"
-    )
-}
-
-extend type HubFellowship {
-  noIncomeTracking: Boolean!
-    @cypher(
-      statement: """
-      MATCH (this)<-[:HAS*5]-(campus:Campus)
-      RETURN campus.noIncomeTracking
-      """
-      columnName: "noIncomeTracking"
-    )
-}

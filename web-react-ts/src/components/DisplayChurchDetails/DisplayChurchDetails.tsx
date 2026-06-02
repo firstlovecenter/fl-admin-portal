@@ -1,63 +1,69 @@
-import React, { useContext } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import DetailsCard from '../card/DetailsCard'
-import { MemberContext } from '../../contexts/MemberContext'
-import { ChurchContext } from '../../contexts/ChurchContext'
-import Timeline, { TimelineElement } from '../Timeline/Timeline'
-import EditButton from '../buttons/EditButton'
-import ChurchButton from '../buttons/ChurchButton/ChurchButton'
-import './DisplayChurchDetails.css'
-import RoleView from '../../auth/RoleView'
-import { Form, Formik, FormikHelpers } from 'formik'
-import * as Yup from 'yup'
 import { useMutation } from '@apollo/client'
+import { Form, Formik, FormikHelpers } from 'formik'
+import RoleView from 'auth/RoleView'
+import { Button } from 'components/ui/button'
 import {
-  ADD_GOVERNORSHIP_ADMIN,
-  REMOVE_GOVERNORSHIP_ADMIN,
-  ADD_COUNCIL_ADMIN,
-  REMOVE_COUNCIL_ADMIN,
-  ADD_STREAM_ADMIN,
-  REMOVE_STREAM_ADMIN,
-  ADD_CAMPUS_ADMIN,
-  REMOVE_CAMPUS_ADMIN,
-  ADD_OVERSIGHT_ADMIN,
-  REMOVE_OVERSIGHT_ADMIN,
-  ADD_DENOMINATION_ADMIN,
-  REMOVE_DENOMINATION_ADMIN,
-  ADD_BACENTA_ADMIN,
-  REMOVE_BACENTA_ADMIN,
-} from './AdminMutations'
-import {
-  alertMsg,
-  directoryLock,
-  plural,
-  throwToSentry,
-} from '../../global-utils'
-import Breadcrumb from './Breadcrumb'
-import { Button, Col, Container, Modal, Row } from 'react-bootstrap'
-import PlaceholderCustom from 'components/Placeholder'
-import { Geo } from 'react-bootstrap-icons'
-import ViewAll from 'components/buttons/ViewAll'
-import { permitAdmin } from 'permission-utils'
-import useSetUserChurch from 'hooks/useSetUserChurch'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
+import { Separator } from 'components/ui/separator'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { MemberContext } from 'contexts/MemberContext'
 import {
   Church,
+  ChurchIdAndName,
   ChurchLevel,
   MemberWithoutBioData,
   Role,
   VacationStatusOptions,
 } from 'global-types'
-import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
-import SearchMember from 'components/formik/SearchMember'
+import {
+  alertMsg,
+  directoryLock,
+  plural,
+  throwToSentry,
+} from 'global-utils'
 import useModal from 'hooks/useModal'
+import { ChevronRight, MapPin, Pencil, PencilLine, XCircle } from 'lucide-react'
+import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
+import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
+import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
+import { permitAdmin, permitAdminArrivals } from 'permission-utils'
+import { useContext, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import SearchMember from 'components/formik/SearchMember'
 import SubmitButton from 'components/formik/SubmitButton'
+import * as Yup from 'yup'
+import Breadcrumb, { BreadcrumbType } from './Breadcrumb'
+import {
+  MAKE_CAMPUS_ADMIN,
+  MAKE_COUNCIL_ADMIN,
+  MAKE_GOVERNORSHIP_ADMIN,
+  MAKE_OVERSIGHT_ADMIN,
+  MAKE_STREAM_ADMIN,
+} from './AdminMutations'
+import EditButton from 'components/buttons/EditButton'
+import CloseDownBacentaButton from 'components/buttons/CloseDownBacentaButton'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import MemberAvatarWithName from 'components/LeaderAvatar/MemberAvatarWithName'
 import Last3WeeksCard, {
   Last3WeeksCardProps,
   shouldFill,
 } from 'components/Last3WeeksCard'
-import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
+import DetailsCard from 'components/card/DetailsCard'
+import Timeline, { TimelineElement } from 'components/Timeline/Timeline'
+import ViewAll from 'components/buttons/ViewAll'
+import ChurchButton from 'components/buttons/ChurchButton/ChurchButton'
+import ChurchRow from 'components/buttons/ChurchButton/ChurchRow'
 import { displayError, isPermissionError } from 'utils/errorHandler'
 
 type DisplayChurchDetailsProps = {
@@ -67,7 +73,7 @@ type DisplayChurchDetailsProps = {
   name: string
   leaderTitle: string
   leader: MemberWithoutBioData
-  admins?: MemberWithoutBioData[]
+  admin?: MemberWithoutBioData
   deputyLeader?: MemberWithoutBioData
   churchId: string
   churchType: ChurchLevel
@@ -75,16 +81,10 @@ type DisplayChurchDetailsProps = {
   editlink: string
   editPermitted: Role[]
   history: TimelineElement[]
-  breadcrumb: Church[]
+  breadcrumb: BreadcrumbType[]
   buttons: Church[]
   vacation?: VacationStatusOptions
-  vacationCount?: number
-
-  buttonsSecondRow?: Church[]
-  subChurchBasonta?: string
-  basontaLeaders?: MemberWithoutBioData[]
   momoNumber?: string
-  //Fellowships
   location?: {
     longitude: number
     latitude: number
@@ -93,14 +93,13 @@ type DisplayChurchDetailsProps = {
 }
 
 type FormOptions = {
+  adminName: string
   adminSelect: string
 }
 
 const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
-  const { setUserChurch } = useSetUserChurch()
   const navigate = useNavigate()
-  let needsAdmin
-
+  let needsAdmin = false
   let roles: Role[] = []
 
   switch (props.churchType) {
@@ -135,30 +134,22 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
 
   const { currentUser } = useContext(MemberContext)
   const { show, handleShow, handleClose } = useModal()
+  const [editBussingOpen, setEditBussingOpen] = useState(false)
+  const [recordDialogOpen, setRecordDialogOpen] = useState(false)
   const { governorshipId, councilId, streamId, campusId, clickCard } =
     useContext(ChurchContext)
 
-  const htmlElement = document.querySelector('html')
-  const currentTheme = htmlElement?.getAttribute('data-bs-theme') || 'dark'
-
-  // Multi-Admin Management
-  const [AddGovernorshipAdmin] = useMutation(ADD_GOVERNORSHIP_ADMIN)
-  const [RemoveGovernorshipAdmin] = useMutation(REMOVE_GOVERNORSHIP_ADMIN)
-  const [AddCouncilAdmin] = useMutation(ADD_COUNCIL_ADMIN)
-  const [RemoveCouncilAdmin] = useMutation(REMOVE_COUNCIL_ADMIN)
-  const [AddStreamAdmin] = useMutation(ADD_STREAM_ADMIN)
-  const [RemoveStreamAdmin] = useMutation(REMOVE_STREAM_ADMIN)
-  const [AddCampusAdmin] = useMutation(ADD_CAMPUS_ADMIN)
-  const [RemoveCampusAdmin] = useMutation(REMOVE_CAMPUS_ADMIN)
-  const [AddOversightAdmin] = useMutation(ADD_OVERSIGHT_ADMIN)
-  const [RemoveOversightAdmin] = useMutation(REMOVE_OVERSIGHT_ADMIN)
-  const [AddDenominationAdmin] = useMutation(ADD_DENOMINATION_ADMIN)
-  const [RemoveDenominationAdmin] = useMutation(REMOVE_DENOMINATION_ADMIN)
-  const [AddBacentaAdmin] = useMutation(ADD_BACENTA_ADMIN)
-  const [RemoveBacentaAdmin] = useMutation(REMOVE_BACENTA_ADMIN)
+  const [MakeGovernorshipAdmin] = useMutation(MAKE_GOVERNORSHIP_ADMIN)
+  const [MakeCouncilAdmin] = useMutation(MAKE_COUNCIL_ADMIN)
+  const [MakeStreamAdmin] = useMutation(MAKE_STREAM_ADMIN)
+  const [MakeCampusAdmin] = useMutation(MAKE_CAMPUS_ADMIN)
+  const [MakeOversightAdmin] = useMutation(MAKE_OVERSIGHT_ADMIN)
 
   const initialValues: FormOptions = {
-    adminSelect: '',
+    adminName: props.admin
+      ? `${props.admin?.firstName} ${props.admin?.lastName}`
+      : '',
+    adminSelect: props.admin?.id ?? '',
   }
   const validationSchema = Yup.object({
     adminSelect: Yup.string().required(
@@ -166,422 +157,558 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     ),
   })
 
-  const addAdmin = async (
+  const onSubmit = async (
     values: FormOptions,
     onSubmitProps: FormikHelpers<FormOptions>
   ) => {
-    try {
-      const variables = {
-        adminId: values.adminSelect,
-        ...(props.churchType === 'Denomination' && {
-          denominationId: props.churchId,
-        }),
-        ...(props.churchType === 'Oversight' && { oversightId: props.churchId }),
-        ...(props.churchType === 'Campus' && { campusId }),
-        ...(props.churchType === 'Stream' && { streamId }),
-        ...(props.churchType === 'Council' && { councilId }),
-        ...(props.churchType === 'Governorship' && { governorshipId }),
-        ...(props.churchType === 'Bacenta' && { bacentaId: props.churchId }),
-      }
-
-      if (props.churchType === 'Denomination') {
-        await AddDenominationAdmin({ variables })
-      } else if (props.churchType === 'Oversight') {
-        await AddOversightAdmin({ variables })
-      } else if (props.churchType === 'Campus') {
-        await AddCampusAdmin({ variables })
-      } else if (props.churchType === 'Stream') {
-        await AddStreamAdmin({ variables })
-      } else if (props.churchType === 'Council') {
-        await AddCouncilAdmin({ variables })
-      } else if (props.churchType === 'Governorship') {
-        await AddGovernorshipAdmin({ variables })
-      } else if (props.churchType === 'Bacenta') {
-        await AddBacentaAdmin({ variables })
-      }
-
-      alertMsg(`Admin added successfully to ${props.churchType}`)
-      onSubmitProps.resetForm()
-      handleClose()
-      window.location.reload() // Refresh to show new admin
-    } catch (e) {
-      throwToSentry('Error adding admin', e)
-      alertMsg('Failed to add admin. Please try again.')
-    }
-  }
-
-  const removeAdmin = async (adminId: string) => {
-    if (!window.confirm('Are you sure you want to remove this admin?')) {
-      return
-    }
+    if (initialValues.adminSelect === values.adminSelect) return
 
     try {
-      const variables = {
-        adminId,
-        ...(props.churchType === 'Denomination' && {
-          denominationId: props.churchId,
-        }),
-        ...(props.churchType === 'Oversight' && { oversightId: props.churchId }),
-        ...(props.churchType === 'Campus' && { campusId }),
-        ...(props.churchType === 'Stream' && { streamId }),
-        ...(props.churchType === 'Council' && { councilId }),
-        ...(props.churchType === 'Governorship' && { governorshipId }),
-        ...(props.churchType === 'Bacenta' && { bacentaId: props.churchId }),
+      if (props.churchType === 'Oversight') {
+        await MakeOversightAdmin({
+          variables: {
+            oversightId: props.churchId,
+            newAdminId: values.adminSelect,
+            oldAdminId: initialValues.adminSelect || 'no-old-admin',
+          },
+        })
+        alertMsg('Oversight Admin has been changed successfully')
       }
 
-      if (props.churchType === 'Denomination') {
-        await RemoveDenominationAdmin({ variables })
-      } else if (props.churchType === 'Oversight') {
-        await RemoveOversightAdmin({ variables })
-      } else if (props.churchType === 'Campus') {
-        await RemoveCampusAdmin({ variables })
-      } else if (props.churchType === 'Stream') {
-        await RemoveStreamAdmin({ variables })
-      } else if (props.churchType === 'Council') {
-        await RemoveCouncilAdmin({ variables })
-      } else if (props.churchType === 'Governorship') {
-        await RemoveGovernorshipAdmin({ variables })
-      } else if (props.churchType === 'Bacenta') {
-        await RemoveBacentaAdmin({ variables })
+      if (props.churchType === 'Campus') {
+        await MakeCampusAdmin({
+          variables: {
+            campusId: campusId,
+            newAdminId: values.adminSelect,
+            oldAdminId: initialValues.adminSelect || 'no-old-admin',
+          },
+        })
+        alertMsg('Campus Admin has been changed successfully')
       }
 
-      alertMsg('Admin removed successfully')
-      window.location.reload() // Refresh to update admin list
+      if (props.churchType === 'Stream') {
+        await MakeStreamAdmin({
+          variables: {
+            streamId: streamId,
+            newAdminId: values.adminSelect,
+            oldAdminId: initialValues.adminSelect || 'no-old-admin',
+          },
+        })
+        alertMsg('Stream Admin has been changed successfully')
+      }
+
+      if (props.churchType === 'Council') {
+        await MakeCouncilAdmin({
+          variables: {
+            councilId: councilId,
+            newAdminId: values.adminSelect,
+            oldAdminId: initialValues.adminSelect || 'no-old-admin',
+          },
+        })
+        alertMsg('Council Admin has been changed successfully')
+      }
+
+      if (props.churchType === 'Governorship') {
+        await MakeGovernorshipAdmin({
+          variables: {
+            governorshipId: governorshipId,
+            newAdminId: values.adminSelect,
+            oldAdminId: initialValues.adminSelect || 'no-old-admin',
+          },
+        })
+        alertMsg('Governorship Admin has been changed successfully')
+      }
     } catch (e) {
       if (!isPermissionError(e)) {
         throwToSentry('Error changing admin', e)
       }
       displayError('Unable to Change Admin', e)
     } finally {
+      onSubmitProps.setSubmitting(false)
+      onSubmitProps.resetForm()
       handleClose()
     }
   }
-  //End of Admin Change
 
-  return (
+  const adminInitials = props.admin
+    ? `${props.admin?.firstName?.[0] ?? ''}${props.admin?.lastName?.[0] ?? ''}`
+    : ''
+
+  const identityBlock = (
     <>
-      <div className="py-2 top-heading title-bar">
-        <Breadcrumb breadcrumb={props.breadcrumb} />
-        <hr />
-        <Container>
-          <PlaceholderCustom as="h3" loading={!props.name} xs={12}>
-            <h3 className="mt-3 font-weight-bold">
-              {`${props.name} ${props.churchType}`}
-
-              {directoryLock(currentUser, props.churchType) && (
-                <RoleView roles={props.editPermitted} directoryLock>
-                  <EditButton link={props.editlink} />
-                </RoleView>
-              )}
-            </h3>
-          </PlaceholderCustom>
-
-          {needsAdmin && (
-            <RoleView roles={roles}>
-              <div className="mb-3">
-                <h6>Administrators ({props.admins?.length || 0})</h6>
-                {props.admins && props.admins.length > 0 ? (
-                  <div className="d-flex flex-column gap-2">
-                    {props.admins.map((admin) => (
-                      <Row key={admin.id} className="g-0 d-flex align-items-center">
-                        <Col className="col-auto">
-                          <MemberAvatarWithName
-                            member={admin}
-                            onClick={() => {
-                              clickCard(admin)
-                              navigate('/member/displaydetails')
-                            }}
-                          />
-                        </Col>
-                        <Col>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            className="ms-2"
-                            onClick={() => removeAdmin(admin.id)}
-                          >
-                            Remove
-                          </Button>
-                        </Col>
-                      </Row>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted">No admins assigned</p>
-                )}
-                <Button className="btn-secondary mt-2" size="sm" onClick={handleShow}>
-                  + Add Admin
-                </Button>
-              </div>
-            </RoleView>
-          )}
-        </Container>
-        <Modal show={show} onHide={handleClose} centered>
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={addAdmin}
-          >
-            {(formik) => (
-              <Form>
-                <Modal.Header closeButton>
-                  Add Admin to {`${props.churchType}`}
-                </Modal.Header>
-                <Modal.Body>
-                  <Row className="form-row">
-                    <Col>
-                      <SearchMember
-                        name="adminSelect"
-                        placeholder="Search for a member to add as admin"
-                        setFieldValue={formik.setFieldValue}
-                        aria-describedby="Member Search"
-                        error={formik.errors.adminSelect}
-                      />
-                    </Col>
-                  </Row>
-                </Modal.Body>
-                <Modal.Footer>
-                  <SubmitButton formik={formik} />
-                  <Button variant="secondary" onClick={handleClose}>
-                    Close
-                  </Button>
-                </Modal.Footer>
-              </Form>
-            )}
-          </Formik>
-        </Modal>
-      </div>
-      <Container>
+      <div>
         <LeaderAvatar leader={props.leader} leaderTitle={props.leaderTitle} />
-        {/* Bacenta Admin and Deputy Leader display */}
-        {props.churchType === 'Bacenta' && (
-          <div className="d-flex flex-column align-items-start mb-3">
-            {props.deputyLeader && (
-              <div
-                className="d-flex flex-row align-items-center gap-2 mb-1"
-                style={{ fontSize: '0.95em' }}
+
+        {needsAdmin && (props.admin || roles.length > 0) && (
+          <div className="flex items-center gap-2 -mt-2">
+            {props.admin && (
+              <Link
+                to="/member/displaydetails"
+                onClick={() => clickCard(props.admin)}
+                className="flex min-h-11 min-w-0 items-center gap-2 no-underline transition-opacity hover:opacity-80"
               >
-                <span className="fw-semibold text-muted">Deputy Leader</span>
-                <MemberAvatarWithName member={props.deputyLeader} size={32} />
-              </div>
+                <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Admin
+                </span>
+                <Avatar className="h-6 w-6 shrink-0">
+                  <AvatarImage
+                    src={props.admin.pictureUrl}
+                    alt={`${props.admin.firstName} ${props.admin.lastName}`}
+                  />
+                  <AvatarFallback className="bg-muted text-[10px] font-medium text-muted-foreground">
+                    {adminInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate text-xs font-medium text-foreground">
+                  {props.admin.firstName} {props.admin.lastName}
+                </span>
+              </Link>
             )}
-            {props.admins && props.admins.length > 0 && (
-              <div
-                className="d-flex flex-row align-items-center gap-2 mb-1"
-                style={{ fontSize: '0.95em' }}
+            <RoleView roles={roles}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1 px-2 text-xs"
+                onClick={handleShow}
               >
-                <span className="fw-semibold text-muted">Bacenta Admin</span>
-                <MemberAvatarWithName member={props.admins[0]} size={32} />
-                {props.admins.length > 1 && (
-                  <span className="text-muted small">(+{props.admins.length - 1} more)</span>
-                )}
-              </div>
-            )}
+                <Pencil className="h-3 w-3" />
+                {props.admin ? 'Change' : 'Add Admin'}
+              </Button>
+            </RoleView>
           </div>
         )}
-        {props.details?.length && (
-          <Row>
-            {props.details.map((detail, i) => (
-              <Col key={i} xs={detail.width ?? 6}>
-                <DetailsCard
-                  onClick={() => navigate(detail.link)}
-                  heading={detail.title}
-                  creativearts={detail?.creativearts}
-                  detail={
-                    !props.loading ? detail?.number?.toString() || '0' : ''
-                  }
-                  vacationCount={
-                    !props.loading
-                      ? detail?.vacationCount?.toString() || '0'
-                      : ''
-                  }
-                  vacationIcBacentaCount={
-                    !props.loading
-                      ? detail?.vacationIcBacentaCount?.toString() || '0'
-                      : ''
-                  }
-                />
-              </Col>
-            ))}
-          </Row>
-        )}
+      </div>
 
-        {props.churchType === 'Bacenta' &&
-        (props.church?.sprinterTopUp !== 0 ||
-          props.church?.urvanTopUp !== 0) ? (
-          <RoleView roles={['leaderBacenta']} verifyId={props?.leader?.id}>
-            {!props.momoNumber && !props.loading && (
-              <p className="my-1 bad fw-bold text-center">
-                There is no valid Mobile Money Number! Please update!
-              </p>
-            )}
-            <div className="d-grid gap-2 mt-2">
-              <PlaceholderCustom
-                loading={props.loading}
-                className={`btn-graphs`}
-                button="true"
-              >
-                <Button
-                  onClick={() => {
-                    navigate(`/${props.churchType.toLowerCase()}/editbussing`)
-                  }}
-                >
-                  Bus Payment Details
-                </Button>
-              </PlaceholderCustom>
+      {props.churchType === 'Bacenta' && (
+        <div className="space-y-2">
+          {props.deputyLeader && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-24 shrink-0">
+                Deputy Leader
+              </span>
+              <MemberAvatarWithName member={props.deputyLeader} />
             </div>
-          </RoleView>
-        ) : null}
-        <hr />
-        <div className="d-grid gap-2">
-          <PlaceholderCustom
-            loading={props.loading}
-            className="btn-graphs"
-            variant="brand"
-            button="button"
-          >
-            <Button
-              variant="brand"
-              size="lg"
-              onClick={() => {
-                setUserChurch({
+          )}
+          {props.admin && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-24 shrink-0">
+                Bacenta Admin
+              </span>
+              <MemberAvatarWithName member={props.admin} />
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  )
+
+  const busPaymentBlock =
+    props.churchType === 'Bacenta' &&
+    (props.church?.sprinterTopUp !== 0 || props.church?.urvanTopUp !== 0) ? (
+      <RoleView roles={['leaderBacenta']} verifyId={props?.leader?.id}>
+        {!props.momoNumber && !props.loading && (
+          <p className="text-sm font-semibold text-destructive text-center">
+            There is no valid Mobile Money Number! Please update!
+          </p>
+        )}
+        <Button
+          className="w-full"
+          variant="outline"
+          onClick={() => setEditBussingOpen(true)}
+        >
+          Bus Payment Details
+        </Button>
+      </RoleView>
+    ) : null
+
+  const actionButtonsBlock = (
+    <div className="space-y-3">
+      <Button
+        className="w-full"
+        size="lg"
+        onClick={() => {
+          navigate('/trends', {
+            state: {
+              overrideChurch: {
+                id: props.churchId,
+                name: props.name,
+                __typename: props.churchType,
+              } satisfies ChurchIdAndName,
+            },
+          })
+        }}
+      >
+        View Trends
+      </Button>
+
+      {shouldFill({
+        last3Weeks: props.last3Weeks ?? [],
+        vacation: props.vacation ?? 'Active',
+      }) && (
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={() => {
+            if (props.churchType === 'Bacenta') {
+              clickCard({
+                id: props.churchId,
+                name: props.name,
+                __typename: props.churchType,
+              })
+              setRecordDialogOpen(true)
+              return
+            }
+            navigate('/services', {
+              state: {
+                overrideChurch: {
                   id: props.churchId,
                   name: props.name,
                   __typename: props.churchType,
-                })
-                navigate(`/trends`)
-              }}
-            >
-              View Trends
-            </Button>
-          </PlaceholderCustom>
+                } satisfies ChurchIdAndName,
+              },
+            })
+          }}
+        >
+          {props.churchType === 'Bacenta' ? 'Fill Service Form' : 'Service Forms'}
+        </Button>
+      )}
+    </div>
+  )
 
-          {shouldFill({
-            last3Weeks: props.last3Weeks ?? [],
-            vacation: props.vacation ?? 'Active',
-          }) && (
-            <PlaceholderCustom
-              loading={props.loading}
-              className="btn-graphs"
-              size="lg"
-              button="button"
-            >
-              <Button
-                variant="brand"
-                size="lg"
-                onClick={() => {
-                  setUserChurch({
-                    id: props.churchId,
-                    name: props.name,
-                    __typename: props.churchType,
-                  })
+  const locationBlock =
+    props?.location && props.location?.latitude !== 0 ? (
+      <div className="text-center py-4">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+          Location
+        </h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Click for directions
+        </p>
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${props?.location?.latitude}%2C${props?.location?.longitude}`}
+          className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-muted hover:bg-muted/80 active:bg-muted/80 transition-colors"
+        >
+          <MapPin className="h-8 w-8 text-[hsl(var(--maps))]" />
+        </a>
+      </div>
+    ) : null
 
-                  navigate(`/services/${props.churchType.toLowerCase()}`)
-                }}
-              >
-                Service Forms
-              </Button>
-            </PlaceholderCustom>
+  const last3WeeksBlock =
+    props.last3Weeks && props.details[2]?.number === 'Active' ? (
+      <Last3WeeksCard last3Weeks={props.last3Weeks} />
+    ) : null
+
+  return (
+    <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      {/* Header */}
+      <StickyPageHeader>
+        <Breadcrumb breadcrumb={props.breadcrumb} />
+        <div className="flex items-center justify-between mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+            {props.name}{' '}
+            <span className="text-members">{props.churchType}</span>
+          </h1>
+          {directoryLock(currentUser, props.churchType) && (
+            <RoleView roles={props.editPermitted} directoryLock>
+              <StickyPageHeaderActions>
+                <EditButton link={props.editlink} />
+                {props.churchType === 'Bacenta' && props.leader?.id && (
+                  <CloseDownBacentaButton
+                    bacentaId={props.churchId}
+                    bacentaName={props.name}
+                    leaderId={props.leader.id}
+                  />
+                )}
+              </StickyPageHeaderActions>
+            </RoleView>
           )}
         </div>
-        {props?.location && props.location?.latitude !== 0 && (
-          <Container className="mt-4 text-center">
-            <h3>LOCATION</h3>
-            <p>Click here for directions</p>
-            <a
-              className="btn p-3"
-              href={`https://www.google.com/maps/search/?api=1&query=${props?.location?.latitude}%2C${props?.location?.longitude}`}
-            >
-              <Geo size="75" />
-            </a>
-          </Container>
-        )}
+      </StickyPageHeader>
 
-        {props.last3Weeks && props.details[2].number === 'Active' && (
-          <Last3WeeksCard last3Weeks={props.last3Weeks} />
-        )}
-      </Container>
+      {/* Bus payment details dialog */}
+      {props.churchType === 'Bacenta' && (
+        <UpdateBusPaymentDialog
+          open={editBussingOpen}
+          onOpenChange={setEditBussingOpen}
+        />
+      )}
 
-      {props.subChurch && props.buttons?.length ? (
-        <>
-          <Container>
-            <hr className="hr-line" />
+      {/* Fill Service Form dialog (Bacenta only) */}
+      {props.churchType === 'Bacenta' && (
+        <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Record this week&apos;s service</DialogTitle>
+              <DialogDescription>
+                Did the service take place this week?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordDialogOpen(false)
+                  navigate('/bacenta/record-service')
+                }}
+                className="group flex min-h-[64px] w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99]"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-members/10 text-members">
+                  <PencilLine className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Record Service
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    We met this week — fill the service form
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordDialogOpen(false)
+                  navigate('/services/bacenta/no-service')
+                }}
+                className="group flex min-h-[64px] w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-accent active:scale-[0.99]"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                  <XCircle className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    I Cancelled My Service
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    No service this week — give a reason
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
-            <div className="row justify-content-between">
-              <div className="col">
-                <p className="text-secondary">{`${props.subChurch} Locations`}</p>
+      {/* Change Admin Dialog */}
+      <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={onSubmit}
+          >
+            {(formik) => (
+              <Form>
+                <DialogHeader>
+                  <DialogTitle>Change {props.churchType} Admin</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <SearchMember
+                    name="adminSelect"
+                    initialValue={initialValues?.adminName}
+                    placeholder="Select an Admin"
+                    setFieldValue={formik.setFieldValue}
+                    aria-describedby="Member Search"
+                    error={formik.errors.adminSelect}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" type="button" onClick={handleClose}>
+                    Close
+                  </Button>
+                  <SubmitButton formik={formik} />
+                </DialogFooter>
+              </Form>
+            )}
+          </Formik>
+        </DialogContent>
+      </Dialog>
+
+      <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-8">
+        <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[320px_1fr] lg:gap-8 lg:items-start">
+          {/* LEFT — identity panel (desktop only) */}
+          <aside className="hidden lg:flex lg:flex-col lg:gap-5 lg:sticky lg:top-40 lg:rounded-xl lg:border lg:border-border lg:bg-card lg:p-6">
+            {identityBlock}
+            {busPaymentBlock}
+            {actionButtonsBlock}
+            {locationBlock}
+          </aside>
+
+          {/* MAIN content */}
+          <div className="space-y-5 min-w-0">
+            {/* Mobile-only identity */}
+            <div className="space-y-5 lg:hidden">{identityBlock}</div>
+
+            {/* Detail stat cards */}
+            {props.details?.length > 0 && (
+              <div className="grid grid-cols-2 gap-0">
+                {props.details.map((detail, i) => (
+                  <div
+                    key={i}
+                    className={detail.width === 12 ? 'col-span-2' : 'col-span-1'}
+                  >
+                    <DetailsCard
+                      onClick={detail.onClick ?? (() => navigate(detail.link))}
+                      heading={detail.title}
+                      detail={
+                        !props.loading ? detail?.number?.toString() || '0' : ''
+                      }
+                      vacationCount={
+                        !props.loading
+                          ? detail?.vacationCount?.toString() || '0'
+                          : ''
+                      }
+                    />
+                  </div>
+                ))}
               </div>
-              <div className="col-auto">
-                <Link
-                  className="card text-secondary px-1"
-                  to={`/${props.subChurch.toLowerCase()}/displayall`}
-                >
-                  {`View All ${plural(props.subChurch)}`}
-                </Link>
+            )}
+
+            {/* Last 3 weeks — desktop placement (alongside stats) */}
+            <div className="hidden lg:block">{last3WeeksBlock}</div>
+
+            {/* Mobile-only actions + location */}
+            <div className="space-y-5 lg:hidden">
+              {busPaymentBlock}
+              {actionButtonsBlock}
+              {locationBlock}
+            </div>
+
+            {/* Last 3 weeks — mobile placement (after location, original order) */}
+            <div className="lg:hidden">{last3WeeksBlock}</div>
+          </div>
+        </div>
+
+        {/* Bottom section — sub-churches (left) + history (right) on lg+ */}
+        {!props.loading && (props.subChurch || props.history?.length > 0) && (
+          <div className="mt-8 lg:mt-10">
+            <Separator className="mb-6" />
+            <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[320px_1fr] lg:gap-8 lg:items-start">
+              {/* LEFT — sub-churches (empty on Bacenta) */}
+              <div>
+                {props.subChurch && props.buttons?.length > 0 && (
+                  <>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        {`${props.subChurch} Locations`}
+                      </h3>
+                      <ViewAll
+                        to={`/${props.subChurch.toLowerCase()}/displayall`}
+                        label={`View All ${plural(props.subChurch)}`}
+                      />
+                    </div>
+                    {(() => {
+                      const PREVIEW_LIMIT = 3
+                      const visible = props.buttons.slice(0, PREVIEW_LIMIT)
+                      const remaining = Math.max(
+                        0,
+                        props.buttons.length - PREVIEW_LIMIT
+                      )
+                      const moreHref = `/${props.subChurch?.toLowerCase()}/displayall`
+
+                      return (
+                        <>
+                          {/* Mobile: chip buttons */}
+                          <div className="flex flex-wrap gap-2 lg:hidden">
+                            {visible.map((church, index) => (
+                              <ChurchButton key={index} church={church} />
+                            ))}
+                            {remaining > 0 && (
+                              <Link to={moreHref}>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1 border-dashed text-nowrap text-members hover:bg-members/10 hover:text-members"
+                                >
+                                  +{remaining} more
+                                  <ChevronRight className="size-3.5" />
+                                </Button>
+                              </Link>
+                            )}
+                          </div>
+                          {/* Desktop: stacked rows */}
+                          <div className="hidden lg:block divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
+                            {visible.map((church, index) => (
+                              <ChurchRow key={index} church={church} />
+                            ))}
+                            {remaining > 0 && (
+                              <Link
+                                to={moreHref}
+                                className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/50 active:bg-muted"
+                              >
+                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-members/10">
+                                  <span className="text-xs font-semibold text-members">
+                                    +{remaining}
+                                  </span>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-base font-semibold text-members">
+                                    {`${remaining} more ${
+                                      remaining === 1
+                                        ? props.subChurch
+                                        : plural(props.subChurch)
+                                    }`}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Show all
+                                  </p>
+                                </div>
+                                <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+                              </Link>
+                            )}
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </>
+                )}
+
+                {props.subChurch && !props.buttons?.length && (
+                  <RoleView
+                    roles={
+                      props.subChurch === 'Bacenta'
+                        ? permitAdminArrivals('Council')
+                        : permitAdmin(props.churchType)
+                    }
+                  >
+                    <Button
+                      className="w-full sm:w-auto"
+                      variant="outline"
+                      onClick={() =>
+                        navigate(
+                          `/${props.subChurch?.toLowerCase()}/add${props.subChurch?.toLowerCase()}`
+                        )
+                      }
+                    >
+                      {`Add New ${props.subChurch}`}
+                    </Button>
+                  </RoleView>
+                )}
+              </div>
+
+              {/* RIGHT — church history */}
+              <div>
+                {props.history?.length > 0 && (
+                  <>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        Church History
+                      </h3>
+                      <ViewAll
+                        to={`/${props.churchType.toLowerCase()}/history`}
+                      />
+                    </div>
+                    <Timeline entries={(props.history ?? []).slice(0, 5)} />
+                  </>
+                )}
               </div>
             </div>
-          </Container>
-
-          <div className="container mb-4 card-button-row">
-            <table>
-              <tbody>
-                <tr>
-                  {props.buttons.map((church, index) => {
-                    if (index > 4) {
-                      return null
-                    }
-                    return (
-                      <td className="col-auto" key={index}>
-                        <ChurchButton church={church} />{' '}
-                      </td>
-                    )
-                  })}
-                </tr>
-              </tbody>
-            </table>
           </div>
-        </>
-      ) : null}
-      {props.subChurch && !props.buttons?.length ? (
-        <Container className="d-grid gap-2 mt-2">
-          <RoleView roles={props.editPermitted}>
-            <PlaceholderCustom
-              loading={props.loading}
-              className="btn-graphs"
-              variant={currentTheme as 'dark' | 'light'}
-              button="button"
-            >
-              <Button
-                className="btn-graphs"
-                variant={currentTheme as 'dark' | 'light'}
-                onClick={() =>
-                  navigate(
-                    `/${props.subChurch?.toLowerCase()}/add${props.subChurch?.toLowerCase()}`
-                  )
-                }
-              >
-                {`Add New ${props.subChurch}`}
-              </Button>
-            </PlaceholderCustom>
-          </RoleView>
-        </Container>
-      ) : null}
-
-      {props.history?.length && (
-        <Container className="mt-5">
-          <Row>
-            <Col>
-              <h3 className="mb-0">CHURCH HISTORY</h3>
-            </Col>
-            <Col className="col-auto">
-              <ViewAll to={`/${props.churchType.toLowerCase()}/history`} />
-            </Col>
-          </Row>
-
-          <Timeline record={props.history} modifier="church" limit={5} />
-        </Container>
-      )}
-    </>
+        )}
+      </div>
+    </div>
   )
 }
 

@@ -7,10 +7,13 @@ import cors from 'cors'
 import { json } from 'body-parser'
 import neo4j from 'neo4j-driver'
 import { Neo4jGraphQL } from '@neo4j/graphql'
-import { jwtDecode } from 'jwt-decode'
 import { typeDefs } from './schema/graphql-schema'
 import resolvers from './resolvers/resolvers'
 import { loadSecrets } from './resolvers/secrets'
+import { verifyJwt } from './resolvers/utils/verify-jwt'
+import { computeUserAuthority } from './resolvers/utils/allowed-church-ids'
+import { requireAuthForMutationsPlugin } from './resolvers/utils/require-auth-for-mutations'
+import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 const startServer = async () => {
   const SECRETS = await loadSecrets()
@@ -88,30 +91,12 @@ const startServer = async () => {
   })
 
   const server = new ApolloServer({
-    context: async ({ req }) => {
-      const token = req.headers.authorization
-      let jwt = null
-
-      if (token) {
-        try {
-          jwt = jwtDecode(token.replace(/^Bearer\s+/i, ''))
-          console.log('🚀 ~ index.js:98 ~ jwt:', jwt)
-        } catch (error) {
-          console.error('Invalid token:', error)
-        }
-      }
-
-      return {
-        req,
-        executionContext: driver,
-        jwt: {
-          ...jwt,
-        },
-      }
-    },
     introspection: true,
     schema,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      requireAuthForMutationsPlugin,
+    ],
   })
 
   await server.start()
@@ -122,29 +107,68 @@ const startServer = async () => {
     json(),
     expressMiddleware(server, {
       context: async ({ req }) => {
-        const token = req.headers.authorization
-        let jwt = null
+        // Leave `context.jwt` undefined on a verifier-rejected or absent
+        // token. `@neo4j/graphql`'s `getAuthorizationContext` does
+        // `if (context.jwt)` — a truthy sentinel like `{}` makes the
+        // library treat the request as authenticated and silently bypasses
+        // schema-level `@authentication` (the 2026-05-26 incident).
+        // Resolvers read claims with `context.jwt?.roles` /
+        // `context.jwt?.userId`; `isAuth(...)` already returns FORBIDDEN
+        // on undefined roles.
+        const jwt = verifyJwt(req.headers.authorization, SECRETS.JWT_SECRET)
 
-        if (token) {
-          try {
-            jwt = jwtDecode(token.replace(/^Bearer\s+/i, ''))
-          } catch (error) {
-            console.error('Invalid token:', error)
-          }
+        // Enrich the JWT with the caller's authority graph, computed once
+        // per login from their Neo4j servant edges and cached for the
+        // token's remaining lifetime. Two fields are attached:
+        //
+        //   - `servantTrees` — one entry per servant edge (LEADS,
+        //     IS_ADMIN_FOR, …) with the church it points at and the spine
+        //     descendants reachable from it. Consumed by `assertCan` /
+        //     `rolesAt` for per-instance action gating. The flat coarse
+        //     `roles` claim alone is insufficient; an oversight leader
+        //     holding `leaderOversight` for Africa West must not be able
+        //     to act on a Bacenta beneath Europe.
+        //
+        //   - `allowedChurchIds` — union of every `reach` plus every spine
+        //     ancestor of every tree root. The `@churchScoped` /
+        //     `@churchScopedVia` directives reference this as
+        //     `$jwt.allowedChurchIds` in their authorization filters,
+        //     collapsing what used to be a 4-deep `streams.some.councils.some.…`
+        //     predicate into a single `id IN [...]` check.
+        //
+        // The engine reads `context.jwt` directly when set
+        // (get-authorization-context.js:22–32 in @neo4j/graphql), so
+        // attaching these fields here makes them visible to `$jwt.*`
+        // substitutions without touching the auth-service token format.
+        let servantTrees = []
+        let allowedChurchIds = []
+        if (jwt?.userId) {
+          const authority = await computeUserAuthority(
+            driver,
+            jwt.userId,
+            jwt.iat,
+            jwt.exp
+          )
+          servantTrees = authority.servantTrees
+          allowedChurchIds = authority.allowedChurchIds
         }
 
         return {
           req,
           executionContext: driver,
-          jwt,
+          jwt: jwt ? { ...jwt, servantTrees, allowedChurchIds } : undefined,
         }
       },
     })
   )
 
-  await new Promise((resolve) =>
-    httpServer.listen({ port: SECRETS.GRAPHQL_SERVER_PORT || 4001 }, resolve)
-  )
+  mountDownloadRoutes(app, driver, SECRETS.JWT_SECRET)
+
+  const port =
+    process.env.GRAPHQL_SERVER_PORT || SECRETS.GRAPHQL_SERVER_PORT || 4001
+  await new Promise((resolve) => {
+    httpServer.listen({ port }, resolve)
+  })
   console.log(
     `🚀 GraphQL Server ready at http://${
       SECRETS.GRAPHQL_SERVER_HOST || '0.0.0.0'

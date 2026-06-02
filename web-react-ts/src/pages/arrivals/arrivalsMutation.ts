@@ -159,7 +159,6 @@ export const UPLOAD_MOBILISATION_PICTURE = gql`
       serviceLog {
         bacenta {
           id
-          stream_name
           bussing(limit: 1) {
             id
             serviceDate {
@@ -197,7 +196,6 @@ export const RECORD_BUSSING_FROM_BACENTA = gql`
         serviceLog {
           bacenta {
             id
-            stream_name
             bussing(limit: 1) {
               id
               week

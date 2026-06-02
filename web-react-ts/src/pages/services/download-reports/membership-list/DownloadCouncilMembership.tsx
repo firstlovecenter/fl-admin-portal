@@ -1,13 +1,13 @@
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext } from 'react'
-import { DISPLAY_COUNCIL_MEMBERSHIP } from './DownloadMembership.gql'
+import { COUNCIL_MEMBERSHIP_DOWNLOAD } from './MembershipDownload.gql'
 import { useQuery } from '@apollo/client'
 import DownloadMembershipList from './DownloadMembershipList'
 
 const DownloadCouncilMembership = () => {
   const { councilId } = useContext(ChurchContext)
 
-  const { data, loading, error } = useQuery(DISPLAY_COUNCIL_MEMBERSHIP, {
+  const { data, loading, error } = useQuery(COUNCIL_MEMBERSHIP_DOWNLOAD, {
     variables: { id: councilId },
   })
 

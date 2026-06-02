@@ -37,14 +37,3 @@
 .space {
   height: 23px;
 }
-
-:root {
-  --creativearts-border-color: var(--chakra-colors-orange-300);
-  --creativearts-border-width: 2px;
-}
-
-[data-bs-theme='dark'] .creativearts,
-[data-bs-theme='light'] .creativearts {
-  border-color: var(--creativearts-border-color);
-  border-width: var(--creativearts-border-width);
-}

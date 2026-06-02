@@ -1,13 +1,13 @@
 import React from 'react'
-import { Spinner } from 'react-bootstrap'
+import { Loader2 } from 'lucide-react'
 
 const BtnSubmitText = ({ loading }: { loading: boolean }) => {
   return (
-    <div>
+    <div className="inline-flex items-center justify-center gap-2">
       {loading ? (
         <>
-          <Spinner animation="grow" size="sm" />
-          <span> Submitting</span>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Submitting</span>
         </>
       ) : (
         `Yes, I'm sure`

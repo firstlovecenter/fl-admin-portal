@@ -2,11 +2,14 @@ import { gql } from '@apollo/client'
 
 export const GET_COUNCIL_PENDING_APPROVAL_TRANSACTIONS = gql`
   query getCouncilPendingApprovalTransactions($campusId: ID!) {
-    campuses(where: { id: $campusId }) {
+    campuses(where: { id: { eq: $campusId } }) {
       councils {
         id
         name
-        transactions(where: { status: "pending approval" }) {
+        # Aliased so CouncilForAccounts.transactions / Approvals.tsx
+        # consumers stay unchanged. Server-side filtered + LIMIT 500 capped;
+        # see Council.pendingApprovalTransactions in api/src/schema/accounts.graphql.
+        transactions: pendingApprovalTransactions {
           id
           createdAt
           lastModified

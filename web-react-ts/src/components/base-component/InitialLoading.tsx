@@ -1,21 +1,13 @@
-import { Container } from 'react-bootstrap'
-import { PropagateLoader } from 'react-spinners'
+import SynagoLogo from 'components/SynagoLogo'
 
 const InitialLoading = ({ text }: { text?: string }) => {
-  const htmlElement = document.querySelector('html')
-  const currentTheme = htmlElement?.getAttribute('data-bs-theme')
-
   return (
-    <Container className="100vh center-page d-flex flex-column justify-content-center align-items-center">
-      <PropagateLoader
-        speedMultiplier={0.8}
-        color={currentTheme === 'dark' ? 'grey' : '#000000'}
-      />
-
-      <Container className="text-center mt-5">
-        <p>{text || 'Please wait while we log you in'}</p>
-      </Container>
-    </Container>
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background px-4">
+      <SynagoLogo className="h-16 w-16 text-brand" title="Synago" animated />
+      <p className="max-w-xs text-center text-sm text-muted-foreground">
+        {text ?? 'Please wait while we log you in'}
+      </p>
+    </div>
   )
 }
 

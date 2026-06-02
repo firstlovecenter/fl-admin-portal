@@ -1,0 +1,79 @@
+import { gql } from '@apollo/client'
+
+export const WEEKLY_TIP_FOR_CHURCH = gql`
+  query WeeklyTipForChurch($churchId: ID!) {
+    weeklyTipForChurch(churchId: $churchId) {
+      id
+      week
+      year
+      body
+      scriptureSnippet
+      passageSnippet
+      prayerPrompt
+      generatedAt
+      scripture {
+        id
+        book
+        chapter
+        verse
+        translation
+        text
+      }
+      quotedPassage {
+        id
+        text
+        citationLabel
+      }
+      recommendedBook {
+        id
+        title
+        author
+        subtitle
+        publishedYear
+      }
+      recommendedChapter {
+        id
+        title
+        order
+      }
+    }
+  }
+`
+
+export type WeeklyTipForChurchResult = {
+  weeklyTipForChurch: {
+    id: string
+    week: number
+    year: number
+    body: string
+    scriptureSnippet: string | null
+    passageSnippet: string | null
+    prayerPrompt: string | null
+    generatedAt: string
+    scripture: {
+      id: string
+      book: string
+      chapter: number
+      verse: number
+      translation: string
+      text: string
+    } | null
+    quotedPassage: {
+      id: string
+      text: string
+      citationLabel: string
+    } | null
+    recommendedBook: {
+      id: string
+      title: string
+      author: string
+      subtitle: string | null
+      publishedYear: number | null
+    } | null
+    recommendedChapter: {
+      id: string
+      title: string
+      order: number
+    } | null
+  } | null
+}

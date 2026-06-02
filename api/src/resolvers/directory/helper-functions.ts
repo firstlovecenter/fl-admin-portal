@@ -91,10 +91,6 @@ export const churchInEmail = (church: {
   type: ChurchLevelWithClosed
   name: string
 }) => {
-  if (church.type === 'ClosedFellowship') {
-    return `${church.name} Fellowship which has been closed`
-  }
-
   if (church.type === 'ClosedBacenta') {
     return `${church.name} Bacenta which has been closed`
   }

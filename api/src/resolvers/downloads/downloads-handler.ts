@@ -1,0 +1,264 @@
+/* eslint-disable no-relative-import-paths/no-relative-import-paths */
+import { Driver, Record as Neo4jRecord, Result } from 'neo4j-driver'
+import { Writable } from 'stream'
+import { Role } from '../utils/types'
+import { permitLeaderAdmin } from '../permissions'
+import { isAuth } from '../utils/utils'
+import {
+  DownloadLevel,
+  ROWS_BY_LEVEL,
+  NAME_QUERY_BY_LEVEL,
+} from './downloads-cypher'
+
+const DOWNLOAD_LEVELS: ReadonlyArray<DownloadLevel> = [
+  'Bacenta',
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+  'Oversight',
+  'Denomination',
+]
+
+export const isDownloadLevel = (value: unknown): value is DownloadLevel =>
+  typeof value === 'string' &&
+  (DOWNLOAD_LEVELS as readonly string[]).includes(value)
+
+// Tickable ancestor levels — every level whose Name / Leader / Leader Phone
+// can appear as columns on a member row. The scope itself never appears here;
+// it's redundant on every row and is captured in the filename instead.
+// Denomination is excluded because the Cypher RETURN doesn't expose it.
+const ANCESTOR_LEVELS = [
+  'Oversight',
+  'Campus',
+  'Stream',
+  'Council',
+  'Governorship',
+  'Bacenta',
+] as const
+
+export type AncestorLevel = (typeof ANCESTOR_LEVELS)[number]
+
+export const isAncestorLevel = (value: unknown): value is AncestorLevel =>
+  typeof value === 'string' &&
+  (ANCESTOR_LEVELS as readonly string[]).includes(value)
+
+type ColumnDef = { key: string; label: string }
+
+const lowerFirst = (s: string): string =>
+  s.length === 0 ? s : s[0].toLowerCase() + s.slice(1)
+
+const ancestorColumns = (level: AncestorLevel): ColumnDef[] => {
+  const k = lowerFirst(level)
+  return [
+    { key: k, label: level },
+    { key: `${k}Leader`, label: `${level} Leader` },
+    { key: `${k}LeaderPhone`, label: `${level} Leader Phone` },
+  ]
+}
+
+const IDENTITY_COLUMNS: ReadonlyArray<ColumnDef> = [
+  { key: 'firstName', label: 'First Name' },
+  { key: 'lastName', label: 'Last Name' },
+  { key: 'phoneNumber', label: 'Phone Number' },
+  { key: 'whatsappNumber', label: 'Whatsapp Number' },
+  { key: 'email', label: 'Email' },
+  { key: 'maritalStatus', label: 'Marital Status' },
+  { key: 'gender', label: 'Gender' },
+  { key: 'dateOfBirth', label: 'Date of Birth' },
+  { key: 'visitationArea', label: 'Visitation Area' },
+  { key: 'basonta', label: 'Basonta' },
+]
+
+// Build the CSV column list for a given set of ticked ancestor levels.
+// Levels are emitted in canonical top-down order regardless of input order,
+// then identity columns are appended. Duplicates in the input are ignored.
+export function buildColumnsForLevels(levels: AncestorLevel[]): ColumnDef[] {
+  const set = new Set(levels)
+  const ancestors = ANCESTOR_LEVELS.filter((l) => set.has(l)).flatMap(
+    ancestorColumns
+  )
+  return [...ancestors, ...IDENTITY_COLUMNS]
+}
+
+// Default = every ancestor level strictly below the scope (inclusive of
+// Bacenta), in canonical descending order. Bacenta scope yields an empty
+// list, which produces an identity-only CSV (no per-row church columns,
+// since the only church is the scope itself).
+export function defaultLevelsForScope(scope: DownloadLevel): AncestorLevel[] {
+  const idx = ANCESTOR_LEVELS.indexOf(scope as AncestorLevel)
+  if (idx < 0) return [...ANCESTOR_LEVELS] // Denomination: all six
+  return ANCESTOR_LEVELS.slice(idx + 1) as AncestorLevel[]
+}
+
+const ILLEGAL_FILENAME_CHARS = /[/\\:*?"<>|]/g
+
+function escapeCsv(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  const s = String(value)
+  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
+  return s
+}
+
+// Mirrors `formatBirthday` in DownloadMembershipList.tsx — birthdays are
+// rendered as day + month only (no year). Cypher returns the date as
+// `YYYY-MM-DD` via `toString(dob.date)`.
+function formatBirthday(iso: unknown): string {
+  if (typeof iso !== 'string' || !iso) return ''
+  const d = new Date(`${iso}T00:00:00Z`)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  })
+}
+
+function formatRow(
+  record: Record<string, unknown>,
+  columns: ReadonlyArray<ColumnDef>
+): string {
+  return `${columns
+    .map(({ key }) => {
+      const raw = record[key]
+      if (key === 'dateOfBirth') return escapeCsv(formatBirthday(raw))
+      return escapeCsv(raw)
+    })
+    .join(',')}\r\n`
+}
+
+export function buildFilename(
+  churchName: string,
+  level: DownloadLevel
+): string {
+  const today = new Date().toISOString().slice(0, 10)
+  const safeName = (churchName || level).replace(ILLEGAL_FILENAME_CHARS, '-')
+  return `${safeName} ${level} Membership - ${today}.csv`
+}
+
+// Builds the `Content-Disposition` value with both the legacy
+// quoted form (for ASCII-only browsers / parsers) and the RFC 5987
+// `filename*=UTF-8''…` form so non-ASCII church names survive transit.
+export function buildContentDisposition(filename: string): string {
+  const safeAscii = filename.replace(/[^\x20-\x7E]/g, '_').replace(/"/g, '')
+  return `attachment; filename="${safeAscii}"; filename*=UTF-8''${encodeURIComponent(
+    filename
+  )}`
+}
+
+export class DownloadError extends Error {
+  statusCode: number
+
+  constructor(statusCode: number, message: string) {
+    super(message)
+    this.statusCode = statusCode
+  }
+}
+
+type DownloadHooks = {
+  // Called once auth + church lookup pass, before the first byte is written.
+  // Express implementations use this to set Content-Disposition.
+  onPrepared: (filename: string) => void
+}
+
+export type HandleMembershipDownloadParams = {
+  driver: Driver
+  level: DownloadLevel
+  churchId: string
+  // Subset of ancestor levels whose Name / Leader / Leader Phone columns
+  // should appear on each row. If omitted, every ancestor level below the
+  // scope is included (matches the legacy "everything" behaviour). An empty
+  // array yields an identity-only CSV with no ancestor columns.
+  levels?: AncestorLevel[]
+  roles: Role[] | undefined
+  userId: string | undefined
+  output: Writable
+  hooks: DownloadHooks
+  // Set to true by the caller (e.g. on HTTP `req.close`) to abort the
+  // streaming loop early. The Cypher result is consumed via async iterator,
+  // so checking this flag between rows lets us release the session promptly
+  // when the client disconnects mid-export.
+  abort?: { aborted: boolean }
+}
+
+export async function handleMembershipDownload(
+  params: HandleMembershipDownloadParams
+): Promise<{ rowCount: number; filename: string }> {
+  const { driver, level, churchId, roles, userId, output, hooks, abort } =
+    params
+  const columns = buildColumnsForLevels(
+    params.levels ?? defaultLevelsForScope(level)
+  )
+  const headerLine = `${columns.map((c) => escapeCsv(c.label)).join(',')}\r\n`
+
+  // Fail fast on missing identifiers BEFORE any role check — a token
+  // without a userId should never have reached this endpoint, and we
+  // don't want isAuth's role decision to be the first thing a malformed
+  // token interacts with.
+  if (!userId) throw new DownloadError(401, 'Unauthorized')
+  if (!churchId) throw new DownloadError(400, 'Missing churchId')
+
+  // Throws a `FORBIDDEN` Error if the user lacks the role for this level.
+  // Caller maps that to HTTP 403. `permitLeaderAdmin` (not `permitMe`)
+  // because membership exports leak PII (phone, WhatsApp, email, DOB) for
+  // an entire branch of the hierarchy — that's the leader/admin gate, not
+  // the broader "any servant in the building" gate that includes
+  // `arrivalsCounterStream`, `arrivalsPayerCouncil`, and `tellerStream`.
+  isAuth(permitLeaderAdmin(level), roles)
+
+  // READ mode lets a clustered Neo4j route us to a follower / read replica
+  // and skip the leader, which keeps bulk exports off the write path.
+  const session = driver.session({ defaultAccessMode: 'READ' })
+  try {
+    // 1. Look up the church name first — also serves as a 404 probe and
+    //    feeds the Content-Disposition filename before any rows are written.
+    //    The query also gates on the caller having a `:LEADS` or
+    //    `:IS_ADMIN_FOR` edge that reaches this church (the per-instance
+    //    IDOR check on top of the role check above). 0 rows = either the
+    //    church doesn't exist or the caller has no authority to reach it —
+    //    both surface as the same 404 so we don't leak existence.
+    const nameResult = await session.executeRead((tx) =>
+      tx.run(NAME_QUERY_BY_LEVEL[level], { id: churchId, userId })
+    )
+    const churchName: string = nameResult.records[0]?.get('name') ?? ''
+    if (!churchName) {
+      throw new DownloadError(404, `${level} ${churchId} not found`)
+    }
+
+    const filename = buildFilename(churchName, level)
+    hooks.onPrepared(filename)
+
+    // 2. Header row.
+    output.write(headerLine)
+
+    // 3. Stream member rows via the driver's async-iterator API. `for await`
+    //    pauses Cypher consumption naturally between rows, so awaiting the
+    //    Writable's `'drain'` event when `output.write` returns false gives
+    //    us real backpressure (the older `subscribe` callback API does not
+    //    expose pause/resume on `Result`).
+    //
+    //    Note: once the header is on the wire we cannot change HTTP status
+    //    mid-stream. An error here truncates the CSV; callers must surface
+    //    that through the connection's natural EOF.
+    const result: Result = session.run(ROWS_BY_LEVEL[level], { id: churchId })
+    let rowCount = 0
+    for await (const record of result as AsyncIterable<Neo4jRecord>) {
+      if (abort?.aborted) break
+
+      const row: Record<string, unknown> = {}
+      for (const key of record.keys) {
+        row[key as string] = record.get(key)
+      }
+      if (!output.write(formatRow(row, columns))) {
+        await new Promise<void>((resolve) => {
+          output.once('drain', resolve)
+        })
+      }
+      rowCount += 1
+    }
+
+    return { rowCount, filename }
+  } finally {
+    await session.close()
+  }
+}

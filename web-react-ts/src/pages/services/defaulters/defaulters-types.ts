@@ -9,7 +9,6 @@ import {
   MemberWithoutBioData,
   Campus,
   Stream,
-  Hub,
   ChurchLevel,
   Bacenta,
 } from 'global-types'
@@ -18,15 +17,14 @@ export interface HigherChurchWithDefaulters extends Church {
   services?: ServiceRecord[]
   rehearsals?: ServiceRecord[]
 }
-export interface HubWithDefaulters extends Hub {
-  __typename: 'Hub'
-  campus: Campus
-  rehearsals: ServiceRecord[]
-}
 export interface BacentaWithDefaulters extends Bacenta {
   __typename: 'Bacenta'
   governorship: Governorship
   services: ServiceRecord[]
+  // Single service record for the selected week (driven by `weekStart` arg
+  // on the cypher field). Replaces the `services(limit: 1)` accessor that
+  // always returned the latest record across all time.
+  serviceRecordForWeek?: ServiceRecord | null
 }
 export interface GovernorshipWithDefaulters extends Governorship {
   __typename: 'Governorship'
@@ -86,46 +84,8 @@ export interface HigherChurchWithDefaulters extends Church {
   [key: string]: any
 }
 
-export interface HigherSontaChurchWithDefaulters
-  extends HigherChurchWithDefaulters {
-  __typename: 'Ministry' | 'HubCouncil' | 'CreativeArts'
-  admin?: MemberWithoutBioData
-  stream_name: StreamOptions
-  hubRehearsalsThisWeek: BacentaWithDefaulters[]
-  hubFormDefaultersThisWeek: BacentaWithDefaulters[]
-  hubsBankedThisWeek: BacentaWithDefaulters[]
-  hubBankingDefaultersThisWeek: BacentaWithDefaulters[]
-  hubCancelledRehearsalsThisWeek: BacentaWithDefaulters[]
-  governorshipBankingDefaultersThisWeek: GovernorshipWithDefaulters[]
-  councilBankingDefaultersThisWeek: CouncilWithDefaulters[]
-  governorshipBankedThisWeek: GovernorshipWithDefaulters[]
-  councilBankedThisWeek: CouncilWithDefaulters[]
-
-  streamServicesThisWeek?: StreamWithDefaulters[]
-  streamFormDefaultersThisWeek?: StreamWithDefaulters[]
-  streamBankedThisWeek?: StreamWithDefaulters[]
-  streamBankingDefaultersThisWeek?: StreamWithDefaulters[]
-  streamCancelledServicesThisWeek?: StreamWithDefaulters[]
-  streamServicesThisWeekCount?: number
-  streamFormDefaultersThisWeekCount?: number
-  streamBankedThisWeekCount?: number
-  streamBankingDefaultersThisWeekCount?: number
-  streamCancelledServicesThisWeekCount?: number
-  streamGovernorshipBankingDefaultersThisWeekCount?: number
-
-  bankedBy: Member
-  hubRehearsalsThisWeekCount: number
-  hubFormDefaultersThisWeekCount: number
-  hubsBankedThisWeekCount: number
-  hubBankingDefaultersThisWeekCount: number
-  hubCancelledRehearsalsThisWeekCount: number
-  hubGovernorshipBankingDefaultersThisWeekCount: number
-
-  // [key: string]: any
-}
-
 export interface DefaultersUseChurchType {
-  church: HigherChurchWithDefaulters | HigherSontaChurchWithDefaulters | null
+  church: HigherChurchWithDefaulters | null
   loading: boolean
   error: ApolloError | undefined
   refetch: () => Promise<any>

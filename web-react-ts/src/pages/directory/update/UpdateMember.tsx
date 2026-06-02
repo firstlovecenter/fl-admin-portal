@@ -4,10 +4,9 @@ import { useQuery, useMutation } from '@apollo/client'
 
 import { parsePhoneNum, throwToSentry } from 'global-utils'
 import {
-  LOG_MEMBER_HISTORY,
-  UPDATE_MEMBER_BASONTA,
   UPDATE_MEMBER_MUTATION,
   UPDATE_MEMBER_BACENTA,
+  UPDATE_MEMBER_BASONTA,
 } from './UpdateMutations'
 import {
   DISPLAY_MEMBER_BIO,
@@ -63,7 +62,6 @@ const UpdateMember = () => {
   })
   const [UpdateMemberBacenta] = useMutation(UPDATE_MEMBER_BACENTA)
   const [UpdateMemberBasonta] = useMutation(UPDATE_MEMBER_BASONTA)
-  const [LogMemberHistory] = useMutation(LOG_MEMBER_HISTORY)
 
   const onSubmit = async (
     values: CreateMemberFormOptions,
@@ -91,37 +89,6 @@ const UpdateMember = () => {
         },
       })
 
-      if (memberChurch?.basonta?.id !== values.basonta) {
-        const res = await UpdateMemberBasonta({
-          variables: {
-            memberId,
-            basontaId: values.basonta,
-          },
-        })
-
-        const newBasonta = res.data.UpdateMemberBasonta?.basonta
-        let basontaHistoryLog = `${member.firstName} ${member.lastName} joined ${newBasonta?.name} Basonta`
-        if (initialValues.basonta) {
-          basontaHistoryLog = `${member.firstName} ${member.lastName} moved from ${memberChurch?.basonta.name} Basonta to ${newBasonta?.name} Basonta`
-        }
-
-        if (
-          (values.basonta === 'None' || !values.basonta) &&
-          memberChurch?.basonta
-        ) {
-          basontaHistoryLog = `${member.firstName} ${member.lastName} left ${memberChurch?.basonta.name} Basonta`
-        }
-
-        if (values.basonta && memberChurch?.basonta) {
-          await LogMemberHistory({
-            variables: {
-              ids: [memberId, newBasonta?.name, memberChurch?.basonta?.id],
-              historyRecord: basontaHistoryLog,
-            },
-          })
-        }
-      }
-
       if (memberChurch?.bacenta.id !== values.bacenta.id) {
         await UpdateMemberBacenta({
           variables: {
@@ -129,6 +96,15 @@ const UpdateMember = () => {
             bacentaId: values.bacenta?.id,
             ids: [memberId, values.bacenta?.id, memberChurch?.bacenta.id],
             historyRecord: `${member.firstName} ${member.lastName} moved from ${memberChurch?.bacenta.name} Bacenta to ${values.bacenta?.name} Bacenta`,
+          },
+        })
+      }
+
+      if (values.basonta && memberChurch?.basonta?.id !== values.basonta) {
+        await UpdateMemberBasonta({
+          variables: {
+            memberId: memberId,
+            basontaId: values.basonta,
           },
         })
       }
@@ -147,7 +123,6 @@ const UpdateMember = () => {
 
   return (
     <MemberForm
-      title="Edit Member Details"
       initialValues={initialValues}
       onSubmit={onSubmit}
       loading={memberLoading}

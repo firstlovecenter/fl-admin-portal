@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const DISPLAY_BACENTA_BUSSING_DETAILS = gql`
   query DisplayBacentaBussingDetails($id: ID!) {
-    bacentas(where: { id: $id }, options: { limit: 1 }) {
+    bacentas(where: { id: { eq: $id } }, limit: 1) {
       id
       name
 

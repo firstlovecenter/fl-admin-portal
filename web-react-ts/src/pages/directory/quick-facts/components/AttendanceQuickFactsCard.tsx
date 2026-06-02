@@ -1,5 +1,6 @@
 import React from 'react'
-import { Badge } from 'react-bootstrap'
+import { Badge } from 'components/ui/badge'
+import { cn } from 'components/lib/utils'
 import '../QuickFacts.css'
 import { getPercentageChange } from './quick-fact-utils'
 
@@ -25,29 +26,21 @@ const AttendanceQuickFactsCard = (props: AttendanceQuickFactsProps) => {
     details?.avgHigherLevelAttendanceThisMonth as number
   )
 
-  const getBadgeBackground = () => {
-    if ((percentageRiseOrFall as number) >= 0) return 'green'
-    return 'red'
-  }
-
-  const getBadgeColor = () => {
-    if ((percentageRiseOrFall as number) >= 0) return 'badge-percentage-green'
-    return 'badge-percentage-red'
-  }
+  const isPositive = (percentageRiseOrFall as number) >= 0
 
   return (
     <div
-      className="w-100 text-center quick-fact-card"
+      className="quick-fact-card w-full text-center"
       data-testid="attendanceCard"
     >
       <div className="church-text">{details?.churchType}</div>
-      <div className="stat-text ">
+      <div className="stat-text">
         Average Weekday <br />
         {details?.cardType}
       </div>
       <div className="leader-text">{details?.leadersName}</div>
       <div className="branch-text">
-        {details?.churchName + ' ' + details?.churchType}
+        {`${details?.churchName} ${details?.churchType}`}
       </div>
       <div className="facts-number">
         {details?.churchAvgAttendanceThisMonth === 'null'
@@ -56,10 +49,14 @@ const AttendanceQuickFactsCard = (props: AttendanceQuickFactsProps) => {
       </div>
       <div>
         <Badge
-          bg={`${getBadgeBackground()}`}
-          className={`${getBadgeColor()} mt-auto`}
+          className={cn(
+            'mt-auto',
+            isPositive
+              ? 'badge-percentage-green bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]'
+              : 'badge-percentage-red bg-destructive text-destructive-foreground hover:bg-destructive'
+          )}
         >
-          {(percentageRiseOrFall as number) >= 0 ? '+' : ''}
+          {isPositive ? '+' : ''}
           {percentageRiseOrFall}%
         </Badge>
       </div>

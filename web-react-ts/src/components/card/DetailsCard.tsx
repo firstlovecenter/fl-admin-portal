@@ -1,8 +1,8 @@
-import PlaceholderCustom from 'components/Placeholder'
+import { cn } from 'components/lib/utils'
+import { Badge } from 'components/ui/badge'
+import { Skeleton } from 'components/ui/skeleton'
 import { MemberContext } from 'contexts/MemberContext'
-import React, { useContext } from 'react'
-import { Badge, Card, Col, Row } from 'react-bootstrap'
-import './DetailsCard.css'
+import { useContext } from 'react'
 
 type DetailsCardPropsType = {
   subtitle?: string
@@ -13,57 +13,53 @@ type DetailsCardPropsType = {
   onClick?: () => void
   bgNone?: boolean
   img?: string
-  creativearts?: boolean
   vacationCount?: string
-  vacationIcBacentaCount?: string
   leading?: JSX.Element
   trailing?: JSX.Element
 }
 
 const DetailsCard = (props: DetailsCardPropsType) => {
   const { currentUser } = useContext(MemberContext)
-  const { leading, trailing, detail, heading, onClick, creativearts } = props
+  const { leading, trailing, detail, heading, onClick } = props
   const loading = !heading || props.loading || !currentUser.id || !detail
 
+  if (loading) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-3 m-1">
+        <Skeleton className="h-3 w-16 mb-2" />
+        <Skeleton className="h-6 w-24" />
+      </div>
+    )
+  }
+
   return (
-    <Card
-      className={`p-2 m-1 pointer ${creativearts && 'creativearts'}`}
+    <div
+      className={cn(
+        'rounded-lg border border-border bg-card p-3 m-1 transition-all duration-200',
+        onClick &&
+          'cursor-pointer hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-muted/50 hover:shadow-sm active:translate-y-0 active:bg-muted active:shadow-none'
+      )}
       onClick={onClick}
     >
-      <Row>
-        <Col>
-          <PlaceholderCustom loading={loading} as="span" xs={12}>
-            <span className={`text-secondary`}>{heading}</span>
-          </PlaceholderCustom>
-          <PlaceholderCustom loading={loading} as="h2" xs={12}>
-            <div className="d-flex justify-content-between align-items-center">
-              {!!leading && <>{leading}</>}
-              <h3 className={`card-detail text-truncate`}>
-                {detail?.replace(currentUser.currency, '')}{' '}
-                <small>{detail?.match(currentUser.currency)}</small>
-              </h3>
-              {!!trailing && <>{trailing}</>}
-              {heading === 'Reds' && props?.vacationIcBacentaCount !== '0' && (
-                <div>
-                  <Badge bg="danger" className="badge-vacation mt-auto">
-                    <span className="font-danger">{`+ `}</span>
-                    {`${props?.vacationIcBacentaCount} on Vacation`}
-                  </Badge>
-                </div>
-              )}
-              {parseFloat(props?.vacationCount?.toString() || '0') !== 0.0 && (
-                <div>
-                  <Badge bg="danger" className="badge-vacation mt-auto">
-                    <span className="font-danger">{`+ `}</span>
-                    {`${props?.vacationCount} on Vacation`}
-                  </Badge>
-                </div>
-              )}
-            </div>
-          </PlaceholderCustom>
-        </Col>
-      </Row>
-    </Card>
+      <p className="text-xs text-muted-foreground mb-1">{heading}</p>
+      <div className="flex items-center gap-2">
+        {leading && <>{leading}</>}
+        <p className="text-base font-semibold tabular-nums truncate text-foreground flex-1">
+          {detail?.replace(currentUser.currency, '')}
+          {detail?.match(currentUser.currency) && (
+            <span className="text-xs font-normal text-muted-foreground ml-1">
+              {currentUser.currency}
+            </span>
+          )}
+        </p>
+        {trailing && <>{trailing}</>}
+        {parseFloat(props?.vacationCount?.toString() || '0') !== 0 && (
+          <Badge variant="destructive" className="text-xs shrink-0">
+            +{props?.vacationCount} Vacation
+          </Badge>
+        )}
+      </div>
+    </div>
   )
 }
 
