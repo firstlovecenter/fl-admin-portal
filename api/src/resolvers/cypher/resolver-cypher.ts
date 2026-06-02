@@ -381,6 +381,7 @@ export const createBacenta = `
 MATCH (lastCode:LastBankingCode)
 CREATE (bacenta:Bacenta:Red:Active {name:$name, location: point({latitude:toFloat($venueLatitude), longitude:toFloat($venueLongitude), crs:'WGS-84'})})
   SET	bacenta.id = apoc.create.uuid(),
+  bacenta.createdAt = datetime(),
   bacenta.sprinterTopUp = 0,
   bacenta.urvanTopUp = 0,
   bacenta.outbound = false,
@@ -414,7 +415,8 @@ RETURN bacenta {.id, .name}, leader {.id, .firstName, .lastName, .email}, govern
 
 export const createGovernorship = `
 CREATE (governorship:Governorship {name: $name})
-  SET	governorship.id = apoc.create.uuid()
+  SET	governorship.id = apoc.create.uuid(),
+  governorship.createdAt = datetime()
 
 WITH governorship
 CREATE (log:HistoryLog)
@@ -443,7 +445,8 @@ RETURN governorship {.id, .name}, leader {.id, .firstName, .lastName, .email}, c
 
 export const createCouncil = `
 CREATE (council:Council {id:apoc.create.uuid(), name:$name})
-  SET council.weekdayBalance  = 0.0,
+  SET council.createdAt = datetime(),
+    council.weekdayBalance  = 0.0,
     council.bussingSocietyBalance = 0.0,
     council.hrAmount = 0.0,
     council.bussingAmount = 0.0
@@ -474,7 +477,8 @@ RETURN council {.id, .name}, leader {.id, .firstName, .lastName, .email}, stream
 
 export const createStream = `
 CREATE (stream:Active:Stream {id:apoc.create.uuid(), name: $name})
-  SET stream.bankAccount = $bankAccount
+  SET stream.bankAccount = $bankAccount,
+    stream.createdAt = datetime()
 
 WITH stream
 CREATE (log:HistoryLog:ServiceLog)
@@ -506,7 +510,8 @@ RETURN stream {.id, .name}, leader {.id, .firstName, .lastName, .email}, campus 
 
 export const createCampus = `
 CREATE (campus:Campus {id:apoc.create.uuid(), name:$name})
-  SET campus.noIncomeTracking = $noIncomeTracking,
+  SET campus.createdAt = datetime(),
+  campus.noIncomeTracking = $noIncomeTracking,
   campus.currency = $currency,
   campus.conversionRateToDollar = $conversionRateToDollar
 
@@ -530,11 +535,12 @@ MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (campus)-[:HAS_HISTORY]->(log)
 MERGE (leader)-[:HAS_HISTORY]->(log)
 
-RETURN campus {.id, .name}, leader {.id, .firstName, .lastName, .email}, oversight {.id, .name}
+RETURN campus {.id, .name, .noIncomeTracking, .currency, .conversionRateToDollar}, leader {.id, .firstName, .lastName, .email}, oversight {.id, .name}
 `
 
 export const createOversight = `
 CREATE (oversight:Oversight {id:apoc.create.uuid(), name:$name})
+  SET oversight.createdAt = datetime()
 
 WITH oversight
 MATCH (leader:Active:Member {id: $leaderId}) WHERE leader.email IS NOT NULL

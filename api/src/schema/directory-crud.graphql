@@ -606,82 +606,193 @@ extend type Mutation {
     oversightId: ID!
     denominationId: ID!
   ): Oversight!
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (oversight:Oversight {id: $oversightId})
       MATCH (denomination:Denomination {id: $denominationId})
-      OPTIONAL MATCH (oversight)<-[r:HAS]-(:Denomination)
-      DELETE r
+      OPTIONAL MATCH (oversight)<-[r:HAS]-(oldDenomination:Denomination)
+      WITH oversight, denomination, oldDenomination, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldDenomination.id,
+        log.movedTo = denomination.id,
+        log.historyRecord = oversight.name + ' Oversight was moved from ' + coalesce(oldDenomination.name, 'no Denomination') + ' to ' + denomination.name + ' Denomination'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (oversight)-[:HAS_HISTORY]->(log)
+
+      WITH oversight, denomination, r
+      DELETE r
       MERGE (denomination)-[:HAS]->(oversight)
       RETURN oversight
       """
       columnName: "oversight"
     )
 
+  # Gate mirrors permitAdmin('Denomination') (FE OversightForm RoleView).
   MoveCampusToOversight(campusId: ID!, oversightId: ID!): Campus!
+    @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(
       statement: """
       MATCH (campus:Campus {id: $campusId})
       MATCH (oversight:Oversight {id: $oversightId})
-      OPTIONAL MATCH (campus)<-[r:HAS]-(:Oversight)
-      DELETE r
+      OPTIONAL MATCH (campus)<-[r:HAS]-(oldOversight:Oversight)
+      WITH campus, oversight, oldOversight, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldOversight.id,
+        log.movedTo = oversight.id,
+        log.historyRecord = campus.name + ' Campus was moved from ' + coalesce(oldOversight.name, 'no Oversight') + ' to ' + oversight.name + ' Oversight'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (campus)-[:HAS_HISTORY]->(log)
+
+      WITH campus, oversight, r
+      DELETE r
       MERGE (oversight)-[:HAS]->(campus)
       RETURN campus
       """
       columnName: "campus"
     )
 
+  # Gate mirrors permitAdmin('Oversight') (FE CampusForm RoleView).
   MoveStreamToCampus(streamId: ID!, campusId: ID!): Stream!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (stream:Stream {id: $streamId})
       MATCH (campus:Campus {id: $campusId})
-      OPTIONAL MATCH (stream)<-[r:HAS]-(:Campus)
-      DELETE r
+      OPTIONAL MATCH (stream)<-[r:HAS]-(oldCampus:Campus)
+      WITH stream, campus, oldCampus, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldCampus.id,
+        log.movedTo = campus.id,
+        log.historyRecord = stream.name + ' Stream was moved from ' + coalesce(oldCampus.name, 'no Campus') + ' to ' + campus.name + ' Campus'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (stream)-[:HAS_HISTORY]->(log)
+
+      WITH stream, campus, r
+      DELETE r
       MERGE (campus)-[:HAS]->(stream)
       RETURN stream
       """
       columnName: "stream"
     )
 
+  # Gate mirrors permitAdmin('Campus') (FE StreamForm RoleView).
   MoveCouncilToStream(councilId: ID!, streamId: ID!): Council!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (council:Council {id: $councilId})
       MATCH (stream:Stream {id: $streamId})
-      OPTIONAL MATCH (council)<-[r:HAS]-(:Stream)
-      DELETE r
+      OPTIONAL MATCH (council)<-[r:HAS]-(oldStream:Stream)
+      WITH council, stream, oldStream, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldStream.id,
+        log.movedTo = stream.id,
+        log.historyRecord = council.name + ' Council was moved from ' + coalesce(oldStream.name, 'no Stream') + ' to ' + stream.name + ' Stream'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (council)-[:HAS_HISTORY]->(log)
+
+      WITH council, stream, r
+      DELETE r
       MERGE (stream)-[:HAS]->(council)
       RETURN council
       """
       columnName: "council"
     )
 
+  # Gate mirrors permitAdmin('Stream') (FE CouncilForm RoleView).
   MoveGovernorshipToCouncil(governorshipId: ID!, councilId: ID!): Governorship!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (governorship:Governorship {id: $governorshipId})
       MATCH (council:Council {id: $councilId})
-      OPTIONAL MATCH (governorship)<-[r:HAS]-(:Council)
-      DELETE r
+      OPTIONAL MATCH (governorship)<-[r:HAS]-(oldCouncil:Council)
+      WITH governorship, council, oldCouncil, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldCouncil.id,
+        log.movedTo = council.id,
+        log.historyRecord = governorship.name + ' Governorship was moved from ' + coalesce(oldCouncil.name, 'no Council') + ' to ' + council.name + ' Council'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (governorship)-[:HAS_HISTORY]->(log)
+
+      WITH governorship, council, r
+      DELETE r
       MERGE (council)-[:HAS]->(governorship)
       RETURN governorship
       """
       columnName: "governorship"
     )
+  # Gate mirrors permitAdmin('Council') (FE GovernorshipForm RoleView).
   MoveBacentaToGovernorship(bacentaId: ID!, governorshipId: ID!): Bacenta!
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (bacenta:Bacenta {id: $bacentaId})
       MATCH (governorship:Governorship {id: $governorshipId})
-      OPTIONAL MATCH (bacenta)<-[r:HAS]-(:Governorship)
-      DELETE r
+      OPTIONAL MATCH (bacenta)<-[r:HAS]-(oldGovernorship:Governorship)
+      WITH bacenta, governorship, oldGovernorship, r
 
+      CREATE (log:HistoryLog {id: apoc.create.uuid()})
+        SET log.timeStamp = datetime(),
+        log.movedFrom = oldGovernorship.id,
+        log.movedTo = governorship.id,
+        log.historyRecord = bacenta.name + ' Bacenta was moved from ' + coalesce(oldGovernorship.name, 'no Governorship') + ' to ' + governorship.name + ' Governorship'
+      MERGE (date:TimeGraph {date: date()})
+      MERGE (log)-[:RECORDED_ON]->(date)
+      MERGE (bacenta)-[:HAS_HISTORY]->(log)
+
+      WITH bacenta, governorship, r
+      DELETE r
       MERGE (governorship)-[:HAS]->(bacenta)
       RETURN bacenta
       """
