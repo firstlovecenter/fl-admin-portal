@@ -33,7 +33,7 @@ import { ChevronRight, MapPin, Pencil, PencilLine, XCircle } from 'lucide-react'
 import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
 import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
 import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
-import { permitAdmin } from 'permission-utils'
+import { permitAdmin, permitAdminArrivals } from 'permission-utils'
 import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import SearchMember from 'components/formik/SearchMember'
@@ -666,7 +666,13 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 )}
 
                 {props.subChurch && !props.buttons?.length && (
-                  <RoleView roles={props.editPermitted}>
+                  <RoleView
+                    roles={
+                      props.subChurch === 'Bacenta'
+                        ? permitAdminArrivals('Council')
+                        : permitAdmin(props.churchType)
+                    }
+                  >
                     <Button
                       className="w-full sm:w-auto"
                       variant="outline"
