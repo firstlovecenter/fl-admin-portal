@@ -1,7 +1,7 @@
 import { ApolloQueryResult, useMutation } from '@apollo/client'
 import { Button } from 'components/ui/button'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { alertMsg, throwToSentry } from 'global-utils'
+import { alertMsg, alertSuccess, throwToSentry } from 'global-utils'
 import { Loader2 } from 'lucide-react'
 import { useContext, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
@@ -140,7 +140,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               'success'
             ) {
               navigate('/self-banking/receipt')
-              alertMsg('Payment Confirmed Successfully 😊')
+              alertSuccess('Payment Confirmed Successfully 😊')
               return
             }
 
@@ -173,7 +173,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
           }
 
           if (serviceRecord.transactionStatus === 'success') {
-            alertMsg('Payment Confirmed Successfully 😊')
+            alertSuccess('Payment Confirmed Successfully 😊')
             navigate('/self-banking/receipt')
             return
           }

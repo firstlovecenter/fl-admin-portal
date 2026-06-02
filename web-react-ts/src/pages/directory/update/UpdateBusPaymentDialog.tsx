@@ -25,6 +25,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import {
   alertMsg,
+  alertSuccess,
   MOMO_NUM_REGEX,
   randomOTPGenerator,
   throwToSentry,
@@ -186,7 +187,7 @@ const UpdateBusPaymentDialog = ({
           momoNumber: pendingMomo.momoNumber,
         },
       })
-      alertMsg('Your phone number has been successfully verified! 😃')
+      alertSuccess('Your phone number has been successfully verified! 😃')
       resetVerifyState()
     } catch (error) {
       alertMsg(error)

@@ -8,7 +8,7 @@ import { FunctionReturnsVoid, Member, Stream } from 'global-types'
 import React, { useContext, useState } from 'react'
 import * as Yup from 'yup'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { alertMsg, throwToSentry } from 'global-utils'
+import { alertSuccess, throwToSentry } from 'global-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import SearchMember from 'components/formik/SearchMember'
 import { Loader2 } from 'lucide-react'
@@ -90,7 +90,7 @@ const TellerSelect = () => {
           tellerId: teller.id,
         },
       })
-      alertMsg(`${teller.fullName} Deleted Successfully`)
+      alertSuccess(`${teller.fullName} Deleted Successfully`)
     } catch (error: any) {
       throwToSentry('', error)
     } finally {
@@ -125,7 +125,7 @@ const TellerSelect = () => {
 
       handleClose()
       onSubmitProps.setSubmitting(false)
-      alertMsg('Stream Teller has been added successfully')
+      alertSuccess('Stream Teller has been added successfully')
     } catch (e: any) {
       onSubmitProps.setSubmitting(false)
       throwToSentry(e)

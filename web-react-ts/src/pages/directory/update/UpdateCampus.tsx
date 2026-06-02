@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
-import { alertMsg, throwToSentry } from '../../../global-utils'
+import { alertSuccess, throwToSentry } from '../../../global-utils'
 import { GET_OVERSIGHT_CAMPUSES } from '../../../queries/ListQueries'
 import { UPDATE_CAMPUS_MUTATION } from './UpdateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -98,7 +98,7 @@ const UpdateCampus = () => {
               campusId: campusId,
             },
           })
-          alertMsg('Leader Changed Successfully')
+          alertSuccess('Leader Changed Successfully')
           navigate(`/campus/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')

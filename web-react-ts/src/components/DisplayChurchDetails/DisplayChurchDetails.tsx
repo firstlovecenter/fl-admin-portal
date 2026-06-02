@@ -23,7 +23,7 @@ import {
   VacationStatusOptions,
 } from 'global-types'
 import {
-  alertMsg,
+  alertSuccess,
   directoryLock,
   plural,
   throwToSentry,
@@ -172,7 +172,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertMsg('Oversight Admin has been changed successfully')
+        alertSuccess('Oversight Admin has been changed successfully')
       }
 
       if (props.churchType === 'Campus') {
@@ -183,7 +183,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertMsg('Campus Admin has been changed successfully')
+        alertSuccess('Campus Admin has been changed successfully')
       }
 
       if (props.churchType === 'Stream') {
@@ -194,7 +194,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertMsg('Stream Admin has been changed successfully')
+        alertSuccess('Stream Admin has been changed successfully')
       }
 
       if (props.churchType === 'Council') {
@@ -205,7 +205,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertMsg('Council Admin has been changed successfully')
+        alertSuccess('Council Admin has been changed successfully')
       }
 
       if (props.churchType === 'Governorship') {
@@ -216,7 +216,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertMsg('Governorship Admin has been changed successfully')
+        alertSuccess('Governorship Admin has been changed successfully')
       }
     } catch (e) {
       if (!isPermissionError(e)) {

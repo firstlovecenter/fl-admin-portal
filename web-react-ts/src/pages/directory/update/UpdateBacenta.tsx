@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
-import { alertMsg, repackDecimals, throwToSentry } from '../../../global-utils'
+import { alertSuccess, repackDecimals, throwToSentry } from '../../../global-utils'
 import { GET_GOVERNORSHIP_BACENTAS } from '../../../queries/ListQueries'
 import { UPDATE_BACENTA_MUTATION } from './UpdateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -170,7 +170,7 @@ const UpdateBacenta = () => {
               bacentaId: bacentaId,
             },
           })
-          alertMsg('Leader Changed Successfully')
+          alertSuccess('Leader Changed Successfully')
           navigate(`/bacenta/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')

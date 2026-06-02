@@ -24,7 +24,7 @@ import { Skeleton } from 'components/ui/skeleton'
 import CurrencySpan from 'components/CurrencySpan'
 import { MemberContext } from 'contexts/MemberContext'
 import { Church, Member, Role, ServiceRecord } from 'global-types'
-import { alertMsg, throwToSentry } from 'global-utils'
+import { alertMsg, alertSuccess, throwToSentry } from 'global-utils'
 import { parseNeoTime } from 'lib/date-utils'
 import {
   AlertTriangle,
@@ -182,7 +182,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
       await DeleteServiceRecord({
         variables: { serviceRecordId: service?.id },
       })
-      alertMsg('Service record deleted successfully')
+      alertSuccess('Service record deleted successfully')
       navigate(-1)
     } catch (error) {
       throwToSentry('Error deleting service record', error)
@@ -555,7 +555,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                                           throw new Error(
                                             res.errors[0].message
                                           )
-                                        alertMsg(
+                                        alertSuccess(
                                           'Offering Payment has been confirmed. Thank you!'
                                         )
                                       } catch (error) {

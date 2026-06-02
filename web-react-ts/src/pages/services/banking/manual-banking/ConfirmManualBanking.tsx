@@ -6,7 +6,7 @@ import { useQuery, useMutation, useLazyQuery } from '@apollo/client'
 import ErrorScreen from 'components/base-component/ErrorScreen'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { DISPLAY_AGGREGATE_SERVICE_RECORD } from 'pages/services/record-service/RecordServiceMutations'
-import { alertMsg, getWeekNumber, throwToSentry } from 'global-utils'
+import { alertMsg, alertSuccess, getWeekNumber, throwToSentry } from 'global-utils'
 import { Church, UserJobs } from 'global-types'
 import {
   AlertTriangle,
@@ -207,7 +207,7 @@ const ConfirmManualBanking = () => {
         await ConfirmBanking({ variables: { governorshipId: selected.id } })
       }
       setSubmitting(false)
-      alertMsg('Banking confirmed successfully')
+      alertSuccess('Banking confirmed successfully')
       if (streamId)
         refetch({
           id: streamId,

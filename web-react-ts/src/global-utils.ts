@@ -208,6 +208,10 @@ export const alertMsg = (error: unknown) => {
   surfaceErrorToast(message)
 }
 
+export const alertSuccess = (message: string) => {
+  toast.success(message)
+}
+
 export const isAuthorised = (permittedRoles: Role[], userRoles: Role[]) => {
   if (permittedRoles?.includes('all')) {
     return true

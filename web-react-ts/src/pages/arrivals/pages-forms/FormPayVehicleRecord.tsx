@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router'
 import { isToday } from 'lib/date-utils'
 import { AlertTriangle } from 'lucide-react'
 import SubmitButton from 'components/formik/SubmitButton'
-import { alertMsg } from 'global-utils'
+import { alertMsg, alertSuccess } from 'global-utils'
 import Input from 'components/formik/Input'
 import CloudinaryImage from 'components/CloudinaryImage'
 import CurrencySpan from 'components/CurrencySpan'
@@ -103,7 +103,7 @@ const FormPayVehicleRecord = () => {
         },
       })
 
-      alertMsg(
+      alertSuccess(
         `Money Successfully Sent to ${supportRes.data.SendVehicleSupport.momoName}`
       )
       setSubmitting(false)

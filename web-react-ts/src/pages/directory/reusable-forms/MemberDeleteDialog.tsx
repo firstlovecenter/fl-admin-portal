@@ -5,7 +5,7 @@ import * as Yup from 'yup'
 import { Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import {
-  alertMsg,
+  alertSuccess,
   DELETE_MEMBER_CATEGORY_OPTIONS,
   throwToSentry,
 } from 'global-utils'
@@ -71,7 +71,7 @@ const MemberDeleteDialog = ({
       })
 
       onClose()
-      alertMsg('Member has been deleted successfully')
+      alertSuccess('Member has been deleted successfully')
       if (bacentaId) {
         clickCard({ __typename: 'Bacenta', id: bacentaId })
         navigate('/bacenta/displaydetails')

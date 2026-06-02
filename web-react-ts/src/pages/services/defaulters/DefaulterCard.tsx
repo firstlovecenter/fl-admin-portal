@@ -2,7 +2,7 @@ import { useMutation } from '@apollo/client'
 import RoleView from 'auth/RoleView'
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { alertMsg, throwToSentry } from 'global-utils'
+import { alertSuccess, throwToSentry } from 'global-utils'
 import { permitLeaderAdmin } from 'permission-utils'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
@@ -168,7 +168,7 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
                             await UndoCancelledService({
                               variables: { serviceRecordId: serviceDetails.id },
                             })
-                            alertMsg(
+                            alertSuccess(
                               'Leader can now fill the form again. Thank you!'
                             )
                             clickCard(defaulter)

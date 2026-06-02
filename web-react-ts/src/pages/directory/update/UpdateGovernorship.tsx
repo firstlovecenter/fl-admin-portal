@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
-import { alertMsg, throwToSentry } from '../../../global-utils'
+import { alertSuccess, throwToSentry } from '../../../global-utils'
 import { UPDATE_GOVERNORSHIP_MUTATION } from './UpdateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import { DISPLAY_GOVERNORSHIP } from '../display/ReadQueries'
@@ -80,7 +80,7 @@ const UpdateGovernorship = () => {
             },
           })
 
-          alertMsg('Leader Changed Successfully')
+          alertSuccess('Leader Changed Successfully')
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {

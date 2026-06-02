@@ -28,7 +28,7 @@ import {
 } from 'components/ui/alert-dialog'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
-import { alertMsg } from 'global-utils'
+import { alertMsg, alertSuccess } from 'global-utils'
 import { permitLeaderAdmin } from 'permission-utils'
 import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
@@ -125,7 +125,7 @@ const UndoCancellationButton = ({
                     variables: { serviceRecordId },
                   })
                   setConfirmOpen(false)
-                  alertMsg('Leader can now fill the form again. Thank you!')
+                  alertSuccess('Leader can now fill the form again. Thank you!')
                   clickCard(defaulter)
                   navigate(
                     `/${defaulter.__typename.toLowerCase()}/displaydetails`

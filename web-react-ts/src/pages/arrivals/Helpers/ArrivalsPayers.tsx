@@ -8,7 +8,7 @@ import { FunctionReturnsVoid, Member, Council } from 'global-types'
 import React, { useContext, useState } from 'react'
 import * as Yup from 'yup'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { alertMsg, throwToSentry } from 'global-utils'
+import { alertSuccess, throwToSentry } from 'global-utils'
 import NoDataComponent from 'pages/arrivals/CompNoData'
 import SearchMember from 'components/formik/SearchMember'
 import ModalSubmitButton from 'pages/services/banking/manual-banking/ModalSubmitButton'
@@ -93,7 +93,7 @@ const ArrivalsPayerSelect = () => {
           arrivalsPayerId: payer.id,
         },
       })
-      alertMsg(`${payer.fullName} Deleted Successfully`)
+      alertSuccess(`${payer.fullName} Deleted Successfully`)
     } catch (error: any) {
       throwToSentry('', error)
     } finally {
@@ -128,7 +128,7 @@ const ArrivalsPayerSelect = () => {
 
       handleClose()
       onSubmitProps.setSubmitting(false)
-      alertMsg(
+      alertSuccess(
         'Arrivals Payment Governorship Member has been added successfully!'
       )
     } catch (e: any) {
