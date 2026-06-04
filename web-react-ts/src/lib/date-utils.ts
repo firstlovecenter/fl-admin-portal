@@ -27,8 +27,8 @@ export const parseTimeToDate = (timeString: string): string => {
 }
 
 export const getMondayThisWeek = (date: Date): Date => {
-  const firstDate = date
-  const numberOfDaysBefore = date.getDay()
+  const firstDate = new Date(date)
+  const numberOfDaysBefore = firstDate.getDay()
   if (numberOfDaysBefore === 0) {
     firstDate.setDate(firstDate.getDate() - 6)
   } else {
