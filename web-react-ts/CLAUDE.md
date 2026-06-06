@@ -59,7 +59,7 @@ Cross-package KB lives in `../kb/`.
 
 | File | Purpose |
 | --- | --- |
-| `src/index.tsx` | Apollo + Auth bootstrap + cache buster |
+| `src/index.tsx` | Apollo + Auth bootstrap |
 | `src/AppWithContext.tsx` | Router + every context provider + every route array |
 | `src/SimpleApp.tsx` | Auth gate above the router |
 | `src/auth/ProtectedRoute.tsx` | Per-route role + auth gate |

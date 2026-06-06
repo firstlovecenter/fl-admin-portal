@@ -3,7 +3,7 @@
  *
  * Builds the ApolloClient used by the admin portal. Extracted from src/index.tsx
  * so the link chain (retry → error → auth → http) can be unit-tested with MSW
- * without having to mount the full React app + AuthProvider + CacheBuster.
+ * without having to mount the full React app + AuthProvider.
  *
  * Behaviour-preserving: every link, every option, every constant matches the
  * inline construction that previously lived in AppWithApollo. The only change

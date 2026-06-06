@@ -1,7 +1,6 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { ApolloProvider } from '@apollo/client'
-import CacheBuster from 'CacheBuster'
 import { createApolloClient } from 'lib/createApolloClient'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import SimpleApp from './SimpleApp'
@@ -43,30 +42,11 @@ const AppWithApollo = () => {
 }
 
 const AppWithAuth = () => (
-  <CacheBuster>
-    {({
-      loading,
-      isLatestVersion,
-      refreshCacheAndReload,
-    }: {
-      loading: boolean
-      isLatestVersion: boolean
-      refreshCacheAndReload: () => void
-    }) => {
-      if (loading) return null
-      if (!loading && !isLatestVersion) {
-        refreshCacheAndReload()
-      }
-
-      return (
-        <AuthProvider>
-          <SimpleApp>
-            <AppWithApollo />
-          </SimpleApp>
-        </AuthProvider>
-      )
-    }}
-  </CacheBuster>
+  <AuthProvider>
+    <SimpleApp>
+      <AppWithApollo />
+    </SimpleApp>
+  </AuthProvider>
 )
 
 ReactGA.initialize('G-BT4M7RYZX0')
