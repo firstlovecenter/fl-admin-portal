@@ -56,16 +56,6 @@ const todayYmd = (): string => {
     .slice(0, 10)
 }
 
-// Most recent Sunday on/before today. Bussing is anchored to Sunday, so
-// landing the dashboard on the most recent Sunday is the right default
-// when no URL/context value is set.
-const lastSundayYmd = (): string => {
-  const today = new Date(`${todayYmd()}T00:00:00Z`)
-  const dow = today.getUTCDay() // 0 = Sunday … 6 = Saturday
-  if (dow !== 0) today.setUTCDate(today.getUTCDate() - dow)
-  return today.toISOString().slice(0, 10)
-}
-
 const addDaysYmd = (ymd: string, n: number): string => {
   const d = new Date(`${ymd}T00:00:00Z`)
   d.setUTCDate(d.getUTCDate() + n)
@@ -156,7 +146,7 @@ export type SelectedArrivalDate = {
   jumpToNearest: () => void
   /** True iff `jumpToNearest` would actually navigate. False during cold load or empty data. */
   hasNearest: boolean
-  /** Reset to the canonical default (most recent Sunday). */
+  /** Reset to the canonical default (today). */
   resetToCurrent: () => void
   /** Append `?date=YYYY-MM-DD` to a path so the selection survives navigation. */
   linkWith: (path: string) => string
@@ -170,10 +160,10 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
   const ctxArrivalDate = churchCtx?.arrivalDate
   const setCtxArrivalDate = churchCtx?.setArrivalDate
 
-  // `cache-and-network` so a long PWA session sees today's Sunday appear in
-  // the list as soon as the first BussingRecord is written, without forcing
-  // a hard reload. Apollo still dedupes concurrent consumers, so the cost is
-  // one shared round trip per page transition.
+  // `cache-and-network` so a long PWA session sees the current week's bussing
+  // appear in the list as soon as the first BussingRecord is written, without
+  // forcing a hard reload. Apollo still dedupes concurrent consumers, so the
+  // cost is one shared round trip per page transition.
   const { data: datesData, loading: datesLoading } = useQuery<{
     bussingDates: string[]
   }>(GET_BUSSING_DATES, { fetchPolicy: 'cache-and-network' })
@@ -183,15 +173,13 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
   )
 
   const dateParam = searchParams.get('date')
-  // No `?date=` param resolves to the most recent Sunday — this MUST match the
-  // sentinel `navigateToDate` drops the param on, or selecting/resetting to
-  // that Sunday reverts to a stale value instead of loading its data.
-  const arrivalDate = isValidIsoDate(dateParam) ? dateParam : lastSundayYmd()
-  // "Current week" tracks the church week containing the most recent
-  // Sunday bussing. Pinning to today's Monday would mark Sunday's data as
-  // "last week" the moment midnight ticks over — pastors review Sunday
-  // night → Monday morning, so the most recent bussing must stay current.
-  const currentWeekStart = weekStartOf(lastSundayYmd())
+  // No `?date=` param resolves to today — this MUST match the sentinel
+  // `navigateToDate` drops the param on, or selecting/resetting to today
+  // reverts to a stale value instead of loading its data (SYN-158).
+  const arrivalDate = isValidIsoDate(dateParam) ? dateParam : todayYmd()
+  // "Current week" is the church week containing today, so the dashboard
+  // opens on the current week and today's activity is visible by default.
+  const currentWeekStart = weekStartOf(todayYmd())
   const weekStart = weekStartOf(arrivalDate)
   const weekEnd = addDaysYmd(weekStart, 6)
   const isCurrent = weekStart === currentWeekStart
@@ -259,8 +247,7 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
   const navigateToDate = useCallback(
     (next: string) => {
       const params = new URLSearchParams(searchParams)
-      const sundayDefault = lastSundayYmd()
-      if (next === sundayDefault) {
+      if (next === todayYmd()) {
         params.delete('date')
       } else {
         params.set('date', next)
@@ -320,16 +307,16 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
   }, [pastNearest, futureNearest, navigateToDate])
 
   const resetToCurrent = useCallback(() => {
-    navigateToDate(lastSundayYmd())
+    navigateToDate(todayYmd())
   }, [navigateToDate])
 
   const linkWith = useCallback(
     (path: string): string => {
       // Round-trip the exact selected day, not the week. `isCurrent` is
-      // week-based and would drop a non-Sunday chip selection in the
+      // week-based and would drop a non-today chip selection in the
       // current week — `linkWith` exists so drill-downs preserve the
       // user's choice down to the day.
-      if (arrivalDate === lastSundayYmd()) return path
+      if (arrivalDate === todayYmd()) return path
       const sep = path.includes('?') ? '&' : '?'
       return `${path}${sep}date=${arrivalDate}`
     },

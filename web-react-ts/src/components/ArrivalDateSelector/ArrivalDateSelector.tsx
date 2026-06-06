@@ -123,7 +123,7 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
           className="min-h-11 self-center px-3 text-muted-foreground"
           onClick={resetToCurrent}
         >
-          Reset to most recent Sunday
+          Reset to today
         </Button>
       )}
     </div>
