@@ -4,7 +4,7 @@
  * Adding a new mutation? Add one line here. That's it.
  */
 
-import { ChurchLevel, Role, ServantType } from '../utils/types'
+import { ChurchLevel, ServantType } from '../utils/types'
 
 export type ServantMutationConfig = {
   name: string // e.g., "MakeOversightAdmin"
@@ -12,6 +12,10 @@ export type ServantMutationConfig = {
   servantType: ServantType
   requiredPermissionLevel: ChurchLevel // Which level must you admin to make this change?
   action: 'make' | 'remove'
+  // When set, the factory mirrors this make/remove onto the Stream Teller
+  // (IS_TELLER_FOR) edge for the same stream + member. Stream Admins double
+  // as Stream Tellers so they can confirm midweek manual-banking offerings.
+  mirrorStreamTeller?: boolean
 }
 
 /**
@@ -55,6 +59,7 @@ export const SERVANT_MUTATIONS: ServantMutationConfig[] = [
     servantType: 'Admin',
     requiredPermissionLevel: 'Campus',
     action: 'make',
+    mirrorStreamTeller: true,
   },
   {
     name: 'RemoveStreamAdmin',
@@ -62,6 +67,7 @@ export const SERVANT_MUTATIONS: ServantMutationConfig[] = [
     servantType: 'Admin',
     requiredPermissionLevel: 'Campus',
     action: 'remove',
+    mirrorStreamTeller: true,
   },
   {
     name: 'MakeCouncilAdmin',

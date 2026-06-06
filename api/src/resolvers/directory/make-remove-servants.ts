@@ -33,11 +33,19 @@ const validateAuthAndPermissions = (
   isAuth(permittedRoles, userRoles as Role[] | undefined)
 }
 
+// `arrivalsCounter` and `teller` are flexible operational assignments, not
+// leadership changes, so they are exempt from the weekly directory lock —
+// Stream Admins must be able to add/remove Stream Tellers on any day.
+const DIRECTORY_LOCK_EXEMPT_SERVANTS = ['arrivalsCounter', 'teller']
+
 const validateDirectoryLock = (
   userRoles: string[] | undefined,
   servantType: string
 ): void => {
-  if (directoryLock(userRoles ?? []) && servantType !== 'arrivalsCounter') {
+  if (
+    directoryLock(userRoles ?? []) &&
+    !DIRECTORY_LOCK_EXEMPT_SERVANTS.includes(servantType)
+  ) {
     throw new Error('Directory is locked till next Tuesday')
   }
 }

@@ -19,7 +19,7 @@ import { ServantMutationConfig, SERVANT_MUTATIONS } from './servant-config'
 /**
  * Resolver factory: Creates a resolver for any servant mutation
  */
-const createServantResolver = (
+const createServantResolver = async (
   config: ServantMutationConfig,
   context: Context,
   args: Member
@@ -57,13 +57,39 @@ const createServantResolver = (
   const isRemoval = config.action === 'remove'
   const handler = isRemoval ? RemoveServant : MakeServant
 
-  return handler(
+  const result = await handler(
     context,
     args,
     getPermittedRoles(),
     config.churchType,
     config.servantType
   )
+
+  // Config-declared side-effect (servant-config.ts `mirrorStreamTeller`):
+  // mirror the Stream Admin make/remove onto the IS_TELLER_FOR edge for the
+  // same stream + member, so Stream Admins double as Stream Tellers and can
+  // confirm the midweek manual-banking offerings handed in by their
+  // governorships. Teller make/remove is directory-lock exempt and the edge
+  // MERGE/DELETE is idempotent, so the same `handler` (make or remove) is
+  // safe to run for the teller edge. The nested call re-runs isAuth +
+  // assertCan bound to `streamId`, so it cannot mint a teller edge on a
+  // stream the caller does not administer.
+  if (config.mirrorStreamTeller) {
+    const adminArgs = args as unknown as Record<string, string>
+    const tellerArgs = {
+      streamId: adminArgs.streamId,
+      tellerId: adminArgs.adminId,
+    }
+    await handler(
+      context,
+      tellerArgs,
+      permitAdmin('Stream'),
+      'Stream',
+      'Teller'
+    )
+  }
+
+  return result
 }
 
 /**
