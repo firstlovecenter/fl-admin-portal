@@ -16,7 +16,7 @@ admin web app, a Node + Apollo GraphQL API on top of Neo4j, and a set of AWS
 Lambda background jobs for aggregation, reporting, and webhooks.
 
 This repo is the entire product. Frontend is deployed on AWS Amplify; backend
-runs as Docker (locally) and Lambda (in cloud). Stack version: `8.1.3`.
+runs as Docker (locally) and Lambda (in cloud). Stack version: `9.0.0`.
 
 ---
 
