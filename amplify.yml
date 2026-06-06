@@ -360,7 +360,6 @@ frontend:
           trap on_error ERR
 
           cd web-react-ts
-          npm run generate-build-version
           npm run build
           cd ..
 
@@ -397,10 +396,6 @@ customHeaders:
       - key: 'Cache-Control'
         value: 'no-cache'
   - pattern: '/manifest.webmanifest'
-    headers:
-      - key: 'Cache-Control'
-        value: 'no-cache'
-  - pattern: '/meta.json'
     headers:
       - key: 'Cache-Control'
         value: 'no-cache'

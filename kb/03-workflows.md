@@ -182,6 +182,19 @@ Run a script locally with e.g.
 
 ## W8 — Cache busting / new deploy
 
-`CacheBuster.tsx` polls `meta.json` and forces a hard reload when a new
-`generate-build-version` build is detected. Do not bypass this — without it,
-clients can run a stale UI against a newer schema.
+The PWA is kept fresh by the Workbox service worker (`vite-plugin-pwa`,
+`registerType: 'autoUpdate'`): on each deploy the new service worker installs
+and activates automatically, serving the new build on the next navigation or
+app foreground. Hashed `/assets/**` are immutable; staleness can only come from
+the unhashed entry point.
+
+To make the entry point reliably revalidate, `amplify.yml` sets `Cache-Control:
+no-cache` (`customHeaders`) on `index.html`, `sw.js`, `registerSW.js`, and the
+manifests, while keeping `/assets/**` immutable. Without those headers the
+browser serves a cached `index.html`/`sw.js`, never discovers the new precache
+manifest, and the autoUpdate cycle never fires — that was the stale-deploy bug
+fixed in `55e3b05f`. Do not remove the entry-point `no-cache` rules.
+
+The old `CacheBuster.tsx` / `meta.json` / `generate-build-version` polling
+mechanism was a no-op (it compared two values both derived from
+`package.json` at the same build) and has been removed.

@@ -85,8 +85,6 @@
     "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview",
-    "generate-build-version": "node generate-build-version",
-    "prebuild": "npm run generate-build-version",
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
