@@ -1,0 +1,374 @@
+/**
+ * useSelectedArrivalDate.test.tsx — SYN-158
+ *
+ * Characterization tests locking in the corrected date-resolution behaviour
+ * of useSelectedArrivalDate.
+ *
+ * THE BUG (now fixed, guarded here): the no-`?date=`-param case used to
+ * resolve to ChurchContext.arrivalDate, which initialises to *today*. But
+ * `navigateToDate` DROPS the `?date` param whenever the chosen date equals
+ * `lastSundayYmd()`. So resetting/selecting the most-recent Sunday produced a
+ * no-param URL that silently reverted to the last-viewed (stale) context day.
+ * The fix: the no-param case resolves directly to `lastSundayYmd()`, so it is
+ * independent of context. These tests pin that and the param-drop round-trip.
+ *
+ * "Today" is pinned with fake timers to Saturday 2026-06-06 (the exact
+ * scenario from the bug report), so `lastSundayYmd()` is deterministically
+ * 2026-05-31 and the current church week is 2026-05-25 (Mon) → 2026-05-31 (Sun).
+ *
+ * Out of scope (documented):
+ *   - prevWeek / nextWeek / jumpToNearest / daysInWeek snapping and the
+ *     bussingDates-driven branches — these depend on GET_BUSSING_DATES data
+ *     and are a separate concern from the SYN-158 date-resolution fix.
+ *   - linkWith — pure string assembly, tested transitively via arrivalDate.
+ */
+
+import React from 'react'
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+} from 'vitest'
+import { renderHook, act, waitFor } from '@testing-library/react'
+import { MockedProvider } from '@apollo/client/testing'
+import { MemoryRouter, useSearchParams } from 'react-router-dom'
+
+import { ChurchContext } from 'contexts/ChurchContext'
+import useSelectedArrivalDate from './useSelectedArrivalDate'
+import { GET_BUSSING_DATES } from './useSelectedArrivalDateQueries'
+
+// ---------------------------------------------------------------------------
+// Deterministic dates (system time pinned to Saturday 2026-06-06T12:00:00Z)
+// ---------------------------------------------------------------------------
+
+const TODAY = '2026-06-06' // Saturday — the bug-report scenario
+const LAST_SUNDAY = '2026-05-31' // most recent Sunday on/before today
+const CURRENT_WEEK_START = '2026-05-25' // Monday of the current church week
+
+// ---------------------------------------------------------------------------
+// Render helper
+// ---------------------------------------------------------------------------
+
+type Ctx = {
+  arrivalDate?: string
+  setArrivalDate?: (next: string) => void
+}
+
+// GET_BUSSING_DATES is fired with `cache-and-network`, so the hook issues
+// network requests on each render pass. Returning an empty list keeps the
+// bussingDates-driven branches inert (they are out of scope here) and silences
+// the "no more mocked responses" noise. Provide several copies because
+// MockedProvider consumes a mock per request.
+const bussingDatesMock = () => ({
+  request: { query: GET_BUSSING_DATES },
+  result: { data: { bussingDates: [] } },
+})
+// MockedProvider consumes one mock per request; `cache-and-network` plus
+// re-renders can fire it a few times, so hand over a small pool.
+const bussingDatesMocks = () => Array.from({ length: 6 }, bussingDatesMock)
+
+/**
+ * Render the hook wrapped in MemoryRouter (controls `?date=`), a
+ * ChurchContext.Provider (controls ctx arrivalDate + spies setArrivalDate),
+ * and an empty MockedProvider (GET_BUSSING_DATES tolerates no data — the
+ * hook defaults bussingDates to []).
+ */
+const renderArrivalDate = (opts: {
+  initialEntry?: string
+  ctx?: Ctx
+}) => {
+  const { initialEntry = '/arrivals', ctx = {} } = opts
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <MockedProvider mocks={bussingDatesMocks()} addTypename={false}>
+        <ChurchContext.Provider value={ctx as never}>
+          {children}
+        </ChurchContext.Provider>
+      </MockedProvider>
+    </MemoryRouter>
+  )
+
+  return renderHook(() => useSelectedArrivalDate(), { wrapper })
+}
+
+beforeEach(() => {
+  vi.useFakeTimers()
+  vi.setSystemTime(new Date(`${TODAY}T12:00:00Z`))
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+
+// ---------------------------------------------------------------------------
+// 1. No `?date=` param → most recent Sunday, independent of context (SYN-158)
+// ---------------------------------------------------------------------------
+
+describe('useSelectedArrivalDate — no `?date=` param resolution (SYN-158)', () => {
+  it('resolves to the most recent Sunday with no param and no context value', () => {
+    const { result } = renderArrivalDate({ initialEntry: '/arrivals' })
+
+    expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+  })
+
+  it('resolves to the most recent Sunday even when context holds today (the stale-weekday bug)', () => {
+    // ChurchContext.arrivalDate initialises to today (a Saturday here). Before
+    // the fix, the no-param case adopted this stale value. It must NOT now.
+    const setArrivalDate = vi.fn()
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals',
+      ctx: { arrivalDate: TODAY, setArrivalDate },
+    })
+
+    expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+    expect(result.current.arrivalDate).not.toBe(TODAY)
+  })
+
+  it('ignores an arbitrary stale weekday in context for the no-param case', () => {
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals',
+      ctx: { arrivalDate: '2026-04-15' }, // some earlier Wednesday
+    })
+
+    expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 2 & 3. `?date=` param resolution (valid wins, invalid falls back)
+// ---------------------------------------------------------------------------
+
+describe('useSelectedArrivalDate — `?date=` param resolution', () => {
+  it('uses a valid `?date=YYYY-MM-DD` param verbatim', () => {
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=2026-05-20',
+    })
+
+    expect(result.current.arrivalDate).toBe('2026-05-20')
+  })
+
+  it('falls back to the most recent Sunday for a malformed `?date=` param', () => {
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=not-a-date',
+    })
+
+    expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+  })
+
+  it('falls back to the most recent Sunday for a well-formed-but-impossible date', () => {
+    // 2026-02-30 matches the regex but `new Date` normalises it → still passes
+    // isValidIsoDate (getTime is not NaN). TODO(refactor): isValidIsoDate only
+    // checks the regex + parseability, not calendar validity, so 2026-02-30 is
+    // accepted and round-trips as-is rather than falling back. Asserting the
+    // ACTUAL (buggy-ish) behaviour: the param is taken verbatim.
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=2026-02-30',
+    })
+
+    expect(result.current.arrivalDate).toBe('2026-02-30')
+  })
+
+  it('falls back to the most recent Sunday for an empty `?date=` param', () => {
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=',
+    })
+
+    expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 4. Sync effect writes resolved arrivalDate back into ChurchContext
+// ---------------------------------------------------------------------------
+
+describe('useSelectedArrivalDate — ChurchContext sync effect', () => {
+  it('writes the resolved arrivalDate to context once when it differs', async () => {
+    const setArrivalDate = vi.fn()
+    renderArrivalDate({
+      initialEntry: '/arrivals',
+      ctx: { arrivalDate: TODAY, setArrivalDate },
+    })
+
+    await waitFor(() => {
+      expect(setArrivalDate).toHaveBeenCalledWith(LAST_SUNDAY)
+    })
+    // One write, no render loop.
+    expect(setArrivalDate).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not call setArrivalDate when context already matches the resolved date', async () => {
+    const setArrivalDate = vi.fn()
+    renderArrivalDate({
+      initialEntry: '/arrivals',
+      ctx: { arrivalDate: LAST_SUNDAY, setArrivalDate },
+    })
+
+    // Give effects a chance to flush.
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(setArrivalDate).not.toHaveBeenCalled()
+  })
+
+  it('tolerates a missing setArrivalDate on context (no throw)', () => {
+    expect(() =>
+      renderArrivalDate({ initialEntry: '/arrivals', ctx: {} })
+    ).not.toThrow()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 5. isCurrent — based on the church week (Mon→Sun) of the most recent Sunday
+// ---------------------------------------------------------------------------
+
+describe('useSelectedArrivalDate — isCurrent', () => {
+  it('is true for the most recent Sunday (the current week default)', () => {
+    const { result } = renderArrivalDate({ initialEntry: '/arrivals' })
+
+    expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+    expect(result.current.isCurrent).toBe(true)
+  })
+
+  it('is true for a weekday inside the current church week', () => {
+    // 2026-05-27 is a Wednesday in the 2026-05-25 → 2026-05-31 week.
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=2026-05-27',
+    })
+
+    expect(result.current.isCurrent).toBe(true)
+  })
+
+  it('is true for the Monday that starts the current church week', () => {
+    const { result } = renderArrivalDate({
+      initialEntry: `/arrivals?date=${CURRENT_WEEK_START}`,
+    })
+
+    expect(result.current.isCurrent).toBe(true)
+  })
+
+  it('is false for a date in an earlier church week', () => {
+    // 2026-05-24 is the Sunday of the prior week (Mon 2026-05-18 → Sun 2026-05-24).
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=2026-05-24',
+    })
+
+    expect(result.current.isCurrent).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 6. Label formatting (cheap + stable for the pinned dates)
+// ---------------------------------------------------------------------------
+
+describe('useSelectedArrivalDate — labels', () => {
+  it('formats dateLabel and weekLabel for the default (most recent Sunday)', () => {
+    const { result } = renderArrivalDate({ initialEntry: '/arrivals' })
+
+    expect(result.current.dateLabel).toBe('Sun, 31 May 2026')
+    expect(result.current.weekLabel).toBe('Week of 25–31 May 2026')
+  })
+
+  it('formats dateLabel for a mid-week selected date', () => {
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=2026-05-27',
+    })
+
+    expect(result.current.dateLabel).toBe('Wed, 27 May 2026')
+    // Same church week as the default Sunday.
+    expect(result.current.weekLabel).toBe('Week of 25–31 May 2026')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 7. navigateToDate via public methods — the SYN-158 param-drop regression guard
+// ---------------------------------------------------------------------------
+
+describe('useSelectedArrivalDate — selectDate / resetToCurrent navigation', () => {
+  it('resetToCurrent drops the `?date` param yet still resolves to the most recent Sunday', async () => {
+    // Start on an earlier date so there IS a param to drop.
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=2026-05-20',
+    })
+    expect(result.current.arrivalDate).toBe('2026-05-20')
+
+    act(() => {
+      result.current.resetToCurrent()
+    })
+
+    // Param is dropped, BUT arrivalDate resolves to the Sunday (the fix).
+    await waitFor(() => {
+      expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+    })
+  })
+
+  it('selectDate(mostRecentSunday) drops the param but still resolves to that Sunday', async () => {
+    const { result } = renderArrivalDate({
+      initialEntry: '/arrivals?date=2026-05-20',
+    })
+
+    act(() => {
+      result.current.selectDate(LAST_SUNDAY)
+    })
+
+    await waitFor(() => {
+      expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+    })
+  })
+
+  it('selectDate(otherDate) sets the param and resolves to that date', async () => {
+    const { result } = renderArrivalDate({ initialEntry: '/arrivals' })
+    expect(result.current.arrivalDate).toBe(LAST_SUNDAY)
+
+    act(() => {
+      result.current.selectDate('2026-05-13')
+    })
+
+    await waitFor(() => {
+      expect(result.current.arrivalDate).toBe('2026-05-13')
+    })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 7b. The URL actually loses the `date` param on the Sunday default — proves
+//     the param-drop is real and the resolution is what keeps arrivalDate
+//     correct (the heart of the SYN-158 regression).
+// ---------------------------------------------------------------------------
+
+describe('useSelectedArrivalDate — param drop is observable on the URL', () => {
+  it('removes `date` from the search string when resetting to the Sunday default', async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <MemoryRouter initialEntries={['/arrivals?date=2026-05-20']}>
+        <MockedProvider mocks={bussingDatesMocks()} addTypename={false}>
+          <ChurchContext.Provider value={{} as never}>
+            {children}
+          </ChurchContext.Provider>
+        </MockedProvider>
+      </MemoryRouter>
+    )
+
+    const { result } = renderHook(
+      () => {
+        const [params] = useSearchParams()
+        const arrival = useSelectedArrivalDate()
+        return { params, arrival }
+      },
+      { wrapper }
+    )
+
+    expect(result.current.params.get('date')).toBe('2026-05-20')
+
+    act(() => {
+      result.current.arrival.resetToCurrent()
+    })
+
+    await waitFor(() => {
+      expect(result.current.params.get('date')).toBeNull()
+    })
+    // And the resolved arrivalDate survives the param drop.
+    expect(result.current.arrival.arrivalDate).toBe(LAST_SUNDAY)
+  })
+})

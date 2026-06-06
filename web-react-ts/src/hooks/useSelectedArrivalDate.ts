@@ -183,11 +183,10 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
   )
 
   const dateParam = searchParams.get('date')
-  const fallback = isValidIsoDate(ctxArrivalDate)
-    ? ctxArrivalDate
-    : lastSundayYmd()
-
-  const arrivalDate = isValidIsoDate(dateParam) ? dateParam : fallback
+  // No `?date=` param resolves to the most recent Sunday — this MUST match the
+  // sentinel `navigateToDate` drops the param on, or selecting/resetting to
+  // that Sunday reverts to a stale value instead of loading its data.
+  const arrivalDate = isValidIsoDate(dateParam) ? dateParam : lastSundayYmd()
   // "Current week" tracks the church week containing the most recent
   // Sunday bussing. Pinning to today's Monday would mark Sunday's data as
   // "last week" the moment midnight ticks over — pastors review Sunday
