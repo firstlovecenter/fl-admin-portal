@@ -19,6 +19,7 @@ import {
   Home,
   Image as ImageIcon,
   ListChecks,
+  Plus,
   Sigma,
 } from 'lucide-react'
 import { Badge } from 'components/ui/badge'
@@ -32,7 +33,7 @@ import {
 import { Skeleton } from 'components/ui/skeleton'
 import { capitalise } from 'global-utils'
 import { BacentaWithArrivals, VehicleRecord } from './arrivals-types'
-import { beforeCountingDeadline } from './arrivals-utils'
+import { beforeCountingDeadline, canAddVehicleRecord } from './arrivals-utils'
 import { DISPLAY_VEHICLE_RECORDS } from './arrivalsQueries'
 
 type DataRowProps = {
@@ -51,7 +52,7 @@ const DataRow = ({ label, children, loading }: DataRowProps) => (
 )
 
 const BusVehicleFormDetails = () => {
-  const { bacentaId } = useContext(ChurchContext)
+  const { bacentaId, clickCard } = useContext(ChurchContext)
   const { vehicleRecordId } = useContext(ServiceContext)
   const [picturePopup, setPicturePopup] = useState('')
   const [pictureOpen, setPictureOpen] = useState(false)
@@ -69,6 +70,7 @@ const BusVehicleFormDetails = () => {
 
   const inOutLabel = vehicle?.outbound ? 'In and Out' : 'In Only'
   const txnSuccess = vehicle?.transactionStatus === 'success'
+  const canAddVehicle = canAddVehicleRecord(church, vehicle?.bussingRecord)
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
@@ -268,6 +270,25 @@ const BusVehicleFormDetails = () => {
                   </h2>
                 </div>
                 <div className="space-y-2 p-4">
+                  <RoleView roles={['leaderBacenta']}>
+                    {canAddVehicle && (
+                      <Button
+                        size="lg"
+                        className="w-full gap-2 bg-arrivals text-white hover:bg-arrivals/90"
+                        onClick={() => {
+                          clickCard(church)
+                          if (vehicle?.bussingRecord) {
+                            clickCard(vehicle.bussingRecord)
+                          }
+                          navigate('/arrivals/submit-vehicle-record')
+                        }}
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Another Vehicle
+                      </Button>
+                    )}
+                  </RoleView>
+
                   {vehicle && !beforeCountingDeadline(vehicle, church) && (
                     <RoleView roles={permitArrivalsPayer()}>
                       <Button

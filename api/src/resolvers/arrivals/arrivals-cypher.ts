@@ -214,14 +214,24 @@ RETURN vehicleRecord {
 export const recordVehicleFromBacenta = `
 MATCH (bussingRecord:BussingRecord {id: $bussingRecordId})
 MATCH (leader:Member {id: $jwt.userId})
-// ADR-005: MERGE on composite key prevents a duplicate VehicleRecord on re-submission
-MERGE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord:VehicleRecord {vehicle: $vehicle, outbound: $outbound})
-ON CREATE SET vehicleRecord.id = apoc.create.uuid(), vehicleRecord.createdAt = datetime()
+// ADR-005: MERGE on picture deduplicates accidental double-submit (same upload).
+// Multiple vehicles of the same type each carry a distinct picture URL.
+MERGE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord:VehicleRecord {picture: $picture})
+ON CREATE SET vehicleRecord.id = apoc.create.uuid(),
+  vehicleRecord.createdAt = datetime(),
+  vehicleRecord.vehicle = $vehicle,
+  vehicleRecord.outbound = $outbound,
+  vehicleRecord.leaderDeclaration = $leaderDeclaration,
+  vehicleRecord.momoNumber = $momoNumber,
+  vehicleRecord.mobileNetwork = $mobileNetwork
 MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
-SET vehicleRecord.leaderDeclaration = $leaderDeclaration,
-vehicleRecord.picture = $picture,
-vehicleRecord.momoNumber = $momoNumber,
-vehicleRecord.mobileNetwork = $mobileNetwork
+FOREACH (_ IN CASE WHEN vehicleRecord.arrivalTime IS NULL THEN [1] ELSE [] END |
+  SET vehicleRecord.leaderDeclaration = $leaderDeclaration,
+    vehicleRecord.vehicle = $vehicle,
+    vehicleRecord.outbound = $outbound,
+    vehicleRecord.momoNumber = $momoNumber,
+    vehicleRecord.mobileNetwork = $mobileNetwork
+)
 
 WITH vehicleRecord, bussingRecord
 MATCH (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecords:VehicleRecord)

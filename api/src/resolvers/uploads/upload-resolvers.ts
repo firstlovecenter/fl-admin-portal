@@ -30,7 +30,7 @@ const generateUniqueFileName = (
         .toLowerCase()
     : generateRandomString(12)
 
-  const filename = `uploads/${username}-${userId}/${date}_${cleanOriginalName}`
+  const filename = `uploads/${username}-${userId}/${date}_${generateRandomString(8)}_${cleanOriginalName}`
 
   return filename
 }

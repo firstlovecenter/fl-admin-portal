@@ -5,7 +5,7 @@ import { useContext } from 'react'
 import * as Yup from 'yup'
 import { useNavigate } from 'react-router'
 import { KeyRound } from 'lucide-react'
-import { BACENTA_ARRIVALS } from '../arrivalsQueries'
+import { BACENTA_ARRIVALS, DISPLAY_BUSSING_RECORDS } from '../arrivalsQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { RECORD_BUSSING_FROM_BACENTA } from '../arrivalsMutation'
@@ -47,6 +47,7 @@ const FormAddVehicleRecord = () => {
       .typeError('Please enter a valid number')
       .positive()
       .integer('You cannot have attendance with decimals!')
+      .max(200, 'Attendance cannot exceed 200')
       .required('This is a required field'),
     vehicle: Yup.string().required('This is a required field'),
     picture: Yup.string().required('This is a required field'),
@@ -66,6 +67,17 @@ const FormAddVehicleRecord = () => {
           vehicle: values.vehicle,
           picture: values.picture,
         },
+        refetchQueries: [
+          {
+            query: BACENTA_ARRIVALS,
+            variables: { id: bacentaId, date: today, bussingDate: today },
+          },
+          {
+            query: DISPLAY_BUSSING_RECORDS,
+            variables: { bussingRecordId, bacentaId },
+          },
+        ],
+        awaitRefetchQueries: true,
       })
 
       const recordedVehicle = res.data?.RecordVehicleFromBacenta

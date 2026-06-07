@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Camera,
   ChevronRight,
+  Plus,
   Users,
 } from 'lucide-react'
 import { getHumanReadableDate } from 'lib/date-utils'
@@ -30,6 +31,7 @@ import { cn } from 'components/lib/utils'
 import { DISPLAY_BUSSING_RECORDS } from './arrivalsQueries'
 import { BacentaWithArrivals, BussingRecord } from './arrivals-types'
 import VehicleButton from './components/VehicleButton'
+import { canAddVehicleRecord } from './arrivals-utils'
 
 const FactRow = ({
   label,
@@ -47,7 +49,7 @@ const FactRow = ({
 )
 
 const BusFormDetails = () => {
-  const { bacentaId } = useContext(ChurchContext)
+  const { bacentaId, clickCard } = useContext(ChurchContext)
   const { bussingRecordId } = useContext(ServiceContext)
   const navigate = useNavigate()
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
@@ -58,6 +60,7 @@ const BusFormDetails = () => {
 
   const bussing: BussingRecord = data?.bussingRecords[0]
   const church: BacentaWithArrivals = data?.bacentas[0]
+  const canAddVehicle = canAddVehicleRecord(church, bussing)
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -263,6 +266,25 @@ const BusFormDetails = () => {
                   </CardContent>
                 </Card>
               ) : null}
+
+              <RoleView roles={['leaderBacenta']}>
+                {canAddVehicle && (
+                  <Button
+                    size="lg"
+                    className="w-full gap-2 bg-arrivals text-white hover:bg-arrivals/90"
+                    onClick={() => {
+                      clickCard(church)
+                      clickCard(bussing)
+                      navigate('/arrivals/submit-vehicle-record')
+                    }}
+                  >
+                    <Plus className="size-4" />
+                    {bussing?.vehicleRecords?.length
+                      ? 'Add Another Vehicle'
+                      : 'Add a Vehicle'}
+                  </Button>
+                )}
+              </RoleView>
 
               {/* Back button */}
               <Button

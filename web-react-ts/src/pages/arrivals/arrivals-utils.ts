@@ -127,6 +127,15 @@ export const beforeArrivalDeadline = (
   )
 }
 
+/** No cap on vehicle count — only mobilisation + arrival window gate submission. */
+export const canAddVehicleRecord = (
+  bacenta: BacentaWithArrivals | undefined,
+  bussing: Pick<BussingRecord, 'id' | 'mobilisationPicture'> | undefined | null
+): boolean =>
+  !!bussing?.mobilisationPicture &&
+  !!bacenta &&
+  beforeArrivalDeadline(bacenta)
+
 export const beforeMobilisationDeadline = (
   church?: BacentaWithArrivals,
   bussing?: BussingRecord

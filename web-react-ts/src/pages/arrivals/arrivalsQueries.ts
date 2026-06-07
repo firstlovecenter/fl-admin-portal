@@ -459,6 +459,10 @@ export const DISPLAY_BUSSING_RECORDS = gql`
         id
         arrivalStartTime
         arrivalEndTime
+        meetingDay {
+          day
+          dayNumber
+        }
       }
     }
   }
@@ -494,6 +498,10 @@ export const DISPLAY_VEHICLE_RECORDS = gql`
       momoNumber
       transactionReference
       transactionStatus
+      bussingRecord {
+        id
+        mobilisationPicture
+      }
     }
     bacentas(where: { id: { eq: $bacentaId } }) {
       id

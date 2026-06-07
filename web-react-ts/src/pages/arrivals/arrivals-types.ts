@@ -73,6 +73,7 @@ export type VehicleRecord = {
   arrivalTime: string
   transactionReference?: string
   transactionStatus?: string
+  bussingRecord?: Pick<BussingRecord, 'id' | 'mobilisationPicture'>
 }
 
 export interface StreamWithArrivals extends Church, HigherChurchWithArrivals {

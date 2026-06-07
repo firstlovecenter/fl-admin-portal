@@ -34,6 +34,7 @@ import { BACENTA_ARRIVALS } from './arrivalsQueries'
 import {
   beforeArrivalDeadline,
   beforeMobilisationDeadline,
+  canAddVehicleRecord,
 } from './arrivals-utils'
 import { BacentaWithArrivals, VehicleRecord } from './arrivals-types'
 import CountdownTimer from './countdown-component/CountdownTimer'
@@ -110,12 +111,7 @@ const BacentaArrivals = () => {
   const bussing = bacenta?.bussingThisWeek
 
   const isBeforeArrivalEnd = beforeArrivalDeadline(bacenta)
-
-  // Vehicles can be added until the arrival deadline closes — there is no
-  // one-vehicle-per-bussing cap. The mobilisation picture remains a
-  // prerequisite (you must have started bussing).
-  const canAddVehicle =
-    !!bussing && isBeforeArrivalEnd && !!bussing.mobilisationPicture
+  const canAddVehicle = canAddVehicleRecord(bacenta, bussing)
 
   const mobilisationDisabled =
     !beforeMobilisationDeadline(bacenta, bussing) || !isMomoCleared(bacenta)
