@@ -365,14 +365,11 @@ export const arrivalsMutation = {
                 stream_name: response.stream_name,
                 bussing: [
                   {
-                    id: vehicleRecord.id,
+                    id: args.bussingRecordId,
                     serviceDate: {
                       date,
                     },
                     week: response.week,
-                    vehicle: vehicleRecord.vehicle,
-                    picture: vehicleRecord.picture,
-                    outbound: vehicleRecord.outbound,
                   },
                 ],
               },
@@ -426,12 +423,14 @@ export const arrivalsMutation = {
       const {
         arrivalEndTime,
         bacentaId,
+        bussingRecordId,
         numberOfVehicles,
         totalAttendance,
         isToday,
       }: {
         arrivalEndTime: string
         bacentaId: string
+        bussingRecordId: string
         numberOfVehicles: neonumber
         totalAttendance: neonumber
         leaderPhoneNumber: string
@@ -511,14 +510,11 @@ export const arrivalsMutation = {
                 stream_name: response.stream_name,
                 bussing: [
                   {
-                    id: vehicleRecord.id,
+                    id: bussingRecordId,
                     serviceDate: {
                       date,
                     },
                     week: response.week,
-                    vehicle: vehicleRecord.vehicle,
-                    picture: vehicleRecord.picture,
-                    outbound: vehicleRecord.outbound,
                   },
                 ],
               },

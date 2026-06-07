@@ -434,22 +434,17 @@ describe('SM5 — submitted: RecordVehicleFromBacenta (leaderBacenta)', () => {
     expect(isAuth).toHaveBeenCalledWith(['leaderBacenta'], context.jwt?.roles)
   })
 
-  it('SM5: RecordVehicleFromBacenta IS idempotent — Cypher MERGEs on picture so same upload retries safely while multiple same-type vehicles are allowed (ADR-005, SYN-117)', () => {
-    // Each vehicle form uploads a unique picture. MERGE on picture prevents
-    // duplicate nodes on double-submit without capping one record per vehicle type.
-    expect(recordVehicleFromBacenta).not.toMatch(
-      /CREATE \(vehicleRecord:VehicleRecord/
-    )
-    expect(recordVehicleFromBacenta).not.toMatch(
-      /VehicleRecord \{vehicle: \$vehicle, outbound: \$outbound\}/
+  it('SM5: RecordVehicleFromBacenta always CREATEs a scoped VehicleRecord — no global MERGE that can re-link pictures (ADR-005, SYN-117)', () => {
+    expect(recordVehicleFromBacenta).toMatch(
+      /CREATE \(vehicleRecord:VehicleRecord \{/
     )
     expect(recordVehicleFromBacenta).toMatch(
-      /MERGE \(bussingRecord\)-\[:INCLUDES_RECORD\]->\(vehicleRecord:VehicleRecord \{picture: \$picture\}\)/
+      /CREATE \(bussingRecord\)-\[:INCLUDES_RECORD\]->\(vehicleRecord\)/
     )
-    expect(recordVehicleFromBacenta).toMatch(
-      /ON CREATE SET vehicleRecord\.id = apoc\.create\.uuid\(\)/
+    expect(recordVehicleFromBacenta).not.toMatch(
+      /MERGE \(bussingRecord\)-\[:INCLUDES_RECORD\]->\(vehicleRecord:VehicleRecord/
     )
-    expect(recordVehicleFromBacenta).toMatch(/arrivalTime IS NULL/)
+    expect(recordVehicleFromBacenta).toMatch(/id: apoc\.create\.uuid\(\)/)
   })
 })
 

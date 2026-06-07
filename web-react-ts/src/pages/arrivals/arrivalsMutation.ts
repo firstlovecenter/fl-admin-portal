@@ -191,6 +191,8 @@ export const RECORD_BUSSING_FROM_BACENTA = gql`
       id
       leaderDeclaration
       attendance
+      vehicle
+      picture
       vehicleTopUp
       bussingRecord {
         serviceLog {

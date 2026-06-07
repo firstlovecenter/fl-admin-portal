@@ -3,7 +3,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { useMutation, useQuery } from '@apollo/client'
 import { useContext } from 'react'
 import * as Yup from 'yup'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { KeyRound } from 'lucide-react'
 import { BACENTA_ARRIVALS, DISPLAY_BUSSING_RECORDS } from '../arrivalsQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -26,6 +26,7 @@ type FormOptions = {
 
 const FormAddVehicleRecord = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { bacentaId, clickCard } = useContext(ChurchContext)
   const { bussingRecordId } = useContext(ServiceContext)
 
@@ -100,6 +101,7 @@ const FormAddVehicleRecord = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <Formik
+        key={`${bussingRecordId}-${location.key}`}
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={onSubmit}
@@ -174,6 +176,7 @@ const FormAddVehicleRecord = () => {
                       </div>
                       <div className="px-4 py-4">
                         <ImageUpload
+                          key={`picture-${formik.values.picture || 'empty'}`}
                           name="picture"
                           placeholder="Upload a bussing picture"
                           setFieldValue={formik.setFieldValue}

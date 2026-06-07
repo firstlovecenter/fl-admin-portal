@@ -322,6 +322,7 @@ export const BACENTA_ARRIVALS = gql`
           vehicle
           attendance
           arrivalTime
+          picture
         }
         week
         mobilisationPicture
@@ -450,6 +451,7 @@ export const DISPLAY_BUSSING_RECORDS = gql`
         vehicle
         arrivalTime
         attendance
+        picture
       }
     }
     bacentas(where: { id: { eq: $bacentaId } }) {

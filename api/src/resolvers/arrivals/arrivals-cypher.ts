@@ -76,6 +76,7 @@ WITH DISTINCT record, bussing, bacenta, leader, stream, bussingDate
 OPTIONAL MATCH (bussing)-[:INCLUDES_RECORD]->(records:VehicleRecord) WHERE records.arrivalTime IS NOT NULL
 RETURN stream.arrivalEndTime AS arrivalEndTime,
 bacenta.id AS bacentaId,
+bussing.id AS bussingRecordId,
 COUNT(DISTINCT records) AS numberOfVehicles,
 SUM(records.attendance) AS totalAttendance,
 leader.phoneNumber AS leaderPhoneNumber,
@@ -214,24 +215,21 @@ RETURN vehicleRecord {
 export const recordVehicleFromBacenta = `
 MATCH (bussingRecord:BussingRecord {id: $bussingRecordId})
 MATCH (leader:Member {id: $jwt.userId})
-// ADR-005: MERGE on picture deduplicates accidental double-submit (same upload).
-// Multiple vehicles of the same type each carry a distinct picture URL.
-MERGE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord:VehicleRecord {picture: $picture})
-ON CREATE SET vehicleRecord.id = apoc.create.uuid(),
-  vehicleRecord.createdAt = datetime(),
-  vehicleRecord.vehicle = $vehicle,
-  vehicleRecord.outbound = $outbound,
-  vehicleRecord.leaderDeclaration = $leaderDeclaration,
-  vehicleRecord.momoNumber = $momoNumber,
-  vehicleRecord.mobileNetwork = $mobileNetwork
+// Always CREATE under this BussingRecord. A MERGE on {picture} can match an
+// existing VehicleRecord node elsewhere in the graph and re-link it here,
+// which swaps pictures between records in the UI.
+CREATE (vehicleRecord:VehicleRecord {
+  id: apoc.create.uuid(),
+  createdAt: datetime(),
+  picture: $picture,
+  vehicle: $vehicle,
+  outbound: $outbound,
+  leaderDeclaration: $leaderDeclaration,
+  momoNumber: $momoNumber,
+  mobileNetwork: $mobileNetwork
+})
+CREATE (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecord)
 MERGE (vehicleRecord)-[:LOGGED_BY]->(leader)
-FOREACH (_ IN CASE WHEN vehicleRecord.arrivalTime IS NULL THEN [1] ELSE [] END |
-  SET vehicleRecord.leaderDeclaration = $leaderDeclaration,
-    vehicleRecord.vehicle = $vehicle,
-    vehicleRecord.outbound = $outbound,
-    vehicleRecord.momoNumber = $momoNumber,
-    vehicleRecord.mobileNetwork = $mobileNetwork
-)
 
 WITH vehicleRecord, bussingRecord
 MATCH (bussingRecord)-[:INCLUDES_RECORD]->(vehicleRecords:VehicleRecord)
