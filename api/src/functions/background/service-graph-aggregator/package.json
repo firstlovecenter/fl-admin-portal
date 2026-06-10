@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.388.0",
-    "axios": "^0.27.2",
     "neo4j-driver": "^5.28.1"
   }
 }
