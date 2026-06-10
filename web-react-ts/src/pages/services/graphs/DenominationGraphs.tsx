@@ -224,9 +224,12 @@ const DenominationGraphs = () => {
             />
           </section>
 
-          {/* Two options — single row keeps tap targets wide enough */}
+          {/* Two options — single row keeps tap targets wide enough.
+              Height override must carry the orientation variant prefix —
+              the list's baked-in `…:h-9` is variant-scoped, so a plain
+              `h-auto` is ignored and the 44 px pills overflow the list. */}
           <Tabs value={graphs} onValueChange={handleTabChange}>
-            <TabsList className="grid h-auto w-full grid-cols-2">
+            <TabsList className="grid h-auto w-full grid-cols-2 group-data-[orientation=horizontal]/tabs:h-auto">
               {DENOMINATION_GRAPH_OPTIONS.map((option) => (
                 <TabsTrigger
                   key={option.value}

@@ -242,9 +242,13 @@ const CampusGraphs = () => {
             />
           </section>
 
-          {/* 4 options: 2×2 grid so each tap target stays ≥ 44 px tall */}
+          {/* 4 options: 2×2 grid so each tap target stays ≥ 44 px tall.
+              Height override must carry the orientation variant prefix —
+              the list's baked-in `…:h-9` is variant-scoped and a plain
+              `h-auto` is ignored, which would crush the second row over the
+              chart title below. */}
           <Tabs value={graphs} onValueChange={handleTabChange}>
-            <TabsList className="grid h-auto w-full grid-cols-2">
+            <TabsList className="grid h-auto w-full grid-cols-2 group-data-[orientation=horizontal]/tabs:h-auto">
               {CAMPUS_GRAPH_OPTIONS.map((option) => (
                 <TabsTrigger
                   key={option.value}
