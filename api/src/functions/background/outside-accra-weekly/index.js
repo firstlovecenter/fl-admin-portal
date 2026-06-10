@@ -8,6 +8,7 @@ const {
 } = require('./utils/writeToGSheet.js')
 const { campusList } = require('./query-exec/campusList.js')
 const campusAttendanceIncome = require('./query-exec/campusAttendanceIncome.js')
+const fellowshipAttendanceIncome = require('./query-exec/fellowshipAttendanceIncome.js')
 const campusBankedIncome = require('./query-exec/campusBankedIncome.js')
 const campusNotBankedIncome = require('./query-exec/campusNotBankedIncome.js')
 const weekdayBankedIncome = require('./query-exec/weekdayBankedIncome.js')
@@ -397,7 +398,12 @@ const handler = async (event = {}, targetDate = null) => {
     }
 
     if (mode === REPORT_MODES.COMBINED || mode === REPORT_MODES.FELLOWSHIP) {
-      ;[weekdayBankedIncomeData, weekdayNotBankedIncomeData] = await Promise.all([
+      ;[
+        fellowshipAttendanceIncomeData,
+        weekdayBankedIncomeData,
+        weekdayNotBankedIncomeData,
+      ] = await Promise.all([
+        fellowshipAttendanceIncome(driver, fellowshipQueryDate),
         weekdayBankedIncome(driver, fellowshipQueryDate),
         weekdayNotBankedIncome(driver, fellowshipQueryDate),
       ])
@@ -478,7 +484,7 @@ const handler = async (event = {}, targetDate = null) => {
         'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
       },
       data: {
-        to: ['john-dag@firstlovecenter.com', 'flcexpense22@gmail.com'],
+        to: ['flcexpense22@gmail.com'],
         subject: modeConfig.subject,
         html,
         attachments: [
