@@ -117,6 +117,49 @@ describe('Cypher invariants — ADR-014 overwrite semantics', () => {
 })
 
 // ---------------------------------------------------------------------------
+// 2b. Currency rule — income source per level
+//
+// Campus and below are single-currency, so income is the raw local sum
+// (income = totalIncome). Oversight and Denomination consolidate campuses that
+// may span multiple currencies, so a raw sum is meaningless there — income is
+// stored as the USD-converted total (income = totalDollarIncome), making
+// income == dollarIncome at those two levels.
+// ---------------------------------------------------------------------------
+
+describe('Cypher invariants — currency rule (USD above Campus)', () => {
+  const LOCAL_LEVEL_QUERIES = ALL_QUERIES.filter((q) =>
+    [
+      'Bacenta→Governorship',
+      'Governorship→Council',
+      'Council→Stream',
+      'Stream→Campus',
+    ].includes(q.name)
+  )
+
+  const USD_LEVEL_QUERIES = ALL_QUERIES.filter((q) =>
+    ['Campus→Oversight', 'Oversight→Denomination'].includes(q.name)
+  )
+
+  test.each(LOCAL_LEVEL_QUERIES)(
+    '$name: income is the local sum (income = totalIncome)',
+    ({ query }) => {
+      expect(query).toMatch(/aggregate\.income\s*=\s*totalIncome\b/)
+      expect(query).not.toMatch(/aggregate\.income\s*=\s*totalDollarIncome\b/)
+    }
+  )
+
+  test.each(USD_LEVEL_QUERIES)(
+    '$name: income is the USD total (income = totalDollarIncome == dollarIncome)',
+    ({ query }) => {
+      expect(query).toMatch(/aggregate\.income\s*=\s*totalDollarIncome\b/)
+      expect(query).toMatch(/aggregate\.dollarIncome\s*=\s*totalDollarIncome\b/)
+      // income must NOT be the raw mixed-currency sum at these levels
+      expect(query).not.toMatch(/aggregate\.income\s*=\s*totalIncome\b/)
+    }
+  )
+})
+
+// ---------------------------------------------------------------------------
 // 3. ADR-008: idempotency — MERGE not CREATE for aggregate nodes
 // ---------------------------------------------------------------------------
 
@@ -153,9 +196,7 @@ describe('Cypher invariants — stale-edge guard (168e2909)', () => {
       // The service-record traversal must start with CURRENT_HISTORY so stale
       // tenure logs are excluded. We pin that the relationship set starts with
       // CURRENT_HISTORY.
-      expect(query).toMatch(
-        /MATCH\s*\(\w+:\w+\)\s*-\s*\[:\s*CURRENT_HISTORY\|/
-      )
+      expect(query).toMatch(/MATCH\s*\(\w+:\w+\)\s*-\s*\[:\s*CURRENT_HISTORY\|/)
     }
   )
 })

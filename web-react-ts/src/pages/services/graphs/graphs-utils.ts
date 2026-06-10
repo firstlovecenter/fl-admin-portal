@@ -101,6 +101,17 @@ export const sortingFunction = (key: string, order = 'asc') => {
   }
 }
 
+// Oversight/Denomination income is the USD-consolidated total, so its stat is
+// always shown in dollars. Single definition shared by the two graph pages.
+export const formatUsdIncomeStat = (
+  avgIncome: string,
+  incomeTracked: boolean
+): string => {
+  if (!incomeTracked) return 'Not tracked'
+  if (avgIncome === '—') return '—'
+  return `$${avgIncome}`
+}
+
 const extractServiceDataWithDollars = (arr: any[] | undefined) => {
   if (!arr || arr.length === 0) return []
   return arr.map(

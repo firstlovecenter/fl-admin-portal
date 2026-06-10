@@ -124,7 +124,10 @@ const aggregateCampusOnOversightQuery = `
 
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
         SET aggregate.attendance = totalAttendance,
-        aggregate.income = totalIncome,
+        // Oversight consolidates campuses that may span multiple currencies, so a
+        // raw SUM(income) here would add unlike currencies. income is therefore
+        // stored as the USD-converted total (income == dollarIncome at this level).
+        aggregate.income = totalDollarIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
         aggregate.numberOfServices = numberOfServices,
@@ -151,7 +154,10 @@ const aggregateOversightOnDenominationQuery = `
 
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
         SET aggregate.attendance = totalAttendance,
-        aggregate.income = totalIncome,
+        // Denomination consolidates the whole network across multiple currencies,
+        // so income is stored as the USD-converted total (income == dollarIncome
+        // at this level). See the Oversight query above.
+        aggregate.income = totalDollarIncome,
         aggregate.dollarIncome = totalDollarIncome,
         aggregate.componentServiceIds = componentServiceIds,
         aggregate.numberOfServices = numberOfServices,

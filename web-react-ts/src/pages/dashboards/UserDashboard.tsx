@@ -23,6 +23,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { isArrivalsCounterOnly, isTellerStreamOnly } from 'permission-utils'
+import { isUsdDisplayLevel } from 'lib/display-currency'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
 import ArrivalsCounterDashboard from './ArrivalsCounterDashboard'
 import StreamTellerDashboard from './StreamTellerDashboard'
@@ -264,6 +265,11 @@ const FullUserDashboard = () => {
       ? currentUser.currency.trim().toUpperCase()
       : ''
   const dashboardCurrency = selectedScopeCurrency || currentUserCurrency
+  // Oversight/Denomination consolidate multiple currencies, so their income is
+  // stored as the USD total — display it (and the currency badge) as USD.
+  const incomeDisplayCurrency = isUsdDisplayLevel(selectedScope?.churchType)
+    ? 'USD'
+    : dashboardCurrency
   const selectedScopeSummary = selectedScope
     ? `${selectedScope.churchName} · ${formatChurchLevel(
         selectedScope.churchType
@@ -301,7 +307,7 @@ const FullUserDashboard = () => {
       })
     : '—'
   const fmtIncome = hasIncome
-    ? formatCurrency(Number(avgIncome), dashboardCurrency)
+    ? formatCurrency(Number(avgIncome), incomeDisplayCurrency)
     : '—'
 
   const currentWeek = getWeekNumber()
@@ -783,16 +789,16 @@ const FullUserDashboard = () => {
                       </p>
                     </div>
                   </div>
-                  {(isScopeOnVacation || dashboardCurrency) && (
+                  {(isScopeOnVacation || incomeDisplayCurrency) && (
                     <>
                       <Separator />
                       <div className="flex flex-wrap gap-1.5">
-                        {dashboardCurrency && (
+                        {incomeDisplayCurrency && (
                           <Badge
                             variant="outline"
                             className="rounded-full px-2.5 py-0.5 text-xs font-normal"
                           >
-                            {dashboardCurrency}
+                            {incomeDisplayCurrency}
                           </Badge>
                         )}
                         {!incomeTracked && (

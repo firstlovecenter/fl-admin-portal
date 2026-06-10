@@ -24,17 +24,19 @@ import { OVERSIGHT_GRAPHS } from './GraphsQueries'
 import {
   getServiceGraphData,
   getMonthlyStatAverage,
+  formatUsdIncomeStat,
   GraphTypes,
 } from './graphs-utils'
 
 const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
 
-// Oversight has joint services plus aggregates of all campuses and levels below, in GHS and USD.
+// Oversight has joint services plus aggregates of all campuses and levels below.
+// Aggregated money consolidates campuses across multiple currencies, so income is
+// the USD total (income == dollarIncome) — there is no separate "(USD)" series.
 const OVERSIGHT_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
   { value: 'services', label: 'Joint Service' },
   { value: 'serviceAggregate', label: 'All Services' },
-  { value: 'serviceAggregateWithDollar', label: 'All Services (USD)' },
   { value: 'bussingAggregate', label: 'All Bussing' },
 ]
 
@@ -66,15 +68,6 @@ const OversightGraphs = () => {
       [],
     [oversight]
   )
-  const serviceWithDollarData = useMemo(
-    () =>
-      getServiceGraphData(
-        oversight,
-        'serviceAggregateWithDollar',
-        TREND_HISTORY_WEEKS
-      ) || [],
-    [oversight]
-  )
   const rawBussingData = useMemo(
     () =>
       getServiceGraphData(oversight, 'bussingAggregate', TREND_HISTORY_WEEKS) ||
@@ -102,8 +95,6 @@ const OversightGraphs = () => {
       ? jointServiceData
       : graphs === 'serviceAggregate'
       ? serviceData
-      : graphs === 'serviceAggregateWithDollar'
-      ? serviceWithDollarData
       : bussingData
 
   const datasetLength = activeDataset.length
@@ -116,7 +107,6 @@ const OversightGraphs = () => {
   const windowedData = activeDataset.slice(windowStart, clampedWindowEnd)
 
   const isBussingTab = graphs === 'bussingAggregate'
-  const isUsdTab = graphs === 'serviceAggregateWithDollar'
   const avgBussing = formatStat(
     getMonthlyStatAverage(isBussingTab ? windowedData : bussingData, 'attendance')
   )
@@ -126,12 +116,12 @@ const OversightGraphs = () => {
       'attendance'
     )
   )
+  // Income is always the USD-consolidated aggregate (oversight has no
+  // single-currency direct service income), shown in $.
   const avgIncome = formatStat(
-    getMonthlyStatAverage(
-      isBussingTab || isUsdTab ? serviceData : windowedData,
-      'income'
-    )
+    getMonthlyStatAverage(isBussingTab ? serviceData : windowedData, 'income')
   )
+  const avgIncomeDisplay = formatUsdIncomeStat(avgIncome, incomeTracked)
 
   const canGoOlder = windowStart > 0
   const canGoNewer = clampedWindowEnd < datasetLength
@@ -170,9 +160,7 @@ const OversightGraphs = () => {
   }, [windowedData])
 
   const showIncomeBar =
-    !isBussingTab &&
-    !isUsdTab &&
-    !!getMonthlyStatAverage(windowedData, 'income')
+    !isBussingTab && !!getMonthlyStatAverage(windowedData, 'income')
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
@@ -231,15 +219,15 @@ const OversightGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Income"
-              value={incomeTracked ? avgIncome : 'Not tracked'}
+              label="Avg Weekly Income (USD)"
+              value={avgIncomeDisplay}
               icon={Wallet}
               accent="banking"
               loading={loading && !oversight}
             />
           </section>
 
-          {/* 4 options: 2×2 grid so each tap target stays ≥ 44 px tall */}
+          {/* 3 options: 2×2 grid so each tap target stays ≥ 44 px tall */}
           <Tabs value={graphs} onValueChange={handleTabChange}>
             <TabsList className="grid h-auto w-full grid-cols-2">
               {OVERSIGHT_GRAPH_OPTIONS.map((option) => (

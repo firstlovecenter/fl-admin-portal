@@ -24,6 +24,7 @@ import { DENOMINATION_GRAPHS } from './GraphsQueries'
 import {
   getServiceGraphData,
   getMonthlyStatAverage,
+  formatUsdIncomeStat,
   GraphTypes,
 } from './graphs-utils'
 
@@ -31,9 +32,11 @@ const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
 
 // Denomination has no individual service records — only network-wide aggregates.
+// Money here consolidates campuses across multiple currencies, so income is the
+// USD total (income == dollarIncome). There is no separate "(USD)" series —
+// "All Services" already shows USD.
 const DENOMINATION_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
   { value: 'serviceAggregate', label: 'All Services' },
-  { value: 'serviceAggregateWithDollar', label: 'All Services (USD)' },
   { value: 'bussingAggregate', label: 'All Bussing' },
 ]
 
@@ -64,15 +67,6 @@ const DenominationGraphs = () => {
       ) || [],
     [denomination]
   )
-  const serviceWithDollarData = useMemo(
-    () =>
-      getServiceGraphData(
-        denomination,
-        'serviceAggregateWithDollar',
-        TREND_HISTORY_WEEKS
-      ) || [],
-    [denomination]
-  )
   const rawBussingData = useMemo(
     () =>
       getServiceGraphData(
@@ -99,11 +93,7 @@ const DenominationGraphs = () => {
   }, [rawBussingData])
 
   const activeDataset =
-    graphs === 'serviceAggregate'
-      ? serviceData
-      : graphs === 'serviceAggregateWithDollar'
-      ? serviceWithDollarData
-      : bussingData
+    graphs === 'bussingAggregate' ? bussingData : serviceData
 
   const datasetLength = activeDataset.length
   const effectiveWindowEnd = windowEnd ?? datasetLength
@@ -115,7 +105,6 @@ const DenominationGraphs = () => {
   const windowedData = activeDataset.slice(windowStart, clampedWindowEnd)
 
   const isBussingTab = graphs === 'bussingAggregate'
-  const isUsdTab = graphs === 'serviceAggregateWithDollar'
   const avgBussing = formatStat(
     getMonthlyStatAverage(isBussingTab ? windowedData : bussingData, 'attendance')
   )
@@ -126,11 +115,10 @@ const DenominationGraphs = () => {
     )
   )
   const avgIncome = formatStat(
-    getMonthlyStatAverage(
-      isBussingTab || isUsdTab ? serviceData : windowedData,
-      'income'
-    )
+    getMonthlyStatAverage(isBussingTab ? serviceData : windowedData, 'income')
   )
+  // Denomination income is the USD-consolidated total — always shown in $.
+  const avgIncomeDisplay = formatUsdIncomeStat(avgIncome, incomeTracked)
 
   const canGoOlder = windowStart > 0
   const canGoNewer = clampedWindowEnd < datasetLength
@@ -169,9 +157,7 @@ const DenominationGraphs = () => {
   }, [windowedData])
 
   const showIncomeBar =
-    !isBussingTab &&
-    !isUsdTab &&
-    !!getMonthlyStatAverage(windowedData, 'income')
+    !isBussingTab && !!getMonthlyStatAverage(windowedData, 'income')
 
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
@@ -230,15 +216,15 @@ const DenominationGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Income"
-              value={incomeTracked ? avgIncome : 'Not tracked'}
+              label="Avg Weekly Income (USD)"
+              value={avgIncomeDisplay}
               icon={Wallet}
               accent="banking"
               loading={loading && !denomination}
             />
           </section>
 
-          {/* 3 options including "All Services (USD)" — 2×2 grid keeps tap targets wide enough */}
+          {/* Two options — single row keeps tap targets wide enough */}
           <Tabs value={graphs} onValueChange={handleTabChange}>
             <TabsList className="grid h-auto w-full grid-cols-2">
               {DENOMINATION_GRAPH_OPTIONS.map((option) => (

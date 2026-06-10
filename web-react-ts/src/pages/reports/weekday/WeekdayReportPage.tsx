@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { getHumanReadableDate } from 'global-utils'
+import { isUsdDisplayLevel } from 'lib/display-currency'
 import DateRangePicker from '../_shared/DateRangePicker'
 import ReportPageShell from '../_shared/ReportPageShell'
 import WeeklyReportDownloadCard, {
@@ -9,22 +11,39 @@ import { useWeeklyReportQuery } from '../_shared/useWeeklyReportQuery'
 import { WEEKDAY_REPORT_QUERIES } from '../_shared/reports.gql'
 import type { WeeklyChurchReportEntry } from '../_shared/report-types'
 
-const HEADERS = [
-  { label: 'Year', key: 'year' },
-  { label: 'Week', key: 'week' },
-  { label: 'Service Attendance', key: 'serviceAttendance' },
-  { label: 'Number of Services', key: 'numberOfServices' },
-  { label: 'Service Income', key: 'serviceIncome' },
-  { label: 'Service Income (USD)', key: 'serviceDollarIncome' },
-  { label: 'Church', key: 'churchName' },
-] as const
+// At Oversight (and Denomination) income == dollarIncome — the level
+// consolidates campuses across currencies, so income is stored as the USD
+// total. The plain "Service Income" column would just duplicate the USD one,
+// so collapse the pair into a single USD column at those levels.
+const buildHeaders = (churchType: string | undefined) => {
+  const incomeColumns = isUsdDisplayLevel(churchType)
+    ? [{ label: 'Service Income (USD)', key: 'serviceDollarIncome' }]
+    : [
+        { label: 'Service Income', key: 'serviceIncome' },
+        { label: 'Service Income (USD)', key: 'serviceDollarIncome' },
+      ]
+  return [
+    { label: 'Year', key: 'year' },
+    { label: 'Week', key: 'week' },
+    { label: 'Service Attendance', key: 'serviceAttendance' },
+    { label: 'Number of Services', key: 'numberOfServices' },
+    ...incomeColumns,
+    { label: 'Church', key: 'churchName' },
+  ]
+}
 
-const PREVIEW_COLUMNS = [
-  { key: 'year', label: 'Year' },
-  { key: 'week', label: 'Week' },
-  { key: 'serviceAttendance', label: 'Attendance' },
-  { key: 'serviceIncome', label: 'Income' },
-]
+const buildPreviewColumns = (churchType: string | undefined) => {
+  const usd = isUsdDisplayLevel(churchType)
+  return [
+    { key: 'year', label: 'Year' },
+    { key: 'week', label: 'Week' },
+    { key: 'serviceAttendance', label: 'Attendance' },
+    {
+      key: usd ? 'serviceDollarIncome' : 'serviceIncome',
+      label: usd ? 'Income (USD)' : 'Income',
+    },
+  ]
+}
 
 const toRow = (entry: WeeklyChurchReportEntry) => ({
   year: entry.year,
@@ -52,6 +71,12 @@ const WeekdayReportPage = () => {
     queriesByLevel: WEEKDAY_REPORT_QUERIES,
     reportField: 'weekdayIncomeBussingReport',
   })
+
+  const headers = useMemo(() => buildHeaders(churchType), [churchType])
+  const previewColumns = useMemo(
+    () => buildPreviewColumns(churchType),
+    [churchType]
+  )
 
   const today = new Date().toISOString().slice(0, 10)
   const generatedOn = getHumanReadableDate(today) ?? today
@@ -91,10 +116,10 @@ const WeekdayReportPage = () => {
             filename={filename}
             loading={loading}
             rows={entries.map(toRow)}
-            headers={HEADERS}
+            headers={headers}
             entriesCount={entries.length}
             rangeLabel={rangeLabel ?? undefined}
-            previewColumns={PREVIEW_COLUMNS}
+            previewColumns={previewColumns}
             emptyMessage="No weekday aggregates in the selected range."
           />
         </ApolloWrapper>
