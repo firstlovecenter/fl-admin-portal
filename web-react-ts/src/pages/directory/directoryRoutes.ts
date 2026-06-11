@@ -238,15 +238,7 @@ export const memberGrids: LazyRouteTypes[] = [
   },
 ]
 
-const Directory = lazy(() => import('pages/dashboards/Directory'))
-
 export const directory: LazyRouteTypes[] = [
-  {
-    path: '/directory',
-    element: Directory,
-    placeholder: true,
-    roles: permitMe('Bacenta'),
-  },
   // Member Display and Edit Pages
   // Profile + history pages are operational-leader surfaces; arrivals
   // helpers (counter, payer) should not reach them by URL. Gate at

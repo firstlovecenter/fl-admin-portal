@@ -3,7 +3,6 @@ import { toast } from 'sonner'
 import {
   ChurchLevel,
   CurrentUser,
-  Member,
   MemberWithChurches,
   Role,
 } from 'global-types'
@@ -408,33 +407,6 @@ export const average = (array: number[]) => {
     sum += array[i++]
   }
   return sum / len
-}
-
-export const parseMemberCount = (number: number) => {
-  if (number === 1) {
-    return `${number} Member`
-  }
-  return `${number} Members`
-}
-interface MemberWithChurchCount extends Member {
-  memberCount: number
-  basontaMembershipCount: number
-  leadsBacentaCount: number
-  leadsAdminsCouncilCount: number
-  leadsAdminsGovernorshipCount: number
-  leadsAdminsCampusCount: number
-  leadsAdminsOversightCount: number
-
-  //sonta
-  leadsAdminsMinistryCount: number
-}
-export const getMemberCount = (servant: MemberWithChurchCount) => {
-  if (!servant?.memberCount) {
-    return
-  }
-  return `${parseMemberCount(servant?.memberCount)}, ${
-    servant?.basontaMembershipCount
-  } in Ministries`
 }
 
 export const getSubChurchLevel = (churchType: ChurchLevel) => {
