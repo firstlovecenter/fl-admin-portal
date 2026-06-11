@@ -196,6 +196,11 @@ frontend:
             | .[]
           ' > web-react-ts/.env
 
+          # Pin Node to 20 (>=20.19) — required floor for the Vite 7 build toolchain
+          nvm install 20
+          nvm use 20
+          echo "Building with Node $(node -v)"
+
           # Install root dependencies
           npm install
 
