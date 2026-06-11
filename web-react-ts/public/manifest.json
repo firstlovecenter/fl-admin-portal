@@ -30,16 +30,22 @@
   ],
   "shortcuts": [
     {
-      "name": "Directory",
-      "short_name": "Directory",
-      "description": "View my directory page",
-      "url": "/directory"
+      "name": "Home",
+      "short_name": "Home",
+      "description": "Go to my home dashboard",
+      "url": "/"
+    },
+    {
+      "name": "Members",
+      "short_name": "Members",
+      "description": "View my members directory",
+      "url": "/directory/members"
     },
     {
       "name": "Services",
       "short_name": "Services",
       "description": "View my services",
-      "url": "/services/church-list"
+      "url": "/services"
     },
     {
       "name": "Arrivals",

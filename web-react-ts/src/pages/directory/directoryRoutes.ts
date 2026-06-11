@@ -239,18 +239,12 @@ export const memberGrids: LazyRouteTypes[] = [
 ]
 
 const Directory = lazy(() => import('pages/dashboards/Directory'))
-const Churches = lazy(() => import('pages/directory/Churches'))
 
 export const directory: LazyRouteTypes[] = [
   {
     path: '/directory',
     element: Directory,
     placeholder: true,
-    roles: permitMe('Bacenta'),
-  },
-  {
-    path: '/directory/churches',
-    element: Churches,
     roles: permitMe('Bacenta'),
   },
   // Member Display and Edit Pages

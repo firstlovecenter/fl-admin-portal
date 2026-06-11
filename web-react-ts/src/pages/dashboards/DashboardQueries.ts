@@ -130,10 +130,6 @@ export const SERVANT_CHURCHES_COUNT = gql`
     members(where: { id: { eq: $id } }) {
       id
       memberCount
-      leadsBacentaCount
-      leadsAdminsGovernorshipCount
-      leadsAdminsCouncilCount
-      leadsAdminsCampusCount
     }
   }
 `

@@ -4,8 +4,7 @@ import React, { useContext } from 'react'
 import { useQuery } from '@apollo/client'
 import MenuButton from 'components/buttons/MenuButton'
 import { useNavigate } from 'react-router'
-import { getChurchCount, getMemberCount } from 'global-utils'
-import Church from 'assets/icons/Church'
+import { getMemberCount } from 'global-utils'
 import People from 'assets/icons/People'
 import Stars from 'assets/icons/Stars'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
@@ -47,13 +46,6 @@ const Directory = () => {
             caption={getMemberCount(data?.members[0])}
             color="members"
             onClick={() => navigate(`/directory/members`)}
-          />
-          <MenuButton
-            iconComponent={<Church />}
-            title="churches"
-            caption={getChurchCount(data?.members[0])}
-            color="churches"
-            onClick={() => navigate(`/directory/churches`)}
           />
           {hasQuickFacts && (
             <MenuButton

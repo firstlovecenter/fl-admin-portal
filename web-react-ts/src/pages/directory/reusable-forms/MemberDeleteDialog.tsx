@@ -76,7 +76,7 @@ const MemberDeleteDialog = ({
         clickCard({ __typename: 'Bacenta', id: bacentaId })
         navigate('/bacenta/displaydetails')
       } else {
-        navigate('/directory')
+        navigate('/directory/members')
       }
     } catch (e) {
       throwToSentry('Cannot delete member', e)
