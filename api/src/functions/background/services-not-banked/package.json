@@ -4,12 +4,12 @@
   "description": "AWS Lambda function to update services not banked data",
   "main": "index.js",
   "dependencies": {
-    "neo4j-driver": "^5.6.0",
-    "axios": "^1.4.0",
     "@aws-sdk/client-secrets-manager": "^3.388.0",
-    "googleapis": "^126.0.1"
+    "axios": "^1.4.0",
+    "googleapis": "^173.0.0",
+    "neo4j-driver": "^5.6.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   }
 }

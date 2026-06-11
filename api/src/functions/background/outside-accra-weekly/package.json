@@ -9,7 +9,7 @@
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.535.0",
     "axios": "^1.6.7",
-    "googleapis": "^131.0.0",
+    "googleapis": "^173.0.0",
     "neo4j-driver": "^5.28.1"
   }
 }
