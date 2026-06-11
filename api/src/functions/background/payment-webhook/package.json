@@ -4,9 +4,9 @@
   "description": "AWS Lambda function to handle Paystack payment webhook callbacks",
   "main": "payment-webhook.js",
   "dependencies": {
-    "neo4j-driver": "^5.28.1",
-    "firebase-admin": "^13.0.2",
-    "@aws-sdk/client-secrets-manager": "^3.900.0"
+    "@aws-sdk/client-secrets-manager": "^3.900.0",
+    "firebase-admin": "^14.0.0",
+    "neo4j-driver": "^5.28.1"
   },
   "overrides": {
     "form-data": "^4.0.4",
@@ -15,6 +15,6 @@
     "tmp": "^0.2.4"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.0.0"
   }
 }
