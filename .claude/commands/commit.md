@@ -66,35 +66,16 @@ Use the package or section the change touches. Common scopes:
 If the change spans multiple scopes, pick the dominant one. If truly
 cross-cutting, omit the scope: `feat: …`.
 
-## Update the changelog (required every commit)
+## Do not hand-edit the changelog
 
-Every commit MUST add an entry to `CHANGELOG.md` under the `#### Unreleased`
-heading, and that change is staged **into the same commit**.
-
-- Find the `#### Unreleased` block at the top of `CHANGELOG.md`. If it does not
-  exist, create it directly above the most recent released `#### x.y.z` heading.
-- Under `Unreleased`, group entries by `##### <Section>` sub-headings. Map the
-  commit `type` to a section, creating the sub-heading if it isn't there yet:
-
-  | Commit `type` | Changelog section |
-  | --- | --- |
-  | `feat` | `##### New Features` |
-  | `fix` | `##### Bug Fixes` |
-  | `refactor` | `##### Refactors` |
-  | `perf` | `##### Performance` |
-  | `docs` | `##### Documentation Changes` |
-  | `chore`, `style`, `ci` | `##### Chores` |
-  | `revert` | `##### Reverts` |
-
-- Add one bullet using the commit description (the part after `type(scope):`),
-  e.g. `- add code-of-the-day rotation for outbound trips`. Don't add the commit
-  hash — that's filled in by the release tooling, not by hand.
-- Section ordering within `Unreleased` should follow the table order above
-  (New Features, Bug Fixes, Refactors, …). Append the bullet to the bottom of
-  its section.
-- This edit happens **before** staging so `CHANGELOG.md` goes into the same
-  commit as the change it documents. The only exception is a commit that
-  *only* touches `CHANGELOG.md` itself — don't recurse.
+`CHANGELOG.md` is generated, not hand-written. **Do not add changelog entries
+in a `/commit`.** The release tooling (`npm run release:patch|minor|major` →
+`scripts/release.js`) runs `generate-changelog` (`changelog -p|-m|-M`), which
+reads the git history, groups commits by Conventional-Commit type, and writes
+entries with GitHub commit-hash links. A good commit message **is** the
+changelog entry — so the only thing `/commit` owes the changelog is an
+accurate, well-typed subject line. Hand-written bullets would have no commit
+link and would duplicate the generated section at release time.
 
 ## Examples
 
@@ -140,12 +121,10 @@ By default, `/commit` only commits work produced in **this session/thread**.
 6. Draft the subject. Keep it under 72 chars.
 7. If the body adds value (the *why*), include it. Skip it if the subject is
    self-explanatory.
-8. Update `CHANGELOG.md` per **Update the changelog** above — add the bullet to
-   the `#### Unreleased` section under the section that matches the commit type.
-9. Stage **only the in-scope files** by name, **including `CHANGELOG.md`**
-   (`git add <specific files> CHANGELOG.md`). Never `git add -A`, `git add .`,
-   or `git add -u` — those sweep up out-of-session work.
-10. Commit with a HEREDOC if the message has multiple lines:
+8. Stage **only the in-scope files** by name (`git add <specific files>`).
+   Never `git add -A`, `git add .`, or `git add -u` — those sweep up
+   out-of-session work. Do not touch `CHANGELOG.md` (see above).
+9. Commit with a HEREDOC if the message has multiple lines:
 
    ```
    git commit -m "$(cat <<'EOF'
@@ -158,9 +137,9 @@ By default, `/commit` only commits work produced in **this session/thread**.
    )"
    ```
 
-11. Run `git status` to confirm. Pre-existing out-of-session changes should
+10. Run `git status` to confirm. Pre-existing out-of-session changes should
     still be unstaged — that is expected, not a problem.
-12. **Do not push.** Only push if the user explicitly asks.
+11. **Do not push.** Only push if the user explicitly asks.
 
 ## Hard rules
 

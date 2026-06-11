@@ -5,10 +5,6 @@
 - remove Creative Arts hierarchy dead code (CreativeArts, Ministry, HubCouncil, Hub, Sonta)
 - lift page headers into StickyPageHeader so the PWA back button isn't covered
 
-##### Documentation Changes
-
-- make /commit update the changelog on every commit
-
 ---
 
 #### 8.1.3 (2025-09-06)
