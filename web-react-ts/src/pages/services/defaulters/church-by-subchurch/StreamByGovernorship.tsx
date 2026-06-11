@@ -8,6 +8,10 @@ import { Phone, MessageCircle, Layers } from 'lucide-react'
 
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
 
 import { STREAM_BY_GOVERNORSHIP } from '../DefaultersQueries'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
@@ -86,8 +90,8 @@ const StreamByGovernorship = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6">
-            <header className="flex items-start justify-between gap-4">
+          <StickyPageHeader bare>
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
               <div className="min-w-0">
                 {loading || !stream ? (
                   <Skeleton className="h-9 w-72" />
@@ -98,11 +102,11 @@ const StreamByGovernorship = () => {
                   </h1>
                 )}
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <StickyPageHeaderActions>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="mt-1 gap-1.5"
+                  className="gap-1.5"
                   onClick={() => navigate('/services/stream-by-council')}
                 >
                   <Layers className="h-4 w-4" />
@@ -114,9 +118,10 @@ const StreamByGovernorship = () => {
                   disabled={loading || !stream}
                   showLabel
                 />
-              </div>
-            </header>
-
+              </StickyPageHeaderActions>
+            </div>
+          </StickyPageHeader>
+          <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6">
             <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_280px] lg:items-start">
               {/* Council-sectioned governorship list */}
               <div className="space-y-6">

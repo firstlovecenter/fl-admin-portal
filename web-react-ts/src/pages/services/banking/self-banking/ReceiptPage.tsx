@@ -30,6 +30,7 @@ import {
   SET_TRANSACTION_REFERENCE_MANUALLY,
 } from './bankingQueries'
 import ButtonConfirmPayment from './components/button/ConfirmPayment'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { TRANSACTION_STATUS } from '../banking-constants'
 
 type StatusVariant = 'success' | 'pending' | 'failed' | 'unknown'
@@ -142,14 +143,12 @@ const ReceiptPage = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Self-Banking <span className="text-banking">Receipt</span>
+        </h1>
+      </StickyPageHeader>
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        <header className="space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Self-Banking{' '}
-            <span className="text-banking">Receipt</span>
-          </h1>
-        </header>
-
         {error && (
           <Card>
             <CardContent className="p-5 text-sm text-destructive">

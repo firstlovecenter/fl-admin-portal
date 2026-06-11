@@ -24,6 +24,7 @@ import {
   permitTellerStream,
 } from 'permission-utils'
 import { ChurchIdAndName, ChurchLevel } from 'global-types'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { cn } from 'components/lib/utils'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Skeleton } from 'components/ui/skeleton'
@@ -229,19 +230,18 @@ const ServicesMenuInner = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {churchName ?? ''}{' '}
+          <span className="text-churches">Services</span>
+        </h1>
+        {churchType && (
+          <p className="text-sm text-muted-foreground">
+            {formatChurchLevel(churchType)}
+          </p>
+        )}
+      </StickyPageHeader>
       <main className="mx-auto max-w-4xl px-4 py-5 lg:px-6 lg:py-8">
-        <header className="mb-6 space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {churchName ?? ''}{' '}
-            <span className="text-churches">Services</span>
-          </h1>
-          {churchType && (
-            <p className="text-sm text-muted-foreground">
-              {formatChurchLevel(churchType)}
-            </p>
-          )}
-        </header>
-
         <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
           <div className="space-y-3">
           {showServiceToggle &&

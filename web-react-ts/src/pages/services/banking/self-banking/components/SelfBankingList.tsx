@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from 'components/ui/dialog'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceRecord } from 'global-types'
 import { TRANSACTION_STATUS } from '../../banking-constants'
@@ -130,32 +131,31 @@ const SelfBankingList = ({
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        {/* Page header */}
-        <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Self-Banking
-          </p>
-          {loading && !church ? (
-            <Skeleton className="h-8 w-64" />
-          ) : (
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {church?.name}{' '}
-              <span className="text-muted-foreground">{church?.__typename}</span>
-            </h1>
+      {/* Page header */}
+      <StickyPageHeader>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Self-Banking
+        </p>
+        {loading && !church ? (
+          <Skeleton className="h-8 w-64" />
+        ) : (
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            {church?.name}{' '}
+            <span className="text-muted-foreground">{church?.__typename}</span>
+          </h1>
+        )}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          {church?.bankingCode && (
+            <Badge
+              variant="outline"
+              className="border-banking/40 bg-banking/5 font-mono text-banking"
+            >
+              Banking Code · {church.bankingCode}
+            </Badge>
           )}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            {church?.bankingCode && (
-              <Badge
-                variant="outline"
-                className="border-banking/40 bg-banking/5 font-mono text-banking"
-              >
-                Banking Code · {church.bankingCode}
-              </Badge>
-            )}
-          </div>
-        </header>
-
+        </div>
+      </StickyPageHeader>
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
           {/* LEFT — service list */}
           <section className="space-y-4">

@@ -32,6 +32,7 @@ import { Skeleton } from 'components/ui/skeleton'
 import { cn } from 'components/lib/utils'
 import FormikInput from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 import { GET_ARRIVAL_TIMES, SET_STREAM_ARRIVAL_TIMES } from './time-gql'
 
@@ -184,21 +185,20 @@ const ArrivalTimes = () => {
 
   return (
     <main className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Stream
+        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+          {streamName ? `${streamName} ` : ''}
+          <span className="text-arrivals">Arrival Times</span>
+        </h1>
+        <p className="max-w-prose text-sm text-muted-foreground">
+          These windows decide when mobilisation and arrival counters can
+          record bussing for this stream.
+        </p>
+      </StickyPageHeader>
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Stream
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-            {streamName ? `${streamName} ` : ''}
-            <span className="text-arrivals">Arrival Times</span>
-          </h1>
-          <p className="max-w-prose text-sm text-muted-foreground">
-            These windows decide when mobilisation and arrival counters can
-            record bussing for this stream.
-          </p>
-        </header>
-
         {!streamId && (
           <Alert variant="destructive">
             <AlertTriangle className="size-4" />

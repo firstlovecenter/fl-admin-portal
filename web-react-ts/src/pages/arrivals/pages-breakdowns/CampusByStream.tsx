@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Button } from 'components/ui/button'
 import { Card } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import {
   LiveRow,
   SectionLabel,
@@ -78,19 +79,17 @@ const CampusByStream = () => {
         placeholder={!!previousData}
       >
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <StickyPageHeader>
+            {loading && !campus ? (
+              <Skeleton className="h-9 w-72" />
+            ) : (
+              <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {campus?.name}{' '}
+                <span className="text-arrivals">Arrivals by Stream</span>
+              </h1>
+            )}
+          </StickyPageHeader>
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6">
-            {/* Page heading */}
-            <div className="mb-5 pl-14 pr-14 md:px-0">
-              {loading && !campus ? (
-                <Skeleton className="h-9 w-72" />
-              ) : (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {campus?.name}{' '}
-                  <span className="text-arrivals">Arrivals by Stream</span>
-                </h1>
-              )}
-            </div>
-
             {/* Stream list — 1 col on mobile, 2 col on lg */}
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start">
               {campus?.streams?.map((stream: HigherChurchWithArrivals) => {

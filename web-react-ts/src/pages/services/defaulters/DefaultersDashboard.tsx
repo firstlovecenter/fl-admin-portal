@@ -31,6 +31,7 @@ import {
   TabsList,
   TabsTrigger,
 } from 'components/ui/tabs'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 import {
   GOVERNORSHIP_DEFAULTERS,
@@ -406,25 +407,24 @@ const DefaultersDashboard = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <StickyPageHeader>
+            {church ? (
+              <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {church.name}{' '}
+                <span className="text-defaulters">
+                  {(church as HigherChurchWithDefaulters).__typename}{' '}
+                  Defaulters
+                </span>
+              </h1>
+            ) : (
+              <Skeleton className="h-9 w-72" />
+            )}
+            <p className="text-sm text-muted-foreground">
+              Weekly defaulter overview
+              {isCurrent ? '' : ` — ${weekLabel}`}
+            </p>
+          </StickyPageHeader>
           <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-            <header className="space-y-1">
-              {church ? (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {church.name}{' '}
-                  <span className="text-defaulters">
-                    {(church as HigherChurchWithDefaulters).__typename}{' '}
-                    Defaulters
-                  </span>
-                </h1>
-              ) : (
-                <Skeleton className="h-9 w-72" />
-              )}
-              <p className="text-sm text-muted-foreground">
-                Weekly defaulter overview
-                {isCurrent ? '' : ` — ${weekLabel}`}
-              </p>
-            </header>
-
             <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {activeUnitLink ? (
                 <button

@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from 'components/ui/dialog'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { displayError } from 'utils/errorHandler'
 import { BACENTA_ARRIVALS } from '../arrivalsQueries'
 import { UPLOAD_MOBILISATION_PICTURE } from '../arrivalsMutation'
@@ -103,21 +104,20 @@ const FormMobilisationSubmission = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+            Pre-Mobilisation{' '}
+            <span className="text-arrivals">Picture</span>
+          </h1>
+          {loading ? (
+            <Skeleton className="h-5 w-48" />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {bacenta?.name} Bacenta
+            </p>
+          )}
+        </StickyPageHeader>
         <main className="mx-auto w-full max-w-xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="mb-6 space-y-1 lg:mb-8">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              Pre-Mobilisation{' '}
-              <span className="text-arrivals">Picture</span>
-            </h1>
-            {loading ? (
-              <Skeleton className="h-5 w-48" />
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {bacenta?.name} Bacenta
-              </p>
-            )}
-          </header>
-
           <div className="space-y-6">
             <Card className="overflow-hidden">
               <CardContent className="space-y-3 p-6 text-center">

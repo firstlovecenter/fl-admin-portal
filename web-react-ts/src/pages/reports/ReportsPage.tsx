@@ -19,6 +19,7 @@ import {
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { cn } from 'components/lib/utils'
 import RoleView from 'auth/RoleView'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { permitLeaderAdmin } from 'permission-utils'
 import type { ChurchLevel } from 'global-types'
 import { getMembershipDownloadPath } from './membership-paths'
@@ -268,14 +269,13 @@ const ReportsPage = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {churchPrefix}
+          <span className="text-banking">Reports</span>
+        </h1>
+      </StickyPageHeader>
       <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-        <header className="mb-6 space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {churchPrefix}
-            <span className="text-banking">Reports</span>
-          </h1>
-        </header>
-
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_240px] lg:items-start lg:gap-8">
           <ReportsTableOfContents
             sections={tocSections}

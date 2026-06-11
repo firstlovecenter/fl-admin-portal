@@ -58,6 +58,10 @@ import {
   TabsTrigger,
 } from 'components/ui/tabs'
 import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
 
 import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
 import { permitAdmin, permitArrivals, permitLeaderAdmin } from 'permission-utils'
@@ -284,43 +288,41 @@ const CampusDashboard = () => {
         placeholder={!!previousData}
       >
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
-            {/* ── Page header ── */}
-            <div className="mb-3 lg:mb-6">
-              {/* pl-14/pr-14 reserve space for AppShell's floating BackButton + sidebar toggle on mobile */}
-              <div className="flex items-start justify-between gap-4 pl-14 pr-14 md:px-0">
-                <div className="min-w-0 flex-1 space-y-1.5">
-                  {loading && !campus ? (
-                    <Skeleton className="h-9 w-72" />
-                  ) : (
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                      {campus?.name}{' '}
-                      <span className="text-arrivals">Arrivals</span>
-                    </h1>
-                  )}
-                  {(isSwellDay || timeGraph?.date) && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {isSwellDay && (
-                        <Badge
-                          variant="outline"
-                          className="gap-1 border-warning/30 bg-warning/10 text-warning"
-                        >
-                          <Sparkles className="size-3" />
-                          Swollen Weekend
-                        </Badge>
-                      )}
-                      {timeGraph?.date && (
-                        <span className="text-xs text-muted-foreground tabular-nums">
-                          {getHumanReadableDate(timeGraph.date, true)}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
+          <StickyPageHeader bare>
+            <div className="mx-auto flex max-w-6xl items-start justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
+              <div className="min-w-0 flex-1 space-y-1.5">
+                {loading && !campus ? (
+                  <Skeleton className="h-9 w-72" />
+                ) : (
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                    {campus?.name}{' '}
+                    <span className="text-arrivals">Arrivals</span>
+                  </h1>
+                )}
+                {(isSwellDay || timeGraph?.date) && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isSwellDay && (
+                      <Badge
+                        variant="outline"
+                        className="gap-1 border-warning/30 bg-warning/10 text-warning"
+                      >
+                        <Sparkles className="size-3" />
+                        Swollen Weekend
+                      </Badge>
+                    )}
+                    {timeGraph?.date && (
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {getHumanReadableDate(timeGraph.date, true)}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
 
-                {/* Settings dropdown — visible to Campus admins and to
-                    fishers (who only see the Code of the Day item). */}
-                {showSettingsMenu && (
+              {/* Settings dropdown — visible to Campus admins and to
+                  fishers (who only see the Code of the Day item). */}
+              {showSettingsMenu && (
+                <StickyPageHeaderActions>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -359,11 +361,11 @@ const CampusDashboard = () => {
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                )}
-              </div>
-
+                </StickyPageHeaderActions>
+              )}
             </div>
-
+          </StickyPageHeader>
+          <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {(() => {
               const metaRow = (
                 <ArrivalsDashboardMeta

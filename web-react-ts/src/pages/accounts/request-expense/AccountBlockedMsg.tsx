@@ -1,20 +1,20 @@
 import { Card, CardContent } from 'components/ui/card'
 import { Lock } from 'lucide-react'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const AccountBlockedMsg = () => {
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Account is{' '}
+          <span className="text-destructive">Locked</span>
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Expense requests can only be submitted while accounts are open.
+        </p>
+      </StickyPageHeader>
       <main className="mx-auto max-w-2xl px-4 py-5 lg:px-6 lg:py-8">
-        <header className="space-y-3 pl-14 pr-14 md:px-0">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Account is{' '}
-            <span className="text-destructive">Locked</span>
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Expense requests can only be submitted while accounts are open.
-          </p>
-        </header>
-
         <Card className="mt-6 overflow-hidden">
           <CardContent className="flex items-start gap-3 p-5">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">

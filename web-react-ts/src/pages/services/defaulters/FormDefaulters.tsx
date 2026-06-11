@@ -16,6 +16,10 @@ import WeekSelector from 'components/WeekSelector/WeekSelector'
 import { Badge } from 'components/ui/badge'
 import { Card, CardContent } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
 
 import {
   CAMPUS_FORM_DEFAULTERS_LIST,
@@ -104,8 +108,8 @@ const FormDefaulters = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-            <header className="space-y-2">
+          <StickyPageHeader bare>
+            <div className="mx-auto max-w-6xl space-y-2 py-3 pl-16 pr-16 md:px-4 lg:px-6">
               <div className="flex items-start justify-between gap-3">
                 {church ? (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
@@ -116,11 +120,13 @@ const FormDefaulters = () => {
                   <Skeleton className="h-9 w-72" />
                 )}
                 {isDefaultersDownloadLevel(church?.__typename) && church?.id && (
-                  <DownloadDefaultersButton
-                    level={church.__typename}
-                    churchId={church.id}
-                    disabled={!church}
-                  />
+                  <StickyPageHeaderActions>
+                    <DownloadDefaultersButton
+                      level={church.__typename}
+                      churchId={church.id}
+                      disabled={!church}
+                    />
+                  </StickyPageHeaderActions>
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -140,8 +146,9 @@ const FormDefaulters = () => {
                   <Skeleton className="h-4 w-48" />
                 )}
               </div>
-            </header>
-
+            </div>
+          </StickyPageHeader>
+          <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
             <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
               <aside className="space-y-3 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
                 <WeekSelector />

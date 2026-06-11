@@ -14,6 +14,7 @@ import { useContext } from 'react'
 import { COUNCIL_ACCOUNT_DASHBOARD } from './accountsGQL'
 import { CouncilForAccounts } from './accounts-types'
 import { ActionRow, BalanceCard } from './components/DashboardCards'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const CouncilDashboard = () => {
   const { councilId } = useContext(ChurchContext)
@@ -36,8 +37,8 @@ const CouncilDashboard = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-3 pl-14 pr-14 md:px-0">
+        <StickyPageHeader>
+          <div className="space-y-3">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {council?.name ? (
                 <>{council.name} </>
@@ -67,8 +68,9 @@ const CouncilDashboard = () => {
                 )}
               </div>
             </div>
-          </header>
-
+          </div>
+        </StickyPageHeader>
+        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
             {/* Supporting column — balances. First in DOM so it sits on top on mobile. */}
             <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">

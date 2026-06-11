@@ -4,6 +4,7 @@ import useInfiniteScroll from 'hooks/useInfiniteScroll'
 import Timeline from 'components/Timeline/Timeline'
 import ErrorScreen from 'components/base-component/ErrorScreen'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { History as HistoryIcon } from 'lucide-react'
 import { HistoryLog } from 'global-types'
 
@@ -61,22 +62,21 @@ const ChurchHistoryView = <TData,>({
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        {loading ? (
+          <Skeleton className="h-8 w-64" />
+        ) : (
+          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+            {headingName && `${headingName} `}
+            <span className="text-members">{headingSuffix}</span>
+          </h1>
+        )}
+        <p className="text-sm text-muted-foreground">
+          Audit trail of leadership and status changes for this{' '}
+          {parentTypename.toLowerCase()}.
+        </p>
+      </StickyPageHeader>
       <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-        <header className="mb-6 space-y-1">
-          {loading ? (
-            <Skeleton className="h-8 w-64" />
-          ) : (
-            <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              {headingName && `${headingName} `}
-              <span className="text-members">{headingSuffix}</span>
-            </h1>
-          )}
-          <p className="text-sm text-muted-foreground">
-            Audit trail of leadership and status changes for this{' '}
-            {parentTypename.toLowerCase()}.
-          </p>
-        </header>
-
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
           <div className="rounded-xl border border-border bg-card p-4 lg:p-6">
             {loading ? (

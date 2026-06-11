@@ -13,6 +13,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
 import { Button } from 'components/ui/button'
@@ -163,14 +164,13 @@ const CouncilGraphs = () => {
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {council?.name ?? 'Council'}{' '}
+            <span className="text-churches">Trends</span>
+          </h1>
+        </StickyPageHeader>
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {council?.name ?? 'Council'}{' '}
-              <span className="text-churches">Trends</span>
-            </h1>
-          </header>
-
           <Card>
             <CardContent className="px-4 py-3 sm:px-5">
               <LeaderAvatar

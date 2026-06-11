@@ -12,6 +12,7 @@ import { ChevronRight, Layers, Users } from 'lucide-react'
 import { GET_STREAM_COUNCILS } from 'queries/ListQueries'
 import { useContext, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const ACCOUNTS_AUTO_REDIRECT_TYPES = new Set([
   'Oversight',
@@ -71,23 +72,22 @@ const AccountsLandingPage = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {isStreamScope && !stream?.name ? (
+            <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
+          ) : (
+            <>{stream?.name ? `${stream.name} Council ` : 'Council '}</>
+          )}
+          <span className="text-banking">Accounts</span>
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {isStreamScope
+            ? 'Choose a council to continue.'
+            : 'Switch to a Stream, Council, or Campus scope to view accounts.'}
+        </p>
+      </StickyPageHeader>
       <main className="mx-auto max-w-2xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {isStreamScope && !stream?.name ? (
-              <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
-            ) : (
-              <>{stream?.name ? `${stream.name} Council ` : 'Council '}</>
-            )}
-            <span className="text-banking">Accounts</span>
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {isStreamScope
-              ? 'Choose a council to continue.'
-              : 'Switch to a Stream, Council, or Campus scope to view accounts.'}
-          </p>
-        </header>
-
         {isStreamScope && (
           <ApolloWrapper loading={loading} data={data} error={error}>
             {councils.length === 0 ? (

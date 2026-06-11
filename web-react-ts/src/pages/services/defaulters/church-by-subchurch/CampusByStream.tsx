@@ -9,6 +9,7 @@ import { cn } from 'components/lib/utils'
 
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 import { CAMPUS_BY_STREAM } from '../DefaultersQueries'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
@@ -57,19 +58,17 @@ const CampusByStream = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <StickyPageHeader>
+            {loading || !campus ? (
+              <Skeleton className="h-9 w-64" />
+            ) : (
+              <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {campus.name}{' '}
+                <span className="text-churches">Campus By Streams</span>
+              </h1>
+            )}
+          </StickyPageHeader>
           <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6">
-            {/* Page heading */}
-            <div className="pl-14 pr-14 md:px-0">
-              {loading || !campus ? (
-                <Skeleton className="h-9 w-64" />
-              ) : (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {campus.name}{' '}
-                  <span className="text-churches">Campus By Streams</span>
-                </h1>
-              )}
-            </div>
-
             {/* Summary first in DOM → sits above stream list on mobile */}
             <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_280px] lg:items-start">
               {/* Summary sidebar — first in DOM, placed in col 2 on lg */}

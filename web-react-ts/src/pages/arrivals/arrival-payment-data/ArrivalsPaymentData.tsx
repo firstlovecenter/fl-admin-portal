@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from 'components/ui/table'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { DISPLAY_ARRIVALS_PAYMENT_DATA } from '../arrivalsQueries'
 
 const INITIAL_PAGE_SIZE = 25
@@ -271,23 +272,22 @@ const ArrivalsPaymentData = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+          {streamName ? `${streamName} ` : ''}
+          <span className="text-arrivals">Arrivals Payment</span>
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {humanDate}
+          {totalCount !== undefined && (
+            <>
+              {' '}
+              · {totalCount} {totalCount === 1 ? 'vehicle' : 'vehicles'}
+            </>
+          )}
+        </p>
+      </StickyPageHeader>
       <main className="mx-auto max-w-7xl px-4 py-5 lg:px-6 lg:py-8 space-y-6">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-            {streamName ? `${streamName} ` : ''}
-            <span className="text-arrivals">Arrivals Payment</span>
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {humanDate}
-            {totalCount !== undefined && (
-              <>
-                {' '}
-                · {totalCount} {totalCount === 1 ? 'vehicle' : 'vehicles'}
-              </>
-            )}
-          </p>
-        </header>
-
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
           {/* Primary column — table */}
           <div className="order-2 lg:order-1 space-y-4">

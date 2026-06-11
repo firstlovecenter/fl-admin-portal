@@ -7,6 +7,7 @@ import MemberDisplayCard from 'components/card/MemberDisplayCard'
 import { Badge } from 'components/ui/badge'
 import { Card, CardContent } from 'components/ui/card'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 import {
   GOVERNORSHIP_BACENTAS_NO_ACTIVITY,
@@ -48,25 +49,24 @@ const BacentasNoActivity = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <StickyPageHeader innerClassName="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-defaulters">
+              <AlertOctagon className="size-3.5" />
+              <span>Bacenta Status</span>
+            </div>
+            {loading && !church ? (
+              <Skeleton className="h-9 w-72" />
+            ) : (
+              <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {church?.name ?? churchName ?? ''}{' '}
+                <span className="text-defaulters">No Activity</span>
+              </h1>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Bacentas that have not started bussing for today.
+            </p>
+          </StickyPageHeader>
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            <header className="mb-6 space-y-2 lg:mb-8">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-defaulters">
-                <AlertOctagon className="size-3.5" />
-                <span>Bacenta Status</span>
-              </div>
-              {loading && !church ? (
-                <Skeleton className="h-9 w-72" />
-              ) : (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {church?.name ?? churchName ?? ''}{' '}
-                  <span className="text-defaulters">No Activity</span>
-                </h1>
-              )}
-              <p className="text-sm text-muted-foreground">
-                Bacentas that have not started bussing for today.
-              </p>
-            </header>
-
             {!isScopeSupported && (
               <Card className="mb-6 border-warning/40 bg-warning/5">
                 <CardContent className="flex flex-col items-center gap-2 p-8 text-center">

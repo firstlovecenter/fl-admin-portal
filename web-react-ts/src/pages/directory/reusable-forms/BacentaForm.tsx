@@ -21,6 +21,7 @@ import RoleView from 'auth/RoleView'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import SubmitButton from 'components/formik/SubmitButton'
 import Select from 'components/formik/Select'
 import Input from 'components/formik/Input'
@@ -103,23 +104,21 @@ const BacentaForm = ({
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <StickyPageHeader>
+        <p className="text-xs font-semibold uppercase tracking-wider text-members">
+          {title}
+        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+          {initialValues.name ? (
+            <>
+              {initialValues.name} <span className="text-members">Bacenta</span>
+            </>
+          ) : (
+            <span className="text-members">New Bacenta</span>
+          )}
+        </h1>
+      </StickyPageHeader>
       <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-        <header className="mb-6 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-members">
-            {title}
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-            {initialValues.name ? (
-              <>
-                {initialValues.name}{' '}
-                <span className="text-members">Bacenta</span>
-              </>
-            ) : (
-              <span className="text-members">New Bacenta</span>
-            )}
-          </h1>
-        </header>
-
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}

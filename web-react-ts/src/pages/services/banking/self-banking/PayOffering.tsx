@@ -24,6 +24,7 @@ import {
 } from 'components/ui/dialog'
 import { Input as ShadcnInput } from 'components/ui/input'
 import { Label } from 'components/ui/label'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { Skeleton } from 'components/ui/skeleton'
 import { MemberContext } from 'contexts/MemberContext'
 import { ServiceContext } from 'contexts/ServiceContext'
@@ -188,24 +189,23 @@ const PayOffering = (props: PayOfferingProps) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        {/* Header */}
-        <header className="space-y-2">
-          {loading || !church ? (
-            <Skeleton className="h-8 w-64" />
-          ) : (
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {church.name}{' '}
-              <span className="text-banking">Banking</span>
-            </h1>
-          )}
-          {church?.bankingCode && (
-            <p className="font-mono text-sm text-muted-foreground">
-              Banking Code: {church.bankingCode}
-            </p>
-          )}
-        </header>
+      {/* Header */}
+      <StickyPageHeader>
+        {loading || !church ? (
+          <Skeleton className="h-8 w-64" />
+        ) : (
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {church.name} <span className="text-banking">Banking</span>
+          </h1>
+        )}
+        {church?.bankingCode && (
+          <p className="font-mono text-sm text-muted-foreground">
+            Banking Code: {church.bankingCode}
+          </p>
+        )}
+      </StickyPageHeader>
 
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         {error && (
           <Card>
             <CardContent className="p-5 text-sm text-destructive">

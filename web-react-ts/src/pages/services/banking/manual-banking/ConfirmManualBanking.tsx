@@ -33,6 +33,7 @@ import {
   DialogTitle,
 } from 'components/ui/dialog'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { cn } from 'components/lib/utils'
 import { formatChurchLevel } from 'lib/scope-display'
 import {
@@ -235,9 +236,9 @@ const ConfirmManualBanking = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-        {/* ── Page header ── */}
-        <header className="space-y-3">
+      {/* ── Page header ── */}
+      <StickyPageHeader>
+        <div className="space-y-3">
           {activeStream?.name ? (
             <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               {activeStream.name}{' '}
@@ -284,8 +285,9 @@ const ConfirmManualBanking = () => {
               <ChurchRoleScopePicker />
             </div>
           )}
-        </header>
-
+        </div>
+      </StickyPageHeader>
+      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
         {/* ── 2-column grid: content left, intentional negative space right ── */}
         <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
           {/* ── Left column ── */}

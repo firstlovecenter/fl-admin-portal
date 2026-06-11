@@ -16,6 +16,7 @@ import { Input } from 'components/ui/input'
 import { Separator } from 'components/ui/separator'
 import { Skeleton } from 'components/ui/skeleton'
 import { Bus, ChevronRight, Search, Wallet } from 'lucide-react'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 type CampusCouncilListLink =
   | '/accounts/council/make-deposit'
@@ -58,25 +59,24 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="mb-6 space-y-1 pl-14 pr-14 md:px-0">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {campus?.name ? (
-                <>{campus.name} </>
-              ) : (
-                <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
-              )}
-              <span className="text-banking">Councils</span>
-            </h1>
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {campus?.name ? (
-              <p className="text-sm text-muted-foreground">
-                {SUBTITLE_BY_LINK[link]}
-              </p>
+              <>{campus.name} </>
             ) : (
-              <Skeleton className="h-4 w-56" />
+              <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
             )}
-          </header>
-
+            <span className="text-banking">Councils</span>
+          </h1>
+          {campus?.name ? (
+            <p className="text-sm text-muted-foreground">
+              {SUBTITLE_BY_LINK[link]}
+            </p>
+          ) : (
+            <Skeleton className="h-4 w-56" />
+          )}
+        </StickyPageHeader>
+        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
             {/* Supporting column — campus totals. First in DOM → above list on mobile */}
             <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">

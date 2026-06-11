@@ -28,6 +28,7 @@ import {
 } from 'components/ui/dialog'
 import { Skeleton } from 'components/ui/skeleton'
 import useModal from 'hooks/useModal'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { cn } from 'components/lib/utils'
 import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
 import { BACENTA_ARRIVALS } from './arrivalsQueries'
@@ -132,24 +133,23 @@ const BacentaArrivals = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error}>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          {/* Page header */}
+          <StickyPageHeader>
+            {loading || !bacenta ? (
+              <Skeleton className="h-8 w-64" />
+            ) : (
+              <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {bacenta.name}{' '}
+                <span className="text-arrivals">Arrivals</span>
+              </h1>
+            )}
+            {date?.swell && (
+              <p className="inline-flex items-center gap-2 rounded-full bg-warning/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-warning">
+                <AlertTriangle className="size-3.5" /> Swollen Weekend
+              </p>
+            )}
+          </StickyPageHeader>
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            {/* Page header */}
-            <header className="mb-6 space-y-1 lg:mb-8">
-              {loading || !bacenta ? (
-                <Skeleton className="h-8 w-64" />
-              ) : (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {bacenta.name}{' '}
-                  <span className="text-arrivals">Arrivals</span>
-                </h1>
-              )}
-              {date?.swell && (
-                <p className="inline-flex items-center gap-2 rounded-full bg-warning/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-warning">
-                  <AlertTriangle className="size-3.5" /> Swollen Weekend
-                </p>
-              )}
-            </header>
-
             {/* Two-column grid on desktop */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr] lg:items-start">
               {/* LEFT — status / countdown */}

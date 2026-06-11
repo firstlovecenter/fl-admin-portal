@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from 'components/ui/dialog'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { cn } from 'components/lib/utils'
 import { DISPLAY_BUSSING_RECORDS } from './arrivalsQueries'
 import { BacentaWithArrivals, BussingRecord } from './arrivals-types'
@@ -66,44 +67,43 @@ const BusFormDetails = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper loading={loading} error={error} data={data} placeholder>
         <div><div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          {/* Header */}
+          <StickyPageHeader>
+            {loading ? (
+              <>
+                <Skeleton className="h-8 w-56" />
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-4 w-48" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                  Bacenta{' '}
+                  <span className="text-arrivals">Bussing Details</span>
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {church?.name} Bacenta
+                </p>
+                <div className="space-y-0.5 text-xs text-muted-foreground">
+                  <p>Recorded by {bussing?.created_by?.fullName}</p>
+                  {bussing?.counted_by?.length ? (
+                    <RoleView roles={permitAdminArrivals('Stream')}>
+                      <p>
+                        Counted by{' '}
+                        {bussing.counted_by.map((counter, i) => (
+                          <span key={counter.id} className="font-medium text-success">
+                            {counter.fullName}
+                            {i < bussing.counted_by.length - 1 && ' | '}
+                          </span>
+                        ))}
+                      </p>
+                    </RoleView>
+                  ) : null}
+                </div>
+              </>
+            )}
+          </StickyPageHeader>
           <main className="mx-auto w-full max-w-2xl px-4 py-5 lg:px-6 lg:py-8">
-
-            {/* Header */}
-            <header className="mb-6 space-y-2">
-              {loading ? (
-                <>
-                  <Skeleton className="h-8 w-56" />
-                  <Skeleton className="h-5 w-40" />
-                  <Skeleton className="h-4 w-48" />
-                </>
-              ) : (
-                <>
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                    Bacenta{' '}
-                    <span className="text-arrivals">Bussing Details</span>
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    {church?.name} Bacenta
-                  </p>
-                  <div className="space-y-0.5 text-xs text-muted-foreground">
-                    <p>Recorded by {bussing?.created_by?.fullName}</p>
-                    {bussing?.counted_by?.length ? (
-                      <RoleView roles={permitAdminArrivals('Stream')}>
-                        <p>
-                          Counted by{' '}
-                          {bussing.counted_by.map((counter, i) => (
-                            <span key={counter.id} className="font-medium text-success">
-                              {counter.fullName}
-                              {i < bussing.counted_by.length - 1 && ' | '}
-                            </span>
-                          ))}
-                        </p>
-                      </RoleView>
-                    ) : null}
-                  </div>
-                </>
-              )}
-            </header>
 
             <div className="space-y-4">
 

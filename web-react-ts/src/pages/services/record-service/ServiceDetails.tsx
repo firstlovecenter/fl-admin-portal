@@ -34,6 +34,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { permitAdmin, permitLeader, permitTellerStream } from 'permission-utils'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import BankingHistorySection from './BankingHistorySection'
 import {
   Fragment,
@@ -201,12 +202,14 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   if (loading) {
     return (
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+        <StickyPageHeader>
           <div className="space-y-2">
             <Skeleton className="h-7 w-48" />
             <Skeleton className="h-4 w-64" />
           </div>
-          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+        </StickyPageHeader>
+        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
             <Skeleton className="h-64 rounded-xl" />
             <Skeleton className="h-80 rounded-xl" />
           </div>
@@ -298,55 +301,52 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-        {/* FULL-WIDTH TOP BAND — page header + event / cancelled banners */}
-        <div className="space-y-4">
-          {/* Page header */}
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {church?.name}{' '}
-              <span className="text-churches">Meeting Details</span>
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {church?.__typename}
-            </p>
-            {service?.created_by && (
-              <p className="text-sm text-muted-foreground">
-                Recorded by {service.created_by.fullName}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2 pt-1">
-              {trackIncome && service?.bankingSlipUploader && (
-                <Badge
-                  variant="outline"
-                  className="border-banking/40 bg-banking/5 text-banking"
-                >
-                  Banking Slip · {service.bankingSlipUploader.fullName}
-                </Badge>
-              )}
-              {trackIncome && service?.transactionStatus === 'success' && (
-                <Badge
-                  variant="outline"
-                  className="border-banking/40 bg-banking/5 text-banking"
-                >
-                  Banked · {service.offeringBankedBy?.fullName}
-                </Badge>
-              )}
-              <RoleView
-                roles={[...permitAdmin('Council'), ...permitTellerStream()]}
+      {/* Page header */}
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {church?.name}{' '}
+          <span className="text-churches">Meeting Details</span>
+        </h1>
+        <p className="text-sm text-muted-foreground">{church?.__typename}</p>
+        {service?.created_by && (
+          <p className="text-sm text-muted-foreground">
+            Recorded by {service.created_by.fullName}
+          </p>
+        )}
+        <div className="flex flex-wrap gap-2 pt-1">
+          {trackIncome && service?.bankingSlipUploader && (
+            <Badge
+              variant="outline"
+              className="border-banking/40 bg-banking/5 text-banking"
+            >
+              Banking Slip · {service.bankingSlipUploader.fullName}
+            </Badge>
+          )}
+          {trackIncome && service?.transactionStatus === 'success' && (
+            <Badge
+              variant="outline"
+              className="border-banking/40 bg-banking/5 text-banking"
+            >
+              Banked · {service.offeringBankedBy?.fullName}
+            </Badge>
+          )}
+          <RoleView
+            roles={[...permitAdmin('Council'), ...permitTellerStream()]}
+          >
+            {trackIncome && service?.bankingConfirmer && (
+              <Badge
+                variant="outline"
+                className="border-success/40 bg-success/5 text-success"
               >
-                {trackIncome && service?.bankingConfirmer && (
-                  <Badge
-                    variant="outline"
-                    className="border-success/40 bg-success/5 text-success"
-                  >
-                    Confirmed · {service.bankingConfirmer.fullName}
-                  </Badge>
-                )}
-              </RoleView>
-            </div>
-          </div>
-
+                Confirmed · {service.bankingConfirmer.fullName}
+              </Badge>
+            )}
+          </RoleView>
+        </div>
+      </StickyPageHeader>
+      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
+        {/* FULL-WIDTH TOP BAND — event / cancelled banners */}
+        <div className="space-y-4">
           {/* Special event info */}
           {service?.name && service?.description && (
             <div className="space-y-1 rounded-xl border border-arrivals/30 bg-arrivals/5 p-4">

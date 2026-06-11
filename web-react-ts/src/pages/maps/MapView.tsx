@@ -275,7 +275,7 @@ const MapView = () => {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-4">
+      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card pl-16 pr-16 md:px-4">
         <span className="flex size-8 items-center justify-center rounded-lg bg-maps/10 text-maps">
           <MapIcon className="size-5" />
         </span>

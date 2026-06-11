@@ -36,6 +36,7 @@ import {
 import { cn } from 'components/lib/utils'
 import CurrencySpan from 'components/CurrencySpan'
 import { AccountTransaction } from './transaction-types'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const INITIAL_PAGE_SIZE = 25
 const PAGE_SIZE = 25
@@ -265,24 +266,23 @@ const TransactionHistoryView = <TData,>({
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-        <header className="mb-6 space-y-1 pl-14 pr-14 md:px-0">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-            {parentName ? (
-              <>{parentName} </>
-            ) : (
-              <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
-            )}
-            <span className="text-banking">Transaction History</span>
-          </h1>
-          {totalCount !== undefined && (
-            <p className="text-sm text-muted-foreground">
-              {totalCount} {totalCount === 1 ? 'transaction' : 'transactions'}{' '}
-              recorded.
-            </p>
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+          {parentName ? (
+            <>{parentName} </>
+          ) : (
+            <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
           )}
-        </header>
-
+          <span className="text-banking">Transaction History</span>
+        </h1>
+        {totalCount !== undefined && (
+          <p className="text-sm text-muted-foreground">
+            {totalCount} {totalCount === 1 ? 'transaction' : 'transactions'}{' '}
+            recorded.
+          </p>
+        )}
+      </StickyPageHeader>
+      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
         <div className="mb-4 flex items-center justify-end">
           {loading || items.length === 0 ? (
             <Button

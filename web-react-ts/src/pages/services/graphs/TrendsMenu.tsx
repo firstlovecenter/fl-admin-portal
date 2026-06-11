@@ -7,6 +7,7 @@ import { MemberContext } from 'contexts/MemberContext'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
 import { cn } from 'components/lib/utils'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { ChurchIdAndName } from 'global-types'
 
 const GRAPHS_TYPES = new Set<string>([
@@ -84,19 +85,19 @@ const TrendsMenu = () => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-        <header className="mb-6 space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {focusChurch && `${focusChurch.name} `}
-            <span className="text-churches">Trends</span>
-          </h1>
-          {focusChurch && (
-            <p className="text-sm text-muted-foreground">
-              Trends for the church currently in focus.
-            </p>
-          )}
-        </header>
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {focusChurch && `${focusChurch.name} `}
+          <span className="text-churches">Trends</span>
+        </h1>
+        {focusChurch && (
+          <p className="text-sm text-muted-foreground">
+            Trends for the church currently in focus.
+          </p>
+        )}
+      </StickyPageHeader>
 
+      <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
           {/* Left — menu list */}
           <div>

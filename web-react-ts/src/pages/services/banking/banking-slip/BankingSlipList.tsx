@@ -6,6 +6,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { ServiceRecord } from 'global-types'
 import { throwToSentry } from 'global-utils'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { parseDate } from 'lib/date-utils'
 import {
   Banknote,
@@ -72,38 +73,35 @@ const BankingSlipList = ({
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        {/* Page header */}
-        <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Banking Slips
-          </p>
-          {loading && !church ? (
-            <Skeleton className="h-9 w-72" />
-          ) : (
-            <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              {church?.name}{' '}
-              <span className="text-banking">Banking Slips</span>
-            </h1>
+      <StickyPageHeader>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Banking Slips
+        </p>
+        {loading && !church ? (
+          <Skeleton className="h-9 w-72" />
+        ) : (
+          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+            {church?.name} <span className="text-banking">Banking Slips</span>
+          </h1>
+        )}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          {church?.bankingCode && (
+            <Badge
+              variant="outline"
+              className="border-banking/40 bg-banking/5 font-mono text-banking"
+            >
+              Banking Code · {church.bankingCode}
+            </Badge>
           )}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            {church?.bankingCode && (
-              <Badge
-                variant="outline"
-                className="border-banking/40 bg-banking/5 font-mono text-banking"
-              >
-                Banking Code · {church.bankingCode}
-              </Badge>
-            )}
-            {!loading && hasServices && (
-              <Badge variant="outline" className="text-muted-foreground">
-                {filledCount}/{services.length} slip
-                {services.length === 1 ? '' : 's'} filled
-              </Badge>
-            )}
-          </div>
-        </header>
-
+          {!loading && hasServices && (
+            <Badge variant="outline" className="text-muted-foreground">
+              {filledCount}/{services.length} slip
+              {services.length === 1 ? '' : 's'} filled
+            </Badge>
+          )}
+        </div>
+      </StickyPageHeader>
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
           {/* LEFT — service list */}
           <section className="space-y-4">

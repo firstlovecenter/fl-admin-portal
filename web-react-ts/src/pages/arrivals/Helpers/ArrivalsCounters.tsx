@@ -29,6 +29,7 @@ import {
 } from 'components/ui/alert-dialog'
 import SubmitButton from 'components/formik/SubmitButton'
 import SearchMember from 'components/formik/SearchMember'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { throwToSentry } from 'global-utils'
 import { Member } from 'global-types'
 import { StreamWithArrivals } from '../arrivals-types'
@@ -128,23 +129,22 @@ const ArrivalsCounters = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+            {showSkeletons ? (
+              <Skeleton className="inline-block h-8 w-72 align-middle lg:h-9" />
+            ) : (
+              <>
+                {stream?.name}{' '}
+                <span className="text-arrivals">Arrivals Counters</span>
+              </>
+            )}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Manage the team that counts arrivals for this stream.
+          </p>
+        </StickyPageHeader>
         <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              {showSkeletons ? (
-                <Skeleton className="inline-block h-8 w-72 align-middle lg:h-9" />
-              ) : (
-                <>
-                  {stream?.name}{' '}
-                  <span className="text-arrivals">Arrivals Counters</span>
-                </>
-              )}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Manage the team that counts arrivals for this stream.
-            </p>
-          </header>
-
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
             {/* Supporting column — first in DOM so summary sits on top on mobile.
                 On lg+ it lands in column 2 (right side). */}

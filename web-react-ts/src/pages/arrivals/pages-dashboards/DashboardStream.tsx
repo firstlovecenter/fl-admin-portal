@@ -55,6 +55,10 @@ import {
   TabsTrigger,
 } from 'components/ui/tabs'
 import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
 
 import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
 import {
@@ -223,24 +227,22 @@ const StreamDashboard = () => {
         placeholder={!!previousData}
       >
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
-            {/* ── Page header ── */}
-            <div className="mb-3 lg:mb-6">
-              {/* pl-14/pr-14 reserve space for AppShell's floating BackButton + sidebar toggle on mobile */}
-              <div className="flex items-start justify-between gap-4 pl-14 pr-14 md:px-0">
-                <div className="min-w-0 flex-1">
-                  {loading && !stream ? (
-                    <Skeleton className="h-9 w-72" />
-                  ) : (
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                      {stream?.name}{' '}
-                      <span className="text-arrivals">Arrivals</span>
-                    </h1>
-                  )}
-                </div>
+          <StickyPageHeader bare>
+            <div className="mx-auto flex max-w-6xl items-start justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
+              <div className="min-w-0 flex-1">
+                {loading && !stream ? (
+                  <Skeleton className="h-9 w-72" />
+                ) : (
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                    {stream?.name}{' '}
+                    <span className="text-arrivals">Arrivals</span>
+                  </h1>
+                )}
+              </div>
 
-                {/* Settings dropdown */}
-                <RoleView roles={STREAM_ADMIN_ROLES}>
+              {/* Settings dropdown */}
+              <RoleView roles={STREAM_ADMIN_ROLES}>
+                <StickyPageHeaderActions>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -282,11 +284,11 @@ const StreamDashboard = () => {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </RoleView>
-              </div>
-
+                </StickyPageHeaderActions>
+              </RoleView>
             </div>
-
+          </StickyPageHeader>
+          <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {deadlinePassed && (
               <Alert variant="destructive" className="mb-6">
                 <AlertTriangle className="size-4" />

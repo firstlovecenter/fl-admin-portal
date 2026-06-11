@@ -16,6 +16,7 @@ import Input from 'components/formik/Input'
 import Select from 'components/formik/Select'
 import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import ImageUpload from 'components/formik/ImageUpload'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { BacentaWithArrivals } from '../arrivals-types'
 
 type FormOptions = {
@@ -109,19 +110,18 @@ const FormAddVehicleRecord = () => {
       >
         {(formik) => (
           <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+            <StickyPageHeader>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                {bacenta?.name ?? 'Bacenta'}{' '}
+                <span className="text-arrivals">Arrivals</span>
+              </h1>
+              {serviceDate && (
+                <p className="text-sm text-muted-foreground">
+                  Service Date · {serviceDate}
+                </p>
+              )}
+            </StickyPageHeader>
             <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-              <header className="mb-6 space-y-1">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                  {bacenta?.name ?? 'Bacenta'}{' '}
-                  <span className="text-arrivals">Arrivals</span>
-                </h1>
-                {serviceDate && (
-                  <p className="text-sm text-muted-foreground">
-                    Service Date · {serviceDate}
-                  </p>
-                )}
-              </header>
-
               {bacenta?.arrivalsCodeOfTheDay && (
                 <div className="mb-6 flex items-center gap-3 rounded-xl border border-arrivals/30 bg-arrivals/10 px-4 py-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-arrivals/20">

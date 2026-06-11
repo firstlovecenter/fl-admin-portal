@@ -10,6 +10,7 @@ import { Church } from 'global-types'
 import { throwToSentry } from 'global-utils'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { RECORD_CANCELLED_SERVICE } from './RecordServiceMutations'
 
 type FormOptionsType = {
@@ -82,19 +83,17 @@ const CancelledServiceForm = ({
     >
       {(formik) => (
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <StickyPageHeader>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Cancelled <span className="text-churches">Service</span>
+            </h1>
+            {church && (
+              <p className="text-sm text-muted-foreground">
+                {church.name} · {church.__typename}
+              </p>
+            )}
+          </StickyPageHeader>
           <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            <header className="mb-6 space-y-1">
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                Cancelled{' '}
-                <span className="text-churches">Service</span>
-              </h1>
-              {church && (
-                <p className="text-sm text-muted-foreground">
-                  {church.name} · {church.__typename}
-                </p>
-              )}
-            </header>
-
             <Form>
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
                 {/* Left — cancellation details */}

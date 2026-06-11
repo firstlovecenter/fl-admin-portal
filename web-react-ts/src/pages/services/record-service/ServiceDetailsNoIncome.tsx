@@ -5,6 +5,7 @@ import {
   DialogTrigger,
 } from 'components/ui/dialog'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import CurrencySpan from 'components/CurrencySpan'
 import { Church, ServiceRecord } from 'global-types'
 import { parseNeoTime } from 'lib/date-utils'
@@ -97,11 +98,13 @@ const ServiceDetailsNoIncome = ({
   if (loading) {
     return (
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
+        <StickyPageHeader>
           <div className="space-y-2">
             <Skeleton className="h-7 w-48" />
             <Skeleton className="h-4 w-64" />
           </div>
+        </StickyPageHeader>
+        <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
             <Skeleton className="h-48 rounded-xl" />
             <Skeleton className="h-64 rounded-xl" />
@@ -113,23 +116,20 @@ const ServiceDetailsNoIncome = ({
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-        {/* Page header */}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {church?.name}{' '}
-            <span className="text-churches">Service Details</span>
-          </h1>
+      {/* Page header */}
+      <StickyPageHeader>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {church?.name}{' '}
+          <span className="text-churches">Service Details</span>
+        </h1>
+        <p className="text-sm text-muted-foreground">{church?.__typename}</p>
+        {service?.created_by && (
           <p className="text-sm text-muted-foreground">
-            {church?.__typename}
+            Recorded by {service.created_by.fullName}
           </p>
-          {service?.created_by && (
-            <p className="text-sm text-muted-foreground">
-              Recorded by {service.created_by.fullName}
-            </p>
-          )}
-        </div>
-
+        )}
+      </StickyPageHeader>
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         {/* Cancelled service */}
         {service?.noServiceReason && !service?.attendance && (
           <div className="space-y-1 rounded-xl border border-destructive/30 bg-destructive/5 p-4">

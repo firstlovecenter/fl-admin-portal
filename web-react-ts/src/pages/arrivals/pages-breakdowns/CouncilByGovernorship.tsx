@@ -22,6 +22,7 @@ import { Skeleton } from 'components/ui/skeleton'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { SHORT_POLL_INTERVAL, getFirstLetterInEveryWord } from 'global-utils'
 import useSetUserChurch from 'hooks/useSetUserChurch'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 import {
   LiveDot,
@@ -152,26 +153,24 @@ const CouncilByGovernorship = () => {
         placeholder={!!previousData}
       >
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            {/* ── Page header ── */}
-            <div className="mb-6 space-y-1.5 lg:mb-8">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                <LiveDot />
-                <span>Governorships</span>
-              </div>
-              {loading && !council ? (
-                <Skeleton className="h-9 w-72" />
-              ) : (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {council?.name}{' '}
-                  <span className="text-arrivals">Arrivals</span>
-                </h1>
-              )}
-              <p className="text-sm text-muted-foreground">
-                Tap a governorship to drill in · refreshes every {POLL_SECONDS}s
-              </p>
+          <StickyPageHeader innerClassName="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <LiveDot />
+              <span>Governorships</span>
             </div>
-
+            {loading && !council ? (
+              <Skeleton className="h-9 w-72" />
+            ) : (
+              <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {council?.name}{' '}
+                <span className="text-arrivals">Arrivals</span>
+              </h1>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Tap a governorship to drill in · refreshes every {POLL_SECONDS}s
+            </p>
+          </StickyPageHeader>
+          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
             {/* ── 2-column grid ── */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
               {/* LEFT — governorship cards */}

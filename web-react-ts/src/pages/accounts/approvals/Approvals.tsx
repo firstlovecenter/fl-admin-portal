@@ -20,6 +20,7 @@ import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Separator } from 'components/ui/separator'
 import { CheckCircle2, Inbox, Loader2, XCircle } from 'lucide-react'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const formatAmount = (value: number | null | undefined, currency: string) => {
   const safeCurrency = currency || 'GHS'
@@ -92,25 +93,24 @@ const Approvals = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Pending <span className="text-banking">Approvals</span>
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {campus?.name}
+            {totalPending > 0 ? (
+              <>
+                {' · '}
+                <span className="font-medium tabular-nums text-foreground">
+                  {totalPending}
+                </span>{' '}
+                awaiting review
+              </>
+            ) : null}
+          </p>
+        </StickyPageHeader>
         <main className="mx-auto max-w-3xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-2 pl-14 pr-14 md:px-0">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Pending <span className="text-banking">Approvals</span>
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {campus?.name}
-              {totalPending > 0 ? (
-                <>
-                  {' · '}
-                  <span className="font-medium tabular-nums text-foreground">
-                    {totalPending}
-                  </span>{' '}
-                  awaiting review
-                </>
-              ) : null}
-            </p>
-          </header>
-
           {totalPending === 0 ? (
             <Card className="mt-6">
               <CardContent className="flex flex-col items-center gap-3 px-5 py-12 text-center">

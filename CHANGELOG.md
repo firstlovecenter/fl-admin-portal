@@ -3,6 +3,7 @@
 ##### Refactors
 
 - remove Creative Arts hierarchy dead code (CreativeArts, Ministry, HubCouncil, Hub, Sonta)
+- lift page headers into StickyPageHeader so the PWA back button isn't covered
 
 ##### Documentation Changes
 

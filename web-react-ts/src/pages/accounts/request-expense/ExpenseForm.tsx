@@ -32,6 +32,7 @@ import { CouncilForAccounts } from '../accounts-types'
 import { isAccountOpen } from '../accounts-utils'
 import AccountBlockedMsg from './AccountBlockedMsg'
 import { EXPENSE_REQUEST } from './expenseGQL'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const formatCurrency = (value: number | null | undefined) => {
   try {
@@ -167,21 +168,20 @@ const ExpenseForm = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {council?.name ? (
+              <>{council.name} </>
+            ) : (
+              <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
+            )}
+            <span className="text-banking">Expense Request</span>
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Submit a new expense for approval by the campus admin.
+          </p>
+        </StickyPageHeader>
         <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-2 pl-14 pr-14 md:px-0">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {council?.name ? (
-                <>{council.name} </>
-              ) : (
-                <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
-              )}
-              <span className="text-banking">Expense Request</span>
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Submit a new expense for approval by the campus admin.
-            </p>
-          </header>
-
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}

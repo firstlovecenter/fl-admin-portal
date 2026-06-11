@@ -25,6 +25,7 @@ import { MemberContext } from 'contexts/MemberContext'
 import SearchMember from 'components/formik/SearchMember'
 import Textarea from 'components/formik/Textarea'
 import { Button } from 'components/ui/button'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 type ServiceFormProps = {
   church: Church
@@ -156,19 +157,18 @@ const ServiceForm = ({
     >
       {(formik) => (
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+          <StickyPageHeader>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {church?.name}{' '}
+              <span className="text-churches">{event || 'Service'}</span>
+            </h1>
+            {church && (
+              <p className="text-sm text-muted-foreground">
+                {church.__typename}
+              </p>
+            )}
+          </StickyPageHeader>
           <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            <header className="mb-6 space-y-1">
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                {church?.name}{' '}
-                <span className="text-churches">{event || 'Service'}</span>
-              </h1>
-              {church && (
-                <p className="text-sm text-muted-foreground">
-                  {church.__typename}
-                </p>
-              )}
-            </header>
-
             <Form>
               {/* 2-column on lg+, stacked on mobile */}
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">

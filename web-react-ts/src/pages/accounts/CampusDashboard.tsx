@@ -10,6 +10,7 @@ import { useContext } from 'react'
 import { CAMPUS_ACCOUNT_DASHBOARD } from './accountsGQL'
 import { CampusDashboardItem } from './accounts-types'
 import { ActionRow, BalanceCard } from './components/DashboardCards'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const CampusDashboard = () => {
   const { campusId } = useContext(ChurchContext)
@@ -30,8 +31,8 @@ const CampusDashboard = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-3 pl-14 pr-14 md:px-0">
+        <StickyPageHeader>
+          <div className="space-y-3">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {campus?.name ? (
                 <>{campus.name} </>
@@ -61,8 +62,9 @@ const CampusDashboard = () => {
                 )}
               </div>
             </div>
-          </header>
-
+          </div>
+        </StickyPageHeader>
+        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
             {/* Supporting column — first in DOM so it floats above actions on mobile */}
             <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">

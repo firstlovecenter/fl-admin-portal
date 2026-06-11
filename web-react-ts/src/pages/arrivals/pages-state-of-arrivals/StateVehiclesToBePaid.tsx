@@ -23,6 +23,7 @@ import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Input } from 'components/ui/input'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 import { cn } from 'components/lib/utils'
 import CurrencySpan from 'components/CurrencySpan'
@@ -185,40 +186,43 @@ const StateVehiclesToBePaid = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="-ml-2 mb-4 min-h-11 gap-1 text-muted-foreground hover:text-foreground"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="size-4" />
-              Back
-            </Button>
+          <StickyPageHeader bare>
+            <div className="mx-auto max-w-6xl py-3 pl-16 pr-16 md:px-4 lg:px-6">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="-ml-2 mb-4 min-h-11 gap-1 text-muted-foreground hover:text-foreground"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft className="size-4" />
+                Back
+              </Button>
 
-            <header className="mb-6 space-y-2 lg:mb-8">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-banking">
-                <Wallet className="size-3.5" />
-                <span>Vehicle Payments</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-banking">
+                  <Wallet className="size-3.5" />
+                  <span>Vehicle Payments</span>
+                </div>
+                {loading && !church ? (
+                  <Skeleton className="h-9 w-72" />
+                ) : (
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                    {church?.name ?? ''}{' '}
+                    <span className="text-banking">
+                      {seePaid ? 'Paid Vehicles' : 'Vehicles To Be Paid'}
+                    </span>
+                  </h1>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {seePaid
+                    ? 'Vehicles that have been paid out for today.'
+                    : 'Vehicles awaiting top-up payment.'}
+                </p>
               </div>
-              {loading && !church ? (
-                <Skeleton className="h-9 w-72" />
-              ) : (
-                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {church?.name ?? ''}{' '}
-                  <span className="text-banking">
-                    {seePaid ? 'Paid Vehicles' : 'Vehicles To Be Paid'}
-                  </span>
-                </h1>
-              )}
-              <p className="text-sm text-muted-foreground">
-                {seePaid
-                  ? 'Vehicles that have been paid out for today.'
-                  : 'Vehicles awaiting top-up payment.'}
-              </p>
-            </header>
-
+            </div>
+          </StickyPageHeader>
+          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
             <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_280px] lg:items-start">
               <section className="space-y-4 lg:order-1">
                 <div className="space-y-3">

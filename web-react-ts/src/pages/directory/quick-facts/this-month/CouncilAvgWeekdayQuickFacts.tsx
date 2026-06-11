@@ -6,6 +6,7 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import LeaderAvatar from 'components/LeaderAvatar/LeaderAvatar'
 import { Card, CardContent } from 'components/ui/card'
 import { Badge } from 'components/ui/badge'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 
@@ -47,39 +48,38 @@ const CouncilAvgWeekdayQuickFacts = () => {
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Quick Facts
+            </p>
+            <Badge variant="outline" className="rounded-full text-xs">
+              This Month
+            </Badge>
+          </div>
+          <div className="mt-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {council?.name ?? 'Council'}{' '}
+              <span className="text-members">Quick Facts</span>
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              How this Council compares against the average Council in{' '}
+              <span className="font-medium text-foreground">{parentName}</span>.
+            </p>
+          </div>
+        </StickyPageHeader>
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Quick Facts
-              </p>
-              <Badge variant="outline" className="rounded-full text-xs">
-                This Month
-              </Badge>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                {council?.name ?? 'Council'}{' '}
-                <span className="text-members">Quick Facts</span>
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                How this Council compares against the average Council in{' '}
-                <span className="font-medium text-foreground">{parentName}</span>.
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-border bg-muted/40 px-4 py-3">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                <span className="font-semibold text-foreground">
-                  Your number is at the top of each card.
-                </span>{' '}
-                Below the divider is the stream avg — what a typical Council in{' '}
-                <span className="font-medium text-foreground">{parentName}</span>{' '}
-                records. The pill shows whether you&apos;re above, below, or right
-                at that avg.
-              </p>
-            </div>
-          </header>
+          <div className="rounded-lg border border-border bg-muted/40 px-4 py-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <span className="font-semibold text-foreground">
+                Your number is at the top of each card.
+              </span>{' '}
+              Below the divider is the stream avg — what a typical Council in{' '}
+              <span className="font-medium text-foreground">{parentName}</span>{' '}
+              records. The pill shows whether you&apos;re above, below, or right
+              at that avg.
+            </p>
+          </div>
 
           <Card>
             <CardContent className="px-4 py-3 sm:px-5">

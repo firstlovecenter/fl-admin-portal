@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from 'components/ui/select'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 import { cn } from 'components/lib/utils'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -219,51 +220,50 @@ const StateBacentasToCount = () => {
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-            <header className="mb-4 space-y-1.5 lg:mb-8 lg:space-y-2">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-arrivals lg:text-xs lg:tracking-[0.18em]">
-                <ListChecks className="size-3.5" />
-                <span>Arrivals Counter</span>
-              </div>
-              {loading && !church ? (
-                <Skeleton className="h-7 w-56 lg:h-9 lg:w-72" />
-              ) : (
-                <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-3xl">
-                  {church?.name ?? churchName ?? ''}{' '}
-                  <span className="text-arrivals">To Count</span>
-                </h1>
-              )}
-              <p className="text-xs text-muted-foreground lg:text-sm">
-                Vehicles awaiting confirmation at the centre.
-              </p>
-              {canSwitchScope && (
-                <div className="pt-2 lg:pt-3">
-                  <Select
-                    value={counterScopeSelected ? selectedScopeKey : ''}
-                    onValueChange={setSelectedScopeKey}
+          <StickyPageHeader innerClassName="space-y-1.5 lg:space-y-2">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-arrivals lg:text-xs lg:tracking-[0.18em]">
+              <ListChecks className="size-3.5" />
+              <span>Arrivals Counter</span>
+            </div>
+            {loading && !church ? (
+              <Skeleton className="h-7 w-56 lg:h-9 lg:w-72" />
+            ) : (
+              <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {church?.name ?? churchName ?? ''}{' '}
+                <span className="text-arrivals">To Count</span>
+              </h1>
+            )}
+            <p className="text-xs text-muted-foreground lg:text-sm">
+              Vehicles awaiting confirmation at the centre.
+            </p>
+            {canSwitchScope && (
+              <div className="pt-2 lg:pt-3">
+                <Select
+                  value={counterScopeSelected ? selectedScopeKey : ''}
+                  onValueChange={setSelectedScopeKey}
+                >
+                  <SelectTrigger
+                    className="h-11 w-full max-w-sm border-arrivals/30 bg-arrivals/10 text-arrivals data-placeholder:text-arrivals/70 [&_svg]:text-arrivals"
+                    aria-label="Switch arrivals counter stream"
                   >
-                    <SelectTrigger
-                      className="h-11 w-full max-w-sm border-arrivals/30 bg-arrivals/10 text-arrivals data-placeholder:text-arrivals/70 [&_svg]:text-arrivals"
-                      aria-label="Switch arrivals counter stream"
-                    >
-                      <span className="flex items-center gap-2 truncate">
-                        <ArrowLeftRight className="size-4 shrink-0" />
-                        <SelectValue placeholder="Switch stream" />
-                      </span>
-                    </SelectTrigger>
-                    <SelectContent align="start" className="max-h-80">
-                      {counterScopes.map((option) => (
-                        <SelectItem key={option.key} value={option.key}>
-                          {option.churchName} ·{' '}
-                          {formatChurchLevel(option.churchType)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </header>
-
+                    <span className="flex items-center gap-2 truncate">
+                      <ArrowLeftRight className="size-4 shrink-0" />
+                      <SelectValue placeholder="Switch stream" />
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent align="start" className="max-h-80">
+                    {counterScopes.map((option) => (
+                      <SelectItem key={option.key} value={option.key}>
+                        {option.churchName} ·{' '}
+                        {formatChurchLevel(option.churchType)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </StickyPageHeader>
+          <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
             {!isScopeSupported && (
               <Card className="mb-4 border-warning/40 bg-warning/5 lg:mb-6">
                 <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">

@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from 'components/ui/alert-dialog'
 import { Card, CardContent } from 'components/ui/card'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { MemberContext } from 'contexts/MemberContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import { Form, Formik, FormikHelpers } from 'formik'
@@ -134,15 +135,15 @@ const BankingSlipSubmissionForm = ({
         </AlertDialogContent>
       </AlertDialog>
 
+      <StickyPageHeader>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Banking Slip Submission
+        </h1>
+        <p className="text-sm text-muted-foreground">{church?.name}</p>
+      </StickyPageHeader>
+
       <ApolloWrapper loading={loading} error={error} data={data && church}>
         <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-6">
-          <header className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Banking Slip Submission
-            </h1>
-            <p className="text-sm text-muted-foreground">{church?.name}</p>
-          </header>
-
           <Card>
             <CardContent className="space-y-2 p-5 text-sm text-muted-foreground">
               <p>

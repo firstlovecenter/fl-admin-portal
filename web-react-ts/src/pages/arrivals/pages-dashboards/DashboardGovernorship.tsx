@@ -51,6 +51,10 @@ import {
   TabsTrigger,
 } from 'components/ui/tabs'
 import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
+import {
+  StickyPageHeader,
+  StickyPageHeaderActions,
+} from 'components/shell/StickyPageHeader'
 
 import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
 import { permitAdmin, permitArrivals } from 'permission-utils'
@@ -220,9 +224,8 @@ const GovernorshipDashboard = () => {
         placeholder={!!previousData}
       >
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-          <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
-            {/* ── Header ── */}
-            <header className="mb-3 flex items-start justify-between gap-4 pl-14 pr-14 md:px-0 lg:mb-6">
+          <StickyPageHeader bare>
+            <div className="mx-auto flex max-w-6xl items-start justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
               <div className="min-w-0 flex-1">
                 {loading && !governorship ? (
                   <Skeleton className="h-9 w-72" />
@@ -235,7 +238,7 @@ const GovernorshipDashboard = () => {
               </div>
 
               {/* Action row */}
-              <div className="flex flex-wrap items-center gap-2">
+              <StickyPageHeaderActions className="flex-wrap">
                 <RoleView
                   roles={[
                     ...permitAdmin('Governorship'),
@@ -265,9 +268,10 @@ const GovernorshipDashboard = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </RoleView>
-              </div>
-            </header>
-
+              </StickyPageHeaderActions>
+            </div>
+          </StickyPageHeader>
+          <main className="mx-auto w-full max-w-6xl px-4 py-3 lg:px-6 lg:py-8">
             {deadlinePassed && (
               <Alert variant="destructive" className="mb-6">
                 <AlertTriangle className="size-4" />

@@ -36,6 +36,7 @@ import {
   UNDO_BUSSING_TRANSACTION,
   UNDO_WEEKDAY_TRANSACTION,
 } from './transactionHistory'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 type TransactionStatus = AccountTransaction['status']
 
@@ -120,17 +121,16 @@ const TransactionDetails = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Transaction <span className="text-banking">Details</span>
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Full record of this expense — including who logged it and the
+            account it touched.
+          </p>
+        </StickyPageHeader>
         <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="space-y-2 pl-14 pr-14 md:px-0">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Transaction <span className="text-banking">Details</span>
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Full record of this expense — including who logged it and the
-              account it touched.
-            </p>
-          </header>
-
           <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
             {/* Supporting column — actions + balances after. First in DOM so it sits on top on mobile. */}
             <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">

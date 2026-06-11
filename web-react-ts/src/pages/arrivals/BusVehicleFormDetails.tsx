@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from 'components/ui/dialog'
 import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { capitalise } from 'global-utils'
 import { BacentaWithArrivals, VehicleRecord } from './arrivals-types'
 import { beforeCountingDeadline, canAddVehicleRecord } from './arrivals-utils'
@@ -75,57 +76,56 @@ const BusVehicleFormDetails = () => {
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
-        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
-          <header className="mb-6 space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {church?.name ?? 'Loading…'}{' '}
-              <span className="text-arrivals">Vehicle Details</span>
-            </h1>
-            <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-3">
-              {vehicle?.created_by?.fullName && (
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {church?.name ?? 'Loading…'}{' '}
+            <span className="text-arrivals">Vehicle Details</span>
+          </h1>
+          <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-3">
+            {vehicle?.created_by?.fullName && (
+              <span>
+                Recorded by{' '}
+                <span className="text-foreground">
+                  {vehicle.created_by.fullName}
+                </span>
+              </span>
+            )}
+            {vehicle?.counted_by?.fullName && (
+              <RoleView roles={permitAdminArrivals('Stream')}>
+                <span className="hidden sm:inline">·</span>
                 <span>
-                  Recorded by{' '}
-                  <span className="text-foreground">
-                    {vehicle.created_by.fullName}
+                  Counted by{' '}
+                  <span className="text-success">
+                    {vehicle.counted_by.fullName}
                   </span>
                 </span>
-              )}
-              {vehicle?.counted_by?.fullName && (
-                <RoleView roles={permitAdminArrivals('Stream')}>
-                  <span className="hidden sm:inline">·</span>
-                  <span>
-                    Counted by{' '}
-                    <span className="text-success">
-                      {vehicle.counted_by.fullName}
-                    </span>
-                  </span>
-                </RoleView>
+              </RoleView>
+            )}
+          </div>
+          {vehicle && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <Badge
+                variant="outline"
+                className="border-warning/40 bg-warning/10 text-warning-foreground"
+              >
+                {inOutLabel}
+              </Badge>
+              {vehicle.transactionStatus && (
+                <Badge
+                  variant={txnSuccess ? 'default' : 'outline'}
+                  className={
+                    txnSuccess
+                      ? 'bg-success text-white'
+                      : 'border-warning/40 bg-warning/10 text-warning-foreground'
+                  }
+                >
+                  {capitalise(vehicle.transactionStatus)}
+                </Badge>
               )}
             </div>
-            {vehicle && (
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <Badge
-                  variant="outline"
-                  className="border-warning/40 bg-warning/10 text-warning-foreground"
-                >
-                  {inOutLabel}
-                </Badge>
-                {vehicle.transactionStatus && (
-                  <Badge
-                    variant={txnSuccess ? 'default' : 'outline'}
-                    className={
-                      txnSuccess
-                        ? 'bg-success text-white'
-                        : 'border-warning/40 bg-warning/10 text-warning-foreground'
-                    }
-                  >
-                    {capitalise(vehicle.transactionStatus)}
-                  </Badge>
-                )}
-              </div>
-            )}
-          </header>
-
+          )}
+        </StickyPageHeader>
+        <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           {/* 2-column on lg+, stacked on mobile */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
             {/* Left — primary data */}
