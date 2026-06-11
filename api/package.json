@@ -72,8 +72,6 @@
     "dotenv": "^16.4.7",
     "epub2": "^3.0.2",
     "express": "^4.22.2",
-    "firebase-admin": "^13.0.2",
-    "googleapis": "^131.0.0",
     "graphql": "^16.8.1",
     "neo4j-driver": "^5.28.1",
     "node-fetch": "^3.3.2",

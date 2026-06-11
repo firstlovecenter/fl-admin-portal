@@ -19,7 +19,9 @@ Lambdas under `src/functions/background/` (also CLI-runnable from
   cheat-sheet" for the v6 → v7 rules every FE query and mutation must follow.
 - Neo4j 5 driver (`neo4j-driver` 5.28).
 - AWS SDK v3 (S3, Secrets Manager, Lambda) + `serverless-http`.
-- `firebase-admin`, `googleapis`, `axios`, `csv-parse`, Cloudinary.
+- `axios`, `csv-parse`, Cloudinary. (`firebase-admin` / `googleapis` live in
+  the self-contained background jobs under `src/functions/background/*`, not in
+  this package.)
 - Auth: JWT (`jwt-decode`) — `JWT_SECRET` from `loadSecrets()`.
 - `serverless-http` for Lambda packaging; `@as-integrations/aws-lambda` for
   Apollo handler.
