@@ -4,6 +4,10 @@
 
 - remove Creative Arts hierarchy dead code (CreativeArts, Ministry, HubCouncil, Hub, Sonta)
 
+##### Documentation Changes
+
+- make /commit update the changelog on every commit
+
 ---
 
 #### 8.1.3 (2025-09-06)
