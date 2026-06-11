@@ -109,7 +109,7 @@
   "overrides": {
     "autoprefixer": "10.4.5",
     "form-data": "^4.0.4",
-    "fast-xml-parser": "^4.5.3",
+    "fast-xml-parser": "^5.7.3",
     "fast-uri": "^3.1.2",
     "sha.js": "^2.4.12",
     "tmp": "^0.2.4",

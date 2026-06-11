@@ -27,7 +27,7 @@
   "overrides": {
     "uuid": "^11.1.1",
     "form-data": "^4.0.4",
-    "fast-xml-parser": "^4.5.3",
+    "fast-xml-parser": "^5.7.3",
     "sha.js": "^2.4.12",
     "@apollo/federation-internals": "^2.11.2",
     "tmp": "^0.2.4",
