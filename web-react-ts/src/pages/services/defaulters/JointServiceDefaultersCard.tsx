@@ -23,9 +23,13 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
 
-  const serviceDetails = defaulter?.services?.length
-    ? defaulter?.services[0]
-    : null
+  // Defaulter cards show the combined unbanked total (own joint service +
+  // sub-church records) via `aggregateServiceRecordForWeek`; banked cards
+  // fall back to the latest joint `ServiceRecord`. Both expose attendance /
+  // income, which is all this card renders.
+  const serviceDetails =
+    defaulter?.aggregateServiceRecordForWeek ??
+    (defaulter?.services?.length ? defaulter.services[0] : null)
 
   return (
     <Card>

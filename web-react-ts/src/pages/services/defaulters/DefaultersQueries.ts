@@ -969,7 +969,11 @@ export const CAMPUS_BY_STREAM = gql`
 `
 
 export const CAMPUS_SERVICES_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
-  query gatheringGovernorshipJointServicesThisWeek($id: ID!, $weekStart: Date) {
+  query gatheringGovernorshipJointServicesThisWeek(
+    $id: ID!
+    $weekStart: Date
+    $week: Int!
+  ) {
     campuses(where: { id: { eq: $id } }) {
       id
       name
@@ -995,12 +999,8 @@ export const CAMPUS_SERVICES_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
             name
           }
         }
-        serviceRecordForWeek(weekStart: $weekStart) {
-          serviceDate {
-            date
-          }
+        aggregateServiceRecordForWeek(week: $week) {
           id
-          noServiceReason
           attendance
           income
         }
@@ -1036,11 +1036,11 @@ export const CAMPUS_SERVICES_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
             name
           }
         }
-        serviceRecordForWeek(weekStart: $weekStart) {
+        services(limit: 1) {
+          id
           serviceDate {
             date
           }
-          id
           noServiceReason
           attendance
           income
@@ -1051,7 +1051,11 @@ export const CAMPUS_SERVICES_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
 `
 
 export const STREAM_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
-  query streamGovernorshipJointServicesDefaultersThisWeek($id: ID!, $weekStart: Date) {
+  query streamGovernorshipJointServicesDefaultersThisWeek(
+    $id: ID!
+    $weekStart: Date
+    $week: Int!
+  ) {
     streams(where: { id: { eq: $id } }) {
       id
       name
@@ -1077,12 +1081,8 @@ export const STREAM_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
             name
           }
         }
-        serviceRecordForWeek(weekStart: $weekStart) {
-          serviceDate {
-            date
-          }
+        aggregateServiceRecordForWeek(week: $week) {
           id
-          noServiceReason
           attendance
           income
         }
@@ -1118,11 +1118,11 @@ export const STREAM_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
             name
           }
         }
-        serviceRecordForWeek(weekStart: $weekStart) {
+        services(limit: 1) {
+          id
           serviceDate {
             date
           }
-          id
           noServiceReason
           attendance
           income
@@ -1133,7 +1133,11 @@ export const STREAM_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
 `
 
 export const COUNCIL_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
-  query councilGovernorshipJointServicesDefaultersThisWeek($id: ID!, $weekStart: Date) {
+  query councilGovernorshipJointServicesDefaultersThisWeek(
+    $id: ID!
+    $weekStart: Date
+    $week: Int!
+  ) {
     councils(where: { id: { eq: $id } }) {
       id
       name
@@ -1159,12 +1163,8 @@ export const COUNCIL_GOVERNORSHIP_JOINT_DEFAULTERS_LIST = gql`
             name
           }
         }
-        serviceRecordForWeek(weekStart: $weekStart) {
-          serviceDate {
-            date
-          }
+        aggregateServiceRecordForWeek(week: $week) {
           id
-          noServiceReason
           attendance
           income
         }
@@ -1200,11 +1200,11 @@ export const COUNCIL_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
             name
           }
         }
-        serviceRecordForWeek(weekStart: $weekStart) {
+        services(limit: 1) {
+          id
           serviceDate {
             date
           }
-          id
           noServiceReason
           attendance
           income
@@ -1215,7 +1215,11 @@ export const COUNCIL_GOVERNORSHIP_JOINT_BANKED_LIST = gql`
 `
 
 export const CAMPUS_SERVICES_COUNCIL_JOINT_DEFAULTERS_LIST = gql`
-  query gatheringCouncilJointServicesDefaultersThisWeek($id: ID!, $weekStart: Date) {
+  query gatheringCouncilJointServicesDefaultersThisWeek(
+    $id: ID!
+    $weekStart: Date
+    $week: Int!
+  ) {
     campuses(where: { id: { eq: $id } }) {
       id
       name
@@ -1238,12 +1242,8 @@ export const CAMPUS_SERVICES_COUNCIL_JOINT_DEFAULTERS_LIST = gql`
           name
         }
 
-        serviceRecordForWeek(weekStart: $weekStart) {
-          serviceDate {
-            date
-          }
+        aggregateServiceRecordForWeek(week: $week) {
           id
-          noServiceReason
           attendance
           income
         }
@@ -1276,11 +1276,11 @@ export const CAMPUS_SERVICES_COUNCIL_JOINT_BANKED_LIST = gql`
           name
         }
 
-        serviceRecordForWeek(weekStart: $weekStart) {
+        services(limit: 1) {
+          id
           serviceDate {
             date
           }
-          id
           noServiceReason
           attendance
           income
@@ -1291,7 +1291,11 @@ export const CAMPUS_SERVICES_COUNCIL_JOINT_BANKED_LIST = gql`
 `
 
 export const STREAM_COUNCIL_JOINT_DEFAULTERS_LIST = gql`
-  query streamCouncilJointServicesDefaultersThisWeek($id: ID!, $weekStart: Date) {
+  query streamCouncilJointServicesDefaultersThisWeek(
+    $id: ID!
+    $weekStart: Date
+    $week: Int!
+  ) {
     streams(where: { id: { eq: $id } }) {
       id
       name
@@ -1313,12 +1317,12 @@ export const STREAM_COUNCIL_JOINT_DEFAULTERS_LIST = gql`
           id
           name
         }
-      }
-      services(limit: 1) {
-        id
-        noServiceReason
-        attendance
-        income
+
+        aggregateServiceRecordForWeek(week: $week) {
+          id
+          attendance
+          income
+        }
       }
     }
   }
@@ -1347,12 +1351,16 @@ export const STREAM_COUNCIL_JOINT_BANKED_LIST = gql`
           id
           name
         }
-      }
-      services(limit: 1) {
-        id
-        noServiceReason
-        attendance
-        income
+
+        services(limit: 1) {
+          id
+          serviceDate {
+            date
+          }
+          noServiceReason
+          attendance
+          income
+        }
       }
     }
   }

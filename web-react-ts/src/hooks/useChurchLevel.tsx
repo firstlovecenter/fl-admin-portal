@@ -8,6 +8,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchLevel } from 'global-types'
 import { getSubChurchLevel } from 'global-utils'
+import { getWeekNumber } from 'lib/date-utils'
 import { HigherChurchWithArrivals } from 'pages/arrivals/arrivals-types'
 import { HigherChurchWithDefaulters } from 'pages/services/defaulters/defaulters-types'
 import { useContext, useEffect, useState } from 'react'
@@ -43,6 +44,10 @@ const useChurchLevel = (props: useChurchLevelProps) => {
   const [error, setError] = useState<undefined | ApolloError>()
 
   const { arrivalDate } = useContext(ChurchContext)
+  // Current ISO week — consumed by the joint-defaulter queries'
+  // `aggregateServiceRecordForWeek(week: Int!)` field. Ignored by queries that
+  // don't declare `$week`.
+  const week = getWeekNumber()
 
   const chooseRefetch = () => {
     switch (churchLevel) {
@@ -100,6 +105,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                week,
               },
             })
 
@@ -114,6 +120,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                week,
               },
             })
 
@@ -129,6 +136,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                week,
               },
             })
             setChurch(res?.data?.streams[0])
@@ -143,6 +151,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                week,
               },
             })
 
@@ -158,6 +167,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                week,
               },
             })
 
@@ -173,6 +183,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
               variables: {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
+                week,
               },
             })
 

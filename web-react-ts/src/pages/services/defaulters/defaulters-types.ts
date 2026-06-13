@@ -26,10 +26,24 @@ export interface BacentaWithDefaulters extends Bacenta {
   // always returned the latest record across all time.
   serviceRecordForWeek?: ServiceRecord | null
 }
+// Combined unbanked total for a joint-service church (own joint service +
+// all its sub-churches' unbanked records), surfaced by the backend
+// `aggregateServiceRecordForWeek` @cypher. Used on the joint-defaulter cards.
+export interface JointWeekAggregate {
+  __typename?: 'AggregateServiceRecord'
+  id?: string
+  attendance?: number | null
+  income?: number | null
+  // Aggregates never carry a no-service reason; declared optional only so the
+  // card can read it off the `JointWeekAggregate | ServiceRecord` union.
+  noServiceReason?: string | null
+}
+
 export interface GovernorshipWithDefaulters extends Governorship {
   __typename: 'Governorship'
   council: Council
   services: ServiceRecord[]
+  aggregateServiceRecordForWeek?: JointWeekAggregate | null
 }
 
 export interface CouncilWithDefaulters extends Council {
@@ -41,6 +55,7 @@ export interface CouncilWithDefaulters extends Council {
     stream: Church
   }
   services: ServiceRecord[]
+  aggregateServiceRecordForWeek?: JointWeekAggregate | null
 }
 export interface StreamWithDefaulters extends Stream {
   __typename: 'Stream'
