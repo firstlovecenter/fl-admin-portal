@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_COUNCIL_MUTATION } from './CreateMutations'
+import { DISPLAY_STREAM } from 'pages/directory/display/ReadQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import CouncilForm, {
   CouncilFormValues,
@@ -22,7 +23,9 @@ const CreateCouncil = () => {
     stream: streamId,
   }
 
-  const [CreateCouncil] = useMutation(CREATE_COUNCIL_MUTATION)
+  const [CreateCouncil] = useMutation(CREATE_COUNCIL_MUTATION, {
+    refetchQueries: [{ query: DISPLAY_STREAM, variables: { id: streamId } }],
+  })
 
   //onSubmit receives the form state as argument
   const onSubmit = async (

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { GET_COUNCIL_GOVERNORSHIPS } from '../../../queries/ListQueries'
+import { DISPLAY_COUNCIL } from 'pages/directory/display/ReadQueries'
 import { CREATE_GOVERNORSHIP_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import GovernorshipForm, {
@@ -26,6 +27,7 @@ const CreateGovernorship = () => {
   const [CreateGovernorship] = useMutation(CREATE_GOVERNORSHIP_MUTATION, {
     refetchQueries: [
       { query: GET_COUNCIL_GOVERNORSHIPS, variables: { id: councilId } },
+      { query: DISPLAY_COUNCIL, variables: { id: councilId } },
     ],
   })
 

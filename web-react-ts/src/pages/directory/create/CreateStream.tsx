@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_STREAM_MUTATION } from './CreateMutations'
+import { DISPLAY_CAMPUS } from 'pages/directory/display/ReadQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import StreamForm, {
   StreamFormValues,
@@ -25,7 +26,9 @@ const CreateStream = () => {
     campus: campusId,
   }
 
-  const [CreateStream] = useMutation(CREATE_STREAM_MUTATION)
+  const [CreateStream] = useMutation(CREATE_STREAM_MUTATION, {
+    refetchQueries: [{ query: DISPLAY_CAMPUS, variables: { id: campusId } }],
+  })
 
   //onSubmit receives the form state as argument
   const onSubmit = async (

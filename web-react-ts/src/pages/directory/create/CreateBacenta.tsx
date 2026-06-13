@@ -2,6 +2,7 @@ import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { CREATE_BACENTA_MUTATION } from './CreateMutations'
+import { DISPLAY_GOVERNORSHIP } from 'pages/directory/display/ReadQueries'
 import { ChurchContext } from '../../../contexts/ChurchContext'
 import BacentaForm, { BacentaFormValues } from '../reusable-forms/BacentaForm'
 import { throwToSentry } from 'global-utils'
@@ -23,7 +24,11 @@ const CreateBacenta = () => {
     venueLongitude: '0.0',
   }
 
-  const [CreateBacenta] = useMutation(CREATE_BACENTA_MUTATION)
+  const [CreateBacenta] = useMutation(CREATE_BACENTA_MUTATION, {
+    refetchQueries: [
+      { query: DISPLAY_GOVERNORSHIP, variables: { id: governorshipId } },
+    ],
+  })
 
   //onSubmit receives the form state as argument
   const onSubmit = async (
