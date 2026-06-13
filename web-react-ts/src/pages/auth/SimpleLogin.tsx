@@ -6,7 +6,7 @@ import { Input } from 'components/ui/input'
 import { Label } from 'components/ui/label'
 import SynagoLogo from 'components/SynagoLogo'
 
-const APP_VERSION = '8.1.3'
+const APP_VERSION = __APP_VERSION__
 
 interface SimpleLoginProps {
   onLoginSuccess?: () => void

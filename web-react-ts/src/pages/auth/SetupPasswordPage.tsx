@@ -10,7 +10,7 @@ import { Label } from 'components/ui/label'
 import PasswordStrengthIndicator from 'components/auth/PasswordStrengthIndicator'
 import SynagoLogo from 'components/SynagoLogo'
 
-const APP_VERSION = '8.1.3'
+const APP_VERSION = __APP_VERSION__
 
 const extractEmailFromToken = (token: string): string | null => {
   try {

@@ -7,6 +7,7 @@ import viteTsconfigPaths from 'vite-tsconfig-paths'
 import svgrPlugin from 'vite-plugin-svgr'
 import dns from 'dns'
 import * as manifest from './public/manifest.json'
+import { version } from './package.json'
 
 // https://vitejs.dev/config/
 
@@ -24,6 +25,11 @@ export default defineConfig(({ command, mode }) => {
     },
     build: {
       sourcemap: true, // Source map generation must be turned on
+    },
+    define: {
+      // Inject the package.json version at build time so the UI never drifts
+      // from the released version. Referenced as __APP_VERSION__.
+      __APP_VERSION__: JSON.stringify(version),
     },
     plugins: [
       tailwindcss(),

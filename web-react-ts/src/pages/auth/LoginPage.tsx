@@ -13,7 +13,7 @@ import { requestPasswordReset } from 'lib/auth-service'
 import { cn } from 'components/lib/utils'
 import SynagoLogo from 'components/SynagoLogo'
 
-const APP_VERSION = '8.1.3'
+const APP_VERSION = __APP_VERSION__
 
 const loginSchema = Yup.object({
   email: Yup.string()
