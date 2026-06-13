@@ -25,10 +25,18 @@ const beforeFirstSet = (cypher: string): string => cypher.split(/\n\s*SET\s/)[0]
 // initiateServiceRecordTransaction — null/failed → pending
 // ---------------------------------------------------------------------------
 describe('SM1 — initiateServiceRecordTransaction', () => {
-  it('SM1: only allows a new payment attempt from null or failed', () => {
+  it('SM1: only allows a new payment attempt from null, failed, or abandoned', () => {
     expect(initiateServiceRecordTransaction).toMatch(
-      /record\.transactionStatus IS NULL OR record\.transactionStatus = 'failed'/
+      /record\.transactionStatus IS NULL\s+OR record\.transactionStatus IN \['failed', 'abandoned'\]/
     )
+  })
+
+  it("SM1: 'abandoned' is retryable — a never-settled Paystack charge can be re-banked", () => {
+    // Paystack verify can return 'abandoned' (user never authorised the momo
+    // prompt). It means money never settled, same as 'failed', so the retry
+    // guard must re-admit it. Without this the record is a permanent dead-end.
+    const guardSection = beforeFirstSet(initiateServiceRecordTransaction)
+    expect(guardSection).toMatch(/'abandoned'/)
   })
 
   it('SM1: guard clause appears before the SET clause (write cannot bypass the check)', () => {
@@ -86,7 +94,7 @@ describe('SM1 — setTransactionStatusFailed', () => {
     expect(guardSection).not.toMatch(/'success'/)
   })
 
-  it("SM1: null is a valid source state (defensive no-reference branch in ConfirmOfferingPayment)", () => {
+  it('SM1: null is a valid source state (defensive no-reference branch in ConfirmOfferingPayment)', () => {
     expect(setTransactionStatusFailed).toMatch(
       /record\.transactionStatus IS NULL/
     )

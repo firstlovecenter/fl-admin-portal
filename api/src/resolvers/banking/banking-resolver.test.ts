@@ -398,12 +398,12 @@ describe('Phase 4 — appendBankingHistoryLog Cypher fragment', () => {
 
 // Static Cypher shape tests — guard cannot be bypassed by reordering
 describe('SM1 — setRecordTransactionReferenceManually Cypher shape', () => {
-  it('SM1: WHERE clause restricts source states to {null, failed} — send OTP is excluded', () => {
+  it('SM1: WHERE clause restricts source states to {null, failed, abandoned} — send OTP is excluded', () => {
     expect(setRecordTransactionReferenceManually).toMatch(
       /record\.transactionStatus IS NULL/
     )
     expect(setRecordTransactionReferenceManually).toMatch(
-      /record\.transactionStatus = 'failed'/
+      /record\.transactionStatus IN \['failed', 'abandoned'\]/
     )
     // 'send OTP' must NOT appear as a legal source state — letting an admin
     // overwrite the reference mid-OTP-flow orphans the in-flight charge.

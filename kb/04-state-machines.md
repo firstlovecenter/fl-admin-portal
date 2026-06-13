@@ -44,9 +44,9 @@ States observed in `api/src/resolvers/banking/banking-cypher.ts` and
 | `pending` | `send OTP` | Paystack returns OTP requirement | `setRecordTransactionReferenceWithOTP` |
 | `send OTP` | `pending` | User submits OTP | `SendPaymentOTP` mutation |
 | `pending` | `success` | Paystack webhook with successful charge | `setTransactionStatusSuccess` |
-| `pending` \| `send OTP` | `failed` | Paystack webhook with failure | `setTransactionStatusFailed` |
+| `pending` \| `send OTP` | `failed` \| `abandoned` | Paystack webhook/verify with failure (`abandoned` = user never authorised the momo prompt) | `setTransactionStatusFailed` |
 | `null` \| `failed` | `failed` | `ConfirmOfferingPayment` defensive write (no-reference / transaction_not_found / verify failure) | `setTransactionStatusFailed` |
-| `failed` | `pending` | User re-initiates banking | `BankServiceOffering` |
+| `failed` \| `abandoned` | `pending` | User re-initiates banking | `BankServiceOffering` |
 | `pending` \| `send OTP` \| `failed` \| `success` | `reversed` | Paystack verify reports `reversed` (refund to customer) | `setTransactionStatusReversed` |
 | any | (reset) | Manual confirmation by `tellerStream` overrides via `ManuallyConfirmOfferingPayment` (sets `tellerConfirmationTime` instead of touching `transactionStatus`) | `manuallyConfirmOfferingPayment` |
 
@@ -54,11 +54,17 @@ States observed in `api/src/resolvers/banking/banking-cypher.ts` and
 - `success` is terminal for self-banking — with one exception: `success → reversed`
   when Paystack reports the charge was reversed (customer refunded).
 - `reversed` is terminal once written.
+- `abandoned` is a Paystack-verify failure status (the charge was never authorised).
+  It is **equivalent to `failed`** for retry purposes — both are valid source
+  states for `BankServiceOffering` re-initiation and for the admin
+  `setRecordTransactionReferenceManually` recovery path. It is kept distinct from
+  `failed` only so the `BankingHistoryLog` audit trail can tell an abandoned
+  charge apart from a gateway-declined one.
 - A new banking attempt for a service that already has `bankingSlip` or
   `tellerConfirmationTime` set must be rejected (`checkIfLastServiceBanked`).
 - The aggregation Cypher treats `WHERE record.transactionStatus IN ['pending','success']`
-  as "in flight or done" — anything else (`null`, `failed`, `send OTP`, `reversed`) is
-  treated as not-banked when computing defaulters.
+  as "in flight or done" — anything else (`null`, `failed`, `abandoned`, `send OTP`,
+  `reversed`) is treated as not-banked when computing defaulters.
 
 ## SM2 — Service banking proof presence
 

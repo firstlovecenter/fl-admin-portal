@@ -58,7 +58,8 @@ ${actorLine}
 // rows returned.
 export const initiateServiceRecordTransaction = `
 MATCH (record:ServiceRecord {id: $serviceRecordId})
-WHERE record.transactionStatus IS NULL OR record.transactionStatus = 'failed'
+WHERE record.transactionStatus IS NULL
+   OR record.transactionStatus IN ['failed', 'abandoned']
 
 MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
 WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus
@@ -81,8 +82,8 @@ MATCH (record)-[:SERVICE_HELD_ON]->(date:TimeGraph)
 // dev: ~3% of ServiceRecord ids resolve to 2-3 :ServiceLog ancestors.
 //
 // Capture the prior transactionStatus into bh_fromStatus before the SET so
-// the BankingHistoryLog records the real source state (null or 'failed'
-// per the WHERE clause above, not always-null).
+// the BankingHistoryLog records the real source state (null, 'failed', or
+// 'abandoned' per the WHERE clause above, not always-null).
 WITH DISTINCT record, church, churchLevel, author, date,
      record.transactionStatus AS bh_fromStatus
 
@@ -118,8 +119,8 @@ export const setRecordTransactionReference = `
 
 // SM1 atomic transition for the admin-driven "paste a Paystack reference
 // the system lost track of" recovery path. Only legal source states are
-// {null, 'failed'} — never overwrite 'pending', 'success', 'reversed',
-// or 'send OTP' (overwriting a 'send OTP' record desyncs the Paystack
+// {null, 'failed', 'abandoned'} — never overwrite 'pending', 'success',
+// 'reversed', or 'send OTP' (overwriting a 'send OTP' record desyncs the Paystack
 // reference still bound to the in-flight OTP and orphans the charge).
 //
 // OFFERING_BANKED_BY stays pointed at whoever actually attempted the
@@ -133,7 +134,7 @@ export const setRecordTransactionReference = `
 export const setRecordTransactionReferenceManually = `
 MATCH (record:ServiceRecord {id: $serviceRecordId})
 WHERE record.transactionStatus IS NULL
-   OR record.transactionStatus = 'failed'
+   OR record.transactionStatus IN ['failed', 'abandoned']
 MATCH (author:Member {id: $jwt.userId})
 
 WITH record, author, record.transactionStatus AS bh_fromStatus
