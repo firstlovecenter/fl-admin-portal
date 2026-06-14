@@ -285,7 +285,7 @@ or before `/commit`.
   package manager. (Pre-tool hook blocks this.)
 - ❌ **Editing `.env` / `secrets.json` / `credentials.json`.** Update AWS
   Secrets Manager. (Pre-tool hook blocks this.)
-- ❌ **Force pushing.** Especially to `main` or `deploy`. (Deny-listed.)
+- ❌ **Force pushing.** Especially to `main` (production). (Deny-listed.)
 - ❌ **`npm run release:*`.** Releases are human-gated. (Deny-listed.)
 - ❌ **Refactoring code without tests on the target.** ADR-013 supersedes
   ADR-010 — refactors must follow the test-first loop (characterize → refactor
@@ -307,9 +307,10 @@ or before `/commit`.
 
 - **Team size:** Small. Releases are coordinated; do not surprise the team
   with structural changes.
-- **Branches:** `deploy` is production (PR target). `dev` is active development.
-  `main` is the AWS Amplify production trigger (Amplify pipeline pulls prod
-  secrets when the build is on `main`); other branches use `dev` secrets.
+- **Branches:** `main` is the production active-deployment branch and the
+  default PR target — the AWS Amplify pipeline pulls prod secrets and deploys
+  when a build lands on `main`. `dev` is active development; other branches use
+  `dev` secrets. (There is no `deploy` branch.)
 - **Region:** Ghana. Phone numbers use `MOMO_NUM_REGEX` (Ghanaian mobile
   money). Currency is cedis (GHS) with foreign-currency overrides on
   ServiceRecords.
