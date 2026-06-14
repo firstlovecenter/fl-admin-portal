@@ -2,7 +2,7 @@
 import { Driver, Record as Neo4jRecord } from 'neo4j-driver'
 
 import { Role } from '../utils/types'
-import { permitLeaderAdmin } from '../permissions'
+import { permitLeaderAdminArrivals } from '../permissions'
 import { isAuth } from '../utils/utils'
 import { assertChurchScope } from '../utils/scope-utils'
 import {
@@ -98,9 +98,10 @@ export async function handleArrivalsDownload(
     params
 
   // PII + finance gate: leader phone numbers, vehicle top-ups, masked momo
-  // numbers, transaction status. Same gate as membership and defaulters
-  // exports.
-  isAuth(permitLeaderAdmin(level), roles)
+  // numbers, transaction status. Arrivals admins run these payments, so they
+  // are admitted alongside leaders/admins; `assertChurchScope` below still
+  // confines every caller to their own church subtree.
+  isAuth(permitLeaderAdminArrivals(level), roles)
 
   if (!churchId) throw new DownloadError(400, 'Missing churchId')
   if (!arrivalDate) throw new DownloadError(400, 'Missing arrivalDate')

@@ -4,14 +4,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import ChurchList from 'pages/services/ChurchList'
-
-const ARRIVALS_CHURCH_TYPES = new Set([
-  'Bacenta',
-  'Governorship',
-  'Council',
-  'Stream',
-  'Campus',
-])
+import { ARRIVALS_CHURCH_TYPES } from './arrivals-utils'
 
 const Arrivals = () => {
   const { clickCard } = useContext(ChurchContext)

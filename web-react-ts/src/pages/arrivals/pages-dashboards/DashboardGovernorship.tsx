@@ -23,6 +23,7 @@ import SearchMember from 'components/formik/SearchMember'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ArrivalsHeader from '../ArrivalsHeader'
 import DownloadArrivalsButton from '../DownloadArrivalsButton'
+import useArrivalsScopeSync from '../utils/useArrivalsScopeSync'
 
 import { Alert, AlertDescription } from 'components/ui/alert'
 import { Button } from 'components/ui/button'
@@ -90,6 +91,7 @@ const GovernorshipDashboard = () => {
   const navigate = useNavigate()
   const { arrivalDate, governorshipId } =
     useContext(ChurchContext)
+  useArrivalsScopeSync('Governorship', governorshipId)
   const [adminDialogOpen, setAdminDialogOpen] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
   const effectiveDate = arrivalDate || today

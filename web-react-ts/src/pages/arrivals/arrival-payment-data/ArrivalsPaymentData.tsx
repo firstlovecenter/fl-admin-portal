@@ -12,6 +12,7 @@ import {
 import useInfiniteScroll from 'hooks/useInfiniteScroll'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
+import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { getHumanReadableDate } from 'lib/date-utils'
 import { Skeleton } from 'components/ui/skeleton'
 import { Button } from 'components/ui/button'
@@ -98,9 +99,15 @@ const ArrivalsPaymentData = () => {
   const today = new Date().toISOString().slice(0, 10)
   const { currentUser } = useContext(MemberContext)
   const { arrivalDate } = useContext(ChurchContext)
+  const { selectedScope } = useChurchRoleScope()
   const church = currentUser?.currentChurch
   const arrivalsDate = arrivalDate || today
-  const streamId = church?.id ?? currentUser?.stream
+  // Follow the "Church in Focus" picker so multi-stream admins can switch
+  // streams without leaving the page (SYN-163). Falls back to the member's
+  // home stream when the focused scope is not a Stream.
+  const focusedStreamId =
+    selectedScope?.churchType === 'Stream' ? selectedScope.churchId : undefined
+  const streamId = focusedStreamId ?? church?.id ?? currentUser?.stream
 
   const {
     data,
@@ -226,7 +233,9 @@ const ArrivalsPaymentData = () => {
   const hasData = items.length > 0
   const showInitialLoading = loading && items.length === 0
   const streamName =
-    data?.streams?.[0]?.name ?? church?.name ?? currentUser?.stream_name
+    data?.streams?.[0]?.name ??
+    (focusedStreamId ? selectedScope?.churchName : church?.name) ??
+    currentUser?.stream_name
 
   const csvFilename = streamName
     ? `${streamName} Stream - ${humanDate} - Buses To Be Paid.csv`

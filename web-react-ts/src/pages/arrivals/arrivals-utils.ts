@@ -7,6 +7,24 @@ import {
   VehicleRecord,
 } from './arrivals-types'
 
+export type ArrivalsScopeLevel =
+  | 'Bacenta'
+  | 'Governorship'
+  | 'Council'
+  | 'Stream'
+  | 'Campus'
+
+// Church levels the arrivals section can focus on. Shared by the `/arrivals`
+// entry redirect (Arrivals.tsx) and the dashboard focus sync
+// (useArrivalsScopeSync) so the two stay identical.
+export const ARRIVALS_CHURCH_TYPES: ReadonlySet<string> = new Set<string>([
+  'Bacenta',
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+])
+
 export const formatAmount = (amount?: number) =>
   typeof amount === 'number' && Number.isFinite(amount)
     ? new Intl.NumberFormat('en-GH', {

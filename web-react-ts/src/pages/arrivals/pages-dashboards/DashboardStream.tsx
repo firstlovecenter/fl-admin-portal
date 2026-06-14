@@ -27,6 +27,7 @@ import SearchMember from 'components/formik/SearchMember'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ArrivalsHeader from '../ArrivalsHeader'
 import DownloadArrivalsButton from '../DownloadArrivalsButton'
+import useArrivalsScopeSync from '../utils/useArrivalsScopeSync'
 
 import { Alert, AlertDescription } from 'components/ui/alert'
 import { Button } from 'components/ui/button'
@@ -101,6 +102,7 @@ const StreamDashboard = () => {
   const navigate = useNavigate()
   const { isAuthorised } = useAuth()
   const { arrivalDate, streamId } = useContext(ChurchContext)
+  useArrivalsScopeSync('Stream', streamId)
   const [adminDialogOpen, setAdminDialogOpen] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
   const effectiveDate = arrivalDate || today

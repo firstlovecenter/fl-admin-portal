@@ -28,6 +28,7 @@ import SearchMember from 'components/formik/SearchMember'
 import { ChurchContext } from 'contexts/ChurchContext'
 import ArrivalsHeader from '../ArrivalsHeader'
 import DownloadArrivalsButton from '../DownloadArrivalsButton'
+import useArrivalsScopeSync from '../utils/useArrivalsScopeSync'
 
 import { Alert, AlertDescription } from 'components/ui/alert'
 import { Badge } from 'components/ui/badge'
@@ -108,6 +109,7 @@ const CouncilDashboard = () => {
   const navigate = useNavigate()
   const { isAuthorised } = useAuth()
   const { arrivalDate, councilId } = useContext(ChurchContext)
+  useArrivalsScopeSync('Council', councilId)
   const [adminDialogOpen, setAdminDialogOpen] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
   const effectiveDate = arrivalDate || today

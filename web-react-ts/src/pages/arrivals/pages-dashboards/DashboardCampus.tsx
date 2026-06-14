@@ -28,6 +28,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import useAuth from 'auth/useAuth'
 import ArrivalsHeader from '../ArrivalsHeader'
 import DownloadArrivalsButton from '../DownloadArrivalsButton'
+import useArrivalsScopeSync from '../utils/useArrivalsScopeSync'
 
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
@@ -97,6 +98,7 @@ const CampusDashboard = () => {
   const navigate = useNavigate()
   const { isAuthorised } = useAuth()
   const { arrivalDate, campusId } = useContext(ChurchContext)
+  useArrivalsScopeSync('Campus', campusId)
   const [adminDialogOpen, setAdminDialogOpen] = useState(false)
   const [swellDialogOpen, setSwellDialogOpen] = useState(false)
   const [codeDialogOpen, setCodeDialogOpen] = useState(false)
