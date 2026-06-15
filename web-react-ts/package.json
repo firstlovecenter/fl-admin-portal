@@ -114,7 +114,7 @@
     "sha.js": "^2.4.12",
     "tmp": "^0.2.4",
     "serialize-javascript": "^7.0.5",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.1",
     "@babel/plugin-transform-modules-systemjs": "^7.29.4",
     "brace-expansion": "^2.0.2",
     "lodash": "^4.18.1",
