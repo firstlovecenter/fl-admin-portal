@@ -21,25 +21,28 @@ RETURN governorship.name AS name,  COUNT(bacentas) AS bacentaCount
 `
 export const checkCouncilHasNoMembers = `//cypher
 MATCH (council:Council {id:$councilId})
-OPTIONAL MATCH (council)-[:HAS]->(governorships:Governorship)<-[:LEADS]-(member:Active:Member)
-RETURN council.name AS name, COUNT(member) AS memberCount, COUNT(governorships) AS governorshipCount
+OPTIONAL MATCH (council)-[:HAS]->(governorships:Governorship)
+RETURN council.name AS name, COUNT(governorships) AS governorshipCount
 `
 
 export const checkStreamHasNoMembers = `//cypher
 MATCH (stream:Stream {id:$streamId})
-OPTIONAL MATCH (stream)-[:HAS]->(councils:Council)<-[:LEADS]-(member:Active:Member)
-OPTIONAL MATCH (stream)-[:HAS_MINISTRY]->(ministries:Ministry)<-[:LEADS]-(leader:Active:Member)
-RETURN stream.name AS name, COUNT(member) AS memberCount, COUNT(councils) AS councilCount, COUNT(leader) AS ministryLeaderCount, COUNT(ministries) as ministryCount
+OPTIONAL MATCH (stream)-[:HAS]->(councils:Council)
+// Councils drop their :Council label on close-down, so (councils:Council) already
+// excludes closed ones. Ministries keep :Ministry and gain :ClosedMinistry, so they
+// need the explicit filter below.
+OPTIONAL MATCH (stream)-[:HAS_MINISTRY]->(ministries:Ministry) WHERE NOT ministries:ClosedMinistry
+RETURN stream.name AS name, COUNT(DISTINCT councils) AS councilCount, COUNT(DISTINCT ministries) AS ministryCount
 `
 export const checkCampusHasNoMembers = `//cypher
 MATCH (campus:Campus {id:$campusId})
-OPTIONAL MATCH (campus)-[:HAS]->(streams:Stream)<-[:LEADS]-(member:Active:Member)
-RETURN campus.name AS name, COUNT(member) AS memberCount, COUNT(streams) AS streamCount
+OPTIONAL MATCH (campus)-[:HAS]->(streams:Stream)
+RETURN campus.name AS name, COUNT(streams) AS streamCount
 `
 export const checkOversightHasNoMembers = `//cypher
 MATCH (oversight:Oversight {id:$oversightId})
-MATCH (oversight)-[:HAS]->(campuses:Campus)<-[:LEADS]-(member:Active:Member)
-RETURN oversight.name AS name, COUNT(member) AS memberCount, COUNT(campuses) AS campusCount
+OPTIONAL MATCH (oversight)-[:HAS]->(campuses:Campus)
+RETURN oversight.name AS name, COUNT(campuses) AS campusCount
 `
 
 export const closeDownBacenta = `//cypher
@@ -180,7 +183,7 @@ RETURN oversight {
 `
 
 export const closeDownOversight = `//cypher
-MATCH (oversight:OverSight {id:$oversightId})<-[:HAS]-(denomination:Denomination)
+MATCH (oversight:Oversight {id:$oversightId})<-[:HAS]-(denomination:Denomination)
 WITH oversight, denomination
 
 CREATE (log:HistoryLog {id:apoc.create.uuid()})
