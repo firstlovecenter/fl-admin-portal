@@ -449,13 +449,13 @@ const directoryMutation = {
       const streamCheck = rearrangeCypherObject(res[0])
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
-      if (streamCheck.memberCount > 0) {
+      if (streamCheck.councilCount.toNumber()) {
         throw new Error(
           `${streamCheck?.name} Stream has ${streamCheck?.councilCount} active councils. Please close down all councils and try again.`
         )
       }
 
-      if (streamCheck.ministryLeaderCount > 0) {
+      if (streamCheck.ministryCount.toNumber()) {
         throw new Error(
           `${streamCheck?.name} Stream has ${streamCheck?.ministryCount} active ministries. Please close down all ministries and try again.`
         )
@@ -539,7 +539,7 @@ const directoryMutation = {
       const campusCheck = rearrangeCypherObject(res[0])
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
-      if (campusCheck.memberCount > 0) {
+      if (campusCheck.streamCount.toNumber()) {
         throw new Error(
           `${campusCheck?.name} Campus has ${campusCheck?.streamCount} active streams. Please close down all streams and try again.`
         )
