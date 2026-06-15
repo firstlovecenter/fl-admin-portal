@@ -190,16 +190,44 @@ const directoryMutation = {
     isAuth(permitAdminArrivals('Governorship'), context.jwt?.roles)
 
     const session = context.executionContext.session()
+    const sessionTwo = context.executionContext.session()
 
     try {
-      const bacentaCheckResponse = await session.executeRead((tx) =>
-        tx.run(closeChurchCypher.checkBacentaHasNoMembers, args)
-      )
-      const bacentaCheck = rearrangeCypherObject(bacentaCheckResponse)
+      const res: any = await Promise.all([
+        session.executeRead((tx) =>
+          tx.run(closeChurchCypher.checkBacentaHasNoMembers, args)
+        ),
+        sessionTwo.executeRead((tx) =>
+          tx.run(closeChurchCypher.getLastServiceRecord, {
+            churchId: args.bacentaId,
+          })
+        ),
+      ])
+
+      const bacentaCheck = rearrangeCypherObject(res[0])
+      const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (bacentaCheck.memberCount > 0) {
         throw new Error(
           `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.memberCount} members. Please transfer all members and try again.`
+        )
+      }
+
+      const record = lastServiceRecord.lastService?.properties ?? {
+        bankingSlip: null,
+      }
+
+      if (
+        !(
+          'bankingSlip' in record ||
+          record.transactionStatus === 'success' ||
+          'tellerConfirmationTime' in record
+        )
+      ) {
+        throw new Error(
+          `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
+            record.createdAt
+          )} before attempting to close down this bacenta`
         )
       }
 
@@ -227,6 +255,7 @@ const directoryMutation = {
       throw error
     } finally {
       await session.close()
+      await sessionTwo.close()
     }
   },
   CloseDownGovernorship: async (object: any, args: any, context: Context) => {
@@ -594,7 +623,7 @@ const directoryMutation = {
       const oversightCheck = rearrangeCypherObject(res[0])
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
-      if (oversightCheck.memberCount) {
+      if (oversightCheck.campusCount.toNumber()) {
         throw new Error(
           `${oversightCheck?.name} Oversight has ${oversightCheck?.campusCount} active campuses. Please close down all campuses and try again.`
         )

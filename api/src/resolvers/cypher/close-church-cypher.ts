@@ -38,8 +38,8 @@ RETURN campus.name AS name, COUNT(member) AS memberCount, COUNT(streams) AS stre
 `
 export const checkOversightHasNoMembers = `//cypher
 MATCH (oversight:Oversight {id:$oversightId})
-MATCH (oversight)-[:HAS]->(campuses:Campus)<-[:LEADS]-(member:Active:Member)
-RETURN oversight.name AS name, COUNT(member) AS memberCount, COUNT(campuses) AS campusCount
+OPTIONAL MATCH (oversight)-[:HAS]->(campuses:Campus)
+RETURN oversight.name AS name, COUNT(campuses) AS campusCount
 `
 
 export const closeDownBacenta = `//cypher
@@ -180,7 +180,7 @@ RETURN oversight {
 `
 
 export const closeDownOversight = `//cypher
-MATCH (oversight:OverSight {id:$oversightId})<-[:HAS]-(denomination:Denomination)
+MATCH (oversight:Oversight {id:$oversightId})<-[:HAS]-(denomination:Denomination)
 WITH oversight, denomination
 
 CREATE (log:HistoryLog {id:apoc.create.uuid()})
