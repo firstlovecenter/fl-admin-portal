@@ -51,6 +51,46 @@ export const getHighestRole = (roles: Role[]) => {
   }
 }
 
+export const getLowestRole = (roles: Role[]) => {
+  let lowestRole
+
+  let lowestLevel: ChurchLevel = 'Bacenta'
+  let lowestVerb: VerbTypes = 'leader'
+
+  for (let i = 0; i < churchLevels.length; i += 1) {
+    const churchLevelLower = churchLevels[i]
+      ?.toLowerCase()
+      .replace('leader', '')
+      .replace('admin', '')
+      .replace('arrivalsadmin', '')
+    let breakCheck = false
+
+    for (let j = 0; j < roles.length; j += 1) {
+      const roleLower = roles[j]
+        ?.toLowerCase()
+        .replace('leader', '')
+        .replace('admin', '')
+        .replace('arrivals', '')
+
+      if (roleLower === churchLevelLower) {
+        breakCheck = true
+        lowestRole = roles[j]
+        lowestLevel = churchLevels[i]
+        lowestVerb = lowestRole?.replace(lowestLevel, '') as VerbTypes
+        break
+      }
+    }
+
+    if (breakCheck) break
+  }
+
+  return {
+    lowestRole,
+    lowestLevel,
+    lowestVerb,
+  }
+}
+
 export const nextHigherChurch = (churchLevel: ChurchLevel): ChurchLevel => {
   switch (churchLevel) {
     case 'Bacenta':

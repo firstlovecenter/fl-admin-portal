@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Role, UserJobs } from 'global-types'
-import { getHighestRole } from 'pages/directory/update/directory-utils'
+import { getLowestRole } from 'pages/directory/update/directory-utils'
 import {
   clearDefaultScopeKey,
   readDefaultScopeKey,
@@ -179,16 +179,16 @@ export const ChurchRoleScopeProvider = ({
         clearDefaultScopeKey()
       }
 
-      const { highestLevel, highestVerb } = getHighestRole(
+      const { lowestLevel, lowestVerb } = getLowestRole(
         currentUser?.roles ?? []
       )
-      const highestRole = `${highestVerb}${highestLevel}` as Role
+      const lowestRole = `${lowestVerb}${lowestLevel}` as Role
 
-      const highestRoleOption = roleChurchOptions.find(
-        (option: RoleChurchScopeOption) => option.authRole === highestRole
+      const lowestRoleOption = roleChurchOptions.find(
+        (option: RoleChurchScopeOption) => option.authRole === lowestRole
       )
 
-      setSelectedScopeKey(highestRoleOption?.key || roleChurchOptions[0].key)
+      setSelectedScopeKey(lowestRoleOption?.key || roleChurchOptions[0].key)
     }
   }, [currentUser?.roles, roleChurchOptions, selectedScopeKey])
 
