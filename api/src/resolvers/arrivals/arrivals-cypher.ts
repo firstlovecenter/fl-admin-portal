@@ -75,13 +75,9 @@ MATCH (bussing)-[:BUSSED_ON]->(bussingDate:TimeGraph)
 WITH DISTINCT record, bussing, bacenta, leader, stream, bussingDate
 OPTIONAL MATCH (bussing)-[:INCLUDES_RECORD]->(records:VehicleRecord) WHERE records.arrivalTime IS NOT NULL
 RETURN stream.arrivalEndTime AS arrivalEndTime,
-bacenta.id AS bacentaId,
-bussing.id AS bussingRecordId,
 COUNT(DISTINCT records) AS numberOfVehicles,
 SUM(records.attendance) AS totalAttendance,
-leader.phoneNumber AS leaderPhoneNumber,
-leader.firstName AS leaderFirstName,
-bacenta.name AS bacentaName,
+record.arrivalTime IS NOT NULL AS alreadyCounted,
 date() = date(bussingDate.date) AS isToday
 `
 

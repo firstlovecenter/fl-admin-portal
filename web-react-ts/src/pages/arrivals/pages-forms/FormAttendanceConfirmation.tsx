@@ -20,10 +20,7 @@ import Select from 'components/formik/Select'
 import { Alert, AlertDescription } from 'components/ui/alert'
 import { Card, CardContent, CardFooter } from 'components/ui/card'
 import { DISPLAY_VEHICLE_RECORDS } from '../arrivalsQueries'
-import {
-  CONFIRM_VEHICLE_BY_ADMIN,
-  SET_VEHICLE_SUPPORT,
-} from '../arrivalsMutation'
+import { CONFIRM_VEHICLE_BY_ADMIN } from '../arrivalsMutation'
 import { BacentaWithArrivals, VehicleRecord } from '../arrivals-types'
 import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import '../Arrivals.css'
@@ -43,7 +40,6 @@ const FormAttendanceConfirmation = () => {
     variables: { vehicleRecordId, bacentaId },
   })
   const [ConfirmVehicleByAdmin] = useMutation(CONFIRM_VEHICLE_BY_ADMIN)
-  const [SetVehicleSupport] = useMutation(SET_VEHICLE_SUPPORT)
 
   const vehicle: VehicleRecord = data?.vehicleRecords[0]
   const bacenta: BacentaWithArrivals = data?.bacentas[0]
@@ -91,6 +87,9 @@ const FormAttendanceConfirmation = () => {
 
     setSubmitting(true)
 
+    // ConfirmVehicleByAdmin records attendance and approves the bussing top-up
+    // in a single round trip. Re-submitting a vehicle that was already counted
+    // re-derives the top-up, which heals a record whose top-up never got set.
     const res = await ConfirmVehicleByAdmin({
       variables: {
         vehicleRecordId,
@@ -107,21 +106,6 @@ const FormAttendanceConfirmation = () => {
     if (!vehicleData) {
       setSubmitting(false)
       return
-    }
-
-    await SetVehicleSupport({
-      variables: {
-        vehicleRecordId,
-      },
-    }).catch((err) =>
-      alertMsg(`There was an error setting vehicle support ${err}`)
-    )
-
-    if (
-      !vehicleData.vehicleTopUp ||
-      bacenta?.stream_name === 'Anagkazo Encounter'
-    ) {
-      navigate(`/bacenta/vehicle-details`)
     }
 
     navigate(`/bacenta/vehicle-details`)

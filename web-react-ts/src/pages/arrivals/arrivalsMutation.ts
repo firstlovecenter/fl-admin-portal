@@ -243,15 +243,6 @@ export const CONFIRM_VEHICLE_BY_ADMIN = gql`
   }
 `
 
-export const SET_VEHICLE_SUPPORT = gql`
-  mutation SetVehicleSupport($vehicleRecordId: ID!) {
-    SetVehicleSupport(vehicleRecordId: $vehicleRecordId) {
-      id
-      vehicleTopUp
-    }
-  }
-`
-
 export const SEND_VEHICLE_SUPPORT = gql`
   mutation SendVehicleSupport(
     $vehicleRecordId: ID!

@@ -1,6 +1,6 @@
 import axios from 'axios'
+import { Integer, int, Session } from 'neo4j-driver'
 import { getHumanReadableDate } from '../utils/date-utils'
-import { Integer, int } from 'neo4j-driver'
 import { getStreamFinancials } from '../utils/financial-utils'
 import { Context } from '../utils/neo4j-types'
 import {
@@ -42,7 +42,7 @@ import {
   uploadMobilisationPicture,
 } from './arrivals-cypher'
 import { joinMessageStrings, sendBulkSMS } from '../utils/notify'
-import { neonumber, RearragedCypherResponse } from '../utils/types'
+import { neonumber } from '../utils/types'
 import texts from '../texts.json'
 import { CreateTransferRecipientBody, SendMoneyBody } from './arrivals-types'
 import { checkServantHasCurrentHistory } from '../services/service-resolvers'
@@ -67,6 +67,128 @@ const arrivalEndTimeCalculator = (arrivalEndTime: string) => {
   const endTime = new Date(endTimeToday.getTime() + COUNTINGBUFFER)
 
   return endTime
+}
+
+type VehicleSupportData = {
+  vehicleRecordId: string
+  attendance: number
+  vehicle: 'Sprinter' | 'Urvan' | 'Car'
+  outbound: boolean
+  bacentaSprinterTopUp: number
+  bacentaUrvanTopUp: number
+  arrivalTime: string
+  leaderPhoneNumber: string
+  leaderFirstName: string
+  dateLabels: string[]
+}
+
+// The eligible top-up is the bacenta's configured rate for the vehicle type,
+// doubled for an "in and out" (outbound) journey. A Car or an unconfigured
+// rate yields 0. `vehicleCost` was removed from the bussing flow long ago, so
+// there is no per-vehicle cost to clamp against — the configured rate is the
+// source of truth.
+const calculateVehicleTopUp = (data: VehicleSupportData) => {
+  const outbound = data.outbound ? 2 : 1
+  const sprinterTopUp =
+    parseNeoNumber(data.bacentaSprinterTopUp as unknown as Integer) * outbound
+  const urvanTopUp =
+    parseNeoNumber(data.bacentaUrvanTopUp as unknown as Integer) * outbound
+
+  if (data.vehicle === 'Sprinter') {
+    return sprinterTopUp === 0 ? 0 : parseFloat(sprinterTopUp.toFixed(2))
+  }
+  if (data.vehicle === 'Urvan') {
+    return urvanTopUp === 0 ? 0 : parseFloat(urvanTopUp.toFixed(2))
+  }
+  return 0
+}
+
+// Derives and writes the eligible top-up for an already-counted vehicle, then
+// notifies the leader. Idempotent — re-running it is how a re-confirm heals a
+// record whose top-up was never set. Cars, sub-8 attendance, and unconfigured
+// rates write 0 via noVehicleTopUp; otherwise the calculated amount is written
+// via setVehicleTopUp. Approving the amount moves no money — release stays with
+// the payer's SendVehicleSupport (SM5 separation of duties).
+const applyVehicleSupport = async (
+  session: Session,
+  vehicleRecordId: string,
+  options: { notify: boolean }
+) => {
+  const data: VehicleSupportData = rearrangeCypherObject(
+    await session.run(getVehicleRecordWithDate, { vehicleRecordId })
+  )
+
+  const attendance = parseNeoNumber(data.attendance as unknown as Integer)
+  const vehicleTopUp = calculateVehicleTopUp(data)
+
+  const writeAndNotify = async (
+    cypher: string,
+    amount: number,
+    message: string
+  ) => {
+    const result = rearrangeCypherObject(
+      await session.run(cypher, { vehicleRecordId, vehicleTopUp: amount })
+    )
+    if (options.notify) {
+      sendBulkSMS([data.leaderPhoneNumber], message).catch((error) =>
+        throwToSentry(
+          'There was an error sending the bussing payment SMS',
+          error
+        )
+      )
+    }
+    return result?.record?.properties
+  }
+
+  const greeting = (extra = '') => `Hi ${extra}${data.leaderFirstName}\n\n`
+
+  if (data.vehicle === 'Car') {
+    return writeAndNotify(
+      noVehicleTopUp,
+      0,
+      joinMessageStrings([
+        greeting(),
+        texts.arrivalsSMS.no_busses_to_pay_for,
+        attendance.toString(),
+      ])
+    )
+  }
+
+  if (attendance < 8) {
+    return writeAndNotify(
+      noVehicleTopUp,
+      0,
+      joinMessageStrings([
+        greeting(),
+        texts.arrivalsSMS.less_than_8,
+        attendance.toString(),
+      ])
+    )
+  }
+
+  if (vehicleTopUp <= 0) {
+    return writeAndNotify(
+      noVehicleTopUp,
+      0,
+      joinMessageStrings([
+        greeting(),
+        texts.arrivalsSMS.no_bussing_cost,
+        attendance.toString(),
+      ])
+    )
+  }
+
+  return writeAndNotify(
+    setVehicleTopUp,
+    vehicleTopUp,
+    joinMessageStrings([
+      greeting(' '),
+      texts.arrivalsSMS.normal_top_up_p1,
+      vehicleTopUp.toString(),
+      texts.arrivalsSMS.normal_top_up_p2,
+      attendance.toString(),
+    ])
+  )
 }
 
 export const arrivalsMutation = {
@@ -385,6 +507,12 @@ export const arrivalsMutation = {
 
     return null
   },
+  // SM5 onTheWay → counted → approved, in one round trip. The counter records
+  // attendance (once-only) and the eligible top-up is derived in the same call.
+  // A re-confirm skips the attendance write but still re-derives the top-up, so
+  // a record orphaned by a dropped first response (counted server-side, top-up
+  // never set) heals on resubmit instead of being stuck forever. Approving the
+  // amount moves no money — release stays with the payer's SendVehicleSupport.
   ConfirmVehicleByAdmin: async (
     object: never,
     args: {
@@ -422,21 +550,16 @@ export const arrivalsMutation = {
 
       const {
         arrivalEndTime,
-        bacentaId,
-        bussingRecordId,
         numberOfVehicles,
         totalAttendance,
         isToday,
+        alreadyCounted,
       }: {
         arrivalEndTime: string
-        bacentaId: string
-        bussingRecordId: string
         numberOfVehicles: neonumber
         totalAttendance: neonumber
-        leaderPhoneNumber: string
-        leaderFirstName: string
-        bacentaName: string
         isToday: boolean
+        alreadyCounted: boolean
       } = recordResponse
 
       if (!isToday) {
@@ -445,45 +568,53 @@ export const arrivalsMutation = {
         )
       }
 
-      const today = new Date()
+      // First count: enforce the arrival window and write attendance once.
+      // SM5 counted is once-only — a re-confirm (alreadyCounted) leaves the
+      // recorded attendance/arrivalTime untouched and falls straight through
+      // to re-derive the top-up.
+      if (!alreadyCounted) {
+        const today = new Date()
 
-      if (today > arrivalEndTimeCalculator(arrivalEndTime)) {
-        throw new Error('It is now past the time for arrivals. Thank you!')
-      }
-
-      const adjustedArgs = args
-
-      if (args.vehicle !== 'Car') {
-        if (parseNeoNumber(numberOfVehicles) < 1 && args.attendance < 8) {
-          // No arrived vehicles and attendance is less than 8
-          adjustedArgs.attendance = 0
-        } else if (
-          parseNeoNumber(numberOfVehicles) >= 1 &&
-          args.attendance < 8 &&
-          parseNeoNumber(totalAttendance) < 8
-        ) {
-          // One arrived vehicle but the combined attendance is less than 8
-          adjustedArgs.attendance = 0
+        if (today > arrivalEndTimeCalculator(arrivalEndTime)) {
+          throw new Error('It is now past the time for arrivals. Thank you!')
         }
-      }
 
-      if (args.attendance < 8) {
-        adjustedArgs.vehicle = 'Car'
-      }
+        const adjustedArgs = args
 
-      const response = rearrangeCypherObject(
+        if (args.vehicle !== 'Car') {
+          if (parseNeoNumber(numberOfVehicles) < 1 && args.attendance < 8) {
+            // No arrived vehicles and attendance is less than 8
+            adjustedArgs.attendance = 0
+          } else if (
+            parseNeoNumber(numberOfVehicles) >= 1 &&
+            args.attendance < 8 &&
+            parseNeoNumber(totalAttendance) < 8
+          ) {
+            // One arrived vehicle but the combined attendance is less than 8
+            adjustedArgs.attendance = 0
+          }
+        }
+
+        if (args.attendance < 8) {
+          adjustedArgs.vehicle = 'Car'
+        }
+
         await session.run(confirmVehicleByAdmin, {
           ...adjustedArgs,
           jwt: context.jwt,
         })
-      )
-
-      if (!response?.vehicleRecord) {
-        throw new Error('This vehicle has already been counted.')
       }
 
+      const vehicleRecord = await applyVehicleSupport(
+        session,
+        args.vehicleRecordId,
+        { notify: !alreadyCounted }
+      )
+
       await session
-        .run(aggregateVehicleBussingRecordData, adjustedArgs)
+        .run(aggregateVehicleBussingRecordData, {
+          vehicleRecordId: args.vehicleRecordId,
+        })
         .catch((error: any) =>
           throwToSentry(
             'Error Running aggregateVehicleBussingRecordData',
@@ -491,43 +622,17 @@ export const arrivalsMutation = {
           )
         )
 
-      const vehicleRecord = response.vehicleRecord.properties
-      const date = new Date().toISOString().slice(0, 10)
-
-      const returnToCache = {
-        id: vehicleRecord.id,
-        leaderDeclaration: vehicleRecord.leaderDeclaration,
-        attendance: vehicleRecord.attendance,
-        vehicle: vehicleRecord.vehicle,
-        picture: vehicleRecord.picture,
-        outbound: vehicleRecord.outbound,
-        arrivalTime: vehicleRecord.arrivalTime,
-        bussingRecord: {
-          serviceLog: {
-            bacenta: [
-              {
-                id: bacentaId,
-                stream_name: response.stream_name,
-                bussing: [
-                  {
-                    id: bussingRecordId,
-                    serviceDate: {
-                      date,
-                    },
-                    week: response.week,
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      }
-      return returnToCache
+      return vehicleRecord
     } finally {
       await session.close()
     }
   },
 
+  // SM5 counted → approved. Stand-alone entry to (re-)derive the eligible
+  // top-up for an already-counted vehicle, available to the counter or payer
+  // (permitArrivalsHelpers). The counter form normally approves the top-up in
+  // the same call as ConfirmVehicleByAdmin; this remains for re-approval and
+  // back-office repair. Approving moves no money (SM5 SoD).
   SetVehicleSupport: async (
     object: never,
     args: { vehicleRecordId: string },
@@ -537,131 +642,13 @@ export const arrivalsMutation = {
     await assertScopeViaVehicleRecord(context, args.vehicleRecordId)
     const session = context.executionContext.session()
 
-    type responseType = {
-      id: string
-      attendance: number
-      vehicle: 'Sprinter' | 'Urvan' | 'Car'
-      vehicleCost: number
-      outbound: boolean
-      bacentaSprinterTopUp: number
-      bacentaUrvanTopUp: number
-      arrivalTime: string
-      leaderPhoneNumber: string
-      leaderFirstName: string
-      dateLabels: string[]
+    try {
+      return await applyVehicleSupport(session, args.vehicleRecordId, {
+        notify: true,
+      })
+    } finally {
+      await session.close()
     }
-
-    const response: responseType = rearrangeCypherObject(
-      await session.run(getVehicleRecordWithDate, args)
-    )
-
-    let vehicleRecord: RearragedCypherResponse | undefined
-
-    const calculateVehicleTopUp = (data: responseType) => {
-      const outbound = response.outbound ? 2 : 1
-      const sprinterTopUp =
-        parseNeoNumber(data.bacentaSprinterTopUp as unknown as Integer) *
-        outbound
-
-      const urvanTopUp =
-        parseNeoNumber(data.bacentaUrvanTopUp as unknown as Integer) * outbound
-
-      const amountToPay = data.vehicleCost
-
-      if (data.vehicle === 'Sprinter') {
-        if (sprinterTopUp === 0) return 0
-
-        if (data.vehicleCost < sprinterTopUp || amountToPay < sprinterTopUp) {
-          return amountToPay
-        }
-
-        return parseFloat(sprinterTopUp.toFixed(2))
-      }
-
-      if (data.vehicle === 'Urvan') {
-        if (urvanTopUp === 0) return 0
-        if (data.vehicleCost < urvanTopUp || amountToPay < urvanTopUp) {
-          return amountToPay
-        }
-
-        return parseFloat(urvanTopUp.toFixed(2))
-      }
-
-      return 0
-    }
-    const vehicleTopUp = calculateVehicleTopUp(response)
-
-    if (response.vehicle === 'Car') {
-      const attendanceRes = await Promise.all([
-        session.run(noVehicleTopUp, { ...args, vehicleTopUp }),
-        sendBulkSMS(
-          [response.leaderPhoneNumber],
-          joinMessageStrings([
-            `Hi ${response.leaderFirstName}\n\n`,
-            texts.arrivalsSMS.no_busses_to_pay_for,
-            response.attendance.toString(),
-          ])
-        ),
-      ])
-      vehicleRecord = rearrangeCypherObject(attendanceRes[0])
-      return vehicleRecord?.record.properties
-    }
-
-    if (response.attendance < 8) {
-      await Promise.all([
-        session.run(noVehicleTopUp, args),
-        sendBulkSMS(
-          [response.leaderPhoneNumber],
-          joinMessageStrings([
-            `Hi ${response.leaderFirstName}\n\n`,
-            texts.arrivalsSMS.less_than_8,
-            response.attendance.toString(),
-          ])
-        ),
-      ]).catch((error) =>
-        throwToSentry('There was an error processing bussing payment', error)
-      )
-      throw new Error("Today's Bussing doesn't require a top up")
-    }
-
-    if (response.vehicleCost === 0 || vehicleTopUp <= 0) {
-      const attendanceRes = await Promise.all([
-        session.run(noVehicleTopUp, { ...args, vehicleTopUp }),
-        sendBulkSMS(
-          [response.leaderPhoneNumber],
-          joinMessageStrings([
-            `Hi ${response.leaderFirstName}\n\n`,
-            texts.arrivalsSMS.no_bussing_cost,
-            response.attendance.toString(),
-          ])
-        ),
-      ])
-      vehicleRecord = rearrangeCypherObject(attendanceRes[0])
-      return vehicleRecord?.record.properties
-    }
-
-    if (
-      response.attendance &&
-      (response.vehicle === 'Sprinter' || response.vehicle === 'Urvan')
-    ) {
-      const receiveMoney = joinMessageStrings([
-        `Hi  ${response.leaderFirstName}\n\n`,
-        texts.arrivalsSMS.normal_top_up_p1,
-        vehicleTopUp?.toString(),
-        texts.arrivalsSMS.normal_top_up_p2,
-        response.attendance?.toString(),
-      ])
-
-      const attendanceRes = await Promise.all([
-        session.run(setVehicleTopUp, { ...args, vehicleTopUp }),
-        sendBulkSMS([response.leaderPhoneNumber], `${receiveMoney}`),
-      ]).catch((error) =>
-        throwToSentry('There was an error processing bussing payment', error)
-      )
-      vehicleRecord = rearrangeCypherObject(attendanceRes[0])
-    }
-
-    return vehicleRecord?.record.properties
   },
   // SM5 approved → paid. Separation of duties: this resolver is restricted
   // to `permitArrivalsPayer()` (Council Payer) only. The Stream Counter can

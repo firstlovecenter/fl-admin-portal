@@ -92,6 +92,7 @@ import {
 } from './arrivals-cypher'
 import type { Context } from '../utils/neo4j-types'
 import { isAuth } from '../utils/utils'
+import { sendBulkSMS } from '../utils/notify'
 import {
   permitArrivalsCounter,
   permitArrivalsHelpers,
@@ -164,41 +165,56 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
     comments: '',
   }
 
+  // ConfirmVehicleByAdmin now records attendance AND derives the top-up in one
+  // round trip (SYN-165): checkArrivalTimeFromVehicle → confirmVehicleByAdmin
+  // (skipped on re-confirm) → getVehicleRecordWithDate → set/noVehicleTopUp →
+  // aggregateVehicleBussingRecordData.
+  const checkResult = (overrides: Record<string, unknown> = {}) =>
+    makeMockQueryResult({
+      arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
+      bacentaId: 'bacenta_1',
+      numberOfVehicles: 0,
+      totalAttendance: 0,
+      leaderPhoneNumber: '0240000000',
+      leaderFirstName: 'Kofi',
+      bacentaName: 'Bacenta 1',
+      isToday: true,
+      alreadyCounted: false,
+      ...overrides,
+    })
+
+  // getVehicleRecordWithDate payload read inside applyVehicleSupport.
+  const supportData = (overrides: Record<string, unknown> = {}) =>
+    makeMockQueryResult({
+      attendance: 25,
+      vehicle: 'Sprinter',
+      outbound: false,
+      bacentaSprinterTopUp: 30,
+      bacentaUrvanTopUp: 50,
+      arrivalTime: '2024-01-07T08:00:00Z',
+      leaderPhoneNumber: '0240000000',
+      leaderFirstName: 'Kofi',
+      dateLabels: [],
+      ...overrides,
+    })
+
+  const recordResult = (
+    props: Record<string, unknown> = { id: 'vr_1', vehicleTopUp: 30 }
+  ) => makeMockQueryResult({ record: { properties: props } })
+
+  const confirmCypherResult = () =>
+    makeMockQueryResult({ vehicleRecord: { properties: { id: 'vr_1' } } })
+
+  const aggregateResult = () =>
+    makeMockQueryResult({ vehicleRecord: { id: 'vr_1' } })
+
   it('SM5: isAuth is called with permitArrivalsCounter() === [arrivalsCounterStream]', async () => {
     mockSession.run
-      // checkArrivalTimeFromVehicle
-      .mockResolvedValueOnce(
-        makeMockQueryResult({
-          arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
-          bacentaId: 'bacenta_1',
-          numberOfVehicles: 0,
-          totalAttendance: 0,
-          leaderPhoneNumber: '0240000000',
-          leaderFirstName: 'Kofi',
-          bacentaName: 'Bacenta 1',
-          isToday: true,
-        })
-      )
-      // confirmVehicleByAdmin
-      .mockResolvedValueOnce(
-        makeMockQueryResult({
-          vehicleRecord: {
-            properties: {
-              id: 'vr_1',
-              attendance: 25,
-              vehicle: 'Sprinter',
-              picture: 'https://img.jpg',
-              leaderDeclaration: 20,
-              outbound: false,
-              arrivalTime: '2024-01-07T08:00:00Z',
-            },
-          },
-          stream_name: 'Stream A',
-          week: 1,
-        })
-      )
-      // aggregateVehicleBussingRecordData (called with .catch on errors)
-      .mockResolvedValueOnce(makeMockQueryResult({ vehicleRecord: { id: 'vr_1' } }))
+      .mockResolvedValueOnce(checkResult())
+      .mockResolvedValueOnce(confirmCypherResult())
+      .mockResolvedValueOnce(supportData())
+      .mockResolvedValueOnce(recordResult())
+      .mockResolvedValueOnce(aggregateResult())
 
     await arrivalsMutation.ConfirmVehicleByAdmin(
       null as never,
@@ -224,38 +240,21 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
     expect(confirmVehicleByAdmin).toMatch(/\$jwt\.userId/)
   })
 
-  it('SM5: ConfirmVehicleByAdmin returns the vehicle record with new arrivalTime', async () => {
+  it('SM5: ConfirmVehicleByAdmin counts then approves the top-up and returns the record', async () => {
     mockSession.run
+      .mockResolvedValueOnce(checkResult())
+      .mockResolvedValueOnce(confirmCypherResult())
+      .mockResolvedValueOnce(supportData())
       .mockResolvedValueOnce(
-        makeMockQueryResult({
-          arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
-          bacentaId: 'bacenta_1',
-          numberOfVehicles: 0,
-          totalAttendance: 0,
-          leaderPhoneNumber: '0240000000',
-          leaderFirstName: 'Kofi',
-          bacentaName: 'Bacenta 1',
-          isToday: true,
+        recordResult({
+          id: 'vr_1',
+          attendance: 25,
+          vehicle: 'Sprinter',
+          arrivalTime: '2024-01-07T08:00:00Z',
+          vehicleTopUp: 30,
         })
       )
-      .mockResolvedValueOnce(
-        makeMockQueryResult({
-          vehicleRecord: {
-            properties: {
-              id: 'vr_1',
-              attendance: 25,
-              vehicle: 'Sprinter',
-              picture: 'https://img.jpg',
-              leaderDeclaration: 20,
-              outbound: false,
-              arrivalTime: '2024-01-07T08:00:00Z',
-            },
-          },
-          stream_name: 'Stream A',
-          week: 1,
-        })
-      )
-      .mockResolvedValueOnce(makeMockQueryResult({ vehicleRecord: { id: 'vr_1' } }))
+      .mockResolvedValueOnce(aggregateResult())
 
     const result = await arrivalsMutation.ConfirmVehicleByAdmin(
       null as never,
@@ -263,35 +262,30 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
       counterContext()
     )
 
+    // The single round trip writes the counted attendance AND the top-up.
     expect(result).toMatchObject({
       id: 'vr_1',
       attendance: 25,
       vehicle: 'Sprinter',
       arrivalTime: '2024-01-07T08:00:00Z',
-      bussingRecord: {
-        serviceLog: {
-          bacenta: [{ id: 'bacenta_1', stream_name: 'Stream A' }],
-        },
-      },
+      vehicleTopUp: 30,
     })
+    const setCall = mockSession.run.mock.calls.find(
+      ([cypher]) => cypher === setVehicleTopUp
+    )
+    expect(setCall?.[1]).toMatchObject({ vehicleTopUp: 30 })
   })
 
-  it('SM5: already-counted vehicle (cypher returns no rows) is rejected', async () => {
+  it('SM5: re-confirming an already-counted vehicle heals the top-up instead of throwing (SYN-165)', async () => {
+    // A record orphaned by a dropped first response (counted server-side, but
+    // the top-up never set) used to be stuck behind "already counted". Now a
+    // resubmit skips the once-only count write and re-derives the top-up.
     mockSession.run
-      .mockResolvedValueOnce(
-        makeMockQueryResult({
-          arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
-          bacentaId: 'bacenta_1',
-          numberOfVehicles: 0,
-          totalAttendance: 0,
-          leaderPhoneNumber: '0240000000',
-          leaderFirstName: 'Kofi',
-          bacentaName: 'Bacenta 1',
-          isToday: true,
-        })
-      )
-      // confirmVehicleByAdmin — WHERE arrivalTime IS NULL filtered the row out
-      .mockResolvedValueOnce(makeMockQueryResult({}))
+      .mockResolvedValueOnce(checkResult({ alreadyCounted: true }))
+      .mockResolvedValueOnce(supportData())
+      .mockResolvedValueOnce(recordResult())
+      .mockResolvedValueOnce(aggregateResult())
+    ;(sendBulkSMS as jest.Mock).mockClear()
 
     await expect(
       arrivalsMutation.ConfirmVehicleByAdmin(
@@ -299,39 +293,33 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
         confirmArgs,
         counterContext()
       )
-    ).rejects.toThrow('This vehicle has already been counted.')
+    ).resolves.toMatchObject({ id: 'vr_1', vehicleTopUp: 30 })
+
+    // once-only count cypher is skipped ...
+    const confirmCall = mockSession.run.mock.calls.find(
+      ([cypher]) => cypher === confirmVehicleByAdmin
+    )
+    expect(confirmCall).toBeUndefined()
+    // ... but the top-up IS (re)written — this is the heal ...
+    const setCall = mockSession.run.mock.calls.find(
+      ([cypher]) => cypher === setVehicleTopUp
+    )
+    expect(setCall?.[1]).toMatchObject({ vehicleTopUp: 30 })
+    // ... and no duplicate "you'll receive money" SMS is sent on the heal.
+    expect(sendBulkSMS).not.toHaveBeenCalled()
   })
 
   it('SM5: attendance below 8 is coerced to vehicle=Car (small-bus rule)', async () => {
     mockSession.run
+      .mockResolvedValueOnce(checkResult())
       .mockResolvedValueOnce(
         makeMockQueryResult({
-          arrivalEndTime: FUTURE_ARRIVAL_END_TIME,
-          bacentaId: 'bacenta_1',
-          numberOfVehicles: 0,
-          totalAttendance: 0,
-          leaderPhoneNumber: '0240000000',
-          leaderFirstName: 'Kofi',
-          bacentaName: 'Bacenta 1',
-          isToday: true,
+          vehicleRecord: { properties: { id: 'vr_small' } },
         })
       )
+      .mockResolvedValueOnce(supportData({ vehicle: 'Car', attendance: 0 }))
       .mockResolvedValueOnce(
-        makeMockQueryResult({
-          vehicleRecord: {
-            properties: {
-              id: 'vr_small',
-              attendance: 0,
-              vehicle: 'Car',
-              picture: 'https://img.jpg',
-              leaderDeclaration: 5,
-              outbound: false,
-              arrivalTime: '2024-01-07T08:00:00Z',
-            },
-          },
-          stream_name: 'Stream A',
-          week: 1,
-        })
+        recordResult({ id: 'vr_small', vehicle: 'Car', vehicleTopUp: 0 })
       )
       .mockResolvedValueOnce(makeMockQueryResult({ vehicleRecord: { id: 'vr_small' } }))
 
@@ -357,16 +345,7 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
     // Past time-of-day forces today > endTime irrespective of run date.
     const PAST_TIME = '2024-01-07T00:00:00.000Z'
     mockSession.run.mockResolvedValueOnce(
-      makeMockQueryResult({
-        arrivalEndTime: PAST_TIME,
-        bacentaId: 'bacenta_1',
-        numberOfVehicles: 0,
-        totalAttendance: 0,
-        leaderPhoneNumber: '0240000000',
-        leaderFirstName: 'Kofi',
-        bacentaName: 'Bacenta 1',
-        isToday: true,
-      })
+      checkResult({ arrivalEndTime: PAST_TIME })
     )
 
     await expect(
@@ -507,7 +486,6 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
     type ScenarioResp = {
       attendance: number
       vehicle: 'Sprinter' | 'Urvan' | 'Car'
-      vehicleCost: number
       outbound: boolean
       bacentaSprinterTopUp: number
       bacentaUrvanTopUp: number
@@ -520,7 +498,6 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
     const baseResp: ScenarioResp = {
       attendance: 50,
       vehicle: 'Sprinter',
-      vehicleCost: 100,
       outbound: false,
       bacentaSprinterTopUp: 30,
       bacentaUrvanTopUp: 50,
@@ -536,7 +513,7 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
       )
     }
 
-    it('SM5: Sprinter, sprinterTopUp 30, vehicleCost 100, inbound only → topUp = 30 (bacenta sprinter rate, single direction)', async () => {
+    it('SM5: Sprinter, sprinterTopUp 30, inbound only → topUp = 30 (bacenta sprinter rate, single direction)', async () => {
       mockGetVehicleRecord({})
       mockSession.run.mockResolvedValueOnce(
         makeMockQueryResult({
@@ -554,7 +531,7 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
     })
 
     it('SM5: Sprinter, sprinterTopUp 30, outbound true → topUp = 60 (rate × 2 for in-and-out)', async () => {
-      mockGetVehicleRecord({ outbound: true, vehicleCost: 200 })
+      mockGetVehicleRecord({ outbound: true })
       mockSession.run.mockResolvedValueOnce(
         makeMockQueryResult({
           record: { properties: { id: 'vr_1', vehicleTopUp: 60 } },
@@ -570,7 +547,7 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
     })
 
     it('SM5: Urvan, urvanTopUp 50, inbound only → topUp = 50', async () => {
-      mockGetVehicleRecord({ vehicle: 'Urvan', vehicleCost: 100 })
+      mockGetVehicleRecord({ vehicle: 'Urvan' })
       mockSession.run.mockResolvedValueOnce(
         makeMockQueryResult({
           record: { properties: { id: 'vr_1', vehicleTopUp: 50 } },
@@ -585,12 +562,13 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
       expect(setCall?.[1]).toMatchObject({ vehicleTopUp: 50 })
     })
 
-    it('SM5: Sprinter, vehicleCost (20) < sprinterTopUp (30) → topUp clamps DOWN to vehicleCost (20)', async () => {
-      // amountToPay (=vehicleCost) clamp branch
-      mockGetVehicleRecord({ vehicleCost: 20 })
+    it('SM5: top-up is the configured rate — there is no vehicleCost clamp (SYN-165 WS3)', async () => {
+      // `vehicleCost` was removed from the bussing flow; the configured rate is
+      // the source of truth, so a low cost can no longer clamp the top-up down.
+      mockGetVehicleRecord({ bacentaSprinterTopUp: 30 })
       mockSession.run.mockResolvedValueOnce(
         makeMockQueryResult({
-          record: { properties: { id: 'vr_1', vehicleTopUp: 20 } },
+          record: { properties: { id: 'vr_1', vehicleTopUp: 30 } },
         })
       )
 
@@ -599,11 +577,11 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
       const setCall = mockSession.run.mock.calls.find(
         ([cypher]) => cypher === setVehicleTopUp
       )
-      expect(setCall?.[1]).toMatchObject({ vehicleTopUp: 20 })
+      expect(setCall?.[1]).toMatchObject({ vehicleTopUp: 30 })
     })
 
     it('SM5: Sprinter, sprinterTopUp = 0 → topUp = 0; routed to noVehicleTopUp branch (not setVehicleTopUp)', async () => {
-      mockGetVehicleRecord({ bacentaSprinterTopUp: 0, vehicleCost: 100 })
+      mockGetVehicleRecord({ bacentaSprinterTopUp: 0 })
       mockSession.run.mockResolvedValueOnce(
         makeMockQueryResult({
           record: { properties: { id: 'vr_1', vehicleTopUp: 0 } },
@@ -628,7 +606,6 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
       mockGetVehicleRecord({
         vehicle: 'Car',
         attendance: 5,
-        vehicleCost: 0,
       })
       mockSession.run.mockResolvedValueOnce(
         makeMockQueryResult({
@@ -644,20 +621,27 @@ describe('SM5 — counted → approved: SetVehicleSupport (arrivalsHelpers)', ()
       expect(noTopUpCall).toBeDefined()
     })
 
-    it('SM5: attendance < 8 on a non-Car vehicle → throws "doesn\'t require a top up" and writes noVehicleTopUp', async () => {
-      mockGetVehicleRecord({ attendance: 5, vehicleCost: 100 })
+    it('SM5: attendance < 8 on a non-Car vehicle → topUp = 0 via noVehicleTopUp (no throw)', async () => {
+      // Previously this threw; decoupling the approval from counting means a
+      // sub-8 record just writes 0 (idempotent) so re-running can never wedge.
+      mockGetVehicleRecord({ attendance: 5 })
       mockSession.run.mockResolvedValueOnce(
-        makeMockQueryResult({ record: { properties: { id: 'vr_1' } } })
+        makeMockQueryResult({
+          record: { properties: { id: 'vr_1', vehicleTopUp: 0 } },
+        })
       )
 
-      await expect(
-        arrivalsMutation.SetVehicleSupport(null as never, setSupportArgs, context)
-      ).rejects.toThrow("Today's Bussing doesn't require a top up")
+      const result = await arrivalsMutation.SetVehicleSupport(
+        null as never,
+        setSupportArgs,
+        context
+      )
 
       const noTopUpCall = mockSession.run.mock.calls.find(
         ([cypher]) => cypher === noVehicleTopUp
       )
       expect(noTopUpCall).toBeDefined()
+      expect(result).toMatchObject({ id: 'vr_1', vehicleTopUp: 0 })
     })
   })
 
