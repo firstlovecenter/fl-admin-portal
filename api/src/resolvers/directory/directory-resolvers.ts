@@ -23,6 +23,7 @@ import {
   createOversight,
 } from '../cypher/resolver-cypher'
 import { sendServantPromotionEmail } from '../utils/notify'
+import { clearUserAuthorityCache } from '../utils/allowed-church-ids'
 
 const cypher = require('../cypher/resolver-cypher')
 const closeChurchCypher = require('../cypher/close-church-cypher')
@@ -697,6 +698,12 @@ const directoryMutation = {
 
       const { bacenta, leader } = result
 
+      // The new node's id is in neither the creator's nor the new leader's
+      // cached `allowedChurchIds`, so both would see a blank dashboard on
+      // redirect until their token's TTL lapses. Recompute on next request.
+      clearUserAuthorityCache(context.jwt?.userId)
+      clearUserAuthorityCache(args.leaderId)
+
       // Send notification email to the new leader
       await sendServantPromotionEmail(
         leader.email,
@@ -750,6 +757,11 @@ const directoryMutation = {
 
       const { governorship, leader } = result
 
+      // Invalidate so creator + new leader see the new node, not a blank
+      // dashboard, on redirect (SYN-166).
+      clearUserAuthorityCache(context.jwt?.userId)
+      clearUserAuthorityCache(args.leaderId)
+
       // Send notification email to the new leader
       await sendServantPromotionEmail(
         leader.email,
@@ -798,6 +810,11 @@ const directoryMutation = {
       )
 
       const { council, leader } = result
+
+      // Invalidate so creator + new leader see the new node, not a blank
+      // dashboard, on redirect (SYN-166).
+      clearUserAuthorityCache(context.jwt?.userId)
+      clearUserAuthorityCache(args.leaderId)
 
       await sendServantPromotionEmail(
         leader.email,
@@ -850,6 +867,11 @@ const directoryMutation = {
       )
 
       const { stream, leader } = result
+
+      // Invalidate so creator + new leader see the new node, not a blank
+      // dashboard, on redirect (SYN-166).
+      clearUserAuthorityCache(context.jwt?.userId)
+      clearUserAuthorityCache(args.leaderId)
 
       await sendServantPromotionEmail(
         leader.email,
@@ -905,6 +927,11 @@ const directoryMutation = {
 
       const { campus, leader } = result
 
+      // Invalidate so creator + new leader see the new node, not a blank
+      // dashboard, on redirect (SYN-166).
+      clearUserAuthorityCache(context.jwt?.userId)
+      clearUserAuthorityCache(args.leaderId)
+
       await sendServantPromotionEmail(
         leader.email,
         leader.firstName,
@@ -949,6 +976,11 @@ const directoryMutation = {
       )
 
       const { oversight, leader } = result
+
+      // Invalidate so creator + new leader see the new node, not a blank
+      // dashboard, on redirect (SYN-166).
+      clearUserAuthorityCache(context.jwt?.userId)
+      clearUserAuthorityCache(args.leaderId)
 
       await sendServantPromotionEmail(
         leader.email,

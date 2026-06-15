@@ -272,3 +272,31 @@ export const computeAllowedChurchIds = async (
 export const clearAllowedChurchIdsCache = (): void => {
   cache.clear()
 }
+
+// Drop every cached authority entry for a single user (all `iat` variants),
+// forcing a fresh `computeUserAuthority` walk on that user's next request.
+// Call this after a mutation that changes which churches the user can reach —
+// creating a church, or being assigned/removed as its servant — so the new
+// node passes the `@churchScoped` READ filter instead of staying invisible (an
+// empty `streams`/`governorships` array → blank dashboard) until the entry's
+// ≤30-minute TTL lapses or a fresh token is issued. SYN-166.
+//
+// Scope caveat: the cache is module-level (per process). In the single-process
+// Docker/`index.js` path this closes the gap outright. On the Lambda fleet it
+// only clears the instance that served the mutation — a follow-up read routed
+// to a different warm instance still sees the stale list until its own TTL
+// lapses. It is a strict improvement everywhere; the cross-instance residual
+// is bounded by the same ≤30-minute TTL the cache always carried.
+//
+// The `${userId}:` prefix is delimited by the colon that always separates the
+// id from the `iat`, so one user's key can never prefix-match another's
+// (member ids are colon-free `apoc.create.uuid()` UUIDs).
+export const clearUserAuthorityCache = (userId: string | undefined): void => {
+  if (!userId) return
+  const prefix = `${userId}:`
+  for (const key of cache.keys()) {
+    if (key.startsWith(prefix)) {
+      cache.delete(key)
+    }
+  }
+}
