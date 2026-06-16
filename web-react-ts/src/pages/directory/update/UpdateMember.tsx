@@ -76,7 +76,7 @@ const UpdateMember = () => {
           firstName: values.firstName.trim(),
           middleName: values.middleName.trim(),
           lastName: values.lastName.trim(),
-          email: values.email?.trim().toLowerCase(),
+          email: values.email?.trim().toLowerCase() || null,
           gender: values.gender,
           phoneNumber: parsePhoneNum(values.phoneNumber),
           whatsappNumber: parsePhoneNum(values.whatsappNumber),

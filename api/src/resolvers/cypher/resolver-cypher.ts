@@ -229,7 +229,7 @@ CREATE (member:Active:Member:IDL:Deer:User {whatsappNumber:$whatsappNumber})
       	member.firstName = $firstName,
       	member.middleName = $middleName,
       	member.lastName = $lastName,
-      	member.email = $email,
+      	member.email = CASE $email WHEN '' THEN null ELSE $email END,
       	member.phoneNumber = $phoneNumber,
         member.visitationArea = $visitationArea,
       	member.pictureUrl = $pictureUrl,

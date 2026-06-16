@@ -87,7 +87,7 @@ const CreateMember = () => {
           gender: values.gender,
           phoneNumber: parsePhoneNum(values.phoneNumber),
           whatsappNumber: parsePhoneNum(values.whatsappNumber),
-          email: values.email?.trim().toLowerCase(),
+          email: values.email?.trim().toLowerCase() || null,
           dob: values.dob,
           maritalStatus: values.maritalStatus,
           occupation: values.occupation,

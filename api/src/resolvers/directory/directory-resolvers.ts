@@ -33,10 +33,11 @@ const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
     isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
     const session = context.executionContext.session()
+    const email = args?.email?.trim().toLowerCase() || null
     const inactiveMemberResponse = rearrangeCypherObject(
       await session.executeRead((tx) =>
         tx.run(cypher.checkInactiveMember, {
-          email: args.email ?? null,
+          email,
           whatsappNumber: args?.whatsappNumber ?? null,
         })
       )
@@ -67,7 +68,7 @@ const directoryMutation = {
 
     const memberResponse = await session.executeRead((tx) =>
       tx.run(cypher.checkMemberEmailExists, {
-        email: args.email ?? null,
+        email,
         whatsappNumber: args?.whatsappNumber ?? null,
       })
     )
@@ -75,7 +76,7 @@ const directoryMutation = {
     const duplicateMember = memberCheck.member?.properties
 
     if (memberCheck.predicate) {
-      if (duplicateMember.email === args.email) {
+      if (duplicateMember.email === email) {
         const errorMsg = `There is a member with this email "${duplicateMember.email}" called ${duplicateMember.firstName} ${duplicateMember.lastName}`
 
         const error = new Error(errorMsg)
@@ -97,7 +98,7 @@ const directoryMutation = {
         firstName: args?.firstName ?? '',
         middleName: args?.middleName ?? null,
         lastName: args?.lastName ?? '',
-        email: args?.email ?? null,
+        email,
         phoneNumber: args?.phoneNumber ?? '',
         whatsappNumber: args?.whatsappNumber ?? '',
         dob: args?.dob ?? '',

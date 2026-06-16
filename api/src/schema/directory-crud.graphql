@@ -344,6 +344,28 @@ extend type Mutation {
     ministry: String
     pictureUrl: String!
   ): Member
+    # Mirrors permitLeaderAdmin('Bacenta') (ADR-001) and the FE
+    # /member/editmember route gate. Keep this list in sync with
+    # permissions.ts permitLeader('bacenta') + permitAdmin('Bacenta').
+    @authentication(
+      jwt: {
+        OR: [
+          { roles: { includes: "leaderDenomination" } }
+          { roles: { includes: "leaderOversight" } }
+          { roles: { includes: "leaderCampus" } }
+          { roles: { includes: "leaderStream" } }
+          { roles: { includes: "leaderCouncil" } }
+          { roles: { includes: "leaderGovernorship" } }
+          { roles: { includes: "leaderBacenta" } }
+          { roles: { includes: "adminGovernorship" } }
+          { roles: { includes: "adminCouncil" } }
+          { roles: { includes: "adminStream" } }
+          { roles: { includes: "adminCampus" } }
+          { roles: { includes: "adminOversight" } }
+          { roles: { includes: "adminDenomination" } }
+        ]
+      }
+    )
     @cypher(
       statement: """
       MATCH (member:Active:Member {id:$id})
@@ -351,7 +373,7 @@ extend type Mutation {
       	member.firstName = $firstName,
       	member.middleName = $middleName,
       	member.lastName = $lastName,
-      	member.email = $email,
+      	member.email = CASE $email WHEN '' THEN null ELSE $email END,
       	member.phoneNumber = $phoneNumber,
         member.whatsappNumber = $whatsappNumber,
       	member.pictureUrl = $pictureUrl
