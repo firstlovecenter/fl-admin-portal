@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda'
-import axios from 'axios'
 import { loadSecrets } from '../secrets'
 import { throwToSentry } from './utils'
 
@@ -12,6 +11,14 @@ interface EmailPayload {
   html?: string
   replyTo?: string
 }
+
+interface SmsPayload {
+  recipient: string[]
+  sender: string
+  message: string
+}
+
+type NotificationResource = '/send-email' | '/send-sms'
 
 interface NotificationEvent {
   resource: string
@@ -59,12 +66,16 @@ const getNotificationLambdaName = async (): Promise<string> => {
 }
 
 /**
- * Send an email via the notification service Lambda
- * @param payload - Email details (from, to, subject, text/html)
- * @returns Promise<boolean> - True if email sent successfully
+ * Send a notification (email or SMS) via the FLC notification service Lambda.
+ * Routes to the requested resource (`/send-email` or `/send-sms`) on the
+ * env-aware Lambda, authenticated with FLC_NOTIFY_KEY.
+ * @param resource - The notification service route to hit
+ * @param payload - Email or SMS payload for that route
+ * @returns Promise<boolean> - True if the notification was sent successfully
  */
 const invokeNotificationLambda = async (
-  payload: EmailPayload
+  resource: NotificationResource,
+  payload: EmailPayload | SmsPayload
 ): Promise<boolean> => {
   try {
     const lambdaName = await getNotificationLambdaName()
@@ -78,8 +89,8 @@ const invokeNotificationLambda = async (
 
     // Construct the notification event
     const event: NotificationEvent = {
-      resource: '/send-email',
-      path: '/send-email',
+      resource,
+      path: resource,
       httpMethod: 'POST',
       headers: {
         'x-secret-key': secretKey,
@@ -89,10 +100,7 @@ const invokeNotificationLambda = async (
       isBase64Encoded: false,
     }
 
-    console.log('[Notification] Sending email via', lambdaName, {
-      to: payload.to,
-      subject: payload.subject,
-    })
+    console.log('[Notification] Sending', resource, 'via', lambdaName)
 
     // Invoke the notification service Lambda
     const command = new InvokeCommand({
@@ -106,29 +114,33 @@ const invokeNotificationLambda = async (
     console.log('[Notification] Lambda response status:', response.StatusCode)
     console.log('[Notification] Function error:', response.FunctionError)
 
-    // Parse response
+    // Parse response. Only the service's statusCode is logged — the body may
+    // echo back PII (e.g. SMS recipient numbers), which must never reach logs.
     if (response.Payload) {
       const result = JSON.parse(new TextDecoder().decode(response.Payload))
 
-      console.log(
-        '[Notification] Response payload:',
-        JSON.stringify(result, null, 2)
-      )
+      console.log('[Notification] Service status code:', result.statusCode)
 
       if (response.StatusCode === 200 && result.statusCode === 200) {
-        console.log('[Notification] Email sent successfully')
+        console.log('[Notification] Notification sent successfully')
         return true
       }
-      console.error('[Notification] Email sending failed:', result)
-      throwToSentry('Email sending failed', result)
+      console.error(
+        '[Notification] Notification sending failed with status code:',
+        result.statusCode
+      )
+      throwToSentry(
+        'Notification sending failed',
+        `status ${result.statusCode}`
+      )
       return false
     }
 
     console.warn('[Notification] No payload in response')
     return false
   } catch (error) {
-    console.error('[Notification] Error sending email:', error)
-    throwToSentry('Error sending email via Lambda', error)
+    console.error('[Notification] Error sending notification:', error)
+    throwToSentry('Error sending notification via Lambda', error)
     return false
   }
 }
@@ -319,7 +331,7 @@ export const sendServantPromotionEmail = async (
     text: `Hi ${firstName} ${lastName}, Congratulations! You have been appointed to serve as the ${servantType} for ${churchName}. Please visit the help center for guidelines and instructions. May the Lord bless you abundantly.`,
   }
 
-  return invokeNotificationLambda(payload)
+  return invokeNotificationLambda('/send-email', payload)
 }
 
 /**
@@ -349,7 +361,7 @@ export const sendServantRemovalEmail = async (
     text: `Hi ${firstName} ${lastName}, We regret to inform you that you have been removed as the ${servantType} for ${churchName}. We encourage you to continue serving the Lord faithfully. May God's peace and guidance accompany you always.`,
   }
 
-  return invokeNotificationLambda(payload)
+  return invokeNotificationLambda('/send-email', payload)
 }
 
 /**
@@ -357,7 +369,7 @@ export const sendServantRemovalEmail = async (
  * @breaking New interface - use specific functions like sendServantPromotionEmail
  */
 export const sendEmail = async (payload: EmailPayload): Promise<boolean> => {
-  return invokeNotificationLambda(payload)
+  return invokeNotificationLambda('/send-email', payload)
 }
 
 /**
@@ -380,40 +392,33 @@ export const sendBulkEmail = async (): Promise<void> => {
   )
 }
 
-export const sendBulkSMS = async (recipient: string[], message: string) => {
-  const SECRETS = await loadSecrets() // Await secrets here
-  const sendMessage = {
-    method: 'post',
-    url: `https://api.mnotify.com/api/sms/quick?key=${SECRETS.MNOTIFY_KEY}`,
-    headers: {
-      'content-type': 'application/json',
-    },
-    data: {
-      recipient: SECRETS.TEST_PHONE_NUMBER
-        ? [SECRETS.TEST_PHONE_NUMBER, '0594760324d']
-        : recipient,
-      sender: 'FLC Admin',
-      message,
-      is_schedule: 'false',
-      schedule_date: '',
-    },
+/**
+ * Send a transactional SMS via the FLC notification service `/send-sms` route.
+ * Routes through the env-aware notification Lambda (same boundary as email and
+ * the scheduled SMS jobs) rather than hitting an external provider directly.
+ * Throws (via throwToSentry) if the service reports failure.
+ */
+export const sendBulkSMS = async (
+  recipient: string[],
+  message: string
+): Promise<string> => {
+  const SECRETS = await loadSecrets()
+
+  // Dev-only guard: when TEST_PHONE_NUMBER is set in the development
+  // environment, redirect SMS to that single test number so local/dev testing
+  // never messages real church leaders. Never applies in production.
+  const recipients =
+    SECRETS.ENVIRONMENT === 'development' && SECRETS.TEST_PHONE_NUMBER
+      ? [SECRETS.TEST_PHONE_NUMBER]
+      : recipient
+
+  const payload: SmsPayload = {
+    recipient: recipients,
+    sender: 'FLC Admin',
+    message,
   }
 
-  try {
-    console.log('Sending SMS using mNotify')
-    const res = await axios(sendMessage)
-
-    if (res.data.code === '2000') {
-      console.log(res.data.message)
-      return 'Message sent successfully'
-    }
-
-    throw new Error(
-      `There was a problem sending your SMS ${JSON.stringify(res.data)}`
-    )
-  } catch (error: any) {
-    throwToSentry('There was a problem sending your SMS', error)
-  }
+  await invokeNotificationLambda('/send-sms', payload)
 
   return 'Message sent successfully'
 }

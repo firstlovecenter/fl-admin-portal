@@ -51,7 +51,7 @@ import { sendBulkSMS } from '../utils/notify'
 jest.mock('../secrets', () => ({
   loadSecrets: jest.fn().mockResolvedValue({
     ENVIRONMENT: 'development',
-    MNOTIFY_KEY: 'jest_mnotify_key',
+    FLC_NOTIFY_KEY: 'jest_notify_key',
   }),
 }))
 
