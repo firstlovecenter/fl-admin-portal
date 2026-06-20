@@ -4,7 +4,8 @@ import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_COUNCIL_MUTATION } from './CreateMutations'
 import { DISPLAY_STREAM } from 'pages/directory/display/ReadQueries'
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useAuth } from 'contexts/AuthContext'
 import CouncilForm, {
   CouncilFormValues,
 } from 'pages/directory/reusable-forms/CouncilForm'
@@ -12,6 +13,7 @@ import { FormikHelpers } from 'formik'
 
 const CreateCouncil = () => {
   const { clickCard, streamId } = useContext(ChurchContext)
+  const { refreshAccessToken } = useAuth()
 
   const navigate = useNavigate()
 
@@ -47,6 +49,10 @@ const CreateCouncil = () => {
           streamId: values.stream,
         },
       })
+
+      // Re-mint the token so its new `iat` forces a server-side authority
+      // recompute that includes the just-created church (SYN-166).
+      await refreshAccessToken()
 
       clickCard(res.data.CreateCouncil)
       clickCard({ id: values.stream, __typename: 'Stream' })

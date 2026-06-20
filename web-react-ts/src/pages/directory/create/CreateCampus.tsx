@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_CAMPUS_MUTATION } from './CreateMutations'
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useAuth } from 'contexts/AuthContext'
 import CampusForm, {
   CampusFormValues,
 } from 'pages/directory/reusable-forms/CampusForm'
@@ -11,6 +12,7 @@ import { FormikHelpers } from 'formik'
 
 const CreateCampus = () => {
   const { clickCard, oversightId } = useContext(ChurchContext)
+  const { refreshAccessToken } = useAuth()
 
   const navigate = useNavigate()
 
@@ -52,6 +54,10 @@ const CreateCampus = () => {
           ),
         },
       })
+
+      // Re-mint the token so its new `iat` forces a server-side authority
+      // recompute that includes the just-created church (SYN-166).
+      await refreshAccessToken()
 
       clickCard(res.data.CreateCampus)
       setSubmitting(false)

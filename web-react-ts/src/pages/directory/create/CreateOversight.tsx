@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_OVERSIGHT_MUTATION } from './CreateMutations'
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useAuth } from 'contexts/AuthContext'
 import OversightForm, {
   OversightFormValues,
 } from 'pages/directory/reusable-forms/OversightForm'
@@ -11,6 +12,7 @@ import { FormikHelpers } from 'formik'
 
 const CreateOversight = () => {
   const { clickCard, denominationId } = useContext(ChurchContext)
+  const { refreshAccessToken } = useAuth()
 
   const navigate = useNavigate()
 
@@ -45,6 +47,10 @@ const CreateOversight = () => {
           denominationId: values.denomination,
         },
       })
+
+      // Re-mint the token so its new `iat` forces a server-side authority
+      // recompute that includes the just-created church (SYN-166).
+      await refreshAccessToken()
 
       clickCard(res.data.CreateOversight)
       setSubmitting(false)

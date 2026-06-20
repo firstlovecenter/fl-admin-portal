@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { CREATE_BACENTA_MUTATION } from './CreateMutations'
 import { DISPLAY_GOVERNORSHIP } from 'pages/directory/display/ReadQueries'
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useAuth } from 'contexts/AuthContext'
 import BacentaForm, { BacentaFormValues } from '../reusable-forms/BacentaForm'
 import { throwToSentry } from 'global-utils'
 import { FormikHelpers } from 'formik'
 
 const CreateBacenta = () => {
   const { clickCard, governorshipId } = useContext(ChurchContext)
+  const { refreshAccessToken } = useAuth()
   const navigate = useNavigate()
 
   const initialValues: BacentaFormValues = {
@@ -54,6 +56,10 @@ const CreateBacenta = () => {
           venueLatitude: parseFloat(values.venueLatitude.toString()),
         },
       })
+
+      // Re-mint the token so its new `iat` forces a server-side authority
+      // recompute that includes the just-created church (SYN-166).
+      await refreshAccessToken()
 
       clickCard(res.data.CreateBacenta)
       setSubmitting(false)

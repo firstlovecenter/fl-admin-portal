@@ -5,7 +5,8 @@ import { throwToSentry } from '../../../global-utils'
 import { GET_COUNCIL_GOVERNORSHIPS } from '../../../queries/ListQueries'
 import { DISPLAY_COUNCIL } from 'pages/directory/display/ReadQueries'
 import { CREATE_GOVERNORSHIP_MUTATION } from './CreateMutations'
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useAuth } from 'contexts/AuthContext'
 import GovernorshipForm, {
   GovernorshipFormValues,
 } from '../reusable-forms/GovernorshipForm'
@@ -13,6 +14,7 @@ import { FormikHelpers } from 'formik'
 
 const CreateGovernorship = () => {
   const { clickCard, councilId } = useContext(ChurchContext)
+  const { refreshAccessToken } = useAuth()
 
   const navigate = useNavigate()
 
@@ -51,6 +53,10 @@ const CreateGovernorship = () => {
           councilId: values.council,
         },
       })
+
+      // Re-mint the token so its new `iat` forces a server-side authority
+      // recompute that includes the just-created church (SYN-166).
+      await refreshAccessToken()
 
       clickCard({ id: values.council, __typename: 'Council' })
       clickCard(res.data.CreateGovernorship)

@@ -4,7 +4,8 @@ import { useMutation } from '@apollo/client'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_STREAM_MUTATION } from './CreateMutations'
 import { DISPLAY_CAMPUS } from 'pages/directory/display/ReadQueries'
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
+import { useAuth } from 'contexts/AuthContext'
 import StreamForm, {
   StreamFormValues,
 } from 'pages/directory/reusable-forms/StreamForm'
@@ -12,6 +13,7 @@ import { FormikHelpers } from 'formik'
 
 const CreateStream = () => {
   const { clickCard, campusId } = useContext(ChurchContext)
+  const { refreshAccessToken } = useAuth()
 
   const navigate = useNavigate()
 
@@ -53,6 +55,10 @@ const CreateStream = () => {
           meetingDay: values.meetingDay,
         },
       })
+
+      // Re-mint the token so its new `iat` forces a server-side authority
+      // recompute that includes the just-created church (SYN-166).
+      await refreshAccessToken()
 
       clickCard(res.data.CreateStream)
       setSubmitting(false)

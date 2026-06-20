@@ -46,6 +46,7 @@ interface AuthContextType {
   resetPassword: (data: ResetPasswordData) => Promise<void>
   setupPassword: (data: SetupPasswordData) => Promise<void>
   getAccessTokenSilently: () => Promise<string>
+  refreshAccessToken: () => Promise<string | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -324,6 +325,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     resetPassword,
     setupPassword,
     getAccessTokenSilently,
+    refreshAccessToken,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
