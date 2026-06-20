@@ -139,9 +139,105 @@ RETURN member.id
 
 export const checkMemberEmailExists = `
 OPTIONAL MATCH (member:Member)
-WHERE member.email = $email 
-OR member.whatsappNumber = $whatsappNumber 
+WHERE member.email = $email
+OR member.whatsappNumber = $whatsappNumber
 RETURN member IS NOT NULL AS predicate, member AS member
+`
+
+// Same intent as checkMemberEmailExists but for the UPDATE path: a member must
+// not collide with its OWN email/whatsapp, so each match is excluded by id.
+// Split into two single-property legs (UNION) so each one can use the unique
+// index seek on Member.email / Member.whatsappNumber instead of scanning every
+// Member; this runs on every edit. Each leg is null-guarded so an unset value
+// never matches another member's null, and returns 0 rows when it has no hit —
+// so a collision on email AND a different collision on whatsapp surface as two
+// distinct rows (the caller must check both).
+export const checkMemberContactExistsOnOther = `
+MATCH (member:Member)
+WHERE $email IS NOT NULL AND member.email = $email AND member.id <> $id
+RETURN member
+UNION
+MATCH (member:Member)
+WHERE $whatsappNumber IS NOT NULL AND member.whatsappNumber = $whatsappNumber AND member.id <> $id
+RETURN member
+`
+
+export const updateMemberDetails = `
+MATCH (member:Active:Member {id:$id})
+SET
+  member.firstName = $firstName,
+  member.middleName = $middleName,
+  member.lastName = $lastName,
+  member.email = CASE $email WHEN '' THEN null ELSE $email END,
+  member.phoneNumber = $phoneNumber,
+  member.whatsappNumber = $whatsappNumber,
+  member.pictureUrl = $pictureUrl
+
+CREATE (log:HistoryLog)
+  SET
+  log.id = apoc.create.uuid(),
+  log.timeStamp = datetime(),
+  log.historyRecord = $firstName +' ' +$lastName+' Details were updated'
+
+WITH member, log
+MATCH (currentUser:Active:Member {id:$userId})
+MATCH (gender:Gender {gender: $gender})
+OPTIONAL MATCH (member)-[gen_rel:HAS_GENDER]-> ()
+DELETE gen_rel
+MERGE (member)-[:HAS_GENDER]-> (gender)
+MERGE (member)-[:HAS_HISTORY]->(log)
+MERGE (today:TimeGraph {date: date()})
+MERGE (log)-[:RECORDED_ON]->(today)
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+
+WITH member
+CALL {
+  WITH member
+  WITH member WHERE $dob IS NOT NULL
+  MERGE (date:TimeGraph {date: date($dob)})
+  WITH member,date
+  OPTIONAL MATCH (member)-[r1:WAS_BORN_ON]->()
+  DELETE r1
+  MERGE (member)-[:WAS_BORN_ON]->(date)
+  RETURN count(member) AS memberCount
+}
+
+WITH member
+CALL {
+  WITH member
+  WITH member WHERE $maritalStatus IS NOT NULL
+  MATCH (maritalStatus:MaritalStatus {status:$maritalStatus})
+  OPTIONAL MATCH (member)-[r1:HAS_MARITAL_STATUS]->()
+  DELETE r1
+  MERGE (member)-[:HAS_MARITAL_STATUS]-> (maritalStatus)
+  RETURN count(member) AS memberCount
+}
+
+WITH member
+CALL {
+  WITH member
+  WITH member WHERE $occupation IS NOT NULL
+  OPTIONAL MATCH (member)-[r1:HAS_OCCUPATION]-> ()
+  MERGE (occupation:Occupation {occupation:$occupation})
+  DELETE r1
+  MERGE (member)-[:HAS_OCCUPATION]-> (occupation)
+  RETURN count(member) AS memberCount
+}
+
+RETURN member {
+  .id,
+  .firstName,
+  .middleName,
+  .lastName,
+  .email,
+  .phoneNumber,
+  .whatsappNumber,
+  .pictureUrl,
+  gender: head([(member)-[:HAS_GENDER]->(g:Gender) | g { .gender }]),
+  maritalStatus: head([(member)-[:HAS_MARITAL_STATUS]->(ms:MaritalStatus) | ms { .status }]),
+  dob: head([(member)-[:WAS_BORN_ON]->(t:TimeGraph) | t { .date }]),
+  occupation: head([(member)-[:HAS_OCCUPATION]->(o:Occupation) | o { .occupation }])
+}
 `
 
 // Closed-Hub-tree labels (ClosedHub, ClosedHubCouncil, ClosedCreativeArts) are

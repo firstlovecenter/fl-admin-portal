@@ -1,7 +1,12 @@
 import { getHumanReadableDate } from '../utils/date-utils'
 import { Context } from '../utils/neo4j-types'
 import { Member } from '../utils/types'
-import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'
+import {
+  badRequest,
+  isAuth,
+  rearrangeCypherObject,
+  throwToSentry,
+} from '../utils/utils'
 import {
   permitAdmin,
   permitLeaderAdmin,
@@ -117,6 +122,72 @@ const directoryMutation = {
     await session.close()
 
     return member
+  },
+  UpdateMemberDetails: async (object: any, args: Member, context: Context) => {
+    isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
+    const session = context.executionContext.session()
+    const email = args?.email?.trim().toLowerCase() || null
+
+    try {
+      // Reject an email / whatsapp already held by ANOTHER member with a
+      // readable message — Member.email and Member.whatsappNumber are unique,
+      // so the bare write would otherwise surface "Constraint validation
+      // failed". Mirrors the CreateMember pre-check, but excludes self. The
+      // query can return two different members (one per field), so check each
+      // field against every returned row.
+      const collisions = rearrangeCypherObject(
+        await session.executeRead((tx) =>
+          tx.run(cypher.checkMemberContactExistsOnOther, {
+            id: args.id,
+            email,
+            whatsappNumber: args?.whatsappNumber ?? null,
+          })
+        ),
+        true
+      )
+        .map((row: any) => row?.member?.properties)
+        .filter(Boolean)
+
+      const emailClash = email
+        ? collisions.find((m: any) => m.email === email)
+        : undefined
+      if (emailClash) {
+        throw badRequest(
+          `There is already a member with this email "${emailClash.email}" called ${emailClash.firstName} ${emailClash.lastName}`
+        )
+      }
+
+      const whatsappClash = args.whatsappNumber
+        ? collisions.find((m: any) => m.whatsappNumber === args.whatsappNumber)
+        : undefined
+      if (whatsappClash) {
+        throw badRequest(
+          `There is already a member with this whatsapp number "${whatsappClash.whatsappNumber}" called ${whatsappClash.firstName} ${whatsappClash.lastName}`
+        )
+      }
+
+      const updateResponse = await session.executeWrite((tx) =>
+        tx.run(cypher.updateMemberDetails, {
+          id: args.id,
+          firstName: args?.firstName ?? '',
+          middleName: args?.middleName ?? null,
+          lastName: args?.lastName ?? '',
+          email,
+          phoneNumber: args?.phoneNumber ?? '',
+          whatsappNumber: args?.whatsappNumber ?? null,
+          pictureUrl: args?.pictureUrl ?? '',
+          gender: args?.gender ?? '',
+          dob: args?.dob ?? null,
+          maritalStatus: args?.maritalStatus ?? null,
+          occupation: args?.occupation ?? null,
+          userId: context.jwt?.userId,
+        })
+      )
+
+      return rearrangeCypherObject(updateResponse)
+    } finally {
+      await session.close()
+    }
   },
   UpdateMemberBacenta: async (
     object: Member,

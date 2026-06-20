@@ -344,96 +344,10 @@ extend type Mutation {
     ministry: String
     pictureUrl: String!
   ): Member
-    # Mirrors permitLeaderAdmin('Bacenta') (ADR-001) and the FE
-    # /member/editmember route gate. Keep this list in sync with
-    # permissions.ts permitLeader('bacenta') + permitAdmin('Bacenta').
-    @authentication(
-      jwt: {
-        OR: [
-          { roles: { includes: "leaderDenomination" } }
-          { roles: { includes: "leaderOversight" } }
-          { roles: { includes: "leaderCampus" } }
-          { roles: { includes: "leaderStream" } }
-          { roles: { includes: "leaderCouncil" } }
-          { roles: { includes: "leaderGovernorship" } }
-          { roles: { includes: "leaderBacenta" } }
-          { roles: { includes: "adminGovernorship" } }
-          { roles: { includes: "adminCouncil" } }
-          { roles: { includes: "adminStream" } }
-          { roles: { includes: "adminCampus" } }
-          { roles: { includes: "adminOversight" } }
-          { roles: { includes: "adminDenomination" } }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-      MATCH (member:Active:Member {id:$id})
-      SET
-      	member.firstName = $firstName,
-      	member.middleName = $middleName,
-      	member.lastName = $lastName,
-      	member.email = CASE $email WHEN '' THEN null ELSE $email END,
-      	member.phoneNumber = $phoneNumber,
-        member.whatsappNumber = $whatsappNumber,
-      	member.pictureUrl = $pictureUrl
-
-       CREATE (log:HistoryLog)
-        SET
-        log.id =  apoc.create.uuid(),
-        log.timeStamp = datetime(),
-        log.historyRecord = $firstName +' ' +$lastName+' Details were updated'
-
-      WITH member, log
-      MATCH (currentUser:Active:Member {id:$jwt.userId})
-      MATCH (gender:Gender {gender: $gender})
-      OPTIONAL MATCH (member)-[gen_rel:HAS_GENDER]-> ()
-      DELETE gen_rel
-      MERGE (member)-[:HAS_GENDER]-> (gender)
-      MERGE (member)-[:HAS_HISTORY]->(log)
-      MERGE (today:TimeGraph {date: date()})
-      MERGE (log)-[:RECORDED_ON]->(today)
-      MERGE (log)-[:LOGGED_BY]->(currentUser)
-
-
-      WITH member
-         CALL {
-         	WITH member
-         	WITH member  WHERE $dob IS NOT NULL
-         	MERGE (date:TimeGraph {date: date($dob)})
-      	WITH member,date
-      	OPTIONAL MATCH (member)-[r1:WAS_BORN_ON]->()
-      	DELETE r1
-      	MERGE (member)-[:WAS_BORN_ON]->(date)
-         	RETURN count(member) AS memberCount
-         	}
-
-      WITH member
-         CALL {
-         	WITH member
-         	WITH member  WHERE $maritalStatus IS NOT NULL
-         	MATCH (maritalStatus:MaritalStatus {status:$maritalStatus})
-      	OPTIONAL MATCH (member)-[r1:HAS_MARITAL_STATUS]->()
-      	DELETE r1
-      	MERGE (member)-[:HAS_MARITAL_STATUS]-> (maritalStatus)
-         	RETURN count(member) AS memberCount
-         	}
-
-         WITH member
-         CALL {
-         	WITH member
-         	WITH member  WHERE $occupation IS NOT NULL
-      	OPTIONAL MATCH (member)-[r1:HAS_OCCUPATION]-> ()
-        MERGE (occupation:Occupation {occupation:$occupation})
-      	DELETE r1
-      	MERGE (member)-[:HAS_OCCUPATION]-> (occupation)
-         	RETURN count(member) AS memberCount
-         	}
-
-      RETURN member
-      """
-      columnName: "member"
-    )
+    # Resolved by directoryMutation.UpdateMemberDetails (directory-resolvers.ts).
+    # No @cypher / @authentication here: the resolver enforces auth via
+    # isAuth(permitLeaderAdmin('Bacenta')) and runs a friendly duplicate-email /
+    # whatsapp pre-check before the write, mirroring CreateMember (ADR-001).
 
   UpdateDenominationDetails(denominationId: ID!, name: String!): Denomination
     @authentication(jwt: { roles: { includes: "adminDenomination" } })
