@@ -13,6 +13,47 @@ export const badRequest = (message: string): GraphQLError =>
     extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
   })
 
+// Structured collision error for the member-edit path: instead of a flat
+// "already in use" dead-end, carry the colliding member's identity + status in
+// `extensions.collision` so the FE can surface them and offer the right action
+// (reactivate a deactivated member, or explain the transfer route for an active
+// one). Still BAD_USER_INPUT so Apollo preserves the code in production.
+export const memberContactCollisionError = (
+  field: 'email' | 'whatsappNumber',
+  clash: {
+    id: string
+    firstName: string
+    lastName: string
+    isActive: boolean
+    bacentaName: string | null
+  }
+): GraphQLError => {
+  const who = `${clash.firstName} ${clash.lastName}`
+  const fieldLabel = field === 'email' ? 'email' : 'WhatsApp number'
+  const message = clash.isActive
+    ? `This ${fieldLabel} already belongs to ${who}${
+        clash.bacentaName
+          ? `, a registered member at ${clash.bacentaName} Bacenta`
+          : ', a registered member'
+      }. To bring them here, request a transfer.`
+    : `This ${fieldLabel} belongs to ${who}, a deactivated member. You can reactivate their profile.`
+
+  return new GraphQLError(message, {
+    extensions: {
+      code: 'BAD_USER_INPUT',
+      severity: 'USER_ERROR',
+      collision: {
+        field,
+        status: clash.isActive ? 'active' : 'inactive',
+        memberId: clash.id,
+        firstName: clash.firstName,
+        lastName: clash.lastName,
+        bacentaName: clash.bacentaName ?? null,
+      },
+    },
+  })
+}
+
 export const isClassifiedError = (err: unknown): boolean => {
   const code = (err as { extensions?: { code?: string } })?.extensions?.code
   return code === 'BAD_USER_INPUT' || code === 'FORBIDDEN'

@@ -59,6 +59,20 @@ export const UPDATE_MEMBER_MUTATION = gql`
   }
 `
 
+export const REACTIVATE_MEMBER_TO_BACENTA = gql`
+  mutation ReactivateMemberToBacenta($memberId: ID!, $bacentaId: ID!) {
+    ReactivateMemberToBacenta(memberId: $memberId, bacentaId: $bacentaId) {
+      id
+      firstName
+      lastName
+      bacenta {
+        id
+        name
+      }
+    }
+  }
+`
+
 export const UPDATE_MEMBER_STICKY_NOTE = gql`
   mutation UpdateMemberStickyNote(
     $id: ID!

@@ -1,12 +1,14 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
 
 import { parsePhoneNum, throwToSentry } from 'global-utils'
+import { displayError } from 'utils/errorHandler'
 import {
   UPDATE_MEMBER_MUTATION,
   UPDATE_MEMBER_BACENTA,
   UPDATE_MEMBER_BASONTA,
+  REACTIVATE_MEMBER_TO_BACENTA,
 } from './UpdateMutations'
 import {
   DISPLAY_MEMBER_BIO,
@@ -17,9 +19,11 @@ import { MemberContext } from 'contexts/MemberContext'
 import MemberForm from '../reusable-forms/MemberForm'
 import { CreateMemberFormOptions } from '../create/CreateMember'
 import { FormikHelpers } from 'formik'
+import MemberCollisionDialog, { MemberCollision } from './MemberCollisionDialog'
 
 const UpdateMember = () => {
-  const { memberId } = useContext(MemberContext)
+  const { memberId, setMemberId } = useContext(MemberContext)
+  const [collision, setCollision] = useState<MemberCollision | null>(null)
 
   const {
     data: memberData,
@@ -62,6 +66,37 @@ const UpdateMember = () => {
   })
   const [UpdateMemberBacenta] = useMutation(UPDATE_MEMBER_BACENTA)
   const [UpdateMemberBasonta] = useMutation(UPDATE_MEMBER_BASONTA)
+  const [ReactivateMember, { loading: reactivating }] = useMutation(
+    REACTIVATE_MEMBER_TO_BACENTA
+  )
+
+  const onReactivate = async () => {
+    if (!collision?.targetBacentaId) {
+      displayError(
+        'Cannot reactivate',
+        new Error('Select a bacenta for this member before reactivating.')
+      )
+      return
+    }
+
+    try {
+      const res = await ReactivateMember({
+        variables: {
+          memberId: collision.memberId,
+          bacentaId: collision.targetBacentaId,
+        },
+      })
+
+      const reactivatedId =
+        res.data?.ReactivateMemberToBacenta?.id ?? collision.memberId
+
+      setCollision(null)
+      setMemberId(reactivatedId)
+      navigate('/member/displaydetails')
+    } catch (error: unknown) {
+      displayError('There was an error reactivating the member', error)
+    }
+  }
 
   const onSubmit = async (
     values: CreateMemberFormOptions,
@@ -113,6 +148,17 @@ const UpdateMember = () => {
       onSubmitProps.resetForm()
       navigate('/member/displaydetails')
     } catch (error: any) {
+      onSubmitProps.setSubmitting(false)
+
+      const collisionInfo = error?.graphQLErrors?.find(
+        (err: any) => err?.extensions?.collision
+      )?.extensions?.collision as MemberCollision | undefined
+
+      if (collisionInfo) {
+        setCollision({ ...collisionInfo, targetBacentaId: values.bacenta?.id })
+        return
+      }
+
       throwToSentry('There was an error updating the member profile\n', error)
     }
   }
@@ -122,12 +168,20 @@ const UpdateMember = () => {
   }
 
   return (
-    <MemberForm
-      initialValues={initialValues}
-      onSubmit={onSubmit}
-      loading={memberLoading}
-      update
-    />
+    <>
+      <MemberForm
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        loading={memberLoading}
+        update
+      />
+      <MemberCollisionDialog
+        collision={collision}
+        reactivating={reactivating}
+        onReactivate={onReactivate}
+        onClose={() => setCollision(null)}
+      />
+    </>
   )
 }
 

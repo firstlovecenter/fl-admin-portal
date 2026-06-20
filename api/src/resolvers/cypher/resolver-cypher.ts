@@ -155,11 +155,15 @@ RETURN member IS NOT NULL AS predicate, member AS member
 export const checkMemberContactExistsOnOther = `
 MATCH (member:Member)
 WHERE $email IS NOT NULL AND member.email = $email AND member.id <> $id
-RETURN member
+RETURN member,
+       member:Active AS isActive,
+       head([(member)-[:BELONGS_TO]->(b:Bacenta) | b.name]) AS bacentaName
 UNION
 MATCH (member:Member)
 WHERE $whatsappNumber IS NOT NULL AND member.whatsappNumber = $whatsappNumber AND member.id <> $id
-RETURN member
+RETURN member,
+       member:Active AS isActive,
+       head([(member)-[:BELONGS_TO]->(b:Bacenta) | b.name]) AS bacentaName
 `
 
 export const updateMemberDetails = `
@@ -471,6 +475,48 @@ OPTIONAL MATCH (member:Inactive:Member)
 WHERE member.email = $email
 OR member.whatsappNumber = $whatsappNumber
 RETURN count(member) AS count, member.id AS id
+`
+
+// Reactivate a deactivated member and move them to a given Bacenta, KEEPING
+// their own details (unlike activateInactiveMember, which overwrites them from
+// the create-member payload). Used when an email/whatsapp edit collides with a
+// deactivated member: the admin reactivates them into the edited member's
+// bacenta and then reconciles the records.
+export const reactivateMemberToBacenta = `
+MATCH (member:Inactive:Member {id: $id})
+MATCH (bacenta:Bacenta {id: $bacentaId})
+OPTIONAL MATCH (member)-[r1:BELONGS_TO]->(oldChurch)
+  WHERE oldChurch:Bacenta OR oldChurch:ClosedBacenta
+// Separate clause: relationship-isomorphism is only enforced within a single
+// MATCH, so collapsing this into r1 above could bind r1 == r2 and silently skip
+// the stale-Basonta cleanup. SYN-147.
+OPTIONAL MATCH (member)-[r2:BELONGS_TO]->(:Basonta)
+DELETE r1, r2
+
+// DISTINCT collapses the row-per-stale-BELONGS_TO fan-out from the two
+// OPTIONAL MATCH clauses, so the HistoryLog below is created exactly once.
+WITH DISTINCT member, bacenta
+SET member:Active, member:User, member:IDL
+REMOVE member:Inactive
+
+CREATE (log:HistoryLog:RegistrationLog)
+  SET
+  log.id = apoc.create.uuid(),
+  log.timeStamp = datetime(),
+  log.historyRecord = member.firstName + ' ' + member.lastName + ' was reactivated on ' + apoc.date.convertFormat(toString(date()), 'date', 'dd MMMM yyyy') + ' and moved to ' + bacenta.name + ' Bacenta'
+
+WITH member, log, bacenta
+MATCH (currentUser:Member {id: $userId})
+MERGE (today:TimeGraph {date: date()})
+MERGE (member)-[:BELONGS_TO]->(bacenta)
+MERGE (member)-[:HAS_HISTORY]->(log)
+MERGE (log)-[:RECORDED_ON]->(today)
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+
+RETURN member {
+  .id, .firstName, .middleName, .lastName, .email, .phoneNumber, .whatsappNumber,
+  bacenta: bacenta { .id, .name }
+} AS member
 `
 
 export const createBacenta = `

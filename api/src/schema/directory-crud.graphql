@@ -349,6 +349,13 @@ extend type Mutation {
     # isAuth(permitLeaderAdmin('Bacenta')) and runs a friendly duplicate-email /
     # whatsapp pre-check before the write, mirroring CreateMember (ADR-001).
 
+  ReactivateMemberToBacenta(memberId: ID!, bacentaId: ID!): Member
+    # Resolved by directoryMutation.ReactivateMemberToBacenta
+    # (directory-resolvers.ts). Reactivates a deactivated member and moves them
+    # to the given Bacenta, keeping their own details. Reached when an
+    # email/whatsapp edit collides with a deactivated member. Auth via
+    # isAuth(permitLeaderAdmin('Bacenta')).
+
   UpdateDenominationDetails(denominationId: ID!, name: String!): Denomination
     @authentication(jwt: { roles: { includes: "adminDenomination" } })
     @cypher(

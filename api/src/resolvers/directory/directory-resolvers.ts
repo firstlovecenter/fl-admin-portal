@@ -4,6 +4,7 @@ import { Member } from '../utils/types'
 import {
   badRequest,
   isAuth,
+  memberContactCollisionError,
   rearrangeCypherObject,
   throwToSentry,
 } from '../utils/utils'
@@ -145,25 +146,25 @@ const directoryMutation = {
         ),
         true
       )
-        .map((row: any) => row?.member?.properties)
-        .filter(Boolean)
+        .map((row: any) => ({
+          ...(row?.member?.properties ?? {}),
+          isActive: Boolean(row?.isActive),
+          bacentaName: row?.bacentaName ?? null,
+        }))
+        .filter((m: any) => m.id)
 
       const emailClash = email
         ? collisions.find((m: any) => m.email === email)
         : undefined
       if (emailClash) {
-        throw badRequest(
-          `There is already a member with this email "${emailClash.email}" called ${emailClash.firstName} ${emailClash.lastName}`
-        )
+        throw memberContactCollisionError('email', emailClash)
       }
 
       const whatsappClash = args.whatsappNumber
         ? collisions.find((m: any) => m.whatsappNumber === args.whatsappNumber)
         : undefined
       if (whatsappClash) {
-        throw badRequest(
-          `There is already a member with this whatsapp number "${whatsappClash.whatsappNumber}" called ${whatsappClash.firstName} ${whatsappClash.lastName}`
-        )
+        throw memberContactCollisionError('whatsappNumber', whatsappClash)
       }
 
       const updateResponse = await session.executeWrite((tx) =>
@@ -185,6 +186,34 @@ const directoryMutation = {
       )
 
       return rearrangeCypherObject(updateResponse)
+    } finally {
+      await session.close()
+    }
+  },
+  ReactivateMemberToBacenta: async (
+    object: any,
+    args: { memberId: string; bacentaId: string },
+    context: Context
+  ) => {
+    isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
+    const session = context.executionContext.session()
+
+    try {
+      const response = await session.executeWrite((tx) =>
+        tx.run(cypher.reactivateMemberToBacenta, {
+          id: args.memberId,
+          bacentaId: args.bacentaId,
+          userId: context.jwt?.userId,
+        })
+      )
+
+      if (!response.records.length) {
+        throw badRequest(
+          'That member could not be reactivated. They may already be active, no longer exist, or the bacenta was not found.'
+        )
+      }
+
+      return rearrangeCypherObject(response)
     } finally {
       await session.close()
     }
