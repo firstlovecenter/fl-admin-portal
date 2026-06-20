@@ -18,9 +18,14 @@ state="$dir/$session.keys"
 unresolved=""
 while IFS= read -r key; do
   [ -z "$key" ] && continue
-  if [ -n "$transcript" ] && [ -f "$transcript" ] \
-     && grep -F "$key" "$transcript" 2>/dev/null | grep -q "transitionJiraIssue"; then
-    continue   # a transitionJiraIssue call referencing this key exists
+  if [ -n "$transcript" ] && [ -f "$transcript" ]; then
+    # Lines in the transcript that mention this key. Captured into a variable
+    # (no pipe) so that `pipefail` + `grep -q`'s early-exit SIGPIPE cannot make
+    # a real match look like a failure and re-nag forever.
+    key_lines=$(grep -F "$key" "$transcript" 2>/dev/null || true)
+    case "$key_lines" in
+      *transitionJiraIssue*) continue ;;  # a transitionJiraIssue call referencing this key exists
+    esac
   fi
   unresolved="$unresolved $key"
 done < "$state"
