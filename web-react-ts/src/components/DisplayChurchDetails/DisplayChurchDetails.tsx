@@ -1,6 +1,7 @@
 import { useMutation } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
 import RoleView from 'auth/RoleView'
+import useAuth from 'auth/useAuth'
 import { Button } from 'components/ui/button'
 import {
   Dialog,
@@ -133,6 +134,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   }
 
   const { currentUser } = useContext(MemberContext)
+  const { isAuthorised } = useAuth()
   const { show, handleShow, handleClose } = useModal()
   const [editBussingOpen, setEditBussingOpen] = useState(false)
   const [recordDialogOpen, setRecordDialogOpen] = useState(false)
@@ -302,10 +304,16 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     </>
   )
 
+  // Arrivals admins set the urvan/sprinter top-up amounts; the bacenta leader
+  // sets the momo number. The dialog shows each their own fields — the trigger
+  // just needs to be visible to either.
+  const canEditBusPayment =
+    isAuthorised(permitAdminArrivals('Stream')) ||
+    (isAuthorised(['leaderBacenta']) && currentUser.id === props?.leader?.id)
+
   const busPaymentBlock =
-    props.churchType === 'Bacenta' &&
-    (props.church?.sprinterTopUp !== 0 || props.church?.urvanTopUp !== 0) ? (
-      <RoleView roles={['leaderBacenta']} verifyId={props?.leader?.id}>
+    props.churchType === 'Bacenta' && canEditBusPayment ? (
+      <>
         {!props.momoNumber && !props.loading && (
           <p className="text-sm font-semibold text-destructive text-center">
             There is no valid Mobile Money Number! Please update!
@@ -318,7 +326,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         >
           Bus Payment Details
         </Button>
-      </RoleView>
+      </>
     ) : null
 
   const actionButtonsBlock = (
