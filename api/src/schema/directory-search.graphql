@@ -5,6 +5,7 @@ extend type Member {
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|IS_SHEEP_SEEKER_FOR*1..7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.middleName + ' ' + members.lastName) CONTAINS toLower($key)
       OR toLower(members.firstName + ' ' + members.lastName) CONTAINS toLower($key)
+      OR toLower(members.email) CONTAINS toLower($key)
       RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) SKIP $offset LIMIT $limit
       """
       columnName: "memberSearch"
@@ -72,6 +73,7 @@ extend type Denomination {
       statement: """
       MATCH (this)-[:HAS*7]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
+      OR toLower(members.email) CONTAINS toLower($key)
       RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) SKIP $offset LIMIT $limit
       """
       columnName: "memberSearch"
@@ -138,6 +140,7 @@ extend type Oversight {
       statement: """
       MATCH (this)-[:HAS*5]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
+      OR toLower(members.email) CONTAINS toLower($key)
       RETURN DISTINCT members AS memberSearch ORDER BY toLower(members.lastName), toLower(members.firstName) SKIP $offset LIMIT $limit
       """
       columnName: "memberSearch"
@@ -195,6 +198,7 @@ extend type Campus {
       statement: """
       MATCH (this)-[:HAS*4]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
+      OR toLower(members.email) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName) SKIP $offset LIMIT $limit
       """
       columnName: "members"
@@ -243,6 +247,7 @@ extend type Stream {
       statement: """
       MATCH (this)-[:HAS*3]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
+      OR toLower(members.email) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  SKIP $offset LIMIT $limit
       """
       columnName: "members"
@@ -282,6 +287,7 @@ extend type Council {
       statement: """
       MATCH (this)-[:HAS*2]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
+      OR toLower(members.email) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  SKIP $offset LIMIT $limit
       """
       columnName: "members"
@@ -312,6 +318,7 @@ extend type Governorship {
       statement: """
       MATCH (this)-[:HAS*]->(:Bacenta)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
+      OR toLower(members.email) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  SKIP $offset LIMIT $limit
       """
       columnName: "members"
@@ -333,6 +340,7 @@ extend type Bacenta {
       statement: """
       MATCH (this)<-[:BELONGS_TO]-(members:Active:Member)
       WHERE toLower(members.firstName+ ' ' + members.lastName) CONTAINS toLower($key)
+      OR toLower(members.email) CONTAINS toLower($key)
       RETURN DISTINCT members ORDER BY toLower(members.lastName), toLower(members.firstName)  SKIP $offset LIMIT $limit
       """
       columnName: "members"
