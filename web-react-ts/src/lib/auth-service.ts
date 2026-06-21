@@ -298,7 +298,7 @@ export async function verifyToken(token: string): Promise<AuthUser> {
  */
 export async function refreshToken(
   refreshToken: string
-): Promise<{ accessToken: string; refreshToken: string }> {
+): Promise<{ accessToken: string; refreshToken?: string }> {
   if (!refreshToken) {
     throw new AuthServiceError('No refresh token available', 401, undefined)
   }

@@ -324,6 +324,41 @@ describe('AuthProvider — token refresh', () => {
     expect(localStorage.getItem('fl_access_token')).toBe(newToken)
   })
 
+  it('8b. refresh response omits refreshToken → existing one is preserved, not clobbered (SYN-166)', async () => {
+    // The real /auth/refresh-token Lambda returns only { accessToken } because
+    // refresh tokens are non-rotating. The FE must keep the existing refresh
+    // token rather than overwriting it with `undefined` ("undefined" string),
+    // which would 401 every subsequent refresh and revert SYN-166's token
+    // re-mint to a blank dashboard.
+    const expiredToken = makeJwt(-1)
+    const newToken = makeJwt(+3600)
+    localStorage.setItem('fl_access_token', expiredToken)
+    localStorage.setItem('fl_refresh_token', 'rt-valid')
+    localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
+
+    server.use(
+      http.post(`${AUTH_URL}/auth/refresh-token`, () =>
+        HttpResponse.json(
+          { message: 'Token refreshed successfully', accessToken: newToken },
+          { status: 200 }
+        )
+      ),
+      http.post(`${AUTH_URL}/auth/verify`, () =>
+        HttpResponse.json({ user: TEST_USER }, { status: 200 })
+      )
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    // initAuth refreshes because the stored access token is expired.
+    await act(async () => {})
+
+    expect(result.current.isAuthenticated).toBe(true)
+    expect(localStorage.getItem('fl_access_token')).toBe(newToken)
+    // The valid refresh token must survive a server response that omits it.
+    expect(localStorage.getItem('fl_refresh_token')).toBe('rt-valid')
+  })
+
   it('9. refreshAccessToken fails with 401 → isAuthenticated becomes false', async () => {
     const expiredToken = makeJwt(-1)
     localStorage.setItem('fl_access_token', expiredToken)

@@ -71,7 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       storeAuth({
         accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
+        // Refresh tokens are non-rotating (7-day) — /auth/refresh-token returns
+        // only a new accessToken and omits refreshToken. Fall back to the
+        // existing one so we don't clobber localStorage with `undefined` (which
+        // serialises to the string "undefined" and 401s every later refresh,
+        // logging the user out and reverting the SYN-166 token re-mint to a
+        // blank dashboard). Still honour a rotated token if the server ever
+        // starts sending one.
+        refreshToken: response.refreshToken ?? currentRefreshToken,
         user: storedUser!,
       })
 
