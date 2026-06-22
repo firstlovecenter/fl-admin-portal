@@ -1,5 +1,5 @@
 {
-  "version": "9.0.1",
+  "version": "9.0.2",
   "devDependencies": {
     "@types/react-test-renderer": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
