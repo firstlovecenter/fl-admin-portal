@@ -1,6 +1,7 @@
 import type { Node, Integer, Point } from 'neo4j-driver'
 import { Member } from '../utils/types'
-import { rearrangeCypherObject, throwToSentry } from '../utils/utils'
+import { isAuth, rearrangeCypherObject, throwToSentry } from '../utils/utils'
+import { permitLeaderAdmin } from '../permissions'
 import {
   memberBacentaSearchByLocation,
   memberBacentaSearchByName,
@@ -176,12 +177,17 @@ export const mapsResolvers = {
       args: any,
       context: Context
     ) => {
+      // SYN-171: gate to council leaders/admins and bind the traversal to the
+      // authenticated user's own node — never trust source.id, which the client
+      // controls via members(where:{id}) and could point at another leader.
+      isAuth(permitLeaderAdmin('Council'), context.jwt?.roles)
+
       const session = context.executionContext.session()
 
       try {
         const res = await session.executeRead((tx: any) =>
           tx.run(memberLoadCouncilUnvisitedMembers, {
-            id: source.id,
+            id: context.jwt?.userId,
             jwt: context.jwt,
           })
         )
@@ -201,6 +207,11 @@ export const mapsResolvers = {
     },
 
     placesSearchByName: async (source: Member, args: any, context: Context) => {
+      // SYN-171: gate to leaders/admins and bind the downline traversal to the
+      // authenticated user's own node, not the client-supplied source.id.
+      isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+
+      const memberId = context.jwt?.userId
       const session = context.executionContext.session()
       const sessionTwo = context.executionContext.session()
       const sessionThree = context.executionContext.session()
@@ -210,28 +221,28 @@ export const mapsResolvers = {
         const res = await Promise.all([
           session.executeRead((tx: any) =>
             tx.run(memberMemberSearchByName, {
-              id: source.id,
+              id: memberId,
               key: args.key,
               limit: args.limit,
             })
           ),
           sessionTwo.executeRead((tx: any) =>
             tx.run(memberBacentaSearchByName, {
-              id: source.id,
+              id: memberId,
               key: args.key,
               limit: args.limit,
             })
           ),
           sessionThree.executeRead((tx: any) =>
             tx.run(indoorOutreachVenuesSearchByName, {
-              id: source.id,
+              id: memberId,
               key: args.key,
               limit: args.limit,
             })
           ),
           sessionFour.executeRead((tx: any) =>
             tx.run(outdoorOutreachVenuesSearchByName, {
-              id: source.id,
+              id: memberId,
               key: args.key,
               limit: args.limit,
             })
@@ -288,6 +299,11 @@ export const mapsResolvers = {
       args: any,
       context: Context
     ) => {
+      // SYN-171: gate to leaders/admins and bind the downline traversal to the
+      // authenticated user's own node, not the client-supplied source.id.
+      isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+
+      const memberId = context.jwt?.userId
       const session = context.executionContext.session()
       const sessionTwo = context.executionContext.session()
       const sessionThree = context.executionContext.session()
@@ -297,7 +313,7 @@ export const mapsResolvers = {
         const res = await Promise.all([
           session.executeRead((tx: any) =>
             tx.run(memberMemberSearchByLocation, {
-              id: source.id,
+              id: memberId,
               latitude: args.latitude,
               longitude: args.longitude,
               limit: args.limit,
@@ -305,7 +321,7 @@ export const mapsResolvers = {
           ),
           sessionTwo.executeRead((tx: any) =>
             tx.run(memberBacentaSearchByLocation, {
-              id: source.id,
+              id: memberId,
 
               latitude: args.latitude,
               longitude: args.longitude,
@@ -314,7 +330,7 @@ export const mapsResolvers = {
           ),
           sessionThree.executeRead((tx: any) =>
             tx.run(indoorOutreachVenuesSearchByLocation, {
-              id: source.id,
+              id: memberId,
               latitude: args.latitude,
               longitude: args.longitude,
               limit: args.limit,
@@ -322,7 +338,7 @@ export const mapsResolvers = {
           ),
           sessionFour.executeRead((tx: any) =>
             tx.run(outdoorOutreachVenuesSearchByLocation, {
-              id: source.id,
+              id: memberId,
               latitude: args.latitude,
               longitude: args.longitude,
               limit: args.limit,

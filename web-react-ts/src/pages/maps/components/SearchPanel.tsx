@@ -2,6 +2,8 @@ import { Building2, Download, Globe2, Loader2, LocateFixed, Users } from 'lucide
 import { Button } from 'components/ui/button'
 import { Switch } from 'components/ui/switch'
 import { Label } from 'components/ui/label'
+import RoleView from 'auth/RoleView'
+import { permitLeaderAdmin } from 'permission-utils'
 import GooglePlacesCombobox from './GooglePlacesCombobox'
 import MemberPlacesCombobox from './MemberPlacesCombobox'
 import type { LazyQueryExecFunction, OperationVariables } from '@apollo/client'
@@ -123,23 +125,25 @@ const SearchPanel = ({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <SectionLabel>Outreach</SectionLabel>
-        <Button
-          type="button"
-          variant="default"
-          className="w-full justify-start gap-2"
-          onClick={onLoadUnvisitedMembers}
-          disabled={loadingUnvisited}
-        >
-          <Users className="size-4" />
-          {loadingUnvisited ? 'Loading…' : 'Load unvisited members'}
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          Drops a marker for every member in your council that hasn't yet been
-          visited this season.
-        </p>
-      </div>
+      <RoleView roles={permitLeaderAdmin('Council')}>
+        <div className="space-y-2">
+          <SectionLabel>Outreach</SectionLabel>
+          <Button
+            type="button"
+            variant="default"
+            className="w-full justify-start gap-2"
+            onClick={onLoadUnvisitedMembers}
+            disabled={loadingUnvisited}
+          >
+            <Users className="size-4" />
+            {loadingUnvisited ? 'Loading…' : 'Load unvisited members'}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Drops a marker for every member in your council that hasn't yet been
+            visited this season.
+          </p>
+        </div>
+      </RoleView>
 
       {onDownloadDirectory ? (
         <div className="space-y-2">
