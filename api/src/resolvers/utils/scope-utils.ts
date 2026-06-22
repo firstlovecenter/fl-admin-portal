@@ -93,6 +93,21 @@ const ASSERT_VIA_VEHICLE_RECORD_CYPHER = `
   RETURN record.id AS id
 `
 
+// Variant for resolvers that move/edit a member by id (e.g.
+// UpdateMemberBacenta): the church anchor is the member's CURRENT bacenta.
+// Anchoring on the live `:Bacenta` the member BELONGS_TO closes the
+// member-stealing half of the IDOR — a leader may only act on a member who
+// already sits inside their own scope. A member with no live bacenta
+// membership in the caller's scope yields zero rows -> FORBIDDEN.
+const ASSERT_VIA_MEMBER_CYPHER = `
+  MATCH (member:Active:Member {id: $memberId})-[:BELONGS_TO]->(church:Bacenta)
+  WHERE EXISTS {
+    MATCH (church)<-[:HAS*0..6]-(scoped)
+          <-[:${SERVANT_EDGES}]-(:Active:Member {id: $userId})
+  }
+  RETURN member.id AS id
+`
+
 const forbidden = (message: string): GraphQLError =>
   new GraphQLError(message, {
     extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
@@ -208,4 +223,20 @@ export const assertScopeViaVehicleRecord = async (
     { vehicleRecordId },
     { vehicleRecordId }
   )
+}
+
+// Variant for resolvers that act on a member by id (e.g. UpdateMemberBacenta).
+// Anchors on the member's current live bacenta so a leader can only act on a
+// member already within their own scope. Pair this with assertChurchScope on
+// the destination church to gate both ends of a move.
+export const assertScopeViaMember = async (
+  context: ScopeContext,
+  memberId: string | undefined | null
+): Promise<void> => {
+  if (!memberId) {
+    throw forbidden(
+      'assertScopeViaMember: memberId is required to verify access scope.'
+    )
+  }
+  await runAssert(context, ASSERT_VIA_MEMBER_CYPHER, { memberId }, { memberId })
 }

@@ -30,6 +30,7 @@ import {
 } from '../cypher/resolver-cypher'
 import { sendServantPromotionEmail } from '../utils/notify'
 import { clearUserAuthorityCache } from '../utils/allowed-church-ids'
+import { assertChurchScope, assertScopeViaMember } from '../utils/scope-utils'
 
 const cypher = require('../cypher/resolver-cypher')
 const closeChurchCypher = require('../cypher/close-church-cypher')
@@ -229,6 +230,13 @@ const directoryMutation = {
     // `arrivalsPayerCouncil`, and `tellerStream` reorganise the membership
     // graph via direct API calls. Tighten to match the FE gate.
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+
+    // isAuth only checks the caller HOLDS a bacenta-level role, not WHERE.
+    // Gate both ends of the move: the member must already sit within the
+    // caller's scope, and the destination bacenta must too. Without this any
+    // bacenta leader could move any member org-wide into any bacenta (BOLA).
+    await assertScopeViaMember(context, args.memberId)
+    await assertChurchScope(context, args.bacentaId)
 
     const session = context.executionContext.session()
 
