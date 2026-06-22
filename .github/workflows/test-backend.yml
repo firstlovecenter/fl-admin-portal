@@ -2,9 +2,9 @@ name: test-backend
 
 on:
   pull_request:
-    branches: [deploy, dev, staging]
+    branches: [main, dev, staging]
   push:
-    branches: [dev, staging]
+    branches: [main, dev, staging]
 
 permissions:
   contents: read
@@ -35,6 +35,7 @@ jobs:
               - 'api/**'
               - 'lib/**'
               - 'kb/**'
+              - 'scripts/check-cypher-lint.js'
               - 'package.json'
               - 'package-lock.json'
               - '.github/workflows/test-backend.yml'
@@ -49,11 +50,29 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: api/package-lock.json
+          cache-dependency-path: |
+            api/package-lock.json
+            package-lock.json
 
       - name: Install dependencies
         if: github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true'
         run: npm ci
+
+      # Root devDeps carry ESLint + the shared Airbnb/TS config that
+      # api/package.json eslintConfig overlays (the fl-cypher plugin itself
+      # comes from the api install above). Needed for the anti-injection gate.
+      - name: Install root lint tooling
+        if: github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true'
+        working-directory: .
+        run: npm ci
+
+      # SYN-172 / ADR-012: fail the build on any string-interpolated Cypher.
+      # Surgical — fails ONLY on fl-cypher/no-interpolated-cypher, not the full
+      # (never-CI-gated) Airbnb ruleset.
+      - name: Enforce no-interpolated-cypher (ADR-012)
+        if: github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true'
+        working-directory: .
+        run: node scripts/check-cypher-lint.js
 
       - name: Jest with coverage (unit only)
         if: github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true'

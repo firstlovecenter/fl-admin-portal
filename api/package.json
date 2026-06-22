@@ -46,6 +46,95 @@
             }
           ]
         }
+      },
+      {
+        "files": [
+          "src/resolvers/downloads/arrivals-cypher.ts"
+        ],
+        "rules": {
+          "fl-cypher/no-interpolated-cypher": [
+            "error",
+            {
+              "allowedIdentifiers": [
+                "BACENTA_CONTEXT",
+                "BUSSING_PICK",
+                "DETAIL_RETURN",
+                "VEHICLE_PICK",
+                "VEHICLE_RETURN",
+                "CHILD_BUCKETS",
+                "SUMMARY_RETURN"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "files": [
+          "src/resolvers/downloads/defaulters-cypher.ts"
+        ],
+        "rules": {
+          "fl-cypher/no-interpolated-cypher": [
+            "error",
+            {
+              "allowedIdentifiers": [
+                "BACENTA_CONTEXT",
+                "RECORD_PICK",
+                "DETAIL_RETURN",
+                "WEEK_RANGE",
+                "CHILD_BACENTA_BUCKETS",
+                "SUMMARY_RETURN"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "files": [
+          "src/resolvers/utils/scope-utils.ts"
+        ],
+        "rules": {
+          "fl-cypher/no-interpolated-cypher": [
+            "error",
+            {
+              "allowedIdentifiers": [
+                "SERVANT_EDGES",
+                "CHURCH_LEVEL_LABELS"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "files": [
+          "src/resolvers/utils/allowed-church-ids.ts"
+        ],
+        "rules": {
+          "fl-cypher/no-interpolated-cypher": [
+            "error",
+            {
+              "allowedIdentifiers": [
+                "SERVANT_EDGES",
+                "SPINE_LABEL_DISJUNCTION"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "files": [
+          "src/resolvers/shepherding-control/shepherding-control-cypher.ts"
+        ],
+        "rules": {
+          "fl-cypher/no-interpolated-cypher": [
+            "error",
+            {
+              "allowedIdentifiers": [
+                "scopeLevel",
+                "HIERARCHY_LABELS"
+              ]
+            }
+          ]
+        }
       }
     ]
   },

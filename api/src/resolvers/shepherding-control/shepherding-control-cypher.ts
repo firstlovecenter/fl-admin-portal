@@ -24,9 +24,14 @@ export type ShepherdingLevel = (typeof SHEPHERDING_LEVELS)[number]
 
 const HIERARCHY_LABELS = `['Denomination','Oversight','Campus','Stream','Council','Governorship','Bacenta']`
 
-const buildScopeCheck = (label: ShepherdingLevel): string => `
+// `scopeLevel` is a compile-time `ShepherdingLevel` union literal (fed only by
+// `SHEPHERDING_LEVELS.map` below) — never a resolver arg or JWT field. The
+// distinct, non-reusable name keeps the `allowedIdentifiers` exemption in
+// api/package.json narrow: a future `${label}`/`${someVar}` interpolation would
+// NOT match the allowlist and would re-arm the rule. ADR-012.
+const buildScopeCheck = (scopeLevel: ShepherdingLevel): string => `
   MATCH (caller:Active:Member {id: $userId})
-  OPTIONAL MATCH (target:${label} {id: $id})
+  OPTIONAL MATCH (target:${scopeLevel} {id: $id})
   RETURN target IS NOT NULL AND EXISTS {
     MATCH path = (target)<-[:HAS*0..6]-(ancestor)
     WHERE all(n IN nodes(path)

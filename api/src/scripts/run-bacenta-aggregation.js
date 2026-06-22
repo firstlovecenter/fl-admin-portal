@@ -119,13 +119,21 @@ async function runAggregations() {
       const week = options.week || new Date().getWeek()
       const year = options.year || new Date().getFullYear()
 
-      await session.run(`
-        CALL apoc.date.convertFormat('${year}-${week}', 'yyyy-w', 'yyyy-MM-dd') YIELD date
-        CALL apoc.util.sleep(100)
-        RETURN date
-      `)
+      // `${year}-${week}` is built in JS (not Cypher) and bound as a $param —
+      // ADR-012 compliant, no interpolation crosses into the query string.
+      await session.run(
+        `CALL apoc.date.convertFormat($yearWeek, 'yyyy-w', 'yyyy-MM-dd') YIELD date
+         CALL apoc.util.sleep(100)
+         RETURN date`,
+        { yearWeek: `${year}-${week}` }
+      )
 
       console.log(`Setting date context to week ${week}, year ${year}`)
+      // `year`/`week` are numbers from argv or `new Date()` in this operator CLI
+      // ops script (not a request path) — never request/JWT data. This prefix is
+      // concatenated onto several query strings run later, so threading a $param
+      // through every call site is not worthwhile. ADR-012 hazard (user input) N/A.
+      // eslint-disable-next-line fl-cypher/no-interpolated-cypher
       dateContext = `USING PERIODIC COMMIT 500
                     CALL apoc.date.convertFormat('${year}-${week}', 'yyyy-w', 'yyyy-MM-dd') YIELD date AS dateString
                     WITH apoc.date.parse(dateString, 'ms', 'yyyy-MM-dd') AS timestamp
