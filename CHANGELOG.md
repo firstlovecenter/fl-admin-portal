@@ -1,3 +1,51 @@
+#### 9.0.2 (2026-06-22)
+
+##### Chores
+
+* **claude:**
+  *  fix jira-guard false-negative on transition detection ([797edaad](https://github.com/firstlovecenter/fl-admin-portal/commit/797edaadea30235b0ea003f66df63470bc229450))
+  *  enforce SYN Jira transitions via prompt + stop hooks ([b0ec4a00](https://github.com/firstlovecenter/fl-admin-portal/commit/b0ec4a001c5c5a14bbba4a1fefbbafc80e3dce19))
+* **deps:**
+  *  scope nodemon override to minimatch 10 + brace-expansion 5 ([4f86dc10](https://github.com/firstlovecenter/fl-admin-portal/commit/4f86dc10ad55afc57911e4f1e2831ad1c5bcc34b))
+  *  bump esbuild override to ^0.28.1 to fix GHSA-gv7w-rqvm-qjhr ([08109ed6](https://github.com/firstlovecenter/fl-admin-portal/commit/08109ed6607ac63fb256230e7fb47d9d5206648f))
+
+##### Documentation Changes
+
+*  correct branch model — main is prod deploy branch & PR target ([b9367dc3](https://github.com/firstlovecenter/fl-admin-portal/commit/b9367dc3c6ef4f3c9669639fab6e99f1a4870536))
+
+##### New Features
+
+* **directory:**
+  *  surface colliding member on contact edit, allow reactivate ([1cd2e8f0](https://github.com/firstlovecenter/fl-admin-portal/commit/1cd2e8f095b1dd8120601a1a29ebd8a9283f4bb3))
+  *  search members by email address ([61b85528](https://github.com/firstlovecenter/fl-admin-portal/commit/61b85528ade623e11c67cbe53f78273a41bb7f70))
+* **dashboards:**
+  *  highlight the church-in-focus picker with brand accent ([b3d8a658](https://github.com/firstlovecenter/fl-admin-portal/commit/b3d8a65886304c86d9ea857d55e4b4e1702cee6e))
+  *  default church in focus to lowest level on login ([55096fcb](https://github.com/firstlovecenter/fl-admin-portal/commit/55096fcb8578bfb0fe10085f0bb7a01516d96062))
+
+##### Bug Fixes
+
+* **banking:**
+  *  make Save fire the mutation on add teller/payer (SYN-187) ([4a95c0b8](https://github.com/firstlovecenter/fl-admin-portal/commit/4a95c0b87bdc6a68555346e77cc193bc01dd0153))
+  *  allow re-banking from abandoned transaction status ([4927a520](https://github.com/firstlovecenter/fl-admin-portal/commit/4927a5204f2f7fc6e1271987258d5cd360b26cf5))
+* **arrivals:**
+  *  let arrivals admins edit bacenta bus-payment top-ups (SYN-183) ([093ea9d3](https://github.com/firstlovecenter/fl-admin-portal/commit/093ea9d30b829a57f3375edc3aa3f2452667f5ca))
+  *  merge vehicle confirm and top-up into one round trip ([d680fc07](https://github.com/firstlovecenter/fl-admin-portal/commit/d680fc078f3834dbd5b6f5eb3b54b8988ab10cdf))
+  *  let arrivals & multi-stream admins download payments ([6f568150](https://github.com/firstlovecenter/fl-admin-portal/commit/6f568150243d51f5c9bb65df08accc59192241a5))
+* **directory:**
+  *  refresh token after spine create so new church shows ([51a2128f](https://github.com/firstlovecenter/fl-admin-portal/commit/51a2128f453aca4b31a5208b018356b1fa18b3fa))
+  *  friendly error on duplicate email/whatsapp member edit ([a5675bfa](https://github.com/firstlovecenter/fl-admin-portal/commit/a5675bfab57aea73bdb6c3570678b280f65402c0))
+  *  coalesce blank member email to null ([dd2e12b6](https://github.com/firstlovecenter/fl-admin-portal/commit/dd2e12b687a4580ab9c25ef2177b88f54796ec19))
+  *  count active children directly in council/stream/campus close gates ([e15902f6](https://github.com/firstlovecenter/fl-admin-portal/commit/e15902f65d2c9918f8afb664e9f26eec91ba0359))
+  *  show new spine church on first load after create ([6489490d](https://github.com/firstlovecenter/fl-admin-portal/commit/6489490dc62a24e859e6f1aae87a7d80f0d774e9))
+  *  harden oversight close-down gate and bank-gate bacentas ([44cc2ab8](https://github.com/firstlovecenter/fl-admin-portal/commit/44cc2ab82f2f953405f433b4e83360142d9ea2f9))
+* **services:**  show combined unbanked total on joint banking defaulters ([dd6a6c32](https://github.com/firstlovecenter/fl-admin-portal/commit/dd6a6c32381f319df2d1b496fe231659d67a47d7))
+* **auth:**  source displayed app version from package.json ([495c51ba](https://github.com/firstlovecenter/fl-admin-portal/commit/495c51baa10f73eb3fc7ca16ae0a86917949b8b2))
+
+##### Refactors
+
+* **schema:**  drop dead Query-level *Search resolvers (SYN-184) ([44a20a4f](https://github.com/firstlovecenter/fl-admin-portal/commit/44a20a4faf074f39868887203afeebea89e1bad7))
+* **api:**  route transactional SMS through notify service ([c8135546](https://github.com/firstlovecenter/fl-admin-portal/commit/c81355464b5e387be7ba267d9ab09a5c25b0116d))
+
 #### 9.0.1 (2026-06-13)
 
 ##### Chores
