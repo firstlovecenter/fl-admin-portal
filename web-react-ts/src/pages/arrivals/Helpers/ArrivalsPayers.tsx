@@ -119,23 +119,26 @@ const ArrivalsPayerSelect = () => {
   ) => {
     onSubmitProps.setSubmitting(true)
     try {
-      await MakeCouncilArrivalsPayer({
+      const { errors } = await MakeCouncilArrivalsPayer({
         variables: {
           councilId,
           arrivalsPayerId: values.arrivalsPayerSelect,
         },
       })
 
+      if (errors?.length) {
+        throw new Error(errors[0].message)
+      }
+
       handleClose()
-      onSubmitProps.setSubmitting(false)
       alertSuccess(
         'Arrivals Payment Governorship Member has been added successfully!'
       )
-    } catch (e: any) {
+    } catch (e: unknown) {
+      throwToSentry('There was an error adding the arrivals payer', e)
+    } finally {
       onSubmitProps.setSubmitting(false)
-      throwToSentry(e)
     }
-    onSubmitProps.setSubmitting(false)
   }
 
   return (
@@ -183,10 +186,7 @@ const ArrivalsPayerSelect = () => {
                     >
                       Close
                     </Button>
-                    <ModalSubmitButton
-                      formik={formik}
-                      onClick={handleClose}
-                    />
+                    <ModalSubmitButton formik={formik} />
                   </DialogFooter>
                 </Form>
               )}

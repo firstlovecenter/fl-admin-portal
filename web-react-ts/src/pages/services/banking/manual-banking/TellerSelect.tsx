@@ -116,21 +116,24 @@ const TellerSelect = () => {
   ) => {
     onSubmitProps.setSubmitting(true)
     try {
-      await MakeStreamTeller({
+      const { errors } = await MakeStreamTeller({
         variables: {
           streamId,
           tellerId: values.tellerSelect,
         },
       })
 
+      if (errors?.length) {
+        throw new Error(errors[0].message)
+      }
+
       handleClose()
-      onSubmitProps.setSubmitting(false)
       alertSuccess('Stream Teller has been added successfully')
-    } catch (e: any) {
+    } catch (e: unknown) {
+      throwToSentry('There was an error adding the teller', e)
+    } finally {
       onSubmitProps.setSubmitting(false)
-      throwToSentry(e)
     }
-    onSubmitProps.setSubmitting(false)
   }
 
   return (
@@ -176,7 +179,7 @@ const TellerSelect = () => {
                     >
                       Close
                     </Button>
-                    <ModalSubmitButton formik={formik} onClick={handleClose} />
+                    <ModalSubmitButton formik={formik} />
                   </DialogFooter>
                 </Form>
               )}
