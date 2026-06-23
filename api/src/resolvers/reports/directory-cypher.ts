@@ -17,6 +17,22 @@
  * name / last name / phone / WhatsApp alongside the bacenta's own leader.
  */
 
+/* eslint-disable fl-cypher/no-interpolated-cypher --
+   This file composes Cypher purely from the compile-time `DirectoryLevel`
+   union ('Bacenta' | 'Governorship' | … | 'Oversight') and hardcoded Cypher
+   variable aliases ('bacenta', 'bacentaLeader', etc.) via the static helpers
+   `leaderField` / `ancestorObject` / `ancestorListExpr` /
+   `directoryEntryProjection`. Every interpolated expression is either one of
+   those literals or a helper-function CALL over those literals — the rule's
+   `allowedIdentifiers` override only exempts bare-Identifier fragments, so it
+   cannot express this call-based composition. No user input, JWT value, or
+   resolver argument is ever interpolated: the only runtime value is `$id`,
+   bound as a $param. ADR-012's intent (no injection vector via user input) is
+   preserved.
+   Reviewers: before approving changes to this disable, confirm every new
+   interpolation is a `DirectoryLevel` literal, a hardcoded alias, or a call to
+   one of the static helpers above — never a resolver arg or JWT field. */
+
 type DirectoryLevel =
   | 'Bacenta'
   | 'Governorship'

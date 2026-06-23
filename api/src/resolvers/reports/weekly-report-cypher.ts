@@ -13,6 +13,25 @@
  *     For Bacenta this returns the bacenta itself (degenerate).
  */
 
+/* eslint-disable fl-cypher/no-interpolated-cypher --
+ * Every `${...}` in this file is sourced from one of:
+ *   - compile-time `ChurchLevel` literals validated by the `ScopeLevel` /
+ *     `AggregateLevel` discriminated unions, OR
+ *   - JS identifiers derived from those literals via `churchVar` / `leaderVar`
+ *     (e.g. `bacentaLeader`), OR
+ *   - calls to the static `weeklyEntryReturn` projection helper over the
+ *     above literals.
+ * The rule's `allowedIdentifiers` override only exempts bare-Identifier
+ * fragments, so it cannot express this helper-call composition — hence a
+ * file-level disable. None of the interpolated values come from request
+ * payloads / JWT; the only runtime values ($id, $startWeekKey, $endWeekKey)
+ * pass as $param bindings, so the ADR-012 hazard (user-controlled
+ * interpolation) does not apply.
+ * Reviewers: before approving changes to this disable, confirm every new
+ * interpolation is a level literal, a `churchVar`/`leaderVar`-derived
+ * identifier, or a `weeklyEntryReturn` call — never a resolver arg or JWT
+ * field. */
+
 /**
  * Projection helper. The two `*AggAlias` callers can be either an
  * `AggregateXxxRecord` node (higher levels) or a Cypher map literal (Bacenta).
@@ -425,22 +444,12 @@ const IN_BETWEEN: Record<
 }
 
 // Build JS identifier names (not Cypher) used by the template generator
-// below. `prefer-template` wants template literals, but the Cypher lint
-// rule then misfires on these as if they were Cypher fragments — so we
-// silence the Cypher rule on the line that uses interpolation.
+// below. These produce Cypher variable names ('bacenta', 'bacentaLeader')
+// from the compile-time level literals — never from request data.
+// (The fl-cypher rule is disabled file-wide; see the header justification.)
 const churchVar = (level: string) => level.toLowerCase()
-const leaderVar = (level: string) =>
-  // eslint-disable-next-line fl-cypher/no-interpolated-cypher
-  `${level.toLowerCase()}Leader`
+const leaderVar = (level: string) => `${level.toLowerCase()}Leader`
 
-/* eslint-disable fl-cypher/no-interpolated-cypher --
- * Every `${...}` in this template is sourced from one of:
- *   - compile-time `ChurchLevel` literals validated by the `ScopeLevel` /
- *     `AggregateLevel` discriminated unions above, OR
- *   - identifiers derived from those literals via `churchVar` / `leaderVar`.
- * None come from request payloads, so the ADR-012 hazard (user-controlled
- * interpolation) does not apply. Tx-level params ($id, $startWeekKey,
- * $endWeekKey) still pass as bindings. */
 const buildSubChurchesAtLevelCypher = (
   scope: ScopeLevel,
   target: AggregateLevel
