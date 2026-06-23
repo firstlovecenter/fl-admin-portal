@@ -158,7 +158,13 @@ export function getStoredUser(): AuthUser | null {
 export function storeAuth(data: AuthTokens): void {
   inMemoryAccessToken = data.accessToken
   if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user))
+  // SYN-175: never persist `roles` to localStorage — they are user-editable
+  // there and the app must not gate on them. Gating roles are re-derived from
+  // the signed access token on every login/bootstrap/refresh. Only the
+  // non-credential display profile is persisted (also the cross-tab signal).
+  const profile = { ...data.user }
+  delete profile.roles
+  localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(profile))
 }
 
 /**
@@ -210,6 +216,36 @@ export function isTokenExpired(token: string): boolean {
   const exp = getTokenExpiryMs(token)
   if (exp === null) return true
   return Date.now() >= exp - ACCESS_TOKEN_EXPIRY_BUFFER_MS
+}
+
+/**
+ * SYN-175: decode the server-signed `roles` claim from the in-memory access
+ * token. This is the *authoritative* source of client gating roles — unlike
+ * `localStorage.fl_user`, the user cannot edit it without invalidating the
+ * signature (the API would then reject the token). Returns `[]` on a malformed
+ * token, a missing/ non-array claim, or any role entry that is not a string.
+ *
+ * Treat the roles persisted in storage as advisory display data only; never
+ * gate UI on them — always re-derive from here.
+ */
+export function getRolesFromToken(token: string | null): string[] {
+  if (!token) return []
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    if (!Array.isArray(payload?.roles)) return []
+    return payload.roles.filter((r: unknown): r is string => typeof r === 'string')
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Order-insensitive equality for two role lists. Shared by AuthContext (refresh)
+ * and AppWithContext (the currentUser sync effect) to avoid pointless re-renders
+ * when a refresh returns the same roles.
+ */
+export function sameRoles(a: string[] = [], b: string[] = []): boolean {
+  return a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|')
 }
 
 /**

@@ -73,6 +73,14 @@ const SetPermissions = ({ children }: { children: JSX.Element }) => {
 
         const nextCurrentUser = {
           ...currentUser,
+          // SYN-175: roles are authoritative only from the signed access token
+          // (surfaced as AuthContext `user.roles`). Set them explicitly so the
+          // `...currentUser` spread can never reintroduce stale/tampered roles.
+          // The `currentUser.roles` arm is only a transient pre-auth fallback
+          // (it is itself token-synced by the AppWithContext effect) — it is
+          // never a trusted source; `user.roles` is set before this query
+          // resolves, so it wins in practice.
+          roles: user?.roles ?? currentUser.roles ?? [],
           id: memberData.id,
           firstName: memberData.firstName,
           lastName: memberData.lastName,

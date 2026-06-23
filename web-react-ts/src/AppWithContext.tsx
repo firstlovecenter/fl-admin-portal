@@ -1,4 +1,4 @@
-import React, { Suspense, useContext, useState } from 'react'
+import React, { Suspense, useContext, useEffect, useState } from 'react'
 import {
   Routes,
   BrowserRouter as Router,
@@ -27,6 +27,7 @@ import SetPermissions from 'auth/SetPermissions'
 import { permitMe } from 'permission-utils'
 import useClickCard from 'hooks/useClickCard'
 import { useAuth } from 'contexts/AuthContext'
+import { sameRoles } from 'lib/auth-service'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
 import { maps } from 'pages/maps/mapsRoutes'
@@ -90,7 +91,10 @@ const getInitialCurrentUser = (
   }
 
   try {
-    return JSON.parse(storedCurrentUser)
+    // SYN-175: rehydrate the cached profile for fast first paint, but never
+    // trust its persisted `roles` — sessionStorage is user-editable. Gating
+    // roles come only from the signed-token-derived AuthContext `user`.
+    return { ...JSON.parse(storedCurrentUser), roles: user?.roles || [] }
   } catch {
     return fallbackUser
   }
@@ -142,6 +146,18 @@ const AppWithContext = () => {
   const [currentUser, setCurrentUser] = useState(() =>
     getInitialCurrentUser(user)
   )
+
+  // SYN-175: keep the gating roles on `currentUser` locked to the signed-token-
+  // derived roles from AuthContext. After a reload the token (and thus
+  // `user.roles`) arrives asynchronously once the refresh resolves, so this
+  // effect re-applies the authoritative roles when they land — independent of
+  // the GET_LOGGED_IN_USER query. No storage-sourced roles ever gate the UI.
+  useEffect(() => {
+    const roles = user?.roles || []
+    setCurrentUser((prev: { roles?: string[] }) =>
+      sameRoles(prev?.roles || [], roles) ? prev : { ...prev, roles }
+    )
+  }, [user])
 
   const [userJobs, setUserJobs] = useState()
 

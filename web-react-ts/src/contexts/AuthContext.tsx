@@ -25,6 +25,8 @@ import {
   setAccessToken,
   serverLogout,
   getStoredUser,
+  getRolesFromToken,
+  sameRoles,
   getTokenExpiryMs,
   isTokenExpired,
   AuthServiceError,
@@ -65,6 +67,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // get back a fresh access token, which we hold in memory.
       const response = await apiRefreshToken()
       setAccessToken(response.accessToken)
+
+      // SYN-175: re-derive gating roles from the freshly signed token so a
+      // server-side role change (granted/revoked) propagates on the next
+      // refresh, and so tampered localStorage roles can never take effect.
+      // No-op when there is no user yet (the initAuth bootstrap sets the user
+      // with token-derived roles itself).
+      const roles = getRolesFromToken(response.accessToken)
+      setUser((prev) =>
+        prev && !sameRoles(prev.roles, roles) ? { ...prev, roles } : prev
+      )
+
       return response.accessToken
     } catch (error: any) {
       // Only clear auth when the cookie is actually rejected (401). Transient
@@ -139,7 +152,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const newToken = await refreshAccessToken()
 
         if (newToken) {
-          setUser(storedUser)
+          // SYN-175: take roles from the signed token, not the stored user.
+          // `storedUser` came from `localStorage.fl_user`, which is user-
+          // editable — its `roles` are advisory only and must never gate UI.
+          setUser({ ...storedUser, roles: getRolesFromToken(newToken) })
           reverifyInBackground(newToken)
         } else {
           clearAuth()
@@ -238,7 +254,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiLogin(data)
       storeAuth(response)
-      setUser(response.user)
+      // SYN-175: gating roles come from the signed access token, not the
+      // response body or what gets persisted to localStorage.
+      setUser({
+        ...response.user,
+        roles: getRolesFromToken(response.accessToken),
+      })
     } catch (error) {
       console.error('Login failed:', error)
       throw error
@@ -256,7 +277,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiSignup(data)
       storeAuth(response)
-      setUser(response.user)
+      // SYN-175: gating roles come from the signed access token (see login).
+      setUser({
+        ...response.user,
+        roles: getRolesFromToken(response.accessToken),
+      })
     } catch (error) {
       console.error('Signup failed:', error)
       throw error
