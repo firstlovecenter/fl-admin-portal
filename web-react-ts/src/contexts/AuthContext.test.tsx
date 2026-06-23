@@ -1,9 +1,20 @@
 /**
- * AuthContext.test.tsx — SYN-65
+ * AuthContext.test.tsx — SYN-65, updated for SYN-173
  *
  * Characterization + unit tests for:
  *   - AuthProvider (initial state, login, logout, refresh, reverify)
  *   - isTokenExpired (pure function from lib/auth-service)
+ *
+ * SYN-173 storage model (asserted throughout):
+ *   - The access token lives in a module-scoped variable (memory), NEVER in
+ *     localStorage/sessionStorage. A reload starts with no token, so mount
+ *     always bootstraps one from the httpOnly refresh cookie via
+ *     POST /auth/refresh-token (the cookie itself is invisible to JS and to
+ *     jsdom — MSW just answers the request).
+ *   - The refresh token is never read or written by JS at all; there is no
+ *     `fl_refresh_token` key anymore.
+ *   - Only the non-credential `fl_user` profile is persisted (cross-tab signal
+ *     + first paint).
  *
  * Out of scope (documented):
  *   - Proactive silent-refresh setTimeout scheduling — requires complex fake-timer
@@ -16,7 +27,7 @@
  */
 
 import React from 'react'
-import { describe, it, expect, vi, beforeAll, afterAll, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
@@ -69,6 +80,19 @@ beforeEach(() => {
   sessionStorage.clear()
 })
 
+/** Seed only the non-credential user profile, as a real prior session would. */
+function seedStoredUser() {
+  localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
+}
+
+/** Assert no credential ever lands in web storage (the SYN-173 invariant). */
+function expectNoTokensInStorage() {
+  expect(localStorage.getItem('fl_access_token')).toBeNull()
+  expect(localStorage.getItem('fl_refresh_token')).toBeNull()
+  expect(sessionStorage.getItem('fl_access_token')).toBeNull()
+  expect(sessionStorage.getItem('fl_refresh_token')).toBeNull()
+}
+
 // ---------------------------------------------------------------------------
 // Render helper
 // ---------------------------------------------------------------------------
@@ -82,8 +106,9 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 // ---------------------------------------------------------------------------
 
 describe('AuthProvider — initial auth state', () => {
-  it('1. no stored token → unauthenticated after mount', async () => {
-    // No localStorage entries, no MSW handlers needed.
+  it('1. no stored user → unauthenticated after mount (no refresh attempted)', async () => {
+    // No fl_user → initAuth must not call the refresh endpoint at all.
+    // onUnhandledRequest: 'error' would fail the test if it did.
     const { result } = renderHook(() => useAuth(), { wrapper })
 
     await act(async () => {})
@@ -93,14 +118,16 @@ describe('AuthProvider — initial auth state', () => {
     expect(result.current.user).toBeNull()
   })
 
-  it('2. valid stored token + user → authenticated on mount (verify returns 200)', async () => {
-    const token = makeJwt(+3600)
-    localStorage.setItem('fl_access_token', token)
-    localStorage.setItem('fl_refresh_token', 'rt-valid')
-    localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
+  it('2. stored user + valid refresh cookie → authenticated on mount', async () => {
+    seedStoredUser()
+    const newToken = makeJwt(+3600)
 
-    // reverifyInBackground fires a POST /auth/verify — must be handled
     server.use(
+      // Mount bootstraps an access token from the httpOnly cookie.
+      http.post(`${AUTH_URL}/auth/refresh-token`, () =>
+        HttpResponse.json({ accessToken: newToken }, { status: 200 })
+      ),
+      // reverifyInBackground confirms the new token.
       http.post(`${AUTH_URL}/auth/verify`, () =>
         HttpResponse.json({ user: TEST_USER }, { status: 200 })
       )
@@ -108,29 +135,22 @@ describe('AuthProvider — initial auth state', () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper })
 
-    // Wait for initAuth to complete
     await act(async () => {})
 
     expect(result.current.isAuthenticated).toBe(true)
     expect(result.current.isLoading).toBe(false)
     expect(result.current.user).toEqual(TEST_USER)
+    expectNoTokensInStorage()
   })
 
-  it('3. expired stored token, refresh succeeds → authenticated after mount', async () => {
-    const expiredToken = makeJwt(-1)
+  it('3. bootstrapped access token is in memory (getAccessTokenSilently), never in storage', async () => {
+    seedStoredUser()
     const newToken = makeJwt(+3600)
-    localStorage.setItem('fl_access_token', expiredToken)
-    localStorage.setItem('fl_refresh_token', 'rt-valid')
-    localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
 
     server.use(
       http.post(`${AUTH_URL}/auth/refresh-token`, () =>
-        HttpResponse.json(
-          { accessToken: newToken, refreshToken: 'rt-new' },
-          { status: 200 }
-        )
+        HttpResponse.json({ accessToken: newToken }, { status: 200 })
       ),
-      // reverifyInBackground is called with the new token after refresh
       http.post(`${AUTH_URL}/auth/verify`, () =>
         HttpResponse.json({ user: TEST_USER }, { status: 200 })
       )
@@ -140,16 +160,17 @@ describe('AuthProvider — initial auth state', () => {
 
     await act(async () => {})
 
-    expect(result.current.isAuthenticated).toBe(true)
-    expect(result.current.isLoading).toBe(false)
-    expect(localStorage.getItem('fl_access_token')).toBe(newToken)
+    let returnedToken: string | undefined
+    await act(async () => {
+      returnedToken = await result.current.getAccessTokenSilently()
+    })
+
+    expect(returnedToken).toBe(newToken)
+    expectNoTokensInStorage()
   })
 
-  it('4. expired stored token, refresh fails with 401 → unauthenticated, storage cleared', async () => {
-    const expiredToken = makeJwt(-1)
-    localStorage.setItem('fl_access_token', expiredToken)
-    localStorage.setItem('fl_refresh_token', 'rt-expired')
-    localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
+  it('4. stored user + refresh cookie rejected (401) → unauthenticated, user cleared', async () => {
+    seedStoredUser()
 
     server.use(
       http.post(`${AUTH_URL}/auth/refresh-token`, () =>
@@ -163,9 +184,8 @@ describe('AuthProvider — initial auth state', () => {
 
     expect(result.current.isAuthenticated).toBe(false)
     expect(result.current.isLoading).toBe(false)
-    expect(localStorage.getItem('fl_access_token')).toBeNull()
-    expect(localStorage.getItem('fl_refresh_token')).toBeNull()
     expect(localStorage.getItem('fl_user')).toBeNull()
+    expectNoTokensInStorage()
   })
 })
 
@@ -174,24 +194,23 @@ describe('AuthProvider — initial auth state', () => {
 // ---------------------------------------------------------------------------
 
 describe('AuthProvider — login', () => {
-  it('5. successful login → authenticated, token in localStorage', async () => {
+  it('5. successful login → authenticated; token in memory only, user profile persisted', async () => {
     const newToken = makeJwt(+3600)
 
     server.use(
       http.post(`${AUTH_URL}/auth/login`, () =>
         HttpResponse.json(
-          { accessToken: newToken, refreshToken: 'rt-1', user: TEST_USER },
+          { accessToken: newToken, user: TEST_USER },
           { status: 200 }
         )
-      ),
-      // The proactive refresh scheduler starts when user becomes non-null.
-      // It schedules a setTimeout well in the future (newToken expires in 1h),
-      // so it will not fire synchronously during the test — no verify needed.
+      )
+      // The proactive refresh scheduler starts when user becomes non-null but
+      // schedules far in the future (token expires in 1h), so it will not fire
+      // synchronously — no refresh/verify handler needed here.
     )
 
     const { result } = renderHook(() => useAuth(), { wrapper })
 
-    // Let initAuth settle (no stored token → immediate)
     await act(async () => {})
 
     await act(async () => {
@@ -200,10 +219,18 @@ describe('AuthProvider — login', () => {
 
     expect(result.current.isAuthenticated).toBe(true)
     expect(result.current.user).toEqual(TEST_USER)
-    expect(localStorage.getItem('fl_access_token')).toBe(newToken)
+    // Profile is persisted (cross-tab signal); the access token is not.
+    expect(localStorage.getItem('fl_user')).not.toBeNull()
+    expectNoTokensInStorage()
+
+    let returnedToken: string | undefined
+    await act(async () => {
+      returnedToken = await result.current.getAccessTokenSilently()
+    })
+    expect(returnedToken).toBe(newToken)
   })
 
-  it('6. failed login (401) → throws, remains unauthenticated, no token stored', async () => {
+  it('6. failed login (401) → throws, remains unauthenticated, nothing stored', async () => {
     server.use(
       http.post(`${AUTH_URL}/auth/login`, () =>
         HttpResponse.json(
@@ -224,7 +251,8 @@ describe('AuthProvider — login', () => {
     })
 
     expect(result.current.isAuthenticated).toBe(false)
-    expect(localStorage.getItem('fl_access_token')).toBeNull()
+    expect(localStorage.getItem('fl_user')).toBeNull()
+    expectNoTokensInStorage()
   })
 })
 
@@ -233,16 +261,19 @@ describe('AuthProvider — login', () => {
 // ---------------------------------------------------------------------------
 
 describe('AuthProvider — logout', () => {
-  it('7. logout clears user state, localStorage, and all sessionStorage keys', async () => {
+  it('7. logout clears state, calls the server to drop the cookie, wipes sessionStorage', async () => {
     const token = makeJwt(+3600)
+    let logoutCalled = false
 
     server.use(
       http.post(`${AUTH_URL}/auth/login`, () =>
-        HttpResponse.json(
-          { accessToken: token, refreshToken: 'rt-1', user: TEST_USER },
-          { status: 200 }
-        )
-      )
+        HttpResponse.json({ accessToken: token, user: TEST_USER }, { status: 200 })
+      ),
+      // serverLogout() must hit this so the httpOnly cookie is dropped.
+      http.post(`${AUTH_URL}/auth/logout`, () => {
+        logoutCalled = true
+        return HttpResponse.json({ message: 'Logged out successfully' }, { status: 200 })
+      })
     )
 
     // Seed sessionStorage keys that clearAuth() is expected to wipe
@@ -275,12 +306,13 @@ describe('AuthProvider — logout', () => {
 
     expect(result.current.isAuthenticated).toBe(false)
     expect(result.current.user).toBeNull()
-    expect(localStorage.getItem('fl_access_token')).toBeNull()
-    expect(localStorage.getItem('fl_refresh_token')).toBeNull()
     expect(localStorage.getItem('fl_user')).toBeNull()
+    expectNoTokensInStorage()
     SESSION_KEYS.forEach((k) => {
       expect(sessionStorage.getItem(k)).toBeNull()
     })
+
+    await waitFor(() => expect(logoutCalled).toBe(true))
   })
 })
 
@@ -289,20 +321,22 @@ describe('AuthProvider — logout', () => {
 // ---------------------------------------------------------------------------
 
 describe('AuthProvider — token refresh', () => {
-  it('8. getAccessTokenSilently with expired stored token → refreshes, returns new token', async () => {
-    const expiredToken = makeJwt(-1)
-    const newToken = makeJwt(+3600)
-    localStorage.setItem('fl_access_token', expiredToken)
-    localStorage.setItem('fl_refresh_token', 'rt-valid')
-    localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
+  it('8. getAccessTokenSilently with an expired in-memory token → refreshes again, returns new token', async () => {
+    seedStoredUser()
+    const shortLived = makeJwt(+299) // inside the 5-min expiry buffer → treated as expired
+    const fresh = makeJwt(+3600)
+    let refreshCalls = 0
 
     server.use(
-      http.post(`${AUTH_URL}/auth/refresh-token`, () =>
-        HttpResponse.json(
-          { accessToken: newToken, refreshToken: 'rt-new' },
+      http.post(`${AUTH_URL}/auth/refresh-token`, () => {
+        refreshCalls += 1
+        // First (mount bootstrap) hands back an about-to-expire token; the
+        // explicit getAccessTokenSilently call below forces a second refresh.
+        return HttpResponse.json(
+          { accessToken: refreshCalls === 1 ? shortLived : fresh },
           { status: 200 }
         )
-      ),
+      }),
       http.post(`${AUTH_URL}/auth/verify`, () =>
         HttpResponse.json({ user: TEST_USER }, { status: 200 })
       )
@@ -310,25 +344,20 @@ describe('AuthProvider — token refresh', () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper })
 
-    // initAuth will trigger refreshAccessToken because token is expired
     await act(async () => {})
 
-    // After refresh on mount, the access token in storage is the new token.
-    // Now call getAccessTokenSilently — the new token is valid, so no refresh.
     let returnedToken: string | undefined
     await act(async () => {
       returnedToken = await result.current.getAccessTokenSilently()
     })
 
-    expect(returnedToken).toBe(newToken)
-    expect(localStorage.getItem('fl_access_token')).toBe(newToken)
+    expect(returnedToken).toBe(fresh)
+    expect(refreshCalls).toBeGreaterThanOrEqual(2)
+    expectNoTokensInStorage()
   })
 
-  it('9. refreshAccessToken fails with 401 → isAuthenticated becomes false', async () => {
-    const expiredToken = makeJwt(-1)
-    localStorage.setItem('fl_access_token', expiredToken)
-    localStorage.setItem('fl_refresh_token', 'rt-expired')
-    localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
+  it('9. refresh on mount fails with 401 → isAuthenticated becomes false', async () => {
+    seedStoredUser()
 
     server.use(
       http.post(`${AUTH_URL}/auth/refresh-token`, () =>
@@ -350,12 +379,13 @@ describe('AuthProvider — token refresh', () => {
 
 describe('AuthProvider — reverifyInBackground', () => {
   it('10. verify returns 401 → auth is cleared (user becomes null)', async () => {
+    seedStoredUser()
     const token = makeJwt(+3600)
-    localStorage.setItem('fl_access_token', token)
-    localStorage.setItem('fl_refresh_token', 'rt-valid')
-    localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
 
     server.use(
+      http.post(`${AUTH_URL}/auth/refresh-token`, () =>
+        HttpResponse.json({ accessToken: token }, { status: 200 })
+      ),
       http.post(`${AUTH_URL}/auth/verify`, () =>
         HttpResponse.json({ error: 'Token revoked', statusCode: 401 }, { status: 401 })
       )
@@ -363,25 +393,24 @@ describe('AuthProvider — reverifyInBackground', () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper })
 
-    // initAuth runs synchronously setting user, then reverifyInBackground fires async
     await act(async () => {})
 
-    // Wait for the background verify to settle and clear the user
     await waitFor(() => {
       expect(result.current.isAuthenticated).toBe(false)
     })
 
     expect(result.current.user).toBeNull()
-    expect(localStorage.getItem('fl_access_token')).toBeNull()
+    expect(localStorage.getItem('fl_user')).toBeNull()
   })
 
   it('11. verify returns 500 → session preserved', async () => {
+    seedStoredUser()
     const token = makeJwt(+3600)
-    localStorage.setItem('fl_access_token', token)
-    localStorage.setItem('fl_refresh_token', 'rt-valid')
-    localStorage.setItem('fl_user', JSON.stringify(TEST_USER))
 
     server.use(
+      http.post(`${AUTH_URL}/auth/refresh-token`, () =>
+        HttpResponse.json({ accessToken: token }, { status: 200 })
+      ),
       http.post(`${AUTH_URL}/auth/verify`, () =>
         HttpResponse.json({ error: 'Internal server error' }, { status: 500 })
       )
@@ -391,14 +420,10 @@ describe('AuthProvider — reverifyInBackground', () => {
 
     await act(async () => {})
 
-    // After initAuth settles, user should be set immediately from localStorage.
-    // The verify is in background and returns 500 — session must be preserved.
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    // Give the background verify time to resolve (it's already resolved via MSW
-    // since act() flushes microtasks). isAuthenticated must still be true.
     expect(result.current.isAuthenticated).toBe(true)
     expect(result.current.user).toEqual(TEST_USER)
   })

@@ -22,7 +22,8 @@ import {
   storeAuth,
   clearAuth,
   getAccessToken,
-  getRefreshToken,
+  setAccessToken,
+  serverLogout,
   getStoredUser,
   getTokenExpiryMs,
   isTokenExpired,
@@ -59,27 +60,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Refresh the access token if needed
    */
   const refreshAccessToken = useCallback(async (): Promise<string | null> => {
-    const currentRefreshToken = getRefreshToken()
-    const storedUser = getStoredUser()
-
-    if (!currentRefreshToken) {
-      return null
-    }
-
     try {
-      const response = await apiRefreshToken(currentRefreshToken)
-
-      storeAuth({
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        user: storedUser!,
-      })
-
+      // The refresh token rides along as an httpOnly cookie (SYN-173); we only
+      // get back a fresh access token, which we hold in memory.
+      const response = await apiRefreshToken()
+      setAccessToken(response.accessToken)
       return response.accessToken
     } catch (error: any) {
-      // Only clear auth if refresh token is actually expired or invalid (401)
-      // If it's a network error (5xx) or other issue, keep the current session
-      if (error.statusCode === 401 || isTokenExpired(currentRefreshToken)) {
+      // Only clear auth when the cookie is actually rejected (401). Transient
+      // failures (network, 5xx) leave the current session intact so the PWA
+      // stays usable offline.
+      if (error.statusCode === 401) {
         clearAuth()
         setUser(null)
       }
@@ -94,12 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getAccessTokenSilently = useCallback(async (): Promise<string> => {
     let token = getAccessToken()
 
-    if (!token) {
-      throw new Error('No access token available')
-    }
-
-    // Check if token is expired and refresh if needed
-    if (isTokenExpired(token)) {
+    // No in-memory token (e.g. just after a reload) or an expired one — mint a
+    // fresh access token from the httpOnly refresh cookie.
+    if (!token || isTokenExpired(token)) {
       const newToken = await refreshAccessToken()
 
       if (!newToken) {
@@ -141,27 +129,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initAuth = async () => {
       setIsLoading(true)
 
-      const token = getAccessToken()
       const storedUser = getStoredUser()
 
-      if (token && storedUser) {
-        // Verify token is still valid
-        if (isTokenExpired(token)) {
-          // Try to refresh
-          const newToken = await refreshAccessToken()
+      // SYN-173: the access token lives in memory only, so a reload always
+      // starts with none. If a previous session left a stored user, bootstrap
+      // a fresh access token from the httpOnly refresh cookie; the stored user
+      // gives us first paint while the background re-verify confirms identity.
+      if (storedUser) {
+        const newToken = await refreshAccessToken()
 
-          if (newToken) {
-            setUser(storedUser)
-            reverifyInBackground(newToken)
-          } else {
-            clearAuth()
-            setUser(null)
-          }
-        } else {
-          // Token is not expired locally — trust the stored user for first
-          // paint, then confirm with the backend in the background.
+        if (newToken) {
           setUser(storedUser)
-          reverifyInBackground(token)
+          reverifyInBackground(newToken)
+        } else {
+          clearAuth()
+          setUser(null)
         }
       }
 
@@ -287,6 +269,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Logout handler
    */
   const logout = useCallback(() => {
+    // Clear the httpOnly refresh cookie server-side (page JS cannot touch it),
+    // then drop local state. Best-effort — clearAuth proceeds regardless.
+    serverLogout()
     clearAuth()
     setUser(null)
   }, [])
