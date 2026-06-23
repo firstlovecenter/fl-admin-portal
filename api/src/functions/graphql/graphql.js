@@ -182,7 +182,11 @@ exports.handler = async (event, context) => {
       event,
       driver,
       corsHeaders,
-      SECRETS?.JWT_SECRET
+      SECRETS?.JWT_SECRET,
+      {
+        expectedIss: SECRETS?.JWT_ISSUER,
+        expectedAud: SECRETS?.JWT_AUDIENCE,
+      }
     )
   }
 
@@ -234,7 +238,10 @@ exports.handler = async (event, context) => {
     // schema-level `@authentication` (the 2026-05-26 incident).
     // Resolvers read claims with `context.jwt?.roles` / `context.jwt?.userId`;
     // `isAuth(...)` already returns FORBIDDEN on undefined roles.
-    const verifiedJwt = verifyJwt(token, SECRETS?.JWT_SECRET)
+    const verifiedJwt = verifyJwt(token, SECRETS?.JWT_SECRET, {
+      expectedIss: SECRETS?.JWT_ISSUER,
+      expectedAud: SECRETS?.JWT_AUDIENCE,
+    })
 
     // Enrich the JWT with the caller's authority graph (servantTrees +
     // allowedChurchIds), computed from their Neo4j servant edges. Without

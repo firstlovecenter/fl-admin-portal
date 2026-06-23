@@ -28,11 +28,16 @@ const sign = (
   return `${headerB64}.${payloadB64}.${base64UrlEncode(signature)}`
 }
 
+// Seconds-since-epoch helper for a token that has not yet expired. Every
+// legitimately-minted token carries an `exp`; verifyJwt rejects tokens without
+// one (SYN-176), so success-path fixtures must include it.
+const futureExp = (): number => Math.floor(Date.now() / 1000) + 600
+
 describe('verifyJwt', () => {
   it('returns the payload for a valid HS256 token', () => {
     const token = sign(
       { alg: 'HS256', typ: 'JWT' },
-      { roles: ['leaderBacenta'], sub: 'm1' },
+      { roles: ['leaderBacenta'], sub: 'm1', exp: futureExp() },
       SECRET
     )
     expect(verifyJwt(token, SECRET)).toMatchObject({
@@ -44,7 +49,7 @@ describe('verifyJwt', () => {
   it('strips a Bearer prefix', () => {
     const token = sign(
       { alg: 'HS256', typ: 'JWT' },
-      { roles: ['adminDenomination'] },
+      { roles: ['adminDenomination'], exp: futureExp() },
       SECRET
     )
     expect(verifyJwt(`Bearer ${token}`, SECRET)?.roles).toEqual([
@@ -136,6 +141,79 @@ describe('verifyJwt', () => {
       SECRET
     )
     expect(verifyJwt(token, SECRET)?.roles).toEqual(['leaderBacenta'])
+  })
+
+  // SYN-176: a token with no `exp` never expires. Reject it outright.
+  it('rejects a token with no exp claim', () => {
+    const token = sign(
+      { alg: 'HS256', typ: 'JWT' },
+      { roles: ['leaderBacenta'] },
+      SECRET
+    )
+    expect(verifyJwt(token, SECRET)).toBeNull()
+  })
+
+  it('rejects a token whose exp is not a number', () => {
+    const token = sign(
+      { alg: 'HS256', typ: 'JWT' },
+      { roles: ['leaderBacenta'], exp: 'soon' },
+      SECRET
+    )
+    expect(verifyJwt(token, SECRET)).toBeNull()
+  })
+
+  describe('iss / aud validation (SYN-176)', () => {
+    const ISS = 'fl-auth-service'
+    const AUD = 'fl-admin-portal'
+
+    const validToken = (claims: Record<string, unknown> = {}): string =>
+      sign(
+        { alg: 'HS256', typ: 'JWT' },
+        { roles: ['leaderBacenta'], exp: futureExp(), ...claims },
+        SECRET
+      )
+
+    it('accepts a token whose iss/aud match the expected values', () => {
+      const token = validToken({ iss: ISS, aud: AUD })
+      expect(
+        verifyJwt(token, SECRET, { expectedIss: ISS, expectedAud: AUD })?.roles
+      ).toEqual(['leaderBacenta'])
+    })
+
+    it('accepts an aud array that contains the expected audience', () => {
+      const token = validToken({ iss: ISS, aud: ['other-api', AUD] })
+      expect(
+        verifyJwt(token, SECRET, { expectedIss: ISS, expectedAud: AUD })
+      ).not.toBeNull()
+    })
+
+    it('rejects a token with the wrong iss', () => {
+      const token = validToken({ iss: 'someone-else', aud: AUD })
+      expect(
+        verifyJwt(token, SECRET, { expectedIss: ISS, expectedAud: AUD })
+      ).toBeNull()
+    })
+
+    it('rejects a token with the wrong aud', () => {
+      const token = validToken({ iss: ISS, aud: 'another-app' })
+      expect(
+        verifyJwt(token, SECRET, { expectedIss: ISS, expectedAud: AUD })
+      ).toBeNull()
+    })
+
+    it('rejects a token missing iss/aud when they are expected', () => {
+      const token = validToken()
+      expect(
+        verifyJwt(token, SECRET, { expectedIss: ISS, expectedAud: AUD })
+      ).toBeNull()
+    })
+
+    it('does not enforce iss/aud when no expected values are configured', () => {
+      // Transitional: enforcement is gated on configuration so the rollout
+      // does not require the auth service and API to deploy in lockstep.
+      const token = validToken()
+      expect(verifyJwt(token, SECRET)).not.toBeNull()
+    })
   })
 
   it('rejects a token with the wrong number of parts', () => {

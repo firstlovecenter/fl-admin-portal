@@ -115,7 +115,10 @@ const startServer = async () => {
         // Resolvers read claims with `context.jwt?.roles` /
         // `context.jwt?.userId`; `isAuth(...)` already returns FORBIDDEN
         // on undefined roles.
-        const jwt = verifyJwt(req.headers.authorization, SECRETS.JWT_SECRET)
+        const jwt = verifyJwt(req.headers.authorization, SECRETS.JWT_SECRET, {
+          expectedIss: SECRETS.JWT_ISSUER,
+          expectedAud: SECRETS.JWT_AUDIENCE,
+        })
 
         // Enrich the JWT with the caller's authority graph, computed once
         // per login from their Neo4j servant edges and cached for the
@@ -162,7 +165,10 @@ const startServer = async () => {
     })
   )
 
-  mountDownloadRoutes(app, driver, SECRETS.JWT_SECRET)
+  mountDownloadRoutes(app, driver, SECRETS.JWT_SECRET, {
+    expectedIss: SECRETS.JWT_ISSUER,
+    expectedAud: SECRETS.JWT_AUDIENCE,
+  })
 
   const port =
     process.env.GRAPHQL_SERVER_PORT || SECRETS.GRAPHQL_SERVER_PORT || 4001
