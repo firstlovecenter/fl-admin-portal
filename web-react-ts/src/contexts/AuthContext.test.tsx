@@ -33,7 +33,7 @@ import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
 
 import { AuthProvider, useAuth } from 'contexts/AuthContext'
-import { isTokenExpired } from 'lib/auth-service'
+import { isTokenExpired, getRolesFromToken } from 'lib/auth-service'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -52,6 +52,16 @@ const AUTH_URL = 'http://localhost:3333'
 function makeJwt(expOffsetSeconds: number): string {
   const exp = Math.floor((Date.now() + expOffsetSeconds * 1000) / 1000)
   const payload = btoa(JSON.stringify({ exp }))
+  return `header.${payload}.signature`
+}
+
+/**
+ * Build a test JWT carrying a server-signed `roles` claim (SYN-175). The roles
+ * the app gates on must come from here, never from user-editable storage.
+ */
+function makeJwtWithRoles(expOffsetSeconds: number, roles: string[]): string {
+  const exp = Math.floor((Date.now() + expOffsetSeconds * 1000) / 1000)
+  const payload = btoa(JSON.stringify({ exp, roles }))
   return `header.${payload}.signature`
 }
 
@@ -139,7 +149,9 @@ describe('AuthProvider — initial auth state', () => {
 
     expect(result.current.isAuthenticated).toBe(true)
     expect(result.current.isLoading).toBe(false)
-    expect(result.current.user).toEqual(TEST_USER)
+    // SYN-175: the user now always carries token-derived roles (here: none,
+    // since these fixtures' tokens have no roles claim).
+    expect(result.current.user).toEqual({ ...TEST_USER, roles: [] })
     expectNoTokensInStorage()
   })
 
@@ -218,7 +230,9 @@ describe('AuthProvider — login', () => {
     })
 
     expect(result.current.isAuthenticated).toBe(true)
-    expect(result.current.user).toEqual(TEST_USER)
+    // SYN-175: the user now always carries token-derived roles (here: none,
+    // since these fixtures' tokens have no roles claim).
+    expect(result.current.user).toEqual({ ...TEST_USER, roles: [] })
     // Profile is persisted (cross-tab signal); the access token is not.
     expect(localStorage.getItem('fl_user')).not.toBeNull()
     expectNoTokensInStorage()
@@ -425,12 +439,138 @@ describe('AuthProvider — reverifyInBackground', () => {
     })
 
     expect(result.current.isAuthenticated).toBe(true)
-    expect(result.current.user).toEqual(TEST_USER)
+    // SYN-175: the user now always carries token-derived roles (here: none,
+    // since these fixtures' tokens have no roles claim).
+    expect(result.current.user).toEqual({ ...TEST_USER, roles: [] })
   })
 })
 
 // ---------------------------------------------------------------------------
-// Group 6: isTokenExpired — pure unit tests (no provider, no MSW)
+// Group 6: SYN-175 — gating roles derive from the signed token, not storage
+// ---------------------------------------------------------------------------
+
+describe('AuthProvider — roles come from the signed token (SYN-175)', () => {
+  it('17. tampered fl_user roles are ignored; user.roles comes from the token on bootstrap', async () => {
+    // Simulate a user who hand-edited localStorage to grant themselves admin.
+    localStorage.setItem(
+      'fl_user',
+      JSON.stringify({ ...TEST_USER, roles: ['adminDenomination'] })
+    )
+    // The signed token the refresh cookie mints only carries their real role.
+    const token = makeJwtWithRoles(+3600, ['leaderBacenta'])
+
+    server.use(
+      http.post(`${AUTH_URL}/auth/refresh-token`, () =>
+        HttpResponse.json({ accessToken: token }, { status: 200 })
+      ),
+      http.post(`${AUTH_URL}/auth/verify`, () =>
+        HttpResponse.json({ user: TEST_USER }, { status: 200 })
+      )
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await act(async () => {})
+
+    // The injected admin role is gone — only the token's roles survive.
+    expect(result.current.user?.roles).toEqual(['leaderBacenta'])
+    expect(result.current.user?.roles).not.toContain('adminDenomination')
+  })
+
+  it('18. login derives roles from the token, not the response body user', async () => {
+    const token = makeJwtWithRoles(+3600, ['leaderBacenta'])
+
+    server.use(
+      http.post(`${AUTH_URL}/auth/login`, () =>
+        HttpResponse.json(
+          // A compromised/altered response body claiming an admin role…
+          {
+            accessToken: token,
+            user: { ...TEST_USER, roles: ['adminDenomination'] },
+          },
+          { status: 200 }
+        )
+      )
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => {})
+
+    await act(async () => {
+      await result.current.login({ email: 'test@example.com', password: 'password' })
+    })
+
+    // …does not win: the signed token is authoritative.
+    expect(result.current.user?.roles).toEqual(['leaderBacenta'])
+  })
+
+  it('19. a refresh that returns a token with fewer roles downgrades the in-memory user', async () => {
+    seedStoredUser()
+    const initial = makeJwtWithRoles(+299, ['leaderBacenta', 'leaderGovernorship'])
+    const downgraded = makeJwtWithRoles(+3600, ['leaderBacenta'])
+    let refreshCalls = 0
+
+    server.use(
+      http.post(`${AUTH_URL}/auth/refresh-token`, () => {
+        refreshCalls += 1
+        return HttpResponse.json(
+          { accessToken: refreshCalls === 1 ? initial : downgraded },
+          { status: 200 }
+        )
+      }),
+      http.post(`${AUTH_URL}/auth/verify`, () =>
+        HttpResponse.json({ user: TEST_USER }, { status: 200 })
+      )
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => {})
+
+    expect(result.current.user?.roles).toEqual([
+      'leaderBacenta',
+      'leaderGovernorship',
+    ])
+
+    // Force a refresh (initial token is inside the expiry buffer) → new token
+    // has one fewer role; the in-memory user must reflect the revocation.
+    await act(async () => {
+      await result.current.getAccessTokenSilently()
+    })
+
+    await waitFor(() => {
+      expect(result.current.user?.roles).toEqual(['leaderBacenta'])
+    })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Group 7: getRolesFromToken — pure unit tests
+// ---------------------------------------------------------------------------
+
+describe('getRolesFromToken — pure function (SYN-175)', () => {
+  it('20. extracts the roles claim from a well-formed token', () => {
+    expect(getRolesFromToken(makeJwtWithRoles(+3600, ['leaderBacenta']))).toEqual([
+      'leaderBacenta',
+    ])
+  })
+
+  it('21. returns [] for null, malformed, or roles-less tokens', () => {
+    expect(getRolesFromToken(null)).toEqual([])
+    expect(getRolesFromToken('not.a.jwt.at.all')).toEqual([])
+    expect(getRolesFromToken(makeJwt(+3600))).toEqual([])
+  })
+
+  it('22. drops non-string entries and a non-array roles claim', () => {
+    const mixed = `header.${btoa(JSON.stringify({ roles: ['leaderBacenta', 42, null] }))}.sig`
+    expect(getRolesFromToken(mixed)).toEqual(['leaderBacenta'])
+
+    const notArray = `header.${btoa(JSON.stringify({ roles: 'adminDenomination' }))}.sig`
+    expect(getRolesFromToken(notArray)).toEqual([])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Group 8: isTokenExpired — pure unit tests (no provider, no MSW)
 // ---------------------------------------------------------------------------
 
 describe('isTokenExpired — pure function', () => {

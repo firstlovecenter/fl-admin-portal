@@ -12,8 +12,29 @@ export type JwtPayload = {
   email?: string
   roles?: Role[]
   churchScopes?: ChurchScopes
+  iss?: string
+  aud?: string | string[]
   exp?: number
   [key: string]: unknown
+}
+
+/**
+ * Optional claim-validation pins (SYN-176). The symmetric `JWT_SECRET` is shared
+ * with the auth service, so a valid signature alone does not prove the token was
+ * minted *for this API*. When `expectedIss` / `expectedAud` are supplied (wired
+ * from `SECRETS.JWT_ISSUER` / `SECRETS.JWT_AUDIENCE`), the token's `iss` / `aud`
+ * must match or the token is rejected.
+ *
+ * These are deliberately gated on configuration so enforcement can be flipped on
+ * via Secrets Manager *after* the auth service is deployed to mint iss/aud-
+ * bearing tokens — avoiding a hard cross-service deploy-ordering outage. Once the
+ * secrets are set in `dev/`/`prod/fl-admin-portal`, tokens missing or carrying
+ * the wrong `iss`/`aud` are rejected. The `exp` requirement below is always on
+ * (every legitimately-minted token carries an `exp`).
+ */
+export type VerifyJwtOptions = {
+  expectedIss?: string
+  expectedAud?: string
 }
 
 const base64UrlDecode = (input: string): Buffer =>
@@ -25,7 +46,8 @@ const base64UrlDecode = (input: string): Buffer =>
 
 export const verifyJwt = (
   token: string | undefined,
-  secret: string | undefined
+  secret: string | undefined,
+  options: VerifyJwtOptions = {}
 ): JwtPayload | null => {
   if (!token || !secret) return null
   const parts = token.replace(/^Bearer\s+/i, '').split('.')
@@ -58,8 +80,24 @@ export const verifyJwt = (
   } catch {
     return null
   }
-  if (typeof payload.exp === 'number' && Date.now() / 1000 >= payload.exp) {
+  // Reject tokens with no `exp` (never-expiring) and any past their expiry.
+  // Always on: a legitimately-minted token always carries an `exp`.
+  if (typeof payload.exp !== 'number' || Date.now() / 1000 >= payload.exp) {
     return null
   }
+
+  // Reject tokens not minted for this API. Only enforced when the expected
+  // values are configured (see VerifyJwtOptions) so the rollout stays safe.
+  const { expectedIss, expectedAud } = options
+  if (expectedIss && payload.iss !== expectedIss) {
+    return null
+  }
+  if (expectedAud) {
+    const audOk = Array.isArray(payload.aud)
+      ? payload.aud.includes(expectedAud)
+      : payload.aud === expectedAud
+    if (!audOk) return null
+  }
+
   return payload
 }

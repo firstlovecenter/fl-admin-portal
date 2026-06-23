@@ -17,7 +17,7 @@ import {
   isArrivalsDownloadLevel,
 } from './arrivals-handler'
 import { isArrivalsTargetLevel } from './arrivals-cypher'
-import { JwtPayload, verifyJwt } from '../utils/verify-jwt'
+import { JwtPayload, verifyJwt, VerifyJwtOptions } from '../utils/verify-jwt'
 
 // API Gateway response body limit (10 MB for REST APIs, 6 MB for the
 // Lambda invocation envelope). Base64 inflates payloads ~33%, so we cap
@@ -310,7 +310,8 @@ export const handleDownloadLambdaEvent = async (
   event: LambdaEvent,
   driver: Driver,
   corsHeaders: Record<string, string>,
-  jwtSecret: string | undefined
+  jwtSecret: string | undefined,
+  verifyOptions: VerifyJwtOptions = {}
 ): Promise<LambdaResponse> => {
   if (eventMethod(event) === 'OPTIONS') {
     return { statusCode: 204, headers: corsHeaders, body: null }
@@ -318,7 +319,7 @@ export const handleDownloadLambdaEvent = async (
 
   const headers = event.headers || {}
   const token = headers.authorization || headers.Authorization
-  const jwt = verifyJwt(token, jwtSecret)
+  const jwt = verifyJwt(token, jwtSecret, verifyOptions)
   if (!jwt) {
     return errorResponse(401, 'Unauthorized', corsHeaders)
   }

@@ -20,10 +20,14 @@ import {
   isArrivalsDownloadLevel,
 } from './arrivals-handler'
 import { isArrivalsTargetLevel } from './arrivals-cypher'
-import { verifyJwt } from '../utils/verify-jwt'
+import { verifyJwt, VerifyJwtOptions } from '../utils/verify-jwt'
 
 const handleDownloadRequest =
-  (driver: Driver, jwtSecret: string | undefined) =>
+  (
+    driver: Driver,
+    jwtSecret: string | undefined,
+    verifyOptions: VerifyJwtOptions
+  ) =>
   async (req: Request, res: Response): Promise<void> => {
     const { level, churchId } = req.params
 
@@ -32,7 +36,7 @@ const handleDownloadRequest =
       return
     }
 
-    const jwt = verifyJwt(req.headers.authorization, jwtSecret)
+    const jwt = verifyJwt(req.headers.authorization, jwtSecret, verifyOptions)
     if (!jwt) {
       res.status(401).json({ error: 'Unauthorized' })
       return
@@ -129,7 +133,11 @@ const handleDownloadRequest =
   }
 
 const handleDefaultersRequest =
-  (driver: Driver, jwtSecret: string | undefined) =>
+  (
+    driver: Driver,
+    jwtSecret: string | undefined,
+    verifyOptions: VerifyJwtOptions
+  ) =>
   async (req: Request, res: Response): Promise<void> => {
     const { level, churchId } = req.params
 
@@ -138,7 +146,7 @@ const handleDefaultersRequest =
       return
     }
 
-    const jwt = verifyJwt(req.headers.authorization, jwtSecret)
+    const jwt = verifyJwt(req.headers.authorization, jwtSecret, verifyOptions)
     if (!jwt) {
       res.status(401).json({ error: 'Unauthorized' })
       return
@@ -197,7 +205,11 @@ const handleDefaultersRequest =
   }
 
 const handleArrivalsRequest =
-  (driver: Driver, jwtSecret: string | undefined) =>
+  (
+    driver: Driver,
+    jwtSecret: string | undefined,
+    verifyOptions: VerifyJwtOptions
+  ) =>
   async (req: Request, res: Response): Promise<void> => {
     const { level, churchId } = req.params
 
@@ -206,7 +218,7 @@ const handleArrivalsRequest =
       return
     }
 
-    const jwt = verifyJwt(req.headers.authorization, jwtSecret)
+    const jwt = verifyJwt(req.headers.authorization, jwtSecret, verifyOptions)
     if (!jwt) {
       res.status(401).json({ error: 'Unauthorized' })
       return
@@ -263,7 +275,8 @@ const handleArrivalsRequest =
 const mountDownloadRoutes = (
   app: Express,
   driver: Driver,
-  jwtSecret: string | undefined
+  jwtSecret: string | undefined,
+  verifyOptions: VerifyJwtOptions = {}
 ): void => {
   // Allow CORS preflight for all download routes. The browser sends OPTIONS
   // before the credentialled GET because of the Authorization header. Without
@@ -274,17 +287,17 @@ const mountDownloadRoutes = (
   app.get(
     '/downloads/membership/:level/:churchId.csv',
     cors(),
-    handleDownloadRequest(driver, jwtSecret)
+    handleDownloadRequest(driver, jwtSecret, verifyOptions)
   )
   app.get(
     '/downloads/defaulters/:level/:churchId.json',
     cors(),
-    handleDefaultersRequest(driver, jwtSecret)
+    handleDefaultersRequest(driver, jwtSecret, verifyOptions)
   )
   app.get(
     '/downloads/arrivals/:level/:churchId.json',
     cors(),
-    handleArrivalsRequest(driver, jwtSecret)
+    handleArrivalsRequest(driver, jwtSecret, verifyOptions)
   )
 }
 
