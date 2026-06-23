@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { getAccessToken } from 'lib/auth-service'
+import { getValidAccessToken } from 'lib/auth-service'
 
 import {
   DefaultersDownloadLevel,
@@ -40,8 +40,14 @@ export const fetchDefaultersExport = async (
   targetLevel: DefaultersTargetLevel | null = null,
   signal?: AbortSignal
 ): Promise<DefaultersExportPayload> => {
-  const token = getAccessToken()
-  if (!token) throw new Error('Sign in expired. Please sign in again.')
+  // Mint a token from the httpOnly refresh cookie if the in-memory one is gone
+  // (e.g. straight after a reload) — SYN-173. Surfaces as the catch below.
+  let token: string
+  try {
+    token = await getValidAccessToken()
+  } catch {
+    throw new Error('Sign in expired. Please sign in again.')
+  }
   const res = await fetch(
     buildDownloadUrl(level, churchId, weekStart, isCurrent, targetLevel),
     {

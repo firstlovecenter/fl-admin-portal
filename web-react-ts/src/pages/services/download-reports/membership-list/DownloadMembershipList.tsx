@@ -13,7 +13,7 @@ import {
 } from 'components/ui/table'
 import { Church, ChurchLevel, Member } from 'global-types'
 import { getDescendantLevels, getHumanReadableDate } from 'global-utils'
-import { getAccessToken } from 'lib/auth-service'
+import { getValidAccessToken } from 'lib/auth-service'
 import AncestorLevelPicker from './AncestorLevelPicker'
 import {
   Check,
@@ -300,8 +300,12 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
 
   const handleDownload = async () => {
     if (!church?.id) return
-    const token = getAccessToken()
-    if (!token) {
+    // Mint a token from the httpOnly refresh cookie if the in-memory one is
+    // gone (e.g. straight after a reload) — SYN-173.
+    let token: string
+    try {
+      token = await getValidAccessToken()
+    } catch {
       toast.error('Sign in expired. Please sign in again.')
       return
     }

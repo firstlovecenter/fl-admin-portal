@@ -19,22 +19,11 @@ export interface AuthUser {
   roles?: string[]
 }
 
-export interface TokensPair {
-  accessToken: string
-  refreshToken: string
-}
-
-export interface LoginResponse {
-  message: string
-  accessToken: string
-  refreshToken: string
-  user: AuthUser
-}
-
-// Flattened version for internal use
+// Flattened version for internal use. SYN-173: the refresh token is no longer
+// handled by the client — it lives only in an httpOnly cookie set by the auth
+// service — so it is intentionally absent here.
 export interface AuthTokens {
   accessToken: string
-  refreshToken: string
   user: AuthUser
 }
 
@@ -77,11 +66,18 @@ class AuthServiceError extends Error {
 }
 
 /**
- * Storage keys for tokens
+ * SYN-173: the short-lived access token is held in this module-scoped variable
+ * (memory only), never in localStorage/sessionStorage. It is wiped on a full
+ * page reload — AuthContext bootstraps a fresh one from the httpOnly refresh
+ * cookie on mount. The refresh token never touches JavaScript at all.
+ */
+let inMemoryAccessToken: string | null = null
+
+/**
+ * Storage keys. Only the non-credential user profile is persisted — it doubles
+ * as the cross-tab login/logout signal (see AuthContext). No token is stored.
  */
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'fl_access_token',
-  REFRESH_TOKEN: 'fl_refresh_token',
   USER: 'fl_user',
 } as const
 
@@ -109,21 +105,35 @@ export function isPublicAuthRoute(pathname: string): boolean {
 }
 
 /**
- * Get stored access token
+ * Get the in-memory access token (null after a reload, until refreshed).
  */
 export function getAccessToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+  return inMemoryAccessToken
 }
 
 /**
- * Get stored refresh token
+ * Set (or clear) the in-memory access token. Called on login and on every
+ * silent refresh so Apollo's auth link always reads the freshest token.
  */
-export function getRefreshToken(): string | null {
-  if (typeof window === 'undefined') return null
-  const token = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+export function setAccessToken(token: string | null): void {
+  inMemoryAccessToken = token
+}
 
-  return token
+/**
+ * Return a usable access token, minting a fresh one from the httpOnly refresh
+ * cookie when the in-memory token is missing (e.g. right after a reload) or
+ * past its expiry buffer. For non-React callers (the download/export helpers)
+ * that used to read the persisted token synchronously — React components should
+ * use `getAccessTokenSilently` from `useAuth()` instead. Throws if no valid
+ * session can be established.
+ */
+export async function getValidAccessToken(): Promise<string> {
+  if (inMemoryAccessToken && !isTokenExpired(inMemoryAccessToken)) {
+    return inMemoryAccessToken
+  }
+  const { accessToken } = await refreshToken()
+  inMemoryAccessToken = accessToken
+  return accessToken
 }
 
 /**
@@ -146,10 +156,8 @@ export function getStoredUser(): AuthUser | null {
  * Store authentication data
  */
 export function storeAuth(data: AuthTokens): void {
+  inMemoryAccessToken = data.accessToken
   if (typeof window === 'undefined') return
-
-  localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken)
-  localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken)
   localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user))
 }
 
@@ -157,11 +165,9 @@ export function storeAuth(data: AuthTokens): void {
  * Clear all authentication data from localStorage and sessionStorage
  */
 export function clearAuth(): void {
+  inMemoryAccessToken = null
   if (typeof window === 'undefined') return
 
-  // Clear localStorage
-  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
-  localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
   localStorage.removeItem(STORAGE_KEYS.USER)
 
   // Clear sessionStorage
@@ -237,6 +243,9 @@ export async function login(data: LoginData): Promise<AuthTokens> {
   const response = await fetch(`${AUTH_API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    // Include credentials so the browser stores the httpOnly refresh cookie the
+    // auth service sets on success (SYN-173).
+    credentials: 'include',
     body: JSON.stringify(data),
   })
 
@@ -250,13 +259,13 @@ export async function login(data: LoginData): Promise<AuthTokens> {
     )
   }
 
-  // Handle both nested and flat token structures
+  // Access token may be nested (tokens.accessToken) or flat depending on the
+  // endpoint version. The refresh token is intentionally ignored — it now
+  // lives only in the httpOnly cookie.
   const accessToken = result.accessToken || result.tokens?.accessToken
-  const refreshToken = result.refreshToken || result.tokens?.refreshToken
 
   return {
     accessToken,
-    refreshToken,
     user: result.user,
   }
 }
@@ -294,32 +303,16 @@ export async function verifyToken(token: string): Promise<AuthUser> {
 }
 
 /**
- * Refresh access token using refresh token
+ * Exchange the httpOnly refresh cookie for a fresh access token. The cookie is
+ * sent automatically by the browser (credentials: 'include'); no token is read
+ * from or passed by JavaScript (SYN-173).
  */
-export async function refreshToken(
-  refreshToken: string
-): Promise<{ accessToken: string; refreshToken: string }> {
-  if (!refreshToken) {
-    throw new AuthServiceError('No refresh token available', 401, undefined)
-  }
-
-  // Get the current (possibly expired) access token
-  const currentAccessToken = getAccessToken()
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  }
-
-  // Include the access token in Authorization header if available
-  // Many auth services require this for security
-  if (currentAccessToken) {
-    headers['Authorization'] = `Bearer ${currentAccessToken}`
-  }
-
+export async function refreshToken(): Promise<{ accessToken: string }> {
   const response = await fetch(`${AUTH_API_URL}/auth/refresh-token`, {
     method: 'POST',
-    headers,
-    body: JSON.stringify({ refreshToken }),
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({}),
   })
 
   const result = await response.json()
@@ -333,6 +326,23 @@ export async function refreshToken(
   }
 
   return result
+}
+
+/**
+ * Tell the auth service to clear the httpOnly refresh cookie. Best-effort:
+ * failures are swallowed because local logout (clearAuth) must proceed
+ * regardless of network state, and the cookie expires on its own (SYN-173).
+ */
+export async function serverLogout(): Promise<void> {
+  try {
+    await fetch(`${AUTH_API_URL}/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    })
+  } catch {
+    // Ignore network errors — the access token is already gone from memory.
+  }
 }
 
 /**
