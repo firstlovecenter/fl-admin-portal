@@ -46,6 +46,22 @@
             }
           ]
         }
+      },
+      {
+        "files": [
+          "src/resolvers/utils/scope-utils.ts"
+        ],
+        "rules": {
+          "fl-cypher/no-interpolated-cypher": [
+            "error",
+            {
+              "allowedIdentifiers": [
+                "SERVANT_EDGES",
+                "CHURCH_LEVEL_LABELS"
+              ]
+            }
+          ]
+        }
       }
     ]
   },
