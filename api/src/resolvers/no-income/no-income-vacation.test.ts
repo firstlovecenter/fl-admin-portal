@@ -8,6 +8,12 @@
  *   npm test -- no-income-vacation --testNamePattern="SM3:"
  */
 
+import serviceNoIncomeMutations from './service-resolvers'
+import { assertChurchScope } from '../utils/scope-utils'
+import type { Context } from '../utils/neo4j-types'
+
+// jest.mock calls are hoisted above these imports by babel-jest, so the mocks
+// are registered before service-resolvers loads its dependencies.
 jest.mock('../utils/utils', () => ({
   ...jest.requireActual('../utils/utils'),
   isAuth: jest.fn(),
@@ -17,8 +23,11 @@ jest.mock('../directory/utils', () => ({
   makeServantCypher: jest.fn().mockResolvedValue(undefined),
 }))
 
-import serviceNoIncomeMutations from './service-resolvers'
-import type { Context } from '../utils/neo4j-types'
+jest.mock('../utils/scope-utils', () => ({
+  assertChurchScope: jest.fn().mockResolvedValue(undefined),
+}))
+
+const mockAssertChurchScope = assertChurchScope as jest.Mock
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -63,6 +72,7 @@ afterAll(() => {
 })
 
 beforeEach(() => {
+  mockAssertChurchScope.mockReset().mockResolvedValue(undefined)
   mockSession = {
     executeRead: jest.fn(),
     executeWrite: jest.fn(),
@@ -90,11 +100,18 @@ describe('SM3 — RecordServiceNoIncome: vacation refusal', () => {
       .mockResolvedValueOnce(makeMockQueryResult({ exists: true }))
       // checkFormFilledThisWeek → vacation labels
       .mockResolvedValueOnce(
-        makeMockQueryResult({ alreadyFilled: false, labels: ['Vacation', 'Bacenta'] })
+        makeMockQueryResult({
+          alreadyFilled: false,
+          labels: ['Vacation', 'Bacenta'],
+        })
       )
 
     await expect(
-      serviceNoIncomeMutations.RecordServiceNoIncome(null, noIncomeArgs, context)
+      serviceNoIncomeMutations.RecordServiceNoIncome(
+        null,
+        noIncomeArgs,
+        context
+      )
     ).rejects.toThrow(VACATION_ERROR)
   })
 
@@ -102,21 +119,33 @@ describe('SM3 — RecordServiceNoIncome: vacation refusal', () => {
     mockSession.executeRead
       .mockResolvedValueOnce(makeMockQueryResult({ exists: true }))
       .mockResolvedValueOnce(
-        makeMockQueryResult({ alreadyFilled: false, labels: ['Vacation', 'Bacenta'] })
+        makeMockQueryResult({
+          alreadyFilled: false,
+          labels: ['Vacation', 'Bacenta'],
+        })
       )
 
     await expect(
-      serviceNoIncomeMutations.RecordServiceNoIncome(null, noIncomeArgs, context)
+      serviceNoIncomeMutations.RecordServiceNoIncome(
+        null,
+        noIncomeArgs,
+        context
+      )
     ).rejects.toThrow()
 
     expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    // Session must close even when the resolver throws mid-flow.
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
   })
 
   it('SM3: RecordServiceNoIncome succeeds for an active Bacenta (vacation check does not block)', async () => {
     mockSession.executeRead
       .mockResolvedValueOnce(makeMockQueryResult({ exists: true }))
       .mockResolvedValueOnce(
-        makeMockQueryResult({ alreadyFilled: false, labels: ['Active', 'Bacenta'] })
+        makeMockQueryResult({
+          alreadyFilled: false,
+          labels: ['Active', 'Bacenta'],
+        })
       )
 
     mockSession.executeWrite.mockResolvedValueOnce(
@@ -124,7 +153,33 @@ describe('SM3 — RecordServiceNoIncome: vacation refusal', () => {
     )
 
     await expect(
-      serviceNoIncomeMutations.RecordServiceNoIncome(null, noIncomeArgs, context)
+      serviceNoIncomeMutations.RecordServiceNoIncome(
+        null,
+        noIncomeArgs,
+        context
+      )
     ).resolves.toMatchObject({ id: 'sr_new' })
+
+    // Session must close on the success path too (no leak).
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+
+  // SYN-169 (BOLA): recording no-income for an out-of-scope church must be
+  // rejected before any read/write — and before makeServantCypher can mint a
+  // :LEADS edge — so the scope check has to short-circuit ahead of the session.
+  it('SYN-169: rejects an out-of-scope churchId before any DB access', async () => {
+    mockAssertChurchScope.mockRejectedValueOnce(new Error('FORBIDDEN'))
+
+    await expect(
+      serviceNoIncomeMutations.RecordServiceNoIncome(
+        null,
+        noIncomeArgs,
+        context
+      )
+    ).rejects.toThrow('FORBIDDEN')
+
+    expect(mockAssertChurchScope).toHaveBeenCalledWith(context, 'bacenta_1')
+    expect(mockSession.executeRead).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 })
