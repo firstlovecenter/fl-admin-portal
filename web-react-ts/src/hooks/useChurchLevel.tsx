@@ -26,6 +26,12 @@ type useChurchLevelProps = {
   oversightRefetch?: () => Promise<ApolloQueryResult<any>>
   denominationFunction?: LazyQueryExecFunction<any, OperationVariables>
   denominationRefetch?: () => Promise<ApolloQueryResult<any>>
+  /** Optional ISO `YYYY-MM-DD` Monday for week-scoped queries (joint banking
+   * lists). When omitted the queries fall back to the server's current week. */
+  weekStart?: string
+  /** Optional ISO week number for `aggregateServiceRecordForWeek($week)`.
+   * Defaults to `getWeekNumber()` for callers that don't select a week. */
+  week?: number
 }
 
 const useChurchLevel = (props: useChurchLevelProps) => {
@@ -44,10 +50,12 @@ const useChurchLevel = (props: useChurchLevelProps) => {
   const [error, setError] = useState<undefined | ApolloError>()
 
   const { arrivalDate } = useContext(ChurchContext)
-  // Current ISO week — consumed by the joint-defaulter queries'
-  // `aggregateServiceRecordForWeek(week: Int!)` field. Ignored by queries that
-  // don't declare `$week`.
-  const week = getWeekNumber()
+  // Week selection — `weekStart` scopes the joint banking list `@cypher`
+  // window (SYN-191: without it the list fell back to the server's current
+  // week and never matched the week the dashboard counted). `week` feeds the
+  // joint-defaulter queries' `aggregateServiceRecordForWeek(week: Int!)` field.
+  const { weekStart } = props
+  const week = props.week ?? getWeekNumber()
 
   const chooseRefetch = () => {
     switch (churchLevel) {
@@ -106,6 +114,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
                 week,
+                weekStart,
               },
             })
 
@@ -121,6 +130,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
                 week,
+                weekStart,
               },
             })
 
@@ -137,6 +147,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
                 week,
+                weekStart,
               },
             })
             setChurch(res?.data?.streams[0])
@@ -152,6 +163,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
                 week,
+                weekStart,
               },
             })
 
@@ -168,6 +180,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
                 week,
+                weekStart,
               },
             })
 
@@ -184,6 +197,7 @@ const useChurchLevel = (props: useChurchLevelProps) => {
                 id: currentChurch?.id,
                 arrivalDate: arrivalDate,
                 week,
+                weekStart,
               },
             })
 

@@ -152,9 +152,14 @@ const DefaultersDashboard = () => {
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
 
+  // SYN-191: `currentChurch` is the source of truth (drill-down writes it; the
+  // picker mirrors into it). Prefer it over `selectedScope` so the level shown
+  // while the query is in flight matches the drilled church, not the home scope.
   const level = (church?.__typename ??
-    (selectedScope?.churchType as ChurchLevel | undefined) ??
-    currentUser?.currentChurch?.__typename) as ChurchLevel | undefined
+    (currentUser?.currentChurch?.__typename as ChurchLevel | undefined) ??
+    (selectedScope?.churchType as ChurchLevel | undefined)) as
+    | ChurchLevel
+    | undefined
   const subChurch = level ? SUB_CHURCH_BY_LEVEL[level] : undefined
 
   const showStreamSection =

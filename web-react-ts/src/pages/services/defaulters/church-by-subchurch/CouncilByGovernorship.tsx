@@ -41,7 +41,7 @@ const CouncilByGovernorship = () => {
                     <CardHeader className="font-bold">
                       <div>{`${governorship.name} Governorship`}</div>
                       <div className="text-muted-foreground">
-                        {governorship.leader.fullName}
+                        {governorship.leader?.fullName ?? 'No Leader'}
                       </div>
                     </CardHeader>
                     <CardContent

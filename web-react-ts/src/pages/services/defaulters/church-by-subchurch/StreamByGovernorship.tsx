@@ -17,6 +17,7 @@ import { STREAM_BY_GOVERNORSHIP } from '../DefaultersQueries'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import DownloadDefaultersButton from '../DownloadDefaultersButton'
 import useSelectedWeek from 'hooks/useSelectedWeek'
+import useSetUserChurch from 'hooks/useSetUserChurch'
 import {
   statClass,
   bankedClass,
@@ -28,6 +29,7 @@ import {
 interface GovernorshipStat {
   id: string
   name: string
+  __typename: 'Governorship'
   leader?: { fullName: string }
   admin?: {
     firstName: string
@@ -64,6 +66,7 @@ const CouncilSectionSkeleton = () => (
 
 const StreamByGovernorship = () => {
   const { streamId, clickCard } = useContext(ChurchContext)
+  const { setUserChurch } = useSetUserChurch()
   const { weekStart } = useSelectedWeek()
   const { data, loading, error, refetch } = useQuery(STREAM_BY_GOVERNORSHIP, {
     variables: { id: streamId, weekStart },
@@ -160,6 +163,7 @@ const StreamByGovernorship = () => {
                                 className="w-full text-left transition-colors hover:bg-muted/30 active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
                                 onClick={() => {
                                   clickCard(governorship)
+                                  setUserChurch(governorship)
                                   navigate('/services/defaulters/dashboard')
                                 }}
                               >

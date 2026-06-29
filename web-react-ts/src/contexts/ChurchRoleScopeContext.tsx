@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -97,8 +98,16 @@ const buildRoleDisplayName = (
   return fallbackRoleName
 }
 
+type CurrentUserShape = {
+  roles?: Role[]
+  currentChurch?: { id: string; name: string; __typename: string }
+} & Record<string, unknown>
+
 type MemberContextShape = {
-  currentUser?: { roles?: Role[] }
+  currentUser?: CurrentUserShape
+  setCurrentUser?: (
+    value: CurrentUserShape | ((prev: CurrentUserShape) => CurrentUserShape)
+  ) => void
   userJobs?: UserJobs[]
 }
 
@@ -115,7 +124,7 @@ export const ChurchRoleScopeProvider = ({
 }: {
   children: ReactNode
 }) => {
-  const { currentUser, userJobs } = useContext(
+  const { currentUser, setCurrentUser, userJobs } = useContext(
     MemberContext
   ) as MemberContextShape
   const [selectedScopeKey, setSelectedScopeKey] = useState('')
@@ -199,6 +208,31 @@ export const ChurchRoleScopeProvider = ({
       ),
     [roleChurchOptions, selectedScopeKey]
   )
+
+  // SYN-191: the "Church in Focus" picker is the user's *home* scope and the
+  // single source of truth for which church the level-aware dashboards display.
+  // Mirror it into `currentChurch` (which those dashboards read) whenever it
+  // resolves or the user actually switches it. Because this provider is mounted
+  // once at the app root, the ref persists across navigation: drill-down
+  // navigation writes `currentChurch` directly and never touches the picker, so
+  // it is not clobbered here — only a genuine picker change re-pins the view.
+  const prevScopeKeyRef = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (!selectedScope || !setCurrentUser) return
+    if (prevScopeKeyRef.current === selectedScope.key) return
+    prevScopeKeyRef.current = selectedScope.key
+
+    const focusChurch = {
+      id: selectedScope.churchId,
+      name: selectedScope.churchName,
+      __typename: selectedScope.churchType,
+    }
+    setCurrentUser((prev: CurrentUserShape) => {
+      const next = { ...(prev ?? {}), currentChurch: focusChurch }
+      sessionStorage.setItem('currentUser', JSON.stringify(next))
+      return next
+    })
+  }, [selectedScope, setCurrentUser])
 
   const value = useMemo(
     () => ({

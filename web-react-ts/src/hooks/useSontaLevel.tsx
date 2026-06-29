@@ -6,7 +6,6 @@ import {
 } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
-import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { ChurchLevel } from 'global-types'
 import { getSubChurchLevel } from 'global-utils'
 import { HigherChurchWithArrivals } from 'pages/arrivals/arrivals-types'
@@ -32,16 +31,14 @@ type useSontaLevelProps = {
 
 const useSontaLevel = (props: useSontaLevelProps) => {
   const { currentUser } = useContext(MemberContext)
-  const { selectedScope } = useChurchRoleScope()
 
-  // "Church in Focus" picker is the source of truth when set; fall back to
-  // the user's primary `currentChurch` for legacy / pre-scope flows.
-  const focusChurch = selectedScope
-    ? {
-        id: selectedScope.churchId,
-        __typename: selectedScope.churchType as ChurchLevel,
-      }
-    : currentUser?.currentChurch
+  // SYN-191: `currentChurch` is the single source of truth for the focused
+  // church. The "Church in Focus" picker mirrors its selection into
+  // `currentChurch` (see ChurchRoleScopeContext) and drill-down navigation
+  // writes it directly via `setUserChurch`. Reading it here means a drilled
+  // sub-church is honoured instead of being overridden by the picker's home
+  // scope — which is what stranded users on their own dashboard (SYN-191).
+  const focusChurch = currentUser?.currentChurch
   const currentChurch = focusChurch
   const churchLevel: ChurchLevel = focusChurch?.__typename
   const subChurchLevel: ChurchLevel = getSubChurchLevel(focusChurch?.__typename)

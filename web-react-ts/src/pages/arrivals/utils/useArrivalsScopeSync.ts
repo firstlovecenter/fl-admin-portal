@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -21,6 +21,14 @@ import {
  * Guards are value-based on purpose: `clickCard` is recreated every render, so
  * relying on its identity in the dependency array would re-fire constantly.
  * Acting only when the focused church actually differs keeps it idempotent.
+ *
+ * SYN-191: only react to an *actual* focus change made by the user while a
+ * dashboard is mounted — never on the initial mount. Drilling down (e.g. Stream
+ * → Council) mounts a deeper dashboard whose `level` differs from the focused
+ * scope; firing on mount would route the user straight back to their focused
+ * level and make drill-down impossible. The `/arrivals` entry route already
+ * performs the one-shot initial sync, so this hook only needs to follow
+ * subsequent picker changes.
  */
 const useArrivalsScopeSync = (
   level: ArrivalsScopeLevel,
@@ -29,10 +37,18 @@ const useArrivalsScopeSync = (
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope } = useChurchRoleScope()
   const navigate = useNavigate()
+  const prevScopeKeyRef = useRef<string | undefined>(selectedScope?.key)
 
   useEffect(() => {
     if (!selectedScope) return
     if (!ARRIVALS_CHURCH_TYPES.has(selectedScope.churchType)) return
+
+    // Ignore the initial mount (including the undefined → resolved race) and
+    // any render where the focused scope has not actually changed. Only a
+    // genuine picker change should re-point or re-route the dashboard.
+    const prevScopeKey = prevScopeKeyRef.current
+    prevScopeKeyRef.current = selectedScope.key
+    if (prevScopeKey === undefined || prevScopeKey === selectedScope.key) return
 
     const focusedCard = {
       id: selectedScope.churchId,

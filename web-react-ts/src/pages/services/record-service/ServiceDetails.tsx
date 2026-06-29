@@ -218,6 +218,37 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
     )
   }
 
+  // SYN-191: the body below dereferences `service` in many unguarded places, so
+  // a missing record (e.g. a joint defaulter card whose selection resolves to an
+  // aggregate with no backing ServiceRecord) would throw during render and
+  // white-screen the route. Render a navigable empty state instead — the
+  // `navigate(-1)` effect above takes the user back when there is history, but a
+  // PWA opened cold on this route has no back stack, so a clear in-app link out
+  // is required (no blank screen, no dead end).
+  if (!service) {
+    return (
+      <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Service record not found
+          </h1>
+        </StickyPageHeader>
+        <main className="mx-auto max-w-md px-4 py-10 text-center">
+          <p className="text-sm text-muted-foreground">
+            This service record is no longer available or has not been filed
+            yet.
+          </p>
+          <Button
+            className="mt-6 min-h-11"
+            onClick={() => navigate('/services', { replace: true })}
+          >
+            Back to Services
+          </Button>
+        </main>
+      </div>
+    )
+  }
+
   const trackIncome = !currentUser.noIncomeTracking
 
   const noBankingProof =

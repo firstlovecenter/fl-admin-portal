@@ -27,6 +27,7 @@ import { ChurchIdAndName, ChurchLevel } from 'global-types'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { cn } from 'components/lib/utils'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
+import useSetUserChurch from 'hooks/useSetUserChurch'
 import { Skeleton } from 'components/ui/skeleton'
 import {
   Dialog,
@@ -131,6 +132,7 @@ const ServicesMenu = () => {
 const ServicesMenuInner = () => {
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
+  const { setUserChurch } = useSetUserChurch()
   const { selectedScope } = useChurchRoleScope()
   const navigate = useNavigate()
   const location = useLocation()
@@ -343,7 +345,19 @@ const ServicesMenuInner = () => {
                 accent="bg-defaulters/10 text-defaulters"
                 title="Defaulters"
                 description="Churches missing services or banking this week"
-                onClick={() => navigate('/services/defaulters/dashboard')}
+                onClick={() => {
+                  // SYN-191: entering Defaulters from the menu pins the
+                  // dashboard to the menu's church (home scope / nav override),
+                  // resetting any church left over from a previous drill-down.
+                  if (churchId && churchType && churchName) {
+                    setUserChurch({
+                      id: churchId,
+                      name: churchName,
+                      __typename: churchType,
+                    })
+                  }
+                  navigate('/services/defaulters/dashboard')
+                }}
               />
             </RoleView>
           )}

@@ -43,7 +43,7 @@ const DenominationByOversight = () => {
                     <CardHeader className="font-bold">
                       <div>{`${oversight.name} Oversight`}</div>
                       <div className="text-muted-foreground">
-                        {oversight.leader.fullName}
+                        {oversight.leader?.fullName ?? 'No Leader'}
                       </div>
                     </CardHeader>
                     <CardContent
