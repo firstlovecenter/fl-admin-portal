@@ -184,8 +184,8 @@ extend type Stream {
 
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
-
-      RETURN DISTINCT bacentas AS bankingDefaultersThisWeek ORDER BY governorship.name, bacentas.id SKIP $offset LIMIT $limit
+       WITH DISTINCT bacentas, governorship
+      RETURN bacentas AS bankingDefaultersThisWeek ORDER BY governorship.name, bacentas.id SKIP $offset LIMIT $limit
       """
       columnName: "bankingDefaultersThisWeek"
     )
@@ -238,8 +238,8 @@ extend type Stream {
 
        WITH DISTINCT bacentas, this
        MATCH (bacentas)<-[:HAS]-(governorship:Governorship)<-[:HAS]-(:Council)<-[:HAS]-(this)
-
-      RETURN DISTINCT bacentas AS bankedThisWeek ORDER BY governorship.name, bacentas.id SKIP $offset LIMIT $limit
+       WITH DISTINCT bacentas, governorship
+      RETURN bacentas AS bankedThisWeek ORDER BY governorship.name, bacentas.id SKIP $offset LIMIT $limit
       """
 
       columnName: "bankedThisWeek"
