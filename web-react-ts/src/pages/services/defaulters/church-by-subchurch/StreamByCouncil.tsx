@@ -53,22 +53,20 @@ const StreamByCouncil = () => {
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <StickyPageHeader bare>
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
-              <div className="min-w-0">
-                {loading || !stream ? (
-                  <Skeleton className="h-9 w-64" />
-                ) : (
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                    {stream.name}{' '}
-                    <span className="text-churches">Stream By Council</span>
-                  </h1>
-                )}
-              </div>
+            <div className="mx-auto max-w-6xl space-y-2 py-3 pl-16 pr-16 md:px-4 lg:px-6">
+              {loading || !stream ? (
+                <Skeleton className="h-9 w-64" />
+              ) : (
+                <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                  {stream.name}{' '}
+                  <span className="text-churches">Stream By Council</span>
+                </h1>
+              )}
               <StickyPageHeaderActions>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1.5"
+                  className="min-h-11 gap-1.5"
                   onClick={() => navigate('/services/stream-by-governorship')}
                 >
                   <Network className="h-4 w-4" />
