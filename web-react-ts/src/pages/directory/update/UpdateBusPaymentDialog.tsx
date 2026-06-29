@@ -36,7 +36,7 @@ import {
   MOBILE_NETWORK_OPTIONS,
   OUTBOUND_OPTIONS,
 } from 'pages/arrivals/arrivals-utils'
-import { permitAdminArrivals } from 'permission-utils'
+import { permitBacentaBussingAdmin } from 'permission-utils'
 import {
   DISPLAY_BACENTA_BUSSING_DETAILS,
   SEND_MOBILE_VERIFICATION_NUMBER,
@@ -120,7 +120,7 @@ const UpdateBusPaymentDialog = ({
     values: FormOptions,
     onSubmitProps: FormikHelpers<FormOptions>
   ) => {
-    const isAdmin = isAuthorised(permitAdminArrivals('Stream'))
+    const isAdmin = isAuthorised(permitBacentaBussingAdmin())
     const momoChanged =
       initialValues.momoNumber !== values.momoNumber && !!values.momoNumber
 
@@ -232,7 +232,7 @@ const UpdateBusPaymentDialog = ({
             >
               {(formik) => (
                 <Form className="space-y-4">
-                  <RoleView roles={permitAdminArrivals('Stream')}>
+                  <RoleView roles={permitBacentaBussingAdmin()}>
                     <div className="space-y-4">
                       <Input
                         name="urvanTopUp"

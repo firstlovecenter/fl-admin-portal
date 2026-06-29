@@ -254,3 +254,107 @@ MATCH (stream:Stream {id:$streamId})-[:HAS*3]->(:Bacenta)-[:HAS_HISTORY]->(:Serv
 MATCH (bussing)-[:INCLUDES_RECORD]->(record:VehicleRecord) WHERE record.arrivalTime IS NOT NULL AND record.attendance > 7
 RETURN count(DISTINCT record) AS total
 `
+
+// SYN-185 — formerly an SDL @cypher mutation. Moved here so the resolver can run
+// an actor-scope check (assertChurchScope) BEFORE the write, closing the IDOR
+// where any arrivals admin could edit any bacenta's top-ups org-wide. The scope
+// gate lives in the resolver; this statement does the write + audit log + node
+// re-projection. $userId replaces the old $jwt.userId (custom resolvers pass
+// explicit params).
+//
+// The history sub-projection is LOAD-BEARING: in @neo4j/graphql v7 object-type
+// @cypher fields (Bacenta.history) are NOT re-resolved off a custom resolver's
+// plain-map return — defaultFieldResolver just reads `source.history` — so any
+// field the mutation's selection set asks for MUST be projected here. It mirrors
+// the Bacenta.history SDL field (DISTINCT, HAS_HISTORY|OLD_HISTORY, ORDER BY
+// timeStamp DESC then id). LIMIT is fixed at 5 to match the sole caller
+// (UpdateBacentaArrivals.ts `history(limit: 5)`); change both together.
+// currentUser is matched up front so a bad/absent $userId yields zero rows and
+// writes nothing (no orphan HistoryLog), rather than after the CREATE.
+export const updateBacentaBussingDetails = `
+MATCH (bacenta:Bacenta {id: $bacentaId})
+MATCH (currentUser:Member {id: $userId})
+SET bacenta.sprinterTopUp = $sprinterTopUp,
+    bacenta.urvanTopUp = $urvanTopUp,
+    bacenta.outbound = $outbound
+
+WITH bacenta, currentUser
+CREATE (log:HistoryLog {id: apoc.create.uuid()})
+  SET log.timeStamp = datetime(),
+      log.historyRecord = bacenta.name + ' Bussing Details were updated'
+
+WITH bacenta, log, currentUser
+MERGE (date:TimeGraph {date: date()})
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+MERGE (log)-[:RECORDED_ON]->(date)
+MERGE (bacenta)-[:HAS_HISTORY]->(log)
+
+WITH bacenta
+CALL {
+  WITH bacenta
+  MATCH (bacenta)-[:HAS_HISTORY|OLD_HISTORY]->(h:HistoryLog)
+  WITH DISTINCT h ORDER BY h.timeStamp DESC, h.id LIMIT 5
+  RETURN collect(h {
+    .id,
+    .timeStamp,
+    .historyRecord,
+    createdAt: head([(h)-[:RECORDED_ON]->(t:TimeGraph) | t { .date }]),
+    loggedBy: head([(h)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName }])
+  }) AS history
+}
+
+RETURN bacenta {
+  .id,
+  .name,
+  .outbound,
+  .sprinterTopUp,
+  .urvanTopUp,
+  history
+} AS bacenta
+`
+
+// SYN-185 — see updateBacentaBussingDetails above. Same scope-before-write
+// rationale, same load-bearing history projection (fixed LIMIT 5); gated to the
+// bacenta's own leader in the resolver.
+export const updateBusPaymentDetails = `
+MATCH (bacenta:Bacenta {id: $bacentaId})
+MATCH (currentUser:Member {id: $userId})
+SET bacenta.mobileNetwork = $mobileNetwork,
+    bacenta.momoName = $momoName,
+    bacenta.momoNumber = $momoNumber
+REMOVE bacenta.recipientCode
+
+WITH bacenta, currentUser
+CREATE (log:HistoryLog {id: apoc.create.uuid()})
+  SET log.timeStamp = datetime(),
+      log.historyRecord = bacenta.name + ' Bus Payment Details were updated'
+
+WITH bacenta, log, currentUser
+MERGE (date:TimeGraph {date: date()})
+MERGE (log)-[:LOGGED_BY]->(currentUser)
+MERGE (log)-[:RECORDED_ON]->(date)
+MERGE (bacenta)-[:HAS_HISTORY]->(log)
+
+WITH bacenta
+CALL {
+  WITH bacenta
+  MATCH (bacenta)-[:HAS_HISTORY|OLD_HISTORY]->(h:HistoryLog)
+  WITH DISTINCT h ORDER BY h.timeStamp DESC, h.id LIMIT 5
+  RETURN collect(h {
+    .id,
+    .timeStamp,
+    .historyRecord,
+    createdAt: head([(h)-[:RECORDED_ON]->(t:TimeGraph) | t { .date }]),
+    loggedBy: head([(h)-[:LOGGED_BY]->(m:Member) | m { .id, .firstName, .lastName }])
+  }) AS history
+}
+
+RETURN bacenta {
+  .id,
+  .name,
+  .momoName,
+  .momoNumber,
+  .mobileNetwork,
+  history
+} AS bacenta
+`

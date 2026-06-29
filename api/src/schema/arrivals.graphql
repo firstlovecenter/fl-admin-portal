@@ -1289,81 +1289,25 @@ extend type Mutation {
       columnName: "code"
     )
 
+  # SYN-185 — resolved by arrivalsMutation.UpdateBacentaBussingDetails. Moved
+  # off @cypher so the resolver can run an actor-scope check (assertChurchScope)
+  # before the write — the old role-only @authentication let any campus/stream
+  # arrivals admin edit ANY bacenta's top-ups (IDOR on driver-payout config).
   UpdateBacentaBussingDetails(
     bacentaId: ID!
     sprinterTopUp: Float!
     urvanTopUp: Float!
     outbound: Boolean!
   ): Bacenta!
-    @authentication(
-      jwt: {
-        OR: [
-          { roles: { includes: "adminCampus" } }
-          { roles: { includes: "arrivalsAdminCampus" } }
-          { roles: { includes: "adminStream" } }
-          { roles: { includes: "arrivalsAdminStream" } }
-        ]
-      }
-    )
-    @cypher(
-      statement: """
-      MATCH (bacenta:Bacenta {id: $bacentaId})
 
-      WITH bacenta
-      MATCH (bacenta)
-        SET bacenta.sprinterTopUp = $sprinterTopUp,
-          bacenta.urvanTopUp = $urvanTopUp,
-          bacenta.outbound = $outbound
-
-      WITH DISTINCT bacenta
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = bacenta.name + ' Bussing Details were updated'
-
-      WITH log,bacenta
-      MATCH (admin:Member {id: $jwt.userId})
-      MERGE (date:TimeGraph {date: date()})
-
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-      RETURN bacenta
-      """
-      columnName: "bacenta"
-    )
-
+  # SYN-185 — resolved by arrivalsMutation.UpdateBusPaymentDetails. Same
+  # scope-before-write rationale; gated to the bacenta's own leader.
   UpdateBusPaymentDetails(
     bacentaId: ID!
     mobileNetwork: String!
     momoName: String!
     momoNumber: String!
   ): Bacenta!
-    @authentication(jwt: { roles: { includes: "leaderBacenta" } })
-    @cypher(
-      statement: """
-      MATCH (bacenta:Bacenta {id: $bacentaId})
-        SET bacenta.mobileNetwork = $mobileNetwork,
-        bacenta.momoName = $momoName,
-        bacenta.momoNumber = $momoNumber
-      REMOVE bacenta.recipientCode
-
-      WITH bacenta
-      CREATE (log:HistoryLog {id:apoc.create.uuid()})
-        SET log.timeStamp = datetime(),
-        log.historyRecord = bacenta.name + ' Bus Payment Details were updated'
-
-      WITH log,bacenta
-      MATCH (admin:Member {id: $jwt.userId})
-      MERGE (date:TimeGraph {date:date()})
-      MERGE (log)-[:LOGGED_BY]->(admin)
-      MERGE (log)-[:RECORDED_ON]->(date)
-      MERGE (bacenta)-[:HAS_HISTORY]->(log)
-
-      RETURN bacenta
-      """
-      columnName: "bacenta"
-    )
 
   UploadMobilisationPicture(
     bacentaId: ID!

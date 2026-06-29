@@ -4,6 +4,7 @@ import { getHumanReadableDate } from '../utils/date-utils'
 import { getStreamFinancials } from '../utils/financial-utils'
 import { Context } from '../utils/neo4j-types'
 import {
+  badRequest,
   isAuth,
   parseNeoNumber,
   rearrangeCypherObject,
@@ -20,6 +21,7 @@ import {
   permitArrivalsCounter,
   permitArrivalsHelpers,
   permitArrivalsPayer,
+  permitBacentaBussingAdmin,
 } from '../permissions'
 import { MakeServant, RemoveServant } from '../directory/make-remove-servants'
 import {
@@ -39,6 +41,8 @@ import {
   setSwellDate,
   setVehicleRecordTransactionSuccessful,
   setVehicleTopUp,
+  updateBacentaBussingDetails,
+  updateBusPaymentDetails,
   uploadMobilisationPicture,
 } from './arrivals-cypher'
 import { joinMessageStrings, sendBulkSMS } from '../utils/notify'
@@ -322,6 +326,91 @@ export const arrivalsMutation = {
       'ArrivalsPayer'
     ),
 
+  // SYN-185 — was an SDL @cypher mutation gated on role strings only, so any
+  // campus/stream arrivals admin could overwrite ANY bacenta's top-ups (which
+  // drive driver payouts). Now a resolver: the role gate is the same four roles
+  // the old @authentication accepted, plus assertChurchScope binds the write to
+  // a bacenta within the caller's authority. Out-of-scope calls throw a friendly
+  // FORBIDDEN before any write or HistoryLog.
+  UpdateBacentaBussingDetails: async (
+    object: never,
+    args: {
+      bacentaId: string
+      sprinterTopUp: number
+      urvanTopUp: number
+      outbound: boolean
+    },
+    context: Context
+  ) => {
+    isAuth(permitBacentaBussingAdmin(), context.jwt?.roles)
+    await assertChurchScope(context, args.bacentaId)
+
+    // These top-ups drive driver-payout amounts — reject negative/non-finite
+    // values server-side (ADR-005). GraphQL Float! already blocks NaN/Infinity;
+    // the finite check is belt-and-suspenders.
+    if (
+      !Number.isFinite(args.sprinterTopUp) ||
+      !Number.isFinite(args.urvanTopUp) ||
+      args.sprinterTopUp < 0 ||
+      args.urvanTopUp < 0
+    ) {
+      throw badRequest('Top-up amounts must be zero or a positive number.')
+    }
+
+    const session = context.executionContext.session()
+    try {
+      const response = await session.executeWrite((tx) =>
+        tx.run(updateBacentaBussingDetails, {
+          bacentaId: args.bacentaId,
+          sprinterTopUp: args.sprinterTopUp,
+          urvanTopUp: args.urvanTopUp,
+          outbound: args.outbound,
+          userId: context.jwt?.userId,
+        })
+      )
+      return response.records[0]?.get('bacenta')
+    } catch (error: any) {
+      throwToSentry('Error updating bacenta bussing details', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
+  // SYN-185 — companion to UpdateBacentaBussingDetails. Gated to the bacenta's
+  // own leader; assertChurchScope confirms the leader actually leads the target
+  // bacenta rather than trusting the bacentaId argument.
+  UpdateBusPaymentDetails: async (
+    object: never,
+    args: {
+      bacentaId: string
+      mobileNetwork: string
+      momoName: string
+      momoNumber: string
+    },
+    context: Context
+  ) => {
+    isAuth(['leaderBacenta'], context.jwt?.roles)
+    await assertChurchScope(context, args.bacentaId)
+
+    const session = context.executionContext.session()
+    try {
+      const response = await session.executeWrite((tx) =>
+        tx.run(updateBusPaymentDetails, {
+          bacentaId: args.bacentaId,
+          mobileNetwork: args.mobileNetwork,
+          momoName: args.momoName,
+          momoNumber: args.momoNumber,
+          userId: context.jwt?.userId,
+        })
+      )
+      return response.records[0]?.get('bacenta')
+    } catch (error: any) {
+      throwToSentry('Error updating bus payment details', error)
+      throw error
+    } finally {
+      await session.close()
+    }
+  },
   UploadMobilisationPicture: async (
     object: any,
     args: {

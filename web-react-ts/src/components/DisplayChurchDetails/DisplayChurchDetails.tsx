@@ -34,7 +34,11 @@ import { ChevronRight, MapPin, Pencil, PencilLine, XCircle } from 'lucide-react'
 import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
 import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
 import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
-import { permitAdmin, permitAdminArrivals } from 'permission-utils'
+import {
+  permitAdmin,
+  permitAdminArrivals,
+  permitBacentaBussingAdmin,
+} from 'permission-utils'
 import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import SearchMember from 'components/formik/SearchMember'
@@ -308,7 +312,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   // sets the momo number. The dialog shows each their own fields — the trigger
   // just needs to be visible to either.
   const canEditBusPayment =
-    isAuthorised(permitAdminArrivals('Stream')) ||
+    isAuthorised(permitBacentaBussingAdmin()) ||
     (isAuthorised(['leaderBacenta']) && currentUser.id === props?.leader?.id)
 
   const busPaymentBlock =

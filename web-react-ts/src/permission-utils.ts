@@ -237,6 +237,18 @@ export const permitAdminArrivals = (churchLevel: ChurchLevel): Role[] => {
   return [...permitAdmin(churchLevel), ...permitArrivals(churchLevel)]
 }
 
+// SYN-185 — exact role set permitted to edit a Bacenta's bussing (top-up)
+// details. Deliberately narrower than `permitAdminArrivals('Stream')`, which
+// also returns adminOversight/adminDenomination; those roles only ever saw a
+// dead-end editor the backend rejected. Used by the bus-payment button gate
+// and dialog. MIRROR any change in api/src/resolvers/permissions.ts (ADR-001).
+export const permitBacentaBussingAdmin = (): Role[] => [
+  'adminCampus',
+  'adminStream',
+  'arrivalsAdminCampus',
+  'arrivalsAdminStream',
+]
+
 export const permitTellerStream = (): Role[] => {
   return ['tellerStream']
 }
