@@ -39,6 +39,14 @@ const texts = require('../texts.json')
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
     isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
+
+    // isAuth only checks the caller HOLDS a bacenta-level role, not WHERE.
+    // Gate the destination bacenta so a leader cannot create — or reactivate —
+    // members into a bacenta outside their scope. Both the new-member and the
+    // `activateInactiveMember` branches below attach to `$bacenta`, so scoping
+    // it once here covers them both (SYN-186).
+    await assertChurchScope(context, args.bacenta)
+
     const session = context.executionContext.session()
     const email = args?.email?.trim().toLowerCase() || null
     const inactiveMemberResponse = rearrangeCypherObject(
@@ -197,6 +205,15 @@ const directoryMutation = {
     context: Context
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
+
+    // isAuth only checks the caller HOLDS a bacenta-level role, not WHERE.
+    // The member being reactivated is Inactive and has no live bacenta to
+    // anchor on, so the only meaningful gate is the destination: the bacenta
+    // they are being attached to must sit within the caller's scope. Without
+    // this any bacenta admin could reactivate any member org-wide into any
+    // bacenta they pass (SYN-186, same IDOR class as SYN-185).
+    await assertChurchScope(context, args.bacentaId)
+
     const session = context.executionContext.session()
 
     try {
