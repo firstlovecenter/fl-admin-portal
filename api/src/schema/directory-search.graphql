@@ -19,7 +19,11 @@ extend type Member {
       """
       columnName: "bacentaSearch"
     )
-  governorshipSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Governorship!]!
+  governorshipSearch(
+    key: String!
+    limit: Int! = 5
+    offset: Int! = 0
+  ): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR*1..6]->(governorship:Governorship)
@@ -55,7 +59,11 @@ extend type Member {
       """
       columnName: "campusSearch"
     )
-  oversightSearch(key: String!, limit: Int! = 5, offset: Int! = 0): [Oversight!]!
+  oversightSearch(
+    key: String!
+    limit: Int! = 5
+    offset: Int! = 0
+  ): [Oversight!]!
     @cypher(
       statement: """
       MATCH (this)-[:LEADS|HAS|IS_ADMIN_FOR*1..2]->(oversight:Oversight)
@@ -64,7 +72,6 @@ extend type Member {
       """
       columnName: "oversightSearch"
     )
-
 }
 
 extend type Denomination {
@@ -87,7 +94,11 @@ extend type Denomination {
       """
       columnName: "bacentaSearch"
     )
-  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
+  governorshipSearch(
+    key: String!
+    limit: Int!
+    offset: Int! = 0
+  ): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*5]->(governorship:Governorship)
@@ -154,7 +165,11 @@ extend type Oversight {
       """
       columnName: "bacentaSearch"
     )
-  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
+  governorshipSearch(
+    key: String!
+    limit: Int!
+    offset: Int! = 0
+  ): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*4]->(governorship:Governorship)
@@ -212,7 +227,11 @@ extend type Campus {
       """
       columnName: "bacenta"
     )
-  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
+  governorshipSearch(
+    key: String!
+    limit: Int!
+    offset: Int! = 0
+  ): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*3]->(governorship:Governorship)
@@ -261,7 +280,11 @@ extend type Stream {
       """
       columnName: "bacenta"
     )
-  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
+  governorshipSearch(
+    key: String!
+    limit: Int!
+    offset: Int! = 0
+  ): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS*2]->(governorship:Governorship)
@@ -301,7 +324,11 @@ extend type Council {
       """
       columnName: "bacenta"
     )
-  governorshipSearch(key: String!, limit: Int!, offset: Int! = 0): [Governorship!]!
+  governorshipSearch(
+    key: String!
+    limit: Int!
+    offset: Int! = 0
+  ): [Governorship!]!
     @cypher(
       statement: """
       MATCH (this)-[:HAS]->(governorship:Governorship)
