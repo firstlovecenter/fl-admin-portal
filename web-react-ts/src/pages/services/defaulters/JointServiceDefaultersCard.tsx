@@ -80,42 +80,51 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             }}
           >
             {defaulter?.leader?.fullName || 'No Leader'}
-            {serviceDetails?.attendance && (
+            {serviceDetails?.attendance ? (
               <div>
                 <span className="text-muted-foreground">Attendance: </span>
-                {serviceDetails?.attendance}
+                {serviceDetails.attendance}
               </div>
-            )}
-            {serviceDetails?.income && (
+            ) : null}
+            {serviceDetails?.income ? (
               <div>
                 <span className="text-muted-foreground">Income: </span>
-                {currentUser.currency} {serviceDetails?.income}
+                {currentUser.currency} {serviceDetails.income}
               </div>
-            )}
-            {serviceDetails?.noServiceReason && (
+            ) : null}
+            {serviceDetails?.noServiceReason ? (
               <div>
                 <span className="text-muted-foreground">
                   Reason for Cancelled Service:{' '}
                 </span>
-                {serviceDetails?.noServiceReason}
+                {serviceDetails.noServiceReason}
               </div>
-            )}
+            ) : null}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button asChild>
-              <a href={`tel:${defaulter?.leader?.phoneNumber}`}>
-                <Phone className="h-4 w-4" /> Call
-              </a>
-            </Button>
-            <Button
-              asChild
-              className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
-            >
-              <a href={`https://wa.me/${defaulter?.leader?.whatsappNumber}`}>
-                <FaWhatsapp className="h-4 w-4" /> WhatsApp
-              </a>
-            </Button>
-          </div>
+          {(defaulter?.leader?.phoneNumber ||
+            defaulter?.leader?.whatsappNumber) && (
+            <div className="flex flex-wrap items-center gap-2">
+              {defaulter?.leader?.phoneNumber && (
+                <Button asChild className="min-h-11">
+                  <a href={`tel:${defaulter.leader.phoneNumber}`}>
+                    <Phone className="h-4 w-4" /> Call
+                  </a>
+                </Button>
+              )}
+              {defaulter?.leader?.whatsappNumber && (
+                <Button
+                  asChild
+                  className="min-h-11 bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
+                >
+                  <a
+                    href={`https://wa.me/${defaulter.leader.whatsappNumber}`}
+                  >
+                    <FaWhatsapp className="h-4 w-4" /> WhatsApp
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
         </CardContent>
       </PlaceholderCustom>
     </Card>

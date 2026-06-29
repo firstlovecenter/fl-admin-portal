@@ -1,21 +1,16 @@
 import { useLazyQuery } from '@apollo/client'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import HeadingSecondary from 'components/HeadingSecondary'
-import PlaceholderCustom from 'components/Placeholder'
-import { getWeekNumber } from 'lib/date-utils'
 import useChurchLevel from 'hooks/useChurchLevel'
-import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import PullToRefresh from 'components/base-component/PullToRefresh'
 import {
   CAMPUS_SERVICES_GOVERNORSHIP_JOINT_DEFAULTERS_LIST,
   COUNCIL_GOVERNORSHIP_JOINT_DEFAULTERS_LIST,
   STREAM_GOVERNORSHIP_JOINT_DEFAULTERS_LIST,
 } from './DefaultersQueries'
-import PlaceholderDefaulterList from './PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from './defaulters-types'
-import JointServiceDefaulterCard from './JointServiceDefaultersCard'
+import JointBankingWeekList from './JointBankingWeekList'
+import useSelectedWeek from 'hooks/useSelectedWeek'
 
 const GovernorshipNotBankedThisWeek = () => {
+  const { weekStart, week } = useSelectedWeek()
   const [councilGovernorshipNotBankedThisWeek, { refetch: councilRefetch }] =
     useLazyQuery(COUNCIL_GOVERNORSHIP_JOINT_DEFAULTERS_LIST)
   const [streamGovernorshipNotBankedThisWeek, { refetch: streamRefetch }] =
@@ -31,38 +26,23 @@ const GovernorshipNotBankedThisWeek = () => {
     streamRefetch,
     campusFunction: campusThisWeek,
     campusRefetch,
+    weekStart,
+    week,
   })
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
 
   return (
-    <PullToRefresh onRefresh={refetch}>
-      <ApolloWrapper data={church} loading={loading} error={error} placeholder>
-        <div className="mx-auto w-full max-w-screen-md px-4">
-          <HeadingPrimary
-            loading={!church}
-          >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
-          <HeadingSecondary>{`Forms Filled This Week (Week ${getWeekNumber()})`}</HeadingSecondary>
-
-          <PlaceholderCustom
-            as="h6"
-            loading={!church?.governorshipBankingDefaultersThisWeek.length}
-          >
-            <h6>{`Forms Filled This Week: ${church?.governorshipBankingDefaultersThisWeek.length}`}</h6>
-          </PlaceholderCustom>
-
-          <div className="grid gap-3">
-            {church?.governorshipBankingDefaultersThisWeek.map((service, i) => (
-              <JointServiceDefaulterCard
-                key={i}
-                defaulter={service}
-                link="/governorship/service-details"
-              />
-            ))}
-            {!church && <PlaceholderDefaulterList />}
-          </div>
-        </div>
-      </ApolloWrapper>
-    </PullToRefresh>
+    <JointBankingWeekList
+      church={church}
+      loading={loading}
+      error={error}
+      refetch={refetch}
+      records={church?.governorshipBankingDefaultersThisWeek ?? []}
+      subjectLabel="Governorship"
+      variant="not-banked"
+      serviceLink="/governorship/service-details"
+      week={week}
+    />
   )
 }
 
