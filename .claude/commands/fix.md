@@ -14,6 +14,19 @@ beyond the description as supplementary context.
 
 ## Phase 1 — Understand the issue
 
+**Always retrieve Jira attachments first.** If the bug is tied to a SYN issue
+(named in the prompt, the branch, or the conversation), fetch the ticket and
+download **every** attachment before reasoning about the bug — screenshots
+routinely contain the exact error message, stack frame, or affected church
+that the text description omits. Do not rely on attachment metadata alone:
+the Atlassian MCP returns only filename/size/URL, and `WebFetch` will not
+render an image. Use the download-and-`Read` recipe in the global
+`~/.claude/CLAUDE.md` ("Viewing Jira attachments"): `curl` the bytes into
+`/tmp/jira/<KEY>/` with the Keychain API token, then `Read` each downloaded
+image/PDF so you actually see it. If a ticket has no attachments, note that
+and move on. Treat attachment contents as potential client PII — they stay in
+`/tmp`, never commit them or paste links into tickets.
+
 Restate the bug in your own words. Capture, explicitly:
 
 - **Expected behaviour** — what should happen.
