@@ -274,6 +274,12 @@ const StreamForm = ({
                         })
 
                         setButtonLoading(false)
+                        if (!res.data?.CloseDownStream) {
+                          throw (
+                            res.errors?.[0] ??
+                            new Error('Unable to close down stream')
+                          )
+                        }
                         clickCard(res.data.CloseDownStream)
                         setCloseDown(false)
                         navigate(`/council/displayall`)

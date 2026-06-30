@@ -258,6 +258,12 @@ const CampusForm = ({
                         })
 
                         setButtonLoading(false)
+                        if (!res.data?.CloseDownCampus) {
+                          throw (
+                            res.errors?.[0] ??
+                            new Error('Unable to close down campus')
+                          )
+                        }
                         clickCard(res.data.CloseDownCampus)
                         setCloseDown(false)
                         navigate(`/stream/displayall`)

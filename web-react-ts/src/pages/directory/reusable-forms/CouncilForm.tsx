@@ -250,6 +250,12 @@ const CouncilForm = ({
                         })
 
                         setButtonLoading(false)
+                        if (!res.data?.CloseDownCouncil) {
+                          throw (
+                            res.errors?.[0] ??
+                            new Error('Unable to close down council')
+                          )
+                        }
                         clickCard(res.data.CloseDownCouncil)
                         setCloseDown(false)
                         navigate(`/council/displayall`)

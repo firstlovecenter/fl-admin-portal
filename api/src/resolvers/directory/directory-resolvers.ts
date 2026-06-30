@@ -31,6 +31,7 @@ import {
 import { sendServantPromotionEmail } from '../utils/notify'
 import { clearUserAuthorityCache } from '../utils/allowed-church-ids'
 import { assertChurchScope, assertScopeViaMember } from '../utils/scope-utils'
+import { assertCan } from '../utils/assert-can'
 
 const cypher = require('../cypher/resolver-cypher')
 const closeChurchCypher = require('../cypher/close-church-cypher')
@@ -315,6 +316,10 @@ const directoryMutation = {
   },
   CloseDownBacenta: async (object: any, args: any, context: Context) => {
     isAuth(permitAdminArrivals('Governorship'), context.jwt?.roles)
+    // Bind the action to the target church — `isAuth` only checks the role
+    // exists somewhere; without this a phantom (leaderless) close-down would
+    // skip the per-instance scope gate that RemoveServant otherwise enforces.
+    assertCan(context, permitAdmin('Governorship'), args.bacentaId)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -358,15 +363,18 @@ const directoryMutation = {
         )
       }
 
-      // Bacenta Leader must be removed since the Bacenta is being closed down
-      await RemoveServant(
-        context,
-        args,
-        permitAdmin('Governorship'),
-        'Bacenta',
-        'Leader',
-        true
-      )
+      // Leaderless ("phantom") bacentas have no leader to remove; only detach
+      // a leader when one was supplied.
+      if (args.leaderId) {
+        await RemoveServant(
+          context,
+          args,
+          permitAdmin('Governorship'),
+          'Bacenta',
+          'Leader',
+          true
+        )
+      }
 
       const closeBacentaResponse = await session.executeWrite((tx) =>
         tx.run(closeChurchCypher.closeDownBacenta, {
@@ -387,6 +395,7 @@ const directoryMutation = {
   },
   CloseDownGovernorship: async (object: any, args: any, context: Context) => {
     isAuth(permitAdmin('Council'), context.jwt?.roles)
+    assertCan(context, permitAdmin('Council'), args.governorshipId)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -430,16 +439,19 @@ const directoryMutation = {
         )
       }
 
-      // Remove Governorship Leader and Admin
+      // Remove Governorship Leader and Admin (a phantom governorship may have
+      // neither — skip whichever was not supplied)
       await Promise.all([
-        RemoveServant(
-          context,
-          args,
-          permitAdmin('Council'),
-          'Governorship',
-          'Leader',
-          true
-        ),
+        args.leaderId
+          ? RemoveServant(
+              context,
+              args,
+              permitAdmin('Council'),
+              'Governorship',
+              'Leader',
+              true
+            )
+          : null,
         args.adminId
           ? RemoveServant(
               context,
@@ -473,6 +485,7 @@ const directoryMutation = {
 
   CloseDownCouncil: async (object: any, args: any, context: Context) => {
     isAuth(permitAdmin('Stream'), context.jwt?.roles)
+    assertCan(context, permitAdmin('Stream'), args.councilId)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -516,16 +529,19 @@ const directoryMutation = {
         )
       }
 
-      // Remove Council Leader and Admin
+      // Remove Council Leader and Admin (a phantom council may have neither —
+      // skip whichever was not supplied)
       await Promise.all([
-        RemoveServant(
-          context,
-          args,
-          permitAdmin('Stream'),
-          'Council',
-          'Leader',
-          true
-        ),
+        args.leaderId
+          ? RemoveServant(
+              context,
+              args,
+              permitAdmin('Stream'),
+              'Council',
+              'Leader',
+              true
+            )
+          : null,
         args.adminId
           ? RemoveServant(
               context,
@@ -557,6 +573,7 @@ const directoryMutation = {
 
   CloseDownStream: async (object: any, args: any, context: Context) => {
     isAuth(permitAdmin('Campus'), context.jwt?.roles)
+    assertCan(context, permitAdmin('Campus'), args.streamId)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -606,16 +623,19 @@ const directoryMutation = {
         )
       }
 
-      // Remove Stream Leader and Admin
+      // Remove Stream Leader and Admin (a phantom stream may have neither —
+      // skip whichever was not supplied)
       await Promise.all([
-        RemoveServant(
-          context,
-          args,
-          permitAdmin('Campus'),
-          'Stream',
-          'Leader',
-          true
-        ),
+        args.leaderId
+          ? RemoveServant(
+              context,
+              args,
+              permitAdmin('Campus'),
+              'Stream',
+              'Leader',
+              true
+            )
+          : null,
         args.adminId
           ? RemoveServant(
               context,
@@ -647,6 +667,7 @@ const directoryMutation = {
 
   CloseDownCampus: async (object: any, args: any, context: Context) => {
     isAuth(permitAdmin('Oversight'), context.jwt?.roles)
+    assertCan(context, permitAdmin('Oversight'), args.campusId)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -690,16 +711,19 @@ const directoryMutation = {
         )
       }
 
-      // Remove Campus Leader and Admin
+      // Remove Campus Leader and Admin (a phantom campus may have neither —
+      // skip whichever was not supplied)
       await Promise.all([
-        RemoveServant(
-          context,
-          args,
-          permitAdmin('Oversight'),
-          'Campus',
-          'Leader',
-          true
-        ),
+        args.leaderId
+          ? RemoveServant(
+              context,
+              args,
+              permitAdmin('Oversight'),
+              'Campus',
+              'Leader',
+              true
+            )
+          : null,
         args.adminId
           ? RemoveServant(
               context,
@@ -731,6 +755,7 @@ const directoryMutation = {
 
   CloseDownOversight: async (object: any, args: any, context: Context) => {
     isAuth(permitAdmin('Denomination'), context.jwt?.roles)
+    assertCan(context, permitAdmin('Denomination'), args.oversightId)
 
     const session = context.executionContext.session()
     const sessionTwo = context.executionContext.session()
@@ -774,16 +799,19 @@ const directoryMutation = {
         )
       }
 
-      // Remove Oversight Leader and Admin
+      // Remove Oversight Leader and Admin (a phantom oversight may have
+      // neither — skip whichever was not supplied)
       await Promise.all([
-        RemoveServant(
-          context,
-          args,
-          permitAdmin('Denomination'),
-          'Oversight',
-          'Leader',
-          true
-        ),
+        args.leaderId
+          ? RemoveServant(
+              context,
+              args,
+              permitAdmin('Denomination'),
+              'Oversight',
+              'Leader',
+              true
+            )
+          : null,
         args.adminId
           ? RemoveServant(
               context,

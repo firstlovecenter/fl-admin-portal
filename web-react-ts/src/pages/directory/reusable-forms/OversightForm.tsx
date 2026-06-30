@@ -238,6 +238,12 @@ const OversightForm = ({
                         })
 
                         setButtonLoading(false)
+                        if (!res.data?.CloseDownOversight) {
+                          throw (
+                            res.errors?.[0] ??
+                            new Error('Unable to close down oversight')
+                          )
+                        }
                         clickCard(res.data.CloseDownOversight)
                         setCloseDown(false)
                         navigate(`/campus/displayall`)

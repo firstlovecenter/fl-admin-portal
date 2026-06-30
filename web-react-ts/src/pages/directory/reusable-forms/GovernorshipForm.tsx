@@ -241,6 +241,13 @@ const GovernorshipForm = ({
                           },
                         })
 
+                        if (!res.data?.CloseDownGovernorship) {
+                          throw (
+                            res.errors?.[0] ??
+                            new Error('Unable to close down governorship')
+                          )
+                        }
+
                         clickCard(res.data.CloseDownGovernorship)
                         setCloseDown(false)
                         navigate(`/governorship/displayall`)

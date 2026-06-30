@@ -42,6 +42,9 @@ const CloseDownBacentaButton = ({
       const res = await CloseDownBacenta({
         variables: { id: bacentaId, leaderId },
       })
+      if (!res.data?.CloseDownBacenta) {
+        throw res.errors?.[0] ?? new Error('Unable to close down bacenta')
+      }
       clickCard(res.data.CloseDownBacenta)
       setOpen(false)
       navigate('/bacenta/displayall')
