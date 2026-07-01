@@ -1,7 +1,8 @@
-import { permitLeaderAdmin } from '../permissions'
+import { permitLeaderAdmin, permitLeaderAdminArrivals } from '../permissions'
 import { Context } from '../utils/neo4j-types'
-import { ChurchLevel } from '../utils/types'
+import { ChurchLevel, Role } from '../utils/types'
 import { isAuth, throwToSentry } from '../utils/utils'
+import { assertChurchScope } from '../utils/scope-utils'
 import {
   bacentaDirectoryReport,
   governorshipDirectoryReport,
@@ -48,6 +49,23 @@ const VALID_SUB_CHURCH_TARGETS: ReadonlySet<string> = new Set([
 const isSubChurchTarget = (value: string): value is SubChurchesTarget =>
   VALID_SUB_CHURCH_TARGETS.has(value)
 
+// Bussing and Weekday reports share one resolver/field; arrivals admins may
+// see only bussing columns, so weekday service metrics are nulled for any
+// caller admitted via an arrivals (not leader/admin) role. SYN-194.
+const isLeaderAdmin = (level: ChurchLevel, roles?: Role[]): boolean =>
+  permitLeaderAdmin(level).some((role) => roles?.includes(role))
+
+const redactServiceMetrics = <T extends Record<string, unknown>>(
+  entries: T[]
+): T[] =>
+  entries.map((entry) => ({
+    ...entry,
+    serviceAttendance: null,
+    serviceIncome: null,
+    serviceDollarIncome: null,
+    numberOfServices: null,
+  }))
+
 const createDirectoryResolver =
   (cypherQuery: string, permissionLevel: ChurchLevel) =>
   async (object: { id: string }, _args: unknown, context: Context) => {
@@ -70,9 +88,26 @@ const createDirectoryResolver =
   }
 
 const createWeeklyReportResolver =
-  (cypherQuery: string, permissionLevel: ChurchLevel, reportName: string) =>
+  (
+    cypherQuery: string,
+    permissionLevel: ChurchLevel,
+    reportName: string,
+    // Bussing reports share this resolver with the leader/admin-only Weekday
+    // reports. When true, arrivals admins are also permitted (scoped to their
+    // own subtree) and income columns are redacted for them. SYN-194.
+    options: { arrivalsAccessible?: boolean } = {}
+  ) =>
   async (object: { id: string }, args: WeekRangeArgs, context: Context) => {
-    isAuth(permitLeaderAdmin(permissionLevel), context.jwt?.roles)
+    const roles = context.jwt?.roles
+    isAuth(
+      options.arrivalsAccessible
+        ? permitLeaderAdminArrivals(permissionLevel)
+        : permitLeaderAdmin(permissionLevel),
+      roles
+    )
+    if (options.arrivalsAccessible) {
+      await assertChurchScope(context, object.id)
+    }
     const session = context.executionContext.session()
 
     try {
@@ -84,7 +119,11 @@ const createWeeklyReportResolver =
         })
       )
 
-      return result.records[0]?.get('entries') ?? []
+      const entries = result.records[0]?.get('entries') ?? []
+      return options.arrivalsAccessible &&
+        !isLeaderAdmin(permissionLevel, roles)
+        ? redactServiceMetrics(entries)
+        : entries
     } catch (error) {
       throwToSentry(
         `Error getting ${permissionLevel} ${reportName} report`,
@@ -98,13 +137,30 @@ const createWeeklyReportResolver =
   }
 
 const createSubChurchesAtLevelResolver =
-  (scope: SubChurchesScope) =>
+  (
+    scope: SubChurchesScope,
+    // Same opt-in as createWeeklyReportResolver: when true, arrivals admins
+    // are permitted (scoped to their own subtree) and weekday service metrics
+    // are redacted for them. Kept explicit per-field so a future non-bussing
+    // sub-church-at-level report doesn't silently inherit arrivals access.
+    // SYN-194.
+    options: { arrivalsAccessible?: boolean } = {}
+  ) =>
   async (
     object: { id: string },
     args: SubChurchesAtLevelArgs,
     context: Context
   ) => {
-    isAuth(permitLeaderAdmin(scope), context.jwt?.roles)
+    const roles = context.jwt?.roles
+    isAuth(
+      options.arrivalsAccessible
+        ? permitLeaderAdminArrivals(scope)
+        : permitLeaderAdmin(scope),
+      roles
+    )
+    if (options.arrivalsAccessible) {
+      await assertChurchScope(context, object.id)
+    }
 
     // Validate targetLevel against the whitelist before reaching Cypher.
     // A bogus level either trips this guard or surfaces as a 0-row return
@@ -132,7 +188,10 @@ const createSubChurchesAtLevelResolver =
           endWeekKey: args.endWeekKey,
         })
       )
-      return result.records[0]?.get('entries') ?? []
+      const entries = result.records[0]?.get('entries') ?? []
+      return options.arrivalsAccessible && !isLeaderAdmin(scope, roles)
+        ? redactServiceMetrics(entries)
+        : entries
     } catch (error) {
       throwToSentry(
         `Error getting ${scope} sub-churches @ ${args.targetLevel}`,
@@ -156,7 +215,8 @@ export const reportsResolvers = {
     weekdayIncomeBussingReport: createWeeklyReportResolver(
       bacentaWeeklyReport,
       'Bacenta',
-      'weekday income & bussing'
+      'weekday income & bussing',
+      { arrivalsAccessible: true }
     ),
     weekdayServiceRecordsReport: createWeeklyReportResolver(
       bacentaServiceRecordsReport,
@@ -182,7 +242,8 @@ export const reportsResolvers = {
     weekdayIncomeBussingReport: createWeeklyReportResolver(
       governorshipWeeklyReport,
       'Governorship',
-      'weekday income & bussing'
+      'weekday income & bussing',
+      { arrivalsAccessible: true }
     ),
     subChurchesReport: createWeeklyReportResolver(
       governorshipSubChurchesReport,
@@ -200,14 +261,17 @@ export const reportsResolvers = {
     weekdayIncomeBussingReport: createWeeklyReportResolver(
       councilWeeklyReport,
       'Council',
-      'weekday income & bussing'
+      'weekday income & bussing',
+      { arrivalsAccessible: true }
     ),
     subChurchesReport: createWeeklyReportResolver(
       councilSubChurchesReport,
       'Council',
       'sub-churches'
     ),
-    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Council'),
+    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Council', {
+      arrivalsAccessible: true,
+    }),
   },
   Stream: {
     directoryReport: createDirectoryResolver(streamDirectoryReport, 'Stream'),
@@ -219,14 +283,17 @@ export const reportsResolvers = {
     weekdayIncomeBussingReport: createWeeklyReportResolver(
       streamWeeklyReport,
       'Stream',
-      'weekday income & bussing'
+      'weekday income & bussing',
+      { arrivalsAccessible: true }
     ),
     subChurchesReport: createWeeklyReportResolver(
       streamSubChurchesReport,
       'Stream',
       'sub-churches'
     ),
-    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Stream'),
+    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Stream', {
+      arrivalsAccessible: true,
+    }),
   },
   Campus: {
     directoryReport: createDirectoryResolver(campusDirectoryReport, 'Campus'),
@@ -238,14 +305,17 @@ export const reportsResolvers = {
     weekdayIncomeBussingReport: createWeeklyReportResolver(
       campusWeeklyReport,
       'Campus',
-      'weekday income & bussing'
+      'weekday income & bussing',
+      { arrivalsAccessible: true }
     ),
     subChurchesReport: createWeeklyReportResolver(
       campusSubChurchesReport,
       'Campus',
       'sub-churches'
     ),
-    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Campus'),
+    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Campus', {
+      arrivalsAccessible: true,
+    }),
   },
   Oversight: {
     directoryReport: createDirectoryResolver(
@@ -260,13 +330,16 @@ export const reportsResolvers = {
     weekdayIncomeBussingReport: createWeeklyReportResolver(
       oversightWeeklyReport,
       'Oversight',
-      'weekday income & bussing'
+      'weekday income & bussing',
+      { arrivalsAccessible: true }
     ),
     subChurchesReport: createWeeklyReportResolver(
       oversightSubChurchesReport,
       'Oversight',
       'sub-churches'
     ),
-    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Oversight'),
+    subChurchesReportAtLevel: createSubChurchesAtLevelResolver('Oversight', {
+      arrivalsAccessible: true,
+    }),
   },
 }

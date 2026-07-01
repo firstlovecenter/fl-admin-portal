@@ -1,5 +1,9 @@
 import { LazyRouteTypes } from 'global-types'
-import { permitLeaderAdmin, permitMe } from 'permission-utils'
+import {
+  permitLeaderAdmin,
+  permitLeaderAdminArrivals,
+  permitMe,
+} from 'permission-utils'
 import { lazy } from 'react'
 
 const ReportsPage = lazy(() => import('./ReportsPage'))
@@ -54,17 +58,17 @@ export const reportsRoutes: LazyRouteTypes[] = [
   {
     path: '/reports/weekday',
     element: WeekdayReportPage,
-    roles: permitMe('Bacenta'),
+    roles: permitLeaderAdmin('Bacenta'),
   },
   {
     path: '/reports/weekday/services',
     element: BacentaServiceRecordsReportPage,
-    roles: permitMe('Bacenta'),
+    roles: permitLeaderAdmin('Bacenta'),
   },
   {
     path: '/reports/weekday/sub-churches',
     element: WeekdaySubChurchesReportPage,
-    roles: permitMe('Bacenta'),
+    roles: permitLeaderAdmin('Bacenta'),
   },
   {
     path: '/reports/defaulters',
@@ -79,11 +83,11 @@ export const reportsRoutes: LazyRouteTypes[] = [
   {
     path: '/reports/arrivals',
     element: ArrivalsReportPage,
-    roles: permitLeaderAdmin('Governorship'),
+    roles: permitLeaderAdminArrivals('Governorship'),
   },
   {
     path: '/reports/arrivals/sub-churches',
     element: ArrivalsSubChurchesReportPage,
-    roles: permitLeaderAdmin('Governorship'),
+    roles: permitLeaderAdminArrivals('Governorship'),
   },
 ]

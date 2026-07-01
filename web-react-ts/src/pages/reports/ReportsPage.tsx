@@ -197,7 +197,9 @@ const ReportsPage = () => {
   const Card = (props: Omit<ReportCardProps, 'pending' | 'onActivate'>) => (
     <ReportCard
       {...props}
-      pending={isPending && pendingTarget !== null && pendingTarget === props.to}
+      pending={
+        isPending && pendingTarget !== null && pendingTarget === props.to
+      }
       onActivate={handleCardActivate}
     />
   )
@@ -260,9 +262,7 @@ const ReportsPage = () => {
   const tocSections: TocSection[] = [
     { id: 'directory', label: 'Directory' },
     { id: 'bussing', label: 'Bussing' },
-    ...(defaultersAvailable
-      ? [{ id: 'defaulters', label: 'Defaulters' }]
-      : []),
+    ...(defaultersAvailable ? [{ id: 'defaulters', label: 'Defaulters' }] : []),
     ...(arrivalsAvailable ? [{ id: 'arrivals', label: 'Arrivals' }] : []),
     { id: 'weekday', label: 'Weekday' },
   ]
@@ -287,9 +287,7 @@ const ReportsPage = () => {
                 Directory
               </p>
               <div className="space-y-3">
-                <RoleView
-                  roles={permitLeaderAdmin(churchType as ChurchLevel)}
-                >
+                <RoleView roles={permitLeaderAdmin(churchType as ChurchLevel)}>
                   <Card
                     icon={<Users className="size-5" />}
                     title={`${churchPrefix}Membership List`}
@@ -300,14 +298,18 @@ const ReportsPage = () => {
                   />
                 </RoleView>
                 {hasSubChurches && (
-                  <Card
-                    icon={<Network className="size-5" />}
-                    title={`${churchPrefix}Sub-Church Directory`}
-                    description={`One row per sub-church in ${
-                      churchName || 'this church'
-                    } — leader's name and phone number.`}
-                    to={directoryPath}
-                  />
+                  <RoleView
+                    roles={permitLeaderAdmin(churchType as ChurchLevel)}
+                  >
+                    <Card
+                      icon={<Network className="size-5" />}
+                      title={`${churchPrefix}Sub-Church Directory`}
+                      description={`One row per sub-church in ${
+                        churchName || 'this church'
+                      } — leader's name and phone number.`}
+                      to={directoryPath}
+                    />
+                  </RoleView>
                 )}
               </div>
             </section>
@@ -349,29 +351,31 @@ const ReportsPage = () => {
             </section>
 
             {defaultersAvailable && (
-              <section id="defaulters" className="space-y-3 scroll-mt-6">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Defaulters
-                </p>
-                <div className="space-y-3">
-                  <Card
-                    icon={<AlertOctagon className="size-5" />}
-                    title={`${churchPrefix}Defaulters Report`}
-                    description="Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-sub-church summary at Council and above."
-                    to={defaultersPath}
-                  />
-                  {defaultersSubChurchesAvailable && (
+              <RoleView roles={permitLeaderAdmin(churchType as ChurchLevel)}>
+                <section id="defaulters" className="space-y-3 scroll-mt-6">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Defaulters
+                  </p>
+                  <div className="space-y-3">
                     <Card
-                      icon={<Network className="size-5" />}
-                      title={`${churchPrefix}Defaulters by Sub-Church`}
-                      description={`One row per sub-church in ${
-                        churchName || 'this church'
-                      } — services filed, form defaulters, banked, banking defaulters, and cancelled.`}
-                      to={defaultersSubChurchesPath}
+                      icon={<AlertOctagon className="size-5" />}
+                      title={`${churchPrefix}Defaulters Report`}
+                      description="Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-sub-church summary at Council and above."
+                      to={defaultersPath}
                     />
-                  )}
-                </div>
-              </section>
+                    {defaultersSubChurchesAvailable && (
+                      <Card
+                        icon={<Network className="size-5" />}
+                        title={`${churchPrefix}Defaulters by Sub-Church`}
+                        description={`One row per sub-church in ${
+                          churchName || 'this church'
+                        } — services filed, form defaulters, banked, banking defaulters, and cancelled.`}
+                        to={defaultersSubChurchesPath}
+                      />
+                    )}
+                  </div>
+                </section>
+              </RoleView>
             )}
 
             {arrivalsAvailable && (
@@ -404,36 +408,38 @@ const ReportsPage = () => {
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Weekday
               </p>
-              <div className="space-y-3">
-                <Card
-                  icon={<CalendarRange className="size-5" />}
-                  title={
-                    churchType === 'Bacenta'
-                      ? `${churchPrefix}Weekday Service Records`
-                      : `${churchPrefix}Weekday`
-                  }
-                  description={
-                    churchType === 'Bacenta'
-                      ? `Every weekday service record for ${
-                          churchName || 'this Bacenta'
-                        } — attendance, income, no-service reasons, treasurers, photo URLs, and banking proof.`
-                      : `Per-week weekday service totals for ${
-                          churchName || 'this church'
-                        } — attendance, count, and income (cedis and USD).`
-                  }
-                  to={weekdayPath}
-                />
-                {hasMetricSubChurches && (
+              <RoleView roles={permitLeaderAdmin(churchType as ChurchLevel)}>
+                <div className="space-y-3">
                   <Card
-                    icon={<Network className="size-5" />}
-                    title={`${churchPrefix}Weekday by Sub-Church`}
-                    description={`Per-week weekday service totals broken down by each sub-church in ${
-                      churchName || 'this church'
-                    }.`}
-                    to={weekdaySubChurchesPath}
+                    icon={<CalendarRange className="size-5" />}
+                    title={
+                      churchType === 'Bacenta'
+                        ? `${churchPrefix}Weekday Service Records`
+                        : `${churchPrefix}Weekday`
+                    }
+                    description={
+                      churchType === 'Bacenta'
+                        ? `Every weekday service record for ${
+                            churchName || 'this Bacenta'
+                          } — attendance, income, no-service reasons, treasurers, photo URLs, and banking proof.`
+                        : `Per-week weekday service totals for ${
+                            churchName || 'this church'
+                          } — attendance, count, and income (cedis and USD).`
+                    }
+                    to={weekdayPath}
                   />
-                )}
-              </div>
+                  {hasMetricSubChurches && (
+                    <Card
+                      icon={<Network className="size-5" />}
+                      title={`${churchPrefix}Weekday by Sub-Church`}
+                      description={`Per-week weekday service totals broken down by each sub-church in ${
+                        churchName || 'this church'
+                      }.`}
+                      to={weekdaySubChurchesPath}
+                    />
+                  )}
+                </div>
+              </RoleView>
             </section>
           </div>
         </div>
