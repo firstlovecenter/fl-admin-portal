@@ -25,7 +25,7 @@ import { DENOMINATION_GRAPHS } from './GraphsQueries'
 import {
   getServiceGraphData,
   getMonthlyStatAverage,
-  formatUsdIncomeStat,
+  formatIncomeStat,
   GraphTypes,
 } from './graphs-utils'
 
@@ -33,9 +33,9 @@ const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
 
 // Denomination has no individual service records — only network-wide aggregates.
-// Money here consolidates campuses across multiple currencies, so income is the
-// USD total (income == dollarIncome). There is no separate "(USD)" series —
-// "All Services" already shows USD.
+// Money here consolidates campuses across many currencies, so in practice income
+// is the USD total; the currency travels on each aggregate (see `incomeCurrency`)
+// so the label stays correct if the network ever becomes single-currency.
 const DENOMINATION_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
   { value: 'serviceAggregate', label: 'All Services' },
   { value: 'bussingAggregate', label: 'All Bussing' },
@@ -93,6 +93,16 @@ const DenominationGraphs = () => {
     )
   }, [rawBussingData])
 
+  // Currency the aggregated income is stored in — USD while the network spans
+  // multiple currencies, native if it ever becomes single-currency. Default to
+  // USD for legacy aggregates written before the field existed.
+  const incomeCurrency: string = useMemo(() => {
+    const latest = [...serviceData]
+      .reverse()
+      .find((d: { currency?: string | null }) => d?.currency)
+    return latest?.currency ?? 'USD'
+  }, [serviceData])
+
   const activeDataset =
     graphs === 'bussingAggregate' ? bussingData : serviceData
 
@@ -115,11 +125,16 @@ const DenominationGraphs = () => {
       'attendance'
     )
   )
-  const avgIncome = formatStat(
-    getMonthlyStatAverage(isBussingTab ? serviceData : windowedData, 'income')
+  // Income formatted in the network's income currency (USD in practice).
+  const avgIncomeRaw = getMonthlyStatAverage(
+    isBussingTab ? serviceData : windowedData,
+    'income'
   )
-  // Denomination income is the USD-consolidated total — always shown in $.
-  const avgIncomeDisplay = formatUsdIncomeStat(avgIncome, incomeTracked)
+  const avgIncomeDisplay = formatIncomeStat(
+    avgIncomeRaw,
+    incomeTracked,
+    incomeCurrency
+  )
 
   const canGoOlder = windowStart > 0
   const canGoNewer = clampedWindowEnd < datasetLength
@@ -216,7 +231,7 @@ const DenominationGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Income (USD)"
+              label={`Avg Weekly Income (${incomeCurrency})`}
               value={avgIncomeDisplay}
               icon={Wallet}
               accent="banking"

@@ -12,6 +12,11 @@ type AggregateServiceRecord implements HadService
   attendance: Int!
   income: Float!
   dollarIncome: Float!
+  # ISO code of the currency `income` is expressed in. Native (e.g. "GHS") for
+  # single-currency churches; "USD" where the church consolidates campuses that
+  # span multiple currencies. Null on legacy aggregates written before this field
+  # existed — consumers treat null as the viewer's local currency.
+  currency: String
   numberOfServices: Int
 }
 

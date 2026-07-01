@@ -101,15 +101,29 @@ export const sortingFunction = (key: string, order = 'asc') => {
   }
 }
 
-// Oversight/Denomination income is the USD-consolidated total, so its stat is
-// always shown in dollars. Single definition shared by the two graph pages.
-export const formatUsdIncomeStat = (
-  avgIncome: string,
-  incomeTracked: boolean
+// Oversight/Denomination income is native (e.g. GHS) when the church is
+// single-currency and USD when it consolidates campuses across currencies. The
+// currency travels on each aggregate, so format the stat in that currency rather
+// than assuming dollars. Shared by the two consolidated graph pages.
+export const formatIncomeStat = (
+  avgIncome: string | undefined,
+  incomeTracked: boolean,
+  currency: string | null | undefined
 ): string => {
   if (!incomeTracked) return 'Not tracked'
-  if (avgIncome === '—') return '—'
-  return `$${avgIncome}`
+  if (avgIncome === undefined || avgIncome === 'NaN') return '—'
+  const num = Number(avgIncome)
+  if (!Number.isFinite(num)) return '—'
+  const code = (currency || 'USD').toUpperCase()
+  try {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'currency',
+      currency: code,
+      maximumFractionDigits: 0,
+    }).format(num)
+  } catch {
+    return `${code} ${num.toLocaleString('en-GH', { maximumFractionDigits: 0 })}`
+  }
 }
 
 const extractServiceDataWithDollars = (arr: any[] | undefined) => {
@@ -211,6 +225,7 @@ export const getServiceGraphData = (
         weekLabel: week ? `W${week}${yearSuffix}` : null,
         attendance: record.attendance,
         income: record.income?.toFixed(2),
+        currency: record?.currency,
         numberOfServices: record?.numberOfServices,
         numberOfUrvans: record?.numberOfUrvans,
         numberOfSprinters: record?.numberOfSprinters,

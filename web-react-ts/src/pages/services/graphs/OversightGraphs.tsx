@@ -25,7 +25,7 @@ import { OVERSIGHT_GRAPHS } from './GraphsQueries'
 import {
   getServiceGraphData,
   getMonthlyStatAverage,
-  formatUsdIncomeStat,
+  formatIncomeStat,
   GraphTypes,
 } from './graphs-utils'
 
@@ -33,8 +33,9 @@ const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
 
 // Oversight has joint services plus aggregates of all campuses and levels below.
-// Aggregated money consolidates campuses across multiple currencies, so income is
-// the USD total (income == dollarIncome) — there is no separate "(USD)" series.
+// A single-currency oversight (e.g. all-GHS Outside Accra) reports income in that
+// native currency; only a genuinely multi-currency oversight consolidates to USD.
+// The currency travels on each aggregate — see `incomeCurrency` below.
 const OVERSIGHT_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
   { value: 'services', label: 'Joint Service' },
   { value: 'serviceAggregate', label: 'All Services' },
@@ -75,6 +76,17 @@ const OversightGraphs = () => {
       [],
     [oversight]
   )
+
+  // Currency the aggregated income is stored in: native (e.g. GHS) for a
+  // single-currency oversight, USD when it consolidates multiple currencies.
+  // Take the most recent aggregate that carries a currency; default to USD for
+  // legacy aggregates written before the field existed.
+  const incomeCurrency: string = useMemo(() => {
+    const latest = [...serviceData]
+      .reverse()
+      .find((d: { currency?: string | null }) => d?.currency)
+    return latest?.currency ?? 'USD'
+  }, [serviceData])
 
   const bussingData = useMemo(() => {
     const currentYear = new Date().getFullYear()
@@ -117,12 +129,17 @@ const OversightGraphs = () => {
       'attendance'
     )
   )
-  // Income is always the USD-consolidated aggregate (oversight has no
-  // single-currency direct service income), shown in $.
-  const avgIncome = formatStat(
-    getMonthlyStatAverage(isBussingTab ? serviceData : windowedData, 'income')
+  // Income is the consolidated aggregate, formatted in the oversight's own
+  // income currency (native for single-currency oversights, USD for mixed).
+  const avgIncomeRaw = getMonthlyStatAverage(
+    isBussingTab ? serviceData : windowedData,
+    'income'
   )
-  const avgIncomeDisplay = formatUsdIncomeStat(avgIncome, incomeTracked)
+  const avgIncomeDisplay = formatIncomeStat(
+    avgIncomeRaw,
+    incomeTracked,
+    incomeCurrency
+  )
 
   const canGoOlder = windowStart > 0
   const canGoNewer = clampedWindowEnd < datasetLength
@@ -219,7 +236,7 @@ const OversightGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Income (USD)"
+              label={`Avg Weekly Income (${incomeCurrency})`}
               value={avgIncomeDisplay}
               icon={Wallet}
               accent="banking"

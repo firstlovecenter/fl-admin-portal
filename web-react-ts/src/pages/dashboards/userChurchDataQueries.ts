@@ -229,6 +229,7 @@ export const SERVANT_OVERSIGHT_LEADER = gql`
           id
           attendance
           income
+          currency
           week
           year
         }
@@ -264,6 +265,7 @@ export const SERVANT_DENOMINATION_LEADER = gql`
           id
           attendance
           income
+          currency
           week
           year
         }
@@ -469,6 +471,7 @@ export const SERVANTS_OVERSIGHT_ADMIN = gql`
           attendance
           income
           dollarIncome
+          currency
           week
           year
         }
@@ -506,6 +509,7 @@ export const SERVANTS_DENOMINATION_ADMIN = gql`
           attendance
           income
           dollarIncome
+          currency
           week
           year
         }

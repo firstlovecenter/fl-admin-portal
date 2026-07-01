@@ -117,16 +117,17 @@ describe('Cypher invariants — ADR-014 overwrite semantics', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 2b. Currency rule — income source per level
+// 2b. Currency rule — income source per level (SYN-193)
 //
 // Campus and below are single-currency, so income is the raw local sum
-// (income = totalIncome). Oversight and Denomination consolidate campuses that
-// may span multiple currencies, so a raw sum is meaningless there — income is
-// stored as the USD-converted total (income = totalDollarIncome), making
-// income == dollarIncome at those two levels.
+// (income = totalIncome). Oversight and Denomination *may* consolidate campuses
+// across multiple currencies, so their income is currency-aware: the native
+// local sum when every campus shares one currency (e.g. all-GHS Outside Accra),
+// and the USD-converted total only when the church genuinely spans currencies.
+// The resolved currency is stamped on the aggregate so consumers can label it.
 // ---------------------------------------------------------------------------
 
-describe('Cypher invariants — currency rule (USD above Campus)', () => {
+describe('Cypher invariants — currency rule', () => {
   const LOCAL_LEVEL_QUERIES = ALL_QUERIES.filter((q) =>
     [
       'Bacenta→Governorship',
@@ -136,7 +137,7 @@ describe('Cypher invariants — currency rule (USD above Campus)', () => {
     ].includes(q.name)
   )
 
-  const USD_LEVEL_QUERIES = ALL_QUERIES.filter((q) =>
+  const CONSOLIDATING_LEVEL_QUERIES = ALL_QUERIES.filter((q) =>
     ['Campus→Oversight', 'Oversight→Denomination'].includes(q.name)
   )
 
@@ -148,12 +149,19 @@ describe('Cypher invariants — currency rule (USD above Campus)', () => {
     }
   )
 
-  test.each(USD_LEVEL_QUERIES)(
-    '$name: income is the USD total (income = totalDollarIncome == dollarIncome)',
+  test.each(CONSOLIDATING_LEVEL_QUERIES)(
+    '$name: income is currency-aware (native when single-currency, USD when mixed)',
     ({ query }) => {
-      expect(query).toMatch(/aggregate\.income\s*=\s*totalDollarIncome\b/)
+      // income switches on the resolved currency rather than always taking USD.
+      expect(query).toMatch(
+        /aggregate\.income\s*=\s*CASE WHEN resolvedCurrency\s*=\s*'USD' THEN totalDollarIncome ELSE totalIncome END/
+      )
+      // dollarIncome stays the USD total, and the resolved currency is stamped.
       expect(query).toMatch(/aggregate\.dollarIncome\s*=\s*totalDollarIncome\b/)
-      // income must NOT be the raw mixed-currency sum at these levels
+      expect(query).toMatch(/aggregate\.currency\s*=\s*resolvedCurrency\b/)
+      // resolvedCurrency is derived from the church's own campus currencies.
+      expect(query).toMatch(/campusCurrencies/)
+      // income must NOT be an unconditional raw mixed-currency sum.
       expect(query).not.toMatch(/aggregate\.income\s*=\s*totalIncome\b/)
     }
   )

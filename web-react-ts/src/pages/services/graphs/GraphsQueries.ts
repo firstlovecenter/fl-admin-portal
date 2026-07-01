@@ -211,6 +211,7 @@ export const CAMPUS_GRAPHS = gql`
         attendance
         income
         dollarIncome
+        currency
         numberOfServices
         week
         year
@@ -258,6 +259,7 @@ export const OVERSIGHT_GRAPHS = gql`
         attendance
         income
         dollarIncome
+        currency
         numberOfServices
         week
         year
@@ -309,6 +311,7 @@ export const DENOMINATION_GRAPHS = gql`
         attendance
         income
         dollarIncome
+        currency
         numberOfServices
         week
         year

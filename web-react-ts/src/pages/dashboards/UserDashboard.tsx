@@ -265,11 +265,18 @@ const FullUserDashboard = () => {
       ? currentUser.currency.trim().toUpperCase()
       : ''
   const dashboardCurrency = selectedScopeCurrency || currentUserCurrency
-  // Oversight/Denomination consolidate multiple currencies, so their income is
-  // stored as the USD total — display it (and the currency badge) as USD.
-  const incomeDisplayCurrency = isUsdDisplayLevel(selectedScope?.churchType)
+  // Currency the aggregated income is actually stored in (native for a
+  // single-currency oversight, USD when it consolidates multiple currencies).
+  // Read it off the most recent aggregate rather than assuming the level is USD.
+  const aggregateIncomeCurrency: string | undefined = [...weekdayData]
+    .reverse()
+    .find((d: { currency?: string | null }) => d?.currency)?.currency
+  const incomeDisplayCurrency = isUsdDisplayLevel(
+    selectedScope?.churchType,
+    aggregateIncomeCurrency
+  )
     ? 'USD'
-    : dashboardCurrency
+    : aggregateIncomeCurrency || dashboardCurrency
   const selectedScopeSummary = selectedScope
     ? `${selectedScope.churchName} · ${formatChurchLevel(
         selectedScope.churchType

@@ -116,6 +116,20 @@ const aggregateCampusOnOversightQuery = `
         round(toFloat(SUM(record.income)), 2) AS totalIncome,
         round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
 
+    // Resolve the income currency from the oversight's campuses. A single-currency
+    // oversight (e.g. all-GHS Outside Accra) reports income in that native currency
+    // so the graph matches the campus figures and the weekly report; only a
+    // genuinely multi-currency oversight consolidates unlike currencies to USD.
+    WITH oversight, componentServiceIds, numberOfServices, totalAttendance, totalIncome, totalDollarIncome,
+         [(oversight)-[:HAS]->(cx:Campus) WHERE cx.currency IS NOT NULL | cx.currency] AS campusCurrencies
+    WITH oversight, componentServiceIds, numberOfServices, totalAttendance, totalIncome, totalDollarIncome,
+         CASE
+           WHEN size(campusCurrencies) > 0
+             AND size([c IN campusCurrencies WHERE c <> campusCurrencies[0]]) = 0
+           THEN campusCurrencies[0]
+           ELSE 'USD'
+         END AS resolvedCurrency
+
     MATCH (oversight)-[:CURRENT_HISTORY]->(log:ServiceLog)
 
     MERGE (aggregate:AggregateServiceRecord {id: oversight.id + '-' + toString(date().week) + '-' + toString(date().year)})
@@ -124,11 +138,9 @@ const aggregateCampusOnOversightQuery = `
 
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
         SET aggregate.attendance = totalAttendance,
-        // Oversight consolidates campuses that may span multiple currencies, so a
-        // raw SUM(income) here would add unlike currencies. income is therefore
-        // stored as the USD-converted total (income == dollarIncome at this level).
-        aggregate.income = totalDollarIncome,
+        aggregate.income = CASE WHEN resolvedCurrency = 'USD' THEN totalDollarIncome ELSE totalIncome END,
         aggregate.dollarIncome = totalDollarIncome,
+        aggregate.currency = resolvedCurrency,
         aggregate.componentServiceIds = componentServiceIds,
         aggregate.numberOfServices = numberOfServices,
         aggregate.recomputedAt = datetime()
@@ -146,6 +158,20 @@ const aggregateOversightOnDenominationQuery = `
         round(toFloat(SUM(record.income)), 2) AS totalIncome,
         round(toFloat(SUM(record.dollarIncome)), 2) AS totalDollarIncome
 
+    // Resolve the income currency from the denomination's campuses (reached via
+    // its oversights). In practice the network spans multiple currencies, so this
+    // consolidates to USD; the single-currency branch is kept for symmetry with
+    // the Oversight query so a future single-currency network stays native.
+    WITH denomination, componentServiceIds, numberOfServices, totalAttendance, totalIncome, totalDollarIncome,
+         [(denomination)-[:HAS*2]->(cx:Campus) WHERE cx.currency IS NOT NULL | cx.currency] AS campusCurrencies
+    WITH denomination, componentServiceIds, numberOfServices, totalAttendance, totalIncome, totalDollarIncome,
+         CASE
+           WHEN size(campusCurrencies) > 0
+             AND size([c IN campusCurrencies WHERE c <> campusCurrencies[0]]) = 0
+           THEN campusCurrencies[0]
+           ELSE 'USD'
+         END AS resolvedCurrency
+
     MATCH (denomination)-[:CURRENT_HISTORY]->(log:ServiceLog)
 
     MERGE (aggregate:AggregateServiceRecord {id: denomination.id + '-' + toString(date().week) + '-' + toString(date().year)})
@@ -154,11 +180,9 @@ const aggregateOversightOnDenominationQuery = `
 
     MERGE (log)-[:HAS_SERVICE_AGGREGATE]->(aggregate)
         SET aggregate.attendance = totalAttendance,
-        // Denomination consolidates the whole network across multiple currencies,
-        // so income is stored as the USD-converted total (income == dollarIncome
-        // at this level). See the Oversight query above.
-        aggregate.income = totalDollarIncome,
+        aggregate.income = CASE WHEN resolvedCurrency = 'USD' THEN totalDollarIncome ELSE totalIncome END,
         aggregate.dollarIncome = totalDollarIncome,
+        aggregate.currency = resolvedCurrency,
         aggregate.componentServiceIds = componentServiceIds,
         aggregate.numberOfServices = numberOfServices,
         aggregate.recomputedAt = datetime()
