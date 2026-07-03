@@ -65,6 +65,7 @@ export type WeeklyChurchReportEntry = {
   serviceAttendance: number | null
   serviceIncome: number | null
   serviceDollarIncome: number | null
+  serviceCurrency: string | null
   numberOfServices: number | null
   bussingAttendance: number | null
   bussingLeaderDeclaration: number | null

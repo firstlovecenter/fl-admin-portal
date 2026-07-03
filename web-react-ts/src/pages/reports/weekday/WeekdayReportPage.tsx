@@ -11,12 +11,16 @@ import { useWeeklyReportQuery } from '../_shared/useWeeklyReportQuery'
 import { WEEKDAY_REPORT_QUERIES } from '../_shared/reports.gql'
 import type { WeeklyChurchReportEntry } from '../_shared/report-types'
 
-// At Oversight (and Denomination) income == dollarIncome — the level
-// consolidates campuses across currencies, so income is stored as the USD
-// total. The plain "Service Income" column would just duplicate the USD one,
-// so collapse the pair into a single USD column at those levels.
-const buildHeaders = (churchType: string | undefined) => {
-  const incomeColumns = isUsdDisplayLevel(churchType)
+// A multi-currency Oversight/Denomination stores income as the USD total, so the
+// native "Service Income" column would just duplicate the USD one — collapse the
+// pair into a single USD column there. A single-currency oversight keeps native
+// income (the aggregate's `serviceCurrency` says so), so it shows the native
+// column like any campus. When the currency is unknown, fall back to the level.
+const buildHeaders = (
+  churchType: string | undefined,
+  incomeCurrency: string | null | undefined
+) => {
+  const incomeColumns = isUsdDisplayLevel(churchType, incomeCurrency)
     ? [{ label: 'Service Income (USD)', key: 'serviceDollarIncome' }]
     : [
         { label: 'Service Income', key: 'serviceIncome' },
@@ -32,8 +36,11 @@ const buildHeaders = (churchType: string | undefined) => {
   ]
 }
 
-const buildPreviewColumns = (churchType: string | undefined) => {
-  const usd = isUsdDisplayLevel(churchType)
+const buildPreviewColumns = (
+  churchType: string | undefined,
+  incomeCurrency: string | null | undefined
+) => {
+  const usd = isUsdDisplayLevel(churchType, incomeCurrency)
   return [
     { key: 'year', label: 'Year' },
     { key: 'week', label: 'Week' },
@@ -72,10 +79,21 @@ const WeekdayReportPage = () => {
     reportField: 'weekdayIncomeBussingReport',
   })
 
-  const headers = useMemo(() => buildHeaders(churchType), [churchType])
+  // The income currency travels on each aggregate. An oversight's currency is a
+  // property of its (stable) campus composition, so the whole table shares one —
+  // take it from the first entry that carries it.
+  const incomeCurrency = useMemo(
+    () => entries.find((entry) => entry.serviceCurrency)?.serviceCurrency ?? null,
+    [entries]
+  )
+
+  const headers = useMemo(
+    () => buildHeaders(churchType, incomeCurrency),
+    [churchType, incomeCurrency]
+  )
   const previewColumns = useMemo(
-    () => buildPreviewColumns(churchType),
-    [churchType]
+    () => buildPreviewColumns(churchType, incomeCurrency),
+    [churchType, incomeCurrency]
   )
 
   const today = new Date().toISOString().slice(0, 10)

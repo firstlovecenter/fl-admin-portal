@@ -31,6 +31,7 @@ type WeeklyChurchReportEntry @node @mutation(operations: []) {
   serviceAttendance: Int
   serviceIncome: Float
   serviceDollarIncome: Float
+  serviceCurrency: String
   numberOfServices: Int
   bussingAttendance: Int
   bussingLeaderDeclaration: Int

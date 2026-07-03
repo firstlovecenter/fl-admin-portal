@@ -45,6 +45,17 @@ const WEEKDAY_FIELDS = `
   numberOfServices
 `
 
+// Only the weekday self-report (`weekdayIncomeBussingReport`, typed
+// WeeklyChurchReportEntry) collapses its income column by currency, so
+// `serviceCurrency` lives here rather than in the shared WEEKDAY_FIELDS.
+// The sub-churches-at-level query returns WeeklyChurchReportEntryWithAncestors,
+// which has no `serviceCurrency` field — selecting it there would fail
+// GraphQL validation.
+const WEEKDAY_SELF_FIELDS = `
+  ${WEEKDAY_FIELDS}
+  serviceCurrency
+`
+
 const BUSSING_FIELDS = `
   id
   churchId
@@ -116,7 +127,7 @@ export const DIRECTORY_REPORT_QUERIES: Record<ReportLevel, ReturnType<typeof gql
 export const WEEKDAY_REPORT_QUERIES = buildLevelMap(
   'weekdayIncomeBussingReport',
   'WeekdayReport',
-  WEEKDAY_FIELDS
+  WEEKDAY_SELF_FIELDS
 )
 
 export const BUSSING_REPORT_QUERIES = buildLevelMap(

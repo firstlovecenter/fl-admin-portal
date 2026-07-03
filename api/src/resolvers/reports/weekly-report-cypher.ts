@@ -36,11 +36,14 @@
  * Projection helper. The two `*AggAlias` callers can be either an
  * `AggregateXxxRecord` node (higher levels) or a Cypher map literal (Bacenta).
  * In both shapes the helper reads these keys, so map-literal callers must
- * project them: service → `attendance, income, dollarIncome, numberOfServices,
- * year, week`; bussing → `attendance, leaderDeclaration, numberOfSprinters,
- * numberOfUrvans, numberOfCars, bussingTopUp, year, week`. Renaming a key in
- * the Bacenta CALL blocks without updating this helper will silently null
- * the corresponding column in the response.
+ * project them: service → `attendance, income, dollarIncome, currency,
+ * numberOfServices, year, week`; bussing → `attendance, leaderDeclaration,
+ * numberOfSprinters, numberOfUrvans, numberOfCars, bussingTopUp, year, week`.
+ * The Bacenta callers intentionally omit `currency` — a leaf Bacenta is always
+ * single-currency (GHS), so the null it yields is the correct native-currency
+ * signal (the FE falls back to the church level). Renaming a key in the Bacenta
+ * CALL blocks without updating this helper will silently null the corresponding
+ * column in the response.
  */
 const weeklyEntryReturn = (
   alias: string,
@@ -58,6 +61,7 @@ const weeklyEntryReturn = (
     serviceAttendance: ${serviceAggAlias}.attendance,
     serviceIncome: ${serviceAggAlias}.income,
     serviceDollarIncome: ${serviceAggAlias}.dollarIncome,
+    serviceCurrency: ${serviceAggAlias}.currency,
     numberOfServices: ${serviceAggAlias}.numberOfServices,
     bussingAttendance: ${bussingAggAlias}.attendance,
     bussingLeaderDeclaration: ${bussingAggAlias}.leaderDeclaration,
