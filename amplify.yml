@@ -381,30 +381,132 @@ frontend:
       - web-react-ts/node_modules/**/*
 
 customHeaders:
-  # Entry point and service worker must always revalidate so the autoUpdate
-  # service worker discovers each new Amplify deploy. Hashed assets are
-  # immutable and cached forever.
+  # Security headers on every response (SYN-179).
+  #
+  # CSP allowlist is derived from the app's real runtime origins (verified
+  # against the deployed prod/staging/dev bundles):
+  #   *.firstlovecenter.com       GraphQL API (api-synago/*) + auth (auth./dev-auth.)
+  #   *.lambda-url.eu-west-2.on.aws (pinned host) dev-only auth Function URL —
+  #                               dev's VITE_AUTH_API_URL still points at the raw
+  #                               Lambda URL; prod/staging use *.firstlovecenter.com.
+  #                               TODO(infra): repoint dev auth at dev-auth.firstlovecenter.com
+  #                               and drop this line.
+  #   *.googleapis.com/*.gstatic.com/*.google.com  Google Maps JS + Firebase FCM
+  #   *.s3.eu-west-2.amazonaws.com presigned image uploads (PUT) + public image reads
+  #   res.cloudinary.com          member/church/map avatars
+  #   www.gstatic.com (script)    firebase-*-compat.js imported by firebase-messaging-sw.js
+  #   fonts.gstatic.com / fonts.googleapis.com  Google Maps' Roboto webfont
+  # 'wasm-unsafe-eval' is required by the Maps WebGL renderer; it does NOT permit
+  # JS eval. No 'unsafe-inline' in script-src — inline scripts are blocked.
+  #
+  # The S3 host is left region-scoped (not pinned to one bucket) on purpose:
+  # this single file is shared across the main/staging/dev branches, whose
+  # AWS_S3_BUCKET_NAME differs per environment. Pinning would need per-branch
+  # header configs, which Amplify does not support in one customHeaders block.
+  #
+  # IMPORTANT — why the security headers are repeated in every block:
+  # Amplify's precedence when a path matches multiple patterns is undocumented
+  # and reportedly applies only ONE rule per path (not a union). So the security
+  # headers are duplicated into each path-specific Cache-Control block (below)
+  # AND the '**/*' catch-all. This is correct under BOTH interpretations:
+  #   - one-rule-wins: each path gets its block's Cache-Control + security headers.
+  #   - union/merge:   overlapping paths get identical security headers twice,
+  #                    which is harmless (duplicate identical CSP = same policy).
+  # Verify post-deploy (headers present is the ticket's acceptance criteria):
+  #   curl -sI https://<env>-synago.firstlovecenter.com/ | grep -iE 'content-security|cache-control|x-content-type'
+  #   curl -sI "https://<env>-synago.firstlovecenter.com/assets/<hashed>.js" | grep -iE 'content-security|cache-control'
+  # Each must show BOTH its CSP/security headers AND the expected Cache-Control.
   - pattern: '/index.html'
     headers:
       - key: 'Cache-Control'
         value: 'no-cache, no-store, must-revalidate'
+      - key: 'Content-Security-Policy'
+        value: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; script-src 'self' 'wasm-unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.s3.eu-west-2.amazonaws.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://via.placeholder.com; connect-src 'self' https://*.firstlovecenter.com https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.s3.eu-west-2.amazonaws.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'; frame-src 'self' https://*.google.com"
+      - key: 'X-Frame-Options'
+        value: 'DENY'
+      - key: 'X-Content-Type-Options'
+        value: 'nosniff'
+      - key: 'Referrer-Policy'
+        value: 'strict-origin-when-cross-origin'
+      - key: 'Strict-Transport-Security'
+        value: 'max-age=63072000; includeSubDomains'
+      - key: 'Cross-Origin-Opener-Policy'
+        value: 'same-origin'
+      - key: 'Permissions-Policy'
+        value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()'
   - pattern: '/sw.js'
     headers:
       - key: 'Cache-Control'
         value: 'no-cache, no-store, must-revalidate'
+      - { key: 'Content-Security-Policy', value: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; script-src 'self' 'wasm-unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.s3.eu-west-2.amazonaws.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://via.placeholder.com; connect-src 'self' https://*.firstlovecenter.com https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.s3.eu-west-2.amazonaws.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'; frame-src 'self' https://*.google.com" }
+      - { key: 'X-Frame-Options', value: 'DENY' }
+      - { key: 'X-Content-Type-Options', value: 'nosniff' }
+      - { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+      - { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }
+      - { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' }
+      - { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()' }
   - pattern: '/registerSW.js'
     headers:
       - key: 'Cache-Control'
         value: 'no-cache, no-store, must-revalidate'
+      - { key: 'Content-Security-Policy', value: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; script-src 'self' 'wasm-unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.s3.eu-west-2.amazonaws.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://via.placeholder.com; connect-src 'self' https://*.firstlovecenter.com https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.s3.eu-west-2.amazonaws.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'; frame-src 'self' https://*.google.com" }
+      - { key: 'X-Frame-Options', value: 'DENY' }
+      - { key: 'X-Content-Type-Options', value: 'nosniff' }
+      - { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+      - { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }
+      - { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' }
+      - { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()' }
+  - pattern: '/firebase-messaging-sw.js'
+    headers:
+      - key: 'Cache-Control'
+        value: 'no-cache, no-store, must-revalidate'
+      - { key: 'Content-Security-Policy', value: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; script-src 'self' 'wasm-unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.s3.eu-west-2.amazonaws.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://via.placeholder.com; connect-src 'self' https://*.firstlovecenter.com https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.s3.eu-west-2.amazonaws.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'; frame-src 'self' https://*.google.com" }
+      - { key: 'X-Frame-Options', value: 'DENY' }
+      - { key: 'X-Content-Type-Options', value: 'nosniff' }
+      - { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+      - { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }
+      - { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' }
+      - { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()' }
   - pattern: '/manifest.json'
     headers:
       - key: 'Cache-Control'
         value: 'no-cache'
+      - { key: 'Content-Security-Policy', value: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; script-src 'self' 'wasm-unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.s3.eu-west-2.amazonaws.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://via.placeholder.com; connect-src 'self' https://*.firstlovecenter.com https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.s3.eu-west-2.amazonaws.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'; frame-src 'self' https://*.google.com" }
+      - { key: 'X-Frame-Options', value: 'DENY' }
+      - { key: 'X-Content-Type-Options', value: 'nosniff' }
+      - { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+      - { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }
+      - { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' }
+      - { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()' }
   - pattern: '/manifest.webmanifest'
     headers:
       - key: 'Cache-Control'
         value: 'no-cache'
+      - { key: 'Content-Security-Policy', value: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; script-src 'self' 'wasm-unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.s3.eu-west-2.amazonaws.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://via.placeholder.com; connect-src 'self' https://*.firstlovecenter.com https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.s3.eu-west-2.amazonaws.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'; frame-src 'self' https://*.google.com" }
+      - { key: 'X-Frame-Options', value: 'DENY' }
+      - { key: 'X-Content-Type-Options', value: 'nosniff' }
+      - { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+      - { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }
+      - { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' }
+      - { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()' }
   - pattern: '/assets/**'
     headers:
       - key: 'Cache-Control'
         value: 'public, max-age=31536000, immutable'
+      - { key: 'Content-Security-Policy', value: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; script-src 'self' 'wasm-unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.s3.eu-west-2.amazonaws.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://via.placeholder.com; connect-src 'self' https://*.firstlovecenter.com https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.s3.eu-west-2.amazonaws.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'; frame-src 'self' https://*.google.com" }
+      - { key: 'X-Frame-Options', value: 'DENY' }
+      - { key: 'X-Content-Type-Options', value: 'nosniff' }
+      - { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+      - { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }
+      - { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' }
+      - { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()' }
+  # Catch-all: security headers for every other path (SPA routes, static files).
+  - pattern: '**/*'
+    headers:
+      - { key: 'Content-Security-Policy', value: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; script-src 'self' 'wasm-unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.s3.eu-west-2.amazonaws.com https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://via.placeholder.com; connect-src 'self' https://*.firstlovecenter.com https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.s3.eu-west-2.amazonaws.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'; frame-src 'self' https://*.google.com" }
+      - { key: 'X-Frame-Options', value: 'DENY' }
+      - { key: 'X-Content-Type-Options', value: 'nosniff' }
+      - { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+      - { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' }
+      - { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' }
+      - { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()' }
