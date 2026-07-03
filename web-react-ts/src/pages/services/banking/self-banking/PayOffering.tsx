@@ -294,13 +294,12 @@ const PayOffering = (props: PayOfferingProps) => {
                         <AlertTriangle className="size-4" />
                         <AlertTitle>Amount too large for self-banking</AlertTitle>
                         <AlertDescription>
-                          This offering of {service.cash.toLocaleString()}{' '}
-                          {currency} is above the{' '}
-                          {MAX_SELF_BANKING_CASH.toLocaleString()} {currency}{' '}
-                          self-banking limit. Please bank this offering manually
-                          (bank deposit slip or teller), or split it into
-                          separate service records. The recorded amount is not
-                          affected.
+                          This offering of GHS{' '}
+                          {service.cash.toLocaleString()} is above the GHS{' '}
+                          {MAX_SELF_BANKING_CASH.toLocaleString()} self-banking
+                          limit. Please bank this offering manually (bank deposit
+                          slip or teller), or split it into separate service
+                          records. The recorded amount is not affected.
                         </AlertDescription>
                       </Alert>
                     )}
