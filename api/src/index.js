@@ -16,6 +16,39 @@ import { requireAuthForMutationsPlugin } from './resolvers/utils/require-auth-fo
 import { depthLimit } from './resolvers/utils/depth-limit'
 import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
+// Logs every GraphQL request's lifecycle so operations show up in the server
+// logs (CloudWatch/stdout). Logs the operation name, the caller's userId, and
+// timing on success; the full error stack on failure. Deliberately does NOT
+// log `request.variables` or the response body — those carry member PII.
+const requestLoggingPlugin = {
+  async requestDidStart(requestContext) {
+    const start = process.hrtime.bigint()
+    const opName = requestContext.request.operationName || '<anonymous>'
+    const userId = requestContext.contextValue?.jwt?.userId || 'anonymous'
+
+    console.log(`[GraphQL] ▶ ${opName} (user: ${userId})`)
+
+    return {
+      async didEncounterErrors(ctx) {
+        ctx.errors.forEach((err) => {
+          console.error(
+            `[GraphQL] ✖ ${opName} (user: ${userId}) — ${err.message}`
+          )
+          if (err.originalError) {
+            console.error(err.originalError.stack || err.originalError)
+          }
+        })
+      },
+      async willSendResponse() {
+        const ms = Number(process.hrtime.bigint() - start) / 1e6
+        console.log(
+          `[GraphQL] ◀ ${opName} (user: ${userId}) — ${ms.toFixed(1)}ms`
+        )
+      },
+    }
+  },
+}
+
 const startServer = async () => {
   const SECRETS = await loadSecrets()
 
@@ -105,6 +138,7 @@ const startServer = async () => {
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       requireAuthForMutationsPlugin,
+      requestLoggingPlugin,
     ],
   })
 
