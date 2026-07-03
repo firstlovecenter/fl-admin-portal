@@ -27,6 +27,7 @@ import SetPermissions from 'auth/SetPermissions'
 import { permitMe } from 'permission-utils'
 import useClickCard from 'hooks/useClickCard'
 import { useAuth } from 'contexts/AuthContext'
+import { usePushNotifications } from 'hooks/usePushNotifications'
 import { sameRoles } from 'lib/auth-service'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
@@ -142,6 +143,10 @@ const AppWithContext = () => {
   }
 
   const { user } = useAuth()
+
+  // Register this device for FCM push once authenticated (non-blocking no-op if
+  // unsupported or denied).
+  usePushNotifications()
 
   const [currentUser, setCurrentUser] = useState(() =>
     getInitialCurrentUser(user)
