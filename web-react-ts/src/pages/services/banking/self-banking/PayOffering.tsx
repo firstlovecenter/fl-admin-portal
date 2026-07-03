@@ -31,11 +31,11 @@ import { ServiceContext } from 'contexts/ServiceContext'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { Bacenta } from 'global-types'
 import { MOMO_NUM_REGEX, throwToSentry } from 'global-utils'
-import { TRANSACTION_STATUS } from '../banking-constants'
+import { MAX_SELF_BANKING_CASH, TRANSACTION_STATUS } from '../banking-constants'
 import useModal from 'hooks/useModal'
 import usePopup from 'hooks/usePopup'
 import { parseDate } from 'lib/date-utils'
-import { Banknote, Info, Loader2, Wallet } from 'lucide-react'
+import { AlertTriangle, Banknote, Info, Loader2, Wallet } from 'lucide-react'
 import { MOBILE_NETWORK_OPTIONS } from 'pages/arrivals/arrivals-utils'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -85,6 +85,12 @@ const PayOffering = (props: PayOfferingProps) => {
   const charges = service?.cash
     ? Number((cashAndCharges - service.cash).toFixed(2))
     : 0
+
+  // SYN-195 — recording an offering has no cap, but a single self-banking
+  // payment is capped at the payment rail (mirrors the backend
+  // BankServiceOffering guard). Surface it here and block the attempt so the
+  // leader isn't left guessing after a failed payment.
+  const exceedsSelfBankingCap = (service?.cash ?? 0) > MAX_SELF_BANKING_CASH
 
   const { togglePopup, isOpen } = usePopup()
   const { show, handleClose, handleShow } = useModal()
@@ -283,6 +289,22 @@ const PayOffering = (props: PayOfferingProps) => {
                       </CardContent>
                     </Card>
 
+                    {exceedsSelfBankingCap && (
+                      <Alert variant="destructive">
+                        <AlertTriangle className="size-4" />
+                        <AlertTitle>Amount too large for self-banking</AlertTitle>
+                        <AlertDescription>
+                          This offering of {service.cash.toLocaleString()}{' '}
+                          {currency} is above the{' '}
+                          {MAX_SELF_BANKING_CASH.toLocaleString()} {currency}{' '}
+                          self-banking limit. Please bank this offering manually
+                          (bank deposit slip or teller), or split it into
+                          separate service records. The recorded amount is not
+                          affected.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     <Card>
                       <CardContent className="space-y-4 p-5">
                         <h2 className="text-sm font-semibold text-foreground">
@@ -303,7 +325,9 @@ const PayOffering = (props: PayOfferingProps) => {
                       </CardContent>
                     </Card>
 
-                    <SubmitButton formik={formik}>Make Payment</SubmitButton>
+                    <SubmitButton formik={formik} disabled={exceedsSelfBankingCap}>
+                      Make Payment
+                    </SubmitButton>
                   </div>
 
                   {/* RIGHT — sticky payable summary */}

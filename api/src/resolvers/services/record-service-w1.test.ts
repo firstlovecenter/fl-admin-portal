@@ -504,6 +504,45 @@ describe('W1 — RecordService: validation', () => {
     expect(mockSession.executeRead).not.toHaveBeenCalled()
     expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
+
+  it('W1: a large income above the old 50_000 cap is NOT rejected at record time (SYN-195)', async () => {
+    // The offering record has no business ceiling — a church may legitimately
+    // record any realistic amount. The self-banking payment cap lives at the
+    // payment rail (BankServiceOffering), not here. An amount well above the
+    // removed 50_000 record cap must flow straight through to the DB write.
+    primeHappyPathReads()
+    const { executeWrite } = captureExecuteWrite(
+      makeMockQueryResult({
+        serviceRecord: { properties: { id: 'sr_big', income: 250_000 } },
+      })
+    )
+    mockSession.executeWrite = executeWrite
+
+    const result = await serviceMutation.RecordService(
+      null,
+      { ...baseArgs, income: 250_000 },
+      context
+    )
+
+    expect(result).toMatchObject({ id: 'sr_big', income: 250_000 })
+    expect(mockSession.executeWrite).toHaveBeenCalled()
+  })
+
+  it('W1: an absurd income above the sanity ceiling IS rejected before any DB write (SYN-195)', async () => {
+    // The removed business cap is not a licence to poison the aggregate
+    // roll-up: a fat-finger (5000 → 5000000000) or overflow value is still
+    // rejected by the high anti-typo/anti-overflow guard (MAX_RECORDED_INCOME).
+    await expect(
+      serviceMutation.RecordService(
+        null,
+        { ...baseArgs, income: 5_000_000_000 },
+        context
+      )
+    ).rejects.toThrow('exceeds the 10000000 ceiling.')
+
+    expect(mockSession.executeRead).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
 })
 
 // ---------------------------------------------------------------------------

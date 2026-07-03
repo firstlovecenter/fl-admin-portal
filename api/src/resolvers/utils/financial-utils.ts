@@ -13,10 +13,21 @@ export type NetworkCode = 'mtn' | 'vod' | 'tgo'
 // no leading 0). Anything else is rejected before we hand it to Paystack.
 export const MOMO_NUM_REGEX = /^(0[1-9]\d{8}|[1-9]\d{9})$/
 
-// Paranoia ceiling on a single offering bank. Well above any realistic
-// single-service total at any church level; catches fat-fingered typos
-// (e.g. 5000 → 5000000) before they reach Paystack.
+// Self-banking payment-rail ceiling (SYN-195). Recording an offering has no
+// business cap — a church may record any realistic amount — but a single
+// self-banking payment is capped so a fat-fingered typo (e.g. 5000 → 5000000)
+// never reaches Paystack. Enforced in BankServiceOffering, surfaced to the
+// user before they attempt payment. Mirrors web-react-ts banking-constants.ts.
 export const MAX_OFFERING_CASH = 50_000
+
+// SYN-195 — sanity ceiling on recorded service income. This is NOT the old
+// 50_000 business cap (removed — real offerings legitimately exceed it). It
+// sits far above any conceivable single-service offering at any church level,
+// and exists only to catch gross typos (e.g. 5000 → 5000000) and absurd/
+// overflow values before they poison the Bacenta→…→Denomination aggregate
+// roll-up (recomputeAggregateChainAfterServiceRecord + the aggregation
+// lambda sum these unbounded). Well below the float-precision break point.
+export const MAX_RECORDED_INCOME = 10_000_000
 
 // SYN-93 — paranoia ceilings on accounts mutations. These are well above
 // any realistic single-call value but below the float-precision break
@@ -37,10 +48,15 @@ export const MAX_ACCOUNTS_CHARGE = 100_000
 // (DepositIntoCouncilBussingSociety.bussingSocietyBalance is the new
 // account total, not a delta) and for charges (a zero charge is a
 // legitimate "no fee" approval).
+//
+// `max` is optional. Omit it to validate positive/finite only, with no
+// upper ceiling — e.g. recorded service income (SYN-195), where a
+// legitimate offering can exceed any fixed ceiling. Ceilings that guard
+// a payment rail (self-banking) live at that rail, not on the record.
 export const assertPositiveFiniteAmount = (
   value: unknown,
   fieldName: string,
-  options: { max: number; allowZero?: boolean }
+  options: { max?: number; allowZero?: boolean } = {}
 ): void => {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     throw badRequest(`${fieldName} must be a finite number.`)
@@ -53,7 +69,7 @@ export const assertPositiveFiniteAmount = (
         : `${fieldName} must be a positive number.`
     )
   }
-  if (value > options.max) {
+  if (options.max !== undefined && value > options.max) {
     throw badRequest(
       `${fieldName} (${value}) exceeds the ${options.max} ceiling.`
     )

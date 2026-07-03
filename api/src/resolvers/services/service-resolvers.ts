@@ -11,7 +11,7 @@ import {
 import { assertChurchScope } from '../utils/scope-utils'
 import {
   assertPositiveFiniteAmount,
-  MAX_OFFERING_CASH,
+  MAX_RECORDED_INCOME,
 } from '../utils/financial-utils'
 import { assertServiceDateInCurrentWeek } from '../utils/date-utils'
 import {
@@ -129,8 +129,13 @@ const serviceMutation = {
   ) => {
     isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
     assertServiceDateInCurrentWeek(args.serviceDate)
+    // SYN-195 — no business cap on recorded offering income; a church can
+    // legitimately record any realistic amount, and the self-banking cap
+    // lives at the payment rail (BankServiceOffering), not on the record.
+    // The only ceiling here is a high anti-typo/anti-overflow sanity guard
+    // that protects the aggregate roll-up chain (far above any real offering).
     assertPositiveFiniteAmount(args.income, 'income', {
-      max: MAX_OFFERING_CASH,
+      max: MAX_RECORDED_INCOME,
     })
     await assertChurchScope(context, args.churchId)
     const session = context.executionContext.session()
