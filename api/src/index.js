@@ -13,6 +13,7 @@ import { loadSecrets } from './resolvers/secrets'
 import { verifyJwt } from './resolvers/utils/verify-jwt'
 import { computeUserAuthority } from './resolvers/utils/allowed-church-ids'
 import { requireAuthForMutationsPlugin } from './resolvers/utils/require-auth-for-mutations'
+import { depthLimit } from './resolvers/utils/depth-limit'
 import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 const startServer = async () => {
@@ -90,9 +91,17 @@ const startServer = async () => {
     process.exit(1)
   })
 
+  // SYN-177 — disable introspection outside development. Anything that is not
+  // explicitly the dev environment is treated as production (secure default),
+  // so a mis-set/absent ENVIRONMENT never leaves the schema exposed.
+  const isDevelopment = SECRETS.ENVIRONMENT === 'development'
+
   const server = new ApolloServer({
-    introspection: true,
+    introspection: isDevelopment,
     schema,
+    // SYN-177 — depth guard on the auto-generated schema. Runs in every
+    // environment; blocks pathological deep-traversal queries before execution.
+    validationRules: [depthLimit()],
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       requireAuthForMutationsPlugin,

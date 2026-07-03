@@ -10,6 +10,7 @@ const { computeUserAuthority } = require('./resolvers/utils/allowed-church-ids')
 const {
   requireAuthForMutationsPlugin,
 } = require('./resolvers/utils/require-auth-for-mutations')
+const { depthLimit } = require('./resolvers/utils/depth-limit')
 const {
   isDownloadEvent,
   handleDownloadLambdaEvent,
@@ -97,10 +98,22 @@ const initializeServer = async () => {
     }
 
     console.log('[Apollo] Creating Apollo Server instance')
+    // SYN-177 — disable introspection outside development. Apollo enables it by
+    // default; anything that is not explicitly the dev environment is treated
+    // as production (secure default) so a mis-set ENVIRONMENT never exposes the
+    // schema on the public endpoint.
+    const isDevelopment = SECRETS?.ENVIRONMENT === 'development'
     server = new ApolloServer({
       schema,
+      introspection: isDevelopment,
       status400ForVariableCoercionErrors: true,
-      includeStacktraceInErrorResponses: process.env.NODE_ENV !== 'production',
+      // SYN-177 — fail closed on the same ENVIRONMENT signal as introspection
+      // (not process.env.NODE_ENV, which may be unset in the Lambda) so raw
+      // stack traces / Neo4j error text never reach clients in production.
+      includeStacktraceInErrorResponses: isDevelopment,
+      // SYN-177 — depth guard on the auto-generated schema; blocks pathological
+      // deep-traversal queries before execution in every environment.
+      validationRules: [depthLimit()],
       plugins: [requireAuthForMutationsPlugin],
       formatResponse: (response) => {
         console.log('[Response] Formatting GraphQL response')
@@ -191,14 +204,15 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Log event structure for debugging — redact Authorization so we don't
-    // dump signed bearer tokens into CloudWatch on every authenticated call.
-    const safeHeaders = { ...(event.headers || {}) }
-    if (safeHeaders.authorization) safeHeaders.authorization = '[redacted]'
-    if (safeHeaders.Authorization) safeHeaders.Authorization = '[redacted]'
-    const safeEvent = { ...event, headers: safeHeaders }
+    // Log only the event's top-level shape for debugging. SYN-177: the previous
+    // `JSON.stringify(safeEvent)` dumped the entire request body on every
+    // invocation — and the body carries the GraphQL `variables`, i.e. momo
+    // numbers + member PII on banking/arrivals mutations and the leader's
+    // free-text pastoral question on `sendChatMessage`. Authorization headers
+    // were redacted but the body was not, so all of it landed in CloudWatch.
+    // Log keys + header names only; never the body or variables.
     console.log('[Event Debug] Event keys:', Object.keys(event))
-    console.log('[Event Debug] Event:', JSON.stringify(safeEvent, null, 2))
+    console.log('[Event Debug] Header names:', Object.keys(event.headers || {}))
 
     // Parse and validate request (handle both API Gateway v1 and v2 formats)
     const body = event.body || event.rawBody || event.requestBody

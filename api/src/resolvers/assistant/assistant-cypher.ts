@@ -118,6 +118,42 @@ OPTIONAL MATCH (s)-[:HAS_MESSAGE]->(m:ChatMessage)
 RETURN count(m) AS messageCount
 `
 
+// SYN-177 — atomically bump the caller's daily assistant-usage counter and
+// return the new value. Used to enforce a per-user daily cap on
+// `sendChatMessage` BEFORE the expensive OpenAI embedding + Claude completion
+// run — a cost-abuse / DoS guard against any authenticated leader.
+//
+// The counter is a day-stamped property on the caller's OWN Member node (unique
+// by `id`). It must be a TRUE atomic read-modify-write: Neo4j is read-committed
+// and takes the node write lock only at `SET`, so reading the counter before
+// the SET would leave a lost-update window (two concurrent turns both read the
+// same value, both write the same +1). We close that by writing
+// `lastAssistantAt` FIRST — that leading SET forces the write lock before the
+// counter is read below, so concurrent turns from the same leader serialise on
+// the node lock and each reads the previous turn's committed value. (The
+// leading write doubles as a genuine last-active stamp.) Different leaders
+// touch different nodes → no cross-user contention. Persisting in Neo4j also
+// keeps the cap correct across warm Lambda instances (in-memory counters would
+// not).
+//
+// `assistantUsageDay` auto-resets the counter on the first call of a new UTC
+// day (Ghana is UTC+0, so this aligns with the local day). It counts attempts,
+// not just successes — the correct signal for a spend guard, since every
+// attempt costs an embedding + a completion. No new node label or uniqueness
+// constraint is required.
+export const INCREMENT_ASSISTANT_USAGE_CYPHER = `
+MATCH (leader:Member {id: $leaderId})
+SET leader.lastAssistantAt = datetime()
+WITH leader, toString(date(datetime({timezone: 'UTC'}))) AS today
+WITH leader, today,
+     CASE WHEN leader.assistantUsageDay = today
+          THEN coalesce(leader.assistantUsageCount, 0) + 1
+          ELSE 1 END AS newCount
+SET leader.assistantUsageCount = newCount,
+    leader.assistantUsageDay = today
+RETURN newCount AS usedToday
+`
+
 // Read the assistant-visible message history (oldest first) so the resolver
 // can hand it to Claude as `messages: [{role,content}, ...]`.
 export const READ_SESSION_HISTORY_CYPHER = `

@@ -17,6 +17,7 @@ import READ_WEEKLY_TIP_FOR_CHURCH_CYPHER, {
   APPEND_CHAT_MESSAGE_CYPHER,
   UPDATE_CHAT_SESSION_TITLE_CYPHER,
   DELETE_CHAT_SESSION_CYPHER,
+  INCREMENT_ASSISTANT_USAGE_CYPHER,
 } from './assistant-cypher'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -25,6 +26,11 @@ const llm = require('../utils/llm-client')
 const RETRIEVAL_K_PASSAGES = 6
 const RETRIEVAL_K_VERSES = 4
 const CHAT_HISTORY_TURNS_CAP = 20 // most recent N turns sent to Claude
+// SYN-177 — per-user daily cap on assistant turns. Each turn triggers an
+// OpenAI embedding + a Claude completion (+ a title call on the first turn), so
+// this bounds the per-leader cost/abuse surface. Generous for a real pastoral
+// session; low enough to stop a rogue account running up spend.
+const DAILY_MESSAGE_CAP = 50
 const CHAT_MODEL = 'claude-haiku-4-5-20251001'
 const TITLE_MODEL = 'claude-haiku-4-5-20251001'
 
@@ -244,6 +250,50 @@ const toJSNumber = (v: unknown): number => {
   return Number(v)
 }
 
+// SYN-177 — enforce the per-user daily assistant cap. The atomic
+// read-modify-write and its locking rationale live in
+// INCREMENT_ASSISTANT_USAGE_CYPHER. This helper must run BEFORE the resolver's
+// main try block: its classified GraphQLErrors have to escape uncaught (that
+// catch funnels everything through `throwToSentry`, which flattens them into
+// plain 500s). DB errors still route through `throwToSentry`; the cap/forbidden
+// throws happen after the finally so they propagate cleanly.
+const enforceDailyChatCap = async (context: Context): Promise<void> => {
+  const capSession = context.executionContext.session()
+  let usedToday: number | null = null
+  try {
+    const result = await capSession.executeWrite((tx) =>
+      tx.run(INCREMENT_ASSISTANT_USAGE_CYPHER, {
+        leaderId: context.jwt?.userId,
+      })
+    )
+    const record = result.records[0]
+    usedToday = record ? toJSNumber(record.get('usedToday')) : null
+  } catch (error) {
+    throwToSentry('Error enforcing assistant daily limit', error)
+  } finally {
+    await capSession.close()
+  }
+
+  // Fail closed: a valid JWT whose userId has no Member node (e.g. deleted
+  // after the token was issued) matches nothing and must NOT get a free,
+  // uncapped pass to LLM spend.
+  if (usedToday === null) {
+    throw new GraphQLError('Authenticated member not found.', {
+      extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
+    })
+  }
+
+  // The increment already happened, so the Nth allowed turn returns N; the
+  // first over-cap turn returns CAP + 1. Rejecting on `> CAP` admits exactly
+  // DAILY_MESSAGE_CAP turns per UTC day before any OpenAI / Claude spend.
+  if (usedToday > DAILY_MESSAGE_CAP) {
+    throw new GraphQLError(
+      `You've reached today's assistant limit of ${DAILY_MESSAGE_CAP} messages. Please try again tomorrow.`,
+      { extensions: { code: 'TOO_MANY_REQUESTS', severity: 'USER_ERROR' } }
+    )
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Query — myChatSessions (sidebar list)
 // ---------------------------------------------------------------------------
@@ -368,6 +418,10 @@ const sendChatMessage = async (
       extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
     })
   }
+
+  // SYN-177 — reject over-cap callers before we spend anything on OpenAI /
+  // Claude. Throws TOO_MANY_REQUESTS when the leader has hit the daily cap.
+  await enforceDailyChatCap(context)
 
   const { openai, anthropic } = await getClients()
 
