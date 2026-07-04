@@ -550,6 +550,10 @@ SET log.id = apoc.create.uuid(),
  MERGE (date:TimeGraph {date: date()})
  MERGE (log)-[:LOGGED_BY]->(currentUser)
  MERGE (log)-[:RECORDED_ON]->(date)
+ MERGE (bacenta)-[:HAS_HISTORY]->(log)
+ MERGE (bacenta)-[:CURRENT_HISTORY]->(log)
+ MERGE (leader)-[:HAS_HISTORY]->(log)
+ MERGE (leader)-[:CURRENT_HISTORY]->(log)
 
 
 RETURN bacenta {.id, .name}, leader {.id, .firstName, .lastName, .email}, governorship {.id, .name}
@@ -561,7 +565,7 @@ CREATE (governorship:Governorship {name: $name})
   governorship.createdAt = datetime()
 
 WITH governorship
-CREATE (log:HistoryLog)
+CREATE (log:HistoryLog:ServiceLog)
   SET
   log.id =  apoc.create.uuid(),
   log.timeStamp = datetime(),
@@ -579,8 +583,10 @@ MERGE (leader)-[:LEADS]->(governorship)
 MERGE (date:TimeGraph {date: date()})
 MERGE (log)-[:LOGGED_BY]->(currentUser)
 MERGE (log)-[:RECORDED_ON]->(date)
-MERGE (council)-[:HAS_HISTORY]->(log)
+MERGE (governorship)-[:HAS_HISTORY]->(log)
+MERGE (governorship)-[:CURRENT_HISTORY]->(log)
 MERGE (leader)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:CURRENT_HISTORY]->(log)
 
 RETURN governorship {.id, .name}, leader {.id, .firstName, .lastName, .email}, council {.id, .name}
 `
@@ -612,7 +618,9 @@ MERGE (date:TimeGraph {date: date()})
 MERGE (log)-[:LOGGED_BY]->(currentUser)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (council)-[:HAS_HISTORY]->(log)
+MERGE (council)-[:CURRENT_HISTORY]->(log)
 MERGE (leader)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:CURRENT_HISTORY]->(log)
 
 RETURN council {.id, .name}, leader {.id, .firstName, .lastName, .email}, stream {.id, .name}
 `
@@ -645,7 +653,9 @@ MERGE (date:TimeGraph {date: date()})
 MERGE (log)-[:LOGGED_BY]->(currentUser)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (stream)-[:HAS_HISTORY]->(log)
+MERGE (stream)-[:CURRENT_HISTORY]->(log)
 MERGE (leader)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:CURRENT_HISTORY]->(log)
 
 RETURN stream {.id, .name}, leader {.id, .firstName, .lastName, .email}, campus {.id, .name}
 `
@@ -675,7 +685,9 @@ MERGE (date:TimeGraph {date: date()})
 MERGE (log)-[:LOGGED_BY]->(currentUser)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (campus)-[:HAS_HISTORY]->(log)
+MERGE (campus)-[:CURRENT_HISTORY]->(log)
 MERGE (leader)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:CURRENT_HISTORY]->(log)
 
 RETURN campus {.id, .name, .noIncomeTracking, .currency, .conversionRateToDollar}, leader {.id, .firstName, .lastName, .email}, oversight {.id, .name}
 `
@@ -703,7 +715,9 @@ MERGE (date:TimeGraph {date: date()})
 MERGE (log)-[:LOGGED_BY]->(currentUser)
 MERGE (log)-[:RECORDED_ON]->(date)
 MERGE (oversight)-[:HAS_HISTORY]->(log)
+MERGE (oversight)-[:CURRENT_HISTORY]->(log)
 MERGE (leader)-[:HAS_HISTORY]->(log)
+MERGE (leader)-[:CURRENT_HISTORY]->(log)
 
 RETURN oversight {.id, .name}, leader {.id, .firstName, .lastName, .email}, denomination {.id, .name}
 `
