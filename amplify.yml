@@ -368,6 +368,24 @@ frontend:
           npm run build
           cd ..
 
+          # SYN-174: never ship source maps to the public origin. The Sentry
+          # vite plugin uploads then deletes them, but if SENTRY_AUTH_TOKEN is
+          # unset the plugin is skipped and .map files remain. Strip any that
+          # survive as a hard guard, and fail the build if the artifact dir
+          # still contains one afterwards.
+          echo "[BUILD] Stripping any source maps from web-react-ts/dist..."
+          # The `|| true` is intentional: a delete hiccup must not bypass the
+          # re-scan below, which is the actual fail-closed check.
+          find web-react-ts/dist -type f -name '*.map' -print -delete || true
+          if find web-react-ts/dist -type f -name '*.map' | grep -q .; then
+            echo "[BUILD] ERROR: .map files still present in dist after strip" >&2
+            # An explicit `exit` does not fire the ERR trap, so notify Slack
+            # directly before failing — otherwise a source-map leak (the exact
+            # thing this guard catches) would fail the deploy silently.
+            slack_notify "build" "failed" "*Source maps leaked into web-react-ts/dist (SYN-174 strip guard tripped)*"
+            exit 1
+          fi
+
           slack_notify "build" "success"
 
   artifacts:
