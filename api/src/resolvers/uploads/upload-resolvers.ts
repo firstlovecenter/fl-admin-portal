@@ -1,13 +1,19 @@
+import { randomBytes } from 'crypto'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Context } from '../utils/neo4j-types'
 import { loadSecrets } from '../secrets'
 
+// SYN-180 — draw the object-key random segment from the CSPRNG (crypto) rather
+// than Math.random(), which is not cryptographically secure. The residual
+// modulo bias over 62 chars is immaterial here (the key is userId-namespaced
+// with a 15-minute presign TTL) — the goal is simply an unpredictable source.
 const generateRandomString = (length: number): string => {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const bytes = randomBytes(length)
   let result = ''
-  for (let i = length; i > 0; i -= 1) {
-    result += chars[Math.floor(Math.random() * 62)]
+  for (let i = 0; i < length; i += 1) {
+    result += chars[bytes[i] % chars.length]
   }
   return result
 }
