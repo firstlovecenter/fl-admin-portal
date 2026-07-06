@@ -18,13 +18,17 @@ send anything until the blockers below clear.
 1. **Dev FCM 401** — `POST fcmregistrations.googleapis.com/.../registrations`
    returns 401 in dev, so devices can't register. GCP console fix (API key
    authorization for the FCM Registration API on project `flc-platform-dev`).
-2. **Prod messaging project** — only `flc-platform-dev` exists. Prod needs its
-   own Firebase web app, VAPID key, and service account. See
-   `web-react-ts/src/services/firebaseMessaging.ts` (config is hardcoded to dev).
+2. **Per-environment projects** — dev deploys target `flc-platform-dev`, prod
+   targets `flc-platform-prod`. The FE picks the project from `VITE_FIREBASE_*`
+   build env per Amplify branch (falls back to the dev project); the SW gets the
+   same config via its registration query string. Prod needs its
+   `VITE_FIREBASE_*` env populated with the prod project's web app + VAPID key.
 3. **Service-account secrets** — populate `FCM_*` keys (see `push-sender.js`
-   header) in `dev/` and `prod/fl-admin-portal`. These belong to the *messaging*
-   project, NOT `flc-membership` (which is Firestore-only, used by
-   payment-webhook).
+   header) in EACH env's secret: `dev/fl-admin-portal` with the
+   flc-platform-dev service account, `prod/fl-admin-portal` with the
+   flc-platform-prod one. `loadSecrets()` already resolves per-env, so the
+   sender targets the matching project automatically. These are the *messaging*
+   projects, NOT `flc-membership` (Firestore-only, used by payment-webhook).
 4. **Host Lambda wiring** — when the first job is built, this dir needs a
    `package.json` (with `firebase-admin`) and its own `secrets.js` sibling, like
    every other job. `push-sender.js` `require('./secrets')` throws on load until
