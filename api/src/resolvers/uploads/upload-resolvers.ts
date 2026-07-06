@@ -30,7 +30,9 @@ const generateUniqueFileName = (
         .toLowerCase()
     : generateRandomString(12)
 
-  const filename = `uploads/${username}-${userId}/${date}_${generateRandomString(8)}_${cleanOriginalName}`
+  const filename = `uploads/${username}-${userId}/${date}_${generateRandomString(
+    8
+  )}_${cleanOriginalName}`
 
   return filename
 }
@@ -89,29 +91,6 @@ const uploadMutations = {
         currentUser.lastName
       )
 
-      // Log details for debugging
-      console.log('Upload request details:', {
-        originalFileName: args.fileName,
-        cleanedKey: key,
-        fileType: args.fileType,
-        fileSize: args.fileSize,
-        userId: currentUser.id,
-        userName: `${currentUser.firstName} ${currentUser.lastName}`,
-      })
-
-      // Test filename cleaning to ensure it's working correctly
-      const testCleanedName = args.fileName
-        .replace(/\s+/g, '-')
-        .replace(/~/g, '-')
-        .replace(/[^a-zA-Z0-9.-]/g, '')
-        .toLowerCase()
-
-      console.log('Filename cleaning test:', {
-        original: args.fileName,
-        cleaned: testCleanedName,
-        finalKey: key,
-      })
-
       // Create presigned URL
       const SECRETS = await loadSecrets()
       const s3Client = new S3Client({
@@ -122,13 +101,6 @@ const uploadMutations = {
         },
       })
 
-      console.log('AWS Configuration:', {
-        region: SECRETS.AWS_REGION || 'eu-west-2',
-        bucket: SECRETS.AWS_S3_BUCKET_NAME,
-        hasAccessKey: !!SECRETS.AWS_ACCESS_KEY_ID,
-        hasSecretKey: !!SECRETS.AWS_SECRET_ACCESS_KEY,
-      })
-
       const command = new PutObjectCommand({
         Bucket: SECRETS.AWS_S3_BUCKET_NAME,
         Key: key,
@@ -136,20 +108,8 @@ const uploadMutations = {
         ContentLength: args.fileSize,
       })
 
-      console.log('S3 Command details:', {
-        bucket: SECRETS.AWS_S3_BUCKET_NAME,
-        key,
-        contentType: args.fileType,
-        contentLength: args.fileSize,
-      })
-
       const presignedUrl = await getSignedUrl(s3Client, command, {
         expiresIn: 900, // 15 minutes
-      })
-
-      console.log('Generated presigned URL:', {
-        url: `${presignedUrl.substring(0, 100)}...`,
-        fullLength: presignedUrl.length,
       })
 
       const publicUrl = `https://${SECRETS.AWS_S3_BUCKET_NAME}.s3.${

@@ -132,6 +132,12 @@ const startServer = async () => {
   const server = new ApolloServer({
     introspection: isDevelopment,
     schema,
+    // SYN-178 — mirror the Lambda's stacktrace gating (graphql.js) on the same
+    // ENVIRONMENT signal as introspection (not process.env.NODE_ENV, which may
+    // be unset in Docker) so raw Neo4j / JS stack traces never reach clients
+    // outside development. Secure default: anything not explicitly development
+    // is treated as production.
+    includeStacktraceInErrorResponses: isDevelopment,
     // SYN-177 — depth guard on the auto-generated schema. Runs in every
     // environment; blocks pathological deep-traversal queries before execution.
     validationRules: [depthLimit()],
