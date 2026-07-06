@@ -24,7 +24,11 @@ export default defineConfig(({ command, mode }) => {
       port: 3000,
     },
     build: {
-      sourcemap: true, // Source map generation must be turned on
+      // 'hidden' still emits .map files (so Sentry can resolve stack traces)
+      // but omits the `//# sourceMappingURL=` comment, so browsers never fetch
+      // them. Combined with the Sentry plugin's filesToDeleteAfterUpload below
+      // and the amplify.yml strip guard, no .map is served publicly (SYN-174).
+      sourcemap: 'hidden',
     },
     define: {
       // Inject the package.json version at build time so the UI never drifts
@@ -40,6 +44,13 @@ export default defineConfig(({ command, mode }) => {
         injectRegister: 'auto',
         registerType: 'autoUpdate',
         manifest: manifest,
+        // Workbox ignores vite's build.sourcemap and emits sw.js.map /
+        // workbox-*.js.map with a sourceMappingURL comment. We don't ship SW
+        // maps to Sentry, so disable them outright to avoid leaking source and
+        // to keep the strip guard from leaving a dangling comment (SYN-174).
+        workbox: {
+          sourcemap: false,
+        },
       }),
       // Put the Sentry vite plugin after all other plugins (only if auth token is available)
       ...(env.SENTRY_AUTH_TOKEN
@@ -55,6 +66,9 @@ export default defineConfig(({ command, mode }) => {
               sourcemaps: {
                 // Specify the directory containing build artifacts
                 assets: './dist/**',
+                // Delete the .map files once uploaded to Sentry so they are
+                // never shipped to the production origin (SYN-174).
+                filesToDeleteAfterUpload: ['./dist/**/*.map'],
               },
 
               // Use the following option if you're on an SDK version lower than 7.47.0:
