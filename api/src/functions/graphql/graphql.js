@@ -39,10 +39,13 @@ const initializeServer = async () => {
       connectionTimeout: 30000,
     }
 
-    // Only add encryption config if not using secure URI scheme
+    // Only add encryption config if not using secure URI scheme.
+    // SYN-180: validate against the system CA store, not TRUST_ALL_CERTIFICATES
+    // (blind trust defeats TLS → bolt MITM). All Neo4j hosts present CA-signed
+    // (Let's Encrypt) certs. Mirror of api/src/index.js.
     if (!hasEncryptionInUri) {
       driverConfig.encrypted = 'ENCRYPTION_ON'
-      driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
+      driverConfig.trust = 'TRUST_SYSTEM_CA_SIGNED_CERTIFICATES'
     }
 
     console.log(
