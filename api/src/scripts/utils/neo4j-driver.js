@@ -2,7 +2,7 @@
 
 /**
  * Builds a Neo4j driver from a loaded secrets bundle. Mirrors the
- * connection logic in `api/src/index.js:23-50` — uses the URI as-is and
+ * connection logic in `api/src/index.js` — uses the URI as-is and
  * toggles encryption config based on whether the URI already carries a
  * secure scheme. The previous `.replace('bolt://', 'neo4j+s://')` shortcut
  * forced routing mode which fails against single-instance Neo4j with
@@ -16,10 +16,12 @@ const buildNeo4jDriver = (SECRETS) => {
   const hasEncryptionInUri =
     uri.includes('neo4j+s://') || uri.includes('neo4j+ssc://')
 
+  // SYN-180: validate against the system CA store, not TRUST_ALL_CERTIFICATES
+  // (blind trust defeats TLS → bolt MITM). Mirror of api/src/index.js.
   const driverConfig = { connectionTimeout: 30000 }
   if (!hasEncryptionInUri) {
     driverConfig.encrypted = 'ENCRYPTION_ON'
-    driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
+    driverConfig.trust = 'TRUST_SYSTEM_CA_SIGNED_CERTIFICATES'
   }
 
   return neo4j.driver(

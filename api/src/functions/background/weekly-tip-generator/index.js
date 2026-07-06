@@ -399,9 +399,11 @@ const handler = async (event = {}) => {
     maxConnectionPoolSize: 10,
     connectionTimeout: 30000,
   }
+  // SYN-180: validate against the system CA store, not TRUST_ALL_CERTIFICATES
+  // (blind trust defeats TLS → bolt MITM). Mirror of api/src/index.js.
   if (!hasEncryptionInUri) {
     driverConfig.encrypted = 'ENCRYPTION_ON'
-    driverConfig.trust = 'TRUST_ALL_CERTIFICATES'
+    driverConfig.trust = 'TRUST_SYSTEM_CA_SIGNED_CERTIFICATES'
   }
   const driver = neo4j.driver(
     uri,

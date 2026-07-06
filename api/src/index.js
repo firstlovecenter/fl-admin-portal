@@ -64,8 +64,9 @@ const startServer = async () => {
 
   // Only add encryption config if not using secure URI scheme.
   // SYN-180: validate against the system CA store, not TRUST_ALL_CERTIFICATES
-  // (blind trust defeats TLS → bolt MITM). Migrate NEO4J_URI to neo4j+s:// to
-  // drop this block; requires a CA-signed server cert on this path.
+  // (blind trust defeats TLS → bolt MITM). All Neo4j hosts (dev + prod) present
+  // CA-signed (Let's Encrypt) certs, so system-CA validation is safe on every
+  // environment. Migrate NEO4J_URI to neo4j+s:// to drop this block entirely.
   if (!hasEncryptionInUri) {
     driverConfig.encrypted = 'ENCRYPTION_ON'
     driverConfig.trust = 'TRUST_SYSTEM_CA_SIGNED_CERTIFICATES'
@@ -73,7 +74,7 @@ const startServer = async () => {
 
   console.log(
     '[Neo4j] Connecting to:',
-    uri.replace(/::\/\/.*@/, '://[REDACTED]@')
+    uri.replace(/:\/\/.*@/, '://[REDACTED]@')
   )
   console.log('[Neo4j] URI encryption scheme detected:', hasEncryptionInUri)
   console.log('[Neo4j] Driver config:', driverConfig)
