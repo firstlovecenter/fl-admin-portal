@@ -16,7 +16,6 @@
  * client.
  */
 
-import React from 'react'
 import { RetryLink } from '@apollo/client/link/retry'
 import { onError } from '@apollo/client/link/error'
 import {
@@ -121,20 +120,26 @@ export function createApolloClient({
   })
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
+    // SYN-178 — never render raw GraphQL/network internals (message, locations,
+    // path, Neo4j error text) into a user-facing toast. Show a generic message;
+    // the technical detail only reaches the dev console (compiled out of the
+    // production bundle via import.meta.env.DEV).
     if (graphQLErrors) {
       graphQLErrors.forEach(({ message, locations, path }) => {
         if (message.includes('Unauthenticated')) return
 
-        toast.error('GraphQL Error', {
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.error(
+            `[GraphQL error]: ${message}`,
+            locations ? { locations, path } : { path }
+          )
+        }
+
+        toast.error('Something went wrong', {
           id: `gql:${message}:${path?.join('.') ?? ''}`,
-          description: (
-            <div className="space-y-1">
-              <div>Message: {message}</div>
-              <div>Location: {JSON.stringify(locations)}</div>
-              <div>Path: {path?.join('.')}</div>
-            </div>
-          ),
-          duration: 20000,
+          description: 'Please try again. If this keeps happening, contact support.',
+          duration: 8000,
         })
       })
     }
@@ -144,10 +149,16 @@ export function createApolloClient({
       !networkError.message.includes('400') &&
       !networkError.message.includes('Failed to fetch')
     ) {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.error(`[Network error]: ${networkError.message}`)
+      }
+
       toast.error('Network Error', {
         id: `network:${networkError.message}`,
-        description: networkError.message,
-        duration: 20000,
+        description:
+          'We could not reach the server. Check your connection and try again.',
+        duration: 8000,
       })
     }
   })

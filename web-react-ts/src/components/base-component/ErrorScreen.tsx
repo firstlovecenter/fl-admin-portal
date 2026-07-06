@@ -170,19 +170,25 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
     networkError: undefined,
   }
 
-  if (graphQLErrors)
-    graphQLErrors.forEach(({ message, locations, path }) =>
-      // eslint-disable-next-line no-console
-      console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
-          locations
-        )}, Path: ${JSON.stringify(path)}`
+  // SYN-178 — only dump the full error internals to the console in development.
+  // In production these unconditional dumps put raw GraphQL/Neo4j error text and
+  // the full networkError payload into the browser console on every render; the
+  // user-facing detail already lives behind the explicit "Show details" dialog.
+  if (import.meta.env.DEV) {
+    if (graphQLErrors)
+      graphQLErrors.forEach(({ message, locations, path }) =>
+        // eslint-disable-next-line no-console
+        console.error(
+          `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
+            locations
+          )}, Path: ${JSON.stringify(path)}`
+        )
       )
-    )
 
-  if (networkError)
-    // eslint-disable-next-line no-console
-    console.error(`[Network error]: ${JSON.stringify(networkError)}`)
+    if (networkError)
+      // eslint-disable-next-line no-console
+      console.error(`[Network error]: ${JSON.stringify(networkError)}`)
+  }
 
   const summaries = buildSummaries(apolloError)
   const headline = error?.message || apolloError?.name || 'Something went wrong'
