@@ -25,64 +25,114 @@ const VAPID_KEY =
 
 let app: FirebaseApp | undefined
 let messaging: Messaging | undefined
+let foregroundListenerWired = false
 
 const getMessagingInstance = (): Messaging => {
   if (!app) app = initializeApp(firebaseConfig)
   if (!messaging) messaging = getMessaging(app)
+  // Wire the foreground listener exactly once — acquireToken can run on every
+  // load (silent re-register) and on each Settings enable, so guarding here
+  // prevents listeners stacking for the session.
+  if (!foregroundListenerWired) {
+    foregroundListenerWired = true
+    onMessage(messaging, (payload) => {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.log(
+          '[FCM] foreground message:',
+          payload?.notification?.title,
+          '—',
+          payload?.notification?.body
+        )
+      }
+    })
+  }
   return messaging
 }
 
 /**
- * Initializes FCM for the PWA: registers the FCM service worker (kept separate
- * from the vite-plugin-pwa Workbox SW), requests notification permission, wires
- * a foreground message listener, and returns this device's registration token.
- *
- * Safe to call when unsupported / denied — returns null and never throws.
- * Token is logged for now; persisting it to the backend is a follow-up.
+ * Whether this browser supports FCM web push at all. Safe to call anywhere —
+ * resolves false rather than throwing on unsupported/SSR contexts.
  */
-export const initPushNotifications = async (): Promise<string | null> => {
+export const isPushSupported = async (): Promise<boolean> => {
   try {
-    if (!(await isSupported())) {
-      // eslint-disable-next-line no-console
-      console.log('[FCM] messaging not supported in this browser')
-      return null
-    }
+    return await isSupported()
+  } catch {
+    return false
+  }
+}
 
-    // Register the FCM worker explicitly and pass it to getToken so FCM uses it
-    // rather than the Workbox service worker.
-    const swReg = await navigator.serviceWorker.register(
-      '/firebase-messaging-sw.js'
-    )
+/**
+ * Mints this device's FCM registration token, registering the dedicated FCM
+ * service worker (kept separate from the vite-plugin-pwa Workbox SW) and wiring
+ * a foreground message listener. Assumes notification permission is already
+ * granted — callers must check first. Throws on failure so callers can surface
+ * a friendly message; the raw error is kept out of the UI.
+ */
+const acquireToken = async (): Promise<string | null> => {
+  // Register the FCM worker explicitly and pass it to getToken so FCM uses it
+  // rather than the Workbox service worker.
+  const swReg = await navigator.serviceWorker.register(
+    '/firebase-messaging-sw.js'
+  )
 
-    const permission = await Notification.requestPermission()
-    if (permission !== 'granted') {
-      // eslint-disable-next-line no-console
-      console.log('[FCM] permission not granted:', permission)
-      return null
-    }
+  const m = getMessagingInstance()
 
-    const m = getMessagingInstance()
-
-    onMessage(m, (payload) => {
-      // eslint-disable-next-line no-console
-      console.log(
-        '[FCM] foreground message:',
-        payload?.notification?.title,
-        '—',
-        payload?.notification?.body
-      )
-    })
-
-    const token = await getToken(m, {
-      vapidKey: VAPID_KEY,
-      serviceWorkerRegistration: swReg,
-    })
+  const token = await getToken(m, {
+    vapidKey: VAPID_KEY,
+    serviceWorkerRegistration: swReg,
+  })
+  if (import.meta.env.DEV) {
     // eslint-disable-next-line no-console
     console.log('[FCM] token acquired:', !!token)
-    return token ?? null
+  }
+  return token ?? null
+}
+
+/**
+ * User-initiated enable path (Settings toggle). Requests notification
+ * permission via the user gesture, then registers this device for FCM. Returns
+ * the token on success. Throws on any failure (permission denied, unsupported,
+ * or a registration error such as the FCM 401) so the caller can surface a
+ * friendly message — the raw error is logged, never shown.
+ */
+export const enablePushNotifications = async (): Promise<string | null> => {
+  if (!(await isPushSupported())) {
+    throw new Error('unsupported')
+  }
+
+  const permission = await Notification.requestPermission()
+  if (permission !== 'granted') {
+    // 'denied' or 'default' (dismissed) — cannot register without a grant.
+    throw new Error(permission)
+  }
+
+  try {
+    return await acquireToken()
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log('[FCM] init failed:', error)
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.log('[FCM] enable failed:', error)
+    }
+    throw new Error('registration-failed')
+  }
+}
+
+/**
+ * Silent re-registration for app load. Only registers when the browser
+ * permission is already granted — never prompts, never throws. A no-op on
+ * unsupported browsers or when permission has not been granted.
+ */
+export const registerPushIfGranted = async (): Promise<string | null> => {
+  try {
+    if (!(await isPushSupported())) return null
+    if (Notification.permission !== 'granted') return null
+    return await acquireToken()
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.log('[FCM] silent register failed:', error)
+    }
     return null
   }
 }

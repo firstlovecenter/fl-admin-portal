@@ -24,6 +24,7 @@ import {
   writeDefaultScopeKey,
 } from 'lib/default-scope-storage'
 import { formatChurchLevel, getRoleRelationLabel } from 'lib/scope-display'
+import NotificationsCard from './NotificationsCard'
 
 const Settings = () => {
   const { roleChurchOptions, selectedScopeKey, setSelectedScopeKey } =
@@ -161,6 +162,8 @@ const Settings = () => {
             )}
           </CardContent>
         </Card>
+
+        <NotificationsCard />
       </div>
     </div>
   )

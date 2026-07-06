@@ -13,6 +13,11 @@ import { accountsMutations } from './accounts/accounts-resolvers'
 import { mapsResolvers } from './maps/maps-resolvers'
 import { Context } from './utils/neo4j-types'
 import MakeServantResolvers from './directory/make-servant-resolvers'
+import pushTokenMutations from './directory/push-token-resolvers'
+import {
+  notificationPrefsQuery,
+  notificationPrefsMutation,
+} from './directory/notification-prefs-resolvers'
 import { reportsResolvers } from './reports/reports-resolvers'
 import shepherdingControlResolvers from './shepherding-control/shepherding-control-resolvers'
 import uploadMutations from './uploads/upload-resolvers'
@@ -153,6 +158,7 @@ const resolvers = {
   Query: {
     ...shepherdingControlResolvers.Query,
     ...assistantResolvers.Query,
+    ...notificationPrefsQuery,
     // Returns the per-edge authority that `index.js` already computed and
     // attached to `context.jwt`. No Cypher executes here — the cache
     // round-trip happened at request-context construction. The FE calls
@@ -246,6 +252,8 @@ const resolvers = {
   Mutation: {
     ...MakeServantResolvers,
     ...directoryMutation,
+    ...pushTokenMutations,
+    ...notificationPrefsMutation,
     ...arrivalsMutation,
     ...serviceMutation,
     ...bankingMutation,
