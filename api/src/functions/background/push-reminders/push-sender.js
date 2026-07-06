@@ -12,36 +12,34 @@ const { loadSecrets } = require('./secrets')
  * against flc-platform-dev can only be delivered by an Admin SDK app that is
  * credentialed for flc-platform-dev.
  *
- * Required secrets (AWS Secrets Manager, dev/ + prod/fl-admin-portal), from the
- * messaging project's service-account JSON:
- *   FCM_PROJECT_ID
- *   FCM_PRIVATE_KEY_ID
- *   FCM_PRIVATE_KEY        (newlines may be escaped as \\n — unescaped below)
- *   FCM_CLIENT_EMAIL
- *   FCM_CLIENT_ID
- *   FCM_CLIENT_X509_CERT_URL
+ * Required secret (AWS Secrets Manager, dev/ + prod/fl-admin-portal): a single
+ * key holding the messaging project's whole service-account JSON, verbatim from
+ * the file downloaded in the Firebase console:
+ *   FCM_SERVICE_ACCOUNT   (the entire {"type":"service_account",...} JSON)
+ * Each env's secret gets that env's project SA (dev→flc-platform-dev,
+ * prod→flc-platform-prod), so the sender targets the matching project.
  *
  * BLOCKED until: (1) the dev FCM 401 on fcmregistrations.googleapis.com is
- * fixed so devices can register at all; (2) the prod messaging project exists
- * with its own web app + VAPID key + service account; (3) the above secrets are
- * populated. Until then this module has nothing to send to.
+ * fixed so devices can register at all; (2) the prod messaging project's web
+ * app + VAPID key exist and VITE_FIREBASE_* is set on the prod branch; (3) the
+ * FCM_SERVICE_ACCOUNT secret is populated per env. Nothing to send to until then.
  */
 
 const APP_NAME = 'push-reminders'
 
-const buildServiceAccount = (SECRETS) => ({
-  type: 'service_account',
-  project_id: SECRETS.FCM_PROJECT_ID,
-  private_key_id: SECRETS.FCM_PRIVATE_KEY_ID,
-  private_key: SECRETS.FCM_PRIVATE_KEY?.replace(/\\n/gm, '\n'),
-  client_email: SECRETS.FCM_CLIENT_EMAIL,
-  client_id: SECRETS.FCM_CLIENT_ID,
-  auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-  token_uri: 'https://oauth2.googleapis.com/token',
-  auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-  client_x509_cert_url: SECRETS.FCM_CLIENT_X509_CERT_URL,
-  universe_domain: 'googleapis.com',
-})
+// The secret stores the raw downloaded service-account JSON as one string.
+// JSON.parse restores the real newlines in private_key (no manual unescaping),
+// and cert() accepts the google-format (snake_case) object directly.
+const buildServiceAccount = (SECRETS) => {
+  const raw = SECRETS.FCM_SERVICE_ACCOUNT
+  if (!raw) {
+    throw new Error(
+      'FCM_SERVICE_ACCOUNT secret is missing — store the messaging project ' +
+        'service-account JSON under that key.'
+    )
+  }
+  return typeof raw === 'string' ? JSON.parse(raw) : raw
+}
 
 let messagingInstance = null
 
@@ -52,10 +50,7 @@ const getMessagingInstance = async () => {
   const existing = getApps().find((a) => a.name === APP_NAME)
   const app =
     existing ||
-    initializeApp(
-      { credential: cert(buildServiceAccount(SECRETS)) },
-      APP_NAME
-    )
+    initializeApp({ credential: cert(buildServiceAccount(SECRETS)) }, APP_NAME)
 
   messagingInstance = getMessaging(app)
   return messagingInstance
