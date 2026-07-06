@@ -23,12 +23,14 @@ send anything until the blockers below clear.
    build env per Amplify branch (falls back to the dev project); the SW gets the
    same config via its registration query string. Prod needs its
    `VITE_FIREBASE_*` env populated with the prod project's web app + VAPID key.
-3. **Service-account secrets** — populate `FCM_*` keys (see `push-sender.js`
-   header) in EACH env's secret: `dev/fl-admin-portal` with the
-   flc-platform-dev service account, `prod/fl-admin-portal` with the
-   flc-platform-prod one. `loadSecrets()` already resolves per-env, so the
+3. **Service-account secret** — populate a single `FCM_SERVICE_ACCOUNT` key
+   (the whole downloaded service-account JSON) in EACH env's secret:
+   `dev/fl-admin-portal` with the flc-platform-dev SA, `prod/fl-admin-portal`
+   with the flc-platform-prod one. `loadSecrets()` resolves per-env, so the
    sender targets the matching project automatically. These are the *messaging*
    projects, NOT `flc-membership` (Firestore-only, used by payment-webhook).
+   Store it via the AWS Console / your own terminal — never paste a private key
+   into chat or a commit.
 4. **Host Lambda wiring** — when the first job is built, this dir needs a
    `package.json` (with `firebase-admin`) and its own `secrets.js` sibling, like
    every other job. `push-sender.js` `require('./secrets')` throws on load until
