@@ -484,7 +484,7 @@ const handler = async (event = {}, targetDate = null) => {
         'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
       },
       data: {
-        to: ['flcexpense22@gmail.com'],
+        to: ['flcexpense22@gmail.com', 'charajoy64@gmail.com'],
         subject: modeConfig.subject,
         html,
         attachments: [
