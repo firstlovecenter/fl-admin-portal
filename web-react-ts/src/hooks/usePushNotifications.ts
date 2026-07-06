@@ -1,22 +1,41 @@
 import { useEffect, useRef } from 'react'
+import { useMutation } from '@apollo/client'
 import { useAuth } from 'contexts/AuthContext'
-import { initPushNotifications } from 'services/firebaseMessaging'
+import { registerPushIfGranted } from 'services/firebaseMessaging'
+import { readPushEnabled, writePushToken } from 'lib/push-preference-storage'
+import { REGISTER_PUSH_TOKEN } from './pushNotificationsGQL'
 
 /**
- * Registers this device for FCM push once the user is authenticated. Fires once
- * per session (guarded), non-blocking, and never throws. The permission prompt
- * appears on first authenticated load; a denied/unsupported browser is a no-op.
+ * Silently re-registers this device for FCM push on load — but only when the
+ * user has already opted in from Settings AND the browser permission is still
+ * granted. Never prompts and never throws; the permission prompt now lives
+ * behind the explicit Settings toggle (see usePushNotificationSettings).
+ *
+ * Also refreshes the persisted device token server-side, since FCM tokens can
+ * rotate between sessions. Fires once per session (guarded).
  */
 export const usePushNotifications = (): void => {
   const { isAuthenticated } = useAuth()
   const initialized = useRef(false)
+  const [registerPushToken] = useMutation(REGISTER_PUSH_TOKEN)
 
   useEffect(() => {
-    if (isAuthenticated && !initialized.current) {
-      initialized.current = true
-      void initPushNotifications()
+    // Reset the guard on sign-out so a later sign-in (in-app account switch)
+    // re-registers the now-current user's device.
+    if (!isAuthenticated) {
+      initialized.current = false
+      return
     }
-  }, [isAuthenticated])
+    if (!initialized.current && readPushEnabled()) {
+      initialized.current = true
+      void registerPushIfGranted().then((token) => {
+        if (token) {
+          writePushToken(token)
+          void registerPushToken({ variables: { token } }).catch(() => undefined)
+        }
+      })
+    }
+  }, [isAuthenticated, registerPushToken])
 }
 
 export default usePushNotifications

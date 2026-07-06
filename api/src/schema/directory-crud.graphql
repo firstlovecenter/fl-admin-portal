@@ -1,5 +1,16 @@
 extend type Mutation {
   RemoveRoleFromMember(role: String!): Boolean!
+  # Push notification device tokens — self-scoped to the caller (jwt.userId).
+  # Tokens are stored as a bare node property (not exposed on the Member type)
+  # and managed only through these two narrow mutations.
+  RegisterPushToken(token: String!): Boolean!
+  UnregisterPushToken(token: String!): Boolean!
+  # Per-category reminder preferences — self-scoped. Default ON (opt-out): an
+  # unset flag reads as subscribed. The reminder jobs read these before sending.
+  SetNotificationPreference(
+    category: NotificationCategory!
+    enabled: Boolean!
+  ): NotificationPreferences!
   #resolver Mutations
   MakeOversightAdmin(adminId: ID!, oversightId: ID!, oldAdminId: ID): Member!
   RemoveOversightAdmin(adminId: ID!, newAdminId: ID!, oversightId: ID!): Member
@@ -742,4 +753,23 @@ extend type Mutation {
       columnName: "bacenta"
     )
 
+}
+
+# Notification reminder categories. Preferences are stored as coalesced boolean
+# flags on the Member node (default true = subscribed) and read self-scoped.
+enum NotificationCategory {
+  SERVICES
+  BANKING
+  ARRIVALS
+}
+
+type NotificationPreferences {
+  services: Boolean!
+  banking: Boolean!
+  arrivals: Boolean!
+}
+
+extend type Query {
+  # The caller's own reminder preferences (self-scoped to jwt.userId).
+  myNotificationPreferences: NotificationPreferences!
 }
