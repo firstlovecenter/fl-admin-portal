@@ -7,21 +7,45 @@ import {
   type Messaging,
 } from 'firebase/messaging'
 
-// Public client config for the flc-platform-dev "Synago" web app (not secrets).
-// Keep in sync with public/firebase-messaging-sw.js. Prod (flc-platform-prod)
-// needs its own values — move to env/per-environment config before prod.
+// Firebase web config is per-environment: dev deploys target flc-platform-dev,
+// prod targets flc-platform-prod. Values come from VITE_FIREBASE_* build env
+// (set per Amplify branch); when unset they fall back to the flc-platform-dev
+// project's PUBLIC config (safe to embed — these are client identifiers, not
+// secrets), so local dev works with no extra setup. The service worker can't
+// read import.meta.env, so acquireToken() forwards this same config to
+// firebase-messaging-sw.js via its registration query string — keep the two in
+// sync through that single source.
+const env = import.meta.env
+
+// Empty-is-unset: a defined-but-blank env var (an easy Amplify misconfig) falls
+// back to the dev default, matching the service worker's `||` semantics so the
+// page and the SW can never resolve to different projects.
+const pick = (value: string | undefined, fallback: string): string =>
+  value || fallback
+
 const firebaseConfig = {
-  apiKey: 'AIzaSyBABDnaD6pmyAjffxADrqrPUfyNim6c3ss',
-  authDomain: 'flc-platform-dev.firebaseapp.com',
-  projectId: 'flc-platform-dev',
-  storageBucket: 'flc-platform-dev.firebasestorage.app',
-  messagingSenderId: '48942564042',
-  appId: '1:48942564042:web:dde1cbc74786eb6e502a33',
+  apiKey: pick(env.VITE_FIREBASE_API_KEY, 'AIzaSyBABDnaD6pmyAjffxADrqrPUfyNim6c3ss'),
+  authDomain: pick(env.VITE_FIREBASE_AUTH_DOMAIN, 'flc-platform-dev.firebaseapp.com'),
+  projectId: pick(env.VITE_FIREBASE_PROJECT_ID, 'flc-platform-dev'),
+  storageBucket: pick(
+    env.VITE_FIREBASE_STORAGE_BUCKET,
+    'flc-platform-dev.firebasestorage.app'
+  ),
+  messagingSenderId: pick(env.VITE_FIREBASE_MESSAGING_SENDER_ID, '48942564042'),
+  appId: pick(env.VITE_FIREBASE_APP_ID, '1:48942564042:web:dde1cbc74786eb6e502a33'),
 }
 
-// Web Push (VAPID) public key for flc-platform-dev — safe to embed (public half).
-const VAPID_KEY =
+// Web Push (VAPID) public key — per-environment, falls back to flc-platform-dev.
+const VAPID_KEY = pick(
+  env.VITE_FIREBASE_VAPID_KEY,
   'BOICTFJjgJ9hJLSVJD1oFqLj4jR9KEVi03on3qqnD7I3uaphrFek3TFNkVlOK8gRTEn-f2bJK7ZfuwWVaZ63Hy0'
+)
+
+// The FCM service worker is a static file (no Vite env substitution), so we pass
+// the resolved config to it as query params; the SW reads them from its own URL.
+const swUrl = `/firebase-messaging-sw.js?${new URLSearchParams(
+  firebaseConfig
+).toString()}`
 
 let app: FirebaseApp | undefined
 let messaging: Messaging | undefined
@@ -70,11 +94,10 @@ export const isPushSupported = async (): Promise<boolean> => {
  * a friendly message; the raw error is kept out of the UI.
  */
 const acquireToken = async (): Promise<string | null> => {
-  // Register the FCM worker explicitly and pass it to getToken so FCM uses it
-  // rather than the Workbox service worker.
-  const swReg = await navigator.serviceWorker.register(
-    '/firebase-messaging-sw.js'
-  )
+  // Register the FCM worker explicitly (with the per-environment config in its
+  // query string) and pass it to getToken so FCM uses it rather than the
+  // Workbox service worker.
+  const swReg = await navigator.serviceWorker.register(swUrl)
 
   const m = getMessagingInstance()
 
