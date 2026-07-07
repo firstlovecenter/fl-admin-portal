@@ -38,6 +38,7 @@ jest.mock('../utils/utils', () => ({
 import servantResolvers from './servant-resolver-factory'
 import { SERVANT_MUTATIONS } from './servant-config'
 import { MakeServant, RemoveServant } from './make-remove-servants'
+import { isAuth } from '../utils/utils'
 import type { Context } from '../utils/neo4j-types'
 import type { Member } from '../utils/types'
 
@@ -212,16 +213,21 @@ describe('SM4 — factory permission routing: correct role arrays per config ent
     )
   })
 
-  it("SM4: MakeDenominationLeader passes ['fishers'] to MakeServant (top-level authority gate)", async () => {
+  it('SM4: MakeDenominationLeader passes permitAdmin(Denomination) to MakeServant and gates on fishers separately', async () => {
     await servantResolvers['MakeDenominationLeader'](null, mockArgs, mockContext)
 
+    // Denomination Leader is a two-part gate: the role array forwarded to the
+    // handler is permitAdmin('Denomination'); the coarse `fishers` marker is
+    // enforced as a separate JWT-only isAuth guard (it maps to no servant edge,
+    // so it is never passed through to MakeServant).
     expect(MakeServant).toHaveBeenCalledWith(
       mockContext,
       mockArgs,
-      ['fishers'],
+      permitAdmin('Denomination'),
       'Denomination',
       'Leader'
     )
+    expect(isAuth).toHaveBeenCalledWith(['fishers'], mockJwt.roles)
   })
 })
 
