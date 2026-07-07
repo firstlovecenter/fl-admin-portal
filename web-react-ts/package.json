@@ -23,7 +23,7 @@
     "enzyme": "^3.11.0",
     "firebase": "^12.15.0",
     "formik": "^2.2.9",
-    "graphql": "^16.8.1",
+    "graphql": "^17.0.2",
     "jszip": "^3.10.1",
     "lucide-react": "^1.14.0",
     "motion": "^12.38.0",
