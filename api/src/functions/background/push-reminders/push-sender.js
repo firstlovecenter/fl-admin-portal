@@ -15,14 +15,12 @@ const { loadSecrets } = require('./secrets')
  * Required secret (AWS Secrets Manager, dev/ + prod/fl-admin-portal): a single
  * key holding the messaging project's whole service-account JSON, verbatim from
  * the file downloaded in the Firebase console:
- *   FCM_SERVICE_ACCOUNT   (the entire {"type":"service_account",...} JSON)
+ *   FIREBASE_SERVICE_ACCOUNT   (the entire {"type":"service_account",...} JSON)
  * Each env's secret gets that env's project SA (dev→flc-platform-dev,
- * prod→flc-platform-prod), so the sender targets the matching project.
- *
- * BLOCKED until: (1) the dev FCM 401 on fcmregistrations.googleapis.com is
- * fixed so devices can register at all; (2) the prod messaging project's web
- * app + VAPID key exist and VITE_FIREBASE_* is set on the prod branch; (3) the
- * FCM_SERVICE_ACCOUNT secret is populated per env. Nothing to send to until then.
+ * prod→flc-platform-prod), so the sender targets the matching project. Both
+ * are populated and verified (2026-07-07). Do NOT confuse with the loose
+ * FIREBASE_CLIENT_EMAIL/FIREBASE_PRIVATE_KEY keys in the dev secret — those
+ * are the flc-membership (Firestore) SA used by payment-webhook.
  */
 
 const APP_NAME = 'push-reminders'
@@ -31,14 +29,21 @@ const APP_NAME = 'push-reminders'
 // JSON.parse restores the real newlines in private_key (no manual unescaping),
 // and cert() accepts the google-format (snake_case) object directly.
 const buildServiceAccount = (SECRETS) => {
-  const raw = SECRETS.FCM_SERVICE_ACCOUNT
+  const raw = SECRETS.FIREBASE_SERVICE_ACCOUNT
   if (!raw) {
     throw new Error(
-      'FCM_SERVICE_ACCOUNT secret is missing — store the messaging project ' +
-        'service-account JSON under that key.'
+      'FIREBASE_SERVICE_ACCOUNT secret is missing — store the messaging ' +
+        'project service-account JSON under that key.'
     )
   }
-  return typeof raw === 'string' ? JSON.parse(raw) : raw
+  if (typeof raw !== 'string') return raw
+  try {
+    return JSON.parse(raw)
+  } catch {
+    // Never rethrow the parse error itself — V8's JSON.parse messages embed a
+    // snippet of the source string, which here is private-key material.
+    throw new Error('FIREBASE_SERVICE_ACCOUNT is not valid JSON')
+  }
 }
 
 let messagingInstance = null
@@ -87,17 +92,29 @@ const sendToTokens = async (tokens, message) => {
   })
 
   const invalidTokens = []
+  let invalidArgumentCount = 0
   response.responses.forEach((res, index) => {
     if (res.success) return
     const code = res.error?.code
+    // Only token-specific verdicts trigger pruning. `messaging/invalid-argument`
+    // is deliberately EXCLUDED: FCM also uses it for message-shape problems
+    // (e.g. a non-string in `data`), and treating it as a dead token would
+    // mass-delete every valid :PushToken in the batch on a payload bug.
     if (
       code === 'messaging/registration-token-not-registered' ||
-      code === 'messaging/invalid-registration-token' ||
-      code === 'messaging/invalid-argument'
+      code === 'messaging/invalid-registration-token'
     ) {
       invalidTokens.push(unique[index])
+    } else if (code === 'messaging/invalid-argument') {
+      invalidArgumentCount += 1
     }
   })
+  if (invalidArgumentCount > 0) {
+    // Counts only — never token values.
+    console.warn(
+      `FCM rejected ${invalidArgumentCount} send(s) with invalid-argument — check the message payload shape; NOT pruning these tokens`
+    )
+  }
 
   return {
     successCount: response.successCount,
