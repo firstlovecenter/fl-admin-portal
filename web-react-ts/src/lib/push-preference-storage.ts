@@ -52,3 +52,25 @@ export const clearPushToken = (): void => {
     // localStorage unavailable — silently ignore
   }
 }
+
+const PUSH_SOFT_ASK_DISMISSED_KEY = 'flc.pushSoftAskDismissed'
+
+/**
+ * Whether the user has permanently dismissed the push soft-ask card. Set once
+ * they tap "Not now" so we never nag them again on this device.
+ */
+export const readPushSoftAskDismissed = (): boolean => {
+  try {
+    return window.localStorage.getItem(PUSH_SOFT_ASK_DISMISSED_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+export const writePushSoftAskDismissed = (): void => {
+  try {
+    window.localStorage.setItem(PUSH_SOFT_ASK_DISMISSED_KEY, 'true')
+  } catch {
+    // localStorage unavailable — silently ignore
+  }
+}
