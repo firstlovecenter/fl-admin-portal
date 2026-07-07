@@ -35,10 +35,13 @@ const firebaseConfig = {
   appId: pick(env.VITE_FIREBASE_APP_ID, '1:48942564042:web:dde1cbc74786eb6e502a33'),
 }
 
-// Web Push (VAPID) public key — per-environment, falls back to flc-platform-dev.
+// Web Push (VAPID) public key — per-environment, falls back to the
+// flc-platform-dev project's Web Push certificate. NOTE: the previous fallback
+// (BOICTFJ…) was actually the flc-platform-PROD key; using it against dev was a
+// mismatch. Dev must use its own key below; prod sets VITE_FIREBASE_VAPID_KEY.
 const VAPID_KEY = pick(
   env.VITE_FIREBASE_VAPID_KEY,
-  'BOICTFJjgJ9hJLSVJD1oFqLj4jR9KEVi03on3qqnD7I3uaphrFek3TFNkVlOK8gRTEn-f2bJK7ZfuwWVaZ63Hy0'
+  'BGNkhk4PrkdZDuW-iHlYnGuwcTK3uGgQXrAVnmXZg6J0Lsc5PDgQ6r3_9PQ5ZGAUnlke6_PQHb_bQ7E38ggsh2o'
 )
 
 // The FCM service worker is a static file (no Vite env substitution), so we pass
