@@ -28,6 +28,7 @@ import { permitMe } from 'permission-utils'
 import useClickCard from 'hooks/useClickCard'
 import { useAuth } from 'contexts/AuthContext'
 import { usePushNotifications } from 'hooks/usePushNotifications'
+import PushSoftAsk from 'components/push/PushSoftAsk'
 import { sameRoles } from 'lib/auth-service'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import SetupPasswordPage from 'pages/auth/SetupPasswordPage'
@@ -179,6 +180,7 @@ const AppWithContext = () => {
     <ThemeProvider>
       <Toaster />
       <Router>
+        <PushSoftAsk />
         <ChurchContext.Provider
           value={{
             clickCard,
