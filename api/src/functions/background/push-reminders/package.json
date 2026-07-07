@@ -1,0 +1,14 @@
+{
+  "name": "push-reminders",
+  "version": "0.0.1",
+  "description": "Scheduled FCM push reminders for Bacenta leaders — one Lambda, three EventBridge schedules (service form, banking, bussing arrivals).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.388.0",
+    "firebase-admin": "^13.0.0",
+    "neo4j-driver": "^5.28.1"
+  }
+}
