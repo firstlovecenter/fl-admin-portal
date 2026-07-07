@@ -4,8 +4,11 @@ on:
   push:
     branches:
       - main
+      - staging
+      - dev
     paths:
       - "api/src/functions/background/**" # Only trigger when background function files change
+      - ".github/workflows/deploy-background-functions.yml" # ...or this workflow itself
 
 jobs:
   deploy:
@@ -93,18 +96,35 @@ jobs:
 
       - name: Process and deploy each background function
         run: |
+          # Per-environment Lambda naming: main deploys the prod fleet
+          # (fl-synago-<job>); staging/dev deploy the env-prefixed variants
+          # (staging-fl-synago-<job> / dev-fl-synago-<job>). $GITHUB_REF_NAME
+          # (runner-provided env var, not workflow interpolation) keeps branch
+          # names out of the generated script text.
+          case "$GITHUB_REF_NAME" in
+            main)    PREFIX="fl-synago-" ;;
+            staging) PREFIX="staging-fl-synago-" ;;
+            dev)     PREFIX="dev-fl-synago-" ;;
+            *)       echo "Unmapped branch $GITHUB_REF_NAME — refusing to deploy"; exit 1 ;;
+          esac
+          echo "Deploying with function prefix: $PREFIX"
+
+          DEPLOYED=""
+          SKIPPED=""
+
           # Find all function directories
           for FUNC_DIR in api/temp-compiled-background/*; do
             if [ -d "$FUNC_DIR" ]; then
               FUNC_NAME=$(basename "$FUNC_DIR")
-              echo "Processing function: $FUNC_NAME"
-              
+              TARGET_FN="${PREFIX}${FUNC_NAME}"
+              echo "Processing function: $FUNC_NAME -> $TARGET_FN"
+
               # Create a temporary directory for this function
               mkdir -p lambda-package-$FUNC_NAME
-              
+
               # Copy function files
               cp -r $FUNC_DIR/* lambda-package-$FUNC_NAME/
-              
+
               # Install dependencies from function's package.json
               if [ -f "lambda-package-$FUNC_NAME/package.json" ]; then
                 echo "Installing dependencies for $FUNC_NAME"
@@ -114,23 +134,43 @@ jobs:
               else
                 echo "Warning: No package.json found for $FUNC_NAME"
               fi
-              
+
               # Create the deployment package
               cd lambda-package-$FUNC_NAME
               zip -r ../lambda-package-$FUNC_NAME.zip .
               cd ..
-              
-              # Deploy to Lambda
-              echo "Deploying $FUNC_NAME to Lambda"
-              aws lambda update-function-code \
-                --function-name arn:aws:lambda:eu-west-2:871777052000:function:fl-synago-$FUNC_NAME \
-                --zip-file fileb://lambda-package-$FUNC_NAME.zip
-              
+
+              # Deploy to Lambda. Most jobs only exist in prod, so on
+              # staging/dev a ResourceNotFoundException means "this job has no
+              # env variant" and is a legitimate skip (adding a variant later
+              # needs no workflow change). On main a missing function is fleet
+              # drift and MUST fail. Any other error (auth, throttle, network)
+              # fails everywhere — a silent skip there would green-light a
+              # deploy that never happened.
+              echo "Deploying $FUNC_NAME to $TARGET_FN"
+              if OUT=$(aws lambda update-function-code \
+                --function-name "arn:aws:lambda:eu-west-2:871777052000:function:$TARGET_FN" \
+                --zip-file fileb://lambda-package-$FUNC_NAME.zip 2>&1); then
+                DEPLOYED="$DEPLOYED $TARGET_FN"
+              elif [ "$GITHUB_REF_NAME" != "main" ] && echo "$OUT" | grep -q "ResourceNotFoundException"; then
+                echo "Skipping $FUNC_NAME — no function named $TARGET_FN in this environment"
+                SKIPPED="$SKIPPED $FUNC_NAME"
+              else
+                echo "Deploy failed for $TARGET_FN:"
+                echo "$OUT"
+                exit 1
+              fi
+
               # Clean up
               rm -rf lambda-package-$FUNC_NAME
               rm lambda-package-$FUNC_NAME.zip
             fi
           done
+
+          echo "Deployed:${DEPLOYED:- (none)}"
+          echo "Skipped:${SKIPPED:- (none)}"
+          echo "DEPLOYED_FUNCTIONS=${DEPLOYED:- none}" >> "$GITHUB_ENV"
+          echo "SKIPPED_FUNCTIONS=${SKIPPED:- none}" >> "$GITHUB_ENV"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -143,5 +183,5 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deployments
           SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: "🚀 Synago Background Functions Deployment"
-          SLACK_MESSAGE: "Commit: ${{ github.event.head_commit.message }} - Deploying Background Functions to AWS Lambda ${{ job.status }}"
+          SLACK_TITLE: "🚀 Synago Background Functions Deployment (${{ github.ref_name }})"
+          SLACK_MESSAGE: "Commit: ${{ github.event.head_commit.message }} - [${{ github.ref_name }}] ${{ job.status }} — deployed: ${{ env.DEPLOYED_FUNCTIONS || 'n/a' }}; skipped: ${{ env.SKIPPED_FUNCTIONS || 'n/a' }}"
