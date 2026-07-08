@@ -1,5 +1,5 @@
 import { toast } from 'sonner'
-import { Bell } from 'lucide-react'
+import { Bell, Loader2 } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -134,10 +134,25 @@ const NotificationsCard = () => {
               htmlFor="push-toggle"
               className="flex min-h-11 cursor-pointer items-center justify-between gap-4 text-sm font-medium"
             >
-              Push notifications
+              <span className="flex items-center gap-2">
+                Push notifications
+                {enabling && (
+                  <span
+                    role="status"
+                    className="flex items-center gap-1 text-xs font-normal text-muted-foreground"
+                  >
+                    <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                    Enabling…
+                  </span>
+                )}
+              </span>
               <Switch
                 id="push-toggle"
-                checked={pushOn}
+                // Optimistically show "on" the moment an enable is in flight so
+                // the toggle gives immediate feedback — the enable path is async
+                // (permission + FCM token + server register) and would otherwise
+                // look unresponsive. Reverts to `pushOn` if enabling fails.
+                checked={enabling ? true : pushOn}
                 disabled={enabling || blocked}
                 onCheckedChange={handlePushToggle}
                 aria-label="Toggle push notifications"
