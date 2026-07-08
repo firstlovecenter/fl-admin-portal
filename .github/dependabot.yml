@@ -6,6 +6,8 @@ updates:
   # ── Root (monorepo orchestration + lint-staged) ──────────────────────────
   - package-ecosystem: "npm"
     directory: "/"
+    # Auto-merge bot (dependabot-auto-merge.yml) sweeps PRs on dev, not main.
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -25,6 +27,7 @@ updates:
   # ── Frontend (web-react-ts) ──────────────────────────────────────────────
   - package-ecosystem: "npm"
     directory: "/web-react-ts"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -45,6 +48,7 @@ updates:
   # ── Backend (api) ────────────────────────────────────────────────────────
   - package-ecosystem: "npm"
     directory: "/api"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -65,6 +69,7 @@ updates:
   # ── GitHub Actions used in .github/workflows ─────────────────────────────
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -86,6 +91,7 @@ updates:
   # not this image, so bumping it adds PR noise for no deployed surface.
   - package-ecosystem: "docker"
     directory: "/api"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "monday"

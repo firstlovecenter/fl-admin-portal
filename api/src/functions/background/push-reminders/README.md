@@ -1,8 +1,8 @@
 # Push Reminders
 
 Scheduled push-notification reminders for Bacenta leaders. **One Lambda,
-three EventBridge schedules** — each schedule invokes the same handler with a
-constant payload selecting the job.
+three EventBridge Scheduler schedules** — each schedule invokes the same
+handler with a constant payload selecting the job.
 
 ## Status
 
@@ -11,11 +11,34 @@ register via the Settings → Notifications toggle or the soft-ask card; tokens
 are stored as `(:Member)-[:HAS_PUSH_TOKEN]->(:PushToken)` nodes through the
 self-scoped `RegisterPushToken` / `UnregisterPushToken` mutations.
 
-**Sender + jobs: BUILT, not yet scheduled.** `index.js` implements all three
-jobs behind an `event.job` dispatcher; `run-push-reminders.js` in
-`api/src/scripts/` exercises them from the CLI. What remains is AWS wiring:
-create the Lambda, attach the three EventBridge rules below, grant the
-Secrets Manager read.
+**Sender + jobs: DEPLOYED and scheduled (2026-07-07).** `index.js` implements
+all three jobs behind an `event.job` dispatcher; `run-push-reminders.js` in
+`api/src/scripts/` exercises them from the CLI. The Lambda is deployed per
+environment as `<prefix>fl-synago-push-reminders` (prefix `dev-` / `staging-`
+/ none for prod) by `.github/workflows/deploy-background-functions.yml` on
+push to `dev` / `staging` / `main` — note that workflow only runs
+`update-function-code`, so the function and its schedules must already exist
+in AWS (they were provisioned by hand). The Secrets Manager read grant and
+the invoke role are attached.
+
+Triggering is via **EventBridge Scheduler** schedules (the newer service — NOT
+classic EventBridge rules), one per job, named
+`<prefix>fl-synago-push-reminders-<job>`, timezone `Africa/Accra`, invoked
+through the `Amazon_EventBridge_Scheduler_LAMBDA_*` service role (Scheduler
+invokes via its own role, so the Lambda has no resource policy — that is
+expected, not a gap).
+
+**Per-environment schedule state (as of 2026-07-07):**
+
+| Env | service | banking | bussing | Lambda |
+| --- | --- | --- | --- | --- |
+| **dev** (`dev-`) | ENABLED | ENABLED | ENABLED | ✅ Active |
+| **staging** (`staging-`) | DISABLED | DISABLED | DISABLED | ✅ Active |
+| **prod** (none) | ENABLED | ENABLED | **DISABLED** | ✅ Active |
+
+`dryRun` defaults to **false** (`index.js`: `event.dryRun === true`), so the
+scheduler payloads (`{"job":"..."}`, no `dryRun`) send real pushes. Only CLI
+runs with `--dryRun` no-op.
 
 ### Historical blockers — all RESOLVED 2026-07-07
 
@@ -42,21 +65,30 @@ Secrets Manager read.
 ## Architecture
 
 ```
-EventBridge rule "push-reminders-service"  { "job": "service" }  ┐
-EventBridge rule "push-reminders-banking"  { "job": "banking" }  ├→ ONE Lambda (index.js)
-EventBridge rule "push-reminders-bussing"  { "job": "bussing" }  ┘      │
-                                                                        ├─ reminders-cypher.js  (targeting queries)
-                                                                        ├─ push-sender.js       (firebase-admin, FCM v1)
-                                                                        └─ secrets.js           (Secrets Manager)
+Scheduler "<prefix>fl-synago-push-reminders-service"  { "job": "service" }  ┐
+Scheduler "<prefix>fl-synago-push-reminders-banking"  { "job": "banking" }  ├→ ONE Lambda (index.js)
+Scheduler "<prefix>fl-synago-push-reminders-bussing"  { "job": "bussing" }  ┘      │
+                                                                                   ├─ reminders-cypher.js  (targeting queries)
+                                                                                   ├─ push-sender.js       (firebase-admin, FCM v1)
+                                                                                   └─ secrets.js           (Secrets Manager)
 ```
 
-Ghana is UTC+0 year-round, so UTC cron **is** Africa/Accra time.
+The schedules carry the cron and timezone; Ghana is UTC+0 year-round, but the
+schedules are set to `Africa/Accra` explicitly so they stay correct if the
+timezone assumption ever changes.
 
-| Rule | Schedule (UTC = Accra) | Payload | Retries |
+| Schedule | Cron (`Africa/Accra`) | Payload | Retries |
 | --- | --- | --- | --- |
-| service | `cron(0 22 * * ? *)` — daily 22:00 | `{"job":"service"}` | 2, max age 1 h |
-| banking | `cron(0 15 * * ? *)` — daily 15:00 | `{"job":"banking"}` | 2, max age 1 h |
-| bussing | `cron(0/5 4-12 ? * SUN *)` — Sundays, every 5 min 04:00–12:55 | `{"job":"bussing"}` | **0** |
+| service | `cron(0 22 * * ? *)` — **every day** 22:00 | `{"job":"service"}` | 2, max age 1 h |
+| banking | `cron(0 15 * * ? *)` — **every day** 15:00 | `{"job":"banking"}` | 2, max age 1 h |
+| bussing | `cron(0/5 4-12 ? * SUN *)` — Sundays only, every 5 min 04:00–12:55 | `{"job":"bussing"}` | **0** |
+
+The service and banking schedules fire **all 7 days** (day-of-month `*`,
+day-of-week `?`). They are not gated to Tue–Sat at the cron level — the
+*targeting query* is what limits who is actually notified: the service job
+only returns a leader whose Bacenta's `MEETS_ON → ServiceDay` is today, so on
+a non-meeting day the job runs but resolves 0 targets. Effective reminder days
+therefore follow each Bacenta's configured meeting day, not the schedule.
 
 Retry semantics depend on the handler's error behaviour: for `service` and
 `banking` the handler RETHROWS on failure so the async invocation registers a
