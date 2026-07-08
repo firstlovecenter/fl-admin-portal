@@ -1,0 +1,169 @@
+# Daily sweep of Dependabot PRs targeting `dev`.
+#
+# Runs entirely on GitHub's servers (cron) — no local machine required.
+# For every open Dependabot PR against `dev`:
+#   • checks green  + patch/minor  → approve + squash-merge automatically
+#   • checks green  + MAJOR bump    → held, reported to Slack for manual review
+#   • checks failing / conflicting  → held, reported to Slack
+#   • checks still running           → left alone, retried on the next run
+#
+# NOTE (GitHub constraint): the `schedule` trigger and `dependabot.yml` are both
+# read from the DEFAULT branch (`main`). This file AND the `target-branch: dev`
+# change in dependabot.yml are inert until merged to `main` — until then
+# Dependabot keeps opening PRs against `main` and this sweep never runs.
+#
+# PREREQUISITE: Settings → Actions → General → "Allow GitHub Actions to create
+# and approve pull requests" must be ON, otherwise the `--approve` step 403s and
+# (if `dev` requires an approving review) the merge fails every run.
+name: dependabot-auto-merge
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # daily at 00:00 UTC
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: write # merge + delete branch
+  pull-requests: write # approve + merge
+
+concurrency:
+  group: dependabot-auto-merge
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sweep Dependabot PRs on dev
+        id: sweep
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BASE_BRANCH: dev
+        run: |
+          set -uo pipefail
+
+          merged=""
+          held_major=""
+          held_review=""
+          failing=""
+          conflicting=""
+          pending=""
+          merge_failed=""
+
+          # Guaranteed-safe (config-restricted to patch/minor) group PR titles.
+          # Everything else that can't be parsed falls through to manual review.
+          is_non_major() {
+            local t="$1"
+            case "$t" in
+              *"minor-and-patch group"*) return 0 ;;  # our version-update groups
+            esac
+            # "... from <maj>.<min>.. to <maj>.<min>.." (also bare "from 20 to 26")
+            if [[ "$t" =~ from[[:space:]]+([0-9]+)(\.([0-9]+))?[^[:space:]]*[[:space:]]+to[[:space:]]+([0-9]+)(\.([0-9]+))? ]]; then
+              local fmaj="${BASH_REMATCH[1]}" fmin="${BASH_REMATCH[3]:-0}"
+              local tmaj="${BASH_REMATCH[4]}" tmin="${BASH_REMATCH[6]:-0}"
+              [ "$tmaj" -ne "$fmaj" ] && return 1   # major bump/downgrade → review
+              # semver 0.x: a minor bump is allowed to be breaking → review
+              [ "$fmaj" -eq 0 ] && [ "$tmin" -gt "$fmin" ] && return 1
+              return 0
+            fi
+            return 1  # unparseable → treat as needs-review
+          }
+
+          prs=$(gh pr list --repo "$GH_REPO" --author "app/dependabot" \
+                  --base "$BASE_BRANCH" --state open \
+                  --json number,title,mergeable --jq '.[] | @base64')
+
+          if [ -z "$prs" ]; then
+            echo "No open Dependabot PRs targeting $BASE_BRANCH."
+          fi
+
+          for row in $prs; do
+            json=$(echo "$row" | base64 --decode)
+            number=$(echo "$json" | jq -r '.number')
+            title=$(echo "$json"  | jq -r '.title')
+            mergeable=$(echo "$json" | jq -r '.mergeable')
+            line="  • #${number} ${title}"
+            echo "Evaluating #${number}: ${title} (mergeable=${mergeable})"
+
+            # Aggregate CI check state via bucket: pass|fail|pending|skipping|cancel
+            buckets=$(gh pr checks "$number" --repo "$GH_REPO" --json bucket \
+                        --jq '.[].bucket' 2>/dev/null | sort -u)
+
+            # Fail SAFE: no checks reported yet (freshly created/rebased PR, or a
+            # `gh` error) must never be read as "green". Hold and retry next run.
+            if [ -z "$buckets" ]; then
+              pending+="${line} (no checks reported yet)"$'\n'
+              continue
+            fi
+            if echo "$buckets" | grep -q '^fail$\|^cancel$'; then
+              failing+="${line}"$'\n'
+              continue
+            fi
+            if echo "$buckets" | grep -q '^pending$'; then
+              pending+="${line}"$'\n'
+              continue
+            fi
+            if [ "$mergeable" = "CONFLICTING" ]; then
+              conflicting+="${line}"$'\n'
+              continue
+            fi
+            if [ "$mergeable" != "MERGEABLE" ]; then
+              # UNKNOWN → GitHub still computing mergeability; retry next run.
+              pending+="${line} (mergeability pending)"$'\n'
+              continue
+            fi
+
+            # Checks green + mergeable. Gate on version bump size.
+            if ! is_non_major "$title"; then
+              held_major+="${line}"$'\n'
+              continue
+            fi
+
+            echo "Merging #${number} (patch/minor, green)…"
+            gh pr review "$number" --repo "$GH_REPO" --approve \
+              --body "Auto-approved: patch/minor Dependabot update, all checks green." || true
+            if gh pr merge "$number" --repo "$GH_REPO" --squash --delete-branch; then
+              merged+="${line}"$'\n'
+            else
+              merge_failed+="${line} (merge command failed — branch protection or out-of-date?)"$'\n'
+            fi
+          done
+
+          # ---- Build report + decide whether to alert ------------------------
+          report=""
+          add_section() { [ -n "$2" ] && report+="*$1*"$'\n'"$2"$'\n'; }
+          add_section "❌ Failing checks — fix or close" "$failing"
+          add_section "⚠️ Merge conflict — needs rebase" "$conflicting"
+          add_section "🔺 Major version bump — review manually" "$held_major"
+          add_section "🛠️ Auto-merge failed — check manually" "$merge_failed"
+
+          needs_alert=false
+          [ -n "$failing$conflicting$held_major$merge_failed" ] && needs_alert=true
+
+          {
+            echo "needs_alert=${needs_alert}"
+            echo "report<<REPORT_EOF"
+            printf '%s' "$report"
+            echo ""
+            echo "REPORT_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "===== Sweep summary ====="
+          echo "Merged:${merged:-<none>}"
+          echo "Pending (retry):${pending:-<none>}"
+          echo "${report:-Nothing to report.}"
+
+      - name: Notify Slack — PRs needing manual attention
+        if: steps.sweep.outputs.needs_alert == 'true'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: project-flc-synago
+          SLACK_COLOR: warning
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_USERNAME: Dependabot Auto-Merge
+          SLACK_TITLE: "Dependabot PRs on dev need manual attention"
+          SLACK_MESSAGE: ${{ steps.sweep.outputs.report }}
+          SLACK_FOOTER: "fl-admin-portal · daily dependency sweep"
+          MSG_MINIMAL: "true"
