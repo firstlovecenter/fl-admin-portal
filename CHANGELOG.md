@@ -1,3 +1,104 @@
+### 9.1.0 (2026-07-08)
+
+##### Chores
+
+* **api:**
+  *  gitignore jest coverage output ([1138233a](https://github.com/firstlovecenter/fl-admin-portal/commit/1138233a50b512bd1c2f333b81d5de9c1ede8fdb))
+  *  gitignore jest coverage output ([d6f50716](https://github.com/firstlovecenter/fl-admin-portal/commit/d6f50716600139d561715c69b270b96fd6e83ef5))
+* **lambda:**
+  *  store FCM creds as one FCM_SERVICE_ACCOUNT secret ([dc8b8061](https://github.com/firstlovecenter/fl-admin-portal/commit/dc8b806188ea8862f8d331467ac1429602749c9d))
+  *  store FCM creds as one FCM_SERVICE_ACCOUNT secret ([daeac129](https://github.com/firstlovecenter/fl-admin-portal/commit/daeac129de3a71ee03a2cedf9c802ba49004401c))
+*  trigger dev Amplify rebuild ([541c43de](https://github.com/firstlovecenter/fl-admin-portal/commit/541c43dea10975dbd314d659c0d9b90fad76fb20))
+*  trigger dev Amplify rebuild ([0e31ac9d](https://github.com/firstlovecenter/fl-admin-portal/commit/0e31ac9da43662523cd0a6d1e634b9ab9eba953b))
+* **deps:**
+  *  bump form-data ([#520](https://github.com/firstlovecenter/fl-admin-portal/pull/520)) ([4909138d](https://github.com/firstlovecenter/fl-admin-portal/commit/4909138d00ffd8289d009e46ca8248dc31c8ea3b))
+  *  bump js-yaml ([#522](https://github.com/firstlovecenter/fl-admin-portal/pull/522)) ([84cbdd44](https://github.com/firstlovecenter/fl-admin-portal/commit/84cbdd44d01855b31acef7ddb1424d27dd10d4de))
+  *  bump undici ([#523](https://github.com/firstlovecenter/fl-admin-portal/pull/523)) ([d7c02513](https://github.com/firstlovecenter/fl-admin-portal/commit/d7c025130b51515227d0f90dc8a5f78b470d78a9))
+* **deps-dev:**  bump http-proxy-middleware ([#521](https://github.com/firstlovecenter/fl-admin-portal/pull/521)) ([5770b9ed](https://github.com/firstlovecenter/fl-admin-portal/commit/5770b9edfd6e6f9c50812229cc709ef2bb1c9acd))
+
+##### Continuous Integration
+
+*  auto-merge non-major Dependabot PRs on dev, Slack-alert the rest ([da08a888](https://github.com/firstlovecenter/fl-admin-portal/commit/da08a888f7cc5073b14d57d5aa8ae1a8fd2b61d3))
+*  add Dependabot config for npm, actions, and docker ([6f002b0b](https://github.com/firstlovecenter/fl-admin-portal/commit/6f002b0bc71fb4ef29e0512f4fb815216333579f))
+*  deploy background functions per environment (main/staging/dev) ([75e766fa](https://github.com/firstlovecenter/fl-admin-portal/commit/75e766fae232f25b59848877ddc48b8113c9f53c))
+*  add Dependabot config for npm, actions, and docker ([e2ce283a](https://github.com/firstlovecenter/fl-admin-portal/commit/e2ce283a2d9607e2bd1fd2e1d20d45f5f29e9fb9))
+*  deploy background functions per environment (main/staging/dev) ([ed9109ca](https://github.com/firstlovecenter/fl-admin-portal/commit/ed9109cab09d64d7ba13e61ba9277bb2a3acbb72))
+* **amplify:**  add CSP and security headers to admin portal (SYN-179) ([c607fd9c](https://github.com/firstlovecenter/fl-admin-portal/commit/c607fd9c22eb839af36d4cbade3b54e9e0eb6b76))
+* **api:**  enforce fl-cypher/no-interpolated-cypher in backend CI ([4566d958](https://github.com/firstlovecenter/fl-admin-portal/commit/4566d958b7c02c4871e388a0bb85d833303b50da))
+
+##### Documentation Changes
+
+* **lambda:**  mark push-reminders deployed + scheduled ([4f1af779](https://github.com/firstlovecenter/fl-admin-portal/commit/4f1af77933d71c5b5278ece5c56196b394003006))
+* **claude:**  always fetch jira attachments in /fix phase 1 ([18a4e92e](https://github.com/firstlovecenter/fl-admin-portal/commit/18a4e92e028c31ac114753101be76a3c4bd9b435))
+
+##### New Features
+
+* **lambda:**
+  *  add push-reminders job (service, banking, bussing) ([035b1edb](https://github.com/firstlovecenter/fl-admin-portal/commit/035b1edb38721adffbe28fd5a12ab2c651931090))
+  *  add push-reminders job (service, banking, bussing) ([cdfa18fb](https://github.com/firstlovecenter/fl-admin-portal/commit/cdfa18fbfe56983ff10cf2934075fef7fd1af266))
+  *  add charajoy64 recipient to outside-accra weekly email ([bc723f3a](https://github.com/firstlovecenter/fl-admin-portal/commit/bc723f3a91e010cef346a919162996efb6c1aaed))
+* **web:**
+  *  add dismissible push-notification soft-ask card ([2949bdb2](https://github.com/firstlovecenter/fl-admin-portal/commit/2949bdb255361274f26e5be59a86a4330387fcc5))
+  *  drive FCM web config per environment (dev vs prod project) ([de1eded0](https://github.com/firstlovecenter/fl-admin-portal/commit/de1eded06a6045cc07f42d5f66d26e0f95a03ac6))
+  *  add dismissible push-notification soft-ask card ([9be556cb](https://github.com/firstlovecenter/fl-admin-portal/commit/9be556cb5579a0730d9e03eee427ab13b0348d76))
+  *  drive FCM web config per environment (dev vs prod project) ([86e3e502](https://github.com/firstlovecenter/fl-admin-portal/commit/86e3e502507196a3df372b81b8e9129e3752e8ed))
+*  add push notification enrollment and per-category reminder prefs ([2847cb9f](https://github.com/firstlovecenter/fl-admin-portal/commit/2847cb9f85faad1410180840309641d76edc53a0))
+*  add push notification enrollment and per-category reminder prefs ([1d7615d7](https://github.com/firstlovecenter/fl-admin-portal/commit/1d7615d7548777b5c84a681d4a7b1ab4748234e0))
+* **api:**
+  *  log GraphQL request lifecycle ([df6343b9](https://github.com/firstlovecenter/fl-admin-portal/commit/df6343b9e2ba53061e7ba70dbea18a86a0f1c839))
+  *  limit query depth, cap AI assistant, disable introspection ([71f62b61](https://github.com/firstlovecenter/fl-admin-portal/commit/71f62b611a0c6e54e5b1ca80c0c7883a13851448))
+  *  validate JWT iss/aud and reject tokens without exp (SYN-176) ([630feceb](https://github.com/firstlovecenter/fl-admin-portal/commit/630feceb859c2702aef78a1118b9144185e3f2ce))
+* **fcm:**  add web push notifications to the Synago PWA ([489c1a03](https://github.com/firstlovecenter/fl-admin-portal/commit/489c1a0315da3f7a444e6bbcbe935408bb86505b))
+* **auth:**  move access token to memory + refresh token to httpOnly cookie (SYN-173) ([ed57ee15](https://github.com/firstlovecenter/fl-admin-portal/commit/ed57ee15844ced120bc7ea553efc658085a11d33))
+
+##### Bug Fixes
+
+* **api:**
+  *  unbreak jest coverage via scoped test-exclude minimatch pin ([673f9917](https://github.com/firstlovecenter/fl-admin-portal/commit/673f9917f41168520f521c0cf2b1664cd1407e48))
+  *  enforce strict Neo4j TLS trust across all driver bootstraps (SYN-180) ([d146637f](https://github.com/firstlovecenter/fl-admin-portal/commit/d146637f7a1c2908545bff8d617aad0b2947f03d))
+  *  unbreak jest coverage via scoped test-exclude minimatch pin ([acdd3f54](https://github.com/firstlovecenter/fl-admin-portal/commit/acdd3f5403dd36aae0a3817a77fcea269ef42c59))
+  *  enforce strict Neo4j TLS trust across all driver bootstraps (SYN-180) ([84c971d2](https://github.com/firstlovecenter/fl-admin-portal/commit/84c971d204f8fbfb96b03728901ed8de657a6c90))
+* **web:**
+  *  use the correct per-project FCM VAPID key ([686542b6](https://github.com/firstlovecenter/fl-admin-portal/commit/686542b6488f36d690f60a33c250802986194f48))
+  *  use the correct per-project FCM VAPID key ([515d4b18](https://github.com/firstlovecenter/fl-admin-portal/commit/515d4b182f1b8d076ebf3ec37670ce7920bcf090))
+*  harden neo4j TLS, upload key RNG, drop dead auth0 dep (SYN-180) ([847a1b84](https://github.com/firstlovecenter/fl-admin-portal/commit/847a1b84bdb9b6a2f35b0fe12c76441c97d90590))
+*  stop logging PII and mask internal errors in UI and server (SYN-178) ([01d85c16](https://github.com/firstlovecenter/fl-admin-portal/commit/01d85c1652144936658b695559b6609b324ac10f))
+*  harden neo4j TLS, upload key RNG, drop dead auth0 dep (SYN-180) ([69564e73](https://github.com/firstlovecenter/fl-admin-portal/commit/69564e73499f7f0425ef587473dc1e33a03a72e5))
+*  stop logging PII and mask internal errors in UI and server (SYN-178) ([87289cef](https://github.com/firstlovecenter/fl-admin-portal/commit/87289cef263359e35e6a35eef1304bcf8cb738ef))
+* **ci:**
+  *  stop shipping production source maps (SYN-174) ([14e8ea3f](https://github.com/firstlovecenter/fl-admin-portal/commit/14e8ea3f8c142d3c4ade935fecca7501a2b9d655))
+  *  stop shipping production source maps (SYN-174) ([418b0588](https://github.com/firstlovecenter/fl-admin-portal/commit/418b0588bb63c93118886730d552ab8c5efe5491))
+* **cypher:**  wire ServiceLog on church creation so trends aggregate (SYN-196/197) ([93c6dd27](https://github.com/firstlovecenter/fl-admin-portal/commit/93c6dd278465a777230800adfbc95e20ebed82ef))
+* **reports:**
+  *  show native income for single-currency oversight weekday ([ab3edeca](https://github.com/firstlovecenter/fl-admin-portal/commit/ab3edeca5e99db5ef63738cdd324407174c02c51))
+  *  allow arrivals admins to download reports (SYN-194) ([89ca7fa4](https://github.com/firstlovecenter/fl-admin-portal/commit/89ca7fa41e367d3282edab7a4b1976481aabd10c))
+* **banking:**  label self-banking cap notice in GHS ([5f6aeb33](https://github.com/firstlovecenter/fl-admin-portal/commit/5f6aeb33344363484182100f6571e1db258a1897))
+* **services:**
+  *  remove offering cap at record time, keep it on self-banking ([c8ad53d1](https://github.com/firstlovecenter/fl-admin-portal/commit/c8ad53d1219d9c0125e338694847905393a5723a))
+  *  stack action buttons below title in stream defaulter headers ([86765663](https://github.com/firstlovecenter/fl-admin-portal/commit/86765663d3ab21fe04fd2d0a7464a3181389561c))
+  *  fix defaulters/arrivals drill-down navigation (SYN-191) ([44baf768](https://github.com/firstlovecenter/fl-admin-portal/commit/44baf768bd1fae7af5fda0c65a3846e12fbff252))
+  *  scope-check RecordServiceNoIncome (SYN-169) ([6c10f762](https://github.com/firstlovecenter/fl-admin-portal/commit/6c10f76262749717c832b6e1f0791a882f92bb29))
+* **lambda:**  make oversight graph income currency-aware (SYN-193) ([6d664197](https://github.com/firstlovecenter/fl-admin-portal/commit/6d664197b65594d2373a6b95cf27fed62be8b308))
+* **directory:**
+  *  allow closing down leaderless churches (SYN-192) ([aea8293d](https://github.com/firstlovecenter/fl-admin-portal/commit/aea8293ddfc4a35baa04d64277b93ce09a300589))
+  *  scope-check member reactivate/create mutations (SYN-186) ([7a20df89](https://github.com/firstlovecenter/fl-admin-portal/commit/7a20df897ae8530b0e36b5a0a0df6f8b1e661038))
+  *  scope-check UpdateMemberBacenta moves (SYN-170) ([6dadc10a](https://github.com/firstlovecenter/fl-admin-portal/commit/6dadc10a19338796fe4bb8967e3637eddc2a20d4))
+* **schema:**  project governorship via WITH DISTINCT before RETURN on Stream banked queries ([63bc1285](https://github.com/firstlovecenter/fl-admin-portal/commit/63bc128506207821089ad613e33f97f754e6ae83))
+* **arrivals:**  scope-check bacenta bus-payment mutations (SYN-185) ([c29095b1](https://github.com/firstlovecenter/fl-admin-portal/commit/c29095b16744228b67130c3745787dfe2d267945))
+* **auth:**  derive client roles from the signed JWT, not localStorage (SYN-175) ([52dcfb44](https://github.com/firstlovecenter/fl-admin-portal/commit/52dcfb446afec93657fc4bafd4622281aaf4f207))
+* **maps:**  scope member map field resolvers to authed user (SYN-171) ([94100b13](https://github.com/firstlovecenter/fl-admin-portal/commit/94100b13f0499171d84986b019a8b16c07bc266e))
+
+##### Other Changes
+
+*  SYN-175 client roles from signed JWT + SYN-176 validate JWT iss/aud into dev ([0033b23f](https://github.com/firstlovecenter/fl-admin-portal/commit/0033b23f93a4badacfd38e1827afca207719f841))
+*  SYN-173 access token in memory + refresh token httpOnly cookie into dev ([2c3f1297](https://github.com/firstlovecenter/fl-admin-portal/commit/2c3f1297cd4262c4d9e5ddf428e43692509fc087))
+*  SYN-172 enforce fl-cypher/no-interpolated-cypher in CI into dev ([0e8c1325](https://github.com/firstlovecenter/fl-admin-portal/commit/0e8c1325ef5066eedd9e8d9de4584bd40083b23c))
+*  SYN-170 scope-check UpdateMemberBacenta moves into dev ([8996cd25](https://github.com/firstlovecenter/fl-admin-portal/commit/8996cd253b3a48ca0f52133c5cd6f8e57ac5b629))
+
+##### Refactors
+
+* **services:**  redesign joint banking defaulter pages to shadcn ([b62ea81b](https://github.com/firstlovecenter/fl-admin-portal/commit/b62ea81bc81d199fb8f1e2c10033b63436492820))
+
 #### 9.0.2 (2026-06-22)
 
 ##### Chores
