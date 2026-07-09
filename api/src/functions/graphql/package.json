@@ -19,7 +19,7 @@
     "csv-parse": "^5.0.3",
     "dotenv": "^16.4.7",
     "graphql": "^16.8.1",
-    "neo4j-driver": "^5.28.1",
+    "neo4j-driver": "^6.2.0",
     "node-fetch": "^3.3.2",
     "openai": "^4.77.0",
     "serverless-http": "^3.2.0"

@@ -9,7 +9,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.110.0",
     "@aws-sdk/client-secrets-manager": "^3.1081.0",
-    "neo4j-driver": "^5.28.1",
+    "neo4j-driver": "^6.2.0",
     "openai": "^4.77.0"
   }
 }
