@@ -23,12 +23,12 @@ jobs:
         working-directory: web-react-ts
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Detect relevant changes
         if: github.event_name == 'pull_request'
         id: changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         with:
           filters: |
             relevant:
@@ -44,7 +44,7 @@ jobs:
 
       - name: Setup Node.js
         if: github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -60,7 +60,7 @@ jobs:
 
       - name: Upload coverage artifact
         if: always() && (github.event_name != 'pull_request' || steps.changes.outputs.relevant == 'true')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: web-react-ts/coverage

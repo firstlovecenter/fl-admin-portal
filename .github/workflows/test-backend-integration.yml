@@ -42,7 +42,7 @@ jobs:
         working-directory: api
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # On pull_request, default to the PR head SHA so the gate tests
           # the proposed change rather than the base branch. workflow_dispatch
@@ -50,7 +50,7 @@ jobs:
           ref: ${{ inputs.ref || github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
