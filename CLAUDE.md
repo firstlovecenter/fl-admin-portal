@@ -247,6 +247,29 @@ must go through it before the user is asked to verify or before `/commit`.
 Reviewers run **after** implementation, **before** the user is asked to verify
 or before `/commit`.
 
+### Tests — MANDATORY on every file you touch
+
+**Any file you create or modify MUST have tests written or updated to cover the
+change, in the same PR — no exceptions.** This is now the top-level rule and it
+**supersedes** the older "bug fixes and feature work do not require tests"
+stance (ADR-013): touching a file obligates you to test it, regardless of
+whether the work is a feature, a bug fix, or a refactor.
+
+- **New file →** write tests for it. **Modified file →** add or extend tests
+  that exercise the changed behavior (not just the happy path — cover the branch
+  you changed).
+- **Frontend** = Vitest + RTL + MSW; **backend** = Jest + babel-jest. Dispatch
+  `test-author` to write them, then `code-reviewer` as usual.
+- **Run the tests and quote the output.** Never claim "tests pass" without
+  running them (see the Must-not below).
+- **The rare exemption** is a file with genuinely no unit-testable surface — a
+  pure config, a lockfile, or a dependency-only `package.json` version bump. In
+  that case say so explicitly and back the change with the appropriate
+  build / integration / real-connection / manual verification instead. "It's
+  only a small change" is **not** an exemption.
+- If the touched file has no tests yet, that means writing the first ones for it
+  now — the no-backfill carve-out applies only to files you did **not** touch.
+
 ### Must not
 
 - ❌ **Auth0.** Do not import `@auth0/auth0-react`. Auth is custom (ADR-002).
@@ -287,11 +310,12 @@ or before `/commit`.
   Secrets Manager. (Pre-tool hook blocks this.)
 - ❌ **Force pushing.** Especially to `main` (production). (Deny-listed.)
 - ❌ **`npm run release:*`.** Releases are human-gated. (Deny-listed.)
-- ❌ **Refactoring code without tests on the target.** ADR-013 supersedes
-  ADR-010 — refactors must follow the test-first loop (characterize → refactor
-  → verify → review). Use `/refactor`. Bug fixes and feature work do not
-  require tests unless the user opts in or the surrounding code is being
-  refactored.
+- ❌ **Touching any file without writing/updating its tests.** Every file you
+  create or modify must ship with tests covering the change in the same PR — no
+  exceptions bar the pure-config/lockfile/dep-bump carve-out (see "Tests —
+  MANDATORY on every file you touch"). Refactors additionally follow the
+  test-first loop (characterize → refactor → verify → review; use `/refactor`) —
+  ADR-013 supersedes ADR-010.
 - ❌ **Claiming "tests pass" when no tests exist for the change.** Run them
   and quote the output. If a package's test runner is not yet configured, say
   so — do not improvise a config inline (test infra is its own PR per
@@ -338,10 +362,13 @@ or before `/commit`.
   - PostToolUse: runs `tsc --noEmit` for the touched package and `eslint` for
     the touched file. Output is capped to last 20 lines, 20s timeout.
 - **Test stack (ADR-013):** Vitest + RTL + MSW on `web-react-ts`, Jest +
-  babel-jest on `api` (reusing the existing `babel.config.js`). Tests are
-  written as code is refactored or extended —
-  there is no backfill for unchanged code. A refactor without tests on the
-  target is forbidden. Bug fixes and feature work do not require tests
-  unless the user opts in. Manual smoke tests still backstop UI flows that
+  babel-jest on `api` (reusing the existing `babel.config.js`). **Every file you
+  touch must have tests written or updated in the same PR** (see "Tests —
+  MANDATORY on every file you touch") — this applies to features, bug fixes, and
+  refactors alike; the only carve-out is files with no unit-testable surface
+  (pure config, lockfiles, dependency-only `package.json` bumps), which are
+  backed by build/integration/real-connection/manual verification instead. There
+  is still no backfill for files you do **not** touch. A refactor without tests
+  on the target is forbidden. Manual smoke tests still backstop UI flows that
   tests cannot reasonably cover (PWA install, Sabbath gating, Apollo offline
   cache).
