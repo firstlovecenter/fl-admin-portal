@@ -23,6 +23,7 @@ const neo4j = require('neo4j-driver')
 
 const { loadSecrets } = require('./secrets')
 const { sendToTokens } = require('./push-sender')
+const { buildBankingBody } = require('./banking-message')
 const {
   SERVICE_REMINDER_RECIPIENTS,
   BANKING_REMINDER_RECIPIENTS,
@@ -33,14 +34,6 @@ const {
   SWEEP_OLD_MARKERS,
   PRUNE_INVALID_TOKENS,
 } = require('./reminders-cypher')
-
-// Neo4j ints arrive as `{ low, high }` — convert to JS number when possible.
-const toNumber = (n) => {
-  if (n === null || n === undefined) return null
-  if (typeof n === 'number') return n
-  if (typeof n.toNumber === 'function') return n.toNumber()
-  return n
-}
 
 // ─── Shared send/prune plumbing ──────────────────────────────────────────────
 
@@ -130,40 +123,18 @@ const runServiceReminder = async (driver, { dryRun }) => {
 
 // ─── Job: banking reminder ───────────────────────────────────────────────────
 
-// Outside Accra records store income in a foreign currency (ServiceRecord.
-// foreignCurrency) — label with it so a USD figure is never presented as GHS.
-const formatMoney = (amount, currency) => {
-  const value = toNumber(amount)
-  if (value === null) return ''
-  return `${currency || 'GHS'} ${value.toLocaleString('en-GH')}`
-}
-
 const runBankingReminder = async (driver, { dryRun }) => {
+  const now = new Date()
   const rows = await readRows(driver, BANKING_REMINDER_RECIPIENTS)
   console.log(`Banking reminder: ${rows.length} leader/Bacenta target(s)`)
 
   const outcome = await sendAll(
     rows,
-    (row) => {
-      // Most recent unbanked service leads the message; extra ones are counted.
-      const [latest] = row.unbanked
-      const more =
-        row.unbanked.length > 1
-          ? ` (+${row.unbanked.length - 1} more unbanked service${
-              row.unbanked.length > 2 ? 's' : ''
-            })`
-          : ''
-      return {
-        title: 'Banking reminder',
-        body: `${row.churchName}: ${formatMoney(
-          latest.income,
-          latest.foreignCurrency
-        )} from your ${
-          latest.date
-        } service hasn't been banked yet${more}. Please bank it today.`,
-        data: { category: 'BANKING', churchId: row.churchId },
-      }
-    },
+    (row) => ({
+      title: 'Banking reminder',
+      body: buildBankingBody(row, now),
+      data: { category: 'BANKING', churchId: row.churchId },
+    }),
     dryRun
   )
 
