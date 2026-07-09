@@ -760,12 +760,14 @@ extend type Mutation {
 enum NotificationCategory {
   SERVICES
   BANKING
+  DEFAULTERS
   ARRIVALS
 }
 
 type NotificationPreferences {
   services: Boolean!
   banking: Boolean!
+  defaulters: Boolean!
   arrivals: Boolean!
 }
 

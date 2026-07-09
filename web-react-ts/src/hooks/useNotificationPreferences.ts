@@ -5,17 +5,23 @@ import {
   SET_NOTIFICATION_PREFERENCE,
 } from './pushNotificationsGQL'
 
-export type NotificationCategory = 'SERVICES' | 'BANKING' | 'ARRIVALS'
+export type NotificationCategory =
+  | 'SERVICES'
+  | 'BANKING'
+  | 'DEFAULTERS'
+  | 'ARRIVALS'
 
 export interface NotificationPreferences {
   services: boolean
   banking: boolean
+  defaulters: boolean
   arrivals: boolean
 }
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
   services: true,
   banking: true,
+  defaulters: true,
   arrivals: true,
 }
 
@@ -23,6 +29,7 @@ const CATEGORY_FIELD: Record<NotificationCategory, keyof NotificationPreferences
   {
     SERVICES: 'services',
     BANKING: 'banking',
+    DEFAULTERS: 'defaulters',
     ARRIVALS: 'arrivals',
   }
 
@@ -38,9 +45,10 @@ export interface UseNotificationPreferences {
 
 /**
  * Reads and updates the current user's per-category reminder preferences
- * (Services / Banking / Arrivals), which live server-side on the Member node so
- * the reminder jobs can honour them. Only meaningful once push is enabled on
- * the device, but the preference itself is per-user, not per-device.
+ * (Services / Banking / Defaulters / Arrivals), which live server-side on the
+ * Member node so the reminder jobs can honour them. Only meaningful once push
+ * is enabled on the device, but the preference itself is per-user, not
+ * per-device.
  */
 export const useNotificationPreferences = (
   skip = false

@@ -17,6 +17,7 @@ export const MY_NOTIFICATION_PREFERENCES = gql`
     myNotificationPreferences {
       services
       banking
+      defaulters
       arrivals
     }
   }
@@ -30,6 +31,7 @@ export const SET_NOTIFICATION_PREFERENCE = gql`
     SetNotificationPreference(category: $category, enabled: $enabled) {
       services
       banking
+      defaulters
       arrivals
     }
   }

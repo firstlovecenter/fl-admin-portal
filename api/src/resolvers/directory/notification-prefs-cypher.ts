@@ -11,6 +11,7 @@ export const READ_NOTIFICATION_PREFERENCES = `
   MATCH (member:Member { id: $userId })
   RETURN coalesce(member.notifyServices, true) AS services,
          coalesce(member.notifyBanking, true) AS banking,
+         coalesce(member.notifyDefaulters, true) AS defaulters,
          coalesce(member.notifyArrivals, true) AS arrivals
 `
 
@@ -27,9 +28,12 @@ export const SET_NOTIFICATION_PREFERENCE = `
     SET member.notifyServices = $enabled)
   FOREACH (_ IN CASE WHEN $category = 'BANKING' THEN [1] ELSE [] END |
     SET member.notifyBanking = $enabled)
+  FOREACH (_ IN CASE WHEN $category = 'DEFAULTERS' THEN [1] ELSE [] END |
+    SET member.notifyDefaulters = $enabled)
   FOREACH (_ IN CASE WHEN $category = 'ARRIVALS' THEN [1] ELSE [] END |
     SET member.notifyArrivals = $enabled)
   RETURN coalesce(member.notifyServices, true) AS services,
          coalesce(member.notifyBanking, true) AS banking,
+         coalesce(member.notifyDefaulters, true) AS defaulters,
          coalesce(member.notifyArrivals, true) AS arrivals
 `

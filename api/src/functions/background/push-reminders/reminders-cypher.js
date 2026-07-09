@@ -139,6 +139,139 @@ const BUSSING_NOT_ARRIVED_RECIPIENTS = `
          collect(DISTINCT pushToken.token) AS tokens
 `
 
+// ─── Defaulters roundup (Fri 12:00 & 15:00, Sat 09:00 Accra) ─────────────────
+//
+// One summary push per SUPERVISORY church node (Governorship / Council /
+// Stream) that has at least one defaulting Bacenta in its subtree THIS WEEK,
+// delivered to every leader (LEADS) and admin (IS_ADMIN_FOR) of that node who
+// hasn't muted the DEFAULTERS category. Collapsing all of a node's overseers
+// into ONE row (tokens collected together) is deliberate: the message names
+// the node, so every governor/admin over it gets the same single summary.
+//
+// Defaulter definitions:
+//   - form defaulter: an Active Bacenta whose MEETS_ON day has ALREADY PASSED
+//     this week (dayNumber < today, or == today after 20:30) with neither a
+//     filled (attendance) nor a cancelled (noServiceReason) ServiceRecord in
+//     the Tue–Sun week. A Bacenta that hasn't met yet is NOT counted — so a
+//     Sunday Bacenta is never nagged on Friday. The meeting-day-passed gate
+//     matches the dashboard's formDefaultersThisWeekCount (services.graphql);
+//     the "serviced" test (attendance OR noServiceReason present) matches
+//     SERVICE_REMINDER above. (The dashboard @cypher additionally collapses to
+//     0 when the week has no ServiceRecords graph-wide — a latent dashboard
+//     quirk this query deliberately does not inherit.)
+//   - banking defaulter: an Active Bacenta with a FILLED record this week not
+//     banked by any rail (bankingSlip / transactionStatus 'success' /
+//     tellerConfirmationTime). Mirrors the defaulters DOWNLOAD
+//     (defaulters-cypher.ts CHILD_BACENTA_BUCKETS): filled record + :Active,
+//     no income>0 filter. NOTE this is intentionally stricter than the
+//     dashboard's bankingDefaultersThisWeekCount, which omits the attendance
+//     requirement and includes Closed/vacation Bacentas — so this can
+//     under-count vs the dashboard but agrees with the download the admin sees.
+// Vacation Bacentas are excluded structurally (:Active:Bacenta — SM3).
+//
+// Performance: both CALLs anchor on the TimeGraph(date) index for the ~6 dates
+// of the week (like BANKING_REMINDER_RECIPIENTS), so cost scales with the
+// WEEK's records, not each Bacenta's all-time history. The form CALL collects
+// the week's serviced Bacentas via that anchored scan and anti-joins the
+// subtree's meeting-day-passed Bacentas against it (never a per-Bacenta
+// full-history NOT EXISTS).
+//
+// The node anchor is `MATCH (node:<Level>)` WITHOUT `:Active`: supervisory
+// nodes (Council/Governorship/Stream) do not reliably carry the `:Active`
+// label — dashboards/downloads always address them by id, never scan by
+// `:Active:Level`. Dormant nodes are already filtered downstream: a node with
+// no defaulting Bacenta (`> 0` gate) or no active overseer with a device
+// (`<-[:LEADS|IS_ADMIN_FOR]-(:Active:Member)-[:HAS_PUSH_TOKEN]->`) yields no
+// row.
+//
+// The three queries differ ONLY in the level label and the :HAS-depth from the
+// node down to its Bacentas, so they are built from one template. They take NO
+// runtime parameters — the week is derived from date() — so ADR-012's $param
+// rule has nothing to bind: every interpolated fragment is a module-private
+// compile-time literal.
+
+/* eslint-disable fl-cypher/no-interpolated-cypher --
+ * `level` and `subtreeSuffix` are module-private compile-time literals (see the
+ * three call sites below); no user or runtime input is interpolated, and the
+ * built queries take no parameters at all. */
+// `subtreeSuffix` is the :HAS chain from the supervisory node down to (but not
+// including) the leaf Bacenta, so a Bacenta variable can be appended in either
+// direction: `${subtreeSuffix}(bacenta:Active:Bacenta)` to bind a fresh leaf,
+// or `${subtreeSuffix}(b)` inside an EXISTS to test that an already-bound `b`
+// belongs to this node's subtree.
+const buildDefaultersRecipients = (level, subtreeSuffix) => `
+  WITH date() AS today
+  WITH today, today.weekDay AS theDay
+  WITH today, date(today) - duration({days: (theDay - 2)}) AS startDate
+  WITH today, [d IN range(0, 5) | startDate + duration({days: d})] AS dates
+  MATCH (node:${level})
+  CALL {
+    WITH node, today, dates
+    CALL {
+      WITH node, dates
+      MATCH (serviceDate:TimeGraph)
+      USING INDEX serviceDate:TimeGraph(date)
+      WHERE serviceDate.date IN dates
+      MATCH (serviceDate)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(b:Active:Bacenta)
+      WHERE (record.attendance IS NOT NULL OR record.noServiceReason IS NOT NULL)
+        AND EXISTS { MATCH ${subtreeSuffix}(b) }
+      RETURN collect(DISTINCT b) AS serviced
+    }
+    MATCH ${subtreeSuffix}(bacenta:Active:Bacenta)-[:MEETS_ON]->(day:ServiceDay)
+    WHERE (day.dayNumber < today.dayOfWeek
+           OR (day.dayNumber = today.dayOfWeek AND time() > time('20:30')))
+      AND NOT bacenta IN serviced
+    RETURN count(DISTINCT bacenta) AS formDefaulters
+  }
+  CALL {
+    WITH node, dates
+    MATCH (serviceDate:TimeGraph)
+    USING INDEX serviceDate:TimeGraph(date)
+    WHERE serviceDate.date IN dates
+    MATCH (serviceDate)<-[:SERVICE_HELD_ON]-(record:ServiceRecord)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(bacenta:Active:Bacenta)
+    WHERE record.attendance IS NOT NULL
+      AND record.noServiceReason IS NULL
+      AND record.bankingSlip IS NULL
+      AND (record.transactionStatus IS NULL OR record.transactionStatus <> 'success')
+      AND record.tellerConfirmationTime IS NULL
+      AND EXISTS { MATCH ${subtreeSuffix}(bacenta) }
+    RETURN count(DISTINCT bacenta) AS bankingDefaulters
+  }
+  WITH node, formDefaulters, bankingDefaulters
+  WHERE formDefaulters > 0 OR bankingDefaulters > 0
+  MATCH (node)<-[:LEADS|IS_ADMIN_FOR]-(member:Active:Member)
+  WHERE coalesce(member.notifyDefaulters, true) = true
+  MATCH (member)-[:HAS_PUSH_TOKEN]->(pushToken:PushToken)
+  RETURN node.id AS churchId,
+         node.name AS churchName,
+         '${level}' AS level,
+         formDefaulters,
+         bankingDefaulters,
+         collect(DISTINCT pushToken.token) AS tokens
+`
+
+const DEFAULTERS_REMINDER_RECIPIENTS_GOVERNORSHIP = buildDefaultersRecipients(
+  'Governorship',
+  '(node)-[:HAS]->'
+)
+const DEFAULTERS_REMINDER_RECIPIENTS_COUNCIL = buildDefaultersRecipients(
+  'Council',
+  '(node)-[:HAS]->(:Governorship)-[:HAS]->'
+)
+const DEFAULTERS_REMINDER_RECIPIENTS_STREAM = buildDefaultersRecipients(
+  'Stream',
+  '(node)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->'
+)
+/* eslint-enable fl-cypher/no-interpolated-cypher */
+
+// Iterated by the defaulters job; each row is one node-level summary. Order is
+// cosmetic (Governorship → Council → Stream).
+const DEFAULTERS_REMINDER_QUERIES = [
+  DEFAULTERS_REMINDER_RECIPIENTS_GOVERNORSHIP,
+  DEFAULTERS_REMINDER_RECIPIENTS_COUNCIL,
+  DEFAULTERS_REMINDER_RECIPIENTS_STREAM,
+]
+
 // ─── Idempotency marker (bussing) ────────────────────────────────────────────
 //
 // Claim-then-send: each (stream, window, date) is claimed exactly once via
@@ -181,6 +314,7 @@ const PRUNE_INVALID_TOKENS = `
 module.exports = {
   SERVICE_REMINDER_RECIPIENTS,
   BANKING_REMINDER_RECIPIENTS,
+  DEFAULTERS_REMINDER_QUERIES,
   STREAMS_WITH_ARRIVAL_TIMES,
   BUSSING_NOT_MOBILISED_RECIPIENTS,
   BUSSING_NOT_ARRIVED_RECIPIENTS,

@@ -18,7 +18,7 @@ import {
 
 type CategoryRow = {
   key: NotificationCategory
-  field: 'services' | 'banking' | 'arrivals'
+  field: 'services' | 'banking' | 'defaulters' | 'arrivals'
   label: string
   description: string
 }
@@ -35,6 +35,13 @@ const CATEGORY_ROWS: CategoryRow[] = [
     field: 'banking',
     label: 'Banking reminders',
     description: 'A nudge to bank your offering the next day.',
+  },
+  {
+    key: 'DEFAULTERS',
+    field: 'defaulters',
+    label: 'Defaulters reminders',
+    description:
+      'Weekly summary of churches under you that haven’t filled or banked (for governors and admins).',
   },
   {
     key: 'ARRIVALS',

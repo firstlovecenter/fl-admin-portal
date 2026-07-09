@@ -9,6 +9,7 @@
  * Usage:
  *   node api/src/scripts/run-push-reminders.js --job service --dryRun
  *   node api/src/scripts/run-push-reminders.js --job banking --dryRun
+ *   node api/src/scripts/run-push-reminders.js --job defaulters --dryRun
  *   node api/src/scripts/run-push-reminders.js --job bussing --dryRun --force
  *   node api/src/scripts/run-push-reminders.js --job service        # REAL send
  *
@@ -41,7 +42,7 @@ if (args.includes('--help') || args.includes('-h') || !job || job === true) {
 Push reminders (CLI wrapper).
 
 Options:
-  --job <service|banking|bussing>   Which reminder job to run. Required.
+  --job <service|banking|defaulters|bussing>   Which reminder job to run. Required.
   --dryRun                          Log targets + messages; send nothing.
   --force                           (bussing) skip the Sunday guard.
   --help, -h                        Show this help.

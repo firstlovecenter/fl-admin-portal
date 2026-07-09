@@ -1,14 +1,18 @@
 /* eslint-disable no-console, no-await-in-loop */
 
-// Push-reminders Lambda — ONE function, THREE EventBridge schedules. Each
+// Push-reminders Lambda — ONE function, SEVERAL EventBridge schedules. Each
 // schedule rule invokes this same handler with a constant JSON payload:
 //
-//   { "job": "service" }   daily 22:00 Africa/Accra  → cron(0 22 * * ? *)
-//   { "job": "banking" }   daily 15:00 Africa/Accra  → cron(0 15 * * ? *)
-//   { "job": "bussing" }   Sundays every 5 min, 04:00–13:00 Africa/Accra
-//                          → cron(0/5 4-12 ? * SUN *), retries MUST be 0
-//                            (idempotency markers make a retry a no-op, but a
-//                            retried tick is still a wasted invocation)
+//   { "job": "service" }    daily 22:00 Africa/Accra  → cron(0 22 * * ? *)
+//   { "job": "banking" }    daily 15:00 Africa/Accra  → cron(0 15 * * ? *)
+//   { "job": "defaulters" } Fri 12:00 & 15:00, Sat 09:00 Africa/Accra
+//                           → cron(0 12,15 ? * FRI *) + cron(0 9 ? * SAT *)
+//                             (two schedules, same payload) — a weekly
+//                             defaulters roundup to the nodes above Bacenta
+//   { "job": "bussing" }    Sundays every 5 min, 04:00–13:00 Africa/Accra
+//                           → cron(0/5 4-12 ? * SUN *), retries MUST be 0
+//                             (idempotency markers make a retry a no-op, but a
+//                             retried tick is still a wasted invocation)
 //
 // Ghana is UTC+0 year-round (no DST), so UTC cron expressions ARE Accra time
 // and JS Date/now math needs no timezone shifting.
@@ -24,9 +28,11 @@ const neo4j = require('neo4j-driver')
 const { loadSecrets } = require('./secrets')
 const { sendToTokens } = require('./push-sender')
 const { buildBankingBody } = require('./banking-message')
+const { buildDefaultersBody } = require('./defaulters-message')
 const {
   SERVICE_REMINDER_RECIPIENTS,
   BANKING_REMINDER_RECIPIENTS,
+  DEFAULTERS_REMINDER_QUERIES,
   STREAMS_WITH_ARRIVAL_TIMES,
   BUSSING_NOT_MOBILISED_RECIPIENTS,
   BUSSING_NOT_ARRIVED_RECIPIENTS,
@@ -140,6 +146,39 @@ const runBankingReminder = async (driver, { dryRun }) => {
 
   await pruneInvalidTokens(driver, outcome.invalidTokens, dryRun)
   return { job: 'banking', targets: rows.length, ...outcome }
+}
+
+// ─── Job: defaulters roundup ─────────────────────────────────────────────────
+
+// Summarises this week's form + banking defaulters to the supervisory nodes
+// above each Bacenta (Governorship / Council / Stream). Each query returns ONE
+// row per node with counts + every non-muted overseer's tokens collapsed
+// together, so a node's governors and admins all receive the same single
+// summary. Fires Fri 12:00 & 15:00 and Sat 09:00 (see README) — chasing the
+// current week's defaulters as the week closes.
+const runDefaultersReminder = async (driver, { dryRun }) => {
+  const rowsPerLevel = await Promise.all(
+    DEFAULTERS_REMINDER_QUERIES.map((query) => readRows(driver, query))
+  )
+  const rows = rowsPerLevel.flat()
+  console.log(`Defaulters reminder: ${rows.length} node summary target(s)`)
+
+  const outcome = await sendAll(
+    rows,
+    (row) => ({
+      title: 'Weekly defaulters',
+      body: buildDefaultersBody(row),
+      data: {
+        category: 'DEFAULTERS',
+        churchId: row.churchId,
+        level: row.level,
+      },
+    }),
+    dryRun
+  )
+
+  await pruneInvalidTokens(driver, outcome.invalidTokens, dryRun)
+  return { job: 'defaulters', targets: rows.length, ...outcome }
 }
 
 // ─── Job: bussing arrival alerts ─────────────────────────────────────────────
@@ -358,6 +397,7 @@ const runBussingAlerts = async (driver, { dryRun, force }) => {
 const JOBS = {
   service: runServiceReminder,
   banking: runBankingReminder,
+  defaulters: runDefaultersReminder,
   bussing: runBussingAlerts,
 }
 

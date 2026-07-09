@@ -6,7 +6,7 @@ import {
   SET_NOTIFICATION_PREFERENCE,
 } from './notification-prefs-cypher'
 
-type NotificationCategory = 'SERVICES' | 'BANKING' | 'ARRIVALS'
+type NotificationCategory = 'SERVICES' | 'BANKING' | 'DEFAULTERS' | 'ARRIVALS'
 
 type SetPreferenceArgs = {
   category: NotificationCategory
@@ -16,10 +16,25 @@ type SetPreferenceArgs = {
 type NotificationPreferences = {
   services: boolean
   banking: boolean
+  defaulters: boolean
   arrivals: boolean
 }
 
-const CATEGORIES: NotificationCategory[] = ['SERVICES', 'BANKING', 'ARRIVALS']
+const CATEGORIES: NotificationCategory[] = [
+  'SERVICES',
+  'BANKING',
+  'DEFAULTERS',
+  'ARRIVALS',
+]
+
+// Fully-subscribed fallback for the (shouldn't-happen) no-node case, mirrored
+// in both the read and write paths.
+const ALL_SUBSCRIBED: NotificationPreferences = {
+  services: true,
+  banking: true,
+  defaulters: true,
+  arrivals: true,
+}
 
 // Both operations are self-scoped: the read/write always targets the Member
 // identified by `context.jwt.userId`, so no caller can read or change another
@@ -31,6 +46,7 @@ const toPreferences = (record: {
 }): NotificationPreferences => ({
   services: record.get('services'),
   banking: record.get('banking'),
+  defaulters: record.get('defaulters'),
   arrivals: record.get('arrivals'),
 })
 
@@ -58,7 +74,7 @@ export const myNotificationPreferences = async (
     // A member with no matching node (shouldn't happen for an authed user)
     // defaults to fully subscribed.
     if (!record) {
-      return { services: true, banking: true, arrivals: true }
+      return ALL_SUBSCRIBED
     }
     return toPreferences(record)
   } catch (error) {
@@ -96,7 +112,7 @@ export const SetNotificationPreference = async (
     // No node for a valid authed user shouldn't happen; mirror the read path
     // and default to fully subscribed rather than throwing.
     if (!record) {
-      return { services: true, banking: true, arrivals: true }
+      return ALL_SUBSCRIBED
     }
     return toPreferences(record)
   } catch (error) {

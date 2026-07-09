@@ -1,8 +1,10 @@
 # Push Reminders
 
-Scheduled push-notification reminders for Bacenta leaders. **One Lambda,
-three EventBridge Scheduler schedules** — each schedule invokes the same
-handler with a constant payload selecting the job.
+Scheduled push-notification reminders. **One Lambda, several EventBridge
+Scheduler schedules** — each schedule invokes the same handler with a constant
+payload selecting the job. Most jobs target the **Bacenta leader**; the
+`defaulters` roundup instead targets the **supervisory nodes above Bacenta**
+(Governorship / Council / Stream).
 
 ## Status
 
@@ -30,11 +32,17 @@ expected, not a gap).
 
 **Per-environment schedule state (as of 2026-07-07):**
 
-| Env | service | banking | bussing | Lambda |
-| --- | --- | --- | --- | --- |
-| **dev** (`dev-`) | ENABLED | ENABLED | ENABLED | ✅ Active |
-| **staging** (`staging-`) | DISABLED | DISABLED | DISABLED | ✅ Active |
-| **prod** (none) | ENABLED | ENABLED | **DISABLED** | ✅ Active |
+| Env | service | banking | defaulters | bussing | Lambda |
+| --- | --- | --- | --- | --- | --- |
+| **dev** (`dev-`) | ENABLED | ENABLED | ⏳ provision | ENABLED | ✅ Active |
+| **staging** (`staging-`) | DISABLED | DISABLED | ⏳ provision | DISABLED | ✅ Active |
+| **prod** (none) | ENABLED | ENABLED | ⏳ provision | **DISABLED** | ✅ Active |
+
+> ⏳ **`defaulters` schedules are NOT yet provisioned in AWS.** The Lambda code
+> ships via the normal `update-function-code` deploy, but the two EventBridge
+> Scheduler schedules below (`…-defaulters-fri`, `…-defaulters-sat`) must be
+> created by hand per environment — like the existing schedules were — before
+> the job will fire. Until then the job only runs via the CLI runner.
 
 `dryRun` defaults to **false** (`index.js`: `event.dryRun === true`), so the
 scheduler payloads (`{"job":"..."}`, no `dryRun`) send real pushes. Only CLI
@@ -65,12 +73,16 @@ runs with `--dryRun` no-op.
 ## Architecture
 
 ```
-Scheduler "<prefix>fl-synago-push-reminders-service"  { "job": "service" }  ┐
-Scheduler "<prefix>fl-synago-push-reminders-banking"  { "job": "banking" }  ├→ ONE Lambda (index.js)
-Scheduler "<prefix>fl-synago-push-reminders-bussing"  { "job": "bussing" }  ┘      │
-                                                                                   ├─ reminders-cypher.js  (targeting queries)
-                                                                                   ├─ push-sender.js       (firebase-admin, FCM v1)
-                                                                                   └─ secrets.js           (Secrets Manager)
+Scheduler "<prefix>...-service"        { "job": "service" }     ┐
+Scheduler "<prefix>...-banking"        { "job": "banking" }     │
+Scheduler "<prefix>...-defaulters-fri" { "job": "defaulters" }  ├→ ONE Lambda (index.js)
+Scheduler "<prefix>...-defaulters-sat" { "job": "defaulters" }  │      │
+Scheduler "<prefix>...-bussing"        { "job": "bussing" }     ┘      │
+                                                                       ├─ reminders-cypher.js   (targeting queries)
+                                                                       ├─ banking-message.js /  (body assembly)
+                                                                       │  defaulters-message.js
+                                                                       ├─ push-sender.js        (firebase-admin, FCM v1)
+                                                                       └─ secrets.js            (Secrets Manager)
 ```
 
 The schedules carry the cron and timezone; Ghana is UTC+0 year-round, but the
@@ -81,6 +93,8 @@ timezone assumption ever changes.
 | --- | --- | --- | --- |
 | service | `cron(0 22 * * ? *)` — **every day** 22:00 | `{"job":"service"}` | 2, max age 1 h |
 | banking | `cron(0 15 * * ? *)` — **every day** 15:00 | `{"job":"banking"}` | 2, max age 1 h |
+| defaulters-fri | `cron(0 12,15 ? * FRI *)` — Fridays 12:00 **and** 15:00 | `{"job":"defaulters"}` | 2, max age 1 h |
+| defaulters-sat | `cron(0 9 ? * SAT *)` — Saturdays 09:00 | `{"job":"defaulters"}` | 2, max age 1 h |
 | bussing | `cron(0/5 4-12 ? * SUN *)` — Sundays only, every 5 min 04:00–12:55 | `{"job":"bussing"}` | **0** |
 
 The service and banking schedules fire **all 7 days** (day-of-month `*`,
@@ -89,6 +103,13 @@ day-of-week `?`). They are not gated to Tue–Sat at the cron level — the
 only returns a leader whose Bacenta's `MEETS_ON → ServiceDay` is today, so on
 a non-meeting day the job runs but resolves 0 targets. Effective reminder days
 therefore follow each Bacenta's configured meeting day, not the schedule.
+
+The **defaulters** job is different: it IS gated at the cron level (three fires
+across Fri/Sat only — `defaulters-fri` uses a two-value minute-of-hour list to
+cover both 12:00 and 15:00 with one schedule). All three fires chase the SAME
+Tue-anchored week's defaulters as the week closes; there is no idempotency
+marker because a repeat summary is intended (the counts shrink as nodes catch
+up). It resolves 0 targets on any node with no defaulters.
 
 Retry semantics depend on the handler's error behaviour: for `service` and
 `banking` the handler RETHROWS on failure so the async invocation registers a
@@ -104,7 +125,18 @@ the next one.
 | --- | --- | --- |
 | `service` | Bacentas whose own `MEETS_ON → ServiceDay` is **today** with no filled/cancelled ServiceRecord this Tue–Sun week | `formDefaultersThisWeek` idiom (services.graphql) |
 | `banking` | Bacentas with a filled record in the trailing 6 days, `income > 0`, not banked by any rail (`bankingSlip` / `transactionStatus` success **or pending** / `tellerConfirmationTime`) | `services-not-banked` predicate |
+| `defaulters` | Governorship / Council / Stream nodes with ≥1 **form** or **banking** defaulter Bacenta in their subtree this Tue–Sun week. Recipients = every leader (`LEADS`) + admin (`IS_ADMIN_FOR`) of that node (default-ON `notifyDefaulters`). One summary push per node. | form: `formDefaultersThisWeekCount` gate (services.graphql); banking: `CHILD_BACENTA_BUCKETS` (defaulters-cypher.ts download) |
 | `bussing` | Per Stream and window: `mob-60` → Bacentas with **no BussingRecord today** (`bacentasNoActivity` idiom); `arr-60/30/5/end` → Bacentas **on the way** (record exists, a `VehicleRecord.arrivalTime` is null — `bacentasOnTheWay` idiom) | arrivals.graphql Stream fields; times stitched to today like `arrivalEndTimeCalculator` |
+
+The **defaulters** job deliberately follows the DASHBOARD form-defaulter
+semantics, not the export's: a form defaulter is a Bacenta whose meeting day has
+**already passed** this week (`dayNumber < today`, or `== today` after 20:30)
+with no filled/cancelled record — so a Sunday Bacenta is never flagged on
+Friday. Banking defaulters mirror the export (filled record, unbanked by any
+rail; no `income > 0` filter, so the count agrees with the defaulters
+download). One row per node collapses all of that node's overseers' device
+tokens together, so muting is per-member (`notifyDefaulters`) but the summary
+itself is per-node.
 
 Deliberate deviations from the source queries, for reminder ergonomics:
 - Banking uses a **trailing-6-day window**, not the Tue-anchored week — on
@@ -168,14 +200,23 @@ Markers older than 30 days are swept at the start of each bussing run.
 
 ## Recipients & preferences (opt-out, default ON)
 
-Recipient = the Bacenta's **leader** (`LEADS`, `:Active:Member`). Every query
-gates on the category flag with `coalesce(leader.notifyX, true) = true`:
+For `service` / `banking` / `bussing`, recipient = the Bacenta's **leader**
+(`LEADS`, `:Active:Member`). For `defaulters`, recipient = every **leader +
+admin** (`LEADS` / `IS_ADMIN_FOR`) of the Governorship / Council / Stream node.
+Every query gates on the category flag with
+`coalesce(member.notifyX, true) = true`:
 
 | Category | Flag | Gates |
 | --- | --- | --- |
 | SERVICES | `notifyServices` | service-form reminder |
 | BANKING  | `notifyBanking`  | banking reminder |
+| DEFAULTERS | `notifyDefaulters` | weekly defaulters roundup |
 | ARRIVALS | `notifyArrivals` | all bussing alerts |
+
+The `DEFAULTERS` flag is wired end-to-end like the others: the SDL
+`NotificationCategory` enum + `NotificationPreferences.defaulters`, the
+self-scoped read/write in `notification-prefs-cypher.ts`, and the Settings
+toggle (`NotificationsCard.tsx`). Default-ON via `coalesce`.
 
 Vacation Bacentas are excluded structurally: vacation is a **label**
 (`:Vacation:Bacenta`), and every query matches `:Active:Bacenta` (SM3).
@@ -185,6 +226,7 @@ Vacation Bacentas are excluded structurally: vacation is a **label**
 ```
 node api/src/scripts/run-push-reminders.js --job service --dryRun
 node api/src/scripts/run-push-reminders.js --job banking --dryRun
+node api/src/scripts/run-push-reminders.js --job defaulters --dryRun
 node api/src/scripts/run-push-reminders.js --job bussing --dryRun --force
 ```
 
