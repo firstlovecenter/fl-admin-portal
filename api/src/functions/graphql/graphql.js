@@ -147,14 +147,27 @@ exports.handler = async (event, context) => {
   // generation) can run several seconds or throw; if any of that lands
   // on a preflight, API Gateway returns a non-2xx and the browser
   // surfaces it as a CORS failure even though origins are valid.
-  // SECRETS may be unloaded here — optional chaining falls through to
-  // the production list, which also contains staging-synago, so the
-  // preflight resolves correctly on the first invocation.
+  // SECRETS may be unloaded here — optional chaining falls through to the
+  // production list. That list shares the deployed hosts (admin/synago/
+  // staging-synago), so preflights from those origins still resolve on a cold
+  // start. The local loopback origins below are dev-only and are NOT in the
+  // production list, so a preflight that lands on a cold Lambda will fail for
+  // them until a subsequent (non-OPTIONS) request warms initializeServer() and
+  // populates SECRETS — retry once and it clears. We deliberately keep loopback
+  // origins out of the production list: the prod deployment must never reflect
+  // Access-Control-Allow-Origin for a plaintext localhost origin.
   const allowedOrigins =
     SECRETS?.ENVIRONMENT === 'development'
       ? [
           'https://dev-synago.firstlovecenter.com',
           'https://staging-synago.firstlovecenter.com',
+          // Local dev servers (both loopback hostnames) so developers can run
+          // the FE locally against the deployed dev API. 5173 = Vite,
+          // 3000 = docker-compose UI.
+          'http://127.0.0.1:5173',
+          'http://localhost:5173',
+          'http://127.0.0.1:3000',
+          'http://localhost:3000',
         ]
       : [
           'https://admin.firstlovecenter.com',
