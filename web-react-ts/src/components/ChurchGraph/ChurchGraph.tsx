@@ -41,12 +41,12 @@ const compactNumberFormatter = new Intl.NumberFormat('en', {
 // Individual (first-class) records use the feature accent; aggregates (rollups) use a
 // distinct hue so it's visually clear whether a chart shows "this church" vs "everything below".
 const PRIMARY_COLOR_BY_TYPE: Record<GraphTypes, string> = {
-  bussing: 'hsl(var(--destructive))',         // red  — individual bacenta bussing
+  bussing: 'hsl(var(--destructive))', // red  — individual bacenta bussing
   bussingAggregate: 'hsl(var(--defaulters))', // orange — all bussing rolled up
-  swellBussing: 'hsl(var(--warning))',        // amber — swell-Sunday special
+  swellBussing: 'hsl(var(--warning))', // amber — swell-Sunday special
 
-  services: 'hsl(var(--arrivals))',              // indigo — this level's own joint/weekday service
-  serviceAggregate: 'hsl(var(--churches))',      // purple — all services aggregated
+  services: 'hsl(var(--arrivals))', // indigo — this level's own joint/weekday service
+  serviceAggregate: 'hsl(var(--churches))', // purple — all services aggregated
   serviceAggregateWithDollar: 'hsl(var(--banking))', // green  — aggregated in USD
   multiplicationAggregate: 'hsl(var(--arrivals))',
 
@@ -115,7 +115,7 @@ type LabelProps = {
   x?: number | string
   y?: number | string
   width?: number | string
-  value?: number | string
+  value?: any
 }
 
 const renderBarLabel = ({ x, y, width, value }: LabelProps) => {
@@ -130,7 +130,7 @@ const renderBarLabel = ({ x, y, width, value }: LabelProps) => {
     !Number.isFinite(yNum) ||
     !Number.isFinite(widthNum)
   ) {
-    return null
+    return <></>
   }
   return (
     <text
@@ -173,8 +173,8 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     meta.week && meta.year
       ? `Week ${meta.week}, ${meta.year}`
       : meta.week
-      ? `Week ${meta.week}`
-      : label || ''
+        ? `Week ${meta.week}`
+        : label || ''
 
   return (
     <div className="min-w-44 rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
@@ -271,9 +271,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
       ? 'Joint Service'
       : (GRAPH_TYPE_LABELS[graphType] ?? capitalise(graphType))
 
-  const graphTitle = stat2
-    ? `${graphLabel} — Attendance & Income`
-    : graphLabel
+  const graphTitle = stat2 ? `${graphLabel} — Attendance & Income` : graphLabel
 
   const handleBarClick = (data: any, statKey: string) => {
     // Bussing aggregate bars don't have a single source record to drill
@@ -302,7 +300,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
     const action =
       statKey === 'income' && graphType === 'bussing'
         ? fallback
-        : routes[graphType] ?? fallback
+        : (routes[graphType] ?? fallback)
 
     clickCard({ ...data, __typename: action.typename })
     navigate(`/${props.church}/${action.route}`)
@@ -380,7 +378,9 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                 radius={[6, 6, 0, 0]}
                 maxBarSize={48}
                 cursor="pointer"
-                onClick={(data: any) => handleBarClick(data, stat1)}
+                onClick={(data: any) =>
+                  handleBarClick(data?.payload ?? data, stat1)
+                }
               >
                 <LabelList
                   dataKey={stat1}
@@ -398,7 +398,9 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   radius={[6, 6, 0, 0]}
                   maxBarSize={48}
                   cursor="pointer"
-                  onClick={(data: any) => handleBarClick(data, stat2)}
+                  onClick={(data: any) =>
+                    handleBarClick(data?.payload ?? data, stat2)
+                  }
                 >
                   <LabelList
                     dataKey={stat2}

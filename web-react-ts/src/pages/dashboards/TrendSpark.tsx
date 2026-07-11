@@ -60,7 +60,7 @@ interface ChartBarLabelProps {
   x?: number | string
   y?: number | string
   width?: number | string
-  value?: number | string
+  value?: any
 }
 
 const compactNumberFormatter = new Intl.NumberFormat('en', {
@@ -81,7 +81,7 @@ const renderBarLabel = ({ x, y, width, value }: ChartBarLabelProps) => {
     !Number.isFinite(yNum) ||
     !Number.isFinite(widthNum)
   ) {
-    return null
+    return <></>
   }
 
   return (
@@ -153,8 +153,8 @@ const TrendSpark = ({
         week !== null && year !== null
           ? `${year}-${week}`
           : week !== null
-          ? `week-${week}-${index}`
-          : `unknown-${index}`
+            ? `week-${week}-${index}`
+            : `unknown-${index}`
 
       const attendance = Number.isFinite(parseFloat(d.attendance ?? ''))
         ? parseFloat(d.attendance ?? '0')
@@ -295,7 +295,8 @@ const TrendSpark = ({
               radius={[6, 6, 0, 0]}
               maxBarSize={48}
               cursor={hasClickableData ? 'pointer' : 'default'}
-              onClick={(point: ChartPoint) => {
+              onClick={(data: any) => {
+                const point = (data?.payload ?? data) as ChartPoint
                 if (
                   !point?.id ||
                   !point?.category ||
@@ -328,7 +329,8 @@ const TrendSpark = ({
                 radius={[6, 6, 0, 0]}
                 maxBarSize={48}
                 cursor={hasClickableData ? 'pointer' : 'default'}
-                onClick={(point: ChartPoint) => {
+                onClick={(data: any) => {
+                  const point = (data?.payload ?? data) as ChartPoint
                   if (
                     !point?.id ||
                     !point?.category ||
