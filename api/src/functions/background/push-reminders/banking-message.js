@@ -21,6 +21,36 @@ const formatMoney = (amount, currency) => {
   return `${currency || 'GHS'} ${value.toLocaleString('en-GH')}`
 }
 
+// Stewardship scriptures appended to the banking reminder. These frame the
+// unbanked offering as funds held in trust (not the leader's own money), so the
+// set is drawn from verses about faithfulness with what is entrusted and
+// honesty in handling money — not personal-giving / tithing verses. Verse text
+// only: the reminder body already carries the "Please bank it today." call to
+// action, so the scripture supplies the "why", not a second instruction.
+const BANKING_VERSES = [
+  '1 Cor 4:2 — It is required of stewards that they be found faithful.',
+  'Luke 16:10 — Whoever is faithful in a very little is faithful also in much.',
+  'Lev 19:11 — You shall not steal, nor deal falsely with one another.',
+  'Prov 11:1 — A false balance is an abomination to the Lord, but a just weight is his delight.',
+]
+
+/**
+ * Pick the day's verse. Rotation is keyed on the UTC calendar day so it is
+ * deterministic (every recipient on a given day sees the same verse, and the
+ * choice is unit-testable from `now` alone) and advances one verse per day.
+ * Ghana is UTC+0 year-round, so the UTC day IS the Accra day.
+ *
+ * @param {Date} now  reference "today"
+ * @returns {string} one of BANKING_VERSES
+ */
+const pickVerse = (now = new Date()) => {
+  const dayNumber = Math.floor(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) /
+      (24 * 60 * 60 * 1000)
+  )
+  return BANKING_VERSES[dayNumber % BANKING_VERSES.length]
+}
+
 /**
  * Build the banking-reminder notification body for one recipient row.
  *
@@ -46,7 +76,13 @@ const buildBankingBody = (row, now = new Date()) => {
   )} from your service ${describeServiceDate(
     latest.date,
     now
-  )} hasn't been banked yet${more}. Please bank it today.`
+  )} hasn't been banked yet${more}. Please bank it today.\n\n${pickVerse(now)}`
 }
 
-module.exports = { toNumber, formatMoney, buildBankingBody }
+module.exports = {
+  toNumber,
+  formatMoney,
+  buildBankingBody,
+  pickVerse,
+  BANKING_VERSES,
+}
