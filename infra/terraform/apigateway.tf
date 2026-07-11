@@ -132,8 +132,17 @@ resource "aws_apigatewayv2_api" "dev_graphql" {
     allow_credentials = false
     allow_headers     = ["content-type", "authorization"]
     allow_methods     = ["POST", "OPTIONS"]
-    allow_origins     = ["https://dev-synago.firstlovecenter.com"]
-    max_age           = 0
+    # Local dev servers (both loopback hostnames) so developers can run the FE
+    # locally against the deployed dev API. 5173 = Vite, 3000 = docker-compose
+    # UI. DEV gateway only — never added to the prod or staging gateways.
+    allow_origins = [
+      "https://dev-synago.firstlovecenter.com",
+      "http://127.0.0.1:5173",
+      "http://localhost:5173",
+      "http://127.0.0.1:3000",
+      "http://localhost:3000",
+    ]
+    max_age = 0
   }
 }
 
