@@ -23,7 +23,8 @@ import {
   permitLeaderAdmin,
   permitTellerStream,
 } from 'permission-utils'
-import { ChurchIdAndName, ChurchLevel } from 'global-types'
+import { ChurchIdAndName, ChurchLevel, UserJobs } from 'global-types'
+import { resolveChurchFromUserJobs } from 'pages/dashboards/dashboard-utils'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { cn } from 'components/lib/utils'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
@@ -162,15 +163,13 @@ const ServicesMenuInner = () => {
 
   // Resolve isManualBanking and vacationStatus from userJobs (populated from
   // GET_LOGGED_IN_USER's leads* fields on every login — no extra query needed).
-  const churchDetails = useMemo(() => {
-    if (churchId && userJobs) {
-      for (const job of userJobs as any[]) {
-        const found = (job.church as any[])?.find((c: any) => c?.id === churchId)
-        if (found) return found
-      }
-    }
-    return currentUser?.currentChurch ?? null
-  }, [churchId, userJobs, currentUser?.currentChurch])
+  const churchDetails = useMemo(
+    () =>
+      resolveChurchFromUserJobs(userJobs as UserJobs[] | undefined, churchId) ??
+      currentUser?.currentChurch ??
+      null,
+    [churchId, userJobs, currentUser?.currentChurch]
+  )
 
   const isManualBanking = !!churchDetails?.isManualBanking
   const isVacationActive = churchDetails?.vacationStatus === 'Active'

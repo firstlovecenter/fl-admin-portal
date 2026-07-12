@@ -23,7 +23,8 @@ import {
 import { Skeleton } from 'components/ui/skeleton'
 import CurrencySpan from 'components/CurrencySpan'
 import { MemberContext } from 'contexts/MemberContext'
-import { Church, Member, Role, ServiceRecord } from 'global-types'
+import { Church, Member, Role, ServiceRecord, UserJobs } from 'global-types'
+import { resolveChurchFromUserJobs } from 'pages/dashboards/dashboard-utils'
 import { alertMsg, alertSuccess, throwToSentry } from 'global-utils'
 import { parseNeoTime } from 'lib/date-utils'
 import {
@@ -160,15 +161,14 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   const { currentUser, userJobs } = useContext(MemberContext)
   const navigate = useNavigate()
 
-  const isChurchManualBanking = useMemo(() => {
-    const churchId = church?.id
-    if (!churchId || !userJobs) return false
-    for (const job of userJobs) {
-      const found = job.church?.find((c: Church) => c?.id === churchId)
-      if (found) return !!found.isManualBanking
-    }
-    return false
-  }, [church?.id, userJobs])
+  const isChurchManualBanking = useMemo(
+    () =>
+      !!resolveChurchFromUserJobs(
+        userJobs as UserJobs[] | undefined,
+        church?.id
+      )?.isManualBanking,
+    [church?.id, userJobs]
+  )
 
   const [ManuallyConfirmOfferingPayment] = useMutation(
     MANUALLY_CONFIRM_OFFERING_PAYMENT

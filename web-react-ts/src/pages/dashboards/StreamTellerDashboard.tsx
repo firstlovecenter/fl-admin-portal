@@ -11,6 +11,7 @@ import { cn } from 'components/lib/utils'
 import { MemberContext } from 'contexts/MemberContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { UserJobs } from 'global-types'
+import { resolveChurchFromUserJobs } from 'pages/dashboards/dashboard-utils'
 import { STREAM_BANKING_DEFAULTERS_THIS_WEEK } from 'pages/services/banking/manual-banking/Treasury.gql'
 import {
   fadeUp,
@@ -31,15 +32,14 @@ const StreamTellerDashboard = () => {
   // Resolve isManualBanking for the selected stream from userJobs — populated
   // at login from `isTellerForStream { isManualBanking }` so no extra query
   // is needed for the gate.
-  const isStreamManualBanking = useMemo(() => {
-    const scopeChurchId = selectedScope?.churchId
-    if (!scopeChurchId || !userJobs) return false
-    for (const job of (userJobs as UserJobs[] | undefined) ?? []) {
-      const found = job.church?.find((c) => c?.id === scopeChurchId)
-      if (found) return !!found.isManualBanking
-    }
-    return false
-  }, [selectedScope?.churchId, userJobs])
+  const isStreamManualBanking = useMemo(
+    () =>
+      !!resolveChurchFromUserJobs(
+        userJobs as UserJobs[] | undefined,
+        selectedScope?.churchId
+      )?.isManualBanking,
+    [selectedScope?.churchId, userJobs]
+  )
 
   const { data: pendingData, loading: pendingLoading } = useQuery(
     STREAM_BANKING_DEFAULTERS_THIS_WEEK,

@@ -19,6 +19,8 @@ import {
   type Icon as TablerIcon,
 } from '@tabler/icons-react'
 import { getWeekNumber, getISOWeekYear } from 'global-utils'
+import { UserJobs } from 'global-types'
+import { resolveChurchFromUserJobs } from 'pages/dashboards/dashboard-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
@@ -126,17 +128,14 @@ const FullUserDashboard = () => {
     selectedScope?.churchType ?? roleChurchOptions[0]?.churchType
   )?.toLowerCase()
 
-  const isSelectedScopeManualBanking = useMemo(() => {
-    const scopeChurchId = selectedScope?.churchId
-    if (!scopeChurchId || !userJobs) return false
-    for (const job of userJobs as any[]) {
-      const found = (job.church as any[])?.find(
-        (c: any) => c?.id === scopeChurchId
-      )
-      if (found) return !!found.isManualBanking
-    }
-    return false
-  }, [selectedScope?.churchId, userJobs])
+  const isSelectedScopeManualBanking = useMemo(
+    () =>
+      !!resolveChurchFromUserJobs(
+        userJobs as UserJobs[] | undefined,
+        selectedScope?.churchId
+      )?.isManualBanking,
+    [selectedScope?.churchId, userJobs]
+  )
 
   const quickActions: QuickAction[] = [
     {

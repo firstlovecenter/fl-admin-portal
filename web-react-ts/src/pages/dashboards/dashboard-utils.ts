@@ -1,4 +1,5 @@
 import {
+  Church,
   ChurchLevel,
   MemberWithChurches,
   Role,
@@ -173,6 +174,38 @@ export const getUserServantRoles = (servant: Servant) => {
   })
 
   return userroles
+}
+
+// Resolve the church a user holds a role on, from `userJobs`, by id.
+//
+// A user can hold several roles on the SAME church, and each job type is
+// queried with a different field set (the arrivals-counter church carries
+// only {id, name}; the teller church additionally carries isManualBanking /
+// bankAccount / vacationStatus). Returning the first match — as every call
+// site did before SYN-203 — is wrong: the fixed role ordering puts
+// arrivals-counter before teller, so a teller who is also an arrivals counter
+// gets the field-poor church and isManualBanking reads undefined. Merging
+// every matching job (last defined value wins) surfaces a field present on
+// ANY role regardless of order. Fields both queries select come from the same
+// Neo4j node, so the merge can never surface a conflicting value. Returns
+// null when no job matches, so callers keep their own fallback.
+export const resolveChurchFromUserJobs = (
+  userJobs: UserJobs[] | null | undefined,
+  churchId: string | null | undefined
+): Partial<Church> | null => {
+  if (!churchId || !userJobs) return null
+  let merged: Partial<Church> | null = null
+  for (const job of userJobs) {
+    const found = job.church?.find((c) => c?.id === churchId)
+    if (!found) continue
+    merged = merged ?? {}
+    for (const [key, value] of Object.entries(found)) {
+      if (value !== undefined) {
+        ;(merged as Record<string, unknown>)[key] = value
+      }
+    }
+  }
+  return merged
 }
 
 export const getServantRoles = (servant: MemberWithChurches) => {
