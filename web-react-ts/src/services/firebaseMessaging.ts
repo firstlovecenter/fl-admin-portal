@@ -62,17 +62,7 @@ const getMessagingInstance = (): Messaging => {
   // prevents listeners stacking for the session.
   if (!foregroundListenerWired) {
     foregroundListenerWired = true
-    onMessage(messaging, (payload) => {
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.log(
-          '[FCM] foreground message:',
-          payload?.notification?.title,
-          '—',
-          payload?.notification?.body
-        )
-      }
-    })
+    onMessage(messaging, () => {})
   }
   return messaging
 }
@@ -108,10 +98,6 @@ const acquireToken = async (): Promise<string | null> => {
     vapidKey: VAPID_KEY,
     serviceWorkerRegistration: swReg,
   })
-  if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.log('[FCM] token acquired:', !!token)
-  }
   return token ?? null
 }
 
@@ -136,10 +122,8 @@ export const enablePushNotifications = async (): Promise<string | null> => {
   try {
     return await acquireToken()
   } catch (error) {
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log('[FCM] enable failed:', error)
-    }
+    // eslint-disable-next-line no-console
+    console.error('[FCM] enable failed:', error)
     throw new Error('registration-failed')
   }
 }
@@ -155,10 +139,8 @@ export const registerPushIfGranted = async (): Promise<string | null> => {
     if (Notification.permission !== 'granted') return null
     return await acquireToken()
   } catch (error) {
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log('[FCM] silent register failed:', error)
-    }
+    // eslint-disable-next-line no-console
+    console.error('[FCM] silent register failed:', error)
     return null
   }
 }
