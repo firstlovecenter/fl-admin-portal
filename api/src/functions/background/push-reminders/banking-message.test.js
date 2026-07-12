@@ -57,15 +57,15 @@ describe('formatMoney', () => {
 describe('buildBankingBody', () => {
   it('names the church, the money, and the relative service date', () => {
     expect(buildBankingBody(row(), NOW)).toBe(
-      "Accra Central: GHS 500 from your service yesterday hasn't been banked yet. Please bank it today." +
-        `\n\n${VERSE_ON_NOW}`
+      `${VERSE_ON_NOW}\n\n` +
+        "Accra Central: GHS 500 from your service yesterday hasn't been banked yet. Please bank it today."
     )
   })
 
-  it("appends the day's stewardship verse after the call to action", () => {
+  it("opens with the day's stewardship verse, then the call to action", () => {
     const body = buildBankingBody(row(), NOW)
+    expect(body.startsWith(`${VERSE_ON_NOW}\n\n`)).toBe(true)
     expect(body).toContain('Please bank it today.')
-    expect(body.endsWith(`\n\n${VERSE_ON_NOW}`)).toBe(true)
     expect(BANKING_VERSES).toContain(VERSE_ON_NOW)
   })
 

@@ -21,11 +21,11 @@ const formatMoney = (amount, currency) => {
   return `${currency || 'GHS'} ${value.toLocaleString('en-GH')}`
 }
 
-// Stewardship scriptures appended to the banking reminder. These frame the
+// Stewardship scriptures that open the banking reminder. These frame the
 // unbanked offering as funds held in trust (not the leader's own money), so the
 // set is drawn from verses about faithfulness with what is entrusted and
 // honesty in handling money — not personal-giving / tithing verses. Verse text
-// only: the reminder body already carries the "Please bank it today." call to
+// only: the reminder body still carries the "Please bank it today." call to
 // action, so the scripture supplies the "why", not a second instruction.
 const BANKING_VERSES = [
   '1 Cor 4:2 — It is required of stewards that they be found faithful.',
@@ -70,13 +70,13 @@ const buildBankingBody = (row, now = new Date()) => {
           row.unbanked.length > 2 ? 's' : ''
         })`
       : ''
-  return `${row.churchName}: ${formatMoney(
+  return `${pickVerse(now)}\n\n${row.churchName}: ${formatMoney(
     latest.income,
     latest.foreignCurrency
   )} from your service ${describeServiceDate(
     latest.date,
     now
-  )} hasn't been banked yet${more}. Please bank it today.\n\n${pickVerse(now)}`
+  )} hasn't been banked yet${more}. Please bank it today.`
 }
 
 module.exports = {
