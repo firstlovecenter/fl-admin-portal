@@ -18,7 +18,8 @@ const {
 const NOW = new Date('2026-07-09T15:00:00.000Z')
 
 // Rotation is keyed on the UTC calendar day, so NOW deterministically resolves
-// to a single verse. 2026-07-09 is day 20643 since epoch; 20643 % 4 === 3.
+// to a single verse. 2026-07-09 is day 20643 since epoch; with a 10-verse pool
+// 20643 % 10 === 3.
 const VERSE_ON_NOW = BANKING_VERSES[3]
 
 const row = (overrides = {}) => ({
@@ -144,12 +145,20 @@ describe('pickVerse', () => {
   })
 
   it('advances one verse per day and wraps around the set', () => {
-    // 2026-07-09 → index 3 (last); the next day wraps back to index 0.
+    // Consecutive days step to consecutive indices (07-09 → 3, so 07-10 → 4,
+    // 07-11 → 5).
     expect(pickVerse(new Date('2026-07-10T15:00:00.000Z'))).toBe(
-      BANKING_VERSES[0]
+      BANKING_VERSES[4]
     )
     expect(pickVerse(new Date('2026-07-11T15:00:00.000Z'))).toBe(
-      BANKING_VERSES[1]
+      BANKING_VERSES[5]
+    )
+    // 2026-07-15 lands on the final index; the next day wraps back to 0.
+    expect(pickVerse(new Date('2026-07-15T15:00:00.000Z'))).toBe(
+      BANKING_VERSES[BANKING_VERSES.length - 1]
+    )
+    expect(pickVerse(new Date('2026-07-16T15:00:00.000Z'))).toBe(
+      BANKING_VERSES[0]
     )
   })
 })

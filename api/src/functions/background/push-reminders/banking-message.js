@@ -21,17 +21,28 @@ const formatMoney = (amount, currency) => {
   return `${currency || 'GHS'} ${value.toLocaleString('en-GH')}`
 }
 
-// Stewardship scriptures that open the banking reminder. These frame the
-// unbanked offering as funds held in trust (not the leader's own money), so the
-// set is drawn from verses about faithfulness with what is entrusted and
-// honesty in handling money — not personal-giving / tithing verses. Verse text
-// only: the reminder body still carries the "Please bank it today." call to
-// action, so the scripture supplies the "why", not a second instruction.
+// Stewardship scriptures that open the banking reminder. They frame the
+// unbanked offering as funds held in trust (not the leader's own money): the
+// set leans on faithfulness with what is entrusted and honesty in handling
+// money. Malachi's "rob God" is included as a warning reframed for this
+// context — the leader is holding the congregation's offering *to* God, not
+// their own giving. Verse text only: the reminder body still carries the
+// "Please bank it today." call to action, so the scripture supplies the "why",
+// not a second instruction.
 const BANKING_VERSES = [
+  // Faithfulness with what is entrusted to you
   '1 Cor 4:2 — It is required of stewards that they be found faithful.',
   'Luke 16:10 — Whoever is faithful in a very little is faithful also in much.',
-  'Lev 19:11 — You shall not steal, nor deal falsely with one another.',
+  "Luke 16:12 — If you have not been faithful in that which is another's, who will give you that which is your own?",
+  'Luke 12:42 — Who then is the faithful and wise steward, whom his master will set over his household?',
+  // Theft / withholding / honest measure
+  'Lev 19:11 — You shall not steal, nor deal falsely, nor lie to one another.',
+  'Lev 19:13 — You shall not oppress your neighbour or rob him.',
   'Prov 11:1 — A false balance is an abomination to the Lord, but a just weight is his delight.',
+  'Mal 3:8 — Will a man rob God? Yet you are robbing me.',
+  // Honesty and accountability before God
+  '2 Kings 12:15 — They required no accounting, for they dealt honestly.',
+  'Acts 5:4 — You have not lied to men but to God.',
 ]
 
 /**
