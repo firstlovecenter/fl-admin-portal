@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { ReactElement, useEffect, useMemo, useState } from 'react'
 import {
   Bar,
   BarChart,
+  BarRectangleItem,
   CartesianGrid,
   LabelList,
+  RenderableText,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -60,7 +62,7 @@ interface ChartBarLabelProps {
   x?: number | string
   y?: number | string
   width?: number | string
-  value?: number | string
+  value?: RenderableText
 }
 
 const compactNumberFormatter = new Intl.NumberFormat('en', {
@@ -68,7 +70,12 @@ const compactNumberFormatter = new Intl.NumberFormat('en', {
   maximumFractionDigits: 1,
 })
 
-const renderBarLabel = ({ x, y, width, value }: ChartBarLabelProps) => {
+const renderBarLabel = ({
+  x,
+  y,
+  width,
+  value,
+}: ChartBarLabelProps): ReactElement | RenderableText => {
   const numericValue = typeof value === 'number' ? value : Number(value)
   const xNum = typeof x === 'number' ? x : Number(x)
   const yNum = typeof y === 'number' ? y : Number(y)
@@ -295,7 +302,8 @@ const TrendSpark = ({
               radius={[6, 6, 0, 0]}
               maxBarSize={48}
               cursor={hasClickableData ? 'pointer' : 'default'}
-              onClick={(point: ChartPoint) => {
+              onClick={(item: BarRectangleItem) => {
+                const point = item.payload as ChartPoint | undefined
                 if (
                   !point?.id ||
                   !point?.category ||
@@ -328,7 +336,8 @@ const TrendSpark = ({
                 radius={[6, 6, 0, 0]}
                 maxBarSize={48}
                 cursor={hasClickableData ? 'pointer' : 'default'}
-                onClick={(point: ChartPoint) => {
+                onClick={(item: BarRectangleItem) => {
+                  const point = item.payload as ChartPoint | undefined
                   if (
                     !point?.id ||
                     !point?.category ||

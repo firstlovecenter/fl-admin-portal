@@ -1,0 +1,99 @@
+{
+  "type": "story",
+  "labels": ["dependencies", "frontend", "infra"],
+  "title": "[Frontend] Migrate recharts 2 → 3 (Dependabot #540)",
+  "summary": "Bumped `recharts` 2.13.3 → 3.9.2 in `web-react-ts` and migrated the two chart components that break on the upgrade. In recharts 3, `Bar`'s `onClick` handler receives a `BarRectangleItem` whose actual data row lives under `.payload` instead of the click argument itself — the pre-migration code in `ChurchGraph.tsx` read `data.id`/`data.category`/`data.week`/`data.year` directly off an untyped (`any`) click argument, and `TrendSpark.tsx` did the same off a typed-but-wrong `ChartPoint` argument. Both now unwrap `item.payload`, and `ChurchGraph.handleBarClick`'s `any` parameter was replaced with a real `ChurchGraphRow` type. `LabelList`'s `content` prop typing also tightened in recharts 3 (`LabelContentType`'s `value` is now `RenderableText`, not `string | number`), so both files' local label-content prop types and `renderBarLabel` return type were widened to match. `CustomLabel.tsx` (the third recharts consumer named in scope) was checked and confirmed dead code — no importers anywhere in the app — so it was left untouched. New Vitest+RTL coverage was added for both files' click handlers and label rendering, driving the real recharts 3 renderer (no mocking) — in the process this caught and locked in a genuine behavioral difference: without the `.payload` unwrap, `ChurchGraph`'s `clickCard({ ...row, __typename })` spread would leak recharts' internal geometry keys (`x`, `y`, `width`, `height`, `background`, `tooltipPosition`, …) into `ChurchContext` click-card state, which the new test suite asserts against exactly.",
+  "evidenceNote": "tsc, vite build, and the full Vitest suite (including 19 new tests) all pass with the same single pre-existing, unrelated failure as the pre-migration baseline (`createApolloClient.test.tsx`, a toast-copy assertion, untouched by this change). Manual/visual QA was run against the live dev environment (dev-api-synago.firstlovecenter.com) logged in as the Bacenta Leader test account: both ChurchGraph (Trends → Last 4 Weeks) and TrendSpark (Home dashboard weekly-trend chart) render bars with value labels and correctly drill down to the matching Service/Bussing record when clicked, verified across desktop/tablet/mobile viewports with no console errors. The bundled `mcp__playwright` browser tool could not launch in this sandbox (ARM64, no `/opt/google/chrome/chrome`, and the MCP hardcodes the `chrome` channel) — screenshots were instead captured by driving the already-installed Playwright `chromium` binary directly via Playwright's Node API, using the same login flow, viewports, and assertions the MCP tool would have used.",
+  "checks": [
+    { "label": "tsc --noEmit", "pass": true },
+    { "label": "vite build", "pass": true },
+    { "label": "vitest (282/283 passing, 1 pre-existing unrelated failure)", "pass": true },
+    { "label": "ChurchGraph drill-down (bar click → correct BussingRecord)", "pass": true },
+    { "label": "TrendSpark drill-down (bar click → correct record)", "pass": true },
+    { "label": "Bar value labels render (ChurchGraph + TrendSpark)", "pass": true },
+    { "label": "No Bootstrap classes in touched files", "pass": true },
+    { "label": "code-reviewer (no Must Fix / Should Fix)", "pass": true }
+  ],
+  "shots": [
+    {
+      "file": "dashboard-desktop.png",
+      "frame": "desktop",
+      "width": 1440,
+      "height": 900,
+      "tag": "after",
+      "label": "Home dashboard — TrendSpark",
+      "caption": "TrendSpark weekly-trend chart rendering bars with value labels (16, 24) on recharts 3, desktop viewport.",
+      "alt": "Home dashboard showing a bar chart with weekly bussing attendance values 16 and 24 labeled above red bars."
+    },
+    {
+      "file": "dashboard-tablet.png",
+      "frame": "tablet",
+      "width": 820,
+      "height": 1180,
+      "tag": "after",
+      "label": "Home dashboard — TrendSpark (tablet)",
+      "caption": "Same dashboard at 820px tablet viewport — stat tiles and chart reflow correctly.",
+      "alt": "Home dashboard on a tablet-width viewport with stat tiles and a weekly trend bar chart."
+    },
+    {
+      "file": "dashboard-mobile.png",
+      "frame": "mobile",
+      "width": 390,
+      "height": 844,
+      "tag": "after",
+      "label": "Home dashboard — TrendSpark (mobile, 375px-class)",
+      "caption": "Dashboard at 390px mobile viewport — no horizontal scroll, content stacks vertically.",
+      "alt": "Home dashboard on a narrow mobile viewport with stacked stat cards and record-now buttons."
+    },
+    {
+      "file": "trendspark-drilldown-desktop.png",
+      "frame": "desktop",
+      "width": 1440,
+      "height": 900,
+      "tag": "verify",
+      "label": "TrendSpark drill-down result",
+      "caption": "Clicking the '16' attendance bar on the Home dashboard navigates to the matching Bacenta Bussing Details record (Confirmed Attendance: 16, 3 May 2026) — confirms the payload unwrap preserves correct drill-down.",
+      "alt": "Bacenta Bussing Details page showing confirmed attendance of 16 for 3 May 2026, reached by clicking a chart bar."
+    },
+    {
+      "file": "church-graph-desktop.png",
+      "frame": "desktop",
+      "width": 1440,
+      "height": 900,
+      "tag": "after",
+      "label": "Trends → Last 4 Weeks — ChurchGraph",
+      "caption": "ChurchGraph bussing chart rendering a bar with its value label (8) on recharts 3, desktop viewport.",
+      "alt": "Test Bacenta Trends page with an avg weekly bussing stat of 8 and a bar chart showing a single red bar labeled 8 for week 20."
+    },
+    {
+      "file": "church-graph-tablet.png",
+      "frame": "tablet",
+      "width": 820,
+      "height": 1180,
+      "tag": "after",
+      "label": "Trends → Last 4 Weeks — ChurchGraph (tablet)",
+      "caption": "Same Trends page at 820px tablet viewport.",
+      "alt": "Test Bacenta Trends page on a tablet-width viewport showing stat tiles and the bussing bar chart."
+    },
+    {
+      "file": "church-graph-mobile.png",
+      "frame": "mobile",
+      "width": 390,
+      "height": 844,
+      "tag": "after",
+      "label": "Trends → Last 4 Weeks — ChurchGraph (mobile, 375px-class)",
+      "caption": "Trends page at 390px mobile viewport — 2-column stat grid, chart and bar remain fully visible and tappable.",
+      "alt": "Test Bacenta Trends page on a narrow mobile viewport with a 2x2 stat grid above the bussing bar chart."
+    },
+    {
+      "file": "church-graph-drilldown-desktop.png",
+      "frame": "desktop",
+      "width": 1440,
+      "height": 900,
+      "tag": "verify",
+      "label": "ChurchGraph drill-down result",
+      "caption": "Clicking the week-20 bussing bar navigates to the matching Bacenta Bussing Details record (Confirmed Attendance: 8, 16 May 2026) — confirms the payload unwrap preserves correct drill-down for the non-aggregate path.",
+      "alt": "Bacenta Bussing Details page showing confirmed attendance of 8 for 16 May 2026, reached by clicking a chart bar."
+    }
+  ]
+}

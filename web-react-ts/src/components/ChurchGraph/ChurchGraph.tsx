@@ -1,12 +1,14 @@
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ChurchLevelLower } from 'global-types'
-import { useContext, useMemo } from 'react'
+import { ReactElement, useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import {
   Bar,
   BarChart,
+  BarRectangleItem,
   CartesianGrid,
   LabelList,
+  RenderableText,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -31,6 +33,18 @@ type ChurchGraphProps = {
   // distinctly so the projection legend reads naturally.
   stat1Color?: string
   stat2Color?: string
+}
+
+// A single row from `churchData`. recharts 3 passes this under the bar
+// click's `payload` field rather than the click argument itself, and it
+// carries whatever fields the underlying GraphQL row has (attendance,
+// income, numberOfServices, ...) beyond the ones `handleBarClick` reads.
+type ChurchGraphRow = {
+  id?: string
+  category?: string
+  week?: number
+  year?: number
+  [key: string]: unknown
 }
 
 const compactNumberFormatter = new Intl.NumberFormat('en', {
@@ -115,10 +129,15 @@ type LabelProps = {
   x?: number | string
   y?: number | string
   width?: number | string
-  value?: number | string
+  value?: RenderableText
 }
 
-const renderBarLabel = ({ x, y, width, value }: LabelProps) => {
+const renderBarLabel = ({
+  x,
+  y,
+  width,
+  value,
+}: LabelProps): ReactElement | RenderableText => {
   const numeric = typeof value === 'number' ? value : Number(value)
   const xNum = typeof x === 'number' ? x : Number(x)
   const yNum = typeof y === 'number' ? y : Number(y)
@@ -275,13 +294,13 @@ const ChurchGraph = (props: ChurchGraphProps) => {
     ? `${graphLabel} — Attendance & Income`
     : graphLabel
 
-  const handleBarClick = (data: any, statKey: string) => {
+  const handleBarClick = (row: ChurchGraphRow | undefined, statKey: string) => {
     // Bussing aggregate bars don't have a single source record to drill
     // into, but each bar represents one ISO week — clicking jumps to the
     // arrivals summary dashboard for that week's Sunday so the user can
     // see "what was the bussing state on that day".
     if (graphType === 'bussingAggregate') {
-      const sundayYmd = isoSundayOfWeek(data?.week, data?.year)
+      const sundayYmd = isoSundayOfWeek(row?.week, row?.year)
       if (!sundayYmd) return
       const arrivalsPath = ARRIVALS_PATH_BY_CHURCH[props.church]
       if (!arrivalsPath) return
@@ -289,7 +308,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
       return
     }
 
-    if (!data?.id || data?.category?.includes('Aggregate')) return
+    if (!row?.id || row?.category?.includes('Aggregate')) return
 
     const routes: Record<string, { typename: string; route: string }> = {
       bussing: { typename: 'BussingRecord', route: 'bussing-details' },
@@ -304,7 +323,7 @@ const ChurchGraph = (props: ChurchGraphProps) => {
         ? fallback
         : routes[graphType] ?? fallback
 
-    clickCard({ ...data, __typename: action.typename })
+    clickCard({ ...row, __typename: action.typename })
     navigate(`/${props.church}/${action.route}`)
   }
 
@@ -380,7 +399,9 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                 radius={[6, 6, 0, 0]}
                 maxBarSize={48}
                 cursor="pointer"
-                onClick={(data: any) => handleBarClick(data, stat1)}
+                onClick={(item: BarRectangleItem) =>
+                  handleBarClick(item.payload as ChurchGraphRow, stat1)
+                }
               >
                 <LabelList
                   dataKey={stat1}
@@ -398,7 +419,9 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   radius={[6, 6, 0, 0]}
                   maxBarSize={48}
                   cursor="pointer"
-                  onClick={(data: any) => handleBarClick(data, stat2)}
+                  onClick={(item: BarRectangleItem) =>
+                    handleBarClick(item.payload as ChurchGraphRow, stat2)
+                  }
                 >
                   <LabelList
                     dataKey={stat2}
