@@ -146,14 +146,14 @@
     ]
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.110.0",
+    "@anthropic-ai/sdk": "^0.111.0",
     "@apollo/client": "^3.8.9",
     "@apollo/server": "^5.5.1",
     "@as-integrations/express4": "^1.1.2",
-    "@aws-sdk/client-lambda": "^3.1081.0",
-    "@aws-sdk/client-s3": "^3.1081.0",
-    "@aws-sdk/client-secrets-manager": "^3.1081.0",
-    "@aws-sdk/s3-request-presigner": "^3.1081.0",
+    "@aws-sdk/client-lambda": "^3.1085.0",
+    "@aws-sdk/client-s3": "^3.1085.0",
+    "@aws-sdk/client-secrets-manager": "^3.1085.0",
+    "@aws-sdk/s3-request-presigner": "^3.1085.0",
     "@neo4j/graphql": "^7.5.4",
     "axios": "^1.18.1",
     "body-parser": "^1.20.3",
@@ -171,7 +171,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.17.10",
+    "@babel/core": "^7.29.6",
     "@babel/node": "^7.8.7",
     "@babel/plugin-transform-class-properties": "^7.25.9",
     "@babel/plugin-transform-private-methods": "^7.25.9",

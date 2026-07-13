@@ -91,7 +91,7 @@ const FileUpload = (props: FileUploadProps) => {
         </Button>
       </label>
       {props.error && <TextError>{props.error}</TextError>}
-      {!props.error ?? <ErrorMessage name={name} component={TextError} />}
+      {!props.error && <ErrorMessage name={name} component={TextError} />}
     </>
   )
 }

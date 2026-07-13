@@ -115,7 +115,9 @@ type LabelProps = {
   x?: number | string
   y?: number | string
   width?: number | string
-  value?: number | string
+  // recharts 3 passes `value` as RenderableText (string | number | boolean |
+  // null | undefined) to label `content` renderers.
+  value?: number | string | boolean | null
 }
 
 const renderBarLabel = ({ x, y, width, value }: LabelProps) => {
@@ -275,7 +277,11 @@ const ChurchGraph = (props: ChurchGraphProps) => {
     ? `${graphLabel} — Attendance & Income`
     : graphLabel
 
-  const handleBarClick = (data: any, statKey: string) => {
+  const handleBarClick = (clicked: any, statKey: string) => {
+    // recharts 3 hands click callbacks a BarRectangleItem whose original datum
+    // lives under `.payload` (recharts 2 spread it onto the top level). Fall
+    // back to the item itself so behaviour is stable across both shapes.
+    const data = clicked?.payload ?? clicked
     // Bussing aggregate bars don't have a single source record to drill
     // into, but each bar represents one ISO week — clicking jumps to the
     // arrivals summary dashboard for that week's Sunday so the user can

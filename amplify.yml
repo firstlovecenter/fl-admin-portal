@@ -196,9 +196,9 @@ frontend:
             | .[]
           ' > web-react-ts/.env
 
-          # Pin Node to 20 (>=20.19) — required floor for the Vite 7 build toolchain
-          nvm install 20
-          nvm use 20
+          # Pin Node to 22 — required floor for graphql 17 (engines: node >=22)
+          nvm install 22
+          nvm use 22
           echo "Building with Node $(node -v)"
 
           # Install root dependencies

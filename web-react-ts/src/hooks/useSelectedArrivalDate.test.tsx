@@ -102,7 +102,10 @@ const renderArrivalDate = (opts: {
 }
 
 beforeEach(() => {
-  vi.useFakeTimers()
+  // `shouldAdvanceTime` lets fake time progress so @testing-library's
+  // `waitFor` poller (RTL 16 / @testing-library/dom 10) still fires while the
+  // system clock stays pinned to TODAY via `setSystemTime`.
+  vi.useFakeTimers({ shouldAdvanceTime: true })
   vi.setSystemTime(new Date(`${TODAY}T12:00:00Z`))
 })
 

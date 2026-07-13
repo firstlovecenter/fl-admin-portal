@@ -24,8 +24,7 @@ const UpdateGovernorship = () => {
   const initialValues: GovernorshipFormValues = {
     name: governorship?.name,
     leaderName:
-      governorship?.leader?.firstName + ' ' + governorship?.leader?.lastName ??
-      '',
+      governorship?.leader?.firstName + ' ' + governorship?.leader?.lastName,
     adminId: governorship?.admin?.id || '',
     leaderId: governorship?.leader?.id || '',
     leaderEmail: governorship?.leader?.email || '',

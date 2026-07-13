@@ -60,7 +60,9 @@ interface ChartBarLabelProps {
   x?: number | string
   y?: number | string
   width?: number | string
-  value?: number | string
+  // recharts 3 passes `value` as RenderableText (string | number | boolean |
+  // null | undefined) to label `content` renderers.
+  value?: number | string | boolean | null
 }
 
 const compactNumberFormatter = new Intl.NumberFormat('en', {
@@ -295,7 +297,8 @@ const TrendSpark = ({
               radius={[6, 6, 0, 0]}
               maxBarSize={48}
               cursor={hasClickableData ? 'pointer' : 'default'}
-              onClick={(point: ChartPoint) => {
+              onClick={(data) => {
+                const point = data?.payload as ChartPoint | undefined
                 if (
                   !point?.id ||
                   !point?.category ||
@@ -328,7 +331,8 @@ const TrendSpark = ({
                 radius={[6, 6, 0, 0]}
                 maxBarSize={48}
                 cursor={hasClickableData ? 'pointer' : 'default'}
-                onClick={(point: ChartPoint) => {
+                onClick={(data) => {
+                  const point = data?.payload as ChartPoint | undefined
                   if (
                     !point?.id ||
                     !point?.category ||
