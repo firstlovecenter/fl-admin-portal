@@ -2,7 +2,7 @@
   "version": "9.1.0",
   "devDependencies": {
     "@types/react-test-renderer": "^18.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.63.0",
+    "@typescript-eslint/eslint-plugin": "^8.64.0",
     "@typescript-eslint/parser": "^8.63.0",
     "concurrently": "^7.1.0",
     "dotenv": "^16.4.5",
