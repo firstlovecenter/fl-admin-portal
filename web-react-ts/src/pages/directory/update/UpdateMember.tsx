@@ -105,7 +105,7 @@ const UpdateMember = () => {
     onSubmitProps.setSubmitting(true)
 
     try {
-      await UpdateMember({
+      const updateResult = await UpdateMember({
         variables: {
           id: memberId,
           firstName: values.firstName.trim(),
@@ -123,6 +123,35 @@ const UpdateMember = () => {
           bacenta: values.bacenta?.id,
         },
       })
+
+      // The Apollo client is configured with errorPolicy: 'all' (SYN-178) so
+      // GraphQL errors (e.g. the friendly email/whatsapp collision check in
+      // the resolver) are attached to `errors` instead of rejecting this
+      // promise. Without this check, a collision — or any other GraphQL
+      // error — was silently swallowed: the code below would run the
+      // bacenta/basonta follow-up mutations, reset the form, and navigate
+      // away as if the update had succeeded, even though nothing was saved.
+      if (updateResult.errors?.length) {
+        const collisionInfo = updateResult.errors.find(
+          (err: any) => err?.extensions?.collision
+        )?.extensions?.collision as MemberCollision | undefined
+
+        onSubmitProps.setSubmitting(false)
+
+        if (collisionInfo) {
+          setCollision({
+            ...collisionInfo,
+            targetBacentaId: values.bacenta?.id,
+          })
+          return
+        }
+
+        displayError(
+          'There was an error updating the member profile',
+          updateResult.errors[0]
+        )
+        return
+      }
 
       if (memberChurch?.bacenta.id !== values.bacenta.id) {
         await UpdateMemberBacenta({
