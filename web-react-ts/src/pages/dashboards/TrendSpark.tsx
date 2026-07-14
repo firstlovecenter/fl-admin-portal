@@ -4,6 +4,7 @@ import {
   BarChart,
   BarRectangleItem,
   CartesianGrid,
+  Cell,
   LabelList,
   RenderableText,
   ResponsiveContainer,
@@ -46,6 +47,16 @@ interface ChartPoint {
 const WEEK_WINDOW_SIZE = 4
 const drillableCategories = new Set(['services', 'bussing', 'rehearsals'])
 
+// Per-bar traffic-light palette (red → yellow → green). Requested by leadership
+// as the standard dashboard bar colouring and cycled across the primary series
+// so every chart reads red/yellow/green. Uses existing design tokens so it
+// stays consistent in light and dark themes.
+const RED_YELLOW_GREEN_PALETTE = [
+  'hsl(var(--destructive))', // red
+  'hsl(var(--warning))', // yellow
+  'hsl(var(--success))', // green
+]
+
 interface TooltipEntry {
   value?: number | string
   name?: string
@@ -56,6 +67,10 @@ interface ChartTooltipProps {
   active?: boolean
   payload?: TooltipEntry[]
   label?: string
+  // The rendered rows (in bar order) so the tooltip dot for the attendance
+  // series can reflect that week's actual red/yellow/green cell colour
+  // rather than the Bar's flat `fill`.
+  data?: { weekLabel?: string }[]
 }
 
 interface ChartBarLabelProps {
@@ -105,8 +120,12 @@ const renderBarLabel = ({
   )
 }
 
-const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
+const ChartTooltip = ({ active, payload, label, data }: ChartTooltipProps) => {
   if (!active || !payload?.length) return null
+
+  // Index of the hovered week within the data — used to pick the matching
+  // palette colour for the attendance (primary) series dot.
+  const primaryIndex = data?.findIndex((row) => row.weekLabel === label) ?? -1
 
   return (
     <div className="min-w-40 rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
@@ -115,25 +134,33 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
       </p>
 
       <div className="mt-2 space-y-1.5">
-        {payload.map((entry) => (
-          <div
-            key={entry.name}
-            className="flex items-center justify-between gap-4 text-sm"
-          >
-            <span className="flex items-center gap-2 text-foreground">
-              <span
-                className="size-2 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
-              {entry.name}
-            </span>
-            <span className="font-semibold text-foreground">
-              {typeof entry.value === 'number'
-                ? entry.value.toLocaleString('en-GH')
-                : entry.value}
-            </span>
-          </div>
-        ))}
+        {payload.map((entry, index) => {
+          const dotColor =
+            index === 0 && primaryIndex >= 0
+              ? RED_YELLOW_GREEN_PALETTE[
+                  primaryIndex % RED_YELLOW_GREEN_PALETTE.length
+                ]
+              : entry.color
+          return (
+            <div
+              key={entry.name}
+              className="flex items-center justify-between gap-4 text-sm"
+            >
+              <span className="flex items-center gap-2 text-foreground">
+                <span
+                  className="size-2 rounded-full"
+                  style={{ backgroundColor: dotColor }}
+                />
+                {entry.name}
+              </span>
+              <span className="font-semibold text-foreground">
+                {typeof entry.value === 'number'
+                  ? entry.value.toLocaleString('en-GH')
+                  : entry.value}
+              </span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -292,7 +319,7 @@ const TrendSpark = ({
 
             <Tooltip
               cursor={{ fill: 'hsl(var(--accent) / 0.24)' }}
-              content={<ChartTooltip />}
+              content={<ChartTooltip data={visibleChartData} />}
             />
 
             <Bar
@@ -321,6 +348,16 @@ const TrendSpark = ({
                 })
               }}
             >
+              {visibleChartData.map((point, index) => (
+                <Cell
+                  key={`attendance-${point.id ?? index}`}
+                  fill={
+                    RED_YELLOW_GREEN_PALETTE[
+                      index % RED_YELLOW_GREEN_PALETTE.length
+                    ]
+                  }
+                />
+              ))}
               <LabelList
                 dataKey="attendance"
                 position="top"

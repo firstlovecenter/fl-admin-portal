@@ -232,6 +232,29 @@ describe('TrendSpark — Bar onClick (recharts-3 payload unwrap)', () => {
   })
 })
 
+describe('TrendSpark — red/yellow/green bar palette', () => {
+  // Leadership-requested traffic-light colouring: the attendance (primary)
+  // series cycles red -> yellow -> green across its bars via per-bar <Cell>s.
+  const RED = 'hsl(var(--destructive))'
+  const YELLOW = 'hsl(var(--warning))'
+  const GREEN = 'hsl(var(--success))'
+
+  it('cycles the attendance bars through red, yellow, green in data order', () => {
+    const { container } = renderTrendSpark({
+      data: [
+        { id: 'sr-1', category: 'services', attendance: '42', week: 1, year: 2026 },
+        { id: 'sr-2', category: 'services', attendance: '55', week: 2, year: 2026 },
+        { id: 'sr-3', category: 'services', attendance: '30', week: 3, year: 2026 },
+        { id: 'sr-4', category: 'services', attendance: '61', week: 4, year: 2026 },
+      ],
+      incomeTracked: false,
+    })
+
+    const fills = getBarsInOrder(container).map((el) => el.getAttribute('fill'))
+    expect(fills).toEqual([RED, YELLOW, GREEN, RED])
+  })
+})
+
 describe('TrendSpark — renderBarLabel', () => {
   it('renders a value label above the bar when attendance is > 0', () => {
     const { container } = renderTrendSpark({

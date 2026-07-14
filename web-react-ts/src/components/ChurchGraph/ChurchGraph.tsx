@@ -7,6 +7,7 @@ import {
   BarChart,
   BarRectangleItem,
   CartesianGrid,
+  Cell,
   LabelList,
   RenderableText,
   ResponsiveContainer,
@@ -90,6 +91,17 @@ const GRAPH_TYPE_LABELS: Record<GraphTypes, string> = {
 }
 
 const SECONDARY_COLOR = 'hsl(var(--success))'
+
+// Per-bar traffic-light palette (red → yellow → green). Requested by leadership
+// as the standard dashboard bar colouring. Cycled across the bars of a series so
+// every chart reads red/yellow/green. Uses existing design tokens so it stays
+// consistent in light and dark themes. Explicit `stat1Color`/`stat2Color`
+// overrides (e.g. Shepherding Control's projection legend) still take priority.
+const RED_YELLOW_GREEN_PALETTE = [
+  'hsl(var(--destructive))', // red
+  'hsl(var(--warning))', // yellow
+  'hsl(var(--success))', // green
+]
 
 // Per-level arrivals dashboard for bussing-aggregate bar clicks. Bacenta
 // is intentionally absent — the bacenta-level "arrivals" view is the
@@ -183,9 +195,20 @@ type ChartTooltipProps = {
   active?: boolean
   payload?: TooltipEntry[]
   label?: string
+  // The rendered rows (in bar order) so the tooltip dot for the primary
+  // series can reflect that week's actual red/yellow/green cell colour
+  // rather than the Bar's flat `fill`.
+  data?: { weekLabel?: string }[]
+  paletteForPrimary?: boolean
 }
 
-const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
+const ChartTooltip = ({
+  active,
+  payload,
+  label,
+  data,
+  paletteForPrimary,
+}: ChartTooltipProps) => {
   if (!active || !payload?.length) return null
   const meta = payload[0]?.payload ?? {}
   const headerLabel =
@@ -195,31 +218,43 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
       ? `Week ${meta.week}`
       : label || ''
 
+  // Index of the hovered week within the data — used to pick the matching
+  // palette colour for the primary series dot.
+  const primaryIndex = data?.findIndex((row) => row.weekLabel === label) ?? -1
+
   return (
     <div className="min-w-44 rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {headerLabel}
       </p>
       <div className="mt-2 space-y-1.5">
-        {payload.map((entry) => (
-          <div
-            key={entry.name}
-            className="flex items-center justify-between gap-4 text-sm"
-          >
-            <span className="flex items-center gap-2 text-foreground">
-              <span
-                className="size-2 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
-              {entry.name}
-            </span>
-            <span className="font-semibold tabular-nums text-foreground">
-              {typeof entry.value === 'number'
-                ? entry.value.toLocaleString('en-GH')
-                : entry.value}
-            </span>
-          </div>
-        ))}
+        {payload.map((entry, index) => {
+          const dotColor =
+            index === 0 && paletteForPrimary && primaryIndex >= 0
+              ? RED_YELLOW_GREEN_PALETTE[
+                  primaryIndex % RED_YELLOW_GREEN_PALETTE.length
+                ]
+              : entry.color
+          return (
+            <div
+              key={entry.name}
+              className="flex items-center justify-between gap-4 text-sm"
+            >
+              <span className="flex items-center gap-2 text-foreground">
+                <span
+                  className="size-2 rounded-full"
+                  style={{ backgroundColor: dotColor }}
+                />
+                {entry.name}
+              </span>
+              <span className="font-semibold tabular-nums text-foreground">
+                {typeof entry.value === 'number'
+                  ? entry.value.toLocaleString('en-GH')
+                  : entry.value}
+              </span>
+            </div>
+          )
+        })}
         {!!meta.numberOfServices && (
           <p className="pt-1 text-xs text-muted-foreground">
             Services: {meta.numberOfServices}
@@ -388,7 +423,12 @@ const ChurchGraph = (props: ChurchGraphProps) => {
 
               <Tooltip
                 cursor={{ fill: 'hsl(var(--accent) / 0.24)' }}
-                content={<ChartTooltip />}
+                content={
+                  <ChartTooltip
+                    data={sortedData}
+                    paletteForPrimary={!stat1Color}
+                  />
+                }
               />
 
               <Bar
@@ -403,6 +443,17 @@ const ChurchGraph = (props: ChurchGraphProps) => {
                   handleBarClick(item.payload as ChurchGraphRow, stat1)
                 }
               >
+                {!stat1Color &&
+                  sortedData.map((row, index) => (
+                    <Cell
+                      key={`stat1-${row?.id ?? index}`}
+                      fill={
+                        RED_YELLOW_GREEN_PALETTE[
+                          index % RED_YELLOW_GREEN_PALETTE.length
+                        ]
+                      }
+                    />
+                  ))}
                 <LabelList
                   dataKey={stat1}
                   position="top"

@@ -1,1 +1,1 @@
-{"key": "SYN-201", "project": "fl-admin-portal", "branch": "fix/syn-201-4073", "target": "dev", "pass": 1, "rework": false, "model": "claude-sonnet-5"}
+{"key": "SYN-201", "project": "fl-admin-portal", "branch": "fix/syn-201-4073", "target": "dev", "pass": 2, "rework": true, "model": "claude-opus-4-8"}

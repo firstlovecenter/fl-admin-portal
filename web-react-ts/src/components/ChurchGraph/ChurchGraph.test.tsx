@@ -301,6 +301,56 @@ describe('ChurchGraph — handleBarClick (recharts-3 payload unwrap)', () => {
   })
 })
 
+describe('ChurchGraph — red/yellow/green bar palette', () => {
+  // Leadership-requested traffic-light colouring: the primary series cycles
+  // red -> yellow -> green across its bars via per-bar <Cell>s. Assert on the
+  // rendered SVG `fill` so the palette is locked in and a future recharts bump
+  // or refactor that drops the <Cell>s is caught.
+  const RED = 'hsl(var(--destructive))'
+  const YELLOW = 'hsl(var(--warning))'
+  const GREEN = 'hsl(var(--success))'
+
+  it('cycles the primary bars through red, yellow, green in data order', () => {
+    const { container } = renderGraph({
+      graphType: 'services',
+      church: 'bacenta',
+      churchData: [
+        { id: 'sr-1', category: 'services', attendance: 42, weekLabel: 'W1' },
+        { id: 'sr-2', category: 'services', attendance: 55, weekLabel: 'W2' },
+        { id: 'sr-3', category: 'services', attendance: 30, weekLabel: 'W3' },
+        { id: 'sr-4', category: 'services', attendance: 61, weekLabel: 'W4' },
+      ],
+    })
+
+    const fills = getBarsInOrder(container).map((el) => el.getAttribute('fill'))
+    expect(fills).toEqual([RED, YELLOW, GREEN, RED])
+  })
+
+  it('honours an explicit stat1Color override instead of the palette (Shepherding Control legend)', () => {
+    const clickCard = vi.fn()
+    const { container } = render(
+      <MemoryRouter>
+        <ChurchContext.Provider value={{ clickCard }}>
+          <ChurchGraph
+            stat1="attendance"
+            stat2={null}
+            churchData={[
+              { id: 'sr-1', category: 'services', attendance: 42, weekLabel: 'W1' },
+              { id: 'sr-2', category: 'services', attendance: 55, weekLabel: 'W2' },
+            ]}
+            graphType="services"
+            church="bacenta"
+            stat1Color="hsl(var(--arrivals))"
+          />
+        </ChurchContext.Provider>
+      </MemoryRouter>
+    )
+
+    const fills = getBarsInOrder(container).map((el) => el.getAttribute('fill'))
+    expect(fills.every((f) => f === 'hsl(var(--arrivals))')).toBe(true)
+  })
+})
+
 describe('ChurchGraph — renderBarLabel', () => {
   it('renders a value label above the bar when the value is > 0', () => {
     renderGraph({
