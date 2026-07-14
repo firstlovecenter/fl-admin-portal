@@ -1,0 +1,65 @@
+{
+  "ceiling": "minor",
+  "ecosystems": [
+    "npm_and_yarn"
+  ],
+  "safe": [
+    {
+      "number": 546,
+      "pkg": "@typescript-eslint/eslint-plugin",
+      "from": "8.63.0",
+      "to": "8.64.0",
+      "level": "minor",
+      "ecosystem": "npm_and_yarn",
+      "security": false,
+      "head": "dependabot/npm_and_yarn/dev/typescript-eslint/eslint-plugin-8.63.0",
+      "title": "chore(deps-dev): bump @typescript-eslint/eslint-plugin from 8.63.0 to 8.64.0",
+      "url": "https://github.com/firstlovecenter/fl-admin-portal/pull/546"
+    }
+  ],
+  "human": [
+    {
+      "number": 550,
+      "pkg": "@babel/core",
+      "from": "7.29.7",
+      "to": "8.0.1",
+      "level": "major",
+      "ecosystem": "npm_and_yarn",
+      "security": false,
+      "head": "dependabot/npm_and_yarn/api/dev/babel/core-8.0.1",
+      "title": "chore(deps-dev): bump @babel/core from 7.29.7 to 8.0.1 in /api",
+      "url": "https://github.com/firstlovecenter/fl-admin-portal/pull/550",
+      "why": "major/breaking bump"
+    },
+    {
+      "number": 542,
+      "pkg": "chore(deps): bump the npm_and_yarn group across 6 directories with 2 updates",
+      "from": "",
+      "to": "",
+      "level": "major",
+      "ecosystem": "npm_and_yarn",
+      "security": false,
+      "head": "dependabot/npm_and_yarn/api/npm_and_yarn-b22d0114c7",
+      "title": "chore(deps): bump the npm_and_yarn group across 6 directories with 2 updates",
+      "url": "https://github.com/firstlovecenter/fl-admin-portal/pull/542",
+      "why": "major/breaking bump"
+    },
+    {
+      "number": 537,
+      "pkg": "@vitejs/plugin-react",
+      "from": "4.7.0",
+      "to": "6.0.3",
+      "level": "major",
+      "ecosystem": "npm_and_yarn",
+      "security": false,
+      "head": "dependabot/npm_and_yarn/web-react-ts/vitejs/plugin-react-6.0.3",
+      "title": "chore(deps): bump @vitejs/plugin-react from 4.7.0 to 6.0.3 in /web-react-ts",
+      "url": "https://github.com/firstlovecenter/fl-admin-portal/pull/537",
+      "why": "major/breaking bump"
+    }
+  ],
+  "counts": {
+    "safe": 1,
+    "human": 3
+  }
+}
