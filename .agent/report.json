@@ -1,19 +1,111 @@
 {
-  "type": "Task",
-  "labels": ["smith-followup"],
-  "title": "Delete CustomLabel.tsx — confirmed dead code",
-  "bug": "`web-react-ts/src/components/pie-chart/CustomLabel.tsx` (a recharts pie-chart label component) had zero importers anywhere in the app. It was flagged as dead code while working SYN-201 but left untouched there; it has been sitting in the tree ever since with no code path reaching it, adding dead weight to the bundle for no user-facing benefit.",
-  "summary": "Deleted `web-react-ts/src/components/pie-chart/CustomLabel.tsx`. Before removing it, verified with repo-wide `grep` for both `CustomLabel` and `pie-chart` that nothing imports it — no relative import, no barrel re-export, no dynamic `import()`/`require()` string, and no test file references it. Confirmed again after deletion that the search returns zero hits.",
-  "evidenceNote": "This is a pure dead-code deletion with zero importers and no rendered UI surface, so no before/after screenshots apply. Proof is the verification gates below plus an independent `code-reviewer` pass that re-ran the same reference search and found no remaining callers.",
+  "type": "bug",
+  "labels": ["client-reported", "email", "form-submission", "member-profile"],
+  "title": "Fix member profile email updates silently failing under errorPolicy: 'all'",
+  "bug": "Apollo Client is configured with `errorPolicy: 'all'` (SYN-178), so GraphQL errors from `UpdateMemberDetails` (e.g. the server-side email/WhatsApp collision check) land on `result.errors` instead of rejecting the mutation promise. `UpdateMember.tsx`'s `onSubmit` only had a try/catch around the mutation call, which never fired, so a rejected write (most commonly a duplicate-email collision) was silently treated as a success: the form ran its follow-up bacenta/basonta mutations, reset, and navigated away as if the profile had saved — while nothing was actually written. A separate global error handler then fired an unrelated generic \"Something went wrong\" toast, matching the exact symptom reported.",
+  "summary": "`onSubmit` in `UpdateMember.tsx` now captures the mutation result and explicitly checks `updateResult.errors`. A real email/WhatsApp collision routes to the existing **MemberCollisionDialog** (the same UX it should always have had); any other GraphQL error calls `displayError` and the function returns *before* the follow-up bacenta/basonta mutations or navigation run, so a rejected write can no longer masquerade as a success. Applied the same `.errors` guard to the `UpdateMemberBacenta` and `UpdateMemberBasonta` follow-up calls in the same function, which had the identical unguarded-error gap. Extracted a typed `extractCollision()` helper (no `any`) shared by both the new `result.errors` path and the pre-existing `catch` block's `graphQLErrors` path. Fixed `getGraphQLErrorMessage` in `errorHandler.ts` to read `.message` off plain `GraphQLFormattedError`-shaped objects (not just `Error`/`ApolloError` instances), so a non-collision error surfaces its real message instead of `\"[object Object]\"`.",
+  "evidenceNote": "Reproduced the exact bug from the attached screenshot (generic \"Something went wrong\" toast, no data saved) by editing a member's email to one already used by another member in the same bacenta, against the live dev database. Screenshots below were captured by temporarily reverting the fix in the working tree to force the original code path for the 'before' shots, then restoring it for 'after'/'verify' — all three states were driven through the real dev GraphQL API, not mocks.",
   "checks": [
-    { "label": "tsc --noEmit", "pass": true },
-    { "label": "Build (vite)", "pass": true },
-    { "label": "Tests (288/289 passing; 1 pre-existing failure in createApolloClient.test.tsx confirmed present on base commit via git stash, unrelated to this change)", "pass": true },
-    { "label": "code-reviewer (no importers found, deletion confirmed safe)", "pass": true }
+    { "label": "tsc", "pass": true },
+    { "label": "eslint", "pass": true },
+    { "label": "Build", "pass": true },
+    { "label": "Tests (308/308, 20 files)", "pass": true }
   ],
-  "shots": [],
+  "shots": [
+    {
+      "file": "before-desktop.png",
+      "frame": "desktop",
+      "width": 1440,
+      "height": 900,
+      "tag": "before",
+      "label": "MEMBER PROFILE",
+      "caption": "Submitting a duplicate email on Council Leader Tester's profile silently fails: the app shows a generic \"Something went wrong\" toast and navigates away to the profile view as if the save succeeded, while the email is unchanged.",
+      "alt": "Member profile page showing a generic 'Something went wrong' error toast after a failed email update, with the email still unchanged"
+    },
+    {
+      "file": "before-tablet.png",
+      "frame": "tablet",
+      "width": 820,
+      "height": 1180,
+      "tag": "before",
+      "label": "MEMBER PROFILE",
+      "caption": "Submitting a duplicate email on Council Leader Tester's profile silently fails: the app shows a generic \"Something went wrong\" toast and navigates away to the profile view as if the save succeeded, while the email is unchanged.",
+      "alt": "Member profile page showing a generic 'Something went wrong' error toast after a failed email update, with the email still unchanged"
+    },
+    {
+      "file": "before-mobile.png",
+      "frame": "mobile",
+      "width": 390,
+      "height": 844,
+      "tag": "before",
+      "label": "MEMBER PROFILE",
+      "caption": "Submitting a duplicate email on Council Leader Tester's profile silently fails: the app shows a generic \"Something went wrong\" toast and navigates away to the profile view as if the save succeeded, while the email is unchanged.",
+      "alt": "Member profile page showing a generic 'Something went wrong' error toast after a failed email update, with the email still unchanged"
+    },
+    {
+      "file": "after-desktop.png",
+      "frame": "desktop",
+      "width": 1440,
+      "height": 900,
+      "tag": "after",
+      "label": "EDIT MEMBER",
+      "caption": "With the fix applied, submitting the same duplicate email now shows the specific \"Member already registered\" collision dialog and keeps the user on the edit form instead of silently discarding the update.",
+      "alt": "Edit Member form with a 'Member already registered' collision dialog explaining the email already belongs to another member"
+    },
+    {
+      "file": "after-tablet.png",
+      "frame": "tablet",
+      "width": 820,
+      "height": 1180,
+      "tag": "after",
+      "label": "EDIT MEMBER",
+      "caption": "With the fix applied, submitting the same duplicate email now shows the specific \"Member already registered\" collision dialog and keeps the user on the edit form instead of silently discarding the update.",
+      "alt": "Edit Member form with a 'Member already registered' collision dialog explaining the email already belongs to another member"
+    },
+    {
+      "file": "after-mobile.png",
+      "frame": "mobile",
+      "width": 390,
+      "height": 844,
+      "tag": "after",
+      "label": "EDIT MEMBER",
+      "caption": "With the fix applied, submitting the same duplicate email now shows the specific \"Member already registered\" collision dialog and keeps the user on the edit form instead of silently discarding the update.",
+      "alt": "Edit Member form with a 'Member already registered' collision dialog explaining the email already belongs to another member"
+    },
+    {
+      "file": "verify-desktop.png",
+      "frame": "desktop",
+      "width": 1440,
+      "height": 900,
+      "tag": "verify",
+      "label": "MEMBER PROFILE",
+      "caption": "Submitting a genuinely unique email address saves successfully: the app navigates to the profile page and shows the updated email address, with a matching \"Details were updated\" history entry.",
+      "alt": "Member profile page showing the newly saved, updated email address after a successful update"
+    },
+    {
+      "file": "verify-tablet.png",
+      "frame": "tablet",
+      "width": 820,
+      "height": 1180,
+      "tag": "verify",
+      "label": "MEMBER PROFILE",
+      "caption": "Submitting a genuinely unique email address saves successfully: the app navigates to the profile page and shows the updated email address, with a matching \"Details were updated\" history entry.",
+      "alt": "Member profile page showing the newly saved, updated email address after a successful update"
+    },
+    {
+      "file": "verify-mobile.png",
+      "frame": "mobile",
+      "width": 390,
+      "height": 844,
+      "tag": "verify",
+      "label": "MEMBER PROFILE",
+      "caption": "Submitting a genuinely unique email address saves successfully: the app navigates to the profile page and shows the updated email address, with a matching \"Details were updated\" history entry.",
+      "alt": "Member profile page showing the newly saved, updated email address after a successful update"
+    }
+  ],
   "followUps": [
-    "`CustomLegend.tsx` and `PieChart.css` in the same `pie-chart/` directory are now fully orphaned (zero remaining importers) — delete them together in a follow-up cleanup ticket.",
-    "`web-react-ts/kb/02-design-system.md:88` and `.claude/commands/new-component.md:41` still reference `components/pie-chart` as a chart component/example folder to keep — update those once the directory is fully removed."
+    "CreateMember.tsx and the self-profile EditPage.tsx share the same errorPolicy: 'all' unguarded-mutation-result pattern this ticket fixed in UpdateMember.tsx — worth applying the identical fix there.",
+    "api/src/resolvers/directory/directory-resolvers.ts's UpdateMemberDetails resolver is missing an assertScopeViaMember(context, args.id) check (unlike its siblings UpdateMemberBacenta/ReactivateMemberToBacenta in the same file) — a Bacenta-level leader/admin can currently edit any member's profile org-wide by ID. Pre-existing, unrelated to this fix, but a real IDOR worth its own ticket.",
+    "The global errorLink in lib/createApolloClient.tsx toasts a generic \"Something went wrong\" for every GraphQL error, including ones already given better UX by a caller (e.g. the collision dialog here) — so collisions now show both the friendly dialog and a redundant generic toast. Consider skipping the generic toast when extensions.collision (or a BAD_USER_INPUT-style code) is present."
   ]
 }

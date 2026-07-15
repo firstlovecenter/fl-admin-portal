@@ -1,0 +1,140 @@
+- generic [ref=f12e2]:
+  - region "Notifications alt+T"
+  - generic [ref=f12e12]:
+    - generic [ref=f12e14]:
+      - button "Collapse sidebar" [expanded] [ref=f12e15] [cursor=pointer]
+      - navigation [ref=f12e16]:
+        - generic [ref=f12e26]:
+          - paragraph [ref=f12e27]: Synago
+          - paragraph [ref=f12e28]: FLC Servants Portal
+        - generic [ref=f12e29]:
+          - button "Open search" [ref=f12e30] [cursor=pointer]:
+            - generic [ref=f12e34]:
+              - generic [ref=f12e35]: Search
+              - generic [ref=f12e36]: Ctrl K
+          - link "Home" [ref=f12e37] [cursor=pointer]:
+            - /url: /
+          - link "Members" [ref=f12e42] [cursor=pointer]:
+            - /url: /directory/members
+          - link "Services" [ref=f12e48] [cursor=pointer]:
+            - /url: /services
+          - link "Arrivals" [ref=f12e53] [cursor=pointer]:
+            - /url: /arrivals
+          - generic [ref=f12e60]:
+            - paragraph [ref=f12e61]: Church in Focus
+            - combobox "Select church in focus" [ref=f12e63] [cursor=pointer]:
+              - generic: Test Governorship · Governorship · Admin
+          - button "View Test Governorship Governorship details" [ref=f12e64] [cursor=pointer]:
+            - generic [ref=f12e69]:
+              - generic [ref=f12e70]: Test Governorship
+              - generic [ref=f12e71]: Governorship
+          - link "Reports" [ref=f12e72] [cursor=pointer]:
+            - /url: /reports
+          - link "Trends" [ref=f12e77] [cursor=pointer]:
+            - /url: /trends
+          - link "Maps" [ref=f12e82] [cursor=pointer]:
+            - /url: /maps
+          - link "Shepherding Control" [ref=f12e86] [cursor=pointer]:
+            - /url: /shepherding-control
+          - link "AI Assistant" [ref=f12e91] [cursor=pointer]:
+            - /url: /ai-assistant
+          - link "Settings" [ref=f12e96] [cursor=pointer]:
+            - /url: /settings
+        - button "Open profile menu" [ref=f12e102] [cursor=pointer]:
+          - generic [ref=f12e103]:
+            - img "Governorship Admin Tester" [ref=f12e104]
+            - generic [ref=f12e105]: GA
+          - paragraph [ref=f12e106]: Governorship Admin Tester
+    - main [ref=f12e110]:
+      - generic [ref=f12e337]:
+        - generic [ref=f12e340]:
+          - generic [ref=f12e341]:
+            - link "Edit" [ref=f12e342] [cursor=pointer]:
+              - /url: /member/editmember
+              - button "Edit" [ref=f12e343]
+            - button "Delete" [ref=f12e345] [cursor=pointer]
+          - button "Add Sticky Note" [ref=f12e348] [cursor=pointer]
+        - generic [ref=f12e349]:
+          - generic [ref=f12e350]:
+            - complementary [ref=f12e351]:
+              - generic [ref=f12e352]:
+                - generic [ref=f12e353]:
+                  - img "Council Leader Tester" [ref=f12e354]
+                  - generic [ref=f12e355]: CT
+                - heading "Council Leader Tester" [level=2] [ref=f12e357]
+                - button "Save Contact" [ref=f12e358] [cursor=pointer]
+              - generic [ref=f12e359]:
+                - link [ref=f12e360] [cursor=pointer]:
+                  - /url: tel:2339086089760
+                  - generic [ref=f12e364]:
+                    - paragraph [ref=f12e365]: Phone
+                    - paragraph [ref=f12e366]: "+2339086089760"
+                - link [ref=f12e369] [cursor=pointer]:
+                  - /url: whatsapp://send?phone=2339086089760
+                  - generic [ref=f12e373]:
+                    - paragraph [ref=f12e374]: WhatsApp
+                    - paragraph [ref=f12e375]: "+2339086089760"
+              - generic [ref=f12e378]:
+                - paragraph [ref=f12e380]: Church Membership
+                - button [ref=f12e382] [cursor=pointer]:
+                  - generic [ref=f12e383]:
+                    - paragraph [ref=f12e384]: Bacenta
+                    - paragraph [ref=f12e385]: Test Bacenta
+            - generic [ref=f12e388]:
+              - generic [ref=f12e389]:
+                - heading "Personal Information" [level=3] [ref=f12e391]
+                - generic [ref=f12e392]:
+                  - generic [ref=f12e393]:
+                    - generic [ref=f12e394]:
+                      - paragraph [ref=f12e395]: First Name
+                      - paragraph [ref=f12e396]: Council Leader
+                    - generic [ref=f12e397]:
+                      - paragraph [ref=f12e398]: Last Name
+                      - paragraph [ref=f12e399]: Tester
+                  - generic [ref=f12e400]:
+                    - generic [ref=f12e401]:
+                      - paragraph [ref=f12e402]: Gender
+                      - paragraph [ref=f12e403]: Male
+                    - generic [ref=f12e404]:
+                      - paragraph [ref=f12e405]: Marital Status
+                      - paragraph [ref=f12e406]: Single
+                  - generic [ref=f12e407]:
+                    - paragraph [ref=f12e408]: Date of Birth
+                    - paragraph [ref=f12e409]: 10 February 2000
+                  - generic [ref=f12e410]:
+                    - paragraph [ref=f12e411]: Email Address
+                    - paragraph [ref=f12e412]: councilleader@test.com
+                  - generic [ref=f12e413]:
+                    - paragraph [ref=f12e414]: Location for IDL
+                    - paragraph [ref=f12e415]: Hoste
+              - generic [ref=f12e416]:
+                - paragraph [ref=f12e418]: Leadership Roles
+                - button [ref=f12e421] [cursor=pointer]:
+                  - generic [ref=f12e423]:
+                    - paragraph [ref=f12e424]: Council Leader
+                    - paragraph [ref=f12e425]: Test Council
+          - generic [ref=f12e430]:
+            - separator [ref=f12e431]
+            - generic [ref=f12e432]:
+              - heading "Church History" [level=3] [ref=f12e433]
+              - link [ref=f12e434] [cursor=pointer]:
+                - /url: /member/history
+                - button "View All" [ref=f12e435]
+            - generic [ref=f12e437]:
+              - generic [ref=f12e442]:
+                - time [ref=f12e443]: Thu Jan 04 2024
+                - generic [ref=f12e445]:
+                  - paragraph [ref=f12e446]: Council Leader Tester started Manual Banking Council under Manual Banking Stream
+                  - paragraph [ref=f12e447]: 12:58:30
+                  - button "Campus Admin Tester" [ref=f12e448] [cursor=pointer]
+              - generic [ref=f12e453]:
+                - time [ref=f12e454]: Thu Jan 04 2024
+                - generic [ref=f12e456]:
+                  - paragraph [ref=f12e457]: Manual Banking Council History Begins
+                  - paragraph [ref=f12e458]: 12:58:25
+                  - button "Campus Admin Tester" [ref=f12e459] [cursor=pointer]
+              - generic [ref=f12e464]:
+                - time [ref=f12e465]: Sun Oct 08 2023
+                - generic [ref=f12e467]:
+                  - paragraph [ref=f12e468]: Council Leader Tester became the Leader of Test Council Council replacing John-Dag Addy
+                  - paragraph [ref=f12e469]: 06:28:56

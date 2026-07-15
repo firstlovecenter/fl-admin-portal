@@ -1,0 +1,27 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e730]:
+    - generic [ref=f6e731]:
+      - img "Synago" [ref=f6e733]
+      - generic [ref=f6e740]:
+        - heading "Synago" [level=1] [ref=f6e741]
+        - paragraph [ref=f6e742]: Portal for Church Leaders
+    - generic [ref=f6e743]:
+      - generic [ref=f6e744]:
+        - heading "Sign in" [level=2] [ref=f6e745]
+        - paragraph [ref=f6e746]: Welcome back. Enter your credentials to continue.
+      - generic [ref=f6e747]:
+        - generic [ref=f6e748]:
+          - generic [ref=f6e749]: Email address
+          - textbox "Email address" [ref=f6e750]:
+            - /placeholder: you@example.com
+        - generic [ref=f6e751]:
+          - generic [ref=f6e752]: Password
+          - generic [ref=f6e753]:
+            - textbox "Password" [ref=f6e754]:
+              - /placeholder: Enter your password
+            - button "Show password" [ref=f6e755] [cursor=pointer]
+        - button "Forgot password?" [ref=f6e760] [cursor=pointer]
+        - button "Sign in" [ref=f6e761] [cursor=pointer]
+      - paragraph [ref=f6e762]: Need help? Contact your administrator
+    - paragraph [ref=f6e763]: v9.1.0
+  - generic [ref=f6e263]: W24

@@ -1,0 +1,5 @@
+- generic [ref=f10e2]:
+  - region "Notifications alt+T"
+  - generic [ref=f10e3]:
+    - img "Synago" [ref=f10e4]
+    - paragraph [ref=f10e11]: Retrieving your church information...

@@ -1,0 +1,108 @@
+- generic [ref=f19e2]:
+  - region "Notifications alt+T"
+  - generic [ref=f19e13]:
+    - button "Open navigation" [ref=f19e14] [cursor=pointer]
+    - main [ref=f19e18]:
+      - generic [ref=f19e19]:
+        - generic [ref=f19e22]:
+          - generic [ref=f19e24]:
+            - paragraph [ref=f19e25]: Directory
+            - heading "Edit Member" [level=1] [ref=f19e26]
+          - button [ref=f19e28] [cursor=pointer]
+        - generic [ref=f19e31]:
+          - generic [ref=f19e32]:
+            - generic [ref=f19e34]:
+              - img "Member photo" [ref=f19e35]
+              - generic [ref=f19e36]: CT
+            - generic [ref=f19e37] [cursor=pointer]:
+              - button "Change Photo" [ref=f19e38]
+              - text: Change Photo
+            - paragraph [ref=f19e39]: PNG, JPG or WebP. Max 10MB.
+          - generic [ref=f19e40]:
+            - generic [ref=f19e41]:
+              - heading "Basic Information" [level=3] [ref=f19e47]
+              - generic [ref=f19e48]:
+                - generic [ref=f19e49]:
+                  - generic [ref=f19e50]:
+                    - generic [ref=f19e51]:
+                      - text: First Name
+                      - generic [ref=f19e52]: "*"
+                    - textbox "First Name *" [ref=f19e53]:
+                      - /placeholder: First name
+                      - text: Council Leader
+                  - generic [ref=f19e54]:
+                    - generic [ref=f19e55]:
+                      - text: Last Name
+                      - generic [ref=f19e56]: "*"
+                    - textbox "Last Name *" [ref=f19e57]:
+                      - /placeholder: Last name
+                      - text: Tester
+                - generic [ref=f19e58]:
+                  - generic [ref=f19e59]: Middle Name
+                  - textbox "Middle Name" [ref=f19e60]:
+                    - /placeholder: Other names
+                - generic [ref=f19e61]:
+                  - generic [ref=f19e62]:
+                    - generic [ref=f19e63]:
+                      - text: Gender
+                      - generic [ref=f19e64]: "*"
+                    - combobox "Gender *" [ref=f19e65] [cursor=pointer]:
+                      - generic: Male
+                    - combobox [ref=f19e66]
+                  - generic [ref=f19e67]:
+                    - generic [ref=f19e68]:
+                      - text: Date of Birth
+                      - generic [ref=f19e69]: "*"
+                    - textbox "Date of Birth *" [ref=f19e70]: 2000-02-10
+            - generic [ref=f19e71]:
+              - heading "Contact" [level=3] [ref=f19e76]
+              - generic [ref=f19e77]:
+                - generic [ref=f19e78]:
+                  - generic [ref=f19e80]:
+                    - text: Phone Number
+                    - generic [ref=f19e83]: "*"
+                  - textbox "Phone Number *" [ref=f19e84]:
+                    - /placeholder: +233 24 123 4567
+                    - text: "+2339086089760"
+                - generic [ref=f19e85]:
+                  - generic [ref=f19e87]:
+                    - text: WhatsApp Number
+                    - generic [ref=f19e90]: "*"
+                  - textbox "WhatsApp Number *" [ref=f19e91]:
+                    - /placeholder: +233 24 123 4567
+                    - text: "+2339086089760"
+                - generic [ref=f19e92]:
+                  - generic [ref=f19e94]:
+                    - text: Email Address
+                    - generic [ref=f19e98]: "*"
+                  - textbox "Email Address *" [active] [ref=f19e99]:
+                    - /placeholder: name@example.com
+                    - text: councilleader.updated3@test.com
+            - generic [ref=f19e100]:
+              - heading "Personal" [level=3] [ref=f19e106]
+              - generic [ref=f19e108]:
+                - generic [ref=f19e109]:
+                  - generic [ref=f19e110]:
+                    - text: Marital Status
+                    - generic [ref=f19e111]: "*"
+                  - combobox "Marital Status *" [ref=f19e112] [cursor=pointer]:
+                    - generic: Single
+                  - combobox [ref=f19e113]
+                - generic [ref=f19e114]:
+                  - generic [ref=f19e115]: Occupation
+                  - textbox "Occupation" [ref=f19e116]:
+                    - /placeholder: e.g. Software Engineer
+            - generic [ref=f19e117]:
+              - heading "Church Membership" [level=3] [ref=f19e123]
+              - generic [ref=f19e124]:
+                - generic [ref=f19e126]:
+                  - generic [ref=f19e127]: Bacenta *
+                  - combobox [expanded] [ref=f19e131]: Test Bacenta
+                - generic [ref=f19e132]:
+                  - generic [ref=f19e133]: Basonta
+                  - combobox "Basonta" [ref=f19e134] [cursor=pointer]:
+                    - generic: Select basonta
+                  - combobox [ref=f19e135]
+            - generic [ref=f19e136]:
+              - paragraph [ref=f19e137]: Fields marked * are required.
+              - button "Save Changes" [ref=f19e138] [cursor=pointer]

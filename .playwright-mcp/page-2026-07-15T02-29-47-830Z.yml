@@ -1,0 +1,197 @@
+- generic:
+  - generic:
+    - region "Notifications alt+T":
+      - list:
+        - listitem:
+          - button "Close toast"
+          - generic:
+            - generic: Something went wrong
+            - generic: Please try again. If this keeps happening, contact support.
+    - generic:
+      - generic:
+        - generic:
+          - button [expanded]
+          - navigation:
+            - generic:
+              - generic:
+                - paragraph: Synago
+                - paragraph: FLC Servants Portal
+            - generic:
+              - button:
+                - generic:
+                  - generic: Search
+                  - generic: Ctrl K
+              - link:
+                - /url: /
+                - generic: Home
+              - link:
+                - /url: /directory/members
+                - generic: Members
+              - link:
+                - /url: /services
+                - generic: Services
+              - link:
+                - /url: /arrivals
+                - generic: Arrivals
+              - generic:
+                - paragraph: Church in Focus
+                - combobox:
+                  - generic: Test Governorship · Governorship · Admin
+              - button:
+                - generic:
+                  - generic: Test Governorship
+                  - generic: Governorship
+              - link:
+                - /url: /reports
+                - generic: Reports
+              - link:
+                - /url: /trends
+                - generic: Trends
+              - link:
+                - /url: /maps
+                - generic: Maps
+              - link:
+                - /url: /shepherding-control
+                - generic: Shepherding Control
+              - link:
+                - /url: /ai-assistant
+                - generic: AI Assistant
+              - link:
+                - /url: /settings
+                - generic: Settings
+            - generic:
+              - button:
+                - generic: GA
+                - paragraph: Governorship Admin Tester
+      - generic:
+        - main:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: Directory
+                      - heading [level=1]: Edit Member
+                  - generic:
+                    - button:
+                      - generic: Delete
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: CT
+                    - generic:
+                      - button
+                      - text: Change Photo
+                    - paragraph: PNG, JPG or WebP. Max 10MB.
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=3]: Basic Information
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - text: First Name
+                              - generic: "*"
+                            - textbox:
+                              - /placeholder: First name
+                              - text: Council Leader
+                          - generic:
+                            - generic:
+                              - text: Last Name
+                              - generic: "*"
+                            - textbox:
+                              - /placeholder: Last name
+                              - text: Tester
+                        - generic:
+                          - generic: Middle Name
+                          - textbox:
+                            - /placeholder: Other names
+                        - generic:
+                          - generic:
+                            - generic:
+                              - text: Gender
+                              - generic: "*"
+                            - combobox:
+                              - generic: Male
+                            - combobox
+                          - generic:
+                            - generic:
+                              - text: Date of Birth
+                              - generic: "*"
+                            - textbox: 2000-02-10
+                    - generic:
+                      - generic:
+                        - heading [level=3]: Contact
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - text: Phone Number
+                              - generic: "*"
+                          - textbox:
+                            - /placeholder: +233 24 123 4567
+                            - text: "+2339086089760"
+                        - generic:
+                          - generic:
+                            - generic:
+                              - text: WhatsApp Number
+                              - generic: "*"
+                          - textbox:
+                            - /placeholder: +233 24 123 4567
+                            - text: "+2339086089760"
+                        - generic:
+                          - generic:
+                            - generic:
+                              - text: Email Address
+                              - generic: "*"
+                          - textbox:
+                            - /placeholder: name@example.com
+                            - text: fellowshipleader@test.com
+                    - generic:
+                      - generic:
+                        - heading [level=3]: Personal
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - text: Marital Status
+                              - generic: "*"
+                            - combobox:
+                              - generic: Single
+                            - combobox
+                          - generic:
+                            - generic: Occupation
+                            - textbox:
+                              - /placeholder: e.g. Software Engineer
+                    - generic:
+                      - generic:
+                        - heading [level=3]: Church Membership
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Bacenta *
+                            - generic:
+                              - generic:
+                                - combobox [expanded]: Test Bacenta
+                        - generic:
+                          - generic: Basonta
+                          - combobox:
+                            - generic: Select basonta
+                          - combobox
+                    - generic:
+                      - paragraph: Fields marked * are required.
+                      - button: Save Changes
+  - dialog [ref=f16e239]:
+    - generic [ref=f16e240]:
+      - heading "Member already registered" [level=2] [ref=f16e241]
+      - paragraph [ref=f16e242]:
+        - text: This email already belongs to
+        - strong [ref=f16e243]: Fellowship Leader Tester
+        - text: ", a registered member at"
+        - strong [ref=f16e244]: Test Bacenta
+        - text: Bacenta. To bring them into this bacenta, a transfer must be requested.
+    - button "Close" [active] [ref=f16e246] [cursor=pointer]
+    - button "Close" [ref=f16e247] [cursor=pointer]

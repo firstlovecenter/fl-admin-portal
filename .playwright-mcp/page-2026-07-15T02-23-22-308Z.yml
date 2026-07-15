@@ -1,0 +1,275 @@
+- generic [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - region "Notifications alt+T"
+    - generic [ref=f6e3]:
+      - generic [ref=f6e5]:
+        - button "Collapse sidebar" [expanded] [ref=f6e6] [cursor=pointer]
+        - navigation [ref=f6e7]:
+          - generic [ref=f6e17]:
+            - paragraph [ref=f6e18]: Synago
+            - paragraph [ref=f6e19]: FLC Servants Portal
+          - generic [ref=f6e20]:
+            - button "Open search" [ref=f6e21] [cursor=pointer]:
+              - generic [ref=f6e25]:
+                - generic [ref=f6e26]: Search
+                - generic [ref=f6e27]: Ctrl K
+            - link "Home" [ref=f6e28] [cursor=pointer]:
+              - /url: /
+            - link "Members" [ref=f6e33] [cursor=pointer]:
+              - /url: /directory/members
+            - link "Services" [ref=f6e39] [cursor=pointer]:
+              - /url: /services
+            - link "Arrivals" [ref=f6e44] [cursor=pointer]:
+              - /url: /arrivals
+            - generic [ref=f6e51]:
+              - paragraph [ref=f6e52]: Church in Focus
+              - combobox "Select church in focus" [ref=f6e54] [cursor=pointer]:
+                - generic: Test Bacenta · Bacenta · Leader
+            - button "View Test Bacenta Bacenta details" [ref=f6e55] [cursor=pointer]:
+              - generic [ref=f6e60]:
+                - generic [ref=f6e61]: Test Bacenta
+                - generic [ref=f6e62]: Bacenta
+            - link "Reports" [ref=f6e63] [cursor=pointer]:
+              - /url: /reports
+            - link "Trends" [ref=f6e68] [cursor=pointer]:
+              - /url: /trends
+            - link "Maps" [ref=f6e73] [cursor=pointer]:
+              - /url: /maps
+            - link "AI Assistant" [ref=f6e77] [cursor=pointer]:
+              - /url: /ai-assistant
+            - link "Settings" [ref=f6e82] [cursor=pointer]:
+              - /url: /settings
+          - button "Open profile menu" [ref=f6e88] [cursor=pointer]:
+            - generic [ref=f6e89]:
+              - img "Bacenta Leader Tester" [ref=f6e90]
+              - generic [ref=f6e91]: BL
+            - paragraph [ref=f6e92]: Bacenta Leader Tester
+      - main [ref=f6e96]:
+        - generic [ref=f6e273]:
+          - generic [ref=f6e275]:
+            - generic [ref=f6e276]:
+              - heading "Test Bacenta Members" [level=1] [ref=f6e351]
+              - generic [ref=f6e352]: 48 members
+            - searchbox "Search members…" [active] [ref=f6e279]
+            - generic [ref=f6e280]:
+              - link [ref=f6e281] [cursor=pointer]:
+                - /url: /member/addmember
+                - button "Add member" [ref=f6e282]
+              - generic [ref=f6e283]:
+                - link [ref=f6e284] [cursor=pointer]:
+                  - /url: /download-reports/bacenta/membership
+                  - button "Download membership list" [ref=f6e285]:
+                    - generic [ref=f6e286]: Download
+                - button "Filters" [ref=f6e287] [cursor=pointer]
+          - generic [ref=f6e289]:
+            - button "Bacenta Leader Tester BT Bacenta Leader Tester Test Bacenta" [ref=f6e353] [cursor=pointer]:
+              - generic [ref=f6e354]:
+                - img "Bacenta Leader Tester" [ref=f6e355]
+                - generic [ref=f6e356]: BT
+              - generic [ref=f6e357]:
+                - paragraph [ref=f6e358]: Bacenta Leader Tester
+                - paragraph [ref=f6e359]: Test Bacenta
+            - button "Barbara Gordon BG Barbara Gordon Test Bacenta" [ref=f6e360] [cursor=pointer]:
+              - generic [ref=f6e361]:
+                - img "Barbara Gordon" [ref=f6e362]
+                - generic [ref=f6e363]: BG
+              - generic [ref=f6e364]:
+                - paragraph [ref=f6e365]: Barbara Gordon
+                - paragraph [ref=f6e366]: Test Bacenta
+            - button "Bucky Barnes BB Bucky Barnes Test Bacenta" [ref=f6e367] [cursor=pointer]:
+              - generic [ref=f6e368]:
+                - img "Bucky Barnes" [ref=f6e369]
+                - generic [ref=f6e370]: BB
+              - generic [ref=f6e371]:
+                - paragraph [ref=f6e372]: Bucky Barnes
+                - paragraph [ref=f6e373]: Test Bacenta
+            - button "Campus Admin Tester CT Campus Admin Tester Test Bacenta" [ref=f6e374] [cursor=pointer]:
+              - generic [ref=f6e375]:
+                - img "Campus Admin Tester" [ref=f6e376]
+                - generic [ref=f6e377]: CT
+              - generic [ref=f6e378]:
+                - paragraph [ref=f6e379]: Campus Admin Tester
+                - paragraph [ref=f6e380]: Test Bacenta
+            - button "Campus Arrivals Admin Tester CT Campus Arrivals Admin Tester Test Bacenta · Test Creative Arts" [ref=f6e381] [cursor=pointer]:
+              - generic [ref=f6e382]:
+                - img "Campus Arrivals Admin Tester" [ref=f6e383]
+                - generic [ref=f6e384]: CT
+              - generic [ref=f6e385]:
+                - paragraph [ref=f6e386]: Campus Arrivals Admin Tester
+                - paragraph [ref=f6e387]: Test Bacenta · Test Creative Arts
+            - button "Campus Leader Tester CT Campus Leader Tester Test Bacenta" [ref=f6e388] [cursor=pointer]:
+              - generic [ref=f6e389]:
+                - img "Campus Leader Tester" [ref=f6e390]
+                - generic [ref=f6e391]: CT
+              - generic [ref=f6e392]:
+                - paragraph [ref=f6e393]: Campus Leader Tester
+                - paragraph [ref=f6e394]: Test Bacenta
+            - button "Council Admin Tester CT Council Admin Tester Test Bacenta" [ref=f6e395] [cursor=pointer]:
+              - generic [ref=f6e396]:
+                - img "Council Admin Tester" [ref=f6e397]
+                - generic [ref=f6e398]: CT
+              - generic [ref=f6e399]:
+                - paragraph [ref=f6e400]: Council Admin Tester
+                - paragraph [ref=f6e401]: Test Bacenta
+            - button "Council Arrivals Admin Tester CT Council Arrivals Admin Tester Test Bacenta · Test Creative Arts" [ref=f6e402] [cursor=pointer]:
+              - generic [ref=f6e403]:
+                - img "Council Arrivals Admin Tester" [ref=f6e404]
+                - generic [ref=f6e405]: CT
+              - generic [ref=f6e406]:
+                - paragraph [ref=f6e407]: Council Arrivals Admin Tester
+                - paragraph [ref=f6e408]: Test Bacenta · Test Creative Arts
+            - button "Council Arrivals Payer Tester CT Council Arrivals Payer Tester Test Bacenta · Test Creative Arts" [ref=f6e409] [cursor=pointer]:
+              - generic [ref=f6e410]:
+                - img "Council Arrivals Payer Tester" [ref=f6e411]
+                - generic [ref=f6e412]: CT
+              - generic [ref=f6e413]:
+                - paragraph [ref=f6e414]: Council Arrivals Payer Tester
+                - paragraph [ref=f6e415]: Test Bacenta · Test Creative Arts
+            - button "Council Leader Tester CT Council Leader Tester Test Bacenta" [ref=f6e416] [cursor=pointer]:
+              - generic [ref=f6e417]:
+                - img "Council Leader Tester" [ref=f6e418]
+                - generic [ref=f6e419]: CT
+              - generic [ref=f6e420]:
+                - paragraph [ref=f6e421]: Council Leader Tester
+                - paragraph [ref=f6e422]: Test Bacenta
+            - button "Creative Arts Admin Tester CT Creative Arts Admin Tester Test Bacenta" [ref=f6e423] [cursor=pointer]:
+              - generic [ref=f6e424]:
+                - img "Creative Arts Admin Tester" [ref=f6e425]
+                - generic [ref=f6e426]: CT
+              - generic [ref=f6e427]:
+                - paragraph [ref=f6e428]: Creative Arts Admin Tester
+                - paragraph [ref=f6e429]: Test Bacenta
+            - button "Creative Arts Leader Tester CT Creative Arts Leader Tester Test Bacenta · Test Creative Arts" [ref=f6e430] [cursor=pointer]:
+              - generic [ref=f6e431]:
+                - img "Creative Arts Leader Tester" [ref=f6e432]
+                - generic [ref=f6e433]: CT
+              - generic [ref=f6e434]:
+                - paragraph [ref=f6e435]: Creative Arts Leader Tester
+                - paragraph [ref=f6e436]: Test Bacenta · Test Creative Arts
+            - button "Denomination Admin Tester DT Denomination Admin Tester Test Bacenta" [ref=f6e437] [cursor=pointer]:
+              - generic [ref=f6e438]:
+                - img "Denomination Admin Tester" [ref=f6e439]
+                - generic [ref=f6e440]: DT
+              - generic [ref=f6e441]:
+                - paragraph [ref=f6e442]: Denomination Admin Tester
+                - paragraph [ref=f6e443]: Test Bacenta
+            - button "Denomination Leader Tester DT Denomination Leader Tester Test Bacenta" [ref=f6e444] [cursor=pointer]:
+              - generic [ref=f6e445]:
+                - img "Denomination Leader Tester" [ref=f6e446]
+                - generic [ref=f6e447]: DT
+              - generic [ref=f6e448]:
+                - paragraph [ref=f6e449]: Denomination Leader Tester
+                - paragraph [ref=f6e450]: Test Bacenta
+            - button "Fellowship Leader Tester FT Fellowship Leader Tester Test Bacenta" [ref=f6e451] [cursor=pointer]:
+              - generic [ref=f6e452]:
+                - img "Fellowship Leader Tester" [ref=f6e453]
+                - generic [ref=f6e454]: FT
+              - generic [ref=f6e455]:
+                - paragraph [ref=f6e456]: Fellowship Leader Tester
+                - paragraph [ref=f6e457]: Test Bacenta
+            - button "Governor Tester GT Governor Tester Test Bacenta" [ref=f6e458] [cursor=pointer]:
+              - generic [ref=f6e459]:
+                - img "Governor Tester" [ref=f6e460]
+                - generic [ref=f6e461]: GT
+              - generic [ref=f6e462]:
+                - paragraph [ref=f6e463]: Governor Tester
+                - paragraph [ref=f6e464]: Test Bacenta
+            - button "Governorship Admin Tester GT Governorship Admin Tester Test Bacenta" [ref=f6e465] [cursor=pointer]:
+              - generic [ref=f6e466]:
+                - img "Governorship Admin Tester" [ref=f6e467]
+                - generic [ref=f6e468]: GT
+              - generic [ref=f6e469]:
+                - paragraph [ref=f6e470]: Governorship Admin Tester
+                - paragraph [ref=f6e471]: Test Bacenta
+            - button "Hub Council Leader Tester HT Hub Council Leader Tester Test Bacenta · Test Creative Arts" [ref=f6e472] [cursor=pointer]:
+              - generic [ref=f6e473]:
+                - img "Hub Council Leader Tester" [ref=f6e474]
+                - generic [ref=f6e475]: HT
+              - generic [ref=f6e476]:
+                - paragraph [ref=f6e477]: Hub Council Leader Tester
+                - paragraph [ref=f6e478]: Test Bacenta · Test Creative Arts
+            - button "Hub Fellowship Tester HT Hub Fellowship Tester Test Bacenta" [ref=f6e479] [cursor=pointer]:
+              - generic [ref=f6e480]:
+                - img "Hub Fellowship Tester" [ref=f6e481]
+                - generic [ref=f6e482]: HT
+              - generic [ref=f6e483]:
+                - paragraph [ref=f6e484]: Hub Fellowship Tester
+                - paragraph [ref=f6e485]: Test Bacenta
+            - button "Hub Leader Tester HT Hub Leader Tester Test Bacenta" [ref=f6e486] [cursor=pointer]:
+              - generic [ref=f6e487]:
+                - img "Hub Leader Tester" [ref=f6e488]
+                - generic [ref=f6e489]: HT
+              - generic [ref=f6e490]:
+                - paragraph [ref=f6e491]: Hub Leader Tester
+                - paragraph [ref=f6e492]: Test Bacenta
+            - button "Iris Allen IA Iris Allen Test Bacenta" [ref=f6e493] [cursor=pointer]:
+              - generic [ref=f6e494]:
+                - img "Iris Allen" [ref=f6e495]
+                - generic [ref=f6e496]: IA
+              - generic [ref=f6e497]:
+                - paragraph [ref=f6e498]: Iris Allen
+                - paragraph [ref=f6e499]: Test Bacenta
+            - button "Iris West IW Iris West Test Bacenta" [ref=f6e500] [cursor=pointer]:
+              - generic [ref=f6e501]:
+                - img "Iris West" [ref=f6e502]
+                - generic [ref=f6e503]: IW
+              - generic [ref=f6e504]:
+                - paragraph [ref=f6e505]: Iris West
+                - paragraph [ref=f6e506]: Test Bacenta
+            - button "Jason Todd JT Jason Todd Test Bacenta" [ref=f6e507] [cursor=pointer]:
+              - generic [ref=f6e508]:
+                - img "Jason Todd" [ref=f6e509]
+                - generic [ref=f6e510]: JT
+              - generic [ref=f6e511]:
+                - paragraph [ref=f6e512]: Jason Todd
+                - paragraph [ref=f6e513]: Test Bacenta
+            - button "Jean Grey-Summers JG Jean Grey-Summers Test Bacenta" [ref=f6e514] [cursor=pointer]:
+              - generic [ref=f6e515]:
+                - img "Jean Grey-Summers" [ref=f6e516]
+                - generic [ref=f6e517]: JG
+              - generic [ref=f6e518]:
+                - paragraph [ref=f6e519]: Jean Grey-Summers
+                - paragraph [ref=f6e520]: Test Bacenta
+            - button "Jessica Jones JJ Jessica Jones Test Bacenta" [ref=f6e521] [cursor=pointer]:
+              - generic [ref=f6e522]:
+                - img "Jessica Jones" [ref=f6e523]
+                - generic [ref=f6e524]: JJ
+              - generic [ref=f6e525]:
+                - paragraph [ref=f6e526]: Jessica Jones
+                - paragraph [ref=f6e527]: Test Bacenta
+            - button "John Stewart JS John Stewart Test Bacenta" [ref=f6e528] [cursor=pointer]:
+              - generic [ref=f6e529]:
+                - img "John Stewart" [ref=f6e530]
+                - generic [ref=f6e531]: JS
+              - generic [ref=f6e532]:
+                - paragraph [ref=f6e533]: John Stewart
+                - paragraph [ref=f6e534]: Test Bacenta
+            - button "Kate Bishop KB Kate Bishop Test Bacenta" [ref=f6e535] [cursor=pointer]:
+              - generic [ref=f6e536]:
+                - img "Kate Bishop" [ref=f6e537]
+                - generic [ref=f6e538]: KB
+              - generic [ref=f6e539]:
+                - paragraph [ref=f6e540]: Kate Bishop
+                - paragraph [ref=f6e541]: Test Bacenta
+            - button "Lois Lane LL Lois Lane Test Bacenta" [ref=f6e542] [cursor=pointer]:
+              - generic [ref=f6e543]:
+                - img "Lois Lane" [ref=f6e544]
+                - generic [ref=f6e545]: LL
+              - generic [ref=f6e546]:
+                - paragraph [ref=f6e547]: Lois Lane
+                - paragraph [ref=f6e548]: Test Bacenta
+            - button "Lois Lane-Kent LL Lois Lane-Kent Test Bacenta" [ref=f6e549] [cursor=pointer]:
+              - generic [ref=f6e550]:
+                - img "Lois Lane-Kent" [ref=f6e551]
+                - generic [ref=f6e552]: LL
+              - generic [ref=f6e553]:
+                - paragraph [ref=f6e554]: Lois Lane-Kent
+                - paragraph [ref=f6e555]: Test Bacenta
+            - button "Loki Laufeyson LL Loki Laufeyson Test Bacenta" [ref=f6e556] [cursor=pointer]:
+              - generic [ref=f6e557]:
+                - img "Loki Laufeyson" [ref=f6e558]
+                - generic [ref=f6e559]: LL
+              - generic [ref=f6e560]:
+                - paragraph [ref=f6e561]: Loki Laufeyson
+                - paragraph [ref=f6e562]: Test Bacenta
+  - generic [ref=f6e263]: W24

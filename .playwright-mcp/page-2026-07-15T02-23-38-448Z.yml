@@ -1,0 +1,91 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - region "Notifications alt+T"
+    - generic [ref=f6e3]:
+      - generic [ref=f6e5]:
+        - button "Collapse sidebar" [expanded] [ref=f6e6] [cursor=pointer]
+        - navigation [ref=f6e7]:
+          - generic [ref=f6e17]:
+            - paragraph [ref=f6e18]: Synago
+            - paragraph [ref=f6e19]: FLC Servants Portal
+          - generic [ref=f6e20]:
+            - button "Open search" [ref=f6e21] [cursor=pointer]:
+              - generic [ref=f6e25]:
+                - generic [ref=f6e26]: Search
+                - generic [ref=f6e27]: Ctrl K
+            - link "Home" [ref=f6e28] [cursor=pointer]:
+              - /url: /
+            - link "Members" [ref=f6e33] [cursor=pointer]:
+              - /url: /directory/members
+            - link "Services" [ref=f6e39] [cursor=pointer]:
+              - /url: /services
+            - link "Arrivals" [ref=f6e44] [cursor=pointer]:
+              - /url: /arrivals
+            - generic [ref=f6e51]:
+              - paragraph [ref=f6e52]: Church in Focus
+              - combobox "Select church in focus" [ref=f6e54] [cursor=pointer]:
+                - generic: Test Bacenta · Bacenta · Leader
+            - button "View Test Bacenta Bacenta details" [ref=f6e55] [cursor=pointer]:
+              - generic [ref=f6e60]:
+                - generic [ref=f6e61]: Test Bacenta
+                - generic [ref=f6e62]: Bacenta
+            - link "Reports" [ref=f6e63] [cursor=pointer]:
+              - /url: /reports
+            - link "Trends" [ref=f6e68] [cursor=pointer]:
+              - /url: /trends
+            - link "Maps" [ref=f6e73] [cursor=pointer]:
+              - /url: /maps
+            - link "AI Assistant" [ref=f6e77] [cursor=pointer]:
+              - /url: /ai-assistant
+            - link "Settings" [ref=f6e82] [cursor=pointer]:
+              - /url: /settings
+          - button "Open profile menu" [ref=f6e88] [cursor=pointer]:
+            - generic [ref=f6e89]:
+              - img "Bacenta Leader Tester" [ref=f6e90]
+              - generic [ref=f6e91]: BL
+            - paragraph [ref=f6e92]: Bacenta Leader Tester
+      - main [ref=f6e96]:
+        - generic [ref=f6e665]:
+          - generic [ref=f6e670]:
+            - paragraph [ref=f6e671]: Directory
+            - heading "Edit Member" [level=1] [ref=f6e672]
+          - generic [ref=f6e675]:
+            - generic [ref=f6e676]:
+              - generic [ref=f6e678]:
+                - img "Member photo" [ref=f6e679]
+                - generic [ref=f6e680]: RR
+              - generic [ref=f6e681] [cursor=pointer]:
+                - button "Change Photo" [ref=f6e682]
+                - text: Change Photo
+              - paragraph [ref=f6e683]: PNG, JPG or WebP. Max 10MB.
+            - generic [ref=f6e684]:
+              - generic [ref=f6e685]:
+                - heading "Personal" [level=3] [ref=f6e691]
+                - generic [ref=f6e693]:
+                  - generic [ref=f6e694]:
+                    - generic [ref=f6e695]:
+                      - text: Marital Status
+                      - generic [ref=f6e696]: "*"
+                    - combobox "Marital Status *" [ref=f6e697] [cursor=pointer]:
+                      - generic: Married
+                    - combobox [ref=f6e698]
+                  - generic [ref=f6e699]:
+                    - generic [ref=f6e700]: Occupation
+                    - textbox "Occupation" [ref=f6e701]:
+                      - /placeholder: e.g. Software Engineer
+                      - text: Scientist
+              - generic [ref=f6e702]:
+                - heading "Church Membership" [level=3] [ref=f6e708]
+                - generic [ref=f6e709]:
+                  - generic [ref=f6e711]:
+                    - generic [ref=f6e712]: Bacenta *
+                    - combobox [expanded] [ref=f6e716]: Test Bacenta
+                  - generic [ref=f6e717]:
+                    - generic [ref=f6e718]: Basonta
+                    - combobox "Basonta" [ref=f6e719] [cursor=pointer]:
+                      - generic: Select basonta
+                    - combobox [ref=f6e720]
+              - generic [ref=f6e721]:
+                - paragraph [ref=f6e722]: Fields marked * are required.
+                - button "Save Changes" [ref=f6e723] [cursor=pointer]
+  - generic [ref=f6e263]: W24

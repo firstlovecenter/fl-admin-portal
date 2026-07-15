@@ -1,0 +1,125 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e2]:
+    - region "Notifications alt+T"
+    - generic [ref=f8e3]:
+      - generic [ref=f8e5]:
+        - button "Collapse sidebar" [expanded] [ref=f8e6] [cursor=pointer]
+        - navigation [ref=f8e7]:
+          - generic [ref=f8e17]:
+            - paragraph [ref=f8e18]: Synago
+            - paragraph [ref=f8e19]: FLC Servants Portal
+          - generic [ref=f8e20]:
+            - button "Open search" [ref=f8e21] [cursor=pointer]:
+              - generic [ref=f8e25]:
+                - generic [ref=f8e26]: Search
+                - generic [ref=f8e27]: Ctrl K
+            - link "Home" [ref=f8e28] [cursor=pointer]:
+              - /url: /
+            - link "Members" [ref=f8e33] [cursor=pointer]:
+              - /url: /directory/members
+            - link "Services" [ref=f8e39] [cursor=pointer]:
+              - /url: /services
+            - link "Arrivals" [ref=f8e44] [cursor=pointer]:
+              - /url: /arrivals
+            - generic [ref=f8e51]:
+              - paragraph [ref=f8e52]: Church in Focus
+              - combobox "Select church in focus" [ref=f8e54] [cursor=pointer]:
+                - generic: Test Governorship · Governorship · Admin
+            - button "View Test Governorship Governorship details" [ref=f8e55] [cursor=pointer]:
+              - generic [ref=f8e60]:
+                - generic [ref=f8e61]: Test Governorship
+                - generic [ref=f8e62]: Governorship
+            - link "Reports" [ref=f8e63] [cursor=pointer]:
+              - /url: /reports
+            - link "Trends" [ref=f8e68] [cursor=pointer]:
+              - /url: /trends
+            - link "Maps" [ref=f8e73] [cursor=pointer]:
+              - /url: /maps
+            - link "Shepherding Control" [ref=f8e77] [cursor=pointer]:
+              - /url: /shepherding-control
+            - link "AI Assistant" [ref=f8e82] [cursor=pointer]:
+              - /url: /ai-assistant
+            - link "Settings" [ref=f8e87] [cursor=pointer]:
+              - /url: /settings
+          - button "Open profile menu" [ref=f8e93] [cursor=pointer]:
+            - generic [ref=f8e94]:
+              - img "Governorship Admin Tester" [ref=f8e95]
+              - generic [ref=f8e96]: GA
+            - paragraph [ref=f8e97]: Governorship Admin Tester
+      - main [ref=f8e101]:
+        - generic [ref=f8e103]:
+          - generic [ref=f8e104]:
+            - generic [ref=f8e105]:
+              - paragraph [ref=f8e106]: Wednesday 15 July
+              - heading "Governorship, at this hour? Paul-and-Silas mode unlocked." [level=1] [ref=f8e107]
+              - generic [ref=f8e108]:
+                - generic [ref=f8e109]: Test Governorship
+                - generic [ref=f8e110]: Governorship
+                - generic [ref=f8e111]: Admin
+            - generic [ref=f8e113]:
+              - paragraph [ref=f8e114]: Church in Focus
+              - combobox "Select church in focus" [ref=f8e116] [cursor=pointer]:
+                - generic: Test Governorship · Governorship · Admin
+          - generic [ref=f8e117]:
+            - generic [ref=f8e118]:
+              - generic [ref=f8e119]:
+                - generic [ref=f8e122]:
+                  - paragraph [ref=f8e123]: Avg. weekly bussing attendance
+                  - paragraph [ref=f8e124]: "17"
+                - separator [ref=f8e125]
+                - generic [ref=f8e126]:
+                  - generic [ref=f8e127]:
+                    - paragraph [ref=f8e128]: Avg. attendance
+                    - paragraph [ref=f8e129]: "16"
+                  - generic [ref=f8e130]:
+                    - paragraph [ref=f8e131]: Avg. income
+                    - paragraph [ref=f8e132]: GH₵558
+              - generic [ref=f8e133]:
+                - generic [ref=f8e134]:
+                  - generic [ref=f8e135]:
+                    - heading "Weekly trend" [level=2] [ref=f8e136]
+                    - paragraph [ref=f8e137]: Test Governorship · Governorship
+                    - group "Trend data mode" [ref=f8e138]:
+                      - button "Weekday service" [ref=f8e139] [cursor=pointer]
+                      - button "Sunday bussing" [pressed] [ref=f8e140] [cursor=pointer]
+                  - generic [ref=f8e141]: Bussing
+                - generic [ref=f8e145]:
+                  - application [ref=f8e149]:
+                    - generic [ref=f8e163]:
+                      - generic [ref=f8e164]:
+                        - generic [ref=f8e165]: W17
+                        - generic [ref=f8e167]: W18
+                        - generic [ref=f8e169]: W19
+                        - generic [ref=f8e171]: W20
+                      - generic [ref=f8e173]:
+                        - generic [ref=f8e174]: "18"
+                        - generic [ref=f8e175]: "16"
+                  - generic [ref=f8e176]:
+                    - button "Previous" [ref=f8e177] [cursor=pointer]
+                    - generic [ref=f8e180]: Week 17 - Week 20
+                    - button "Next" [disabled] [ref=f8e181]
+            - complementary [ref=f8e184]:
+              - generic [ref=f8e185]:
+                - heading "Quick actions" [level=3] [ref=f8e187]
+                - generic [ref=f8e188]:
+                  - button "Record service" [ref=f8e189] [cursor=pointer]
+                  - button "Fill bussing" [ref=f8e198] [cursor=pointer]
+                  - button "Add member" [ref=f8e208] [cursor=pointer]
+                  - button "Bank service" [ref=f8e217] [cursor=pointer]
+              - generic [ref=f8e224]:
+                - heading "Current focus" [level=3] [ref=f8e226]
+                - generic [ref=f8e227]:
+                  - generic [ref=f8e228]:
+                    - paragraph [ref=f8e229]: Church
+                    - paragraph [ref=f8e230]: Test Governorship
+                  - separator [ref=f8e231]
+                  - generic [ref=f8e232]:
+                    - generic [ref=f8e233]:
+                      - paragraph [ref=f8e234]: Level
+                      - paragraph [ref=f8e235]: Governorship
+                    - generic [ref=f8e236]:
+                      - paragraph [ref=f8e237]: Role
+                      - paragraph [ref=f8e238]: Admin
+                  - separator [ref=f8e239]
+                  - generic [ref=f8e240]: GHS
+  - generic [ref=f8e242]: W20

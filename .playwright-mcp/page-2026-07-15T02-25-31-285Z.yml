@@ -1,0 +1,90 @@
+- generic [ref=f9e2]:
+  - region "Notifications alt+T"
+  - generic [ref=f9e12]:
+    - generic [ref=f9e14]:
+      - button "Collapse sidebar" [expanded] [ref=f9e15] [cursor=pointer]
+      - navigation [ref=f9e16]:
+        - generic [ref=f9e26]:
+          - paragraph [ref=f9e27]: Synago
+          - paragraph [ref=f9e28]: FLC Servants Portal
+        - generic [ref=f9e29]:
+          - button "Open search" [ref=f9e30] [cursor=pointer]:
+            - generic [ref=f9e34]:
+              - generic [ref=f9e35]: Search
+              - generic [ref=f9e36]: Ctrl K
+          - link "Home" [ref=f9e37] [cursor=pointer]:
+            - /url: /
+          - link "Members" [ref=f9e42] [cursor=pointer]:
+            - /url: /directory/members
+          - link "Services" [ref=f9e48] [cursor=pointer]:
+            - /url: /services
+          - link "Arrivals" [ref=f9e53] [cursor=pointer]:
+            - /url: /arrivals
+          - generic [ref=f9e60]:
+            - paragraph [ref=f9e61]: Church in Focus
+            - combobox "Select church in focus" [ref=f9e63] [cursor=pointer]:
+              - generic: Test Governorship · Governorship · Admin
+          - button "View Test Governorship Governorship details" [ref=f9e64] [cursor=pointer]:
+            - generic [ref=f9e69]:
+              - generic [ref=f9e70]: Test Governorship
+              - generic [ref=f9e71]: Governorship
+          - link "Reports" [ref=f9e72] [cursor=pointer]:
+            - /url: /reports
+          - link "Trends" [ref=f9e77] [cursor=pointer]:
+            - /url: /trends
+          - link "Maps" [ref=f9e82] [cursor=pointer]:
+            - /url: /maps
+          - link "Shepherding Control" [ref=f9e86] [cursor=pointer]:
+            - /url: /shepherding-control
+          - link "AI Assistant" [ref=f9e91] [cursor=pointer]:
+            - /url: /ai-assistant
+          - link "Settings" [ref=f9e96] [cursor=pointer]:
+            - /url: /settings
+        - button "Open profile menu" [ref=f9e102] [cursor=pointer]:
+          - generic [ref=f9e103]:
+            - img "Governorship Admin Tester" [ref=f9e104]
+            - generic [ref=f9e105]: GA
+          - paragraph [ref=f9e106]: Governorship Admin Tester
+    - main [ref=f9e110]:
+      - generic [ref=f9e427]:
+        - generic [ref=f9e430]:
+          - generic [ref=f9e431]:
+            - link "Edit" [ref=f9e432] [cursor=pointer]:
+              - /url: /member/editmember
+              - button "Edit" [ref=f9e433]
+            - button "Delete" [ref=f9e435] [cursor=pointer]
+          - button "Add Sticky Note" [ref=f9e438] [cursor=pointer]
+        - generic [ref=f9e440]:
+          - complementary [ref=f9e441]:
+            - generic [ref=f9e458]:
+              - paragraph [ref=f9e460]: Church Membership
+              - button [ref=f9e462] [cursor=pointer]:
+                - generic [ref=f9e463]:
+                  - paragraph [ref=f9e464]: Bacenta
+                  - paragraph [ref=f9e465]: Test Bacenta
+          - generic [ref=f9e469]:
+            - heading "Personal Information" [level=3] [ref=f9e471]
+            - generic [ref=f9e472]:
+              - generic [ref=f9e473]:
+                - generic [ref=f9e474]:
+                  - paragraph [ref=f9e475]: First Name
+                  - paragraph [ref=f9e476]: Reed
+                - generic [ref=f9e477]:
+                  - paragraph [ref=f9e478]: Last Name
+                  - paragraph [ref=f9e479]: Richards
+              - generic [ref=f9e480]:
+                - generic [ref=f9e481]:
+                  - paragraph [ref=f9e482]: Gender
+                  - paragraph [ref=f9e483]: Male
+                - generic [ref=f9e484]:
+                  - paragraph [ref=f9e485]: Marital Status
+                  - paragraph [ref=f9e486]: Married
+              - generic [ref=f9e487]:
+                - paragraph [ref=f9e488]: Date of Birth
+                - paragraph [ref=f9e489]: 9 September 1979
+              - generic [ref=f9e490]:
+                - paragraph [ref=f9e491]: Occupation
+                - paragraph [ref=f9e492]: Scientist
+              - generic [ref=f9e493]:
+                - paragraph [ref=f9e494]: Email Address
+                - paragraph [ref=f9e495]: reed.richards@fantasticfour.org

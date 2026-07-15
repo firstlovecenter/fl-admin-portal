@@ -1,0 +1,154 @@
+- generic [ref=f11e2]:
+  - region "Notifications alt+T"
+  - generic [ref=f11e12]:
+    - generic [ref=f11e14]:
+      - button "Collapse sidebar" [expanded] [ref=f11e15] [cursor=pointer]
+      - navigation [ref=f11e16]:
+        - generic [ref=f11e26]:
+          - paragraph [ref=f11e27]: Synago
+          - paragraph [ref=f11e28]: FLC Servants Portal
+        - generic [ref=f11e29]:
+          - button "Open search" [ref=f11e30] [cursor=pointer]:
+            - generic [ref=f11e34]:
+              - generic [ref=f11e35]: Search
+              - generic [ref=f11e36]: Ctrl K
+          - link "Home" [ref=f11e37] [cursor=pointer]:
+            - /url: /
+          - link "Members" [ref=f11e42] [cursor=pointer]:
+            - /url: /directory/members
+          - link "Services" [ref=f11e48] [cursor=pointer]:
+            - /url: /services
+          - link "Arrivals" [ref=f11e53] [cursor=pointer]:
+            - /url: /arrivals
+          - generic [ref=f11e60]:
+            - paragraph [ref=f11e61]: Church in Focus
+            - combobox "Select church in focus" [ref=f11e63] [cursor=pointer]:
+              - generic: Test Governorship · Governorship · Admin
+          - button "View Test Governorship Governorship details" [ref=f11e64] [cursor=pointer]:
+            - generic [ref=f11e69]:
+              - generic [ref=f11e70]: Test Governorship
+              - generic [ref=f11e71]: Governorship
+          - link "Reports" [ref=f11e72] [cursor=pointer]:
+            - /url: /reports
+          - link "Trends" [ref=f11e77] [cursor=pointer]:
+            - /url: /trends
+          - link "Maps" [ref=f11e82] [cursor=pointer]:
+            - /url: /maps
+          - link "Shepherding Control" [ref=f11e86] [cursor=pointer]:
+            - /url: /shepherding-control
+          - link "AI Assistant" [ref=f11e91] [cursor=pointer]:
+            - /url: /ai-assistant
+          - link "Settings" [ref=f11e96] [cursor=pointer]:
+            - /url: /settings
+        - button "Open profile menu" [ref=f11e102] [cursor=pointer]:
+          - generic [ref=f11e103]:
+            - img "Governorship Admin Tester" [ref=f11e104]
+            - generic [ref=f11e105]: GA
+          - paragraph [ref=f11e106]: Governorship Admin Tester
+    - main [ref=f11e110]:
+      - generic [ref=f11e111]:
+        - generic [ref=f11e114]:
+          - generic [ref=f11e116]:
+            - paragraph [ref=f11e117]: Directory
+            - heading "Edit Member" [level=1] [ref=f11e118]
+          - button "Delete" [ref=f11e120] [cursor=pointer]
+        - generic [ref=f11e124]:
+          - generic [ref=f11e125]:
+            - generic [ref=f11e127]:
+              - img "Member photo" [ref=f11e128]
+              - generic [ref=f11e129]: RR
+            - generic [ref=f11e130] [cursor=pointer]:
+              - button "Change Photo" [ref=f11e131]
+              - text: Change Photo
+            - paragraph [ref=f11e132]: PNG, JPG or WebP. Max 10MB.
+          - generic [ref=f11e133]:
+            - generic [ref=f11e134]:
+              - heading "Basic Information" [level=3] [ref=f11e140]
+              - generic [ref=f11e141]:
+                - generic [ref=f11e142]:
+                  - generic [ref=f11e143]:
+                    - generic [ref=f11e144]:
+                      - text: First Name
+                      - generic [ref=f11e145]: "*"
+                    - textbox "First Name *" [ref=f11e146]:
+                      - /placeholder: First name
+                      - text: Reed
+                  - generic [ref=f11e147]:
+                    - generic [ref=f11e148]:
+                      - text: Last Name
+                      - generic [ref=f11e149]: "*"
+                    - textbox "Last Name *" [ref=f11e150]:
+                      - /placeholder: Last name
+                      - text: Richards
+                - generic [ref=f11e151]:
+                  - generic [ref=f11e152]: Middle Name
+                  - textbox "Middle Name" [ref=f11e153]:
+                    - /placeholder: Other names
+                - generic [ref=f11e154]:
+                  - generic [ref=f11e155]:
+                    - generic [ref=f11e156]:
+                      - text: Gender
+                      - generic [ref=f11e157]: "*"
+                    - combobox "Gender *" [ref=f11e158] [cursor=pointer]:
+                      - generic: Male
+                    - combobox [ref=f11e159]
+                  - generic [ref=f11e160]:
+                    - generic [ref=f11e161]:
+                      - text: Date of Birth
+                      - generic [ref=f11e162]: "*"
+                    - textbox "Date of Birth *" [ref=f11e163]: 1979-09-09
+            - generic [ref=f11e164]:
+              - heading "Contact" [level=3] [ref=f11e169]
+              - generic [ref=f11e170]:
+                - generic [ref=f11e171]:
+                  - generic [ref=f11e173]:
+                    - text: Phone Number
+                    - generic [ref=f11e176]: "*"
+                  - textbox "Phone Number *" [invalid] [ref=f11e177]:
+                    - /placeholder: +233 24 123 4567
+                    - text: "+0264000005"
+                  - alert [ref=f11e239]: Phone Number must start with + and country code (eg. '+233')
+                - generic [ref=f11e178]:
+                  - generic [ref=f11e180]:
+                    - text: WhatsApp Number
+                    - generic [ref=f11e183]: "*"
+                  - textbox "WhatsApp Number *" [invalid] [ref=f11e184]:
+                    - /placeholder: +233 24 123 4567
+                    - text: "+0264000005"
+                  - alert [ref=f11e240]: Phone Number must start with + and country code (eg. '+233')
+                - generic [ref=f11e185]:
+                  - generic [ref=f11e187]:
+                    - text: Email Address
+                    - generic [ref=f11e191]: "*"
+                  - textbox "Email Address *" [ref=f11e192]:
+                    - /placeholder: name@example.com
+                    - text: sue.richards@fantasticfour.org
+            - generic [ref=f11e193]:
+              - heading "Personal" [level=3] [ref=f11e199]
+              - generic [ref=f11e201]:
+                - generic [ref=f11e202]:
+                  - generic [ref=f11e203]:
+                    - text: Marital Status
+                    - generic [ref=f11e204]: "*"
+                  - combobox "Marital Status *" [ref=f11e205] [cursor=pointer]:
+                    - generic: Married
+                  - combobox [ref=f11e206]
+                - generic [ref=f11e207]:
+                  - generic [ref=f11e208]: Occupation
+                  - textbox "Occupation" [ref=f11e209]:
+                    - /placeholder: e.g. Software Engineer
+                    - text: Scientist
+            - generic [ref=f11e210]:
+              - heading "Church Membership" [level=3] [ref=f11e216]
+              - generic [ref=f11e217]:
+                - generic [ref=f11e219]:
+                  - generic [ref=f11e220]: Bacenta *
+                  - combobox [expanded] [ref=f11e224]: Test Bacenta
+                - generic [ref=f11e226]:
+                  - generic [ref=f11e227]: Basonta
+                  - combobox "Basonta" [ref=f11e228] [cursor=pointer]:
+                    - generic: Select basonta
+                  - combobox [ref=f11e229]
+            - generic [ref=f11e230]:
+              - paragraph [ref=f11e231]: Fields marked * are required.
+              - button "Save Changes" [ref=f11e232] [cursor=pointer]

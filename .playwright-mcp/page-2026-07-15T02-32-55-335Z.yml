@@ -1,0 +1,98 @@
+- generic [ref=f18e2]:
+  - region "Notifications alt+T"
+  - generic [ref=f18e13]:
+    - button "Open navigation" [ref=f18e14] [cursor=pointer]
+    - main [ref=f18e18]:
+      - generic [ref=f18e156]:
+        - generic [ref=f18e159]:
+          - generic [ref=f18e160]:
+            - link "Edit" [ref=f18e161] [cursor=pointer]:
+              - /url: /member/editmember
+              - button [ref=f18e162]
+            - button [ref=f18e163] [cursor=pointer]
+          - button "Add Sticky Note" [ref=f18e165] [cursor=pointer]
+        - generic [ref=f18e166]:
+          - generic [ref=f18e167]:
+            - complementary [ref=f18e168]:
+              - generic [ref=f18e169]:
+                - generic [ref=f18e170]:
+                  - img "Council Leader Tester" [ref=f18e171]
+                  - generic [ref=f18e172]: CT
+                - heading "Council Leader Tester" [level=2] [ref=f18e174]
+                - button "Save Contact" [ref=f18e175] [cursor=pointer]
+              - generic [ref=f18e176]:
+                - link [ref=f18e177] [cursor=pointer]:
+                  - /url: tel:2339086089760
+                  - generic [ref=f18e181]:
+                    - paragraph [ref=f18e182]: Phone
+                    - paragraph [ref=f18e183]: "+2339086089760"
+                - link [ref=f18e186] [cursor=pointer]:
+                  - /url: whatsapp://send?phone=2339086089760
+                  - generic [ref=f18e190]:
+                    - paragraph [ref=f18e191]: WhatsApp
+                    - paragraph [ref=f18e192]: "+2339086089760"
+              - generic [ref=f18e195]:
+                - paragraph [ref=f18e197]: Church Membership
+                - button [ref=f18e199] [cursor=pointer]:
+                  - generic [ref=f18e200]:
+                    - paragraph [ref=f18e201]: Bacenta
+                    - paragraph [ref=f18e202]: Test Bacenta
+            - generic [ref=f18e205]:
+              - generic [ref=f18e206]:
+                - heading "Personal Information" [level=3] [ref=f18e208]
+                - generic [ref=f18e209]:
+                  - generic [ref=f18e210]:
+                    - generic [ref=f18e211]:
+                      - paragraph [ref=f18e212]: First Name
+                      - paragraph [ref=f18e213]: Council Leader
+                    - generic [ref=f18e214]:
+                      - paragraph [ref=f18e215]: Last Name
+                      - paragraph [ref=f18e216]: Tester
+                  - generic [ref=f18e217]:
+                    - generic [ref=f18e218]:
+                      - paragraph [ref=f18e219]: Gender
+                      - paragraph [ref=f18e220]: Male
+                    - generic [ref=f18e221]:
+                      - paragraph [ref=f18e222]: Marital Status
+                      - paragraph [ref=f18e223]: Single
+                  - generic [ref=f18e224]:
+                    - paragraph [ref=f18e225]: Date of Birth
+                    - paragraph [ref=f18e226]: 10 February 2000
+                  - generic [ref=f18e227]:
+                    - paragraph [ref=f18e228]: Email Address
+                    - paragraph [ref=f18e229]: councilleader.updated3@test.com
+                  - generic [ref=f18e230]:
+                    - paragraph [ref=f18e231]: Location for IDL
+                    - paragraph [ref=f18e232]: Hoste
+              - generic [ref=f18e233]:
+                - paragraph [ref=f18e235]: Leadership Roles
+                - button [ref=f18e238] [cursor=pointer]:
+                  - generic [ref=f18e240]:
+                    - paragraph [ref=f18e241]: Council Leader
+                    - paragraph [ref=f18e242]: Test Council
+          - generic [ref=f18e246]:
+            - separator [ref=f18e247]
+            - generic [ref=f18e248]:
+              - heading "Church History" [level=3] [ref=f18e249]
+              - link [ref=f18e250] [cursor=pointer]:
+                - /url: /member/history
+                - button "View All" [ref=f18e251]
+            - generic [ref=f18e253]:
+              - generic [ref=f18e258]:
+                - time [ref=f18e259]: Today
+                - generic [ref=f18e261]:
+                  - paragraph [ref=f18e262]: Council Leader Tester Details were updated
+                  - paragraph [ref=f18e263]: 02:32:54
+                  - button "Governorship Admin Tester" [ref=f18e264] [cursor=pointer]
+              - generic [ref=f18e269]:
+                - time [ref=f18e270]: Today
+                - generic [ref=f18e272]:
+                  - paragraph [ref=f18e273]: Council Leader Tester Details were updated
+                  - paragraph [ref=f18e274]: 02:31:50
+                  - button "Governorship Admin Tester" [ref=f18e275] [cursor=pointer]
+              - generic [ref=f18e280]:
+                - time [ref=f18e281]: Today
+                - generic [ref=f18e283]:
+                  - paragraph [ref=f18e284]: Council Leader Tester Details were updated
+                  - paragraph [ref=f18e285]: 02:30:12
+                  - button "Governorship Admin Tester" [ref=f18e286] [cursor=pointer]

@@ -21,6 +21,17 @@ import { CreateMemberFormOptions } from '../create/CreateMember'
 import { FormikHelpers } from 'formik'
 import MemberCollisionDialog, { MemberCollision } from './MemberCollisionDialog'
 
+type CollisionExtension = { collision?: MemberCollision }
+
+// Shared by the errorPolicy: 'all' result.errors path and the catch-block's
+// graphQLErrors path — both carry the collision the same way.
+const extractCollision = (
+  errors: readonly { extensions?: unknown }[] | undefined
+): MemberCollision | undefined =>
+  errors
+    ?.map((err) => (err.extensions as CollisionExtension | undefined)?.collision)
+    .find((collision): collision is MemberCollision => Boolean(collision))
+
 const UpdateMember = () => {
   const { memberId, setMemberId } = useContext(MemberContext)
   const [collision, setCollision] = useState<MemberCollision | null>(null)
@@ -105,7 +116,7 @@ const UpdateMember = () => {
     onSubmitProps.setSubmitting(true)
 
     try {
-      await UpdateMember({
+      const updateResult = await UpdateMember({
         variables: {
           id: memberId,
           firstName: values.firstName.trim(),
@@ -124,8 +135,31 @@ const UpdateMember = () => {
         },
       })
 
+      // errorPolicy: 'all' (SYN-178) puts GraphQL errors in `.errors` rather
+      // than rejecting the promise — see SYN-205: without this check, a
+      // collision (or any other GraphQL error) was silently treated as a
+      // success.
+      if (updateResult.errors?.length) {
+        onSubmitProps.setSubmitting(false)
+
+        const collisionInfo = extractCollision(updateResult.errors)
+        if (collisionInfo) {
+          setCollision({
+            ...collisionInfo,
+            targetBacentaId: values.bacenta?.id,
+          })
+          return
+        }
+
+        displayError(
+          'There was an error updating the member profile',
+          new Error(updateResult.errors[0].message)
+        )
+        return
+      }
+
       if (memberChurch?.bacenta.id !== values.bacenta.id) {
-        await UpdateMemberBacenta({
+        const bacentaResult = await UpdateMemberBacenta({
           variables: {
             memberId: memberId,
             bacentaId: values.bacenta?.id,
@@ -133,15 +167,33 @@ const UpdateMember = () => {
             historyRecord: `${member.firstName} ${member.lastName} moved from ${memberChurch?.bacenta.name} Bacenta to ${values.bacenta?.name} Bacenta`,
           },
         })
+
+        if (bacentaResult.errors?.length) {
+          onSubmitProps.setSubmitting(false)
+          displayError(
+            "There was an error updating the member's bacenta",
+            new Error(bacentaResult.errors[0].message)
+          )
+          return
+        }
       }
 
       if (values.basonta && memberChurch?.basonta?.id !== values.basonta) {
-        await UpdateMemberBasonta({
+        const basontaResult = await UpdateMemberBasonta({
           variables: {
             memberId: memberId,
             basontaId: values.basonta,
           },
         })
+
+        if (basontaResult.errors?.length) {
+          onSubmitProps.setSubmitting(false)
+          displayError(
+            "There was an error updating the member's basonta",
+            new Error(basontaResult.errors[0].message)
+          )
+          return
+        }
       }
 
       onSubmitProps.setSubmitting(false)
@@ -150,9 +202,7 @@ const UpdateMember = () => {
     } catch (error: any) {
       onSubmitProps.setSubmitting(false)
 
-      const collisionInfo = error?.graphQLErrors?.find(
-        (err: any) => err?.extensions?.collision
-      )?.extensions?.collision as MemberCollision | undefined
+      const collisionInfo = extractCollision(error?.graphQLErrors)
 
       if (collisionInfo) {
         setCollision({ ...collisionInfo, targetBacentaId: values.bacenta?.id })

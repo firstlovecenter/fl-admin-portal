@@ -1,0 +1,27 @@
+- generic [ref=f7e4]:
+  - generic [ref=f7e5]:
+    - img "Synago" [ref=f7e7]
+    - generic [ref=f7e14]:
+      - heading "Synago" [level=1] [ref=f7e15]
+      - paragraph [ref=f7e16]: Portal for Church Leaders
+  - generic [ref=f7e17]:
+    - generic [ref=f7e18]:
+      - heading "Sign in" [level=2] [ref=f7e19]
+      - paragraph [ref=f7e20]: Welcome back. Enter your credentials to continue.
+    - generic [ref=f7e21]:
+      - generic [ref=f7e22]:
+        - generic [ref=f7e23]: Email address
+        - textbox "Email address" [disabled]:
+          - /placeholder: you@example.com
+          - text: governorshipadmin@test.com
+      - generic [ref=f7e25]:
+        - generic [ref=f7e26]: Password
+        - generic [ref=f7e27]:
+          - textbox "Password" [disabled]:
+            - /placeholder: Enter your password
+            - text: password
+          - button "Show password" [ref=f7e29] [cursor=pointer]
+      - button "Forgot password?" [ref=f7e34] [cursor=pointer]
+      - button "Signing in…" [disabled]
+    - paragraph [ref=f7e36]: Need help? Contact your administrator
+  - paragraph [ref=f7e37]: v9.1.0

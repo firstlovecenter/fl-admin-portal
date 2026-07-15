@@ -1,0 +1,117 @@
+- generic:
+  - generic:
+    - region "Notifications alt+T"
+    - generic:
+      - generic:
+        - generic:
+          - button [expanded]
+          - navigation:
+            - generic:
+              - generic:
+                - paragraph: Synago
+                - paragraph: FLC Servants Portal
+            - generic:
+              - button:
+                - generic:
+                  - generic: Search
+                  - generic: Ctrl K
+              - link:
+                - /url: /
+                - generic: Home
+              - link:
+                - /url: /directory/members
+                - generic: Members
+              - link:
+                - /url: /services
+                - generic: Services
+              - link:
+                - /url: /arrivals
+                - generic: Arrivals
+              - generic:
+                - paragraph: Church in Focus
+                - combobox:
+                  - generic: Test Bacenta · Bacenta · Leader
+              - button:
+                - generic:
+                  - generic: Test Bacenta
+                  - generic: Bacenta
+              - link:
+                - /url: /reports
+                - generic: Reports
+              - link:
+                - /url: /trends
+                - generic: Trends
+              - link:
+                - /url: /maps
+                - generic: Maps
+              - link:
+                - /url: /ai-assistant
+                - generic: AI Assistant
+              - link:
+                - /url: /settings
+                - generic: Settings
+            - generic:
+              - button [expanded]:
+                - generic: BL
+                - paragraph: Bacenta Leader Tester
+      - generic:
+        - main:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: Directory
+                      - heading [level=1]: Edit Member
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: RR
+                    - generic:
+                      - button
+                      - text: Change Photo
+                    - paragraph: PNG, JPG or WebP. Max 10MB.
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=3]: Personal
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - text: Marital Status
+                              - generic: "*"
+                            - combobox:
+                              - generic: Married
+                            - combobox
+                          - generic:
+                            - generic: Occupation
+                            - textbox:
+                              - /placeholder: e.g. Software Engineer
+                              - text: Scientist
+                    - generic:
+                      - generic:
+                        - heading [level=3]: Church Membership
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Bacenta *
+                            - generic:
+                              - generic:
+                                - combobox [expanded]: Test Bacenta
+                        - generic:
+                          - generic: Basonta
+                          - combobox:
+                            - generic: Select basonta
+                          - combobox
+                    - generic:
+                      - paragraph: Fields marked * are required.
+                      - button: Save Changes
+  - generic: W24
+  - menu "Open profile menu" [active] [ref=f6e724]:
+    - generic [ref=f6e725]: Bacenta Leader Tester
+    - separator [ref=f6e726]
+    - menuitem "Switch to dark mode" [ref=f6e727]
+    - menuitem "Log out" [ref=f6e728]
