@@ -287,7 +287,7 @@ describe('createApolloClient — error link', () => {
       .catch(() => undefined)
 
     expect(toast.error).toHaveBeenCalledTimes(1)
-    // SYN-178 — the user-facing toast title is generic; the raw GraphQL
+   // SYN-178 — the user-facing toast title is generic; the raw GraphQL
     // message ('boom') must NOT leak into it. It survives only inside the
     // stable dedupe `id` (an internal seam, never rendered) and the dev
     // console. Asserting the generic title + description pins that contract.
