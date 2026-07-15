@@ -32,9 +32,13 @@ import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { MockedProvider, MockedResponse } from '@apollo/client/testing'
+import { toast } from 'sonner'
 
 import UpdateMember from './UpdateMember'
-import { UPDATE_MEMBER_MUTATION } from './UpdateMutations'
+import {
+  UPDATE_MEMBER_MUTATION,
+  UPDATE_MEMBER_BACENTA,
+} from './UpdateMutations'
 import {
   DISPLAY_MEMBER_BIO,
   DISPLAY_MEMBER_CHURCH,
@@ -43,6 +47,17 @@ import { GET_CAMPUS_BASONTAS } from 'queries/ListQueries'
 import { MEMBER_BACENTA_SEARCH } from 'components/formik/SearchBacentaQueries'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
+
+// Mock sonner so displayError's toast.error calls land on a spy, matching
+// the pattern in lib/createApolloClient.test.tsx. vi.mock is hoisted above
+// all imports, so import order above doesn't matter.
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+    message: vi.fn(),
+  },
+}))
 
 vi.mock('react-router-dom', async () => {
   const actual =
@@ -78,10 +93,12 @@ beforeAll(() => {
 afterEach(() => {
   cleanup()
   mockNavigate.mockClear()
+  vi.mocked(toast.error).mockClear()
 })
 
 const MEMBER_ID = 'member-1'
 const BACENTA_ID = 'bacenta-1'
+const OTHER_BACENTA_ID = 'bacenta-2'
 const CAMPUS_ID = 'campus-1'
 
 const memberBioMock = {
@@ -175,6 +192,45 @@ const memberBacentaSearchMock = {
   },
 }
 
+// Same as above, but also offers a bacenta the member is *not* currently in,
+// so a test can move them and exercise the UpdateMemberBacenta follow-up.
+const bacentaSearchMockWithOther = {
+  request: { query: MEMBER_BACENTA_SEARCH },
+  variableMatcher: () => true,
+  result: {
+    data: {
+      members: [
+        {
+          id: MEMBER_ID,
+          bacentaSearch: [
+            { id: BACENTA_ID, name: 'Grace Bacenta', governorship: null },
+            { id: OTHER_BACENTA_ID, name: 'Hope Bacenta', governorship: null },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+// The member moves Grace -> Hope, so onSubmit runs UpdateMemberBacenta; this
+// mock makes that follow-up mutation fail under errorPolicy: 'all'.
+const bacentaMoveErrorMock = {
+  request: {
+    query: UPDATE_MEMBER_BACENTA,
+    variables: {
+      memberId: MEMBER_ID,
+      bacentaId: OTHER_BACENTA_ID,
+      ids: [MEMBER_ID, OTHER_BACENTA_ID, BACENTA_ID],
+      historyRecord:
+        'Ama Mensah moved from Grace Bacenta Bacenta to Hope Bacenta Bacenta',
+    },
+  },
+  result: {
+    data: { UpdateMemberBacenta: null, LogMemberHistory: null },
+    errors: [{ message: 'Could not move this member to that bacenta' }],
+  },
+}
+
 const collisionUpdateMock = (variables: Record<string, unknown>) => ({
   request: { query: UPDATE_MEMBER_MUTATION, variables },
   result: {
@@ -192,6 +248,18 @@ const collisionUpdateMock = (variables: Record<string, unknown>) => ({
             bacentaName: 'Faith Bacenta',
           },
         },
+      },
+    ],
+  },
+})
+
+const genericErrorUpdateMock = (variables: Record<string, unknown>) => ({
+  request: { query: UPDATE_MEMBER_MUTATION, variables },
+  result: {
+    data: { UpdateMemberDetails: null },
+    errors: [
+      {
+        message: 'Something went wrong saving this member',
       },
     ],
   },
@@ -273,15 +341,15 @@ const renderUpdateMember = (mocks: readonly MockedResponse[]) =>
 // not formik.values.bacenta. A real user re-confirms the bacenta by
 // picking it from the dropdown; do the same here so submission has a
 // valid `bacenta` object regardless of query-resolution timing.
-const selectBacentaFromDropdown = async () => {
+const selectBacentaFromDropdown = async (bacentaName = 'Grace Bacenta') => {
   const user = userEvent.setup()
   const bacentaInput = await screen.findByPlaceholderText(
     /start typing to search/i
   )
   await user.click(bacentaInput)
   await user.clear(bacentaInput)
-  await user.type(bacentaInput, 'Grace')
-  const option = await screen.findByText('Grace Bacenta')
+  await user.type(bacentaInput, bacentaName.split(' ')[0])
+  const option = await screen.findByText(bacentaName)
   await user.click(option)
 }
 
@@ -355,5 +423,78 @@ describe('UpdateMember — SYN-205 email-collision handling', () => {
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith('/member/displaydetails')
     )
+  })
+
+  it('stops (does not navigate away) when the bacenta-move follow-up mutation fails', async () => {
+    const variables = {
+      ...baseUpdateVariables('ama@example.com'),
+      bacenta: OTHER_BACENTA_ID,
+    }
+
+    renderUpdateMember([
+      memberBioMock,
+      memberChurchMock,
+      basontasMock,
+      bacentaSearchMockWithOther,
+      // The profile update itself succeeds — it's the bacenta move that fails.
+      successUpdateMock(variables),
+      memberBioMock,
+      memberChurchMock,
+      bacentaMoveErrorMock,
+    ])
+
+    await screen.findByDisplayValue('ama@example.com')
+    await selectBacentaFromDropdown('Hope Bacenta')
+
+    await submitForm()
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "There was an error updating the member's bacenta",
+        expect.objectContaining({
+          description: 'Could not move this member to that bacenta',
+        })
+      )
+    )
+
+    // Before this branch existed, a failed bacenta move still fell through to
+    // resetForm() + navigate() — reporting success for a move that never happened.
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  it('shows a real error toast (does not navigate away) for a non-collision GraphQL error', async () => {
+    const variables = baseUpdateVariables('newemail@example.com')
+
+    renderUpdateMember([
+      memberBioMock,
+      memberChurchMock,
+      basontasMock,
+      memberBacentaSearchMock,
+      genericErrorUpdateMock(variables),
+      memberBioMock,
+      memberChurchMock,
+    ])
+
+    await screen.findByDisplayValue('ama@example.com')
+    await selectBacentaFromDropdown()
+
+    const emailInput = screen.getByLabelText(/email address/i)
+    await userEvent.setup().clear(emailInput)
+    await userEvent.setup().type(emailInput, 'newemail@example.com')
+
+    await submitForm()
+
+    // This is the branch that used to render "[object Object]" — displayError
+    // must be passed the real GraphQLFormattedError message, not the raw object.
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        'There was an error updating the member profile',
+        expect.objectContaining({
+          description: 'Something went wrong saving this member',
+        })
+      )
+    )
+
+    expect(mockNavigate).not.toHaveBeenCalled()
   })
 })

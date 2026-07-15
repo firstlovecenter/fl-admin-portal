@@ -33,6 +33,18 @@ export const getGraphQLErrorMessage = (error: unknown): string => {
     return error.message
   }
 
+  // Plain GraphQLFormattedError objects (e.g. useMutation's `result.errors`
+  // under errorPolicy: 'all') aren't Error instances — read `.message`
+  // directly so callers don't fall through to `String(error)` → "[object Object]".
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message
+  }
+
   return String(error)
 }
 

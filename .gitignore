@@ -8,6 +8,9 @@ node_modules/
 # testing
 /coverage
 
+# Browser-automation debug output (page snapshots, console logs)
+.playwright-mcp/
+
 # production
 build/
 dist/
