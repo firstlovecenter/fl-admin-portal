@@ -1,9 +1,9 @@
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
-import { parsePhoneNum, throwToSentry } from '../../../global-utils'
+import { parsePhoneNum, throwToSentry } from 'global-utils'
 import { CREATE_MEMBER_MUTATION } from './CreateMutations'
-import { ChurchContext } from '../../../contexts/ChurchContext'
+import { ChurchContext } from 'contexts/ChurchContext'
 import MemberForm from '../reusable-forms/MemberForm'
 import { Bacenta } from 'global-types'
 import { FormikHelpers } from 'formik'
@@ -63,8 +63,13 @@ const CreateMember = () => {
   //All of the Hooks!
 
   const [CreateMember] = useMutation(CREATE_MEMBER_MUTATION, {
+    // Guard against a partial result: under errorPolicy: 'all' onCompleted
+    // still fires when the write failed, and `CreateMember` is then null —
+    // clicking a null card would blank out ChurchContext.
     onCompleted: (newMemberData) => {
-      clickCard(newMemberData.CreateMember)
+      if (newMemberData?.CreateMember) {
+        clickCard(newMemberData.CreateMember)
+      }
     },
   })
 
@@ -78,8 +83,26 @@ const CreateMember = () => {
     setSubmitting(true)
     // Variables that are not controlled by formik
 
+    // A duplicate email/whatsapp is reported as a plain GraphQL error, so both
+    // the errorPolicy: 'all' path and the catch block route through here.
+    const handleFailure = (message: string, error: unknown) => {
+      setSubmitting(false)
+      // Defensive String(): the old catch block used `message?.toLowerCase?.()`,
+      // whose optional call tolerated a thrown value with a non-string message.
+      // Keep that tolerance so a malformed throw still surfaces an error rather
+      // than a TypeError that escapes this handler.
+      const normalised = String(message ?? '').toLowerCase()
+      if (normalised.includes('email') || normalised.includes('whatsapp')) {
+        setDuplicateDialogMessage(
+          `There was an error creating the member profile\n${message}\n\nWould you like to request for the member?`
+        )
+        return
+      }
+      throwToSentry('There was an error creating the member profile\n', error)
+    }
+
     try {
-      await CreateMember({
+      const createResult = await CreateMember({
         variables: {
           firstName: values.firstName.trim(),
           middleName: values.middleName.trim(),
@@ -98,20 +121,24 @@ const CreateMember = () => {
           basonta: values.basonta,
         },
       })
+
+      // errorPolicy: 'all' (SYN-178) puts GraphQL errors in `.errors` rather
+      // than rejecting the promise — see SYN-205/SYN-206: without this check a
+      // duplicate-member rejection still reset the form and navigated to the
+      // (non-existent) new member's details page as though the write worked.
+      if (createResult.errors?.length) {
+        handleFailure(
+          createResult.errors[0].message,
+          new Error(createResult.errors[0].message)
+        )
+        return
+      }
+
       setSubmitting(false)
       resetForm()
       navigate('/member/displaydetails')
-    } catch (error: any) {
-      const message = error?.message?.toLowerCase?.() ?? ''
-      if (message.includes('email') || message.includes('whatsapp')) {
-        setDuplicateDialogMessage(
-          `There was an error creating the member profile\n${error}\n\nWould you like to request for the member?`
-        )
-        setSubmitting(false)
-      } else {
-        setSubmitting(false)
-        throwToSentry('There was an error creating the member profile\n', error)
-      }
+    } catch (error: unknown) {
+      handleFailure((error as Error)?.message ?? '', error)
     }
   }
 

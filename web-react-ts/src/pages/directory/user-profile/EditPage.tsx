@@ -1,7 +1,8 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
-import { parsePhoneNum } from 'global-utils'
+import { parsePhoneNum, throwToSentry } from 'global-utils'
+import { displayError } from 'utils/errorHandler'
 
 import { UPDATE_MEMBER_MUTATION } from '../update/UpdateMutations'
 import {
@@ -58,28 +59,46 @@ const UserProfileEditPage = () => {
     onSubmitProps.setSubmitting(true)
     //Variables that are not controlled by formik
 
-    await UpdateMember({
-      variables: {
-        id: currentUser.id,
-        firstName: values.firstName,
-        middleName: values.middleName,
-        lastName: values.lastName,
-        gender: values.gender,
-        phoneNumber: parsePhoneNum(values.phoneNumber),
-        whatsappNumber: parsePhoneNum(values.whatsappNumber),
-        email: values.email?.trim().toLowerCase(),
-        dob: values.dob,
-        maritalStatus: values.maritalStatus,
-        occupation: values.occupation,
-        pictureUrl: values.pictureUrl,
+    try {
+      const updateResult = await UpdateMember({
+        variables: {
+          id: currentUser.id,
+          firstName: values.firstName,
+          middleName: values.middleName,
+          lastName: values.lastName,
+          gender: values.gender,
+          phoneNumber: parsePhoneNum(values.phoneNumber),
+          whatsappNumber: parsePhoneNum(values.whatsappNumber),
+          email: values.email?.trim().toLowerCase(),
+          dob: values.dob,
+          maritalStatus: values.maritalStatus,
+          occupation: values.occupation,
+          pictureUrl: values.pictureUrl,
 
-        bacenta: values.bacenta.id,
-        basonta: values.basonta,
-      },
-    })
+          bacenta: values.bacenta.id,
+          basonta: values.basonta,
+        },
+      })
 
-    onSubmitProps.setSubmitting(false)
-    navigate(`/user-profile`)
+      // errorPolicy: 'all' (SYN-178) puts GraphQL errors in `.errors` rather
+      // than rejecting the promise — see SYN-205/SYN-206: without this check a
+      // rejected write (e.g. an email already held by another member) still
+      // navigated back to the profile as though it had saved.
+      if (updateResult.errors?.length) {
+        onSubmitProps.setSubmitting(false)
+        displayError(
+          'There was an error updating your profile',
+          new Error(updateResult.errors[0].message)
+        )
+        return
+      }
+
+      onSubmitProps.setSubmitting(false)
+      navigate(`/user-profile`)
+    } catch (error: unknown) {
+      onSubmitProps.setSubmitting(false)
+      throwToSentry('There was an error updating your profile\n', error)
+    }
   }
 
   return (

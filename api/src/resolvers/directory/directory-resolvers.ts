@@ -136,6 +136,22 @@ const directoryMutation = {
   },
   UpdateMemberDetails: async (object: any, args: Member, context: Context) => {
     isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
+
+    // isAuth only checks the caller HOLDS a bacenta-level role, not WHERE.
+    // Without a scope check any bacenta leader/admin could edit ANY member's
+    // profile org-wide by passing their id (SYN-207, same IDOR class as
+    // SYN-185/186). Siblings UpdateMemberBacenta / ReactivateMemberToBacenta
+    // already gate this way.
+    //
+    // Editing your OWN profile is always permitted: the user-profile EditPage
+    // posts this same mutation with id = the caller's own id, and a servant's
+    // personal bacenta membership does not necessarily sit inside the scope
+    // they lead — asserting scope unconditionally would lock them out of
+    // their own profile.
+    if (args.id !== context?.jwt?.userId) {
+      await assertScopeViaMember(context, args.id)
+    }
+
     const session = context.executionContext.session()
     const email = args?.email?.trim().toLowerCase() || null
 
