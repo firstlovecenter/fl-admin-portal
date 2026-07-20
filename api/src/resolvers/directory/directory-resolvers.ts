@@ -136,6 +136,12 @@ const directoryMutation = {
   },
   UpdateMemberDetails: async (object: any, args: Member, context: Context) => {
     isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
+
+    // isAuth only checks the caller HOLDS a bacenta-level role, not WHERE.
+    // Without this, any bacenta leader/admin could edit any member's profile
+    // org-wide by id — the same IDOR class as UpdateMemberBacenta (SYN-207).
+    await assertScopeViaMember(context, args.id)
+
     const session = context.executionContext.session()
     const email = args?.email?.trim().toLowerCase() || null
 
