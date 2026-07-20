@@ -46,3 +46,5 @@ api/src/resolvers/**/*.js
 # AWS Amplify files
 .amplify/
 amplify-artifacts.json
+# Smith the Agent scratch (run transcript, ticket text, evidence manifests)
+.agent/
