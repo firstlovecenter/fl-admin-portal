@@ -20,7 +20,7 @@
     "execa": "^4.0.2",
     "generate-changelog": "^1.8.0",
     "gitops-secrets": "^0.0.6",
-    "lint-staged": "^15.2.8",
+    "lint-staged": "^17.1.0",
     "prettier": "^3.9.5",
     "shadcn": "^4.13.1",
     "typescript": "^5.9.3",
