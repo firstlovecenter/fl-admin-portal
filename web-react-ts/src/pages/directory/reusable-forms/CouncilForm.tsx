@@ -1,6 +1,7 @@
 import { useMutation } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
+import { useTranslation } from 'react-i18next'
 import { throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -51,6 +52,7 @@ const CouncilForm = ({
   title,
   newCouncil,
 }: CouncilFormProps) => {
+  const { t } = useTranslation()
   const { clickCard, councilId } = useContext(ChurchContext)
   const [governorshipModal, setGovernorshipModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
@@ -71,27 +73,31 @@ const CouncilForm = ({
     }
   )
   const validationSchema = Yup.object({
-    name: Yup.string().required(`Council Name is a required field`),
+    name: Yup.string().required(
+      t('directory.councilForm.validation.nameRequired')
+    ),
     leaderId: Yup.string().required(
-      'Please choose a leader from the drop down'
+      t('directory.councilForm.validation.leaderRequired')
     ),
   })
 
   return (
     <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{`${initialValues.name} Council`}</HeadingSecondary>
+      <HeadingSecondary>
+        {initialValues.name} {t('shared.churchLevel.Council')}
+      </HeadingSecondary>
       <div className="mt-3 inline-flex gap-2">
         {!newCouncil && (
           <>
             <Button onClick={() => setGovernorshipModal(true)}>
-              Add Governorship
+              {t('directory.councilForm.addGovernorship')}
             </Button>
             <Button
               className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
               onClick={() => setCloseDown(true)}
             >
-              Close Down Council
+              {t('directory.councilForm.closeDown')}
             </Button>
           </>
         )}
@@ -111,8 +117,8 @@ const CouncilForm = ({
                   <div className="mb-2 space-y-3">
                     <Input
                       name="name"
-                      label="Name of Council"
-                      placeholder="Name of Council"
+                      label={t('directory.councilForm.nameLabel')}
+                      placeholder={t('directory.councilForm.namePlaceholder')}
                     />
 
                     <div className="mb-3 flex items-center">
@@ -120,8 +126,8 @@ const CouncilForm = ({
                         <div className="flex-1">
                           <SearchMember
                             name="leaderId"
-                            label="Choose a Leader"
-                            placeholder="Start typing..."
+                            label={t('directory.councilForm.leaderLabel')}
+                            placeholder={t('directory.common.startTyping')}
                             initialValue={initialValues?.leaderName}
                             setFieldValue={formik.setFieldValue}
                             aria-describedby="Member Search Box"
@@ -132,7 +138,9 @@ const CouncilForm = ({
                     </div>
                     <div className="grid gap-2">
                       {initialValues.governorships?.length ? (
-                        <p className="text-lg font-semibold">Governorships</p>
+                        <p className="text-lg font-semibold">
+                          {t('shared.churchLevelPlural.Governorship')}
+                        </p>
                       ) : null}
 
                       {initialValues.governorships?.map(
@@ -140,7 +148,9 @@ const CouncilForm = ({
                           if (!governorship && !index) {
                             return (
                               <NoDataComponent
-                                text="No Governorships"
+                                text={t(
+                                  'directory.councilForm.noGovernorships'
+                                )}
                                 key="no"
                               />
                             )
@@ -152,7 +162,8 @@ const CouncilForm = ({
                               variant="secondary"
                               className="justify-start text-left"
                             >
-                              {governorship.name} Governorship
+                              {governorship.name}{' '}
+                              {t('shared.churchLevel.Governorship')}
                             </Button>
                           )
                         }
@@ -173,12 +184,16 @@ const CouncilForm = ({
             >
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add A Governorship</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.councilForm.addGovernorshipDialogTitle')}
+                  </DialogTitle>
                 </DialogHeader>
-                <p>Choose a governorship to move to this council</p>
+                <p>{t('directory.councilForm.addGovernorshipDialogBody')}</p>
                 <SearchGovernorship
                   name="governorship"
-                  placeholder="Governorship Name"
+                  placeholder={t(
+                    'directory.councilForm.governorshipNamePlaceholder'
+                  )}
                   initialValue=""
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Governorship Name"
@@ -219,7 +234,7 @@ const CouncilForm = ({
                     variant="outline"
                     onClick={() => setGovernorshipModal(false)}
                   >
-                    Close
+                    {t('directory.common.close')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -228,10 +243,12 @@ const CouncilForm = ({
             <Dialog open={closeDown} onOpenChange={setCloseDown}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Close Down Council</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.councilForm.closeDown')}
+                  </DialogTitle>
                 </DialogHeader>
                 <p className="text-[hsl(var(--maps))]">
-                  Are you sure you want to close down this council?
+                  {t('directory.councilForm.closeDownConfirm')}
                 </p>
                 <DialogFooter>
                   <Button
@@ -274,7 +291,7 @@ const CouncilForm = ({
                     variant="outline"
                     onClick={() => setCloseDown(false)}
                   >
-                    No, take me back
+                    {t('directory.governorshipForm.closeDownCancel')}
                   </Button>
                 </DialogFooter>
               </DialogContent>

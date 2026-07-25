@@ -43,12 +43,141 @@
       "Oversight": "Supervision",
       "Denomination": "Dénomination"
     },
+    "churchLevelPlural": {
+      "Governorship": "Gouvernorats",
+      "Council": "Conseils",
+      "Stream": "Filières",
+      "Campus": "Campus",
+      "Oversight": "Supervisions",
+      "Denomination": "Dénominations"
+    },
     "roleLabel": {
       "leader": "Responsable",
       "admin": "Administrateur",
       "arrivalsAdmin": "Administrateur des arrivées",
       "arrivalsCounter": "Compteur des arrivées",
       "teller": "Caissier"
+    }
+  },
+  "directory": {
+    "common": {
+      "startTyping": "Commencez à taper...",
+      "close": "Fermer",
+      "chooseOne": "Choisissez-en un",
+      "selectACurrency": "Sélectionnez une devise"
+    },
+    "campusForm": {
+      "validation": {
+        "nameRequired": "Le nom du campus est requis",
+        "leaderRequired": "Veuillez choisir un responsable dans la liste"
+      },
+      "nameLabel": "Nom du campus",
+      "namePlaceholder": "Nom du campus",
+      "incomeTrackingLabel": "Allez-vous suivre les revenus de ce campus ?",
+      "currencyLabel": "Devise",
+      "conversionRateLabel": "Taux de conversion en dollars (combien vaut 1 $ dans cette devise)",
+      "conversionRatePlaceholder": "Taux de conversion en dollars",
+      "leaderLabel": "Choisir un responsable",
+      "noStreams": "Aucune filière",
+      "addStream": "Ajouter une filière",
+      "closeDown": "Fermer le campus",
+      "addStreamDialogTitle": "Ajouter une filière",
+      "addStreamDialogBody": "Choisissez une filière à déplacer vers ce campus",
+      "streamNamePlaceholder": "Nom de la filière",
+      "closeDownConfirm": "Êtes-vous sûr de vouloir fermer ce campus ?"
+    },
+    "councilForm": {
+      "validation": {
+        "nameRequired": "Le nom du conseil est requis",
+        "leaderRequired": "Veuillez choisir un responsable dans la liste"
+      },
+      "nameLabel": "Nom du conseil",
+      "namePlaceholder": "Nom du conseil",
+      "leaderLabel": "Choisir un responsable",
+      "addGovernorship": "Ajouter un gouvernorat",
+      "closeDown": "Fermer le conseil",
+      "noGovernorships": "Aucun gouvernorat",
+      "addGovernorshipDialogTitle": "Ajouter un gouvernorat",
+      "addGovernorshipDialogBody": "Choisissez un gouvernorat à déplacer vers ce conseil",
+      "governorshipNamePlaceholder": "Nom du gouvernorat",
+      "closeDownConfirm": "Êtes-vous sûr de vouloir fermer ce conseil ?"
+    },
+    "streamForm": {
+      "validation": {
+        "nameRequired": "Le nom de la filière est requis",
+        "leaderRequired": "Veuillez choisir un responsable dans la liste",
+        "vacationStatusRequired": "Le statut de vacances est requis",
+        "meetingDayRequired": "Le jour de réunion est requis"
+      },
+      "nameLabel": "Nom de la filière",
+      "namePlaceholder": "Nom de la filière",
+      "meetingDayLabel": "Jour de réunion",
+      "meetingDayDefaultOption": "Choisissez un jour de culte",
+      "vacationStatusLabel": "Statut de vacances",
+      "vacationStatusDefaultOption": "Sélectionnez le statut de vacances",
+      "bankAccountLabel": "Compte de la filière",
+      "leaderLabel": "Choisir un responsable",
+      "noCouncils": "Aucun conseil",
+      "addCouncil": "Ajouter un conseil",
+      "closeDown": "Fermer la filière",
+      "addCouncilDialogTitle": "Ajouter un conseil",
+      "addCouncilDialogBody": "Choisissez un conseil à déplacer vers cette filière",
+      "councilNamePlaceholder": "Nom du conseil",
+      "closeDownConfirm": "Êtes-vous sûr de vouloir fermer cette filière ?"
+    },
+    "quickFacts": {
+      "title": "Faits rapides"
+    },
+    "oversightForm": {
+      "validation": {
+        "nameRequired": "Le nom de la supervision est requis",
+        "leaderRequired": "Veuillez choisir un responsable dans la liste"
+      },
+      "nameLabel": "Nom de la supervision",
+      "namePlaceholder": "Nom de la supervision",
+      "leaderLabel": "Choisir un responsable",
+      "noCampuses": "Aucun campus",
+      "addCampus": "Ajouter un campus",
+      "closeDown": "Fermer la supervision",
+      "addCampusDialogTitle": "Ajouter un campus",
+      "addCampusDialogBody": "Choisissez un campus à déplacer vers cette supervision",
+      "campusNamePlaceholder": "Nom du campus",
+      "closeDownConfirm": "Êtes-vous sûr de vouloir fermer cette supervision ?"
+    },
+    "governorshipForm": {
+      "validation": {
+        "nameRequired": "Le nom du gouvernorat est requis",
+        "leaderRequired": "Veuillez choisir un responsable dans la liste"
+      },
+      "nameLabel": "Nom du gouvernorat",
+      "namePlaceholder": "Nom du gouvernorat",
+      "leaderLabel": "Choisir un responsable",
+      "noBacentas": "Aucun Bacenta",
+      "addBacenta": "Ajouter un Bacenta",
+      "closeDown": "Fermer le gouvernorat",
+      "addBacentaDialogTitle": "Ajouter un Bacenta",
+      "addBacentaDialogBody": "Choisissez un Bacenta à déplacer vers ce gouvernorat",
+      "bacentaNamePlaceholder": "Nom du Bacenta",
+      "moveBacentaError": "Impossible de déplacer le Bacenta",
+      "closeDownConfirm": "Êtes-vous sûr de vouloir fermer ce gouvernorat ?",
+      "closeDownError": "Impossible de fermer le gouvernorat",
+      "closeDownCancel": "Non, retour en arrière"
+    },
+    "denominationForm": {
+      "validation": {
+        "nameRequired": "Le nom de la dénomination est requis",
+        "leaderRequired": "Veuillez choisir un responsable dans la liste"
+      },
+      "nameLabel": "Nom de la dénomination",
+      "namePlaceholder": "Nom de la dénomination",
+      "leaderLabel": "Choisir un responsable",
+      "noOversights": "Aucune supervision"
+    },
+    "updateDenomination": {
+      "formTitle": "Formulaire de mise à jour de la dénomination",
+      "leaderChanged": "Responsable changé avec succès",
+      "leaderChangeError": "Un problème est survenu lors du changement de responsable",
+      "updateError": "Un problème est survenu lors de la mise à jour de cette dénomination"
     }
   },
   "dashboard": {

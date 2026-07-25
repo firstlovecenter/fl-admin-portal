@@ -1,6 +1,7 @@
 import { useMutation } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
+import { useTranslation } from 'react-i18next'
 import { throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -54,6 +55,7 @@ const OversightForm = ({
   title,
   newOversight,
 }: OversightFormProps) => {
+  const { t } = useTranslation()
   const { clickCard, oversightId } = useContext(ChurchContext)
   const [campusModal, setCampusModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
@@ -75,25 +77,31 @@ const OversightForm = ({
   })
 
   const validationSchema = Yup.object({
-    name: Yup.string().required(`Oversight Name is a required field`),
+    name: Yup.string().required(
+      t('directory.oversightForm.validation.nameRequired')
+    ),
     leaderId: Yup.string().required(
-      'Please choose a leader from the drop down'
+      t('directory.oversightForm.validation.leaderRequired')
     ),
   })
 
   return (
     <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{`${initialValues.name} Oversight`}</HeadingSecondary>
+      <HeadingSecondary>
+        {initialValues.name} {t('shared.churchLevel.Oversight')}
+      </HeadingSecondary>
       <div className="mt-3 inline-flex gap-2">
         {!newOversight && (
           <>
-            <Button onClick={() => setCampusModal(true)}>Add Campus</Button>
+            <Button onClick={() => setCampusModal(true)}>
+              {t('directory.oversightForm.addCampus')}
+            </Button>
             <Button
               className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
               onClick={() => setCloseDown(true)}
             >
-              Close Down Oversight
+              {t('directory.oversightForm.closeDown')}
             </Button>
           </>
         )}
@@ -113,8 +121,10 @@ const OversightForm = ({
                   <div className="mb-2 space-y-3">
                     <Input
                       name="name"
-                      label="Name of Oversight"
-                      placeholder="Name of Oversight"
+                      label={t('directory.oversightForm.nameLabel')}
+                      placeholder={t(
+                        'directory.oversightForm.namePlaceholder'
+                      )}
                     />
 
                     <div className="mb-3 flex items-center">
@@ -122,8 +132,8 @@ const OversightForm = ({
                         <div className="flex-1">
                           <SearchMember
                             name="leaderId"
-                            label="Choose a Leader"
-                            placeholder="Start typing..."
+                            label={t('directory.oversightForm.leaderLabel')}
+                            placeholder={t('directory.common.startTyping')}
                             initialValue={initialValues?.leaderName}
                             setFieldValue={formik.setFieldValue}
                             aria-describedby="Member Search Box"
@@ -133,10 +143,17 @@ const OversightForm = ({
                       </RoleView>
                     </div>
                     <div className="grid gap-2">
-                      <p className="text-lg font-semibold">Campuses</p>
+                      <p className="text-lg font-semibold">
+                        {t('shared.churchLevelPlural.Campus')}
+                      </p>
                       {initialValues.campuses?.map((campus, index) => {
                         if (!campus && !index) {
-                          return <NoDataComponent text="No Campuses" key="no" />
+                          return (
+                            <NoDataComponent
+                              text={t('directory.oversightForm.noCampuses')}
+                              key="no"
+                            />
+                          )
                         }
                         return (
                           <Button
@@ -145,7 +162,7 @@ const OversightForm = ({
                             variant="secondary"
                             className="justify-start text-left"
                           >
-                            {campus.name} Campus
+                            {campus.name} {t('shared.churchLevel.Campus')}
                           </Button>
                         )
                       })}
@@ -162,12 +179,16 @@ const OversightForm = ({
             <Dialog open={campusModal} onOpenChange={setCampusModal}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add A Campus</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.oversightForm.addCampusDialogTitle')}
+                  </DialogTitle>
                 </DialogHeader>
-                <p>Choose a campus to move to this oversight</p>
+                <p>{t('directory.oversightForm.addCampusDialogBody')}</p>
                 <SearchCampus
                   name="campus"
-                  placeholder="Campus Name"
+                  placeholder={t(
+                    'directory.oversightForm.campusNamePlaceholder'
+                  )}
                   initialValue=""
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Campus Name"
@@ -207,7 +228,7 @@ const OversightForm = ({
                     variant="outline"
                     onClick={() => setCampusModal(false)}
                   >
-                    Close
+                    {t('directory.common.close')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -216,10 +237,12 @@ const OversightForm = ({
             <Dialog open={closeDown} onOpenChange={setCloseDown}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Close Down Oversight</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.oversightForm.closeDown')}
+                  </DialogTitle>
                 </DialogHeader>
                 <p className="text-[hsl(var(--maps))]">
-                  Are you sure you want to close down this oversight?
+                  {t('directory.oversightForm.closeDownConfirm')}
                 </p>
                 <DialogFooter>
                   <Button
@@ -262,7 +285,7 @@ const OversightForm = ({
                     variant="outline"
                     onClick={() => setCloseDown(false)}
                   >
-                    No, take me back
+                    {t('directory.governorshipForm.closeDownCancel')}
                   </Button>
                 </DialogFooter>
               </DialogContent>

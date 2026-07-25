@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation } from '@apollo/client'
 import { alertSuccess, throwToSentry } from '../../../global-utils'
 import { GET_DENOMINATION_OVERSIGHTS } from '../../../queries/ListQueries'
@@ -15,6 +16,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 
 const UpdateDenomination = () => {
+  const { t } = useTranslation()
   const { denominationId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(DISPLAY_DENOMINATION, {
     variables: { id: denominationId },
@@ -91,17 +93,20 @@ const UpdateDenomination = () => {
               denominationId: denominationId,
             },
           })
-          alertSuccess('Leader Changed Successfully')
+          alertSuccess(t('directory.updateDenomination.leaderChanged'))
           navigate(`/denomination/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
             throwToSentry(
-              'There was a problem changing the leader',
+              t('directory.updateDenomination.leaderChangeError'),
               errorArray[0]
             )
           } else {
-            throwToSentry('There was a problem changing the leader', err)
+            throwToSentry(
+              t('directory.updateDenomination.leaderChangeError'),
+              err
+            )
           }
         }
       }
@@ -110,7 +115,7 @@ const UpdateDenomination = () => {
       resetForm()
       navigate(`/denomination/displaydetails`)
     } catch (err: any) {
-      throwToSentry('There was a problem updating this denomination', err)
+      throwToSentry(t('directory.updateDenomination.updateError'), err)
       setSubmitting(false)
     }
   }
@@ -120,7 +125,7 @@ const UpdateDenomination = () => {
       <DenominationForm
         initialValues={initialValues}
         onSubmit={onSubmit}
-        title={`Update Denomination Form`}
+        title={t('directory.updateDenomination.formTitle')}
         newDenomination={false}
       />
     </ApolloWrapper>

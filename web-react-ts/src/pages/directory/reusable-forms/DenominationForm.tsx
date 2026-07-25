@@ -1,5 +1,6 @@
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
+import { useTranslation } from 'react-i18next'
 import RoleView from 'auth/RoleView'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
@@ -31,17 +32,22 @@ const DenominationForm = ({
   onSubmit,
   title,
 }: DenominationFormProps) => {
+  const { t } = useTranslation()
   const validationSchema = Yup.object({
-    name: Yup.string().required(`Denomination Name is a required field`),
+    name: Yup.string().required(
+      t('directory.denominationForm.validation.nameRequired')
+    ),
     leaderId: Yup.string().required(
-      'Please choose a leader from the drop down'
+      t('directory.denominationForm.validation.leaderRequired')
     ),
   })
 
   return (
     <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{`${initialValues.name} Denomination`}</HeadingSecondary>
+      <HeadingSecondary>
+        {initialValues.name} {t('shared.churchLevel.Denomination')}
+      </HeadingSecondary>
 
       <Formik
         initialValues={initialValues}
@@ -57,8 +63,10 @@ const DenominationForm = ({
                   <div className="mb-2 space-y-3">
                     <Input
                       name="name"
-                      label="Name of Denomination"
-                      placeholder="Name of Denomination"
+                      label={t('directory.denominationForm.nameLabel')}
+                      placeholder={t(
+                        'directory.denominationForm.namePlaceholder'
+                      )}
                     />
 
                     <div className="mb-3 flex items-center">
@@ -66,8 +74,8 @@ const DenominationForm = ({
                         <div className="flex-1">
                           <SearchMember
                             name="leaderId"
-                            label="Choose a Leader"
-                            placeholder="Start typing..."
+                            label={t('directory.denominationForm.leaderLabel')}
+                            placeholder={t('directory.common.startTyping')}
                             initialValue={initialValues?.leaderName}
                             setFieldValue={formik.setFieldValue}
                             aria-describedby="Member Search Box"
@@ -77,11 +85,18 @@ const DenominationForm = ({
                       </RoleView>
                     </div>
                     <div className="grid gap-2">
-                      <p className="text-lg font-semibold">Oversights</p>
+                      <p className="text-lg font-semibold">
+                        {t('shared.churchLevelPlural.Oversight')}
+                      </p>
                       {initialValues.oversights?.map((oversight, index) => {
                         if (!oversight && !index) {
                           return (
-                            <NoDataComponent text="No Oversights" key="no" />
+                            <NoDataComponent
+                              text={t(
+                                'directory.denominationForm.noOversights'
+                              )}
+                              key="no"
+                            />
                           )
                         }
                         return (
@@ -91,7 +106,8 @@ const DenominationForm = ({
                             variant="secondary"
                             className="justify-start text-left"
                           >
-                            {oversight.name} Oversight
+                            {oversight.name}{' '}
+                            {t('shared.churchLevel.Oversight')}
                           </Button>
                         )
                       })}

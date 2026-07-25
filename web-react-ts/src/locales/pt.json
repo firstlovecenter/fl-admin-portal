@@ -43,12 +43,141 @@
       "Oversight": "Supervisão",
       "Denomination": "Denominação"
     },
+    "churchLevelPlural": {
+      "Governorship": "Governadorias",
+      "Council": "Conselhos",
+      "Stream": "Fluxos",
+      "Campus": "Campi",
+      "Oversight": "Supervisões",
+      "Denomination": "Denominações"
+    },
     "roleLabel": {
       "leader": "Líder",
       "admin": "Administrador",
       "arrivalsAdmin": "Administrador de chegadas",
       "arrivalsCounter": "Contador de chegadas",
       "teller": "Caixa"
+    }
+  },
+  "directory": {
+    "common": {
+      "startTyping": "Comece a digitar...",
+      "close": "Fechar",
+      "chooseOne": "Escolha uma opção",
+      "selectACurrency": "Selecione uma moeda"
+    },
+    "campusForm": {
+      "validation": {
+        "nameRequired": "O nome do campus é obrigatório",
+        "leaderRequired": "Selecione um líder na lista"
+      },
+      "nameLabel": "Nome do campus",
+      "namePlaceholder": "Nome do campus",
+      "incomeTrackingLabel": "Você vai acompanhar a renda deste campus?",
+      "currencyLabel": "Moeda",
+      "conversionRateLabel": "Taxa de conversão em dólares (quanto vale $1 nesta moeda)",
+      "conversionRatePlaceholder": "Taxa de conversão em dólares",
+      "leaderLabel": "Escolher um líder",
+      "noStreams": "Nenhum fluxo",
+      "addStream": "Adicionar fluxo",
+      "closeDown": "Encerrar o campus",
+      "addStreamDialogTitle": "Adicionar um fluxo",
+      "addStreamDialogBody": "Escolha um fluxo para mover para este campus",
+      "streamNamePlaceholder": "Nome do fluxo",
+      "closeDownConfirm": "Tem certeza de que deseja encerrar este campus?"
+    },
+    "councilForm": {
+      "validation": {
+        "nameRequired": "O nome do conselho é obrigatório",
+        "leaderRequired": "Selecione um líder na lista"
+      },
+      "nameLabel": "Nome do conselho",
+      "namePlaceholder": "Nome do conselho",
+      "leaderLabel": "Escolher um líder",
+      "addGovernorship": "Adicionar governadoria",
+      "closeDown": "Encerrar o conselho",
+      "noGovernorships": "Nenhuma governadoria",
+      "addGovernorshipDialogTitle": "Adicionar uma governadoria",
+      "addGovernorshipDialogBody": "Escolha uma governadoria para mover para este conselho",
+      "governorshipNamePlaceholder": "Nome da governadoria",
+      "closeDownConfirm": "Tem certeza de que deseja encerrar este conselho?"
+    },
+    "streamForm": {
+      "validation": {
+        "nameRequired": "O nome do fluxo é obrigatório",
+        "leaderRequired": "Selecione um líder na lista",
+        "vacationStatusRequired": "O status de férias é obrigatório",
+        "meetingDayRequired": "O dia de reunião é obrigatório"
+      },
+      "nameLabel": "Nome do fluxo",
+      "namePlaceholder": "Nome do fluxo",
+      "meetingDayLabel": "Dia de reunião",
+      "meetingDayDefaultOption": "Escolha um dia de culto",
+      "vacationStatusLabel": "Status de férias",
+      "vacationStatusDefaultOption": "Selecione o status de férias",
+      "bankAccountLabel": "Conta do fluxo",
+      "leaderLabel": "Escolher um líder",
+      "noCouncils": "Nenhum conselho",
+      "addCouncil": "Adicionar conselho",
+      "closeDown": "Encerrar o fluxo",
+      "addCouncilDialogTitle": "Adicionar um conselho",
+      "addCouncilDialogBody": "Escolha um conselho para mover para este fluxo",
+      "councilNamePlaceholder": "Nome do conselho",
+      "closeDownConfirm": "Tem certeza de que deseja encerrar este fluxo?"
+    },
+    "quickFacts": {
+      "title": "Fatos rápidos"
+    },
+    "oversightForm": {
+      "validation": {
+        "nameRequired": "O nome da supervisão é obrigatório",
+        "leaderRequired": "Selecione um líder na lista"
+      },
+      "nameLabel": "Nome da supervisão",
+      "namePlaceholder": "Nome da supervisão",
+      "leaderLabel": "Escolher um líder",
+      "noCampuses": "Nenhum campus",
+      "addCampus": "Adicionar campus",
+      "closeDown": "Encerrar a supervisão",
+      "addCampusDialogTitle": "Adicionar um campus",
+      "addCampusDialogBody": "Escolha um campus para mover para esta supervisão",
+      "campusNamePlaceholder": "Nome do campus",
+      "closeDownConfirm": "Tem certeza de que deseja encerrar esta supervisão?"
+    },
+    "governorshipForm": {
+      "validation": {
+        "nameRequired": "O nome do governadoria é obrigatório",
+        "leaderRequired": "Selecione um líder na lista"
+      },
+      "nameLabel": "Nome da governadoria",
+      "namePlaceholder": "Nome da governadoria",
+      "leaderLabel": "Escolher um líder",
+      "noBacentas": "Nenhum Bacenta",
+      "addBacenta": "Adicionar Bacenta",
+      "closeDown": "Encerrar a governadoria",
+      "addBacentaDialogTitle": "Adicionar um Bacenta",
+      "addBacentaDialogBody": "Escolha um Bacenta para mover para esta governadoria",
+      "bacentaNamePlaceholder": "Nome do Bacenta",
+      "moveBacentaError": "Não foi possível mover o Bacenta",
+      "closeDownConfirm": "Tem certeza de que deseja encerrar esta governadoria?",
+      "closeDownError": "Não foi possível encerrar a governadoria",
+      "closeDownCancel": "Não, voltar"
+    },
+    "denominationForm": {
+      "validation": {
+        "nameRequired": "O nome da denominação é obrigatório",
+        "leaderRequired": "Selecione um líder na lista"
+      },
+      "nameLabel": "Nome da denominação",
+      "namePlaceholder": "Nome da denominação",
+      "leaderLabel": "Escolher um líder",
+      "noOversights": "Nenhuma supervisão"
+    },
+    "updateDenomination": {
+      "formTitle": "Formulário de atualização de denominação",
+      "leaderChanged": "Líder alterado com sucesso",
+      "leaderChangeError": "Houve um problema ao alterar o líder",
+      "updateError": "Houve um problema ao atualizar esta denominação"
     }
   },
   "dashboard": {

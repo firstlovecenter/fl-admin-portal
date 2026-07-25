@@ -43,12 +43,141 @@
       "Oversight": "Aufsicht",
       "Denomination": "Konfession"
     },
+    "churchLevelPlural": {
+      "Governorship": "Gouvernorate",
+      "Council": "Räte",
+      "Stream": "Zweige",
+      "Campus": "Campusse",
+      "Oversight": "Aufsichten",
+      "Denomination": "Konfessionen"
+    },
     "roleLabel": {
       "leader": "Leiter",
       "admin": "Administrator",
       "arrivalsAdmin": "Ankunfts-Administrator",
       "arrivalsCounter": "Ankunftszähler",
       "teller": "Kassierer"
+    }
+  },
+  "directory": {
+    "common": {
+      "startTyping": "Zu tippen beginnen...",
+      "close": "Schließen",
+      "chooseOne": "Eine Option wählen",
+      "selectACurrency": "Eine Währung auswählen"
+    },
+    "campusForm": {
+      "validation": {
+        "nameRequired": "Der Name des Campus ist erforderlich",
+        "leaderRequired": "Bitte wählen Sie einen Leiter aus der Liste"
+      },
+      "nameLabel": "Name des Campus",
+      "namePlaceholder": "Name des Campus",
+      "incomeTrackingLabel": "Werden Sie die Einnahmen für diesen Campus erfassen?",
+      "currencyLabel": "Währung",
+      "conversionRateLabel": "Dollar-Umrechnungskurs (Wie viel ist 1 $ in dieser Währung)",
+      "conversionRatePlaceholder": "Dollar-Umrechnungskurs",
+      "leaderLabel": "Leiter auswählen",
+      "noStreams": "Keine Zweige",
+      "addStream": "Zweig hinzufügen",
+      "closeDown": "Campus schließen",
+      "addStreamDialogTitle": "Einen Zweig hinzufügen",
+      "addStreamDialogBody": "Wählen Sie einen Zweig aus, der in diesen Campus verschoben werden soll",
+      "streamNamePlaceholder": "Name des Zweigs",
+      "closeDownConfirm": "Sind Sie sicher, dass Sie diesen Campus schließen möchten?"
+    },
+    "councilForm": {
+      "validation": {
+        "nameRequired": "Der Name des Rates ist erforderlich",
+        "leaderRequired": "Bitte wählen Sie einen Leiter aus der Liste"
+      },
+      "nameLabel": "Name des Rates",
+      "namePlaceholder": "Name des Rates",
+      "leaderLabel": "Leiter auswählen",
+      "addGovernorship": "Gouvernorat hinzufügen",
+      "closeDown": "Rat schließen",
+      "noGovernorships": "Keine Gouvernorate",
+      "addGovernorshipDialogTitle": "Ein Gouvernorat hinzufügen",
+      "addGovernorshipDialogBody": "Wählen Sie ein Gouvernorat aus, das in diesen Rat verschoben werden soll",
+      "governorshipNamePlaceholder": "Name des Gouvernorats",
+      "closeDownConfirm": "Sind Sie sicher, dass Sie diesen Rat schließen möchten?"
+    },
+    "streamForm": {
+      "validation": {
+        "nameRequired": "Der Name des Zweigs ist erforderlich",
+        "leaderRequired": "Bitte wählen Sie einen Leiter aus der Liste",
+        "vacationStatusRequired": "Der Urlaubsstatus ist erforderlich",
+        "meetingDayRequired": "Der Treffentag ist erforderlich"
+      },
+      "nameLabel": "Name des Zweigs",
+      "namePlaceholder": "Name des Zweigs",
+      "meetingDayLabel": "Treffentag",
+      "meetingDayDefaultOption": "Einen Gottesdiensttag wählen",
+      "vacationStatusLabel": "Urlaubsstatus",
+      "vacationStatusDefaultOption": "Urlaubsstatus auswählen",
+      "bankAccountLabel": "Konto des Zweigs",
+      "leaderLabel": "Leiter auswählen",
+      "noCouncils": "Keine Räte",
+      "addCouncil": "Rat hinzufügen",
+      "closeDown": "Zweig schließen",
+      "addCouncilDialogTitle": "Einen Rat hinzufügen",
+      "addCouncilDialogBody": "Wählen Sie einen Rat aus, der in diesen Zweig verschoben werden soll",
+      "councilNamePlaceholder": "Name des Rates",
+      "closeDownConfirm": "Sind Sie sicher, dass Sie diesen Zweig schließen möchten?"
+    },
+    "quickFacts": {
+      "title": "Kurzfakten"
+    },
+    "oversightForm": {
+      "validation": {
+        "nameRequired": "Der Name der Aufsicht ist erforderlich",
+        "leaderRequired": "Bitte wählen Sie einen Leiter aus der Liste"
+      },
+      "nameLabel": "Name der Aufsicht",
+      "namePlaceholder": "Name der Aufsicht",
+      "leaderLabel": "Leiter auswählen",
+      "noCampuses": "Keine Campusse",
+      "addCampus": "Campus hinzufügen",
+      "closeDown": "Aufsicht schließen",
+      "addCampusDialogTitle": "Einen Campus hinzufügen",
+      "addCampusDialogBody": "Wählen Sie einen Campus aus, der in diese Aufsicht verschoben werden soll",
+      "campusNamePlaceholder": "Name des Campus",
+      "closeDownConfirm": "Sind Sie sicher, dass Sie diese Aufsicht schließen möchten?"
+    },
+    "governorshipForm": {
+      "validation": {
+        "nameRequired": "Der Name des Gouvernorats ist erforderlich",
+        "leaderRequired": "Bitte wählen Sie einen Leiter aus der Liste"
+      },
+      "nameLabel": "Name des Gouvernorats",
+      "namePlaceholder": "Name des Gouvernorats",
+      "leaderLabel": "Leiter auswählen",
+      "noBacentas": "Keine Bacentas",
+      "addBacenta": "Bacenta hinzufügen",
+      "closeDown": "Gouvernorat schließen",
+      "addBacentaDialogTitle": "Ein Bacenta hinzufügen",
+      "addBacentaDialogBody": "Wählen Sie ein Bacenta aus, das in dieses Gouvernorat verschoben werden soll",
+      "bacentaNamePlaceholder": "Name des Bacenta",
+      "moveBacentaError": "Bacenta konnte nicht verschoben werden",
+      "closeDownConfirm": "Sind Sie sicher, dass Sie dieses Gouvernorat schließen möchten?",
+      "closeDownError": "Gouvernorat konnte nicht geschlossen werden",
+      "closeDownCancel": "Nein, zurück"
+    },
+    "denominationForm": {
+      "validation": {
+        "nameRequired": "Der Name der Konfession ist erforderlich",
+        "leaderRequired": "Bitte wählen Sie einen Leiter aus der Liste"
+      },
+      "nameLabel": "Name der Konfession",
+      "namePlaceholder": "Name der Konfession",
+      "leaderLabel": "Leiter auswählen",
+      "noOversights": "Keine Aufsichten"
+    },
+    "updateDenomination": {
+      "formTitle": "Formular zur Aktualisierung der Konfession",
+      "leaderChanged": "Leiter erfolgreich geändert",
+      "leaderChangeError": "Beim Ändern des Leiters ist ein Problem aufgetreten",
+      "updateError": "Beim Aktualisieren dieser Konfession ist ein Problem aufgetreten"
     }
   },
   "dashboard": {

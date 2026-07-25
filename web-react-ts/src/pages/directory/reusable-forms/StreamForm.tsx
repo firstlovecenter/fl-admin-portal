@@ -1,6 +1,7 @@
 import { useMutation } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
+import { useTranslation } from 'react-i18next'
 import {
   STREAM_ACCOUNT_OPTIONS,
   STREAM_SERVICE_DAY_OPTIONS,
@@ -72,6 +73,7 @@ const StreamForm = ({
   title,
   newStream,
 }: StreamFormProps) => {
+  const { t } = useTranslation()
   const { clickCard, streamId } = useContext(ChurchContext)
   const [councilModal, setCouncilModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
@@ -87,29 +89,37 @@ const StreamForm = ({
     refetchQueries: [{ query: DISPLAY_STREAM, variables: { id: streamId } }],
   })
   const validationSchema = Yup.object({
-    name: Yup.string().required(`Stream Name is a required field`),
+    name: Yup.string().required(
+      t('directory.streamForm.validation.nameRequired')
+    ),
     leaderId: Yup.string().required(
-      'Please choose a leader from the drop down'
+      t('directory.streamForm.validation.leaderRequired')
     ),
     vacationStatus: Yup.string().required(
-      'Vacation Status is a required field'
+      t('directory.streamForm.validation.vacationStatusRequired')
     ),
-    meetingDay: Yup.string().required('Meeting Day is a required field'),
+    meetingDay: Yup.string().required(
+      t('directory.streamForm.validation.meetingDayRequired')
+    ),
   })
 
   return (
     <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{`${initialValues.name} Stream`}</HeadingSecondary>
+      <HeadingSecondary>
+        {initialValues.name} {t('shared.churchLevel.Stream')}
+      </HeadingSecondary>
       <div className="mt-3 inline-flex gap-2">
         {!newStream && (
           <>
-            <Button onClick={() => setCouncilModal(true)}>Add Council</Button>
+            <Button onClick={() => setCouncilModal(true)}>
+              {t('directory.streamForm.addCouncil')}
+            </Button>
             <Button
               className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
               onClick={() => setCloseDown(true)}
             >
-              Close Down Stream
+              {t('directory.streamForm.closeDown')}
             </Button>
           </>
         )}
@@ -129,24 +139,28 @@ const StreamForm = ({
                   <div className="mb-2 space-y-3">
                     <Input
                       name="name"
-                      label="Name of Stream"
-                      placeholder="Name of Stream"
+                      label={t('directory.streamForm.nameLabel')}
+                      placeholder={t('directory.streamForm.namePlaceholder')}
                     />
 
                     <Select
-                      label="Meeting Day"
+                      label={t('directory.streamForm.meetingDayLabel')}
                       name="meetingDay"
                       options={STREAM_SERVICE_DAY_OPTIONS}
-                      defaultOption="Pick a Service Day"
+                      defaultOption={t(
+                        'directory.streamForm.meetingDayDefaultOption'
+                      )}
                     />
                     <Select
-                      label="Vacation Status"
+                      label={t('directory.streamForm.vacationStatusLabel')}
                       name="vacationStatus"
                       options={VACATION_OPTIONS}
-                      defaultOption="Select Vacation Status"
+                      defaultOption={t(
+                        'directory.streamForm.vacationStatusDefaultOption'
+                      )}
                     />
                     <Select
-                      label="Stream Account"
+                      label={t('directory.streamForm.bankAccountLabel')}
                       name="bankAccount"
                       options={STREAM_ACCOUNT_OPTIONS}
                     />
@@ -156,8 +170,8 @@ const StreamForm = ({
                         <div className="flex-1">
                           <SearchMember
                             name="leaderId"
-                            label="Choose a Leader"
-                            placeholder="Start typing..."
+                            label={t('directory.streamForm.leaderLabel')}
+                            placeholder={t('directory.common.startTyping')}
                             initialValue={initialValues?.leaderName}
                             setFieldValue={formik.setFieldValue}
                             aria-describedby="Member Search Box"
@@ -168,11 +182,18 @@ const StreamForm = ({
                     </div>
                     <div className="grid gap-2">
                       {initialValues.councils?.length ? (
-                        <p className="text-lg font-semibold">Councils</p>
+                        <p className="text-lg font-semibold">
+                          {t('shared.churchLevelPlural.Council')}
+                        </p>
                       ) : null}
                       {initialValues.councils?.map((council, index) => {
                         if (!council && !index) {
-                          return <NoDataComponent text="No Councils" key="no" />
+                          return (
+                            <NoDataComponent
+                              text={t('directory.streamForm.noCouncils')}
+                              key="no"
+                            />
+                          )
                         }
                         return (
                           <Button
@@ -181,7 +202,7 @@ const StreamForm = ({
                             variant="secondary"
                             className="justify-start text-left"
                           >
-                            {council.name} Council
+                            {council.name} {t('shared.churchLevel.Council')}
                           </Button>
                         )
                       })}
@@ -198,12 +219,16 @@ const StreamForm = ({
             <Dialog open={councilModal} onOpenChange={setCouncilModal}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add A Council</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.streamForm.addCouncilDialogTitle')}
+                  </DialogTitle>
                 </DialogHeader>
-                <p>Choose a council to move to this stream</p>
+                <p>{t('directory.streamForm.addCouncilDialogBody')}</p>
                 <SearchCouncil
                   name="council"
-                  placeholder="Council Name"
+                  placeholder={t(
+                    'directory.streamForm.councilNamePlaceholder'
+                  )}
                   initialValue=""
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Council Name"
@@ -243,7 +268,7 @@ const StreamForm = ({
                     variant="outline"
                     onClick={() => setCouncilModal(false)}
                   >
-                    Close
+                    {t('directory.common.close')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -252,10 +277,12 @@ const StreamForm = ({
             <Dialog open={closeDown} onOpenChange={setCloseDown}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Close Down Stream</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.streamForm.closeDown')}
+                  </DialogTitle>
                 </DialogHeader>
                 <p className="text-[hsl(var(--maps))]">
-                  Are you sure you want to close down this stream?
+                  {t('directory.streamForm.closeDownConfirm')}
                 </p>
                 <DialogFooter>
                   <Button
@@ -298,7 +325,7 @@ const StreamForm = ({
                     variant="outline"
                     onClick={() => setCloseDown(false)}
                   >
-                    No, take me back
+                    {t('directory.governorshipForm.closeDownCancel')}
                   </Button>
                 </DialogFooter>
               </DialogContent>

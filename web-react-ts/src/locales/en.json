@@ -43,12 +43,141 @@
       "Oversight": "Oversight",
       "Denomination": "Denomination"
     },
+    "churchLevelPlural": {
+      "Governorship": "Governorships",
+      "Council": "Councils",
+      "Stream": "Streams",
+      "Campus": "Campuses",
+      "Oversight": "Oversights",
+      "Denomination": "Denominations"
+    },
     "roleLabel": {
       "leader": "Leader",
       "admin": "Admin",
       "arrivalsAdmin": "Arrivals Admin",
       "arrivalsCounter": "Arrivals Counter",
       "teller": "Teller"
+    }
+  },
+  "directory": {
+    "common": {
+      "startTyping": "Start typing...",
+      "close": "Close",
+      "chooseOne": "Choose One",
+      "selectACurrency": "Select a Currency"
+    },
+    "campusForm": {
+      "validation": {
+        "nameRequired": "Campus Name is a required field",
+        "leaderRequired": "Please choose a leader from the drop down"
+      },
+      "nameLabel": "Name of Campus",
+      "namePlaceholder": "Name of Campus",
+      "incomeTrackingLabel": "Will you be tracking income for this Campus?",
+      "currencyLabel": "Currency",
+      "conversionRateLabel": "Dollar Conversion Rate (How Much Is $1 In Currency)",
+      "conversionRatePlaceholder": "Dollar Conversion Rate",
+      "leaderLabel": "Choose a Leader",
+      "noStreams": "No Streams",
+      "addStream": "Add Stream",
+      "closeDown": "Close Down Campus",
+      "addStreamDialogTitle": "Add A Stream",
+      "addStreamDialogBody": "Choose a stream to move to this campus",
+      "streamNamePlaceholder": "Stream Name",
+      "closeDownConfirm": "Are you sure you want to close down this campus?"
+    },
+    "councilForm": {
+      "validation": {
+        "nameRequired": "Council Name is a required field",
+        "leaderRequired": "Please choose a leader from the drop down"
+      },
+      "nameLabel": "Name of Council",
+      "namePlaceholder": "Name of Council",
+      "leaderLabel": "Choose a Leader",
+      "addGovernorship": "Add Governorship",
+      "closeDown": "Close Down Council",
+      "noGovernorships": "No Governorships",
+      "addGovernorshipDialogTitle": "Add A Governorship",
+      "addGovernorshipDialogBody": "Choose a governorship to move to this council",
+      "governorshipNamePlaceholder": "Governorship Name",
+      "closeDownConfirm": "Are you sure you want to close down this council?"
+    },
+    "streamForm": {
+      "validation": {
+        "nameRequired": "Stream Name is a required field",
+        "leaderRequired": "Please choose a leader from the drop down",
+        "vacationStatusRequired": "Vacation Status is a required field",
+        "meetingDayRequired": "Meeting Day is a required field"
+      },
+      "nameLabel": "Name of Stream",
+      "namePlaceholder": "Name of Stream",
+      "meetingDayLabel": "Meeting Day",
+      "meetingDayDefaultOption": "Pick a Service Day",
+      "vacationStatusLabel": "Vacation Status",
+      "vacationStatusDefaultOption": "Select Vacation Status",
+      "bankAccountLabel": "Stream Account",
+      "leaderLabel": "Choose a Leader",
+      "noCouncils": "No Councils",
+      "addCouncil": "Add Council",
+      "closeDown": "Close Down Stream",
+      "addCouncilDialogTitle": "Add A Council",
+      "addCouncilDialogBody": "Choose a council to move to this stream",
+      "councilNamePlaceholder": "Council Name",
+      "closeDownConfirm": "Are you sure you want to close down this stream?"
+    },
+    "quickFacts": {
+      "title": "Quick Facts"
+    },
+    "oversightForm": {
+      "validation": {
+        "nameRequired": "Oversight Name is a required field",
+        "leaderRequired": "Please choose a leader from the drop down"
+      },
+      "nameLabel": "Name of Oversight",
+      "namePlaceholder": "Name of Oversight",
+      "leaderLabel": "Choose a Leader",
+      "noCampuses": "No Campuses",
+      "addCampus": "Add Campus",
+      "closeDown": "Close Down Oversight",
+      "addCampusDialogTitle": "Add A Campus",
+      "addCampusDialogBody": "Choose a campus to move to this oversight",
+      "campusNamePlaceholder": "Campus Name",
+      "closeDownConfirm": "Are you sure you want to close down this oversight?"
+    },
+    "governorshipForm": {
+      "validation": {
+        "nameRequired": "Governorship Name is a required field",
+        "leaderRequired": "Please choose a leader from the drop down"
+      },
+      "nameLabel": "Name of Governorship",
+      "namePlaceholder": "Name of Governorship",
+      "leaderLabel": "Choose a Leader",
+      "noBacentas": "No Bacentas",
+      "addBacenta": "Add Bacenta",
+      "closeDown": "Close Down Governorship",
+      "addBacentaDialogTitle": "Add A Bacenta",
+      "addBacentaDialogBody": "Choose a bacenta to move to this governorship",
+      "bacentaNamePlaceholder": "Bacenta Name",
+      "moveBacentaError": "Unable to Move Bacenta",
+      "closeDownConfirm": "Are you sure you want to close down this governorship?",
+      "closeDownError": "Unable to Close Down Governorship",
+      "closeDownCancel": "No, take me back"
+    },
+    "denominationForm": {
+      "validation": {
+        "nameRequired": "Denomination Name is a required field",
+        "leaderRequired": "Please choose a leader from the drop down"
+      },
+      "nameLabel": "Name of Denomination",
+      "namePlaceholder": "Name of Denomination",
+      "leaderLabel": "Choose a Leader",
+      "noOversights": "No Oversights"
+    },
+    "updateDenomination": {
+      "formTitle": "Update Denomination Form",
+      "leaderChanged": "Leader Changed Successfully",
+      "leaderChangeError": "There was a problem changing the leader",
+      "updateError": "There was a problem updating this denomination"
     }
   },
   "dashboard": {

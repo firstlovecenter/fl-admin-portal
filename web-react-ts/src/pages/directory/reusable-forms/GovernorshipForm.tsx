@@ -1,6 +1,7 @@
 import { useMutation } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
+import { useTranslation } from 'react-i18next'
 import { throwToSentry } from 'global-utils'
 import { useContext, useState } from 'react'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -52,6 +53,7 @@ const GovernorshipForm = ({
   title,
   newGovernorship,
 }: GovernorshipFormProps) => {
+  const { t } = useTranslation()
   const { clickCard, governorshipId } = useContext(ChurchContext)
   const [bacentaModal, setBacentaModal] = useState(false)
   const [closeDown, setCloseDown] = useState(false)
@@ -72,26 +74,32 @@ const GovernorshipForm = ({
     }
   )
   const validationSchema = Yup.object({
-    name: Yup.string().required(`Governorship Name is a required field`),
+    name: Yup.string().required(
+      t('directory.governorshipForm.validation.nameRequired')
+    ),
     leaderId: Yup.string().required(
-      'Please choose a leader from the drop down'
+      t('directory.governorshipForm.validation.leaderRequired')
     ),
   })
 
   return (
     <div className="mx-auto w-full max-w-screen-md px-4">
       <HeadingPrimary>{title}</HeadingPrimary>
-      <HeadingSecondary>{`${initialValues.name} Governorship`}</HeadingSecondary>
+      <HeadingSecondary>
+        {initialValues.name} {t('shared.churchLevel.Governorship')}
+      </HeadingSecondary>
 
       <div className="mt-3 inline-flex gap-2">
         {!newGovernorship && (
           <>
-            <Button onClick={() => setBacentaModal(true)}>Add Bacenta</Button>
+            <Button onClick={() => setBacentaModal(true)}>
+              {t('directory.governorshipForm.addBacenta')}
+            </Button>
             <Button
               className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
               onClick={() => setCloseDown(true)}
             >
-              Close Down Governorship
+              {t('directory.governorshipForm.closeDown')}
             </Button>
           </>
         )}
@@ -111,8 +119,10 @@ const GovernorshipForm = ({
                   <div className="mb-2 space-y-3">
                     <Input
                       name="name"
-                      label="Name of Governorship"
-                      placeholder="Name of Governorship"
+                      label={t('directory.governorshipForm.nameLabel')}
+                      placeholder={t(
+                        'directory.governorshipForm.namePlaceholder'
+                      )}
                     />
 
                     <div className="mb-3 flex items-center">
@@ -120,8 +130,8 @@ const GovernorshipForm = ({
                         <div className="flex-1">
                           <SearchMember
                             name="leaderId"
-                            label="Choose a Leader"
-                            placeholder="Start typing..."
+                            label={t('directory.governorshipForm.leaderLabel')}
+                            placeholder={t('directory.common.startTyping')}
                             initialValue={initialValues?.leaderName}
                             setFieldValue={formik.setFieldValue}
                             aria-describedby="Member Search Box"
@@ -132,11 +142,22 @@ const GovernorshipForm = ({
                     </div>
                     <div className="grid gap-2">
                       {initialValues.bacentas?.length ? (
-                        <p className="text-lg font-semibold">Bacentas</p>
+                        <p className="text-lg font-semibold">
+                          {/* Bacenta plurals are a plain English "+s" in
+                              every locale, never conjugated — kb/01-glossary.md */}
+                          {t('shared.churchLevel.Bacenta')}s
+                        </p>
                       ) : null}
                       {initialValues.bacentas?.map((bacenta, index) => {
                         if (!bacenta && !index) {
-                          return <NoDataComponent text="No Bacentas" key="no" />
+                          return (
+                            <NoDataComponent
+                              text={t(
+                                'directory.governorshipForm.noBacentas'
+                              )}
+                              key="no"
+                            />
+                          )
                         }
                         return (
                           <Button
@@ -162,12 +183,16 @@ const GovernorshipForm = ({
             <Dialog open={bacentaModal} onOpenChange={setBacentaModal}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add A Bacenta</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.governorshipForm.addBacentaDialogTitle')}
+                  </DialogTitle>
                 </DialogHeader>
-                <p>Choose a bacenta to move to this governorship</p>
+                <p>{t('directory.governorshipForm.addBacentaDialogBody')}</p>
                 <SearchBacenta
                   name="bacenta"
-                  placeholder="Bacenta Name"
+                  placeholder={t(
+                    'directory.governorshipForm.bacentaNamePlaceholder'
+                  )}
                   initialValue=""
                   setFieldValue={formik.setFieldValue}
                   aria-describedby="Bacenta Name"
@@ -199,7 +224,10 @@ const GovernorshipForm = ({
                             error
                           )
                         }
-                        displayError('Unable to Move Bacenta', error)
+                        displayError(
+                          t('directory.governorshipForm.moveBacentaError'),
+                          error
+                        )
                       } finally {
                         setButtonLoading(false)
                       }
@@ -211,7 +239,7 @@ const GovernorshipForm = ({
                     variant="outline"
                     onClick={() => setBacentaModal(false)}
                   >
-                    Close
+                    {t('directory.common.close')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -220,10 +248,12 @@ const GovernorshipForm = ({
             <Dialog open={closeDown} onOpenChange={setCloseDown}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Close Down Governorship</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.governorshipForm.closeDown')}
+                  </DialogTitle>
                 </DialogHeader>
                 <p className="text-[hsl(var(--maps))]">
-                  Are you sure you want to close down this governorship?
+                  {t('directory.governorshipForm.closeDownConfirm')}
                 </p>
                 <DialogFooter>
                   <Button
@@ -259,7 +289,7 @@ const GovernorshipForm = ({
                           )
                         }
                         displayError(
-                          'Unable to Close Down Governorship',
+                          t('directory.governorshipForm.closeDownError'),
                           error
                         )
                       } finally {
@@ -273,7 +303,7 @@ const GovernorshipForm = ({
                     variant="outline"
                     onClick={() => setCloseDown(false)}
                   >
-                    No, take me back
+                    {t('directory.governorshipForm.closeDownCancel')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
