@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from 'lib/i18n'
 
@@ -10,12 +11,17 @@ interface UseLanguageResult {
 const useLanguage = (): UseLanguageResult => {
   const { i18n } = useTranslation()
 
+  const setLanguage = useCallback(
+    (code: string) => {
+      i18n.changeLanguage(code)
+    },
+    [i18n]
+  )
+
   return {
     language: i18n.resolvedLanguage || i18n.language || 'en',
     languages: SUPPORTED_LANGUAGES,
-    setLanguage: (code: string) => {
-      i18n.changeLanguage(code)
-    },
+    setLanguage,
   }
 }
 

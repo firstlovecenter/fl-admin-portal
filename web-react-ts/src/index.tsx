@@ -2,12 +2,12 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { ApolloProvider } from '@apollo/client'
 import { createApolloClient } from 'lib/createApolloClient'
+// Registers i18next resources as a side effect. SimpleLogin (rendered
+// pre-auth, before AppWithContext mounts) reads translations too, so this
+// must be imported at the module level rather than deferred into the tree.
+import 'lib/i18n'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import SimpleApp from './SimpleApp'
-
-// Must run before the first render — SimpleLogin (rendered pre-auth) reads
-// translations too, so i18n can't wait until AppWithContext mounts.
-import 'lib/i18n'
 
 // Tailwind v4 entry (pulls in design tokens). The legacy color-theme.css and
 // index.css are still imported by individual component CSS files where needed.

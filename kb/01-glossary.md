@@ -148,8 +148,9 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
 ## Localization — do not translate
 
 The frontend supports multiple languages (English source; French, Spanish,
-Portuguese, German as of the initial rollout — see ADR list for the i18n
-decision). The following terms are not real words in any target language and
+Portuguese, German as of the initial rollout — see ADR-017 in `06-adr.md` for
+the i18n stack decision). The following terms are not real words in any
+target language and
 must be left exactly as written in every locale file — never run through
 translation, machine or human:
 

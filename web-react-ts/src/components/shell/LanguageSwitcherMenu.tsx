@@ -31,5 +31,3 @@ export const LanguageSwitcherMenu = () => {
     </DropdownMenuSub>
   )
 }
-
-export default LanguageSwitcherMenu

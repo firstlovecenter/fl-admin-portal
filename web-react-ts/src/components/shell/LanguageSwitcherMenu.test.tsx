@@ -3,7 +3,7 @@ import { render, screen, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DropdownMenu, DropdownMenuContent } from 'components/ui/dropdown-menu'
 import i18n, { LANGUAGE_STORAGE_KEY } from 'lib/i18n'
-import LanguageSwitcherMenu from './LanguageSwitcherMenu'
+import { LanguageSwitcherMenu } from './LanguageSwitcherMenu'
 
 const renderMenu = () =>
   render(

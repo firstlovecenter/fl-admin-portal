@@ -663,3 +663,59 @@ missing higher-level income/bussing graphs:
 - Any future "are the aggregates complete?" question must be answered with the
   rotated-log-aware queries, or it will re-measure the same blind spot.
 
+---
+
+## ADR-017 — Multi-language support via react-i18next, bundled resources
+
+**Status:** Accepted (2026-07-25).
+
+**Context:** The frontend had no i18n infrastructure. First Love Center's
+reach extends into Francophone, Hispanophone, Lusophone, and German-speaking
+regions, so the admin portal needs to render in the user's language. This is
+phase one: infrastructure, a language switcher, and one fully-localized page
+(`pages/auth/SimpleLogin.tsx`, the real pre-auth screen) as the template for
+migrating the rest of the ~300 pages incrementally.
+
+**Decision:**
+1. **Stack is `react-i18next` + `i18next-browser-languagedetector`.** Fits the
+   existing React 18 + Vite stack with no build tooling changes
+   (`resolveJsonModule` was already on).
+2. **Resources are bundled at build time, not fetched (`i18next-http-backend`
+   is NOT used).** Locale JSON lives in `src/locales/{en,fr,es,pt,de}.json`
+   and is imported directly. This keeps the app translating correctly
+   offline, per the PWA rules in the root `CLAUDE.md`.
+3. **`react-i18next`'s `useSuspense` is explicitly disabled** in
+   `src/lib/i18n.ts` (`react: { useSuspense: false }`). Bundled resources
+   happen to make `i18n.init()` resolve synchronously today, but nothing
+   above `SimpleLogin` (the pre-auth entry point) has a `<Suspense>` boundary
+   or an `<ErrorBoundary>` — an implicit synchronous guarantee is not a
+   sturdy enough foundation for the app's front door.
+4. **Preference persists to `localStorage` under `flc-language`**, mirroring
+   the existing `flc-theme` key from `ThemeProvider`. Detection order is
+   `['localStorage', 'navigator']`, fallback `en`, `load: 'languageOnly'` (so
+   a browser reporting `fr-CA` resolves to the `fr` resource bundle).
+5. **Initial supported languages: English (source), French, Spanish,
+   Portuguese, German.** Adding a language is content-only — one more locale
+   JSON file plus one entry in `SUPPORTED_LANGUAGES` (`src/lib/i18n.ts`); no
+   code changes.
+6. **A fixed set of terms is never translated**, documented in
+   `kb/01-glossary.md` under "Localization — do not translate": coined/
+   loanword church-hierarchy terms (Bacenta, Anagkazo, Sonta, Basonta — and
+   their plurals, which keep plain English `+s` in every locale), Ghanaian
+   money terms and the unexpanded IMCL acronym, the Poimen app name, the
+   Synago brand name, and official church/Stream proper names.
+7. **Backend is out of scope for phase one.** GraphQL data (member/church
+   names) is not translated. Error messages surfaced from the API remain
+   in English until a later phase touches the error contract.
+
+**Consequences:**
+- Every future page migrated to Shadcn/Tailwind (per the ongoing Bootstrap
+  migration) should pick up i18n in the same pass rather than as a separate
+  follow-up PR, to avoid two migration waves over the same ~300 files.
+- The do-not-translate list in `kb/01-glossary.md` must be kept in sync as
+  new coined terms or proper names enter the domain.
+- If a future optimization lazy-loads only the active locale's JSON (instead
+  of bundling all five), the `useSuspense: false` guard above becomes load-
+  bearing rather than precautionary — do not remove it without adding a real
+  `<Suspense>`/`<ErrorBoundary>` pair above `SimpleApp`.
+

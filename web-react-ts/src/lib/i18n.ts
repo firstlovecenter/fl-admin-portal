@@ -50,6 +50,14 @@ i18n
     interpolation: {
       escapeValue: false,
     },
+    // Resources are bundled inline (no i18next-http-backend), so init()
+    // happens to resolve synchronously today — but nothing above
+    // SimpleLogin (the pre-auth entry point) has a Suspense/ErrorBoundary
+    // pair. Disable useSuspense explicitly rather than depend on that
+    // implicit guarantee (see ADR-017).
+    react: {
+      useSuspense: false,
+    },
   })
 
 const syncDocumentLang = (language: string) => {
