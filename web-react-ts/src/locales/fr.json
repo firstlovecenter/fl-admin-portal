@@ -201,6 +201,59 @@
       "leaderChangeError": "Un problème est survenu lors du changement de responsable",
       "updateError": "Un problème est survenu lors de la mise à jour de cette dénomination"
     },
+    "update": {
+      "formTitle": "Formulaire de mise à jour : {{level}}",
+      "leaderChanged": "Responsable changé avec succès",
+      "leaderChangeError": "Un problème est survenu lors du changement de responsable",
+      "updateError": "Un problème est survenu lors de la mise à jour de {{level}}"
+    },
+    "memberCollisionDialog": {
+      "deactivatedTitle": "Membre désactivé trouvé",
+      "registeredTitle": "Membre déjà enregistré",
+      "fieldEmail": "e-mail",
+      "fieldWhatsapp": "numéro WhatsApp",
+      "deactivatedDescriptionPrefix": "Ce {{field}} appartient à",
+      "deactivatedDescriptionSuffix": ", dont le profil est désactivé. Réactivez-le et déplacez-le vers ce Bacenta afin de pouvoir examiner les deux dossiers et décider de la marche à suivre.",
+      "registeredDescriptionPrefix": "Ce {{field}} appartient déjà à",
+      "registeredWithBacentaMiddle": ", un membre enregistré à",
+      "registeredWithoutBacenta": ", un membre enregistré",
+      "registeredDescriptionSuffix": ". Pour l'intégrer à ce Bacenta, un transfert doit être demandé.",
+      "reactivating": "Réactivation…",
+      "reactivateMember": "Réactiver le membre"
+    },
+    "updateBusPaymentDialog": {
+      "title": "Détails du paiement du bus",
+      "validation": {
+        "invalidMomo": "Saisissez un numéro Mobile Money valide sans espaces. ex. (02XXXXXXXX)",
+        "outboundRequired": "Veuillez sélectionner une option",
+        "momoNameRequired": "Veuillez saisir le nom Momo",
+        "mobileNetworkRequired": "Veuillez saisir le réseau mobile"
+      },
+      "wrongCode": "Votre code de vérification est incorrect ! Réessayez 😡",
+      "verifiedSuccess": "Votre numéro de téléphone a été vérifié avec succès ! 😃",
+      "urvanTopUpLabel": "Recharge Urvan de l'église (aller simple)",
+      "sprinterTopUpLabel": "Recharge Sprinter de l'église (aller simple)",
+      "amountPlaceholder": "Entrez le montant en {{currency}}",
+      "bussingBackLabel": "Font-ils le trajet retour ?",
+      "mobileNetworkLabel": "Réseau mobile",
+      "momoNumberLabel": "Numéro Mobile Money",
+      "momoNumberPlaceholder": "Entrez un numéro",
+      "momoNameLabel": "Nom Mobile Money",
+      "verifyTitle": "Vérifiez votre numéro",
+      "verifyDescriptionPrefix": "Nous avons envoyé un code à",
+      "verifyDescriptionSuffix": ". Saisissez-le ci-dessous pour confirmer.",
+      "verificationCodeLabel": "Code de vérification",
+      "verifying": "Vérification…",
+      "verifyNumber": "Vérifier le numéro"
+    },
+    "updateMember": {
+      "cannotReactivate": "Impossible de réactiver",
+      "selectBacentaBeforeReactivating": "Sélectionnez un Bacenta pour ce membre avant de le réactiver.",
+      "reactivateError": "Une erreur est survenue lors de la réactivation du membre",
+      "updateProfileError": "Une erreur est survenue lors de la mise à jour du profil du membre",
+      "updateBacentaError": "Une erreur est survenue lors de la mise à jour du Bacenta du membre",
+      "updateBasontaError": "Une erreur est survenue lors de la mise à jour du Basonta du membre"
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Changer",

@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { alertSuccess, throwToSentry } from '../../../global-utils'
 import { GET_OVERSIGHT_CAMPUSES } from '../../../queries/ListQueries'
 import { UPDATE_CAMPUS_MUTATION } from './UpdateMutations'
@@ -15,6 +16,7 @@ import { FormikHelpers } from 'formik'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 
 const UpdateCampus = () => {
+  const { t } = useTranslation()
   const { campusId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(DISPLAY_CAMPUS, {
     variables: { id: campusId },
@@ -98,7 +100,7 @@ const UpdateCampus = () => {
               campusId: campusId,
             },
           })
-          alertSuccess('Leader Changed Successfully')
+          alertSuccess(t('directory.update.leaderChanged'))
           navigate(`/campus/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
@@ -127,7 +129,9 @@ const UpdateCampus = () => {
       <CampusForm
         initialValues={initialValues}
         onSubmit={onSubmit}
-        title={`Update Campus Form`}
+        title={t('directory.update.formTitle', {
+          level: t('shared.churchLevel.Campus'),
+        })}
         newCampus={false}
       />
     </ApolloWrapper>

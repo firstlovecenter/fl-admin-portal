@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { alertSuccess, throwToSentry } from '../../../global-utils'
 import { GET_CAMPUS_STREAMS } from '../../../queries/ListQueries'
 import { UPDATE_STREAM_MUTATION } from './UpdateMutations'
@@ -16,6 +17,7 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { SET_ACTIVE_STREAM, SET_VACATION_STREAM } from './StatusChanges'
 
 const UpdateStream = () => {
+  const { t } = useTranslation()
   const { streamId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(DISPLAY_STREAM, {
     variables: { id: streamId },
@@ -95,7 +97,7 @@ const UpdateStream = () => {
               streamId: streamId,
             },
           })
-          alertSuccess('Leader Changed Successfully')
+          alertSuccess(t('directory.update.leaderChanged'))
           navigate(`/stream/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
@@ -141,7 +143,9 @@ const UpdateStream = () => {
       <StreamForm
         initialValues={initialValues}
         onSubmit={onSubmit}
-        title={`Update Stream Form`}
+        title={t('directory.update.formTitle', {
+          level: t('shared.churchLevel.Stream'),
+        })}
         newStream={false}
       />
     </ApolloWrapper>

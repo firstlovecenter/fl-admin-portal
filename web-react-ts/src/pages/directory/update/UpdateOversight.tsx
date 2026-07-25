@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { alertSuccess, throwToSentry } from '../../../global-utils'
 import { GET_DENOMINATION_OVERSIGHTS } from '../../../queries/ListQueries'
 import { UPDATE_OVERSIGHT_MUTATION } from './UpdateMutations'
@@ -15,6 +16,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 
 const UpdateOversight = () => {
+  const { t } = useTranslation()
   const { oversightId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(DISPLAY_OVERSIGHT, {
     variables: { id: oversightId },
@@ -91,7 +93,7 @@ const UpdateOversight = () => {
               oversightId: oversightId,
             },
           })
-          alertSuccess('Leader Changed Successfully')
+          alertSuccess(t('directory.update.leaderChanged'))
           navigate(`/oversight/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
@@ -120,7 +122,9 @@ const UpdateOversight = () => {
       <OversightForm
         initialValues={initialValues}
         onSubmit={onSubmit}
-        title={`Update Oversight Form`}
+        title={t('directory.update.formTitle', {
+          level: t('shared.churchLevel.Oversight'),
+        })}
         newOversight={false}
       />
     </ApolloWrapper>

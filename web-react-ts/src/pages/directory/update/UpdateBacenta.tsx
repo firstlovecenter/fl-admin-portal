@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { alertSuccess, repackDecimals, throwToSentry } from '../../../global-utils'
 import { GET_GOVERNORSHIP_BACENTAS } from '../../../queries/ListQueries'
 import { UPDATE_BACENTA_MUTATION } from './UpdateMutations'
@@ -18,6 +19,7 @@ import { FormikHelpers } from 'formik'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 
 const UpdateBacenta = () => {
+  const { t } = useTranslation()
   const { bacentaId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(DISPLAY_BACENTA, {
     variables: { id: bacentaId },
@@ -170,7 +172,7 @@ const UpdateBacenta = () => {
               bacentaId: bacentaId,
             },
           })
-          alertSuccess('Leader Changed Successfully')
+          alertSuccess(t('directory.update.leaderChanged'))
           navigate(`/bacenta/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
@@ -242,7 +244,9 @@ const UpdateBacenta = () => {
       <BacentaForm
         initialValues={initialValues}
         onSubmit={onSubmit}
-        title="Update Bacenta Form"
+        title={t('directory.update.formTitle', {
+          level: t('shared.churchLevel.Bacenta'),
+        })}
       />
     </ApolloWrapper>
   )

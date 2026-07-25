@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogContent,
@@ -33,10 +34,14 @@ const MemberCollisionDialog = ({
   onReactivate,
   onClose,
 }: MemberCollisionDialogProps) => {
+  const { t } = useTranslation()
   if (!collision) return null
 
   const who = `${collision.firstName} ${collision.lastName}`
-  const fieldLabel = collision.field === 'email' ? 'email' : 'WhatsApp number'
+  const fieldLabel =
+    collision.field === 'email'
+      ? t('directory.memberCollisionDialog.fieldEmail')
+      : t('directory.memberCollisionDialog.fieldWhatsapp')
   const isInactive = collision.status === 'inactive'
 
   return (
@@ -44,27 +49,37 @@ const MemberCollisionDialog = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isInactive ? 'Deactivated member found' : 'Member already registered'}
+            {isInactive
+              ? t('directory.memberCollisionDialog.deactivatedTitle')
+              : t('directory.memberCollisionDialog.registeredTitle')}
           </DialogTitle>
           <DialogDescription>
             {isInactive ? (
               <>
-                This {fieldLabel} belongs to <strong>{who}</strong>, whose profile
-                is deactivated. Reactivate them and move them to this bacenta so
-                you can review both records and decide what to do.
+                {t('directory.memberCollisionDialog.deactivatedDescriptionPrefix', {
+                  field: fieldLabel,
+                })}{' '}
+                <strong>{who}</strong>
+                {t('directory.memberCollisionDialog.deactivatedDescriptionSuffix')}
               </>
             ) : (
               <>
-                This {fieldLabel} already belongs to <strong>{who}</strong>
+                {t('directory.memberCollisionDialog.registeredDescriptionPrefix', {
+                  field: fieldLabel,
+                })}{' '}
+                <strong>{who}</strong>
                 {collision.bacentaName ? (
                   <>
-                    , a registered member at{' '}
-                    <strong>{collision.bacentaName}</strong> Bacenta
+                    {t(
+                      'directory.memberCollisionDialog.registeredWithBacentaMiddle'
+                    )}{' '}
+                    <strong>{collision.bacentaName}</strong>{' '}
+                    {t('shared.churchLevel.Bacenta')}
                   </>
                 ) : (
-                  ', a registered member'
+                  t('directory.memberCollisionDialog.registeredWithoutBacenta')
                 )}
-                . To bring them into this bacenta, a transfer must be requested.
+                {t('directory.memberCollisionDialog.registeredDescriptionSuffix')}
               </>
             )}
           </DialogDescription>
@@ -72,11 +87,15 @@ const MemberCollisionDialog = ({
 
         <DialogFooter className="gap-2 sm:gap-2">
           <Button variant="outline" onClick={onClose} disabled={reactivating}>
-            {isInactive ? 'Cancel' : 'Close'}
+            {isInactive
+              ? t('directory.common.cancel')
+              : t('directory.common.close')}
           </Button>
           {isInactive && (
             <Button onClick={onReactivate} disabled={reactivating}>
-              {reactivating ? 'Reactivating…' : 'Reactivate member'}
+              {reactivating
+                ? t('directory.memberCollisionDialog.reactivating')
+                : t('directory.memberCollisionDialog.reactivateMember')}
             </Button>
           )}
         </DialogFooter>

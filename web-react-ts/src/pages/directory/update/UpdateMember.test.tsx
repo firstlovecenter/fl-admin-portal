@@ -24,6 +24,15 @@
  * These tests render the real <UpdateMember /> against a MockedProvider
  * with `errorPolicy: 'all'` on the mutate default (matching prod config)
  * so they fail against the pre-fix code and pass against the fix.
+ *
+ * `lib/i18n` is imported for its side effect (calling `i18n.init()`) —
+ * UpdateMember.tsx and MemberCollisionDialog.tsx now call `useTranslation()`
+ * (i18n pass on directory/update/*), and react-i18next's `t()` silently
+ * returns the raw key string instead of throwing when the i18next singleton
+ * was never initialized in this file's module graph. Without this import,
+ * every toast/dialog assertion below sees literal keys like
+ * "directory.updateMember.updateProfileError" instead of the translated
+ * English text.
  */
 
 import React from 'react'
@@ -33,6 +42,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { MockedProvider, MockedResponse } from '@apollo/client/testing'
 import { toast } from 'sonner'
+import 'lib/i18n'
 
 import UpdateMember from './UpdateMember'
 import {

@@ -201,6 +201,59 @@
       "leaderChangeError": "Beim Ändern des Leiters ist ein Problem aufgetreten",
       "updateError": "Beim Aktualisieren dieser Konfession ist ein Problem aufgetreten"
     },
+    "update": {
+      "formTitle": "Formular zur Aktualisierung: {{level}}",
+      "leaderChanged": "Leiter erfolgreich geändert",
+      "leaderChangeError": "Beim Ändern des Leiters ist ein Problem aufgetreten",
+      "updateError": "Beim Aktualisieren von {{level}} ist ein Problem aufgetreten"
+    },
+    "memberCollisionDialog": {
+      "deactivatedTitle": "Deaktiviertes Mitglied gefunden",
+      "registeredTitle": "Mitglied bereits registriert",
+      "fieldEmail": "E-Mail",
+      "fieldWhatsapp": "WhatsApp-Nummer",
+      "deactivatedDescriptionPrefix": "Diese {{field}} gehört zu",
+      "deactivatedDescriptionSuffix": ", dessen Profil deaktiviert ist. Reaktivieren Sie es und verschieben Sie es in dieses Bacenta, damit Sie beide Datensätze prüfen und entscheiden können, wie weiter vorzugehen ist.",
+      "registeredDescriptionPrefix": "Diese {{field}} gehört bereits zu",
+      "registeredWithBacentaMiddle": ", einem registrierten Mitglied bei",
+      "registeredWithoutBacenta": ", einem registrierten Mitglied",
+      "registeredDescriptionSuffix": ". Um es in dieses Bacenta zu holen, muss eine Übertragung angefordert werden.",
+      "reactivating": "Wird reaktiviert…",
+      "reactivateMember": "Mitglied reaktivieren"
+    },
+    "updateBusPaymentDialog": {
+      "title": "Busbezahlungsdetails",
+      "validation": {
+        "invalidMomo": "Geben Sie eine gültige Mobile-Money-Nummer ohne Leerzeichen ein. z. B. (02XXXXXXXX)",
+        "outboundRequired": "Bitte wählen Sie eine Option aus",
+        "momoNameRequired": "Bitte geben Sie den Momo-Namen ein",
+        "mobileNetworkRequired": "Bitte geben Sie das Mobilfunknetz ein"
+      },
+      "wrongCode": "Ihr Verifizierungscode ist falsch! Versuchen Sie es erneut 😡",
+      "verifiedSuccess": "Ihre Telefonnummer wurde erfolgreich verifiziert! 😃",
+      "urvanTopUpLabel": "Urvan-Gemeindeaufladung (einfache Fahrt)",
+      "sprinterTopUpLabel": "Sprinter-Gemeindeaufladung (einfache Fahrt)",
+      "amountPlaceholder": "Betrag in {{currency}} eingeben",
+      "bussingBackLabel": "Fahren sie zurück?",
+      "mobileNetworkLabel": "Mobilfunknetz",
+      "momoNumberLabel": "Mobile-Money-Nummer",
+      "momoNumberPlaceholder": "Nummer eingeben",
+      "momoNameLabel": "Mobile-Money-Name",
+      "verifyTitle": "Nummer verifizieren",
+      "verifyDescriptionPrefix": "Wir haben einen Code gesendet an",
+      "verifyDescriptionSuffix": ". Geben Sie ihn unten ein, um zu bestätigen.",
+      "verificationCodeLabel": "Verifizierungscode",
+      "verifying": "Wird verifiziert…",
+      "verifyNumber": "Nummer verifizieren"
+    },
+    "updateMember": {
+      "cannotReactivate": "Reaktivierung nicht möglich",
+      "selectBacentaBeforeReactivating": "Wählen Sie ein Bacenta für dieses Mitglied aus, bevor Sie es reaktivieren.",
+      "reactivateError": "Beim Reaktivieren des Mitglieds ist ein Fehler aufgetreten",
+      "updateProfileError": "Beim Aktualisieren des Mitgliederprofils ist ein Fehler aufgetreten",
+      "updateBacentaError": "Beim Aktualisieren des Bacenta des Mitglieds ist ein Fehler aufgetreten",
+      "updateBasontaError": "Beim Aktualisieren des Basonta des Mitglieds ist ein Fehler aufgetreten"
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Ändern",

@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { alertSuccess, throwToSentry } from '../../../global-utils'
 import { UPDATE_GOVERNORSHIP_MUTATION } from './UpdateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -14,6 +15,7 @@ import { FormikHelpers } from 'formik'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 
 const UpdateGovernorship = () => {
+  const { t } = useTranslation()
   const { governorshipId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(DISPLAY_GOVERNORSHIP, {
     variables: { id: governorshipId },
@@ -79,7 +81,7 @@ const UpdateGovernorship = () => {
             },
           })
 
-          alertSuccess('Leader Changed Successfully')
+          alertSuccess(t('directory.update.leaderChanged'))
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
           if (errorArray[0] === errorArray[1]) {
@@ -107,7 +109,9 @@ const UpdateGovernorship = () => {
       <GovernorshipForm
         initialValues={initialValues}
         onSubmit={onSubmit}
-        title={`Update Governorship Form`}
+        title={t('directory.update.formTitle', {
+          level: t('shared.churchLevel.Governorship'),
+        })}
         newGovernorship={false}
       />
     </ApolloWrapper>

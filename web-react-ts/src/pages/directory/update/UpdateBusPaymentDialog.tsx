@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { Loader2 } from 'lucide-react'
 import { useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as Yup from 'yup'
 import RoleView from 'auth/RoleView'
 import useAuth from 'auth/useAuth'
@@ -68,6 +69,7 @@ const UpdateBusPaymentDialog = ({
   open,
   onOpenChange,
 }: UpdateBusPaymentDialogProps) => {
+  const { t } = useTranslation()
   const { bacentaId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const { isAuthorised } = useAuth()
@@ -103,16 +105,22 @@ const UpdateBusPaymentDialog = ({
   const validationSchema = Yup.object({
     momoNumber: Yup.string().matches(
       MOMO_NUM_REGEX,
-      'Enter a valid MoMo Number without spaces. eg. (02XXXXXXXX)'
+      t('directory.updateBusPaymentDialog.validation.invalidMomo')
     ),
-    outbound: Yup.string().required('Please select an option'),
+    outbound: Yup.string().required(
+      t('directory.updateBusPaymentDialog.validation.outboundRequired')
+    ),
     momoName: Yup.string().when('momoNumber', {
       is: (momoNumber: string) => momoNumber && momoNumber.length > 0,
-      then: Yup.string().required('Please enter the Momo Name'),
+      then: Yup.string().required(
+        t('directory.updateBusPaymentDialog.validation.momoNameRequired')
+      ),
     }),
     mobileNetwork: Yup.string().when('momoNumber', {
       is: (momoNumber: string) => momoNumber && momoNumber.length > 0,
-      then: Yup.string().required('Please enter the Mobile Network'),
+      then: Yup.string().required(
+        t('directory.updateBusPaymentDialog.validation.mobileNetworkRequired')
+      ),
     }),
   })
 
@@ -173,7 +181,7 @@ const UpdateBusPaymentDialog = ({
     if (!pendingMomo) return
 
     if (verificationCode !== otp) {
-      alertMsg('Your verification code is wrong! Try again 😡')
+      alertMsg(t('directory.updateBusPaymentDialog.wrongCode'))
       return
     }
 
@@ -187,7 +195,7 @@ const UpdateBusPaymentDialog = ({
           momoNumber: pendingMomo.momoNumber,
         },
       })
-      alertSuccess('Your phone number has been successfully verified! 😃')
+      alertSuccess(t('directory.updateBusPaymentDialog.verifiedSuccess'))
       resetVerifyState()
     } catch (error) {
       alertMsg(error)
@@ -206,7 +214,7 @@ const UpdateBusPaymentDialog = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Bus Payment Details</DialogTitle>
+            <DialogTitle>{t('directory.updateBusPaymentDialog.title')}</DialogTitle>
             <DialogDescription>
               {loading || !bacenta ? (
                 <Skeleton className="h-4 w-40" />
@@ -238,20 +246,30 @@ const UpdateBusPaymentDialog = ({
                         name="urvanTopUp"
                         type="number"
                         inputMode="decimal"
-                        label="Urvan Church Top Up (One Way)"
-                        placeholder={`Enter Amount in ${currentUser.currency}`}
+                        label={t('directory.updateBusPaymentDialog.urvanTopUpLabel')}
+                        placeholder={t(
+                          'directory.updateBusPaymentDialog.amountPlaceholder',
+                          { currency: currentUser.currency }
+                        )}
                       />
                       <Input
                         name="sprinterTopUp"
                         type="number"
                         inputMode="decimal"
-                        label="Sprinter Church Top Up (One Way)"
-                        placeholder={`Enter Amount in ${currentUser.currency}`}
+                        label={t(
+                          'directory.updateBusPaymentDialog.sprinterTopUpLabel'
+                        )}
+                        placeholder={t(
+                          'directory.updateBusPaymentDialog.amountPlaceholder',
+                          { currency: currentUser.currency }
+                        )}
                       />
                       <div className="rounded-lg border border-warning/40 bg-warning/5 p-4">
                         <RadioButtons
                           name="outbound"
-                          label="Are They Bussing Back?"
+                          label={t(
+                            'directory.updateBusPaymentDialog.bussingBackLabel'
+                          )}
                           options={OUTBOUND_OPTIONS}
                         />
                       </div>
@@ -265,17 +283,24 @@ const UpdateBusPaymentDialog = ({
                     <div className="space-y-4">
                       <Select
                         name="mobileNetwork"
-                        label="Mobile Network"
+                        label={t(
+                          'directory.updateBusPaymentDialog.mobileNetworkLabel'
+                        )}
                         options={MOBILE_NETWORK_OPTIONS}
                       />
                       <Input
                         name="momoNumber"
                         type="tel"
                         inputMode="numeric"
-                        label="MoMo Number"
-                        placeholder="Enter a number"
+                        label={t('directory.updateBusPaymentDialog.momoNumberLabel')}
+                        placeholder={t(
+                          'directory.updateBusPaymentDialog.momoNumberPlaceholder'
+                        )}
                       />
-                      <Input name="momoName" label="MoMo Name" />
+                      <Input
+                        name="momoName"
+                        label={t('directory.updateBusPaymentDialog.momoNameLabel')}
+                      />
                     </div>
                   </RoleView>
 
@@ -286,7 +311,7 @@ const UpdateBusPaymentDialog = ({
                       onClick={() => onOpenChange(false)}
                       disabled={formik.isSubmitting}
                     >
-                      Cancel
+                      {t('directory.common.cancel')}
                     </Button>
                     <SubmitButton formik={formik} />
                   </DialogFooter>
@@ -300,18 +325,22 @@ const UpdateBusPaymentDialog = ({
       <Dialog open={verifyOpen} onOpenChange={handleVerifyOpenChange}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Verify Your Number</DialogTitle>
+            <DialogTitle>
+              {t('directory.updateBusPaymentDialog.verifyTitle')}
+            </DialogTitle>
             <DialogDescription>
-              We&apos;ve sent a code to{' '}
+              {t('directory.updateBusPaymentDialog.verifyDescriptionPrefix')}{' '}
               <span className="font-mono font-medium">
                 {pendingMomo?.momoNumber}
               </span>
-              . Enter it below to confirm.
+              {t('directory.updateBusPaymentDialog.verifyDescriptionSuffix')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-1.5 py-2">
-            <Label htmlFor="verificationCode">Verification code</Label>
+            <Label htmlFor="verificationCode">
+              {t('directory.updateBusPaymentDialog.verificationCodeLabel')}
+            </Label>
             <ShadcnInput
               id="verificationCode"
               type="tel"
@@ -330,7 +359,7 @@ const UpdateBusPaymentDialog = ({
               onClick={() => handleVerifyOpenChange(false)}
               disabled={verifying}
             >
-              Cancel
+              {t('directory.common.cancel')}
             </Button>
             <Button
               type="button"
@@ -342,10 +371,10 @@ const UpdateBusPaymentDialog = ({
               {verifying ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Verifying…
+                  {t('directory.updateBusPaymentDialog.verifying')}
                 </>
               ) : (
-                'Verify Number'
+                t('directory.updateBusPaymentDialog.verifyNumber')
               )}
             </Button>
           </DialogFooter>

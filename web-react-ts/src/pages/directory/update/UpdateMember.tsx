@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 
 import { parsePhoneNum, throwToSentry } from 'global-utils'
 import { displayError } from 'utils/errorHandler'
@@ -35,6 +36,7 @@ const extractCollision = (
     .find((collision): collision is MemberCollision => Boolean(collision))
 
 const UpdateMember = () => {
+  const { t } = useTranslation()
   const { memberId, setMemberId } = useContext(MemberContext)
   const [collision, setCollision] = useState<MemberCollision | null>(null)
 
@@ -86,8 +88,8 @@ const UpdateMember = () => {
   const onReactivate = async () => {
     if (!collision?.targetBacentaId) {
       displayError(
-        'Cannot reactivate',
-        new Error('Select a bacenta for this member before reactivating.')
+        t('directory.updateMember.cannotReactivate'),
+        new Error(t('directory.updateMember.selectBacentaBeforeReactivating'))
       )
       return
     }
@@ -107,7 +109,7 @@ const UpdateMember = () => {
       setMemberId(reactivatedId)
       navigate('/member/displaydetails')
     } catch (error: unknown) {
-      displayError('There was an error reactivating the member', error)
+      displayError(t('directory.updateMember.reactivateError'), error)
     }
   }
 
@@ -154,7 +156,7 @@ const UpdateMember = () => {
         }
 
         displayError(
-          'There was an error updating the member profile',
+          t('directory.updateMember.updateProfileError'),
           new Error(updateResult.errors[0].message)
         )
         return
@@ -173,7 +175,7 @@ const UpdateMember = () => {
         if (bacentaResult.errors?.length) {
           onSubmitProps.setSubmitting(false)
           displayError(
-            "There was an error updating the member's bacenta",
+            t('directory.updateMember.updateBacentaError'),
             new Error(bacentaResult.errors[0].message)
           )
           return
@@ -191,7 +193,7 @@ const UpdateMember = () => {
         if (basontaResult.errors?.length) {
           onSubmitProps.setSubmitting(false)
           displayError(
-            "There was an error updating the member's basonta",
+            t('directory.updateMember.updateBasontaError'),
             new Error(basontaResult.errors[0].message)
           )
           return

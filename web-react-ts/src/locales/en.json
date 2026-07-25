@@ -201,6 +201,59 @@
       "leaderChangeError": "There was a problem changing the leader",
       "updateError": "There was a problem updating this denomination"
     },
+    "update": {
+      "formTitle": "Update {{level}} Form",
+      "leaderChanged": "Leader Changed Successfully",
+      "leaderChangeError": "There was a problem changing the leader",
+      "updateError": "There was a problem updating this {{level}}"
+    },
+    "memberCollisionDialog": {
+      "deactivatedTitle": "Deactivated member found",
+      "registeredTitle": "Member already registered",
+      "fieldEmail": "email",
+      "fieldWhatsapp": "WhatsApp number",
+      "deactivatedDescriptionPrefix": "This {{field}} belongs to",
+      "deactivatedDescriptionSuffix": ", whose profile is deactivated. Reactivate them and move them to this bacenta so you can review both records and decide what to do.",
+      "registeredDescriptionPrefix": "This {{field}} already belongs to",
+      "registeredWithBacentaMiddle": ", a registered member at",
+      "registeredWithoutBacenta": ", a registered member",
+      "registeredDescriptionSuffix": ". To bring them into this bacenta, a transfer must be requested.",
+      "reactivating": "Reactivating…",
+      "reactivateMember": "Reactivate member"
+    },
+    "updateBusPaymentDialog": {
+      "title": "Bus Payment Details",
+      "validation": {
+        "invalidMomo": "Enter a valid MoMo Number without spaces. eg. (02XXXXXXXX)",
+        "outboundRequired": "Please select an option",
+        "momoNameRequired": "Please enter the Momo Name",
+        "mobileNetworkRequired": "Please enter the Mobile Network"
+      },
+      "wrongCode": "Your verification code is wrong! Try again 😡",
+      "verifiedSuccess": "Your phone number has been successfully verified! 😃",
+      "urvanTopUpLabel": "Urvan Church Top Up (One Way)",
+      "sprinterTopUpLabel": "Sprinter Church Top Up (One Way)",
+      "amountPlaceholder": "Enter Amount in {{currency}}",
+      "bussingBackLabel": "Are They Bussing Back?",
+      "mobileNetworkLabel": "Mobile Network",
+      "momoNumberLabel": "MoMo Number",
+      "momoNumberPlaceholder": "Enter a number",
+      "momoNameLabel": "MoMo Name",
+      "verifyTitle": "Verify Your Number",
+      "verifyDescriptionPrefix": "We've sent a code to",
+      "verifyDescriptionSuffix": ". Enter it below to confirm.",
+      "verificationCodeLabel": "Verification code",
+      "verifying": "Verifying…",
+      "verifyNumber": "Verify Number"
+    },
+    "updateMember": {
+      "cannotReactivate": "Cannot reactivate",
+      "selectBacentaBeforeReactivating": "Select a bacenta for this member before reactivating.",
+      "reactivateError": "There was an error reactivating the member",
+      "updateProfileError": "There was an error updating the member profile",
+      "updateBacentaError": "There was an error updating the member's bacenta",
+      "updateBasontaError": "There was an error updating the member's basonta"
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Change",

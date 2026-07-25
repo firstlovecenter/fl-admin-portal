@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { alertSuccess, throwToSentry } from '../../../global-utils'
 import { UPDATE_COUNCIL_MUTATION } from './UpdateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -14,6 +15,7 @@ import { FormikHelpers } from 'formik'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 
 const UpdateCouncil = () => {
+  const { t } = useTranslation()
   const { councilId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(DISPLAY_COUNCIL, {
     variables: { id: councilId },
@@ -80,7 +82,7 @@ const UpdateCouncil = () => {
               councilId: councilId,
             },
           })
-          alertSuccess('Leader Changed Successfully')
+          alertSuccess(t('directory.update.leaderChanged'))
           navigate(`/council/displaydetails`)
         } catch (err: any) {
           const errorArray = err.toString().replace('Error: ', '').split('\n')
@@ -109,7 +111,9 @@ const UpdateCouncil = () => {
       <CouncilForm
         initialValues={initialValues}
         onSubmit={onSubmit}
-        title="Update Council Form"
+        title={t('directory.update.formTitle', {
+          level: t('shared.churchLevel.Council'),
+        })}
         newCouncil={false}
       />
     </ApolloWrapper>
