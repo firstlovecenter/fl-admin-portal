@@ -127,7 +127,27 @@
       "closeDownConfirm": "Are you sure you want to close down this stream?"
     },
     "quickFacts": {
-      "title": "Quick Facts"
+      "title": "Quick Facts",
+      "avgWeekday": {
+        "thisMonth": "This Month",
+        "comparisonAriaLabel": "Quick facts comparison",
+        "compareDescriptionPrefix": "How this {{level}} compares against the average {{level}} in",
+        "compareDescriptionSuffix": ".",
+        "explainerBold": "Your number is at the top of each card.",
+        "explainerBodyPrefix": "Below the divider is the {{parentLevel}} avg — what a typical {{level}} in",
+        "explainerBodySuffix": " records. The pill shows whether you're above, below, or right at that avg.",
+        "metricAttendance": "Weekday Attendance",
+        "metricBussing": "Sunday Bussing",
+        "metricIncome": "Weekday Income",
+        "churchLabel": "Your avg this month",
+        "benchmarkLabel": "{{parentLevel}} avg",
+        "benchmarkContext": "Avg {{level}} in {{parentName}}"
+      }
+    },
+    "quickFactComparisonCard": {
+      "atBenchmark": "At the {{benchmark}}",
+      "aboveBenchmark": "{{percent}}% above {{benchmark}}",
+      "belowBenchmark": "{{percent}}% below {{benchmark}}"
     },
     "oversightForm": {
       "validation": {
@@ -231,6 +251,7 @@
       "campusLeader": "Campus Leader",
       "councilLeader": "Council Leader",
       "governor": "Governor",
+      "governorshipLeader": "Governorship Leader",
       "oversightLeader": "Oversight Leader",
       "streamLeader": "Stream Leader",
       "leadPastor": "Lead Pastor"

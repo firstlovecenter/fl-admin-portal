@@ -127,7 +127,27 @@
       "closeDownConfirm": "¿Seguro que quieres cerrar esta corriente?"
     },
     "quickFacts": {
-      "title": "Datos rápidos"
+      "title": "Datos rápidos",
+      "avgWeekday": {
+        "thisMonth": "Este mes",
+        "comparisonAriaLabel": "Comparación de datos rápidos",
+        "compareDescriptionPrefix": "Cómo se compara este {{level}} con el promedio de {{level}} en",
+        "compareDescriptionSuffix": ".",
+        "explainerBold": "Su número aparece en la parte superior de cada tarjeta.",
+        "explainerBodyPrefix": "Debajo del divisor está el promedio de {{parentLevel}} — lo que un {{level}} típico en",
+        "explainerBodySuffix": " registra. La insignia indica si está por encima, por debajo o justo en ese promedio.",
+        "metricAttendance": "Asistencia entre semana",
+        "metricBussing": "Transporte del domingo",
+        "metricIncome": "Ingresos entre semana",
+        "churchLabel": "Su promedio este mes",
+        "benchmarkLabel": "Promedio de {{parentLevel}}",
+        "benchmarkContext": "Promedio de {{level}} en {{parentName}}"
+      }
+    },
+    "quickFactComparisonCard": {
+      "atBenchmark": "En el promedio de {{benchmark}}",
+      "aboveBenchmark": "{{percent}}% por encima de {{benchmark}}",
+      "belowBenchmark": "{{percent}}% por debajo de {{benchmark}}"
     },
     "oversightForm": {
       "validation": {
@@ -231,6 +251,7 @@
       "campusLeader": "Líder de Campus",
       "councilLeader": "Líder de Consejo",
       "governor": "Gobernador",
+      "governorshipLeader": "Líder de Gobernación",
       "oversightLeader": "Líder de Supervisión",
       "streamLeader": "Líder de Corriente",
       "leadPastor": "Pastor principal"

@@ -217,7 +217,7 @@ is now the rule for the rest of this phase, not just a style preference.
       failures. `tsc --noEmit` + `eslint --max-warnings=0` clean. Production
       build succeeded.
 
-### 3b — DisplayChurchDetails + display/ + grids/ wrapper pages (IN PROGRESS, not yet committed)
+### 3b — DisplayChurchDetails + display/ + grids/ wrapper pages (DONE except tests, committed `efe16a04`)
 
 - [x] `shared.churchLevelPlural.Bacenta` added ("Bacentas", identical in all
       5 locales per the glossary rule) — unifies the plural lookup so every
@@ -268,15 +268,33 @@ is now the rule for the rest of this phase, not just a style preference.
       this sub-batch. Key parity across all 5 locale files reconfirmed
       twice via a standalone Node script (not just the Vitest key-parity
       test) after each addition.
-- [ ] **Tests**: a `test-author` dispatch for `DisplayChurchDetails.tsx` +
-      the 7 `Details*.tsx` pages is in progress (first attempt hit a
-      transient API 529/overload, not a real failure — retried). Tests for
-      the 7 `grids/*.tsx` pages not yet dispatched.
-- [ ] `code-reviewer` pass for this whole sub-batch — not yet dispatched
-      (waiting on tests to land first, per this branch's established
-      per-batch order: locale keys → tsc/eslint → tests → code-reviewer →
-      full suite → commit).
-- [ ] Not yet committed.
+- [ ] **Tests deliberately deferred — real gap, not silently skipped.** The
+      `test-author` subagent dispatch for `DisplayChurchDetails.tsx` + the 7
+      `Details*.tsx` pages failed twice: first a transient API 529/overload
+      (retried), then a hard failure — **the account hit its monthly API
+      spend limit**. Tests for the 7 `grids/*.tsx` pages were never
+      dispatched at all as a result. Asked the user how to proceed
+      (write inline myself / pause until the limit is raised / commit
+      without tests); user explicitly chose to commit without tests this
+      round. This means **15 files in this sub-batch have zero test
+      coverage**, against this repo's normally-mandatory "every touched
+      file ships with tests in the same PR" rule — a deliberate,
+      user-approved exception, not an oversight. **Follow-up required**:
+      backfill tests for all 15 files (`DisplayChurchDetails.tsx` + 7
+      `Details*.tsx` + 7 `grids/*.tsx`) once the spend limit is raised.
+- [ ] `code-reviewer` pass for this whole sub-batch was also skipped for the
+      same reason (would have hit the same spend-limit wall). Substituted
+      with a manual self-review instead: read the full diff for all 15
+      source files plus all 5 locale JSON diffs, confirmed symmetric +60
+      line additions across all 5 locales, reran `tsc --noEmit` and
+      `eslint --max-warnings=0` (clean) and the key-parity check (clean).
+      This is not a substitute for the usual second-pass review — flagged
+      as outstanding follow-up too.
+- [x] Committed as `efe16a04` (`feat(directory): localize
+      DisplayChurchDetails and display/grids wrapper pages`). Full suite:
+      406 passing / same 11 pre-existing unrelated failures
+      (`createApolloClient.test.tsx`, reconfirmed untouched by this branch
+      via `git diff --stat`).
 
 ### 3c — not started yet (rest of `pages/directory/`)
 
@@ -304,32 +322,39 @@ is now the rule for the rest of this phase, not just a style preference.
 
 Roughly in priority order:
 
-1. **Native-speaker review of the greeting pool and organizational-level
+1. **Backfill tests for the 15 files committed in `efe16a04` without
+   coverage** (`DisplayChurchDetails.tsx`, the 7 `Details*.tsx` pages, the 7
+   `grids/*.tsx` pages) — blocked purely by the account's monthly API spend
+   limit at commit time, not a code issue. Do this before any further
+   subagent-driven work in this repo if possible, so the gap doesn't grow.
+   Also do the deferred `code-reviewer` second-pass review on that commit.
+2. **Native-speaker review of the greeting pool and organizational-level
    terms** (see the ⚠️ above) — should happen before this ships to real
    users, independent of further page localization.
-2. **Finish `pages/dashboards/`**: `ArrivalsCounterDashboard.tsx` and
+3. **Finish `pages/dashboards/`**: `ArrivalsCounterDashboard.tsx` and
    `StreamTellerDashboard.tsx` still have their own English-only strings
    (bussing counters, banking-defaulter CTAs, etc.) beyond the one
    fallback-name fix already made.
-3. **Finish `pages/directory/`** — see Phase 3 above; 3b tests + review +
-   commit, then 3c (quick-facts/create/update remainder, user-profile,
-   church-history, MemberForm/MemberDisplay, shared grid components).
-4. **`pages/arrivals/`** — after directory. Not started.
-5. Then accounts/banking/reports, translating error/validation copy as each
+4. **Finish `pages/directory/`** — see Phase 3 above; 3c (quick-facts/
+   create/update remainder, user-profile, church-history,
+   MemberForm/MemberDisplay, shared grid components:
+   `MembersGrid.tsx`/`MemberTable.tsx`/`Filters.tsx`).
+5. **`pages/arrivals/`** — after directory. Not started.
+6. Then accounts/banking/reports, translating error/validation copy as each
    page is migrated (Yup schema messages, Apollo/notistack-surfaced errors
    are still English-only everywhere, including on already-localized pages).
-6. **Backend-sourced strings** (still explicitly out of scope): if any
+7. **Backend-sourced strings** (still explicitly out of scope): if any
    generated PDF/report exports or SMS text ever need localizing, that's a
    distinct, later decision — not assumed by ADR-017.
-7. **AI Assistant page** (`pages/ai-assistant/`, nav entry `/ai-assistant`,
+8. **AI Assistant page** (`pages/ai-assistant/`, nav entry `/ai-assistant`,
    `navigation-config.tsx:135-139`) — deliberately deferred, needs its own
    design decision (translate the source corpus? generate in-language?
    translate output post-hoc?) before implementation. Two separate problems:
    UI chrome (straightforward `t()` pass) and AI-generated content itself
    (English-only corpus per ADR-015, a different kind of problem).
-8. **Keep `kb/01-glossary.md`'s do-not-translate list in sync** as new
+9. **Keep `kb/01-glossary.md`'s do-not-translate list in sync** as new
    coined terms or proper names enter the domain.
-9. Optional later optimization: lazy-load only the active locale's JSON
+10. Optional later optimization: lazy-load only the active locale's JSON
    instead of bundling all five. If this happens, the `useSuspense: false`
    guard in `lib/i18n.ts` becomes load-bearing rather than precautionary —
    pair it with a real `<Suspense>`/`<ErrorBoundary>` above `SimpleApp` at
@@ -400,7 +425,7 @@ app-wide auth bootstrap, out of scope for this pass).
   `directory.<level>Form.*`, `directory.quickFacts.*`,
   `directory.updateDenomination.*`, `shared.churchLevelPlural.*` added)
 
-**Modified (phase 3b — DisplayChurchDetails + display/ + grids/, not yet committed):**
+**Modified (phase 3b — DisplayChurchDetails + display/ + grids/, committed `efe16a04`):**
 - `web-react-ts/src/components/DisplayChurchDetails/DisplayChurchDetails.tsx`
 - `web-react-ts/src/pages/directory/display/{DetailsBacenta,DetailsCampus,
   DetailsCouncil,DetailsDenomination,DetailsGovernorship,DetailsOversight,
@@ -413,6 +438,8 @@ app-wide auth bootstrap, out of scope for this pass).
   `directory.detailsStats.*`, `directory.leaderTitle.*`,
   `directory.churchLevelMembers.*` added)
 
-**Pending (phase 3b, not yet written at time of writing):** test files for
-all 15 files in the bullet above — dispatched to `test-author`, in progress
-in the background (see Phase 3b status notes).
+**Missing (phase 3b — real gap, tracked as priority-1 follow-up above):** no
+test files exist for any of the 15 files in the bullet above. Both
+`test-author` dispatch attempts failed (transient 529, then a hard monthly
+API spend-limit stop) and the user explicitly chose to commit without tests
+rather than wait. Backfill before further subagent-driven work in this repo.

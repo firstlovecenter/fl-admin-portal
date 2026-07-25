@@ -127,7 +127,27 @@
       "closeDownConfirm": "Êtes-vous sûr de vouloir fermer cette filière ?"
     },
     "quickFacts": {
-      "title": "Faits rapides"
+      "title": "Faits rapides",
+      "avgWeekday": {
+        "thisMonth": "Ce mois-ci",
+        "comparisonAriaLabel": "Comparaison des faits rapides",
+        "compareDescriptionPrefix": "Comparaison de {{level}} par rapport à la moyenne des {{level}} de",
+        "compareDescriptionSuffix": ".",
+        "explainerBold": "Votre chiffre apparaît en haut de chaque carte.",
+        "explainerBodyPrefix": "Sous le séparateur se trouve la moyenne de {{parentLevel}} — ce qu'un {{level}} typique de",
+        "explainerBodySuffix": " enregistre. La pastille indique si vous êtes au-dessus, en dessous, ou exactement à cette moyenne.",
+        "metricAttendance": "Fréquentation en semaine",
+        "metricBussing": "Transport du dimanche",
+        "metricIncome": "Revenus en semaine",
+        "churchLabel": "Votre moyenne ce mois-ci",
+        "benchmarkLabel": "Moyenne {{parentLevel}}",
+        "benchmarkContext": "Moyenne {{level}} de {{parentName}}"
+      }
+    },
+    "quickFactComparisonCard": {
+      "atBenchmark": "À la moyenne {{benchmark}}",
+      "aboveBenchmark": "{{percent}} % au-dessus de {{benchmark}}",
+      "belowBenchmark": "{{percent}} % en dessous de {{benchmark}}"
     },
     "oversightForm": {
       "validation": {
@@ -231,6 +251,7 @@
       "campusLeader": "Chef de Campus",
       "councilLeader": "Chef de Conseil",
       "governor": "Gouverneur",
+      "governorshipLeader": "Chef de Gouvernorat",
       "oversightLeader": "Chef de Supervision",
       "streamLeader": "Chef de Filière",
       "leadPastor": "Pasteur principal"

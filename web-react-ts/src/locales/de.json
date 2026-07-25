@@ -127,7 +127,27 @@
       "closeDownConfirm": "Sind Sie sicher, dass Sie diesen Zweig schließen möchten?"
     },
     "quickFacts": {
-      "title": "Kurzfakten"
+      "title": "Kurzfakten",
+      "avgWeekday": {
+        "thisMonth": "Dieser Monat",
+        "comparisonAriaLabel": "Kurzfakten-Vergleich",
+        "compareDescriptionPrefix": "Wie sich dieses {{level}} mit dem Durchschnitt der {{level}} in",
+        "compareDescriptionSuffix": " vergleicht.",
+        "explainerBold": "Ihre Zahl steht oben auf jeder Karte.",
+        "explainerBodyPrefix": "Unter der Trennlinie steht der {{parentLevel}}-Durchschnitt — was ein typisches {{level}} in",
+        "explainerBodySuffix": " verzeichnet. Das Abzeichen zeigt, ob Sie über, unter oder genau auf diesem Durchschnitt liegen.",
+        "metricAttendance": "Anwesenheit an Wochentagen",
+        "metricBussing": "Sonntags-Bustransport",
+        "metricIncome": "Einnahmen an Wochentagen",
+        "churchLabel": "Ihr Durchschnitt diesen Monat",
+        "benchmarkLabel": "{{parentLevel}}-Durchschnitt",
+        "benchmarkContext": "Durchschnitt {{level}} in {{parentName}}"
+      }
+    },
+    "quickFactComparisonCard": {
+      "atBenchmark": "Beim {{benchmark}}",
+      "aboveBenchmark": "{{percent}} % über {{benchmark}}",
+      "belowBenchmark": "{{percent}} % unter {{benchmark}}"
     },
     "oversightForm": {
       "validation": {
@@ -231,6 +251,7 @@
       "campusLeader": "Campus-Leiter",
       "councilLeader": "Rats-Leiter",
       "governor": "Gouverneur",
+      "governorshipLeader": "Gouvernorat-Leiter",
       "oversightLeader": "Aufsichts-Leiter",
       "streamLeader": "Zweig-Leiter",
       "leadPastor": "Leitender Pastor"

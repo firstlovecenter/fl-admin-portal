@@ -4,6 +4,7 @@ import {
   Minus,
   type LucideIcon,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from 'components/lib/utils'
 import { Card, CardContent } from 'components/ui/card'
 import { Separator } from 'components/ui/separator'
@@ -50,6 +51,7 @@ const QuickFactComparisonCard = ({
   delta,
   loading = false,
 }: Props) => {
+  const { t } = useTranslation()
   const showDeltaPill = typeof delta === 'number' && Number.isFinite(delta)
   const direction: 'up' | 'down' | 'flat' = !showDeltaPill
     ? 'flat'
@@ -67,17 +69,21 @@ const QuickFactComparisonCard = ({
       : direction === 'down'
         ? 'bg-destructive/15 text-destructive'
         : 'bg-muted text-muted-foreground'
-  const aboveBelow =
-    direction === 'up'
-      ? 'above'
-      : direction === 'down'
-        ? 'below'
-        : 'at'
   const benchmarkShort = benchmarkLabel.toLowerCase()
   const deltaText = showDeltaPill
     ? direction === 'flat'
-      ? `At the ${benchmarkShort}`
-      : `${Math.round(Math.abs(delta as number))}% ${aboveBelow} ${benchmarkShort}`
+      ? t('directory.quickFactComparisonCard.atBenchmark', {
+          benchmark: benchmarkShort,
+        })
+      : t(
+          direction === 'up'
+            ? 'directory.quickFactComparisonCard.aboveBenchmark'
+            : 'directory.quickFactComparisonCard.belowBenchmark',
+          {
+            percent: Math.round(Math.abs(delta as number)),
+            benchmark: benchmarkShort,
+          }
+        )
     : ''
 
   return (
