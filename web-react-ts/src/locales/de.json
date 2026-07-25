@@ -272,6 +272,20 @@
       "overseeingPastor": "Aufsichtsführender Pastor",
       "ministry": "Dienst"
     },
+    "churchHistory": {
+      "headingSuffix": "Verlauf",
+      "memberTypeName": "Mitglied",
+      "auditTrailPrefix": "Prüfprotokoll der Leitungs- und Statusänderungen für dieses",
+      "auditTrailSuffix": ".",
+      "noHistoryYet": "Noch kein Verlauf",
+      "noHistoryCaption": "Leitungsänderungen und wichtige Ereignisse werden hier angezeigt, sobald sie eintreten.",
+      "summary": "Zusammenfassung",
+      "recordedEntry": "erfasster Eintrag",
+      "recordedEntries": "erfasste Einträge",
+      "showingOf": "Zeige {{shown}} von {{total}}",
+      "aboutThisLog": "Über dieses Protokoll",
+      "aboutThisLogDescription": "Jeder Leitungswechsel, jede Statusänderung und jedes wichtige Ereignis wird hier direkt erfasst. Einträge sind schreibgeschützt und können nicht bearbeitet oder entfernt werden."
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Ändern",

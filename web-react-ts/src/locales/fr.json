@@ -272,6 +272,20 @@
       "overseeingPastor": "Pasteur superviseur",
       "ministry": "Ministère"
     },
+    "churchHistory": {
+      "headingSuffix": "Historique",
+      "memberTypeName": "Membre",
+      "auditTrailPrefix": "Journal d'audit des changements de responsables et de statut pour ce",
+      "auditTrailSuffix": ".",
+      "noHistoryYet": "Aucun historique pour le moment",
+      "noHistoryCaption": "Les changements de responsables et les événements majeurs apparaîtront ici au fur et à mesure.",
+      "summary": "Résumé",
+      "recordedEntry": "entrée enregistrée",
+      "recordedEntries": "entrées enregistrées",
+      "showingOf": "Affichage de {{shown}} sur {{total}}",
+      "aboutThisLog": "À propos de ce journal",
+      "aboutThisLogDescription": "Chaque changement de responsable, changement de statut et événement majeur est ajouté ici au fur et à mesure. Les entrées sont en lecture seule et ne peuvent pas être modifiées ou supprimées."
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Changer",

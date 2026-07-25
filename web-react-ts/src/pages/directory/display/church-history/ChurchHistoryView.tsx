@@ -1,5 +1,6 @@
 import React from 'react'
 import { DocumentNode } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import useInfiniteScroll from 'hooks/useInfiniteScroll'
 import Timeline from 'components/Timeline/Timeline'
 import ErrorScreen from 'components/base-component/ErrorScreen'
@@ -32,6 +33,7 @@ const ChurchHistoryView = <TData,>({
   pluckParent,
   headingSuffix,
 }: ChurchHistoryViewProps<TData>) => {
+  const { t } = useTranslation()
   const {
     data,
     items,
@@ -59,6 +61,10 @@ const ChurchHistoryView = <TData,>({
   const parent = pluckParent(data)
   const headingName = parent?.displayName ?? ''
   const showCounter = totalCount !== undefined && items.length < totalCount
+  const parentLabel =
+    parentTypename === 'Member'
+      ? t('directory.churchHistory.memberTypeName')
+      : t(`shared.churchLevel.${parentTypename}`)
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
@@ -72,8 +78,9 @@ const ChurchHistoryView = <TData,>({
           </h1>
         )}
         <p className="text-sm text-muted-foreground">
-          Audit trail of leadership and status changes for this{' '}
-          {parentTypename.toLowerCase()}.
+          {t('directory.churchHistory.auditTrailPrefix')}{' '}
+          {parentLabel.toLowerCase()}
+          {t('directory.churchHistory.auditTrailSuffix')}
         </p>
       </StickyPageHeader>
       <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
@@ -92,11 +99,10 @@ const ChurchHistoryView = <TData,>({
                   <HistoryIcon className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <p className="text-sm font-medium text-foreground">
-                  No history yet
+                  {t('directory.churchHistory.noHistoryYet')}
                 </p>
                 <p className="max-w-xs text-xs text-muted-foreground">
-                  Leadership changes and major events will appear here as they
-                  happen.
+                  {t('directory.churchHistory.noHistoryCaption')}
                 </p>
               </div>
             ) : (
@@ -113,7 +119,7 @@ const ChurchHistoryView = <TData,>({
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="border-b border-border px-4 py-3">
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Summary
+                  {t('directory.churchHistory.summary')}
                 </h2>
               </div>
               <div className="space-y-1 px-4 py-4">
@@ -126,12 +132,15 @@ const ChurchHistoryView = <TData,>({
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {(totalCount ?? items.length) === 1
-                    ? 'recorded entry'
-                    : 'recorded entries'}
+                    ? t('directory.churchHistory.recordedEntry')
+                    : t('directory.churchHistory.recordedEntries')}
                 </p>
                 {showCounter && (
                   <p className="pt-2 text-xs text-muted-foreground">
-                    Showing {items.length} of {totalCount}
+                    {t('directory.churchHistory.showingOf', {
+                      shown: items.length,
+                      total: totalCount,
+                    })}
                   </p>
                 )}
               </div>
@@ -140,14 +149,12 @@ const ChurchHistoryView = <TData,>({
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="border-b border-border px-4 py-3">
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  About this log
+                  {t('directory.churchHistory.aboutThisLog')}
                 </h2>
               </div>
               <div className="px-4 py-4">
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Every leadership transition, status change, and major event
-                  is appended here as it happens. Entries are read-only and
-                  cannot be edited or removed.
+                  {t('directory.churchHistory.aboutThisLogDescription')}
                 </p>
               </div>
             </div>

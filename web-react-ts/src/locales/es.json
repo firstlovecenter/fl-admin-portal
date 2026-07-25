@@ -272,6 +272,20 @@
       "overseeingPastor": "Pastor supervisor",
       "ministry": "Ministerio"
     },
+    "churchHistory": {
+      "headingSuffix": "Historial",
+      "memberTypeName": "Miembro",
+      "auditTrailPrefix": "Registro de auditoría de cambios de liderazgo y estado para este",
+      "auditTrailSuffix": ".",
+      "noHistoryYet": "Aún no hay historial",
+      "noHistoryCaption": "Los cambios de liderazgo y los eventos importantes aparecerán aquí a medida que ocurran.",
+      "summary": "Resumen",
+      "recordedEntry": "entrada registrada",
+      "recordedEntries": "entradas registradas",
+      "showingOf": "Mostrando {{shown}} de {{total}}",
+      "aboutThisLog": "Acerca de este registro",
+      "aboutThisLogDescription": "Cada transición de liderazgo, cambio de estado y evento importante se agrega aquí a medida que ocurre. Las entradas son de solo lectura y no se pueden editar ni eliminar."
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Cambiar",

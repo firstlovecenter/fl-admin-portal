@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { HistoryLog } from 'global-types'
 import ChurchHistoryView from './ChurchHistoryView'
@@ -14,6 +15,7 @@ type BacentaHistoryData = {
 }
 
 const BacentaHistory = () => {
+  const { t } = useTranslation()
   const { bacentaId } = useContext(ChurchContext)
 
   return (
@@ -30,7 +32,7 @@ const BacentaHistory = () => {
           history: b.history,
         }
       }}
-      headingSuffix="History"
+      headingSuffix={t('directory.churchHistory.headingSuffix')}
     />
   )
 }

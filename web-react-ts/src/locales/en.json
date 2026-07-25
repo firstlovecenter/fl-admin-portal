@@ -272,6 +272,20 @@
       "overseeingPastor": "Overseeing Pastor",
       "ministry": "Ministry"
     },
+    "churchHistory": {
+      "headingSuffix": "History",
+      "memberTypeName": "Member",
+      "auditTrailPrefix": "Audit trail of leadership and status changes for this",
+      "auditTrailSuffix": ".",
+      "noHistoryYet": "No history yet",
+      "noHistoryCaption": "Leadership changes and major events will appear here as they happen.",
+      "summary": "Summary",
+      "recordedEntry": "recorded entry",
+      "recordedEntries": "recorded entries",
+      "showingOf": "Showing {{shown}} of {{total}}",
+      "aboutThisLog": "About this log",
+      "aboutThisLogDescription": "Every leadership transition, status change, and major event is appended here as it happens. Entries are read-only and cannot be edited or removed."
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Change",

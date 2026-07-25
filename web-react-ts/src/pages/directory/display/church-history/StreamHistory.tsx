@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { HistoryLog } from 'global-types'
 import ChurchHistoryView from './ChurchHistoryView'
@@ -14,6 +15,7 @@ type StreamHistoryData = {
 }
 
 const StreamHistory = () => {
+  const { t } = useTranslation()
   const { streamId } = useContext(ChurchContext)
 
   return (
@@ -30,7 +32,7 @@ const StreamHistory = () => {
           history: s.history,
         }
       }}
-      headingSuffix="History"
+      headingSuffix={t('directory.churchHistory.headingSuffix')}
     />
   )
 }

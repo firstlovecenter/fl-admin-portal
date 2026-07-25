@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MemberContext } from 'contexts/MemberContext'
 import { HistoryLog } from 'global-types'
 import ChurchHistoryView from './ChurchHistoryView'
@@ -15,6 +16,7 @@ type MemberHistoryData = {
 }
 
 const MemberHistory = () => {
+  const { t } = useTranslation()
   const { memberId } = useContext(MemberContext)
 
   return (
@@ -31,7 +33,7 @@ const MemberHistory = () => {
           history: m.history,
         }
       }}
-      headingSuffix="History"
+      headingSuffix={t('directory.churchHistory.headingSuffix')}
     />
   )
 }
