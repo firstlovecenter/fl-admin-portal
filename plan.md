@@ -370,6 +370,64 @@ phase and everything after it in this session follows that mode.
   `UpdateDenomination.tsx`'s `onSubmit` doesn't inspect
   `updateResult.errors` under `errorPolicy: 'all'`.
 
+### 3e — create/ directory pages + BacentaForm.tsx (DONE, committed `f5fb8b86`)
+
+Translated all 7 `pages/directory/create/*.tsx` wrappers. Found and fixed a
+real gap while doing so: `BacentaForm.tsx` (`reusable-forms/`) was missed
+entirely in phase 3a's church-level-forms pass — caught because
+`CreateBacenta.tsx` renders it. Unlike the six forms done in 3a,
+`BacentaForm.tsx` is already fully Tailwind, so no Bootstrap-preservation
+constraint applied; translated normally. New `directory.create.*`,
+`directory.createMember.*`, `directory.bacentaForm.*` namespaces, plus
+`directory.common.cancel`. `directory.create.createNewLevel` handles the
+shared "Create a New {{level}}" pattern (Campus/Council/Governorship/
+Oversight/Stream); Bacenta keeps its own `startNewBacenta` key since the
+source uses different wording ("Start a New Bacenta"). Tests written inline
+(26 new — first batch under the spend-limit workaround, see 3d above).
+`tsc`/`eslint` clean, full suite 439 passing / same 11 pre-existing
+failures.
+
+### 3f — update/ directory pages (DONE, committed `d59c8381`)
+
+Translated the 6 near-identical `Update{Level}.tsx` wrappers plus
+`UpdateMember.tsx`, `MemberCollisionDialog.tsx`, and
+`UpdateBusPaymentDialog.tsx`. New `directory.update.*` namespace (shared,
+interpolated by level — distinct from the existing `directory.
+updateDenomination.*` from 3a, left untouched), plus
+`directory.memberCollisionDialog.*`, `directory.updateBusPaymentDialog.*`,
+`directory.updateMember.*`.
+
+**Deliberate non-translation, documented for future readers**:
+`historyRecord` template strings passed to `LOG_*_HISTORY` mutations
+(audit-trail text persisted to `HistoryLog` nodes) are left in English —
+these are stored data, not runtime UI. Translating them would mean a
+church's audit trail mixes languages depending on which locale was active
+when each change was made, which is worse than a consistent single
+language. Same reasoning as leaving `throwToSentry(...)` messages
+untranslated (dev/Sentry-only), a precedent now applied consistently since
+phase 3b.
+
+**Real test-infra bug found and fixed**: `UpdateMember.test.tsx` (existing,
+from an earlier SYN-205 fix) never imported `lib/i18n`. Once
+`UpdateMember.tsx`/`MemberCollisionDialog.tsx` started calling
+`useTranslation()`, `t()` silently returned raw key strings
+(e.g. `"directory.updateMember.updateProfileError"`) instead of translated
+text, because react-i18next's singleton was never initialized in that
+file's module graph — every toast/dialog assertion in that file started
+failing. Fixed with the same side-effect import used everywhere else in
+this branch (`import 'lib/i18n'`). This is a real gotcha worth remembering:
+**any existing test file that renders a component newly touched to call
+`useTranslation()` needs this import added**, or its `t()` calls will
+silently no-op to raw keys instead of throwing.
+
+25 new tests, written inline (test-author/code-reviewer subagent dispatch
+still blocked by the spend limit — see 3d). One full-render test
+(`UpdateCampus.test.tsx`) establishes the `MockedProvider` +
+`DISPLAY_CAMPUS` pattern; the other five `Update*.tsx` wrappers use a
+lighter translation-key-resolution test instead of repeating the same
+scaffolding six times (documented in each file). `tsc`/`eslint` clean,
+full suite 464 passing / same 11 pre-existing failures.
+
 ## Remaining work (not started — future phases)
 
 Roughly in priority order:
@@ -387,10 +445,12 @@ Roughly in priority order:
    `StreamTellerDashboard.tsx` still have their own English-only strings
    (bussing counters, banking-defaulter CTAs, etc.) beyond the one
    fallback-name fix already made.
-4. **Finish `pages/directory/`** — see Phase 3 above; 3e (create/update
-   remainder, user-profile, church-history, MemberForm/MemberDisplay,
-   shared grid components: `MembersGrid.tsx`/`MemberTable.tsx`/
-   `Filters.tsx`).
+4. **Finish `pages/directory/`** — remaining: `user-profile/`,
+   `church-history/`, `reusable-forms/MemberForm.tsx` (620 lines),
+   `reusable-forms/MemberDisplay.tsx` (844 lines), shared grid components
+   (`components/members-grids/MembersGrid.tsx`/`MemberTable.tsx`/
+   `Filters.tsx` — confirmed used by all 7 already-translated `grids/*.tsx`
+   pages, not yet surveyed for their own hardcoded strings).
 5. **`pages/arrivals/`** — after directory. Not started.
 6. Then accounts/banking/reports, translating error/validation copy as each
    page is migrated (Yup schema messages, Apollo/notistack-surfaced errors
@@ -511,3 +571,23 @@ inline, no subagent):**
   `directory.leaderTitle.governorshipLeader` added)
 
 Not touched (phase 3d, confirmed dead code): `web-react-ts/src/pages/directory/quick-facts/components/{AttendanceQuickFactsCard,BussingQuickFactsCard,IncomeQuickFactsCard,QuickFactsSlider,QuickFactsSelect}.tsx`, `quick-fact-utils.ts` — unreachable from any route, not worth translating.
+
+**Modified/new (phase 3e — create/ + BacentaForm, committed `f5fb8b86`):**
+- `web-react-ts/src/pages/directory/create/{CreateBacenta,CreateCampus,
+  CreateCouncil,CreateGovernorship,CreateOversight,CreateStream,
+  CreateMember}.tsx` + matching `.test.tsx` for each (new)
+- `web-react-ts/src/pages/directory/reusable-forms/BacentaForm.tsx` +
+  `BacentaForm.test.tsx` (new)
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json` (`directory.create.*`,
+  `directory.createMember.*`, `directory.bacentaForm.*`,
+  `directory.common.cancel` added)
+
+**Modified/new (phase 3f — update/, committed `d59c8381`):**
+- `web-react-ts/src/pages/directory/update/{UpdateBacenta,UpdateCampus,
+  UpdateCouncil,UpdateGovernorship,UpdateOversight,UpdateStream,
+  UpdateMember,MemberCollisionDialog,UpdateBusPaymentDialog}.tsx` +
+  matching `.test.tsx` for each (new, except `UpdateMember.test.tsx`
+  which already existed and was fixed — see 3f notes above)
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json` (`directory.update.*`,
+  `directory.memberCollisionDialog.*`, `directory.updateBusPaymentDialog.*`,
+  `directory.updateMember.*` added)
