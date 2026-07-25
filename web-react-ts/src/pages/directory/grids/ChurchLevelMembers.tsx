@@ -1,5 +1,6 @@
 import React from 'react'
 import { DocumentNode } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import MembersGrid from 'components/members-grids/MembersGrid'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import {
@@ -66,6 +67,7 @@ const LEVEL_CONFIGS: Record<SupportedChurchType, LevelConfig> = {
 }
 
 const ChurchLevelMembers = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
 
   if (!selectedScope) return <></>
@@ -76,8 +78,11 @@ const ChurchLevelMembers = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-svh gap-2 text-muted-foreground">
         <p className="text-sm">
-          Member browsing is not available at the{' '}
-          <span className="font-medium">{selectedScope.churchType}</span> level.
+          {t('directory.churchLevelMembers.notAvailablePrefix')}{' '}
+          <span className="font-medium">
+            {t(`shared.churchLevel.${selectedScope.churchType}`)}
+          </span>
+          {t('directory.churchLevelMembers.notAvailableSuffix')}
         </p>
       </div>
     )
@@ -93,7 +98,9 @@ const ChurchLevelMembers = () => {
         parent ? (
           <>
             {parent.name}{' '}
-            <span className="text-members">Members</span>
+            <span className="text-members">
+              {t('directory.detailsStats.members')}
+            </span>
           </>
         ) : null
       }

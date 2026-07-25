@@ -1,9 +1,11 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import MembersGrid from 'components/members-grids/MembersGrid'
 import { GET_STREAM_MEMBERS } from './GridQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 
 const StreamMembers = () => {
+  const { t } = useTranslation()
   const { streamId } = useContext(ChurchContext)
 
   return (
@@ -16,7 +18,9 @@ const StreamMembers = () => {
         parent ? (
           <>
             {parent.name}{' '}
-            <span className="text-members">Stream</span>
+            <span className="text-members">
+              {t('shared.churchLevel.Stream')}
+            </span>
           </>
         ) : null
       }

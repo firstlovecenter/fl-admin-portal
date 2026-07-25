@@ -44,6 +44,7 @@
       "Denomination": "Denomination"
     },
     "churchLevelPlural": {
+      "Bacenta": "Bacentas",
       "Governorship": "Governorships",
       "Council": "Councils",
       "Stream": "Streams",
@@ -178,6 +179,65 @@
       "leaderChanged": "Leader Changed Successfully",
       "leaderChangeError": "There was a problem changing the leader",
       "updateError": "There was a problem updating this denomination"
+    },
+    "displayChurchDetails": {
+      "admin": "Admin",
+      "change": "Change",
+      "addAdmin": "Add Admin",
+      "deputyLeader": "Deputy Leader",
+      "bacentaAdmin": "Bacenta Admin",
+      "noMomoWarning": "There is no valid Mobile Money Number! Please update!",
+      "busPaymentDetails": "Bus Payment Details",
+      "viewTrends": "View Trends",
+      "fillServiceForm": "Fill Service Form",
+      "serviceForms": "Service Forms",
+      "location": "Location",
+      "clickForDirections": "Click for directions",
+      "changeAdminDialogTitle": "Change {{churchType}} Admin",
+      "selectAnAdmin": "Select an Admin",
+      "subChurchLocations": "{{subChurch}} Locations",
+      "viewAllSubChurch": "View All {{subChurchPlural}}",
+      "moreCount": "+{{count}} more",
+      "moreSubChurches": "{{count}} more {{subChurch}}",
+      "showAll": "Show all",
+      "addNewSubChurch": "Add New {{subChurch}}",
+      "churchHistory": "Church History",
+      "adminRequired": "Please select an Admin from the dropdown",
+      "adminChangedSuccess": "{{churchType}} Admin has been changed successfully",
+      "changeAdminErrorToast": "Unable to Change Admin"
+    },
+    "detailsStats": {
+      "members": "Members",
+      "pastors": "Pastors",
+      "status": "Status",
+      "meetingDay": "Meeting Day",
+      "code": "Code",
+      "momoNumber": "Momo Number",
+      "outboundStatus": "Outbound Status",
+      "urvanTopUp": "Urvan Top Up (One Way)",
+      "sprinterTopUp": "Sprinter Top Up (One Way)",
+      "incomeTracking": "Income Tracking",
+      "currency": "Currency",
+      "conversionRate": "Conversion Rate ($)",
+      "vacationStatus": "Vacation Status",
+      "bankAccount": "Bank Account",
+      "yes": "Yes",
+      "no": "No",
+      "inAndOut": "In and Out",
+      "inOnly": "In Only"
+    },
+    "leaderTitle": {
+      "bacentaLeader": "Bacenta Leader",
+      "campusLeader": "Campus Leader",
+      "councilLeader": "Council Leader",
+      "governor": "Governor",
+      "oversightLeader": "Oversight Leader",
+      "streamLeader": "Stream Leader",
+      "leadPastor": "Lead Pastor"
+    },
+    "churchLevelMembers": {
+      "notAvailablePrefix": "Member browsing is not available at the",
+      "notAvailableSuffix": " level."
     }
   },
   "dashboard": {

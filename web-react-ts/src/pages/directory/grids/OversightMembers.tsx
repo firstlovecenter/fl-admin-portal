@@ -1,9 +1,11 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import MembersGrid from 'components/members-grids/MembersGrid'
 import { GET_OVERSIGHT_MEMBERS } from './GridQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 
 const OversightMembers = () => {
+  const { t } = useTranslation()
   const { oversightId } = useContext(ChurchContext)
 
   return (
@@ -16,7 +18,9 @@ const OversightMembers = () => {
         parent ? (
           <>
             {parent.name}{' '}
-            <span className="text-members">Members</span>
+            <span className="text-members">
+              {t('directory.detailsStats.members')}
+            </span>
           </>
         ) : null
       }

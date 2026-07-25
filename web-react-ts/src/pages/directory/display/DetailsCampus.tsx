@@ -3,12 +3,14 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { DISPLAY_CAMPUS } from './ReadQueries'
 import { permitAdmin } from 'permission-utils'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsCampus = () => {
+  const { t } = useTranslation()
   const { campusId, setFilters } = useContext(ChurchContext)
   const navigate = useNavigate()
 
@@ -21,13 +23,13 @@ const DetailsCampus = () => {
 
   const details: DetailsArray = [
     {
-      title: 'Members',
+      title: t('directory.detailsStats.members'),
       number: gathering?.memberCount || 0,
       link: `/${gathering?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
     {
-      title: 'Pastors',
+      title: t('directory.detailsStats.pastors'),
       number: gathering?.pastorCount || '0',
       link: '/campus/members',
       onClick: () => {
@@ -44,38 +46,40 @@ const DetailsCampus = () => {
     },
 
     {
-      title: 'Streams',
+      title: t('shared.churchLevelPlural.Stream'),
       number: gathering?.streamCount || 0,
       link: `/${`Stream`.toLowerCase()}/displayall`,
     },
     {
-      title: 'Councils',
+      title: t('shared.churchLevelPlural.Council'),
       number: gathering?.councilCount,
       link: `/campus/councils`,
     },
     {
-      title: 'Governorships',
+      title: t('shared.churchLevelPlural.Governorship'),
       number: gathering?.governorshipCount,
       link: `/campus/governorships`,
     },
     {
-      title: 'Bacentas',
+      title: t('shared.churchLevelPlural.Bacenta'),
       number: gathering?.bacentaCount || 0,
       vacationCount: gathering?.vacationBacentaCount,
       link: '#',
     },
     {
-      title: 'Income Tracking',
-      number: gathering?.noIncomeTracking ? 'No' : 'Yes',
+      title: t('directory.detailsStats.incomeTracking'),
+      number: gathering?.noIncomeTracking
+        ? t('directory.detailsStats.no')
+        : t('directory.detailsStats.yes'),
       link: `#`,
     },
     {
-      title: 'Currency',
+      title: t('directory.detailsStats.currency'),
       number: gathering?.currency,
       link: `#`,
     },
     {
-      title: 'Conversion Rate ($)',
+      title: t('directory.detailsStats.conversionRate'),
       number: gathering?.conversionRateToDollar,
       link: `#`,
     },
@@ -92,7 +96,7 @@ const DetailsCampus = () => {
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
       <DisplayChurchDetails
         name={gathering?.name}
-        leaderTitle="Campus Leader"
+        leaderTitle={t('directory.leaderTitle.campusLeader')}
         church={gathering}
         churchId={campusId}
         leader={gathering?.leader}

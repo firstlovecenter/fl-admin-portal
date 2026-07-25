@@ -174,6 +174,132 @@ unrelated failures (`createApolloClient.test.tsx`, confirmed untouched by
 this branch) / 0 new failures. `tsc --noEmit` and `eslint --max-warnings=0`
 clean on every touched file.
 
+## Phase 3 — directory page group (IN PROGRESS)
+
+**Course-correction, mid-phase (important):** the original plan was to pair
+i18n with a full Shadcn/Tailwind visual migration on the Bootstrap-mixed
+directory forms (per the repo-wide "every touched file must be fully
+migrated" rule). The user explicitly overrode that for this branch: *"we had
+moved to Shadcn about 2 months ago — can't we do the language additions
+without touching the existing UI?"* All directory work from that point on is
+**pure text-content translation only** — wrap hardcoded strings in `t()`,
+add the `useTranslation` import/hook, change **zero** classNames, JSX
+structure, or components — even on files that still have legacy Bootstrap
+divs (`form-group`, `HeadingPrimary`/`HeadingSecondary`). This deliberately
+does not follow the repo's usual "fully migrate every touched file" rule; it
+is a scoped, explicit user override for this branch only.
+
+This correction came right after a real incident: a first attempt at
+`GovernorshipForm.tsx` did a full visual redesign and accidentally dropped
+two functional dialogs (Add Bacenta, Close Down Governorship) while
+restructuring JSX. Caught on self-review and fixed before the course
+correction landed, but it's the concrete reason the safer text-only pattern
+is now the rule for the rest of this phase, not just a style preference.
+
+### 3a — church-level forms (DONE, committed `a41e5eb7`)
+
+- [x] `DenominationForm.tsx`, `GovernorshipForm.tsx`, `CouncilForm.tsx`,
+      `StreamForm.tsx`, `CampusForm.tsx`, `OversightForm.tsx`,
+      `QuickFactsHeader.tsx`, `UpdateDenomination.tsx` — text-only pass,
+      Bootstrap markup left untouched.
+- [x] New locale namespaces: `directory.common.*`,
+      `directory.<level>Form.*` (×6), `directory.quickFacts.*`,
+      `directory.updateDenomination.*`, and `shared.churchLevelPlural.*`
+      (new — proper per-language plurals for Governorship/Council/Stream/
+      Campus/Oversight/Denomination, since naive `{{word}}+s` concatenation
+      is wrong in Spanish/French/German; Bacenta is the deliberate exception
+      — always untranslated + plain English `+s` per `kb/01-glossary.md`).
+- [x] 39 new tests (`test-author`), `code-reviewer` pass fixed 8 dead locale
+      keys (leftovers from the reverted visual-migration attempt) and one
+      duplicated key (`oversightsTitle` → reused
+      `shared.churchLevelPlural.Oversight`).
+- [x] Full suite 406 passing (367 + 39) / same 11 pre-existing unrelated
+      failures. `tsc --noEmit` + `eslint --max-warnings=0` clean. Production
+      build succeeded.
+
+### 3b — DisplayChurchDetails + display/ + grids/ wrapper pages (IN PROGRESS, not yet committed)
+
+- [x] `shared.churchLevelPlural.Bacenta` added ("Bacentas", identical in all
+      5 locales per the glossary rule) — unifies the plural lookup so every
+      church level, Bacenta included, can go through the same
+      `t(\`shared.churchLevelPlural.${level}\`)` call.
+- [x] `components/DisplayChurchDetails/DisplayChurchDetails.tsx` (727 lines,
+      shared by all 7 `Details*.tsx` pages below, already pure Tailwind —
+      no Bootstrap-preservation constraint here) — fully localized. New
+      `directory.displayChurchDetails.*` namespace (24 keys, several
+      interpolated: `changeAdminDialogTitle`, `subChurchLocations`,
+      `viewAllSubChurch`, `moreCount`, `moreSubChurches`, `addNewSubChurch`,
+      `adminChangedSuccess`). The "Record this week's service" dialog
+      (Bacenta-only) reuses the existing `dashboard.userDashboard.dialog.*`
+      keys from phase 2 instead of duplicating near-identical strings.
+      `props.churchType`/`props.subChurch` now route through
+      `shared.churchLevel.*` / `shared.churchLevelPlural.*`. The local
+      `plural()` util import (from `global-utils`) was removed — no longer
+      used. `throwToSentry`'s dev-facing message was deliberately left as a
+      raw English literal (matches the established phase-3a precedent —
+      Sentry diagnostics aren't user-facing); only the `displayError`
+      toast message was translated.
+- [x] The 7 `Details*.tsx` wrapper pages (`DetailsBacenta`, `DetailsCampus`,
+      `DetailsCouncil`, `DetailsDenomination`, `DetailsGovernorship`,
+      `DetailsOversight`, `DetailsStream`) — their `details[].title` stat
+      labels and `leaderTitle` props translated. New
+      `directory.detailsStats.*` (members/pastors/status/meetingDay/code/
+      momoNumber/outboundStatus/urvanTopUp/sprinterTopUp/incomeTracking/
+      currency/conversionRate/vacationStatus/bankAccount/yes/no/inAndOut/
+      inOnly) and `directory.leaderTitle.*` (bacentaLeader/campusLeader/
+      councilLeader/governor/oversightLeader/streamLeader/leadPastor)
+      namespaces; entity-count titles (Bacentas/Governorships/Councils/
+      Streams/Campuses) reuse `shared.churchLevelPlural.*` rather than
+      duplicating.
+- [x] The 7 `grids/*.tsx` member-grid wrapper pages (`BacentaMembers`,
+      `CampusMembers`, `CouncilMembers`, `GovernorshipMembers`,
+      `OversightMembers`, `StreamMembers`, `ChurchLevelMembers`) — grid
+      headings translated (mix of `shared.churchLevel.*` and
+      `directory.detailsStats.members`, matching each file's pre-existing
+      choice of showing the level name vs. the word "Members" — an
+      inconsistency in the original source, preserved faithfully rather
+      than silently "fixed"). `ChurchLevelMembers.tsx`'s defensive
+      "level not supported" fallback message got a new
+      `directory.churchLevelMembers.*` prefix/suffix pair split around the
+      translated level name — checked each locale's punctuation spacing
+      convention (no space before a period in French/Spanish/Portuguese;
+      German needs the verb after the noun, so its suffix carries the verb).
+- [x] `tsc --noEmit` and `eslint --max-warnings=0` clean on every file in
+      this sub-batch. Key parity across all 5 locale files reconfirmed
+      twice via a standalone Node script (not just the Vitest key-parity
+      test) after each addition.
+- [ ] **Tests**: a `test-author` dispatch for `DisplayChurchDetails.tsx` +
+      the 7 `Details*.tsx` pages is in progress (first attempt hit a
+      transient API 529/overload, not a real failure — retried). Tests for
+      the 7 `grids/*.tsx` pages not yet dispatched.
+- [ ] `code-reviewer` pass for this whole sub-batch — not yet dispatched
+      (waiting on tests to land first, per this branch's established
+      per-batch order: locale keys → tsc/eslint → tests → code-reviewer →
+      full suite → commit).
+- [ ] Not yet committed.
+
+### 3c — not started yet (rest of `pages/directory/`)
+
+- `quick-facts/` (remaining files beyond `QuickFactsHeader.tsx`, already
+  done in 3a)
+- `create/`, remainder of `update/` (beyond `UpdateDenomination.tsx`)
+- `user-profile/`, `church-history/`
+- `reusable-forms/MemberForm.tsx` (620 lines), `MemberDisplay.tsx` (844
+  lines) — the two largest remaining files in this page group
+- Shared grid components used by all 7 `grids/*.tsx` pages:
+  `components/members-grids/MembersGrid.tsx` (261 lines),
+  `MemberTable.tsx` (191 lines), `Filters.tsx` (142 lines) — not yet
+  surveyed for hardcoded strings
+- Two pre-existing, unrelated bugs were noticed in passing during 3a/3b and
+  **deliberately left unfixed** (flagged instead of silently patched, since
+  they're outside this branch's diff): `SearchCombobox.tsx`'s `<Label
+  htmlFor>` doesn't associate with the underlying `cmdk` input (affects
+  every `Search*` field app-wide); `StreamForm.tsx`'s "Close Down Stream"
+  success handler navigates to `/council/displayall` instead of
+  `/stream/displayall` (copy/paste artifact from commit `58adb4bd`);
+  `UpdateDenomination.tsx`'s `onSubmit` doesn't inspect
+  `updateResult.errors` under `errorPolicy: 'all'`.
+
 ## Remaining work (not started — future phases)
 
 Roughly in priority order:
@@ -185,8 +311,9 @@ Roughly in priority order:
    `StreamTellerDashboard.tsx` still have their own English-only strings
    (bussing counters, banking-defaulter CTAs, etc.) beyond the one
    fallback-name fix already made.
-3. **`pages/directory/`** — next page group per the original priority order
-   (dashboards → directory → arrivals). Not started.
+3. **Finish `pages/directory/`** — see Phase 3 above; 3b tests + review +
+   commit, then 3c (quick-facts/create/update remainder, user-profile,
+   church-history, MemberForm/MemberDisplay, shared grid components).
 4. **`pages/arrivals/`** — after directory. Not started.
 5. Then accounts/banking/reports, translating error/validation copy as each
    page is migrated (Yup schema messages, Apollo/notistack-surfaced errors
@@ -256,3 +383,36 @@ translatable literal strings), `useComponentQuery.tsx` (checked — no
 user-visible literal strings), `dashboard-utils.ts`'s `setServantRoles`/
 `getUserServantRoles` (deliberately left alone — see above, used by
 app-wide auth bootstrap, out of scope for this pass).
+
+**New (phase 3a — church-level forms, committed `a41e5eb7`):**
+- `web-react-ts/src/pages/directory/reusable-forms/{Denomination,
+  Governorship,Council,Stream,Campus,Oversight}Form.test.tsx`
+- `web-react-ts/src/pages/directory/quick-facts/components/QuickFactsHeader.test.tsx`
+- `web-react-ts/src/pages/directory/update/UpdateDenomination.test.tsx`
+
+**Modified (phase 3a):**
+- `web-react-ts/src/pages/directory/reusable-forms/{Denomination,
+  Governorship,Council,Stream,Campus,Oversight}Form.tsx` (text-only,
+  Bootstrap markup untouched)
+- `web-react-ts/src/pages/directory/quick-facts/components/QuickFactsHeader.tsx`
+- `web-react-ts/src/pages/directory/update/UpdateDenomination.tsx`
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json` (`directory.common.*`,
+  `directory.<level>Form.*`, `directory.quickFacts.*`,
+  `directory.updateDenomination.*`, `shared.churchLevelPlural.*` added)
+
+**Modified (phase 3b — DisplayChurchDetails + display/ + grids/, not yet committed):**
+- `web-react-ts/src/components/DisplayChurchDetails/DisplayChurchDetails.tsx`
+- `web-react-ts/src/pages/directory/display/{DetailsBacenta,DetailsCampus,
+  DetailsCouncil,DetailsDenomination,DetailsGovernorship,DetailsOversight,
+  DetailsStream}.tsx`
+- `web-react-ts/src/pages/directory/grids/{BacentaMembers,CampusMembers,
+  CouncilMembers,GovernorshipMembers,OversightMembers,StreamMembers,
+  ChurchLevelMembers}.tsx`
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json`
+  (`shared.churchLevelPlural.Bacenta`, `directory.displayChurchDetails.*`,
+  `directory.detailsStats.*`, `directory.leaderTitle.*`,
+  `directory.churchLevelMembers.*` added)
+
+**Pending (phase 3b, not yet written at time of writing):** test files for
+all 15 files in the bullet above — dispatched to `test-author`, in progress
+in the background (see Phase 3b status notes).

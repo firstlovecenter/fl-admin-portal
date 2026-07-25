@@ -23,12 +23,7 @@ import {
   Role,
   VacationStatusOptions,
 } from 'global-types'
-import {
-  alertSuccess,
-  directoryLock,
-  plural,
-  throwToSentry,
-} from 'global-utils'
+import { alertSuccess, directoryLock, throwToSentry } from 'global-utils'
 import useModal from 'hooks/useModal'
 import { ChevronRight, MapPin, Pencil, PencilLine, XCircle } from 'lucide-react'
 import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
@@ -40,6 +35,7 @@ import {
   permitBacentaBussingAdmin,
 } from 'permission-utils'
 import { useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import SearchMember from 'components/formik/SearchMember'
 import SubmitButton from 'components/formik/SubmitButton'
@@ -103,6 +99,7 @@ type FormOptions = {
 }
 
 const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   let needsAdmin = false
   let roles: Role[] = []
@@ -159,7 +156,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   }
   const validationSchema = Yup.object({
     adminSelect: Yup.string().required(
-      'Please select an Admin from the dropdown'
+      t('directory.displayChurchDetails.adminRequired')
     ),
   })
 
@@ -168,6 +165,11 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     onSubmitProps: FormikHelpers<FormOptions>
   ) => {
     if (initialValues.adminSelect === values.adminSelect) return
+
+    const adminChangedSuccessMessage = t(
+      'directory.displayChurchDetails.adminChangedSuccess',
+      { churchType: t(`shared.churchLevel.${props.churchType}`) }
+    )
 
     try {
       if (props.churchType === 'Oversight') {
@@ -178,7 +180,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertSuccess('Oversight Admin has been changed successfully')
+        alertSuccess(adminChangedSuccessMessage)
       }
 
       if (props.churchType === 'Campus') {
@@ -189,7 +191,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertSuccess('Campus Admin has been changed successfully')
+        alertSuccess(adminChangedSuccessMessage)
       }
 
       if (props.churchType === 'Stream') {
@@ -200,7 +202,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertSuccess('Stream Admin has been changed successfully')
+        alertSuccess(adminChangedSuccessMessage)
       }
 
       if (props.churchType === 'Council') {
@@ -211,7 +213,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertSuccess('Council Admin has been changed successfully')
+        alertSuccess(adminChangedSuccessMessage)
       }
 
       if (props.churchType === 'Governorship') {
@@ -222,13 +224,16 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             oldAdminId: initialValues.adminSelect || 'no-old-admin',
           },
         })
-        alertSuccess('Governorship Admin has been changed successfully')
+        alertSuccess(adminChangedSuccessMessage)
       }
     } catch (e) {
       if (!isPermissionError(e)) {
         throwToSentry('Error changing admin', e)
       }
-      displayError('Unable to Change Admin', e)
+      displayError(
+        t('directory.displayChurchDetails.changeAdminErrorToast'),
+        e
+      )
     } finally {
       onSubmitProps.setSubmitting(false)
       onSubmitProps.resetForm()
@@ -254,7 +259,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 className="flex min-h-11 min-w-0 items-center gap-2 no-underline transition-opacity hover:opacity-80"
               >
                 <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Admin
+                  {t('directory.displayChurchDetails.admin')}
                 </span>
                 <Avatar className="h-6 w-6 shrink-0">
                   <AvatarImage
@@ -278,7 +283,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 onClick={handleShow}
               >
                 <Pencil className="h-3 w-3" />
-                {props.admin ? 'Change' : 'Add Admin'}
+                {props.admin
+                  ? t('directory.displayChurchDetails.change')
+                  : t('directory.displayChurchDetails.addAdmin')}
               </Button>
             </RoleView>
           </div>
@@ -290,7 +297,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           {props.deputyLeader && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground w-24 shrink-0">
-                Deputy Leader
+                {t('directory.displayChurchDetails.deputyLeader')}
               </span>
               <MemberAvatarWithName member={props.deputyLeader} />
             </div>
@@ -298,7 +305,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           {props.admin && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground w-24 shrink-0">
-                Bacenta Admin
+                {t('directory.displayChurchDetails.bacentaAdmin')}
               </span>
               <MemberAvatarWithName member={props.admin} />
             </div>
@@ -320,7 +327,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
       <>
         {!props.momoNumber && !props.loading && (
           <p className="text-sm font-semibold text-destructive text-center">
-            There is no valid Mobile Money Number! Please update!
+            {t('directory.displayChurchDetails.noMomoWarning')}
           </p>
         )}
         <Button
@@ -328,7 +335,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           variant="outline"
           onClick={() => setEditBussingOpen(true)}
         >
-          Bus Payment Details
+          {t('directory.displayChurchDetails.busPaymentDetails')}
         </Button>
       </>
     ) : null
@@ -350,7 +357,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
           })
         }}
       >
-        View Trends
+        {t('directory.displayChurchDetails.viewTrends')}
       </Button>
 
       {shouldFill({
@@ -381,7 +388,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             })
           }}
         >
-          {props.churchType === 'Bacenta' ? 'Fill Service Form' : 'Service Forms'}
+          {props.churchType === 'Bacenta'
+            ? t('directory.displayChurchDetails.fillServiceForm')
+            : t('directory.displayChurchDetails.serviceForms')}
         </Button>
       )}
     </div>
@@ -391,10 +400,10 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
     props?.location && props.location?.latitude !== 0 ? (
       <div className="text-center py-4">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-          Location
+          {t('directory.displayChurchDetails.location')}
         </h3>
         <p className="text-xs text-muted-foreground mb-3">
-          Click for directions
+          {t('directory.displayChurchDetails.clickForDirections')}
         </p>
         <a
           href={`https://www.google.com/maps/search/?api=1&query=${props?.location?.latitude}%2C${props?.location?.longitude}`}
@@ -418,7 +427,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         <div className="flex items-center justify-between mt-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
             {props.name}{' '}
-            <span className="text-members">{props.churchType}</span>
+            <span className="text-members">
+              {t(`shared.churchLevel.${props.churchType}`)}
+            </span>
           </h1>
           {directoryLock(currentUser, props.churchType) && (
             <RoleView roles={props.editPermitted} directoryLock>
@@ -450,9 +461,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
         <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Record this week&apos;s service</DialogTitle>
+              <DialogTitle>{t('dashboard.userDashboard.dialog.title')}</DialogTitle>
               <DialogDescription>
-                Did the service take place this week?
+                {t('dashboard.userDashboard.dialog.description')}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-2 pt-1">
@@ -469,10 +480,12 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-foreground">
-                    Record Service
+                    {t('dashboard.userDashboard.dialog.recordService.title')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    We met this week — fill the service form
+                    {t(
+                      'dashboard.userDashboard.dialog.recordService.subtitle'
+                    )}
                   </p>
                 </div>
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -490,10 +503,12 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-foreground">
-                    I Cancelled My Service
+                    {t('dashboard.userDashboard.dialog.cancelService.title')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    No service this week — give a reason
+                    {t(
+                      'dashboard.userDashboard.dialog.cancelService.subtitle'
+                    )}
                   </p>
                 </div>
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -514,13 +529,19 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             {(formik) => (
               <Form>
                 <DialogHeader>
-                  <DialogTitle>Change {props.churchType} Admin</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.displayChurchDetails.changeAdminDialogTitle', {
+                      churchType: t(`shared.churchLevel.${props.churchType}`),
+                    })}
+                  </DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
                   <SearchMember
                     name="adminSelect"
                     initialValue={initialValues?.adminName}
-                    placeholder="Select an Admin"
+                    placeholder={t(
+                      'directory.displayChurchDetails.selectAnAdmin'
+                    )}
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="Member Search"
                     error={formik.errors.adminSelect}
@@ -528,7 +549,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                 </div>
                 <DialogFooter>
                   <Button variant="outline" type="button" onClick={handleClose}>
-                    Close
+                    {t('directory.common.close')}
                   </Button>
                   <SubmitButton formik={formik} />
                 </DialogFooter>
@@ -604,11 +625,20 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                   <>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                        {`${props.subChurch} Locations`}
+                        {t('directory.displayChurchDetails.subChurchLocations', {
+                          subChurch: t(`shared.churchLevel.${props.subChurch}`),
+                        })}
                       </h3>
                       <ViewAll
                         to={`/${props.subChurch.toLowerCase()}/displayall`}
-                        label={`View All ${plural(props.subChurch)}`}
+                        label={t(
+                          'directory.displayChurchDetails.viewAllSubChurch',
+                          {
+                            subChurchPlural: t(
+                              `shared.churchLevelPlural.${props.subChurch}`
+                            ),
+                          }
+                        )}
                       />
                     </div>
                     {(() => {
@@ -634,7 +664,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                                   size="sm"
                                   className="gap-1 border-dashed text-nowrap text-members hover:bg-members/10 hover:text-members"
                                 >
-                                  +{remaining} more
+                                  {t('directory.displayChurchDetails.moreCount', {
+                                    count: remaining,
+                                  })}
                                   <ChevronRight className="size-3.5" />
                                 </Button>
                               </Link>
@@ -657,14 +689,23 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="text-base font-semibold text-members">
-                                    {`${remaining} more ${
-                                      remaining === 1
-                                        ? props.subChurch
-                                        : plural(props.subChurch)
-                                    }`}
+                                    {t(
+                                      'directory.displayChurchDetails.moreSubChurches',
+                                      {
+                                        count: remaining,
+                                        subChurch:
+                                          remaining === 1
+                                            ? t(
+                                                `shared.churchLevel.${props.subChurch}`
+                                              )
+                                            : t(
+                                                `shared.churchLevelPlural.${props.subChurch}`
+                                              ),
+                                      }
+                                    )}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
-                                    Show all
+                                    {t('directory.displayChurchDetails.showAll')}
                                   </p>
                                 </div>
                                 <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
@@ -694,7 +735,9 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                         )
                       }
                     >
-                      {`Add New ${props.subChurch}`}
+                      {t('directory.displayChurchDetails.addNewSubChurch', {
+                        subChurch: t(`shared.churchLevel.${props.subChurch}`),
+                      })}
                     </Button>
                   </RoleView>
                 )}
@@ -706,7 +749,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                   <>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                        Church History
+                        {t('directory.displayChurchDetails.churchHistory')}
                       </h3>
                       <ViewAll
                         to={`/${props.churchType.toLowerCase()}/history`}

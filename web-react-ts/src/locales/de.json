@@ -44,6 +44,7 @@
       "Denomination": "Konfession"
     },
     "churchLevelPlural": {
+      "Bacenta": "Bacentas",
       "Governorship": "Gouvernorate",
       "Council": "Räte",
       "Stream": "Zweige",
@@ -178,6 +179,65 @@
       "leaderChanged": "Leiter erfolgreich geändert",
       "leaderChangeError": "Beim Ändern des Leiters ist ein Problem aufgetreten",
       "updateError": "Beim Aktualisieren dieser Konfession ist ein Problem aufgetreten"
+    },
+    "displayChurchDetails": {
+      "admin": "Admin",
+      "change": "Ändern",
+      "addAdmin": "Admin hinzufügen",
+      "deputyLeader": "Stellvertretender Leiter",
+      "bacentaAdmin": "Bacenta-Administrator",
+      "noMomoWarning": "Es liegt keine gültige Mobile-Money-Nummer vor! Bitte aktualisieren!",
+      "busPaymentDetails": "Busbezahlungsdetails",
+      "viewTrends": "Trends anzeigen",
+      "fillServiceForm": "Gottesdienstformular ausfüllen",
+      "serviceForms": "Gottesdienstformulare",
+      "location": "Standort",
+      "clickForDirections": "Klicken für Wegbeschreibung",
+      "changeAdminDialogTitle": "{{churchType}}-Administrator ändern",
+      "selectAnAdmin": "Einen Administrator auswählen",
+      "subChurchLocations": "{{subChurch}}-Standorte",
+      "viewAllSubChurch": "Alle {{subChurchPlural}} anzeigen",
+      "moreCount": "+{{count}} weitere",
+      "moreSubChurches": "{{count}} weitere {{subChurch}}",
+      "showAll": "Alle anzeigen",
+      "addNewSubChurch": "Neue(n) {{subChurch}} hinzufügen",
+      "churchHistory": "Gemeindeverlauf",
+      "adminRequired": "Bitte wählen Sie einen Administrator aus der Dropdown-Liste aus",
+      "adminChangedSuccess": "{{churchType}}-Administrator wurde erfolgreich geändert",
+      "changeAdminErrorToast": "Administrator konnte nicht geändert werden"
+    },
+    "detailsStats": {
+      "members": "Mitglieder",
+      "pastors": "Pastoren",
+      "status": "Status",
+      "meetingDay": "Versammlungstag",
+      "code": "Code",
+      "momoNumber": "Mobile-Money-Nummer",
+      "outboundStatus": "Abfahrtsstatus",
+      "urvanTopUp": "Urvan-Aufladung (einfache Fahrt)",
+      "sprinterTopUp": "Sprinter-Aufladung (einfache Fahrt)",
+      "incomeTracking": "Einkommensverfolgung",
+      "currency": "Währung",
+      "conversionRate": "Umrechnungskurs ($)",
+      "vacationStatus": "Urlaubsstatus",
+      "bankAccount": "Bankkonto",
+      "yes": "Ja",
+      "no": "Nein",
+      "inAndOut": "Hin und zurück",
+      "inOnly": "Nur Hinfahrt"
+    },
+    "leaderTitle": {
+      "bacentaLeader": "Bacenta-Leiter",
+      "campusLeader": "Campus-Leiter",
+      "councilLeader": "Rats-Leiter",
+      "governor": "Gouverneur",
+      "oversightLeader": "Aufsichts-Leiter",
+      "streamLeader": "Zweig-Leiter",
+      "leadPastor": "Leitender Pastor"
+    },
+    "churchLevelMembers": {
+      "notAvailablePrefix": "Die Mitgliederansicht ist auf der Ebene",
+      "notAvailableSuffix": " nicht verfügbar."
     }
   },
   "dashboard": {

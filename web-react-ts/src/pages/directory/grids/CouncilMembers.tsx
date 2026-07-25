@@ -1,9 +1,11 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import MembersGrid from 'components/members-grids/MembersGrid'
 import { GET_COUNCIL_MEMBERS } from './GridQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
 
 const CouncilMembers = () => {
+  const { t } = useTranslation()
   const { councilId } = useContext(ChurchContext)
 
   return (
@@ -16,7 +18,9 @@ const CouncilMembers = () => {
         parent ? (
           <>
             {parent.name}{' '}
-            <span className="text-members">Council</span>
+            <span className="text-members">
+              {t('shared.churchLevel.Council')}
+            </span>
           </>
         ) : null
       }

@@ -44,6 +44,7 @@
       "Denomination": "Dénomination"
     },
     "churchLevelPlural": {
+      "Bacenta": "Bacentas",
       "Governorship": "Gouvernorats",
       "Council": "Conseils",
       "Stream": "Filières",
@@ -178,6 +179,65 @@
       "leaderChanged": "Responsable changé avec succès",
       "leaderChangeError": "Un problème est survenu lors du changement de responsable",
       "updateError": "Un problème est survenu lors de la mise à jour de cette dénomination"
+    },
+    "displayChurchDetails": {
+      "admin": "Admin",
+      "change": "Changer",
+      "addAdmin": "Ajouter un administrateur",
+      "deputyLeader": "Chef adjoint",
+      "bacentaAdmin": "Administrateur de Bacenta",
+      "noMomoWarning": "Il n'y a pas de numéro Mobile Money valide ! Veuillez le mettre à jour !",
+      "busPaymentDetails": "Détails du paiement du bus",
+      "viewTrends": "Voir les tendances",
+      "fillServiceForm": "Remplir le formulaire de service",
+      "serviceForms": "Formulaires de service",
+      "location": "Emplacement",
+      "clickForDirections": "Cliquez pour l'itinéraire",
+      "changeAdminDialogTitle": "Changer l'administrateur {{churchType}}",
+      "selectAnAdmin": "Sélectionner un administrateur",
+      "subChurchLocations": "Emplacements des {{subChurch}}",
+      "viewAllSubChurch": "Voir tous les {{subChurchPlural}}",
+      "moreCount": "+{{count}} de plus",
+      "moreSubChurches": "{{count}} {{subChurch}} de plus",
+      "showAll": "Tout afficher",
+      "addNewSubChurch": "Ajouter un nouveau {{subChurch}}",
+      "churchHistory": "Historique de l'église",
+      "adminRequired": "Veuillez sélectionner un administrateur dans la liste déroulante",
+      "adminChangedSuccess": "L'administrateur {{churchType}} a été changé avec succès",
+      "changeAdminErrorToast": "Impossible de changer l'administrateur"
+    },
+    "detailsStats": {
+      "members": "Membres",
+      "pastors": "Pasteurs",
+      "status": "Statut",
+      "meetingDay": "Jour de réunion",
+      "code": "Code",
+      "momoNumber": "Numéro Mobile Money",
+      "outboundStatus": "Statut de sortie",
+      "urvanTopUp": "Recharge Urvan (aller simple)",
+      "sprinterTopUp": "Recharge Sprinter (aller simple)",
+      "incomeTracking": "Suivi des revenus",
+      "currency": "Devise",
+      "conversionRate": "Taux de conversion ($)",
+      "vacationStatus": "Statut de vacances",
+      "bankAccount": "Compte bancaire",
+      "yes": "Oui",
+      "no": "Non",
+      "inAndOut": "Aller-retour",
+      "inOnly": "Aller seulement"
+    },
+    "leaderTitle": {
+      "bacentaLeader": "Chef de Bacenta",
+      "campusLeader": "Chef de Campus",
+      "councilLeader": "Chef de Conseil",
+      "governor": "Gouverneur",
+      "oversightLeader": "Chef de Supervision",
+      "streamLeader": "Chef de Filière",
+      "leadPastor": "Pasteur principal"
+    },
+    "churchLevelMembers": {
+      "notAvailablePrefix": "La consultation des membres n'est pas disponible au niveau",
+      "notAvailableSuffix": "."
     }
   },
   "dashboard": {

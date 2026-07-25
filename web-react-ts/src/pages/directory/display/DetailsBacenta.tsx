@@ -1,5 +1,7 @@
 import React, { useContext } from 'react'
 import { useQuery } from '@apollo/client'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 
 import { DISPLAY_BACENTA, DISPLAY_BACENTA_HISTORY } from './ReadQueries'
@@ -19,15 +21,16 @@ export type DetailsArray = {
   onClick?: () => void
 }[]
 
-const convertToString = (value: string | boolean) => {
+const convertToString = (value: string | boolean, t: TFunction) => {
   if (value === true) {
-    return 'In and Out'
+    return t('directory.detailsStats.inAndOut')
   }
 
-  return 'In Only'
+  return t('directory.detailsStats.inOnly')
 }
 
 const DetailsBacenta = () => {
+  const { t } = useTranslation()
   const { bacentaId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const { data, loading, error } = useQuery(DISPLAY_BACENTA, {
@@ -47,44 +50,44 @@ const DetailsBacenta = () => {
 
   const details: DetailsArray = [
     {
-      title: 'Members',
+      title: t('directory.detailsStats.members'),
       number: bacenta?.memberCount || 0,
       link: `/${bacenta?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
     {
-      title: 'Status',
+      title: t('directory.detailsStats.status'),
       number: bacenta?.vacationStatus,
       link: '#',
     },
     {
-      title: 'Meeting Day',
+      title: t('directory.detailsStats.meetingDay'),
       number: bacenta?.meetingDay?.day,
       link: '#',
     },
 
     {
-      title: 'Code',
+      title: t('directory.detailsStats.code'),
       number: bacenta?.bankingCode,
       link: `#`,
     },
     {
-      title: 'Momo Number',
+      title: t('directory.detailsStats.momoNumber'),
       number: bacenta?.momoNumber || '-',
       link: `#`,
     },
     {
-      title: 'Outbound Status',
-      number: convertToString(bacenta?.outbound),
+      title: t('directory.detailsStats.outboundStatus'),
+      number: convertToString(bacenta?.outbound, t),
       link: `#`,
     },
     {
-      title: 'Urvan Top Up (One Way)',
+      title: t('directory.detailsStats.urvanTopUp'),
       number: bacenta?.urvanTopUp + ' ' + currentUser.currency,
       link: `#`,
     },
     {
-      title: 'Sprinter Top Up (One Way)',
+      title: t('directory.detailsStats.sprinterTopUp'),
       number: bacenta?.sprinterTopUp + ' ' + currentUser.currency,
       link: `#`,
     },
@@ -110,7 +113,7 @@ const DetailsBacenta = () => {
         church={bacenta}
         momoNumber={bacenta?.momoNumber}
         name={bacenta?.name}
-        leaderTitle="Bacenta Leader"
+        leaderTitle={t('directory.leaderTitle.bacentaLeader')}
         leader={bacenta?.leader}
         admin={bacenta?.admin}
         deputyLeader={bacenta?.deputyLeader}

@@ -3,12 +3,14 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { DISPLAY_STREAM } from './ReadQueries'
 import { permitAdmin } from 'permission-utils'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsStream = () => {
+  const { t } = useTranslation()
   const { streamId, setFilters } = useContext(ChurchContext)
   const navigate = useNavigate()
 
@@ -20,33 +22,33 @@ const DetailsStream = () => {
   let breadcrumb = [stream?.campus, stream]
   const details: DetailsArray = [
     {
-      title: 'Members',
+      title: t('directory.detailsStats.members'),
       number: stream?.memberCount || 0,
       link: `/${stream?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
     {
-      title: 'Meeting Day',
+      title: t('directory.detailsStats.meetingDay'),
       number: stream?.meetingDay.day,
       link: '#',
     },
     {
-      title: 'Vacation Status',
+      title: t('directory.detailsStats.vacationStatus'),
       number: stream?.vacationStatus,
       link: '#',
     },
     {
-      title: 'Bank Account',
+      title: t('directory.detailsStats.bankAccount'),
       number: stream?.bankAccount,
       link: '#',
     },
     {
-      title: 'Councils',
+      title: t('shared.churchLevelPlural.Council'),
       number: stream?.councilCount || 0,
       link: `/${`Council`.toLowerCase()}/displayall`,
     },
     {
-      title: 'Pastors',
+      title: t('directory.detailsStats.pastors'),
       number: stream?.pastorCount || '0',
       link: '/stream/members',
       onClick: () => {
@@ -62,12 +64,12 @@ const DetailsStream = () => {
       },
     },
     {
-      title: 'Governorships',
+      title: t('shared.churchLevelPlural.Governorship'),
       number: stream?.governorshipCount,
       link: `/stream/governorships`,
     },
     {
-      title: 'Bacentas',
+      title: t('shared.churchLevelPlural.Bacenta'),
       number: stream?.bacentaCount || 0,
       vacationCount: stream?.vacationBacentaCount,
       link: '/stream/bacentas',
@@ -80,7 +82,7 @@ const DetailsStream = () => {
         name={stream?.name}
         church={stream}
         subChurch="Council"
-        leaderTitle={'Stream Leader'}
+        leaderTitle={t('directory.leaderTitle.streamLeader')}
         leader={stream?.leader}
         admin={stream?.admin}
         churchId={streamId}

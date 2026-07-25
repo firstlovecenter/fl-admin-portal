@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
 import { useQuery } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchDetails'
 
@@ -10,6 +11,7 @@ import { permitAdminArrivals } from 'permission-utils'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsGovernorship = () => {
+  const { t } = useTranslation()
   const { governorshipId, setFilters } = useContext(ChurchContext)
   const navigate = useNavigate()
 
@@ -20,13 +22,13 @@ const DetailsGovernorship = () => {
 
   const details: DetailsArray = [
     {
-      title: 'Members',
+      title: t('directory.detailsStats.members'),
       number: governorship?.memberCount || 0,
       link: `/${governorship?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
     {
-      title: 'Pastors',
+      title: t('directory.detailsStats.pastors'),
       number: governorship?.pastorCount || '0',
       link: '/governorship/members',
       onClick: () => {
@@ -42,7 +44,7 @@ const DetailsGovernorship = () => {
       },
     },
     {
-      title: 'Bacentas',
+      title: t('shared.churchLevelPlural.Bacenta'),
       number: governorship?.bacentaCount || 0,
       link: `/bacenta/displayall`,
       vacationCount: governorship?.vacationBacentaCount,
@@ -55,7 +57,7 @@ const DetailsGovernorship = () => {
         details={details}
         loading={loading}
         name={data?.governorships[0]?.name}
-        leaderTitle={'Governor'}
+        leaderTitle={t('directory.leaderTitle.governor')}
         leader={data?.governorships[0]?.leader}
         churchId={governorshipId}
         admin={data?.governorships[0]?.admin}

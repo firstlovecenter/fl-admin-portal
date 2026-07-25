@@ -4,12 +4,14 @@ import DisplayChurchDetails from 'components/DisplayChurchDetails/DisplayChurchD
 import { ChurchContext } from 'contexts/ChurchContext'
 import { permitAdmin } from 'permission-utils'
 import React, { useContext, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { DISPLAY_COUNCIL } from './ReadQueries'
 import useClickCard from 'hooks/useClickCard'
 import { DetailsArray } from './DetailsBacenta'
 
 const DetailsCouncil = () => {
+  const { t } = useTranslation()
   const { councilId, setFilters } = useContext(ChurchContext)
   const { setChurch } = useClickCard()
   const navigate = useNavigate()
@@ -25,24 +27,24 @@ const DetailsCouncil = () => {
 
   const details: DetailsArray = [
     {
-      title: 'Members',
+      title: t('directory.detailsStats.members'),
       number: council?.memberCount || 0,
       link: `/${council?.__typename?.toLowerCase()}/members`,
       width: 12,
     },
     {
-      title: 'Governorships',
+      title: t('shared.churchLevelPlural.Governorship'),
       number: council?.governorshipCount || 0,
       link: `/${`Governorship`.toLowerCase()}/displayall`,
     },
     {
-      title: 'Bacentas',
+      title: t('shared.churchLevelPlural.Bacenta'),
       number: council?.bacentaCount || 0,
       vacationCount: council?.vacationBacentaCount,
       link: '/council/bacentas',
     },
     {
-      title: 'Pastors',
+      title: t('directory.detailsStats.pastors'),
       number: council?.pastorCount ?? 0,
       link: '/council/members',
       onClick: () => {
@@ -64,7 +66,7 @@ const DetailsCouncil = () => {
       <DisplayChurchDetails
         loading={loading}
         name={council?.name}
-        leaderTitle={'Council Leader'}
+        leaderTitle={t('directory.leaderTitle.councilLeader')}
         churchId={councilId}
         leader={council?.leader}
         admin={council?.admin}
