@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_CAMPUS_MUTATION } from './CreateMutations'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -11,6 +12,7 @@ import CampusForm, {
 import { FormikHelpers } from 'formik'
 
 const CreateCampus = () => {
+  const { t } = useTranslation()
   const { clickCard, oversightId } = useContext(ChurchContext)
   const { refreshAccessToken } = useAuth()
 
@@ -73,7 +75,9 @@ const CreateCampus = () => {
     <CampusForm
       initialValues={initialValues}
       onSubmit={onSubmit}
-      title={`Create a New Campus`}
+      title={t('directory.create.createNewLevel', {
+        level: t('shared.churchLevel.Campus'),
+      })}
       newCampus
     />
   )

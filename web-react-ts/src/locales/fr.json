@@ -64,6 +64,7 @@
     "common": {
       "startTyping": "Commencez à taper...",
       "close": "Fermer",
+      "cancel": "Annuler",
       "chooseOne": "Choisissez-en un",
       "selectACurrency": "Sélectionnez une devise"
     },
@@ -259,6 +260,54 @@
     "churchLevelMembers": {
       "notAvailablePrefix": "La consultation des membres n'est pas disponible au niveau",
       "notAvailableSuffix": "."
+    },
+    "create": {
+      "createNewLevel": "Créer un nouveau {{level}}",
+      "startNewBacenta": "Commencer un nouveau Bacenta"
+    },
+    "createMember": {
+      "duplicateDialogTitle": "Le membre existe déjà",
+      "duplicateDialogMessage": "Une erreur s'est produite lors de la création du profil du membre\n{{error}}\n\nSouhaitez-vous faire une demande pour ce membre ?",
+      "requestMember": "Demander le membre"
+    },
+    "bacentaForm": {
+      "validation": {
+        "nameRequired": "Le nom du Bacenta est un champ obligatoire",
+        "leaderRequired": "Veuillez choisir un responsable dans la liste déroulante",
+        "vacationStatusRequired": "Le statut de vacances est un champ obligatoire",
+        "meetingDayRequired": "Le jour de réunion est un champ obligatoire",
+        "locationRequired": "Veuillez renseigner les informations de localisation",
+        "invalidCoordinates": "Veuillez saisir des coordonnées valides"
+      },
+      "newBacenta": "Nouveau Bacenta",
+      "detailsSectionTitle": "Détails du Bacenta",
+      "detailsSectionDescription": "Nom, statut et jour de réunion",
+      "nameLabel": "Nom du Bacenta",
+      "namePlaceholder": "Entrez le nom ici",
+      "statusLabel": "Statut",
+      "vacationStatusDefaultOption": "Choisir le statut de vacances",
+      "meetingDayLabel": "Jour de réunion",
+      "leadershipSectionTitle": "Responsables",
+      "leadershipSectionDescription": "Responsable, administrateur et responsable adjoint du Bacenta",
+      "selectALeader": "Sélectionner un responsable",
+      "startTyping": "Commencez à taper",
+      "selectBacentaAdmin": "Sélectionner l'administrateur du Bacenta",
+      "selectDeputyLeader": "Sélectionner le responsable adjoint du Bacenta",
+      "venueSectionTitle": "Lieu du culte",
+      "venueSectionDescription": "Coordonnées GPS du lieu du Bacenta",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "loading": "Chargement",
+      "locateMeNow": "Me localiser maintenant",
+      "locateMeCaption": "Appuyez sur ce bouton lorsque vous êtes sur le lieu du culte du Bacenta.",
+      "currentStatus": "Statut actuel",
+      "onVacationCaption": "En vacances — aucun culte ni transport attendu cette semaine.",
+      "activeCaption": "Actif — un compte rendu de culte est attendu chaque semaine.",
+      "quickActions": "Actions rapides",
+      "editBussingDetails": "Modifier les détails de transport",
+      "editBussingCaption": "Définissez les recharges du dimanche et si le Bacenta effectue le trajet retour cette semaine.",
+      "aboutThisForm": "À propos de ce formulaire",
+      "aboutThisFormDescription": "Mettez à jour les détails du Bacenta — responsables, jour de réunion, statut de vacances et coordonnées du lieu. Les modifications sont enregistrées dans l'historique."
     }
   },
   "dashboard": {

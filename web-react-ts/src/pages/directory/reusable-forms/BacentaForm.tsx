@@ -7,6 +7,7 @@ import {
   Users,
   Wallet,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import * as Yup from 'yup'
 import {
   DECIMAL_NUM_REGEX,
@@ -74,30 +75,35 @@ const BacentaForm = ({
   onSubmit,
   title,
 }: BacentaFormProps) => {
+  const { t } = useTranslation()
   const [editBussingOpen, setEditBussingOpen] = useState(false)
   const [positionLoading, setPositionLoading] = useState(false)
 
   const validationSchema = Yup.object({
-    name: Yup.string().required('Bacenta Name is a required field'),
-    leaderId: Yup.string().required('Please choose a leader from the dropdown'),
+    name: Yup.string().required(t('directory.bacentaForm.validation.nameRequired')),
+    leaderId: Yup.string().required(
+      t('directory.bacentaForm.validation.leaderRequired')
+    ),
     adminId: Yup.string(),
     deputyLeaderId: Yup.string(),
     vacationStatus: Yup.string().required(
-      'Vacation Status is a required field'
+      t('directory.bacentaForm.validation.vacationStatusRequired')
     ),
-    meetingDay: Yup.string().required('Meeting Day is a required field'),
+    meetingDay: Yup.string().required(
+      t('directory.bacentaForm.validation.meetingDayRequired')
+    ),
     venueLatitude: Yup.string()
-      .required('Please fill in your location info')
+      .required(t('directory.bacentaForm.validation.locationRequired'))
       .test(
         'is-decimal',
-        'Please enter valid coordinates',
+        t('directory.bacentaForm.validation.invalidCoordinates'),
         (value) => !!(value + '').match(DECIMAL_NUM_REGEX)
       ),
     venueLongitude: Yup.string()
-      .required('Please fill in your location info')
+      .required(t('directory.bacentaForm.validation.locationRequired'))
       .test(
         'is-decimal',
-        'Please enter valid coordinates',
+        t('directory.bacentaForm.validation.invalidCoordinates'),
         (value) => !!(value + '').match(DECIMAL_NUM_REGEX)
       ),
   })
@@ -111,10 +117,15 @@ const BacentaForm = ({
         <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
           {initialValues.name ? (
             <>
-              {initialValues.name} <span className="text-members">Bacenta</span>
+              {initialValues.name}{' '}
+              <span className="text-members">
+                {t('shared.churchLevel.Bacenta')}
+              </span>
             </>
           ) : (
-            <span className="text-members">New Bacenta</span>
+            <span className="text-members">
+              {t('directory.bacentaForm.newBacenta')}
+            </span>
           )}
         </h1>
       </StickyPageHeader>
@@ -135,27 +146,33 @@ const BacentaForm = ({
                   <Card className="overflow-hidden">
                     <SectionHeader
                       icon={<Building2 className="size-4" />}
-                      title="Bacenta Details"
-                      description="Name, status, and meeting day"
+                      title={t('directory.bacentaForm.detailsSectionTitle')}
+                      description={t(
+                        'directory.bacentaForm.detailsSectionDescription'
+                      )}
                     />
                     <CardContent className="space-y-4 p-5">
                       <Input
                         name="name"
-                        label="Name of Bacenta"
-                        placeholder="Enter Name Here"
+                        label={t('directory.bacentaForm.nameLabel')}
+                        placeholder={t('directory.bacentaForm.namePlaceholder')}
                       />
                       <div className="grid gap-4 sm:grid-cols-2">
                         <Select
                           name="vacationStatus"
                           options={VACATION_OPTIONS}
-                          defaultOption="Choose Vacation Status"
-                          label="Status"
+                          defaultOption={t(
+                            'directory.bacentaForm.vacationStatusDefaultOption'
+                          )}
+                          label={t('directory.bacentaForm.statusLabel')}
                         />
                         <Select
-                          label="Meeting Day"
+                          label={t('directory.bacentaForm.meetingDayLabel')}
                           name="meetingDay"
                           options={SERVICE_DAY_OPTIONS}
-                          defaultOption="Pick a Service Day"
+                          defaultOption={t(
+                            'directory.streamForm.meetingDayDefaultOption'
+                          )}
                         />
                       </div>
                     </CardContent>
@@ -165,15 +182,17 @@ const BacentaForm = ({
                     <Card className="overflow-hidden">
                       <SectionHeader
                         icon={<Users className="size-4" />}
-                        title="Leadership"
-                        description="Bacenta leader, admin, and deputy leader"
+                        title={t('directory.bacentaForm.leadershipSectionTitle')}
+                        description={t(
+                          'directory.bacentaForm.leadershipSectionDescription'
+                        )}
                       />
                       <CardContent className="space-y-4 p-5">
                         <SearchMember
                           name="leaderId"
                           initialValue={initialValues?.leaderName}
-                          placeholder="Start typing"
-                          label="Select a Leader"
+                          placeholder={t('directory.bacentaForm.startTyping')}
+                          label={t('directory.bacentaForm.selectALeader')}
                           setFieldValue={formik.setFieldValue}
                           aria-describedby="Member Search Box"
                           error={formik.errors.leaderId}
@@ -181,8 +200,8 @@ const BacentaForm = ({
                         <SearchMember
                           name="adminId"
                           initialValue={initialValues?.adminName}
-                          placeholder="Start typing"
-                          label="Select Bacenta Admin"
+                          placeholder={t('directory.bacentaForm.startTyping')}
+                          label={t('directory.bacentaForm.selectBacentaAdmin')}
                           setFieldValue={formik.setFieldValue}
                           aria-describedby="Admin Search Box"
                           error={formik.errors.adminId}
@@ -190,8 +209,8 @@ const BacentaForm = ({
                         <SearchMember
                           name="deputyLeaderId"
                           initialValue={initialValues?.deputyLeaderName}
-                          placeholder="Start typing"
-                          label="Select Deputy Bacenta Leader"
+                          placeholder={t('directory.bacentaForm.startTyping')}
+                          label={t('directory.bacentaForm.selectDeputyLeader')}
                           setFieldValue={formik.setFieldValue}
                           aria-describedby="Deputy Leader Search Box"
                           error={formik.errors.deputyLeaderId}
@@ -203,20 +222,22 @@ const BacentaForm = ({
                   <Card className="overflow-hidden">
                     <SectionHeader
                       icon={<MapPin className="size-4" />}
-                      title="Service Venue"
-                      description="GPS coordinates of the bacenta venue"
+                      title={t('directory.bacentaForm.venueSectionTitle')}
+                      description={t(
+                        'directory.bacentaForm.venueSectionDescription'
+                      )}
                     />
                     <CardContent className="space-y-4 p-5">
                       <div className="grid grid-cols-2 gap-3">
                         <Input
                           name="venueLatitude"
-                          label="Latitude"
+                          label={t('directory.bacentaForm.latitude')}
                           placeholder="0.000000"
                           inputMode="decimal"
                         />
                         <Input
                           name="venueLongitude"
-                          label="Longitude"
+                          label={t('directory.bacentaForm.longitude')}
                           placeholder="0.000000"
                           inputMode="decimal"
                         />
@@ -248,18 +269,17 @@ const BacentaForm = ({
                           {positionLoading ? (
                             <>
                               <Loader2 className="size-4 animate-spin" />
-                              Loading
+                              {t('directory.bacentaForm.loading')}
                             </>
                           ) : (
                             <>
                               <LocateFixed className="size-4" />
-                              Locate Me Now
+                              {t('directory.bacentaForm.locateMeNow')}
                             </>
                           )}
                         </Button>
                         <p className="text-center text-xs text-muted-foreground">
-                          Tap this button while you&apos;re at the bacenta
-                          service venue.
+                          {t('directory.bacentaForm.locateMeCaption')}
                         </p>
                       </div>
                     </CardContent>
@@ -275,7 +295,7 @@ const BacentaForm = ({
                     <Card>
                       <CardContent className="space-y-2 p-5">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Current status
+                          {t('directory.bacentaForm.currentStatus')}
                         </h3>
                         <div>
                           <Badge
@@ -286,8 +306,8 @@ const BacentaForm = ({
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {isOnVacation
-                            ? 'On vacation — no service or bussing expected this week.'
-                            : 'Active — a service record is expected each week.'}
+                            ? t('directory.bacentaForm.onVacationCaption')
+                            : t('directory.bacentaForm.activeCaption')}
                         </p>
                       </CardContent>
                     </Card>
@@ -297,7 +317,7 @@ const BacentaForm = ({
                     <Card>
                       <CardContent className="space-y-3 p-5">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Quick actions
+                          {t('directory.bacentaForm.quickActions')}
                         </h3>
                         <Button
                           type="button"
@@ -306,11 +326,10 @@ const BacentaForm = ({
                           onClick={() => setEditBussingOpen(true)}
                         >
                           <Wallet className="size-4" />
-                          Edit Bussing Details
+                          {t('directory.bacentaForm.editBussingDetails')}
                         </Button>
                         <p className="text-xs text-muted-foreground">
-                          Set Sunday top-ups and whether the bacenta is bussing
-                          back this week.
+                          {t('directory.bacentaForm.editBussingCaption')}
                         </p>
                       </CardContent>
                     </Card>
@@ -319,12 +338,10 @@ const BacentaForm = ({
                   <Card>
                     <CardContent className="space-y-2 p-5">
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        About this form
+                        {t('directory.bacentaForm.aboutThisForm')}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        Update bacenta details — leadership, meeting day,
-                        vacation status, and venue coordinates. Changes are
-                        logged to history.
+                        {t('directory.bacentaForm.aboutThisFormDescription')}
                       </p>
                     </CardContent>
                   </Card>

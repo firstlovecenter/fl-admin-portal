@@ -64,6 +64,7 @@
     "common": {
       "startTyping": "Zu tippen beginnen...",
       "close": "Schließen",
+      "cancel": "Abbrechen",
       "chooseOne": "Eine Option wählen",
       "selectACurrency": "Eine Währung auswählen"
     },
@@ -259,6 +260,54 @@
     "churchLevelMembers": {
       "notAvailablePrefix": "Die Mitgliederansicht ist auf der Ebene",
       "notAvailableSuffix": " nicht verfügbar."
+    },
+    "create": {
+      "createNewLevel": "Neues {{level}} erstellen",
+      "startNewBacenta": "Neues Bacenta starten"
+    },
+    "createMember": {
+      "duplicateDialogTitle": "Mitglied existiert bereits",
+      "duplicateDialogMessage": "Beim Erstellen des Mitgliederprofils ist ein Fehler aufgetreten\n{{error}}\n\nMöchten Sie das Mitglied anfordern?",
+      "requestMember": "Mitglied anfordern"
+    },
+    "bacentaForm": {
+      "validation": {
+        "nameRequired": "Der Bacenta-Name ist ein Pflichtfeld",
+        "leaderRequired": "Bitte wählen Sie einen Leiter aus der Dropdown-Liste aus",
+        "vacationStatusRequired": "Der Urlaubsstatus ist ein Pflichtfeld",
+        "meetingDayRequired": "Der Versammlungstag ist ein Pflichtfeld",
+        "locationRequired": "Bitte geben Sie die Standortinformationen ein",
+        "invalidCoordinates": "Bitte geben Sie gültige Koordinaten ein"
+      },
+      "newBacenta": "Neues Bacenta",
+      "detailsSectionTitle": "Bacenta-Details",
+      "detailsSectionDescription": "Name, Status und Versammlungstag",
+      "nameLabel": "Name des Bacenta",
+      "namePlaceholder": "Namen hier eingeben",
+      "statusLabel": "Status",
+      "vacationStatusDefaultOption": "Urlaubsstatus wählen",
+      "meetingDayLabel": "Versammlungstag",
+      "leadershipSectionTitle": "Leitung",
+      "leadershipSectionDescription": "Bacenta-Leiter, Administrator und stellvertretender Leiter",
+      "selectALeader": "Einen Leiter auswählen",
+      "startTyping": "Beginnen Sie zu tippen",
+      "selectBacentaAdmin": "Bacenta-Administrator auswählen",
+      "selectDeputyLeader": "Stellvertretenden Bacenta-Leiter auswählen",
+      "venueSectionTitle": "Gottesdienstort",
+      "venueSectionDescription": "GPS-Koordinaten des Bacenta-Ortes",
+      "latitude": "Breitengrad",
+      "longitude": "Längengrad",
+      "loading": "Lädt",
+      "locateMeNow": "Jetzt orten",
+      "locateMeCaption": "Tippen Sie auf diese Schaltfläche, während Sie sich am Bacenta-Gottesdienstort befinden.",
+      "currentStatus": "Aktueller Status",
+      "onVacationCaption": "Im Urlaub — diese Woche wird kein Gottesdienst oder Bustransport erwartet.",
+      "activeCaption": "Aktiv — jede Woche wird ein Gottesdienstbericht erwartet.",
+      "quickActions": "Schnellaktionen",
+      "editBussingDetails": "Bustransport-Details bearbeiten",
+      "editBussingCaption": "Legen Sie die Sonntagsaufladungen fest und ob das Bacenta diese Woche die Rückfahrt durchführt.",
+      "aboutThisForm": "Über dieses Formular",
+      "aboutThisFormDescription": "Aktualisieren Sie die Bacenta-Details — Leitung, Versammlungstag, Urlaubsstatus und Standortkoordinaten. Änderungen werden im Verlauf protokolliert."
     }
   },
   "dashboard": {

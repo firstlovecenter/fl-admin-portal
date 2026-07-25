@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { throwToSentry } from '../../../global-utils'
 import { GET_COUNCIL_GOVERNORSHIPS } from '../../../queries/ListQueries'
 import { DISPLAY_COUNCIL } from 'pages/directory/display/ReadQueries'
@@ -13,6 +14,7 @@ import GovernorshipForm, {
 import { FormikHelpers } from 'formik'
 
 const CreateGovernorship = () => {
+  const { t } = useTranslation()
   const { clickCard, councilId } = useContext(ChurchContext)
   const { refreshAccessToken } = useAuth()
 
@@ -72,7 +74,9 @@ const CreateGovernorship = () => {
     <GovernorshipForm
       initialValues={initialValues}
       onSubmit={onSubmit}
-      title={`Create a New Governorship`}
+      title={t('directory.create.createNewLevel', {
+        level: t('shared.churchLevel.Governorship'),
+      })}
       newGovernorship={true}
     />
   )

@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_OVERSIGHT_MUTATION } from './CreateMutations'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -11,6 +12,7 @@ import OversightForm, {
 import { FormikHelpers } from 'formik'
 
 const CreateOversight = () => {
+  const { t } = useTranslation()
   const { clickCard, denominationId } = useContext(ChurchContext)
   const { refreshAccessToken } = useAuth()
 
@@ -66,7 +68,9 @@ const CreateOversight = () => {
     <OversightForm
       initialValues={initialValues}
       onSubmit={onSubmit}
-      title={`Create a New Oversight`}
+      title={t('directory.create.createNewLevel', {
+        level: t('shared.churchLevel.Oversight'),
+      })}
       newOversight
     />
   )

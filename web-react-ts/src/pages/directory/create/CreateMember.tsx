@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { parsePhoneNum, throwToSentry } from '../../../global-utils'
 import { CREATE_MEMBER_MUTATION } from './CreateMutations'
 import { ChurchContext } from '../../../contexts/ChurchContext'
@@ -38,6 +39,7 @@ export type CreateMemberFormOptions = {
 }
 
 const CreateMember = () => {
+  const { t } = useTranslation()
   const initialValues: CreateMemberFormOptions = {
     firstName: '',
     middleName: '',
@@ -105,7 +107,9 @@ const CreateMember = () => {
       const message = error?.message?.toLowerCase?.() ?? ''
       if (message.includes('email') || message.includes('whatsapp')) {
         setDuplicateDialogMessage(
-          `There was an error creating the member profile\n${error}\n\nWould you like to request for the member?`
+          t('directory.createMember.duplicateDialogMessage', {
+            error: String(error),
+          })
         )
         setSubmitting(false)
       } else {
@@ -130,13 +134,17 @@ const CreateMember = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Member already exists</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('directory.createMember.duplicateDialogTitle')}
+            </AlertDialogTitle>
             <AlertDialogDescription className="whitespace-pre-line">
               {duplicateDialogMessage}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="min-h-11">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="min-h-11">
+              {t('directory.common.cancel')}
+            </AlertDialogCancel>
             <AlertDialogAction
               className="min-h-11"
               onClick={() => {
@@ -144,7 +152,7 @@ const CreateMember = () => {
                 setDuplicateDialogMessage(null)
               }}
             >
-              Request Member
+              {t('directory.createMember.requestMember')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

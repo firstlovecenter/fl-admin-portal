@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_COUNCIL_MUTATION } from './CreateMutations'
 import { DISPLAY_STREAM } from 'pages/directory/display/ReadQueries'
@@ -12,6 +13,7 @@ import CouncilForm, {
 import { FormikHelpers } from 'formik'
 
 const CreateCouncil = () => {
+  const { t } = useTranslation()
   const { clickCard, streamId } = useContext(ChurchContext)
   const { refreshAccessToken } = useAuth()
 
@@ -69,7 +71,9 @@ const CreateCouncil = () => {
     <CouncilForm
       initialValues={initialValues}
       onSubmit={onSubmit}
-      title={`Create a New Council`}
+      title={t('directory.create.createNewLevel', {
+        level: t('shared.churchLevel.Council'),
+      })}
       newCouncil
     />
   )

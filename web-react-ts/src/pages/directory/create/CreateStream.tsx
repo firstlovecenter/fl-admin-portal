@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { throwToSentry } from '../../../global-utils'
 import { CREATE_STREAM_MUTATION } from './CreateMutations'
 import { DISPLAY_CAMPUS } from 'pages/directory/display/ReadQueries'
@@ -12,6 +13,7 @@ import StreamForm, {
 import { FormikHelpers } from 'formik'
 
 const CreateStream = () => {
+  const { t } = useTranslation()
   const { clickCard, campusId } = useContext(ChurchContext)
   const { refreshAccessToken } = useAuth()
 
@@ -74,7 +76,9 @@ const CreateStream = () => {
     <StreamForm
       initialValues={initialValues}
       onSubmit={onSubmit}
-      title={`Create a New Stream`}
+      title={t('directory.create.createNewLevel', {
+        level: t('shared.churchLevel.Stream'),
+      })}
       newStream
     />
   )

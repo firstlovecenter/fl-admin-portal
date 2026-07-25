@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { CREATE_BACENTA_MUTATION } from './CreateMutations'
 import { DISPLAY_GOVERNORSHIP } from 'pages/directory/display/ReadQueries'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -10,6 +11,7 @@ import { throwToSentry } from 'global-utils'
 import { FormikHelpers } from 'formik'
 
 const CreateBacenta = () => {
+  const { t } = useTranslation()
   const { clickCard, governorshipId } = useContext(ChurchContext)
   const { refreshAccessToken } = useAuth()
   const navigate = useNavigate()
@@ -75,7 +77,7 @@ const CreateBacenta = () => {
     <BacentaForm
       initialValues={initialValues}
       onSubmit={onSubmit}
-      title="Start a New Bacenta"
+      title={t('directory.create.startNewBacenta')}
     />
   )
 }

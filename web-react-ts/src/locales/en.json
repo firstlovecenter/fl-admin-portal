@@ -64,6 +64,7 @@
     "common": {
       "startTyping": "Start typing...",
       "close": "Close",
+      "cancel": "Cancel",
       "chooseOne": "Choose One",
       "selectACurrency": "Select a Currency"
     },
@@ -259,6 +260,54 @@
     "churchLevelMembers": {
       "notAvailablePrefix": "Member browsing is not available at the",
       "notAvailableSuffix": " level."
+    },
+    "create": {
+      "createNewLevel": "Create a New {{level}}",
+      "startNewBacenta": "Start a New Bacenta"
+    },
+    "createMember": {
+      "duplicateDialogTitle": "Member already exists",
+      "duplicateDialogMessage": "There was an error creating the member profile\n{{error}}\n\nWould you like to request for the member?",
+      "requestMember": "Request Member"
+    },
+    "bacentaForm": {
+      "validation": {
+        "nameRequired": "Bacenta Name is a required field",
+        "leaderRequired": "Please choose a leader from the dropdown",
+        "vacationStatusRequired": "Vacation Status is a required field",
+        "meetingDayRequired": "Meeting Day is a required field",
+        "locationRequired": "Please fill in your location info",
+        "invalidCoordinates": "Please enter valid coordinates"
+      },
+      "newBacenta": "New Bacenta",
+      "detailsSectionTitle": "Bacenta Details",
+      "detailsSectionDescription": "Name, status, and meeting day",
+      "nameLabel": "Name of Bacenta",
+      "namePlaceholder": "Enter Name Here",
+      "statusLabel": "Status",
+      "vacationStatusDefaultOption": "Choose Vacation Status",
+      "meetingDayLabel": "Meeting Day",
+      "leadershipSectionTitle": "Leadership",
+      "leadershipSectionDescription": "Bacenta leader, admin, and deputy leader",
+      "selectALeader": "Select a Leader",
+      "startTyping": "Start typing",
+      "selectBacentaAdmin": "Select Bacenta Admin",
+      "selectDeputyLeader": "Select Deputy Bacenta Leader",
+      "venueSectionTitle": "Service Venue",
+      "venueSectionDescription": "GPS coordinates of the bacenta venue",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "loading": "Loading",
+      "locateMeNow": "Locate Me Now",
+      "locateMeCaption": "Tap this button while you're at the bacenta service venue.",
+      "currentStatus": "Current status",
+      "onVacationCaption": "On vacation — no service or bussing expected this week.",
+      "activeCaption": "Active — a service record is expected each week.",
+      "quickActions": "Quick actions",
+      "editBussingDetails": "Edit Bussing Details",
+      "editBussingCaption": "Set Sunday top-ups and whether the bacenta is bussing back this week.",
+      "aboutThisForm": "About this form",
+      "aboutThisFormDescription": "Update bacenta details — leadership, meeting day, vacation status, and venue coordinates. Changes are logged to history."
     }
   },
   "dashboard": {

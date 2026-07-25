@@ -64,6 +64,7 @@
     "common": {
       "startTyping": "Empieza a escribir...",
       "close": "Cerrar",
+      "cancel": "Cancelar",
       "chooseOne": "Elige uno",
       "selectACurrency": "Selecciona una moneda"
     },
@@ -259,6 +260,54 @@
     "churchLevelMembers": {
       "notAvailablePrefix": "La navegación de miembros no está disponible en el nivel",
       "notAvailableSuffix": "."
+    },
+    "create": {
+      "createNewLevel": "Crear un nuevo {{level}}",
+      "startNewBacenta": "Iniciar un nuevo Bacenta"
+    },
+    "createMember": {
+      "duplicateDialogTitle": "El miembro ya existe",
+      "duplicateDialogMessage": "Se produjo un error al crear el perfil del miembro\n{{error}}\n\n¿Desea solicitar el miembro?",
+      "requestMember": "Solicitar miembro"
+    },
+    "bacentaForm": {
+      "validation": {
+        "nameRequired": "El nombre del Bacenta es un campo obligatorio",
+        "leaderRequired": "Por favor elija un líder de la lista desplegable",
+        "vacationStatusRequired": "El estado de vacaciones es un campo obligatorio",
+        "meetingDayRequired": "El día de reunión es un campo obligatorio",
+        "locationRequired": "Por favor complete la información de ubicación",
+        "invalidCoordinates": "Por favor ingrese coordenadas válidas"
+      },
+      "newBacenta": "Nuevo Bacenta",
+      "detailsSectionTitle": "Detalles del Bacenta",
+      "detailsSectionDescription": "Nombre, estado y día de reunión",
+      "nameLabel": "Nombre del Bacenta",
+      "namePlaceholder": "Ingrese el nombre aquí",
+      "statusLabel": "Estado",
+      "vacationStatusDefaultOption": "Elegir estado de vacaciones",
+      "meetingDayLabel": "Día de reunión",
+      "leadershipSectionTitle": "Liderazgo",
+      "leadershipSectionDescription": "Líder, administrador y líder adjunto del Bacenta",
+      "selectALeader": "Seleccionar un líder",
+      "startTyping": "Empiece a escribir",
+      "selectBacentaAdmin": "Seleccionar administrador del Bacenta",
+      "selectDeputyLeader": "Seleccionar líder adjunto del Bacenta",
+      "venueSectionTitle": "Lugar de reunión",
+      "venueSectionDescription": "Coordenadas GPS del lugar del Bacenta",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "loading": "Cargando",
+      "locateMeNow": "Localizarme ahora",
+      "locateMeCaption": "Toque este botón mientras esté en el lugar de reunión del Bacenta.",
+      "currentStatus": "Estado actual",
+      "onVacationCaption": "De vacaciones — no se espera culto ni transporte esta semana.",
+      "activeCaption": "Activo — se espera un registro de culto cada semana.",
+      "quickActions": "Acciones rápidas",
+      "editBussingDetails": "Editar detalles de transporte",
+      "editBussingCaption": "Configure las recargas del domingo y si el Bacenta hace el viaje de regreso esta semana.",
+      "aboutThisForm": "Acerca de este formulario",
+      "aboutThisFormDescription": "Actualice los detalles del Bacenta — liderazgo, día de reunión, estado de vacaciones y coordenadas del lugar. Los cambios se registran en el historial."
     }
   },
   "dashboard": {
