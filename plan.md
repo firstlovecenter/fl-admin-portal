@@ -89,6 +89,14 @@ switch languages via the profile menu once logged in, confirm the switcher
 appears correctly on both desktop (`Sidebar.tsx`) and mobile
 (`MobileNav.tsx`, < md breakpoint), confirm the choice survives a reload.
 
+**Expect a disjointed first demo loop, not a bug:** the switcher only lives
+in the *authenticated* profile menu, but the only localized page is the
+*pre-auth* login screen. Switching language while logged in has no visible
+effect on anything currently on screen — every other page is still
+English-only. The only way to actually see a switch take effect right now
+is to change it, then log out and view the login screen again. That is
+expected for phase 1, not a regression to chase.
+
 ## Remaining work (not started — future phases)
 
 Roughly in priority order:
