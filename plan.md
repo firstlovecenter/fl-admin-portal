@@ -296,10 +296,62 @@ is now the rule for the rest of this phase, not just a style preference.
       (`createApolloClient.test.tsx`, reconfirmed untouched by this branch
       via `git diff --stat`).
 
-### 3c — not started yet (rest of `pages/directory/`)
+### 3d — quick-facts this-month pages (DONE, committed `1e009b93`)
 
-- `quick-facts/` (remaining files beyond `QuickFactsHeader.tsx`, already
-  done in 3a)
+**API spend limit hit mid-branch.** The `test-author` subagent dispatch for
+the 3b batch failed twice — a transient 529, then a hard stop: *"You've hit
+your monthly spend limit."* Asked the user how to proceed; they chose to
+keep going with translation work but write tests inline myself (no
+`test-author`/`code-reviewer` subagent dispatches) rather than pause. This
+phase and everything after it in this session follows that mode.
+
+- [x] Surveyed `pages/directory/quick-facts/` fully. Found the
+      `components/` subfolder (`AttendanceQuickFactsCard.tsx`,
+      `BussingQuickFactsCard.tsx`, `IncomeQuickFactsCard.tsx`,
+      `QuickFactsSlider.tsx`, `QuickFactsSelect.tsx`, `quick-fact-utils.ts`)
+      is **dead code** — confirmed via grep that nothing outside their own
+      files imports them, and `directoryRoutes.ts` only routes the 5
+      `this-month/*.tsx` pages. `QuickFactsHeader.tsx` (translated in 3a) is
+      *also* dead by the same test — orphaned, only referenced by its own
+      test file. Skipped translating the dead `components/` files; no
+      value in maintaining translations for unreachable code.
+- [x] Localized the 5 routed `this-month/*AvgWeekdayQuickFacts.tsx` pages
+      (Bacenta/Campus/Council/Governorship/Stream) and their shared
+      `QuickFactComparisonCard.tsx`. New
+      `directory.quickFacts.avgWeekday.*` and
+      `directory.quickFactComparisonCard.*` namespaces, several
+      interpolated (`compareDescriptionPrefix/Suffix`,
+      `explainerBodyPrefix/Suffix`, `benchmarkLabel`, `benchmarkContext`,
+      `atBenchmark`/`aboveBenchmark`/`belowBenchmark`). Same
+      prefix/suffix-around-a-styled-`<span>` pattern established in 3b's
+      `churchLevelMembers` fallback message, including per-locale
+      leading-space/punctuation handling (German suffixes carry the verb
+      and a leading space; French/Spanish/Portuguese don't need one before
+      the period).
+- [x] Added `directory.leaderTitle.governorshipLeader` = "Governorship
+      Leader" — deliberately **not** reusing the existing
+      `directory.leaderTitle.governor` ("Governor") key, because the
+      source itself uses two different labels for the same role on two
+      different pages (`DetailsGovernorship.tsx` vs. this one). Preserved
+      faithfully rather than silently merged, same policy as the
+      Members-vs-level-name inconsistency found in 3b's `grids/*.tsx`.
+- [x] **Tests written inline by me** (not `test-author`, per the spend-limit
+      workaround above): 15 new tests across 6 files, `MockedProvider` +
+      the real `lib/i18n.ts` instance, English + French coverage per file.
+      Validated the `MockedProvider`/`ApolloWrapper` pattern on
+      `BacentaAvgWeekdayQuickFacts.test.tsx` first (which required
+      `placeholder` + awaiting the mocked query resolve via `findByText`,
+      since `ApolloWrapper`'s `placeholder` prop bypasses its own loading
+      gate) before replicating across the other 4 pages.
+- [x] **Self-reviewed the diff manually** (no `code-reviewer` dispatch, same
+      reason). Confirmed symmetric locale-file diffs and structurally
+      identical per-page diffs across all 5 `this-month` pages.
+- [x] `tsc --noEmit` + `eslint --max-warnings=0` clean. Key parity
+      reconfirmed across all 5 locale files. Full suite: 421 passing
+      (406 + 15 new) / same 11 pre-existing unrelated failures.
+
+### 3e — not started yet (rest of `pages/directory/`)
+
 - `create/`, remainder of `update/` (beyond `UpdateDenomination.tsx`)
 - `user-profile/`, `church-history/`
 - `reusable-forms/MemberForm.tsx` (620 lines), `MemberDisplay.tsx` (844
@@ -335,10 +387,10 @@ Roughly in priority order:
    `StreamTellerDashboard.tsx` still have their own English-only strings
    (bussing counters, banking-defaulter CTAs, etc.) beyond the one
    fallback-name fix already made.
-4. **Finish `pages/directory/`** — see Phase 3 above; 3c (quick-facts/
-   create/update remainder, user-profile, church-history,
-   MemberForm/MemberDisplay, shared grid components:
-   `MembersGrid.tsx`/`MemberTable.tsx`/`Filters.tsx`).
+4. **Finish `pages/directory/`** — see Phase 3 above; 3e (create/update
+   remainder, user-profile, church-history, MemberForm/MemberDisplay,
+   shared grid components: `MembersGrid.tsx`/`MemberTable.tsx`/
+   `Filters.tsx`).
 5. **`pages/arrivals/`** — after directory. Not started.
 6. Then accounts/banking/reports, translating error/validation copy as each
    page is migrated (Yup schema messages, Apollo/notistack-surfaced errors
@@ -443,3 +495,19 @@ test files exist for any of the 15 files in the bullet above. Both
 `test-author` dispatch attempts failed (transient 529, then a hard monthly
 API spend-limit stop) and the user explicitly chose to commit without tests
 rather than wait. Backfill before further subagent-driven work in this repo.
+
+**New (phase 3d — quick-facts this-month, committed `1e009b93`, written
+inline, no subagent):**
+- `web-react-ts/src/pages/directory/quick-facts/this-month/{Bacenta,Campus,
+  Council,Governorship,Stream}AvgWeekdayQuickFacts.test.tsx`
+- `web-react-ts/src/pages/directory/quick-facts/this-month/QuickFactComparisonCard.test.tsx`
+
+**Modified (phase 3d):**
+- `web-react-ts/src/pages/directory/quick-facts/this-month/{Bacenta,Campus,
+  Council,Governorship,Stream}AvgWeekdayQuickFacts.tsx`
+- `web-react-ts/src/pages/directory/quick-facts/this-month/QuickFactComparisonCard.tsx`
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json`
+  (`directory.quickFacts.avgWeekday.*`, `directory.quickFactComparisonCard.*`,
+  `directory.leaderTitle.governorshipLeader` added)
+
+Not touched (phase 3d, confirmed dead code): `web-react-ts/src/pages/directory/quick-facts/components/{AttendanceQuickFactsCard,BussingQuickFactsCard,IncomeQuickFactsCard,QuickFactsSlider,QuickFactsSelect}.tsx`, `quick-fact-utils.ts` — unreachable from any route, not worth translating.
