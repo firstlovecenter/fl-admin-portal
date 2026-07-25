@@ -19,6 +19,7 @@ import useAuth from 'auth/useAuth'
 import { MemberContext } from 'contexts/MemberContext'
 import { hasOnlyRolesFrom } from 'permission-utils'
 import { useTheme } from './ThemeProvider'
+import { LanguageSwitcherMenu } from './LanguageSwitcherMenu'
 import { ChurchRoleScopePicker } from './ChurchRoleScopePicker'
 import { ChurchScopeNavItem } from './ChurchScopeNavItem'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
@@ -288,6 +289,8 @@ export const Sidebar = ({
                 )}
                 {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               </DropdownMenuItem>
+              <LanguageSwitcherMenu />
+              <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={logout}>
                 <LogOut className="size-4" />
                 Log out

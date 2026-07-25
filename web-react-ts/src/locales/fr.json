@@ -1,0 +1,36 @@
+{
+  "auth": {
+    "brand": {
+      "tagline": "Portail pour les responsables d'église"
+    },
+    "common": {
+      "emailLabel": "Adresse e-mail",
+      "emailPlaceholder": "you@example.com",
+      "helpFooter": "Besoin d'aide ? Contactez votre administrateur"
+    },
+    "signIn": {
+      "title": "Connexion",
+      "subtitle": "Bon retour. Entrez vos identifiants pour continuer.",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "showPassword": "Afficher le mot de passe",
+      "hidePassword": "Masquer le mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "submit": "Se connecter",
+      "submitting": "Connexion en cours…",
+      "genericError": "Échec de la connexion. Veuillez réessayer."
+    },
+    "forgotPassword": {
+      "back": "Retour à la connexion",
+      "title": "Réinitialiser le mot de passe",
+      "subtitle": "Entrez votre e-mail et nous vous enverrons les instructions de réinitialisation.",
+      "submit": "Envoyer les instructions",
+      "submitting": "Envoi en cours…",
+      "success": "Instructions envoyées. Vérifiez votre e-mail.",
+      "genericError": "Échec de l'envoi de l'e-mail. Veuillez réessayer."
+    }
+  },
+  "language": {
+    "menuLabel": "Langue"
+  }
+}

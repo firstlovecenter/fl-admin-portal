@@ -1,0 +1,36 @@
+{
+  "auth": {
+    "brand": {
+      "tagline": "Portal para líderes de la iglesia"
+    },
+    "common": {
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "you@example.com",
+      "helpFooter": "¿Necesitas ayuda? Contacta a tu administrador"
+    },
+    "signIn": {
+      "title": "Iniciar sesión",
+      "subtitle": "Bienvenido de nuevo. Introduce tus credenciales para continuar.",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Introduce tu contraseña",
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "submit": "Iniciar sesión",
+      "submitting": "Iniciando sesión…",
+      "genericError": "No se pudo iniciar sesión. Inténtalo de nuevo."
+    },
+    "forgotPassword": {
+      "back": "Volver a iniciar sesión",
+      "title": "Restablecer contraseña",
+      "subtitle": "Introduce tu correo electrónico y te enviaremos las instrucciones para restablecerla.",
+      "submit": "Enviar instrucciones",
+      "submitting": "Enviando…",
+      "success": "Instrucciones enviadas. Revisa tu correo electrónico.",
+      "genericError": "No se pudo enviar el correo. Inténtalo de nuevo."
+    }
+  },
+  "language": {
+    "menuLabel": "Idioma"
+  }
+}

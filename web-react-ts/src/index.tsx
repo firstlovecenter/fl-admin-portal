@@ -5,6 +5,10 @@ import { createApolloClient } from 'lib/createApolloClient'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import SimpleApp from './SimpleApp'
 
+// Must run before the first render — SimpleLogin (rendered pre-auth) reads
+// translations too, so i18n can't wait until AppWithContext mounts.
+import 'lib/i18n'
+
 // Tailwind v4 entry (pulls in design tokens). The legacy color-theme.css and
 // index.css are still imported by individual component CSS files where needed.
 import './app.css'

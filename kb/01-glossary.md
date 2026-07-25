@@ -145,6 +145,30 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
   shows a leader's photo, their church, and a multi-week metric chart. A PDF export
   of the same deck is generated ahead of the meeting so attendees can follow along.
 
+## Localization — do not translate
+
+The frontend supports multiple languages (English source; French, Spanish,
+Portuguese, German as of the initial rollout — see ADR list for the i18n
+decision). The following terms are not real words in any target language and
+must be left exactly as written in every locale file — never run through
+translation, machine or human:
+
+- **Bacenta**, **Anagkazo**, **Sonta**, **Basonta** — coined / loanword church
+  hierarchy terms. Plurals follow plain English `+s` (**Bacentas**, **Sontas**,
+  **Basontas**) in every locale — do not conjugate or accent the plural marker
+  to match the target language's own pluralization rules.
+- **Momo**, **IMCL**, **GHS** / **Cedi(s)** — Ghanaian money terms and an
+  unexpanded acronym.
+- **Poimen** — a separate church app, referenced by name.
+- **Synago** — this app's own brand name.
+- Proper names of churches / Streams: **First Love Center**, **First Love
+  Experience**, **Holy Ghost Encounter**, **Gospel Encounter**, **Anagkazo
+  Encounter**.
+
+By contrast, **Governorship, Oversight, Council, Denomination, Fellowship,
+Bussing** are real English words used in a domain-specific sense — these
+**are** translated normally per target language.
+
 ## Codebase patterns
 
 - **Servant resolver factory** — the data-driven generator that turns

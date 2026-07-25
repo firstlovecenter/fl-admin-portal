@@ -1,0 +1,36 @@
+{
+  "auth": {
+    "brand": {
+      "tagline": "Portal für Gemeindeleiter"
+    },
+    "common": {
+      "emailLabel": "E-Mail-Adresse",
+      "emailPlaceholder": "you@example.com",
+      "helpFooter": "Brauchen Sie Hilfe? Wenden Sie sich an Ihren Administrator"
+    },
+    "signIn": {
+      "title": "Anmelden",
+      "subtitle": "Willkommen zurück. Geben Sie Ihre Anmeldedaten ein, um fortzufahren.",
+      "passwordLabel": "Passwort",
+      "passwordPlaceholder": "Passwort eingeben",
+      "showPassword": "Passwort anzeigen",
+      "hidePassword": "Passwort ausblenden",
+      "forgotPassword": "Passwort vergessen?",
+      "submit": "Anmelden",
+      "submitting": "Anmeldung läuft…",
+      "genericError": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "forgotPassword": {
+      "back": "Zurück zur Anmeldung",
+      "title": "Passwort zurücksetzen",
+      "subtitle": "Geben Sie Ihre E-Mail-Adresse ein, und wir senden Ihnen Anweisungen zum Zurücksetzen.",
+      "submit": "Anweisungen senden",
+      "submitting": "Wird gesendet…",
+      "success": "Anweisungen gesendet. Überprüfen Sie Ihre E-Mails.",
+      "genericError": "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+    }
+  },
+  "language": {
+    "menuLabel": "Sprache"
+  }
+}

@@ -16,6 +16,7 @@ import useAuth from 'auth/useAuth'
 import { MemberContext } from 'contexts/MemberContext'
 import { hasOnlyRolesFrom } from 'permission-utils'
 import { useTheme } from './ThemeProvider'
+import { LanguageSwitcherMenu } from './LanguageSwitcherMenu'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -223,6 +224,8 @@ export const MobileNav = ({
                 )}
                 {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               </DropdownMenuItem>
+              <LanguageSwitcherMenu />
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
                 onSelect={() => {

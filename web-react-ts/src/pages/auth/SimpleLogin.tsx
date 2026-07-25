@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { login as apiLogin, storeAuth, requestPasswordReset } from 'lib/auth-service'
 import { Eye, EyeOff, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Button } from 'components/ui/button'
@@ -12,33 +13,38 @@ interface SimpleLoginProps {
   onLoginSuccess?: () => void
 }
 
-const AuthLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex min-h-svh flex-col bg-background pb-[env(safe-area-inset-bottom)]">
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-10">
-      <div className="mb-8 flex flex-col items-center gap-3">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10">
-          <SynagoLogo className="h-10 w-10 text-brand" title="Synago" />
+const AuthLayout = ({ children }: { children: React.ReactNode }) => {
+  const { t } = useTranslation()
+  return (
+    <div className="flex min-h-svh flex-col bg-background pb-[env(safe-area-inset-bottom)]">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-10">
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10">
+            {/* "Synago" is the product's brand name — never translated */}
+            <SynagoLogo className="h-10 w-10 text-brand" title="Synago" />
+          </div>
+          <div className="text-center">
+            <h1 className="text-xl font-semibold tracking-tight text-foreground">
+              Synago
+            </h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {t('auth.brand.tagline')}
+            </p>
+          </div>
         </div>
-        <div className="text-center">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            Synago
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Portal for Church Leaders
-          </p>
+
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-[0_4px_24px_0_rgb(0_0_0/0.08)]">
+          {children}
         </div>
-      </div>
 
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-[0_4px_24px_0_rgb(0_0_0/0.08)]">
-        {children}
+        <p className="mt-6 text-xs text-muted-foreground">v{APP_VERSION}</p>
       </div>
-
-      <p className="mt-6 text-xs text-muted-foreground">v{APP_VERSION}</p>
     </div>
-  </div>
-)
+  )
+}
 
 const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -59,9 +65,7 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
         window.location.href = '/'
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to login. Please try again.'
-      )
+      setError(err instanceof Error ? err.message : t('auth.signIn.genericError'))
     } finally {
       setLoading(false)
     }
@@ -82,9 +86,11 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
   return (
     <AuthLayout>
       <div className="mb-5">
-        <h2 className="text-lg font-semibold text-foreground">Sign in</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          {t('auth.signIn.title')}
+        </h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          Welcome back. Enter your credentials to continue.
+          {t('auth.signIn.subtitle')}
         </p>
       </div>
 
@@ -99,11 +105,11 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="email">Email address</Label>
+          <Label htmlFor="email">{t('auth.common.emailLabel')}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="you@example.com"
+            placeholder={t('auth.common.emailPlaceholder')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -114,12 +120,12 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t('auth.signIn.passwordLabel')}</Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Enter your password"
+              placeholder={t('auth.signIn.passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -131,7 +137,11 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               className="absolute right-0 top-0 flex size-11 items-center justify-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-r-lg"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={
+                showPassword
+                  ? t('auth.signIn.hidePassword')
+                  : t('auth.signIn.showPassword')
+              }
               tabIndex={-1}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -145,7 +155,7 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
             onClick={() => setShowForgot(true)}
             className="min-h-11 px-1 text-sm text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
-            Forgot password?
+            {t('auth.signIn.forgotPassword')}
           </button>
         </div>
 
@@ -157,16 +167,16 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in…
+              {t('auth.signIn.submitting')}
             </>
           ) : (
-            'Sign in'
+            t('auth.signIn.submit')
           )}
         </Button>
       </form>
 
       <p className="mt-5 text-center text-xs text-muted-foreground">
-        Need help? Contact your administrator
+        {t('auth.common.helpFooter')}
       </p>
     </AuthLayout>
   )
@@ -179,6 +189,7 @@ interface ForgotPasswordFormProps {
 }
 
 const ForgotPasswordForm = ({ loading, setLoading, onBack }: ForgotPasswordFormProps) => {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -192,7 +203,7 @@ const ForgotPasswordForm = ({ loading, setLoading, onBack }: ForgotPasswordFormP
       setSuccess(true)
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to send reset email. Please try again.'
+        err instanceof Error ? err.message : t('auth.forgotPassword.genericError')
       )
     } finally {
       setLoading(false)
@@ -207,13 +218,15 @@ const ForgotPasswordForm = ({ loading, setLoading, onBack }: ForgotPasswordFormP
         className="mb-4 flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to sign in
+        {t('auth.forgotPassword.back')}
       </button>
 
       <div className="mb-5">
-        <h2 className="text-lg font-semibold text-foreground">Reset password</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          {t('auth.forgotPassword.title')}
+        </h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          Enter your email and we&apos;ll send reset instructions.
+          {t('auth.forgotPassword.subtitle')}
         </p>
       </div>
 
@@ -232,17 +245,17 @@ const ForgotPasswordForm = ({ loading, setLoading, onBack }: ForgotPasswordFormP
           className="mb-4 flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success"
         >
           <CheckCircle2 className="h-4 w-4 shrink-0" />
-          Reset instructions sent. Check your email.
+          {t('auth.forgotPassword.success')}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="forgot-email">Email address</Label>
+          <Label htmlFor="forgot-email">{t('auth.common.emailLabel')}</Label>
           <Input
             id="forgot-email"
             type="email"
-            placeholder="you@example.com"
+            placeholder={t('auth.common.emailPlaceholder')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -260,16 +273,16 @@ const ForgotPasswordForm = ({ loading, setLoading, onBack }: ForgotPasswordFormP
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending…
+              {t('auth.forgotPassword.submitting')}
             </>
           ) : (
-            'Send reset instructions'
+            t('auth.forgotPassword.submit')
           )}
         </Button>
       </form>
 
       <p className="mt-5 text-center text-xs text-muted-foreground">
-        Need help? Contact your administrator
+        {t('auth.common.helpFooter')}
       </p>
     </>
   )
