@@ -254,6 +254,24 @@
       "updateBacentaError": "There was an error updating the member's bacenta",
       "updateBasontaError": "There was an error updating the member's basonta"
     },
+    "userProfile": {
+      "editButton": "Edit Your Profile",
+      "bioSection": "Bio",
+      "historySection": "History",
+      "churchGroupsSection": "Church Groups",
+      "firstName": "First Name",
+      "middleName": "Middle Name",
+      "lastName": "Last Name",
+      "emailAddress": "Email Address",
+      "dateOfBirth": "Date Of Birth",
+      "gender": "Gender",
+      "maritalStatus": "Marital Status",
+      "occupation": "Occupation",
+      "phoneNumber": "Phone Number",
+      "whatsappNumber": "WhatsApp No.",
+      "overseeingPastor": "Overseeing Pastor",
+      "ministry": "Ministry"
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Change",

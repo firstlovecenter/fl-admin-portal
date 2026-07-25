@@ -254,6 +254,24 @@
       "updateBacentaError": "Se produjo un error al actualizar el Bacenta del miembro",
       "updateBasontaError": "Se produjo un error al actualizar el Basonta del miembro"
     },
+    "userProfile": {
+      "editButton": "Editar tu perfil",
+      "bioSection": "Biografía",
+      "historySection": "Historial",
+      "churchGroupsSection": "Grupos de la iglesia",
+      "firstName": "Nombre",
+      "middleName": "Segundo nombre",
+      "lastName": "Apellido",
+      "emailAddress": "Correo electrónico",
+      "dateOfBirth": "Fecha de nacimiento",
+      "gender": "Género",
+      "maritalStatus": "Estado civil",
+      "occupation": "Ocupación",
+      "phoneNumber": "Número de teléfono",
+      "whatsappNumber": "N.º de WhatsApp",
+      "overseeingPastor": "Pastor supervisor",
+      "ministry": "Ministerio"
+    },
     "displayChurchDetails": {
       "admin": "Admin",
       "change": "Cambiar",

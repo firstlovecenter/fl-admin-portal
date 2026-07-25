@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
 import { useQuery } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { MemberContext } from 'contexts/MemberContext'
 import { getMemberDob } from 'lib/date-utils'
 import Timeline from 'components/Timeline/Timeline'
@@ -23,6 +24,7 @@ import {
 import './UserProfile.css'
 
 const DisplayPage = () => {
+  const { t } = useTranslation()
   const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
 
@@ -77,7 +79,7 @@ const DisplayPage = () => {
               className="px-8"
               onClick={() => navigate('/user-profile/edit')}
             >
-              Edit Your Profile
+              {t('directory.userProfile.editButton')}
             </Button>
           </div>
 
@@ -91,39 +93,55 @@ const DisplayPage = () => {
             <div className="mx-auto w-full max-w-screen-md px-4">
               <Accordion type="single" collapsible className="space-y-4">
                 <AccordionItem value="bio" className="px-4">
-                  <AccordionTrigger>Bio</AccordionTrigger>
+                  <AccordionTrigger>
+                    {t('directory.userProfile.bioSection')}
+                  </AccordionTrigger>
                   <AccordionContent>
                     <div className="grid gap-2">
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>First Name</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.firstName')}
+                        </div>
                         <div className={valueClass}>{member?.firstName}</div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Middle Name</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.middleName')}
+                        </div>
                         <div className={valueClass}>{member?.middleName}</div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Last Name</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.lastName')}
+                        </div>
                         <div className={valueClass}>{member?.lastName}</div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Email Address</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.emailAddress')}
+                        </div>
                         <div className={valueClass}>{member?.email}</div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Date Of Birth</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.dateOfBirth')}
+                        </div>
                         <div className={valueClass}>
                           {memberBirthday && memberBirthday}
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Gender</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.gender')}
+                        </div>
                         <div className={valueClass}>
                           {member?.gender ? member?.gender.gender : null}
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Marital Status</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.maritalStatus')}
+                        </div>
                         <div className={valueClass}>
                           {member?.maritalStatus
                             ? member?.maritalStatus.status
@@ -131,7 +149,9 @@ const DisplayPage = () => {
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Occupation</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.occupation')}
+                        </div>
                         <div className={valueClass}>
                           {member?.occupation
                             ? member?.occupation.occupation
@@ -139,11 +159,15 @@ const DisplayPage = () => {
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Phone Number</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.phoneNumber')}
+                        </div>
                         <div className={valueClass}>{member?.phoneNumber}</div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>WhatsApp No.</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.whatsappNumber')}
+                        </div>
                         <div className={valueClass}>
                           <a
                             className="font-bold"
@@ -158,7 +182,9 @@ const DisplayPage = () => {
                 </AccordionItem>
 
                 <AccordionItem value="history" className="px-4">
-                  <AccordionTrigger>History</AccordionTrigger>
+                  <AccordionTrigger>
+                    {t('directory.userProfile.historySection')}
+                  </AccordionTrigger>
                   <AccordionContent>
                     {memberChurch?.history?.length ? (
                       <Timeline record={memberChurch?.history} limit={3} />
@@ -167,23 +193,31 @@ const DisplayPage = () => {
                 </AccordionItem>
 
                 <AccordionItem value="church-groups" className="px-4">
-                  <AccordionTrigger>Church Groups</AccordionTrigger>
+                  <AccordionTrigger>
+                    {t('directory.userProfile.churchGroupsSection')}
+                  </AccordionTrigger>
                   <AccordionContent>
                     <div className="grid gap-2">
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Overseeing Pastor</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.overseeingPastor')}
+                        </div>
                         <div className={valueClass}>
                           {memberChurch?.bacenta.council.leader.fullName}
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Bacenta</div>
+                        <div className={labelClass}>
+                          {t('shared.churchLevel.Bacenta')}
+                        </div>
                         <div className={valueClass}>
                           {memberChurch?.bacenta?.name}
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className={labelClass}>Ministry</div>
+                        <div className={labelClass}>
+                          {t('directory.userProfile.ministry')}
+                        </div>
                         <div className={valueClass}>
                           {memberChurch?.ministry
                             ? `${memberChurch?.ministry.name}`
