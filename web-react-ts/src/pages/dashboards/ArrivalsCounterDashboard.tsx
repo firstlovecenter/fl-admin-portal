@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { ChevronRight, ListChecks } from 'lucide-react'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
@@ -28,6 +29,7 @@ import {
 const TREND_HISTORY_WEEKS = 24
 
 const ArrivalsCounterDashboard = () => {
+  const { t } = useTranslation()
   const { currentUser } = useContext(MemberContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
@@ -45,7 +47,9 @@ const ArrivalsCounterDashboard = () => {
   )
 
   const isLoading = !currentUser?.fullName
-  const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
+  const firstName =
+    currentUser?.fullName?.trim().split(' ')[0] ??
+    t('dashboard.greetings.fallbackName')
   const userKey = currentUser?.fullName ?? firstName
   const greeting = useHourlyGreeting(firstName, userKey)
 

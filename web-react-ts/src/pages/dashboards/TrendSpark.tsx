@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import {
   Bar,
   BarChart,
@@ -70,6 +72,23 @@ const compactNumberFormatter = new Intl.NumberFormat('en', {
   maximumFractionDigits: 1,
 })
 
+// Exported for direct unit testing — the axis's XAxis is mocked out in
+// TrendSpark.test.tsx's recharts harness (jsdom can't lay out/measure
+// recharts), so this can't be exercised by rendering the chart.
+export const formatWeekTick = (value: string, t: TFunction): string => {
+  // Pulls the week number back out of the already-translated weekLabel
+  // (e.g. "Semaine 12") rather than stripping a hardcoded English "Week "
+  // prefix, so the abbreviated tick works for every locale, not just
+  // English. The "week unknown" label (e.g. "Week N/A") has no digit to
+  // pull out — abbreviate it explicitly instead of falling through to the
+  // full untruncated label.
+  const weekMatch = value.match(/\d+/)
+  if (weekMatch) {
+    return t('dashboard.trendSpark.weekAbbrev', { week: weekMatch[0] })
+  }
+  return t('dashboard.trendSpark.weekAbbrevUnknown')
+}
+
 const renderBarLabel = ({ x, y, width, value }: ChartBarLabelProps) => {
   const numericValue = typeof value === 'number' ? value : Number(value)
   const xNum = typeof x === 'number' ? x : Number(x)
@@ -140,6 +159,7 @@ const TrendSpark = ({
   mode = 'weekday',
   onBarClick,
 }: TrendSparkProps) => {
+  const { t, i18n } = useTranslation()
   const chartData = useMemo(() => {
     const groupedByWeek = new Map<string, ChartPoint>()
 
@@ -173,7 +193,10 @@ const TrendSpark = ({
           category: d.category,
           week,
           year,
-          weekLabel: week !== null ? `Week ${week}` : 'Week N/A',
+          weekLabel:
+            week !== null
+              ? t('dashboard.trendSpark.weekLabel', { week })
+              : t('dashboard.trendSpark.weekUnknown'),
           attendance,
           income,
         })
@@ -204,7 +227,10 @@ const TrendSpark = ({
 
       return 0
     })
-  }, [data, incomeTracked])
+    // i18n.language drives re-translation of weekLabel even though `t`
+    // itself is stable across renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, incomeTracked, i18n.language])
 
   const [windowEndIndex, setWindowEndIndex] = useState(chartData.length)
 
@@ -247,7 +273,9 @@ const TrendSpark = ({
   if (!chartData.length || !hasAnyRenderableValues) {
     return (
       <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
-        {mode === 'bussing' ? 'No bussing data yet' : 'No service data yet'}
+        {mode === 'bussing'
+          ? t('dashboard.trendSpark.noBussingData')
+          : t('dashboard.trendSpark.noServiceData')}
       </div>
     )
   }
@@ -280,7 +308,7 @@ const TrendSpark = ({
               axisLine={false}
               tick={{ fill: axisColor, fontSize: 11, fontWeight: 500 }}
               interval={0}
-              tickFormatter={(value) => value.replace('Week ', 'W')}
+              tickFormatter={(value: string) => formatWeekTick(value, t)}
             />
 
             <YAxis hide />
@@ -292,7 +320,11 @@ const TrendSpark = ({
 
             <Bar
               dataKey="attendance"
-              name={mode === 'bussing' ? 'Bussing' : 'Weekday attendance'}
+              name={
+                mode === 'bussing'
+                  ? t('dashboard.userDashboard.legend.bussing')
+                  : t('dashboard.userDashboard.legend.weekdayAttendance')
+              }
               fill={attendanceColor}
               radius={[6, 6, 0, 0]}
               maxBarSize={48}
@@ -326,7 +358,7 @@ const TrendSpark = ({
             {showIncome && (
               <Bar
                 dataKey="income"
-                name="Income"
+                name={t('dashboard.userDashboard.legend.income')}
                 fill={incomeColor}
                 radius={[6, 6, 0, 0]}
                 maxBarSize={48}
@@ -363,7 +395,7 @@ const TrendSpark = ({
 
       {!hasRenderableValues && (
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          No values in this 4-week window. Use Previous to view older weeks.
+          {t('dashboard.trendSpark.emptyWindow', { count: WEEK_WINDOW_SIZE })}
         </p>
       )}
 
@@ -376,7 +408,7 @@ const TrendSpark = ({
             className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ChevronLeft className="size-3.5" />
-            Previous
+            {t('dashboard.trendSpark.previous')}
           </button>
 
           <span className="text-xs text-muted-foreground">
@@ -390,7 +422,7 @@ const TrendSpark = ({
             disabled={!canViewNewer}
             className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Next
+            {t('dashboard.trendSpark.next')}
             <ChevronRight className="size-3.5" />
           </button>
         </div>

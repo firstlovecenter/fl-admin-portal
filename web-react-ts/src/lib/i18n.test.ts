@@ -13,18 +13,27 @@ import pt from 'locales/pt.json'
 import de from 'locales/de.json'
 import i18n, { SUPPORTED_LANGUAGES } from './i18n'
 
-type JsonTree = { [key: string]: string | JsonTree }
+// String arrays (e.g. dashboard.greetings.<bucket>) flatten the same way as
+// nested objects — Object.entries on an array yields ["0", ...], ["1", ...]
+// index/value pairs, so no special-casing is needed below; the array variant
+// only exists so this type accepts that shape.
+type JsonTree = { [key: string]: string | JsonTree | string[] }
 
 const flattenKeys = (tree: JsonTree, prefix = ''): string[] =>
   Object.entries(tree).flatMap(([key, value]) => {
     const path = prefix ? `${prefix}.${key}` : key
-    return typeof value === 'string' ? [path] : flattenKeys(value, path)
+    return typeof value === 'string'
+      ? [path]
+      : flattenKeys(value as JsonTree, path)
   })
 
 const getAtPath = (tree: JsonTree, path: string): string => {
   const value = path
     .split('.')
-    .reduce<JsonTree | string>((acc, part) => (acc as JsonTree)[part], tree)
+    .reduce<JsonTree | string | string[]>(
+      (acc, part) => (acc as JsonTree)[part],
+      tree
+    )
   return value as string
 }
 

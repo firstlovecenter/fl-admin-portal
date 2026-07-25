@@ -1,5 +1,6 @@
 import { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { useQuery } from '@apollo/client'
 import { ChevronRight, HandCoins, Settings as SettingsIcon } from 'lucide-react'
@@ -25,6 +26,7 @@ import {
 const RECEIVE_BANKING_PATH = '/manual-banking/receive-banking'
 
 const StreamTellerDashboard = () => {
+  const { t } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
@@ -60,7 +62,9 @@ const StreamTellerDashboard = () => {
   const pendingCount = governorshipPending + councilPending
 
   const isLoading = !currentUser?.fullName
-  const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
+  const firstName =
+    currentUser?.fullName?.trim().split(' ')[0] ??
+    t('dashboard.greetings.fallbackName')
   const userKey = currentUser?.fullName ?? firstName
   const greeting = useHourlyGreeting(firstName, userKey)
 

@@ -11,6 +11,29 @@ type RoleCardProps = {
   loading: boolean
 }
 
+// Dashboards.css only defines colour-bacenta / colour-governorship / etc.
+// (English-only selectors). `role` is now a translated display string in
+// non-English locales (e.g. "Gouvernorat"), so deriving the colour class
+// from it would go blank outside English — derive it from `authRoles`
+// instead, which is always the untranslated internal role key
+// (e.g. "adminGovernorship") and always ends with one of these levels.
+const CHURCH_LEVELS_BY_COLOUR_CLASS = [
+  'Bacenta',
+  'Governorship',
+  'Council',
+  'Stream',
+  'Campus',
+  'Oversight',
+  'Denomination',
+]
+
+const deriveColourClass = (authRoles: string, role: Role) => {
+  const level = CHURCH_LEVELS_BY_COLOUR_CLASS.find((lvl) =>
+    authRoles?.endsWith(lvl)
+  )
+  return `colour-${(level ?? role)?.toLowerCase()}`
+}
+
 const RoleCard = ({ number, role, authRoles, loading }: RoleCardProps) => {
   const isString = typeof number === 'string' && true
 
@@ -32,7 +55,10 @@ const RoleCard = ({ number, role, authRoles, loading }: RoleCardProps) => {
 
   return (
     <div
-      className={`card rounded-corners role-card pointer colour-${role?.toLowerCase()}`}
+      className={`card rounded-corners role-card pointer ${deriveColourClass(
+        authRoles,
+        role
+      )}`}
     >
       <PlaceholderCustom
         className={`card rounded-corners role-card`}

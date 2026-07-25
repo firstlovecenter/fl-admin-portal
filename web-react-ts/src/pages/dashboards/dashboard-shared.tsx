@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getHourlyGreeting } from './greetings'
 
 export { formatChurchLevel, getRoleRelationLabel } from 'lib/scope-display'
@@ -75,6 +76,7 @@ export const useHourlyGreeting = (
   firstName: string,
   userKey: string
 ): string => {
+  const { t, i18n } = useTranslation()
   const [hourTick, setHourTick] = useState(() =>
     Math.floor(Date.now() / HOUR_MS)
   )
@@ -92,7 +94,11 @@ export const useHourlyGreeting = (
         firstName,
         userKey,
         now: new Date(hourTick * HOUR_MS),
+        t,
       }),
-    [firstName, userKey, hourTick]
+    // i18n.language drives re-selection on language switch even though `t`
+    // itself is stable across renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [firstName, userKey, hourTick, i18n.language]
   )
 }

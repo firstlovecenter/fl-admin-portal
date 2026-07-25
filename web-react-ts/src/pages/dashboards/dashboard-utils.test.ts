@@ -10,9 +10,10 @@
  * field present on ANY role wins regardless of order.
  */
 
-import { describe, it, expect } from 'vitest'
-import { resolveChurchFromUserJobs } from './dashboard-utils'
-import type { UserJobs } from 'global-types'
+import { describe, it, expect, afterEach } from 'vitest'
+import i18n from 'lib/i18n'
+import { getServantRoles, resolveChurchFromUserJobs } from './dashboard-utils'
+import type { MemberWithChurches, UserJobs } from 'global-types'
 
 const STREAM_ID = 'stream-passion-weekday'
 
@@ -79,5 +80,60 @@ describe('resolveChurchFromUserJobs', () => {
     expect(resolveChurchFromUserJobs([], STREAM_ID)).toBeNull()
     expect(resolveChurchFromUserJobs(undefined, STREAM_ID)).toBeNull()
     expect(resolveChurchFromUserJobs([tellerJob], null)).toBeNull()
+  })
+})
+
+// `getServantRoles`'s role `name` field is rendered as-is on the
+// ServantsDashboard role cards. Covers the `roleDisplayName` helper's three
+// shapes (bare level, "<level> Admin", "<level> Arrivals Admin") both
+// without `t` (the pre-i18n behavior every existing caller still gets) and
+// with `t` (the new, opt-in translated path).
+describe('getServantRoles', () => {
+  afterEach(async () => {
+    await i18n.changeLanguage('en')
+  })
+
+  const servantFixture = {
+    leadsBacenta: [{ id: 'b1' }],
+    isAdminForGovernorship: [{ id: 'g1' }],
+    isArrivalsAdminForCouncil: [{ id: 'c1' }],
+  } as unknown as MemberWithChurches
+
+  it('without t: returns the original untranslated English names (backward compatible)', () => {
+    const { userroles } = getServantRoles(servantFixture)
+    const names = userroles.map((r) => r.name)
+
+    expect(names).toContain('Bacenta')
+    expect(names).toContain('Governorship Admin')
+    expect(names).toContain('Council Arrivals Admin')
+  })
+
+  it('with an English t: matches the untranslated names', () => {
+    const { userroles } = getServantRoles(servantFixture, i18n.t.bind(i18n))
+    const names = userroles.map((r) => r.name)
+
+    expect(names).toContain('Bacenta')
+    expect(names).toContain('Governorship Admin')
+    expect(names).toContain('Council Arrivals Admin')
+  })
+
+  it('with a French t: translates both the church level and the role suffix', async () => {
+    await i18n.changeLanguage('fr')
+    const { userroles } = getServantRoles(servantFixture, i18n.t.bind(i18n))
+    const names = userroles.map((r) => r.name)
+
+    // Bacenta is a do-not-translate loanword (kb/01-glossary.md) — stays as-is.
+    expect(names).toContain('Bacenta')
+    expect(names).toContain('Gouvernorat Administrateur')
+    expect(names).toContain('Conseil Administrateur des arrivées')
+  })
+
+  it('produces no roles for a servant with none of the role arrays populated', () => {
+    const { userroles, roleTitles } = getServantRoles(
+      {} as MemberWithChurches,
+      i18n.t.bind(i18n)
+    )
+    expect(userroles).toHaveLength(0)
+    expect(roleTitles).toHaveLength(0)
   })
 })

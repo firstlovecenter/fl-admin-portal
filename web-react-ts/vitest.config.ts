@@ -2,6 +2,7 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
+import { version } from './package.json'
 
 export default defineConfig({
   plugins: [react(), viteTsconfigPaths()],
@@ -10,6 +11,9 @@ export default defineConfig({
   // but NOT by vite.config.mts, so it cannot affect production builds.
   define: {
     'import.meta.env.VITE_AUTH_API_URL': '"http://localhost:3333"',
+    // vite.config.mts defines __APP_VERSION__ for production builds; SimpleLogin.tsx
+    // reads it unconditionally at module scope, so tests need the same global.
+    __APP_VERSION__: JSON.stringify(version),
   },
   test: {
     environment: 'jsdom',

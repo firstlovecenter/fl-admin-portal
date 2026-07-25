@@ -37,7 +37,10 @@ describe('SimpleLogin', () => {
   it('renders the English sign-in form by default, leaving the Synago brand name untranslated', () => {
     render(<SimpleLogin />)
 
-    expect(screen.getByText('Synago')).toBeInTheDocument()
+    // The inline SVG logo also carries an accessible "Synago" <title>, so
+    // getByText would ambiguously match both it and this heading — scope
+    // to the heading role to test the brand name specifically.
+    expect(screen.getByRole('heading', { name: 'Synago' })).toBeInTheDocument()
     expect(screen.getByText('Portal for Church Leaders')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
     expect(screen.getByLabelText('Email address')).toBeInTheDocument()
@@ -57,7 +60,7 @@ describe('SimpleLogin', () => {
     expect(
       await screen.findByRole('heading', { name: 'Connexion' })
     ).toBeInTheDocument()
-    expect(screen.getByText('Synago')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Synago' })).toBeInTheDocument()
   })
 
   it('shows the translated forgot-password form and returns to sign-in', async () => {

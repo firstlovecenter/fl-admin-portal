@@ -40,11 +40,23 @@ describe('LanguageSwitcherMenu', () => {
   })
 
   it('switches the active language and persists it to localStorage when a language is selected', async () => {
+    // jsdom never computes real layout, so Radix's submenu "pointer grace
+    // area" (the polygon that lets the cursor travel diagonally from the
+    // trigger into the submenu without closing it) degenerates and the
+    // submenu closes mid-interaction under a simulated pointer click.
+    // Keyboard selection exercises the same onSelect/onValueChange wiring
+    // without going through that pointer geometry, and is worth covering
+    // in its own right for a11y.
     const user = userEvent.setup()
     renderMenu()
 
     await user.click(screen.getByText('Language'))
-    await user.click(await screen.findByText('Français'))
+    expect(await screen.findByText('Français')).toBeInTheDocument()
+
+    // ArrowRight moves focus from the (already-open) sub-trigger into the
+    // submenu's own roving-focus group, landing on the first item
+    // (English); ArrowDown then advances to French.
+    await user.keyboard('{ArrowRight}{ArrowDown}{Enter}')
 
     expect(i18n.language).toBe('fr')
     expect(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe('fr')

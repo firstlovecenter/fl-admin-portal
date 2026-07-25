@@ -32,5 +32,197 @@
   },
   "language": {
     "menuLabel": "Idioma"
+  },
+  "shared": {
+    "churchLevel": {
+      "Bacenta": "Bacenta",
+      "Campus": "Campus",
+      "Stream": "Corriente",
+      "Governorship": "Gobernación",
+      "Council": "Consejo",
+      "Oversight": "Supervisión",
+      "Denomination": "Denominación"
+    },
+    "roleLabel": {
+      "leader": "Líder",
+      "admin": "Administrador",
+      "arrivalsAdmin": "Administrador de llegadas",
+      "arrivalsCounter": "Contador de llegadas",
+      "teller": "Cajero"
+    }
+  },
+  "dashboard": {
+    "userDashboard": {
+      "onVacation": "De vacaciones",
+      "selectChurchPrompt": "Selecciona una iglesia activa para ver el contexto del rol.",
+      "noRolesAssigned": "Aún no tienes roles asignados.",
+      "quickActions": {
+        "title": "Acciones rápidas",
+        "recordService": "Registrar culto",
+        "fillBussing": "Registrar transporte",
+        "addMember": "Añadir miembro",
+        "bankService": "Depositar el culto en el banco"
+      },
+      "metrics": {
+        "avgWeeklyBussing": "Asistencia media semanal de transporte",
+        "noRecentBussing": "Sin transporte reciente",
+        "avgAttendance": "Asistencia media",
+        "avgIncome": "Ingreso medio",
+        "notTracked": "No registrado"
+      },
+      "trend": {
+        "title": "Tendencia semanal",
+        "acrossChurches": "En todas tus iglesias",
+        "trendModeAriaLabel": "Modo de datos de tendencia",
+        "weekdayService": "Culto entre semana",
+        "sundayBussing": "Transporte del domingo"
+      },
+      "legend": {
+        "bussing": "Transporte",
+        "weekdayAttendance": "Asistencia entre semana",
+        "income": "Ingreso"
+      },
+      "currentFocus": {
+        "title": "Enfoque actual",
+        "church": "Iglesia",
+        "level": "Nivel",
+        "role": "Rol",
+        "noIncomeTracking": "Ingreso no registrado"
+      },
+      "dialog": {
+        "title": "Registrar el culto de esta semana",
+        "description": "¿Se realizó el culto esta semana?",
+        "recordService": {
+          "title": "Registrar culto",
+          "subtitle": "Nos reunimos esta semana — completa el formulario del culto"
+        },
+        "cancelService": {
+          "title": "Cancelé mi culto",
+          "subtitle": "No hubo culto esta semana — indica un motivo"
+        }
+      }
+    },
+    "trendSpark": {
+      "weekLabel": "Semana {{week}}",
+      "weekUnknown": "Semana N/D",
+      "weekAbbrev": "S{{week}}",
+      "weekAbbrevUnknown": "N/D",
+      "noBussingData": "Aún no hay datos de transporte",
+      "noServiceData": "Aún no hay datos de culto",
+      "emptyWindow": "Sin valores en estas {{count}} semanas. Usa Anterior para ver semanas previas.",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "servantsDashboard": {
+      "welcomeTo": "Bienvenido a",
+      "dashboardTitle": "Panel de {{name}}",
+      "avgWeeklyAttendance": "Asistencia semanal media",
+      "avgWeeklyIncome": "Ingreso semanal medio ({{currency}})"
+    },
+    "weeklyTasks": {
+      "weekLabel": "Semana {{week}}",
+      "onVacationLine": "El Bacenta está de vacaciones. No se requieren registros.",
+      "scheduleLine": "Culto el {{serviceDay}}, transporte el {{bussingDay}}.",
+      "defaultBacentaDay": "día de reunión del Bacenta",
+      "defaultStreamDay": "día de reunión de la Corriente",
+      "recordService": "Registrar culto",
+      "recordBussing": "Registrar transporte",
+      "status": {
+        "waived": "Exento",
+        "bankPending": "Depósito pendiente",
+        "done": "Hecho",
+        "upcoming": "Próximo",
+        "due": "Pendiente"
+      },
+      "action": {
+        "viewService": "Ver culto",
+        "recorded": "Registrado",
+        "recordNow": "Registrar ahora",
+        "viewBussing": "Ver transporte",
+        "notDueYet": "Aún no vence"
+      }
+    },
+    "greetings": {
+      "fallbackName": "amigo",
+      "lateNight": [
+        "{{name}}, ¿a esta hora? Modo Pablo-y-Silas activado.",
+        "Centinela {{name}}, ¿qué hay de la noche? Al parecer, más trabajo administrativo.",
+        "{{name}}, hasta los discípulos dormían. Solo lo digo, con cariño.",
+        "El espíritu está dispuesto, {{name}} — pero deja que la carne descanse pronto.",
+        "Aceite ardiendo a las {{name}} en punto. El cielo te ve.",
+        "Él no dormita ni duerme, {{name}}. Tú, en cambio, deberías.",
+        "El aceite de medianoche pega distinto.",
+        "Sé sobrio, sé vigilante — y por favor, acuéstate pronto.",
+        "Alza tus manos en el santuario, de noche. O en el panel de control."
+      ],
+      "earlyMorning": [
+        "Levántate y resplandece, {{name}} — las misericordias son nuevas esta mañana.",
+        "{{name}}, el madrugador. El gusano se inclina con respeto.",
+        "Él despierta mañana tras mañana, {{name}}. Tú sigues el ritmo.",
+        "{{name}}, despierto antes del amanecer — gran energía de «te busco temprano».",
+        "Trabajo administrativo antes del alba, {{name}}. El centinela lo aprueba.",
+        "Buenos días, {{name}}. La alegría viene por la mañana — y tú también.",
+        "Ojos abiertos, {{name}}. Corazón despierto. Vamos.",
+        "Las estrellas de la mañana cantaban juntas. Tú eres el bis.",
+        "Nuevo día, unción fresca.",
+        "Antes de que se levante el rocío — ese tipo de devoción."
+      ],
+      "morning": [
+        "Buenos días, {{name}}. Misericordias recién salidas del horno.",
+        "Café en una mano, llamado en la otra — vamos, {{name}}.",
+        "Buenos días, {{name}}. Este es el día que hizo el Señor.",
+        "{{name}}, la mies es mucha — y la lista de tareas también.",
+        "{{name}}, el gozo del Señor es tu fortaleza.",
+        "Horas de servicio a plena luz, {{name}}. En marcha.",
+        "Bienvenido, {{name}}. Empieza pequeño, termina fiel.",
+        "Café fuerte, llamado más fuerte aún.",
+        "Todo don perfecto desciende de lo alto — incluyendo hoy.",
+        "Amanecer: hecho. Lista de tareas: pendiente."
+      ],
+      "midday": [
+        "Chequeo del mediodía, {{name}}. ¿Ya comiste?",
+        "El sol está alto, {{name}}. Los estándares, más aún.",
+        "{{name}}, a mitad del día. Mantente firme.",
+        "¿Pausa para comer o pausa administrativa, {{name}}? Las dos.",
+        "Bienvenido de nuevo, {{name}}. El día todavía es tuyo.",
+        "Está quieto, {{name}} — pero solo después de enviar el formulario.",
+        "Mediodía en punto, santo ajetreo.",
+        "La luz está en su punto más brillante. La misión también.",
+        "Hasta Elías comió antes de correr."
+      ],
+      "afternoon": [
+        "Buenas tardes, {{name}}. Terminar fuerte vale más que empezar fuerte.",
+        "{{name}}, corre con paciencia la carrera que tienes por delante — hasta la parte administrativa.",
+        "{{name}}, fiel en lo poco, fiel en lo mucho.",
+        "Ventana de productividad abierta, {{name}}. La siesta también es bíblica.",
+        "Buenas tardes, {{name}}. Sigue adelante.",
+        "El día no ha terminado, {{name}}. Tampoco el llamado.",
+        "Sigues en pie. Sigues sirviendo.",
+        "El turno de la tarde es invicto.",
+        "Lento pero seguro gana la carrera del reino."
+      ],
+      "evening": [
+        "Buenas noches, {{name}}. ¿Día bien aprovechado?",
+        "Trabajo administrativo nocturno, {{name}}. Modo pastor: sigue activo.",
+        "{{name}}, el día está muy avanzado — el trabajo fue bueno.",
+        "Atardecer, {{name}}. El panel de control todavía brilla.",
+        "Bienvenido de nuevo, {{name}}. Un último empujón.",
+        "Él da a su amado el sueño, {{name}} — justo después de que deposites ese culto.",
+        "Trabajo administrativo al atardecer. Santo, aunque un poco cansado.",
+        "El fresco del día — Dios camina. Tú también.",
+        "Los sacrificios de la tarde aún son aceptables."
+      ],
+      "night": [
+        "¿Turno nocturno, {{name}}? El Señor vela por ti.",
+        "Él no dormita ni duerme, {{name}}. Tú, en cambio…",
+        "{{name}}, fiel hasta en los detalles de última hora. Respeto.",
+        "Quemando el aceite de medianoche, {{name}} — ungido, pero descansa pronto, por favor.",
+        "Buenas noches, {{name}}. Descansar también es adoración.",
+        "Horas tranquilas, {{name}}. Manos firmes. Trabajo santo.",
+        "Un registro más, un descanso más.",
+        "Hasta el templo cerró eventualmente.",
+        "Horas de servicio del atardecer — fichando en silencio."
+      ]
+    }
   }
 }

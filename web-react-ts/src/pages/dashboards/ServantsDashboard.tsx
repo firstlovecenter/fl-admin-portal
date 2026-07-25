@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
 import { MemberContext } from 'contexts/MemberContext'
 import { useQuery } from '@apollo/client'
@@ -10,6 +11,7 @@ import { permitMe } from 'permission-utils'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Role } from 'global-types'
 import Placeholder from 'components/Placeholder'
+import { formatChurchLevel } from 'lib/scope-display'
 import RoleCard from './RoleCard'
 import {
   getServiceGraphData,
@@ -21,6 +23,7 @@ import { SERVANT_CHURCH_LIST } from './DashboardQueries'
 import './Dashboards.css'
 
 const ServantsDashboard = () => {
+  const { t } = useTranslation()
   const { memberId, currentUser } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
@@ -33,7 +36,7 @@ const ServantsDashboard = () => {
     variables: { id: servantId },
   })
   const servant = data?.members[0]
-  const computedRoles = getServantRoles(servant)
+  const computedRoles = getServantRoles(servant, t)
   const roles = computedRoles ? computedRoles.userroles : []
 
   const { assessmentChurch } = useComponentQuery({
@@ -48,10 +51,14 @@ const ServantsDashboard = () => {
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-3 px-4">
         <Placeholder loading={!servant?.fullName} as="p">
-          <p className="mb-0">Welcome to</p>
+          <p className="mb-0">{t('dashboard.servantsDashboard.welcomeTo')}</p>
         </Placeholder>
         <Placeholder loading={!servant?.fullName} as="h5">
-          <h5 className="roboto text-lg font-semibold">{`${servant?.fullName}'s Dashboard`}</h5>
+          <h5 className="roboto text-lg font-semibold">
+            {t('dashboard.servantsDashboard.dashboardTitle', {
+              name: servant?.fullName,
+            })}
+          </h5>
         </Placeholder>
 
         <div className="card-button-row">
@@ -100,7 +107,7 @@ const ServantsDashboard = () => {
 
         <div className="mt-3 grid grid-cols-2 gap-3">
           <StatDisplay
-            title="Avg Weekly Attendance"
+            title={t('dashboard.servantsDashboard.avgWeeklyAttendance')}
             loading={!assessmentChurchData}
             statistic={getMonthlyStatAverage(
               assessmentChurchData,
@@ -109,7 +116,9 @@ const ServantsDashboard = () => {
           />
 
           <StatDisplay
-            title={`Avg Weekly Income (${currentUser?.currency || 'GHS'})`}
+            title={t('dashboard.servantsDashboard.avgWeeklyIncome', {
+              currency: currentUser?.currency || 'GHS',
+            })}
             loading={!assessmentChurchData}
             statistic={getMonthlyStatAverage(assessmentChurchData, 'income')}
           />
@@ -121,7 +130,10 @@ const ServantsDashboard = () => {
           church={assessmentChurch?.__typename.toLowerCase() || ''}
           churchData={assessmentChurchData || []}
           graphType="services"
-          secondaryTitle={`${assessmentChurch?.name} ${assessmentChurch?.__typename}`}
+          secondaryTitle={`${assessmentChurch?.name} ${formatChurchLevel(
+            assessmentChurch?.__typename,
+            t
+          )}`}
         />
       </div>
     </ApolloWrapper>

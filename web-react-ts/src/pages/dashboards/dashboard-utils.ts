@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import {
   Church,
   ChurchLevel,
@@ -9,9 +10,27 @@ import {
 } from 'global-types'
 import { authorisedLink, plural } from 'global-utils'
 import { churchLevels } from 'pages/directory/update/directory-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import {
   permitMe,
 } from 'permission-utils'
+
+// `t` optional, like `formatChurchLevel`/`getRoleRelationLabel` in
+// lib/scope-display.ts — callers that don't pass it keep the exact English
+// "<Level> Admin" / "<Level> Arrivals Admin" strings this always returned.
+const roleDisplayName = (
+  level: ChurchLevel,
+  suffix?: 'admin' | 'arrivalsAdmin',
+  t?: TFunction
+): string => {
+  const base = formatChurchLevel(level, t)
+  if (!suffix) return base
+  const englishSuffix = suffix === 'admin' ? 'Admin' : 'Arrivals Admin'
+  const translatedSuffix = t
+    ? t(`shared.roleLabel.${suffix}`, { defaultValue: englishSuffix })
+    : englishSuffix
+  return `${base} ${translatedSuffix}`
+}
 
 export const roles: {
   [key in ChurchLevel]: VerbTypes[]
@@ -208,7 +227,7 @@ export const resolveChurchFromUserJobs = (
   return merged
 }
 
-export const getServantRoles = (servant: MemberWithChurches) => {
+export const getServantRoles = (servant: MemberWithChurches, t?: TFunction) => {
   const userroles: UserJobs[] = []
   const roleTitles: Role[] = []
 
@@ -216,7 +235,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('leaderBacenta')
     userroles.push({
       authRoles: 'leaderBacenta',
-      name: 'Bacenta',
+      name: roleDisplayName('Bacenta', undefined, t),
       church: servant?.leadsBacenta,
       number: servant?.leadsBacenta?.length,
       link: authorisedLink(
@@ -231,7 +250,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('leaderGovernorship')
     userroles.push({
       authRoles: 'leaderGovernorship',
-      name: 'Governorship',
+      name: roleDisplayName('Governorship', undefined, t),
       church: servant?.leadsGovernorship,
       number: servant?.leadsGovernorship?.length,
       link: authorisedLink(
@@ -245,7 +264,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('adminGovernorship')
     userroles.push({
       authRoles: 'adminGovernorship',
-      name: 'Governorship Admin',
+      name: roleDisplayName('Governorship', 'admin', t),
       church: servant?.isAdminForGovernorship,
       number: servant?.isAdminForGovernorship?.length,
       link: authorisedLink(
@@ -259,7 +278,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('arrivalsAdminGovernorship')
     userroles.push({
       authRoles: 'arrivalsAdminGovernorship',
-      name: 'Governorship Arrivals Admin',
+      name: roleDisplayName('Governorship', 'arrivalsAdmin', t),
       church: servant?.isArrivalsAdminForGovernorship,
       number: servant?.isArrivalsAdminForGovernorship?.length,
       link: authorisedLink(
@@ -273,7 +292,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('leaderCouncil')
     userroles.push({
       authRoles: 'leaderCouncil',
-      name: 'Council',
+      name: roleDisplayName('Council', undefined, t),
       church: servant?.leadsCouncil,
       number: servant?.leadsCouncil?.length,
       link: authorisedLink(
@@ -287,7 +306,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('adminCouncil')
     userroles.push({
       authRoles: 'adminCouncil',
-      name: 'Council Admin',
+      name: roleDisplayName('Council', 'admin', t),
       church: servant?.isAdminForCouncil,
       number: servant?.isAdminForCouncil?.length,
       link: authorisedLink(
@@ -301,7 +320,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('arrivalsAdminCouncil')
     userroles.push({
       authRoles: 'arrivalsAdminCouncil',
-      name: 'Council Arrivals Admin',
+      name: roleDisplayName('Council', 'arrivalsAdmin', t),
       church: servant?.isArrivalsAdminForCouncil,
       number: servant?.isArrivalsAdminForCouncil?.length,
       link: authorisedLink(
@@ -315,7 +334,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('leaderStream')
     userroles.push({
       authRoles: 'leaderStream',
-      name: 'Stream',
+      name: roleDisplayName('Stream', undefined, t),
       church: servant?.leadsStream,
       number: servant?.leadsStream?.length,
       link: authorisedLink(
@@ -329,7 +348,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('adminStream')
     userroles.push({
       authRoles: 'adminStream',
-      name: 'Stream Admin',
+      name: roleDisplayName('Stream', 'admin', t),
       church: servant?.isAdminForStream,
       number: servant?.isAdminForStream?.length,
       link: authorisedLink(
@@ -343,7 +362,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('arrivalsAdminStream')
     userroles.push({
       authRoles: 'arrivalsAdminStream',
-      name: 'Stream Arrivals Admin',
+      name: roleDisplayName('Stream', 'arrivalsAdmin', t),
       church: servant?.isArrivalsAdminForStream,
       number: servant?.isArrivalsAdminForStream?.length,
       link: authorisedLink(
@@ -357,7 +376,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('leaderCampus')
     userroles.push({
       authRoles: 'leaderCampus',
-      name: 'Campus',
+      name: roleDisplayName('Campus', undefined, t),
       church: servant?.leadsCampus,
       number: servant?.leadsCampus?.length,
       link: authorisedLink(
@@ -371,7 +390,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('adminCampus')
     userroles.push({
       authRoles: 'adminCampus',
-      name: 'Campus Admin',
+      name: roleDisplayName('Campus', 'admin', t),
       church: servant?.isAdminForCampus,
       number: servant?.isAdminForCampus?.length,
       link: authorisedLink(
@@ -385,7 +404,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('leaderOversight')
     userroles.push({
       authRoles: 'leaderOversight',
-      name: 'Oversight',
+      name: roleDisplayName('Oversight', undefined, t),
       church: servant?.leadsOversight,
       number: servant?.leadsOversight?.length,
       link: authorisedLink(
@@ -399,7 +418,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('adminOversight')
     userroles.push({
       authRoles: 'adminOversight',
-      name: 'Oversight Admin',
+      name: roleDisplayName('Oversight', 'admin', t),
       church: servant?.isAdminForOversight,
       number: servant?.isAdminForOversight?.length,
       link: authorisedLink(
@@ -413,7 +432,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('leaderDenomination')
     userroles.push({
       authRoles: 'leaderDenomination',
-      name: 'Denomination',
+      name: roleDisplayName('Denomination', undefined, t),
       church: servant?.leadsDenomination,
       number: servant?.leadsDenomination?.length,
       link: authorisedLink(
@@ -427,7 +446,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('adminDenomination')
     userroles.push({
       authRoles: 'adminDenomination',
-      name: 'Denomination Admin',
+      name: roleDisplayName('Denomination', 'admin', t),
       church: servant?.isAdminForDenomination,
       number: servant?.isAdminForDenomination?.length,
       link: authorisedLink(
@@ -441,7 +460,7 @@ export const getServantRoles = (servant: MemberWithChurches) => {
     roleTitles.push('arrivalsAdminCampus')
     userroles.push({
       authRoles: 'arrivalsAdminCampus',
-      name: 'Campus Arrivals Admin',
+      name: roleDisplayName('Campus', 'arrivalsAdmin', t),
       church: servant?.isArrivalsAdminForCampus,
       number: servant?.isArrivalsAdminForCampus?.length,
       link: authorisedLink(

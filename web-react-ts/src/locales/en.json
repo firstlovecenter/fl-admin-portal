@@ -32,5 +32,197 @@
   },
   "language": {
     "menuLabel": "Language"
+  },
+  "shared": {
+    "churchLevel": {
+      "Bacenta": "Bacenta",
+      "Campus": "Campus",
+      "Stream": "Stream",
+      "Governorship": "Governorship",
+      "Council": "Council",
+      "Oversight": "Oversight",
+      "Denomination": "Denomination"
+    },
+    "roleLabel": {
+      "leader": "Leader",
+      "admin": "Admin",
+      "arrivalsAdmin": "Arrivals Admin",
+      "arrivalsCounter": "Arrivals Counter",
+      "teller": "Teller"
+    }
+  },
+  "dashboard": {
+    "userDashboard": {
+      "onVacation": "On vacation",
+      "selectChurchPrompt": "Select a church in focus to view role context.",
+      "noRolesAssigned": "No roles assigned yet.",
+      "quickActions": {
+        "title": "Quick actions",
+        "recordService": "Record service",
+        "fillBussing": "Fill bussing",
+        "addMember": "Add member",
+        "bankService": "Bank service"
+      },
+      "metrics": {
+        "avgWeeklyBussing": "Avg. weekly bussing attendance",
+        "noRecentBussing": "No recent bussing",
+        "avgAttendance": "Avg. attendance",
+        "avgIncome": "Avg. income",
+        "notTracked": "Not tracked"
+      },
+      "trend": {
+        "title": "Weekly trend",
+        "acrossChurches": "Across your churches",
+        "trendModeAriaLabel": "Trend data mode",
+        "weekdayService": "Weekday service",
+        "sundayBussing": "Sunday bussing"
+      },
+      "legend": {
+        "bussing": "Bussing",
+        "weekdayAttendance": "Weekday attendance",
+        "income": "Income"
+      },
+      "currentFocus": {
+        "title": "Current focus",
+        "church": "Church",
+        "level": "Level",
+        "role": "Role",
+        "noIncomeTracking": "No income tracking"
+      },
+      "dialog": {
+        "title": "Record this week's service",
+        "description": "Did the service take place this week?",
+        "recordService": {
+          "title": "Record Service",
+          "subtitle": "We met this week — fill the service form"
+        },
+        "cancelService": {
+          "title": "I Cancelled My Service",
+          "subtitle": "No service this week — give a reason"
+        }
+      }
+    },
+    "trendSpark": {
+      "weekLabel": "Week {{week}}",
+      "weekUnknown": "Week N/A",
+      "weekAbbrev": "W{{week}}",
+      "weekAbbrevUnknown": "N/A",
+      "noBussingData": "No bussing data yet",
+      "noServiceData": "No service data yet",
+      "emptyWindow": "No values in this {{count}}-week window. Use Previous to view older weeks.",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "servantsDashboard": {
+      "welcomeTo": "Welcome to",
+      "dashboardTitle": "{{name}}'s Dashboard",
+      "avgWeeklyAttendance": "Avg Weekly Attendance",
+      "avgWeeklyIncome": "Avg Weekly Income ({{currency}})"
+    },
+    "weeklyTasks": {
+      "weekLabel": "Week {{week}}",
+      "onVacationLine": "Bacenta is on vacation. No records required.",
+      "scheduleLine": "Service on {{serviceDay}}, bussing on {{bussingDay}}.",
+      "defaultBacentaDay": "Bacenta meeting day",
+      "defaultStreamDay": "Stream meeting day",
+      "recordService": "Record service",
+      "recordBussing": "Record bussing",
+      "status": {
+        "waived": "Waived",
+        "bankPending": "Bank pending",
+        "done": "Done",
+        "upcoming": "Upcoming",
+        "due": "Due"
+      },
+      "action": {
+        "viewService": "View service",
+        "recorded": "Recorded",
+        "recordNow": "Record now",
+        "viewBussing": "View bussing",
+        "notDueYet": "Not due yet"
+      }
+    },
+    "greetings": {
+      "fallbackName": "there",
+      "lateNight": [
+        "{{name}}, at this hour? Paul-and-Silas mode unlocked.",
+        "Watchman {{name}}, what of the night? Apparently, more admin.",
+        "{{name}}, even the disciples slept. Just gently saying.",
+        "The spirit is willing, {{name}} — please let the flesh sleep soon.",
+        "Burning oil at {{name}} o'clock. Heaven sees you.",
+        "He neither slumbers nor sleeps, {{name}}. You, however, should.",
+        "Midnight oil hits different.",
+        "Be sober, be vigilant — and please, be horizontal soon.",
+        "Lift up your hands in the sanctuary by night. Or in the dashboard."
+      ],
+      "earlyMorning": [
+        "Rise and shine, {{name}} — mercies are new this morning.",
+        "Early bird {{name}}. The worm respectfully bows.",
+        "He waketh morning by morning, {{name}}. You're keeping up.",
+        "{{name}}, up before sunrise — big \"I sought thee early\" energy.",
+        "Pre-dawn admin, {{name}}. The watchman approves.",
+        "Good morning, {{name}}. Joy comes in the morning — and so do you.",
+        "Eyes open, {{name}}. Heart awake. Let's go.",
+        "The morning stars sang together. You're the encore.",
+        "New day, fresh anointing.",
+        "Before the dew lifts — that kind of devotion."
+      ],
+      "morning": [
+        "Good morning, {{name}}. Mercies: fresh out the box.",
+        "Coffee in one hand, calling in the other — let's go, {{name}}.",
+        "Morning, {{name}}. This is the day the Lord has made.",
+        "{{name}}, the harvest is plentiful — and so is the to-do list.",
+        "{{name}}, the joy of the Lord is your strength.",
+        "Daylight servant hours, {{name}}. Let's move.",
+        "Welcome, {{name}}. Start small, finish faithful.",
+        "Strong coffee, stronger calling.",
+        "Every good gift cometh down — including today.",
+        "Sunrise: done. To-do list: pending."
+      ],
+      "midday": [
+        "Midday check-in, {{name}}. Did you eat?",
+        "The sun is high, {{name}}. The standards are higher.",
+        "{{name}}, halfway through the day. Stand firm.",
+        "Lunch break or admin break, {{name}}? Yes.",
+        "Welcome back, {{name}}. The day is still yours.",
+        "Be still, {{name}} — but only after the form is submitted.",
+        "High noon, holy hustle.",
+        "The light is at its brightest. So is the assignment.",
+        "Even Elijah ate before he ran."
+      ],
+      "afternoon": [
+        "Good afternoon, {{name}}. Finishing strong beats starting strong.",
+        "{{name}}, run with patience the race set before you — even the admin part.",
+        "{{name}}, faithful in little, faithful in much.",
+        "Productivity window open, {{name}}. Naps are also biblical.",
+        "Afternoon, {{name}}. Press on.",
+        "The day is not over, {{name}}. Neither is the calling.",
+        "Still standing. Still serving.",
+        "The afternoon shift is undefeated.",
+        "Slow and steady wins the kingdom race."
+      ],
+      "evening": [
+        "Good evening, {{name}}. Day well used?",
+        "Evening admin, {{name}}. Pastor mode: still on.",
+        "{{name}}, the day is far spent — the work was good.",
+        "Sun setting, {{name}}. Dashboard still glowing.",
+        "Welcome back, {{name}}. One last push.",
+        "He gives His beloved sleep, {{name}} — right after you bank that service.",
+        "Sunset admin. Holy, but slightly tired.",
+        "Cool of the day — God walks. So do you.",
+        "Evening sacrifices are still acceptable."
+      ],
+      "night": [
+        "Late shift, {{name}}? The Lord watches over you.",
+        "He neither slumbers nor sleeps, {{name}}. You, on the other hand…",
+        "{{name}}, faithful with the late-night details. Respect.",
+        "Burning the midnight oil, {{name}} — anointed, but please rest soon.",
+        "Evening, {{name}}. Rest is also worship.",
+        "Quiet hours, {{name}}. Steady hands. Holy work.",
+        "One more record, one more rest.",
+        "Even the temple closed eventually.",
+        "Twilight servant hours — clocking in quietly."
+      ]
+    }
   }
 }

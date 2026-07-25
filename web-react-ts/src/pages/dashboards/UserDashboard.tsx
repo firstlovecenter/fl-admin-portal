@@ -1,5 +1,6 @@
 import { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import {
   Bus,
@@ -62,6 +63,10 @@ import {
 const TREND_HISTORY_WEEKS = 24
 
 interface QuickAction {
+  // Stable across language switches, unlike `label` (translated) — used as
+  // the React list key so switching languages updates the label in place
+  // instead of remounting the button.
+  id: string
   label: string
   icon: TablerIcon
   onPress: () => void
@@ -117,7 +122,21 @@ const hasMeetingDayStarted = (dayNumber?: number) => {
   return getNeoWeekdayToday() >= dayNumber
 }
 
+// Intl locale to format the header date in, per active UI language. Distinct
+// from the 'en-GH'/'en-US' locales used elsewhere in this file for currency
+// and Accra-timezone weekday math, which format Ghanaian money/time
+// conventions rather than user-facing prose and stay fixed regardless of
+// the selected UI language.
+const DATE_HEADER_LOCALES: Record<string, string> = {
+  en: 'en-GB',
+  fr: 'fr-FR',
+  es: 'es-ES',
+  pt: 'pt-PT',
+  de: 'de-DE',
+}
+
 const FullUserDashboard = () => {
+  const { t, i18n } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
@@ -139,7 +158,8 @@ const FullUserDashboard = () => {
 
   const quickActions: QuickAction[] = [
     {
-      label: 'Record service',
+      id: 'record-service',
+      label: t('dashboard.userDashboard.quickActions.recordService'),
       icon: IconClipboardCheck,
       accent: 'hsl(var(--arrivals))',
       onPress: () => {
@@ -157,13 +177,15 @@ const FullUserDashboard = () => {
       },
     },
     {
-      label: 'Fill bussing',
+      id: 'fill-bussing',
+      label: t('dashboard.userDashboard.quickActions.fillBussing'),
       icon: IconBusStop,
       accent: 'hsl(var(--brand))',
       onPress: () => navigate('/arrivals'),
     },
     {
-      label: 'Add member',
+      id: 'add-member',
+      label: t('dashboard.userDashboard.quickActions.addMember'),
       icon: IconUsersPlus,
       accent: 'hsl(var(--members))',
       onPress: () => navigate('/member/addmember'),
@@ -172,7 +194,8 @@ const FullUserDashboard = () => {
       ? []
       : [
           {
-            label: 'Bank service',
+            id: 'bank-service',
+            label: t('dashboard.userDashboard.quickActions.bankService'),
             icon: IconBuildingBank,
             accent: 'hsl(var(--banking))',
             onPress: () =>
@@ -278,15 +301,19 @@ const FullUserDashboard = () => {
     : aggregateIncomeCurrency || dashboardCurrency
   const selectedScopeSummary = selectedScope
     ? `${selectedScope.churchName} · ${formatChurchLevel(
-        selectedScope.churchType
+        selectedScope.churchType,
+        t
       )} · ${getRoleRelationLabel(
         selectedScope.authRole,
-        selectedScope.roleName
+        selectedScope.roleName,
+        t
       )}`
     : null
 
   const isLoading = !currentUser?.fullName
-  const firstName = currentUser?.fullName?.trim().split(' ')[0] ?? 'there'
+  const firstName =
+    currentUser?.fullName?.trim().split(' ')[0] ??
+    t('dashboard.greetings.fallbackName')
   const userKey = currentUser?.fullName ?? firstName
   const greeting = useHourlyGreeting(firstName, userKey)
   const selectedScopeIncomeTracked =
@@ -413,7 +440,7 @@ const FullUserDashboard = () => {
   )?.vacationStatus
   const isScopeOnVacation = scopeVacationStatus === 'Vacation'
   const scopeRoleLabel = selectedScope
-    ? getRoleRelationLabel(selectedScope.authRole, selectedScope.roleName)
+    ? getRoleRelationLabel(selectedScope.authRole, selectedScope.roleName, t)
     : ''
 
   return (
@@ -431,11 +458,14 @@ const FullUserDashboard = () => {
         >
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {new Date().toLocaleDateString('en-GB', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })}
+              {new Date().toLocaleDateString(
+                DATE_HEADER_LOCALES[i18n.language] || DATE_HEADER_LOCALES.en,
+                {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                }
+              )}
             </p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               {isLoading ? (
@@ -456,7 +486,7 @@ const FullUserDashboard = () => {
                   variant="outline"
                   className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
                 >
-                  {formatChurchLevel(selectedScope?.churchType)}
+                  {formatChurchLevel(selectedScope?.churchType, t)}
                 </Badge>
                 {scopeRoleLabel && (
                   <Badge
@@ -469,15 +499,15 @@ const FullUserDashboard = () => {
                 {isScopeOnVacation && (
                   <Badge className="gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 dark:bg-warning/20">
                     <Palmtree className="size-3" />
-                    On vacation
+                    {t('dashboard.userDashboard.onVacation')}
                   </Badge>
                 )}
               </div>
             ) : (
               <p className="mt-2 text-sm text-muted-foreground">
                 {activeRoles
-                  ? 'Select a church in focus to view role context.'
-                  : 'No roles assigned yet.'}
+                  ? t('dashboard.userDashboard.selectChurchPrompt')
+                  : t('dashboard.userDashboard.noRolesAssigned')}
               </p>
             )}
           </div>
@@ -515,7 +545,7 @@ const FullUserDashboard = () => {
                 />
                 <div className="flex-1 px-6 py-5">
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Avg. weekly bussing attendance
+                    {t('dashboard.userDashboard.metrics.avgWeeklyBussing')}
                   </p>
                   {isLoading ? (
                     <Skeleton className="mt-3 h-12 w-32" />
@@ -530,7 +560,7 @@ const FullUserDashboard = () => {
                     >
                       {hasBussingAttendance
                         ? fmtBussingAttendance
-                        : 'No recent bussing'}
+                        : t('dashboard.userDashboard.metrics.noRecentBussing')}
                     </p>
                   )}
                 </div>
@@ -540,7 +570,7 @@ const FullUserDashboard = () => {
               <div className="grid grid-cols-2 divide-x divide-border">
                 <div className="px-6 py-4">
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Avg. attendance
+                    {t('dashboard.userDashboard.metrics.avgAttendance')}
                   </p>
                   {isLoading ? (
                     <Skeleton className="mt-2 h-7 w-20" />
@@ -552,7 +582,7 @@ const FullUserDashboard = () => {
                 </div>
                 <div className="px-6 py-4">
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Avg. income
+                    {t('dashboard.userDashboard.metrics.avgIncome')}
                   </p>
                   {isLoading ? (
                     <Skeleton className="mt-2 h-7 w-24" />
@@ -565,7 +595,9 @@ const FullUserDashboard = () => {
                           : 'text-foreground'
                       )}
                     >
-                      {incomeTracked ? fmtIncome : 'Not tracked'}
+                      {incomeTracked
+                        ? fmtIncome
+                        : t('dashboard.userDashboard.metrics.notTracked')}
                     </p>
                   )}
                 </div>
@@ -629,19 +661,24 @@ const FullUserDashboard = () => {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
                   <h2 className="text-base font-medium text-foreground">
-                    Weekly trend
+                    {t('dashboard.userDashboard.trend.title')}
                   </h2>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {assessmentChurch?.name
-                      ? `${assessmentChurch.name} · ${assessmentChurch.__typename}`
-                      : 'Across your churches'}
+                      ? `${assessmentChurch.name} · ${formatChurchLevel(
+                          assessmentChurch.__typename,
+                          t
+                        )}`
+                      : t('dashboard.userDashboard.trend.acrossChurches')}
                   </p>
 
                   {canToggleTrendMode && (
                     <div
                       className="mt-3 inline-flex w-full max-w-sm rounded-lg border border-border p-1 sm:w-auto"
                       role="group"
-                      aria-label="Trend data mode"
+                      aria-label={t(
+                        'dashboard.userDashboard.trend.trendModeAriaLabel'
+                      )}
                     >
                       <button
                         type="button"
@@ -654,7 +691,7 @@ const FullUserDashboard = () => {
                             : 'text-muted-foreground hover:text-foreground'
                         )}
                       >
-                        Weekday service
+                        {t('dashboard.userDashboard.trend.weekdayService')}
                       </button>
                       <button
                         type="button"
@@ -667,7 +704,7 @@ const FullUserDashboard = () => {
                             : 'text-muted-foreground hover:text-foreground'
                         )}
                       >
-                        Sunday bussing
+                        {t('dashboard.userDashboard.trend.sundayBussing')}
                       </button>
                     </div>
                   )}
@@ -684,8 +721,8 @@ const FullUserDashboard = () => {
                       }}
                     />
                     {activeTrendMode === 'bussing'
-                      ? 'Bussing'
-                      : 'Weekday attendance'}
+                      ? t('dashboard.userDashboard.legend.bussing')
+                      : t('dashboard.userDashboard.legend.weekdayAttendance')}
                   </span>
                   {trendIncomeTracked && (
                     <span className="flex items-center gap-1.5">
@@ -693,7 +730,7 @@ const FullUserDashboard = () => {
                         className="size-1.5 rounded-full"
                         style={{ backgroundColor: 'hsl(var(--success))' }}
                       />
-                      Income
+                      {t('dashboard.userDashboard.legend.income')}
                     </span>
                   )}
                 </div>
@@ -727,7 +764,7 @@ const FullUserDashboard = () => {
             <section className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="border-b border-border px-4 py-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Quick actions
+                  {t('dashboard.userDashboard.quickActions.title')}
                 </h3>
               </div>
               <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-4 lg:grid-cols-1 lg:gap-0 lg:divide-y lg:divide-border lg:p-0">
@@ -735,7 +772,7 @@ const FullUserDashboard = () => {
                   const Icon = action.icon
                   return (
                     <button
-                      key={action.label}
+                      key={action.id}
                       type="button"
                       onClick={action.onPress}
                       className={cn(
@@ -770,12 +807,14 @@ const FullUserDashboard = () => {
               <section className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="border-b border-border px-4 py-3">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Current focus
+                    {t('dashboard.userDashboard.currentFocus.title')}
                   </h3>
                 </div>
                 <div className="space-y-3 p-4">
                   <div>
-                    <p className="text-xs text-muted-foreground">Church</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('dashboard.userDashboard.currentFocus.church')}
+                    </p>
                     <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
                       {selectedScope.churchName}
                     </p>
@@ -783,13 +822,17 @@ const FullUserDashboard = () => {
                   <Separator />
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-xs text-muted-foreground">Level</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('dashboard.userDashboard.currentFocus.level')}
+                      </p>
                       <p className="mt-0.5 text-sm font-medium text-foreground">
-                        {formatChurchLevel(selectedScope.churchType)}
+                        {formatChurchLevel(selectedScope.churchType, t)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Role</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('dashboard.userDashboard.currentFocus.role')}
+                      </p>
                       <p className="mt-0.5 text-sm font-medium text-foreground">
                         {scopeRoleLabel || '—'}
                       </p>
@@ -812,13 +855,15 @@ const FullUserDashboard = () => {
                             variant="outline"
                             className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
                           >
-                            No income tracking
+                            {t(
+                              'dashboard.userDashboard.currentFocus.noIncomeTracking'
+                            )}
                           </Badge>
                         )}
                         {isScopeOnVacation && (
                           <Badge className="gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 dark:bg-warning/20">
                             <Palmtree className="size-3" />
-                            On vacation
+                            {t('dashboard.userDashboard.onVacation')}
                           </Badge>
                         )}
                       </div>
@@ -834,9 +879,9 @@ const FullUserDashboard = () => {
       <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Record this week&apos;s service</DialogTitle>
+            <DialogTitle>{t('dashboard.userDashboard.dialog.title')}</DialogTitle>
             <DialogDescription>
-              Did the service take place this week?
+              {t('dashboard.userDashboard.dialog.description')}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2 pt-1">
@@ -859,10 +904,10 @@ const FullUserDashboard = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground">
-                  Record Service
+                  {t('dashboard.userDashboard.dialog.recordService.title')}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  We met this week — fill the service form
+                  {t('dashboard.userDashboard.dialog.recordService.subtitle')}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -886,10 +931,10 @@ const FullUserDashboard = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground">
-                  I Cancelled My Service
+                  {t('dashboard.userDashboard.dialog.cancelService.title')}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  No service this week — give a reason
+                  {t('dashboard.userDashboard.dialog.cancelService.subtitle')}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -926,6 +971,7 @@ const BacentaWeeklyTasks = ({
   onRecordBussing,
   serviceAwaitingBanking = false,
 }: BacentaWeeklyTasksProps) => {
+  const { t } = useTranslation()
   const currentWeek = getWeekNumber()
   const currentISOWeekYear = getISOWeekYear()
   const onVacation = vacationStatus === 'Vacation'
@@ -960,22 +1006,25 @@ const BacentaWeeklyTasks = ({
       <div className="flex items-end justify-between mb-3">
         <div>
           <h2 className="text-sm font-medium text-foreground">
-            Week {currentWeek}
+            {t('dashboard.weeklyTasks.weekLabel', { week: currentWeek })}
           </h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {onVacation
-              ? 'Bacenta is on vacation. No records required.'
-              : `Service on ${
-                  serviceMeetingDay?.day || 'Bacenta meeting day'
-                }, bussing on ${
-                  bussingMeetingDay?.day || 'Stream meeting day'
-                }.`}
+              ? t('dashboard.weeklyTasks.onVacationLine')
+              : t('dashboard.weeklyTasks.scheduleLine', {
+                  serviceDay:
+                    serviceMeetingDay?.day ||
+                    t('dashboard.weeklyTasks.defaultBacentaDay'),
+                  bussingDay:
+                    bussingMeetingDay?.day ||
+                    t('dashboard.weeklyTasks.defaultStreamDay'),
+                })}
           </p>
         </div>
         {onVacation && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-3 py-1 text-xs font-medium text-warning dark:bg-warning/20">
             <Palmtree className="size-3.5" />
-            On vacation
+            {t('dashboard.userDashboard.onVacation')}
           </span>
         )}
       </div>
@@ -983,7 +1032,7 @@ const BacentaWeeklyTasks = ({
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <WeeklyTaskCard
           icon={ClipboardCheck}
-          label="Record service"
+          label={t('dashboard.weeklyTasks.recordService')}
           done={serviceDone}
           awaitingBanking={serviceAwaitingBanking}
           upcoming={serviceUpcoming}
@@ -991,20 +1040,24 @@ const BacentaWeeklyTasks = ({
           actionLabel={
             serviceDone
               ? canViewService
-                ? 'View service'
-                : 'Recorded'
-              : 'Record now'
+                ? t('dashboard.weeklyTasks.action.viewService')
+                : t('dashboard.weeklyTasks.action.recorded')
+              : t('dashboard.weeklyTasks.action.recordNow')
           }
           onAction={serviceAction}
           actionDisabled={serviceActionDisabled}
         />
         <WeeklyTaskCard
           icon={Bus}
-          label="Record bussing"
+          label={t('dashboard.weeklyTasks.recordBussing')}
           done={bussingDone}
           upcoming={bussingUpcoming}
           waived={onVacation}
-          actionLabel={bussingDone ? 'View bussing' : 'Record now'}
+          actionLabel={
+            bussingDone
+              ? t('dashboard.weeklyTasks.action.viewBussing')
+              : t('dashboard.weeklyTasks.action.recordNow')
+          }
           onAction={onRecordBussing}
         />
       </div>
@@ -1035,15 +1088,16 @@ const WeeklyTaskCard = ({
   onAction,
   actionDisabled = false,
 }: WeeklyTaskCardProps) => {
+  const { t } = useTranslation()
   const status = waived
-    ? 'Waived'
+    ? t('dashboard.weeklyTasks.status.waived')
     : awaitingBanking
-    ? 'Bank pending'
+    ? t('dashboard.weeklyTasks.status.bankPending')
     : done
-    ? 'Done'
+    ? t('dashboard.weeklyTasks.status.done')
     : upcoming
-    ? 'Upcoming'
-    : 'Due'
+    ? t('dashboard.weeklyTasks.status.upcoming')
+    : t('dashboard.weeklyTasks.status.due')
   const statusClass = waived
     ? 'bg-muted text-muted-foreground'
     : awaitingBanking
@@ -1111,7 +1165,7 @@ const WeeklyTaskCard = ({
               : 'bg-brand text-brand-foreground hover:bg-brand/90'
           )}
         >
-          {upcoming ? 'Not due yet' : actionLabel}
+          {upcoming ? t('dashboard.weeklyTasks.action.notDueYet') : actionLabel}
         </Button>
       )}
     </div>

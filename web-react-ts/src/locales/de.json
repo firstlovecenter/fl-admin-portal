@@ -32,5 +32,197 @@
   },
   "language": {
     "menuLabel": "Sprache"
+  },
+  "shared": {
+    "churchLevel": {
+      "Bacenta": "Bacenta",
+      "Campus": "Campus",
+      "Stream": "Zweig",
+      "Governorship": "Gouvernorat",
+      "Council": "Rat",
+      "Oversight": "Aufsicht",
+      "Denomination": "Konfession"
+    },
+    "roleLabel": {
+      "leader": "Leiter",
+      "admin": "Administrator",
+      "arrivalsAdmin": "Ankunfts-Administrator",
+      "arrivalsCounter": "Ankunftszähler",
+      "teller": "Kassierer"
+    }
+  },
+  "dashboard": {
+    "userDashboard": {
+      "onVacation": "Im Urlaub",
+      "selectChurchPrompt": "Wählen Sie eine Gemeinde im Fokus, um den Rollenkontext zu sehen.",
+      "noRolesAssigned": "Noch keine Rollen zugewiesen.",
+      "quickActions": {
+        "title": "Schnellaktionen",
+        "recordService": "Gottesdienst erfassen",
+        "fillBussing": "Beförderung erfassen",
+        "addMember": "Mitglied hinzufügen",
+        "bankService": "Gottesdienst einzahlen"
+      },
+      "metrics": {
+        "avgWeeklyBussing": "Durchschn. wöchentliche Beförderungsteilnahme",
+        "noRecentBussing": "Keine aktuelle Beförderung",
+        "avgAttendance": "Durchschn. Teilnahme",
+        "avgIncome": "Durchschn. Einnahmen",
+        "notTracked": "Nicht erfasst"
+      },
+      "trend": {
+        "title": "Wöchentlicher Trend",
+        "acrossChurches": "Über alle Ihre Gemeinden hinweg",
+        "trendModeAriaLabel": "Trenddaten-Modus",
+        "weekdayService": "Wochentags-Gottesdienst",
+        "sundayBussing": "Sonntagsbeförderung"
+      },
+      "legend": {
+        "bussing": "Beförderung",
+        "weekdayAttendance": "Wochentagsteilnahme",
+        "income": "Einnahmen"
+      },
+      "currentFocus": {
+        "title": "Aktueller Fokus",
+        "church": "Gemeinde",
+        "level": "Ebene",
+        "role": "Rolle",
+        "noIncomeTracking": "Einnahmen nicht erfasst"
+      },
+      "dialog": {
+        "title": "Gottesdienst dieser Woche erfassen",
+        "description": "Fand der Gottesdienst diese Woche statt?",
+        "recordService": {
+          "title": "Gottesdienst erfassen",
+          "subtitle": "Wir haben uns diese Woche getroffen — füllen Sie das Gottesdienstformular aus"
+        },
+        "cancelService": {
+          "title": "Ich habe meinen Gottesdienst abgesagt",
+          "subtitle": "Kein Gottesdienst diese Woche — geben Sie einen Grund an"
+        }
+      }
+    },
+    "trendSpark": {
+      "weekLabel": "Woche {{week}}",
+      "weekUnknown": "Woche unbek.",
+      "weekAbbrev": "W{{week}}",
+      "weekAbbrevUnknown": "unbek.",
+      "noBussingData": "Noch keine Beförderungsdaten",
+      "noServiceData": "Noch keine Gottesdienstdaten",
+      "emptyWindow": "Keine Werte in diesen {{count}} Wochen. Verwenden Sie „Zurück“, um ältere Wochen anzuzeigen.",
+      "previous": "Zurück",
+      "next": "Weiter"
+    },
+    "servantsDashboard": {
+      "welcomeTo": "Willkommen bei",
+      "dashboardTitle": "Dashboard von {{name}}",
+      "avgWeeklyAttendance": "Durchschn. wöchentliche Teilnahme",
+      "avgWeeklyIncome": "Durchschn. wöchentliche Einnahmen ({{currency}})"
+    },
+    "weeklyTasks": {
+      "weekLabel": "Woche {{week}}",
+      "onVacationLine": "Das Bacenta ist im Urlaub. Keine Einträge erforderlich.",
+      "scheduleLine": "Gottesdienst am {{serviceDay}}, Beförderung am {{bussingDay}}.",
+      "defaultBacentaDay": "Bacenta-Treffentag",
+      "defaultStreamDay": "Zweig-Treffentag",
+      "recordService": "Gottesdienst erfassen",
+      "recordBussing": "Beförderung erfassen",
+      "status": {
+        "waived": "Erlassen",
+        "bankPending": "Einzahlung ausstehend",
+        "done": "Erledigt",
+        "upcoming": "Bevorstehend",
+        "due": "Fällig"
+      },
+      "action": {
+        "viewService": "Gottesdienst ansehen",
+        "recorded": "Erfasst",
+        "recordNow": "Jetzt erfassen",
+        "viewBussing": "Beförderung ansehen",
+        "notDueYet": "Noch nicht fällig"
+      }
+    },
+    "greetings": {
+      "fallbackName": "Freund",
+      "lateNight": [
+        "{{name}}, zu dieser Stunde? Paulus-und-Silas-Modus aktiviert.",
+        "Wächter {{name}}, wie steht es um die Nacht? Anscheinend noch mehr Verwaltung.",
+        "{{name}}, selbst die Jünger haben geschlafen. Nur so nebenbei gesagt.",
+        "Der Geist ist willig, {{name}} — aber lassen Sie das Fleisch bald schlafen.",
+        "Öl brennt um {{name}} Uhr. Der Himmel sieht Sie.",
+        "Er schlummert nicht und schläft nicht, {{name}}. Sie sollten es aber tun.",
+        "Mitternachtsöl fühlt sich anders an.",
+        "Seien Sie nüchtern, seien Sie wachsam — und bitte bald waagerecht.",
+        "Erheben Sie Ihre Hände im Heiligtum, bei Nacht. Oder im Dashboard."
+      ],
+      "earlyMorning": [
+        "Stehen Sie auf und werden Sie licht, {{name}} — die Gnaden sind heute Morgen neu.",
+        "Früher Vogel {{name}}. Der Wurm verneigt sich respektvoll.",
+        "Er erwacht Morgen für Morgen, {{name}}. Sie halten mit.",
+        "{{name}}, wach vor Sonnenaufgang — große „Ich suche dich früh“-Energie.",
+        "Verwaltung vor der Morgendämmerung, {{name}}. Der Wächter ist einverstanden.",
+        "Guten Morgen, {{name}}. Die Freude kommt am Morgen — und Sie auch.",
+        "Augen auf, {{name}}. Herz wach. Los geht's.",
+        "Die Morgensterne sangen zusammen. Sie sind die Zugabe.",
+        "Neuer Tag, frische Salbung.",
+        "Bevor der Tau sich hebt — diese Art von Hingabe."
+      ],
+      "morning": [
+        "Guten Morgen, {{name}}. Gnaden: frisch aus der Packung.",
+        "Kaffee in der einen Hand, Berufung in der anderen — los geht's, {{name}}.",
+        "Morgen, {{name}}. Dies ist der Tag, den der Herr gemacht hat.",
+        "{{name}}, die Ernte ist groß — und die To-do-Liste auch.",
+        "{{name}}, die Freude des Herrn ist Ihre Stärke.",
+        "Diensttunden bei Tageslicht, {{name}}. Auf geht's.",
+        "Willkommen, {{name}}. Klein anfangen, treu beenden.",
+        "Starker Kaffee, stärkere Berufung.",
+        "Jede gute Gabe kommt von oben herab — auch heute.",
+        "Sonnenaufgang: erledigt. To-do-Liste: ausstehend."
+      ],
+      "midday": [
+        "Mittags-Check-in, {{name}}. Haben Sie schon gegessen?",
+        "Die Sonne steht hoch, {{name}}. Die Ansprüche noch höher.",
+        "{{name}}, mitten im Tag. Bleiben Sie standhaft.",
+        "Mittagspause oder Verwaltungspause, {{name}}? Beides.",
+        "Willkommen zurück, {{name}}. Der Tag gehört noch Ihnen.",
+        "Seien Sie still, {{name}} — aber erst, nachdem das Formular abgeschickt ist.",
+        "Hoher Mittag, heilige Geschäftigkeit.",
+        "Das Licht ist am hellsten. Der Auftrag auch.",
+        "Selbst Elia hat gegessen, bevor er lief."
+      ],
+      "afternoon": [
+        "Guten Nachmittag, {{name}}. Stark beenden schlägt stark anfangen.",
+        "{{name}}, laufen Sie mit Geduld den Lauf, der vor Ihnen liegt — auch den Verwaltungsteil.",
+        "{{name}}, treu im Kleinen, treu im Großen.",
+        "Produktivitätsfenster geöffnet, {{name}}. Nickerchen sind auch biblisch.",
+        "Nachmittag, {{name}}. Bleiben Sie dran.",
+        "Der Tag ist noch nicht vorbei, {{name}}. Die Berufung auch nicht.",
+        "Immer noch standhaft. Immer noch im Dienst.",
+        "Die Nachmittagsschicht ist ungeschlagen.",
+        "Langsam und stetig gewinnt das Rennen des Königreichs."
+      ],
+      "evening": [
+        "Guten Abend, {{name}}. Tag gut genutzt?",
+        "Abendverwaltung, {{name}}. Pastor-Modus: immer noch aktiv.",
+        "{{name}}, der Tag ist weit fortgeschritten — die Arbeit war gut.",
+        "Sonnenuntergang, {{name}}. Das Dashboard leuchtet noch.",
+        "Willkommen zurück, {{name}}. Ein letzter Schub.",
+        "Er gibt seinen Geliebten Schlaf, {{name}} — gleich nachdem Sie diesen Gottesdienst eingezahlt haben.",
+        "Verwaltung bei Sonnenuntergang. Heilig, aber etwas müde.",
+        "Die Kühle des Tages — Gott wandelt. Sie auch.",
+        "Abendopfer sind noch annehmbar."
+      ],
+      "night": [
+        "Spätschicht, {{name}}? Der Herr wacht über Sie.",
+        "Er schlummert nicht und schläft nicht, {{name}}. Sie hingegen…",
+        "{{name}}, treu bis in die spätabendlichen Details. Respekt.",
+        "Mitternachtsöl verbrennen, {{name}} — gesalbt, aber ruhen Sie sich bitte bald aus.",
+        "Guten Abend, {{name}}. Ruhe ist auch Anbetung.",
+        "Ruhige Stunden, {{name}}. Ruhige Hände. Heilige Arbeit.",
+        "Noch ein Eintrag, noch eine Ruhepause.",
+        "Selbst der Tempel schloss irgendwann.",
+        "Dämmerungs-Diensttunden — stilles Einstempeln."
+      ]
+    }
   }
 }

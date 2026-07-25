@@ -32,5 +32,197 @@
   },
   "language": {
     "menuLabel": "Langue"
+  },
+  "shared": {
+    "churchLevel": {
+      "Bacenta": "Bacenta",
+      "Campus": "Campus",
+      "Stream": "Filière",
+      "Governorship": "Gouvernorat",
+      "Council": "Conseil",
+      "Oversight": "Supervision",
+      "Denomination": "Dénomination"
+    },
+    "roleLabel": {
+      "leader": "Responsable",
+      "admin": "Administrateur",
+      "arrivalsAdmin": "Administrateur des arrivées",
+      "arrivalsCounter": "Compteur des arrivées",
+      "teller": "Caissier"
+    }
+  },
+  "dashboard": {
+    "userDashboard": {
+      "onVacation": "En vacances",
+      "selectChurchPrompt": "Sélectionnez une église active pour voir le contexte du rôle.",
+      "noRolesAssigned": "Aucun rôle attribué pour le moment.",
+      "quickActions": {
+        "title": "Actions rapides",
+        "recordService": "Enregistrer un culte",
+        "fillBussing": "Remplir le transport",
+        "addMember": "Ajouter un membre",
+        "bankService": "Déposer le culte en banque"
+      },
+      "metrics": {
+        "avgWeeklyBussing": "Fréquentation moyenne du transport hebdomadaire",
+        "noRecentBussing": "Aucun transport récent",
+        "avgAttendance": "Fréquentation moyenne",
+        "avgIncome": "Revenu moyen",
+        "notTracked": "Non suivi"
+      },
+      "trend": {
+        "title": "Tendance hebdomadaire",
+        "acrossChurches": "Sur l'ensemble de vos églises",
+        "trendModeAriaLabel": "Mode des données de tendance",
+        "weekdayService": "Culte en semaine",
+        "sundayBussing": "Transport du dimanche"
+      },
+      "legend": {
+        "bussing": "Transport",
+        "weekdayAttendance": "Fréquentation en semaine",
+        "income": "Revenu"
+      },
+      "currentFocus": {
+        "title": "Focus actuel",
+        "church": "Église",
+        "level": "Niveau",
+        "role": "Rôle",
+        "noIncomeTracking": "Revenu non suivi"
+      },
+      "dialog": {
+        "title": "Enregistrer le culte de cette semaine",
+        "description": "Le culte a-t-il eu lieu cette semaine ?",
+        "recordService": {
+          "title": "Enregistrer le culte",
+          "subtitle": "Nous nous sommes réunis cette semaine — remplissez le formulaire du culte"
+        },
+        "cancelService": {
+          "title": "J'ai annulé mon culte",
+          "subtitle": "Pas de culte cette semaine — indiquez une raison"
+        }
+      }
+    },
+    "trendSpark": {
+      "weekLabel": "Semaine {{week}}",
+      "weekUnknown": "Semaine N/D",
+      "weekAbbrev": "S{{week}}",
+      "weekAbbrevUnknown": "N/D",
+      "noBussingData": "Aucune donnée de transport pour l'instant",
+      "noServiceData": "Aucune donnée de culte pour l'instant",
+      "emptyWindow": "Aucune valeur sur ces {{count}} semaines. Utilisez Précédent pour voir les semaines antérieures.",
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "servantsDashboard": {
+      "welcomeTo": "Bienvenue sur",
+      "dashboardTitle": "Tableau de bord de {{name}}",
+      "avgWeeklyAttendance": "Fréquentation hebdomadaire moyenne",
+      "avgWeeklyIncome": "Revenu hebdomadaire moyen ({{currency}})"
+    },
+    "weeklyTasks": {
+      "weekLabel": "Semaine {{week}}",
+      "onVacationLine": "Le Bacenta est en vacances. Aucun enregistrement requis.",
+      "scheduleLine": "Culte le {{serviceDay}}, transport le {{bussingDay}}.",
+      "defaultBacentaDay": "jour de réunion du Bacenta",
+      "defaultStreamDay": "jour de réunion de la Filière",
+      "recordService": "Enregistrer le culte",
+      "recordBussing": "Enregistrer le transport",
+      "status": {
+        "waived": "Dispensé",
+        "bankPending": "Dépôt en attente",
+        "done": "Fait",
+        "upcoming": "À venir",
+        "due": "En attente"
+      },
+      "action": {
+        "viewService": "Voir le culte",
+        "recorded": "Enregistré",
+        "recordNow": "Enregistrer maintenant",
+        "viewBussing": "Voir le transport",
+        "notDueYet": "Pas encore requis"
+      }
+    },
+    "greetings": {
+      "fallbackName": "l'ami",
+      "lateNight": [
+        "{{name}}, à cette heure-ci ? Mode Paul-et-Silas activé.",
+        "Sentinelle {{name}}, où en est la nuit ? Apparemment, encore de l'administratif.",
+        "{{name}}, même les disciples dormaient. Je dis ça, je dis rien.",
+        "L'esprit est prompt, {{name}} — mais laisse la chair se reposer bientôt.",
+        "Il est {{name}} heure(s) et l'huile brûle encore. Le ciel te voit.",
+        "Il ne sommeille ni ne dort, {{name}}. Toi, en revanche, tu devrais.",
+        "L'huile de minuit, ce n'est pas pareil.",
+        "Sois sobre, sois vigilant — et s'il te plaît, sois bientôt allongé.",
+        "Élève tes mains dans le sanctuaire, la nuit. Ou dans le tableau de bord."
+      ],
+      "earlyMorning": [
+        "Debout, {{name}} — les grâces sont nouvelles ce matin.",
+        "{{name}} le lève-tôt. Le ver de terre s'incline respectueusement.",
+        "Il se réveille matin après matin, {{name}}. Tu suis le rythme.",
+        "{{name}}, debout avant le lever du soleil — grande énergie « je te cherche dès l'aube ».",
+        "Administratif avant l'aube, {{name}}. La sentinelle approuve.",
+        "Bonjour, {{name}}. La joie vient au matin — et toi aussi.",
+        "Yeux ouverts, {{name}}. Cœur éveillé. Allons-y.",
+        "Les étoiles du matin chantaient ensemble. Tu es le rappel.",
+        "Nouveau jour, onction fraîche.",
+        "Avant que la rosée ne se lève — ce genre de dévotion."
+      ],
+      "morning": [
+        "Bonjour, {{name}}. Grâces toutes fraîches.",
+        "Café dans une main, appel dans l'autre — allons-y, {{name}}.",
+        "Bonjour, {{name}}. C'est ici le jour que l'Éternel a fait.",
+        "{{name}}, la moisson est abondante — et la liste des tâches aussi.",
+        "{{name}}, la joie de l'Éternel est ta force.",
+        "Heures de service en plein jour, {{name}}. On avance.",
+        "Bienvenue, {{name}}. Commence petit, termine fidèle.",
+        "Café corsé, vocation plus corsée encore.",
+        "Tout don parfait descend d'en haut — y compris aujourd'hui.",
+        "Lever du soleil : fait. Liste des tâches : en attente."
+      ],
+      "midday": [
+        "Petit point de midi, {{name}}. Tu as mangé ?",
+        "Le soleil est haut, {{name}}. Les exigences le sont encore plus.",
+        "{{name}}, à mi-journée. Tiens ferme.",
+        "Pause déjeuner ou pause administratif, {{name}} ? Les deux.",
+        "Bon retour, {{name}}. La journée t'appartient encore.",
+        "Sois tranquille, {{name}} — mais seulement après avoir soumis le formulaire.",
+        "Plein midi, sainte agitation.",
+        "La lumière est à son comble. La mission aussi.",
+        "Même Élie a mangé avant de courir."
+      ],
+      "afternoon": [
+        "Bon après-midi, {{name}}. Bien finir vaut mieux que bien commencer.",
+        "{{name}}, cours avec patience la course qui t'est proposée — même la partie administrative.",
+        "{{name}}, fidèle dans les petites choses, fidèle dans les grandes.",
+        "Fenêtre de productivité ouverte, {{name}}. La sieste aussi est biblique.",
+        "Après-midi, {{name}}. Continue.",
+        "Le jour n'est pas fini, {{name}}. La vocation non plus.",
+        "Toujours debout. Toujours au service.",
+        "L'équipe de l'après-midi est invaincue.",
+        "Lent et régulier gagne la course du royaume."
+      ],
+      "evening": [
+        "Bonsoir, {{name}}. Journée bien employée ?",
+        "Administratif du soir, {{name}}. Mode pasteur : toujours activé.",
+        "{{name}}, le jour est bien avancé — le travail était bon.",
+        "Soleil couchant, {{name}}. Le tableau de bord brille encore.",
+        "Bon retour, {{name}}. Un dernier effort.",
+        "Il donne du repos à ceux qu'il aime, {{name}} — juste après que tu aies déposé ce culte.",
+        "Administratif du coucher du soleil. Saint, mais un peu fatigué.",
+        "La fraîcheur du jour — Dieu marche. Toi aussi.",
+        "Les sacrifices du soir sont encore agréables."
+      ],
+      "night": [
+        "Service tardif, {{name}} ? Le Seigneur veille sur toi.",
+        "Il ne sommeille ni ne dort, {{name}}. Toi, en revanche…",
+        "{{name}}, fidèle jusque dans les détails de fin de soirée. Respect.",
+        "Huile de minuit, {{name}} — oint, mais repose-toi bientôt s'il te plaît.",
+        "Bonsoir, {{name}}. Le repos est aussi un culte.",
+        "Heures tranquilles, {{name}}. Mains fermes. Travail saint.",
+        "Encore un enregistrement, encore un peu de repos.",
+        "Même le temple a fini par fermer.",
+        "Heures de service crépusculaires — pointage silencieux."
+      ]
+    }
   }
 }
