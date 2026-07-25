@@ -428,6 +428,38 @@ lighter translation-key-resolution test instead of repeating the same
 scaffolding six times (documented in each file). `tsc`/`eslint` clean,
 full suite 464 passing / same 11 pre-existing failures.
 
+### 3g — user-profile/ (DONE, committed `ab70a8c7`)
+
+Translated `DisplayPage.tsx` (`/user-profile` route): edit button,
+accordion section titles (Bio/History/Church Groups), all bio/church-group
+field labels. New `directory.userProfile.*` namespace; "Bacenta" label
+routed through the existing `shared.churchLevel.Bacenta` key.
+`EditPage.tsx` (`/user-profile/edit`) has no hardcoded strings of its own —
+thin `<MemberForm>` wrapper, left untouched pending the MemberForm.tsx
+pass. 4 new tests (Radix Accordion unmounts collapsed content, so
+field-label assertions click triggers open first; also worked around an
+Apollo `MockedProvider` quirk where the accordion-click interaction caused
+a query to re-fire once more than a single-consumption mock allows, fixed
+by duplicating each mock). Full suite 468 passing / same 11 pre-existing
+failures.
+
+### 3h — church-history/ (DONE, committed `00123a7b`)
+
+Translated the shared `ChurchHistoryView.tsx` (nested under
+`display/church-history/`, not a top-level folder — audit-trail heading,
+empty state, Summary/About-this-log sidebar) and the 6 `*History.tsx`
+wrapper pages (Bacenta/Campus/Council/Governorship/Stream/Member). New
+`directory.churchHistory.*` namespace. `parentTypename` routes through
+`shared.churchLevel.*` for the audit-trail sentence, except `"Member"`
+(not a `ChurchLevel`), which gets its own `memberTypeName` key.
+`historyRecord` entries (actual log content) stay untranslated stored
+data, same reasoning as phase 3f. 22 new tests — `hooks/useInfiniteScroll`
+mocked (Apollo + IntersectionObserver internals out of scope), one
+full-render wrapper test (`BacentaHistory.test.tsx`) plus a thorough
+`ChurchHistoryView.test.tsx`, the other five wrappers using lighter
+key-resolution tests. Full suite 490 passing / same 11 pre-existing
+failures.
+
 ## Remaining work (not started — future phases)
 
 Roughly in priority order:
@@ -445,12 +477,12 @@ Roughly in priority order:
    `StreamTellerDashboard.tsx` still have their own English-only strings
    (bussing counters, banking-defaulter CTAs, etc.) beyond the one
    fallback-name fix already made.
-4. **Finish `pages/directory/`** — remaining: `user-profile/`,
-   `church-history/`, `reusable-forms/MemberForm.tsx` (620 lines),
-   `reusable-forms/MemberDisplay.tsx` (844 lines), shared grid components
-   (`components/members-grids/MembersGrid.tsx`/`MemberTable.tsx`/
+4. **Finish `pages/directory/`** — remaining: `reusable-forms/MemberForm.tsx`
+   (620 lines), `reusable-forms/MemberDisplay.tsx` (844 lines), shared grid
+   components (`components/members-grids/MembersGrid.tsx`/`MemberTable.tsx`/
    `Filters.tsx` — confirmed used by all 7 already-translated `grids/*.tsx`
-   pages, not yet surveyed for their own hardcoded strings).
+   pages, not yet surveyed for their own hardcoded strings). `user-profile/`
+   and `church-history/` are done (3g/3h above).
 5. **`pages/arrivals/`** — after directory. Not started.
 6. Then accounts/banking/reports, translating error/validation copy as each
    page is migrated (Yup schema messages, Apollo/notistack-surfaced errors
