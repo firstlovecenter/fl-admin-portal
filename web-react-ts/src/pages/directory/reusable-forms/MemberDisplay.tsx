@@ -1,5 +1,7 @@
 import { useContext, useEffect } from 'react'
 import { useMutation, useQuery } from '@apollo/client'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import Timeline from 'components/Timeline/Timeline'
 import MemberRoleList, { getRank } from 'components/MemberRoleList'
 import { throwToSentry, USER_PLACEHOLDER } from 'global-utils'
@@ -95,7 +97,7 @@ const fetchMemberPhoto = async (
   }
 }
 
-const generateVCard = async (member: Member, roles: string) => {
+const generateVCard = async (member: Member, roles: string, t: TFunction) => {
   const middleName = member.middleName?.trim()
   const nameParts = [
     member.lastName ?? '',
@@ -109,8 +111,10 @@ const generateVCard = async (member: Member, roles: string) => {
 
   const councilName = member?.bacenta?.council?.name ?? ''
   const visitationArea = member.visitationArea ?? ''
-  const occupation = member.occupation?.occupation || 'None'
-  const maritalStatus = member.maritalStatus?.status ?? 'Unknown'
+  const occupation =
+    member.occupation?.occupation || t('directory.memberDisplay.vcard.none')
+  const maritalStatus =
+    member.maritalStatus?.status ?? t('directory.memberDisplay.vcard.unknown')
   const dob = member.dob?.date
   const hasDistinctWhatsapp =
     !!member.whatsappNumber && member.whatsappNumber !== member.phoneNumber
@@ -118,11 +122,11 @@ const generateVCard = async (member: Member, roles: string) => {
   const photoLine = await fetchMemberPhoto(member.pictureUrl)
 
   const noteBody = [
-    `Visitation Landmark: ${visitationArea}`,
-    `Occupation: ${occupation}`,
-    `Marital Status: ${maritalStatus}`,
+    `${t('directory.memberDisplay.vcard.visitationLandmark')}: ${visitationArea}`,
+    `${t('directory.memberDisplay.vcard.occupation')}: ${occupation}`,
+    `${t('directory.memberDisplay.vcard.maritalStatus')}: ${maritalStatus}`,
     '',
-    'Roles in Church:',
+    t('directory.memberDisplay.vcard.rolesInChurch'),
     roles,
   ]
     .map(escapeVCardText)
@@ -133,7 +137,9 @@ const generateVCard = async (member: Member, roles: string) => {
     'VERSION:3.0',
     `N:${nameParts}`,
     `FN:${escapeVCardText(member.nameWithTitle ?? '')}`,
-    `ORG:${escapeVCardText(`FLC ${councilName} Council`)}`,
+    `ORG:${escapeVCardText(
+      t('directory.memberDisplay.vcard.org', { councilName })
+    )}`,
   ]
 
   if (member.email) {
@@ -213,6 +219,7 @@ const InfoRow = ({ label, value, loading, mono, noBorder }: InfoRowProps) => {
 // ── MemberDisplay ─────────────────────────────────────────────────────────────
 
 const MemberDisplay = ({ memberId }: { memberId: string }) => {
+  const { t } = useTranslation()
   const {
     data: bioData,
     loading: bioLoading,
@@ -267,7 +274,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
   const { isOpen: isDeleteOpen, togglePopup: toggleDelete } = usePopup()
   const initialValues = { note: member?.stickyNote ?? '' }
   const validationSchema = Yup.object({
-    note: Yup.string().required('Note is required'),
+    note: Yup.string().required(t('directory.memberDisplay.noteRequired')),
   })
 
   const onSubmit = async (
@@ -288,7 +295,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
       if (!isPermissionError(e)) {
         throwToSentry('Error saving sticky note', e)
       }
-      displayError('Could not save note', e)
+      displayError(t('directory.memberDisplay.couldNotSaveNote'), e)
     } finally {
       onSubmitProps.setSubmitting(false)
       handleClose()
@@ -309,7 +316,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
       if (!isPermissionError(e)) {
         throwToSentry('Error deleting sticky note', e)
       }
-      displayError('Could not delete note', e)
+      displayError(t('directory.memberDisplay.couldNotDeleteNote'), e)
     } finally {
       handleClose()
     }
@@ -342,25 +349,31 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
             {(formik) => (
               <Form>
                 <DialogHeader>
-                  <DialogTitle>Add or Update Sticky Note</DialogTitle>
+                  <DialogTitle>
+                    {t('directory.memberDisplay.stickyNoteDialogTitle')}
+                  </DialogTitle>
                 </DialogHeader>
                 <div className="py-4 space-y-3">
                   <div className="space-y-1">
                     <p className="text-sm text-arrivals">
-                      This note will be visible to all Admins and Leaders
+                      {t('directory.memberDisplay.stickyNoteVisibility')}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      You can put Room Number, Special Instructions etc
+                      {t('directory.memberDisplay.stickyNoteHint')}
                     </p>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="note">Note</Label>
+                    <Label htmlFor="note">
+                      {t('directory.memberDisplay.noteLabel')}
+                    </Label>
                     <Field
                       as={Textarea}
                       id="note"
                       name="note"
                       rows={4}
-                      placeholder="e.g. Room 12B, prefers WhatsApp over calls"
+                      placeholder={t(
+                        'directory.memberDisplay.notePlaceholder'
+                      )}
                       aria-invalid={
                         !!(formik.touched.note && formik.errors.note)
                       }
@@ -389,7 +402,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                       ) : (
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
                       )}
-                      Delete Note
+                      {t('directory.memberDisplay.deleteNote')}
                     </Button>
                   )}
                   <Button
@@ -403,7 +416,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                         aria-hidden="true"
                       />
                     ) : (
-                      'Save Note'
+                      t('directory.memberDisplay.saveNote')
                     )}
                   </Button>
                 </DialogFooter>
@@ -435,7 +448,9 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                 className="min-h-[44px] gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Delete</span>
+                <span className="hidden sm:inline">
+                  {t('directory.memberDisplay.delete')}
+                </span>
               </Button>
             </RoleView>
           </div>
@@ -449,7 +464,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                 className="min-h-[44px] gap-1.5"
               >
                 <StickyNote className="h-3.5 w-3.5" aria-hidden="true" />
-                Add Sticky Note
+                {t('directory.memberDisplay.addStickyNote')}
               </Button>
             </StickyPageHeaderActions>
           </RoleView>
@@ -502,7 +517,8 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                       try {
                         const vCard = await generateVCard(
                           { ...member, ...memberChurch },
-                          roles
+                          roles,
+                          t
                         )
                         const blob = new Blob([vCard], { type: 'text/vcard' })
                         const url = window.URL.createObjectURL(blob)
@@ -513,12 +529,15 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                         window.URL.revokeObjectURL(url)
                       } catch (e) {
                         throwToSentry('Error generating vCard', e)
-                        displayError('Could not save contact', e)
+                        displayError(
+                          t('directory.memberDisplay.couldNotSaveContact'),
+                          e
+                        )
                       }
                     }}
                   >
                     <Save className="h-4 w-4" aria-hidden="true" />
-                    Save Contact
+                    {t('directory.memberDisplay.saveContact')}
                   </Button>
                 </>
               )}
@@ -548,7 +567,9 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                       <Phone className="h-5 w-5 text-arrivals" aria-hidden="true" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-muted-foreground">Phone</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('directory.memberDisplay.phone')}
+                      </p>
                       <p className="text-base font-mono font-bold tabular-nums truncate">
                         +{member?.phoneNumber}
                       </p>
@@ -566,7 +587,9 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                       <MessageCircle className="h-5 w-5 text-banking" aria-hidden="true" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-muted-foreground">WhatsApp</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('directory.memberDisplay.whatsapp')}
+                      </p>
                       <p className="text-base font-mono font-bold tabular-nums truncate">
                         +{member?.whatsappNumber}
                       </p>
@@ -595,7 +618,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               <div className="border-t border-border">
                 <div className="px-4 py-2.5 border-b border-border bg-muted/30">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Church Membership
+                    {t('directory.memberDisplay.churchMembership')}
                   </p>
                 </div>
                 <div className="divide-y divide-border">
@@ -617,7 +640,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                         >
                           <div className="min-w-0 flex-1">
                             <p className="text-xs text-muted-foreground mb-0.5">
-                              Bacenta
+                              {t('shared.churchLevel.Bacenta')}
                             </p>
                             <p className="text-sm font-medium text-foreground truncate">
                               {memberChurch?.bacenta?.name}
@@ -636,7 +659,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                         <div className="w-full flex items-center gap-3 px-4 py-3 min-h-[56px]">
                           <div className="min-w-0 flex-1">
                             <p className="text-xs text-muted-foreground mb-0.5">
-                              Bacenta
+                              {t('shared.churchLevel.Bacenta')}
                             </p>
                             <p className="text-sm font-medium text-foreground truncate">
                               {memberChurch.bacentaSummary.name}
@@ -676,7 +699,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                 <div className="flex items-center gap-2 mb-2">
                   <StickyNote className="h-4 w-4 text-warning" aria-hidden="true" />
                   <span className="text-sm font-semibold text-warning">
-                    Sticky Note
+                    {t('directory.memberDisplay.stickyNote')}
                   </span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
@@ -689,7 +712,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="px-4 lg:px-5 py-3 border-b border-border">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Personal Information
+                  {t('directory.memberDisplay.personalInformation')}
                 </h3>
               </div>
               <div className="px-4 lg:px-5">
@@ -710,57 +733,60 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                     {/* Pair rows: border on wrapper, not on individual InfoRow */}
                     <div className="grid grid-cols-2 border-b border-border">
                       <InfoRow
-                        label="First Name"
+                        label={t('directory.memberDisplay.firstName')}
                         value={member?.firstName}
                         noBorder
                       />
                       <InfoRow
-                        label="Last Name"
+                        label={t('directory.memberDisplay.lastName')}
                         value={member?.lastName}
                         noBorder
                       />
                     </div>
                     {member?.middleName && (
-                      <InfoRow label="Middle Name" value={member?.middleName} />
+                      <InfoRow
+                        label={t('directory.memberDisplay.middleName')}
+                        value={member?.middleName}
+                      />
                     )}
                     <div className="grid grid-cols-2 border-b border-border">
                       <InfoRow
-                        label="Gender"
+                        label={t('directory.memberDisplay.gender')}
                         value={member?.gender?.gender}
                         noBorder
                       />
                       <InfoRow
-                        label="Marital Status"
+                        label={t('directory.memberDisplay.maritalStatus')}
                         value={member?.maritalStatus?.status}
                         noBorder
                       />
                     </div>
                     <InfoRow
-                      label="Date of Birth"
+                      label={t('directory.memberDisplay.dateOfBirth')}
                       value={memberBirthday || undefined}
                     />
                     {member?.occupation?.occupation && (
                       <InfoRow
-                        label="Occupation"
+                        label={t('directory.memberDisplay.occupation')}
                         value={member?.occupation?.occupation}
                       />
                     )}
                     {member?.email && (
                       <InfoRow
-                        label="Email Address"
+                        label={t('directory.memberDisplay.emailAddress')}
                         value={member?.email}
                         mono
                       />
                     )}
                     {member?.visitationArea && (
                       <InfoRow
-                        label="Location for IDL"
+                        label={t('directory.memberDisplay.locationForIdl')}
                         value={member?.visitationArea.toString()}
                       />
                     )}
                     {member?.currentTitle && (
                       <InfoRow
-                        label="Pastoral Rank"
+                        label={t('directory.memberDisplay.pastoralRank')}
                         value={member.currentTitle}
                       />
                     )}
@@ -800,7 +826,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
                 <div className="rounded-xl border border-border bg-card overflow-hidden">
                   <div className="px-4 py-2.5 border-b border-border bg-muted/30">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Leadership Roles
+                      {t('directory.memberDisplay.leadershipRoles')}
                     </p>
                   </div>
                   <div className="px-2 py-2">
@@ -828,7 +854,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               <Separator className="mb-6" />
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Church History
+                  {t('directory.memberDisplay.churchHistory')}
                 </h3>
                 <ViewAll to="/member/history" />
               </div>
