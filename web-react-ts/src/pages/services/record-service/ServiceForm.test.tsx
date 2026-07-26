@@ -28,6 +28,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { MockedProvider } from '@apollo/client/testing'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
+import 'lib/i18n'
 import ServiceForm from './ServiceForm'
 import type { Church } from 'global-types'
 

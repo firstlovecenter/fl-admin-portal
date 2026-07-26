@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { cn } from 'components/lib/utils'
 import { primaryNav } from './navigation-config'
 import useAuth from 'auth/useAuth'
@@ -7,6 +8,7 @@ import { MemberContext } from 'contexts/MemberContext'
 import { hasOnlyRolesFrom } from 'permission-utils'
 
 export const BottomNav = () => {
+  const { t } = useTranslation()
   const { isAuthorised } = useAuth()
   const { currentUser } = useContext(MemberContext)
   const userRoles = currentUser?.roles
@@ -26,11 +28,13 @@ export const BottomNav = () => {
       <ul className="flex items-stretch justify-around">
         {visibleItems.map((item) => {
           const Icon = item.icon
+          const label = t(item.nameKey)
           return (
             <li key={item.to} className="flex-1">
               <NavLink
                 to={item.to}
                 end={item.to === '/'}
+                aria-label={label}
                 className={({ isActive }) =>
                   cn(
                     'flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors',
@@ -41,7 +45,7 @@ export const BottomNav = () => {
                 }
               >
                 <Icon className="size-5" />
-                <span>{item.name}</span>
+                <span>{label}</span>
               </NavLink>
             </li>
           )

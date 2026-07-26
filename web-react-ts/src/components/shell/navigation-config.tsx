@@ -30,7 +30,8 @@ const focusedSpecialistRoles = [
 ]
 
 export interface NavItem {
-  name: string
+  /** i18n key for the visible label (e.g. `nav.home`). */
+  nameKey: string
   to: string
   icon: LucideIcon
   /** Tailwind classes for icon accent color in the active state */
@@ -54,23 +55,23 @@ export interface NavItem {
 
 /** Primary nav (sidebar + bottom nav top slots) */
 export const primaryNav: NavItem[] = [
-  { name: 'Home', to: '/', icon: Home },
+  { nameKey: 'nav.home', to: '/', icon: Home },
   {
-    name: 'Members',
+    nameKey: 'nav.members',
     to: '/directory/members',
     icon: UserCheck,
     accentClass: 'text-members',
     hideForRoles: focusedSpecialistRoles,
   },
   {
-    name: 'Services',
+    nameKey: 'nav.services',
     to: '/services',
     icon: ClipboardList,
     accentClass: 'text-churches',
     hideForRoles: permitArrivalsHelpers('Stream'),
   },
   {
-    name: 'Arrivals',
+    nameKey: 'nav.arrivals',
     to: '/arrivals',
     icon: Bus,
     accentClass: 'text-arrivals',
@@ -87,7 +88,7 @@ export const primaryNav: NavItem[] = [
     ],
   },
   {
-    name: 'Accounts',
+    nameKey: 'nav.accounts',
     to: '/accounts',
     icon: Wallet,
     accentClass: 'text-banking',
@@ -105,40 +106,40 @@ export const primaryNav: NavItem[] = [
 /** Secondary nav — Church in Focus section items (sidebar + mobile drawer) */
 export const secondaryNav: NavItem[] = [
   {
-    name: 'Reports',
+    nameKey: 'nav.reports',
     to: '/reports',
     icon: Download,
     accentClass: 'text-banking',
     hideForRoles: focusedSpecialistRoles,
   },
   {
-    name: 'Trends',
+    nameKey: 'nav.trends',
     to: '/trends',
     icon: TrendingUp,
     accentClass: 'text-churches',
     hideForRoles: focusedSpecialistRoles,
   },
   {
-    name: 'Maps',
+    nameKey: 'nav.maps',
     to: '/maps',
     icon: Map,
     accentClass: 'text-maps',
     roles: permitMe('Bacenta').filter((role) => role !== 'tellerStream'),
   },
   {
-    name: 'Shepherding Control',
+    nameKey: 'nav.shepherdingControl',
     to: '/shepherding-control',
     icon: ShieldCheck,
     roles: permitShepherdingControl(),
   },
   {
-    name: 'AI Assistant',
+    nameKey: 'nav.aiAssistant',
     to: '/ai-assistant',
     icon: Bot,
     hideForRoles: focusedSpecialistRoles,
   },
   {
-    name: 'Settings',
+    nameKey: 'nav.settings',
     to: '/settings',
     icon: Settings,
   },

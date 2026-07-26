@@ -41,6 +41,7 @@ import { MockedProvider } from '@apollo/client/testing'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { LATEST_SERVICE_FOR_STREAM } from 'pages/services/ServicesQueries'
+import 'lib/i18n'
 import ServicesMenu from './ServicesMenu'
 
 const STREAM_ID = 'stream-passion-weekday'

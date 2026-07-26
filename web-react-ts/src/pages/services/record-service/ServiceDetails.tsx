@@ -26,7 +26,8 @@ import { MemberContext } from 'contexts/MemberContext'
 import { Church, Member, Role, ServiceRecord, UserJobs } from 'global-types'
 import { resolveChurchFromUserJobs } from 'pages/dashboards/dashboard-utils'
 import { alertMsg, alertSuccess, throwToSentry } from 'global-utils'
-import { parseNeoTime } from 'lib/date-utils'
+import { parseDate, parseNeoTime } from 'lib/date-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import {
   AlertTriangle,
   Banknote,
@@ -45,6 +46,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import { VisuallyHidden } from 'radix-ui'
 import { useNavigate } from 'react-router'
 import {
@@ -102,12 +104,13 @@ function PhotoTile({
   label: string
   shape?: 'rect' | 'square'
 }) {
+  const { t } = useTranslation()
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button
           type="button"
-          aria-label={`Expand ${label}`}
+          aria-label={t('services.details.expandPhoto', { label })}
           className={
             shape === 'square'
               ? 'group relative aspect-square w-full overflow-hidden rounded-lg ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
@@ -158,8 +161,17 @@ function TreasurerCell({ treasurer }: { treasurer: Member }) {
 }
 
 const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
+  const { t, i18n } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const navigate = useNavigate()
+
+  const formatServiceDate = (date?: string) => {
+    if (!date) return ''
+    return parseDate(date, {
+      t,
+      locale: i18n.resolvedLanguage || i18n.language,
+    })
+  }
 
   const isChurchManualBanking = useMemo(
     () =>
@@ -183,11 +195,11 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
       await DeleteServiceRecord({
         variables: { serviceRecordId: service?.id },
       })
-      alertSuccess('Service record deleted successfully')
+      alertSuccess(t('services.details.deleteSuccess'))
       navigate(-1)
     } catch (error) {
-      throwToSentry('Error deleting service record', error)
-      alertMsg('Failed to delete service record. Please try again.')
+      throwToSentry(t('services.details.deleteError'), error)
+      alertMsg(t('services.details.deleteFailed'))
     } finally {
       setDeleting(false)
     }
@@ -230,19 +242,18 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Service record not found
+            {t('services.details.notFound')}
           </h1>
         </StickyPageHeader>
         <main className="mx-auto max-w-md px-4 py-10 text-center">
           <p className="text-sm text-muted-foreground">
-            This service record is no longer available or has not been filed
-            yet.
+            {t('services.details.notFoundDescription')}
           </p>
           <Button
             className="mt-6 min-h-11"
             onClick={() => navigate('/services', { replace: true })}
           >
-            Back to Services
+            {t('services.details.backToServices')}
           </Button>
         </main>
       </div>
@@ -291,7 +302,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Delete service record"
+            aria-label={t('services.details.deleteAriaLabel')}
             className="size-11 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             disabled={deleting}
           >
@@ -300,19 +311,23 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this service record?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('services.details.deleteTitle')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {service?.serviceDate?.date
-                ? `This will permanently remove the record for ${
-                    church?.name
-                  } on ${new Date(service.serviceDate.date).toDateString()}.`
-                : `This will permanently remove this record for ${church?.name}.`}{' '}
-              This action cannot be undone.
+                ? t('services.details.deleteDescriptionWithDate', {
+                    church: church?.name,
+                    date: formatServiceDate(service.serviceDate.date),
+                  })
+                : t('services.details.deleteDescription', {
+                    church: church?.name,
+                  })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting} className="min-h-11">
-              Cancel
+              {t('services.details.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={deleting}
@@ -322,7 +337,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
               }}
               className="min-h-11 bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/30"
             >
-              {deleting ? 'Deleting…' : 'Delete record'}
+              {deleting
+                ? t('services.details.deleting')
+                : t('services.details.deleteRecord')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -336,12 +353,18 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
       <StickyPageHeader>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {church?.name}{' '}
-          <span className="text-churches">Meeting Details</span>
+          <span className="text-churches">
+            {t('services.details.meetingDetails')}
+          </span>
         </h1>
-        <p className="text-sm text-muted-foreground">{church?.__typename}</p>
+        <p className="text-sm text-muted-foreground">
+          {formatChurchLevel(church?.__typename, t)}
+        </p>
         {service?.created_by && (
           <p className="text-sm text-muted-foreground">
-            Recorded by {service.created_by.fullName}
+            {t('services.details.recordedBy', {
+              name: service.created_by.fullName,
+            })}
           </p>
         )}
         <div className="flex flex-wrap gap-2 pt-1">
@@ -350,7 +373,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
               variant="outline"
               className="border-banking/40 bg-banking/5 text-banking"
             >
-              Banking Slip · {service.bankingSlipUploader.fullName}
+              {t('services.details.bankingSlipBadge', {
+                name: service.bankingSlipUploader.fullName,
+              })}
             </Badge>
           )}
           {trackIncome && service?.transactionStatus === 'success' && (
@@ -358,7 +383,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
               variant="outline"
               className="border-banking/40 bg-banking/5 text-banking"
             >
-              Banked · {service.offeringBankedBy?.fullName}
+              {t('services.details.bankedBadge', {
+                name: service.offeringBankedBy?.fullName,
+              })}
             </Badge>
           )}
           <RoleView
@@ -369,7 +396,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                 variant="outline"
                 className="border-success/40 bg-success/5 text-success"
               >
-                Confirmed · {service.bankingConfirmer.fullName}
+                {t('services.details.confirmedBadge', {
+                  name: service.bankingConfirmer.fullName,
+                })}
               </Badge>
             )}
           </RoleView>
@@ -395,10 +424,11 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
             <div className="flex items-start justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
               <div className="min-w-0 flex-1 space-y-1">
                 <p className="text-sm font-semibold text-foreground">
-                  Service Cancelled ·{' '}
-                  {service?.serviceDate?.date
-                    ? new Date(service.serviceDate.date).toDateString()
-                    : ''}
+                  {t('services.details.serviceCancelled', {
+                    date: service?.serviceDate?.date
+                      ? formatServiceDate(service.serviceDate.date)
+                      : '',
+                  })}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {service?.noServiceReason}
@@ -419,42 +449,44 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Service Record
+                      {t('services.details.serviceRecord')}
                     </h2>
                     {deleteTrashButton}
                   </div>
                   <div className="divide-y divide-border">
-                    <DetailRow label="Date of Service">
-                      {new Date(service.serviceDate.date).toDateString()}
+                    <DetailRow label={t('services.details.dateOfService')}>
+                      {formatServiceDate(service.serviceDate.date)}
                     </DetailRow>
-                    <DetailRow label="Form Filled At">
+                    <DetailRow label={t('services.details.formFilledAt')}>
                       {parseNeoTime(service.createdAt)}
                     </DetailRow>
-                    <DetailRow label="Attendance">
+                    <DetailRow label={t('services.details.attendance')}>
                       <span className="tabular-nums">{service.attendance}</span>
                     </DetailRow>
                     {trackIncome && (
-                      <DetailRow label="Income">
+                      <DetailRow label={t('services.details.income')}>
                         <CurrencySpan number={service.income} />
                       </DetailRow>
                     )}
                     {trackIncome && service.onlineGiving ? (
-                      <DetailRow label="Online Giving">
+                      <DetailRow label={t('services.details.onlineGiving')}>
                         <CurrencySpan number={service.onlineGiving} />
                       </DetailRow>
                     ) : null}
                     {trackIncome && service.cash ? (
                       <>
-                        <DetailRow label="Cash">
+                        <DetailRow label={t('services.details.cash')}>
                           <CurrencySpan number={service.cash} />
                         </DetailRow>
-                        <DetailRow label="Number of Tithers">
+                        <DetailRow label={t('services.details.numberOfTithers')}>
                           <span className="tabular-nums">
                             {service.numberOfTithers}
                           </span>
                         </DetailRow>
                         {service.foreignCurrency && (
-                          <DetailRow label="Foreign Currency & Cheques">
+                          <DetailRow
+                            label={t('services.details.foreignCurrency')}
+                          >
                             <span className="text-right">
                               {service.foreignCurrency
                                 .split('\n')
@@ -471,12 +503,17 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                     ) : null}
                     {trackIncome &&
                       service.treasurers?.map((treasurer, i) => (
-                        <DetailRow key={i} label={`Treasurer ${i + 1}`}>
+                        <DetailRow
+                          key={i}
+                          label={t('services.details.treasurer', {
+                            number: i + 1,
+                          })}
+                        >
                           <TreasurerCell treasurer={treasurer} />
                         </DetailRow>
                       ))}
                     {service.noServiceReason && (
-                      <DetailRow label="No Service Reason">
+                      <DetailRow label={t('services.details.noServiceReason')}>
                         {service.noServiceReason}
                       </DetailRow>
                     )}
@@ -514,14 +551,15 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                             : 'text-xs font-semibold uppercase tracking-wider text-muted-foreground'
                         }
                       >
-                        {showWarning ? 'Action Required' : 'Actions'}
+                        {showWarning
+                          ? t('services.details.actionRequired')
+                          : t('services.details.actions')}
                       </h2>
                     </div>
                     <div className="space-y-2 p-3">
                       {showWarning && (
                         <p className="px-1 pb-1 text-sm text-foreground/80">
-                          Cash was recorded but no banking proof has been
-                          submitted yet.
+                          {t('services.details.bankingWarning')}
                         </p>
                       )}
                       {showSelfBankingPay && (
@@ -531,7 +569,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                             onClick={() => navigate(selfBankingPath)}
                           >
                             <Banknote className="h-4 w-4" />
-                            Pay Offering
+                            {t('services.details.payOffering')}
                           </Button>
                         </RoleView>
                       )}
@@ -548,18 +586,19 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                                 >
                                   <CheckCircle className="h-4 w-4" />
                                   {submitting
-                                    ? 'Confirming…'
-                                    : 'Confirm Offering'}
+                                    ? t('services.details.confirming')
+                                    : t('services.details.confirmOffering')}
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
-                                    Confirm offering banking?
+                                    {t('services.details.confirmOfferingTitle')}
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Do you want to confirm banking for this
-                                    service?
+                                    {t(
+                                      'services.details.confirmOfferingDescription'
+                                    )}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -567,7 +606,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                                     disabled={submitting}
                                     className="min-h-11"
                                   >
-                                    Cancel
+                                    {t('services.details.cancel')}
                                   </AlertDialogCancel>
                                   <AlertDialogAction
                                     disabled={submitting}
@@ -587,7 +626,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                                             res.errors[0].message
                                           )
                                         alertSuccess(
-                                          'Offering Payment has been confirmed. Thank you!'
+                                          t('services.details.confirmSuccess')
                                         )
                                       } catch (error) {
                                         throwToSentry('', error)
@@ -597,8 +636,8 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                                     }}
                                   >
                                     {submitting
-                                      ? 'Confirming…'
-                                      : 'Confirm Offering'}
+                                      ? t('services.details.confirming')
+                                      : t('services.details.confirmOffering')}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -615,7 +654,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                               }
                             >
                               <FileUp className="h-4 w-4" />
-                              Upload Banking Slip
+                              {t('services.details.uploadBankingSlip')}
                             </Button>
                           </RoleView>
                         </>
@@ -626,7 +665,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                           className="w-full min-h-11 justify-start px-2 text-muted-foreground hover:text-foreground"
                           onClick={() => navigate('/self-banking/receipt')}
                         >
-                          View banking details
+                          {t('services.details.viewBankingDetails')}
                         </Button>
                       )}
                     </div>
@@ -661,40 +700,40 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                   <div className="overflow-hidden rounded-xl border border-border bg-card">
                     <div className="border-b border-border px-4 py-3">
                       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Photos
+                        {t('services.details.photos')}
                       </h2>
                     </div>
                     <div className="divide-y divide-border">
                       {trackIncome && service.treasurerSelfie && (
                         <div className="p-3">
                           <p className="mb-2 text-xs font-medium text-muted-foreground">
-                            Treasurer Selfie
+                            {t('services.details.treasurerSelfie')}
                           </p>
                           <PhotoTile
                             src={service.treasurerSelfie}
-                            label="Treasurer Selfie"
+                            label={t('services.details.treasurerSelfie')}
                           />
                         </div>
                       )}
                       {service.familyPicture && (
                         <div className="p-3">
                           <p className="mb-2 text-xs font-medium text-muted-foreground">
-                            Family Picture
+                            {t('services.details.familyPicture')}
                           </p>
                           <PhotoTile
                             src={service.familyPicture}
-                            label="Family Picture"
+                            label={t('services.details.familyPicture')}
                           />
                         </div>
                       )}
                       {trackIncome && service.bankingSlip && (
                         <div className="p-3">
                           <p className="mb-2 text-xs font-medium text-muted-foreground">
-                            Banking Slip
+                            {t('services.details.bankingSlip')}
                           </p>
                           <PhotoTile
                             src={service.bankingSlip}
-                            label="Banking Slip"
+                            label={t('services.details.bankingSlip')}
                           />
                         </div>
                       )}

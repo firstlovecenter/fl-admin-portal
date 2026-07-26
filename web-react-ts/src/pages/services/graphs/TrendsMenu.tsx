@@ -1,5 +1,6 @@
 import { ReactNode, useContext } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { BarChart3, ChevronRight, Download, Sparkles } from 'lucide-react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
@@ -38,6 +39,7 @@ const DOWNLOAD_MEMBERSHIP_TYPES = new Set<string>([
 ])
 
 const TrendsMenu = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const { clickCard } = useContext(ChurchContext)
@@ -88,11 +90,11 @@ const TrendsMenu = () => {
       <StickyPageHeader>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {focusChurch && `${focusChurch.name} `}
-          <span className="text-churches">Trends</span>
+          <span className="text-churches">{t('services.trends.title')}</span>
         </h1>
         {focusChurch && (
           <p className="text-sm text-muted-foreground">
-            Trends for the church currently in focus.
+            {t('services.trends.subtitle')}
           </p>
         )}
       </StickyPageHeader>
@@ -103,8 +105,7 @@ const TrendsMenu = () => {
           <div>
             {!focusChurch ? (
               <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
-                No church in focus. Pick one from the Church in Focus selector
-                to view trends.
+                {t('services.trends.noChurch')}
               </div>
             ) : (
               <div className="space-y-3">
@@ -112,8 +113,8 @@ const TrendsMenu = () => {
                   <MenuCard
                     icon={<BarChart3 className="h-5 w-5" />}
                     accent="bg-churches/10 text-churches"
-                    title="Last 4 Weeks"
-                    description="Income and attendance graphs"
+                    title={t('services.trends.last4Weeks')}
+                    description={t('services.trends.last4WeeksDescription')}
                     onClick={() => handleNavigate(`/${routeSlug}/graphs`)}
                   />
                 )}
@@ -122,8 +123,8 @@ const TrendsMenu = () => {
                   <MenuCard
                     icon={<Sparkles className="h-5 w-5" />}
                     accent="bg-campaigns/10 text-campaigns"
-                    title="Quick Facts"
-                    description="Quick facts about your church"
+                    title={t('services.trends.quickFacts')}
+                    description={t('services.trends.quickFactsDescription')}
                     onClick={() =>
                       handleNavigate(`/quick-facts/this-month/${routeSlug}`)
                     }
@@ -135,8 +136,10 @@ const TrendsMenu = () => {
                     <MenuCard
                       icon={<Download className="h-5 w-5" />}
                       accent="bg-banking/10 text-banking"
-                      title="Download Membership"
-                      description="Download membership list as CSV"
+                      title={t('services.trends.downloadMembership')}
+                      description={t(
+                        'services.trends.downloadMembershipDescription'
+                      )}
                       onClick={() =>
                         handleNavigate(
                           `/download-reports/${routeSlug}/membership`

@@ -1,7 +1,6 @@
+import { useTranslation } from 'react-i18next'
 import { Tabs, TabsList, TabsTrigger } from 'components/ui/tabs'
-import {
-  WINDOW_SIZES,
-} from 'pages/shepherding-control/shepherding-control-utils'
+import { WINDOW_SIZES } from 'pages/shepherding-control/shepherding-control-utils'
 import { WindowWeeks } from 'pages/shepherding-control/shepherding-control-types'
 
 type Props = {
@@ -10,10 +9,12 @@ type Props = {
 }
 
 const WindowSizeToggle = ({ value, onChange }: Props) => {
+  const { t } = useTranslation()
+
   return (
     <div className="flex flex-col gap-1">
       <span className="text-base uppercase tracking-wider text-muted-foreground">
-        Window
+        {t('shepherding.window')}
       </span>
       <Tabs
         value={String(value)}
@@ -26,7 +27,7 @@ const WindowSizeToggle = ({ value, onChange }: Props) => {
               value={String(w)}
               className="min-h-11 min-w-11 px-4 text-base"
             >
-              {w} wk
+              {t('shepherding.weeksShort', { count: w })}
             </TabsTrigger>
           ))}
         </TabsList>

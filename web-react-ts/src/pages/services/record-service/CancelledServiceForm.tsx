@@ -3,6 +3,7 @@ import * as Yup from 'yup'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { XCircle } from 'lucide-react'
 import { getMondayThisWeek } from 'lib/date-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -11,6 +12,7 @@ import { throwToSentry } from 'global-utils'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import { formatChurchLevel } from 'lib/scope-display'
 import { RECORD_CANCELLED_SERVICE } from './RecordServiceMutations'
 
 type FormOptionsType = {
@@ -29,6 +31,7 @@ const CancelledServiceForm = ({
   churchId,
   churchType,
 }: CancelledServiceFormProps) => {
+  const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
 
@@ -46,10 +49,12 @@ const CancelledServiceForm = ({
 
   const validationSchema = Yup.object({
     serviceDate: Yup.date()
-      .max(today, 'Service could not possibly have happened after today')
-      .min(mondayThisWeek, 'You can only fill forms for this week')
-      .required('Date is a required field'),
-    noServiceReason: Yup.string().required('You must give a reason'),
+      .max(today, t('services.form.dateAfterToday'))
+      .min(mondayThisWeek, t('services.form.dateThisWeekOnly'))
+      .required(t('services.form.dateRequired')),
+    noServiceReason: Yup.string().required(
+      t('services.cancelled.reasonRequired')
+    ),
   })
 
   const onSubmit = async (
@@ -69,7 +74,7 @@ const CancelledServiceForm = ({
       clickCard(res.data.RecordCancelledService)
       navigate(`/${churchType}/service-details`)
     } catch (error) {
-      throwToSentry('There was a problem submitting your form', error)
+      throwToSentry(t('services.cancelled.submitError'), error)
     } finally {
       onSubmitProps.setSubmitting(false)
     }
@@ -85,11 +90,14 @@ const CancelledServiceForm = ({
         <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
           <StickyPageHeader>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Cancelled <span className="text-churches">Service</span>
+              {t('services.cancelled.title')}{' '}
+              <span className="text-churches">
+                {t('services.cancelled.titleAccent')}
+              </span>
             </h1>
             {church && (
               <p className="text-sm text-muted-foreground">
-                {church.name} · {church.__typename}
+                {church.name} · {formatChurchLevel(church.__typename, t)}
               </p>
             )}
           </StickyPageHeader>
@@ -100,23 +108,23 @@ const CancelledServiceForm = ({
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="border-b border-border px-4 py-3">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Cancellation Details
+                      {t('services.cancelled.cancellationDetails')}
                     </h2>
                   </div>
                   <div className="space-y-4 px-4 py-4">
                     <Input
                       name="serviceDate"
                       type="date"
-                      label="Date of Service"
-                      placeholder="dd/mm/yyyy"
+                      label={t('services.cancelled.dateOfService')}
+                      placeholder={t('services.cancelled.datePlaceholder')}
                       aria-describedby="dateofservice"
                       min={mondayThisWeekIso}
                       max={todayIso}
                     />
                     <Input
                       name="noServiceReason"
-                      label="Reason for Cancellation"
-                      placeholder="e.g. Joint service with Council"
+                      label={t('services.cancelled.reasonLabel')}
+                      placeholder={t('services.cancelled.reasonPlaceholder')}
                     />
                   </div>
                 </div>
@@ -130,16 +138,17 @@ const CancelledServiceForm = ({
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-semibold text-foreground">
-                          No Service This Week
+                          {t('services.cancelled.noServiceTitle')}
                         </p>
                         <p className="text-xs leading-relaxed text-muted-foreground">
-                          Use this form when no service took place. The reason
-                          will be saved to the church&apos;s history.
+                          {t('services.cancelled.noServiceDescription')}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <SubmitButton formik={formik}>Submit Cancellation</SubmitButton>
+                  <SubmitButton formik={formik}>
+                    {t('services.cancelled.submit')}
+                  </SubmitButton>
                 </div>
               </div>
             </Form>

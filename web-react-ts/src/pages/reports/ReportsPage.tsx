@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   AlertOctagon,
   Bus,
@@ -33,6 +34,7 @@ const ReportsTableOfContents = ({
   sections: TocSection[]
   className?: string
 }) => {
+  const { t } = useTranslation()
   const [activeId, setActiveId] = useState<string | null>(
     sections[0]?.id ?? null
   )
@@ -71,14 +73,14 @@ const ReportsTableOfContents = ({
 
   return (
     <nav
-      aria-label="Report sections"
+      aria-label={t('reports.home.tocAriaLabel')}
       className={cn(
         'lg:sticky lg:top-6 lg:rounded-xl lg:border lg:border-border lg:bg-card lg:p-4',
         className
       )}
     >
       <p className="mb-3 hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground lg:block">
-        On this page
+        {t('reports.home.onThisPage')}
       </p>
       <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:p-0">
         {sections.map((section) => {
@@ -133,6 +135,7 @@ const ReportCard = ({
   pending,
   onActivate,
 }: ReportCardProps) => {
+  const { t } = useTranslation()
   const unavailable = to === null
   const isLoading = pending && !unavailable
 
@@ -159,11 +162,11 @@ const ReportCard = ({
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-foreground">{title}</p>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          {isLoading ? 'Opening…' : description}
+          {isLoading ? t('reports.home.opening') : description}
         </p>
         {unavailable && (
           <p className="mt-1 text-xs text-muted-foreground/70">
-            Not available for your current church scope
+            {t('reports.home.unavailable')}
           </p>
         )}
       </div>
@@ -178,6 +181,7 @@ const ReportCard = ({
 }
 
 const ReportsPage = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   const navigate = useNavigate()
   // `pendingTarget` gives the just-clicked card its own spinner so the
@@ -206,6 +210,8 @@ const ReportsPage = () => {
   const churchType = selectedScope?.churchType ?? ''
   const churchName = selectedScope?.churchName ?? ''
   const churchPrefix = churchName ? `${churchName} ` : ''
+  const churchFallback = churchName || t('reports.home.thisChurch')
+  const bacentaFallback = churchName || t('reports.home.thisBacenta')
   const reportsAvailable = SUPPORTED_REPORT_LEVELS.has(churchType)
   const membershipPath = getMembershipDownloadPath(churchType)
   // Bacenta is the leaf level; sub-church breakdowns don't apply at this scope.
@@ -260,11 +266,15 @@ const ReportsPage = () => {
     : null
 
   const tocSections: TocSection[] = [
-    { id: 'directory', label: 'Directory' },
-    { id: 'bussing', label: 'Bussing' },
-    ...(defaultersAvailable ? [{ id: 'defaulters', label: 'Defaulters' }] : []),
-    ...(arrivalsAvailable ? [{ id: 'arrivals', label: 'Arrivals' }] : []),
-    { id: 'weekday', label: 'Weekday' },
+    { id: 'directory', label: t('reports.home.sections.directory') },
+    { id: 'bussing', label: t('reports.home.sections.bussing') },
+    ...(defaultersAvailable
+      ? [{ id: 'defaulters', label: t('reports.home.sections.defaulters') }]
+      : []),
+    ...(arrivalsAvailable
+      ? [{ id: 'arrivals', label: t('reports.home.sections.arrivals') }]
+      : []),
+    { id: 'weekday', label: t('reports.home.sections.weekday') },
   ]
 
   return (
@@ -272,7 +282,7 @@ const ReportsPage = () => {
       <StickyPageHeader>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {churchPrefix}
-          <span className="text-banking">Reports</span>
+          <span className="text-banking">{t('reports.home.title')}</span>
         </h1>
       </StickyPageHeader>
       <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
@@ -284,16 +294,19 @@ const ReportsPage = () => {
           <div className="space-y-6 lg:order-1">
             <section id="directory" className="space-y-3 scroll-mt-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('reports.home.sections.directory')}
               </p>
               <div className="space-y-3">
                 <RoleView roles={permitLeaderAdmin(churchType as ChurchLevel)}>
                   <Card
                     icon={<Users className="size-5" />}
-                    title={`${churchPrefix}Membership List`}
-                    description={`Every member in ${
-                      churchName || 'this church'
-                    } as a CSV — name, contact details, ministry, and group assignments.`}
+                    title={`${churchPrefix}${t(
+                      'reports.home.cards.membershipList.title'
+                    )}`}
+                    description={t(
+                      'reports.home.cards.membershipList.description',
+                      { church: churchFallback }
+                    )}
                     to={membershipPath}
                   />
                 </RoleView>
@@ -303,10 +316,13 @@ const ReportsPage = () => {
                   >
                     <Card
                       icon={<Network className="size-5" />}
-                      title={`${churchPrefix}Sub-Church Directory`}
-                      description={`One row per sub-church in ${
-                        churchName || 'this church'
-                      } — leader's name and phone number.`}
+                      title={`${churchPrefix}${t(
+                        'reports.home.cards.subChurchDirectory.title'
+                      )}`}
+                      description={t(
+                        'reports.home.cards.subChurchDirectory.description',
+                        { church: churchFallback }
+                      )}
                       to={directoryPath}
                     />
                   </RoleView>
@@ -316,34 +332,41 @@ const ReportsPage = () => {
 
             <section id="bussing" className="space-y-3 scroll-mt-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Bussing
+                {t('reports.home.sections.bussing')}
               </p>
               <div className="space-y-3">
                 <Card
                   icon={<Bus className="size-5" />}
                   title={
                     churchType === 'Bacenta'
-                      ? `${churchPrefix}Bussing Records`
-                      : `${churchPrefix}Bussing`
+                      ? `${churchPrefix}${t(
+                          'reports.home.cards.bussingRecords.title'
+                        )}`
+                      : `${churchPrefix}${t(
+                          'reports.home.cards.bussing.title'
+                        )}`
                   }
                   description={
                     churchType === 'Bacenta'
-                      ? `Every Sunday bussing record for ${
-                          churchName || 'this Bacenta'
-                        } — attendance, leader declaration, vehicles, and top-up.`
-                      : `Per-week Sunday bussing totals for ${
-                          churchName || 'this church'
-                        } — attendance, leader declaration, vehicles, and top-up.`
+                      ? t('reports.home.cards.bussingRecords.description', {
+                          church: bacentaFallback,
+                        })
+                      : t('reports.home.cards.bussing.description', {
+                          church: churchFallback,
+                        })
                   }
                   to={bussingPath}
                 />
                 {hasMetricSubChurches && (
                   <Card
                     icon={<Network className="size-5" />}
-                    title={`${churchPrefix}Bussing by Sub-Church`}
-                    description={`Per-week Sunday bussing totals broken down by each sub-church in ${
-                      churchName || 'this church'
-                    }.`}
+                    title={`${churchPrefix}${t(
+                      'reports.home.cards.bussingBySubChurch.title'
+                    )}`}
+                    description={t(
+                      'reports.home.cards.bussingBySubChurch.description',
+                      { church: churchFallback }
+                    )}
                     to={bussingSubChurchesPath}
                   />
                 )}
@@ -354,22 +377,29 @@ const ReportsPage = () => {
               <RoleView roles={permitLeaderAdmin(churchType as ChurchLevel)}>
                 <section id="defaulters" className="space-y-3 scroll-mt-6">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Defaulters
+                    {t('reports.home.sections.defaulters')}
                   </p>
                   <div className="space-y-3">
                     <Card
                       icon={<AlertOctagon className="size-5" />}
-                      title={`${churchPrefix}Defaulters Report`}
-                      description="Comprehensive defaulters list for any week — banking status, form submission, attendance, and a per-sub-church summary at Council and above."
+                      title={`${churchPrefix}${t(
+                        'reports.home.cards.defaultersReport.title'
+                      )}`}
+                      description={t(
+                        'reports.home.cards.defaultersReport.description'
+                      )}
                       to={defaultersPath}
                     />
                     {defaultersSubChurchesAvailable && (
                       <Card
                         icon={<Network className="size-5" />}
-                        title={`${churchPrefix}Defaulters by Sub-Church`}
-                        description={`One row per sub-church in ${
-                          churchName || 'this church'
-                        } — services filed, form defaulters, banked, banking defaulters, and cancelled.`}
+                        title={`${churchPrefix}${t(
+                          'reports.home.cards.defaultersBySubChurch.title'
+                        )}`}
+                        description={t(
+                          'reports.home.cards.defaultersBySubChurch.description',
+                          { church: churchFallback }
+                        )}
                         to={defaultersSubChurchesPath}
                       />
                     )}
@@ -381,22 +411,29 @@ const ReportsPage = () => {
             {arrivalsAvailable && (
               <section id="arrivals" className="space-y-3 scroll-mt-6">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Arrivals
+                  {t('reports.home.sections.arrivals')}
                 </p>
                 <div className="space-y-3">
                   <Card
                     icon={<BusFront className="size-5" />}
-                    title={`${churchPrefix}Arrivals Report`}
-                    description="Per-Bacenta and per-vehicle bussing snapshot for any Sunday — attendance, leader declaration, vehicle counts, top-ups, and a per-sub-church summary at Council and above."
+                    title={`${churchPrefix}${t(
+                      'reports.home.cards.arrivalsReport.title'
+                    )}`}
+                    description={t(
+                      'reports.home.cards.arrivalsReport.description'
+                    )}
                     to={arrivalsPath}
                   />
                   {arrivalsSubChurchesAvailable && (
                     <Card
                       icon={<Network className="size-5" />}
-                      title={`${churchPrefix}Arrivals by Sub-Church`}
-                      description={`One row per sub-church in ${
-                        churchName || 'this church'
-                      } — bacentas bussed, attendance, vehicles, cost, and top-up.`}
+                      title={`${churchPrefix}${t(
+                        'reports.home.cards.arrivalsBySubChurch.title'
+                      )}`}
+                      description={t(
+                        'reports.home.cards.arrivalsBySubChurch.description',
+                        { church: churchFallback }
+                      )}
                       to={arrivalsSubChurchesPath}
                     />
                   )}
@@ -406,7 +443,7 @@ const ReportsPage = () => {
 
             <section id="weekday" className="space-y-3 scroll-mt-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Weekday
+                {t('reports.home.sections.weekday')}
               </p>
               <RoleView roles={permitLeaderAdmin(churchType as ChurchLevel)}>
                 <div className="space-y-3">
@@ -414,27 +451,35 @@ const ReportsPage = () => {
                     icon={<CalendarRange className="size-5" />}
                     title={
                       churchType === 'Bacenta'
-                        ? `${churchPrefix}Weekday Service Records`
-                        : `${churchPrefix}Weekday`
+                        ? `${churchPrefix}${t(
+                            'reports.home.cards.weekdayServiceRecords.title'
+                          )}`
+                        : `${churchPrefix}${t(
+                            'reports.home.cards.weekday.title'
+                          )}`
                     }
                     description={
                       churchType === 'Bacenta'
-                        ? `Every weekday service record for ${
-                            churchName || 'this Bacenta'
-                          } — attendance, income, no-service reasons, treasurers, photo URLs, and banking proof.`
-                        : `Per-week weekday service totals for ${
-                            churchName || 'this church'
-                          } — attendance, count, and income (cedis and USD).`
+                        ? t(
+                            'reports.home.cards.weekdayServiceRecords.description',
+                            { church: bacentaFallback }
+                          )
+                        : t('reports.home.cards.weekday.description', {
+                            church: churchFallback,
+                          })
                     }
                     to={weekdayPath}
                   />
                   {hasMetricSubChurches && (
                     <Card
                       icon={<Network className="size-5" />}
-                      title={`${churchPrefix}Weekday by Sub-Church`}
-                      description={`Per-week weekday service totals broken down by each sub-church in ${
-                        churchName || 'this church'
-                      }.`}
+                      title={`${churchPrefix}${t(
+                        'reports.home.cards.weekdayBySubChurch.title'
+                      )}`}
+                      description={t(
+                        'reports.home.cards.weekdayBySubChurch.description',
+                        { church: churchFallback }
+                      )}
                       to={weekdaySubChurchesPath}
                     />
                   )}

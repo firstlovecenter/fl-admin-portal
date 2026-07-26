@@ -36,6 +36,7 @@ import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { cn } from 'components/lib/utils'
 import { formatChurchLevel } from 'lib/scope-display'
+import { useTranslation } from 'react-i18next'
 import {
   CONFIRM_BANKING,
   CONFIRM_COUNCIL_BANKING,
@@ -63,6 +64,7 @@ const formatCurrency = (value: number | string | null | undefined) => {
 }
 
 const ConfirmManualBanking = () => {
+  const { t } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const { streamId: contextStreamId } = useContext(ChurchContext)
@@ -180,7 +182,7 @@ const ConfirmManualBanking = () => {
   const councilTotalPages = Math.max(1, Math.ceil(councilCount / PAGE_SIZE))
 
   const headerTypeLabel = activeStream?.__typename
-    ? formatChurchLevel(activeStream.__typename)
+    ? formatChurchLevel(activeStream.__typename, t)
     : ''
   const hasMultipleScopes = roleChurchOptions.length > 1
 
@@ -208,7 +210,7 @@ const ConfirmManualBanking = () => {
         await ConfirmBanking({ variables: { governorshipId: selected.id } })
       }
       setSubmitting(false)
-      alertSuccess('Banking confirmed successfully')
+      alertSuccess(t('services.banking.manualBanking.bankingConfirmed'))
       if (streamId)
         refetch({
           id: streamId,
@@ -225,7 +227,7 @@ const ConfirmManualBanking = () => {
       alertMsg(
         err?.message?.includes('already been banked')
           ? err.message
-          : 'Something went wrong while confirming. Please try again.'
+          : t('services.banking.manualBanking.confirmError')
       )
     }
   }
@@ -242,7 +244,9 @@ const ConfirmManualBanking = () => {
           {activeStream?.name ? (
             <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               {activeStream.name}{' '}
-              <span className="text-banking">Receive Offering</span>
+              <span className="text-banking">
+                {t('services.banking.manualBanking.receiveOffering')}
+              </span>
             </h1>
           ) : (
             <Skeleton className="h-9 w-72 max-w-full" />
@@ -254,13 +258,16 @@ const ConfirmManualBanking = () => {
               className="rounded-full px-2.5 py-1 text-xs font-normal text-muted-foreground"
             >
               <Building2 className="mr-1 size-3 text-churches" />
-              {headerTypeLabel || 'Stream'}
+              {headerTypeLabel ||
+                t('shared.churchLevel.Stream', { defaultValue: 'Stream' })}
             </Badge>
             <Badge
               variant="outline"
               className="rounded-full px-2.5 py-1 text-xs font-medium"
             >
-              Week {getWeekNumber()}
+              {t('services.banking.manualBanking.week', {
+                week: getWeekNumber(),
+              })}
             </Badge>
             {!loading && (
               <Badge
@@ -274,8 +281,10 @@ const ConfirmManualBanking = () => {
               >
                 <HandCoins className="mr-1 size-3" />
                 {totalPending === 0
-                  ? 'All caught up'
-                  : `${totalPending} pending`}
+                  ? t('services.banking.manualBanking.allCaughtUp')
+                  : t('services.banking.manualBanking.pendingCount', {
+                      count: totalPending,
+                    })}
               </Badge>
             )}
           </div>
@@ -309,9 +318,13 @@ const ConfirmManualBanking = () => {
                       type="search"
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      placeholder="Search councils or governorships"
+                      placeholder={t(
+                        'services.banking.manualBanking.searchPlaceholder'
+                      )}
                       className="min-h-11 pl-9"
-                      aria-label="Search churches"
+                      aria-label={t(
+                        'services.banking.manualBanking.searchAria'
+                      )}
                     />
                   </div>
                 )}
@@ -320,7 +333,7 @@ const ConfirmManualBanking = () => {
                 {showCouncilSection && (
                   <section className="space-y-3">
                     <SectionHeading
-                      label="Councils"
+                      label={t('services.banking.manualBanking.councils')}
                       total={councilCount}
                       page={councilPage}
                       totalPages={councilTotalPages}
@@ -356,7 +369,7 @@ const ConfirmManualBanking = () => {
                 {showGovSection && (
                   <section className="space-y-3">
                     <SectionHeading
-                      label="Governorships"
+                      label={t('services.banking.manualBanking.governorships')}
                       total={govCount}
                       page={govPage}
                       totalPages={govTotalPages}
@@ -426,12 +439,14 @@ const ConfirmManualBanking = () => {
                   variant="outline"
                   className="rounded-full px-2 py-0.5 text-[11px] font-normal text-muted-foreground"
                 >
-                  {formatChurchLevel(selected.__typename)}
+                  {formatChurchLevel(selected.__typename, t)}
                 </Badge>
               )}
             </DialogTitle>
             <DialogDescription>
-              Confirm the offering submitted for week {getWeekNumber()}.
+              {t('services.banking.manualBanking.confirmDialogBody', {
+                week: getWeekNumber(),
+              })}
             </DialogDescription>
           </DialogHeader>
 
@@ -447,7 +462,7 @@ const ConfirmManualBanking = () => {
               <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Income
+                    {t('services.banking.manualBanking.income')}
                   </p>
                   <p className="text-3xl font-bold tabular-nums tracking-tight text-foreground">
                     {formatCurrency(service?.income)}
@@ -459,7 +474,7 @@ const ConfirmManualBanking = () => {
                       <Separator />
                       <div className="flex items-baseline justify-between gap-3">
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Foreign currency
+                          {t('services.banking.manualBanking.foreignCurrency')}
                         </p>
                         <p className="text-sm font-medium text-foreground">
                           {Array.isArray(service.foreignCurrency)
@@ -473,10 +488,7 @@ const ConfirmManualBanking = () => {
 
               <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-                <p>
-                  Only confirm if the cash handed in matches this figure
-                  exactly. This action is logged and cannot be reversed.
-                </p>
+                <p>{t('services.banking.manualBanking.confirmWarning')}</p>
               </div>
             </>
           )}
@@ -488,7 +500,7 @@ const ConfirmManualBanking = () => {
               disabled={isSubmitting}
               onClick={closeDialog}
             >
-              No, take me back
+              {t('services.banking.manualBanking.noTakeMeBack')}
             </Button>
             <Button
               type="button"
@@ -499,12 +511,12 @@ const ConfirmManualBanking = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  <span>Confirming…</span>
+                  <span>{t('services.banking.common.confirming')}</span>
                 </>
               ) : (
                 <>
                   <HandCoins className="size-4" />
-                  Yes, I&apos;m sure
+                  {t('services.banking.manualBanking.yesImSure')}
                 </>
               )}
             </Button>
@@ -527,7 +539,9 @@ const SectionHeading = ({
   total,
   page,
   totalPages,
-}: SectionHeadingProps) => (
+}: SectionHeadingProps) => {
+  const { t } = useTranslation()
+  return (
   <div className="flex items-baseline justify-between gap-2">
     <h2 className="text-sm font-semibold text-foreground">
       {label}{' '}
@@ -537,11 +551,15 @@ const SectionHeading = ({
     </h2>
     {totalPages > 1 && (
       <p className="text-xs tabular-nums text-muted-foreground">
-        Page {page} of {totalPages}
+        {t('services.banking.manualBanking.pageOf', {
+          page,
+          total: totalPages,
+        })}
       </p>
     )}
   </div>
-)
+  )
+}
 
 interface PagerProps {
   page: number
@@ -549,7 +567,9 @@ interface PagerProps {
   onPage: (n: number) => void
 }
 
-const Pager = ({ page, totalPages, onPage }: PagerProps) => (
+const Pager = ({ page, totalPages, onPage }: PagerProps) => {
+  const { t } = useTranslation()
+  return (
   <div className="flex items-center justify-between gap-2 pt-1">
     <Button
       type="button"
@@ -560,10 +580,13 @@ const Pager = ({ page, totalPages, onPage }: PagerProps) => (
       className="min-h-11 flex-1 sm:flex-none"
     >
       <ChevronLeft className="size-4" />
-      Previous
+      {t('services.banking.manualBanking.previous')}
     </Button>
     <p className="text-xs tabular-nums text-muted-foreground">
-      Page {page} of {totalPages}
+      {t('services.banking.manualBanking.pageOf', {
+        page,
+        total: totalPages,
+      })}
     </p>
     <Button
       type="button"
@@ -573,11 +596,12 @@ const Pager = ({ page, totalPages, onPage }: PagerProps) => (
       onClick={() => onPage(Math.min(totalPages, page + 1))}
       className="min-h-11 flex-1 sm:flex-none"
     >
-      Next
+      {t('services.banking.manualBanking.next')}
       <ChevronRight className="size-4" />
     </Button>
   </div>
-)
+  )
+}
 
 const LoadingSkeleton = () => (
   <>
@@ -627,6 +651,7 @@ const DefaulterCard = ({
   onConfirm,
   isLoading,
 }: DefaulterCardProps) => {
+  const { t } = useTranslation()
   const isCouncil = defaulter.__typename === 'Council'
   const leader = defaulter?.leader
   const initials = `${leader?.firstName?.[0] ?? ''}${
@@ -655,7 +680,7 @@ const DefaulterCard = ({
                   : 'border-members/40 bg-members/10 text-members'
               )}
             >
-              {formatChurchLevel(defaulter.__typename)}
+              {formatChurchLevel(defaulter.__typename, t)}
             </Badge>
           </div>
           {leader?.fullName && (
@@ -675,12 +700,12 @@ const DefaulterCard = ({
           {isLoading ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              <span>Loading…</span>
+              <span>{t('shared.loading')}</span>
             </>
           ) : (
             <>
               <HandCoins className="size-4" />
-              Confirm offering
+              {t('services.banking.manualBanking.confirmOffering')}
             </>
           )}
         </Button>
@@ -689,23 +714,30 @@ const DefaulterCard = ({
   )
 }
 
-const EmptyStateAllConfirmed = () => (
+const EmptyStateAllConfirmed = () => {
+  const { t } = useTranslation()
+  return (
   <Card className="border-dashed bg-card">
     <CardContent className="flex flex-col items-center gap-3 px-6 py-12 text-center">
       <div className="flex size-12 items-center justify-center rounded-full bg-success/15 text-success">
         <HandCoins className="size-6" />
       </div>
       <div className="space-y-1">
-        <p className="text-base font-semibold text-foreground">All caught up</p>
+        <p className="text-base font-semibold text-foreground">
+          {t('services.banking.manualBanking.emptyAllTitle')}
+        </p>
         <p className="max-w-sm text-sm text-muted-foreground">
-          There are no offerings waiting to be confirmed this week.
+          {t('services.banking.manualBanking.emptyAllBody')}
         </p>
       </div>
     </CardContent>
   </Card>
-)
+  )
+}
 
-const EmptyStateNoScope = () => (
+const EmptyStateNoScope = () => {
+  const { t } = useTranslation()
+  return (
   <Card className="border-dashed bg-card">
     <CardContent className="flex flex-col items-center gap-3 px-6 py-12 text-center">
       <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -713,23 +745,25 @@ const EmptyStateNoScope = () => (
       </div>
       <div className="space-y-1">
         <p className="text-base font-semibold text-foreground">
-          Pick a stream in focus
+          {t('services.banking.manualBanking.emptyScopeTitle')}
         </p>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Select a stream from the sidebar to view services awaiting
-          confirmation.
+          {t('services.banking.manualBanking.emptyScopeBody')}
         </p>
       </div>
     </CardContent>
   </Card>
-)
+  )
+}
 
 interface NoMatchProps {
   search: string
   onClear: () => void
 }
 
-const EmptyStateNoMatch = ({ search, onClear }: NoMatchProps) => (
+const EmptyStateNoMatch = ({ search, onClear }: NoMatchProps) => {
+  const { t } = useTranslation()
+  return (
   <Card className="border-dashed bg-card">
     <CardContent className="flex flex-col items-center gap-3 px-6 py-12 text-center">
       <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -737,18 +771,18 @@ const EmptyStateNoMatch = ({ search, onClear }: NoMatchProps) => (
       </div>
       <div className="space-y-1">
         <p className="text-base font-semibold text-foreground">
-          No matches for &ldquo;{search}&rdquo;
+          {t('services.banking.manualBanking.noMatches', { search })}
         </p>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Try a different search term or clear it to see all pending
-          confirmations.
+          {t('services.banking.manualBanking.noMatchesBody')}
         </p>
       </div>
       <Button variant="outline" size="sm" onClick={onClear}>
-        Clear search
+        {t('services.banking.manualBanking.clearSearch')}
       </Button>
     </CardContent>
   </Card>
-)
+  )
+}
 
 export default ConfirmManualBanking

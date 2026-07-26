@@ -19,6 +19,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import usePopup from 'hooks/usePopup'
 import { getHumanReadableDate } from 'lib/date-utils'
 import { useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import * as Yup from 'yup'
 import { BANKING_SLIP_SUBMISSION } from '../../ServicesQueries'
@@ -62,6 +63,7 @@ const BankingSlipSubmissionForm = ({
   successPath,
   errorListPath,
 }: BankingSlipSubmissionFormProps) => {
+  const { t } = useTranslation()
   const { serviceRecordId } = useContext(ServiceContext)
   const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
@@ -79,7 +81,9 @@ const BankingSlipSubmissionForm = ({
   const [SubmitBankingSlip] = useMutation(BANKING_SLIP_SUBMISSION)
 
   const validationSchema = Yup.object({
-    bankingSlip: Yup.string().required('You must upload a banking slip'),
+    bankingSlip: Yup.string().required(
+      t('services.banking.bankingSlip.slipRequired')
+    ),
   })
 
   const onSubmit = async (
@@ -114,9 +118,11 @@ const BankingSlipSubmissionForm = ({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Submission failed</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('services.banking.bankingSlip.submissionFailed')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              There was a problem uploading your banking slip.
+              {t('services.banking.bankingSlip.submissionFailedBody')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <code className="block break-words rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
@@ -129,7 +135,7 @@ const BankingSlipSubmissionForm = ({
                 navigate(errorListPath)
               }}
             >
-              Okay
+              {t('shared.actions.okay')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -137,7 +143,7 @@ const BankingSlipSubmissionForm = ({
 
       <StickyPageHeader>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Banking Slip Submission
+          {t('services.banking.bankingSlip.submissionTitle')}
         </h1>
         <p className="text-sm text-muted-foreground">{church?.name}</p>
       </StickyPageHeader>
@@ -156,7 +162,7 @@ const BankingSlipSubmissionForm = ({
               </p>
               <p>
                 <span className="font-medium text-foreground">
-                  Expected Income:
+                  {t('services.banking.bankingSlip.expectedIncome')}
                 </span>{' '}
                 <span className="font-mono tabular-nums">
                   {serviceRecord?.cash ?? '—'} {currency}
@@ -176,9 +182,9 @@ const BankingSlipSubmissionForm = ({
                 <Card>
                   <CardContent className="space-y-4 p-5">
                     <ImageUpload
-                      label="Upload a Picture of Your Banking Slip"
+                      label={t('services.banking.bankingSlip.uploadLabel')}
                       name="bankingSlip"
-                      placeholder="Choose"
+                      placeholder={t('services.banking.bankingSlip.choose')}
                       setFieldValue={formik.setFieldValue}
                     />
                   </CardContent>

@@ -8,6 +8,7 @@ import {
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Minus, Plus } from 'lucide-react'
 import SubmitButton from 'components/formik/SubmitButton'
 import {
@@ -26,6 +27,7 @@ import SearchMember from 'components/formik/SearchMember'
 import Textarea from 'components/formik/Textarea'
 import { Button } from 'components/ui/button'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import { formatChurchLevel } from 'lib/scope-display'
 
 type ServiceFormProps = {
   church: Church
@@ -55,6 +57,7 @@ const ServiceForm = ({
   RecordServiceMutation,
   recordType,
 }: ServiceFormProps) => {
+  const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
@@ -77,32 +80,32 @@ const ServiceForm = ({
 
   const validationSchema = Yup.object({
     serviceDate: Yup.date()
-      .max(today, 'Service could not possibly have happened after today')
-      .min(mondayThisWeek, 'You can only fill forms for this week')
-      .required('Date is a required field'),
+      .max(today, t('services.form.dateAfterToday'))
+      .min(mondayThisWeek, t('services.form.dateThisWeekOnly'))
+      .required(t('services.form.dateRequired')),
     cediIncome: Yup.number()
-      .typeError('Please enter a valid number')
-      .positive('You cannot have negative income')
-      .required('You cannot submit this form without entering your income'),
+      .typeError(t('services.form.validNumber'))
+      .positive(t('services.form.negativeIncome'))
+      .required(t('services.form.incomeRequired')),
     foreignCurrency: Yup.string(),
     numberOfTithers: Yup.number()
-      .typeError('Please enter a valid number')
-      .integer('You cannot enter decimals here')
-      .required(
-        'You cannot submit this form without entering your number of tithers'
-      ),
+      .typeError(t('services.form.validNumber'))
+      .integer(t('services.form.tithersInteger'))
+      .required(t('services.form.tithersRequired')),
     attendance: Yup.number()
-      .typeError('Please enter a valid number')
+      .typeError(t('services.form.validNumber'))
       .positive()
-      .integer('You cannot have attendance with decimals!')
-      .required('You cannot submit this form without entering your attendance'),
-    treasurerSelfie: Yup.string().required('You must take a treasurers selfie'),
+      .integer(t('services.form.attendanceDecimals'))
+      .required(t('services.form.attendanceRequired')),
+    treasurerSelfie: Yup.string().required(
+      t('services.form.treasurerSelfieRequired')
+    ),
     familyPicture: Yup.string().required(
-      'Please submit a picture of your service'
+      t('services.form.familyPictureRequired')
     ),
     treasurers: Yup.array()
-      .min(2, 'You must have at least two treasurers')
-      .of(Yup.string().required('Please pick a name from the dropdown')),
+      .min(2, t('services.form.minTreasurers'))
+      .of(Yup.string().required(t('services.form.pickName'))),
   })
 
   const onSubmit = async (
@@ -112,7 +115,7 @@ const ServiceForm = ({
     const { setSubmitting } = onSubmitProps
     setSubmitting(true)
     if (checkIfArrayHasRepeatingValues(values.treasurers)) {
-      throwToSentry('You cannot choose the same treasurer twice!')
+      throwToSentry(t('services.form.duplicateTreasurer'))
       setSubmitting(false)
       return
     } else {
@@ -160,11 +163,13 @@ const ServiceForm = ({
           <StickyPageHeader>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {church?.name}{' '}
-              <span className="text-churches">{event || 'Service'}</span>
+              <span className="text-churches">
+                {event || t('services.form.service')}
+              </span>
             </h1>
             {church && (
               <p className="text-sm text-muted-foreground">
-                {church.__typename}
+                {formatChurchLevel(church.__typename, t)}
               </p>
             )}
           </StickyPageHeader>
@@ -177,40 +182,48 @@ const ServiceForm = ({
                   <div className="overflow-hidden rounded-xl border border-border bg-card">
                     <div className="border-b border-border px-4 py-3">
                       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Service Details
+                        {t('services.form.serviceDetails')}
                       </h2>
                     </div>
                     <div className="space-y-4 px-4 py-4">
                       <Input
                         name="serviceDate"
                         type="date"
-                        label="Date of Service"
+                        label={t('services.form.dateOfService')}
                         min={mondayThisWeekIso}
                         max={todayIso}
                       />
-                      <Input name="attendance" label="Attendance" />
+                      <Input
+                        name="attendance"
+                        label={t('services.form.attendance')}
+                      />
                       <Input
                         name="cediIncome"
-                        label={`Income (in ${currentUser.currency})`}
+                        label={t('services.form.income', {
+                          currency: currentUser.currency,
+                        })}
                       />
                       <Textarea
                         name="foreignCurrency"
-                        label="Foreign Currency and Cheques (Optional)"
+                        label={t('services.form.foreignCurrency')}
                         rows={2}
                       />
-                      <Input name="numberOfTithers" label="Number of Tithers" />
+                      <Input
+                        name="numberOfTithers"
+                        label={t('services.form.numberOfTithers')}
+                      />
                     </div>
                   </div>
 
                   <div className="overflow-hidden rounded-xl border border-border bg-card">
                     <div className="border-b border-border px-4 py-3">
                       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Treasurers
+                        {t('services.form.treasurers')}
                       </h2>
                     </div>
                     <div className="space-y-3 px-4 py-4">
                       <p className="text-xs text-muted-foreground">
-                        Minimum of 2. Fill names in the order they appear.
+                        {t('services.form.treasurersHint')}
                       </p>
                       <FieldArray name="treasurers">
                         {(fieldArrayProps: FieldArrayRenderProps) => {
@@ -229,9 +242,11 @@ const ServiceForm = ({
                                   <div className="flex-1">
                                     <SearchMember
                                       name={`treasurers[${index}]`}
-                                      placeholder="Start typing"
+                                      placeholder={t(
+                                        'services.form.startTyping'
+                                      )}
                                       setFieldValue={formik.setFieldValue}
-                                      aria-describedby="Member List"
+                                      aria-describedby="treasurers-member-list"
                                       error={
                                         !Array.isArray(
                                           formik.errors.treasurers
@@ -279,27 +294,27 @@ const ServiceForm = ({
                   <div className="overflow-hidden rounded-xl border border-border bg-card">
                     <div className="border-b border-border px-4 py-3">
                       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Photos
+                        {t('services.form.photos')}
                       </h2>
                     </div>
                     <div className="space-y-5 px-4 py-4">
                       <div className="space-y-2">
                         <p className="text-sm font-medium text-foreground">
-                          Treasurer Selfie
+                          {t('services.form.treasurerSelfie')}
                         </p>
                         <ImageUpload
                           name="treasurerSelfie"
-                          placeholder="Choose"
+                          placeholder={t('services.form.choose')}
                           setFieldValue={formik.setFieldValue}
                         />
                       </div>
                       <div className="space-y-2">
                         <p className="text-sm font-medium text-foreground">
-                          Service / Family Picture
+                          {t('services.form.familyPicture')}
                         </p>
                         <ImageUpload
                           name="familyPicture"
-                          placeholder="Choose"
+                          placeholder={t('services.form.choose')}
                           setFieldValue={formik.setFieldValue}
                         />
                       </div>

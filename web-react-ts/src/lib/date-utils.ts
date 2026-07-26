@@ -46,18 +46,42 @@ export const parseNeoTime = (timestamp?: string): string | undefined => {
   )}`
 }
 
-export const parseDate = (date: string): string => {
+type ParseDateOptions = {
+  /** When provided, Today/Yesterday/N days ago come from i18n. */
+  t?: (key: string, options?: Record<string, unknown>) => string
+  /** BCP 47 locale for the long-date fallback (default en). */
+  locale?: string
+}
+
+export const parseDate = (date: string, options?: ParseDateOptions): string => {
   // Returns text "Today", "Yesterday", "N days ago", or a long date string
   const todaysDate = new Date()
   const inputDate = new Date(date)
   const differenceInTime = todaysDate.getTime() - inputDate.getTime()
   const differenceInDays = differenceInTime / (1000 * 3600 * 24)
+  const { t, locale = 'en' } = options ?? {}
 
-  if (inputDate.toDateString() === todaysDate.toDateString()) return 'Today'
-  if (differenceInDays < 2) return 'Yesterday'
-  if (Math.floor(differenceInDays) < 7)
-    return `${Math.floor(differenceInDays)} days ago`
-  return inputDate.toDateString()
+  if (inputDate.toDateString() === todaysDate.toDateString()) {
+    return t ? t('shared.dates.today') : 'Today'
+  }
+  if (differenceInDays < 2) {
+    return t ? t('shared.dates.yesterday') : 'Yesterday'
+  }
+  if (Math.floor(differenceInDays) < 7) {
+    const count = Math.floor(differenceInDays)
+    return t
+      ? t('shared.dates.daysAgo', { count })
+      : `${count} days ago`
+  }
+  // Preserve the historical `toDateString()` shape for callers that have not
+  // opted into locale-aware formatting (banking/arrivals lists, etc.).
+  if (!options?.locale && !t) return inputDate.toDateString()
+  return inputDate.toLocaleDateString(locale, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 export function getHumanReadableDate(
