@@ -1,5 +1,6 @@
 import { Check, RotateCcw } from 'lucide-react'
 import { Button } from 'components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 type Props = {
   isDirty: boolean
@@ -14,6 +15,7 @@ type Props = {
 // nothing to apply — first-time visitors who just want the default
 // report never see this band.
 const ApplyBar = ({ isDirty, onApply, onDiscard }: Props) => {
+  const { t } = useTranslation()
   if (!isDirty) return null
   return (
     <section
@@ -22,9 +24,11 @@ const ApplyBar = ({ isDirty, onApply, onDiscard }: Props) => {
       className="flex flex-col gap-3 rounded-xl border border-banking/30 bg-banking/5 p-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <p className="text-sm font-medium text-foreground">
-        Filters changed — click{' '}
-        <span className="font-semibold text-banking">Apply</span> to refresh
-        the report.
+        {t('reports.shared.filtersChangedBefore')}{' '}
+        <span className="font-semibold text-banking">
+          {t('reports.shared.apply')}
+        </span>{' '}
+        {t('reports.shared.filtersChangedAfter')}
       </p>
       <div className="flex items-center gap-2">
         <Button
@@ -35,7 +39,7 @@ const ApplyBar = ({ isDirty, onApply, onDiscard }: Props) => {
           className="min-h-11 gap-1.5"
         >
           <RotateCcw className="size-4" />
-          Discard
+          {t('reports.shared.discard')}
         </Button>
         <Button
           type="button"
@@ -43,7 +47,7 @@ const ApplyBar = ({ isDirty, onApply, onDiscard }: Props) => {
           className="min-h-11 gap-1.5"
         >
           <Check className="size-4" />
-          Apply
+          {t('reports.shared.apply')}
         </Button>
       </div>
     </section>

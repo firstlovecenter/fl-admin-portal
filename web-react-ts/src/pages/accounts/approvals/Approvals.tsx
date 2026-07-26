@@ -1,7 +1,8 @@
 import { useMutation, useQuery } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   APPROVE_EXPENSE,
   DECLINE_EXPENSE,
@@ -9,6 +10,11 @@ import {
 } from './approvals-gql'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { CouncilForAccounts } from '../accounts-types'
+import {
+  translateAccountLabel,
+  translateCategoryLabel,
+  translateStatusLabel,
+} from '../accounts-i18n'
 import { AccountTransaction } from '../transaction-history/transaction-types'
 import { getHumanReadableDateTime, throwToSentry } from 'global-utils'
 import Input from 'components/formik/Input'
@@ -36,6 +42,7 @@ const formatAmount = (value: number | null | undefined, currency: string) => {
 }
 
 const Approvals = () => {
+  const { t } = useTranslation()
   const { campusId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   // SYN-110: per-card lock keyed on transaction id. The previous shared
@@ -86,16 +93,25 @@ const Approvals = () => {
 
   const initialValues = { charge: '' }
 
-  const validationSchema = Yup.object({
-    charge: Yup.number().required('Required'),
-  })
+  const validationSchema = useMemo(
+    () =>
+      Yup.object({
+        charge: Yup.number()
+          .typeError(t('accounts.common.validNumber'))
+          .required(t('accounts.approvals.chargeRequired')),
+      }),
+    [t]
+  )
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Pending <span className="text-banking">Approvals</span>
+            {t('accounts.approvals.titlePrefix')}{' '}
+            <span className="text-banking">
+              {t('accounts.approvals.titleHighlight')}
+            </span>
           </h1>
           <p className="text-sm text-muted-foreground">
             {campus?.name}
@@ -105,7 +121,7 @@ const Approvals = () => {
                 <span className="font-medium tabular-nums text-foreground">
                   {totalPending}
                 </span>{' '}
-                awaiting review
+                {t('accounts.approvals.awaitingReview')}
               </>
             ) : null}
           </p>
@@ -118,10 +134,10 @@ const Approvals = () => {
                   <Inbox className="size-6 text-muted-foreground" />
                 </span>
                 <p className="text-sm font-medium text-foreground">
-                  No pending approvals
+                  {t('accounts.approvals.emptyTitle')}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Expense requests awaiting your review will appear here.
+                  {t('accounts.approvals.emptyBody')}
                 </p>
               </CardContent>
             </Card>
@@ -137,7 +153,9 @@ const Approvals = () => {
                       {council.name}
                     </h2>
                     <span className="text-xs text-muted-foreground">
-                      {council.transactions.length} pending
+                      {t('accounts.approvals.pendingCount', {
+                        count: council.transactions.length,
+                      })}
                     </span>
                   </div>
 
@@ -175,7 +193,7 @@ const Approvals = () => {
                               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="min-w-0">
                                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Amount requested
+                                    {t('accounts.approvals.amountRequested')}
                                   </p>
                                   <p className="mt-1 text-2xl font-bold tracking-tight tabular-nums text-foreground">
                                     {formatAmount(transaction.amount, currency)}
@@ -185,7 +203,7 @@ const Approvals = () => {
                                   variant="outline"
                                   className="h-7 self-start border-warning/30 bg-warning/15 px-3 text-xs font-semibold uppercase tracking-wider text-warning"
                                 >
-                                  {transaction.status}
+                                  {translateStatusLabel(t, transaction.status)}
                                 </Badge>
                               </div>
 
@@ -194,23 +212,29 @@ const Approvals = () => {
                               <dl className="grid gap-3 text-sm sm:grid-cols-2">
                                 <div className="space-y-0.5">
                                   <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Category
+                                    {t('accounts.common.category')}
                                   </dt>
                                   <dd className="font-medium text-foreground">
-                                    {transaction.category}
+                                    {translateCategoryLabel(
+                                      t,
+                                      transaction.category
+                                    )}
                                   </dd>
                                 </div>
                                 <div className="space-y-0.5">
                                   <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Account
+                                    {t('accounts.common.account')}
                                   </dt>
                                   <dd className="font-medium text-foreground">
-                                    {transaction.account}
+                                    {translateAccountLabel(
+                                      t,
+                                      transaction.account
+                                    )}
                                   </dd>
                                 </div>
                                 <div className="space-y-0.5 sm:col-span-2">
                                   <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Description
+                                    {t('accounts.common.description')}
                                   </dt>
                                   <dd className="text-foreground break-words">
                                     {transaction.description}
@@ -218,7 +242,7 @@ const Approvals = () => {
                                 </div>
                                 <div className="space-y-0.5">
                                   <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Logged by
+                                    {t('accounts.approvals.loggedBy')}
                                   </dt>
                                   <dd className="font-medium text-foreground">
                                     {transaction.loggedBy?.fullName}
@@ -226,7 +250,7 @@ const Approvals = () => {
                                 </div>
                                 <div className="space-y-0.5">
                                   <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Created
+                                    {t('accounts.approvals.created')}
                                   </dt>
                                   <dd className="text-foreground">
                                     {getHumanReadableDateTime(
@@ -247,8 +271,10 @@ const Approvals = () => {
                                   <Form className="space-y-4">
                                     <Input
                                       name="charge"
-                                      label="Charge (GHS)"
-                                      placeholder="e.g. 5"
+                                      label={t('accounts.approvals.chargeLabel')}
+                                      placeholder={t(
+                                        'accounts.approvals.chargePlaceholder'
+                                      )}
                                       type="number"
                                       inputMode="decimal"
                                     />
@@ -281,12 +307,12 @@ const Approvals = () => {
                                         {isDeclining(transaction.id) ? (
                                           <>
                                             <Loader2 className="size-4 animate-spin" />
-                                            Declining…
+                                            {t('accounts.approvals.declining')}
                                           </>
                                         ) : (
                                           <>
                                             <XCircle className="size-5" />
-                                            Decline
+                                            {t('accounts.approvals.decline')}
                                           </>
                                         )}
                                       </Button>
@@ -295,7 +321,7 @@ const Approvals = () => {
                                         className="h-12 w-full gap-2 px-6 sm:w-auto sm:min-w-40"
                                       >
                                         <CheckCircle2 className="size-5" />
-                                        Approve
+                                        {t('accounts.approvals.approve')}
                                       </SubmitButton>
                                     </div>
                                   </Form>

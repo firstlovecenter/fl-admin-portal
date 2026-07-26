@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from 'components/ui/button'
 import { cn } from 'components/lib/utils'
@@ -29,6 +30,7 @@ interface BackButtonProps {
 }
 
 export const BackButton = ({ className }: BackButtonProps) => {
+  const { t } = useTranslation()
   const isStandalone = useIsStandalone()
   const location = useLocation()
   const navigate = useNavigate()
@@ -51,7 +53,7 @@ export const BackButton = ({ className }: BackButtonProps) => {
       variant="ghost"
       size="icon"
       onClick={handleClick}
-      aria-label="Go back"
+      aria-label={t('nav.goBack')}
       className={cn('h-11 w-11 rounded-full', className)}
     >
       <ChevronLeft className="size-4" />

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Download, FileSpreadsheet, FileText, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -16,22 +17,6 @@ import {
 import { fetchDefaultersExport } from './utils/useDefaultersExport'
 
 type Format = 'xlsx' | 'csv-zip'
-
-const FORMATS: ReadonlyArray<DownloadFormatOption<Format>> = [
-  {
-    id: 'xlsx',
-    label: 'Excel (.xlsx)',
-    description:
-      'Multi-sheet workbook with the per-Bacenta breakdown and a sub-church summary.',
-    icon: FileSpreadsheet,
-  },
-  {
-    id: 'csv-zip',
-    label: 'CSV (.zip)',
-    description: 'One CSV per sheet, bundled into a single zip file.',
-    icon: FileText,
-  },
-]
 
 type DownloadDefaultersButtonProps = {
   level: DefaultersDownloadLevel
@@ -54,9 +39,25 @@ const DownloadDefaultersButton = ({
   className,
   showLabel = false,
 }: DownloadDefaultersButtonProps) => {
+  const { t } = useTranslation()
   const { weekStart, isCurrent, weekShortLabel } = useSelectedWeek()
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState<Format | null>(null)
+
+  const formats: ReadonlyArray<DownloadFormatOption<Format>> = [
+    {
+      id: 'xlsx',
+      label: t('services.defaulters.formatXlsx'),
+      description: t('services.defaulters.formatXlsxDesc'),
+      icon: FileSpreadsheet,
+    },
+    {
+      id: 'csv-zip',
+      label: t('services.defaulters.formatCsvZip'),
+      description: t('services.defaulters.formatCsvZipDesc'),
+      icon: FileText,
+    },
+  ]
 
   const handleSelect = async (format: Format) => {
     if (!churchId) return
@@ -70,7 +71,7 @@ const DownloadDefaultersButton = ({
         isCurrent
       )
       if (!payload.detail || payload.detail.length === 0) {
-        toast.info('No defaulters data to download for the selected week.')
+        toast.info(t('services.defaulters.noDataToDownload'))
         setOpen(false)
         return
       }
@@ -84,7 +85,9 @@ const DownloadDefaultersButton = ({
       setOpen(false)
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Could not download defaulters'
+        err instanceof Error
+          ? err.message
+          : t('services.defaulters.downloadError')
       toast.error(message)
     } finally {
       setPending(null)
@@ -98,7 +101,7 @@ const DownloadDefaultersButton = ({
         variant={showLabel ? 'default' : 'outline'}
         size={showLabel ? 'default' : 'sm'}
         disabled={disabled || pending !== null || !churchId}
-        aria-label="Download defaulters list"
+        aria-label={t('services.defaulters.downloadAria')}
         aria-busy={pending !== null}
         className={className}
         onClick={() => setOpen(true)}
@@ -106,19 +109,23 @@ const DownloadDefaultersButton = ({
         {pending !== null ? (
           <>
             <Loader2 className="animate-spin" aria-hidden="true" />
-            <span className="sr-only">Downloading…</span>
+            <span className="sr-only">
+              {t('services.defaulters.downloading')}
+            </span>
           </>
         ) : (
           <Download aria-hidden="true" />
         )}
-        <span className={showLabel ? '' : 'hidden lg:inline'}>Download</span>
+        <span className={showLabel ? '' : 'hidden lg:inline'}>
+          {t('services.defaulters.download')}
+        </span>
       </Button>
       <DownloadFormatDialog
         open={open}
         onOpenChange={setOpen}
-        title="Download defaulters"
-        description="Choose a file format. The full report includes every Bacenta in scope for the selected week."
-        formats={FORMATS}
+        title={t('services.defaulters.downloadTitle')}
+        description={t('services.defaulters.downloadDescription')}
+        formats={formats}
         pending={pending}
         onSelect={handleSelect}
         accent="defaulters"

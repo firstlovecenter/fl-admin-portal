@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import { Checkbox } from 'components/ui/checkbox'
 import { ListChecks, ListX } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   SUB_CHURCH_TARGETS_ORDERED,
   type SubChurchesTargetLevel,
@@ -27,6 +28,7 @@ const SubChurchLevelPicker = ({
   selectedLevels,
   onChange,
 }: Props) => {
+  const { t } = useTranslation()
   const headingId = useId()
   if (availableLevels.length === 0) return null
 
@@ -57,6 +59,9 @@ const SubChurchLevelPicker = ({
   const deepest = availableLevels[availableLevels.length - 1]
   const clearAll = () => onChange([deepest])
 
+  const levelLabel = (level: SubChurchesTargetLevel) =>
+    t(`shared.churchLevel.${level}`)
+
   return (
     <section
       aria-labelledby={headingId}
@@ -68,12 +73,10 @@ const SubChurchLevelPicker = ({
             id={headingId}
             className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
           >
-            Sub-church breakdown
+            {t('reports.shared.subChurchBreakdown')}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            The deepest ticked level sets the row granularity. Each
-            additional tick adds that level&apos;s name, leader, and leader
-            phone as columns.
+            {t('reports.shared.subChurchBreakdownHint')}
           </p>
         </div>
         <div className="shrink-0 flex items-center gap-1">
@@ -84,7 +87,7 @@ const SubChurchLevelPicker = ({
             className="inline-flex min-h-11 items-center gap-1 rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ListChecks className="size-3.5" />
-            All
+            {t('reports.shared.all')}
           </button>
           <button
             type="button"
@@ -93,7 +96,7 @@ const SubChurchLevelPicker = ({
             className="inline-flex min-h-11 items-center gap-1 rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ListX className="size-3.5" />
-            Reset
+            {t('reports.shared.reset')}
           </button>
         </div>
       </div>
@@ -106,6 +109,7 @@ const SubChurchLevelPicker = ({
         {availableLevels.map((level) => {
           const isOn = selected.has(level)
           const isLastTick = isOn && selected.size === 1
+          const label = levelLabel(level)
           // The whole row is the click target — wrapping a Radix Checkbox
           // (which renders as <button>) inside a <label> does NOT forward
           // label clicks the way a native <input type="checkbox"> would,
@@ -120,7 +124,9 @@ const SubChurchLevelPicker = ({
                 onClick={() => toggle(level)}
                 disabled={isLastTick}
                 aria-pressed={isOn}
-                aria-label={`Include ${level} as row or ancestor column`}
+                aria-label={t('reports.shared.includeLevelAria', {
+                  level: label,
+                })}
                 className={
                   isLastTick
                     ? 'flex w-full min-h-11 cursor-not-allowed items-center gap-3 rounded-md border border-transparent px-3 py-2 text-left opacity-60'
@@ -135,7 +141,7 @@ const SubChurchLevelPicker = ({
                   className="pointer-events-none"
                 />
                 <span className="text-sm font-medium text-foreground">
-                  {level}
+                  {label}
                 </span>
               </button>
             </li>

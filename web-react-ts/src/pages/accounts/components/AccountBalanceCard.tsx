@@ -1,5 +1,6 @@
 import { Card, CardContent } from 'components/ui/card'
 import { Bus, Wallet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../accounts-utils'
 
 type AccountBalanceCardProps = {
@@ -11,12 +12,15 @@ type AccountBalanceCardProps = {
 }
 
 const AccountBalanceCard = ({ church, variant }: AccountBalanceCardProps) => {
+  const { t } = useTranslation()
   const isWeekday = variant === 'current-balance'
 
-  const label = isWeekday ? 'Weekday Account Balance' : 'Bussing Society Balance'
+  const label = isWeekday
+    ? t('accounts.common.weekdayAccountBalance')
+    : t('accounts.common.bussingSocietyBalance')
   const hint = isWeekday
-    ? 'Available for council expenses'
-    : 'Reserved for Sunday bussing'
+    ? t('accounts.common.weekdayAccountHint')
+    : t('accounts.common.bussingSocietyHint')
   const value = isWeekday ? church?.weekdayBalance : church?.bussingSocietyBalance
   const Icon = isWeekday ? Wallet : Bus
   const accentBg = isWeekday ? 'bg-banking/10' : 'bg-arrivals/10'

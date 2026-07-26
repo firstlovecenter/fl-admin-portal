@@ -11,12 +11,14 @@ import { Skeleton } from 'components/ui/skeleton'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Bus, History, Receipt, Wallet } from 'lucide-react'
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { COUNCIL_ACCOUNT_DASHBOARD } from './accountsGQL'
 import { CouncilForAccounts } from './accounts-types'
 import { ActionRow, BalanceCard } from './components/DashboardCards'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const CouncilDashboard = () => {
+  const { t } = useTranslation()
   const { councilId } = useContext(ChurchContext)
 
   const { data, loading, error } = useQuery<{
@@ -45,20 +47,24 @@ const CouncilDashboard = () => {
               ) : (
                 <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
               )}
-              <span className="text-banking">Accounts</span>
+              <span className="text-banking">{t('accounts.common.title')}</span>
             </h1>
             <div className="flex items-center gap-3">
               <Avatar className="size-9">
                 <AvatarImage
                   src={leader?.pictureUrl}
-                  alt={leader?.fullName ?? 'Council leader'}
+                  alt={
+                    leader?.fullName ?? t('accounts.dashboard.councilLeaderAlt')
+                  }
                 />
                 <AvatarFallback className="bg-banking/10 text-xs font-medium text-banking">
                   {leaderInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Council leader</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('accounts.dashboard.councilLeader')}
+                </p>
                 {leader?.fullName ? (
                   <p className="truncate text-sm font-medium text-foreground">
                     {leader.fullName}
@@ -72,21 +78,20 @@ const CouncilDashboard = () => {
         </StickyPageHeader>
         <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
-            {/* Supporting column — balances. First in DOM so it sits on top on mobile. */}
             <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
               <BalanceCard
-                label="Weekday Account"
+                label={t('accounts.common.weekdayAccount')}
                 value={council?.weekdayBalance}
-                hint="Available for council expenses"
+                hint={t('accounts.common.weekdayAccountHint')}
                 icon={Wallet}
                 accentBg="bg-banking/10"
                 accentText="text-banking"
                 loading={loading}
               />
               <BalanceCard
-                label="Bussing Society"
+                label={t('accounts.common.bussingSociety')}
                 value={council?.bussingSocietyBalance}
-                hint="Reserved for Sunday bussing"
+                hint={t('accounts.common.bussingSocietyHint')}
                 icon={Bus}
                 accentBg="bg-arrivals/10"
                 accentText="text-arrivals"
@@ -94,10 +99,9 @@ const CouncilDashboard = () => {
               />
             </aside>
 
-            {/* Primary column — actions. */}
             <section className="space-y-3 lg:col-start-1 lg:row-start-1">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Actions
+                {t('accounts.common.actions')}
               </h2>
               <RoleView
                 roles={[
@@ -111,8 +115,10 @@ const CouncilDashboard = () => {
                   icon={Receipt}
                   iconBg="bg-brand/10"
                   iconText="text-brand"
-                  title="Request Expense"
-                  description="Submit a new expense request for approval"
+                  title={t('accounts.dashboard.requestExpense')}
+                  description={t(
+                    'accounts.dashboard.requestExpenseDescription'
+                  )}
                 />
               </RoleView>
               <ActionRow
@@ -120,8 +126,10 @@ const CouncilDashboard = () => {
                 icon={History}
                 iconBg="bg-churches/10"
                 iconText="text-churches"
-                title="Transaction History"
-                description="Review past deposits, withdrawals, and approvals"
+                title={t('accounts.dashboard.transactionHistory')}
+                description={t(
+                  'accounts.dashboard.transactionHistoryDescription'
+                )}
               />
             </section>
           </div>

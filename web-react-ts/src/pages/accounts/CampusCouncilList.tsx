@@ -1,6 +1,7 @@
 import { useQuery } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useContext, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CAMPUS_BY_COUNCIL_ACCOUNTS } from './accountsGQL'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import {
@@ -23,17 +24,22 @@ type CampusCouncilListLink =
   | '/accounts/council/dashboard'
   | '/accounts/campus/bussing-expense-entry'
 
-const SUBTITLE_BY_LINK: Record<CampusCouncilListLink, string> = {
-  '/accounts/council/make-deposit': 'Select a council to make a deposit',
-  '/accounts/council/dashboard': 'Select a council to view its account details',
-  '/accounts/campus/bussing-expense-entry':
-    'Select a council to record bussing expenses',
-}
-
 const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
+  const { t } = useTranslation()
   const { campusId, clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+
+  const subtitleByLink = useMemo(
+    (): Record<CampusCouncilListLink, string> => ({
+      '/accounts/council/make-deposit': t('accounts.councilList.subtitleDeposit'),
+      '/accounts/council/dashboard': t('accounts.councilList.subtitleView'),
+      '/accounts/campus/bussing-expense-entry': t(
+        'accounts.councilList.subtitleBussing'
+      ),
+    }),
+    [t]
+  )
 
   const { data, loading, error } = useQuery<{
     campuses: CampusForAccounts[]
@@ -66,11 +72,13 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
             ) : (
               <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
             )}
-            <span className="text-banking">Councils</span>
+            <span className="text-banking">
+              {t('accounts.councilList.councils')}
+            </span>
           </h1>
           {campus?.name ? (
             <p className="text-sm text-muted-foreground">
-              {SUBTITLE_BY_LINK[link]}
+              {subtitleByLink[link]}
             </p>
           ) : (
             <Skeleton className="h-4 w-56" />
@@ -78,12 +86,11 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
         </StickyPageHeader>
         <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
-            {/* Supporting column — campus totals. First in DOM → above list on mobile */}
             <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
               <Card>
                 <CardContent className="p-5">
                   <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Campus Totals
+                    {t('accounts.councilList.campusTotals')}
                   </h2>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -92,7 +99,7 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs text-muted-foreground">
-                          Weekday Account
+                          {t('accounts.common.weekdayAccount')}
                         </p>
                         {loading ? (
                           <Skeleton className="mt-1 h-5 w-24" />
@@ -110,7 +117,7 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs text-muted-foreground">
-                          Bussing Society
+                          {t('accounts.common.bussingSociety')}
                         </p>
                         {loading ? (
                           <Skeleton className="mt-1 h-5 w-24" />
@@ -126,7 +133,6 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
               </Card>
             </aside>
 
-            {/* Primary column — search + council list */}
             <section className="space-y-5 lg:col-start-1 lg:row-start-1">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -134,8 +140,8 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
                   type="search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search councils or leader"
-                  aria-label="Search councils or leader"
+                  placeholder={t('accounts.councilList.searchPlaceholder')}
+                  aria-label={t('accounts.councilList.searchAria')}
                   className="min-h-11 pl-9"
                 />
               </div>
@@ -150,7 +156,6 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
                 )}
 
                 {campus?.streams.map((stream: StreamForAccounts) => {
-                  // Sort by leader name client-side; server returns councils sorted by council name.
                   const sorted = [...stream.councils].sort((a, b) =>
                     a.leader.fullName.localeCompare(b.leader.fullName)
                   )
@@ -173,13 +178,13 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
                       {sorted.length === 0 ? (
                         <Card>
                           <CardContent className="p-4 text-sm text-muted-foreground">
-                            No councils under this stream
+                            {t('accounts.councilList.noCouncilsUnderStream')}
                           </CardContent>
                         </Card>
                       ) : visible.length === 0 ? (
                         <Card>
                           <CardContent className="p-4 text-sm text-muted-foreground">
-                            No councils match your search
+                            {t('accounts.councilList.noCouncilsMatch')}
                           </CardContent>
                         </Card>
                       ) : (
@@ -215,13 +220,13 @@ const CampusCouncilList = ({ link }: { link: CampusCouncilListLink }) => {
                                   <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5">
                                     <span className="text-xs tabular-nums text-muted-foreground">
                                       <span className="font-medium text-banking">
-                                        Weekday
+                                        {t('accounts.common.weekdayShort')}
                                       </span>{' '}
                                       {formatCurrency(council.weekdayBalance)}
                                     </span>
                                     <span className="text-xs tabular-nums text-muted-foreground">
                                       <span className="font-medium text-arrivals">
-                                        Bussing
+                                        {t('accounts.common.bussingShort')}
                                       </span>{' '}
                                       {formatCurrency(
                                         council.bussingSocietyBalance

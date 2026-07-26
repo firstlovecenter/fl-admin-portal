@@ -3,8 +3,10 @@ import RoleView from 'auth/RoleView'
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { alertSuccess, throwToSentry } from 'global-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import { permitLeaderAdmin } from 'permission-utils'
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { Phone, RotateCcw } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
@@ -35,6 +37,7 @@ type DefaulterCardProps = {
 }
 
 const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
@@ -45,6 +48,8 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
   if ('services' in defaulter && defaulter.services?.length) {
     serviceDetails = defaulter.services[0]
   }
+
+  const typeLabel = formatChurchLevel(defaulter?.__typename, t)
 
   return (
     <Card>
@@ -59,19 +64,25 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
           }}
           className="cursor-pointer font-bold"
         >
-          {`${defaulter?.name} ${defaulter?.__typename}`}
+          {`${defaulter?.name} ${typeLabel}`}
           <br />
 
           {defaulter?.__typename === 'Bacenta' &&
             defaulter?.governorship?.name && (
               <span className="text-muted-foreground">
-                {`${defaulter?.governorship?.name} ${defaulter?.governorship?.__typename}`}
+                {`${defaulter?.governorship?.name} ${formatChurchLevel(
+                  defaulter?.governorship?.__typename,
+                  t
+                )}`}
               </span>
             )}
 
           {defaulter?.__typename === 'Stream' && defaulter?.campus && (
             <span className="text-muted-foreground">
-              {`${defaulter?.campus?.name} ${defaulter?.campus?.__typename}`}
+              {`${defaulter?.campus?.name} ${formatChurchLevel(
+                defaulter?.campus?.__typename,
+                t
+              )}`}
             </span>
           )}
         </CardHeader>
@@ -100,23 +111,27 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
               }
             }}
           >
-            {defaulter?.leader?.fullName || 'No Leader'}
+            {defaulter?.leader?.fullName || t('services.defaulters.noLeader')}
             {serviceDetails?.attendance && (
               <div>
-                <span className="text-muted-foreground">Attendance: </span>
+                <span className="text-muted-foreground">
+                  {t('services.defaulters.attendanceColon')}
+                </span>
                 {serviceDetails?.attendance}
               </div>
             )}
             {serviceDetails?.income && (
               <div>
-                <span className="text-muted-foreground">Income: </span>
+                <span className="text-muted-foreground">
+                  {t('services.defaulters.incomeColon')}
+                </span>
                 {currentUser.currency} {serviceDetails?.income}
               </div>
             )}
             {serviceDetails?.noServiceReason && (
               <div>
                 <span className="text-muted-foreground">
-                  Reason for Cancelled Service:{' '}
+                  {t('services.defaulters.reasonCancelled')}
                 </span>
                 {serviceDetails?.noServiceReason}
               </div>
@@ -125,7 +140,7 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild>
               <a href={`tel:${defaulter?.leader?.phoneNumber}`}>
-                <Phone className="h-4 w-4" /> Call
+                <Phone className="h-4 w-4" /> {t('services.defaulters.call')}
               </a>
             </Button>
             <Button
@@ -135,7 +150,8 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
               <a
                 href={`whatsapp://send?phone=${defaulter?.leader?.whatsappNumber}`}
               >
-                <FaWhatsapp className="h-4 w-4" /> WhatsApp
+                <FaWhatsapp className="h-4 w-4" />{' '}
+                {t('services.defaulters.whatsapp')}
               </a>
             </Button>
             {serviceDetails?.noServiceReason && (
@@ -143,22 +159,22 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button className="bg-[hsl(var(--warning))] text-white hover:bg-[hsl(var(--warning))]/90">
-                      <RotateCcw className="h-4 w-4" /> Undo
+                      <RotateCcw className="h-4 w-4" />{' '}
+                      {t('services.defaulters.undo')}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>
-                        Undo cancelled service?
+                        {t('services.defaulters.undoCancelledTitle')}
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        Do you want to undo the cancellation of this service?
-                        The leader will be able to fill the form again.
+                        {t('services.defaulters.undoCancelledBody')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel className="min-h-11">
-                        Cancel
+                        {t('shared.actions.cancel')}
                       </AlertDialogCancel>
                       <AlertDialogAction
                         className="min-h-11"
@@ -168,22 +184,20 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
                             await UndoCancelledService({
                               variables: { serviceRecordId: serviceDetails.id },
                             })
-                            alertSuccess(
-                              'Leader can now fill the form again. Thank you!'
-                            )
+                            alertSuccess(t('services.defaulters.undoSuccess'))
                             clickCard(defaulter)
                             navigate(
                               `/${defaulter?.__typename.toLowerCase()}/displaydetails`
                             )
                           } catch (error) {
                             throwToSentry(
-                              'Error undoing cancelled service',
+                              t('services.defaulters.undoErrorSentry'),
                               error
                             )
                           }
                         }}
                       >
-                        Undo
+                        {t('services.defaulters.undo')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -192,7 +206,11 @@ const DefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
             )}
           </div>
         </CardContent>
-        <CardFooter className="text-muted-foreground">{`Meeting Day: ${defaulter?.meetingDay?.day}`}</CardFooter>
+        <CardFooter className="text-muted-foreground">
+          {t('services.defaulters.meetingDayColon', {
+            day: defaulter?.meetingDay?.day,
+          })}
+        </CardFooter>
       </PlaceholderCustom>
     </Card>
   )

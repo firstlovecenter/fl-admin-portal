@@ -1,4 +1,5 @@
 import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@apollo/client'
 import { Link } from 'react-router-dom'
 import {
@@ -27,17 +28,10 @@ import {
   getMonthlyStatAverage,
   GraphTypes,
 } from './graphs-utils'
+import { campusGraphOptions, getGraphPageLabels } from './graph-labels'
 
 const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
-
-// Campus has joint services plus aggregates in GHS and USD.
-const CAMPUS_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
-  { value: 'services', label: 'Joint Service' },
-  { value: 'serviceAggregate', label: 'All Services' },
-  { value: 'serviceAggregateWithDollar', label: 'All Services (USD)' },
-  { value: 'bussingAggregate', label: 'All Bussing' },
-]
 
 const formatStat = (value: string | undefined) =>
   value && value !== 'NaN'
@@ -45,6 +39,9 @@ const formatStat = (value: string | undefined) =>
     : '—'
 
 const CampusGraphs = () => {
+  const { t } = useTranslation()
+  const labels = getGraphPageLabels(t, 'Campus')
+  const graphOptions = useMemo(() => campusGraphOptions(t), [t])
   const { campusId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const [graphs, setGraphs] = useState<GraphTypes>('services')
@@ -58,29 +55,31 @@ const CampusGraphs = () => {
   const incomeTracked = !currentUser?.noIncomeTracking
 
   const jointServiceData = useMemo(
-    () => getServiceGraphData(campus, 'services', TREND_HISTORY_WEEKS) || [],
-    [campus]
+    () =>
+      getServiceGraphData(campus, 'services', TREND_HISTORY_WEEKS, t) || [],
+    [campus, t]
   )
   const serviceData = useMemo(
     () =>
-      getServiceGraphData(campus, 'serviceAggregate', TREND_HISTORY_WEEKS) ||
+      getServiceGraphData(campus, 'serviceAggregate', TREND_HISTORY_WEEKS, t) ||
       [],
-    [campus]
+    [campus, t]
   )
   const serviceWithDollarData = useMemo(
     () =>
       getServiceGraphData(
         campus,
         'serviceAggregateWithDollar',
-        TREND_HISTORY_WEEKS
+        TREND_HISTORY_WEEKS,
+        t
       ) || [],
-    [campus]
+    [campus, t]
   )
   const rawBussingData = useMemo(
     () =>
-      getServiceGraphData(campus, 'bussingAggregate', TREND_HISTORY_WEEKS) ||
+      getServiceGraphData(campus, 'bussingAggregate', TREND_HISTORY_WEEKS, t) ||
       [],
-    [campus]
+    [campus, t]
   )
 
   const bussingData = useMemo(() => {
@@ -155,21 +154,19 @@ const CampusGraphs = () => {
         year: Number(d.year ?? 0),
       }))
       .filter((e) => Number.isFinite(e.week) && e.week > 0)
-    if (!validEntries.length) return 'No service data'
+    if (!validEntries.length) return labels.noServiceData
 
     const sorted = [...validEntries].sort(
       (a, b) => a.year * 100 + a.week - (b.year * 100 + b.week)
     )
     const first = sorted[0]
     const last = sorted[sorted.length - 1]
-    const formatWeekYear = (w: number, y: number) =>
-      y ? `W${w}'${String(y).slice(-2)}` : `W${w}`
 
     if (first.year === last.year) {
-      return `Weeks ${first.week} – ${last.week} (${first.year})`
+      return labels.weeksRange(first.week, last.week, first.year)
     }
-    return `${formatWeekYear(first.week, first.year)} – ${formatWeekYear(last.week, last.year)}`
-  }, [windowedData])
+    return `${labels.weekShort(first.week, first.year)} – ${labels.weekShort(last.week, last.year)}`
+  }, [windowedData, labels])
 
   // Suppress income bar on USD tab — the chart title already signals the currency,
   // and the tooltip would format dollar values with GHS locale.
@@ -183,8 +180,8 @@ const CampusGraphs = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {campus?.name ?? 'Campus'}{' '}
-            <span className="text-churches">Trends</span>
+            {campus?.name ?? labels.fallbackChurchName}{' '}
+            <span className="text-churches">{labels.trends}</span>
           </h1>
         </StickyPageHeader>
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -192,7 +189,7 @@ const CampusGraphs = () => {
             <CardContent className="px-4 py-3 sm:px-5">
               <LeaderAvatar
                 leader={campus?.leader}
-                leaderTitle="Campus Leader"
+                leaderTitle={labels.leaderTitle}
                 loading={!campus}
               />
             </CardContent>
@@ -205,18 +202,18 @@ const CampusGraphs = () => {
             >
               <StatCard
                 compact
-                label="Membership"
+                label={labels.membership}
                 value={campus?.memberCount ?? 0}
                 icon={Users}
                 accent="members"
-                hint="Tap to view"
+                hint={labels.tapToView}
                 loading={!campus}
               />
             </Link>
 
             <StatCard
               compact
-              label="Avg Weekly Bussing"
+              label={labels.avgWeeklyBussing}
               value={avgBussing}
               icon={Bus}
               accent="defaulters"
@@ -225,7 +222,7 @@ const CampusGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Attendance"
+              label={labels.avgWeeklyAttendance}
               value={avgAttendance}
               icon={TrendingUp}
               accent="churches"
@@ -234,8 +231,8 @@ const CampusGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Income"
-              value={incomeTracked ? avgIncome : 'Not tracked'}
+              label={labels.avgWeeklyIncome}
+              value={incomeTracked ? avgIncome : labels.notTracked}
               icon={Wallet}
               accent="banking"
               loading={loading && !campus}
@@ -249,7 +246,7 @@ const CampusGraphs = () => {
               chart title below. */}
           <Tabs value={graphs} onValueChange={handleTabChange}>
             <TabsList className="grid h-auto w-full grid-cols-2 group-data-[orientation=horizontal]/tabs:h-auto">
-              {CAMPUS_GRAPH_OPTIONS.map((option) => (
+              {graphOptions.map((option) => (
                 <TabsTrigger
                   key={option.value}
                   value={option.value}
@@ -279,7 +276,7 @@ const CampusGraphs = () => {
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
                 <ChevronLeft className="size-4" />
-                Older
+                {labels.older}
               </Button>
 
               <span className="text-xs font-medium tabular-nums text-muted-foreground">
@@ -292,7 +289,7 @@ const CampusGraphs = () => {
                 disabled={!canGoNewer}
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
-                Newer
+                {labels.newer}
                 <ChevronRight className="size-4" />
               </Button>
             </div>

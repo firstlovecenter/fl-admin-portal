@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   CalendarCheck,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
@@ -12,6 +13,7 @@ import { Badge } from 'components/ui/badge'
 import { Card, CardContent } from 'components/ui/card'
 import { StatCard } from 'components/ui/stat-card'
 import { Skeleton } from 'components/ui/skeleton'
+import { formatChurchLevel } from 'lib/scope-display'
 import {
   DefaultersUseChurchType,
   GovernorshipWithDefaulters,
@@ -50,13 +52,22 @@ const JointBankingWeekList = ({
   serviceLink,
   week,
 }: JointBankingWeekListProps) => {
+  const { t } = useTranslation()
   const isNotBanked = variant === 'not-banked'
+  const levelLabel = formatChurchLevel(subjectLabel, t)
 
   const accentText = isNotBanked ? 'text-defaulters' : 'text-banking'
   const sectionName = isNotBanked
-    ? `${subjectLabel} Not Banked`
-    : `${subjectLabel} Banked`
+    ? t('services.defaulters.subjectNotBanked', { level: levelLabel })
+    : t('services.defaulters.subjectBanked', { level: levelLabel })
   const count = records.length
+
+  const countMessage = isNotBanked
+    ? t('services.defaulters.jointCountNotBanked', {
+        count,
+        level: levelLabel,
+      })
+    : t('services.defaulters.jointCountBanked', { count, level: levelLabel })
 
   return (
     <PullToRefresh onRefresh={refetch}>
@@ -75,17 +86,10 @@ const JointBankingWeekList = ({
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarCheck className="size-3.5" />
-                  Week {week}
+                  {t('services.defaulters.weekBadge', { week })}
                 </Badge>
                 {church ? (
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {count}
-                    </span>{' '}
-                    {subjectLabel.toLowerCase()}
-                    {count === 1 ? ' service has' : ' services have'}{' '}
-                    {isNotBanked ? 'not banked' : 'banked'} this week
-                  </p>
+                  <p className="text-sm text-muted-foreground">{countMessage}</p>
                 ) : (
                   <Skeleton className="h-5 w-40" />
                 )}
@@ -99,11 +103,15 @@ const JointBankingWeekList = ({
               {/* Supporting column — summary */}
               <aside className="lg:col-start-2 lg:row-start-1 lg:sticky lg:top-[88px]">
                 <StatCard
-                  label={isNotBanked ? 'Not Banked' : 'Banked This Week'}
+                  label={
+                    isNotBanked
+                      ? t('services.defaulters.notBanked')
+                      : t('services.defaulters.bankedThisWeekStat')
+                  }
                   value={count}
                   icon={isNotBanked ? AlertTriangle : Banknote}
                   accent={isNotBanked ? 'defaulters' : 'banking'}
-                  hint={`Week ${week}`}
+                  hint={t('services.defaulters.weekBadge', { week })}
                   loading={!church}
                 />
               </aside>
@@ -120,13 +128,17 @@ const JointBankingWeekList = ({
                       </span>
                       <p className="text-sm font-medium text-foreground">
                         {isNotBanked
-                          ? 'Nothing outstanding'
-                          : 'No banked services yet'}
+                          ? t('services.defaulters.nothingOutstanding')
+                          : t('services.defaulters.noBankedServicesYet')}
                       </p>
                       <p className="max-w-xs text-xs text-muted-foreground">
                         {isNotBanked
-                          ? `No ${subjectLabel.toLowerCase()} services are awaiting banking this week.`
-                          : `No ${subjectLabel.toLowerCase()} services have banked this week.`}
+                          ? t('services.defaulters.noJointAwaiting', {
+                              level: levelLabel,
+                            })
+                          : t('services.defaulters.noJointBanked', {
+                              level: levelLabel,
+                            })}
                       </p>
                     </CardContent>
                   </Card>

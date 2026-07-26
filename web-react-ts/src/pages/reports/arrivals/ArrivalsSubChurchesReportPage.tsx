@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Alert, AlertDescription } from 'components/ui/alert'
@@ -39,32 +41,51 @@ const TARGETS_BY_SCOPE: Record<ArrivalsScope, readonly ArrivalsTargetLevel[]> =
 const isArrivalsScope = (value: string): value is ArrivalsScope =>
   value === 'Campus' || value === 'Stream' || value === 'Council'
 
-const METRIC_HEADERS = [
-  { label: 'Active Bacentas', key: 'activeBacentas' },
-  { label: 'Bacentas Bussed', key: 'bacentasWithBussing' },
-  { label: 'Total Attendance', key: 'totalAttendance' },
-  { label: 'Total Leader Declaration', key: 'totalLeaderDeclaration' },
-  { label: 'Sprinters', key: 'totalSprinters' },
-  { label: 'Urvans', key: 'totalUrvans' },
-  { label: 'Cars', key: 'totalCars' },
-  { label: 'Bussing Cost (GHS)', key: 'totalBussingCost' },
-  { label: 'Bussing Top-Up (GHS)', key: 'totalBussingTopUp' },
-] as const
+const levelLabel = (level: string, t: TFunction) =>
+  t(`shared.churchLevel.${level}`)
 
-const decoratorHeadersFor = (level: ArrivalsTargetLevel) => [
-  { key: `${level}_name`, label: level },
-  { key: `${level}_leader`, label: `${level} Leader` },
-  { key: `${level}_phone`, label: `${level} Leader Phone` },
-]
+const metricHeaders = (t: TFunction) =>
+  [
+    { label: t('reports.shared.activeBacentas'), key: 'activeBacentas' },
+    { label: t('reports.shared.bacentasBussed'), key: 'bacentasWithBussing' },
+    { label: t('reports.shared.totalAttendance'), key: 'totalAttendance' },
+    {
+      label: t('reports.shared.totalLeaderDeclaration'),
+      key: 'totalLeaderDeclaration',
+    },
+    { label: t('reports.shared.sprinters'), key: 'totalSprinters' },
+    { label: t('reports.shared.urvans'), key: 'totalUrvans' },
+    { label: t('reports.shared.cars'), key: 'totalCars' },
+    { label: t('reports.shared.bussingCostGhs'), key: 'totalBussingCost' },
+    { label: t('reports.shared.bussingTopUpGhs'), key: 'totalBussingTopUp' },
+  ] as const
 
-const buildHeaders = (selected: readonly ArrivalsTargetLevel[]) => {
+const decoratorHeadersFor = (level: ArrivalsTargetLevel, t: TFunction) => {
+  const label = levelLabel(level, t)
+  return [
+    { key: `${level}_name`, label },
+    {
+      key: `${level}_leader`,
+      label: t('reports.shared.levelLeader', { level: label }),
+    },
+    {
+      key: `${level}_phone`,
+      label: t('reports.shared.levelLeaderPhone', { level: label }),
+    },
+  ]
+}
+
+const buildHeaders = (
+  selected: readonly ArrivalsTargetLevel[],
+  t: TFunction
+) => {
   const ordered = SUB_CHURCH_TARGETS_ORDERED.filter(
     (l): l is ArrivalsTargetLevel =>
       l !== 'Campus' && selected.includes(l as ArrivalsTargetLevel)
   )
   return [
-    ...ordered.flatMap(decoratorHeadersFor),
-    ...METRIC_HEADERS.map((h) => ({ key: h.key, label: h.label })),
+    ...ordered.flatMap((l) => decoratorHeadersFor(l, t)),
+    ...metricHeaders(t).map((h) => ({ key: h.key, label: h.label })),
   ]
 }
 
@@ -108,25 +129,35 @@ const buildRow = (
   return row
 }
 
-const previewColumnsFor = (selected: readonly ArrivalsTargetLevel[]) => {
+const previewColumnsFor = (
+  selected: readonly ArrivalsTargetLevel[],
+  t: TFunction
+) => {
   const ordered = SUB_CHURCH_TARGETS_ORDERED.filter(
     (l): l is ArrivalsTargetLevel =>
       l !== 'Campus' && selected.includes(l as ArrivalsTargetLevel)
   )
   return [
-    ...ordered.flatMap((l) => [
-      { key: `${l}_name`, label: l },
-      { key: `${l}_leader`, label: `${l} Leader` },
-    ]),
-    { key: 'bacentasWithBussing', label: 'Bussed' },
-    { key: 'totalAttendance', label: 'Attendance' },
-    { key: 'totalBussingTopUp', label: 'Top-Up' },
+    ...ordered.flatMap((l) => {
+      const label = levelLabel(l, t)
+      return [
+        { key: `${l}_name`, label },
+        {
+          key: `${l}_leader`,
+          label: t('reports.shared.levelLeader', { level: label }),
+        },
+      ]
+    }),
+    { key: 'bacentasWithBussing', label: t('reports.shared.bussed') },
+    { key: 'totalAttendance', label: t('reports.shared.attendance') },
+    { key: 'totalBussingTopUp', label: t('reports.shared.topUp') },
   ]
 }
 
 const levelKey = (levels: readonly ArrivalsTargetLevel[]) => levels.join(',')
 
 const ArrivalsSubChurchesReportPage = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   const { arrivalDate, dateLabel } = useSelectedArrivalDate()
 
@@ -186,11 +217,22 @@ const ArrivalsSubChurchesReportPage = () => {
     )
   }, [payload, appliedLevels, appliedTarget])
 
-  const headers = useMemo(() => buildHeaders(appliedLevels), [appliedLevels])
-  const previewColumns = useMemo(
-    () => (appliedTarget ? previewColumnsFor(appliedLevels) : []),
-    [appliedLevels, appliedTarget]
+  const headers = useMemo(
+    () => buildHeaders(appliedLevels, t),
+    [appliedLevels, t]
   )
+  const previewColumns = useMemo(
+    () => (appliedTarget ? previewColumnsFor(appliedLevels, t) : []),
+    [appliedLevels, appliedTarget, t]
+  )
+
+  const targetLabel = appliedTarget
+    ? levelLabel(appliedTarget, t)
+    : t('reports.shared.subChurch')
+  const byTitle = t('reports.shared.byLevel', {
+    report: t('reports.arrivals.reportName'),
+    level: targetLabel,
+  })
 
   const filename = useMemo(() => {
     const safe = sanitizeFilenamePart(churchName)
@@ -200,12 +242,12 @@ const ArrivalsSubChurchesReportPage = () => {
   if (!selectedScope) {
     return (
       <ReportPageShell
-        title="Arrivals"
-        highlightWord="by Sub-Church"
+        title={t('reports.arrivals.title')}
+        highlightWord={t('reports.arrivals.bySubChurch')}
         highlightClassName="text-arrivals"
       >
         <p className="text-sm text-muted-foreground">
-          Select a church scope to download the breakdown.
+          {t('reports.shared.selectScopeBreakdown')}
         </p>
       </ReportPageShell>
     )
@@ -215,15 +257,13 @@ const ArrivalsSubChurchesReportPage = () => {
     return (
       <ReportPageShell
         title={churchName}
-        highlightWord="Arrivals by Sub-Church"
+        highlightWord={t('reports.arrivals.arrivalsBySubChurch')}
         highlightClassName="text-arrivals"
       >
         <Alert>
           <AlertTriangle className="size-4" />
           <AlertDescription>
-            The by-sub-church arrivals breakdown is available at Council,
-            Stream, and Campus scopes. Switch your church-in-focus to one of
-            those levels to enable it.
+            {t('reports.arrivals.subChurchUnavailable')}
           </AlertDescription>
         </Alert>
       </ReportPageShell>
@@ -233,9 +273,9 @@ const ArrivalsSubChurchesReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord={`Arrivals by ${appliedTarget ?? 'Sub-Church'}`}
+      highlightWord={byTitle}
       highlightClassName="text-arrivals"
-      subtitle="Pick the row level and which ancestor columns to include, then click Apply to refresh the report."
+      subtitle={t('reports.shared.pickerSubtitle')}
     >
       <div className="space-y-6">
         <SubChurchLevelPicker
@@ -250,7 +290,7 @@ const ArrivalsSubChurchesReportPage = () => {
 
         <section className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Bussing date
+            {t('reports.arrivals.bussingDate')}
           </p>
           <div className="mt-3">
             <ArrivalDateSelector />
@@ -270,10 +310,14 @@ const ArrivalsSubChurchesReportPage = () => {
           </Alert>
         ) : (
           <WeeklyReportDownloadCard
-            title={`Arrivals by ${appliedTarget ?? 'Sub-Church'}`}
-            description={`One row per ${
-              appliedTarget?.toLowerCase() ?? 'sub-church'
-            } in ${churchName || 'this church'} for ${dateLabel}, with ancestor decoration columns for every ticked level above.`}
+            title={byTitle}
+            description={t('reports.shared.oneRowPerLevel', {
+              level: appliedTarget
+                ? levelLabel(appliedTarget, t)
+                : t('reports.shared.subChurchFallback'),
+              church: churchName || t('reports.shared.thisChurch'),
+              period: dateLabel,
+            })}
             filename={filename}
             loading={loading}
             rows={rows}
@@ -281,7 +325,10 @@ const ArrivalsSubChurchesReportPage = () => {
             entriesCount={rows.length}
             rangeLabel={dateLabel}
             previewColumns={previewColumns}
-            emptyMessage={`No arrivals data for ${churchName} on ${dateLabel}.`}
+            emptyMessage={t('reports.arrivals.emptyMessage', {
+              church: churchName,
+              date: dateLabel,
+            })}
           />
         )}
       </div>

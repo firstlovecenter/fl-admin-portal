@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { getHumanReadableDate } from 'global-utils'
@@ -16,59 +18,63 @@ import {
 } from '../_shared/week-utils'
 import type { ServiceRecordDetailEntry } from '../_shared/report-types'
 
-const HEADERS = [
-  { label: 'Service Date', key: 'serviceDate' },
-  { label: 'Year', key: 'year' },
-  { label: 'Week', key: 'week' },
-  { label: 'No-Service Reason', key: 'noServiceReason' },
-  { label: 'Attendance', key: 'attendance' },
-  { label: 'Income', key: 'income' },
-  { label: 'Cash', key: 'cash' },
-  { label: 'Online Giving', key: 'onlineGiving' },
-  { label: 'Number of Tithers', key: 'numberOfTithers' },
-  { label: 'Foreign Currency', key: 'foreignCurrency' },
-  { label: 'Dollar Income', key: 'dollarIncome' },
-  { label: 'Recorded By', key: 'recordedByName' },
-  { label: 'Recorded By Phone', key: 'recordedByPhone' },
-  { label: 'Recorded At', key: 'createdAt' },
-  { label: 'Treasurers', key: 'treasurerNames' },
-  { label: 'Treasurer Phones', key: 'treasurerPhones' },
-  { label: 'Family Picture', key: 'familyPicture' },
-  { label: 'Treasurer Selfie', key: 'treasurerSelfie' },
-  { label: 'Banking Slip', key: 'bankingSlip' },
-  { label: 'Transaction Status', key: 'transactionStatus' },
-  { label: 'Banking Proof', key: 'bankingProofLabel' },
-  { label: 'Banked By', key: 'bankedByName' },
-  { label: 'Banked By Phone', key: 'bankedByPhone' },
-  { label: 'Service Record ID', key: 'id' },
-] as const
+const buildHeaders = (t: TFunction) =>
+  [
+    { label: t('reports.weekday.serviceDate'), key: 'serviceDate' },
+    { label: t('reports.shared.year'), key: 'year' },
+    { label: t('reports.shared.week'), key: 'week' },
+    { label: t('reports.weekday.noServiceReason'), key: 'noServiceReason' },
+    { label: t('reports.shared.attendance'), key: 'attendance' },
+    { label: t('reports.shared.income'), key: 'income' },
+    { label: t('reports.weekday.cash'), key: 'cash' },
+    { label: t('reports.weekday.onlineGiving'), key: 'onlineGiving' },
+    { label: t('reports.weekday.numberOfTithers'), key: 'numberOfTithers' },
+    { label: t('reports.weekday.foreignCurrency'), key: 'foreignCurrency' },
+    { label: t('reports.weekday.dollarIncome'), key: 'dollarIncome' },
+    { label: t('reports.weekday.recordedBy'), key: 'recordedByName' },
+    { label: t('reports.weekday.recordedByPhone'), key: 'recordedByPhone' },
+    { label: t('reports.weekday.recordedAt'), key: 'createdAt' },
+    { label: t('reports.weekday.treasurers'), key: 'treasurerNames' },
+    { label: t('reports.weekday.treasurerPhones'), key: 'treasurerPhones' },
+    { label: t('reports.weekday.familyPicture'), key: 'familyPicture' },
+    { label: t('reports.weekday.treasurerSelfie'), key: 'treasurerSelfie' },
+    { label: t('reports.weekday.bankingSlip'), key: 'bankingSlip' },
+    {
+      label: t('reports.weekday.transactionStatus'),
+      key: 'transactionStatus',
+    },
+    { label: t('reports.weekday.bankingProof'), key: 'bankingProofLabel' },
+    { label: t('reports.weekday.bankedBy'), key: 'bankedByName' },
+    { label: t('reports.weekday.bankedByPhone'), key: 'bankedByPhone' },
+    { label: t('reports.weekday.serviceRecordId'), key: 'id' },
+  ] as const
 
-const PREVIEW_COLUMNS = [
-  { key: 'serviceDate', label: 'Date' },
-  { key: 'attendance', label: 'Attendance' },
-  { key: 'income', label: 'Income' },
-  { key: 'noServiceReason', label: 'No-Service Reason' },
-  { key: 'recordedByName', label: 'Recorded By' },
+const buildPreviewColumns = (t: TFunction) => [
+  { key: 'serviceDate', label: t('reports.weekday.date') },
+  { key: 'attendance', label: t('reports.shared.attendance') },
+  { key: 'income', label: t('reports.shared.income') },
+  { key: 'noServiceReason', label: t('reports.weekday.noServiceReason') },
+  { key: 'recordedByName', label: t('reports.weekday.recordedBy') },
 ]
 
 const formatTreasurerNames = (entry: ServiceRecordDetailEntry) =>
   entry.treasurers
-    .map((t) => t.name.trim())
+    .map((treasurer) => treasurer.name.trim())
     .filter(Boolean)
     .join('; ')
 
 const formatTreasurerPhones = (entry: ServiceRecordDetailEntry) =>
   entry.treasurers
-    .map((t) => t.phone ?? '')
+    .map((treasurer) => treasurer.phone ?? '')
     .filter(Boolean)
     .join('; ')
 
-const formatBankingProof = (entry: ServiceRecordDetailEntry) => {
+const formatBankingProof = (entry: ServiceRecordDetailEntry, t: TFunction) => {
   if (entry.bankingProof === null) return ''
-  return entry.bankingProof ? 'Yes' : 'No'
+  return entry.bankingProof ? t('reports.weekday.yes') : t('reports.weekday.no')
 }
 
-const toRow = (entry: ServiceRecordDetailEntry) => ({
+const toRow = (entry: ServiceRecordDetailEntry, t: TFunction) => ({
   serviceDate: entry.serviceDate ?? '',
   year: entry.year ?? '',
   week: entry.week ?? '',
@@ -89,13 +95,14 @@ const toRow = (entry: ServiceRecordDetailEntry) => ({
   treasurerSelfie: entry.treasurerSelfie ?? '',
   bankingSlip: entry.bankingSlip ?? '',
   transactionStatus: entry.transactionStatus ?? '',
-  bankingProofLabel: formatBankingProof(entry),
+  bankingProofLabel: formatBankingProof(entry, t),
   bankedByName: entry.bankedByName ?? '',
   bankedByPhone: entry.bankedByPhone ?? '',
   id: entry.id,
 })
 
 const BacentaServiceRecordsReportPage = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   const churchType = selectedScope?.churchType
   const churchId = selectedScope?.churchId
@@ -138,6 +145,10 @@ const BacentaServiceRecordsReportPage = () => {
     [data]
   )
 
+  const headers = useMemo(() => buildHeaders(t), [t])
+  const previewColumns = useMemo(() => buildPreviewColumns(t), [t])
+  const rows = useMemo(() => entries.map((entry) => toRow(entry, t)), [entries, t])
+
   const rangeLabel =
     startWeekKey !== null && endWeekKey !== null
       ? `${getHumanReadableDate(startDate) ?? startDate} → ${
@@ -154,10 +165,12 @@ const BacentaServiceRecordsReportPage = () => {
 
   if (churchType !== 'Bacenta') {
     return (
-      <ReportPageShell title="Weekday" highlightWord="Service Records">
+      <ReportPageShell
+        title={t('reports.weekday.title')}
+        highlightWord={t('reports.weekday.serviceRecords')}
+      >
         <p className="text-sm text-muted-foreground">
-          The detailed per-service Weekday report is only available at Bacenta
-          scope. Switch to a Bacenta to download it.
+          {t('reports.weekday.bacentaOnly')}
         </p>
       </ReportPageShell>
     )
@@ -166,8 +179,8 @@ const BacentaServiceRecordsReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Weekday Service Records"
-      subtitle="One row per individual service record, with treasurer, photo, and banking detail."
+      highlightWord={t('reports.weekday.serviceRecordsHighlight')}
+      subtitle={t('reports.weekday.serviceRecordsSubtitle')}
     >
       <div className="space-y-6">
         <DateRangePicker
@@ -179,16 +192,16 @@ const BacentaServiceRecordsReportPage = () => {
 
         <ApolloWrapper data={entries} loading={loading} error={error} placeholder>
           <WeeklyReportDownloadCard
-            title="Weekday Service Records"
-            description="Full per-service detail for this Bacenta — including no-service reasons, treasurers, photo URLs, and banking-proof state."
+            title={t('reports.weekday.serviceRecordsHighlight')}
+            description={t('reports.weekday.serviceRecordsDescription')}
             filename={filename}
             loading={loading}
-            rows={entries.map(toRow)}
-            headers={HEADERS}
+            rows={rows}
+            headers={headers}
             entriesCount={entries.length}
             rangeLabel={rangeLabel ?? undefined}
-            previewColumns={PREVIEW_COLUMNS}
-            emptyMessage="No service records in the selected range."
+            previewColumns={previewColumns}
+            emptyMessage={t('reports.weekday.serviceRecordsEmpty')}
           />
         </ApolloWrapper>
       </div>

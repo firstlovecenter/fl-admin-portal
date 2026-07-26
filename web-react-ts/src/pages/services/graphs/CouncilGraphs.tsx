@@ -1,4 +1,5 @@
 import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@apollo/client'
 import { Link } from 'react-router-dom'
 import {
@@ -27,16 +28,10 @@ import {
   getMonthlyStatAverage,
   GraphTypes,
 } from './graphs-utils'
+import { getGraphPageLabels, higherChurchGraphOptions } from './graph-labels'
 
 const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
-
-// Council has its own joint services plus aggregates of all governorships and bacentas.
-const COUNCIL_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
-  { value: 'services', label: 'Joint Service' },
-  { value: 'serviceAggregate', label: 'All Services' },
-  { value: 'bussingAggregate', label: 'All Bussing' },
-]
 
 const formatStat = (value: string | undefined) =>
   value && value !== 'NaN'
@@ -44,6 +39,9 @@ const formatStat = (value: string | undefined) =>
     : '—'
 
 const CouncilGraphs = () => {
+  const { t } = useTranslation()
+  const labels = getGraphPageLabels(t, 'Council')
+  const graphOptions = useMemo(() => higherChurchGraphOptions(t), [t])
   const { councilId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const [graphs, setGraphs] = useState<GraphTypes>('services')
@@ -57,18 +55,18 @@ const CouncilGraphs = () => {
   const incomeTracked = !currentUser?.noIncomeTracking
 
   const jointServiceData = useMemo(
-    () => getServiceGraphData(council, 'services', TREND_HISTORY_WEEKS) || [],
-    [council]
+    () => getServiceGraphData(council, 'services', TREND_HISTORY_WEEKS, t) || [],
+    [council, t]
   )
   const serviceData = useMemo(
     () =>
-      getServiceGraphData(council, 'serviceAggregate', TREND_HISTORY_WEEKS) ||
+      getServiceGraphData(council, 'serviceAggregate', TREND_HISTORY_WEEKS, t) ||
       [],
     [council]
   )
   const rawBussingData = useMemo(
     () =>
-      getServiceGraphData(council, 'bussingAggregate', TREND_HISTORY_WEEKS) ||
+      getServiceGraphData(council, 'bussingAggregate', TREND_HISTORY_WEEKS, t) ||
       [],
     [council]
   )
@@ -142,21 +140,19 @@ const CouncilGraphs = () => {
         year: Number(d.year ?? 0),
       }))
       .filter((e) => Number.isFinite(e.week) && e.week > 0)
-    if (!validEntries.length) return 'No service data'
+    if (!validEntries.length) return labels.noServiceData
 
     const sorted = [...validEntries].sort(
       (a, b) => a.year * 100 + a.week - (b.year * 100 + b.week)
     )
     const first = sorted[0]
     const last = sorted[sorted.length - 1]
-    const formatWeekYear = (w: number, y: number) =>
-      y ? `W${w}'${String(y).slice(-2)}` : `W${w}`
 
     if (first.year === last.year) {
-      return `Weeks ${first.week} – ${last.week} (${first.year})`
+      return labels.weeksRange(first.week, last.week, first.year)
     }
-    return `${formatWeekYear(first.week, first.year)} – ${formatWeekYear(last.week, last.year)}`
-  }, [windowedData])
+    return `${labels.weekShort(first.week, first.year)} – ${labels.weekShort(last.week, last.year)}`
+  }, [windowedData, labels])
 
   const showIncomeBar =
     !isBussingTab && !!getMonthlyStatAverage(windowedData, 'income')
@@ -166,8 +162,8 @@ const CouncilGraphs = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {council?.name ?? 'Council'}{' '}
-            <span className="text-churches">Trends</span>
+            {council?.name ?? labels.fallbackChurchName}{' '}
+            <span className="text-churches">{labels.trends}</span>
           </h1>
         </StickyPageHeader>
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -175,7 +171,7 @@ const CouncilGraphs = () => {
             <CardContent className="px-4 py-3 sm:px-5">
               <LeaderAvatar
                 leader={council?.leader}
-                leaderTitle="Council Leader"
+                leaderTitle={labels.leaderTitle}
                 loading={!council}
               />
             </CardContent>
@@ -188,18 +184,18 @@ const CouncilGraphs = () => {
             >
               <StatCard
                 compact
-                label="Membership"
+                label={labels.membership}
                 value={council?.memberCount ?? 0}
                 icon={Users}
                 accent="members"
-                hint="Tap to view"
+                hint={labels.tapToView}
                 loading={!council}
               />
             </Link>
 
             <StatCard
               compact
-              label="Avg Weekly Bussing"
+              label={labels.avgWeeklyBussing}
               value={avgBussing}
               icon={Bus}
               accent="defaulters"
@@ -208,7 +204,7 @@ const CouncilGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Attendance"
+              label={labels.avgWeeklyAttendance}
               value={avgAttendance}
               icon={TrendingUp}
               accent="churches"
@@ -217,8 +213,8 @@ const CouncilGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Income"
-              value={incomeTracked ? avgIncome : 'Not tracked'}
+              label={labels.avgWeeklyIncome}
+              value={incomeTracked ? avgIncome : labels.notTracked}
               icon={Wallet}
               accent="banking"
               loading={loading && !council}
@@ -227,7 +223,7 @@ const CouncilGraphs = () => {
 
           <Tabs value={graphs} onValueChange={handleTabChange}>
             <TabsList className="grid h-12 w-full grid-cols-3">
-              {COUNCIL_GRAPH_OPTIONS.map((option) => (
+              {graphOptions.map((option) => (
                 <TabsTrigger key={option.value} value={option.value}>
                   {option.label}
                 </TabsTrigger>
@@ -253,7 +249,7 @@ const CouncilGraphs = () => {
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
                 <ChevronLeft className="size-4" />
-                Older
+                {labels.older}
               </Button>
 
               <span className="text-xs font-medium tabular-nums text-muted-foreground">
@@ -266,7 +262,7 @@ const CouncilGraphs = () => {
                 disabled={!canGoNewer}
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
-                Newer
+                {labels.newer}
                 <ChevronRight className="size-4" />
               </Button>
             </div>

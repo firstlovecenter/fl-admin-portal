@@ -1,5 +1,6 @@
 import { useApolloClient } from '@apollo/client'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import ShepherdingSlide from './components/ShepherdingSlide'
 import { checkScope, walkSubtree } from './shepherding-control-fetch'
@@ -23,6 +24,7 @@ const PRINT_STYLES = `
 `
 
 const ShepherdingControlPrint = () => {
+  const { t } = useTranslation()
   const [params] = useSearchParams()
   const client = useApolloClient()
 
@@ -45,8 +47,8 @@ const ShepherdingControlPrint = () => {
   const cancelledRef = useRef(false)
 
   useEffect(() => {
-    document.title = 'Shepherding Control — Print'
-  }, [])
+    document.title = t('shepherding.print.documentTitle')
+  }, [t])
 
   useEffect(() => {
     if (
@@ -59,7 +61,7 @@ const ShepherdingControlPrint = () => {
       Number.isNaN(year)
     ) {
       setStatus('error')
-      setErrorMessage('Missing or invalid parameters in URL.')
+      setErrorMessage(t('shepherding.print.invalidParams'))
       return
     }
 
@@ -71,7 +73,7 @@ const ShepherdingControlPrint = () => {
         const allowed = await checkScope(client, root)
         if (!allowed) {
           setStatus('error')
-          setErrorMessage('Out of scope: you can only print your own subtree.')
+          setErrorMessage(t('shepherding.print.outOfScope'))
           return
         }
 
@@ -94,7 +96,7 @@ const ShepherdingControlPrint = () => {
         if (!cancelledRef.current) {
           setStatus('error')
           setErrorMessage(
-            err instanceof Error ? err.message : 'Failed to load slides.'
+            err instanceof Error ? err.message : t('shepherding.print.loadFailed')
           )
         }
       }
@@ -104,7 +106,7 @@ const ShepherdingControlPrint = () => {
     return () => {
       cancelledRef.current = true
     }
-  }, [client, level, id, depth, week, year])
+  }, [client, level, id, depth, week, year, t])
 
   // Defer by one frame so the final slide is painted before the dialog opens.
   useEffect(() => {
@@ -130,7 +132,9 @@ const ShepherdingControlPrint = () => {
 
       {status === 'loading' && slides.length === 0 && (
         <div className="flex min-h-svh items-center justify-center print:hidden">
-          <p className="text-xl text-muted-foreground">Loading slides…</p>
+          <p className="text-xl text-muted-foreground">
+            {t('shepherding.print.loading')}
+          </p>
         </div>
       )}
 

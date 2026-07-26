@@ -1,4 +1,5 @@
 import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@apollo/client'
 import { Link } from 'react-router-dom'
 import {
@@ -28,19 +29,10 @@ import {
   formatIncomeStat,
   GraphTypes,
 } from './graphs-utils'
+import { getGraphPageLabels, oversightGraphOptions } from './graph-labels'
 
 const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
-
-// Oversight has joint services plus aggregates of all campuses and levels below.
-// A single-currency oversight (e.g. all-GHS Outside Accra) reports income in that
-// native currency; only a genuinely multi-currency oversight consolidates to USD.
-// The currency travels on each aggregate — see `incomeCurrency` below.
-const OVERSIGHT_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
-  { value: 'services', label: 'Joint Service' },
-  { value: 'serviceAggregate', label: 'All Services' },
-  { value: 'bussingAggregate', label: 'All Bussing' },
-]
 
 const formatStat = (value: string | undefined) =>
   value && value !== 'NaN'
@@ -48,6 +40,9 @@ const formatStat = (value: string | undefined) =>
     : '—'
 
 const OversightGraphs = () => {
+  const { t } = useTranslation()
+  const labels = getGraphPageLabels(t, 'Oversight')
+  const graphOptions = useMemo(() => oversightGraphOptions(t), [t])
   const { oversightId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const [graphs, setGraphs] = useState<GraphTypes>('services')
@@ -61,20 +56,29 @@ const OversightGraphs = () => {
   const incomeTracked = !currentUser?.noIncomeTracking
 
   const jointServiceData = useMemo(
-    () => getServiceGraphData(oversight, 'services', TREND_HISTORY_WEEKS) || [],
-    [oversight]
+    () =>
+      getServiceGraphData(oversight, 'services', TREND_HISTORY_WEEKS, t) || [],
+    [oversight, t]
   )
   const serviceData = useMemo(
     () =>
-      getServiceGraphData(oversight, 'serviceAggregate', TREND_HISTORY_WEEKS) ||
-      [],
-    [oversight]
+      getServiceGraphData(
+        oversight,
+        'serviceAggregate',
+        TREND_HISTORY_WEEKS,
+        t
+      ) || [],
+    [oversight, t]
   )
   const rawBussingData = useMemo(
     () =>
-      getServiceGraphData(oversight, 'bussingAggregate', TREND_HISTORY_WEEKS) ||
-      [],
-    [oversight]
+      getServiceGraphData(
+        oversight,
+        'bussingAggregate',
+        TREND_HISTORY_WEEKS,
+        t
+      ) || [],
+    [oversight, t]
   )
 
   // Currency the aggregated income is stored in: native (e.g. GHS) for a
@@ -138,7 +142,8 @@ const OversightGraphs = () => {
   const avgIncomeDisplay = formatIncomeStat(
     avgIncomeRaw,
     incomeTracked,
-    incomeCurrency
+    incomeCurrency,
+    t
   )
 
   const canGoOlder = windowStart > 0
@@ -161,21 +166,19 @@ const OversightGraphs = () => {
         year: Number(d.year ?? 0),
       }))
       .filter((e) => Number.isFinite(e.week) && e.week > 0)
-    if (!validEntries.length) return 'No service data'
+    if (!validEntries.length) return labels.noServiceData
 
     const sorted = [...validEntries].sort(
       (a, b) => a.year * 100 + a.week - (b.year * 100 + b.week)
     )
     const first = sorted[0]
     const last = sorted[sorted.length - 1]
-    const formatWeekYear = (w: number, y: number) =>
-      y ? `W${w}'${String(y).slice(-2)}` : `W${w}`
 
     if (first.year === last.year) {
-      return `Weeks ${first.week} – ${last.week} (${first.year})`
+      return labels.weeksRange(first.week, last.week, first.year)
     }
-    return `${formatWeekYear(first.week, first.year)} – ${formatWeekYear(last.week, last.year)}`
-  }, [windowedData])
+    return `${labels.weekShort(first.week, first.year)} – ${labels.weekShort(last.week, last.year)}`
+  }, [windowedData, labels])
 
   const showIncomeBar =
     !isBussingTab && !!getMonthlyStatAverage(windowedData, 'income')
@@ -185,8 +188,8 @@ const OversightGraphs = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {oversight?.name ?? 'Oversight'}{' '}
-            <span className="text-churches">Trends</span>
+            {oversight?.name ?? labels.fallbackChurchName}{' '}
+            <span className="text-churches">{labels.trends}</span>
           </h1>
         </StickyPageHeader>
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -194,7 +197,7 @@ const OversightGraphs = () => {
             <CardContent className="px-4 py-3 sm:px-5">
               <LeaderAvatar
                 leader={oversight?.leader}
-                leaderTitle="Oversight Leader"
+                leaderTitle={labels.leaderTitle}
                 loading={!oversight}
               />
             </CardContent>
@@ -207,18 +210,18 @@ const OversightGraphs = () => {
             >
               <StatCard
                 compact
-                label="Membership"
+                label={labels.membership}
                 value={oversight?.memberCount ?? 0}
                 icon={Users}
                 accent="members"
-                hint="Tap to view"
+                hint={labels.tapToView}
                 loading={!oversight}
               />
             </Link>
 
             <StatCard
               compact
-              label="Avg Weekly Bussing"
+              label={labels.avgWeeklyBussing}
               value={avgBussing}
               icon={Bus}
               accent="defaulters"
@@ -227,7 +230,7 @@ const OversightGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Attendance"
+              label={labels.avgWeeklyAttendance}
               value={avgAttendance}
               icon={TrendingUp}
               accent="churches"
@@ -236,7 +239,7 @@ const OversightGraphs = () => {
 
             <StatCard
               compact
-              label={`Avg Weekly Income (${incomeCurrency})`}
+              label={`${labels.avgWeeklyIncome} (${incomeCurrency})`}
               value={avgIncomeDisplay}
               icon={Wallet}
               accent="banking"
@@ -251,7 +254,7 @@ const OversightGraphs = () => {
               chart title below. */}
           <Tabs value={graphs} onValueChange={handleTabChange}>
             <TabsList className="grid h-auto w-full grid-cols-2 group-data-[orientation=horizontal]/tabs:h-auto">
-              {OVERSIGHT_GRAPH_OPTIONS.map((option) => (
+              {graphOptions.map((option) => (
                 <TabsTrigger
                   key={option.value}
                   value={option.value}
@@ -281,7 +284,7 @@ const OversightGraphs = () => {
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
                 <ChevronLeft className="size-4" />
-                Older
+                {labels.older}
               </Button>
 
               <span className="text-xs font-medium tabular-nums text-muted-foreground">
@@ -294,7 +297,7 @@ const OversightGraphs = () => {
                 disabled={!canGoNewer}
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
-                Newer
+                {labels.newer}
                 <ChevronRight className="size-4" />
               </Button>
             </div>

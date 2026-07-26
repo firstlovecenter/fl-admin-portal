@@ -1,6 +1,8 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Checkbox } from 'components/ui/checkbox'
 import type { ChurchLevel } from 'global-types'
+import { formatChurchLevel } from 'lib/scope-display'
 import { ListChecks, ListX } from 'lucide-react'
 
 type Props = {
@@ -23,6 +25,7 @@ const AncestorLevelPicker = ({
   selectedLevels,
   onChange,
 }: Props) => {
+  const { t } = useTranslation()
   const headingId = useId()
   if (availableLevels.length === 0) return null
 
@@ -53,11 +56,10 @@ const AncestorLevelPicker = ({
             id={headingId}
             className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
           >
-            Sub-church columns
+            {t('services.membershipDownload.subchurchColumns')}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tick a level to add its church name, leader, and leader phone to
-            every row.
+            {t('services.membershipDownload.subchurchHint')}
           </p>
         </div>
         <div className="shrink-0 flex items-center gap-1">
@@ -68,7 +70,7 @@ const AncestorLevelPicker = ({
             className="inline-flex min-h-11 items-center gap-1 rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ListChecks className="size-3.5" />
-            All
+            {t('services.membershipDownload.all')}
           </button>
           <button
             type="button"
@@ -77,7 +79,7 @@ const AncestorLevelPicker = ({
             className="inline-flex min-h-11 items-center gap-1 rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ListX className="size-3.5" />
-            Clear
+            {t('services.membershipDownload.clear')}
           </button>
         </div>
       </div>
@@ -89,18 +91,15 @@ const AncestorLevelPicker = ({
       >
         {availableLevels.map((level) => {
           const isOn = selected.has(level)
-          // Whole row is the click target. A native <label> would not
-          // forward clicks to a Radix Checkbox (which renders <button>,
-          // not <input>), so users could only hit the tiny 16px square.
-          // Render the row as a button and let the Checkbox be a
-          // visual-only indicator.
           return (
             <li key={level}>
               <button
                 type="button"
                 onClick={() => toggle(level)}
                 aria-pressed={isOn}
-                aria-label={`Include ${level} columns`}
+                aria-label={t('services.membershipDownload.includeColumnsAria', {
+                  level: formatChurchLevel(level, t),
+                })}
                 className="flex w-full min-h-11 cursor-pointer items-center gap-3 rounded-md border border-transparent px-3 py-2 text-left transition-colors hover:border-border hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Checkbox
@@ -110,7 +109,7 @@ const AncestorLevelPicker = ({
                   className="pointer-events-none"
                 />
                 <span className="text-sm font-medium text-foreground">
-                  {level}
+                  {formatChurchLevel(level, t)}
                 </span>
               </button>
             </li>

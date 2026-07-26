@@ -21,6 +21,8 @@ import {
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { CSVLink } from 'react-csv'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { DIRECTORY_REPORT_QUERIES } from '../_shared/reports.gql'
 import ReportPageShell from '../_shared/ReportPageShell'
 import {
@@ -32,15 +34,6 @@ import {
 } from '../_shared/report-types'
 
 const ILLEGAL_FILENAME_CHARS = /[/\\:*?"<>|]/g
-
-const LEVEL_PLURAL: Record<ReportLevel, string> = {
-  Bacenta: 'Bacentas',
-  Governorship: 'Governorships',
-  Council: 'Councils',
-  Stream: 'Streams',
-  Campus: 'Campuses',
-  Oversight: 'Oversights',
-}
 
 // Top-down order is the natural reading order for chain columns: at Council
 // scope the bacenta CSV reads Governorship → Bacenta, not Bacenta →
@@ -80,36 +73,45 @@ const findAncestor = (
 ): DirectoryAncestorEntry | undefined =>
   entry.ancestors.find((a) => a.level === level)
 
-const ancestorColumns = (ancestorLevel: ReportLevel): ColumnSpec[] => {
-  const prefix = ancestorLevel
+const levelLabel = (level: ReportLevel, t: TFunction) =>
+  t(`shared.churchLevel.${level}`)
+
+const levelPlural = (level: ReportLevel, t: TFunction) =>
+  t(`shared.churchLevelPlural.${level}`)
+
+const ancestorColumns = (
+  ancestorLevel: ReportLevel,
+  t: TFunction
+): ColumnSpec[] => {
+  const label = levelLabel(ancestorLevel, t)
   return [
     {
-      key: `${prefix}.name`,
-      label: prefix,
+      key: `${ancestorLevel}.name`,
+      label,
       showInPreview: true,
       toCell: (entry) => blank(findAncestor(entry, ancestorLevel)?.name),
     },
     {
-      key: `${prefix}.leaderFirstName`,
-      label: `${prefix} Leader First Name`,
+      key: `${ancestorLevel}.leaderFirstName`,
+      label: t('reports.directory.levelLeaderFirstName', { level: label }),
       toCell: (entry) =>
         blank(findAncestor(entry, ancestorLevel)?.leaderFirstName),
     },
     {
-      key: `${prefix}.leaderLastName`,
-      label: `${prefix} Leader Last Name`,
+      key: `${ancestorLevel}.leaderLastName`,
+      label: t('reports.directory.levelLeaderLastName', { level: label }),
       toCell: (entry) =>
         blank(findAncestor(entry, ancestorLevel)?.leaderLastName),
     },
     {
-      key: `${prefix}.leaderPhone`,
-      label: `${prefix} Leader Phone`,
+      key: `${ancestorLevel}.leaderPhone`,
+      label: t('reports.directory.levelLeaderPhone', { level: label }),
       toCell: (entry) =>
         blank(findAncestor(entry, ancestorLevel)?.leaderPhone),
     },
     {
-      key: `${prefix}.leaderWhatsApp`,
-      label: `${prefix} Leader WhatsApp`,
+      key: `${ancestorLevel}.leaderWhatsApp`,
+      label: t('reports.directory.levelLeaderWhatsApp', { level: label }),
       toCell: (entry) =>
         blank(findAncestor(entry, ancestorLevel)?.leaderWhatsApp),
     },
@@ -124,7 +126,8 @@ const ancestorColumns = (ancestorLevel: ReportLevel): ColumnSpec[] => {
  */
 const buildColumns = (
   level: ReportLevel,
-  rows: DirectoryReportEntry[]
+  rows: DirectoryReportEntry[],
+  t: TFunction
 ): ColumnSpec[] => {
   const sample = rows[0]
   const ancestorLevels = sample
@@ -138,37 +141,37 @@ const buildColumns = (
 
   const columns: ColumnSpec[] = []
   ancestorLevels.forEach((ancestorLevel) => {
-    columns.push(...ancestorColumns(ancestorLevel))
+    columns.push(...ancestorColumns(ancestorLevel, t))
   })
 
   columns.push(
     {
       key: 'name',
-      label: level,
+      label: levelLabel(level, t),
       showInPreview: true,
       toCell: (entry) => blank(entry.name),
     },
     {
       key: 'leaderFirstName',
-      label: 'Leader First Name',
+      label: t('reports.directory.leaderFirstName'),
       showInPreview: true,
       toCell: (entry) => blank(entry.leaderFirstName),
     },
     {
       key: 'leaderLastName',
-      label: 'Leader Last Name',
+      label: t('reports.directory.leaderLastName'),
       showInPreview: true,
       toCell: (entry) => blank(entry.leaderLastName),
     },
     {
       key: 'leaderPhone',
-      label: 'Leader Phone',
+      label: t('reports.directory.leaderPhone'),
       showInPreview: true,
       toCell: (entry) => blank(entry.leaderPhone),
     },
     {
       key: 'leaderWhatsApp',
-      label: 'Leader WhatsApp',
+      label: t('reports.directory.leaderWhatsApp'),
       toCell: (entry) => blank(entry.leaderWhatsApp),
     }
   )
@@ -177,12 +180,12 @@ const buildColumns = (
     columns.push(
       {
         key: 'latitude',
-        label: 'Latitude',
+        label: t('reports.directory.latitude'),
         toCell: (entry) => formatCoord(entry.latitude),
       },
       {
         key: 'longitude',
-        label: 'Longitude',
+        label: t('reports.directory.longitude'),
         toCell: (entry) => formatCoord(entry.longitude),
       }
     )
@@ -216,6 +219,7 @@ const compareEntries = (
 }
 
 const DirectoryReportPage = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   const churchType = isReportLevel(selectedScope?.churchType)
     ? selectedScope?.churchType
@@ -269,13 +273,16 @@ const DirectoryReportPage = () => {
   const safeChurchName = churchName.replace(ILLEGAL_FILENAME_CHARS, '-')
 
   const buildFilename = (level: ReportLevel) =>
-    `${safeChurchName ? `${safeChurchName} ` : ''}${LEVEL_PLURAL[level]} Directory - ${generatedOn}.csv`
+    `${safeChurchName ? `${safeChurchName} ` : ''}${levelPlural(level, t)} Directory - ${generatedOn}.csv`
 
   if (!selectedScope || !churchType) {
     return (
-      <ReportPageShell title="Church" highlightWord="Directory">
+      <ReportPageShell
+        title={t('reports.directory.church')}
+        highlightWord={t('reports.directory.highlight')}
+      >
         <p className="text-sm text-muted-foreground">
-          Select a church scope to download the directory.
+          {t('reports.directory.selectScope')}
         </p>
       </ReportPageShell>
     )
@@ -284,8 +291,8 @@ const DirectoryReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Directory"
-      subtitle="One CSV per church level — leaders and contact numbers."
+      highlightWord={t('reports.directory.highlight')}
+      subtitle={t('reports.directory.subtitle')}
     >
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
         <div className="space-y-4">
@@ -296,7 +303,7 @@ const DirectoryReportPage = () => {
           ) : (
             presentLevels.map((level) => {
               const groupEntries = grouped[level]
-              const columns = buildColumns(level, groupEntries)
+              const columns = buildColumns(level, groupEntries, t)
               const previewColumns = columns.filter((c) => c.showInPreview)
               const rows = groupEntries.map((entry) => toCsvRow(entry, columns))
               const headers = columns.map((c) => ({
@@ -322,11 +329,12 @@ const DirectoryReportPage = () => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-base font-semibold text-foreground">
-                          {LEVEL_PLURAL[level]}
+                          {levelPlural(level, t)}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {totalLabel}{' '}
-                          {groupEntries.length === 1 ? 'entry' : 'entries'}
+                          {t('reports.directory.entry', {
+                            count: groupEntries.length,
+                          })}
                         </p>
                         <p className="mt-1 break-words font-mono text-xs text-muted-foreground">
                           {filename}
@@ -345,7 +353,7 @@ const DirectoryReportPage = () => {
                         target="_self"
                       >
                         <Download className="size-4" />
-                        Download CSV
+                        {t('reports.shared.downloadCsv')}
                       </CSVLink>
                     </Button>
                   </section>
@@ -353,12 +361,18 @@ const DirectoryReportPage = () => {
                   <section className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card">
                     <div className="flex items-center justify-between px-4 py-3">
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Preview
+                        {t('reports.shared.preview')}
                       </h3>
                       <p className="text-xs text-muted-foreground tabular-nums">
                         {groupEntries.length > previewRows.length
-                          ? `Showing first ${previewRows.length} of ${totalLabel}`
-                          : `Showing ${groupEntries.length} of ${totalLabel}`}
+                          ? t('reports.shared.showingFirstOf', {
+                              shown: previewRows.length,
+                              total: totalLabel,
+                            })
+                          : t('reports.shared.showingOf', {
+                              count: groupEntries.length,
+                              total: totalLabel,
+                            })}
                       </p>
                     </div>
                     <div className="overflow-x-auto border-t border-border">
@@ -410,21 +424,24 @@ const LoadingSkeleton = () => (
   </>
 )
 
-const EmptyState = () => (
-  <section className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-12 text-center">
-    <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
-      <Inbox className="size-7" />
-    </div>
-    <div className="space-y-1">
-      <h2 className="text-base font-semibold text-foreground">
-        Nothing to export
-      </h2>
-      <p className="text-sm text-muted-foreground">
-        We couldn&apos;t find any sub-churches for this scope.
-      </p>
-    </div>
-    <FileSpreadsheet className="size-5 text-muted-foreground/60" />
-  </section>
-)
+const EmptyState = () => {
+  const { t } = useTranslation()
+  return (
+    <section className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-12 text-center">
+      <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Inbox className="size-7" />
+      </div>
+      <div className="space-y-1">
+        <h2 className="text-base font-semibold text-foreground">
+          {t('reports.directory.nothingToExport')}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {t('reports.directory.emptyBody')}
+        </p>
+      </div>
+      <FileSpreadsheet className="size-5 text-muted-foreground/60" />
+    </section>
+  )
+}
 
 export default DirectoryReportPage

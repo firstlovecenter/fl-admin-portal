@@ -1,6 +1,7 @@
 import { useQuery } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
 import React, { useContext, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
@@ -14,6 +15,7 @@ import { OVERSIGHT_BY_CAMPUS_ACCOUNT } from './accountsGQL'
 import { CampusForAccounts, StreamForAccounts } from './accounts-types'
 
 const CampusCouncilList = () => {
+  const { t } = useTranslation()
   const { oversightId, clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
 
@@ -67,20 +69,29 @@ const CampusCouncilList = () => {
     onSubmitProps.setSubmitting(false)
   }
 
+  const churchTypeLabel = oversight?.__typename
+    ? t(`shared.churchLevel.${oversight.__typename}`, {
+        defaultValue: oversight.__typename,
+      })
+    : ''
+
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
-        <HeadingPrimary>{oversight?.name} Oversight Campuses</HeadingPrimary>
-        <HeadingSecondary>{`${oversight?.name} ${oversight?.__typename}`}</HeadingSecondary>
+        <HeadingPrimary>
+          {t('accounts.oversightList.oversightCampuses', {
+            name: oversight?.name ?? '',
+          })}
+        </HeadingPrimary>
+        <HeadingSecondary>{`${oversight?.name ?? ''} ${churchTypeLabel}`.trim()}</HeadingSecondary>
 
         <Formik initialValues={initialValues} onSubmit={onSubmit}>
           {() => (
             <Form>
               <Input
-                className="form-control church-search search-center"
                 name="councilSearch"
-                placeholder="Search Councils or Leader"
-                aria-describedby="Stream Search"
+                placeholder={t('accounts.oversightList.searchPlaceholder')}
+                aria-label={t('accounts.oversightList.searchPlaceholder')}
               />
             </Form>
           )}
@@ -106,7 +117,7 @@ const CampusCouncilList = () => {
           return (
             <div key={campus.id} className="grid gap-2">
               <div className="text-lg font-medium text-[hsl(var(--maps))]">
-                {campus.name} Campus
+                {t('accounts.oversightList.campusLabel', { name: campus.name })}
               </div>
               {campus.streams.length === 0 && (
                 <Button
@@ -114,7 +125,7 @@ const CampusCouncilList = () => {
                   className="justify-start py-3 text-left"
                   disabled
                 >
-                  There are no streams under this campus
+                  {t('accounts.oversightList.noStreamsUnderCampus')}
                 </Button>
               )}
 
@@ -132,7 +143,11 @@ const CampusCouncilList = () => {
                     className="h-auto justify-start whitespace-normal py-3 text-left"
                   >
                     <MemberAvatarWithName member={stream.leader} />
-                    <span className="ml-2">{stream.name} Stream</span>
+                    <span className="ml-2">
+                      {t('accounts.oversightList.streamLabel', {
+                        name: stream.name,
+                      })}
+                    </span>
                   </Button>
 
                   <Button
@@ -141,14 +156,14 @@ const CampusCouncilList = () => {
                   >
                     <div>
                       <div>
-                        Weekday Account -{' '}
+                        {t('accounts.common.weekdayAccount')} -{' '}
                         <CurrencySpan
                           number={stream.weekdayBalance}
                           negative
                         />
                       </div>
                       <div>
-                        Bussing Society -{' '}
+                        {t('accounts.common.bussingSociety')} -{' '}
                         <CurrencySpan
                           number={stream.bussingSocietyBalance}
                           negative

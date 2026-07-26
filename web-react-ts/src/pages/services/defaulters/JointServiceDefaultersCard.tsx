@@ -1,7 +1,9 @@
 import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
-import React, { useContext } from 'react'
+import { formatChurchLevel } from 'lib/scope-display'
+import { useContext } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Phone } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
 import { Button } from 'components/ui/button'
@@ -19,17 +21,16 @@ type DefaulterCardProps = {
 }
 
 const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
 
-  // Defaulter cards show the combined unbanked total (own joint service +
-  // sub-church records) via `aggregateServiceRecordForWeek`; banked cards
-  // fall back to the latest joint `ServiceRecord`. Both expose attendance /
-  // income, which is all this card renders.
   const serviceDetails =
     defaulter?.aggregateServiceRecordForWeek ??
     (defaulter?.services?.length ? defaulter.services[0] : null)
+
+  const typeLabel = formatChurchLevel(defaulter?.__typename, t)
 
   return (
     <Card>
@@ -44,14 +45,20 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
           }}
           className="cursor-pointer font-bold"
         >
-          {`${defaulter?.name} ${defaulter?.__typename}`}
+          {`${defaulter?.name} ${typeLabel}`}
           <br />
           {defaulter?.council
-            ? `${defaulter?.council?.name} ${defaulter?.council?.__typename}`
+            ? `${defaulter?.council?.name} ${formatChurchLevel(
+                defaulter?.council?.__typename,
+                t
+              )}`
             : null}
 
           {defaulter?.stream
-            ? `${defaulter?.stream?.name} ${defaulter?.stream?.__typename}`
+            ? `${defaulter?.stream?.name} ${formatChurchLevel(
+                defaulter?.stream?.__typename,
+                t
+              )}`
             : null}
         </CardHeader>
         <CardContent className="space-y-3 pb-4">
@@ -79,23 +86,27 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
               }
             }}
           >
-            {defaulter?.leader?.fullName || 'No Leader'}
+            {defaulter?.leader?.fullName || t('services.defaulters.noLeader')}
             {serviceDetails?.attendance ? (
               <div>
-                <span className="text-muted-foreground">Attendance: </span>
+                <span className="text-muted-foreground">
+                  {t('services.defaulters.attendanceColon')}
+                </span>
                 {serviceDetails.attendance}
               </div>
             ) : null}
             {serviceDetails?.income ? (
               <div>
-                <span className="text-muted-foreground">Income: </span>
+                <span className="text-muted-foreground">
+                  {t('services.defaulters.incomeColon')}
+                </span>
                 {currentUser.currency} {serviceDetails.income}
               </div>
             ) : null}
             {serviceDetails?.noServiceReason ? (
               <div>
                 <span className="text-muted-foreground">
-                  Reason for Cancelled Service:{' '}
+                  {t('services.defaulters.reasonCancelled')}
                 </span>
                 {serviceDetails.noServiceReason}
               </div>
@@ -107,7 +118,8 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
               {defaulter?.leader?.phoneNumber && (
                 <Button asChild className="min-h-11">
                   <a href={`tel:${defaulter.leader.phoneNumber}`}>
-                    <Phone className="h-4 w-4" /> Call
+                    <Phone className="h-4 w-4" />{' '}
+                    {t('services.defaulters.call')}
                   </a>
                 </Button>
               )}
@@ -119,7 +131,8 @@ const JointServiceDefaulterCard = ({ defaulter, link }: DefaulterCardProps) => {
                   <a
                     href={`https://wa.me/${defaulter.leader.whatsappNumber}`}
                   >
-                    <FaWhatsapp className="h-4 w-4" /> WhatsApp
+                    <FaWhatsapp className="h-4 w-4" />{' '}
+                    {t('services.defaulters.whatsapp')}
                   </a>
                 </Button>
               )}

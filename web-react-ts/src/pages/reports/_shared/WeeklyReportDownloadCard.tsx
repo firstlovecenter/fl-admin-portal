@@ -27,6 +27,7 @@ import {
   Inbox,
 } from 'lucide-react'
 import { CSVLink } from 'react-csv'
+import { useTranslation } from 'react-i18next'
 import StatTile from './StatTile'
 
 type CsvHeader = {
@@ -83,9 +84,12 @@ const WeeklyReportDownloadCard = ({
   entriesCount,
   rangeLabel,
   previewColumns,
-  emptyMessage = 'No records in the selected date range.',
+  emptyMessage,
   notice,
 }: WeeklyReportDownloadCardProps) => {
+  const { t } = useTranslation()
+  const resolvedEmpty =
+    emptyMessage ?? t('reports.shared.emptyDefault')
   const [sorting, setSorting] = useState<SortingState>([])
   const previewRows = useMemo(() => rows.slice(0, 5), [rows])
   const columns = useMemo<ColumnDef<Record<string, string | number>>[]>(
@@ -190,7 +194,7 @@ const WeeklyReportDownloadCard = ({
           <h2 className="text-base font-semibold text-foreground">
             {title}
           </h2>
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+          <p className="text-sm text-muted-foreground">{resolvedEmpty}</p>
         </div>
         <FileSpreadsheet className="size-5 text-muted-foreground/60" />
       </section>
@@ -217,12 +221,12 @@ const WeeklyReportDownloadCard = ({
           <dl className="mt-5 grid grid-cols-2 gap-3">
             <StatTile
               icon={<FileSpreadsheet className="size-4" />}
-              label="Rows"
+              label={t('reports.shared.rows')}
               value={entriesCount.toLocaleString('en-GH')}
             />
             <StatTile
               icon={<CalendarRange className="size-4" />}
-              label="Range"
+              label={t('reports.shared.range')}
               value={rangeLabel ?? '—'}
             />
           </dl>
@@ -232,7 +236,7 @@ const WeeklyReportDownloadCard = ({
 
         <section className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Filename
+            {t('reports.shared.filename')}
           </p>
           <p className="mt-2 truncate font-mono text-sm text-foreground">
             {filename}
@@ -250,7 +254,7 @@ const WeeklyReportDownloadCard = ({
             target="_self"
           >
             <Download className="size-5" />
-            Download CSV
+            {t('reports.shared.downloadCsv')}
           </CSVLink>
         </Button>
       </div>
@@ -259,14 +263,18 @@ const WeeklyReportDownloadCard = ({
       <section className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Preview
+            {t('reports.shared.preview')}
           </h3>
           <p className="text-xs text-muted-foreground tabular-nums">
             {entriesCount > previewRows.length
-              ? `Showing first ${previewRows.length} of ${entriesCount.toLocaleString(
-                  'en-GH'
-                )}`
-              : `Showing ${entriesCount} of ${entriesCount}`}
+              ? t('reports.shared.showingFirstOf', {
+                  shown: previewRows.length,
+                  total: entriesCount.toLocaleString('en-GH'),
+                })
+              : t('reports.shared.showingOf', {
+                  count: entriesCount,
+                  total: entriesCount,
+                })}
           </p>
         </div>
         <div className="overflow-x-auto">

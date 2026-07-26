@@ -1,6 +1,7 @@
 import { useContext, useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Bus,
   ChevronLeft,
@@ -27,14 +28,10 @@ import {
   getMonthlyStatAverage,
   GraphTypes,
 } from './graphs-utils'
+import { bacentaGraphOptions, getGraphPageLabels } from './graph-labels'
 
 const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
-
-const BACENTA_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
-  { value: 'bussing', label: 'Bussing' },
-  { value: 'services', label: 'Services' },
-]
 
 const formatStat = (value: string | undefined) =>
   value && value !== 'NaN'
@@ -42,6 +39,9 @@ const formatStat = (value: string | undefined) =>
     : '—'
 
 export const BacentaGraphs = () => {
+  const { t } = useTranslation()
+  const labels = getGraphPageLabels(t, 'Bacenta')
+  const graphOptions = useMemo(() => bacentaGraphOptions(t), [t])
   const { bacentaId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const [graphs, setGraphs] = useState<GraphTypes>('bussing')
@@ -55,12 +55,14 @@ export const BacentaGraphs = () => {
   const incomeTracked = !currentUser?.noIncomeTracking
 
   const weekdayData = useMemo(
-    () => getServiceGraphData(bacenta, 'services', TREND_HISTORY_WEEKS) || [],
-    [bacenta]
+    () =>
+      getServiceGraphData(bacenta, 'services', TREND_HISTORY_WEEKS, t) || [],
+    [bacenta, t]
   )
   const bussingData = useMemo(
-    () => getServiceGraphData(bacenta, 'bussing', TREND_HISTORY_WEEKS) || [],
-    [bacenta]
+    () =>
+      getServiceGraphData(bacenta, 'bussing', TREND_HISTORY_WEEKS, t) || [],
+    [bacenta, t]
   )
 
   const recentBussingData = useMemo(() => {
@@ -132,21 +134,19 @@ export const BacentaGraphs = () => {
         year: Number(d.year ?? 0),
       }))
       .filter((e) => Number.isFinite(e.week) && e.week > 0)
-    if (!validEntries.length) return 'No service data'
+    if (!validEntries.length) return labels.noServiceData
 
     const sorted = [...validEntries].sort(
       (a, b) => a.year * 100 + a.week - (b.year * 100 + b.week)
     )
     const first = sorted[0]
     const last = sorted[sorted.length - 1]
-    const formatWeekYear = (w: number, y: number) =>
-      y ? `W${w}'${String(y).slice(-2)}` : `W${w}`
 
     if (first.year === last.year) {
-      return `Weeks ${first.week} – ${last.week} (${first.year})`
+      return labels.weeksRange(first.week, last.week, first.year)
     }
-    return `${formatWeekYear(first.week, first.year)} – ${formatWeekYear(last.week, last.year)}`
-  }, [windowedData])
+    return `${labels.weekShort(first.week, first.year)} – ${labels.weekShort(last.week, last.year)}`
+  }, [windowedData, labels])
 
   const showIncomeBar =
     graphs !== 'bussing' && !!getMonthlyStatAverage(weekdayData, 'income')
@@ -156,8 +156,8 @@ export const BacentaGraphs = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {bacenta?.name ?? 'Bacenta'}{' '}
-            <span className="text-churches">Trends</span>
+            {bacenta?.name ?? labels.fallbackChurchName}{' '}
+            <span className="text-churches">{labels.trends}</span>
           </h1>
         </StickyPageHeader>
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -165,7 +165,7 @@ export const BacentaGraphs = () => {
             <CardContent className="px-4 py-3 sm:px-5">
               <LeaderAvatar
                 leader={bacenta?.leader}
-                leaderTitle="Bacenta Leader"
+                leaderTitle={labels.leaderTitle}
                 loading={!bacenta}
               />
             </CardContent>
@@ -178,18 +178,18 @@ export const BacentaGraphs = () => {
             >
               <StatCard
                 compact
-                label="Membership"
+                label={labels.membership}
                 value={bacenta?.memberCount ?? 0}
                 icon={Users}
                 accent="members"
-                hint="Tap to view"
+                hint={labels.tapToView}
                 loading={!bacenta}
               />
             </Link>
 
             <StatCard
               compact
-              label="Avg Weekly Bussing"
+              label={labels.avgWeeklyBussing}
               value={avgBussing}
               icon={Bus}
               accent="defaulters"
@@ -198,7 +198,7 @@ export const BacentaGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Attendance"
+              label={labels.avgWeeklyAttendance}
               value={avgAttendance}
               icon={TrendingUp}
               accent="churches"
@@ -207,8 +207,8 @@ export const BacentaGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Income"
-              value={incomeTracked ? avgIncome : 'Not tracked'}
+              label={labels.avgWeeklyIncome}
+              value={incomeTracked ? avgIncome : labels.notTracked}
               icon={Wallet}
               accent="banking"
               loading={loading && !bacenta}
@@ -217,7 +217,7 @@ export const BacentaGraphs = () => {
 
           <Tabs value={graphs} onValueChange={handleTabChange}>
             <TabsList className="grid h-12 w-full grid-cols-2">
-              {BACENTA_GRAPH_OPTIONS.map((option) => (
+              {graphOptions.map((option) => (
                 <TabsTrigger key={option.value} value={option.value}>
                   {option.label}
                 </TabsTrigger>
@@ -243,7 +243,7 @@ export const BacentaGraphs = () => {
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
                 <ChevronLeft className="size-4" />
-                Older
+                {labels.older}
               </Button>
 
               <span className="text-xs font-medium tabular-nums text-muted-foreground">
@@ -256,7 +256,7 @@ export const BacentaGraphs = () => {
                 disabled={!canGoNewer}
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
-                Newer
+                {labels.newer}
                 <ChevronRight className="size-4" />
               </Button>
             </div>

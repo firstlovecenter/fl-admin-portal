@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react'
 import { type ComponentType, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from 'components/lib/utils'
 import {
@@ -74,55 +75,62 @@ const FormatGrid = <TFormat extends string>({
   pending,
   onSelect,
   accent,
-}: FormatGridProps<TFormat>) => (
-  <div className="grid gap-3">
-    {formats.map((format) => {
-      const Icon = format.icon
-      const isPending = pending === format.id
-      const isDisabled = pending !== null && !isPending
-      return (
-        <button
-          key={format.id}
-          type="button"
-          onClick={() => onSelect(format.id)}
-          disabled={pending !== null}
-          aria-busy={isPending}
-          className={cn(
-            'group flex min-h-11 items-start gap-3 rounded-xl border bg-card p-4 text-left transition-colors',
-            'hover:border-foreground/20 hover:bg-muted/50',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            'disabled:cursor-not-allowed',
-            isPending
-              ? cn('border-transparent ring-2', accentRing[accent])
-              : 'border-border',
-            isDisabled && 'opacity-50'
-          )}
-        >
-          <div
+}: FormatGridProps<TFormat>) => {
+  const { t } = useTranslation()
+  return (
+    <div className="grid gap-3">
+      {formats.map((format) => {
+        const Icon = format.icon
+        const isPending = pending === format.id
+        const isDisabled = pending !== null && !isPending
+        return (
+          <button
+            key={format.id}
+            type="button"
+            onClick={() => onSelect(format.id)}
+            disabled={pending !== null}
+            aria-busy={isPending}
             className={cn(
-              'flex size-10 shrink-0 items-center justify-center rounded-full',
-              accentBg[accent],
-              accentText[accent]
+              'group flex min-h-11 items-start gap-3 rounded-xl border bg-card p-4 text-left transition-colors',
+              'hover:border-foreground/20 hover:bg-muted/50',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              'disabled:cursor-not-allowed',
+              isPending
+                ? cn('border-transparent ring-2', accentRing[accent])
+                : 'border-border',
+              isDisabled && 'opacity-50'
             )}
           >
-            {isPending ? (
-              <>
-                <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-                <span className="sr-only">Downloading…</span>
-              </>
-            ) : (
-              <Icon className="size-5" aria-hidden="true" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground">{format.label}</p>
-            <p className="text-sm text-muted-foreground">{format.description}</p>
-          </div>
-        </button>
-      )
-    })}
-  </div>
-)
+            <div
+              className={cn(
+                'flex size-10 shrink-0 items-center justify-center rounded-full',
+                accentBg[accent],
+                accentText[accent]
+              )}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+                  <span className="sr-only">
+                    {t('reports.shared.downloading')}
+                  </span>
+                </>
+              ) : (
+                <Icon className="size-5" aria-hidden="true" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-foreground">{format.label}</p>
+              <p className="text-sm text-muted-foreground">
+                {format.description}
+              </p>
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 const DownloadFormatDialog = <TFormat extends string>({
   open,

@@ -7,12 +7,14 @@ import { Skeleton } from 'components/ui/skeleton'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ArrowDownUp, Bus, CheckCircle2, History, LayoutList, Wallet } from 'lucide-react'
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CAMPUS_ACCOUNT_DASHBOARD } from './accountsGQL'
 import { CampusDashboardItem } from './accounts-types'
 import { ActionRow, BalanceCard } from './components/DashboardCards'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const CampusDashboard = () => {
+  const { t } = useTranslation()
   const { campusId } = useContext(ChurchContext)
 
   const { data, loading, error } = useQuery<{
@@ -39,20 +41,22 @@ const CampusDashboard = () => {
               ) : (
                 <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
               )}
-              <span className="text-banking">Accounts</span>
+              <span className="text-banking">{t('accounts.common.title')}</span>
             </h1>
             <div className="flex items-center gap-3">
               <Avatar className="size-9">
                 <AvatarImage
                   src={leader?.pictureUrl}
-                  alt={leader?.fullName ?? 'Campus leader'}
+                  alt={leader?.fullName ?? t('accounts.dashboard.campusLeaderAlt')}
                 />
                 <AvatarFallback className="bg-banking/10 text-xs font-medium text-banking">
                   {leaderInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Campus leader</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('accounts.dashboard.campusLeader')}
+                </p>
                 {leader?.fullName ? (
                   <p className="truncate text-sm font-medium text-foreground">
                     {leader.fullName}
@@ -66,21 +70,20 @@ const CampusDashboard = () => {
         </StickyPageHeader>
         <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
-            {/* Supporting column — first in DOM so it floats above actions on mobile */}
             <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
               <BalanceCard
-                label="Weekday Account"
+                label={t('accounts.common.weekdayAccount')}
                 value={campus?.weekdayBalance}
-                hint="Available for council expenses"
+                hint={t('accounts.common.weekdayAccountHint')}
                 icon={Wallet}
                 accentBg="bg-banking/10"
                 accentText="text-banking"
                 loading={loading}
               />
               <BalanceCard
-                label="Bussing Society"
+                label={t('accounts.common.bussingSociety')}
                 value={campus?.bussingSocietyBalance}
-                hint="Reserved for Sunday bussing"
+                hint={t('accounts.common.bussingSocietyHint')}
                 icon={Bus}
                 accentBg="bg-arrivals/10"
                 accentText="text-arrivals"
@@ -88,26 +91,27 @@ const CampusDashboard = () => {
               />
             </aside>
 
-            {/* Primary column — actions */}
             <section className="space-y-3 lg:col-start-1 lg:row-start-1">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Actions
+                {t('accounts.common.actions')}
               </h2>
               <ActionRow
                 to="/accounts/campus/councils-for-deposits"
                 icon={ArrowDownUp}
                 iconBg="bg-banking/10"
                 iconText="text-banking"
-                title="Update Balances"
-                description="Deposit or adjust council account balances"
+                title={t('accounts.dashboard.updateBalances')}
+                description={t('accounts.dashboard.updateBalancesDescription')}
               />
               <ActionRow
                 to="/accounts/campus/council/view-accounts"
                 icon={LayoutList}
                 iconBg="bg-churches/10"
                 iconText="text-churches"
-                title="View Council Balances"
-                description="See current balance for each council"
+                title={t('accounts.dashboard.viewCouncilBalances')}
+                description={t(
+                  'accounts.dashboard.viewCouncilBalancesDescription'
+                )}
               />
               <RoleView roles={permitLeaderAdmin('Campus')}>
                 <ActionRow
@@ -115,8 +119,8 @@ const CampusDashboard = () => {
                   icon={CheckCircle2}
                   iconBg="bg-banking/10"
                   iconText="text-banking"
-                  title="Approvals"
-                  description="Review and approve pending expense requests"
+                  title={t('accounts.dashboard.approvals')}
+                  description={t('accounts.dashboard.approvalsDescription')}
                 />
               </RoleView>
               <RoleView roles={[...permitArrivals('Campus')]}>
@@ -125,8 +129,10 @@ const CampusDashboard = () => {
                   icon={Bus}
                   iconBg="bg-arrivals/10"
                   iconText="text-arrivals"
-                  title="Weekend Bussing Expense Entry"
-                  description="Record bussing costs for the weekend"
+                  title={t('accounts.dashboard.weekendBussingExpense')}
+                  description={t(
+                    'accounts.dashboard.weekendBussingExpenseDescription'
+                  )}
                 />
               </RoleView>
               <RoleView roles={permitLeaderAdmin('Campus')}>
@@ -135,8 +141,10 @@ const CampusDashboard = () => {
                   icon={History}
                   iconBg="bg-churches/10"
                   iconText="text-churches"
-                  title="Transaction History"
-                  description="Review past deposits, withdrawals, and approvals"
+                  title={t('accounts.dashboard.transactionHistory')}
+                  description={t(
+                    'accounts.dashboard.transactionHistoryDescription'
+                  )}
                 />
               </RoleView>
             </section>

@@ -3,6 +3,7 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronRight, MessageCircle, Phone } from 'lucide-react'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import { cn } from 'components/lib/utils'
@@ -15,6 +16,7 @@ import { CAMPUS_BY_STREAM } from '../DefaultersQueries'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import useSelectedWeek from 'hooks/useSelectedWeek'
+import { formatChurchLevel } from 'lib/scope-display'
 import {
   statClass,
   bankedClass,
@@ -23,6 +25,7 @@ import {
 } from './subchurch-shared'
 
 const CampusByStream = () => {
+  const { t } = useTranslation()
   const { campusId, clickCard } = useContext(ChurchContext)
   const { weekStart } = useSelectedWeek()
   const { data, loading, error, refetch } = useQuery(CAMPUS_BY_STREAM, {
@@ -64,7 +67,12 @@ const CampusByStream = () => {
             ) : (
               <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {campus.name}{' '}
-                <span className="text-churches">Campus By Streams</span>
+                <span className="text-churches">
+                  {t('services.defaulters.bySubchurchHighlight', {
+                    level: formatChurchLevel('Campus', t),
+                    subLevel: t('shared.churchLevelPlural.Stream'),
+                  })}
+                </span>
               </h1>
             )}
           </StickyPageHeader>
@@ -76,16 +84,17 @@ const CampusByStream = () => {
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="border-b border-border px-4 py-3">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Campus Summary
+                      {formatChurchLevel('Campus', t)}{' '}
+                      {t('arrivals.common.summary')}
                     </h2>
                   </div>
                   <div className="divide-y divide-border">
                     <SummaryRow
-                      label="Streams"
+                      label={t('shared.churchLevelPlural.Stream')}
                       value={loading ? '—' : String(streams.length)}
                     />
                     <SummaryRow
-                      label="Services Filed"
+                      label={t('services.defaulters.servicesFiledLabel')}
                       value={
                         loading ? '—' : totals.services.toLocaleString('en-GH')
                       }
@@ -96,7 +105,7 @@ const CampusByStream = () => {
                       }
                     />
                     <SummaryRow
-                      label="Form Defaulters"
+                      label={t('services.defaulters.formDefaultersLabel')}
                       value={
                         loading
                           ? '—'
@@ -109,7 +118,7 @@ const CampusByStream = () => {
                       }
                     />
                     <SummaryRow
-                      label="Banked"
+                      label={t('services.defaulters.banked')}
                       value={
                         loading ? '—' : totals.banked.toLocaleString('en-GH')
                       }
@@ -118,7 +127,7 @@ const CampusByStream = () => {
                       }
                     />
                     <SummaryRow
-                      label="Not Banked"
+                      label={t('services.defaulters.notBanked')}
                       value={
                         loading
                           ? '—'
@@ -131,7 +140,7 @@ const CampusByStream = () => {
                       }
                     />
                     <SummaryRow
-                      label="Cancelled"
+                      label={t('services.defaulters.cancelled')}
                       value={
                         loading
                           ? '—'
@@ -174,13 +183,14 @@ const CampusByStream = () => {
                           <button
                             type="button"
                             aria-expanded={isExpanded}
-                            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${stream.name} Stream`}
+                            aria-label={`${isExpanded ? t('nav.collapseSidebar') : t('nav.expandSidebar')}: ${stream.name}`}
                             className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30 active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                             onClick={() => toggle(stream.id)}
                           >
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-semibold text-foreground">
-                                {stream.name} Stream
+                                {stream.name}{' '}
+                                {formatChurchLevel('Stream', t)}
                               </p>
                               <p className="mt-0.5 truncate text-xs text-muted-foreground">
                                 {stream.leader?.fullName}
@@ -194,7 +204,7 @@ const CampusByStream = () => {
                                   stream.servicesThisWeekCount,
                                   false
                                 )}
-                                title="Services"
+                                title={t('services.defaulters.servicesThisWeekLabel')}
                               >
                                 {stream.servicesThisWeekCount ?? 0}
                               </span>
@@ -202,7 +212,7 @@ const CampusByStream = () => {
                                 className={statClass(
                                   stream.formDefaultersThisWeekCount
                                 )}
-                                title="Form defaulters"
+                                title={t('services.defaulters.formDefaultersLabel')}
                               >
                                 {stream.formDefaultersThisWeekCount ?? 0}
                               </span>
@@ -210,7 +220,7 @@ const CampusByStream = () => {
                                 className={statClass(
                                   stream.bankingDefaultersThisWeekCount
                                 )}
-                                title="Not banked"
+                                title={t('services.defaulters.notBanked')}
                               >
                                 {stream.bankingDefaultersThisWeekCount ?? 0}
                               </span>
@@ -229,7 +239,7 @@ const CampusByStream = () => {
                             <>
                               <div className="divide-y divide-border border-t border-border">
                                 <StatRow
-                                  label="Active Bacentas"
+                                  label={t('services.defaulters.activeBacentas')}
                                   value={stream.activeBacentaCount}
                                   valueClass={statClass(
                                     stream.activeBacentaCount,
@@ -237,7 +247,7 @@ const CampusByStream = () => {
                                   )}
                                 />
                                 <StatRow
-                                  label="Services This Week"
+                                  label={t('services.defaulters.servicesThisWeekLabel')}
                                   value={stream.servicesThisWeekCount}
                                   valueClass={statClass(
                                     stream.servicesThisWeekCount,
@@ -245,14 +255,14 @@ const CampusByStream = () => {
                                   )}
                                 />
                                 <StatRow
-                                  label="Form Not Filled"
+                                  label={t('services.defaulters.formNotFilled')}
                                   value={stream.formDefaultersThisWeekCount}
                                   valueClass={statClass(
                                     stream.formDefaultersThisWeekCount
                                   )}
                                 />
                                 <StatRow
-                                  label="Banked This Week"
+                                  label={t('services.defaulters.bankedThisWeekLabel')}
                                   value={stream.bankedThisWeekCount}
                                   valueClass={bankedClass(
                                     stream.bankedThisWeekCount,
@@ -260,14 +270,14 @@ const CampusByStream = () => {
                                   )}
                                 />
                                 <StatRow
-                                  label="Not Banked This Week"
+                                  label={t('services.defaulters.notBankedThisWeekLabel')}
                                   value={stream.bankingDefaultersThisWeekCount}
                                   valueClass={statClass(
                                     stream.bankingDefaultersThisWeekCount
                                   )}
                                 />
                                 <StatRow
-                                  label="Cancelled Services"
+                                  label={t('services.defaulters.cancelledServicesLabel')}
                                   value={stream.cancelledServicesThisWeekCount}
                                   valueClass={statClass(
                                     stream.cancelledServicesThisWeekCount
@@ -278,7 +288,7 @@ const CampusByStream = () => {
                               {/* Admin contact + navigate */}
                               <div className="border-t border-border bg-muted/20 px-4 py-3">
                                 <p className="mb-2.5 text-xs text-muted-foreground">
-                                  Admin:{' '}
+                                  {t('services.defaulters.adminLabel')}{' '}
                                   <span className="font-medium text-foreground">
                                     {stream.admin?.fullName}
                                   </span>
@@ -294,7 +304,7 @@ const CampusByStream = () => {
                                       href={`tel:${stream.admin?.phoneNumber}`}
                                     >
                                       <Phone className="h-4 w-4" />
-                                      Call
+                                      {t('services.defaulters.call')}
                                     </a>
                                   </Button>
                                   <Button
@@ -307,7 +317,7 @@ const CampusByStream = () => {
                                       href={`https://wa.me/${stream.admin?.whatsappNumber}?text=${messageForAdminsOfDefaulters(stream)}`}
                                     >
                                       <MessageCircle className="h-4 w-4" />
-                                      WhatsApp
+                                      {t('services.defaulters.whatsapp')}
                                     </a>
                                   </Button>
                                   <Button
@@ -319,7 +329,8 @@ const CampusByStream = () => {
                                       navigate('/services/stream-by-council')
                                     }}
                                   >
-                                    View Stream
+                                    {t('arrivals.common.view')}{' '}
+                                    {formatChurchLevel('Stream', t)}
                                     <ChevronRight className="size-3.5" />
                                   </Button>
                                 </div>

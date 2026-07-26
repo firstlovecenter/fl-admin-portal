@@ -1,6 +1,8 @@
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import {
   CalendarDays,
   ChevronRight,
@@ -29,6 +31,7 @@ import {
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { alertMsg, alertSuccess } from 'global-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import { permitLeaderAdmin } from 'permission-utils'
 import { UNDO_CANCELLED_SERVICE } from '../record-service/RecordServiceMutations'
 import {
@@ -51,13 +54,20 @@ const initials = (name?: string) =>
     .join('') || '—'
 
 const parentLabel = (
-  defaulter: BacentaWithDefaulters | StreamWithDefaulters
+  defaulter: BacentaWithDefaulters | StreamWithDefaulters,
+  t: TFunction
 ): string | null => {
   if (defaulter.__typename === 'Bacenta' && defaulter.governorship?.name) {
-    return `${defaulter.governorship.name} ${defaulter.governorship.__typename}`
+    return `${defaulter.governorship.name} ${formatChurchLevel(
+      defaulter.governorship.__typename,
+      t
+    )}`
   }
   if (defaulter.__typename === 'Stream' && defaulter.campus?.name) {
-    return `${defaulter.campus.name} ${defaulter.campus.__typename}`
+    return `${defaulter.campus.name} ${formatChurchLevel(
+      defaulter.campus.__typename,
+      t
+    )}`
   }
   return null
 }
@@ -71,6 +81,7 @@ const UndoCancellationButton = ({
   defaulter,
   serviceRecordId,
 }: UndoCancellationButtonProps) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { clickCard } = useContext(ChurchContext) as any
@@ -102,20 +113,23 @@ const UndoCancellationButton = ({
         className="min-h-11 w-full gap-2 border-warning/40 text-warning hover:bg-warning/10 hover:text-warning"
       >
         <RotateCcw className="size-4" />
-        Undo cancellation
+        {t('services.defaulters.undoCancellation')}
       </Button>
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Undo cancellation?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('services.defaulters.undoCancellationTitle')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will allow the leader to fill the form for{' '}
-              <span className="font-semibold">{defaulter.name}</span>{' '}
-              {defaulter.__typename} again.
+              {t('services.defaulters.undoCancellationBody', {
+                name: defaulter.name,
+                type: formatChurchLevel(defaulter.__typename, t),
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('shared.actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               disabled={undoLoading}
               onClick={async (event) => {
@@ -125,20 +139,18 @@ const UndoCancellationButton = ({
                     variables: { serviceRecordId },
                   })
                   setConfirmOpen(false)
-                  alertSuccess('Leader can now fill the form again. Thank you!')
+                  alertSuccess(t('services.defaulters.undoSuccess'))
                   clickCard(defaulter)
                   navigate(
                     `/${defaulter.__typename.toLowerCase()}/displaydetails`
                   )
                 } catch {
                   setConfirmOpen(false)
-                  alertMsg(
-                    'Could not undo the cancellation. Please try again.'
-                  )
+                  alertMsg(t('services.defaulters.undoError'))
                 }
               }}
             >
-              Yes, undo
+              {t('services.defaulters.yesUndo')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -152,6 +164,7 @@ const BacentaServiceCard = ({
   link,
   showCancellationControls = false,
 }: BacentaServiceCardProps) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { clickCard } = useContext(ChurchContext) as any
@@ -170,10 +183,11 @@ const BacentaServiceCard = ({
     showCancellationControls && cancellationReason && serviceDetails?.id
   )
 
-  const leaderName = defaulter?.leader?.fullName ?? 'No Leader'
+  const leaderName =
+    defaulter?.leader?.fullName ?? t('services.defaulters.noLeader')
   const phone = defaulter?.leader?.phoneNumber
   const whatsapp = defaulter?.leader?.whatsappNumber
-  const parent = parentLabel(defaulter)
+  const parent = parentLabel(defaulter, t)
   const meetingDay = defaulter?.meetingDay?.day
   // `serviceDate.date` is a YYYY-MM-DD string from the TimeGraph.date field.
   // Anchored to UTC noon to avoid the `new Date('YYYY-MM-DD')` UTC-midnight
@@ -200,17 +214,22 @@ const BacentaServiceCard = ({
     navigate(link ?? `/${defaulter.__typename.toLowerCase()}/displaydetails`)
   }
 
+  const typeLabel = formatChurchLevel(defaulter.__typename, t)
+
   return (
     <Card className="overflow-hidden">
       <button
         type="button"
         onClick={openDetails}
-        aria-label={`View ${defaulter.name} ${defaulter.__typename} details`}
+        aria-label={t('services.defaulters.viewDetailsAria', {
+          name: defaulter.name,
+          type: typeLabel,
+        })}
         className="flex w-full items-center gap-3 px-4 py-3 text-left outline-none transition-colors hover:bg-muted/50 active:bg-muted focus-visible:bg-muted/50"
       >
         <div className="min-w-0 flex-1">
           <p className="truncate text-base font-semibold text-foreground">
-            {defaulter.name} {defaulter.__typename}
+            {defaulter.name} {typeLabel}
           </p>
           {parent && (
             <p className="truncate text-xs text-muted-foreground">{parent}</p>
@@ -240,7 +259,7 @@ const BacentaServiceCard = ({
             </p>
             {meetingDay && (
               <p className="text-xs text-muted-foreground">
-                Meeting day · {meetingDay}
+                {t('services.defaulters.meetingDay', { day: meetingDay })}
               </p>
             )}
           </div>
@@ -262,7 +281,9 @@ const BacentaServiceCard = ({
                 <span className="tabular-nums">
                   {serviceDetails.attendance}
                 </span>
-                <span className="text-members/80">attendance</span>
+                <span className="text-members/80">
+                  {t('services.defaulters.attendance')}
+                </span>
               </div>
             )}
             {serviceDetails?.income != null && (
@@ -277,7 +298,7 @@ const BacentaServiceCard = ({
         {showCancellationControls && cancellationReason && (
           <div className="rounded-md border border-defaulters/30 bg-defaulters/10 px-3 py-2 text-xs">
             <p className="font-semibold uppercase tracking-wider text-defaulters">
-              Cancelled service
+              {t('services.defaulters.cancelledServiceBanner')}
             </p>
             <p className="mt-1 text-foreground">{cancellationReason}</p>
           </div>
@@ -293,7 +314,7 @@ const BacentaServiceCard = ({
             >
               <a href={`tel:${phone}`}>
                 <Phone className="size-4" />
-                Call
+                {t('services.defaulters.call')}
               </a>
             </Button>
           ) : (
@@ -304,7 +325,7 @@ const BacentaServiceCard = ({
               className="min-h-11 flex-1 gap-2"
             >
               <Phone className="size-4" />
-              Call
+              {t('services.defaulters.call')}
             </Button>
           )}
           {whatsapp ? (
@@ -315,7 +336,7 @@ const BacentaServiceCard = ({
             >
               <a href={`whatsapp://send?phone=${whatsapp}`}>
                 <MessageCircle className="size-4" />
-                WhatsApp
+                {t('services.defaulters.whatsapp')}
               </a>
             </Button>
           ) : (
@@ -326,7 +347,7 @@ const BacentaServiceCard = ({
               className="min-h-11 flex-1 gap-2"
             >
               <MessageCircle className="size-4" />
-              WhatsApp
+              {t('services.defaulters.whatsapp')}
             </Button>
           )}
         </div>

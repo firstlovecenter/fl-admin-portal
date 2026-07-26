@@ -1,5 +1,6 @@
 import { useLazyQuery } from '@apollo/client'
 import { useContext, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Banknote, CalendarCheck, Inbox, Users } from 'lucide-react'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -31,6 +32,7 @@ import { isDefaultersDownloadLevel } from './utils/buildDefaultersWorkbook'
 import { DefaultersUseChurchType } from './defaulters-types'
 
 const ServicesThisWeek = () => {
+  const { t } = useTranslation()
   const { weekStart, week, isCurrent } = useSelectedWeek()
 
   const [governorshipServicesThisWeek, { refetch: governorshipRefetch }] =
@@ -95,14 +97,14 @@ const ServicesThisWeek = () => {
   const totalsItems: WeekTotalItem[] = [
     {
       key: 'filed',
-      label: 'Forms filled',
+      label: t('services.defaulters.formsFilled'),
       value: formatCount(total),
       accent: 'churches',
       icon: <CalendarCheck />,
     },
     {
       key: 'attendance',
-      label: 'Total attendance',
+      label: t('services.defaulters.totalAttendance'),
       value: totalAttendance > 0 ? formatCount(totalAttendance) : '—',
       accent: 'members',
       icon: <Users />,
@@ -111,7 +113,7 @@ const ServicesThisWeek = () => {
   if (trackIncome) {
     totalsItems.push({
       key: 'income',
-      label: 'Total income',
+      label: t('services.defaulters.totalIncome'),
       value: totalIncome > 0 ? formatMoney(totalIncome) : '—',
       accent: 'banking',
       icon: <Banknote />,
@@ -128,7 +130,9 @@ const ServicesThisWeek = () => {
                 {church ? (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {church.name}{' '}
-                    <span className="text-churches">Filled Services</span>
+                    <span className="text-churches">
+                      {t('services.defaulters.filledServicesTitle')}
+                    </span>
                   </h1>
                 ) : (
                   <Skeleton className="h-9 w-72" />
@@ -146,15 +150,14 @@ const ServicesThisWeek = () => {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarCheck className="size-3.5" />
-                  Week {week}
+                  {t('services.defaulters.weekBadge', { week })}
                 </Badge>
                 {church ? (
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {total}
-                    </span>{' '}
-                    {total === 1 ? 'service form' : 'service forms'} filled
-                    {isCurrent ? ' this week' : ' that week'}
+                    {t('services.defaulters.formsFilledCount', { count: total })}
+                    {isCurrent
+                      ? t('services.defaulters.thisWeekSuffix')
+                      : t('services.defaulters.thatWeekSuffix')}
                   </p>
                 ) : (
                   <Skeleton className="h-4 w-48" />
@@ -193,11 +196,10 @@ const ServicesThisWeek = () => {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-foreground">
-                          No service forms filled yet
+                          {t('services.defaulters.noFormsFilledYet')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Forms filled by Bacenta leaders this week will appear
-                          here.
+                          {t('services.defaulters.noFormsFilledHint')}
                         </p>
                       </div>
                     </CardContent>

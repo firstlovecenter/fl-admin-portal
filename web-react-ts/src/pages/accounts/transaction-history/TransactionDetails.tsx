@@ -29,7 +29,13 @@ import {
 } from 'lucide-react'
 import { permitAdmin, permitArrivals, permitLeader } from 'permission-utils'
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
+import {
+  translateAccountLabel,
+  translateCategoryLabel,
+  translateStatusLabel,
+} from '../accounts-i18n'
 import { AccountTransaction } from './transaction-types'
 import {
   GET_TRANSACTION_DETAILS,
@@ -77,6 +83,7 @@ const DetailRow = ({ label, value, loading }: DetailRowProps) => (
 )
 
 const TransactionDetails = () => {
+  const { t } = useTranslation()
   const { transactionId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const { show, handleClose, handleShow } = useModal()
@@ -123,23 +130,24 @@ const TransactionDetails = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Transaction <span className="text-banking">Details</span>
+            {t('accounts.history.detailsTitlePrefix')}{' '}
+            <span className="text-banking">
+              {t('accounts.history.detailsTitleHighlight')}
+            </span>
           </h1>
           <p className="text-sm text-muted-foreground">
-            Full record of this expense — including who logged it and the
-            account it touched.
+            {t('accounts.history.detailsSubtitle')}
           </p>
         </StickyPageHeader>
         <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
           <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
-            {/* Supporting column — actions + balances after. First in DOM so it sits on top on mobile. */}
             <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
               {(typeof transaction?.weekdayBalance === 'number' ||
                 typeof transaction?.bussingSocietyBalance === 'number') && (
                 <Card>
                   <CardContent className="space-y-3 p-5">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Balance after transaction
+                      {t('accounts.history.balanceAfter')}
                     </p>
                     {typeof transaction?.weekdayBalance === 'number' && (
                       <div className="flex items-center gap-3">
@@ -148,7 +156,7 @@ const TransactionDetails = () => {
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs text-muted-foreground">
-                            Weekday account
+                            {t('accounts.history.weekdayAccountLower')}
                           </p>
                           <p className="truncate text-base font-semibold tabular-nums text-foreground">
                             {formatAmount(transaction.weekdayBalance, currency)}
@@ -163,7 +171,7 @@ const TransactionDetails = () => {
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs text-muted-foreground">
-                            Bussing society
+                            {t('accounts.history.bussingSocietyLower')}
                           </p>
                           <p className="truncate text-base font-semibold tabular-nums text-foreground">
                             {formatAmount(
@@ -181,21 +189,21 @@ const TransactionDetails = () => {
               <Card>
                 <CardContent className="space-y-2 p-3">
                   <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Jump to
+                    {t('accounts.history.jumpTo')}
                   </p>
                   <Link
                     to="/accounts/council/transaction-history"
                     className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/60 active:bg-muted"
                   >
                     <History className="size-4 text-churches" />
-                    Council transaction history
+                    {t('accounts.history.councilTransactionHistory')}
                   </Link>
                   <Link
                     to="/accounts/council/dashboard"
                     className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/60 active:bg-muted"
                   >
                     <ArrowLeft className="size-4 text-banking" />
-                    Council dashboard
+                    {t('accounts.history.councilDashboard')}
                   </Link>
                   <RoleView
                     roles={[
@@ -209,22 +217,20 @@ const TransactionDetails = () => {
                       className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/60 active:bg-muted"
                     >
                       <Building2 className="size-4 text-members" />
-                      Campus dashboard
+                      {t('accounts.history.campusDashboard')}
                     </Link>
                   </RoleView>
                 </CardContent>
               </Card>
             </aside>
 
-            {/* Primary column — transaction record. */}
             <section className="space-y-6 lg:col-start-1 lg:row-start-1">
               <Card className="overflow-hidden">
                 <CardContent className="space-y-5 p-5">
-                  {/* Hero — amount + status */}
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        Amount
+                        {t('accounts.common.amount')}
                       </p>
                       {loading || !transaction ? (
                         <Skeleton className="mt-2 h-10 w-40" />
@@ -235,7 +241,9 @@ const TransactionDetails = () => {
                       )}
                       {!!transaction?.charge && (
                         <p className="mt-1 text-xs text-muted-foreground">
-                          + {formatAmount(transaction.charge, currency)} charge
+                          {t('accounts.history.plusCharge', {
+                            amount: formatAmount(transaction.charge, currency),
+                          })}
                         </p>
                       )}
                     </div>
@@ -247,7 +255,7 @@ const TransactionDetails = () => {
                           'border-border bg-muted text-muted-foreground'
                         }`}
                       >
-                        {transaction.status}
+                        {translateStatusLabel(t, transaction.status)}
                       </Badge>
                     )}
                   </div>
@@ -256,7 +264,7 @@ const TransactionDetails = () => {
 
                   <div className="divide-y divide-border">
                     <DetailRow
-                      label="Created at"
+                      label={t('accounts.history.createdAt')}
                       loading={loading || !transaction}
                       value={
                         transaction
@@ -266,7 +274,7 @@ const TransactionDetails = () => {
                     />
                     {transaction?.createdAt !== transaction?.lastModified && (
                       <DetailRow
-                        label="Last modified"
+                        label={t('accounts.history.lastModified')}
                         loading={loading || !transaction}
                         value={
                           transaction
@@ -276,22 +284,22 @@ const TransactionDetails = () => {
                       />
                     )}
                     <DetailRow
-                      label="Created by"
+                      label={t('accounts.history.createdBy')}
                       loading={loading || !transaction}
                       value={transaction?.loggedBy?.fullName}
                     />
                     <DetailRow
-                      label="Account"
+                      label={t('accounts.common.account')}
                       loading={loading || !transaction}
-                      value={transaction?.account}
+                      value={translateAccountLabel(t, transaction?.account)}
                     />
                     <DetailRow
-                      label="Category"
+                      label={t('accounts.common.category')}
                       loading={loading || !transaction}
-                      value={transaction?.category}
+                      value={translateCategoryLabel(t, transaction?.category)}
                     />
                     <DetailRow
-                      label="Description"
+                      label={t('accounts.common.description')}
                       loading={loading || !transaction}
                       value={transaction?.description}
                     />
@@ -310,7 +318,7 @@ const TransactionDetails = () => {
                     className="h-12 w-full gap-2 px-8 text-base font-semibold sm:w-auto sm:min-w-64"
                   >
                     <Undo2 className="size-5" />
-                    Undo Transaction
+                    {t('accounts.history.undoTransaction')}
                   </Button>
                 </div>
 
@@ -322,18 +330,19 @@ const TransactionDetails = () => {
                 >
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle>Undo this transaction?</DialogTitle>
+                      <DialogTitle>
+                        {t('accounts.history.undoTitle')}
+                      </DialogTitle>
                       <DialogDescription>
-                        This reverses the transaction and restores the affected
-                        account balance. The action will appear in the audit
-                        history.
+                        {t('accounts.history.undoBody')}
                       </DialogDescription>
                     </DialogHeader>
 
                     {transaction && (
                       <div className="rounded-lg border border-border bg-muted/30 p-4">
                         <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                          {transaction.category} · {transaction.account}
+                          {translateCategoryLabel(t, transaction.category)} ·{' '}
+                          {translateAccountLabel(t, transaction.account)}
                         </p>
                         <p className="mt-1 text-xl font-semibold tabular-nums text-foreground">
                           {formatAmount(transaction.amount, currency)}
@@ -349,7 +358,7 @@ const TransactionDetails = () => {
                           className="w-full sm:w-auto"
                           disabled={undoLoading}
                         >
-                          Cancel
+                          {t('shared.actions.cancel')}
                         </Button>
                       </DialogClose>
                       <Button
@@ -362,12 +371,12 @@ const TransactionDetails = () => {
                         {undoLoading ? (
                           <>
                             <Loader2 className="size-4 animate-spin" />
-                            Undoing…
+                            {t('accounts.history.undoing')}
                           </>
                         ) : (
                           <>
                             <Undo2 className="size-4" />
-                            Confirm undo
+                            {t('accounts.history.confirmUndo')}
                           </>
                         )}
                       </Button>

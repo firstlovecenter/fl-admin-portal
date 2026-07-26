@@ -8,8 +8,9 @@ import {
   FormikHelpers,
 } from 'formik'
 import * as Yup from 'yup'
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import SubmitButton from 'components/formik/SubmitButton'
 import {
@@ -26,6 +27,7 @@ import ImageUpload from 'components/formik/ImageUpload'
 import { MemberContext } from 'contexts/MemberContext'
 import SearchMember from 'components/formik/SearchMember'
 import Textarea from 'components/formik/Textarea'
+import { formatChurchLevel } from 'lib/scope-display'
 
 type ServiceFormProps = {
   church: Church
@@ -55,6 +57,7 @@ const SpecialServiceForm = ({
   churchType,
   RecordServiceMutation,
 }: ServiceFormProps) => {
+  const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
@@ -77,39 +80,45 @@ const SpecialServiceForm = ({
     serviceDescription: '',
   }
 
-  const validationSchema = Yup.object({
-    serviceName: Yup.string().required('Service name is a required field'),
-    serviceDescription: Yup.string().required(
-      'Service description is a required field'
-    ),
-    serviceDate: Yup.date()
-      .max(today, 'Service could not possibly have happened after today')
-      .min(mondayThisWeek, 'You can only fill forms for this week')
-      .required('Date is a required field'),
-    cediIncome: Yup.number()
-      .typeError('Please enter a valid number')
-      .positive('You cannot have negative income')
-      .required('You cannot submit this form without entering your income'),
-    foreignCurrency: Yup.string(),
-    numberOfTithers: Yup.number()
-      .typeError('Please enter a valid number')
-      .integer('You cannot enter decimals here')
-      .required(
-        'You cannot submit this form without entering your number of tithers'
-      ),
-    attendance: Yup.number()
-      .typeError('Please enter a valid number')
-      .positive()
-      .integer('You cannot have attendance with decimals!')
-      .required('You cannot submit this form without entering your attendance'),
-    treasurerSelfie: Yup.string().required('You must take a treasurers selfie'),
-    familyPicture: Yup.string().required(
-      'Please submit a picture of your service'
-    ),
-    treasurers: Yup.array()
-      .min(2, 'You must have at least two treasurers')
-      .of(Yup.string().required('Please pick a name from the dropdown')),
-  })
+  const validationSchema = useMemo(
+    () =>
+      Yup.object({
+        serviceName: Yup.string().required(
+          t('services.specialService.serviceNameRequired')
+        ),
+        serviceDescription: Yup.string().required(
+          t('services.specialService.serviceDescriptionRequired')
+        ),
+        serviceDate: Yup.date()
+          .max(today, t('services.form.dateAfterToday'))
+          .min(mondayThisWeek, t('services.form.dateThisWeekOnly'))
+          .required(t('services.form.dateRequired')),
+        cediIncome: Yup.number()
+          .typeError(t('services.form.validNumber'))
+          .positive(t('services.form.negativeIncome'))
+          .required(t('services.form.incomeRequired')),
+        foreignCurrency: Yup.string(),
+        numberOfTithers: Yup.number()
+          .typeError(t('services.form.validNumber'))
+          .integer(t('services.form.tithersInteger'))
+          .required(t('services.form.tithersRequired')),
+        attendance: Yup.number()
+          .typeError(t('services.form.validNumber'))
+          .positive()
+          .integer(t('services.form.attendanceDecimals'))
+          .required(t('services.form.attendanceRequired')),
+        treasurerSelfie: Yup.string().required(
+          t('services.form.treasurerSelfieRequired')
+        ),
+        familyPicture: Yup.string().required(
+          t('services.form.familyPictureRequired')
+        ),
+        treasurers: Yup.array()
+          .min(2, t('services.form.minTreasurers'))
+          .of(Yup.string().required(t('services.form.pickName'))),
+      }),
+    [mondayThisWeek, t, today]
+  )
 
   const onSubmit = async (
     values: FormOptions,
@@ -118,7 +127,7 @@ const SpecialServiceForm = ({
     const { setSubmitting } = onSubmitProps
     setSubmitting(true)
     if (checkIfArrayHasRepeatingValues(values.treasurers)) {
-      throwToSentry('You cannot choose the same treasurer twice!')
+      throwToSentry(t('services.form.duplicateTreasurer'))
       setSubmitting(false)
       return
     }
@@ -153,8 +162,8 @@ const SpecialServiceForm = ({
     >
       {(formik) => (
         <div className="mx-auto w-full max-w-screen-md px-4">
-          <HeadingPrimary>Record Your Special Service Details</HeadingPrimary>
-          <h5 className="text-sm text-muted-foreground">{`${church?.name} ${church?.__typename}`}</h5>
+          <HeadingPrimary>{t('services.specialService.title')}</HeadingPrimary>
+          <h5 className="text-sm text-muted-foreground">{`${church?.name} ${formatChurchLevel(church?.__typename, t)}`}</h5>
 
           <Form className="form-group">
             <div className="mb-2 space-y-3">
@@ -162,40 +171,51 @@ const SpecialServiceForm = ({
                 <hr className="border-border" />
                 <Input
                   name="serviceName"
-                  label="Service Name*"
-                  placeholder="e.g. Tsalach Night"
+                  label={t('services.specialService.serviceName')}
+                  placeholder={t('services.specialService.serviceNamePlaceholder')}
                 />
                 <Textarea
                   name="serviceDescription"
-                  label="Service Description*"
-                  placeholder="eg. It was a watchnight service for the year 2023"
+                  label={t('services.specialService.serviceDescription')}
+                  placeholder={t(
+                    'services.specialService.serviceDescriptionPlaceholder'
+                  )}
                   rows={3}
                 />
                 <hr className="border-border" />
                 <small className="form-text label">
-                  Date of Service*
-                  <i className="text-muted-foreground">(Day/Month/Year)</i>
+                  {t('services.specialService.dateOfService')}
+                  <i className="text-muted-foreground">
+                    {t('services.specialService.dateHint')}
+                  </i>
                 </small>
                 <Input
                   name="serviceDate"
                   type="date"
-                  placeholder="dd/mm/yyyy"
+                  placeholder={t('services.specialService.datePlaceholder')}
                   aria-describedby="dateofservice"
                   min={mondayThisWeekIso}
                   max={todayIso}
                 />
-                <Input name="attendance" label="Attendance*" />
+                <Input name="attendance" label={t('services.specialService.attendance')} />
                 <Input
                   name="cediIncome"
-                  label={`Income (in ${currentUser.currency})*`}
+                  label={t('services.specialService.income', {
+                    currency: currentUser.currency,
+                  })}
                 />
                 <Textarea
                   name="foreignCurrency"
-                  label="Foreign Currency (if any) (Optional)"
+                  label={t('services.specialService.foreignCurrency')}
                   rows={2}
                 />
-                <Input name="numberOfTithers" label="Number of Tithers*" />
-                <small className="label">Treasurers (minimum of 2)</small>
+                <Input
+                  name="numberOfTithers"
+                  label={t('services.specialService.numberOfTithers')}
+                />
+                <small className="label">
+                  {t('services.specialService.treasurers')}
+                </small>
                 <FieldArray name="treasurers">
                   {(fieldArrayProps: FieldArrayRenderProps) => {
                     const { push, remove, form } = fieldArrayProps
@@ -209,7 +229,7 @@ const SpecialServiceForm = ({
                             <div className="flex-1">
                               <SearchMember
                                 name={`treasurers[${index}]`}
-                                placeholder="Start typing"
+                                placeholder={t('services.specialService.startTyping')}
                                 setFieldValue={formik.setFieldValue}
                                 aria-describedby="Member List"
                                 error={
@@ -234,19 +254,21 @@ const SpecialServiceForm = ({
                   }}
                 </FieldArray>
                 <div className="my-2 mt-2">
-                  <small>Upload Treasurer Selfie*</small>
+                  <small>{t('services.specialService.uploadTreasurerSelfie')}</small>
                   <ImageUpload
                     name="treasurerSelfie"
-                    placeholder="Choose"
+                    placeholder={t('services.specialService.choose')}
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="ImageUpload"
                   />
                 </div>
                 <div className="my-2">
-                  <small className="mb-3">Upload Your Family Picture*</small>
+                  <small className="mb-3">
+                    {t('services.specialService.uploadFamilyPicture')}
+                  </small>
                   <ImageUpload
                     name="familyPicture"
-                    placeholder="Choose"
+                    placeholder={t('services.specialService.choose')}
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="UploadfamilyPicture"
                   />

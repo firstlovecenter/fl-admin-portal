@@ -1,4 +1,5 @@
 import { FileSpreadsheet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Card, CardContent } from 'components/ui/card'
@@ -10,6 +11,7 @@ import DownloadDefaultersButton from 'pages/services/defaulters/DownloadDefaulte
 import { isDefaultersDownloadLevel } from 'pages/services/defaulters/utils/buildDefaultersWorkbook'
 
 const DefaultersReportPage = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   const { weekLabel, isCurrent } = useSelectedWeek()
 
@@ -23,9 +25,9 @@ const DefaultersReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Defaulters Report"
+      highlightWord={t('reports.defaulters.highlight')}
       highlightClassName="text-defaulters"
-      subtitle="Download a comprehensive defaulters list for any week. Includes a per-Bacenta breakdown and, at Council and above, a summary by sub-church."
+      subtitle={t('reports.defaulters.subtitle')}
     >
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_360px] lg:items-start">
         <div className="space-y-6">
@@ -33,10 +35,10 @@ const DefaultersReportPage = () => {
             <CardContent className="space-y-4 p-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Week
+                  {t('reports.shared.weekSection')}
                 </p>
                 <p className="mt-1 text-sm text-foreground">
-                  {isCurrent ? 'Current week' : weekLabel}
+                  {isCurrent ? t('reports.shared.currentWeek') : weekLabel}
                 </p>
               </div>
               <WeekSelector />
@@ -51,12 +53,12 @@ const DefaultersReportPage = () => {
               <div className="min-w-0 flex-1 space-y-3">
                 <div>
                   <p className="font-semibold text-foreground">
-                    Comprehensive defaulters list
+                    {t('reports.defaulters.listTitle')}
                   </p>
                   <p className="mt-0.5 text-sm text-muted-foreground">
-                    Every Bacenta in {churchName || 'this church'} for the
-                    selected week — banking status, form submission, attendance,
-                    income, and vacation status.
+                    {t('reports.defaulters.listDescription', {
+                      church: churchName || t('reports.shared.thisChurch'),
+                    })}
                   </p>
                 </div>
                 {downloadable && downloadLevel ? (
@@ -66,9 +68,7 @@ const DefaultersReportPage = () => {
                   />
                 ) : (
                   <p className="text-xs text-muted-foreground">
-                    Defaulters download is available at Governorship, Council,
-                    Stream, and Campus scopes. Switch your church-in-focus to
-                    one of those levels to enable it.
+                    {t('reports.defaulters.unavailableScope')}
                   </p>
                 )}
               </div>

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Alert, AlertDescription } from 'components/ui/alert'
@@ -44,29 +46,45 @@ const TARGETS_BY_SCOPE: Record<
 const isDefaultersScope = (value: string): value is DefaultersScope =>
   value === 'Campus' || value === 'Stream' || value === 'Council'
 
-const METRIC_HEADERS = [
-  { label: 'Active Bacentas', key: 'activeBacentas' },
-  { label: 'Services Filed', key: 'servicesFiled' },
-  { label: 'Form Defaulters', key: 'formDefaulters' },
-  { label: 'Banked', key: 'banked' },
-  { label: 'Banking Defaulters', key: 'bankingDefaulters' },
-  { label: 'Cancelled', key: 'cancelled' },
-] as const
+const levelLabel = (level: string, t: TFunction) =>
+  t(`shared.churchLevel.${level}`)
 
-const decoratorHeadersFor = (level: DefaultersTargetLevel) => [
-  { key: `${level}_name`, label: level },
-  { key: `${level}_leader`, label: `${level} Leader` },
-  { key: `${level}_phone`, label: `${level} Leader Phone` },
-]
+const metricHeaders = (t: TFunction) =>
+  [
+    { label: t('reports.shared.activeBacentas'), key: 'activeBacentas' },
+    { label: t('reports.shared.servicesFiled'), key: 'servicesFiled' },
+    { label: t('reports.shared.formDefaulters'), key: 'formDefaulters' },
+    { label: t('reports.shared.banked'), key: 'banked' },
+    { label: t('reports.shared.bankingDefaulters'), key: 'bankingDefaulters' },
+    { label: t('reports.shared.cancelled'), key: 'cancelled' },
+  ] as const
 
-const buildHeaders = (selected: readonly DefaultersTargetLevel[]) => {
+const decoratorHeadersFor = (level: DefaultersTargetLevel, t: TFunction) => {
+  const label = levelLabel(level, t)
+  return [
+    { key: `${level}_name`, label },
+    {
+      key: `${level}_leader`,
+      label: t('reports.shared.levelLeader', { level: label }),
+    },
+    {
+      key: `${level}_phone`,
+      label: t('reports.shared.levelLeaderPhone', { level: label }),
+    },
+  ]
+}
+
+const buildHeaders = (
+  selected: readonly DefaultersTargetLevel[],
+  t: TFunction
+) => {
   const ordered = SUB_CHURCH_TARGETS_ORDERED.filter(
     (l): l is DefaultersTargetLevel =>
       l !== 'Campus' && selected.includes(l as DefaultersTargetLevel)
   )
   return [
-    ...ordered.flatMap(decoratorHeadersFor),
-    ...METRIC_HEADERS.map((h) => ({ key: h.key, label: h.label })),
+    ...ordered.flatMap((l) => decoratorHeadersFor(l, t)),
+    ...metricHeaders(t).map((h) => ({ key: h.key, label: h.label })),
   ]
 }
 
@@ -110,25 +128,35 @@ const buildRow = (
 // Preview = Name + Leader per ticked level (top-down) plus the headline
 // metric pair. Phone is omitted on screen for layout reasons — the CSV
 // still carries it.
-const previewColumnsFor = (selected: readonly DefaultersTargetLevel[]) => {
+const previewColumnsFor = (
+  selected: readonly DefaultersTargetLevel[],
+  t: TFunction
+) => {
   const ordered = SUB_CHURCH_TARGETS_ORDERED.filter(
     (l): l is DefaultersTargetLevel =>
       l !== 'Campus' && selected.includes(l as DefaultersTargetLevel)
   )
   return [
-    ...ordered.flatMap((l) => [
-      { key: `${l}_name`, label: l },
-      { key: `${l}_leader`, label: `${l} Leader` },
-    ]),
-    { key: 'activeBacentas', label: 'Active' },
-    { key: 'formDefaulters', label: 'Form Def.' },
-    { key: 'bankingDefaulters', label: 'Banking Def.' },
+    ...ordered.flatMap((l) => {
+      const label = levelLabel(l, t)
+      return [
+        { key: `${l}_name`, label },
+        {
+          key: `${l}_leader`,
+          label: t('reports.shared.levelLeader', { level: label }),
+        },
+      ]
+    }),
+    { key: 'activeBacentas', label: t('reports.shared.active') },
+    { key: 'formDefaulters', label: t('reports.shared.formDefShort') },
+    { key: 'bankingDefaulters', label: t('reports.shared.bankingDefShort') },
   ]
 }
 
 const levelKey = (levels: readonly DefaultersTargetLevel[]) => levels.join(',')
 
 const DefaultersSubChurchesReportPage = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   const { weekStart, weekLabel, weekShortLabel, isCurrent } = useSelectedWeek()
 
@@ -194,11 +222,22 @@ const DefaultersSubChurchesReportPage = () => {
     )
   }, [payload, appliedLevels, appliedTarget])
 
-  const headers = useMemo(() => buildHeaders(appliedLevels), [appliedLevels])
-  const previewColumns = useMemo(
-    () => (appliedTarget ? previewColumnsFor(appliedLevels) : []),
-    [appliedLevels, appliedTarget]
+  const headers = useMemo(
+    () => buildHeaders(appliedLevels, t),
+    [appliedLevels, t]
   )
+  const previewColumns = useMemo(
+    () => (appliedTarget ? previewColumnsFor(appliedLevels, t) : []),
+    [appliedLevels, appliedTarget, t]
+  )
+
+  const targetLabel = appliedTarget
+    ? levelLabel(appliedTarget, t)
+    : t('reports.shared.subChurch')
+  const byTitle = t('reports.shared.byLevel', {
+    report: t('reports.defaulters.reportName'),
+    level: targetLabel,
+  })
 
   const filename = useMemo(() => {
     const safe = sanitizeFilenamePart(churchName)
@@ -208,12 +247,12 @@ const DefaultersSubChurchesReportPage = () => {
   if (!selectedScope) {
     return (
       <ReportPageShell
-        title="Defaulters"
-        highlightWord="by Sub-Church"
+        title={t('reports.defaulters.title')}
+        highlightWord={t('reports.defaulters.bySubChurch')}
         highlightClassName="text-defaulters"
       >
         <p className="text-sm text-muted-foreground">
-          Select a church scope to download the breakdown.
+          {t('reports.shared.selectScopeBreakdown')}
         </p>
       </ReportPageShell>
     )
@@ -223,15 +262,13 @@ const DefaultersSubChurchesReportPage = () => {
     return (
       <ReportPageShell
         title={churchName}
-        highlightWord="Defaulters by Sub-Church"
+        highlightWord={t('reports.defaulters.defaultersBySubChurch')}
         highlightClassName="text-defaulters"
       >
         <Alert>
           <AlertTriangle className="size-4" />
           <AlertDescription>
-            The by-sub-church defaulters breakdown is available at Council,
-            Stream, and Campus scopes. Switch your church-in-focus to one of
-            those levels to enable it.
+            {t('reports.defaulters.subChurchUnavailable')}
           </AlertDescription>
         </Alert>
       </ReportPageShell>
@@ -241,9 +278,9 @@ const DefaultersSubChurchesReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord={`Defaulters by ${appliedTarget ?? 'Sub-Church'}`}
+      highlightWord={byTitle}
       highlightClassName="text-defaulters"
-      subtitle="Pick the row level and which ancestor columns to include, then click Apply to refresh the report."
+      subtitle={t('reports.shared.pickerSubtitle')}
     >
       <div className="space-y-6">
         <SubChurchLevelPicker
@@ -260,10 +297,10 @@ const DefaultersSubChurchesReportPage = () => {
           <CardContent className="space-y-4 p-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Week
+                {t('reports.shared.weekSection')}
               </p>
               <p className="mt-1 text-sm text-foreground">
-                {isCurrent ? 'Current week' : weekLabel}
+                {isCurrent ? t('reports.shared.currentWeek') : weekLabel}
               </p>
             </div>
             <WeekSelector />
@@ -283,10 +320,14 @@ const DefaultersSubChurchesReportPage = () => {
           </Alert>
         ) : (
           <WeeklyReportDownloadCard
-            title={`Defaulters by ${appliedTarget ?? 'Sub-Church'}`}
-            description={`One row per ${
-              appliedTarget?.toLowerCase() ?? 'sub-church'
-            } in ${churchName || 'this church'} for ${weekShortLabel}, with ancestor decoration columns for every ticked level above.`}
+            title={byTitle}
+            description={t('reports.shared.oneRowPerLevel', {
+              level: appliedTarget
+                ? levelLabel(appliedTarget, t)
+                : t('reports.shared.subChurchFallback'),
+              church: churchName || t('reports.shared.thisChurch'),
+              period: weekShortLabel,
+            })}
             filename={filename}
             loading={loading}
             rows={rows}
@@ -294,7 +335,10 @@ const DefaultersSubChurchesReportPage = () => {
             entriesCount={rows.length}
             rangeLabel={weekShortLabel}
             previewColumns={previewColumns}
-            emptyMessage={`No defaulters data for ${churchName} in ${weekShortLabel}.`}
+            emptyMessage={t('reports.defaulters.emptyMessage', {
+              church: churchName,
+              period: weekShortLabel,
+            })}
           />
         )}
       </div>

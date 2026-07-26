@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import ShepherdingSlide from './components/ShepherdingSlide'
 import { useShepherdingSlide } from './useShepherdingSlide'
@@ -9,6 +10,7 @@ import { useProjectorViewer } from './shepherding-control-channel'
 // the normal Apollo + auth tree (same origin popup inherits sessionStorage
 // and the user has the gating role by virtue of being on the parent route).
 const ShepherdingControlProjector = () => {
+  const { t } = useTranslation()
   const state = useProjectorViewer()
   const slideData = useShepherdingSlide(
     state?.level ?? null,
@@ -17,9 +19,9 @@ const ShepherdingControlProjector = () => {
 
   useEffect(() => {
     document.title = state?.name
-      ? `Projector — ${state.name}`
-      : 'Shepherding Control — Projector'
-  }, [state?.name])
+      ? t('shepherding.projector.titleWithName', { name: state.name })
+      : t('shepherding.projector.titleDefault')
+  }, [state?.name, t])
 
   return (
     <div className="dark grid min-h-svh w-full bg-background text-foreground">
@@ -34,7 +36,7 @@ const ShepherdingControlProjector = () => {
           onSelectChild={() => undefined}
         />
       ) : (
-        <LoadingScreen text="Waiting for controller — drag this window to your projector or external monitor." />
+        <LoadingScreen text={t('shepherding.projector.waiting')} />
       )}
     </div>
   )

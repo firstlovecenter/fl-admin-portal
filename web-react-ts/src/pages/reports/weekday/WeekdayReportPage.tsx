@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { getHumanReadableDate } from 'global-utils'
 import { isUsdDisplayLevel } from 'lib/display-currency'
@@ -18,36 +20,49 @@ import type { WeeklyChurchReportEntry } from '../_shared/report-types'
 // column like any campus. When the currency is unknown, fall back to the level.
 const buildHeaders = (
   churchType: string | undefined,
-  incomeCurrency: string | null | undefined
+  incomeCurrency: string | null | undefined,
+  t: TFunction
 ) => {
   const incomeColumns = isUsdDisplayLevel(churchType, incomeCurrency)
-    ? [{ label: 'Service Income (USD)', key: 'serviceDollarIncome' }]
+    ? [{ label: t('reports.shared.serviceIncomeUsd'), key: 'serviceDollarIncome' }]
     : [
-        { label: 'Service Income', key: 'serviceIncome' },
-        { label: 'Service Income (USD)', key: 'serviceDollarIncome' },
+        { label: t('reports.shared.serviceIncome'), key: 'serviceIncome' },
+        {
+          label: t('reports.shared.serviceIncomeUsd'),
+          key: 'serviceDollarIncome',
+        },
       ]
   return [
-    { label: 'Year', key: 'year' },
-    { label: 'Week', key: 'week' },
-    { label: 'Service Attendance', key: 'serviceAttendance' },
-    { label: 'Number of Services', key: 'numberOfServices' },
+    { label: t('reports.shared.year'), key: 'year' },
+    { label: t('reports.shared.week'), key: 'week' },
+    {
+      label: t('reports.shared.serviceAttendance'),
+      key: 'serviceAttendance',
+    },
+    {
+      label: t('reports.shared.numberOfServices'),
+      key: 'numberOfServices',
+    },
     ...incomeColumns,
-    { label: 'Church', key: 'churchName' },
+    { label: t('reports.shared.church'), key: 'churchName' },
   ]
 }
 
 const buildPreviewColumns = (
   churchType: string | undefined,
-  incomeCurrency: string | null | undefined
+  incomeCurrency: string | null | undefined,
+  t: TFunction
 ) => {
   const usd = isUsdDisplayLevel(churchType, incomeCurrency)
   return [
-    { key: 'year', label: 'Year' },
-    { key: 'week', label: 'Week' },
-    { key: 'serviceAttendance', label: 'Attendance' },
+    { key: 'year', label: t('reports.shared.year') },
+    { key: 'week', label: t('reports.shared.week') },
+    { key: 'serviceAttendance', label: t('reports.shared.attendance') },
     {
       key: usd ? 'serviceDollarIncome' : 'serviceIncome',
-      label: usd ? 'Income (USD)' : 'Income',
+      label: usd
+        ? t('reports.shared.incomeUsd')
+        : t('reports.shared.income'),
     },
   ]
 }
@@ -63,6 +78,7 @@ const toRow = (entry: WeeklyChurchReportEntry) => ({
 })
 
 const WeekdayReportPage = () => {
+  const { t } = useTranslation()
   const {
     startDate,
     endDate,
@@ -88,12 +104,12 @@ const WeekdayReportPage = () => {
   )
 
   const headers = useMemo(
-    () => buildHeaders(churchType, incomeCurrency),
-    [churchType, incomeCurrency]
+    () => buildHeaders(churchType, incomeCurrency, t),
+    [churchType, incomeCurrency, t]
   )
   const previewColumns = useMemo(
-    () => buildPreviewColumns(churchType, incomeCurrency),
-    [churchType, incomeCurrency]
+    () => buildPreviewColumns(churchType, incomeCurrency, t),
+    [churchType, incomeCurrency, t]
   )
 
   const today = new Date().toISOString().slice(0, 10)
@@ -105,19 +121,24 @@ const WeekdayReportPage = () => {
 
   if (!churchType) {
     return (
-      <ReportPageShell title="Weekday" highlightWord="Report">
+      <ReportPageShell
+        title={t('reports.weekday.title')}
+        highlightWord={t('reports.weekday.report')}
+      >
         <p className="text-sm text-muted-foreground">
-          Select a church scope to download the weekday report.
+          {t('reports.weekday.selectScope')}
         </p>
       </ReportPageShell>
     )
   }
 
+  const levelLabel = t(`shared.churchLevel.${churchType}`)
+
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Weekday"
-      subtitle={`Per-week weekday service attendance and income for this ${churchType.toLowerCase()}.`}
+      highlightWord={t('reports.weekday.title')}
+      subtitle={t('reports.weekday.subtitle', { level: levelLabel })}
     >
       <div className="space-y-6">
         <DateRangePicker
@@ -129,8 +150,10 @@ const WeekdayReportPage = () => {
 
         <ApolloWrapper data={entries} loading={loading} error={error} placeholder>
           <WeeklyReportDownloadCard
-            title="Weekday"
-            description={`Per-week service attendance, count, and income for this ${churchType.toLowerCase()}.`}
+            title={t('reports.weekday.title')}
+            description={t('reports.weekday.description', {
+              level: levelLabel,
+            })}
             filename={filename}
             loading={loading}
             rows={entries.map(toRow)}
@@ -138,7 +161,7 @@ const WeekdayReportPage = () => {
             entriesCount={entries.length}
             rangeLabel={rangeLabel ?? undefined}
             previewColumns={previewColumns}
-            emptyMessage="No weekday aggregates in the selected range."
+            emptyMessage={t('reports.weekday.emptyMessage')}
           />
         </ApolloWrapper>
       </div>

@@ -4,6 +4,7 @@ import PullToRefresh from 'components/base-component/PullToRefresh'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { MessageCircle, Phone } from 'lucide-react'
 
 import { Button } from 'components/ui/button'
@@ -13,6 +14,7 @@ import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { OVERSIGHT_BY_CAMPUS } from '../stream-services/StreamDefaultersQueries'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import {
   bankedClass,
   CardSkeleton,
@@ -22,6 +24,7 @@ import {
 } from './subchurch-shared'
 
 const OversightByCampus = () => {
+  const { t } = useTranslation()
   const { oversightId, clickCard } = useContext(ChurchContext)
   const { data, loading, error, refetch } = useQuery(OVERSIGHT_BY_CAMPUS, {
     variables: { id: oversightId },
@@ -53,7 +56,12 @@ const OversightByCampus = () => {
             ) : (
               <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {oversight.name}{' '}
-                <span className="text-churches">Oversight By Campuses</span>
+                <span className="text-churches">
+                  {t('services.defaulters.bySubchurchHighlight', {
+                    level: formatChurchLevel('Oversight', t),
+                    subLevel: t('shared.churchLevelPlural.Campus'),
+                  })}
+                </span>
               </h1>
             )}
           </StickyPageHeader>
@@ -65,16 +73,17 @@ const OversightByCampus = () => {
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="border-b border-border px-4 py-3">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Oversight Summary
+                      {formatChurchLevel('Oversight', t)}{' '}
+                      {t('arrivals.common.summary')}
                     </h2>
                   </div>
                   <div className="divide-y divide-border">
                     <SummaryRow
-                      label="Campuses"
+                      label={t('shared.churchLevelPlural.Campus')}
                       value={loading ? '—' : String(campuses.length)}
                     />
                     <SummaryRow
-                      label="Services Filed"
+                      label={t('services.defaulters.servicesFiledLabel')}
                       value={
                         loading ? '—' : totals.services.toLocaleString('en-GH')
                       }
@@ -85,7 +94,7 @@ const OversightByCampus = () => {
                       }
                     />
                     <SummaryRow
-                      label="Form Defaulters"
+                      label={t('services.defaulters.formDefaultersLabel')}
                       value={
                         loading
                           ? '—'
@@ -98,7 +107,7 @@ const OversightByCampus = () => {
                       }
                     />
                     <SummaryRow
-                      label="Banked"
+                      label={t('services.defaulters.banked')}
                       value={
                         loading ? '—' : totals.banked.toLocaleString('en-GH')
                       }
@@ -109,7 +118,7 @@ const OversightByCampus = () => {
                       }
                     />
                     <SummaryRow
-                      label="Not Banked"
+                      label={t('services.defaulters.notBanked')}
                       value={
                         loading ? '—' : totals.notBanked.toLocaleString('en-GH')
                       }
@@ -120,7 +129,7 @@ const OversightByCampus = () => {
                       }
                     />
                     <SummaryRow
-                      label="Cancelled"
+                      label={t('services.defaulters.cancelled')}
                       value={
                         loading ? '—' : totals.cancelled.toLocaleString('en-GH')
                       }
@@ -156,7 +165,8 @@ const OversightByCampus = () => {
                         >
                           <div className="border-b border-border px-4 py-3">
                             <p className="font-semibold text-foreground">
-                              {campus.name} Campus
+                              {campus.name}{' '}
+                              {formatChurchLevel('Campus', t)}
                             </p>
                             <p className="mt-0.5 text-xs text-muted-foreground">
                               {campus.leader?.fullName}
@@ -166,12 +176,12 @@ const OversightByCampus = () => {
                           {/* Stream-level stats */}
                           <div className="border-b border-border bg-muted/10 px-4 py-2">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                              Streams
+                              {t('shared.churchLevelPlural.Stream')}
                             </p>
                           </div>
                           <div className="divide-y divide-border">
                             <StatRow
-                              label="Active Streams"
+                              label={t('services.defaulters.activeStreams')}
                               value={campus.activeStreamCount ?? 0}
                               valueClass={statClass(
                                 campus.activeStreamCount ?? 0,
@@ -179,7 +189,7 @@ const OversightByCampus = () => {
                               )}
                             />
                             <StatRow
-                              label="Services This Week"
+                              label={t('services.defaulters.servicesThisWeekLabel')}
                               value={campus.streamServicesThisWeekCount ?? 0}
                               valueClass={statClass(
                                 campus.streamServicesThisWeekCount ?? 0,
@@ -187,7 +197,7 @@ const OversightByCampus = () => {
                               )}
                             />
                             <StatRow
-                              label="Form Not Filled"
+                              label={t('services.defaulters.formNotFilled')}
                               value={
                                 campus.streamFormDefaultersThisWeekCount ?? 0
                               }
@@ -196,7 +206,7 @@ const OversightByCampus = () => {
                               )}
                             />
                             <StatRow
-                              label="Banked This Week"
+                              label={t('services.defaulters.bankedThisWeekLabel')}
                               value={campus.streamBankedThisWeekCount ?? 0}
                               valueClass={bankedClass(
                                 campus.streamBankedThisWeekCount ?? 0,
@@ -204,7 +214,7 @@ const OversightByCampus = () => {
                               )}
                             />
                             <StatRow
-                              label="Not Banked This Week"
+                              label={t('services.defaulters.notBankedThisWeekLabel')}
                               value={
                                 campus.streamBankingDefaultersThisWeekCount ?? 0
                               }
@@ -213,7 +223,7 @@ const OversightByCampus = () => {
                               )}
                             />
                             <StatRow
-                              label="Cancelled Services"
+                              label={t('services.defaulters.cancelledServicesLabel')}
                               value={
                                 campus.streamCancelledServicesThisWeekCount ?? 0
                               }
@@ -226,12 +236,12 @@ const OversightByCampus = () => {
                           {/* Bacenta-level stats */}
                           <div className="border-y border-border bg-muted/10 px-4 py-2">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                              Bacentas
+                              {t('shared.churchLevel.Bacenta')}
                             </p>
                           </div>
                           <div className="divide-y divide-border">
                             <StatRow
-                              label="Active Bacentas"
+                              label={t('services.defaulters.activeBacentas')}
                               value={campus.activeBacentaCount ?? 0}
                               valueClass={statClass(
                                 campus.activeBacentaCount ?? 0,
@@ -239,7 +249,7 @@ const OversightByCampus = () => {
                               )}
                             />
                             <StatRow
-                              label="Services This Week"
+                              label={t('services.defaulters.servicesThisWeekLabel')}
                               value={campus.servicesThisWeekCount ?? 0}
                               valueClass={statClass(
                                 campus.servicesThisWeekCount ?? 0,
@@ -247,14 +257,14 @@ const OversightByCampus = () => {
                               )}
                             />
                             <StatRow
-                              label="Form Not Filled"
+                              label={t('services.defaulters.formNotFilled')}
                               value={campus.formDefaultersThisWeekCount ?? 0}
                               valueClass={statClass(
                                 campus.formDefaultersThisWeekCount ?? 0
                               )}
                             />
                             <StatRow
-                              label="Banked This Week"
+                              label={t('services.defaulters.bankedThisWeekLabel')}
                               value={campus.bankedThisWeekCount ?? 0}
                               valueClass={bankedClass(
                                 campus.bankedThisWeekCount ?? 0,
@@ -262,14 +272,14 @@ const OversightByCampus = () => {
                               )}
                             />
                             <StatRow
-                              label="Not Banked This Week"
+                              label={t('services.defaulters.notBankedThisWeekLabel')}
                               value={campus.bankingDefaultersThisWeekCount ?? 0}
                               valueClass={statClass(
                                 campus.bankingDefaultersThisWeekCount ?? 0
                               )}
                             />
                             <StatRow
-                              label="Cancelled Services"
+                              label={t('services.defaulters.cancelledServicesLabel')}
                               value={campus.cancelledServicesThisWeekCount ?? 0}
                               valueClass={statClass(
                                 campus.cancelledServicesThisWeekCount ?? 0
@@ -281,7 +291,7 @@ const OversightByCampus = () => {
                         {/* Footer — admin contact (outside the clickable area) */}
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
                           <p className="mb-2.5 text-xs text-muted-foreground">
-                            Admin:{' '}
+                            {t('services.defaulters.adminLabel')}{' '}
                             <span className="font-medium text-foreground">
                               {campus.admin?.fullName}
                             </span>
@@ -295,7 +305,7 @@ const OversightByCampus = () => {
                             >
                               <a href={`tel:${campus.admin?.phoneNumber}`}>
                                 <Phone className="h-4 w-4" />
-                                Call
+                                {t('services.defaulters.call')}
                               </a>
                             </Button>
                             <Button
@@ -310,7 +320,7 @@ const OversightByCampus = () => {
                                 }?text=${messageForAdminsOfDefaulters(campus)}`}
                               >
                                 <MessageCircle className="h-4 w-4" />
-                                WhatsApp
+                                {t('services.defaulters.whatsapp')}
                               </a>
                             </Button>
                           </div>

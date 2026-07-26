@@ -1,4 +1,5 @@
 import { useLazyQuery } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { Ban, CalendarCheck, CheckCircle2 } from 'lucide-react'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -29,6 +30,7 @@ import { isDefaultersDownloadLevel } from './utils/buildDefaultersWorkbook'
 import { DefaultersUseChurchType } from './defaulters-types'
 
 const CancelledServicesThisWeek = () => {
+  const { t } = useTranslation()
   const { weekStart, week, isCurrent } = useSelectedWeek()
 
   const [governorshipCancelledServices, { refetch: governorshipRefetch }] =
@@ -64,7 +66,7 @@ const CancelledServicesThisWeek = () => {
   const totalsItems: WeekTotalItem[] = [
     {
       key: 'cancelled',
-      label: 'Cancelled services',
+      label: t('services.defaulters.cancelledServicesCount'),
       value: formatCount(total),
       accent: 'destructive',
       icon: <Ban />,
@@ -81,7 +83,9 @@ const CancelledServicesThisWeek = () => {
                 {church ? (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {church.name}{' '}
-                    <span className="text-defaulters">Cancelled Services</span>
+                    <span className="text-defaulters">
+                      {t('services.defaulters.cancelledServicesTitle')}
+                    </span>
                   </h1>
                 ) : (
                   <Skeleton className="h-9 w-72" />
@@ -99,17 +103,14 @@ const CancelledServicesThisWeek = () => {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarCheck className="size-3.5" />
-                  Week {week}
+                  {t('services.defaulters.weekBadge', { week })}
                 </Badge>
                 {church ? (
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {total}
-                    </span>{' '}
-                    {total === 1
-                      ? 'service was cancelled'
-                      : 'services were cancelled'}
-                    {isCurrent ? ' this week' : ' that week'}
+                    {t('services.defaulters.cancelledCount', { count: total })}
+                    {isCurrent
+                      ? t('services.defaulters.thisWeekSuffix')
+                      : t('services.defaulters.thatWeekSuffix')}
                   </p>
                 ) : (
                   <Skeleton className="h-4 w-48" />
@@ -148,10 +149,12 @@ const CancelledServicesThisWeek = () => {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-foreground">
-                          No cancelled services
+                          {t('services.defaulters.noCancelledServices')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Nothing has been cancelled for week {week}.
+                          {t('services.defaulters.nothingCancelledWeek', {
+                            week,
+                          })}
                         </p>
                       </div>
                     </CardContent>

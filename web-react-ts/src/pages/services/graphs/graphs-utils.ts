@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { average } from 'global-utils'
 
 const numberOfWeeks = 4
@@ -108,9 +109,12 @@ export const sortingFunction = (key: string, order = 'asc') => {
 export const formatIncomeStat = (
   avgIncome: string | undefined,
   incomeTracked: boolean,
-  currency: string | null | undefined
+  currency: string | null | undefined,
+  t?: TFunction
 ): string => {
-  if (!incomeTracked) return 'Not tracked'
+  if (!incomeTracked) {
+    return t ? t('services.graphs.notTracked') : 'Not tracked'
+  }
   if (avgIncome === undefined || avgIncome === 'NaN') return '—'
   const num = Number(avgIncome)
   if (!Number.isFinite(num)) return '—'
@@ -178,7 +182,8 @@ export const getServiceGraphData = (
       }
     | undefined,
   category: GraphTypes,
-  windowSize = numberOfWeeks
+  windowSize = numberOfWeeks,
+  t?: TFunction
 ) => {
   if (!church) {
     return
@@ -214,15 +219,24 @@ export const getServiceGraphData = (
       }
       const yearSuffix =
         typeof year === 'number' && year !== currentYear
-          ? `'${String(year).slice(-2)}`
+          ? String(year).slice(-2)
           : ''
+      const weekLabel = week
+        ? t
+          ? yearSuffix
+            ? t('services.graphs.weekShortYear', { week, yearSuffix })
+            : t('services.graphs.weekShort', { week })
+          : yearSuffix
+          ? `W${week}'${yearSuffix}`
+          : `W${week}`
+        : null
       data.push({
         id: record?.id,
         category,
         date: recordDate,
         week,
         year,
-        weekLabel: week ? `W${week}${yearSuffix}` : null,
+        weekLabel,
         attendance: record.attendance,
         income: record.income?.toFixed(2),
         currency: record?.currency,
