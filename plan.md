@@ -460,6 +460,48 @@ full-render wrapper test (`BacentaHistory.test.tsx`) plus a thorough
 key-resolution tests. Full suite 490 passing / same 11 pre-existing
 failures.
 
+### 3i — MemberForm.tsx (DONE, committed `f837815e`)
+
+Translated the shared `MemberForm.tsx` (620 lines — rendered by
+`CreateMember`, `UpdateMember`, and the user-profile edit page):
+validation messages, header, the four section titles (Basic Information /
+Contact / Personal / Church Membership), all field labels and
+placeholders, and the submit footer. New `directory.memberForm.*`
+namespace. "Basonta" (label and value) left untranslated per
+`kb/01-glossary.md`'s do-not-translate list, same as "Bacenta"; the
+`SearchBacenta` label ("Bacenta *") routes through
+`shared.churchLevel.Bacenta`. 3 new tests (register mode, update mode,
+French). Full suite 493 passing / same 11 pre-existing failures.
+
+### 3j — MemberDisplay.tsx (DONE, committed `516cf0fb`)
+
+Translated `MemberDisplay.tsx` (844 lines — the member detail page): the
+sticky-note dialog, top action bar, identity/contact panel, church
+membership rows, personal-information rows, leadership-roles and
+church-history headings, and the vCard export. New
+`directory.memberDisplay.*` namespace.
+
+**The translate-vs-don't line, now settled and test-pinned.** This file
+forced the distinction to be made explicit, so it's worth recording:
+
+- `historyRecord` values (`"Added Sticky Note: …"`, `"Deleted Sticky
+  Note"`) — **not translated.** Persisted to `HistoryLog` nodes and read
+  later by other users; translating them would mean one church's audit
+  trail mixes languages depending on whichever locale each editor
+  happened to have active. Same call as phases 3f and 3h.
+- The **vCard export — translated.** Superficially similar (it's
+  "exported data"), but it's generated fresh on each download and read
+  only by the person who downloaded it, so there's no stored-data or
+  cross-user consistency problem. `generateVCard` takes `t` as a third
+  param, following the module-level-helper pattern already used by
+  `getHourlyGreeting(t)` and `convertToString(value, t)`.
+- `throwToSentry(...)` — not translated (dev-only diagnostics), and
+  "Basonta"/"Bacenta" values stay as coined loanwords.
+
+Two of the 4 new tests exist specifically to pin the do-not-translate
+and translate-the-vCard decisions so a later pass can't silently flip
+either one. Full suite 497 passing / same 11 pre-existing failures.
+
 ## Remaining work (not started — future phases)
 
 Roughly in priority order:
@@ -477,13 +519,17 @@ Roughly in priority order:
    `StreamTellerDashboard.tsx` still have their own English-only strings
    (bussing counters, banking-defaulter CTAs, etc.) beyond the one
    fallback-name fix already made.
-4. **Finish `pages/directory/`** — remaining: `reusable-forms/MemberForm.tsx`
-   (620 lines), `reusable-forms/MemberDisplay.tsx` (844 lines), shared grid
-   components (`components/members-grids/MembersGrid.tsx`/`MemberTable.tsx`/
-   `Filters.tsx` — confirmed used by all 7 already-translated `grids/*.tsx`
-   pages, not yet surveyed for their own hardcoded strings). `user-profile/`
-   and `church-history/` are done (3g/3h above).
-5. **`pages/arrivals/`** — after directory. Not started.
+4. **Finish `pages/directory/`** — only the shared grid components are left:
+   `components/members-grids/MembersGrid.tsx` (search placeholder, "Add
+   member", Download, Filters, "Filter Members", the matches/members count
+   suffix) and `Filters.tsx` (Gender / Marital Status / Select a Ministry /
+   Leader Rank / Leader Title group labels, Reset, Apply Filters).
+   `MemberTable.tsx` was surveyed and has **no** hardcoded user-facing
+   strings — nothing to do there. These three are used by all 7
+   already-translated `grids/*.tsx` pages. Everything else in
+   `pages/directory/` is done (3a–3j above).
+5. **`pages/arrivals/`** — after directory. Not started; the whole page
+   group is still unsurveyed and is the single largest remaining chunk.
 6. Then accounts/banking/reports, translating error/validation copy as each
    page is migrated (Yup schema messages, Apollo/notistack-surfaced errors
    are still English-only everywhere, including on already-localized pages).
@@ -623,3 +669,28 @@ Not touched (phase 3d, confirmed dead code): `web-react-ts/src/pages/directory/q
 - `web-react-ts/src/locales/{en,fr,es,pt,de}.json` (`directory.update.*`,
   `directory.memberCollisionDialog.*`, `directory.updateBusPaymentDialog.*`,
   `directory.updateMember.*` added)
+
+**Modified/new (phase 3g — user-profile, committed `ab70a8c7`):**
+- `web-react-ts/src/pages/directory/user-profile/DisplayPage.tsx` +
+  `DisplayPage.test.tsx` (new)
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json`
+  (`directory.userProfile.*` added)
+
+**Modified/new (phase 3h — church-history, committed `00123a7b`):**
+- `web-react-ts/src/pages/directory/display/church-history/{ChurchHistoryView,
+  BacentaHistory,CampusHistory,CouncilHistory,GovernorshipHistory,
+  StreamHistory,MemberHistory}.tsx` + matching `.test.tsx` for each (new)
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json`
+  (`directory.churchHistory.*` added)
+
+**Modified/new (phase 3i — MemberForm, committed `f837815e`):**
+- `web-react-ts/src/pages/directory/reusable-forms/MemberForm.tsx` +
+  `MemberForm.test.tsx` (new)
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json`
+  (`directory.memberForm.*` added)
+
+**Modified/new (phase 3j — MemberDisplay, committed `516cf0fb`):**
+- `web-react-ts/src/pages/directory/reusable-forms/MemberDisplay.tsx` +
+  `MemberDisplay.test.tsx` (new)
+- `web-react-ts/src/locales/{en,fr,es,pt,de}.json`
+  (`directory.memberDisplay.*` added, including the `vcard.*` sub-block)
