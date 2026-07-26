@@ -3,6 +3,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   AlertOctagon,
@@ -100,6 +101,7 @@ const STREAM_ADMIN_ROLES = [
 
 const StreamDashboard = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { isAuthorised } = useAuth()
   const { arrivalDate, streamId } = useContext(ChurchContext)
   useArrivalsScopeSync('Stream', streamId)
@@ -141,7 +143,7 @@ const StreamDashboard = () => {
 
   const adminValidationSchema = Yup.object({
     adminSelect: Yup.string().required(
-      'Please select an Admin from the dropdown'
+      t('arrivals.dashboard.selectAdmin')
     ),
   })
 
@@ -150,7 +152,7 @@ const StreamDashboard = () => {
     onSubmitProps: FormikHelpers<AdminFormOptions>
   ) => {
     if (!isAuthorised(STREAM_ADMIN_ROLES)) {
-      toast.error('You are not authorised to change the arrivals admin')
+      toast.error(t('arrivals.dashboard.notAuthorisedToChangeAdmin'))
       return
     }
     onSubmitProps.setSubmitting(true)
@@ -163,10 +165,10 @@ const StreamDashboard = () => {
         },
       })
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? 'Update failed'))
+        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
         return
       }
-      toast.success('Arrivals admin updated')
+      toast.success(t('arrivals.dashboard.adminUpdated'))
       setAdminDialogOpen(false)
     } catch (e) {
       throwToSentry('Failed to update arrivals admin', e)
@@ -180,7 +182,7 @@ const StreamDashboard = () => {
   const bacentaTiles: BacentaTile[] = [
     {
       key: 'no-activity',
-      label: 'No Activity',
+      label: t('arrivals.dashboard.noActivity'),
       value: stream?.bacentasNoActivityCount,
       icon: AlertOctagon,
       tone: 'defaulters',
@@ -188,7 +190,7 @@ const StreamDashboard = () => {
     },
     {
       key: 'mobilising',
-      label: 'Mobilising',
+      label: t('arrivals.dashboard.mobilising'),
       value: stream?.bacentasMobilisingCount,
       icon: Megaphone,
       tone: 'warning',
@@ -196,7 +198,7 @@ const StreamDashboard = () => {
     },
     {
       key: 'on-the-way',
-      label: 'On The Way',
+      label: t('arrivals.dashboard.onTheWay'),
       value: stream?.bacentasOnTheWayCount,
       icon: BusFront,
       tone: 'arrivals',
@@ -204,7 +206,7 @@ const StreamDashboard = () => {
     },
     {
       key: 'didnt-bus',
-      label: "Didn't Bus",
+      label: t('arrivals.dashboard.didNotBus'),
       value: stream?.bacentasBelow8Count,
       icon: AlertTriangle,
       tone: 'destructive',
@@ -212,7 +214,7 @@ const StreamDashboard = () => {
     },
     {
       key: 'arrived',
-      label: 'Have Arrived',
+      label: t('arrivals.dashboard.haveArrived'),
       value: stream?.bacentasHaveArrivedCount,
       icon: CheckCircle2,
       tone: 'success',
@@ -237,7 +239,7 @@ const StreamDashboard = () => {
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {stream?.name}{' '}
-                    <span className="text-arrivals">Arrivals</span>
+                    <span className="text-arrivals">{t('arrivals.common.title')}</span>
                   </h1>
                 )}
               </div>
@@ -252,37 +254,37 @@ const StreamDashboard = () => {
                         variant="outline"
                         size="icon"
                         className="size-11 shrink-0"
-                        aria-label="Dashboard settings"
+                        aria-label={t('arrivals.dashboard.settingsAriaLabel')}
                       >
                         <Settings2 className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t('arrivals.dashboard.settings')}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={() => setAdminDialogOpen(true)}
                       >
-                        Change Arrivals Admin
+                        {t('arrivals.dashboard.changeAdmin')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onSelect={() =>
                           navigate('/stream/arrivals-counters')
                         }
                       >
-                        Arrivals Counters
+                        {t('arrivals.dashboard.arrivalsCounters')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onSelect={() => navigate('/stream/arrival-times')}
                       >
-                        Arrival Times
+                        {t('arrivals.dashboard.arrivalTimes')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onSelect={() =>
                           navigate('/stream/arrival-excel-data')
                         }
                       >
-                        Download Arrivals Payment Data
+                        {t('arrivals.dashboard.downloadPaymentData')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -295,7 +297,7 @@ const StreamDashboard = () => {
               <Alert variant="destructive" className="mb-6">
                 <AlertTriangle className="size-4" />
                 <AlertDescription>
-                  Arrival deadline is up. Thank you very much.
+                  {t('arrivals.dashboard.deadlinePassed')}
                 </AlertDescription>
               </Alert>
             )}
@@ -308,7 +310,9 @@ const StreamDashboard = () => {
                   admin={stream?.arrivalsAdmin}
                   loading={loading && !stream}
                   subChurch={{
-                    label: stream?.councilCount === 1 ? 'Council' : 'Councils',
+                    label: stream?.councilCount === 1
+                      ? t('shared.churchLevel.Council')
+                      : t('shared.churchLevelPlural.Council'),
                     count: stream?.councilCount,
                     to: '/arrivals/stream-by-council',
                   }}
@@ -318,7 +322,7 @@ const StreamDashboard = () => {
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <SectionLabel>
-                      Bacenta Status
+                      {t('arrivals.dashboard.bacentaStatus')}
                     </SectionLabel>
                     <DownloadArrivalsButton
                       level="Stream"
@@ -339,7 +343,7 @@ const StreamDashboard = () => {
                     ))}
                     <RoleView roles={permitArrivalsCounter()}>
                       <StatusTile
-                        label="To Be Counted"
+                        label={t('arrivals.dashboard.toBeCounted')}
                         value={stream?.vehiclesNotCountedCount}
                         icon={ClipboardList}
                         tone="warning"
@@ -360,33 +364,33 @@ const StreamDashboard = () => {
                 >
                   <section className="space-y-2">
                     <SectionLabel>
-                      Financial Data
+                      {t('arrivals.dashboard.financialData')}
                     </SectionLabel>
                     <Card className="overflow-hidden">
                       <div className="divide-y divide-border">
                         <LiveRow
-                          label="Vehicles Paid"
+                          label={t('arrivals.dashboard.vehiclesPaid')}
                           value={stream?.vehiclesHaveBeenPaidCount}
                           icon={CheckCircle2}
                           tone="success"
                           loading={loading && !stream}
                         />
                         <LiveRow
-                          label="Vehicles To Be Paid"
+                          label={t('arrivals.dashboard.vehiclesToBePaid')}
                           value={stream?.vehiclesToBePaidCount}
                           icon={BusFront}
                           tone="warning"
                           loading={loading && !stream}
                         />
                         <LiveRow
-                          label="Amount Paid"
+                          label={t('arrivals.dashboard.amountPaid')}
                           value={formatAmount(stream?.vehicleAmountHasBeenPaid)}
                           icon={Banknote}
                           tone="success"
                           loading={loading && !stream}
                         />
                         <LiveRow
-                          label="Amount To Be Paid"
+                          label={t('arrivals.dashboard.amountToBePaid')}
                           value={formatAmount(stream?.vehicleAmountToBePaid)}
                           icon={CreditCard}
                           tone="warning"
@@ -401,44 +405,44 @@ const StreamDashboard = () => {
               const liveArrivalsBlock = (
                 <section className="space-y-2">
                   <SectionLabel>
-                    Live Arrivals
+                    {t('arrivals.dashboard.liveArrivals')}
                   </SectionLabel>
                   <Card className="overflow-hidden">
                     <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <LiveDot />
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Realtime
+                          {t('arrivals.dashboard.realtime')}
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        Updated {updatedLabel}
+                        {t('arrivals.dashboard.updated', { time: updatedLabel })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
                       <LiveRow
-                        label="Members On The Way"
+                        label={t('arrivals.dashboard.membersOnTheWay')}
                         value={stream?.bussingMembersOnTheWayCount}
                         icon={UsersRound}
                         tone="warning"
                         loading={loading && !stream}
                       />
                       <LiveRow
-                        label="Members Arrived"
+                        label={t('arrivals.dashboard.membersArrived')}
                         value={stream?.bussingMembersHaveArrivedCount}
                         icon={Users}
                         tone="success"
                         loading={loading && !stream}
                       />
                       <LiveRow
-                        label="Buses On The Way"
+                        label={t('arrivals.dashboard.busesOnTheWay')}
                         value={stream?.bussesOnTheWayCount}
                         icon={BusFront}
                         tone="warning"
                         loading={loading && !stream}
                       />
                       <LiveRow
-                        label="Buses Arrived"
+                        label={t('arrivals.dashboard.busesArrived')}
                         value={stream?.bussesThatArrivedCount}
                         icon={BusFront}
                         tone="success"
@@ -458,7 +462,7 @@ const StreamDashboard = () => {
                     <Tabs defaultValue="bacentas">
                       <TabsList className="grid h-11 w-full grid-cols-3">
                         <TabsTrigger value="bacentas" className="text-xs">
-                          Bacentas
+                          {t('shared.churchLevelPlural.Bacenta')}
                         </TabsTrigger>
                         <RoleView
                           roles={[
@@ -467,11 +471,11 @@ const StreamDashboard = () => {
                           ]}
                         >
                           <TabsTrigger value="financial" className="text-xs">
-                            Financial
+                            {t('arrivals.dashboard.financial')}
                           </TabsTrigger>
                         </RoleView>
                         <TabsTrigger value="live" className="text-xs">
-                          Live
+                          {t('arrivals.dashboard.live')}
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="bacentas" className="mt-3">
@@ -507,10 +511,11 @@ const StreamDashboard = () => {
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Change Arrivals Admin</DialogTitle>
+                  <DialogTitle>{t('arrivals.dashboard.changeAdmin')}</DialogTitle>
                   <DialogDescription>
-                    Search for the member you want to assign as the new
-                    arrivals admin for this stream.
+                    {t('arrivals.dashboard.changeAdminDescription', {
+                      level: t('shared.churchLevel.Stream').toLowerCase(),
+                    })}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -525,7 +530,7 @@ const StreamDashboard = () => {
                       <SearchMember
                         name="adminSelect"
                         initialValue={initialAdminValues.adminName}
-                        placeholder="Search for a member"
+                        placeholder={t('arrivals.dashboard.searchMember')}
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="Member Search"
                         error={formik.errors.adminSelect}
@@ -537,7 +542,7 @@ const StreamDashboard = () => {
                           onClick={() => setAdminDialogOpen(false)}
                           disabled={formik.isSubmitting}
                         >
-                          Cancel
+                          {t('arrivals.dashboard.cancel')}
                         </Button>
                         <Button
                           type="submit"
@@ -547,7 +552,7 @@ const StreamDashboard = () => {
                           {formik.isSubmitting && (
                             <Loader2 className="size-4 animate-spin" />
                           )}
-                          Save Changes
+                          {t('arrivals.dashboard.saveChanges')}
                         </Button>
                       </DialogFooter>
                     </Form>

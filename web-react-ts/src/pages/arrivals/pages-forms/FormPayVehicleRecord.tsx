@@ -37,6 +37,7 @@ import {
   OUTBOUND_OPTIONS,
 } from '../arrivals-utils'
 import '../Arrivals.css'
+import { useTranslation } from 'react-i18next'
 
 type FormOptions = {
   momoNumber: string
@@ -47,6 +48,7 @@ type FormOptions = {
 
 const FormPayVehicleRecord = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { bacentaId } = useContext(ChurchContext)
   const { vehicleRecordId } = useContext(ServiceContext)
   const { show, handleShow, handleClose } = useModal()
@@ -69,12 +71,12 @@ const FormPayVehicleRecord = () => {
 
   const validationSchema = Yup.object({
     vehicleTopUp: Yup.number()
-      .typeError('Please enter a valid number')
-      .integer('You cannot have attendance with decimals!')
-      .required('This is a required field'),
-    momoName: Yup.string().required('This is a required field'),
-    momoNumber: Yup.string().required('This is a required field'),
-    outbound: Yup.string().required('Please select an option'),
+      .typeError(t('arrivals.form.validNumber'))
+      .integer(t('arrivals.form.noAttendanceDecimals'))
+      .required(t('arrivals.form.required')),
+    momoName: Yup.string().required(t('arrivals.form.required')),
+    momoNumber: Yup.string().required(t('arrivals.form.required')),
+    outbound: Yup.string().required(t('arrivals.form.selectOption')),
   })
 
   const onSubmit = async (
@@ -85,7 +87,7 @@ const FormPayVehicleRecord = () => {
 
     if (!isRecordFromToday) {
       alertMsg(
-        'This bussing record is not for today. You can only pay for vehicles bussed today.'
+        t('arrivals.form.notTodayPay')
       )
       return
     }
@@ -104,7 +106,9 @@ const FormPayVehicleRecord = () => {
       })
 
       alertSuccess(
-        `Money Successfully Sent to ${supportRes.data.SendVehicleSupport.momoName}`
+        t('arrivals.form.moneySent', {
+          name: supportRes.data.SendVehicleSupport.momoName,
+        })
       )
       setSubmitting(false)
       navigate(`/bacenta/vehicle-details`)
@@ -117,31 +121,31 @@ const FormPayVehicleRecord = () => {
   }
 
   const detailRows = [
-    ['Stream', bacenta?.stream.name],
-    ['Council Pastor', bacenta?.governorship.council.leader.fullName],
-    ['Council', bacenta?.governorship.council.name],
-    ['Governorship', bacenta?.governorship.name],
-    ['Attendance', `${vehicle?.attendance || 0}`],
-    ['Vehicle Type', vehicle?.vehicle || 0],
+    [t('arrivals.payment.stream'), bacenta?.stream.name],
+    [t('arrivals.form.councilPastor'), bacenta?.governorship.council.leader.fullName],
+    [t('arrivals.payment.council'), bacenta?.governorship.council.name],
+    [t('arrivals.payment.governorship'), bacenta?.governorship.name],
+    [t('arrivals.payment.attendance'), `${vehicle?.attendance || 0}`],
+    [t('arrivals.form.vehicleType'), vehicle?.vehicle || 0],
     [
-      'In and Out',
+      t('arrivals.vehicle.inAndOut'),
       <span className="yellow" key="in-out">
         {convertOutboundToString(vehicle?.outbound) || 0}
       </span>,
     ],
     [
-      'View Picture',
+      t('arrivals.form.viewPicture'),
       <button
         type="button"
         className="text-primary underline-offset-4 hover:underline"
         onClick={() => handleShow()}
         key="view"
       >
-        Click Here
+        {t('arrivals.form.clickHere')}
       </button>,
     ],
     [
-      'Top Up From Church',
+      t('arrivals.form.topUpFromChurch'),
       <CurrencySpan
         className="font-semibold text-[hsl(var(--success))]"
         number={vehicle?.vehicleTopUp}
@@ -154,15 +158,14 @@ const FormPayVehicleRecord = () => {
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <PlaceholderCustom as="h3" loading={loading}>
-          <HeadingPrimary>Vehicle Attendance Form</HeadingPrimary>
+          <HeadingPrimary>{t('arrivals.form.vehicleAttendance')}</HeadingPrimary>
         </PlaceholderCustom>
 
         {!loading && vehicle && !isRecordFromToday && (
           <Alert variant="destructive">
             <AlertTriangle className="size-4" />
             <AlertDescription>
-              This bussing record is not for today. You can only pay for
-              vehicles bussed today.
+              {t('arrivals.form.notTodayPay')}
             </AlertDescription>
           </Alert>
         )}
@@ -173,8 +176,8 @@ const FormPayVehicleRecord = () => {
             className="avatar"
           />
           <div>
-            <div>{`${bacenta?.name} Bacenta`}</div>
-            <div className="text-sm text-muted-foreground">{`Leader: ${bacenta?.leader.fullName}`}</div>
+            <div>{t('arrivals.bussing.bacentaName', { name: bacenta?.name })}</div>
+            <div className="text-sm text-muted-foreground">{t('arrivals.form.leaderName', { name: bacenta?.leader.fullName })}</div>
           </div>
         </div>
         <Dialog
@@ -183,7 +186,7 @@ const FormPayVehicleRecord = () => {
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{bacenta?.name} Bacenta Picture</DialogTitle>
+              <DialogTitle>{t('arrivals.form.bacentaPicture', { name: bacenta?.name })}</DialogTitle>
             </DialogHeader>
             <CloudinaryImage
               className="bus-picture"
@@ -192,7 +195,7 @@ const FormPayVehicleRecord = () => {
             />
             <DialogFooter>
               <Button variant="outline" onClick={handleClose}>
-                Close
+                {t('arrivals.common.close')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -210,33 +213,32 @@ const FormPayVehicleRecord = () => {
             <Form className="space-y-3">
               <Input
                 name="vehicleTopUp"
-                label="Vehicle Top Up Amount*"
+                label={t('arrivals.form.vehicleTopUpAmount')}
                 placeholder={vehicle?.vehicleTopUp.toString()}
               />
               <Card className="my-3 border-[hsl(var(--warning))]/60">
                 <CardContent className="p-4">
                   <RadioButtons
                     name="outbound"
-                    label="Are They Bussing Back?"
+                    label={t('arrivals.form.areTheyBussingBack')}
                     options={OUTBOUND_OPTIONS}
                   />
                 </CardContent>
               </Card>
               <Input
                 name="momoNumber"
-                label="Momo Number*"
+                label={t('arrivals.form.momoNumberRequired')}
                 placeholder={vehicle?.momoNumber.toString()}
               />
               <Input
                 name="momoName"
-                label="Momo Name*"
+                label={t('arrivals.form.momoNameRequired')}
                 placeholder={vehicle?.momoName.toString()}
               />
 
               <Card className="mt-4 text-center">
                 <CardContent className="p-4">
-                  I can confirm that the above data is correct and I approve the
-                  vehicle top up for this bacenta
+                  {t('arrivals.form.approveVehicleTopUp')}
                 </CardContent>
                 <CardFooter className="justify-center p-4 pt-0">
                   <SubmitButton formik={formik} disabled={!isRecordFromToday} />

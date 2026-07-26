@@ -3,6 +3,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   AlertOctagon,
@@ -89,6 +90,7 @@ type BacentaTile = {
 
 const GovernorshipDashboard = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { arrivalDate, governorshipId } =
     useContext(ChurchContext)
   useArrivalsScopeSync('Governorship', governorshipId)
@@ -139,7 +141,7 @@ const GovernorshipDashboard = () => {
 
   const adminValidationSchema = Yup.object({
     adminSelect: Yup.string().required(
-      'Please select an Admin from the dropdown'
+      t('arrivals.dashboard.selectAdmin')
     ),
   })
 
@@ -158,11 +160,11 @@ const GovernorshipDashboard = () => {
       })
 
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? 'Update failed'))
+        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
         return
       }
 
-      toast.success('Arrivals admin updated')
+      toast.success(t('arrivals.dashboard.adminUpdated'))
       setAdminDialogOpen(false)
     } catch (e) {
       throwToSentry('Failed to update arrivals admin', e)
@@ -177,7 +179,7 @@ const GovernorshipDashboard = () => {
   const bacentaTiles: BacentaTile[] = [
     {
       key: 'no-activity',
-      label: 'No Activity',
+      label: t('arrivals.dashboard.noActivity'),
       value: governorship?.bacentasNoActivityCount,
       icon: AlertOctagon,
       tone: 'defaulters',
@@ -185,7 +187,7 @@ const GovernorshipDashboard = () => {
     },
     {
       key: 'mobilising',
-      label: 'Mobilising',
+      label: t('arrivals.dashboard.mobilising'),
       value: governorship?.bacentasMobilisingCount,
       icon: Megaphone,
       tone: 'warning',
@@ -193,7 +195,7 @@ const GovernorshipDashboard = () => {
     },
     {
       key: 'on-the-way',
-      label: 'On The Way',
+      label: t('arrivals.dashboard.onTheWay'),
       value: governorship?.bacentasOnTheWayCount,
       icon: BusFront,
       tone: 'arrivals',
@@ -201,7 +203,7 @@ const GovernorshipDashboard = () => {
     },
     {
       key: 'didnt-bus',
-      label: "Didn't Bus",
+      label: t('arrivals.dashboard.didNotBus'),
       value: governorship?.bacentasBelow8Count,
       icon: AlertTriangle,
       tone: 'destructive',
@@ -209,7 +211,7 @@ const GovernorshipDashboard = () => {
     },
     {
       key: 'arrived',
-      label: 'Have Arrived',
+      label: t('arrivals.dashboard.haveArrived'),
       value: governorship?.bacentasHaveArrivedCount,
       icon: CheckCircle2,
       tone: 'success',
@@ -234,7 +236,7 @@ const GovernorshipDashboard = () => {
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {governorship?.name}{' '}
-                    <span className="text-arrivals">Arrivals</span>
+                    <span className="text-arrivals">{t('arrivals.common.title')}</span>
                   </h1>
                 )}
               </div>
@@ -254,18 +256,18 @@ const GovernorshipDashboard = () => {
                         variant="outline"
                         size="icon"
                         className="size-11"
-                        aria-label="Dashboard settings"
+                        aria-label={t('arrivals.dashboard.settingsAriaLabel')}
                       >
                         <Settings2 className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t('arrivals.dashboard.settings')}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={() => setAdminDialogOpen(true)}
                       >
-                        Change Arrivals Admin
+                        {t('arrivals.dashboard.changeAdmin')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -278,7 +280,7 @@ const GovernorshipDashboard = () => {
               <Alert variant="destructive" className="mb-6">
                 <AlertTriangle className="size-4" />
                 <AlertDescription>
-                  Arrival deadline is up. Thank you very much.
+                  {t('arrivals.dashboard.deadlinePassed')}
                 </AlertDescription>
               </Alert>
             )}
@@ -294,7 +296,7 @@ const GovernorshipDashboard = () => {
               const bacentaStatusBlock = (
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
-                    <SectionLabel>Bacenta Status</SectionLabel>
+                    <SectionLabel>{t('arrivals.dashboard.bacentaStatus')}</SectionLabel>
                     <DownloadArrivalsButton
                       level="Governorship"
                       churchId={governorshipId}
@@ -318,36 +320,36 @@ const GovernorshipDashboard = () => {
 
               const liveArrivalsBlock = (
                 <section className="space-y-2">
-                  <SectionLabel>Live Arrivals</SectionLabel>
+                  <SectionLabel>{t('arrivals.dashboard.liveArrivals')}</SectionLabel>
                   <Card className="overflow-hidden">
                     <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <LiveDot />
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Realtime
+                          {t('arrivals.dashboard.realtime')}
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        Updated {updatedLabel}
+                        {t('arrivals.dashboard.updated', { time: updatedLabel })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
                       <LiveRow
-                        label="Members On The Way"
+                        label={t('arrivals.dashboard.membersOnTheWay')}
                         value={governorship?.bussingMembersOnTheWayCount}
                         icon={UsersRound}
                         tone="warning"
                         loading={loading && !governorship}
                       />
                       <LiveRow
-                        label="Members Arrived"
+                        label={t('arrivals.dashboard.membersArrived')}
                         value={governorship?.bussingMembersHaveArrivedCount}
                         icon={Users}
                         tone="success"
                         loading={loading && !governorship}
                       />
                       <LiveRow
-                        label="Buses Arrived"
+                        label={t('arrivals.dashboard.busesArrived')}
                         value={governorship?.bussesThatArrivedCount}
                         icon={BusFront}
                         tone="success"
@@ -366,10 +368,10 @@ const GovernorshipDashboard = () => {
                     <Tabs defaultValue="bacentas">
                       <TabsList className="grid h-11 w-full grid-cols-2">
                         <TabsTrigger value="bacentas" className="text-xs">
-                          Bacentas
+                          {t('shared.churchLevelPlural.Bacenta')}
                         </TabsTrigger>
                         <TabsTrigger value="live" className="text-xs">
-                          Live
+                          {t('arrivals.dashboard.live')}
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="bacentas" className="mt-3">
@@ -399,10 +401,11 @@ const GovernorshipDashboard = () => {
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Change Arrivals Admin</DialogTitle>
+                  <DialogTitle>{t('arrivals.dashboard.changeAdmin')}</DialogTitle>
                   <DialogDescription>
-                    Search for the member you want to assign as the new
-                    arrivals admin for this governorship.
+                    {t('arrivals.dashboard.changeAdminDescription', {
+                      level: t('shared.churchLevel.Governorship').toLowerCase(),
+                    })}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -417,7 +420,7 @@ const GovernorshipDashboard = () => {
                       <SearchMember
                         name="adminSelect"
                         initialValue={initialAdminValues.adminName}
-                        placeholder="Search for a member"
+                        placeholder={t('arrivals.dashboard.searchMember')}
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="Member Search"
                         error={formik.errors.adminSelect}
@@ -429,7 +432,7 @@ const GovernorshipDashboard = () => {
                           onClick={() => setAdminDialogOpen(false)}
                           disabled={formik.isSubmitting}
                         >
-                          Cancel
+                          {t('arrivals.dashboard.cancel')}
                         </Button>
                         <Button
                           type="submit"
@@ -439,7 +442,7 @@ const GovernorshipDashboard = () => {
                           {formik.isSubmitting && (
                             <Loader2 className="size-4 animate-spin" />
                           )}
-                          Save Changes
+                          {t('arrivals.dashboard.saveChanges')}
                         </Button>
                       </DialogFooter>
                     </Form>

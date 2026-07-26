@@ -36,6 +36,7 @@ import { capitalise } from 'global-utils'
 import { BacentaWithArrivals, VehicleRecord } from './arrivals-types'
 import { beforeCountingDeadline, canAddVehicleRecord } from './arrivals-utils'
 import { DISPLAY_VEHICLE_RECORDS } from './arrivalsQueries'
+import { useTranslation } from 'react-i18next'
 
 type DataRowProps = {
   label: string
@@ -54,6 +55,7 @@ const DataRow = ({ label, children, loading }: DataRowProps) => (
 
 const BusVehicleFormDetails = () => {
   const { bacentaId, clickCard } = useContext(ChurchContext)
+  const { t } = useTranslation()
   const { vehicleRecordId } = useContext(ServiceContext)
   const [picturePopup, setPicturePopup] = useState('')
   const [pictureOpen, setPictureOpen] = useState(false)
@@ -69,7 +71,9 @@ const BusVehicleFormDetails = () => {
     setPictureOpen(true)
   }
 
-  const inOutLabel = vehicle?.outbound ? 'In and Out' : 'In Only'
+  const inOutLabel = vehicle?.outbound
+    ? t('arrivals.vehicle.inAndOut')
+    : t('arrivals.vehicle.inOnly')
   const txnSuccess = vehicle?.transactionStatus === 'success'
   const canAddVehicle = canAddVehicleRecord(church, vehicle?.bussingRecord)
 
@@ -78,13 +82,13 @@ const BusVehicleFormDetails = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {church?.name ?? 'Loading…'}{' '}
-            <span className="text-arrivals">Vehicle Details</span>
+            {church?.name ?? t('arrivals.common.loading')}{' '}
+            <span className="text-arrivals">{t('arrivals.vehicle.details')}</span>
           </h1>
           <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-3">
             {vehicle?.created_by?.fullName && (
               <span>
-                Recorded by{' '}
+                {t('arrivals.common.recordedBy')}{' '}
                 <span className="text-foreground">
                   {vehicle.created_by.fullName}
                 </span>
@@ -94,7 +98,7 @@ const BusVehicleFormDetails = () => {
               <RoleView roles={permitAdminArrivals('Stream')}>
                 <span className="hidden sm:inline">·</span>
                 <span>
-                  Counted by{' '}
+                  {t('arrivals.common.countedBy')}{' '}
                   <span className="text-success">
                     {vehicle.counted_by.fullName}
                   </span>
@@ -134,54 +138,54 @@ const BusVehicleFormDetails = () => {
                 <div className="flex items-center gap-2 border-b border-border px-4 py-3">
                   <Sigma className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Bussing Record
+                    {t('arrivals.vehicle.bussingRecord')}
                   </h2>
                 </div>
                 <div className="divide-y divide-border">
-                  <DataRow label="Date of Service" loading={loading}>
+                  <DataRow label={t('arrivals.bussing.dateOfService')} loading={loading}>
                     {vehicle?.createdAt
                       ? getHumanReadableDate(vehicle.createdAt)
                       : '—'}
                   </DataRow>
-                  <DataRow label="Time Filled" loading={loading}>
+                  <DataRow label={t('arrivals.vehicle.timeFilled')} loading={loading}>
                     {vehicle?.createdAt
                       ? getTime(new Date(vehicle.createdAt))
                       : '—'}
                   </DataRow>
-                  <DataRow label="Leader Says" loading={loading}>
+                  <DataRow label={t('arrivals.bussing.leaderSays')} loading={loading}>
                     <span className="tabular-nums">
                       {vehicle?.leaderDeclaration ?? '—'}
                     </span>
                   </DataRow>
-                  <DataRow label="Confirmed Attendance" loading={loading}>
+                  <DataRow label={t('arrivals.bussing.confirmedAttendance')} loading={loading}>
                     <span className="font-semibold tabular-nums text-success">
                       {vehicle?.attendance ?? '—'}
                     </span>
                   </DataRow>
-                  <DataRow label="Vehicle Top Up" loading={loading}>
+                  <DataRow label={t('arrivals.vehicle.topUp')} loading={loading}>
                     <span className="font-semibold tabular-nums text-success">
                       <CurrencySpan number={vehicle?.vehicleTopUp ?? 0} />
                     </span>
                   </DataRow>
                   {vehicle?.vehicle && (
-                    <DataRow label="Category" loading={loading}>
+                    <DataRow label={t('arrivals.vehicle.category')} loading={loading}>
                       {vehicle.vehicle}
                     </DataRow>
                   )}
                   {vehicle?.arrivalTime && (
-                    <DataRow label="Arrival Time" loading={loading}>
+                    <DataRow label={t('arrivals.vehicle.arrivalTime')} loading={loading}>
                       <span className="font-semibold tabular-nums text-success">
                         {parseNeoTime(vehicle.arrivalTime.toString())}
                       </span>
                     </DataRow>
                   )}
-                  <DataRow label="In and Out" loading={loading}>
+                  <DataRow label={t('arrivals.vehicle.inAndOut')} loading={loading}>
                     <span className="font-semibold text-warning-foreground">
                       {inOutLabel}
                     </span>
                   </DataRow>
                   {vehicle?.comments && (
-                    <DataRow label="Comments" loading={loading}>
+                    <DataRow label={t('arrivals.common.comments')} loading={loading}>
                       <span className="italic">{vehicle.comments}</span>
                     </DataRow>
                   )}
@@ -193,16 +197,16 @@ const BusVehicleFormDetails = () => {
                   <div className="flex items-center gap-2 border-b border-border px-4 py-3">
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Financial Details
+                      {t('arrivals.vehicle.financialDetails')}
                     </h2>
                   </div>
                   <div className="divide-y divide-border">
-                    <DataRow label="Transaction Reference">
+                    <DataRow label={t('arrivals.vehicle.transactionReference')}>
                       <span className="font-mono text-xs">
                         {vehicle.transactionReference || '—'}
                       </span>
                     </DataRow>
-                    <DataRow label="Transaction Status">
+                    <DataRow label={t('arrivals.vehicle.transactionStatus')}>
                       <span
                         className={
                           txnSuccess
@@ -213,13 +217,13 @@ const BusVehicleFormDetails = () => {
                         {capitalise(vehicle.transactionStatus)}
                       </span>
                     </DataRow>
-                    <DataRow label="Mobile Network">
+                    <DataRow label={t('arrivals.common.mobileNetwork')}>
                       {vehicle.mobileNetwork || '—'}
                     </DataRow>
-                    <DataRow label="Momo Name">
+                    <DataRow label={t('arrivals.common.momoName')}>
                       {capitalise(vehicle.momoName ?? '')}
                     </DataRow>
-                    <DataRow label="Momo Number">
+                    <DataRow label={t('arrivals.common.momoNumber')}>
                       <span className="font-mono">
                         {vehicle.momoNumber || '—'}
                       </span>
@@ -235,7 +239,7 @@ const BusVehicleFormDetails = () => {
                 <div className="flex items-center gap-2 border-b border-border px-4 py-3">
                   <ImageIcon className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Vehicle Picture
+                    {t('arrivals.vehicle.picture')}
                   </h2>
                 </div>
                 {vehicle?.picture ? (
@@ -243,7 +247,7 @@ const BusVehicleFormDetails = () => {
                     type="button"
                     onClick={() => openPicture(vehicle.picture)}
                     className="block w-full overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label="View full-size vehicle picture"
+                    aria-label={t('arrivals.vehicle.viewFullSizePicture')}
                   >
                     <CloudinaryImage
                       className="h-auto w-full object-cover"
@@ -256,7 +260,7 @@ const BusVehicleFormDetails = () => {
                     {loading ? (
                       <Skeleton className="h-full w-full" />
                     ) : (
-                      'No picture submitted'
+                      t('arrivals.vehicle.noPictureSubmitted')
                     )}
                   </div>
                 )}
@@ -266,7 +270,7 @@ const BusVehicleFormDetails = () => {
                 <div className="flex items-center gap-2 border-b border-border px-4 py-3">
                   <ListChecks className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Actions
+                    {t('arrivals.common.actions')}
                   </h2>
                 </div>
                 <div className="space-y-2 p-4">
@@ -284,7 +288,7 @@ const BusVehicleFormDetails = () => {
                         }}
                       >
                         <Plus className="h-4 w-4" />
-                        Add Another Vehicle
+                        {t('arrivals.bussing.addAnotherVehicle')}
                       </Button>
                     )}
                   </RoleView>
@@ -300,7 +304,7 @@ const BusVehicleFormDetails = () => {
                         }
                       >
                         <CreditCard className="h-4 w-4" />
-                        Continue Payments
+                        {t('arrivals.vehicle.continuePayments')}
                       </Button>
                     </RoleView>
                   )}
@@ -316,7 +320,7 @@ const BusVehicleFormDetails = () => {
                               navigate('/arrivals/submit-vehicle-attendance')
                             }
                           >
-                            I Want to Count
+                            {t('arrivals.vehicle.wantToCount')}
                           </Button>
                         )}
                       </>
@@ -328,7 +332,7 @@ const BusVehicleFormDetails = () => {
                       onClick={() => navigate('/arrivals/bacentas-to-count')}
                     >
                       <ListChecks className="h-4 w-4" />
-                      Continue Counting
+                      {t('arrivals.vehicle.continueCounting')}
                     </Button>
                   </RoleView>
 
@@ -339,7 +343,7 @@ const BusVehicleFormDetails = () => {
                     onClick={() => navigate('/arrivals')}
                   >
                     <Home className="h-4 w-4" />
-                    Back to Arrivals Home
+                    {t('arrivals.bussing.backToArrivalsHome')}
                   </Button>
                 </div>
               </div>
@@ -352,8 +356,11 @@ const BusVehicleFormDetails = () => {
               <DialogHeader>
                 <DialogTitle>
                   {church?.name
-                    ? `${church.name} ${church.__typename ?? ''} Picture`.trim()
-                    : 'Vehicle Picture'}
+                    ? t('arrivals.vehicle.churchPicture', {
+                        churchName: church.name,
+                        churchType: church.__typename ?? '',
+                      }).trim()
+                    : t('arrivals.vehicle.picture')}
                 </DialogTitle>
               </DialogHeader>
               {picturePopup && (
@@ -369,7 +376,7 @@ const BusVehicleFormDetails = () => {
                   onClick={() => setPictureOpen(false)}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Close
+                  {t('arrivals.common.close')}
                 </Button>
               </div>
             </DialogContent>

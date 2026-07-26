@@ -3,6 +3,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { getHumanReadableDate } from 'lib/date-utils'
 import {
@@ -96,6 +97,7 @@ type BacentaTile = {
 
 const CampusDashboard = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { isAuthorised } = useAuth()
   const { arrivalDate, campusId } = useContext(ChurchContext)
   useArrivalsScopeSync('Campus', campusId)
@@ -146,7 +148,7 @@ const CampusDashboard = () => {
 
   const adminValidationSchema = Yup.object({
     adminSelect: Yup.string().required(
-      'Please select an Admin from the dropdown'
+      t('arrivals.dashboard.selectAdmin')
     ),
   })
 
@@ -155,7 +157,7 @@ const CampusDashboard = () => {
     onSubmitProps: FormikHelpers<AdminFormOptions>
   ) => {
     if (!isAuthorised(permitAdmin('Campus'))) {
-      toast.error('You are not authorised to change the arrivals admin')
+      toast.error(t('arrivals.dashboard.notAuthorisedToChangeAdmin'))
       return
     }
     onSubmitProps.setSubmitting(true)
@@ -168,10 +170,10 @@ const CampusDashboard = () => {
         },
       })
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? 'Update failed'))
+        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
         return
       }
-      toast.success('Arrivals admin updated')
+      toast.success(t('arrivals.dashboard.adminUpdated'))
       setAdminDialogOpen(false)
     } catch (e) {
       throwToSentry('Failed to update arrivals admin', e)
@@ -184,17 +186,17 @@ const CampusDashboard = () => {
 
   const handleSetSwell = async () => {
     if (!isAuthorised(permitAdmin('Campus'))) {
-      toast.error('You are not authorised to set the swell date')
+      toast.error(t('arrivals.dashboard.notAuthorisedToSetSwell'))
       return
     }
     if (isSwellDay) {
-      toast.info('Swell is already set for today')
+      toast.info(t('arrivals.dashboard.swellAlreadySet'))
       setSwellDialogOpen(false)
       return
     }
     try {
       await SetSwellDate({ variables: { date: today } })
-      toast.success('Swell date set successfully')
+      toast.success(t('arrivals.dashboard.swellSet'))
       setSwellDialogOpen(false)
     } catch (e) {
       throwToSentry('Failed to set swell date', e)
@@ -219,17 +221,19 @@ const CampusDashboard = () => {
   const handleSetCodeOfTheDay = async () => {
     const code = codeValue.trim()
     if (!code) {
-      toast.error('Please enter a code')
+      toast.error(t('arrivals.dashboard.enterCode'))
       return
     }
     try {
       const result = await SetCodeOfTheDay({ variables: { code } })
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? 'Update failed'))
+        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
         return
       }
       toast.success(
-        `Code of the day set to "${result.data?.SetCodeOfTheDay ?? code}"`
+        t('arrivals.dashboard.codeSet', {
+          code: result.data?.SetCodeOfTheDay ?? code,
+        })
       )
       setCodeValue('')
       setCodeDialogOpen(false)
@@ -241,7 +245,7 @@ const CampusDashboard = () => {
   const bacentaTiles: BacentaTile[] = [
     {
       key: 'no-activity',
-      label: 'No Activity',
+      label: t('arrivals.dashboard.noActivity'),
       value: campus?.bacentasNoActivityCount,
       icon: AlertOctagon,
       tone: 'defaulters',
@@ -249,7 +253,7 @@ const CampusDashboard = () => {
     },
     {
       key: 'mobilising',
-      label: 'Mobilising',
+      label: t('arrivals.dashboard.mobilising'),
       value: campus?.bacentasMobilisingCount,
       icon: Megaphone,
       tone: 'warning',
@@ -257,7 +261,7 @@ const CampusDashboard = () => {
     },
     {
       key: 'on-the-way',
-      label: 'On The Way',
+      label: t('arrivals.dashboard.onTheWay'),
       value: campus?.bacentasOnTheWayCount,
       icon: BusFront,
       tone: 'arrivals',
@@ -265,7 +269,7 @@ const CampusDashboard = () => {
     },
     {
       key: 'didnt-bus',
-      label: "Didn't Bus",
+      label: t('arrivals.dashboard.didNotBus'),
       value: campus?.bacentasBelow8Count,
       icon: AlertTriangle,
       tone: 'destructive',
@@ -273,7 +277,7 @@ const CampusDashboard = () => {
     },
     {
       key: 'arrived',
-      label: 'Have Arrived',
+      label: t('arrivals.dashboard.haveArrived'),
       value: campus?.bacentasHaveArrivedCount,
       icon: CheckCircle2,
       tone: 'success',
@@ -298,7 +302,7 @@ const CampusDashboard = () => {
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {campus?.name}{' '}
-                    <span className="text-arrivals">Arrivals</span>
+                    <span className="text-arrivals">{t('arrivals.common.title')}</span>
                   </h1>
                 )}
                 {(isSwellDay || timeGraph?.date) && (
@@ -309,7 +313,7 @@ const CampusDashboard = () => {
                         className="gap-1 border-warning/30 bg-warning/10 text-warning"
                       >
                         <Sparkles className="size-3" />
-                        Swollen Weekend
+                        {t('arrivals.bacenta.swollenWeekend')}
                       </Badge>
                     )}
                     {timeGraph?.date && (
@@ -332,33 +336,33 @@ const CampusDashboard = () => {
                         variant="outline"
                         size="icon"
                         className="size-11 shrink-0"
-                        aria-label="Dashboard settings"
+                        aria-label={t('arrivals.dashboard.settingsAriaLabel')}
                       >
                         <Settings2 className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t('arrivals.dashboard.settings')}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       {isCampusAdmin && (
                         <DropdownMenuItem
                           onSelect={() => setAdminDialogOpen(true)}
                         >
-                          Change Arrivals Admin
+                          {t('arrivals.dashboard.changeAdmin')}
                         </DropdownMenuItem>
                       )}
                       {isCampusAdmin && canSetSwell && (
                         <DropdownMenuItem
                           onSelect={() => setSwellDialogOpen(true)}
                         >
-                          Set Today as Swell
+                          {t('arrivals.dashboard.setTodayAsSwell')}
                         </DropdownMenuItem>
                       )}
                       {canSetCodeOfDay && (
                         <DropdownMenuItem
                           onSelect={() => setCodeDialogOpen(true)}
                         >
-                          Set Code of the Day
+                          {t('arrivals.dashboard.setCodeOfDay')}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -374,7 +378,9 @@ const CampusDashboard = () => {
                   admin={campus?.arrivalsAdmin}
                   loading={loading && !campus}
                   subChurch={{
-                    label: campus?.streamCount === 1 ? 'Stream' : 'Streams',
+                    label: campus?.streamCount === 1
+                      ? t('shared.churchLevel.Stream')
+                      : t('shared.churchLevelPlural.Stream'),
                     count: campus?.streamCount,
                     to: '/arrivals/campus-by-stream',
                   }}
@@ -384,7 +390,7 @@ const CampusDashboard = () => {
               const bacentaStatusBlock = (
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
-                    <SectionLabel>Bacenta Status</SectionLabel>
+                    <SectionLabel>{t('arrivals.dashboard.bacentaStatus')}</SectionLabel>
                     <DownloadArrivalsButton
                       level="Campus"
                       churchId={campusId}
@@ -414,32 +420,32 @@ const CampusDashboard = () => {
                   ]}
                 >
                   <section className="space-y-2">
-                    <SectionLabel>Financial Data</SectionLabel>
+                    <SectionLabel>{t('arrivals.dashboard.financialData')}</SectionLabel>
                     <Card className="overflow-hidden">
                       <div className="divide-y divide-border">
                         <LiveRow
-                          label="Vehicles Paid"
+                          label={t('arrivals.dashboard.vehiclesPaid')}
                           value={campus?.vehiclesHaveBeenPaidCount}
                           icon={CheckCircle2}
                           tone="success"
                           loading={loading && !campus}
                         />
                         <LiveRow
-                          label="Vehicles To Be Paid"
+                          label={t('arrivals.dashboard.vehiclesToBePaid')}
                           value={campus?.vehiclesToBePaidCount}
                           icon={BusFront}
                           tone="warning"
                           loading={loading && !campus}
                         />
                         <LiveRow
-                          label="Amount Paid"
+                          label={t('arrivals.dashboard.amountPaid')}
                           value={formatAmount(campus?.vehicleAmountHasBeenPaid)}
                           icon={Banknote}
                           tone="success"
                           loading={loading && !campus}
                         />
                         <LiveRow
-                          label="Amount To Be Paid"
+                          label={t('arrivals.dashboard.amountToBePaid')}
                           value={formatAmount(campus?.vehicleAmountToBePaid)}
                           icon={CreditCard}
                           tone="warning"
@@ -453,43 +459,43 @@ const CampusDashboard = () => {
 
               const liveArrivalsBlock = (
                 <section className="space-y-2">
-                  <SectionLabel>Live Arrivals</SectionLabel>
+                  <SectionLabel>{t('arrivals.dashboard.liveArrivals')}</SectionLabel>
                   <Card className="overflow-hidden">
                     <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <LiveDot />
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Realtime
+                          {t('arrivals.dashboard.realtime')}
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        Updated {updatedLabel}
+                        {t('arrivals.dashboard.updated', { time: updatedLabel })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
                       <LiveRow
-                        label="Members On The Way"
+                        label={t('arrivals.dashboard.membersOnTheWay')}
                         value={campus?.bussingMembersOnTheWayCount}
                         icon={UsersRound}
                         tone="warning"
                         loading={loading && !campus}
                       />
                       <LiveRow
-                        label="Members Arrived"
+                        label={t('arrivals.dashboard.membersArrived')}
                         value={campus?.bussingMembersHaveArrivedCount}
                         icon={Users}
                         tone="success"
                         loading={loading && !campus}
                       />
                       <LiveRow
-                        label="Buses On The Way"
+                        label={t('arrivals.dashboard.busesOnTheWay')}
                         value={campus?.bussesOnTheWayCount}
                         icon={BusFront}
                         tone="warning"
                         loading={loading && !campus}
                       />
                       <LiveRow
-                        label="Buses Arrived"
+                        label={t('arrivals.dashboard.busesArrived')}
                         value={campus?.bussesThatArrivedCount}
                         icon={BusFront}
                         tone="success"
@@ -508,7 +514,7 @@ const CampusDashboard = () => {
                     <Tabs defaultValue="bacentas">
                       <TabsList className="grid h-11 w-full grid-cols-3">
                         <TabsTrigger value="bacentas" className="text-xs">
-                          Bacentas
+                          {t('shared.churchLevelPlural.Bacenta')}
                         </TabsTrigger>
                         <RoleView
                           roles={[
@@ -517,11 +523,11 @@ const CampusDashboard = () => {
                           ]}
                         >
                           <TabsTrigger value="financial" className="text-xs">
-                            Financial
+                            {t('arrivals.dashboard.financial')}
                           </TabsTrigger>
                         </RoleView>
                         <TabsTrigger value="live" className="text-xs">
-                          Live
+                          {t('arrivals.dashboard.live')}
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="bacentas" className="mt-3">
@@ -555,10 +561,11 @@ const CampusDashboard = () => {
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Change Arrivals Admin</DialogTitle>
+                  <DialogTitle>{t('arrivals.dashboard.changeAdmin')}</DialogTitle>
                   <DialogDescription>
-                    Search for the member you want to assign as the new
-                    arrivals admin for this campus.
+                    {t('arrivals.dashboard.changeAdminDescription', {
+                      level: t('shared.churchLevel.Campus').toLowerCase(),
+                    })}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -573,7 +580,7 @@ const CampusDashboard = () => {
                       <SearchMember
                         name="adminSelect"
                         initialValue={initialAdminValues.adminName}
-                        placeholder="Search for a member"
+                        placeholder={t('arrivals.dashboard.searchMember')}
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="Member Search"
                         error={formik.errors.adminSelect}
@@ -585,7 +592,7 @@ const CampusDashboard = () => {
                           onClick={() => setAdminDialogOpen(false)}
                           disabled={formik.isSubmitting}
                         >
-                          Cancel
+                          {t('arrivals.dashboard.cancel')}
                         </Button>
                         <Button
                           type="submit"
@@ -595,7 +602,7 @@ const CampusDashboard = () => {
                           {formik.isSubmitting && (
                             <Loader2 className="size-4 animate-spin" />
                           )}
-                          Save Changes
+                          {t('arrivals.dashboard.saveChanges')}
                         </Button>
                       </DialogFooter>
                     </Form>
@@ -610,11 +617,10 @@ const CampusDashboard = () => {
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Sparkles className="size-5 text-warning" />
-                    Set Today as Swell
+                    {t('arrivals.dashboard.setTodayAsSwell')}
                   </DialogTitle>
                   <DialogDescription>
-                    This will mark today as a Swell / special weekend. This
-                    action applies to the entire campus.
+                    {t('arrivals.dashboard.setSwellDescription')}
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -624,7 +630,7 @@ const CampusDashboard = () => {
                     onClick={() => setSwellDialogOpen(false)}
                     disabled={swellLoading}
                   >
-                    Cancel
+                    {t('arrivals.dashboard.cancel')}
                   </Button>
                   <Button
                     type="button"
@@ -635,7 +641,7 @@ const CampusDashboard = () => {
                     {swellLoading && (
                       <Loader2 className="size-4 animate-spin" />
                     )}
-                    Set as Swell
+                    {t('arrivals.dashboard.setAsSwell')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -645,21 +651,19 @@ const CampusDashboard = () => {
             <Dialog open={codeDialogOpen} onOpenChange={setCodeDialogOpen}>
               <DialogContent className="sm:max-w-sm">
                 <DialogHeader>
-                  <DialogTitle>Set Code of the Day</DialogTitle>
+                  <DialogTitle>{t('arrivals.dashboard.setCodeOfDay')}</DialogTitle>
                   <DialogDescription>
-                    Override today&apos;s Code of the Day. The new value
-                    replaces whatever was set this morning until the next
-                    daily run.
+                    {t('arrivals.dashboard.setCodeDescription')}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-2 py-2">
-                  <Label htmlFor="code-of-the-day-input">Code</Label>
+                  <Label htmlFor="code-of-the-day-input">{t('arrivals.dashboard.code')}</Label>
                   <Input
                     id="code-of-the-day-input"
                     autoFocus
                     value={codeValue}
                     onChange={(e) => setCodeValue(e.target.value)}
-                    placeholder="e.g. Anointing"
+                    placeholder={t('arrivals.dashboard.codePlaceholder')}
                     disabled={codeLoading}
                   />
                 </div>
@@ -670,7 +674,7 @@ const CampusDashboard = () => {
                     onClick={() => setCodeDialogOpen(false)}
                     disabled={codeLoading}
                   >
-                    Cancel
+                    {t('arrivals.dashboard.cancel')}
                   </Button>
                   <Button
                     type="button"
@@ -681,7 +685,7 @@ const CampusDashboard = () => {
                     {codeLoading && (
                       <Loader2 className="size-4 animate-spin" />
                     )}
-                    Save Code
+                    {t('arrivals.dashboard.saveCode')}
                   </Button>
                 </DialogFooter>
               </DialogContent>

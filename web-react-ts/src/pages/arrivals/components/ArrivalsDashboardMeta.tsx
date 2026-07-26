@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
 import { Skeleton } from 'components/ui/skeleton'
+import { useTranslation } from 'react-i18next'
 
 type ArrivalsAdmin = {
   id?: string
@@ -42,6 +43,7 @@ const ArrivalsDashboardMeta = ({
   subChurch,
 }: ArrivalsDashboardMetaProps) => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const showAdmin = !!admin?.fullName
   const showSubChurch = hasSubChurch(subChurch)
@@ -64,7 +66,7 @@ const ArrivalsDashboardMeta = ({
       {showAdmin && admin && (
         <div
           className="inline-flex min-h-11 items-center gap-2 rounded-full border bg-muted/40 py-1 pl-1 pr-3"
-          aria-label={`Arrivals admin: ${admin.fullName}`}
+          aria-label={t('arrivals.meta.adminAriaLabel', { name: admin.fullName })}
         >
           <Avatar className="size-8">
             {admin.pictureUrl ? (
@@ -81,7 +83,7 @@ const ArrivalsDashboardMeta = ({
             variant="outline"
             className="border-arrivals/30 bg-arrivals/10 px-1.5 py-0 text-[10px] uppercase tracking-wider text-arrivals"
           >
-            Admin
+            {t('arrivals.meta.admin')}
           </Badge>
         </div>
       )}
@@ -93,7 +95,7 @@ const ArrivalsDashboardMeta = ({
           size="sm"
           className="h-11 gap-1 rounded-full px-3 text-xs font-medium tabular-nums"
           onClick={() => navigate(subChurch.to)}
-          aria-label={`View ${subChurch.label}`}
+          aria-label={t('arrivals.meta.viewChurches', { label: subChurch.label })}
         >
           <span>
             {subChurch.count} {subChurch.label}

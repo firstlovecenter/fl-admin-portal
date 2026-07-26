@@ -40,6 +40,7 @@ import {
 import { BacentaWithArrivals, VehicleRecord } from './arrivals-types'
 import CountdownTimer from './countdown-component/CountdownTimer'
 import ButtonIcons from './components/ButtonIcons'
+import { useTranslation } from 'react-i18next'
 
 const VehicleRow = ({ record }: { record: VehicleRecord }) => {
   const { clickCard } = useContext(ChurchContext)
@@ -88,6 +89,7 @@ const SectionLabel = ({ children }: { children: string }) => (
 
 const BacentaArrivals = () => {
   const { clickCard, bacentaId } = useContext(ChurchContext)
+  const { t } = useTranslation()
   const { show, handleClose } = useModal()
   const [showCodeFullscreen, setShowCodeFullscreen] = useState(false)
   const [showMobPic, setShowMobPic] = useState(false)
@@ -140,12 +142,12 @@ const BacentaArrivals = () => {
             ) : (
               <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {bacenta.name}{' '}
-                <span className="text-arrivals">Arrivals</span>
+                <span className="text-arrivals">{t('arrivals.common.title')}</span>
               </h1>
             )}
             {date?.swell && (
               <p className="inline-flex items-center gap-2 rounded-full bg-warning/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-warning">
-                <AlertTriangle className="size-3.5" /> Swollen Weekend
+                <AlertTriangle className="size-3.5" /> {t('arrivals.bacenta.swollenWeekend')}
               </p>
             )}
           </StickyPageHeader>
@@ -154,14 +156,14 @@ const BacentaArrivals = () => {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr] lg:items-start">
               {/* LEFT — status / countdown */}
               <section className="space-y-4">
-                <SectionLabel>Today&apos;s Status</SectionLabel>
+                <SectionLabel>{t('arrivals.bacenta.todayStatus')}</SectionLabel>
 
                 <Card className="overflow-hidden">
                   {/* Code of the Day */}
                   {!filledFormsToday && (
                     <CardContent className="p-6 text-center">
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Code of the Day
+                        {t('arrivals.bacenta.codeOfDay')}
                       </p>
                       <div className="mt-1 flex items-center justify-center gap-2">
                         <p className="font-mono text-3xl font-bold tabular-nums text-foreground dark:text-yellow-300">
@@ -173,7 +175,7 @@ const BacentaArrivals = () => {
                             variant="ghost"
                             size="icon"
                             className="size-11 shrink-0 text-muted-foreground hover:text-foreground"
-                            aria-label="Show code of the day fullscreen"
+                            aria-label={t('arrivals.bacenta.showCodeFullscreen')}
                             onClick={() => setShowCodeFullscreen(true)}
                           >
                             <Maximize2 className="size-4" />
@@ -187,7 +189,7 @@ const BacentaArrivals = () => {
                   {isBeforeArrivalEnd && (
                     <div className={cn('border-border', !filledFormsToday && 'border-t')}>
                       <p className="flex items-center justify-center gap-2 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        <Clock className="size-3.5" /> Arrivals close in
+                        <Clock className="size-3.5" /> {t('arrivals.bacenta.arrivalsCloseIn')}
                       </p>
                       <CountdownTimer targetDate={dateTimeToEnd} />
                     </div>
@@ -199,11 +201,10 @@ const BacentaArrivals = () => {
                     <CardContent className="space-y-2 p-6 text-center">
                       <p className="text-4xl">😞</p>
                       <h2 className="text-lg font-semibold text-destructive">
-                        It is too late to fill your forms!
+                        {t('arrivals.bacenta.tooLateToFill')}
                       </h2>
                       <p className="text-sm italic text-muted-foreground">
-                        Ecclesiastes 3:1 — To every thing there is a season,
-                        and a time to every purpose under the heaven.
+                        {t('arrivals.bacenta.ecclesiastes')}
                       </p>
                     </CardContent>
                   </Card>
@@ -214,14 +215,14 @@ const BacentaArrivals = () => {
                     <CardContent className="space-y-2 p-6 text-center">
                       <CheckCircle2 className="mx-auto size-8 text-success" />
                       <p className="text-sm font-medium text-foreground">
-                        You have filled your forms today
+                        {t('arrivals.bacenta.formsFilledToday')}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Tap{' '}
+                        {t('arrivals.bacenta.tap')}{' '}
                         <span className="font-semibold text-success">
-                          Today&apos;s Bussing Summary
+                          {t('arrivals.bacenta.todayBussingSummary')}
                         </span>{' '}
-                        below to view your bussing data
+                        {t('arrivals.bacenta.belowToView')}
                       </p>
                       <ArrowDown
                         className="mx-auto size-5 text-muted-foreground"
@@ -242,14 +243,14 @@ const BacentaArrivals = () => {
                     }}
                   >
                     <ReceiptText className="size-4" />
-                    Today&apos;s Bussing Summary
+                    {t('arrivals.bacenta.todayBussingSummary')}
                   </Button>
                 )}
               </section>
 
               {/* RIGHT — actions */}
               <section className="space-y-4">
-                <SectionLabel>Actions</SectionLabel>
+                <SectionLabel>{t('arrivals.common.actions')}</SectionLabel>
 
                 {!isMomoCleared(bacenta) && (
                   <Card className="border-destructive/40 bg-destructive/5">
@@ -261,10 +262,10 @@ const BacentaArrivals = () => {
                         onClick={() => setEditBussingOpen(true)}
                       >
                         <Wallet className="size-4" />
-                        Update payment details
+                        {t('arrivals.bacenta.updatePaymentDetails')}
                       </Button>
                       <p className="text-center text-xs font-medium text-destructive">
-                        You will need this to fill your forms
+                        {t('arrivals.bacenta.paymentDetailsRequired')}
                       </p>
                     </CardContent>
                   </Card>
@@ -276,21 +277,21 @@ const BacentaArrivals = () => {
                     type="button"
                     className="group relative w-full overflow-hidden rounded-xl border border-success/40 bg-success/5 transition-colors hover:bg-success/10 active:bg-success/15"
                     onClick={() => setShowMobPic(true)}
-                    aria-label="View mobilisation picture"
+                    aria-label={t('arrivals.bacenta.viewMobilisationPicture')}
                   >
                     <img
                       src={bussing.mobilisationPicture}
-                      alt="Mobilisation"
+                      alt={t('arrivals.common.mobilisation')}
                       className="h-36 w-full object-cover"
                     />
                     <div className="flex items-center justify-between px-4 py-2">
                       <span className="flex items-center gap-2 text-xs font-semibold text-success">
                         <CheckCircle2 className="size-4" />
-                        Mobilisation picture uploaded
+                        {t('arrivals.bacenta.mobilisationPictureUploaded')}
                       </span>
                       <span className="flex items-center gap-1 text-xs font-medium text-success">
                         <Camera className="size-3.5" />
-                        View
+                        {t('arrivals.common.view')}
                       </span>
                     </div>
                   </button>
@@ -306,11 +307,11 @@ const BacentaArrivals = () => {
                         navigate('/arrivals/submit-mobilisation-picture')
                       }}
                     >
-                      Upload Pre-Mobilisation Picture
+                      {t('arrivals.bacenta.uploadPreMobilisationPicture')}
                     </Button>
                     {showMobilisationError && (
                       <p className="text-center text-xs font-medium text-destructive">
-                        Pre-Mobilisation window is not open
+                        {t('arrivals.bacenta.preMobilisationWindowClosed')}
                       </p>
                     )}
                   </div>
@@ -319,9 +320,9 @@ const BacentaArrivals = () => {
                 <Card>
                   <CardContent className="space-y-3 p-5">
                     <div className="flex items-center justify-between">
-                      <SectionLabel>Vehicles</SectionLabel>
+                      <SectionLabel>{t('arrivals.common.vehicles')}</SectionLabel>
                       <p className="text-xs font-semibold text-warning">
-                        One form per vehicle
+                        {t('arrivals.bacenta.oneFormPerVehicle')}
                       </p>
                     </div>
 
@@ -336,7 +337,7 @@ const BacentaArrivals = () => {
                       </div>
                     ) : (
                       <p className="rounded-md border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
-                        No vehicles added yet
+                        {t('arrivals.bacenta.noVehiclesAdded')}
                       </p>
                     )}
 
@@ -351,7 +352,7 @@ const BacentaArrivals = () => {
                       }}
                     >
                       <Plus className="size-4" />
-                      Add a Vehicle
+                      {t('arrivals.common.addVehicle')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -363,18 +364,17 @@ const BacentaArrivals = () => {
             <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>You Are Too Late! 😞</DialogTitle>
+                  <DialogTitle>{t('arrivals.bacenta.tooLateDialogTitle')}</DialogTitle>
                   <DialogDescription>
-                    To everything there is a time and a season, and your time is
-                    up.
+                    {t('arrivals.bacenta.tooLateDialogDescription')}
                   </DialogDescription>
                 </DialogHeader>
                 <p className="text-center text-lg font-semibold">
-                  It is too late to fill your forms.
+                  {t('arrivals.bacenta.tooLateToFill')}
                 </p>
                 <DialogFooter>
                   <Button variant="outline" onClick={handleClose}>
-                    Close
+                    {t('arrivals.common.close')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -390,13 +390,13 @@ const BacentaArrivals = () => {
                 showCloseButton={false}
               >
                 <DialogHeader className="sr-only">
-                  <DialogTitle>Code of the Day</DialogTitle>
+                  <DialogTitle>{t('arrivals.bacenta.codeOfDay')}</DialogTitle>
                   <DialogDescription>
-                    Fullscreen view of today&apos;s arrivals code
+                    {t('arrivals.bacenta.fullscreenCodeDescription')}
                   </DialogDescription>
                 </DialogHeader>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  Code of the Day
+                  {t('arrivals.bacenta.codeOfDay')}
                 </p>
                 <p className="break-all text-center font-mono text-[clamp(4rem,22vw,16rem)] font-black leading-none tabular-nums text-foreground dark:text-yellow-300">
                   {bacenta?.arrivalsCodeOfTheDay ?? '—'}
@@ -407,7 +407,7 @@ const BacentaArrivals = () => {
                   className="mt-4"
                   onClick={() => setShowCodeFullscreen(false)}
                 >
-                  Close
+                  {t('arrivals.common.close')}
                 </Button>
               </DialogContent>
             </Dialog>
@@ -422,15 +422,15 @@ const BacentaArrivals = () => {
             <Dialog open={showMobPic} onOpenChange={setShowMobPic}>
               <DialogContent className="flex max-h-svh max-w-[95vw] flex-col items-center gap-4 p-4 sm:max-w-xl">
                 <DialogHeader className="sr-only">
-                  <DialogTitle>Mobilisation Picture</DialogTitle>
+                  <DialogTitle>{t('arrivals.common.mobilisationPicture')}</DialogTitle>
                   <DialogDescription>
-                    Pre-mobilisation picture submitted for today
+                    {t('arrivals.bacenta.submittedMobilisationPicture')}
                   </DialogDescription>
                 </DialogHeader>
                 {bussing?.mobilisationPicture && (
                   <img
                     src={bussing.mobilisationPicture}
-                    alt="Pre-mobilisation"
+                    alt={t('arrivals.common.preMobilisation')}
                     className="max-h-[75svh] w-full rounded-lg object-contain"
                   />
                 )}
@@ -439,7 +439,7 @@ const BacentaArrivals = () => {
                   className="w-full"
                   onClick={() => setShowMobPic(false)}
                 >
-                  Close
+                  {t('arrivals.common.close')}
                 </Button>
               </DialogContent>
             </Dialog>

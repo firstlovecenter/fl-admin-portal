@@ -1,13 +1,15 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 const ExpiredNotice = () => {
+  const { t } = useTranslation()
   return (
     <div>
       <p>😞</p>
       <h5 className="countdown danger fw-bold ">
-        It is too late to fill your forms!
+        {t('arrivals.bacenta.tooLateToFill')}
       </h5>
-      <p>To everything there is a time and a season and your time is up!</p>
+      <p>{t('arrivals.countdown.expiredDescription')}</p>
     </div>
   )
 }

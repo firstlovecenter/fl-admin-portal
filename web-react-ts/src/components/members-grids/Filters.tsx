@@ -12,6 +12,7 @@ import { Button } from 'components/ui/button'
 import { Separator } from 'components/ui/separator'
 import CheckboxGroup from 'components/formik/CheckboxGroup'
 import CheckboxWithQuery from 'components/formik/CheckboxWithQuery'
+import { useTranslation } from 'react-i18next'
 
 type FormOptions = {
   gender: string[]
@@ -29,6 +30,7 @@ const LEADER_OPTIONS = [
 ]
 
 const Filters = ({ onClose }: { onClose?: () => void }) => {
+  const { t } = useTranslation()
   const { setFilters, filters, campusId } = useContext(ChurchContext)
   const location = useLocation()
   const atPastors = location.pathname === '/pastors'
@@ -73,14 +75,14 @@ const Filters = ({ onClose }: { onClose?: () => void }) => {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
               <CheckboxGroup
-                label="Gender"
+                label={t('directory.memberFilters.gender')}
                 name="gender"
                 options={GENDER_OPTIONS}
               />
             </div>
             <div>
               <CheckboxGroup
-                label="Marital Status"
+                label={t('directory.memberFilters.maritalStatus')}
                 name="maritalStatus"
                 options={MARITAL_STATUS_OPTIONS}
               />
@@ -95,19 +97,19 @@ const Filters = ({ onClose }: { onClose?: () => void }) => {
                 dataset=""
                 varValue={campusId}
                 nestedDataset={['campuses', 'basontas']}
-                label="Select a Ministry"
+                label={t('directory.memberFilters.selectMinistry')}
               />
             </div>
             <div>
               <CheckboxGroup
-                label="Leader Rank"
+                label={t('directory.memberFilters.leaderRank')}
                 name="leaderRank"
                 options={LEADER_OPTIONS}
               />
             </div>
             <div>
               <CheckboxGroup
-                label="Leader Title"
+                label={t('directory.memberFilters.leaderTitle')}
                 name="leaderTitle"
                 options={TITLE_OPTIONS}
               />
@@ -123,14 +125,14 @@ const Filters = ({ onClose }: { onClose?: () => void }) => {
               className="flex-1 text-foreground"
               onClick={() => handleReset(formik.resetForm)}
             >
-              Reset
+              {t('directory.memberFilters.reset')}
             </Button>
             <Button
               type="submit"
               className="flex-1"
               disabled={!formik.isValid || formik.isSubmitting}
             >
-              Apply Filters
+              {t('directory.memberFilters.applyFilters')}
             </Button>
           </div>
         </Form>

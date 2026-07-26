@@ -3,6 +3,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   AlertOctagon,
@@ -107,6 +108,7 @@ const PAYMENT_VISIBLE_ROLES = [
 
 const CouncilDashboard = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { isAuthorised } = useAuth()
   const { arrivalDate, councilId } = useContext(ChurchContext)
   useArrivalsScopeSync('Council', councilId)
@@ -148,7 +150,7 @@ const CouncilDashboard = () => {
 
   const adminValidationSchema = Yup.object({
     adminSelect: Yup.string().required(
-      'Please select an Admin from the dropdown'
+      t('arrivals.dashboard.selectAdmin')
     ),
   })
 
@@ -157,7 +159,7 @@ const CouncilDashboard = () => {
     onSubmitProps: FormikHelpers<AdminFormOptions>
   ) => {
     if (!isAuthorised(COUNCIL_ADMIN_ROLES)) {
-      toast.error('You are not authorised to change the arrivals admin')
+      toast.error(t('arrivals.dashboard.notAuthorisedToChangeAdmin'))
       return
     }
     onSubmitProps.setSubmitting(true)
@@ -170,10 +172,10 @@ const CouncilDashboard = () => {
         },
       })
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? 'Update failed'))
+        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
         return
       }
-      toast.success('Arrivals admin updated')
+      toast.success(t('arrivals.dashboard.adminUpdated'))
       setAdminDialogOpen(false)
     } catch (e) {
       throwToSentry('Failed to update arrivals admin', e)
@@ -188,7 +190,7 @@ const CouncilDashboard = () => {
   const bacentaTiles: BacentaTile[] = [
     {
       key: 'no-activity',
-      label: 'No Activity',
+      label: t('arrivals.dashboard.noActivity'),
       value: council?.bacentasNoActivityCount,
       icon: AlertOctagon,
       tone: 'defaulters',
@@ -196,7 +198,7 @@ const CouncilDashboard = () => {
     },
     {
       key: 'mobilising',
-      label: 'Mobilising',
+      label: t('arrivals.dashboard.mobilising'),
       value: council?.bacentasMobilisingCount,
       icon: Megaphone,
       tone: 'warning',
@@ -204,7 +206,7 @@ const CouncilDashboard = () => {
     },
     {
       key: 'on-the-way',
-      label: 'On The Way',
+      label: t('arrivals.dashboard.onTheWay'),
       value: council?.bacentasOnTheWayCount,
       icon: BusFront,
       tone: 'arrivals',
@@ -212,7 +214,7 @@ const CouncilDashboard = () => {
     },
     {
       key: 'didnt-bus',
-      label: "Didn't Bus",
+      label: t('arrivals.dashboard.didNotBus'),
       value: council?.bacentasBelow8Count,
       icon: AlertTriangle,
       tone: 'destructive',
@@ -220,7 +222,7 @@ const CouncilDashboard = () => {
     },
     {
       key: 'arrived',
-      label: 'Have Arrived',
+      label: t('arrivals.dashboard.haveArrived'),
       value: council?.bacentasHaveArrivedCount,
       icon: CheckCircle2,
       tone: 'success',
@@ -245,7 +247,7 @@ const CouncilDashboard = () => {
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {council?.name}{' '}
-                    <span className="text-arrivals">Arrivals</span>
+                    <span className="text-arrivals">{t('arrivals.common.title')}</span>
                   </h1>
                 )}
               </div>
@@ -260,23 +262,23 @@ const CouncilDashboard = () => {
                         variant="outline"
                         size="icon"
                         className="size-11 shrink-0"
-                        aria-label="Dashboard settings"
+                        aria-label={t('arrivals.dashboard.settingsAriaLabel')}
                       >
                         <Settings2 className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t('arrivals.dashboard.settings')}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={() => setAdminDialogOpen(true)}
                       >
-                        Change Arrivals Admin
+                        {t('arrivals.dashboard.changeAdmin')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onSelect={() => navigate('/council/arrivals-payers')}
                       >
-                        Arrivals Payment Governorship
+                        {t('arrivals.dashboard.paymentGovernorship')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -289,7 +291,7 @@ const CouncilDashboard = () => {
               <Alert variant="destructive" className="mb-6">
                 <AlertTriangle className="size-4" />
                 <AlertDescription>
-                  Arrival deadline is up. Thank you very much.
+                  {t('arrivals.dashboard.deadlinePassed')}
                 </AlertDescription>
               </Alert>
             )}
@@ -302,8 +304,8 @@ const CouncilDashboard = () => {
                   subChurch={{
                     label:
                       council?.governorshipCount === 1
-                        ? 'Governorship'
-                        : 'Governorships',
+                        ? t('shared.churchLevel.Governorship')
+                        : t('shared.churchLevelPlural.Governorship'),
                     count: council?.governorshipCount,
                     to: '/arrivals/council-by-governorship',
                   }}
@@ -315,7 +317,7 @@ const CouncilDashboard = () => {
               const quickActionsBlock = (
                 <RoleView roles={PAYMENT_VISIBLE_ROLES}>
                   <section className="space-y-2">
-                    <SectionLabel>Quick Actions</SectionLabel>
+                    <SectionLabel>{t('arrivals.dashboard.quickActions')}</SectionLabel>
                     <Card
                       className="cursor-pointer transition hover:border-banking/40 hover:bg-banking/5"
                       onClick={() =>
@@ -329,7 +331,7 @@ const CouncilDashboard = () => {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-semibold text-foreground">
-                              Pay Vehicles
+                              {t('arrivals.dashboard.payVehicles')}
                             </p>
                             {vehiclesToBePaidCount > 0 && (
                               <Badge
@@ -342,12 +344,10 @@ const CouncilDashboard = () => {
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {vehiclesToBePaidCount === 0
-                              ? 'No vehicles awaiting payment'
-                              : `${vehiclesToBePaidCount} ${
-                                  vehiclesToBePaidCount === 1
-                                    ? 'vehicle'
-                                    : 'vehicles'
-                                } awaiting payment`}
+                              ? t('arrivals.dashboard.noVehiclesAwaitingPayment')
+                              : t('arrivals.dashboard.vehiclesAwaitingPayment', {
+                                  count: vehiclesToBePaidCount,
+                                })}
                           </p>
                         </div>
                         <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
@@ -361,7 +361,7 @@ const CouncilDashboard = () => {
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <SectionLabel>
-                      Bacenta Status
+                      {t('arrivals.dashboard.bacentaStatus')}
                     </SectionLabel>
                     <DownloadArrivalsButton
                       level="Council"
@@ -388,26 +388,26 @@ const CouncilDashboard = () => {
                 <RoleView roles={PAYMENT_VISIBLE_ROLES}>
                   <section className="space-y-2">
                     <SectionLabel>
-                      Financial Data
+                      {t('arrivals.dashboard.financialData')}
                     </SectionLabel>
                     <Card className="overflow-hidden">
                       <div className="divide-y divide-border">
                         <LiveRow
-                          label="Vehicles Paid"
+                          label={t('arrivals.dashboard.vehiclesPaid')}
                           value={council?.vehiclesHaveBeenPaidCount}
                           icon={CheckCircle2}
                           tone="success"
                           loading={loading && !council}
                         />
                         <LiveRow
-                          label="Vehicles To Be Paid"
+                          label={t('arrivals.dashboard.vehiclesToBePaid')}
                           value={council?.vehiclesToBePaidCount}
                           icon={BusFront}
                           tone="warning"
                           loading={loading && !council}
                         />
                         <LiveRow
-                          label="Amount Paid"
+                          label={t('arrivals.dashboard.amountPaid')}
                           value={formatAmount(
                             council?.vehicleAmountHasBeenPaid
                           )}
@@ -416,7 +416,7 @@ const CouncilDashboard = () => {
                           loading={loading && !council}
                         />
                         <LiveRow
-                          label="Amount To Be Paid"
+                          label={t('arrivals.dashboard.amountToBePaid')}
                           value={formatAmount(council?.vehicleAmountToBePaid)}
                           icon={CreditCard}
                           tone="warning"
@@ -431,44 +431,44 @@ const CouncilDashboard = () => {
               const liveArrivalsBlock = (
                 <section className="space-y-2">
                   <SectionLabel>
-                    Live Arrivals
+                    {t('arrivals.dashboard.liveArrivals')}
                   </SectionLabel>
                   <Card className="overflow-hidden">
                     <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <LiveDot />
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Realtime
+                          {t('arrivals.dashboard.realtime')}
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        Updated {updatedLabel}
+                        {t('arrivals.dashboard.updated', { time: updatedLabel })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
                       <LiveRow
-                        label="Members On The Way"
+                        label={t('arrivals.dashboard.membersOnTheWay')}
                         value={council?.bussingMembersOnTheWayCount}
                         icon={UsersRound}
                         tone="warning"
                         loading={loading && !council}
                       />
                       <LiveRow
-                        label="Members Arrived"
+                        label={t('arrivals.dashboard.membersArrived')}
                         value={council?.bussingMembersHaveArrivedCount}
                         icon={Users}
                         tone="success"
                         loading={loading && !council}
                       />
                       <LiveRow
-                        label="Buses On The Way"
+                        label={t('arrivals.dashboard.busesOnTheWay')}
                         value={council?.bussesOnTheWayCount}
                         icon={BusFront}
                         tone="warning"
                         loading={loading && !council}
                       />
                       <LiveRow
-                        label="Buses Arrived"
+                        label={t('arrivals.dashboard.busesArrived')}
                         value={council?.bussesThatArrivedCount}
                         icon={BusFront}
                         tone="success"
@@ -489,15 +489,15 @@ const CouncilDashboard = () => {
                     <Tabs defaultValue="bacentas">
                       <TabsList className="grid h-11 w-full grid-cols-3">
                         <TabsTrigger value="bacentas" className="text-xs">
-                          Bacentas
+                          {t('shared.churchLevelPlural.Bacenta')}
                         </TabsTrigger>
                         <RoleView roles={PAYMENT_VISIBLE_ROLES}>
                           <TabsTrigger value="financial" className="text-xs">
-                            Financial
+                            {t('arrivals.dashboard.financial')}
                           </TabsTrigger>
                         </RoleView>
                         <TabsTrigger value="live" className="text-xs">
-                          Live
+                          {t('arrivals.dashboard.live')}
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="bacentas" className="mt-3">
@@ -534,10 +534,11 @@ const CouncilDashboard = () => {
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Change Arrivals Admin</DialogTitle>
+                  <DialogTitle>{t('arrivals.dashboard.changeAdmin')}</DialogTitle>
                   <DialogDescription>
-                    Search for the member you want to assign as the new
-                    arrivals admin for this council.
+                    {t('arrivals.dashboard.changeAdminDescription', {
+                      level: t('shared.churchLevel.Council').toLowerCase(),
+                    })}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -552,7 +553,7 @@ const CouncilDashboard = () => {
                       <SearchMember
                         name="adminSelect"
                         initialValue={initialAdminValues.adminName}
-                        placeholder="Search for a member"
+                        placeholder={t('arrivals.dashboard.searchMember')}
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="Member Search"
                         error={formik.errors.adminSelect}
@@ -564,7 +565,7 @@ const CouncilDashboard = () => {
                           onClick={() => setAdminDialogOpen(false)}
                           disabled={formik.isSubmitting}
                         >
-                          Cancel
+                          {t('arrivals.dashboard.cancel')}
                         </Button>
                         <Button
                           type="submit"
@@ -574,7 +575,7 @@ const CouncilDashboard = () => {
                           {formik.isSubmitting && (
                             <Loader2 className="size-4 animate-spin" />
                           )}
-                          Save Changes
+                          {t('arrivals.dashboard.saveChanges')}
                         </Button>
                       </DialogFooter>
                     </Form>

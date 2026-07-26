@@ -18,6 +18,7 @@ import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
 import { Download, Search, SlidersHorizontal, UserPlus } from 'lucide-react'
 import { cn } from 'components/lib/utils'
+import { useTranslation } from 'react-i18next'
 import {
   MEMBERSHIP_DOWNLOAD_PATHS,
   getMembershipDownloadPath,
@@ -73,6 +74,7 @@ const MembersGrid = ({
   pluckParent,
   getHeading,
 }: MembersGridProps) => {
+  const { t } = useTranslation()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { filters } = useContext(ChurchContext) as { filters: MemberFilters }
   const [searchInput, setSearchInput] = useState('')
@@ -161,7 +163,9 @@ const MembersGrid = ({
                 {displayCount}
               </span>
               <span className="text-muted-foreground">
-                {isFiltering ? ' matches' : ' members'}
+                {isFiltering
+                  ? t('directory.memberGrid.matches')
+                  : t('directory.memberGrid.members')}
               </span>
             </span>
           )}
@@ -171,7 +175,7 @@ const MembersGrid = ({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
           <input
             type="search"
-            placeholder="Search members…"
+            placeholder={t('directory.memberGrid.searchPlaceholder')}
             className="h-11 w-full rounded-lg border border-input bg-muted/40 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -187,7 +191,7 @@ const MembersGrid = ({
                 className="h-11 gap-1.5 text-sm text-foreground"
               >
                 <UserPlus className="size-4" />
-                Add member
+                {t('directory.memberGrid.addMember')}
               </Button>
             </Link>
           </RoleView>
@@ -199,10 +203,12 @@ const MembersGrid = ({
                     variant="ghost"
                     size="default"
                     className="h-11 gap-1.5 text-sm text-foreground"
-                    aria-label="Download membership list"
+                    aria-label={t('directory.memberGrid.downloadMembershipList')}
                   >
                     <Download className="size-4" />
-                    <span className="hidden sm:inline">Download</span>
+                    <span className="hidden sm:inline">
+                      {t('directory.memberGrid.download')}
+                    </span>
                   </Button>
                 </Link>
               </RoleView>
@@ -217,7 +223,7 @@ const MembersGrid = ({
               onClick={() => setFilterOpen(true)}
             >
               <SlidersHorizontal className="size-4" />
-              Filters
+              {t('directory.memberGrid.filters')}
               {hasActiveFilters && (
                 <span className="size-1.5 rounded-full bg-members inline-block" />
               )}
@@ -247,7 +253,7 @@ const MembersGrid = ({
           )}
         >
           <SheetHeader>
-            <SheetTitle>Filter Members</SheetTitle>
+            <SheetTitle>{t('directory.memberGrid.filterMembers')}</SheetTitle>
           </SheetHeader>
           <div className="px-4 pb-8">
             <Filters onClose={() => setFilterOpen(false)} />

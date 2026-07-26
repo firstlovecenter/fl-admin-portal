@@ -8,6 +8,7 @@ import DownloadFormatDialog, {
   type DownloadFormatOption,
 } from 'pages/reports/_shared/DownloadFormatDialog'
 import { triggerBlobDownload } from 'pages/reports/_shared/triggerBlobDownload'
+import { useTranslation } from 'react-i18next'
 
 import {
   ArrivalsDownloadLevel,
@@ -18,18 +19,17 @@ import { fetchArrivalsExport } from './utils/useArrivalsExport'
 
 type Format = 'xlsx' | 'csv-zip'
 
-const FORMATS: ReadonlyArray<DownloadFormatOption<Format>> = [
+const createFormats = (t: (key: string) => string): ReadonlyArray<DownloadFormatOption<Format>> => [
   {
     id: 'xlsx',
-    label: 'Excel (.xlsx)',
-    description:
-      'Multi-sheet workbook — sub-church summary, Bacenta detail, and vehicle detail.',
+    label: t('arrivals.download.excel'),
+    description: t('arrivals.download.excelDescription'),
     icon: FileSpreadsheet,
   },
   {
     id: 'csv-zip',
-    label: 'CSV (.zip)',
-    description: 'One CSV per sheet, bundled into a single zip file.',
+    label: t('arrivals.download.csv'),
+    description: t('arrivals.download.csvDescription'),
     icon: FileText,
   },
 ]
@@ -61,6 +61,7 @@ const DownloadArrivalsButton = ({
   className,
   showLabel = false,
 }: DownloadArrivalsButtonProps) => {
+  const { t } = useTranslation()
   const { arrivalDate } = useSelectedArrivalDate()
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState<Format | null>(null)
@@ -76,7 +77,7 @@ const DownloadArrivalsButton = ({
         (!data.detail || data.detail.length === 0) &&
         (!data.vehicles || data.vehicles.length === 0)
       ) {
-        toast.info('No arrivals data to download for the selected date.')
+        toast.info(t('arrivals.download.noData'))
         setOpen(false)
         return
       }
@@ -90,7 +91,7 @@ const DownloadArrivalsButton = ({
       setOpen(false)
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Could not download arrivals'
+        err instanceof Error ? err.message : t('arrivals.download.failed')
       toast.error(message)
     } finally {
       setPending(null)
@@ -104,7 +105,7 @@ const DownloadArrivalsButton = ({
         variant={showLabel ? 'default' : 'outline'}
         size={showLabel ? 'default' : 'sm'}
         disabled={disabled || pending !== null || !churchId}
-        aria-label="Download arrivals list"
+        aria-label={t('arrivals.download.listAriaLabel')}
         aria-busy={pending !== null}
         className={className}
         onClick={() => setOpen(true)}
@@ -112,19 +113,19 @@ const DownloadArrivalsButton = ({
         {pending !== null ? (
           <>
             <Loader2 className="animate-spin" aria-hidden="true" />
-            <span className="sr-only">Downloading…</span>
+            <span className="sr-only">{t('arrivals.download.downloading')}</span>
           </>
         ) : (
           <Download aria-hidden="true" />
         )}
-        <span className={showLabel ? '' : 'hidden lg:inline'}>Download</span>
+        <span className={showLabel ? '' : 'hidden lg:inline'}>{t('arrivals.download.download')}</span>
       </Button>
       <DownloadFormatDialog
         open={open}
         onOpenChange={setOpen}
-        title="Download arrivals"
-        description="Choose a file format. The full snapshot includes every Bacenta and vehicle for the selected Sunday."
-        formats={FORMATS}
+        title={t('arrivals.download.title')}
+        description={t('arrivals.download.description')}
+        formats={createFormats(t)}
         pending={pending}
         onSelect={handleSelect}
         accent="arrivals"

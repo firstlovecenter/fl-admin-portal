@@ -1,4 +1,5 @@
 import { cn } from 'components/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 type ShowCounterProps = {
   days: number
@@ -32,6 +33,7 @@ const CounterUnit = ({
 )
 
 const ShowCounter = ({ days, hours, minutes, seconds }: ShowCounterProps) => {
+  const { t } = useTranslation()
   const isDanger = days === 0 && hours === 0 && minutes < 30
 
   const showDays = days > 0
@@ -45,13 +47,13 @@ const ShowCounter = ({ days, hours, minutes, seconds }: ShowCounterProps) => {
       )}
     >
       {showDays && (
-        <CounterUnit value={days} label="Days" isDanger={isDanger} />
+        <CounterUnit value={days} label={t('arrivals.countdown.days')} isDanger={isDanger} />
       )}
       {showHours && (
-        <CounterUnit value={hours} label="Hours" isDanger={isDanger} />
+        <CounterUnit value={hours} label={t('arrivals.countdown.hours')} isDanger={isDanger} />
       )}
-      <CounterUnit value={minutes} label="Mins" isDanger={isDanger} />
-      <CounterUnit value={seconds} label="Secs" isDanger={isDanger} />
+      <CounterUnit value={minutes} label={t('arrivals.countdown.minutes')} isDanger={isDanger} />
+      <CounterUnit value={seconds} label={t('arrivals.countdown.seconds')} isDanger={isDanger} />
     </div>
   )
 }

@@ -25,6 +25,7 @@ import { BACENTA_ARRIVALS } from '../arrivalsQueries'
 import { UPLOAD_MOBILISATION_PICTURE } from '../arrivalsMutation'
 import { beforeMobilisationDeadline } from '../arrivals-utils'
 import { BacentaWithArrivals } from '../arrivals-types'
+import { useTranslation } from 'react-i18next'
 
 type FormOptions = {
   serviceDate: string
@@ -33,6 +34,7 @@ type FormOptions = {
 
 const FormMobilisationSubmission = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { bacentaId, clickCard } = useContext(ChurchContext)
   const [showCodeFullscreen, setShowCodeFullscreen] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
@@ -52,9 +54,9 @@ const FormMobilisationSubmission = () => {
 
   const validationSchema = Yup.object({
     serviceDate: Yup.date()
-      .max(new Date(), 'Service could not possibly have happened after today')
-      .required('Date is a required field'),
-    mobilisationPicture: Yup.string().required('You must upload a picture'),
+      .max(new Date(), t('arrivals.form.serviceDateAfterToday'))
+      .required(t('arrivals.form.dateRequired')),
+    mobilisationPicture: Yup.string().required(t('arrivals.form.pictureRequired')),
   })
 
   const onSubmit = (
@@ -79,7 +81,7 @@ const FormMobilisationSubmission = () => {
       .then((res) => {
         const result = res.data?.UploadMobilisationPicture
         if (!result) {
-          displayError('Upload failed', new Error('No result returned from server'))
+          displayError(t('arrivals.form.uploadFailed'), new Error('No result returned from server'))
           onSubmitProps.setSubmitting(false)
           return
         }
@@ -89,7 +91,7 @@ const FormMobilisationSubmission = () => {
         navigate(`/bacenta/bussing-details`)
       })
       .catch((err) => {
-        displayError('Pre-mobilisation submission failed', err)
+        displayError(t('arrivals.form.preMobilisationSubmissionFailed'), err)
         onSubmitProps.setSubmitting(false)
       })
   }
@@ -106,14 +108,14 @@ const FormMobilisationSubmission = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-            Pre-Mobilisation{' '}
-            <span className="text-arrivals">Picture</span>
+            {t('arrivals.common.preMobilisation')}{' '}
+            <span className="text-arrivals">{t('arrivals.form.picture')}</span>
           </h1>
           {loading ? (
             <Skeleton className="h-5 w-48" />
           ) : (
             <p className="text-sm text-muted-foreground">
-              {bacenta?.name} Bacenta
+              {t('arrivals.bussing.bacentaName', { name: bacenta?.name })}
             </p>
           )}
         </StickyPageHeader>
@@ -122,7 +124,7 @@ const FormMobilisationSubmission = () => {
             <Card className="overflow-hidden">
               <CardContent className="space-y-3 p-6 text-center">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Code of the Day
+                  {t('arrivals.bacenta.codeOfDay')}
                 </p>
                 <div className="flex items-center justify-center gap-2">
                   <p className="font-mono text-3xl font-bold tabular-nums text-foreground dark:text-yellow-300">
@@ -134,7 +136,7 @@ const FormMobilisationSubmission = () => {
                       variant="ghost"
                       size="icon"
                       className="size-11 shrink-0 text-muted-foreground hover:text-foreground"
-                      aria-label="Show code of the day fullscreen"
+                      aria-label={t('arrivals.bacenta.showCodeFullscreen')}
                       onClick={() => setShowCodeFullscreen(true)}
                     >
                       <Maximize2 className="size-4" />
@@ -158,18 +160,18 @@ const FormMobilisationSubmission = () => {
                         <Input
                           name="serviceDate"
                           type="date"
-                          label="Date of Service"
+                          label={t('arrivals.bussing.dateOfService')}
                           aria-describedby="dateofservice"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Day / Month / Year
+                          {t('arrivals.form.dateFormat')}
                         </p>
                       </div>
 
                       <ImageUpload
                         name="mobilisationPicture"
                         error={formik.errors.mobilisationPicture}
-                        placeholder="Upload Mobilisation Picture"
+                        placeholder={t('arrivals.form.uploadMobilisationPicture')}
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="ImageUpload"
                       />
@@ -191,13 +193,13 @@ const FormMobilisationSubmission = () => {
               showCloseButton={false}
             >
               <DialogHeader className="sr-only">
-                <DialogTitle>Code of the Day</DialogTitle>
+                <DialogTitle>{t('arrivals.bacenta.codeOfDay')}</DialogTitle>
                 <DialogDescription>
-                  Fullscreen view of today&apos;s arrivals code
+                  {t('arrivals.bacenta.fullscreenCodeDescription')}
                 </DialogDescription>
               </DialogHeader>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                Code of the Day
+                {t('arrivals.bacenta.codeOfDay')}
               </p>
               <p className="break-all text-center font-mono text-[clamp(4rem,22vw,16rem)] font-black leading-none tabular-nums text-foreground dark:text-yellow-300">
                 {codeOfTheDay ?? '—'}
@@ -208,7 +210,7 @@ const FormMobilisationSubmission = () => {
                 className="mt-4"
                 onClick={() => setShowCodeFullscreen(false)}
               >
-                Close
+                {t('arrivals.common.close')}
               </Button>
             </DialogContent>
           </Dialog>

@@ -7,12 +7,14 @@ import { ServiceContext } from 'contexts/ServiceContext'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from 'components/ui/button'
+import { useTranslation } from 'react-i18next'
 import { BussingRecord } from './arrivals-types'
 import { DISPLAY_BUSSING_RECORDS } from './arrivalsQueries'
 import './Arrivals.css'
 
 const PreMobilisationPicture = () => {
   const { bacentaId } = useContext(ChurchContext)
+  const { t } = useTranslation()
   const { bussingRecordId } = useContext(ServiceContext)
   const navigate = useNavigate()
   const { data, loading, error } = useQuery(DISPLAY_BUSSING_RECORDS, {
@@ -23,7 +25,7 @@ const PreMobilisationPicture = () => {
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4 text-center">
-        <HeadingPrimary>Mobilisation Picture</HeadingPrimary>
+        <HeadingPrimary>{t('arrivals.common.mobilisationPicture')}</HeadingPrimary>
         <CloudinaryImage
           className="report-picture"
           src={bussing?.mobilisationPicture}
@@ -31,7 +33,7 @@ const PreMobilisationPicture = () => {
         />
         <div className="grid gap-2">
           <Button size="lg" onClick={() => navigate(-1)}>
-            Go Back
+            {t('arrivals.common.goBack')}
           </Button>
         </div>
       </div>

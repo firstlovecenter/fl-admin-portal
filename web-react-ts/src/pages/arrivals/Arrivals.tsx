@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import { useTranslation } from 'react-i18next'
 import ChurchList from 'pages/services/ChurchList'
 import { ARRIVALS_CHURCH_TYPES } from './arrivals-utils'
 
@@ -10,6 +11,7 @@ const Arrivals = () => {
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope } = useChurchRoleScope()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const canAutoRedirect =
     !!selectedScope && ARRIVALS_CHURCH_TYPES.has(selectedScope.churchType)
@@ -33,10 +35,10 @@ const Arrivals = () => {
         <>
           <StickyPageHeader>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              <span className="text-arrivals">Arrivals</span>
+              <span className="text-arrivals">{t('arrivals.common.title')}</span>
             </h1>
             <p className="text-sm text-muted-foreground">
-              Choose a church to continue.
+              {t('arrivals.home.chooseChurch')}
             </p>
           </StickyPageHeader>
           <main className="mx-auto max-w-2xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">

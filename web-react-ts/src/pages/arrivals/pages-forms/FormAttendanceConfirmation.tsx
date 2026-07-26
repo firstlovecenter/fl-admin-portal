@@ -24,6 +24,7 @@ import { CONFIRM_VEHICLE_BY_ADMIN } from '../arrivalsMutation'
 import { BacentaWithArrivals, VehicleRecord } from '../arrivals-types'
 import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import '../Arrivals.css'
+import { useTranslation } from 'react-i18next'
 
 type FormOptions = {
   attendance: string
@@ -33,6 +34,7 @@ type FormOptions = {
 
 const FormAttendanceConfirmation = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { bacentaId } = useContext(ChurchContext)
   const { vehicleRecordId } = useContext(ServiceContext)
 
@@ -53,10 +55,10 @@ const FormAttendanceConfirmation = () => {
 
   const validationSchema = Yup.object({
     attendance: Yup.number()
-      .typeError('Please enter a valid number')
-      .integer('You cannot have attendance with decimals!')
-      .required('This is a required field'),
-    vehicle: Yup.string().required('This is a required field'),
+      .typeError(t('arrivals.form.validNumber'))
+      .integer(t('arrivals.form.noAttendanceDecimals'))
+      .required(t('arrivals.form.required')),
+    vehicle: Yup.string().required(t('arrivals.form.required')),
     comments: Yup.string().when(['attendance', 'vehicle'], {
       is: (attendance: number, vehicleType: string) => {
         if (
@@ -67,7 +69,7 @@ const FormAttendanceConfirmation = () => {
         }
       },
       then: Yup.string().required(
-        'You need to explain if the numbers are different'
+        t('arrivals.form.explainDifference')
       ),
     }),
   })
@@ -80,7 +82,7 @@ const FormAttendanceConfirmation = () => {
 
     if (!isRecordFromToday) {
       alertMsg(
-        'This bussing record is not for today. You can only count vehicles bussed today.'
+        t('arrivals.form.notTodayCount')
       )
       return
     }
@@ -115,19 +117,18 @@ const FormAttendanceConfirmation = () => {
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <PlaceholderCustom as="h3" loading={loading}>
-          <HeadingPrimary>Vehicle Attendance Form</HeadingPrimary>
+          <HeadingPrimary>{t('arrivals.form.vehicleAttendance')}</HeadingPrimary>
         </PlaceholderCustom>
         <PlaceholderCustom as="h6" loading={loading}>
           <HeadingSecondary>{`${bacenta?.name} ${bacenta?.__typename}`}</HeadingSecondary>
-          <p>{`Picture Submitted by ${vehicle?.created_by.fullName}`}</p>
+          <p>{t('arrivals.form.pictureSubmittedBy', { name: vehicle?.created_by.fullName })}</p>
         </PlaceholderCustom>
 
         {!loading && vehicle && !isRecordFromToday && (
           <Alert variant="destructive">
             <AlertTriangle className="size-4" />
             <AlertDescription>
-              This bussing record is not for today. You can only count vehicles
-              bussed today.
+              {t('arrivals.form.notTodayCount')}
             </AlertDescription>
           </Alert>
         )}
@@ -140,7 +141,7 @@ const FormAttendanceConfirmation = () => {
               size="respond"
             />
             <div className="text-sm text-muted-foreground">
-              Claimed Attendance:{' '}
+              {t('arrivals.form.claimedAttendance')}{': '}
               <span className="font-semibold text-[hsl(var(--maps))]">
                 {vehicle?.leaderDeclaration || 0}
               </span>
@@ -157,21 +158,20 @@ const FormAttendanceConfirmation = () => {
             <Form className="space-y-4">
               <Input
                 name="attendance"
-                label="Attendance (from Picture)*"
+                label={t('arrivals.form.attendanceFromPicture')}
                 placeholder={vehicle?.leaderDeclaration.toString()}
               />
               <Select
                 name="vehicle"
-                label="Type of Vehicle"
+                label={t('arrivals.form.vehicleType')}
                 options={VEHICLE_OPTIONS_WITH_CAR}
-                defaultOption="Select a vehicle type"
+                defaultOption={t('arrivals.form.selectVehicleType')}
               />
 
-              <Textarea name="comments" label="Comments" />
+              <Textarea name="comments" label={t('arrivals.common.comments')} />
               <Card className="text-center">
                 <CardContent className="p-4">
-                  I can confirm that the above data is correct and I approve the
-                  vehicle top up for this bacenta
+                  {t('arrivals.form.approveVehicleTopUp')}
                 </CardContent>
                 <CardFooter className="justify-center p-4 pt-0">
                   <SubmitButton formik={formik} disabled={!isRecordFromToday} />

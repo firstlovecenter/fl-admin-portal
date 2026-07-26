@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Skeleton } from 'components/ui/skeleton'
 import { cn } from 'components/lib/utils'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
+import { useTranslation } from 'react-i18next'
 
 export const POLL_SECONDS = Math.max(
   1,
@@ -150,14 +151,14 @@ export const LiveDot = () => (
   </span>
 )
 
-const formatRelative = (ms: number) => {
-  if (ms < 5_000) return 'just now'
+const formatRelative = (t: (key: string, options?: { count: number }) => string, ms: number) => {
+  if (ms < 5_000) return t('arrivals.dashboard.updatedJustNow')
   const s = Math.floor(ms / 1000)
-  if (s < 60) return `${s}s ago`
+  if (s < 60) return t('arrivals.dashboard.updatedSecondsAgo', { count: s })
   const m = Math.floor(s / 60)
-  if (m < 60) return `${m}m ago`
+  if (m < 60) return t('arrivals.dashboard.updatedMinutesAgo', { count: m })
   const h = Math.floor(m / 60)
-  return `${h}h ago`
+  return t('arrivals.dashboard.updatedHoursAgo', { count: h })
 }
 
 /**
@@ -198,6 +199,7 @@ export const useVisibilityAwarePolling = ({
 }
 
 export const useUpdatedAt = (data: unknown) => {
+  const { t } = useTranslation()
   const [updatedAt, setUpdatedAt] = useState(() => Date.now())
   const [now, setNow] = useState(() => Date.now())
   const lastDataRef = useRef(data)
@@ -214,7 +216,7 @@ export const useUpdatedAt = (data: unknown) => {
     return () => window.clearInterval(id)
   }, [])
 
-  return formatRelative(now - updatedAt)
+  return formatRelative(t, now - updatedAt)
 }
 
 export const SectionLabel = ({

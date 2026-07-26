@@ -24,9 +24,16 @@ import {
 } from './dashboard-shared'
 
 const RECEIVE_BANKING_PATH = '/manual-banking/receive-banking'
+const DATE_HEADER_LOCALES: Record<string, string> = {
+  en: 'en-GB',
+  fr: 'fr-FR',
+  es: 'es-ES',
+  pt: 'pt-PT',
+  de: 'de-DE',
+}
 
 const StreamTellerDashboard = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
@@ -71,7 +78,8 @@ const StreamTellerDashboard = () => {
   const churchName = selectedScope?.churchName
   const scopeRoleLabel = getRoleRelationLabel(
     selectedScope?.authRole,
-    'Stream Teller'
+    'Stream Teller',
+    t
   )
 
   const goToConfirmBanking = () => {
@@ -94,11 +102,14 @@ const StreamTellerDashboard = () => {
         >
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {new Date().toLocaleDateString('en-GB', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })}
+              {new Date().toLocaleDateString(
+                DATE_HEADER_LOCALES[i18n.language] || DATE_HEADER_LOCALES.en,
+                {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                }
+              )}
             </p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               {isLoading ? (
@@ -119,7 +130,10 @@ const StreamTellerDashboard = () => {
                   variant="outline"
                   className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
                 >
-                  {formatChurchLevel(selectedScope?.churchType ?? 'Stream')}
+                  {formatChurchLevel(
+                    selectedScope?.churchType ?? 'Stream',
+                    t
+                  )}
                 </Badge>
                 <Badge
                   variant="outline"
@@ -130,7 +144,7 @@ const StreamTellerDashboard = () => {
               </div>
             ) : (
               <p className="mt-2 text-sm text-muted-foreground">
-                Select a stream to start confirming bankings.
+                {t('dashboard.streamTeller.selectStream')}
               </p>
             )}
           </div>
@@ -147,7 +161,7 @@ const StreamTellerDashboard = () => {
             <button
               type="button"
               onClick={goToConfirmBanking}
-              aria-label="Confirm bankings"
+              aria-label={t('dashboard.streamTeller.confirmBankings')}
               className={cn(
                 'group flex w-full items-center gap-4 rounded-2xl border border-banking/30 bg-banking/10 p-5 text-left transition-colors',
                 'hover:bg-banking/15 active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-banking/60'
@@ -158,16 +172,16 @@ const StreamTellerDashboard = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-base font-semibold text-foreground sm:text-lg">
-                  Confirm bankings
+                  {t('dashboard.streamTeller.confirmBankings')}
                 </p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {pendingLoading
-                    ? 'Checking what needs confirming this week…'
+                    ? t('dashboard.streamTeller.checkingPending')
                     : pendingCount > 0
-                    ? `${pendingCount} ${
-                        pendingCount === 1 ? 'centre' : 'centres'
-                      } awaiting your confirmation this week`
-                    : 'No centres awaiting confirmation this week'}
+                    ? t('dashboard.streamTeller.pendingCentres', {
+                        count: pendingCount,
+                      })
+                    : t('dashboard.streamTeller.noPendingCentres')}
                 </p>
               </div>
               <ChevronRight className="size-5 shrink-0 text-banking transition-transform group-hover:translate-x-0.5" />
@@ -175,7 +189,7 @@ const StreamTellerDashboard = () => {
           ) : (
             <div
               role="note"
-              aria-label="Manual banking not active"
+              aria-label={t('dashboard.streamTeller.manualBankingNotActive')}
               className={cn(
                 'flex w-full items-center gap-4 rounded-2xl border border-border bg-muted/30 p-5 text-left',
                 'opacity-70'
@@ -186,11 +200,10 @@ const StreamTellerDashboard = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-base font-semibold text-muted-foreground sm:text-lg">
-                  Nothing to confirm
+                  {t('dashboard.streamTeller.nothingToConfirm')}
                 </p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  This stream isn&apos;t on manual banking, so there are no
-                  offerings for you to receive.
+                  {t('dashboard.streamTeller.manualBankingInactiveDescription')}
                 </p>
               </div>
             </div>
@@ -206,17 +219,17 @@ const StreamTellerDashboard = () => {
             <section className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="border-b border-border px-4 py-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Quick actions
+                  {t('dashboard.streamTeller.quickActions')}
                 </h3>
               </div>
               <div className="divide-y divide-border">
                 <DashboardActionRow
                   icon={<HandCoins className="size-4" />}
-                  label="Services to confirm"
+                  label={t('dashboard.streamTeller.servicesToConfirm')}
                   helperText={
                     isStreamManualBanking
-                      ? 'By centre and governorship — confirm offerings handed in'
-                      : 'Available once this stream is on manual banking'
+                      ? t('dashboard.streamTeller.servicesToConfirmDescription')
+                      : t('dashboard.streamTeller.servicesToConfirmUnavailable')
                   }
                   accentClass="text-banking"
                   accentBg="bg-banking/12"
@@ -225,8 +238,8 @@ const StreamTellerDashboard = () => {
                 />
                 <DashboardActionRow
                   icon={<SettingsIcon className="size-4" />}
-                  label="Settings"
-                  helperText="Profile, theme, sign out"
+                  label={t('dashboard.streamTeller.settings')}
+                  helperText={t('dashboard.streamTeller.settingsDescription')}
                   accentClass="text-muted-foreground"
                   accentBg="bg-muted"
                   onClick={() => navigate('/settings')}
@@ -244,19 +257,23 @@ const StreamTellerDashboard = () => {
               <section className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="border-b border-border px-4 py-3">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Your post
+                    {t('dashboard.streamTeller.yourPost')}
                   </h3>
                 </div>
                 <div className="space-y-3 p-4">
                   <div>
-                    <p className="text-xs text-muted-foreground">Stream</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('dashboard.streamTeller.stream')}
+                    </p>
                     <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
                       {selectedScope.churchName}
                     </p>
                   </div>
                   <Separator />
                   <div>
-                    <p className="text-xs text-muted-foreground">Role</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('dashboard.streamTeller.role')}
+                    </p>
                     <p className="mt-0.5 text-sm font-medium text-foreground">
                       {scopeRoleLabel}
                     </p>
@@ -264,7 +281,7 @@ const StreamTellerDashboard = () => {
                   <Separator />
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      Banking method
+                      {t('dashboard.streamTeller.bankingMethod')}
                     </p>
                     <p
                       className={cn(
@@ -274,7 +291,9 @@ const StreamTellerDashboard = () => {
                           : 'text-muted-foreground'
                       )}
                     >
-                      {isStreamManualBanking ? 'Manual' : 'Not manual'}
+                      {isStreamManualBanking
+                        ? t('dashboard.streamTeller.manual')
+                        : t('dashboard.streamTeller.notManual')}
                     </p>
                   </div>
                 </div>

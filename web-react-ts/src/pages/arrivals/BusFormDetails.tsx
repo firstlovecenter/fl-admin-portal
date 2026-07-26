@@ -33,6 +33,7 @@ import { DISPLAY_BUSSING_RECORDS } from './arrivalsQueries'
 import { BacentaWithArrivals, BussingRecord } from './arrivals-types'
 import VehicleButton from './components/VehicleButton'
 import { canAddVehicleRecord } from './arrivals-utils'
+import { useTranslation } from 'react-i18next'
 
 const FactRow = ({
   label,
@@ -51,6 +52,7 @@ const FactRow = ({
 
 const BusFormDetails = () => {
   const { bacentaId, clickCard } = useContext(ChurchContext)
+  const { t } = useTranslation()
   const { bussingRecordId } = useContext(ServiceContext)
   const navigate = useNavigate()
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
@@ -79,17 +81,17 @@ const BusFormDetails = () => {
               <>
                 <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                   Bacenta{' '}
-                  <span className="text-arrivals">Bussing Details</span>
+                  <span className="text-arrivals">{t('arrivals.bussing.details')}</span>
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {church?.name} Bacenta
+                  {t('arrivals.bussing.bacentaName', { name: church?.name })}
                 </p>
                 <div className="space-y-0.5 text-xs text-muted-foreground">
-                  <p>Recorded by {bussing?.created_by?.fullName}</p>
+                  <p>{t('arrivals.common.recordedBy', { name: bussing?.created_by?.fullName })}</p>
                   {bussing?.counted_by?.length ? (
                     <RoleView roles={permitAdminArrivals('Stream')}>
                       <p>
-                        Counted by{' '}
+                        {t('arrivals.common.countedBy')}{' '}
                         {bussing.counted_by.map((counter, i) => (
                           <span key={counter.id} className="font-medium text-success">
                             {counter.fullName}
@@ -111,7 +113,7 @@ const BusFormDetails = () => {
               <Card className="overflow-hidden">
                 <div className="border-b border-border px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Summary
+                    {t('arrivals.common.summary')}
                   </p>
                 </div>
                 <div className="divide-y divide-border">
@@ -124,7 +126,7 @@ const BusFormDetails = () => {
                     ))
                   ) : (
                     <>
-                      <FactRow label="Date of Service">
+                      <FactRow label={t('arrivals.bussing.dateOfService')}>
                         {getHumanReadableDate(
                           bussing?.serviceDate?.date?.toString()
                         )}
@@ -138,68 +140,68 @@ const BusFormDetails = () => {
                       >
                         <span className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Camera className="size-4 shrink-0" />
-                          Mobilisation Picture
+                          {t('arrivals.common.mobilisationPicture')}
                         </span>
                         <span className="flex items-center gap-1 text-sm font-medium text-arrivals">
-                          View <ChevronRight className="size-4" />
+                          {t('arrivals.common.view')} <ChevronRight className="size-4" />
                         </span>
                       </button>
 
-                      <FactRow label="Leader Says">
+                      <FactRow label={t('arrivals.bussing.leaderSays')}>
                         {bussing?.leaderDeclaration ?? '—'}
                       </FactRow>
 
-                      <FactRow label="Confirmed Attendance">
+                      <FactRow label={t('arrivals.bussing.confirmedAttendance')}>
                         <span className="flex items-center gap-1.5 text-success">
                           <Users className="size-4" />
                           {bussing?.attendance ?? '—'}
                         </span>
                       </FactRow>
 
-                      <FactRow label="Bussing Top-Up">
+                      <FactRow label={t('arrivals.bussing.bussingTopUp')}>
                         <span className="tabular-nums">
                           <CurrencySpan number={bussing?.bussingTopUp} />
                         </span>
                       </FactRow>
 
                       {bussing?.numberOfBusses ? (
-                        <FactRow label="Number of Buses">
+                        <FactRow label={t('arrivals.bussing.numberOfBuses')}>
                           {bussing.numberOfBusses}
                         </FactRow>
                       ) : null}
 
                       {bussing?.numberOfSprinters ? (
-                        <FactRow label="Number of Sprinters">
+                        <FactRow label={t('arrivals.bussing.numberOfSprinters')}>
                           {bussing.numberOfSprinters}
                         </FactRow>
                       ) : null}
 
                       {bussing?.numberOfUrvans ? (
-                        <FactRow label="Number of Urvans">
+                        <FactRow label={t('arrivals.bussing.numberOfUrvans')}>
                           {bussing.numberOfUrvans}
                         </FactRow>
                       ) : null}
 
                       {bussing?.numberOfCars ? (
-                        <FactRow label="Private Cars">
+                        <FactRow label={t('arrivals.bussing.privateCars')}>
                           {bussing.numberOfCars}
                         </FactRow>
                       ) : null}
 
                       {bussing?.mobileNetwork && (
-                        <FactRow label="Mobile Network">
+                        <FactRow label={t('arrivals.common.mobileNetwork')}>
                           {bussing.mobileNetwork}
                         </FactRow>
                       )}
 
                       {bussing?.momoNumber && (
-                        <FactRow label="Momo Number">
+                        <FactRow label={t('arrivals.common.momoNumber')}>
                           <span className="font-mono">{bussing.momoNumber}</span>
                         </FactRow>
                       )}
 
                       {bussing?.momoName && (
-                        <FactRow label="Momo Name">{bussing.momoName}</FactRow>
+                        <FactRow label={t('arrivals.common.momoName')}>{bussing.momoName}</FactRow>
                       )}
 
                     </>
@@ -212,7 +214,7 @@ const BusFormDetails = () => {
                 <Card className="overflow-hidden">
                   <div className="border-b border-border px-4 py-3">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Bussing Pictures
+                      {t('arrivals.bussing.bussingPictures')}
                     </p>
                   </div>
                   <CardContent className="p-4">
@@ -228,7 +230,7 @@ const BusFormDetails = () => {
                           <button
                             key={i}
                             type="button"
-                            aria-label={`View bussing picture ${i + 1}`}
+                            aria-label={t('arrivals.bussing.viewPicture', { count: i + 1 })}
                             onClick={() => setLightboxSrc(src)}
                             className="size-24 shrink-0 overflow-hidden rounded-lg border border-border transition-opacity hover:opacity-90 active:opacity-75"
                           >
@@ -250,7 +252,7 @@ const BusFormDetails = () => {
                 <Card className="overflow-hidden">
                   <div className="border-b border-border px-4 py-3">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Vehicles
+                      {t('arrivals.common.vehicles')}
                     </p>
                   </div>
                   <CardContent className="space-y-2 p-4">
@@ -280,8 +282,8 @@ const BusFormDetails = () => {
                   >
                     <Plus className="size-4" />
                     {bussing?.vehicleRecords?.length
-                      ? 'Add Another Vehicle'
-                      : 'Add a Vehicle'}
+                      ? t('arrivals.bussing.addAnotherVehicle')
+                      : t('arrivals.common.addVehicle')}
                   </Button>
                 )}
               </RoleView>
@@ -294,7 +296,7 @@ const BusFormDetails = () => {
                 onClick={() => navigate('/arrivals')}
               >
                 <ArrowLeft className="size-4" />
-                Back to Arrivals Home
+                {t('arrivals.bussing.backToArrivalsHome')}
               </Button>
 
             </div>
@@ -310,13 +312,13 @@ const BusFormDetails = () => {
             className="flex max-h-svh max-w-[95vw] flex-col items-center justify-center gap-4 bg-black/95 p-4 sm:max-w-3xl"
           >
             <DialogHeader className="sr-only">
-              <DialogTitle>Bussing Picture</DialogTitle>
-              <DialogDescription>Full size bussing picture</DialogDescription>
+              <DialogTitle>{t('arrivals.bussing.bussingPicture')}</DialogTitle>
+              <DialogDescription>{t('arrivals.bussing.fullSizePicture')}</DialogDescription>
             </DialogHeader>
             {lightboxSrc && (
               <img
                 src={lightboxSrc}
-                alt="Full-size bussing record"
+                alt={t('arrivals.bussing.fullSizePicture')}
                 className="max-h-[80svh] w-full rounded-lg object-contain"
               />
             )}

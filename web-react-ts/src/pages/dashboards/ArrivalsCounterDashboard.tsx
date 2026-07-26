@@ -27,9 +27,16 @@ import {
 } from './dashboard-shared'
 
 const TREND_HISTORY_WEEKS = 24
+const DATE_HEADER_LOCALES: Record<string, string> = {
+  en: 'en-GB',
+  fr: 'fr-FR',
+  es: 'es-ES',
+  pt: 'pt-PT',
+  de: 'de-DE',
+}
 
 const ArrivalsCounterDashboard = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { currentUser } = useContext(MemberContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
@@ -82,7 +89,8 @@ const ArrivalsCounterDashboard = () => {
 
   const scopeRoleLabel = getRoleRelationLabel(
     selectedScope?.authRole,
-    'Arrivals Counter'
+    'Arrivals Counter',
+    t
   )
   const churchName = selectedScope?.churchName ?? assessmentChurch?.name
 
@@ -101,11 +109,14 @@ const ArrivalsCounterDashboard = () => {
         >
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {new Date().toLocaleDateString('en-GB', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })}
+              {new Date().toLocaleDateString(
+                DATE_HEADER_LOCALES[i18n.language] || DATE_HEADER_LOCALES.en,
+                {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                }
+              )}
             </p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               {isLoading ? (
@@ -126,7 +137,10 @@ const ArrivalsCounterDashboard = () => {
                   variant="outline"
                   className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
                 >
-                  {formatChurchLevel(selectedScope?.churchType ?? 'Stream')}
+                  {formatChurchLevel(
+                    selectedScope?.churchType ?? 'Stream',
+                    t
+                  )}
                 </Badge>
                 <Badge
                   variant="outline"
@@ -137,7 +151,7 @@ const ArrivalsCounterDashboard = () => {
               </div>
             ) : (
               <p className="mt-2 text-sm text-muted-foreground">
-                Select a stream to start counting arrivals.
+                {t('dashboard.arrivalsCounter.selectStream')}
               </p>
             )}
           </div>
@@ -163,10 +177,10 @@ const ArrivalsCounterDashboard = () => {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-base font-semibold text-foreground sm:text-lg">
-                Start counting
+                {t('dashboard.arrivalsCounter.startCounting')}
               </p>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                Open the list of vehicles waiting to be counted at the centre.
+                {t('dashboard.arrivalsCounter.startCountingDescription')}
               </p>
             </div>
             <ChevronRight className="size-5 shrink-0 text-arrivals transition-transform group-hover:translate-x-0.5" />
@@ -190,7 +204,7 @@ const ArrivalsCounterDashboard = () => {
                 />
                 <div className="flex-1 px-6 py-5">
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Avg. weekly bussing attendance
+                    {t('dashboard.arrivalsCounter.avgWeeklyBussingAttendance')}
                   </p>
                   {isLoading ? (
                     <Skeleton className="mt-3 h-12 w-32" />
@@ -205,7 +219,7 @@ const ArrivalsCounterDashboard = () => {
                     >
                       {hasBussingAttendance
                         ? fmtBussingAttendance
-                        : 'No recent bussing'}
+                        : t('dashboard.arrivalsCounter.noRecentBussing')}
                     </p>
                   )}
                 </div>
@@ -215,10 +229,15 @@ const ArrivalsCounterDashboard = () => {
             <section className="rounded-2xl border border-border bg-card p-6">
               <div className="flex flex-col gap-2">
                 <h2 className="text-base font-medium text-foreground">
-                  Sunday bussing — weekly trend
+                  {t('dashboard.arrivalsCounter.sundayBussingTrend')}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  {churchName ? `${churchName} · Stream` : 'Stream-level totals'}
+                  {churchName
+                    ? t('dashboard.arrivalsCounter.trendForChurch', {
+                        churchName,
+                        stream: t('shared.churchLevel.Stream'),
+                      })
+                    : t('dashboard.arrivalsCounter.streamLevelTotals')}
                 </p>
               </div>
               <div className="mt-6">
@@ -241,19 +260,23 @@ const ArrivalsCounterDashboard = () => {
               <section className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="border-b border-border px-4 py-3">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Your post
+                    {t('dashboard.arrivalsCounter.yourPost')}
                   </h3>
                 </div>
                 <div className="space-y-3 p-4">
                   <div>
-                    <p className="text-xs text-muted-foreground">Stream</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('dashboard.arrivalsCounter.stream')}
+                    </p>
                     <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
                       {selectedScope.churchName}
                     </p>
                   </div>
                   <Separator />
                   <div>
-                    <p className="text-xs text-muted-foreground">Role</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('dashboard.arrivalsCounter.role')}
+                    </p>
                     <p className="mt-0.5 text-sm font-medium text-foreground">
                       {scopeRoleLabel}
                     </p>

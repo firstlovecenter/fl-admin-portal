@@ -26,6 +26,7 @@ import {
   TableRow,
 } from 'components/ui/table'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import { useTranslation } from 'react-i18next'
 import { DISPLAY_ARRIVALS_PAYMENT_DATA } from '../arrivalsQueries'
 
 const INITIAL_PAGE_SIZE = 25
@@ -62,30 +63,27 @@ type ArrivalsPaymentDataResponse = {
   }>
 }
 
-const headers = [
-  { label: 'Date', key: 'date' },
-  { label: 'Stream', key: 'stream' },
-  { label: 'Council', key: 'council' },
-  { label: 'Council Head', key: 'councilHead' },
-  { label: 'Governorship', key: 'governorship' },
-  { label: 'Bacenta', key: 'bacenta' },
-  { label: 'Leader', key: 'leader' },
-  { label: 'Bacenta Code', key: 'bacentaCode' },
-  { label: 'Attendance', key: 'attendance' },
-  { label: 'Confirmed Attendance', key: 'confirmedAttendance' },
-  { label: 'Vehicle', key: 'vehicle' },
-  { label: 'In and Out', key: 'outbound' },
-  { label: 'Top Up', key: 'topUp' },
-  { label: 'Vehicle Cost', key: 'vehicleCost' },
-  { label: 'Momo Number', key: 'momoNumber' },
-  { label: 'Momo Name', key: 'momoName' },
-  { label: 'Comments', key: 'comments' },
-  { label: 'Society', key: 'society' },
-  { label: 'Arrival Time', key: 'arrivalTime' },
+const getHeaders = (t: (key: string) => string) => [
+  { label: t('arrivals.payment.date'), key: 'date' },
+  { label: t('arrivals.payment.stream'), key: 'stream' },
+  { label: t('arrivals.payment.council'), key: 'council' },
+  { label: t('arrivals.payment.councilHead'), key: 'councilHead' },
+  { label: t('arrivals.payment.governorship'), key: 'governorship' },
+  { label: t('arrivals.payment.bacenta'), key: 'bacenta' },
+  { label: t('arrivals.payment.leader'), key: 'leader' },
+  { label: t('arrivals.payment.bacentaCode'), key: 'bacentaCode' },
+  { label: t('arrivals.payment.attendance'), key: 'attendance' },
+  { label: t('arrivals.payment.confirmedAttendance'), key: 'confirmedAttendance' },
+  { label: t('arrivals.payment.vehicle'), key: 'vehicle' },
+  { label: t('arrivals.payment.inAndOut'), key: 'outbound' },
+  { label: t('arrivals.payment.topUp'), key: 'topUp' },
+  { label: t('arrivals.payment.vehicleCost'), key: 'vehicleCost' },
+  { label: t('arrivals.common.momoNumber'), key: 'momoNumber' },
+  { label: t('arrivals.common.momoName'), key: 'momoName' },
+  { label: t('arrivals.common.comments'), key: 'comments' },
+  { label: t('arrivals.payment.society'), key: 'society' },
+  { label: t('arrivals.vehicle.arrivalTime'), key: 'arrivalTime' },
 ]
-
-const formatNumber = (value: number | undefined | null) =>
-  value == null ? '' : value.toLocaleString('en-GH')
 
 const SortIcon = ({ sorted }: { sorted: 'asc' | 'desc' | false }) => {
   if (sorted === 'asc') return <ChevronUp className="size-3.5 shrink-0" />
@@ -96,6 +94,7 @@ const SortIcon = ({ sorted }: { sorted: 'asc' | 'desc' | false }) => {
 const columnHelper = createColumnHelper<ArrivalPaymentRow>()
 
 const ArrivalsPaymentData = () => {
+  const { t, i18n } = useTranslation()
   const today = new Date().toISOString().slice(0, 10)
   const { currentUser } = useContext(MemberContext)
   const { arrivalDate } = useContext(ChurchContext)
@@ -132,6 +131,7 @@ const ArrivalsPaymentData = () => {
   })
 
   const [sorting, setSorting] = useState<SortingState>([])
+  const headers = useMemo(() => getHeaders(t), [t])
   const columns = useMemo(
     () => [
       columnHelper.display({
@@ -145,77 +145,79 @@ const ArrivalsPaymentData = () => {
         ),
       }),
       columnHelper.accessor('bacenta', {
-        header: 'Bacenta',
+        header: t('arrivals.payment.bacenta'),
         cell: (info) => info.getValue(),
       }),
       columnHelper.accessor('bacentaCode', {
-        header: 'Code',
+        header: t('arrivals.payment.code'),
         enableSorting: false,
         cell: (info) => (
           <span className="text-muted-foreground">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('leader', {
-        header: 'Leader',
+        header: t('arrivals.payment.leader'),
         cell: (info) => info.getValue(),
       }),
       columnHelper.accessor('council', {
-        header: 'Council',
+        header: t('arrivals.payment.council'),
         cell: (info) => (
           <span className="text-muted-foreground">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('attendance', {
-        header: 'Attendance',
+        header: t('arrivals.payment.attendance'),
         sortingFn: 'basic',
         cell: (info) => (
           <span className="tabular-nums">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('confirmedAttendance', {
-        header: 'Confirmed',
+        header: t('arrivals.payment.confirmed'),
         sortingFn: 'basic',
         cell: (info) => (
           <span className="tabular-nums">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('vehicle', {
-        header: 'Vehicle',
+        header: t('arrivals.payment.vehicle'),
         enableSorting: false,
         cell: (info) => (
           <span className="text-muted-foreground">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('outbound', {
-        header: 'In/Out',
+        header: t('arrivals.payment.inOut'),
         enableSorting: false,
         cell: (info) => (
           <span className="text-muted-foreground">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('topUp', {
-        header: 'Top Up',
+        header: t('arrivals.payment.topUp'),
         sortingFn: 'basic',
         cell: (info) => (
-          <span className="tabular-nums">{formatNumber(info.getValue())}</span>
+          <span className="tabular-nums">
+            {info.getValue().toLocaleString(i18n.language)}
+          </span>
         ),
       }),
       columnHelper.accessor('vehicleCost', {
-        header: 'Cost',
+        header: t('arrivals.payment.cost'),
         sortingFn: 'basic',
         cell: (info) => (
-          <span className="tabular-nums">{formatNumber(info.getValue())}</span>
+          <span className="tabular-nums">{info.getValue().toLocaleString(i18n.language)}</span>
         ),
       }),
       columnHelper.accessor('momoNumber', {
-        header: 'Momo',
+        header: t('arrivals.payment.momo'),
         enableSorting: false,
         cell: (info) => (
           <span className="text-muted-foreground">{info.getValue()}</span>
         ),
       }),
     ],
-    []
+    [i18n.language, t]
   )
 
   const table = useReactTable({
@@ -238,14 +240,14 @@ const ArrivalsPaymentData = () => {
     currentUser?.stream_name
 
   const csvFilename = streamName
-    ? `${streamName} Stream - ${humanDate} - Buses To Be Paid.csv`
-    : `Stream - ${humanDate} - Buses To Be Paid.csv`
+    ? t('arrivals.payment.csvFilenameWithStream', { streamName, date: humanDate })
+    : t('arrivals.payment.csvFilename', { date: humanDate })
 
   const summaryCard = (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Summary
+          {t('arrivals.common.summary')}
         </h2>
       </div>
       <dl className="divide-y divide-border">
@@ -254,7 +256,7 @@ const ArrivalsPaymentData = () => {
             <CalendarDays className="size-4 text-arrivals" />
           </div>
           <div className="min-w-0 flex-1">
-            <dt className="text-xs text-muted-foreground">Date</dt>
+            <dt className="text-xs text-muted-foreground">{t('arrivals.payment.date')}</dt>
             <dd className="text-sm font-medium text-foreground truncate">
               {humanDate}
             </dd>
@@ -265,7 +267,7 @@ const ArrivalsPaymentData = () => {
             <Bus className="size-4 text-arrivals" />
           </div>
           <div className="min-w-0 flex-1">
-            <dt className="text-xs text-muted-foreground">Vehicles</dt>
+            <dt className="text-xs text-muted-foreground">{t('arrivals.common.vehicles')}</dt>
             <dd className="text-sm font-medium text-foreground tabular-nums">
               {showInitialLoading ? (
                 <Skeleton className="h-4 w-12" />
@@ -284,14 +286,14 @@ const ArrivalsPaymentData = () => {
       <StickyPageHeader>
         <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
           {streamName ? `${streamName} ` : ''}
-          <span className="text-arrivals">Arrivals Payment</span>
+          <span className="text-arrivals">{t('arrivals.payment.title')}</span>
         </h1>
         <p className="text-sm text-muted-foreground">
           {humanDate}
           {totalCount !== undefined && (
             <>
               {' '}
-              · {totalCount} {totalCount === 1 ? 'vehicle' : 'vehicles'}
+              · {t('arrivals.payment.vehicleCount', { count: totalCount })}
             </>
           )}
         </p>
@@ -312,10 +314,10 @@ const ArrivalsPaymentData = () => {
                   <Inbox className="size-6 text-muted-foreground" />
                 </div>
                 <p className="text-sm font-medium text-foreground">
-                  No arrivals payment data
+                  {t('arrivals.payment.noData')}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Nothing to pay for {humanDate} yet.
+                  {t('arrivals.payment.nothingToPay', { date: humanDate })}
                 </p>
               </div>
             ) : (
@@ -411,7 +413,7 @@ const ArrivalsPaymentData = () => {
                   data={table.getRowModel().rows.map((row) => row.original)}
                 >
                   <Download className="size-4" />
-                  Download CSV
+                  {t('arrivals.payment.downloadCsv')}
                 </CSVLink>
               </Button>
             ) : (
@@ -421,7 +423,7 @@ const ArrivalsPaymentData = () => {
                 className="h-11 w-full gap-2 font-semibold"
               >
                 <Download className="size-4" />
-                Download CSV
+                {t('arrivals.payment.downloadCsv')}
               </Button>
             )}
           </aside>

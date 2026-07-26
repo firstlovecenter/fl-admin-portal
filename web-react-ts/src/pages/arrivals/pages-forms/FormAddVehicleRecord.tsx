@@ -18,6 +18,7 @@ import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import ImageUpload from 'components/formik/ImageUpload'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { BacentaWithArrivals } from '../arrivals-types'
+import { useTranslation } from 'react-i18next'
 
 type FormOptions = {
   leaderDeclaration: string
@@ -27,6 +28,7 @@ type FormOptions = {
 
 const FormAddVehicleRecord = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const location = useLocation()
   const { bacentaId, clickCard } = useContext(ChurchContext)
   const { bussingRecordId } = useContext(ServiceContext)
@@ -46,13 +48,13 @@ const FormAddVehicleRecord = () => {
   const [RecordVehicleFromBacenta] = useMutation(RECORD_BUSSING_FROM_BACENTA)
   const validationSchema = Yup.object({
     leaderDeclaration: Yup.number()
-      .typeError('Please enter a valid number')
+      .typeError(t('arrivals.form.validNumber'))
       .positive()
-      .integer('You cannot have attendance with decimals!')
-      .max(200, 'Attendance cannot exceed 200')
-      .required('This is a required field'),
-    vehicle: Yup.string().required('This is a required field'),
-    picture: Yup.string().required('This is a required field'),
+      .integer(t('arrivals.form.noAttendanceDecimals'))
+      .max(200, t('arrivals.form.attendanceMax'))
+      .required(t('arrivals.form.required')),
+    vehicle: Yup.string().required(t('arrivals.form.required')),
+    picture: Yup.string().required(t('arrivals.form.required')),
   })
 
   const onSubmit = async (
@@ -113,11 +115,11 @@ const FormAddVehicleRecord = () => {
             <StickyPageHeader>
               <h1 className="text-2xl font-bold tracking-tight text-foreground">
                 {bacenta?.name ?? 'Bacenta'}{' '}
-                <span className="text-arrivals">Arrivals</span>
+                <span className="text-arrivals">{t('arrivals.common.title')}</span>
               </h1>
               {serviceDate && (
                 <p className="text-sm text-muted-foreground">
-                  Service Date · {serviceDate}
+                  {t('arrivals.form.serviceDate')} · {serviceDate}
                 </p>
               )}
             </StickyPageHeader>
@@ -129,7 +131,7 @@ const FormAddVehicleRecord = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Code of the Day
+                      {t('arrivals.bacenta.codeOfDay')}
                     </p>
                     <p className="font-mono text-lg font-bold tracking-wider tabular-nums text-foreground">
                       {bacenta.arrivalsCodeOfTheDay}
@@ -146,7 +148,7 @@ const FormAddVehicleRecord = () => {
                     <div className="overflow-hidden rounded-xl border border-border bg-card">
                       <div className="border-b border-border px-4 py-3">
                         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Bussing Details
+                          {t('arrivals.bussing.details')}
                         </h2>
                       </div>
                       <div className="space-y-4 px-4 py-4">
@@ -154,13 +156,13 @@ const FormAddVehicleRecord = () => {
                           name="leaderDeclaration"
                           type="number"
                           inputMode="numeric"
-                          label="Attendance"
+                          label={t('arrivals.payment.attendance')}
                         />
                         <Select
                           name="vehicle"
-                          label="Type of Vehicle"
+                          label={t('arrivals.form.vehicleType')}
                           options={VEHICLE_OPTIONS_WITH_CAR}
-                          defaultOption="Select a vehicle type"
+                          defaultOption={t('arrivals.form.selectVehicleType')}
                         />
                       </div>
                     </div>
@@ -171,14 +173,14 @@ const FormAddVehicleRecord = () => {
                     <div className="overflow-hidden rounded-xl border border-border bg-card">
                       <div className="border-b border-border px-4 py-3">
                         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Bussing Picture
+                          {t('arrivals.bussing.bussingPicture')}
                         </h2>
                       </div>
                       <div className="px-4 py-4">
                         <ImageUpload
                           key={`picture-${formik.values.picture || 'empty'}`}
                           name="picture"
-                          placeholder="Upload a bussing picture"
+                          placeholder={t('arrivals.form.uploadBussingPicture')}
                           setFieldValue={formik.setFieldValue}
                           aria-describedby="UploadBussingPicture"
                         />
@@ -186,8 +188,7 @@ const FormAddVehicleRecord = () => {
                     </div>
 
                     <p className="text-center text-xs italic leading-relaxed text-muted-foreground">
-                      I can confirm that the above data is correct and I am
-                      cursed if I do the work of the Lord deceitfully.
+                      {t('arrivals.form.declaration')}
                     </p>
                     <SubmitButton formik={formik} />
                   </div>
