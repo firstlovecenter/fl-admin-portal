@@ -2,6 +2,7 @@ import { useQuery } from '@apollo/client'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BadgePlus,
   Loader2,
@@ -122,6 +123,7 @@ const MemberForm = ({
   loading,
   update,
 }: MemberFormProps) => {
+  const { t } = useTranslation()
   const { currentUser } = useContext(MemberContext)
   const { campusId } = useContext(ChurchContext)
   const { isOpen, togglePopup } = usePopup()
@@ -138,29 +140,45 @@ const MemberForm = ({
   }
 
   const validationSchema = Yup.object({
-    pictureUrl: Yup.string().required('You must upload a picture'),
-    firstName: Yup.string().required('First Name is a required field'),
-    lastName: Yup.string().required('Last Name is a required field'),
-    gender: Yup.string().required('Gender is a required field'),
-    email: Yup.string().email('Please enter a valid email address').trim(),
-    maritalStatus: Yup.string().required('Marital Status is a required field'),
+    pictureUrl: Yup.string().required(
+      t('directory.memberForm.validation.pictureRequired')
+    ),
+    firstName: Yup.string().required(
+      t('directory.memberForm.validation.firstNameRequired')
+    ),
+    lastName: Yup.string().required(
+      t('directory.memberForm.validation.lastNameRequired')
+    ),
+    gender: Yup.string().required(
+      t('directory.memberForm.validation.genderRequired')
+    ),
+    email: Yup.string()
+      .email(t('directory.memberForm.validation.invalidEmail'))
+      .trim(),
+    maritalStatus: Yup.string().required(
+      t('directory.memberForm.validation.maritalStatusRequired')
+    ),
     dob: Yup.date()
-      .max(new Date(), "You can't be born after today")
-      .required('Date of Birth is a required field'),
+      .max(new Date(), t('directory.memberForm.validation.dobFuture'))
+      .required(t('directory.memberForm.validation.dobRequired')),
     phoneNumber: Yup.string()
       .matches(
         PHONE_NUM_REGEX,
-        `Phone Number must start with + and country code (eg. '+233')`
+        t('directory.memberForm.validation.phoneFormat')
       )
-      .required('Phone Number is required'),
+      .required(t('directory.memberForm.validation.phoneRequired')),
     whatsappNumber: Yup.string()
-      .required('Whatsapp Number is required')
+      .required(t('directory.memberForm.validation.whatsappRequired'))
       .matches(
         PHONE_NUM_REGEX,
-        `Phone Number must start with + and country code (eg. '+233')`
+        t('directory.memberForm.validation.phoneFormat')
       ),
-    visitationArea: Yup.string().required('Location is a required field'),
-    bacenta: Yup.object().required('Please pick a bacenta from the dropdown'),
+    visitationArea: Yup.string().required(
+      t('directory.memberForm.validation.locationRequired')
+    ),
+    bacenta: Yup.object().required(
+      t('directory.memberForm.validation.bacentaRequired')
+    ),
   })
 
   if (basontasLoading || loading) {
@@ -189,18 +207,22 @@ const MemberForm = ({
               <div className="flex min-w-0 items-center gap-1">
                 <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Directory
+                    {t('directory.memberForm.directoryLabel')}
                   </p>
                   <h1 className="truncate text-2xl font-bold tracking-tight text-foreground">
                     {update ? (
                       <>
-                        Edit{' '}
-                        <span className="text-members">Member</span>
+                        {t('directory.memberForm.editTitle')}{' '}
+                        <span className="text-members">
+                          {t('directory.memberForm.memberLabel')}
+                        </span>
                       </>
                     ) : (
                       <>
-                        Register a New{' '}
-                        <span className="text-members">Member</span>
+                        {t('directory.memberForm.registerTitle')}{' '}
+                        <span className="text-members">
+                          {t('directory.memberForm.memberLabel')}
+                        </span>
                       </>
                     )}
                   </h1>
@@ -217,7 +239,9 @@ const MemberForm = ({
                       className="min-h-[44px] gap-1.5"
                     >
                       <BadgePlus className="h-4 w-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">Add Title</span>
+                      <span className="hidden sm:inline">
+                        {t('directory.memberForm.addTitle')}
+                      </span>
                     </Button>
                   </RoleView>
                   <RoleView roles={permitLeaderAdmin('Governorship')}>
@@ -228,7 +252,9 @@ const MemberForm = ({
                       className="min-h-[44px] gap-1.5"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">Delete</span>
+                      <span className="hidden sm:inline">
+                        {t('directory.memberForm.delete')}
+                      </span>
                     </Button>
                   </RoleView>
                 </StickyPageHeaderActions>
@@ -255,20 +281,22 @@ const MemberForm = ({
                 <div className="space-y-4">
                   {canChangeUniques() && (
                     <Section
-                      title="Basic Information"
+                      title={t('directory.memberForm.basicInformation')}
                       icon={<User className="h-4 w-4" />}
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label htmlFor="firstName">
-                            First Name{' '}
+                            {t('directory.memberForm.firstNameLabel')}{' '}
                             <span className="text-destructive">*</span>
                           </Label>
                           <Field
                             as={Input}
                             id="firstName"
                             name="firstName"
-                            placeholder="First name"
+                            placeholder={t(
+                              'directory.memberForm.firstNamePlaceholder'
+                            )}
                             autoComplete="given-name"
                             aria-invalid={
                               !!(
@@ -281,14 +309,16 @@ const MemberForm = ({
                         </div>
                         <div className="space-y-1.5">
                           <Label htmlFor="lastName">
-                            Last Name{' '}
+                            {t('directory.memberForm.lastNameLabel')}{' '}
                             <span className="text-destructive">*</span>
                           </Label>
                           <Field
                             as={Input}
                             id="lastName"
                             name="lastName"
-                            placeholder="Last name"
+                            placeholder={t(
+                              'directory.memberForm.lastNamePlaceholder'
+                            )}
                             autoComplete="family-name"
                             aria-invalid={
                               !!(
@@ -302,12 +332,16 @@ const MemberForm = ({
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label htmlFor="middleName">Middle Name</Label>
+                        <Label htmlFor="middleName">
+                          {t('directory.memberForm.middleNameLabel')}
+                        </Label>
                         <Field
                           as={Input}
                           id="middleName"
                           name="middleName"
-                          placeholder="Other names"
+                          placeholder={t(
+                            'directory.memberForm.middleNamePlaceholder'
+                          )}
                           autoComplete="additional-name"
                         />
                       </div>
@@ -315,7 +349,7 @@ const MemberForm = ({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label htmlFor="gender">
-                            Gender{' '}
+                            {t('directory.memberForm.genderLabel')}{' '}
                             <span className="text-destructive">*</span>
                           </Label>
                           <Select
@@ -333,7 +367,11 @@ const MemberForm = ({
                                 )
                               }
                             >
-                              <SelectValue placeholder="Select gender" />
+                              <SelectValue
+                                placeholder={t(
+                                  'directory.memberForm.selectGender'
+                                )}
+                              />
                             </SelectTrigger>
                             <SelectContent>
                               {GENDER_OPTIONS.map((o) => (
@@ -347,7 +385,7 @@ const MemberForm = ({
                         </div>
                         <div className="space-y-1.5">
                           <Label htmlFor="dob">
-                            Date of Birth{' '}
+                            {t('directory.memberForm.dobLabel')}{' '}
                             <span className="text-destructive">*</span>
                           </Label>
                           <Field
@@ -367,14 +405,14 @@ const MemberForm = ({
 
                   {canChangeUniques() && (
                     <Section
-                      title="Contact"
+                      title={t('directory.memberForm.contact')}
                       icon={<Phone className="h-4 w-4" />}
                     >
                       <div className="space-y-1.5">
                         <Label htmlFor="phoneNumber">
                           <span className="inline-flex items-center gap-1.5">
                             <Phone className="h-3.5 w-3.5 text-arrivals" />
-                            Phone Number
+                            {t('directory.memberForm.phoneNumberLabel')}
                             <span className="text-destructive">*</span>
                           </span>
                         </Label>
@@ -401,7 +439,7 @@ const MemberForm = ({
                         <Label htmlFor="whatsappNumber">
                           <span className="inline-flex items-center gap-1.5">
                             <MessageCircle className="h-3.5 w-3.5 text-banking" />
-                            WhatsApp Number
+                            {t('directory.memberForm.whatsappNumberLabel')}
                             <span className="text-destructive">*</span>
                           </span>
                         </Label>
@@ -427,9 +465,11 @@ const MemberForm = ({
                         <Label htmlFor="email">
                           <span className="inline-flex items-center gap-1.5">
                             <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                            Email Address
+                            {t('directory.memberForm.emailAddressLabel')}
                             <span className="text-muted-foreground text-xs font-normal">
-                              {update ? '*' : '(Optional)'}
+                              {update
+                                ? '*'
+                                : t('directory.memberForm.optional')}
                             </span>
                           </span>
                         </Label>
@@ -451,13 +491,13 @@ const MemberForm = ({
                   )}
 
                   <Section
-                    title="Personal"
+                    title={t('directory.memberForm.personal')}
                     icon={<User className="h-4 w-4" />}
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label htmlFor="maritalStatus">
-                          Marital Status{' '}
+                          {t('directory.memberForm.maritalStatusLabel')}{' '}
                           <span className="text-destructive">*</span>
                         </Label>
                         <Select
@@ -476,7 +516,11 @@ const MemberForm = ({
                               )
                             }
                           >
-                            <SelectValue placeholder="Select status" />
+                            <SelectValue
+                              placeholder={t(
+                                'directory.memberForm.selectStatus'
+                              )}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {MARITAL_STATUS_OPTIONS.map((o) => (
@@ -489,35 +533,41 @@ const MemberForm = ({
                         <FieldMessage name="maritalStatus" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor="occupation">Occupation</Label>
+                        <Label htmlFor="occupation">
+                          {t('directory.memberForm.occupationLabel')}
+                        </Label>
                         <Field
                           as={Input}
                           id="occupation"
                           name="occupation"
-                          placeholder="e.g. Software Engineer"
+                          placeholder={t(
+                            'directory.memberForm.occupationPlaceholder'
+                          )}
                         />
                       </div>
                     </div>
                   </Section>
 
                   <Section
-                    title="Church Membership"
+                    title={t('directory.memberForm.churchMembership')}
                     icon={<MapPin className="h-4 w-4" />}
                   >
                     {!update && (
                       <div className="space-y-1.5">
                         <Label htmlFor="visitationArea">
-                          Home / Campus Location{' '}
+                          {t('directory.memberForm.homeLocationLabel')}{' '}
                           <span className="text-destructive">*</span>
                           <span className="block text-xs font-normal text-muted-foreground mt-0.5">
-                            Used for IDL visitation
+                            {t('directory.memberForm.idlVisitationHint')}
                           </span>
                         </Label>
                         <Field
                           as={Input}
                           id="visitationArea"
                           name="visitationArea"
-                          placeholder="Enter the location for IDL visitation"
+                          placeholder={t(
+                            'directory.memberForm.idlVisitationPlaceholder'
+                          )}
                           aria-invalid={
                             !!(
                               formik.touched.visitationArea &&
@@ -532,8 +582,10 @@ const MemberForm = ({
                     <div className="space-y-1.5">
                       <SearchBacenta
                         name="bacenta"
-                        label="Bacenta *"
-                        placeholder="Start typing to search"
+                        label={`${t('shared.churchLevel.Bacenta')} *`}
+                        placeholder={t(
+                          'directory.memberForm.searchBacentaPlaceholder'
+                        )}
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="Bacenta Name"
                         initialValue={initialValues?.bacenta?.name || null}
@@ -553,7 +605,11 @@ const MemberForm = ({
                         }
                       >
                         <SelectTrigger id="basonta" className="w-full">
-                          <SelectValue placeholder="Select basonta" />
+                          <SelectValue
+                            placeholder={t(
+                              'directory.memberForm.selectBasonta'
+                            )}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {basontaOptions.map((o) => (
@@ -569,9 +625,9 @@ const MemberForm = ({
                   {/* Submit */}
                   <div className="rounded-xl border border-border bg-card p-4 lg:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <p className="text-xs text-muted-foreground">
-                      Fields marked{' '}
+                      {t('directory.memberForm.requiredFieldsPrefix')}{' '}
                       <span className="text-destructive font-medium">*</span>{' '}
-                      are required.
+                      {t('directory.memberForm.requiredFieldsSuffix')}
                     </p>
                     <Button
                       type="submit"
@@ -585,12 +641,12 @@ const MemberForm = ({
                       {formik.isSubmitting ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Submitting…
+                          {t('directory.memberForm.submitting')}
                         </>
                       ) : update ? (
-                        'Save Changes'
+                        t('directory.memberForm.saveChanges')
                       ) : (
-                        'Register Member'
+                        t('directory.memberForm.registerMember')
                       )}
                     </Button>
                   </div>
