@@ -5,6 +5,7 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { FunctionReturnsVoid, Member, Council } from 'global-types'
+import { useTranslation } from 'react-i18next'
 import React, { useContext, useState } from 'react'
 import * as Yup from 'yup'
 import { Form, Formik, FormikHelpers } from 'formik'
@@ -49,6 +50,7 @@ type FormOptions = {
 }
 
 const ArrivalsPayerSelect = () => {
+  const { t } = useTranslation()
   const { councilId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(COUNCIL_ARRIVALSPAYERS, {
     variables: { id: councilId },
@@ -93,7 +95,7 @@ const ArrivalsPayerSelect = () => {
           arrivalsPayerId: payer.id,
         },
       })
-      alertSuccess(`${payer.fullName} Deleted Successfully`)
+      alertSuccess(t('arrivals.payers.deletedToast', { name: payer.fullName }))
     } catch (error: any) {
       throwToSentry('', error)
     } finally {
@@ -109,7 +111,7 @@ const ArrivalsPayerSelect = () => {
 
   const validationSchema = Yup.object({
     arrivalsPayerSelect: Yup.string().required(
-      'Please select a arrivals payment governorship member from the dropdown'
+      t('arrivals.payers.selectFromDropdown')
     ),
   })
 
@@ -131,11 +133,9 @@ const ArrivalsPayerSelect = () => {
       }
 
       handleClose()
-      alertSuccess(
-        'Arrivals Payment Governorship Member has been added successfully!'
-      )
+      alertSuccess(t('arrivals.payers.addedToast'))
     } catch (e: unknown) {
-      throwToSentry('There was an error adding the arrivals payer', e)
+      throwToSentry(t('arrivals.payers.addError'), e)
     } finally {
       onSubmitProps.setSubmitting(false)
     }
@@ -144,11 +144,19 @@ const ArrivalsPayerSelect = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
-        <HeadingPrimary>{`Select ${council?.name} Council Arrivals Payment Governorship Members`}</HeadingPrimary>
+        <HeadingPrimary>
+          {t('arrivals.payers.selectCouncilMembers', {
+            council: council?.name,
+          })}
+        </HeadingPrimary>
         <HeadingSecondary>
-          Use the buttons below to choose Arrivals Payment Governorship Members
+          {t('arrivals.payers.useButtonsBelow')}
         </HeadingSecondary>
-        <div>{`Number of Active Bacentas: ${council?.activeBacentaCount}`}</div>
+        <div>
+          {t('arrivals.payers.activeBacentaCount', {
+            count: council?.activeBacentaCount,
+          })}
+        </div>
 
         <Dialog
           open={show}
@@ -156,9 +164,7 @@ const ArrivalsPayerSelect = () => {
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
-                Choose an Arrivals Payment Governorship Member
-              </DialogTitle>
+              <DialogTitle>{t('arrivals.payers.chooseMember')}</DialogTitle>
             </DialogHeader>
 
             <Formik
@@ -172,7 +178,7 @@ const ArrivalsPayerSelect = () => {
                     <SearchMember
                       name="arrivalsPayerSelect"
                       initialValue={initialValues?.arrivalsPayerName}
-                      placeholder="Select a Name"
+                      placeholder={t('arrivals.payers.selectAName')}
                       setFieldValue={formik.setFieldValue}
                       aria-describedby="Member Search"
                       error={formik.errors.arrivalsPayerSelect}
@@ -184,7 +190,7 @@ const ArrivalsPayerSelect = () => {
                       variant="outline"
                       onClick={handleClose}
                     >
-                      Close
+                      {t('directory.common.close')}
                     </Button>
                     <ModalSubmitButton formik={formik} />
                   </DialogFooter>
@@ -199,7 +205,7 @@ const ArrivalsPayerSelect = () => {
             onClick={handleOpen}
             className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
           >
-            Choose Arrivals Payment Governorship Members
+            {t('arrivals.payers.chooseMembers')}
           </Button>
         </div>
 
@@ -215,10 +221,10 @@ const ArrivalsPayerSelect = () => {
                 {submitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Submitting</span>
+                    <span>{t('shared.form.submitting')}</span>
                   </>
                 ) : (
-                  'Delete'
+                  t('arrivals.payers.delete')
                 )}
               </Button>
             </div>
@@ -226,7 +232,7 @@ const ArrivalsPayerSelect = () => {
         ))}
 
         {!council?.arrivalsPayers?.length && (
-          <NoDataComponent text="You have no Arrivals Payment Governorship Members at this time" />
+          <NoDataComponent text={t('arrivals.payers.emptyList')} />
         )}
 
         <AlertDialog
@@ -238,17 +244,19 @@ const ArrivalsPayerSelect = () => {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                Remove this Arrivals Payment Governorship Member?
+                {t('arrivals.payers.removeTitle')}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {payerToDelete
-                  ? `Do you want to delete ${payerToDelete.fullName} as an Arrivals Payment Governorship Member?`
+                  ? t('arrivals.payers.confirmDelete', {
+                      name: payerToDelete.fullName,
+                    })
                   : ''}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={submitting} className="min-h-11">
-                Cancel
+                {t('shared.actions.cancel')}
               </AlertDialogCancel>
               <AlertDialogAction
                 disabled={submitting}
@@ -258,7 +266,9 @@ const ArrivalsPayerSelect = () => {
                 }}
                 className="min-h-11 bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/30"
               >
-                {submitting ? 'Deleting…' : 'Delete'}
+                {submitting
+                  ? t('arrivals.payers.deleting')
+                  : t('arrivals.payers.delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

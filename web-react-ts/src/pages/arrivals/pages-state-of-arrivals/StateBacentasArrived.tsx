@@ -1,4 +1,5 @@
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, CheckCircle2, Compass, Flag } from 'lucide-react'
 
@@ -34,6 +35,7 @@ const QUERIES_BY_LEVEL = {
 }
 
 const BacentasHaveArrived = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { clickCard } = useContext(ChurchContext)
   const {
@@ -76,24 +78,26 @@ const BacentasHaveArrived = () => {
                 onClick={() => navigate(-1)}
               >
                 <ArrowLeft className="size-4" />
-                Back
+                {t('arrivals.state.back')}
               </Button>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-success">
                   <Flag className="size-3.5" />
-                  <span>Bacenta Status</span>
+                  <span>{t('arrivals.dashboard.bacentaStatus')}</span>
                 </div>
                 {loading && !church ? (
                   <Skeleton className="h-9 w-72" />
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {church?.name ?? churchName ?? ''}{' '}
-                    <span className="text-success">Have Arrived</span>
+                    <span className="text-success">
+                      {t('arrivals.dashboard.haveArrived')}
+                    </span>
                   </h1>
                 )}
                 <p className="text-sm text-muted-foreground">
-                  Bacentas that have arrived at the centre.
+                  {t('arrivals.state.arrived.subtitle')}
                 </p>
               </div>
             </div>
@@ -104,12 +108,14 @@ const BacentasHaveArrived = () => {
                 <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
                   <Compass className="size-8 text-warning" />
                   <p className="text-base font-semibold text-foreground">
-                    {hasScope ? 'Pick a higher church' : 'Pick a church in focus'}
+                    {hasScope
+                      ? t('arrivals.state.pickHigherChurch')
+                      : t('arrivals.state.pickChurchInFocus')}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {hasScope
-                      ? 'Bacenta status is tracked at the Governorship, Council, Stream, or Campus level.'
-                      : 'Choose a church from the Church in Focus selector to view bacenta status.'}
+                      ? t('arrivals.state.trackedAtLevels')
+                      : t('arrivals.state.chooseFromSelector')}
                   </p>
                 </CardContent>
               </Card>
@@ -119,10 +125,12 @@ const BacentasHaveArrived = () => {
               <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_280px] lg:items-start">
                 <section className="space-y-3 lg:order-1">
                   <div className="flex items-center justify-between">
-                    <SectionLabel>Bacentas</SectionLabel>
+                    <SectionLabel>
+                      {t('shared.churchLevelPlural.Bacenta')}
+                    </SectionLabel>
                     {!loading && church && (
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        {count} total
+                        {t('arrivals.state.countTotal', { count })}
                       </span>
                     )}
                   </div>
@@ -134,10 +142,10 @@ const BacentasHaveArrived = () => {
                       <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
                         <Flag className="size-8 text-warning" />
                         <p className="text-base font-semibold text-foreground">
-                          Nobody yet
+                          {t('arrivals.state.arrived.emptyTitle')}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          No bacentas have arrived at the centre.
+                          {t('arrivals.state.arrived.emptyBody')}
                         </p>
                       </CardContent>
                     </Card>
@@ -150,8 +158,7 @@ const BacentasHaveArrived = () => {
                       onBacentaClick={onBacentaClick}
                       renderExtra={(bacenta) => (
                         <span className="text-xs font-semibold text-success tabular-nums">
-                          Attendance:{' '}
-                          {bacenta.bussingThisWeek?.attendance ?? 0}
+                          Attendance: {bacenta.bussingThisWeek?.attendance ?? 0}
                         </span>
                       )}
                     />
@@ -194,7 +201,7 @@ const BacentasHaveArrived = () => {
                 </section>
 
                 <aside className="space-y-3 lg:sticky lg:top-6 lg:order-2">
-                  <SectionLabel>Summary</SectionLabel>
+                  <SectionLabel>{t('arrivals.common.summary')}</SectionLabel>
                   <Card>
                     <CardContent className="space-y-4 p-5">
                       <div>
@@ -206,7 +213,7 @@ const BacentasHaveArrived = () => {
                           </p>
                         )}
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {count === 1 ? 'bacenta' : 'bacentas'} arrived
+                          {t('arrivals.state.arrived.countLabel', { count })}
                         </p>
                       </div>
 
@@ -217,7 +224,7 @@ const BacentasHaveArrived = () => {
                             <span className="tabular-nums">
                               {totalAttendance}
                             </span>{' '}
-                            members in attendance
+                            {t('arrivals.state.membersInAttendance')}
                           </p>
                         </div>
                       )}

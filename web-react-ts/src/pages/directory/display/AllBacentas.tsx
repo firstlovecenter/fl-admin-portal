@@ -100,7 +100,7 @@ const DisplayAllBacentas = () => {
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">
                     {t('directory.list.add', {
-                      level: 'Bacenta',
+                      level: t('shared.churchLevel.Bacenta'),
                     })}
                   </span>
                   <span className="sm:hidden">
@@ -136,7 +136,7 @@ const DisplayAllBacentas = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Bacenta',
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
                   })}
                 />
               </div>
@@ -150,7 +150,7 @@ const DisplayAllBacentas = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   {t('directory.list.allOf', {
-                    levelPlural: 'Bacenta',
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
                   })}
                 </h2>
                 <span
@@ -170,15 +170,15 @@ const DisplayAllBacentas = () => {
                     <Building2 className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
                       {t('directory.list.noneFound', {
-                        levelPlural: 'Bacenta',
+                        levelPlural: t('shared.churchLevelPlural.Bacenta'),
                       })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {search
                         ? t('directory.list.tryDifferentSearch')
                         : t('directory.list.noneUnderYet', {
-                            parent: 'Governorship',
-                            levelPlural: 'Bacenta',
+                            parent: t('shared.churchLevel.Governorship'),
+                            levelPlural: t('shared.churchLevelPlural.Bacenta'),
                           })}
                     </p>
                   </CardContent>
@@ -359,7 +359,7 @@ const DisplayAllBacentas = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Bacenta',
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
                   })}
                 />
               </div>

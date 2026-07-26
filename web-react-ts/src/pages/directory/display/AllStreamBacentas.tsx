@@ -465,7 +465,7 @@ const AllStreamBacentas = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Bacenta',
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
                   })}
                 />
               </div>
@@ -485,11 +485,11 @@ const AllStreamBacentas = () => {
                     <p className="text-sm font-medium text-foreground">
                       {totalBacentas === 0
                         ? t('directory.list.noneInYet', {
-                            levelPlural: 'Bacenta',
-                            parent: 'Stream',
+                            levelPlural: t('shared.churchLevelPlural.Bacenta'),
+                            parent: t('shared.churchLevel.Stream'),
                           })
                         : t('directory.list.noneMatchSearch', {
-                            levelPlural: 'Bacenta',
+                            levelPlural: t('shared.churchLevelPlural.Bacenta'),
                           })}
                     </p>
                     {totalBacentas > 0 && search && (
@@ -623,7 +623,7 @@ const AllStreamBacentas = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Bacenta',
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
                   })}
                 />
               </div>

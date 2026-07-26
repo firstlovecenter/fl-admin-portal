@@ -56,7 +56,9 @@ const FormMobilisationSubmission = () => {
     serviceDate: Yup.date()
       .max(new Date(), t('arrivals.form.serviceDateAfterToday'))
       .required(t('arrivals.form.dateRequired')),
-    mobilisationPicture: Yup.string().required(t('arrivals.form.pictureRequired')),
+    mobilisationPicture: Yup.string().required(
+      t('arrivals.form.pictureRequired')
+    ),
   })
 
   const onSubmit = (
@@ -81,7 +83,10 @@ const FormMobilisationSubmission = () => {
       .then((res) => {
         const result = res.data?.UploadMobilisationPicture
         if (!result) {
-          displayError(t('arrivals.form.uploadFailed'), new Error('No result returned from server'))
+          displayError(
+            t('arrivals.form.uploadFailed'),
+            new Error('No result returned from server')
+          )
           onSubmitProps.setSubmitting(false)
           return
         }
@@ -171,7 +176,9 @@ const FormMobilisationSubmission = () => {
                       <ImageUpload
                         name="mobilisationPicture"
                         error={formik.errors.mobilisationPicture}
-                        placeholder={t('arrivals.form.uploadMobilisationPicture')}
+                        placeholder={t(
+                          'arrivals.form.uploadMobilisationPicture'
+                        )}
                         setFieldValue={formik.setFieldValue}
                         aria-describedby="ImageUpload"
                       />

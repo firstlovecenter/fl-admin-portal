@@ -46,12 +46,7 @@ import {
   DropdownMenuTrigger,
 } from 'components/ui/dropdown-menu'
 import { Skeleton } from 'components/ui/skeleton'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from 'components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'components/ui/tabs'
 import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
 import {
   StickyPageHeader,
@@ -91,8 +86,7 @@ type BacentaTile = {
 const GovernorshipDashboard = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { arrivalDate, governorshipId } =
-    useContext(ChurchContext)
+  const { arrivalDate, governorshipId } = useContext(ChurchContext)
   useArrivalsScopeSync('Governorship', governorshipId)
   const [adminDialogOpen, setAdminDialogOpen] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
@@ -140,9 +134,7 @@ const GovernorshipDashboard = () => {
   )
 
   const adminValidationSchema = Yup.object({
-    adminSelect: Yup.string().required(
-      t('arrivals.dashboard.selectAdmin')
-    ),
+    adminSelect: Yup.string().required(t('arrivals.dashboard.selectAdmin')),
   })
 
   const onAdminSubmit = async (
@@ -160,7 +152,11 @@ const GovernorshipDashboard = () => {
       })
 
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
+        toast.error(
+          String(
+            result.errors[0].message ?? t('arrivals.dashboard.updateFailed')
+          )
+        )
         return
       }
 
@@ -174,7 +170,8 @@ const GovernorshipDashboard = () => {
   }
 
   const deadlinePassed =
-    !!governorship && !beforeStreamArrivalsDeadline(governorship?.council?.stream)
+    !!governorship &&
+    !beforeStreamArrivalsDeadline(governorship?.council?.stream)
 
   const bacentaTiles: BacentaTile[] = [
     {
@@ -236,7 +233,9 @@ const GovernorshipDashboard = () => {
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {governorship?.name}{' '}
-                    <span className="text-arrivals">{t('arrivals.common.title')}</span>
+                    <span className="text-arrivals">
+                      {t('arrivals.common.title')}
+                    </span>
                   </h1>
                 )}
               </div>
@@ -262,7 +261,9 @@ const GovernorshipDashboard = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>{t('arrivals.dashboard.settings')}</DropdownMenuLabel>
+                      <DropdownMenuLabel>
+                        {t('arrivals.dashboard.settings')}
+                      </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={() => setAdminDialogOpen(true)}
@@ -296,7 +297,9 @@ const GovernorshipDashboard = () => {
               const bacentaStatusBlock = (
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
-                    <SectionLabel>{t('arrivals.dashboard.bacentaStatus')}</SectionLabel>
+                    <SectionLabel>
+                      {t('arrivals.dashboard.bacentaStatus')}
+                    </SectionLabel>
                     <DownloadArrivalsButton
                       level="Governorship"
                       churchId={governorshipId}
@@ -320,7 +323,9 @@ const GovernorshipDashboard = () => {
 
               const liveArrivalsBlock = (
                 <section className="space-y-2">
-                  <SectionLabel>{t('arrivals.dashboard.liveArrivals')}</SectionLabel>
+                  <SectionLabel>
+                    {t('arrivals.dashboard.liveArrivals')}
+                  </SectionLabel>
                   <Card className="overflow-hidden">
                     <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                       <div className="flex items-center gap-2">
@@ -330,7 +335,9 @@ const GovernorshipDashboard = () => {
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        {t('arrivals.dashboard.updated', { time: updatedLabel })}
+                        {t('arrivals.dashboard.updated', {
+                          time: updatedLabel,
+                        })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
@@ -401,7 +408,9 @@ const GovernorshipDashboard = () => {
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>{t('arrivals.dashboard.changeAdmin')}</DialogTitle>
+                  <DialogTitle>
+                    {t('arrivals.dashboard.changeAdmin')}
+                  </DialogTitle>
                   <DialogDescription>
                     {t('arrivals.dashboard.changeAdminDescription', {
                       level: t('shared.churchLevel.Governorship').toLowerCase(),

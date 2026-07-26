@@ -164,7 +164,10 @@ const CouncilSection = ({
             to="/council/displaydetails"
             onClick={() => onOpenCouncil(group)}
             className="flex min-w-0 items-center gap-3 hover:opacity-80 active:opacity-70"
-            aria-label={`Open ${group.name} council`}
+            aria-label={t('directory.list.openNamedLevel', {
+              name: group.name,
+              level: t('shared.churchLevel.Council'),
+            })}
           >
             <Avatar className="size-10 shrink-0">
               <AvatarImage src={leader?.pictureUrl} alt={leaderName} />
@@ -196,7 +199,7 @@ const CouncilSection = ({
           <p className="mt-4 text-sm text-muted-foreground">
             {term
               ? t('directory.list.noneMatchSearch', {
-                  levelPlural: 'Governorship',
+                  levelPlural: t('shared.churchLevelPlural.Governorship'),
                 })
               : 'This council has no governorships yet.'}
           </p>
@@ -304,7 +307,7 @@ const AllStreamGovernorships = () => {
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">
                     {t('directory.list.add', {
-                      level: 'Governorship',
+                      level: t('shared.churchLevel.Governorship'),
                     })}
                   </span>
                   <span className="sm:hidden">
@@ -350,7 +353,7 @@ const AllStreamGovernorships = () => {
                   value={search}
                   onChange={handleSearch}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Governorship',
+                    levelPlural: t('shared.churchLevelPlural.Governorship'),
                   })}
                 />
               </div>
@@ -373,9 +376,14 @@ const AllStreamGovernorships = () => {
                             levelPlural: t(
                               'shared.churchLevelPlural.Governorship'
                             ),
-                            parent: 'Stream',
+                            parent: t('shared.churchLevel.Stream'),
                           })
-                        : `No governorships match "${search}".`}
+                        : t('directory.list.noneMatchTerm', {
+                            levelPlural: t(
+                              'shared.churchLevelPlural.Governorship'
+                            ),
+                            term: search,
+                          })}
                     </p>
                     {totalGovernorships > 0 && (
                       <p className="text-xs text-muted-foreground">
@@ -508,7 +516,7 @@ const AllStreamGovernorships = () => {
                   value={search}
                   onChange={handleSearch}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Governorship',
+                    levelPlural: t('shared.churchLevelPlural.Governorship'),
                   })}
                 />
               </div>

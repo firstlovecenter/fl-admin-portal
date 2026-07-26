@@ -53,12 +53,7 @@ import {
   DropdownMenuTrigger,
 } from 'components/ui/dropdown-menu'
 import { Skeleton } from 'components/ui/skeleton'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from 'components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'components/ui/tabs'
 import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
 import {
   StickyPageHeader,
@@ -66,7 +61,11 @@ import {
 } from 'components/shell/StickyPageHeader'
 
 import { SHORT_POLL_INTERVAL, throwToSentry } from 'global-utils'
-import { permitAdmin, permitArrivals, permitLeaderAdmin } from 'permission-utils'
+import {
+  permitAdmin,
+  permitArrivals,
+  permitLeaderAdmin,
+} from 'permission-utils'
 
 import { CAMPUS_ARRIVALS_DASHBOARD } from '../arrivalsQueries'
 import {
@@ -147,9 +146,7 @@ const CampusDashboard = () => {
   )
 
   const adminValidationSchema = Yup.object({
-    adminSelect: Yup.string().required(
-      t('arrivals.dashboard.selectAdmin')
-    ),
+    adminSelect: Yup.string().required(t('arrivals.dashboard.selectAdmin')),
   })
 
   const onAdminSubmit = async (
@@ -170,7 +167,11 @@ const CampusDashboard = () => {
         },
       })
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
+        toast.error(
+          String(
+            result.errors[0].message ?? t('arrivals.dashboard.updateFailed')
+          )
+        )
         return
       }
       toast.success(t('arrivals.dashboard.adminUpdated'))
@@ -227,7 +228,11 @@ const CampusDashboard = () => {
     try {
       const result = await SetCodeOfTheDay({ variables: { code } })
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
+        toast.error(
+          String(
+            result.errors[0].message ?? t('arrivals.dashboard.updateFailed')
+          )
+        )
         return
       }
       toast.success(
@@ -302,7 +307,9 @@ const CampusDashboard = () => {
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {campus?.name}{' '}
-                    <span className="text-arrivals">{t('arrivals.common.title')}</span>
+                    <span className="text-arrivals">
+                      {t('arrivals.common.title')}
+                    </span>
                   </h1>
                 )}
                 {(isSwellDay || timeGraph?.date) && (
@@ -342,7 +349,9 @@ const CampusDashboard = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>{t('arrivals.dashboard.settings')}</DropdownMenuLabel>
+                      <DropdownMenuLabel>
+                        {t('arrivals.dashboard.settings')}
+                      </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       {isCampusAdmin && (
                         <DropdownMenuItem
@@ -378,9 +387,10 @@ const CampusDashboard = () => {
                   admin={campus?.arrivalsAdmin}
                   loading={loading && !campus}
                   subChurch={{
-                    label: campus?.streamCount === 1
-                      ? t('shared.churchLevel.Stream')
-                      : t('shared.churchLevelPlural.Stream'),
+                    label:
+                      campus?.streamCount === 1
+                        ? t('shared.churchLevel.Stream')
+                        : t('shared.churchLevelPlural.Stream'),
                     count: campus?.streamCount,
                     to: '/arrivals/campus-by-stream',
                   }}
@@ -390,7 +400,9 @@ const CampusDashboard = () => {
               const bacentaStatusBlock = (
                 <section className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
-                    <SectionLabel>{t('arrivals.dashboard.bacentaStatus')}</SectionLabel>
+                    <SectionLabel>
+                      {t('arrivals.dashboard.bacentaStatus')}
+                    </SectionLabel>
                     <DownloadArrivalsButton
                       level="Campus"
                       churchId={campusId}
@@ -420,7 +432,9 @@ const CampusDashboard = () => {
                   ]}
                 >
                   <section className="space-y-2">
-                    <SectionLabel>{t('arrivals.dashboard.financialData')}</SectionLabel>
+                    <SectionLabel>
+                      {t('arrivals.dashboard.financialData')}
+                    </SectionLabel>
                     <Card className="overflow-hidden">
                       <div className="divide-y divide-border">
                         <LiveRow
@@ -459,7 +473,9 @@ const CampusDashboard = () => {
 
               const liveArrivalsBlock = (
                 <section className="space-y-2">
-                  <SectionLabel>{t('arrivals.dashboard.liveArrivals')}</SectionLabel>
+                  <SectionLabel>
+                    {t('arrivals.dashboard.liveArrivals')}
+                  </SectionLabel>
                   <Card className="overflow-hidden">
                     <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                       <div className="flex items-center gap-2">
@@ -469,7 +485,9 @@ const CampusDashboard = () => {
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        {t('arrivals.dashboard.updated', { time: updatedLabel })}
+                        {t('arrivals.dashboard.updated', {
+                          time: updatedLabel,
+                        })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
@@ -561,7 +579,9 @@ const CampusDashboard = () => {
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>{t('arrivals.dashboard.changeAdmin')}</DialogTitle>
+                  <DialogTitle>
+                    {t('arrivals.dashboard.changeAdmin')}
+                  </DialogTitle>
                   <DialogDescription>
                     {t('arrivals.dashboard.changeAdminDescription', {
                       level: t('shared.churchLevel.Campus').toLowerCase(),
@@ -651,13 +671,17 @@ const CampusDashboard = () => {
             <Dialog open={codeDialogOpen} onOpenChange={setCodeDialogOpen}>
               <DialogContent className="sm:max-w-sm">
                 <DialogHeader>
-                  <DialogTitle>{t('arrivals.dashboard.setCodeOfDay')}</DialogTitle>
+                  <DialogTitle>
+                    {t('arrivals.dashboard.setCodeOfDay')}
+                  </DialogTitle>
                   <DialogDescription>
                     {t('arrivals.dashboard.setCodeDescription')}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-2 py-2">
-                  <Label htmlFor="code-of-the-day-input">{t('arrivals.dashboard.code')}</Label>
+                  <Label htmlFor="code-of-the-day-input">
+                    {t('arrivals.dashboard.code')}
+                  </Label>
                   <Input
                     id="code-of-the-day-input"
                     autoFocus
@@ -682,9 +706,7 @@ const CampusDashboard = () => {
                     disabled={codeLoading || !codeValue.trim()}
                     className="gap-2"
                   >
-                    {codeLoading && (
-                      <Loader2 className="size-4 animate-spin" />
-                    )}
+                    {codeLoading && <Loader2 className="size-4 animate-spin" />}
                     {t('arrivals.dashboard.saveCode')}
                   </Button>
                 </DialogFooter>

@@ -177,7 +177,7 @@ const DisplayAllGovernorships = () => {
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">
                     {t('directory.list.add', {
-                      level: 'Governorship',
+                      level: t('shared.churchLevel.Governorship'),
                     })}
                   </span>
                   <span className="sm:hidden">
@@ -235,7 +235,7 @@ const DisplayAllGovernorships = () => {
                   <CardContent className="flex flex-col items-center justify-center gap-2 p-8 text-center">
                     <Search className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
-                      No matches for &ldquo;{search}&rdquo;
+                      {t('directory.list.noMatchesFor', { term: search })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {t('directory.list.tryDifferentGovernorshipOrBacenta')}
@@ -250,14 +250,21 @@ const DisplayAllGovernorships = () => {
                         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                           {searching
                             ? t('shared.churchLevelPlural.Governorship')
-                            : 'All Governorships'}
+                            : t('directory.list.allOf', {
+                                levelPlural: t(
+                                  'shared.churchLevelPlural.Governorship'
+                                ),
+                              })}
                         </h2>
                         <span
                           aria-live="polite"
                           className="text-xs tabular-nums text-muted-foreground"
                         >
                           {searching
-                            ? `${filteredGovernorships.length} of ${governorships.length}`
+                            ? t('directory.list.countOfTotal', {
+                                shown: filteredGovernorships.length,
+                                total: governorships.length,
+                              })
                             : `${governorships.length}`}
                         </span>
                       </div>
@@ -273,7 +280,7 @@ const DisplayAllGovernorships = () => {
                               {searching
                                 ? t('directory.list.noGovernorshipNameMatch')
                                 : t('directory.list.noneUnderYet', {
-                                    parent: 'Council',
+                                    parent: t('shared.churchLevel.Council'),
                                     levelPlural: t(
                                       'shared.churchLevelPlural.Governorship'
                                     ),

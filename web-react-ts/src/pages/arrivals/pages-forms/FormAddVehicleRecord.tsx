@@ -115,7 +115,9 @@ const FormAddVehicleRecord = () => {
             <StickyPageHeader>
               <h1 className="text-2xl font-bold tracking-tight text-foreground">
                 {bacenta?.name ?? 'Bacenta'}{' '}
-                <span className="text-arrivals">{t('arrivals.common.title')}</span>
+                <span className="text-arrivals">
+                  {t('arrivals.common.title')}
+                </span>
               </h1>
               {serviceDate && (
                 <p className="text-sm text-muted-foreground">

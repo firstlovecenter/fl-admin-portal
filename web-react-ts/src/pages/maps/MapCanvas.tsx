@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useCallback, useState } from 'react'
 import {
   GoogleMap,
@@ -41,7 +42,13 @@ const popupOffset = (width: number, height: number) => ({
   y: -(height + 24),
 })
 
-const MapCanvas = ({ centre, places, onMapReady, onLocate }: MapCanvasProps) => {
+const MapCanvas = ({
+  centre,
+  places,
+  onMapReady,
+  onLocate,
+}: MapCanvasProps) => {
+  const { t } = useTranslation()
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '',
     libraries: LIBRARIES,
@@ -56,15 +63,13 @@ const MapCanvas = ({ centre, places, onMapReady, onLocate }: MapCanvasProps) => 
   )
 
   if (!isLoaded) {
-    return <LoadingScreen text="Loading map…" />
+    return <LoadingScreen text={t('shared.loadingMap')} />
   }
 
   // Skip drawing the centre place a second time when it appears in `places`
   // (the original logic only filtered when it was the first index, which
   // missed all other positions).
-  const otherPlaces = centre
-    ? places.filter((p) => p.id !== centre.id)
-    : places
+  const otherPlaces = centre ? places.filter((p) => p.id !== centre.id) : places
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-muted">
@@ -93,7 +98,9 @@ const MapCanvas = ({ centre, places, onMapReady, onLocate }: MapCanvasProps) => 
                 const typeLabel = TYPENAME_LABEL[place.typename]
                 return (
                   <Marker
-                    key={place.id || `${place.position.lat}-${place.position.lng}`}
+                    key={
+                      place.id || `${place.position.lat}-${place.position.lng}`
+                    }
                     label={{
                       text: typeLabel
                         ? `${place.name} ${typeLabel}`

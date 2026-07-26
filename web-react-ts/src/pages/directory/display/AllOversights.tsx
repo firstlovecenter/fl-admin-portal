@@ -70,7 +70,7 @@ const DisplayAllOversights = () => {
               <Button asChild variant="destructive">
                 <Link to="/oversight/addoversight">
                   {t('directory.list.add', {
-                    level: 'Oversight',
+                    level: t('shared.churchLevel.Oversight'),
                   })}
                 </Link>
               </Button>

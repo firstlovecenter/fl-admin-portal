@@ -101,7 +101,7 @@ const DisplayAllCampuses = () => {
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">
                     {t('directory.list.add', {
-                      level: 'Campus',
+                      level: t('shared.churchLevel.Campus'),
                     })}
                   </span>
                   <span className="sm:hidden">
@@ -122,7 +122,7 @@ const DisplayAllCampuses = () => {
                   value={search}
                   onChange={handleSearch}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Campus',
+                    levelPlural: t('shared.churchLevelPlural.Campus'),
                   })}
                 />
               </div>
@@ -138,7 +138,7 @@ const DisplayAllCampuses = () => {
                   {term
                     ? t('shared.churchLevelPlural.Campus')
                     : t('directory.list.allOf', {
-                        levelPlural: 'Campus',
+                        levelPlural: t('shared.churchLevelPlural.Campus'),
                       })}
                 </h2>
                 <span
@@ -162,7 +162,7 @@ const DisplayAllCampuses = () => {
                       {term
                         ? t('directory.list.noMatchesFor', { term: search })
                         : t('directory.list.noneYet', {
-                            levelPlural: 'Campus',
+                            levelPlural: t('shared.churchLevelPlural.Campus'),
                           })}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -378,7 +378,7 @@ const DisplayAllCampuses = () => {
                   value={search}
                   onChange={handleSearch}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Campus',
+                    levelPlural: t('shared.churchLevelPlural.Campus'),
                   })}
                 />
               </div>

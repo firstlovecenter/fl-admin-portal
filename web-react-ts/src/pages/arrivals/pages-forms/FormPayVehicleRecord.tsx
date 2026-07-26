@@ -86,9 +86,7 @@ const FormPayVehicleRecord = () => {
     const { setSubmitting } = onSubmitProps
 
     if (!isRecordFromToday) {
-      alertMsg(
-        t('arrivals.form.notTodayPay')
-      )
+      alertMsg(t('arrivals.form.notTodayPay'))
       return
     }
 
@@ -122,7 +120,10 @@ const FormPayVehicleRecord = () => {
 
   const detailRows = [
     [t('arrivals.payment.stream'), bacenta?.stream.name],
-    [t('arrivals.form.councilPastor'), bacenta?.governorship.council.leader.fullName],
+    [
+      t('arrivals.form.councilPastor'),
+      bacenta?.governorship.council.leader.fullName,
+    ],
     [t('arrivals.payment.council'), bacenta?.governorship.council.name],
     [t('arrivals.payment.governorship'), bacenta?.governorship.name],
     [t('arrivals.payment.attendance'), `${vehicle?.attendance || 0}`],
@@ -158,7 +159,9 @@ const FormPayVehicleRecord = () => {
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <PlaceholderCustom as="h3" loading={loading}>
-          <HeadingPrimary>{t('arrivals.form.vehicleAttendance')}</HeadingPrimary>
+          <HeadingPrimary>
+            {t('arrivals.form.vehicleAttendance')}
+          </HeadingPrimary>
         </PlaceholderCustom>
 
         {!loading && vehicle && !isRecordFromToday && (
@@ -176,8 +179,14 @@ const FormPayVehicleRecord = () => {
             className="avatar"
           />
           <div>
-            <div>{t('arrivals.bussing.bacentaName', { name: bacenta?.name })}</div>
-            <div className="text-sm text-muted-foreground">{t('arrivals.form.leaderName', { name: bacenta?.leader.fullName })}</div>
+            <div>
+              {t('arrivals.bussing.bacentaName', { name: bacenta?.name })}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {t('arrivals.form.leaderName', {
+                name: bacenta?.leader.fullName,
+              })}
+            </div>
           </div>
         </div>
         <Dialog
@@ -186,7 +195,9 @@ const FormPayVehicleRecord = () => {
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t('arrivals.form.bacentaPicture', { name: bacenta?.name })}</DialogTitle>
+              <DialogTitle>
+                {t('arrivals.form.bacentaPicture', { name: bacenta?.name })}
+              </DialogTitle>
             </DialogHeader>
             <CloudinaryImage
               className="bus-picture"

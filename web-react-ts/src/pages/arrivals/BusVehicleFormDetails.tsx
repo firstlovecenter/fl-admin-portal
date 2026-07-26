@@ -83,7 +83,9 @@ const BusVehicleFormDetails = () => {
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {church?.name ?? t('arrivals.common.loading')}{' '}
-            <span className="text-arrivals">{t('arrivals.vehicle.details')}</span>
+            <span className="text-arrivals">
+              {t('arrivals.vehicle.details')}
+            </span>
           </h1>
           <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-3">
             {vehicle?.created_by?.fullName && (
@@ -142,50 +144,77 @@ const BusVehicleFormDetails = () => {
                   </h2>
                 </div>
                 <div className="divide-y divide-border">
-                  <DataRow label={t('arrivals.bussing.dateOfService')} loading={loading}>
+                  <DataRow
+                    label={t('arrivals.bussing.dateOfService')}
+                    loading={loading}
+                  >
                     {vehicle?.createdAt
                       ? getHumanReadableDate(vehicle.createdAt)
                       : '—'}
                   </DataRow>
-                  <DataRow label={t('arrivals.vehicle.timeFilled')} loading={loading}>
+                  <DataRow
+                    label={t('arrivals.vehicle.timeFilled')}
+                    loading={loading}
+                  >
                     {vehicle?.createdAt
                       ? getTime(new Date(vehicle.createdAt))
                       : '—'}
                   </DataRow>
-                  <DataRow label={t('arrivals.bussing.leaderSays')} loading={loading}>
+                  <DataRow
+                    label={t('arrivals.bussing.leaderSays')}
+                    loading={loading}
+                  >
                     <span className="tabular-nums">
                       {vehicle?.leaderDeclaration ?? '—'}
                     </span>
                   </DataRow>
-                  <DataRow label={t('arrivals.bussing.confirmedAttendance')} loading={loading}>
+                  <DataRow
+                    label={t('arrivals.bussing.confirmedAttendance')}
+                    loading={loading}
+                  >
                     <span className="font-semibold tabular-nums text-success">
                       {vehicle?.attendance ?? '—'}
                     </span>
                   </DataRow>
-                  <DataRow label={t('arrivals.vehicle.topUp')} loading={loading}>
+                  <DataRow
+                    label={t('arrivals.vehicle.topUp')}
+                    loading={loading}
+                  >
                     <span className="font-semibold tabular-nums text-success">
                       <CurrencySpan number={vehicle?.vehicleTopUp ?? 0} />
                     </span>
                   </DataRow>
                   {vehicle?.vehicle && (
-                    <DataRow label={t('arrivals.vehicle.category')} loading={loading}>
+                    <DataRow
+                      label={t('arrivals.vehicle.category')}
+                      loading={loading}
+                    >
                       {vehicle.vehicle}
                     </DataRow>
                   )}
                   {vehicle?.arrivalTime && (
-                    <DataRow label={t('arrivals.vehicle.arrivalTime')} loading={loading}>
+                    <DataRow
+                      label={t('arrivals.vehicle.arrivalTime')}
+                      loading={loading}
+                    >
                       <span className="font-semibold tabular-nums text-success">
                         {parseNeoTime(vehicle.arrivalTime.toString())}
                       </span>
                     </DataRow>
                   )}
-                  <DataRow label={t('arrivals.vehicle.inAndOut')} loading={loading}>
+                  <DataRow
+                    label={t('arrivals.vehicle.inAndOut')}
+                    loading={loading}
+                  >
                     <span className="font-semibold text-warning-foreground">
                       {inOutLabel}
                     </span>
                   </DataRow>
                   {vehicle?.comments && (
-                    <DataRow label={t('arrivals.common.comments')} loading={loading}>
+                    <DataRow
+                      label={t('arrivals.common.comments')}
+                      loading={loading}
+                    >
                       <span className="italic">{vehicle.comments}</span>
                     </DataRow>
                   )}
@@ -371,10 +400,7 @@ const BusVehicleFormDetails = () => {
                 />
               )}
               <div className="flex justify-end pt-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setPictureOpen(false)}
-                >
+                <Button variant="outline" onClick={() => setPictureOpen(false)}>
                   <ChevronLeft className="h-4 w-4" />
                   {t('arrivals.common.close')}
                 </Button>

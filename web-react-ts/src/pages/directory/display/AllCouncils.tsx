@@ -105,7 +105,7 @@ const DisplayAllCouncils = () => {
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">
                     {t('directory.list.add', {
-                      level: 'Council',
+                      level: t('shared.churchLevel.Council'),
                     })}
                   </span>
                   <span className="sm:hidden">
@@ -126,7 +126,7 @@ const DisplayAllCouncils = () => {
                   value={search}
                   onChange={handleSearch}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Council',
+                    levelPlural: t('shared.churchLevelPlural.Council'),
                   })}
                 />
               </div>
@@ -142,7 +142,7 @@ const DisplayAllCouncils = () => {
                   {term
                     ? t('shared.churchLevelPlural.Council')
                     : t('directory.list.allOf', {
-                        levelPlural: 'Council',
+                        levelPlural: t('shared.churchLevelPlural.Council'),
                       })}
                 </h2>
                 <span
@@ -166,15 +166,15 @@ const DisplayAllCouncils = () => {
                       {term
                         ? t('directory.list.noMatchesFor', { term: search })
                         : t('directory.list.noneYet', {
-                            levelPlural: 'Council',
+                            levelPlural: t('shared.churchLevelPlural.Council'),
                           })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {term
                         ? t('directory.list.tryDifferentNameOrLeader')
                         : t('directory.list.noneUnder', {
-                            parent: 'Stream',
-                            levelPlural: 'Council',
+                            parent: t('shared.churchLevel.Stream'),
+                            levelPlural: t('shared.churchLevelPlural.Council'),
                           })}
                     </p>
                   </CardContent>
@@ -385,7 +385,7 @@ const DisplayAllCouncils = () => {
                   value={search}
                   onChange={handleSearch}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Council',
+                    levelPlural: t('shared.churchLevelPlural.Council'),
                   })}
                 />
               </div>

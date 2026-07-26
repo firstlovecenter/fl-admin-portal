@@ -508,7 +508,7 @@ const CouncilBacentas = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Bacenta',
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
                   })}
                 />
               </div>
@@ -528,11 +528,11 @@ const CouncilBacentas = () => {
                     <p className="text-sm font-medium text-foreground">
                       {governorships.length === 0
                         ? t('directory.list.noneInYet', {
-                            levelPlural: 'Bacenta',
-                            parent: 'Council',
+                            levelPlural: t('shared.churchLevelPlural.Bacenta'),
+                            parent: t('shared.churchLevel.Council'),
                           })
                         : t('directory.list.noneMatchSearch', {
-                            levelPlural: 'Bacenta',
+                            levelPlural: t('shared.churchLevelPlural.Bacenta'),
                           })}
                     </p>
                     {governorships.length > 0 && search && (
@@ -571,7 +571,7 @@ const CouncilBacentas = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Bacenta',
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
                   })}
                 />
               </div>

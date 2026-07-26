@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { CheckCircle2, AlertOctagon, Compass } from 'lucide-react'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -29,6 +30,7 @@ const QUERIES_BY_LEVEL = {
 }
 
 const BacentasNoActivity = () => {
+  const { t } = useTranslation()
   const {
     church,
     churchType,
@@ -52,18 +54,20 @@ const BacentasNoActivity = () => {
           <StickyPageHeader innerClassName="space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-defaulters">
               <AlertOctagon className="size-3.5" />
-              <span>Bacenta Status</span>
+              <span>{t('arrivals.dashboard.bacentaStatus')}</span>
             </div>
             {loading && !church ? (
               <Skeleton className="h-9 w-72" />
             ) : (
               <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {church?.name ?? churchName ?? ''}{' '}
-                <span className="text-defaulters">No Activity</span>
+                <span className="text-defaulters">
+                  {t('arrivals.dashboard.noActivity')}
+                </span>
               </h1>
             )}
             <p className="text-sm text-muted-foreground">
-              Bacentas that have not started bussing for today.
+              {t('arrivals.state.noActivity.subtitle')}
             </p>
           </StickyPageHeader>
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
@@ -72,12 +76,14 @@ const BacentasNoActivity = () => {
                 <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
                   <Compass className="size-8 text-warning" />
                   <p className="text-base font-semibold text-foreground">
-                    {hasScope ? 'Pick a higher church' : 'Pick a church in focus'}
+                    {hasScope
+                      ? t('arrivals.state.pickHigherChurch')
+                      : t('arrivals.state.pickChurchInFocus')}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {hasScope
-                      ? 'Bacenta status is tracked at the Governorship, Council, Stream, or Campus level.'
-                      : 'Choose a church from the Church in Focus selector to view bacenta status.'}
+                      ? t('arrivals.state.trackedAtLevels')
+                      : t('arrivals.state.chooseFromSelector')}
                   </p>
                 </CardContent>
               </Card>
@@ -87,10 +93,12 @@ const BacentasNoActivity = () => {
               <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_280px] lg:items-start">
                 <section className="space-y-3 lg:order-1">
                   <div className="flex items-center justify-between">
-                    <SectionLabel>Bacentas</SectionLabel>
+                    <SectionLabel>
+                      {t('shared.churchLevelPlural.Bacenta')}
+                    </SectionLabel>
                     {!loading && church && (
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        {count} total
+                        {t('arrivals.state.countTotal', { count })}
                       </span>
                     )}
                   </div>
@@ -102,10 +110,10 @@ const BacentasNoActivity = () => {
                       <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
                         <CheckCircle2 className="size-8 text-success" />
                         <p className="text-base font-semibold text-foreground">
-                          Nothing to flag
+                          {t('arrivals.state.noActivity.emptyTitle')}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Every bacenta has started bussing today.
+                          {t('arrivals.state.noActivity.emptyBody')}
                         </p>
                       </CardContent>
                     </Card>
@@ -143,7 +151,7 @@ const BacentasNoActivity = () => {
                 </section>
 
                 <aside className="space-y-3 lg:sticky lg:top-6 lg:order-2">
-                  <SectionLabel>Summary</SectionLabel>
+                  <SectionLabel>{t('arrivals.common.summary')}</SectionLabel>
                   <Card>
                     <CardContent className="space-y-4 p-5">
                       <div>
@@ -155,7 +163,7 @@ const BacentasNoActivity = () => {
                           </p>
                         )}
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {count === 1 ? 'bacenta' : 'bacentas'} with no activity
+                          {t('arrivals.state.noActivity.countLabel', { count })}
                         </p>
                       </div>
 
@@ -174,9 +182,7 @@ const BacentasNoActivity = () => {
                       )}
 
                       <p className="text-xs text-muted-foreground">
-                        &quot;No activity&quot; means no mobilisation picture has
-                        been uploaded and no vehicles have been registered for
-                        the day.
+                        {t('arrivals.state.noActivity.footnote')}
                       </p>
                     </CardContent>
                   </Card>

@@ -72,7 +72,8 @@
       "close": "Close",
       "copy": "Copy",
       "copied": "Copied",
-      "goToDashboard": "Go back to the dashboard"
+      "goToDashboard": "Go back to the dashboard",
+      "call": "Call"
     },
     "loading": "Loading…",
     "form": {
@@ -180,7 +181,9 @@
     "reconciliation": {
       "title": "Reconciliation",
       "body": "The Reconciliation Feature is still being worked on. Will update soon!"
-    }
+    },
+    "retrievingChurch": "Retrieving your church information…",
+    "loadingMap": "Loading map…"
   },
   "accounts": {
     "common": {
@@ -612,6 +615,187 @@
       "updatedMinutesAgo_other": "{{count}} minutes ago",
       "updatedHoursAgo_one": "{{count}} hour ago",
       "updatedHoursAgo_other": "{{count}} hours ago"
+    },
+    "state": {
+      "back": "Back",
+      "countTotal": "{{count}} total",
+      "pickHigherChurch": "Pick a higher church",
+      "pickChurchInFocus": "Pick a church in focus",
+      "trackedAtLevels": "Bacenta status is tracked at the Governorship, Council, Stream, or Campus level.",
+      "chooseFromSelector": "Choose a church from the Church in Focus selector to view bacenta status.",
+      "countingTrackedAtLevels": "Counting is tracked at the Governorship, Council, Stream, or Campus level.",
+      "chooseFromSelectorCounting": "Choose a church from the Church in Focus selector to start counting.",
+      "membersInAttendance": "members in attendance",
+      "noMatches": "No matches",
+      "noBacentasOrLeadersMatch": "No bacentas or leaders match your search.",
+      "searchBacentasOrLeaders": "Search bacentas or leaders",
+      "searchBacentas": "Search bacentas",
+      "arrived": {
+        "subtitle": "Bacentas that have arrived at the centre.",
+        "emptyTitle": "Nobody yet",
+        "emptyBody": "No bacentas have arrived at the centre.",
+        "countLabel_one": "bacenta arrived",
+        "countLabel_other": "bacentas arrived"
+      },
+      "onTheWay": {
+        "subtitle": "Bacentas en route to the centre.",
+        "emptyTitle": "Nothing on the road",
+        "emptyBody": "No bacentas are currently on their way.",
+        "countLabel_one": "bacenta on the way",
+        "countLabel_other": "bacentas on the way",
+        "footnote": "\"On the way\" means at least one vehicle has been registered but the bacenta has not yet arrived."
+      },
+      "mobilising": {
+        "subtitle": "Bacentas with mobilisation underway today.",
+        "emptyTitle": "No bacentas mobilising",
+        "emptyBody": "Either everyone has moved on, or mobilisation is yet to start.",
+        "countLabel_one": "bacenta mobilising",
+        "countLabel_other": "bacentas mobilising",
+        "footnote": "\"Mobilising\" means a mobilisation picture has been uploaded but no vehicles have been registered yet."
+      },
+      "noActivity": {
+        "subtitle": "Bacentas that have not started bussing for today.",
+        "emptyTitle": "Nothing to flag",
+        "emptyBody": "Every bacenta has started bussing today.",
+        "countLabel_one": "bacenta with no activity",
+        "countLabel_other": "bacentas with no activity",
+        "footnote": "\"No activity\" means no mobilisation picture has been uploaded and no vehicles have been registered for the day."
+      },
+      "below8": {
+        "subtitle": "Bacentas that didn't bus this week.",
+        "emptyTitle": "Every bacenta bussed",
+        "emptyBody": "Nobody to flag — strong week.",
+        "countLabel_one": "bacenta below threshold",
+        "countLabel_other": "bacentas below threshold",
+        "footnote": "These bacentas either skipped bussing this week or bussed below the minimum attendance."
+      },
+      "toCount": {
+        "subtitle": "Vehicles awaiting confirmation at the centre.",
+        "titleAccent": "To Count",
+        "sprinterUrvan": "Sprinter & Urvan",
+        "carUber": "Car & Uber",
+        "emptyTitle": "Nothing to count",
+        "emptyBody": "Every vehicle has been confirmed.",
+        "allHidden": "All vehicles hidden",
+        "switchStreamAria": "Switch arrivals counter stream",
+        "switchStream": "Switch stream",
+        "vehiclesDisappear": "Vehicles disappear from this list once you confirm their arrival time.",
+        "toggleBackOn": "Toggle Sprinter & Urvan or Car & Uber back on to see pending vehicles."
+      },
+      "vehiclePayments": {
+        "title": "Vehicle Payments",
+        "unpaid": "Unpaid",
+        "paid": "Paid",
+        "statusFilter": "Payment status filter",
+        "paidVehicles": "Paid Vehicles",
+        "subtitlePaid": "Vehicles that have been paid out for today.",
+        "subtitleUnpaid": "Vehicles awaiting top-up payment.",
+        "emptyTitleUnpaid": "Nothing to pay",
+        "emptyBodyUnpaid": "No vehicles are pending payment.",
+        "emptyTitlePaid": "No paid vehicles yet",
+        "emptyBodyPaid": "All vehicles are paid",
+        "switchToUnpaid": "Switch to Unpaid to see what is still pending.",
+        "switchToPaid": "Switch to Paid to see completed payouts.",
+        "countLabelPaid": "paid out",
+        "countLabelUnpaid": "to pay out",
+        "tapToViewPayout": "view its payout",
+        "tapToProcessPayment": "process payment",
+        "tapAVehicleTo": "Tap a vehicle to {{action}}."
+      },
+      "unassigned": "Unassigned"
+    },
+    "breakdown": {
+      "viewLevel": "View {{level}}",
+      "openLevel": "Open {{level}}",
+      "arrivalsByLevel": "Arrivals by {{level}}",
+      "liveArrivals": "Live Arrivals",
+      "active": "Active",
+      "realtime": "Realtime",
+      "councilLiveTotals": "Council Live Totals",
+      "membersAndBuses": "Members & Buses",
+      "noGovernorshipsUnderCouncil": "No governorships found under this council.",
+      "miniOnWay": "on way",
+      "miniArrived": "arrived",
+      "miniBuses": "buses",
+      "noLeaderAssigned": "No leader assigned",
+      "collapseNamed": "Collapse {{name}} {{level}}",
+      "expandNamed": "Expand {{name}} {{level}}",
+      "openNamedLevel": "Open {{name}} {{level}}",
+      "openNamedLevelPage": "Open {{name}} {{level}} page",
+      "tapToDrillIn": "Tap a governorship to drill in · refreshes every {{seconds}}s",
+      "updatedAt": "Updated {{time}}",
+      "collapseDetails": "Collapse {{name}} details",
+      "expandDetails": "Expand {{name}} details"
+    },
+    "counters": {
+      "title": "Arrivals Counters",
+      "subtitle": "Manage the team that counts arrivals for this stream.",
+      "activeCounters": "Active counters",
+      "activeBacentas": "Active Bacentas",
+      "currentCounters": "Current Counters",
+      "addCounter": "Add Counter",
+      "addArrivalsCounter": "Add Arrivals Counter",
+      "emptyTitle": "No arrivals counters yet",
+      "emptyBody": "Add a counter to begin tracking arrivals for this stream.",
+      "dialogDescription": "Search for the member you want to add as an arrivals counter for this stream.",
+      "removeTitle": "Remove counter?",
+      "removing": "Removing…",
+      "addedToast": "Arrivals Counter added successfully",
+      "selectHelper": "Please select a helper from the dropdown",
+      "removeBody": "Are you sure you want to remove <1>{{name}}</1> as an arrivals counter? They will no longer be able to count arrivals for this stream.",
+      "remove": "Remove",
+      "removedToast": "{{name}} removed successfully",
+      "removeAria": "Remove {{name}}",
+      "personCount_one": "person",
+      "personCount_other": "people"
+    },
+    "payers": {
+      "chooseMembers": "Choose Arrivals Payment Governorship Members",
+      "chooseMember": "Choose an Arrivals Payment Governorship Member",
+      "useButtonsBelow": "Use the buttons below to choose Arrivals Payment Governorship Members",
+      "removeTitle": "Remove this Arrivals Payment Governorship Member?",
+      "selectAName": "Select a Name",
+      "selectFromDropdown": "Please select a arrivals payment governorship member from the dropdown",
+      "addedToast": "Arrivals Payment Governorship Member has been added successfully!",
+      "addError": "There was an error adding the arrivals payer",
+      "selectCouncilMembers": "Select {{council}} Council Arrivals Payment Governorship Members",
+      "activeBacentaCount": "Number of Active Bacentas: {{count}}",
+      "confirmDelete": "Do you want to delete {{name}} as an Arrivals Payment Governorship Member?",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "emptyList": "You have no Arrivals Payment Governorship Members at this time",
+      "deletedToast": "{{name}} deleted successfully"
+    },
+    "times": {
+      "title": "Arrival Times",
+      "noStreamInFocus": "No stream in focus",
+      "loadError": "Could not load arrival times",
+      "editTitle": "Edit Arrival Times",
+      "editTimes": "Edit Times",
+      "saveTimes": "Save Times",
+      "pickATime": "Pick a time",
+      "required": "Required",
+      "currentWindow": "Current Window",
+      "howTheseWork": "How these windows work",
+      "howTheseWorkBody": "These windows decide when mobilisation and arrival counters can record bussing for this stream.",
+      "mobilisationWindow": "Mobilisation window",
+      "arrivalWindow": "Arrival window",
+      "mobilisationStart": "Mobilisation Start",
+      "mobilisationStartHint": "Bacentas start calling members.",
+      "mobilisationEnd": "Mobilisation End",
+      "mobilisationEndHint": "Last window to confirm passengers.",
+      "arrivalStart": "Arrival Start",
+      "arrivalStartHint": "Counters open at the auditorium.",
+      "arrivalEnd": "Arrival End",
+      "arrivalEndHint": "Last bus is counted in.",
+      "updatedToast": "Arrival times updated",
+      "updateError": "Could not update stream arrival times",
+      "openStreamFirst": "Open a stream from the arrivals dashboard first, then return here to view or edit its arrival times.",
+      "mobilisationWindowHint": "Bacenta leaders fill in expected passengers between these two times. The window closes automatically at the end.",
+      "arrivalWindowHint": "Arrival counters can confirm and pay for buses only between these two times. Late buses fall outside payment.",
+      "appliesEverySunday": "Times apply to {{stream}} every Sunday until changed.",
+      "editDescription": "Update the mobilisation and arrival windows for {{stream}}.",
+      "thisStream": "this stream"
     }
   },
   "directory": {
@@ -992,7 +1176,8 @@
       "oversightLeader": "Oversight Leader",
       "streamLeader": "Stream Leader",
       "leadPastor": "Lead Pastor",
-      "overseer": "Overseer"
+      "overseer": "Overseer",
+      "pastor": "Pastor"
     },
     "churchLevelMembers": {
       "notAvailablePrefix": "Member browsing is not available at the",
@@ -1123,7 +1308,9 @@
       "noGovernorshipNameMatch": "No governorship name or leader matches.",
       "noGovernorships": "No governorships",
       "noMatchesFor": "No matches for \"{{term}}\"",
-      "unnamed": "Unnamed {{role}}"
+      "unnamed": "Unnamed {{role}}",
+      "openNamedLevel": "Open {{name}} {{level}}",
+      "noneMatchTerm": "No {{levelPlural}} match \"{{term}}\""
     }
   },
   "dashboard": {

@@ -100,7 +100,7 @@ const DisplayAllStreams = () => {
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">
                     {t('directory.list.add', {
-                      level: 'Stream',
+                      level: t('shared.churchLevel.Stream'),
                     })}
                   </span>
                   <span className="sm:hidden">
@@ -140,7 +140,7 @@ const DisplayAllStreams = () => {
                   value={search}
                   onChange={handleSearch}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Stream',
+                    levelPlural: t('shared.churchLevelPlural.Stream'),
                   })}
                 />
               </div>
@@ -156,7 +156,7 @@ const DisplayAllStreams = () => {
                   {term
                     ? t('shared.churchLevelPlural.Stream')
                     : t('directory.list.allOf', {
-                        levelPlural: 'Stream',
+                        levelPlural: t('shared.churchLevelPlural.Stream'),
                       })}
                 </h2>
                 <span
@@ -180,15 +180,15 @@ const DisplayAllStreams = () => {
                       {term
                         ? t('directory.list.noMatchesFor', { term: search })
                         : t('directory.list.noneYet', {
-                            levelPlural: 'Stream',
+                            levelPlural: t('shared.churchLevelPlural.Stream'),
                           })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {term
                         ? t('directory.list.tryDifferentNameOrLeader')
                         : t('directory.list.noneUnder', {
-                            parent: 'Campus',
-                            levelPlural: 'Stream',
+                            parent: t('shared.churchLevel.Campus'),
+                            levelPlural: t('shared.churchLevelPlural.Stream'),
                           })}
                     </p>
                   </CardContent>
@@ -315,7 +315,10 @@ const DisplayAllStreams = () => {
                               {t('directory.leaderTitle.leadPastor')}
                             </p>
                             <p className="truncate text-sm font-semibold text-foreground">
-                              {displayName || 'Unnamed Pastor'}
+                              {displayName ||
+                                t('directory.list.unnamed', {
+                                  role: t('directory.leaderTitle.pastor'),
+                                })}
                             </p>
                           </div>
                         </Link>
@@ -399,7 +402,7 @@ const DisplayAllStreams = () => {
                   value={search}
                   onChange={handleSearch}
                   aria-label={t('directory.list.searchAria', {
-                    levelPlural: 'Stream',
+                    levelPlural: t('shared.churchLevelPlural.Stream'),
                   })}
                 />
               </div>

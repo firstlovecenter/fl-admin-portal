@@ -66,7 +66,9 @@ const ArrivalsDashboardMeta = ({
       {showAdmin && admin && (
         <div
           className="inline-flex min-h-11 items-center gap-2 rounded-full border bg-muted/40 py-1 pl-1 pr-3"
-          aria-label={t('arrivals.meta.adminAriaLabel', { name: admin.fullName })}
+          aria-label={t('arrivals.meta.adminAriaLabel', {
+            name: admin.fullName,
+          })}
         >
           <Avatar className="size-8">
             {admin.pictureUrl ? (
@@ -95,7 +97,9 @@ const ArrivalsDashboardMeta = ({
           size="sm"
           className="h-11 gap-1 rounded-full px-3 text-xs font-medium tabular-nums"
           onClick={() => navigate(subChurch.to)}
-          aria-label={t('arrivals.meta.viewChurches', { label: subChurch.label })}
+          aria-label={t('arrivals.meta.viewChurches', {
+            label: subChurch.label,
+          })}
         >
           <span>
             {subChurch.count} {subChurch.label}

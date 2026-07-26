@@ -19,7 +19,9 @@ import { fetchArrivalsExport } from './utils/useArrivalsExport'
 
 type Format = 'xlsx' | 'csv-zip'
 
-const createFormats = (t: (key: string) => string): ReadonlyArray<DownloadFormatOption<Format>> => [
+const createFormats = (
+  t: (key: string) => string
+): ReadonlyArray<DownloadFormatOption<Format>> => [
   {
     id: 'xlsx',
     label: t('arrivals.download.excel'),
@@ -113,12 +115,16 @@ const DownloadArrivalsButton = ({
         {pending !== null ? (
           <>
             <Loader2 className="animate-spin" aria-hidden="true" />
-            <span className="sr-only">{t('arrivals.download.downloading')}</span>
+            <span className="sr-only">
+              {t('arrivals.download.downloading')}
+            </span>
           </>
         ) : (
           <Download aria-hidden="true" />
         )}
-        <span className={showLabel ? '' : 'hidden lg:inline'}>{t('arrivals.download.download')}</span>
+        <span className={showLabel ? '' : 'hidden lg:inline'}>
+          {t('arrivals.download.download')}
+        </span>
       </Button>
       <DownloadFormatDialog
         open={open}
