@@ -965,5 +965,73 @@
         "Horas de servicio del atardecer — fichando en silencio."
       ]
     }
+  },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Preferencias guardadas solo en este dispositivo.",
+    "defaultChurch": {
+      "title": "Iglesia predeterminada",
+      "description": "La iglesia y el rol con los que iniciará cada vez que abra la aplicación en este dispositivo. Si solo tiene un rol, se selecciona automáticamente.",
+      "noScopes": "Todavía no tiene ningún ámbito de iglesia asignado a su cuenta.",
+      "label": "Iglesia en foco",
+      "placeholder": "Seleccionar iglesia predeterminada",
+      "savedDefault": "Predeterminado guardado: {{value}}",
+      "staleDefault": "El valor predeterminado guardado ya no está disponible — elija uno nuevo.",
+      "noneSaved": "No hay valor predeterminado guardado. Se usa el rol más alto al iniciar sesión.",
+      "reset": "Restablecer",
+      "save": "Guardar como predeterminado",
+      "saved": "Guardado",
+      "savedToast": "Iglesia predeterminada guardada para este dispositivo",
+      "clearedToast": "Iglesia predeterminada borrada. Se usará el rol más alto en el próximo inicio de sesión."
+    },
+    "language": {
+      "title": "Idioma",
+      "description": "El idioma en el que se muestra la aplicación en este dispositivo. Otros dispositivos mantienen su propia configuración.",
+      "label": "Idioma de visualización",
+      "placeholder": "Seleccionar idioma",
+      "ariaLabel": "Seleccionar idioma de visualización",
+      "changedToast": "Idioma cambiado a {{language}}"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "description": "Recordatorios en este dispositivo — para registrar el culto, hacer los depósitos y para los horarios de llegada del transporte del domingo.",
+      "on": "Activado",
+      "off": "Desactivado",
+      "checking": "Comprobando…",
+      "unsupported": "Las notificaciones no son compatibles con este dispositivo o navegador. Instale la aplicación en su pantalla de inicio y ábrala desde allí para activarlas.",
+      "pushToggle": "Notificaciones push",
+      "enabling": "Activando…",
+      "togglePushAria": "Activar o desactivar las notificaciones push",
+      "blocked": "Las notificaciones están bloqueadas para esta aplicación. Actívelas en la configuración de su navegador o dispositivo, luego vuelva y active esta opción.",
+      "whatToBeReminded": "Sobre qué desea recibir recordatorios",
+      "chooseReminders": "Elija qué recordatorios desea. Se aplican a su cuenta en todos los dispositivos.",
+      "turnOnFirst": "Active las notificaciones push arriba para elegir sus recordatorios.",
+      "toggleAria": "Activar o desactivar {{label}}",
+      "mutedToast": "Notificaciones silenciadas en este dispositivo.",
+      "enabledToast": "Notificaciones activadas en este dispositivo.",
+      "deniedToast": "Las notificaciones están bloqueadas. Actívelas para esta aplicación en la configuración de su navegador o dispositivo e inténtelo de nuevo.",
+      "unsupportedToast": "Este dispositivo o navegador no admite notificaciones.",
+      "dismissedToast": "Se descartó el permiso de notificación. Toque de nuevo para permitir.",
+      "failedToast": "No se pudieron activar las notificaciones en este dispositivo. Inténtelo de nuevo más tarde.",
+      "prefSaveFailedToast": "No se pudo guardar esa preferencia. Inténtelo de nuevo.",
+      "categories": {
+        "services": {
+          "label": "Recordatorios de culto",
+          "description": "Un aviso cuando su formulario de culto aún está sin completar."
+        },
+        "banking": {
+          "label": "Recordatorios bancarios",
+          "description": "Un aviso para depositar su ofrenda al día siguiente."
+        },
+        "defaulters": {
+          "label": "Recordatorios de morosos",
+          "description": "Resumen semanal de las iglesias a su cargo que no han completado el formulario ni depositado (para gobernadores y administradores)."
+        },
+        "arrivals": {
+          "label": "Recordatorios de llegadas",
+          "description": "Movilización del transporte del domingo y alertas de horarios de llegada."
+        }
+      }
+    }
   }
 }

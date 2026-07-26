@@ -965,5 +965,73 @@
         "Horas de serviço do crepúsculo — batendo ponto em silêncio."
       ]
     }
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Preferências guardadas apenas neste dispositivo.",
+    "defaultChurch": {
+      "title": "Igreja padrão",
+      "description": "A igreja e a função com que inicia sempre que abre a aplicação neste dispositivo. Se tiver apenas uma função, esta é selecionada automaticamente.",
+      "noScopes": "Ainda não tem nenhum âmbito de igreja atribuído à sua conta.",
+      "label": "Igreja em foco",
+      "placeholder": "Selecionar igreja padrão",
+      "savedDefault": "Padrão guardado: {{value}}",
+      "staleDefault": "O padrão guardado já não está disponível — escolha um novo.",
+      "noneSaved": "Nenhum padrão guardado. A função mais alta é usada ao iniciar sessão.",
+      "reset": "Repor",
+      "save": "Guardar como padrão",
+      "saved": "Guardado",
+      "savedToast": "Igreja padrão guardada para este dispositivo",
+      "clearedToast": "Igreja padrão limpa. A função mais alta será usada no próximo início de sessão."
+    },
+    "language": {
+      "title": "Idioma",
+      "description": "O idioma em que a aplicação é apresentada neste dispositivo. Outros dispositivos mantêm a sua própria definição.",
+      "label": "Idioma de apresentação",
+      "placeholder": "Selecionar idioma",
+      "ariaLabel": "Selecionar idioma de apresentação",
+      "changedToast": "Idioma alterado para {{language}}"
+    },
+    "notifications": {
+      "title": "Notificações",
+      "description": "Lembretes neste dispositivo — para registar o culto, fazer os depósitos e para os horários de chegada do transporte de domingo.",
+      "on": "Ativado",
+      "off": "Desativado",
+      "checking": "A verificar…",
+      "unsupported": "As notificações não são suportadas neste dispositivo ou navegador. Instale a aplicação no ecrã principal e abra-a a partir daí para as ativar.",
+      "pushToggle": "Notificações push",
+      "enabling": "A ativar…",
+      "togglePushAria": "Ativar ou desativar as notificações push",
+      "blocked": "As notificações estão bloqueadas para esta aplicação. Ative-as nas definições do seu navegador ou dispositivo e volte para ativar esta opção.",
+      "whatToBeReminded": "Sobre o que quer ser lembrado",
+      "chooseReminders": "Escolha os lembretes que pretende. Aplicam-se à sua conta em todos os dispositivos.",
+      "turnOnFirst": "Ative as notificações push acima para escolher os seus lembretes.",
+      "toggleAria": "Ativar ou desativar {{label}}",
+      "mutedToast": "Notificações silenciadas neste dispositivo.",
+      "enabledToast": "Notificações ativadas neste dispositivo.",
+      "deniedToast": "As notificações estão bloqueadas. Ative-as para esta aplicação nas definições do seu navegador ou dispositivo e tente novamente.",
+      "unsupportedToast": "Este dispositivo ou navegador não suporta notificações.",
+      "dismissedToast": "A permissão de notificação foi ignorada. Toque novamente para permitir.",
+      "failedToast": "Não foi possível ativar as notificações neste dispositivo. Tente novamente mais tarde.",
+      "prefSaveFailedToast": "Não foi possível guardar essa preferência. Tente novamente.",
+      "categories": {
+        "services": {
+          "label": "Lembretes de culto",
+          "description": "Um aviso quando o seu formulário de culto ainda está por preencher."
+        },
+        "banking": {
+          "label": "Lembretes bancários",
+          "description": "Um aviso para depositar a sua oferta no dia seguinte."
+        },
+        "defaulters": {
+          "label": "Lembretes de faltosos",
+          "description": "Resumo semanal das igrejas sob a sua responsabilidade que não preencheram nem depositaram (para governadores e administradores)."
+        },
+        "arrivals": {
+          "label": "Lembretes de chegadas",
+          "description": "Mobilização do transporte de domingo e alertas de horários de chegada."
+        }
+      }
+    }
   }
 }

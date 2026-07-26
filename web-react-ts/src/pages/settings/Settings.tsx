@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Settings as SettingsIcon, RotateCcw } from 'lucide-react'
 import { Button } from 'components/ui/button'
@@ -24,9 +25,11 @@ import {
   writeDefaultScopeKey,
 } from 'lib/default-scope-storage'
 import { formatChurchLevel, getRoleRelationLabel } from 'lib/scope-display'
+import LanguageCard from './LanguageCard'
 import NotificationsCard from './NotificationsCard'
 
 const Settings = () => {
+  const { t } = useTranslation()
   const { roleChurchOptions, selectedScopeKey, setSelectedScopeKey } =
     useChurchRoleScope()
   const [persistedKey, setPersistedKey] = useState<string>(
@@ -45,15 +48,13 @@ const Settings = () => {
     writeDefaultScopeKey(pendingKey)
     setPersistedKey(pendingKey)
     setSelectedScopeKey(pendingKey)
-    toast.success('Default church saved for this device')
+    toast.success(t('settings.defaultChurch.savedToast'))
   }
 
   const handleReset = () => {
     clearDefaultScopeKey()
     setPersistedKey('')
-    toast.info(
-      'Default church cleared. Highest role will be used on next sign-in.'
-    )
+    toast.info(t('settings.defaultChurch.clearedToast'))
   }
 
   const isSaved = Boolean(pendingKey) && pendingKey === persistedKey
@@ -68,10 +69,10 @@ const Settings = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Settings
+              {t('settings.title')}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Preferences saved to this device only.
+              {t('settings.subtitle')}
             </p>
           </div>
         </div>
@@ -79,16 +80,15 @@ const Settings = () => {
       <div className="mx-auto w-full max-w-2xl px-4 py-6 md:py-10">
         <Card>
           <CardHeader>
-            <CardTitle>Default church</CardTitle>
+            <CardTitle>{t('settings.defaultChurch.title')}</CardTitle>
             <CardDescription>
-              The church and role you'll start in each time you open the app on
-              this device. If you have only one role, this picks itself.
+              {t('settings.defaultChurch.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!hasOptions ? (
               <p className="text-sm text-muted-foreground">
-                You don't have any church scopes assigned to your account yet.
+                {t('settings.defaultChurch.noScopes')}
               </p>
             ) : (
               <>
@@ -97,24 +97,27 @@ const Settings = () => {
                     htmlFor="default-scope-select"
                     className="text-sm font-medium"
                   >
-                    Church in focus
+                    {t('settings.defaultChurch.label')}
                   </label>
                   <Select value={pendingKey} onValueChange={setPendingKey}>
                     <SelectTrigger
                       id="default-scope-select"
                       className="h-11 w-full"
-                      aria-label="Select default church"
+                      aria-label={t('settings.defaultChurch.placeholder')}
                     >
-                      <SelectValue placeholder="Select default church" />
+                      <SelectValue
+                        placeholder={t('settings.defaultChurch.placeholder')}
+                      />
                     </SelectTrigger>
                     <SelectContent align="start" className="max-h-80">
                       {roleChurchOptions.map((option) => (
                         <SelectItem key={option.key} value={option.key}>
                           {option.churchName} ·{' '}
-                          {formatChurchLevel(option.churchType)} ·{' '}
+                          {formatChurchLevel(option.churchType, t)} ·{' '}
                           {getRoleRelationLabel(
                             option.authRole,
-                            option.roleName
+                            option.roleName,
+                            t
                           )}
                         </SelectItem>
                       ))}
@@ -122,18 +125,23 @@ const Settings = () => {
                   </Select>
                   {persistedOption ? (
                     <p className="text-xs text-muted-foreground">
-                      Saved default: {persistedOption.churchName} ·{' '}
-                      {formatChurchLevel(persistedOption.churchType)} ·{' '}
-                      {getRoleRelationLabel(
-                        persistedOption.authRole,
-                        persistedOption.roleName
-                      )}
+                      {t('settings.defaultChurch.savedDefault', {
+                        value: [
+                          persistedOption.churchName,
+                          formatChurchLevel(persistedOption.churchType, t),
+                          getRoleRelationLabel(
+                            persistedOption.authRole,
+                            persistedOption.roleName,
+                            t
+                          ),
+                        ].join(' · '),
+                      })}
                     </p>
                   ) : (
                     <p className="text-xs text-muted-foreground">
                       {isPersistedKeyStale
-                        ? 'Saved default is no longer available — pick a new one.'
-                        : 'No default saved. Highest role is used at sign-in.'}
+                        ? t('settings.defaultChurch.staleDefault')
+                        : t('settings.defaultChurch.noneSaved')}
                     </p>
                   )}
                 </div>
@@ -147,7 +155,7 @@ const Settings = () => {
                     disabled={!persistedKey}
                   >
                     <RotateCcw className="size-4" />
-                    Reset to default
+                    {t('settings.defaultChurch.reset')}
                   </Button>
                   <Button
                     type="button"
@@ -155,13 +163,17 @@ const Settings = () => {
                     onClick={handleSave}
                     disabled={!pendingKey || isSaved}
                   >
-                    {isSaved ? 'Saved' : 'Save as default'}
+                    {isSaved
+                      ? t('settings.defaultChurch.saved')
+                      : t('settings.defaultChurch.save')}
                   </Button>
                 </div>
               </>
             )}
           </CardContent>
         </Card>
+
+        <LanguageCard />
 
         <NotificationsCard />
       </div>

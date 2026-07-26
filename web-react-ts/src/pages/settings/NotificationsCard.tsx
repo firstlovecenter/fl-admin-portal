@@ -1,4 +1,5 @@
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next'
 import { Bell, Loader2 } from 'lucide-react'
 import {
   Card,
@@ -19,39 +20,20 @@ import {
 type CategoryRow = {
   key: NotificationCategory
   field: 'services' | 'banking' | 'defaulters' | 'arrivals'
-  label: string
-  description: string
 }
 
+// Labels/descriptions are looked up at render time from
+// `settings.notifications.categories.<field>` rather than stored here, so this
+// stays a module-level constant instead of being rebuilt on every render.
 const CATEGORY_ROWS: CategoryRow[] = [
-  {
-    key: 'SERVICES',
-    field: 'services',
-    label: 'Service reminders',
-    description: 'A nudge when your service form is still unfilled.',
-  },
-  {
-    key: 'BANKING',
-    field: 'banking',
-    label: 'Banking reminders',
-    description: 'A nudge to bank your offering the next day.',
-  },
-  {
-    key: 'DEFAULTERS',
-    field: 'defaulters',
-    label: 'Defaulters reminders',
-    description:
-      'Weekly summary of churches under you that haven’t filled or banked (for governors and admins).',
-  },
-  {
-    key: 'ARRIVALS',
-    field: 'arrivals',
-    label: 'Arrivals reminders',
-    description: 'Sunday bussing mobilisation and arrival-time alerts.',
-  },
+  { key: 'SERVICES', field: 'services' },
+  { key: 'BANKING', field: 'banking' },
+  { key: 'DEFAULTERS', field: 'defaulters' },
+  { key: 'ARRIVALS', field: 'arrivals' },
 ]
 
 const NotificationsCard = () => {
+  const { t } = useTranslation()
   const {
     supported,
     permission,
@@ -70,27 +52,23 @@ const NotificationsCard = () => {
   const handlePushToggle = async (next: boolean) => {
     if (!next) {
       disable()
-      toast.info('Notifications muted on this device.')
+      toast.info(t('settings.notifications.mutedToast'))
       return
     }
 
     try {
       await enable()
-      toast.success('Notifications enabled on this device.')
+      toast.success(t('settings.notifications.enabledToast'))
     } catch (error) {
       const reason = error instanceof Error ? error.message : 'registration-failed'
       if (reason === 'denied') {
-        toast.error(
-          'Notifications are blocked. Enable them for this app in your browser or device settings, then try again.'
-        )
+        toast.error(t('settings.notifications.deniedToast'))
       } else if (reason === 'unsupported') {
-        toast.error('This device or browser does not support notifications.')
+        toast.error(t('settings.notifications.unsupportedToast'))
       } else if (reason === 'default') {
-        toast.info('Notification permission was dismissed. Tap again to allow.')
+        toast.info(t('settings.notifications.dismissedToast'))
       } else {
-        toast.error(
-          "Couldn't enable notifications on this device. Please try again later."
-        )
+        toast.error(t('settings.notifications.failedToast'))
       }
     }
   }
@@ -102,7 +80,7 @@ const NotificationsCard = () => {
     try {
       await setPreference(category, next)
     } catch {
-      toast.error("Couldn't save that preference. Please try again.")
+      toast.error(t('settings.notifications.prefSaveFailedToast'))
     }
   }
 
@@ -113,27 +91,27 @@ const NotificationsCard = () => {
           <div className="space-y-1.5">
             <CardTitle className="flex items-center gap-2">
               <Bell className="size-4 text-muted-foreground" />
-              Notifications
+              {t('settings.notifications.title')}
             </CardTitle>
             <CardDescription>
-              Reminders on this device — to record service, do banking, and for
-              Sunday bussing arrival times.
+              {t('settings.notifications.description')}
             </CardDescription>
           </div>
           {pushOn ? (
-            <Badge variant="success">On</Badge>
+            <Badge variant="success">{t('settings.notifications.on')}</Badge>
           ) : (
-            <Badge variant="outline">Off</Badge>
+            <Badge variant="outline">{t('settings.notifications.off')}</Badge>
           )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {supported === undefined ? (
-          <p className="text-sm text-muted-foreground">Checking…</p>
+          <p className="text-sm text-muted-foreground">
+            {t('settings.notifications.checking')}
+          </p>
         ) : !supported ? (
           <p className="text-sm text-muted-foreground">
-            Notifications aren't supported on this device or browser. Install the
-            app to your home screen and open it there to enable them.
+            {t('settings.notifications.unsupported')}
           </p>
         ) : (
           <>
@@ -142,14 +120,14 @@ const NotificationsCard = () => {
               className="flex min-h-11 cursor-pointer items-center justify-between gap-4 text-sm font-medium"
             >
               <span className="flex items-center gap-2">
-                Push notifications
+                {t('settings.notifications.pushToggle')}
                 {enabling && (
                   <span
                     role="status"
                     className="flex items-center gap-1 text-xs font-normal text-muted-foreground"
                   >
                     <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                    Enabling…
+                    {t('settings.notifications.enabling')}
                   </span>
                 )}
               </span>
@@ -162,52 +140,63 @@ const NotificationsCard = () => {
                 checked={enabling ? true : pushOn}
                 disabled={enabling || blocked}
                 onCheckedChange={handlePushToggle}
-                aria-label="Toggle push notifications"
+                aria-label={t('settings.notifications.togglePushAria')}
               />
             </label>
 
             {blocked && (
               <Alert>
                 <AlertDescription>
-                  Notifications are blocked for this app. Turn them on in your
-                  browser or device settings, then come back and toggle this on.
+                  {t('settings.notifications.blocked')}
                 </AlertDescription>
               </Alert>
             )}
 
             <div className="border-t pt-4">
-              <p className="mb-1 text-sm font-medium">What to be reminded about</p>
+              <p className="mb-1 text-sm font-medium">
+                {t('settings.notifications.whatToBeReminded')}
+              </p>
               <p className="mb-3 text-xs text-muted-foreground">
                 {pushOn
-                  ? 'Choose which reminders you want. These apply to your account on every device.'
-                  : 'Turn on push notifications above to choose your reminders.'}
+                  ? t('settings.notifications.chooseReminders')
+                  : t('settings.notifications.turnOnFirst')}
               </p>
               <div className="divide-y">
-                {CATEGORY_ROWS.map((row) => (
-                  <label
-                    key={row.key}
-                    htmlFor={`category-${row.key}`}
-                    className="flex min-h-11 cursor-pointer items-center justify-between gap-4 py-2"
-                  >
-                    <span>
-                      <span className="block text-sm font-medium">
-                        {row.label}
+                {CATEGORY_ROWS.map((row) => {
+                  const label = t(
+                    `settings.notifications.categories.${row.field}.label`
+                  )
+
+                  return (
+                    <label
+                      key={row.key}
+                      htmlFor={`category-${row.key}`}
+                      className="flex min-h-11 cursor-pointer items-center justify-between gap-4 py-2"
+                    >
+                      <span>
+                        <span className="block text-sm font-medium">
+                          {label}
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          {t(
+                            `settings.notifications.categories.${row.field}.description`
+                          )}
+                        </span>
                       </span>
-                      <span className="block text-xs text-muted-foreground">
-                        {row.description}
-                      </span>
-                    </span>
-                    <Switch
-                      id={`category-${row.key}`}
-                      checked={preferences[row.field]}
-                      disabled={!pushOn || prefsLoading}
-                      onCheckedChange={(next) =>
-                        handleCategoryToggle(row.key, next)
-                      }
-                      aria-label={`Toggle ${row.label}`}
-                    />
-                  </label>
-                ))}
+                      <Switch
+                        id={`category-${row.key}`}
+                        checked={preferences[row.field]}
+                        disabled={!pushOn || prefsLoading}
+                        onCheckedChange={(next) =>
+                          handleCategoryToggle(row.key, next)
+                        }
+                        aria-label={t('settings.notifications.toggleAria', {
+                          label,
+                        })}
+                      />
+                    </label>
+                  )
+                })}
               </div>
             </div>
           </>

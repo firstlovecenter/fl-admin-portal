@@ -965,5 +965,73 @@
         "Twilight servant hours — clocking in quietly."
       ]
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Preferences saved to this device only.",
+    "defaultChurch": {
+      "title": "Default church",
+      "description": "The church and role you'll start in each time you open the app on this device. If you have only one role, this picks itself.",
+      "noScopes": "You don't have any church scopes assigned to your account yet.",
+      "label": "Church in focus",
+      "placeholder": "Select default church",
+      "savedDefault": "Saved default: {{value}}",
+      "staleDefault": "Saved default is no longer available — pick a new one.",
+      "noneSaved": "No default saved. Highest role is used at sign-in.",
+      "reset": "Reset to default",
+      "save": "Save as default",
+      "saved": "Saved",
+      "savedToast": "Default church saved for this device",
+      "clearedToast": "Default church cleared. Highest role will be used on next sign-in."
+    },
+    "language": {
+      "title": "Language",
+      "description": "The language the app is displayed in on this device. Other devices keep their own setting.",
+      "label": "Display language",
+      "placeholder": "Select language",
+      "ariaLabel": "Select display language",
+      "changedToast": "Language changed to {{language}}"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Reminders on this device — to record service, do banking, and for Sunday bussing arrival times.",
+      "on": "On",
+      "off": "Off",
+      "checking": "Checking…",
+      "unsupported": "Notifications aren't supported on this device or browser. Install the app to your home screen and open it there to enable them.",
+      "pushToggle": "Push notifications",
+      "enabling": "Enabling…",
+      "togglePushAria": "Toggle push notifications",
+      "blocked": "Notifications are blocked for this app. Turn them on in your browser or device settings, then come back and toggle this on.",
+      "whatToBeReminded": "What to be reminded about",
+      "chooseReminders": "Choose which reminders you want. These apply to your account on every device.",
+      "turnOnFirst": "Turn on push notifications above to choose your reminders.",
+      "toggleAria": "Toggle {{label}}",
+      "mutedToast": "Notifications muted on this device.",
+      "enabledToast": "Notifications enabled on this device.",
+      "deniedToast": "Notifications are blocked. Enable them for this app in your browser or device settings, then try again.",
+      "unsupportedToast": "This device or browser does not support notifications.",
+      "dismissedToast": "Notification permission was dismissed. Tap again to allow.",
+      "failedToast": "Couldn't enable notifications on this device. Please try again later.",
+      "prefSaveFailedToast": "Couldn't save that preference. Please try again.",
+      "categories": {
+        "services": {
+          "label": "Service reminders",
+          "description": "A nudge when your service form is still unfilled."
+        },
+        "banking": {
+          "label": "Banking reminders",
+          "description": "A nudge to bank your offering the next day."
+        },
+        "defaulters": {
+          "label": "Defaulters reminders",
+          "description": "Weekly summary of churches under you that haven’t filled or banked (for governors and admins)."
+        },
+        "arrivals": {
+          "label": "Arrivals reminders",
+          "description": "Sunday bussing mobilisation and arrival-time alerts."
+        }
+      }
+    }
   }
 }

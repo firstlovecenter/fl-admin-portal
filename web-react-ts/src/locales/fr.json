@@ -965,5 +965,73 @@
         "Heures de service crépusculaires — pointage silencieux."
       ]
     }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Préférences enregistrées sur cet appareil uniquement.",
+    "defaultChurch": {
+      "title": "Église par défaut",
+      "description": "L'église et le rôle dans lesquels vous démarrez à chaque ouverture de l'application sur cet appareil. Si vous n'avez qu'un seul rôle, il est sélectionné automatiquement.",
+      "noScopes": "Aucune portée d'église n'est encore attribuée à votre compte.",
+      "label": "Église en cours",
+      "placeholder": "Sélectionner l'église par défaut",
+      "savedDefault": "Valeur par défaut enregistrée : {{value}}",
+      "staleDefault": "La valeur par défaut enregistrée n'est plus disponible — choisissez-en une nouvelle.",
+      "noneSaved": "Aucune valeur par défaut enregistrée. Le rôle le plus élevé est utilisé à la connexion.",
+      "reset": "Réinitialiser",
+      "save": "Enregistrer par défaut",
+      "saved": "Enregistré",
+      "savedToast": "Église par défaut enregistrée pour cet appareil",
+      "clearedToast": "Église par défaut effacée. Le rôle le plus élevé sera utilisé à la prochaine connexion."
+    },
+    "language": {
+      "title": "Langue",
+      "description": "La langue d'affichage de l'application sur cet appareil. Les autres appareils conservent leur propre réglage.",
+      "label": "Langue d'affichage",
+      "placeholder": "Sélectionner la langue",
+      "ariaLabel": "Sélectionner la langue d'affichage",
+      "changedToast": "Langue changée en {{language}}"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Rappels sur cet appareil — pour enregistrer le culte, effectuer les dépôts bancaires et pour les heures d'arrivée du transport du dimanche.",
+      "on": "Activé",
+      "off": "Désactivé",
+      "checking": "Vérification…",
+      "unsupported": "Les notifications ne sont pas prises en charge sur cet appareil ou ce navigateur. Installez l'application sur votre écran d'accueil et ouvrez-la depuis là pour les activer.",
+      "pushToggle": "Notifications push",
+      "enabling": "Activation…",
+      "togglePushAria": "Activer ou désactiver les notifications push",
+      "blocked": "Les notifications sont bloquées pour cette application. Activez-les dans les paramètres de votre navigateur ou de votre appareil, puis revenez activer ce réglage.",
+      "whatToBeReminded": "Ce dont vous voulez être averti",
+      "chooseReminders": "Choisissez les rappels souhaités. Ils s'appliquent à votre compte sur tous les appareils.",
+      "turnOnFirst": "Activez les notifications push ci-dessus pour choisir vos rappels.",
+      "toggleAria": "Activer ou désactiver {{label}}",
+      "mutedToast": "Notifications désactivées sur cet appareil.",
+      "enabledToast": "Notifications activées sur cet appareil.",
+      "deniedToast": "Les notifications sont bloquées. Activez-les pour cette application dans les paramètres de votre navigateur ou appareil, puis réessayez.",
+      "unsupportedToast": "Cet appareil ou ce navigateur ne prend pas en charge les notifications.",
+      "dismissedToast": "L'autorisation de notification a été ignorée. Appuyez à nouveau pour autoriser.",
+      "failedToast": "Impossible d'activer les notifications sur cet appareil. Veuillez réessayer plus tard.",
+      "prefSaveFailedToast": "Impossible d'enregistrer cette préférence. Veuillez réessayer.",
+      "categories": {
+        "services": {
+          "label": "Rappels de culte",
+          "description": "Un rappel lorsque votre formulaire de culte n'est pas encore rempli."
+        },
+        "banking": {
+          "label": "Rappels bancaires",
+          "description": "Un rappel pour déposer votre offrande le lendemain."
+        },
+        "defaulters": {
+          "label": "Rappels de défaillants",
+          "description": "Résumé hebdomadaire des églises sous votre responsabilité qui n'ont pas rempli leur formulaire ou effectué leur dépôt (pour les gouverneurs et administrateurs)."
+        },
+        "arrivals": {
+          "label": "Rappels des arrivées",
+          "description": "Mobilisation du transport du dimanche et alertes sur les heures d'arrivée."
+        }
+      }
+    }
   }
 }

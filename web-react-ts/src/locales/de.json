@@ -965,5 +965,73 @@
         "Dämmerungs-Diensttunden — stilles Einstempeln."
       ]
     }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Einstellungen werden nur auf diesem Gerät gespeichert.",
+    "defaultChurch": {
+      "title": "Standardgemeinde",
+      "description": "Die Gemeinde und Rolle, mit der Sie bei jedem Öffnen der App auf diesem Gerät starten. Wenn Sie nur eine Rolle haben, wird diese automatisch gewählt.",
+      "noScopes": "Ihrem Konto ist noch kein Gemeindebereich zugewiesen.",
+      "label": "Aktuelle Gemeinde",
+      "placeholder": "Standardgemeinde auswählen",
+      "savedDefault": "Gespeicherter Standard: {{value}}",
+      "staleDefault": "Der gespeicherte Standard ist nicht mehr verfügbar — bitte wählen Sie einen neuen.",
+      "noneSaved": "Kein Standard gespeichert. Bei der Anmeldung wird die höchste Rolle verwendet.",
+      "reset": "Zurücksetzen",
+      "save": "Als Standard speichern",
+      "saved": "Gespeichert",
+      "savedToast": "Standardgemeinde für dieses Gerät gespeichert",
+      "clearedToast": "Standardgemeinde gelöscht. Bei der nächsten Anmeldung wird die höchste Rolle verwendet."
+    },
+    "language": {
+      "title": "Sprache",
+      "description": "Die Sprache, in der die App auf diesem Gerät angezeigt wird. Andere Geräte behalten ihre eigene Einstellung.",
+      "label": "Anzeigesprache",
+      "placeholder": "Sprache auswählen",
+      "ariaLabel": "Anzeigesprache auswählen",
+      "changedToast": "Sprache geändert zu {{language}}"
+    },
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "description": "Erinnerungen auf diesem Gerät — zum Erfassen des Gottesdienstes, für Bankeinzahlungen und für die Ankunftszeiten des Sonntagstransports.",
+      "on": "Ein",
+      "off": "Aus",
+      "checking": "Wird geprüft…",
+      "unsupported": "Benachrichtigungen werden auf diesem Gerät oder in diesem Browser nicht unterstützt. Installieren Sie die App auf Ihrem Startbildschirm und öffnen Sie sie von dort, um sie zu aktivieren.",
+      "pushToggle": "Push-Benachrichtigungen",
+      "enabling": "Wird aktiviert…",
+      "togglePushAria": "Push-Benachrichtigungen ein- oder ausschalten",
+      "blocked": "Benachrichtigungen sind für diese App blockiert. Aktivieren Sie sie in den Browser- oder Geräteeinstellungen und kehren Sie dann zurück, um dies einzuschalten.",
+      "whatToBeReminded": "Woran Sie erinnert werden möchten",
+      "chooseReminders": "Wählen Sie die gewünschten Erinnerungen. Diese gelten für Ihr Konto auf allen Geräten.",
+      "turnOnFirst": "Aktivieren Sie oben die Push-Benachrichtigungen, um Ihre Erinnerungen auszuwählen.",
+      "toggleAria": "{{label}} ein- oder ausschalten",
+      "mutedToast": "Benachrichtigungen auf diesem Gerät stummgeschaltet.",
+      "enabledToast": "Benachrichtigungen auf diesem Gerät aktiviert.",
+      "deniedToast": "Benachrichtigungen sind blockiert. Aktivieren Sie sie für diese App in Ihren Browser- oder Geräteeinstellungen und versuchen Sie es erneut.",
+      "unsupportedToast": "Dieses Gerät oder dieser Browser unterstützt keine Benachrichtigungen.",
+      "dismissedToast": "Die Benachrichtigungsberechtigung wurde verworfen. Tippen Sie erneut, um sie zu erlauben.",
+      "failedToast": "Benachrichtigungen konnten auf diesem Gerät nicht aktiviert werden. Bitte versuchen Sie es später erneut.",
+      "prefSaveFailedToast": "Diese Einstellung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "categories": {
+        "services": {
+          "label": "Gottesdienst-Erinnerungen",
+          "description": "Ein Hinweis, wenn Ihr Gottesdienstformular noch nicht ausgefüllt ist."
+        },
+        "banking": {
+          "label": "Bank-Erinnerungen",
+          "description": "Ein Hinweis, Ihre Kollekte am nächsten Tag einzuzahlen."
+        },
+        "defaulters": {
+          "label": "Erinnerungen zu Säumigen",
+          "description": "Wöchentliche Übersicht der Ihnen unterstellten Gemeinden, die weder ausgefüllt noch eingezahlt haben (für Gouverneure und Administratoren)."
+        },
+        "arrivals": {
+          "label": "Ankunfts-Erinnerungen",
+          "description": "Mobilisierung des Sonntagstransports und Hinweise zu Ankunftszeiten."
+        }
+      }
+    }
   }
 }
