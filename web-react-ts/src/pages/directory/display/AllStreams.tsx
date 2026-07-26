@@ -20,6 +20,7 @@ import { ChevronRight, Layers, Plus, Search, Users, Waves } from 'lucide-react'
 import { permitAdmin } from 'permission-utils'
 import { GET_CAMPUS_STREAMS } from 'queries/ListQueries'
 import { ChangeEvent, useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 type StreamRow = {
@@ -47,6 +48,7 @@ type CampusLeader = {
 const formatCount = (n: number) => n.toLocaleString('en-GH')
 
 const DisplayAllStreams = () => {
+  const { t } = useTranslation()
   const { clickCard, campusId } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
 
@@ -83,19 +85,27 @@ const DisplayAllStreams = () => {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('directory.list.eyebrow')}
               </p>
               <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {campus?.name ? `${campus.name} ` : ''}
-                <span className="text-members">Streams</span>
+                <span className="text-members">
+                  {t('shared.churchLevelPlural.Stream')}
+                </span>
               </h1>
             </div>
             <RoleView roles={permitAdmin('Campus')} directoryLock>
               <Link to="/stream/addstream" className="shrink-0">
                 <Button size="sm" className="h-11 gap-2">
                   <Plus className="size-4" />
-                  <span className="hidden sm:inline">Add Stream</span>
-                  <span className="sm:hidden">Add</span>
+                  <span className="hidden sm:inline">
+                    {t('directory.list.add', {
+                      level: 'Stream',
+                    })}
+                  </span>
+                  <span className="sm:hidden">
+                    {t('directory.list.addShort')}
+                  </span>
                 </Button>
               </Link>
             </RoleView>
@@ -103,13 +113,19 @@ const DisplayAllStreams = () => {
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
               <BreadcrumbList className="text-xs">
-                <BreadcrumbItem><span>Campus</span></BreadcrumbItem>
-                <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold text-members">Stream</BreadcrumbPage>
+                  <span>{t('shared.churchLevel.Campus')}</span>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
-                <BreadcrumbItem><span>Council</span></BreadcrumbItem>
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-semibold text-members">
+                    {t('shared.churchLevel.Stream')}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Council')}</span>
+                </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
@@ -120,10 +136,12 @@ const DisplayAllStreams = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search streams"
+                  placeholder={t('directory.list.searchStreams')}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search streams"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Stream',
+                  })}
                 />
               </div>
             </div>
@@ -135,14 +153,21 @@ const DisplayAllStreams = () => {
             <section className="order-2 space-y-3 lg:order-1">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  {term ? 'Streams' : 'All Streams'}
+                  {term
+                    ? t('shared.churchLevelPlural.Stream')
+                    : t('directory.list.allOf', {
+                        levelPlural: 'Stream',
+                      })}
                 </h2>
                 <span
                   aria-live="polite"
                   className="text-xs tabular-nums text-muted-foreground"
                 >
                   {term
-                    ? `${filtered.length} of ${streams.length}`
+                    ? t('directory.list.countOfTotal', {
+                        shown: filtered.length,
+                        total: streams.length,
+                      })
                     : `${streams.length}`}
                 </span>
               </div>
@@ -152,12 +177,19 @@ const DisplayAllStreams = () => {
                   <CardContent className="flex flex-col items-center justify-center gap-2 p-8 text-center">
                     <Waves className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
-                      {term ? `No matches for "${search}"` : 'No streams yet'}
+                      {term
+                        ? t('directory.list.noMatchesFor', { term: search })
+                        : t('directory.list.noneYet', {
+                            levelPlural: 'Stream',
+                          })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {term
-                        ? 'Try a different name or leader.'
-                        : 'This campus has no streams.'}
+                        ? t('directory.list.tryDifferentNameOrLeader')
+                        : t('directory.list.noneUnder', {
+                            parent: 'Campus',
+                            levelPlural: 'Stream',
+                          })}
                     </p>
                   </CardContent>
                 </Card>
@@ -176,7 +208,9 @@ const DisplayAllStreams = () => {
                         key={stream.id}
                         to="/stream/displaydetails"
                         onClick={() => clickCard(stream)}
-                        aria-label={`Open ${stream.name}`}
+                        aria-label={t('directory.list.openChurch', {
+                          name: stream.name,
+                        })}
                         className="group rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
                       >
                         <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -197,13 +231,13 @@ const DisplayAllStreams = () => {
                             <p className="truncate text-base font-semibold text-foreground">
                               {stream.name}{' '}
                               <span className="text-xs font-normal text-muted-foreground">
-                                Stream
+                                {t('shared.churchLevel.Stream')}
                               </span>
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
                               {stream.leader
                                 ? `${stream.leader.firstName} ${stream.leader.lastName}`
-                                : 'No leader'}
+                                : t('directory.list.noLeader')}
                             </p>
                             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                               <Badge
@@ -239,7 +273,7 @@ const DisplayAllStreams = () => {
               <Card>
                 <CardContent className="p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Campus
+                    {t('shared.churchLevel.Campus')}
                   </p>
                   <Link
                     to="/campus/displaydetails"
@@ -278,7 +312,7 @@ const DisplayAllStreams = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Lead Pastor
+                              {t('directory.leaderTitle.leadPastor')}
                             </p>
                             <p className="truncate text-sm font-semibold text-foreground">
                               {displayName || 'Unnamed Pastor'}
@@ -315,10 +349,15 @@ const DisplayAllStreams = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Admin
+                              {t('directory.displayChurchDetails.admin')}
                             </p>
                             <p className="truncate text-sm font-semibold text-foreground">
-                              {displayName || 'Unnamed Admin'}
+                              {displayName ||
+                                t('directory.list.unnamed', {
+                                  role: t(
+                                    'directory.displayChurchDetails.admin'
+                                  ),
+                                })}
                             </p>
                           </div>
                         </Link>
@@ -329,16 +368,19 @@ const DisplayAllStreams = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <StatCard
-                  label="Streams"
+                  label={t('shared.churchLevelPlural.Stream')}
                   value={formatCount(streams.length)}
                   icon={Waves}
                   accent="members"
                   compact
                   loading={loading}
                 />
-                <Link to="/campus/members" className="block hover:opacity-80 active:opacity-70 transition-opacity rounded-xl">
+                <Link
+                  to="/campus/members"
+                  className="block hover:opacity-80 active:opacity-70 transition-opacity rounded-xl"
+                >
                   <StatCard
-                    label="Members"
+                    label={t('shared.churchesSummary.members')}
                     value={formatCount(campus?.memberCount ?? 0)}
                     icon={Users}
                     accent="members"
@@ -353,10 +395,12 @@ const DisplayAllStreams = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search streams"
+                  placeholder={t('directory.list.searchStreams')}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search streams"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Stream',
+                  })}
                 />
               </div>
             </aside>

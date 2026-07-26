@@ -67,12 +67,119 @@
     },
     "actions": {
       "cancel": "Abbrechen",
-      "okay": "Okay"
+      "okay": "Okay",
+      "edit": "Bearbeiten",
+      "close": "Schließen",
+      "copy": "Kopieren",
+      "copied": "Kopiert",
+      "goToDashboard": "Zurück zum Dashboard"
     },
     "loading": "Wird geladen…",
     "form": {
       "submit": "Senden",
-      "submitting": "Wird gesendet…"
+      "submitting": "Wird gesendet…",
+      "confirmYes": "Ja, ich bin sicher"
+    },
+    "week": {
+      "label": "Woche {{number}}",
+      "of": "Woche vom {{range}}",
+      "withRange": "Woche {{week}} · {{range}}"
+    },
+    "weekSelector": {
+      "previousWeek": "Vorherige Woche",
+      "nextWeek": "Nächste Woche",
+      "weekAndYear": "Woche {{week}}, {{year}}",
+      "resetToCurrent": "Zurück zur aktuellen Woche"
+    },
+    "arrivalDateSelector": {
+      "bussingDays": "Bus-Tage diese Woche",
+      "noBussings": "Keine Busfahrten diese Woche",
+      "jumpToNearest": "Zum nächstgelegenen springen",
+      "resetToToday": "Zurück zu heute"
+    },
+    "last3Weeks": {
+      "title": "Formulare",
+      "noService": "Kein Gottesdienst",
+      "incomeForm": "Einnahmenformular",
+      "filled": "Ausgefüllt",
+      "notFilled": "Nicht ausgefüllt",
+      "bankingSlip": "Einzahlungsbeleg",
+      "submitted": "Eingereicht",
+      "notSubmitted": "Nicht eingereicht"
+    },
+    "churchesSummary": {
+      "members": "Mitglieder"
+    },
+    "churchSearch": {
+      "placeholder": "Gemeinden oder Leiter suchen",
+      "ariaLabel": "Gemeindesuche"
+    },
+    "imageUpload": {
+      "uploading": "Wird hochgeladen…",
+      "dropToUpload": "Zum Hochladen ablegen",
+      "previewAlt": "Upload-Vorschau",
+      "changePhoto": "Foto ändern",
+      "prompt": "Ziehen und ablegen oder zum Hochladen tippen",
+      "formats": "JPG, PNG oder WebP"
+    },
+    "authButton": {
+      "logIn": "Anmelden",
+      "logInAria": "Anmelden",
+      "loggingIn": "Bitte warten, Sie werden angemeldet",
+      "logOut": "Abmelden",
+      "logOutAria": "Abmelden",
+      "confirmTitle": "Abmeldung bestätigen",
+      "confirmBody": "Möchten Sie sich wirklich abmelden?"
+    },
+    "errorScreen": {
+      "title": "Diese Seite konnte nicht geladen werden",
+      "subtitle": "{{name}} — bitte erneut versuchen. Wenn das Problem bestehen bleibt, senden Sie einen Fehlerbericht, damit das Team es untersuchen kann.",
+      "errorFallbackName": "Fehler",
+      "headlineFallback": "Etwas ist schiefgelaufen",
+      "unexpected": "Unerwarteter Fehler",
+      "showDetails": "Details anzeigen",
+      "sendCrashReport": "Fehlerbericht senden",
+      "reloadPage": "Seite neu laden",
+      "tip": "Tipp: Tippen Sie auf <1>Details anzeigen</1> und machen Sie einen Screenshot, bevor Sie den Support kontaktieren.",
+      "detailsTitle": "Fehlerdetails",
+      "detailsDescription": "Rohdaten — teilen Sie diese mit dem Support-Team.",
+      "copyUnavailable": "Kopieren nicht verfügbar — halten Sie die Daten gedrückt, um sie auszuwählen",
+      "copyFailed": "Fehlerdetails konnten nicht kopiert werden",
+      "networkRequestFailed": "Netzwerkanfrage fehlgeschlagen",
+      "pathMeta": "Pfad: {{path}}",
+      "locationMeta": "Position: Zeile {{line}}, Spalte {{column}}"
+    },
+    "pushSoftAsk": {
+      "regionLabel": "Benachrichtigungen aktivieren",
+      "title": "Benachrichtigungen einschalten",
+      "body": "Erhalten Sie Erinnerungen, um den Gottesdienst zu erfassen, Opfergaben einzuzahlen und für die Ankunftszeiten der Sonntagsbusse.",
+      "dismiss": "Ausblenden",
+      "notNow": "Jetzt nicht",
+      "enable": "Aktivieren",
+      "enabling": "Wird aktiviert…",
+      "enabledToast": "Benachrichtigungen aktiviert.",
+      "blockedToast": "Benachrichtigungen sind blockiert. Sie können sie in Ihren Browsereinstellungen aktivieren.",
+      "dismissedToast": "Kein Problem — tippen Sie auf Aktivieren, wann immer Sie bereit sind.",
+      "failedToast": "Benachrichtigungen konnten nicht aktiviert werden. Bitte später erneut versuchen."
+    },
+    "unauthorised": {
+      "title": "Sie haben keinen Zugriff auf diese Seite",
+      "body": "Ihr Konto hat nicht die nötigen Berechtigungen, um diese Seite zu sehen. Wenn Sie glauben, dass dies ein Fehler ist, wenden Sie sich an Ihren Gemeinde-Admin."
+    },
+    "pageNotFound": {
+      "heading": "Seite nicht gefunden",
+      "body": "Die gesuchte Seite existiert nicht. Möglicherweise wird sie gewartet, oder es liegt ein anderes Problem vor."
+    },
+    "sabbath": {
+      "title": "Heute ist der <1>Sabbat!</1>",
+      "reference": "2. Mose 20,8-10",
+      "verse": "Gedenke des Sabbattages, dass du ihn heiligest. Sechs Tage sollst du arbeiten und alle deine Werke tun. Aber am siebenten Tage ist der Sabbat des HERRN, deines Gottes:",
+      "verseEmphasis": "da sollst du kein Werk tun...",
+      "quote": "Nachdem Sie wiedergeboren sind, müssen Sie Ihren Respekt vor Gott zeigen, indem Sie den Sabbattag ehren."
+    },
+    "reconciliation": {
+      "title": "Abstimmung",
+      "body": "Die Abstimmungsfunktion wird noch entwickelt. Bald gibt es Neuigkeiten!"
     }
   },
   "accounts": {
@@ -884,7 +991,8 @@
       "governorshipLeader": "Gouvernorat-Leiter",
       "oversightLeader": "Aufsichts-Leiter",
       "streamLeader": "Zweig-Leiter",
-      "leadPastor": "Leitender Pastor"
+      "leadPastor": "Leitender Pastor",
+      "overseer": "Aufseher"
     },
     "churchLevelMembers": {
       "notAvailablePrefix": "Die Mitgliederansicht ist auf der Ebene",
@@ -971,6 +1079,51 @@
       "detailsUpdated": "Details von {{subject}} wurden aktualisiert",
       "bussingDetailsUpdated": "Bussing-Details von {{name}} wurden aktualisiert",
       "busPaymentDetailsUpdated": "Buszahlungsdetails von {{name}} wurden aktualisiert"
+    },
+    "list": {
+      "eyebrow": "Verzeichnis",
+      "add": "{{level}} hinzufügen",
+      "addShort": "Hinzufügen",
+      "allOf": "Alle {{levelPlural}}",
+      "countOfTotal": "{{shown}} von {{total}}",
+      "openChurch": "{{name}} öffnen",
+      "noLeader": "Kein Leiter",
+      "noGovernor": "Kein Gouverneur",
+      "vacation": "Urlaub",
+      "graduated": "Graduiert",
+      "summary": "{{level}}-Übersicht",
+      "inParent": "{{levelPlural}} in {{parent}}",
+      "backToDetails": "Zurück zu den {{level}}-Details",
+      "backTo": "Zurück zu {{level}}",
+      "adminPrefix": "Admin :",
+      "searchAria": "{{levelPlural}} suchen",
+      "searchBacentaOrLeader": "Bacenta oder Leiter suchen",
+      "searchBacentaLeaderGovernorship": "Bacenta, Leiter oder Gouvernement suchen",
+      "searchCouncils": "Räte suchen",
+      "searchCouncilsOrStreams": "Räte oder Streams suchen",
+      "searchCampuses": "Campus suchen",
+      "searchStreams": "Streams suchen",
+      "searchGovernorships": "Gouvernements suchen",
+      "searchGovernorshipsOrCouncils": "Gouvernements oder Räte suchen",
+      "searchGovernorshipsOrBacentas": "Gouvernements oder Bacentas suchen",
+      "searchGovernorshipsCouncilsStreams": "Gouvernements, Räte oder Streams suchen",
+      "searchGovernorshipsAndBacentas": "Gouvernements und Bacentas suchen",
+      "noneFound": "Keine {{levelPlural}} gefunden",
+      "noneYet": "Noch keine {{levelPlural}}",
+      "noneMatchSearch": "Keine {{levelPlural}} entsprechen Ihrer Suche.",
+      "noneUnderYet": "Dieses {{parent}} hat noch keine {{levelPlural}}.",
+      "noneUnder": "Dieses {{parent}} hat keine {{levelPlural}}.",
+      "noneInYet": "Noch keine {{levelPlural}} in diesem {{parent}}.",
+      "tryDifferentSearch": "Versuchen Sie einen anderen Suchbegriff.",
+      "tryDifferentNameOrLeader": "Versuchen Sie einen anderen Namen oder Leiter.",
+      "tryDifferentNameLeaderStream": "Versuchen Sie einen anderen Namen, Leiter oder Stream.",
+      "tryDifferentNameLeaderCouncil": "Versuchen Sie einen anderen Namen, Leiter oder Rat.",
+      "tryDifferentNameLeaderCouncilStream": "Versuchen Sie einen anderen Namen, Leiter, Rat oder Stream.",
+      "tryDifferentGovernorshipOrBacenta": "Versuchen Sie einen anderen Gouvernements- oder Bacenta-Namen.",
+      "noGovernorshipNameMatch": "Kein Gouvernements-Name oder Leiter stimmt überein.",
+      "noGovernorships": "Keine Gouvernements",
+      "noMatchesFor": "Keine Treffer für „{{term}}“",
+      "unnamed": "Unbenannter {{role}}"
     }
   },
   "dashboard": {
@@ -2120,6 +2273,7 @@
     "projectorOpenTitle": "Projektorfenster geöffnet — klicken zum Fokussieren",
     "castTitle": "Zweites Fenster für die Projektion öffnen",
     "projector": {
+      "label": "Projektor",
       "titleWithName": "Projektor — {{name}}",
       "titleDefault": "Shepherding-Kontrolle — Projektor",
       "waiting": "Warte auf den Controller — ziehen Sie dieses Fenster auf Ihren Projektor oder externen Monitor."

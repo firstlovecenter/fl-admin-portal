@@ -67,12 +67,119 @@
     },
     "actions": {
       "cancel": "Cancelar",
-      "okay": "Ok"
+      "okay": "Ok",
+      "edit": "Editar",
+      "close": "Fechar",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "goToDashboard": "Voltar ao painel"
     },
     "loading": "A carregar…",
     "form": {
       "submit": "Enviar",
-      "submitting": "A enviar…"
+      "submitting": "A enviar…",
+      "confirmYes": "Sim, tenho a certeza"
+    },
+    "week": {
+      "label": "Semana {{number}}",
+      "of": "Semana de {{range}}",
+      "withRange": "Semana {{week}} · {{range}}"
+    },
+    "weekSelector": {
+      "previousWeek": "Semana anterior",
+      "nextWeek": "Semana seguinte",
+      "weekAndYear": "Semana {{week}}, {{year}}",
+      "resetToCurrent": "Voltar à semana atual"
+    },
+    "arrivalDateSelector": {
+      "bussingDays": "Dias de autocarro esta semana",
+      "noBussings": "Sem autocarros esta semana",
+      "jumpToNearest": "Ir para o mais próximo",
+      "resetToToday": "Voltar a hoje"
+    },
+    "last3Weeks": {
+      "title": "Formulários",
+      "noService": "Sem culto",
+      "incomeForm": "Formulário de receitas",
+      "filled": "Preenchido",
+      "notFilled": "Não preenchido",
+      "bankingSlip": "Comprovativo de depósito",
+      "submitted": "Enviado",
+      "notSubmitted": "Não enviado"
+    },
+    "churchesSummary": {
+      "members": "Membros"
+    },
+    "churchSearch": {
+      "placeholder": "Pesquisar igrejas ou líder",
+      "ariaLabel": "Pesquisa de igrejas"
+    },
+    "imageUpload": {
+      "uploading": "A carregar…",
+      "dropToUpload": "Largue para carregar",
+      "previewAlt": "Pré-visualização do carregamento",
+      "changePhoto": "Mudar foto",
+      "prompt": "Arraste e largue ou toque para carregar",
+      "formats": "JPG, PNG ou WebP"
+    },
+    "authButton": {
+      "logIn": "Iniciar sessão",
+      "logInAria": "Iniciar sessão",
+      "loggingIn": "Aguarde enquanto iniciamos a sua sessão",
+      "logOut": "Terminar sessão",
+      "logOutAria": "Terminar sessão",
+      "confirmTitle": "Confirmar fim de sessão",
+      "confirmBody": "Tem a certeza de que quer terminar a sessão?"
+    },
+    "errorScreen": {
+      "title": "Não foi possível carregar esta página",
+      "subtitle": "{{name}} — tente novamente. Se o problema persistir, envie um relatório de falha para a equipa poder investigar.",
+      "errorFallbackName": "Erro",
+      "headlineFallback": "Algo correu mal",
+      "unexpected": "Erro inesperado",
+      "showDetails": "Ver detalhes",
+      "sendCrashReport": "Enviar relatório de falha",
+      "reloadPage": "Recarregar a página",
+      "tip": "Dica: toque em <1>Ver detalhes</1> e tire uma captura de ecrã quando contactar o suporte.",
+      "detailsTitle": "Detalhes do erro",
+      "detailsDescription": "Dados brutos — partilhe-os com a equipa de suporte.",
+      "copyUnavailable": "Cópia indisponível — mantenha premidos os dados para os selecionar",
+      "copyFailed": "Não foi possível copiar os detalhes do erro",
+      "networkRequestFailed": "O pedido de rede falhou",
+      "pathMeta": "Caminho: {{path}}",
+      "locationMeta": "Localização: linha {{line}}, coluna {{column}}"
+    },
+    "pushSoftAsk": {
+      "regionLabel": "Ativar notificações",
+      "title": "Ativar notificações",
+      "body": "Receba lembretes para registar o culto, depositar as ofertas e para as horas de chegada dos autocarros de domingo.",
+      "dismiss": "Dispensar",
+      "notNow": "Agora não",
+      "enable": "Ativar",
+      "enabling": "A ativar…",
+      "enabledToast": "Notificações ativadas.",
+      "blockedToast": "As notificações estão bloqueadas. Pode ativá-las nas definições do seu navegador.",
+      "dismissedToast": "Sem problema — toque em Ativar quando estiver pronto.",
+      "failedToast": "Não foi possível ativar as notificações. Tente novamente mais tarde."
+    },
+    "unauthorised": {
+      "title": "Não tem acesso a esta página",
+      "body": "A sua conta não tem as permissões necessárias para ver esta página. Se acha que isto é um engano, contacte o administrador da sua igreja."
+    },
+    "pageNotFound": {
+      "heading": "Página não encontrada",
+      "body": "A página que procura não existe. Pode estar em manutenção ou haver outro problema."
+    },
+    "sabbath": {
+      "title": "Hoje é o <1>Dia de Repouso!</1>",
+      "reference": "Êxodo 20:8-10",
+      "verse": "Lembra-te do dia de sábado, para o santificar. Seis dias trabalharás e farás toda a tua obra. Mas o sétimo dia é o sábado do Senhor teu Deus:",
+      "verseEmphasis": "não farás nenhuma obra...",
+      "quote": "Depois de nascer de novo, deve mostrar o seu respeito por Deus honrando o dia de sábado."
+    },
+    "reconciliation": {
+      "title": "Reconciliação",
+      "body": "A funcionalidade de reconciliação ainda está a ser desenvolvida. Novidades em breve!"
     }
   },
   "accounts": {
@@ -884,7 +991,8 @@
       "governorshipLeader": "Líder de Governadoria",
       "oversightLeader": "Líder de Supervisão",
       "streamLeader": "Líder de Fluxo",
-      "leadPastor": "Pastor principal"
+      "leadPastor": "Pastor principal",
+      "overseer": "Supervisor"
     },
     "churchLevelMembers": {
       "notAvailablePrefix": "A navegação de membros não está disponível no nível",
@@ -971,6 +1079,51 @@
       "detailsUpdated": "Os detalhes de {{subject}} foram atualizados",
       "bussingDetailsUpdated": "Os detalhes de bussing de {{name}} foram atualizados",
       "busPaymentDetailsUpdated": "Os detalhes de pagamento de autocarro de {{name}} foram atualizados"
+    },
+    "list": {
+      "eyebrow": "Diretório",
+      "add": "Adicionar {{level}}",
+      "addShort": "Adicionar",
+      "allOf": "Todos os {{levelPlural}}",
+      "countOfTotal": "{{shown}} de {{total}}",
+      "openChurch": "Abrir {{name}}",
+      "noLeader": "Sem líder",
+      "noGovernor": "Sem governador",
+      "vacation": "Férias",
+      "graduated": "Graduada",
+      "summary": "Resumo de {{level}}",
+      "inParent": "{{levelPlural}} em {{parent}}",
+      "backToDetails": "Voltar aos detalhes de {{level}}",
+      "backTo": "Voltar a {{level}}",
+      "adminPrefix": "Admin :",
+      "searchAria": "Pesquisar {{levelPlural}}",
+      "searchBacentaOrLeader": "Pesquisar bacenta ou líder",
+      "searchBacentaLeaderGovernorship": "Pesquisar bacenta, líder ou governação",
+      "searchCouncils": "Pesquisar concelhos",
+      "searchCouncilsOrStreams": "Pesquisar concelhos ou correntes",
+      "searchCampuses": "Pesquisar campus",
+      "searchStreams": "Pesquisar correntes",
+      "searchGovernorships": "Pesquisar governações",
+      "searchGovernorshipsOrCouncils": "Pesquisar governações ou concelhos",
+      "searchGovernorshipsOrBacentas": "Pesquisar governações ou bacentas",
+      "searchGovernorshipsCouncilsStreams": "Pesquisar governações, concelhos ou correntes",
+      "searchGovernorshipsAndBacentas": "Pesquisar governações e bacentas",
+      "noneFound": "Nenhum {{levelPlural}} encontrado",
+      "noneYet": "Ainda não há {{levelPlural}}",
+      "noneMatchSearch": "Nenhum {{levelPlural}} corresponde à sua pesquisa.",
+      "noneUnderYet": "Este {{parent}} ainda não tem {{levelPlural}}.",
+      "noneUnder": "Este {{parent}} não tem {{levelPlural}}.",
+      "noneInYet": "Ainda não há {{levelPlural}} neste {{parent}}.",
+      "tryDifferentSearch": "Tente outro termo de pesquisa.",
+      "tryDifferentNameOrLeader": "Tente outro nome ou líder.",
+      "tryDifferentNameLeaderStream": "Tente outro nome, líder ou corrente.",
+      "tryDifferentNameLeaderCouncil": "Tente outro nome, líder ou concelho.",
+      "tryDifferentNameLeaderCouncilStream": "Tente outro nome, líder, concelho ou corrente.",
+      "tryDifferentGovernorshipOrBacenta": "Tente outro nome de governação ou bacenta.",
+      "noGovernorshipNameMatch": "Nenhum nome de governação ou líder corresponde.",
+      "noGovernorships": "Sem governações",
+      "noMatchesFor": "Sem resultados para «{{term}}»",
+      "unnamed": "{{role}} sem nome"
     }
   },
   "dashboard": {
@@ -2120,6 +2273,7 @@
     "projectorOpenTitle": "Janela do projetor aberta — clique para focar",
     "castTitle": "Abrir uma segunda janela para projeção",
     "projector": {
+      "label": "Projetor",
       "titleWithName": "Projetor — {{name}}",
       "titleDefault": "Controle de pastoreio — Projetor",
       "waiting": "Aguardando o controlador — arraste esta janela para o projetor ou monitor externo."

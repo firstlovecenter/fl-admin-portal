@@ -246,7 +246,11 @@ const BussingSubChurchesReportPage = () => {
     return `${safeChurchName ? `${safeChurchName} ` : ''}${
       scope ?? ''
     } Bussing by ${appliedTarget ?? 'Sub-Church'} - ${generatedOn}.csv`
-  }, [churchName, scope, appliedTarget])
+    // `t` is in the deps purely as the language signal: getHumanReadableDate
+    // reads the active locale off the i18next singleton, which useMemo cannot
+    // see on its own — without it the filename keeps the previous locale's
+    // month name after a mid-session language switch.
+  }, [churchName, scope, appliedTarget, t])
 
   const targetLabel = appliedTarget
     ? levelLabel(appliedTarget, t)

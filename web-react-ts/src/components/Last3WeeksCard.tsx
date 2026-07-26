@@ -1,4 +1,5 @@
 import { getWeekNumber } from 'global-utils'
+import { useTranslation } from 'react-i18next'
 import { cn } from 'components/lib/utils'
 import { VacationStatusOptions } from 'global-types'
 
@@ -34,31 +35,45 @@ export const shouldFill = ({
 }
 
 const Last3WeeksCard = ({ last3Weeks }: Last3WeeksCardProps) => {
+  const { t } = useTranslation()
+
   if (last3Weeks.every((week) => week.banked === 'No Service')) return <></>
 
   return (
     <div className="mt-4">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-        Forms
+        {t('shared.last3Weeks.title')}
       </h3>
       <div className="space-y-3">
         {last3Weeks.map((week, i) => {
           if (week.banked === 'No Service') {
             return (
-              <div key={i} className="rounded-lg border border-border bg-card p-3">
+              <div
+                key={i}
+                className="rounded-lg border border-border bg-card p-3"
+              >
                 <p className="text-xs text-muted-foreground mb-1">
-                  Week {week.number}
+                  {t('shared.week.label', { number: week.number })}
                 </p>
-                <p className="text-sm font-medium text-foreground">No Service</p>
+                <p className="text-sm font-medium text-foreground">
+                  {t('shared.last3Weeks.noService')}
+                </p>
               </div>
             )
           }
 
           return (
-            <div key={i} className="rounded-lg border border-border bg-card p-3 space-y-1.5">
-              <p className="text-xs text-muted-foreground">Week {week.number}</p>
+            <div
+              key={i}
+              className="rounded-lg border border-border bg-card p-3 space-y-1.5"
+            >
+              <p className="text-xs text-muted-foreground">
+                {t('shared.week.label', { number: week.number })}
+              </p>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground">Income Form</span>
+                <span className="text-sm text-foreground">
+                  {t('shared.last3Weeks.incomeForm')}
+                </span>
                 <span
                   className={cn(
                     'text-sm font-medium',
@@ -67,14 +82,18 @@ const Last3WeeksCard = ({ last3Weeks }: Last3WeeksCardProps) => {
                       : 'text-destructive'
                   )}
                 >
-                  {week.filled ? 'Filled' : 'Not Filled'}
+                  {week.filled
+                    ? t('shared.last3Weeks.filled')
+                    : t('shared.last3Weeks.notFilled')}
                 </span>
               </div>
               {week.filled &&
                 (typeof week.banked === 'boolean' ||
                   week.banked === 'No Service') && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">Banking Slip</span>
+                    <span className="text-sm text-foreground">
+                      {t('shared.last3Weeks.bankingSlip')}
+                    </span>
                     <span
                       className={cn(
                         'text-sm font-medium',
@@ -83,7 +102,9 @@ const Last3WeeksCard = ({ last3Weeks }: Last3WeeksCardProps) => {
                           : 'text-destructive'
                       )}
                     >
-                      {week.banked ? 'Submitted' : 'Not Submitted'}
+                      {week.banked
+                        ? t('shared.last3Weeks.submitted')
+                        : t('shared.last3Weeks.notSubmitted')}
                     </span>
                   </div>
                 )}

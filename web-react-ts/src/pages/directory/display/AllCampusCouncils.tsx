@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { permitAdmin } from 'permission-utils'
 import { ChangeEvent, useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { GET_CAMPUS_STREAMS_WITH_COUNCILS } from './ReadQueries'
 
@@ -80,6 +81,7 @@ const CouncilCard = ({
   council: CouncilRow
   onClick: () => void
 }) => {
+  const { t } = useTranslation()
   const initials =
     `${council.leader?.firstName?.[0] ?? ''}${
       council.leader?.lastName?.[0] ?? ''
@@ -92,13 +94,13 @@ const CouncilCard = ({
     [council.leader?.firstName, council.leader?.lastName]
       .filter(Boolean)
       .join(' ') ||
-    'No leader'
+    t('directory.list.noLeader')
 
   return (
     <Link
       to="/council/displaydetails"
       onClick={onClick}
-      aria-label={`Open ${council.name}`}
+      aria-label={t('directory.list.openChurch', { name: council.name })}
       className="group rounded-xl border border-border bg-background transition-colors hover:bg-muted/40 active:bg-muted"
     >
       <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -112,7 +114,7 @@ const CouncilCard = ({
           <p className="truncate text-base font-semibold text-foreground">
             {council.name}{' '}
             <span className="text-xs font-normal text-muted-foreground">
-              Council
+              {t('shared.churchLevel.Council')}
             </span>
           </p>
           <p className="truncate text-xs text-muted-foreground">{leaderName}</p>
@@ -148,13 +150,14 @@ const StreamSection = ({
   onOpenCouncil: (c: CouncilRow) => void
   onOpenStream: (s: StreamGroup) => void
 }) => {
+  const { t } = useTranslation()
   const streamLeader = stream.leader
   const streamLeaderName =
     streamLeader?.fullName ||
     [streamLeader?.firstName, streamLeader?.lastName]
       .filter(Boolean)
       .join(' ') ||
-    'No leader'
+    t('directory.list.noLeader')
   const streamLeaderInitials =
     `${streamLeader?.firstName?.[0] ?? ''}${
       streamLeader?.lastName?.[0] ?? ''
@@ -185,7 +188,7 @@ const StreamSection = ({
               <h2 className="truncate text-base font-semibold text-foreground">
                 {stream.name}{' '}
                 <span className="text-xs font-normal text-muted-foreground">
-                  Stream
+                  {t('shared.churchLevel.Stream')}
                 </span>
               </h2>
               <p className="truncate text-xs text-muted-foreground">
@@ -214,8 +217,13 @@ const StreamSection = ({
         ) : (
           <p className="mt-4 text-sm text-muted-foreground">
             {term
-              ? 'No councils match your search.'
-              : 'This stream has no councils yet.'}
+              ? t('directory.list.noneMatchSearch', {
+                  levelPlural: 'Council',
+                })
+              : t('directory.list.noneUnderYet', {
+                  parent: 'Stream',
+                  levelPlural: 'Council',
+                })}
           </p>
         )}
       </CardContent>
@@ -247,6 +255,7 @@ const LoadingSkeleton = () => (
 )
 
 const AllCampusCouncils = () => {
+  const { t } = useTranslation()
   const { clickCard, campusId } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
 
@@ -293,19 +302,27 @@ const AllCampusCouncils = () => {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('directory.list.eyebrow')}
               </p>
               <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {campus?.name ? `${campus.name} ` : ''}
-                <span className="text-members">Councils</span>
+                <span className="text-members">
+                  {t('shared.churchLevelPlural.Council')}
+                </span>
               </h1>
             </div>
             <RoleView roles={permitAdmin('Stream')} directoryLock>
               <Link to="/council/addcouncil" className="shrink-0">
                 <Button size="sm" className="h-11 gap-2">
                   <Plus className="size-4" />
-                  <span className="hidden sm:inline">Add Council</span>
-                  <span className="sm:hidden">Add</span>
+                  <span className="hidden sm:inline">
+                    {t('directory.list.add', {
+                      level: 'Council',
+                    })}
+                  </span>
+                  <span className="sm:hidden">
+                    {t('directory.list.addShort')}
+                  </span>
                 </Button>
               </Link>
             </RoleView>
@@ -313,15 +330,23 @@ const AllCampusCouncils = () => {
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
               <BreadcrumbList className="text-xs">
-                <BreadcrumbItem><span>Campus</span></BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem><span>Stream</span></BreadcrumbItem>
-                <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold text-members">Council</BreadcrumbPage>
+                  <span>{t('shared.churchLevel.Campus')}</span>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
-                <BreadcrumbItem><span>Governorship</span></BreadcrumbItem>
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Stream')}</span>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-semibold text-members">
+                    {t('shared.churchLevel.Council')}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Governorship')}</span>
+                </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
@@ -332,10 +357,12 @@ const AllCampusCouncils = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search councils or streams"
+                  placeholder={t('directory.list.searchCouncilsOrStreams')}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search councils"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Council',
+                  })}
                 />
               </div>
             </div>
@@ -349,7 +376,7 @@ const AllCampusCouncils = () => {
               <Card>
                 <CardContent className="p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Campus
+                    {t('shared.churchLevel.Campus')}
                   </p>
                   <Link
                     to="/campus/displaydetails"
@@ -358,76 +385,99 @@ const AllCampusCouncils = () => {
                   >
                     {campus?.name}
                   </Link>
-                  {campus?.leader && (() => {
-                    const leader: CampusLeader = campus.leader
-                    const displayName =
-                      leader.fullName ||
-                      [leader.firstName, leader.lastName].filter(Boolean).join(' ')
-                    const initials =
-                      `${leader.firstName?.[0] ?? ''}${leader.lastName?.[0] ?? ''}` ||
-                      campus?.name?.charAt(0) ||
-                      '?'
-                    return (
-                      <Link
-                        to="/member/displaydetails"
-                        onClick={() => clickCard({ ...leader, __typename: 'Member' })}
-                        className="-mx-2 mt-3 flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50 active:bg-muted"
-                      >
-                        <Avatar className="size-10 shrink-0">
-                          <AvatarImage src={leader.pictureUrl} alt={displayName || ''} />
-                          <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                            Lead Pastor
-                          </p>
-                          <p className="truncate text-sm font-semibold text-foreground">
-                            {displayName || 'Unnamed Pastor'}
-                          </p>
-                        </div>
-                      </Link>
-                    )
-                  })()}
-                  {campus?.admin && (() => {
-                    const admin: CampusLeader = campus.admin
-                    const displayName = [admin.firstName, admin.lastName]
-                      .filter(Boolean)
-                      .join(' ')
-                    const initials =
-                      `${admin.firstName?.[0] ?? ''}${admin.lastName?.[0] ?? ''}` ||
-                      campus?.name?.charAt(0) ||
-                      '?'
-                    return (
-                      <Link
-                        to="/member/displaydetails"
-                        onClick={() => clickCard({ ...admin, __typename: 'Member' })}
-                        className="-mx-2 mt-1 flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50 active:bg-muted"
-                      >
-                        <Avatar className="size-10 shrink-0">
-                          <AvatarImage src={admin.pictureUrl} alt={displayName || ''} />
-                          <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                            Admin
-                          </p>
-                          <p className="truncate text-sm font-semibold text-foreground">
-                            {displayName || 'Unnamed Admin'}
-                          </p>
-                        </div>
-                      </Link>
-                    )
-                  })()}
+                  {campus?.leader &&
+                    (() => {
+                      const leader: CampusLeader = campus.leader
+                      const displayName =
+                        leader.fullName ||
+                        [leader.firstName, leader.lastName]
+                          .filter(Boolean)
+                          .join(' ')
+                      const initials =
+                        `${leader.firstName?.[0] ?? ''}${
+                          leader.lastName?.[0] ?? ''
+                        }` ||
+                        campus?.name?.charAt(0) ||
+                        '?'
+                      return (
+                        <Link
+                          to="/member/displaydetails"
+                          onClick={() =>
+                            clickCard({ ...leader, __typename: 'Member' })
+                          }
+                          className="-mx-2 mt-3 flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50 active:bg-muted"
+                        >
+                          <Avatar className="size-10 shrink-0">
+                            <AvatarImage
+                              src={leader.pictureUrl}
+                              alt={displayName || ''}
+                            />
+                            <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                              {t('directory.leaderTitle.leadPastor')}
+                            </p>
+                            <p className="truncate text-sm font-semibold text-foreground">
+                              {displayName || 'Unnamed Pastor'}
+                            </p>
+                          </div>
+                        </Link>
+                      )
+                    })()}
+                  {campus?.admin &&
+                    (() => {
+                      const admin: CampusLeader = campus.admin
+                      const displayName = [admin.firstName, admin.lastName]
+                        .filter(Boolean)
+                        .join(' ')
+                      const initials =
+                        `${admin.firstName?.[0] ?? ''}${
+                          admin.lastName?.[0] ?? ''
+                        }` ||
+                        campus?.name?.charAt(0) ||
+                        '?'
+                      return (
+                        <Link
+                          to="/member/displaydetails"
+                          onClick={() =>
+                            clickCard({ ...admin, __typename: 'Member' })
+                          }
+                          className="-mx-2 mt-1 flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50 active:bg-muted"
+                        >
+                          <Avatar className="size-10 shrink-0">
+                            <AvatarImage
+                              src={admin.pictureUrl}
+                              alt={displayName || ''}
+                            />
+                            <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                              {t('directory.displayChurchDetails.admin')}
+                            </p>
+                            <p className="truncate text-sm font-semibold text-foreground">
+                              {displayName ||
+                                t('directory.list.unnamed', {
+                                  role: t(
+                                    'directory.displayChurchDetails.admin'
+                                  ),
+                                })}
+                            </p>
+                          </div>
+                        </Link>
+                      )
+                    })()}
                 </CardContent>
               </Card>
 
               <div className="grid grid-cols-2 gap-3">
                 <StatCard
-                  label="Councils"
+                  label={t('shared.churchLevelPlural.Council')}
                   value={formatCount(totalCouncils)}
                   icon={Layers}
                   accent="members"
@@ -435,7 +485,7 @@ const AllCampusCouncils = () => {
                   loading={loading}
                 />
                 <StatCard
-                  label="Streams"
+                  label={t('shared.churchLevelPlural.Stream')}
                   value={formatCount(totalStreams)}
                   icon={Waves}
                   accent="members"
@@ -449,10 +499,12 @@ const AllCampusCouncils = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search councils or streams"
+                  placeholder={t('directory.list.searchCouncilsOrStreams')}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search councils"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Council',
+                  })}
                 />
               </div>
             </aside>
@@ -471,7 +523,7 @@ const AllCampusCouncils = () => {
                     </p>
                     {totalCouncils > 0 && (
                       <p className="text-xs text-muted-foreground">
-                        Try a different name, leader, or stream.
+                        {t('directory.list.tryDifferentNameLeaderStream')}
                       </p>
                     )}
                   </CardContent>

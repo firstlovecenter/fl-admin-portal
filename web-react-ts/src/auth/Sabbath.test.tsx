@@ -25,6 +25,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import React from 'react'
 import { render, screen, cleanup } from '@testing-library/react'
+// Sabbath renders through `useTranslation` now, so the real i18next instance
+// has to be registered or every string comes back as its raw key. The English
+// assertions below are unchanged — 'en' is the default language.
+import 'lib/i18n'
 import Sabbath from './Sabbath'
 import SabbathGate from './SabbathGate'
 

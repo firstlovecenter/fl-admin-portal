@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Formik, Form, FormikHelpers } from 'formik'
+import { useTranslation } from 'react-i18next'
 import { Church, ChurchLevel, HigherChurch } from 'global-types'
 import Input from './formik/Input'
 import ChurchList from './DisplayChurchList'
@@ -12,6 +13,7 @@ type ChurchSearchProps = {
 
 const ChurchSearch = (props: ChurchSearchProps) => {
   const churchDataLoaded = props.data
+  const { t } = useTranslation()
   const [churchData, setChurchData] = useState<Church[]>([])
 
   useEffect(() => {
@@ -54,8 +56,8 @@ const ChurchSearch = (props: ChurchSearchProps) => {
               <Input
                 className="form-control church-search search-center"
                 name="churchSearch"
-                placeholder="Search Churches or Leader"
-                aria-describedby="Church Search"
+                placeholder={t('shared.churchSearch.placeholder')}
+                aria-label={t('shared.churchSearch.ariaLabel')}
               />
             </Form>
           )}

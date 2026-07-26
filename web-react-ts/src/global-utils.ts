@@ -7,6 +7,7 @@ import {
   Role,
 } from 'global-types'
 import { GraphTypes } from 'pages/services/graphs/graphs-utils'
+import { currentIntlLocale } from 'lib/intl-locale'
 
 //Global Constants
 export const PHONE_NUM_REGEX = /^[+][(]{0,1}[1-9]{1,4}[)]{0,1}[-\s/0-9]*$/
@@ -271,14 +272,14 @@ export const getHumanReadableDate = (
 ): string | undefined => {
   if (!date) return undefined
   if (weekday) {
-    return new Date(date).toLocaleDateString('en-gb', {
+    return new Date(date).toLocaleDateString(currentIntlLocale(), {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       weekday: 'long',
     })
   }
-  return new Date(date).toLocaleDateString('en-gb', {
+  return new Date(date).toLocaleDateString(currentIntlLocale(), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -287,7 +288,7 @@ export const getHumanReadableDate = (
 
 export const getHumanReadableDateTime = (date: string): string | undefined => {
   if (!date) return undefined
-  return new Date(date).toLocaleString('en-gb', {
+  return new Date(date).toLocaleString(currentIntlLocale(), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

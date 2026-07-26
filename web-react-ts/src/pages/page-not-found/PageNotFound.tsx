@@ -2,8 +2,11 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import FourOhFour from 'assets/FourOhFour'
 import { Button } from 'components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 const PageNotFound = () => {
+  const { t } = useTranslation()
+
   return (
     <div className="flex min-h-full flex-1 flex-col items-center justify-center px-4 py-10 text-center">
       <div className="w-32 sm:w-40">
@@ -13,14 +16,13 @@ const PageNotFound = () => {
         404
       </h1>
       <h2 className="mt-2 text-lg font-semibold text-foreground">
-        Page not found
+        {t('shared.pageNotFound.heading')}
       </h2>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        The page you are looking for does not exist. It may be under maintenance,
-        or there may be some other problem.
+        {t('shared.pageNotFound.body')}
       </p>
       <Button asChild className="mt-6">
-        <Link to="/">Go back to the dashboard</Link>
+        <Link to="/">{t('shared.actions.goToDashboard')}</Link>
       </Button>
     </div>
   )

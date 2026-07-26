@@ -269,7 +269,7 @@ const ShepherdingControlSession = () => {
                 <MonitorUp className="size-5" />
               )}
               {projector.isConnected
-                ? t('shepherding.projector')
+                ? t('shepherding.projector.label')
                 : t('shepherding.cast')}
             </Button>
           )}

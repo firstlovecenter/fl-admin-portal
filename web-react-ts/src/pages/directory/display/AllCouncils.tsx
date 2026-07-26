@@ -9,10 +9,18 @@ import { Card, CardContent } from 'components/ui/card'
 import { Input } from 'components/ui/input'
 import { StatCard } from 'components/ui/stat-card'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { Building2, ChevronRight, Layers, Plus, Search, Users } from 'lucide-react'
+import {
+  Building2,
+  ChevronRight,
+  Layers,
+  Plus,
+  Search,
+  Users,
+} from 'lucide-react'
 import { permitAdmin } from 'permission-utils'
 import { GET_STREAM_COUNCILS } from 'queries/ListQueries'
 import { ChangeEvent, useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 type CouncilRow = {
@@ -45,6 +53,7 @@ type StreamLeader = {
 const formatCount = (n: number) => n.toLocaleString('en-GH')
 
 const DisplayAllCouncils = () => {
+  const { t } = useTranslation()
   const { clickCard, streamId } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
 
@@ -81,19 +90,27 @@ const DisplayAllCouncils = () => {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('directory.list.eyebrow')}
               </p>
               <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {stream?.name ? `${stream.name} ` : ''}
-                <span className="text-members">Councils</span>
+                <span className="text-members">
+                  {t('shared.churchLevelPlural.Council')}
+                </span>
               </h1>
             </div>
             <RoleView roles={permitAdmin('Stream')} directoryLock>
               <Link to="/council/addcouncil" className="shrink-0">
                 <Button size="sm" className="h-11 gap-2">
                   <Plus className="size-4" />
-                  <span className="hidden sm:inline">Add Council</span>
-                  <span className="sm:hidden">Add</span>
+                  <span className="hidden sm:inline">
+                    {t('directory.list.add', {
+                      level: 'Council',
+                    })}
+                  </span>
+                  <span className="sm:hidden">
+                    {t('directory.list.addShort')}
+                  </span>
                 </Button>
               </Link>
             </RoleView>
@@ -105,10 +122,12 @@ const DisplayAllCouncils = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search councils"
+                  placeholder={t('directory.list.searchCouncils')}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search councils"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Council',
+                  })}
                 />
               </div>
             </div>
@@ -120,14 +139,21 @@ const DisplayAllCouncils = () => {
             <section className="order-2 space-y-3 lg:order-1">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  {term ? 'Councils' : 'All Councils'}
+                  {term
+                    ? t('shared.churchLevelPlural.Council')
+                    : t('directory.list.allOf', {
+                        levelPlural: 'Council',
+                      })}
                 </h2>
                 <span
                   aria-live="polite"
                   className="text-xs tabular-nums text-muted-foreground"
                 >
                   {term
-                    ? `${filtered.length} of ${councils.length}`
+                    ? t('directory.list.countOfTotal', {
+                        shown: filtered.length,
+                        total: councils.length,
+                      })
                     : `${councils.length}`}
                 </span>
               </div>
@@ -138,13 +164,18 @@ const DisplayAllCouncils = () => {
                     <Layers className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
                       {term
-                        ? `No matches for "${search}"`
-                        : 'No councils yet'}
+                        ? t('directory.list.noMatchesFor', { term: search })
+                        : t('directory.list.noneYet', {
+                            levelPlural: 'Council',
+                          })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {term
-                        ? 'Try a different name or leader.'
-                        : 'This stream has no councils.'}
+                        ? t('directory.list.tryDifferentNameOrLeader')
+                        : t('directory.list.noneUnder', {
+                            parent: 'Stream',
+                            levelPlural: 'Council',
+                          })}
                     </p>
                   </CardContent>
                 </Card>
@@ -163,7 +194,9 @@ const DisplayAllCouncils = () => {
                         key={council.id}
                         to="/council/displaydetails"
                         onClick={() => clickCard(council)}
-                        aria-label={`Open ${council.name}`}
+                        aria-label={t('directory.list.openChurch', {
+                          name: council.name,
+                        })}
                         className="group rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
                       >
                         <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -184,13 +217,13 @@ const DisplayAllCouncils = () => {
                             <p className="truncate text-base font-semibold text-foreground">
                               {council.name}{' '}
                               <span className="text-xs font-normal text-muted-foreground">
-                                Council
+                                {t('shared.churchLevel.Council')}
                               </span>
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
                               {council.leader
                                 ? `${council.leader.firstName} ${council.leader.lastName}`
-                                : 'No leader'}
+                                : t('directory.list.noLeader')}
                             </p>
                             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                               <Badge
@@ -226,7 +259,7 @@ const DisplayAllCouncils = () => {
               <Card>
                 <CardContent className="p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Stream
+                    {t('shared.churchLevel.Stream')}
                   </p>
                   <Link
                     to="/stream/displaydetails"
@@ -265,10 +298,13 @@ const DisplayAllCouncils = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Overseer
+                              {t('directory.leaderTitle.overseer')}
                             </p>
                             <p className="truncate text-sm font-semibold text-foreground">
-                              {displayName || 'Unnamed Overseer'}
+                              {displayName ||
+                                t('directory.list.unnamed', {
+                                  role: t('directory.leaderTitle.overseer'),
+                                })}
                             </p>
                           </div>
                         </Link>
@@ -302,10 +338,15 @@ const DisplayAllCouncils = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Admin
+                              {t('directory.displayChurchDetails.admin')}
                             </p>
                             <p className="truncate text-sm font-semibold text-foreground">
-                              {displayName || 'Unnamed Admin'}
+                              {displayName ||
+                                t('directory.list.unnamed', {
+                                  role: t(
+                                    'directory.displayChurchDetails.admin'
+                                  ),
+                                })}
                             </p>
                           </div>
                         </Link>
@@ -316,7 +357,7 @@ const DisplayAllCouncils = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <StatCard
-                  label="Councils"
+                  label={t('shared.churchLevelPlural.Council')}
                   value={formatCount(councils.length)}
                   icon={Layers}
                   accent="members"
@@ -325,7 +366,7 @@ const DisplayAllCouncils = () => {
                 />
                 <Link to="/stream/members" className="block">
                   <StatCard
-                    label="Members"
+                    label={t('shared.churchesSummary.members')}
                     value={formatCount(stream?.memberCount ?? 0)}
                     icon={Users}
                     accent="members"
@@ -340,10 +381,12 @@ const DisplayAllCouncils = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search councils"
+                  placeholder={t('directory.list.searchCouncils')}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search councils"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Council',
+                  })}
                 />
               </div>
             </aside>

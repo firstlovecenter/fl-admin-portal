@@ -1,3 +1,29 @@
+import i18next from 'i18next'
+import en from 'locales/en.json'
+import { currentIntlLocale, intlLocaleFor } from 'lib/intl-locale'
+
+// `i18next.t` is unbound until `lib/i18n` has run — it returns `undefined`,
+// not the key, so an uninitialised caller would render the literal string
+// "undefined". The app always initialises (`src/index.tsx` imports `lib/i18n`
+// at module level), but a pure unit test importing a date helper on its own
+// does not.
+//
+// The fallback reads the bundled English catalogue rather than repeating the
+// three strings here: duplicating them would silently drift the moment
+// anyone edits `shared.dates.*` in `en.json`.
+const enDates = (en as { shared: { dates: Record<string, string> } }).shared
+  .dates
+
+const translate = (key: string, options?: Record<string, unknown>): string => {
+  if (i18next.isInitialized) return i18next.t(key, options) as string
+
+  const leaf = key.replace(/^shared\.dates\./, '')
+  const template = enDates[leaf]
+  if (!template) return key
+  // Only `{{count}}` appears in this namespace; keep the shim to that.
+  return template.replace('{{count}}', String(options?.count ?? 0))
+}
+
 // Replaces the `jd-date-utils` npm dep. The published package transitively
 // bundled the entire npm 8 CLI tree, which dragged in dozens of Dependabot
 // alerts (SYN-61). The functions below are inlined from the package's 1.0.9
@@ -47,9 +73,13 @@ export const parseNeoTime = (timestamp?: string): string | undefined => {
 }
 
 type ParseDateOptions = {
-  /** When provided, Today/Yesterday/N days ago come from i18n. */
+  /**
+   * Overrides the ambient i18next `t`. Pages already holding a `t` from
+   * `useTranslation()` should pass it — that subscription is what re-renders
+   * them on a language change.
+   */
   t?: (key: string, options?: Record<string, unknown>) => string
-  /** BCP 47 locale for the long-date fallback (default en). */
+  /** BCP 47 locale for the long-date fallback. Defaults to the active UI language. */
   locale?: string
 }
 
@@ -59,23 +89,24 @@ export const parseDate = (date: string, options?: ParseDateOptions): string => {
   const inputDate = new Date(date)
   const differenceInTime = todaysDate.getTime() - inputDate.getTime()
   const differenceInDays = differenceInTime / (1000 * 3600 * 24)
-  const { t, locale = 'en' } = options ?? {}
+  // Falling back to the i18next singleton (rather than English literals)
+  // keeps the ~5 bare call sites on localized banking/arrivals pages in the
+  // user's language without threading `t` through each of them.
+  const t = options?.t ?? translate
+  const locale = options?.locale
+    ? intlLocaleFor(options.locale)
+    : currentIntlLocale()
 
   if (inputDate.toDateString() === todaysDate.toDateString()) {
-    return t ? t('shared.dates.today') : 'Today'
+    return t('shared.dates.today')
   }
   if (differenceInDays < 2) {
-    return t ? t('shared.dates.yesterday') : 'Yesterday'
+    return t('shared.dates.yesterday')
   }
   if (Math.floor(differenceInDays) < 7) {
     const count = Math.floor(differenceInDays)
-    return t
-      ? t('shared.dates.daysAgo', { count })
-      : `${count} days ago`
+    return t('shared.dates.daysAgo', { count })
   }
-  // Preserve the historical `toDateString()` shape for callers that have not
-  // opted into locale-aware formatting (banking/arrivals lists, etc.).
-  if (!options?.locale && !t) return inputDate.toDateString()
   return inputDate.toLocaleDateString(locale, {
     weekday: 'short',
     month: 'short',
@@ -95,7 +126,7 @@ export function getHumanReadableDate(
     day: 'numeric',
   }
   if (weekday) options.weekday = 'long'
-  return new Date(date).toLocaleDateString('en-gb', options)
+  return new Date(date).toLocaleDateString(currentIntlLocale(), options)
 }
 
 type MemberWithDob = { dob?: { date?: string } }
@@ -128,7 +159,14 @@ export const last3Weeks = (): number[] => {
   return [getWeekNumber(), getWeekNumber(lastWeek), getWeekNumber(last2Weeks)]
 }
 
-export const isToday = (date: string): boolean => parseDate(date) === 'Today'
+// Compares calendar days directly rather than string-matching `parseDate`'s
+// output against the literal 'Today'. That comparison was correct while
+// `parseDate` returned English literals on its no-options path, but making
+// `parseDate` translate by default (same commit) would have made it return
+// false in every non-English session — and it gates real arrivals behaviour
+// (`FormAttendanceConfirmation`, `FormPayVehicleRecord`, `arrivals-utils`).
+export const isToday = (date: string): boolean =>
+  new Date(date).toDateString() === new Date().toDateString()
 
 // Intentional drift from upstream: the published `jd-date-utils@1.0.9`
 // signature was `(string) => string` but its body optional-chained the

@@ -27,6 +27,7 @@ import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { isArrivalsCounterOnly, isTellerStreamOnly } from 'permission-utils'
 import { isUsdDisplayLevel } from 'lib/display-currency'
+import { currentIntlLocale } from 'lib/intl-locale'
 import { ChurchRoleScopePicker } from 'components/shell/ChurchRoleScopePicker'
 import ArrivalsCounterDashboard from './ArrivalsCounterDashboard'
 import StreamTellerDashboard from './StreamTellerDashboard'
@@ -122,21 +123,8 @@ const hasMeetingDayStarted = (dayNumber?: number) => {
   return getNeoWeekdayToday() >= dayNumber
 }
 
-// Intl locale to format the header date in, per active UI language. Distinct
-// from the 'en-GH'/'en-US' locales used elsewhere in this file for currency
-// and Accra-timezone weekday math, which format Ghanaian money/time
-// conventions rather than user-facing prose and stay fixed regardless of
-// the selected UI language.
-const DATE_HEADER_LOCALES: Record<string, string> = {
-  en: 'en-GB',
-  fr: 'fr-FR',
-  es: 'es-ES',
-  pt: 'pt-PT',
-  de: 'de-DE',
-}
-
 const FullUserDashboard = () => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
@@ -459,7 +447,7 @@ const FullUserDashboard = () => {
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {new Date().toLocaleDateString(
-                DATE_HEADER_LOCALES[i18n.language] || DATE_HEADER_LOCALES.en,
+                currentIntlLocale(),
                 {
                   weekday: 'long',
                   day: 'numeric',
@@ -879,7 +867,9 @@ const FullUserDashboard = () => {
       <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t('dashboard.userDashboard.dialog.title')}</DialogTitle>
+            <DialogTitle>
+              {t('dashboard.userDashboard.dialog.title')}
+            </DialogTitle>
             <DialogDescription>
               {t('dashboard.userDashboard.dialog.description')}
             </DialogDescription>
@@ -948,8 +938,14 @@ const FullUserDashboard = () => {
 
 interface BacentaWeeklyTasksProps {
   vacationStatus?: string
-  services: Array<{ week?: number | string; serviceDate?: { date?: string } | null }>
-  bussing: Array<{ week?: number | string; serviceDate?: { date?: string } | null }>
+  services: Array<{
+    week?: number | string
+    serviceDate?: { date?: string } | null
+  }>
+  bussing: Array<{
+    week?: number | string
+    serviceDate?: { date?: string } | null
+  }>
   serviceMeetingDay?: { day?: string; dayNumber?: number }
   bussingMeetingDay?: { day?: string; dayNumber?: number }
   onRecordService: () => void
@@ -975,10 +971,7 @@ const BacentaWeeklyTasks = ({
   const currentWeek = getWeekNumber()
   const currentISOWeekYear = getISOWeekYear()
   const onVacation = vacationStatus === 'Vacation'
-  const matchesCurrentWeek = (
-    w?: number | string,
-    date?: string | null
-  ) => {
+  const matchesCurrentWeek = (w?: number | string, date?: string | null) => {
     if (w === undefined || w === null || Number(w) !== currentWeek) return false
     if (date) return getISOWeekYear(date) === currentISOWeekYear
     return true

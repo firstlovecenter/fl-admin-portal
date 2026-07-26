@@ -24,6 +24,7 @@ import {
   Users,
 } from 'lucide-react'
 import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { classifyBacenta } from './bacenta-classification'
 import { GET_STREAM_BACENTAS } from './ReadQueries'
@@ -156,6 +157,7 @@ const BacentaRowItem = ({
   bacenta: BacentaRow
   onOpen: (b: BacentaRow) => void
 }) => {
+  const { t } = useTranslation()
   const initials =
     `${bacenta.leader?.firstName?.[0] ?? ''}${
       bacenta.leader?.lastName?.[0] ?? ''
@@ -169,7 +171,7 @@ const BacentaRowItem = ({
     <Link
       to="/bacenta/displaydetails"
       onClick={() => onOpen(bacenta)}
-      aria-label={`Open ${bacenta.name}`}
+      aria-label={t('directory.list.openChurch', { name: bacenta.name })}
       className="group block rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
     >
       <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -193,7 +195,7 @@ const BacentaRowItem = ({
           <p className="truncate text-xs text-muted-foreground">
             {bacenta.leader
               ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
-              : 'No leader'}
+              : t('directory.list.noLeader')}
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <Badge variant="outline" className="gap-1 px-2 py-0.5">
@@ -204,7 +206,7 @@ const BacentaRowItem = ({
             </Badge>
             {isVacation && (
               <Badge variant="destructive" className="px-2 py-0.5">
-                Vacation
+                {t('directory.list.vacation')}
               </Badge>
             )}
             {category && (
@@ -227,6 +229,7 @@ const GovernorshipSection = ({
   group: GovernorshipGroup
   onOpenBacenta: (b: BacentaRow) => void
 }) => {
+  const { t } = useTranslation()
   const split = useMemo(() => splitFor(group.bacentas), [group.bacentas])
   const leader = group.leader
 
@@ -247,14 +250,16 @@ const GovernorshipSection = ({
             <p className="truncate text-sm font-semibold text-foreground">
               {group.name}{' '}
               <span className="text-xs font-normal text-muted-foreground">
-                Governorship
+                {t('shared.churchLevel.Governorship')}
               </span>
             </p>
             <p className="truncate text-xs text-muted-foreground">
               {leader?.nameWithTitle ||
                 leader?.fullName ||
-                [leader?.firstName, leader?.lastName].filter(Boolean).join(' ') ||
-                'No governor'}
+                [leader?.firstName, leader?.lastName]
+                  .filter(Boolean)
+                  .join(' ') ||
+                t('directory.list.noGovernor')}
             </p>
           </div>
         </div>
@@ -273,7 +278,9 @@ const GovernorshipSection = ({
 
       {group.bacentas.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No bacentas match your search.
+          {t('directory.list.noneMatchSearch', {
+            levelPlural: t('shared.churchLevelPlural.Bacenta'),
+          })}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -296,25 +303,31 @@ const CouncilSection = ({
 }: {
   council: CouncilData
   onOpenBacenta: (b: BacentaRow) => void
-}) => (
-  <Card>
-    <CardContent className="p-4 lg:p-5">
-      <h2 className="mb-4 text-base font-semibold text-foreground">
-        {council.name}{' '}
-        <span className="text-xs font-normal text-muted-foreground">Council</span>
-      </h2>
-      <div className="space-y-6">
-        {council.governorships.map((group) => (
-          <GovernorshipSection
-            key={group.id}
-            group={group}
-            onOpenBacenta={onOpenBacenta}
-          />
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-)
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <Card>
+      <CardContent className="p-4 lg:p-5">
+        <h2 className="mb-4 text-base font-semibold text-foreground">
+          {council.name}{' '}
+          <span className="text-xs font-normal text-muted-foreground">
+            {t('shared.churchLevel.Council')}
+          </span>
+        </h2>
+        <div className="space-y-6">
+          {council.governorships.map((group) => (
+            <GovernorshipSection
+              key={group.id}
+              group={group}
+              onOpenBacenta={onOpenBacenta}
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 const LoadingSkeleton = () => (
   <div className="space-y-4">
@@ -348,6 +361,7 @@ const LoadingSkeleton = () => (
 )
 
 const AllStreamBacentas = () => {
+  const { t } = useTranslation()
   const { streamId, clickCard } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
 
@@ -401,14 +415,16 @@ const AllStreamBacentas = () => {
           <div className="mx-auto flex max-w-6xl items-center gap-1 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('directory.list.eyebrow')}
               </p>
               {loading || !stream ? (
                 <Skeleton className="mt-0.5 h-8 w-56" />
               ) : (
                 <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                   {stream.name ? `${stream.name} ` : ''}
-                  <span className="text-members">Bacentas</span>
+                  <span className="text-members">
+                    {t('shared.churchLevelPlural.Bacenta')}
+                  </span>
                 </h1>
               )}
             </div>
@@ -416,14 +432,22 @@ const AllStreamBacentas = () => {
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
               <BreadcrumbList className="text-xs">
-                <BreadcrumbItem><span>Stream</span></BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem><span>Council</span></BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem><span>Governorship</span></BreadcrumbItem>
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Stream')}</span>
+                </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold text-members">Bacenta</BreadcrumbPage>
+                  <span>{t('shared.churchLevel.Council')}</span>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Governorship')}</span>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-semibold text-members">
+                    {t('shared.churchLevel.Bacenta')}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -435,10 +459,14 @@ const AllStreamBacentas = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search bacenta, leader, or governorship"
+                  placeholder={t(
+                    'directory.list.searchBacentaLeaderGovernorship'
+                  )}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search bacentas"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Bacenta',
+                  })}
                 />
               </div>
             </div>
@@ -456,12 +484,17 @@ const AllStreamBacentas = () => {
                     <Building2 className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
                       {totalBacentas === 0
-                        ? 'No bacentas in this stream yet.'
-                        : 'No bacentas match your search.'}
+                        ? t('directory.list.noneInYet', {
+                            levelPlural: 'Bacenta',
+                            parent: 'Stream',
+                          })
+                        : t('directory.list.noneMatchSearch', {
+                            levelPlural: 'Bacenta',
+                          })}
                     </p>
                     {totalBacentas > 0 && search && (
                       <p className="text-xs text-muted-foreground">
-                        Try a different search term.
+                        {t('directory.list.tryDifferentSearch')}
                       </p>
                     )}
                   </CardContent>
@@ -482,7 +515,9 @@ const AllStreamBacentas = () => {
                 <CardContent className="space-y-4 p-4 lg:p-5">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Stream Summary
+                      {t('directory.list.summary', {
+                        level: t('shared.churchLevel.Stream'),
+                      })}
                     </p>
                     {loading ? (
                       <Skeleton className="mt-2 h-9 w-24" />
@@ -492,7 +527,10 @@ const AllStreamBacentas = () => {
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Bacentas in stream
+                      {t('directory.list.inParent', {
+                        levelPlural: t('shared.churchLevelPlural.Bacenta'),
+                        parent: t('shared.churchLevel.Stream'),
+                      })}
                     </p>
                   </div>
 
@@ -505,7 +543,7 @@ const AllStreamBacentas = () => {
                   <div className="grid grid-cols-3 gap-2">
                     <div className="rounded-lg border border-border p-2.5">
                       <p className="text-[11px] text-muted-foreground">
-                        Graduated
+                        {t('directory.list.graduated')}
                       </p>
                       {loading ? (
                         <Skeleton className="mt-1 h-5 w-10" />
@@ -527,7 +565,7 @@ const AllStreamBacentas = () => {
                     </div>
                     <div className="rounded-lg border border-border p-2.5">
                       <p className="text-[11px] text-muted-foreground">
-                        Councils
+                        {t('shared.churchLevelPlural.Council')}
                       </p>
                       {loading ? (
                         <Skeleton className="mt-1 h-5 w-12" />
@@ -543,12 +581,14 @@ const AllStreamBacentas = () => {
                     <div className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-muted-foreground">
                       <Layers className="size-3.5 shrink-0" />
                       <span className="tabular-nums">
-                        {loading ? '—' : formatCount(
-                          councils.reduce(
-                            (sum, c) => sum + c.governorships.length,
-                            0
-                          )
-                        )}
+                        {loading
+                          ? '—'
+                          : formatCount(
+                              councils.reduce(
+                                (sum, c) => sum + c.governorships.length,
+                                0
+                              )
+                            )}
                       </span>
                       <span>governorships</span>
                     </div>
@@ -564,7 +604,9 @@ const AllStreamBacentas = () => {
                       className="gap-1 text-sm font-medium text-members"
                     >
                       <ArrowLeft className="size-4" />
-                      Back to stream details
+                      {t('directory.list.backToDetails', {
+                        level: t('shared.churchLevel.Stream'),
+                      })}
                     </Link>
                   </Button>
                 </CardContent>
@@ -575,10 +617,14 @@ const AllStreamBacentas = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search bacenta, leader, or governorship"
+                  placeholder={t(
+                    'directory.list.searchBacentaLeaderGovernorship'
+                  )}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search bacentas"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Bacenta',
+                  })}
                 />
               </div>
             </aside>

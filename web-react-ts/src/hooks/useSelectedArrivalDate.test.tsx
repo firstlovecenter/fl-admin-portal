@@ -44,6 +44,9 @@ import { MockedProvider } from '@apollo/client/testing'
 import { MemoryRouter, useSearchParams } from 'react-router-dom'
 
 import { ChurchContext } from 'contexts/ChurchContext'
+// `weekLabel` now composes through i18next (`shared.week.of`), so the real
+// instance has to be registered or the hook hands back the raw key.
+import i18n from 'lib/i18n'
 import useSelectedArrivalDate from './useSelectedArrivalDate'
 import { GET_BUSSING_DATES } from './useSelectedArrivalDateQueries'
 
@@ -109,8 +112,11 @@ beforeEach(() => {
   vi.setSystemTime(new Date(`${TODAY}T12:00:00Z`))
 })
 
-afterEach(() => {
+afterEach(async () => {
   vi.useRealTimers()
+  // Reset here rather than at the end of a test body: a failing expect would
+  // skip an in-body reset and leak the language into every later test.
+  await i18n.changeLanguage('en')
 })
 
 // ---------------------------------------------------------------------------
@@ -289,6 +295,14 @@ describe('useSelectedArrivalDate — labels', () => {
 
     expect(result.current.dateLabel).toBe('Sat, 6 Jun 2026')
     expect(result.current.weekLabel).toBe('Week of 1–7 Jun 2026')
+  })
+
+  it('localizes weekLabel and the day-chip month names', async () => {
+    await i18n.changeLanguage('fr')
+    const { result } = renderArrivalDate({ initialEntry: '/arrivals' })
+
+    expect(result.current.weekLabel).toBe('Semaine du 1–7 juin 2026')
+    expect(result.current.dateLabel).toBe('sam., 6 juin 2026')
   })
 
   it('formats dateLabel for a date in a previous week', () => {

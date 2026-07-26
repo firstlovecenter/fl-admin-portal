@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
+import { MockedProvider } from '@apollo/client/testing'
 import { MemoryRouter } from 'react-router-dom'
 import { MemberContext } from 'contexts/MemberContext'
 import 'lib/i18n'
@@ -24,25 +25,30 @@ describe('ServiceDetails i18n smoke', () => {
   afterEach(cleanup)
 
   it('shows not-found copy when service is missing', () => {
+    // ServiceDetails calls useMutation at the top of its body (offering
+    // confirmation / record deletion), so it needs an Apollo client in
+    // context even on the not-found path that never fires either one.
     render(
-      <MemoryRouter>
-        <MemberContext.Provider
-          value={{
-            currentUser: {
-              id: 'user-1',
-              roles: ['leaderBacenta'],
-              noIncomeTracking: false,
-            },
-            userJobs: [],
-          }}
-        >
-          <ServiceDetails
-            service={undefined as never}
-            church={stubChurch}
-            loading={false}
-          />
-        </MemberContext.Provider>
-      </MemoryRouter>
+      <MockedProvider mocks={[]} addTypename={false}>
+        <MemoryRouter>
+          <MemberContext.Provider
+            value={{
+              currentUser: {
+                id: 'user-1',
+                roles: ['leaderBacenta'],
+                noIncomeTracking: false,
+              },
+              userJobs: [],
+            }}
+          >
+            <ServiceDetails
+              service={undefined as never}
+              church={stubChurch}
+              loading={false}
+            />
+          </MemberContext.Provider>
+        </MemoryRouter>
+      </MockedProvider>
     )
 
     expect(screen.getByText('Service record not found')).toBeInTheDocument()

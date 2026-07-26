@@ -15,14 +15,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from 'components/ui/breadcrumb'
-import {
-  ArrowLeft,
-  Building2,
-  ChevronRight,
-  Search,
-  Users,
-} from 'lucide-react'
+import { ArrowLeft, Building2, ChevronRight, Search, Users } from 'lucide-react'
 import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { classifyBacenta } from './bacenta-classification'
 import { GET_COUNCIL_BACENTAS } from './ReadQueries'
@@ -125,9 +120,7 @@ const SplitLegend = ({ split }: { split: CategorySplit }) => (
     </span>
     <span className="inline-flex items-center gap-1.5">
       <span className="inline-block size-2 rounded-full bg-destructive" />
-      <span className="tabular-nums">
-        {pct(split.ic, split.total)}% IC
-      </span>
+      <span className="tabular-nums">{pct(split.ic, split.total)}% IC</span>
       <span className="tabular-nums">({formatCount(split.ic)})</span>
     </span>
     {split.unclassified > 0 && (
@@ -151,6 +144,7 @@ const BacentaRowItem = ({
   bacenta: BacentaRow
   onOpen: (b: BacentaRow) => void
 }) => {
+  const { t } = useTranslation()
   const initials =
     `${bacenta.leader?.firstName?.[0] ?? ''}${
       bacenta.leader?.lastName?.[0] ?? ''
@@ -164,7 +158,7 @@ const BacentaRowItem = ({
     <Link
       to="/bacenta/displaydetails"
       onClick={() => onOpen(bacenta)}
-      aria-label={`Open ${bacenta.name}`}
+      aria-label={t('directory.list.openChurch', { name: bacenta.name })}
       className="group block rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
     >
       <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -188,7 +182,7 @@ const BacentaRowItem = ({
           <p className="truncate text-xs text-muted-foreground">
             {bacenta.leader
               ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
-              : 'No leader'}
+              : t('directory.list.noLeader')}
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <Badge variant="outline" className="gap-1 px-2 py-0.5">
@@ -199,7 +193,7 @@ const BacentaRowItem = ({
             </Badge>
             {isVacation && (
               <Badge variant="destructive" className="px-2 py-0.5">
-                Vacation
+                {t('directory.list.vacation')}
               </Badge>
             )}
             {category && (
@@ -222,6 +216,7 @@ const GovernorshipSection = ({
   group: GovernorshipGroup
   onOpenBacenta: (b: BacentaRow) => void
 }) => {
+  const { t } = useTranslation()
   const split = useMemo(() => splitFor(group.bacentas), [group.bacentas])
   const leader = group.leader
 
@@ -243,7 +238,7 @@ const GovernorshipSection = ({
               <h2 className="truncate text-base font-semibold text-foreground">
                 {group.name}{' '}
                 <span className="text-xs font-normal text-muted-foreground">
-                  Governorship
+                  {t('shared.churchLevel.Governorship')}
                 </span>
               </h2>
               <p className="truncate text-xs text-muted-foreground">
@@ -251,7 +246,7 @@ const GovernorshipSection = ({
                   leader?.fullName ||
                   (leader
                     ? `${leader.firstName ?? ''} ${leader.lastName ?? ''}`
-                    : 'No governor')}
+                    : t('directory.list.noGovernor'))}
               </p>
             </div>
           </div>
@@ -270,7 +265,9 @@ const GovernorshipSection = ({
 
         {group.bacentas.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">
-            No bacentas match your search.
+            {t('directory.list.noneMatchSearch', {
+              levelPlural: t('shared.churchLevelPlural.Bacenta'),
+            })}
           </p>
         ) : (
           <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -299,74 +296,91 @@ const RollupCard = ({
   }
   split: CategorySplit
   loading: boolean
-}) => (
-  <Card>
-    <CardContent className="space-y-4 p-4 lg:p-5">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Council Summary
-        </p>
-        {loading ? (
-          <Skeleton className="mt-2 h-9 w-24" />
-        ) : (
-          <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-foreground">
-            {formatCount(split.total)}
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <Card>
+      <CardContent className="space-y-4 p-4 lg:p-5">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t('directory.list.summary', {
+              level: t('shared.churchLevel.Council'),
+            })}
           </p>
+          {loading ? (
+            <Skeleton className="mt-2 h-9 w-24" />
+          ) : (
+            <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-foreground">
+              {formatCount(split.total)}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            {t('directory.list.inParent', {
+              levelPlural: t('shared.churchLevelPlural.Bacenta'),
+              parent: t('shared.churchLevel.Council'),
+            })}
+          </p>
+        </div>
+
+        {loading ? (
+          <Skeleton className="h-1.5 w-full rounded-full" />
+        ) : (
+          <SplitBar split={split} />
         )}
-        <p className="text-xs text-muted-foreground">Bacentas in council</p>
-      </div>
 
-      {loading ? (
-        <Skeleton className="h-1.5 w-full rounded-full" />
-      ) : (
-        <SplitBar split={split} />
-      )}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-lg border border-border p-2.5">
+            <p className="text-[11px] text-muted-foreground">
+              {t('directory.list.graduated')}
+            </p>
+            {loading ? (
+              <Skeleton className="mt-1 h-5 w-10" />
+            ) : (
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-success">
+                {pct(split.graduated, split.total)}%
+              </p>
+            )}
+          </div>
+          <div className="rounded-lg border border-border p-2.5">
+            <p className="text-[11px] text-muted-foreground">IC</p>
+            {loading ? (
+              <Skeleton className="mt-1 h-5 w-10" />
+            ) : (
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-destructive">
+                {pct(split.ic, split.total)}%
+              </p>
+            )}
+          </div>
+          <div className="rounded-lg border border-border p-2.5">
+            <p className="text-[11px] text-muted-foreground">
+              {t('shared.churchesSummary.members')}
+            </p>
+            {loading ? (
+              <Skeleton className="mt-1 h-5 w-12" />
+            ) : (
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
+                {formatCount(council?.memberCount ?? 0)}
+              </p>
+            )}
+          </div>
+        </div>
 
-      <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-lg border border-border p-2.5">
-          <p className="text-[11px] text-muted-foreground">Graduated</p>
-          {loading ? (
-            <Skeleton className="mt-1 h-5 w-10" />
-          ) : (
-            <p className="mt-0.5 text-lg font-semibold tabular-nums text-success">
-              {pct(split.graduated, split.total)}%
-            </p>
-          )}
-        </div>
-        <div className="rounded-lg border border-border p-2.5">
-          <p className="text-[11px] text-muted-foreground">IC</p>
-          {loading ? (
-            <Skeleton className="mt-1 h-5 w-10" />
-          ) : (
-            <p className="mt-0.5 text-lg font-semibold tabular-nums text-destructive">
-              {pct(split.ic, split.total)}%
-            </p>
-          )}
-        </div>
-        <div className="rounded-lg border border-border p-2.5">
-          <p className="text-[11px] text-muted-foreground">Members</p>
-          {loading ? (
-            <Skeleton className="mt-1 h-5 w-12" />
-          ) : (
-            <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
-              {formatCount(council?.memberCount ?? 0)}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <Button variant="link" asChild className="h-11 justify-start px-0">
-        <Link
-          to="/council/displaydetails"
-          className="gap-1 text-sm font-medium text-members"
-        >
-          <ArrowLeft className="size-4" />
-          Back to council details
-        </Link>
-      </Button>
-    </CardContent>
-  </Card>
-)
+        <Button variant="link" asChild className="h-11 justify-start px-0">
+          <Link
+            to="/council/displaydetails"
+            className="gap-1 text-sm font-medium text-members"
+          >
+            <ArrowLeft className="size-4" />
+            {t('directory.list.backToDetails', {
+              level: t('shared.churchLevel.Council'),
+            })}
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
 
 const LoadingSkeleton = () => (
   <div className="space-y-4">
@@ -393,6 +407,7 @@ const LoadingSkeleton = () => (
 )
 
 const CouncilBacentas = () => {
+  const { t } = useTranslation()
   const { councilId, clickCard } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
 
@@ -440,29 +455,42 @@ const CouncilBacentas = () => {
               className="size-11 shrink-0"
               asChild
             >
-              <Link to="/council/displaydetails" aria-label="Back to council">
+              <Link
+                to="/council/displaydetails"
+                aria-label={t('directory.list.backTo', {
+                  level: t('shared.churchLevel.Council'),
+                })}
+              >
                 <ArrowLeft className="size-5" />
               </Link>
             </Button>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('directory.list.eyebrow')}
               </p>
               <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {council?.name ? `${council.name} ` : ''}
-                <span className="text-members">Bacentas</span>
+                <span className="text-members">
+                  {t('shared.churchLevelPlural.Bacenta')}
+                </span>
               </h1>
             </div>
           </div>
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
               <BreadcrumbList className="text-xs">
-                <BreadcrumbItem><span>Council</span></BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem><span>Governorship</span></BreadcrumbItem>
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Council')}</span>
+                </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold text-members">Bacenta</BreadcrumbPage>
+                  <span>{t('shared.churchLevel.Governorship')}</span>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-semibold text-members">
+                    {t('shared.churchLevel.Bacenta')}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -474,10 +502,14 @@ const CouncilBacentas = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search bacenta, leader, or governorship"
+                  placeholder={t(
+                    'directory.list.searchBacentaLeaderGovernorship'
+                  )}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search bacentas"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Bacenta',
+                  })}
                 />
               </div>
             </div>
@@ -495,12 +527,17 @@ const CouncilBacentas = () => {
                     <Building2 className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
                       {governorships.length === 0
-                        ? 'No bacentas in this council yet.'
-                        : 'No bacentas match your search.'}
+                        ? t('directory.list.noneInYet', {
+                            levelPlural: 'Bacenta',
+                            parent: 'Council',
+                          })
+                        : t('directory.list.noneMatchSearch', {
+                            levelPlural: 'Bacenta',
+                          })}
                     </p>
                     {governorships.length > 0 && search && (
                       <p className="text-xs text-muted-foreground">
-                        Try a different search term.
+                        {t('directory.list.tryDifferentSearch')}
                       </p>
                     )}
                   </CardContent>
@@ -528,10 +565,14 @@ const CouncilBacentas = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search bacenta, leader, or governorship"
+                  placeholder={t(
+                    'directory.list.searchBacentaLeaderGovernorship'
+                  )}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search bacentas"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: 'Bacenta',
+                  })}
                 />
               </div>
             </aside>

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useAuth } from 'contexts/AuthContext'
+import { useTranslation } from 'react-i18next'
 import usePopup from 'hooks/usePopup'
 import { Loader2, LogIn, LogOut } from 'lucide-react'
 import { Button } from 'components/ui/button'
@@ -11,6 +12,7 @@ type AuthButtonPropsType = {
 }
 
 const AuthButton = ({ mobileFullSize }: AuthButtonPropsType) => {
+  const { t } = useTranslation()
   const { logout, isAuthenticated } = useAuth()
   const { togglePopup, isOpen } = usePopup()
 
@@ -26,7 +28,7 @@ const AuthButton = ({ mobileFullSize }: AuthButtonPropsType) => {
           onClick={handleLoginClick}
           className={cn('px-8', !mobileFullSize && 'hidden md:inline-flex')}
         >
-          Log In
+          {t('shared.authButton.logIn')}
         </Button>
         {!mobileFullSize && (
           <Button
@@ -35,7 +37,7 @@ const AuthButton = ({ mobileFullSize }: AuthButtonPropsType) => {
             variant="ghost"
             onClick={handleLoginClick}
             className="md:hidden"
-            aria-label="Log in"
+            aria-label={t('shared.authButton.logInAria')}
           >
             <LogIn className="h-6 w-6" />
           </Button>
@@ -47,7 +49,7 @@ const AuthButton = ({ mobileFullSize }: AuthButtonPropsType) => {
   if (isAuthenticated && location.pathname === '/') {
     return (
       <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
-        <p>Please wait while we log you in</p>
+        <p>{t('shared.authButton.loggingIn')}</p>
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     )
@@ -62,15 +64,15 @@ const AuthButton = ({ mobileFullSize }: AuthButtonPropsType) => {
           !mobileFullSize && 'hidden md:inline-flex'
         )}
       >
-        Log Out
+        {t('shared.authButton.logOut')}
         <LogOut className="h-4 w-4" />
       </Button>
 
       {isOpen && (
         <Popup handleClose={togglePopup}>
           <>
-            <b>Confirm Log Out</b>
-            <p className="mt-2">Are you sure you want to Log Out?</p>
+            <b>{t('shared.authButton.confirmTitle')}</b>
+            <p className="mt-2">{t('shared.authButton.confirmBody')}</p>
             <Button
               className={cn(
                 'mt-3 px-6',
@@ -81,7 +83,7 @@ const AuthButton = ({ mobileFullSize }: AuthButtonPropsType) => {
                 togglePopup()
               }}
             >
-              Log Out
+              {t('shared.authButton.logOut')}
             </Button>
           </>
         </Popup>
@@ -94,7 +96,7 @@ const AuthButton = ({ mobileFullSize }: AuthButtonPropsType) => {
           variant="ghost"
           onClick={() => logout()}
           className="md:hidden"
-          aria-label="Log out"
+          aria-label={t('shared.authButton.logOutAria')}
         >
           <LogOut className="h-6 w-6" />
         </Button>

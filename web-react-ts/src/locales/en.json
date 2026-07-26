@@ -67,12 +67,119 @@
     },
     "actions": {
       "cancel": "Cancel",
-      "okay": "Okay"
+      "okay": "Okay",
+      "edit": "Edit",
+      "close": "Close",
+      "copy": "Copy",
+      "copied": "Copied",
+      "goToDashboard": "Go back to the dashboard"
     },
     "loading": "Loading…",
     "form": {
       "submit": "Submit",
-      "submitting": "Submitting…"
+      "submitting": "Submitting…",
+      "confirmYes": "Yes, I'm sure"
+    },
+    "week": {
+      "label": "Week {{number}}",
+      "of": "Week of {{range}}",
+      "withRange": "Week {{week}} · {{range}}"
+    },
+    "weekSelector": {
+      "previousWeek": "Previous week",
+      "nextWeek": "Next week",
+      "weekAndYear": "Week {{week}}, {{year}}",
+      "resetToCurrent": "Reset to current week"
+    },
+    "arrivalDateSelector": {
+      "bussingDays": "Bussing days this week",
+      "noBussings": "No bussings this week",
+      "jumpToNearest": "Jump to nearest",
+      "resetToToday": "Reset to today"
+    },
+    "last3Weeks": {
+      "title": "Forms",
+      "noService": "No Service",
+      "incomeForm": "Income Form",
+      "filled": "Filled",
+      "notFilled": "Not Filled",
+      "bankingSlip": "Banking Slip",
+      "submitted": "Submitted",
+      "notSubmitted": "Not Submitted"
+    },
+    "churchesSummary": {
+      "members": "Members"
+    },
+    "churchSearch": {
+      "placeholder": "Search Churches or Leader",
+      "ariaLabel": "Church Search"
+    },
+    "imageUpload": {
+      "uploading": "Uploading…",
+      "dropToUpload": "Drop to upload",
+      "previewAlt": "Upload preview",
+      "changePhoto": "Change Photo",
+      "prompt": "Drag & drop or tap to upload",
+      "formats": "JPG, PNG or WebP"
+    },
+    "authButton": {
+      "logIn": "Log In",
+      "logInAria": "Log in",
+      "loggingIn": "Please wait while we log you in",
+      "logOut": "Log Out",
+      "logOutAria": "Log out",
+      "confirmTitle": "Confirm Log Out",
+      "confirmBody": "Are you sure you want to Log Out?"
+    },
+    "errorScreen": {
+      "title": "We couldn't load this page",
+      "subtitle": "{{name}} — please try again. If the issue persists, send a crash report so the team can investigate.",
+      "errorFallbackName": "Error",
+      "headlineFallback": "Something went wrong",
+      "unexpected": "Unexpected error",
+      "showDetails": "Show details",
+      "sendCrashReport": "Send crash report",
+      "reloadPage": "Reload page",
+      "tip": "Tip: tap <1>Show details</1> and screenshot it when you contact support.",
+      "detailsTitle": "Error details",
+      "detailsDescription": "Raw payload — share this with the support team.",
+      "copyUnavailable": "Copy unavailable — long-press the payload to select it",
+      "copyFailed": "Could not copy error details",
+      "networkRequestFailed": "Network request failed",
+      "pathMeta": "Path: {{path}}",
+      "locationMeta": "Location: line {{line}}, column {{column}}"
+    },
+    "pushSoftAsk": {
+      "regionLabel": "Enable notifications",
+      "title": "Turn on notifications",
+      "body": "Get reminded to record service, bank offerings, and for Sunday bussing arrival times.",
+      "dismiss": "Dismiss",
+      "notNow": "Not now",
+      "enable": "Enable",
+      "enabling": "Enabling…",
+      "enabledToast": "Notifications enabled.",
+      "blockedToast": "Notifications are blocked. You can enable them in your browser settings.",
+      "dismissedToast": "No problem — tap Enable whenever you’re ready.",
+      "failedToast": "Couldn't enable notifications. Please try again later."
+    },
+    "unauthorised": {
+      "title": "You don't have access to this page",
+      "body": "Your account doesn't have the permissions needed to view this page. If you think this is a mistake, contact your church admin."
+    },
+    "pageNotFound": {
+      "heading": "Page not found",
+      "body": "The page you are looking for does not exist. It may be under maintenance, or there may be some other problem."
+    },
+    "sabbath": {
+      "title": "Today is the <1>Sabbath!</1>",
+      "reference": "Exodus 20:8-10",
+      "verse": "Remember the sabbath day, to keep it holy. Six days shalt thou labour, and do all thy work: But the seventh day is the sabbath of the LORD thy God: in it",
+      "verseEmphasis": "thou shalt not do any work...",
+      "quote": "After you are born again, you must show your respect for God by honouring the Sabbath day."
+    },
+    "reconciliation": {
+      "title": "Reconciliation",
+      "body": "The Reconciliation Feature is still being worked on. Will update soon!"
     }
   },
   "accounts": {
@@ -884,7 +991,8 @@
       "governorshipLeader": "Governorship Leader",
       "oversightLeader": "Oversight Leader",
       "streamLeader": "Stream Leader",
-      "leadPastor": "Lead Pastor"
+      "leadPastor": "Lead Pastor",
+      "overseer": "Overseer"
     },
     "churchLevelMembers": {
       "notAvailablePrefix": "Member browsing is not available at the",
@@ -971,6 +1079,51 @@
       "detailsUpdated": "{{subject}} Details were updated",
       "bussingDetailsUpdated": "{{name}} Bussing Details were updated",
       "busPaymentDetailsUpdated": "{{name}} Bus Payment Details were updated"
+    },
+    "list": {
+      "eyebrow": "Directory",
+      "add": "Add {{level}}",
+      "addShort": "Add",
+      "allOf": "All {{levelPlural}}",
+      "countOfTotal": "{{shown}} of {{total}}",
+      "openChurch": "Open {{name}}",
+      "noLeader": "No leader",
+      "noGovernor": "No governor",
+      "vacation": "Vacation",
+      "graduated": "Graduated",
+      "summary": "{{level}} Summary",
+      "inParent": "{{levelPlural}} in {{parent}}",
+      "backToDetails": "Back to {{level}} details",
+      "backTo": "Back to {{level}}",
+      "adminPrefix": "Admin :",
+      "searchAria": "Search {{levelPlural}}",
+      "searchBacentaOrLeader": "Search bacenta or leader",
+      "searchBacentaLeaderGovernorship": "Search bacenta, leader, or governorship",
+      "searchCouncils": "Search councils",
+      "searchCouncilsOrStreams": "Search councils or streams",
+      "searchCampuses": "Search campuses",
+      "searchStreams": "Search streams",
+      "searchGovernorships": "Search governorships",
+      "searchGovernorshipsOrCouncils": "Search governorships or councils",
+      "searchGovernorshipsOrBacentas": "Search governorships or bacentas",
+      "searchGovernorshipsCouncilsStreams": "Search governorships, councils, or streams",
+      "searchGovernorshipsAndBacentas": "Search governorships and bacentas",
+      "noneFound": "No {{levelPlural}} found",
+      "noneYet": "No {{levelPlural}} yet",
+      "noneMatchSearch": "No {{levelPlural}} match your search.",
+      "noneUnderYet": "This {{parent}} has no {{levelPlural}} yet.",
+      "noneUnder": "This {{parent}} has no {{levelPlural}}.",
+      "noneInYet": "No {{levelPlural}} in this {{parent}} yet.",
+      "tryDifferentSearch": "Try a different search term.",
+      "tryDifferentNameOrLeader": "Try a different name or leader.",
+      "tryDifferentNameLeaderStream": "Try a different name, leader, or stream.",
+      "tryDifferentNameLeaderCouncil": "Try a different name, leader, or council.",
+      "tryDifferentNameLeaderCouncilStream": "Try a different name, leader, council, or stream.",
+      "tryDifferentGovernorshipOrBacenta": "Try a different governorship or bacenta name.",
+      "noGovernorshipNameMatch": "No governorship name or leader matches.",
+      "noGovernorships": "No governorships",
+      "noMatchesFor": "No matches for \"{{term}}\"",
+      "unnamed": "Unnamed {{role}}"
     }
   },
   "dashboard": {
@@ -2120,6 +2273,7 @@
     "projectorOpenTitle": "Projector window open — click to focus",
     "castTitle": "Open a second window for projection",
     "projector": {
+      "label": "Projector",
       "titleWithName": "Projector — {{name}}",
       "titleDefault": "Shepherding Control — Projector",
       "waiting": "Waiting for controller — drag this window to your projector or external monitor."

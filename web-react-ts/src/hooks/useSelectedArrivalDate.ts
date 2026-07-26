@@ -1,9 +1,12 @@
 import { Context, useCallback, useContext, useEffect, useMemo } from 'react'
 import { useQuery } from '@apollo/client'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import { ChurchContext } from 'contexts/ChurchContext'
 import { GET_BUSSING_DATES } from 'hooks/useSelectedArrivalDateQueries'
+import { currentIntlLocale } from 'lib/intl-locale'
 
 // `ChurchContext` is plain JS (no createContext type arg), so type the
 // surface we touch here rather than spreading `any` through the hook.
@@ -12,29 +15,19 @@ type ArrivalDateContext = {
   setArrivalDate?: (next: string) => void
 }
 
-const MONTH_NAMES_SHORT = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-]
-const WEEKDAY_NAMES_SHORT = [
-  'Sun',
-  'Mon',
-  'Tue',
-  'Wed',
-  'Thu',
-  'Fri',
-  'Sat',
-]
+// Month/weekday names come from Intl rather than hardcoded English arrays:
+// these labels render on the arrivals dashboards, which are localized. Only
+// the names are localized — day-first ordering is the app's convention in
+// every language. `timeZone: 'UTC'` matches the getUTC* arithmetic below.
+const shortMonth = (date: Date, locale: string): string =>
+  new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }).format(
+    date
+  )
+
+const shortWeekday = (date: Date, locale: string): string =>
+  new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' }).format(
+    date
+  )
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -74,44 +67,49 @@ const weekStartOf = (ymd: string): string => {
   return d.toISOString().slice(0, 10)
 }
 
-const formatDateLabel = (ymd: string): string => {
+const formatDateLabel = (ymd: string, locale: string): string => {
   const d = new Date(`${ymd}T12:00:00Z`)
   if (Number.isNaN(d.getTime())) return ymd
-  const weekday = WEEKDAY_NAMES_SHORT[d.getUTCDay()]
+  const weekday = shortWeekday(d, locale)
   const day = d.getUTCDate()
-  const month = MONTH_NAMES_SHORT[d.getUTCMonth()]
+  const month = shortMonth(d, locale)
   const year = d.getUTCFullYear()
   return `${weekday}, ${day} ${month} ${year}`
 }
 
 // "Week of 4–10 May 2026" / "Week of 28 Apr – 4 May 2026" / cross-year variant.
-const formatWeekLabel = (weekStart: string): string => {
+const formatWeekLabel = (
+  weekStart: string,
+  locale: string,
+  t: TFunction
+): string => {
   const start = new Date(`${weekStart}T12:00:00Z`)
   const end = new Date(`${addDaysYmd(weekStart, 6)}T12:00:00Z`)
+  const weekOf = (range: string) => t('shared.week.of', { range })
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return `Week of ${weekStart}`
+    return weekOf(weekStart)
   }
   const sDay = start.getUTCDate()
-  const sMonth = MONTH_NAMES_SHORT[start.getUTCMonth()]
+  const sMonth = shortMonth(start, locale)
   const sYear = start.getUTCFullYear()
   const eDay = end.getUTCDate()
-  const eMonth = MONTH_NAMES_SHORT[end.getUTCMonth()]
+  const eMonth = shortMonth(end, locale)
   const eYear = end.getUTCFullYear()
 
   if (sYear !== eYear) {
-    return `Week of ${sDay} ${sMonth} ${sYear} – ${eDay} ${eMonth} ${eYear}`
+    return weekOf(`${sDay} ${sMonth} ${sYear} – ${eDay} ${eMonth} ${eYear}`)
   }
-  if (sMonth !== eMonth) {
-    return `Week of ${sDay} ${sMonth} – ${eDay} ${eMonth} ${sYear}`
+  if (start.getUTCMonth() !== end.getUTCMonth()) {
+    return weekOf(`${sDay} ${sMonth} – ${eDay} ${eMonth} ${sYear}`)
   }
-  return `Week of ${sDay}–${eDay} ${sMonth} ${sYear}`
+  return weekOf(`${sDay}–${eDay} ${sMonth} ${sYear}`)
 }
 
 // Short label for a day chip, e.g. "Sun 4".
-const formatDayChip = (ymd: string): string => {
+const formatDayChip = (ymd: string, locale: string): string => {
   const d = new Date(`${ymd}T12:00:00Z`)
   if (Number.isNaN(d.getTime())) return ymd
-  return `${WEEKDAY_NAMES_SHORT[d.getUTCDay()]} ${d.getUTCDate()}`
+  return `${shortWeekday(d, locale)} ${d.getUTCDate()}`
 }
 
 export type ArrivalDayChip = {
@@ -153,6 +151,8 @@ export type SelectedArrivalDate = {
 }
 
 const useSelectedArrivalDate = (): SelectedArrivalDate => {
+  const { t } = useTranslation()
+  const locale = currentIntlLocale()
   const [searchParams, setSearchParams] = useSearchParams()
   const churchCtx = useContext(
     ChurchContext as Context<ArrivalDateContext | undefined>
@@ -183,8 +183,8 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
   const weekStart = weekStartOf(arrivalDate)
   const weekEnd = addDaysYmd(weekStart, 6)
   const isCurrent = weekStart === currentWeekStart
-  const dateLabel = formatDateLabel(arrivalDate)
-  const weekLabel = formatWeekLabel(weekStart)
+  const dateLabel = formatDateLabel(arrivalDate, locale)
+  const weekLabel = formatWeekLabel(weekStart, locale, t)
 
   // Bussings within the visible week, ASC.
   const daysInWeek = useMemo<ArrivalDayChip[]>(() => {
@@ -195,8 +195,8 @@ const useSelectedArrivalDate = (): SelectedArrivalDate => {
     return inWeek
       .slice()
       .sort()
-      .map((date) => ({ date, label: formatDayChip(date) }))
-  }, [bussingDates, weekStart, weekEnd])
+      .map((date) => ({ date, label: formatDayChip(date, locale) }))
+  }, [bussingDates, weekStart, weekEnd, locale])
 
   // bussingDates is DESC: the first entry strictly less than weekStart is
   // the most recent bussing before the visible week. Used to gate `hasPrev`

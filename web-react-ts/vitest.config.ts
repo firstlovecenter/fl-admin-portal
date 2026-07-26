@@ -35,6 +35,10 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // Several date assertions format a `…T09:00:00Z` instant and expect the
+    // UTC calendar day. Pin the runner's zone so they don't flip at UTC-10
+    // and below.
+    env: { TZ: 'UTC' },
     globals: false,
     setupFiles: ['src/test-utils/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
