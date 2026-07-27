@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import { Building2 } from 'lucide-react'
 import { cn } from 'components/lib/utils'
@@ -33,6 +34,7 @@ export const ChurchScopeNavItem = ({
   onNavigate,
   variant = 'desktop',
 }: ChurchScopeNavItemProps) => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { clickCard } = useContext(ChurchContext) as any
@@ -44,8 +46,11 @@ export const ChurchScopeNavItem = ({
   )
     return null
 
-  const typeLabel = formatChurchLevel(selectedScope.churchType)
-  const ariaLabel = `View ${selectedScope.churchName} ${typeLabel} details`
+  const typeLabel = formatChurchLevel(selectedScope.churchType, t)
+  const ariaLabel = t('nav.viewChurchDetails', {
+    name: selectedScope.churchName,
+    type: typeLabel,
+  })
 
   const handleClick = () => {
     clickCard({
@@ -75,7 +80,7 @@ export const ChurchScopeNavItem = ({
         onClick={handleClick}
         aria-label={ariaLabel}
         className={cn(
-          'flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors',
+          'flex min-h-11 w-full items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors',
           'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground active:scale-[0.98]'
         )}
       >
@@ -92,7 +97,7 @@ export const ChurchScopeNavItem = ({
       type="button"
       onClick={handleClick}
       aria-label={ariaLabel}
-      title={`${selectedScope.churchName} ${typeLabel}`}
+      title={ariaLabel}
       className={cn(
         'flex h-10 w-full items-center gap-3 rounded-lg px-2.5 text-sm font-medium transition-colors',
         'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground active:scale-[0.98]'

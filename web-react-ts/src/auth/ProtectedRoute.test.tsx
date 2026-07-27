@@ -22,6 +22,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { permitLeader } from 'permission-utils'
+// UnauthMsg (rendered on the deny path) is localized, so the real i18next
+// instance must be registered for its English copy to resolve.
+import 'lib/i18n'
 import type { Role } from 'global-types'
 import ProtectedRoute from './ProtectedRoute'
 

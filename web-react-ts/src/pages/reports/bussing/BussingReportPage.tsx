@@ -1,3 +1,6 @@
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { getHumanReadableDate } from 'global-utils'
 import DateRangePicker from '../_shared/DateRangePicker'
@@ -9,23 +12,30 @@ import { useWeeklyReportQuery } from '../_shared/useWeeklyReportQuery'
 import { BUSSING_REPORT_QUERIES } from '../_shared/reports.gql'
 import type { WeeklyChurchReportEntry } from '../_shared/report-types'
 
-const HEADERS = [
-  { label: 'Year', key: 'year' },
-  { label: 'Week', key: 'week' },
-  { label: 'Bussing Attendance', key: 'bussingAttendance' },
-  { label: 'Bussing Leader Declaration', key: 'bussingLeaderDeclaration' },
-  { label: 'Sprinters', key: 'numberOfSprinters' },
-  { label: 'Urvans', key: 'numberOfUrvans' },
-  { label: 'Cars', key: 'numberOfCars' },
-  { label: 'Bussing Top-Up', key: 'bussingTopUp' },
-  { label: 'Church', key: 'churchName' },
-] as const
+const buildHeaders = (t: TFunction) =>
+  [
+    { label: t('reports.shared.year'), key: 'year' },
+    { label: t('reports.shared.week'), key: 'week' },
+    {
+      label: t('reports.shared.bussingAttendance'),
+      key: 'bussingAttendance',
+    },
+    {
+      label: t('reports.shared.bussingLeaderDeclaration'),
+      key: 'bussingLeaderDeclaration',
+    },
+    { label: t('reports.shared.sprinters'), key: 'numberOfSprinters' },
+    { label: t('reports.shared.urvans'), key: 'numberOfUrvans' },
+    { label: t('reports.shared.cars'), key: 'numberOfCars' },
+    { label: t('reports.shared.bussingTopUp'), key: 'bussingTopUp' },
+    { label: t('reports.shared.church'), key: 'churchName' },
+  ] as const
 
-const PREVIEW_COLUMNS = [
-  { key: 'year', label: 'Year' },
-  { key: 'week', label: 'Week' },
-  { key: 'bussingAttendance', label: 'Bussing Att.' },
-  { key: 'bussingTopUp', label: 'Top-Up' },
+const buildPreviewColumns = (t: TFunction) => [
+  { key: 'year', label: t('reports.shared.year') },
+  { key: 'week', label: t('reports.shared.week') },
+  { key: 'bussingAttendance', label: t('reports.shared.bussingAttShort') },
+  { key: 'bussingTopUp', label: t('reports.shared.topUp') },
 ]
 
 const toRow = (entry: WeeklyChurchReportEntry) => ({
@@ -41,6 +51,7 @@ const toRow = (entry: WeeklyChurchReportEntry) => ({
 })
 
 const BussingReportPage = () => {
+  const { t } = useTranslation()
   const {
     startDate,
     endDate,
@@ -57,6 +68,9 @@ const BussingReportPage = () => {
     reportField: 'weekdayIncomeBussingReport',
   })
 
+  const headers = useMemo(() => buildHeaders(t), [t])
+  const previewColumns = useMemo(() => buildPreviewColumns(t), [t])
+
   const today = new Date().toISOString().slice(0, 10)
   const generatedOn = getHumanReadableDate(today) ?? today
   const safeChurchName = sanitizeFilenamePart(churchName)
@@ -66,19 +80,24 @@ const BussingReportPage = () => {
 
   if (!churchType) {
     return (
-      <ReportPageShell title="Bussing" highlightWord="Report">
+      <ReportPageShell
+        title={t('reports.bussing.title')}
+        highlightWord={t('reports.bussing.report')}
+      >
         <p className="text-sm text-muted-foreground">
-          Select a church scope to download the bussing report.
+          {t('reports.bussing.selectScope')}
         </p>
       </ReportPageShell>
     )
   }
 
+  const levelLabel = t(`shared.churchLevel.${churchType}`)
+
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Bussing"
-      subtitle={`Per-week Sunday bussing totals for this ${churchType.toLowerCase()}.`}
+      highlightWord={t('reports.bussing.title')}
+      subtitle={t('reports.bussing.subtitle', { level: levelLabel })}
     >
       <div className="space-y-6">
         <DateRangePicker
@@ -90,16 +109,18 @@ const BussingReportPage = () => {
 
         <ApolloWrapper data={entries} loading={loading} error={error} placeholder>
           <WeeklyReportDownloadCard
-            title="Bussing"
-            description={`Per-week bussing attendance, leader declaration, vehicles, and top-up for this ${churchType.toLowerCase()}.`}
+            title={t('reports.bussing.title')}
+            description={t('reports.bussing.description', {
+              level: levelLabel,
+            })}
             filename={filename}
             loading={loading}
             rows={entries.map(toRow)}
-            headers={HEADERS}
+            headers={headers}
             entriesCount={entries.length}
             rangeLabel={rangeLabel ?? undefined}
-            previewColumns={PREVIEW_COLUMNS}
-            emptyMessage="No bussing aggregates in the selected range."
+            previewColumns={previewColumns}
+            emptyMessage={t('reports.bussing.emptyMessage')}
           />
         </ApolloWrapper>
       </div>

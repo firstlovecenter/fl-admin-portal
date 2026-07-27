@@ -1,3 +1,4 @@
+import { tOutsideReact } from 'lib/translate-outside-react'
 /**
  * FL Auth Service Client
  * Client library for interacting with the custom authentication microservice
@@ -233,7 +234,9 @@ export function getRolesFromToken(token: string | null): string[] {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
     if (!Array.isArray(payload?.roles)) return []
-    return payload.roles.filter((r: unknown): r is string => typeof r === 'string')
+    return payload.roles.filter(
+      (r: unknown): r is string => typeof r === 'string'
+    )
   } catch {
     return []
   }
@@ -245,7 +248,9 @@ export function getRolesFromToken(token: string | null): string[] {
  * when a refresh returns the same roles.
  */
 export function sameRoles(a: string[] = [], b: string[] = []): boolean {
-  return a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|')
+  return (
+    a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|')
+  )
 }
 
 /**
@@ -262,7 +267,8 @@ export async function signup(data: SignupData): Promise<AuthTokens> {
 
   if (!response.ok) {
     throw new AuthServiceError(
-      result.error || 'Signup failed',
+      result.error ||
+        tOutsideReact('shared.errors.signupFailed', 'Signup failed'),
       result.statusCode || response.status,
       result.requestId
     )
@@ -289,7 +295,8 @@ export async function login(data: LoginData): Promise<AuthTokens> {
 
   if (!response.ok) {
     throw new AuthServiceError(
-      result.error || 'Login failed',
+      result.error ||
+        tOutsideReact('shared.errors.loginFailed', 'Login failed'),
       result.statusCode || response.status,
       result.requestId
     )
@@ -355,7 +362,11 @@ export async function refreshToken(): Promise<{ accessToken: string }> {
 
   if (!response.ok) {
     throw new AuthServiceError(
-      result.error || 'Token refresh failed',
+      result.error ||
+        tOutsideReact(
+          'shared.errors.tokenRefreshFailed',
+          'Token refresh failed'
+        ),
       result.statusCode || response.status,
       result.requestId
     )
@@ -397,7 +408,11 @@ export async function setupPassword(
 
   if (!response.ok) {
     throw new AuthServiceError(
-      result.error || 'Password setup failed',
+      result.error ||
+        tOutsideReact(
+          'shared.errors.passwordSetupFailed',
+          'Password setup failed'
+        ),
       result.statusCode || response.status,
       result.requestId
     )
@@ -422,7 +437,11 @@ export async function resetPassword(
 
   if (!response.ok) {
     throw new AuthServiceError(
-      result.error || 'Password reset failed',
+      result.error ||
+        tOutsideReact(
+          'shared.errors.passwordResetFailed',
+          'Password reset failed'
+        ),
       result.statusCode || response.status,
       result.requestId
     )
@@ -447,7 +466,11 @@ export async function requestPasswordReset(
 
   if (!response.ok) {
     throw new AuthServiceError(
-      result.error || 'Password reset request failed',
+      result.error ||
+        tOutsideReact(
+          'shared.errors.passwordResetRequestFailed',
+          'Password reset request failed'
+        ),
       result.statusCode || response.status,
       result.requestId
     )
@@ -472,7 +495,11 @@ export async function deleteAccount(
 
   if (!response.ok) {
     throw new AuthServiceError(
-      result.error || 'Account deletion failed',
+      result.error ||
+        tOutsideReact(
+          'shared.errors.accountDeletionFailed',
+          'Account deletion failed'
+        ),
       result.statusCode || response.status,
       result.requestId
     )

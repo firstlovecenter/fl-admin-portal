@@ -9,10 +9,18 @@ import { Card, CardContent } from 'components/ui/card'
 import { Input } from 'components/ui/input'
 import { StatCard } from 'components/ui/stat-card'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { Building, ChevronRight, Layers, Plus, Search, Users } from 'lucide-react'
+import {
+  Building,
+  ChevronRight,
+  Layers,
+  Plus,
+  Search,
+  Users,
+} from 'lucide-react'
 import { permitAdmin } from 'permission-utils'
 import { GET_OVERSIGHT_CAMPUSES } from 'queries/ListQueries'
 import { ChangeEvent, useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 type CampusRow = {
@@ -41,6 +49,7 @@ type OversightLeader = {
 const formatCount = (n: number) => n.toLocaleString('en-GH')
 
 const DisplayAllCampuses = () => {
+  const { t } = useTranslation()
   const { clickCard, oversightId } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
 
@@ -77,19 +86,27 @@ const DisplayAllCampuses = () => {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('directory.list.eyebrow')}
               </p>
               <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {oversight?.name ? `${oversight.name} ` : ''}
-                <span className="text-members">Campuses</span>
+                <span className="text-members">
+                  {t('shared.churchLevelPlural.Campus')}
+                </span>
               </h1>
             </div>
             <RoleView roles={permitAdmin('Oversight')} directoryLock>
               <Link to="/campus/addcampus" className="shrink-0">
                 <Button size="sm" className="h-11 gap-2">
                   <Plus className="size-4" />
-                  <span className="hidden sm:inline">Add Campus</span>
-                  <span className="sm:hidden">Add</span>
+                  <span className="hidden sm:inline">
+                    {t('directory.list.add', {
+                      level: t('shared.churchLevel.Campus'),
+                    })}
+                  </span>
+                  <span className="sm:hidden">
+                    {t('directory.list.addShort')}
+                  </span>
                 </Button>
               </Link>
             </RoleView>
@@ -101,10 +118,12 @@ const DisplayAllCampuses = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search campuses"
+                  placeholder={t('directory.list.searchCampuses')}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search campuses"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: t('shared.churchLevelPlural.Campus'),
+                  })}
                 />
               </div>
             </div>
@@ -116,14 +135,21 @@ const DisplayAllCampuses = () => {
             <section className="order-2 space-y-3 lg:order-1">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  {term ? 'Campuses' : 'All Campuses'}
+                  {term
+                    ? t('shared.churchLevelPlural.Campus')
+                    : t('directory.list.allOf', {
+                        levelPlural: t('shared.churchLevelPlural.Campus'),
+                      })}
                 </h2>
                 <span
                   aria-live="polite"
                   className="text-xs tabular-nums text-muted-foreground"
                 >
                   {term
-                    ? `${filtered.length} of ${campuses.length}`
+                    ? t('directory.list.countOfTotal', {
+                        shown: filtered.length,
+                        total: campuses.length,
+                      })
                     : `${campuses.length}`}
                 </span>
               </div>
@@ -133,11 +159,15 @@ const DisplayAllCampuses = () => {
                   <CardContent className="flex flex-col items-center justify-center gap-2 p-8 text-center">
                     <Building className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
-                      {term ? `No matches for "${search}"` : 'No campuses yet'}
+                      {term
+                        ? t('directory.list.noMatchesFor', { term: search })
+                        : t('directory.list.noneYet', {
+                            levelPlural: t('shared.churchLevelPlural.Campus'),
+                          })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {term
-                        ? 'Try a different name or leader.'
+                        ? t('directory.list.tryDifferentNameOrLeader')
                         : 'This oversight has no campuses.'}
                     </p>
                   </CardContent>
@@ -157,7 +187,9 @@ const DisplayAllCampuses = () => {
                         key={campus.id}
                         to="/campus/displaydetails"
                         onClick={() => clickCard(campus)}
-                        aria-label={`Open ${campus.name}`}
+                        aria-label={t('directory.list.openChurch', {
+                          name: campus.name,
+                        })}
                         className="group rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
                       >
                         <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -181,7 +213,7 @@ const DisplayAllCampuses = () => {
                             <p className="truncate text-xs text-muted-foreground">
                               {campus.leader
                                 ? `${campus.leader.firstName} ${campus.leader.lastName}`
-                                : 'No leader'}
+                                : t('directory.list.noLeader')}
                             </p>
                             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                               <Badge
@@ -217,7 +249,7 @@ const DisplayAllCampuses = () => {
               <Card>
                 <CardContent className="p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Oversight
+                    {t('shared.churchLevel.Oversight')}
                   </p>
                   <Link
                     to="/oversight/displaydetails"
@@ -256,10 +288,13 @@ const DisplayAllCampuses = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Overseer
+                              {t('directory.leaderTitle.overseer')}
                             </p>
                             <p className="truncate text-sm font-semibold text-foreground">
-                              {displayName || 'Unnamed Overseer'}
+                              {displayName ||
+                                t('directory.list.unnamed', {
+                                  role: t('directory.leaderTitle.overseer'),
+                                })}
                             </p>
                           </div>
                         </Link>
@@ -293,10 +328,15 @@ const DisplayAllCampuses = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Admin
+                              {t('directory.displayChurchDetails.admin')}
                             </p>
                             <p className="truncate text-sm font-semibold text-foreground">
-                              {displayName || 'Unnamed Admin'}
+                              {displayName ||
+                                t('directory.list.unnamed', {
+                                  role: t(
+                                    'directory.displayChurchDetails.admin'
+                                  ),
+                                })}
                             </p>
                           </div>
                         </Link>
@@ -307,16 +347,19 @@ const DisplayAllCampuses = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <StatCard
-                  label="Campuses"
+                  label={t('shared.churchLevelPlural.Campus')}
                   value={formatCount(campuses.length)}
                   icon={Building}
                   accent="members"
                   compact
                   loading={loading}
                 />
-                <Link to="/oversight/members" className="block hover:opacity-80 active:opacity-70 transition-opacity rounded-xl">
+                <Link
+                  to="/oversight/members"
+                  className="block hover:opacity-80 active:opacity-70 transition-opacity rounded-xl"
+                >
                   <StatCard
-                    label="Members"
+                    label={t('shared.churchesSummary.members')}
                     value={formatCount(oversight?.memberCount ?? 0)}
                     icon={Users}
                     accent="members"
@@ -331,10 +374,12 @@ const DisplayAllCampuses = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search campuses"
+                  placeholder={t('directory.list.searchCampuses')}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search campuses"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: t('shared.churchLevelPlural.Campus'),
+                  })}
                 />
               </div>
             </aside>

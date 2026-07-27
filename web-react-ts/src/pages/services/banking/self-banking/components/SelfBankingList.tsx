@@ -14,7 +14,7 @@ import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceRecord } from 'global-types'
 import { TRANSACTION_STATUS } from '../../banking-constants'
-import { capitalise, throwToSentry } from 'global-utils'
+import { throwToSentry } from 'global-utils'
 import { parseDate } from 'lib/date-utils'
 import {
   AlertCircle,
@@ -27,6 +27,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import ConfirmPaymentButton, {
   ConfirmPaymentServiceType,
@@ -77,13 +78,6 @@ const statusForService = (service: ServiceRecord): StatusVariant => {
   return 'new'
 }
 
-const statusLabel: Record<StatusVariant, string> = {
-  pending: 'Pending',
-  success: 'Banked',
-  failed: 'Failed',
-  new: 'Ready to bank',
-}
-
 const statusBadgeClass: Record<StatusVariant, string> = {
   pending: 'border-warning/40 bg-warning/10 text-warning',
   success: 'border-banking/40 bg-banking/10 text-banking',
@@ -91,13 +85,23 @@ const statusBadgeClass: Record<StatusVariant, string> = {
   new: 'border-brand/30 bg-brand/10 text-brand',
 }
 
-const StatusBadge = ({ variant }: { variant: StatusVariant }) => (
-  <Badge variant="outline" className={statusBadgeClass[variant]}>
-    {variant === 'pending' && <Clock className="mr-1 size-3" />}
-    {variant === 'failed' && <AlertCircle className="mr-1 size-3" />}
-    {statusLabel[variant]}
-  </Badge>
-)
+const statusLabelKey: Record<StatusVariant, string> = {
+  pending: 'services.banking.selfBanking.statusPending',
+  success: 'services.banking.selfBanking.statusBanked',
+  failed: 'services.banking.selfBanking.statusFailed',
+  new: 'services.banking.selfBanking.statusReady',
+}
+
+const StatusBadge = ({ variant }: { variant: StatusVariant }) => {
+  const { t } = useTranslation()
+  return (
+    <Badge variant="outline" className={statusBadgeClass[variant]}>
+      {variant === 'pending' && <Clock className="mr-1 size-3" />}
+      {variant === 'failed' && <AlertCircle className="mr-1 size-3" />}
+      {t(statusLabelKey[variant])}
+    </Badge>
+  )
+}
 
 const SKIP_VALUE = 10
 
@@ -111,6 +115,7 @@ const SelfBankingList = ({
   skip,
   setSkip,
 }: SelfBankingListProps) => {
+  const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const { show, handleShow, handleClose } = popupTools
   const { confirmService, setConfirmService } = confirmationTools
@@ -128,13 +133,18 @@ const SelfBankingList = ({
   )
 
   const hasServices = services.length > 0
+  const howItWorksSteps = [
+    t('services.banking.selfBanking.step1'),
+    t('services.banking.selfBanking.step2'),
+    t('services.banking.selfBanking.step3'),
+  ]
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       {/* Page header */}
       <StickyPageHeader>
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Self-Banking
+          {t('services.banking.selfBanking.title')}
         </p>
         {loading && !church ? (
           <Skeleton className="h-8 w-64" />
@@ -150,7 +160,9 @@ const SelfBankingList = ({
               variant="outline"
               className="border-banking/40 bg-banking/5 font-mono text-banking"
             >
-              Banking Code · {church.bankingCode}
+              {t('services.banking.common.bankingCode', {
+                code: church.bankingCode,
+              })}
             </Badge>
           )}
         </div>
@@ -162,10 +174,10 @@ const SelfBankingList = ({
             <div className="flex items-end justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">
-                  Services to bank
+                  {t('services.banking.selfBanking.servicesToBank')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Tap a service to bank its offering
+                  {t('services.banking.selfBanking.tapToBank')}
                 </p>
               </div>
               <div className="flex items-center gap-1">
@@ -173,7 +185,7 @@ const SelfBankingList = ({
                   variant="outline"
                   size="icon"
                   className="size-11"
-                  aria-label="Older services"
+                  aria-label={t('services.banking.selfBanking.olderServices')}
                   disabled={skip - SKIP_VALUE < 0}
                   onClick={() => setSkip(skip - SKIP_VALUE)}
                 >
@@ -183,7 +195,7 @@ const SelfBankingList = ({
                   variant="outline"
                   size="icon"
                   className="size-11"
-                  aria-label="Newer services"
+                  aria-label={t('services.banking.selfBanking.newerServices')}
                   disabled={(church?.services?.length ?? 0) < SKIP_VALUE}
                   onClick={() => {
                     if ((church?.services?.length ?? 0) < SKIP_VALUE) return
@@ -211,11 +223,10 @@ const SelfBankingList = ({
                   </span>
                   <div className="space-y-1">
                     <p className="text-base font-medium text-foreground">
-                      Nothing to bank yet
+                      {t('services.banking.common.nothingToBank')}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      When you record a service with cash, it will show up here
-                      ready to bank.
+                      {t('services.banking.selfBanking.nothingToBankHint')}
                     </p>
                   </div>
                 </CardContent>
@@ -256,13 +267,10 @@ const SelfBankingList = ({
                             {parseDate(service.serviceDate.date)}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Offering ·{' '}
+                            {t('services.banking.common.offering')} ·{' '}
                             <span className="font-mono tabular-nums text-foreground">
                               {service.cash}
                             </span>
-                            {service.transactionStatus
-                              ? ` · ${capitalise(service.transactionStatus)}`
-                              : ''}
                           </p>
                         </div>
                         <StatusBadge variant={variant} />
@@ -285,19 +293,15 @@ const SelfBankingList = ({
                   </span>
                   <div className="space-y-0.5">
                     <h3 className="text-sm font-semibold text-foreground">
-                      How self-banking works
+                      {t('services.banking.selfBanking.howItWorks')}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Three quick steps
+                      {t('services.banking.selfBanking.threeQuickSteps')}
                     </p>
                   </div>
                 </div>
                 <ol className="space-y-3 text-sm">
-                  {[
-                    'Pick a service to bank from the list.',
-                    'Enter your MoMo number — we send a prompt to authorise.',
-                    'Approve on your phone, then confirm here.',
-                  ].map((step, i) => (
+                  {howItWorksSteps.map((step, i) => (
                     <li key={step} className="flex items-start gap-3">
                       <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground tabular-nums">
                         {i + 1}
@@ -312,11 +316,10 @@ const SelfBankingList = ({
             <Card>
               <CardContent className="space-y-2 p-5">
                 <h3 className="text-sm font-semibold text-foreground">
-                  Need help?
+                  {t('services.banking.selfBanking.needHelp')}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  If a transaction looks stuck or charges look off, tap the
-                  service and reach out to your stream administrator.
+                  {t('services.banking.selfBanking.needHelpBody')}
                 </p>
               </CardContent>
             </Card>
@@ -328,10 +331,11 @@ const SelfBankingList = ({
       <Dialog open={show} onOpenChange={(open) => (open ? handleShow() : handleClose())}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirm pending payment</DialogTitle>
+            <DialogTitle>
+              {t('services.banking.selfBanking.confirmPendingTitle')}
+            </DialogTitle>
             <DialogDescription>
-              Your transaction status is still pending. Tap below to confirm
-              with the network.
+              {t('services.banking.selfBanking.confirmPendingBody')}
             </DialogDescription>
           </DialogHeader>
           <ConfirmPaymentButton

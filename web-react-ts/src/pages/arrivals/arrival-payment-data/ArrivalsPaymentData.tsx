@@ -1,6 +1,14 @@
 import { useContext, useMemo, useState } from 'react'
 import { CSVLink } from 'react-csv'
-import { Bus, CalendarDays, ChevronDown, ChevronUp, ChevronsUpDown, Download, Inbox } from 'lucide-react'
+import {
+  Bus,
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Download,
+  Inbox,
+} from 'lucide-react'
 import {
   createColumnHelper,
   flexRender,
@@ -73,7 +81,10 @@ const getHeaders = (t: (key: string) => string) => [
   { label: t('arrivals.payment.leader'), key: 'leader' },
   { label: t('arrivals.payment.bacentaCode'), key: 'bacentaCode' },
   { label: t('arrivals.payment.attendance'), key: 'attendance' },
-  { label: t('arrivals.payment.confirmedAttendance'), key: 'confirmedAttendance' },
+  {
+    label: t('arrivals.payment.confirmedAttendance'),
+    key: 'confirmedAttendance',
+  },
   { label: t('arrivals.payment.vehicle'), key: 'vehicle' },
   { label: t('arrivals.payment.inAndOut'), key: 'outbound' },
   { label: t('arrivals.payment.topUp'), key: 'topUp' },
@@ -168,16 +179,12 @@ const ArrivalsPaymentData = () => {
       columnHelper.accessor('attendance', {
         header: t('arrivals.payment.attendance'),
         sortingFn: 'basic',
-        cell: (info) => (
-          <span className="tabular-nums">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
       }),
       columnHelper.accessor('confirmedAttendance', {
         header: t('arrivals.payment.confirmed'),
         sortingFn: 'basic',
-        cell: (info) => (
-          <span className="tabular-nums">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
       }),
       columnHelper.accessor('vehicle', {
         header: t('arrivals.payment.vehicle'),
@@ -206,7 +213,9 @@ const ArrivalsPaymentData = () => {
         header: t('arrivals.payment.cost'),
         sortingFn: 'basic',
         cell: (info) => (
-          <span className="tabular-nums">{info.getValue().toLocaleString(i18n.language)}</span>
+          <span className="tabular-nums">
+            {info.getValue().toLocaleString(i18n.language)}
+          </span>
         ),
       }),
       columnHelper.accessor('momoNumber', {
@@ -240,7 +249,10 @@ const ArrivalsPaymentData = () => {
     currentUser?.stream_name
 
   const csvFilename = streamName
-    ? t('arrivals.payment.csvFilenameWithStream', { streamName, date: humanDate })
+    ? t('arrivals.payment.csvFilenameWithStream', {
+        streamName,
+        date: humanDate,
+      })
     : t('arrivals.payment.csvFilename', { date: humanDate })
 
   const summaryCard = (
@@ -256,7 +268,9 @@ const ArrivalsPaymentData = () => {
             <CalendarDays className="size-4 text-arrivals" />
           </div>
           <div className="min-w-0 flex-1">
-            <dt className="text-xs text-muted-foreground">{t('arrivals.payment.date')}</dt>
+            <dt className="text-xs text-muted-foreground">
+              {t('arrivals.payment.date')}
+            </dt>
             <dd className="text-sm font-medium text-foreground truncate">
               {humanDate}
             </dd>
@@ -267,7 +281,9 @@ const ArrivalsPaymentData = () => {
             <Bus className="size-4 text-arrivals" />
           </div>
           <div className="min-w-0 flex-1">
-            <dt className="text-xs text-muted-foreground">{t('arrivals.common.vehicles')}</dt>
+            <dt className="text-xs text-muted-foreground">
+              {t('arrivals.common.vehicles')}
+            </dt>
             <dd className="text-sm font-medium text-foreground tabular-nums">
               {showInitialLoading ? (
                 <Skeleton className="h-4 w-12" />
@@ -291,10 +307,7 @@ const ArrivalsPaymentData = () => {
         <p className="text-sm text-muted-foreground">
           {humanDate}
           {totalCount !== undefined && (
-            <>
-              {' '}
-              · {t('arrivals.payment.vehicleCount', { count: totalCount })}
-            </>
+            <> · {t('arrivals.payment.vehicleCount', { count: totalCount })}</>
           )}
         </p>
       </StickyPageHeader>
@@ -323,68 +336,68 @@ const ArrivalsPaymentData = () => {
             ) : (
               <div className="overflow-hidden rounded-xl border border-border bg-card">
                 <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-muted/40">
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <TableRow
-                        key={headerGroup.id}
-                        className="border-b border-border hover:bg-transparent"
-                      >
-                        {headerGroup.headers.map((header) => (
-                          <TableHead
-                            key={header.id}
-                            className="px-4 py-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                          >
-                            {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                              <button
-                                type="button"
-                                onClick={(e) =>
-                                  header.column.getToggleSortingHandler()?.(e)
-                                }
-                                className="-ml-1 flex min-h-11 items-center gap-1 rounded px-1 transition-colors hover:text-foreground"
-                              >
-                                {flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                                <SortIcon
-                                  sorted={header.column.getIsSorted()}
-                                />
-                              </button>
-                            ) : (
-                              <div className="flex min-h-11 items-center">
-                                {flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                              </div>
-                            )}
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableHeader>
-                  <TableBody>
-                    {table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        className="border-b border-border"
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell
-                            key={cell.id}
-                            className="px-4 py-3 text-sm"
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                  <Table>
+                    <TableHeader className="bg-muted/40">
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow
+                          key={headerGroup.id}
+                          className="border-b border-border hover:bg-transparent"
+                        >
+                          {headerGroup.headers.map((header) => (
+                            <TableHead
+                              key={header.id}
+                              className="px-4 py-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                            >
+                              {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) =>
+                                    header.column.getToggleSortingHandler()?.(e)
+                                  }
+                                  className="-ml-1 flex min-h-11 items-center gap-1 rounded px-1 transition-colors hover:text-foreground"
+                                >
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                                  <SortIcon
+                                    sorted={header.column.getIsSorted()}
+                                  />
+                                </button>
+                              ) : (
+                                <div className="flex min-h-11 items-center">
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                                </div>
+                              )}
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableHeader>
+                    <TableBody>
+                      {table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="border-b border-border"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell
+                              key={cell.id}
+                              className="px-4 py-3 text-sm"
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
                 {fetchingMore && (
                   <div className="space-y-2 p-4">
@@ -393,7 +406,9 @@ const ArrivalsPaymentData = () => {
                     <Skeleton className="h-12 w-full rounded" />
                   </div>
                 )}
-                {hasMore && <div ref={sentinelRef} aria-hidden className="h-1" />}
+                {hasMore && (
+                  <div ref={sentinelRef} aria-hidden className="h-1" />
+                )}
               </div>
             )}
           </div>

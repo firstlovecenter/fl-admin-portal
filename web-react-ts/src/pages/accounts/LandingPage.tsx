@@ -11,6 +11,7 @@ import useSetUserChurch from 'hooks/useSetUserChurch'
 import { ChevronRight, Layers, Users } from 'lucide-react'
 import { GET_STREAM_COUNCILS } from 'queries/ListQueries'
 import { useContext, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
@@ -35,6 +36,7 @@ type CouncilOption = {
 const formatCount = (n: number) => n.toLocaleString('en-GH')
 
 const AccountsLandingPage = () => {
+  const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const { selectedScope } = useChurchRoleScope()
   const { setUserChurch } = useSetUserChurch()
@@ -77,14 +79,20 @@ const AccountsLandingPage = () => {
           {isStreamScope && !stream?.name ? (
             <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
           ) : (
-            <>{stream?.name ? `${stream.name} Council ` : 'Council '}</>
+            <>
+              {stream?.name
+                ? `${t('accounts.landing.councilAccountsTitle', {
+                    name: stream.name,
+                  })} `
+                : `${t('accounts.landing.councilAccountsFallback')} `}
+            </>
           )}
-          <span className="text-banking">Accounts</span>
+          <span className="text-banking">{t('accounts.common.title')}</span>
         </h1>
         <p className="text-sm text-muted-foreground">
           {isStreamScope
-            ? 'Choose a council to continue.'
-            : 'Switch to a Stream, Council, or Campus scope to view accounts.'}
+            ? t('accounts.landing.chooseCouncil')
+            : t('accounts.landing.switchScopeHint')}
         </p>
       </StickyPageHeader>
       <main className="mx-auto max-w-2xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -95,10 +103,10 @@ const AccountsLandingPage = () => {
                 <CardContent className="flex flex-col items-center justify-center gap-2 p-8 text-center">
                   <Layers className="size-8 text-muted-foreground" />
                   <p className="text-sm font-medium text-foreground">
-                    No councils yet
+                    {t('accounts.landing.noCouncilsYet')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    This stream has no councils.
+                    {t('accounts.landing.noCouncilsBody')}
                   </p>
                 </CardContent>
               </Card>
@@ -131,7 +139,9 @@ const AccountsLandingPage = () => {
                         clickCard(churchPayload)
                         setUserChurch(churchPayload)
                       }}
-                      aria-label={`Open ${council.name} accounts`}
+                      aria-label={t('accounts.landing.openAccountsAria', {
+                        name: council.name,
+                      })}
                       className="group block rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
                     >
                       <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -149,7 +159,7 @@ const AccountsLandingPage = () => {
                             {council.name}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {leaderName || 'No leader'}
+                            {leaderName || t('accounts.common.noLeader')}
                           </p>
                           {typeof council.memberCount === 'number' && (
                             <div className="mt-1.5">

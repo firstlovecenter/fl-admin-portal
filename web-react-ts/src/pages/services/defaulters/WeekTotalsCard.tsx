@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Card, CardContent } from 'components/ui/card'
 import { Separator } from 'components/ui/separator'
@@ -36,11 +37,13 @@ type WeekTotalsCardProps = {
 }
 
 const WeekTotalsCard = ({ week, items, loading }: WeekTotalsCardProps) => {
+  const { t } = useTranslation()
+
   return (
     <Card>
       <CardContent className="space-y-3 p-4 lg:space-y-4 lg:p-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Week {week} totals
+          {t('services.defaulters.weekTotals', { week })}
         </p>
 
         {/* Mobile compact rows */}

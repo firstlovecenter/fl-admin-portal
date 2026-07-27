@@ -17,9 +17,17 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from 'components/ui/breadcrumb'
-import { Building2, ChevronRight, Layers, Plus, Search, Users } from 'lucide-react'
+import {
+  Building2,
+  ChevronRight,
+  Layers,
+  Plus,
+  Search,
+  Users,
+} from 'lucide-react'
 import { permitAdmin } from 'permission-utils'
 import { ChangeEvent, useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { GET_STREAM_COUNCILS_WITH_GOVERNORSHIPS } from './ReadQueries'
 
@@ -63,6 +71,7 @@ const GovernorshipCard = ({
   governorship: GovernorshipRow
   onClick: () => void
 }) => {
+  const { t } = useTranslation()
   const initials =
     `${governorship.leader?.firstName?.[0] ?? ''}${
       governorship.leader?.lastName?.[0] ?? ''
@@ -74,7 +83,7 @@ const GovernorshipCard = ({
     <Link
       to="/governorship/displaydetails"
       onClick={onClick}
-      aria-label={`Open ${governorship.name}`}
+      aria-label={t('directory.list.openChurch', { name: governorship.name })}
       className="group rounded-xl border border-border bg-background transition-colors hover:bg-muted/40 active:bg-muted"
     >
       <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -95,13 +104,13 @@ const GovernorshipCard = ({
           <p className="truncate text-base font-semibold text-foreground">
             {governorship.name}{' '}
             <span className="text-xs font-normal text-muted-foreground">
-              Governorship
+              {t('shared.churchLevel.Governorship')}
             </span>
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {governorship.leader
               ? `${governorship.leader.firstName} ${governorship.leader.lastName}`
-              : 'No leader'}
+              : t('directory.list.noLeader')}
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <Badge variant="outline" className="gap-1 px-2 py-0.5">
@@ -135,12 +144,13 @@ const CouncilSection = ({
   onOpenGovernorship: (g: GovernorshipRow) => void
   onOpenCouncil: (c: CouncilGroup) => void
 }) => {
+  const { t } = useTranslation()
   const leader = group.leader
   const leaderName =
     leader?.nameWithTitle ||
     leader?.fullName ||
     [leader?.firstName, leader?.lastName].filter(Boolean).join(' ') ||
-    'No leader'
+    t('directory.list.noLeader')
   const leaderInitials =
     `${leader?.firstName?.[0] ?? ''}${leader?.lastName?.[0] ?? ''}` ||
     group.name?.charAt(0) ||
@@ -154,13 +164,13 @@ const CouncilSection = ({
             to="/council/displaydetails"
             onClick={() => onOpenCouncil(group)}
             className="flex min-w-0 items-center gap-3 hover:opacity-80 active:opacity-70"
-            aria-label={`Open ${group.name} council`}
+            aria-label={t('directory.list.openNamedLevel', {
+              name: group.name,
+              level: t('shared.churchLevel.Council'),
+            })}
           >
             <Avatar className="size-10 shrink-0">
-              <AvatarImage
-                src={leader?.pictureUrl}
-                alt={leaderName}
-              />
+              <AvatarImage src={leader?.pictureUrl} alt={leaderName} />
               <AvatarFallback className="bg-members/10 text-xs font-medium text-members">
                 {leaderInitials}
               </AvatarFallback>
@@ -169,7 +179,7 @@ const CouncilSection = ({
               <h2 className="truncate text-base font-semibold text-foreground">
                 {group.name}{' '}
                 <span className="text-xs font-normal text-muted-foreground">
-                  Council
+                  {t('shared.churchLevel.Council')}
                 </span>
               </h2>
               <p className="truncate text-xs text-muted-foreground">
@@ -188,7 +198,9 @@ const CouncilSection = ({
         {group.governorships.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">
             {term
-              ? 'No governorships match your search.'
+              ? t('directory.list.noneMatchSearch', {
+                  levelPlural: t('shared.churchLevelPlural.Governorship'),
+                })
               : 'This council has no governorships yet.'}
           </p>
         ) : (
@@ -231,6 +243,7 @@ const LoadingSkeleton = () => (
 )
 
 const AllStreamGovernorships = () => {
+  const { t } = useTranslation()
   const { clickCard, streamId } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
 
@@ -279,19 +292,27 @@ const AllStreamGovernorships = () => {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('directory.list.eyebrow')}
               </p>
               <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {stream?.name ? `${stream.name} ` : ''}
-                <span className="text-members">Governorships</span>
+                <span className="text-members">
+                  {t('shared.churchLevelPlural.Governorship')}
+                </span>
               </h1>
             </div>
             <RoleView roles={permitAdmin('Stream')} directoryLock>
               <Link to="/governorship/addgovernorship" className="shrink-0">
                 <Button size="sm" className="h-11 gap-2">
                   <Plus className="size-4" />
-                  <span className="hidden sm:inline">Add Governorship</span>
-                  <span className="sm:hidden">Add</span>
+                  <span className="hidden sm:inline">
+                    {t('directory.list.add', {
+                      level: t('shared.churchLevel.Governorship'),
+                    })}
+                  </span>
+                  <span className="sm:hidden">
+                    {t('directory.list.addShort')}
+                  </span>
                 </Button>
               </Link>
             </RoleView>
@@ -299,15 +320,23 @@ const AllStreamGovernorships = () => {
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
               <BreadcrumbList className="text-xs">
-                <BreadcrumbItem><span>Stream</span></BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem><span>Council</span></BreadcrumbItem>
-                <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold text-members">Governorship</BreadcrumbPage>
+                  <span>{t('shared.churchLevel.Stream')}</span>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
-                <BreadcrumbItem><span>Bacenta</span></BreadcrumbItem>
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Council')}</span>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-semibold text-members">
+                    {t('shared.churchLevel.Governorship')}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Bacenta')}</span>
+                </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
@@ -318,10 +347,14 @@ const AllStreamGovernorships = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search governorships or councils"
+                  placeholder={t(
+                    'directory.list.searchGovernorshipsOrCouncils'
+                  )}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search governorships"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: t('shared.churchLevelPlural.Governorship'),
+                  })}
                 />
               </div>
             </div>
@@ -339,12 +372,22 @@ const AllStreamGovernorships = () => {
                     <Building2 className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
                       {totalGovernorships === 0
-                        ? 'No governorships in this stream yet.'
-                        : `No governorships match "${search}".`}
+                        ? t('directory.list.noneInYet', {
+                            levelPlural: t(
+                              'shared.churchLevelPlural.Governorship'
+                            ),
+                            parent: t('shared.churchLevel.Stream'),
+                          })
+                        : t('directory.list.noneMatchTerm', {
+                            levelPlural: t(
+                              'shared.churchLevelPlural.Governorship'
+                            ),
+                            term: search,
+                          })}
                     </p>
                     {totalGovernorships > 0 && (
                       <p className="text-xs text-muted-foreground">
-                        Try a different name, leader, or council.
+                        {t('directory.list.tryDifferentNameLeaderCouncil')}
                       </p>
                     )}
                   </CardContent>
@@ -366,7 +409,7 @@ const AllStreamGovernorships = () => {
               <Card>
                 <CardContent className="p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Stream
+                    {t('shared.churchLevel.Stream')}
                   </p>
                   <Link
                     to="/stream/displaydetails"
@@ -397,10 +440,13 @@ const AllStreamGovernorships = () => {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                          Overseer
+                          {t('directory.leaderTitle.overseer')}
                         </p>
                         <p className="truncate text-sm font-semibold text-foreground">
-                          {stream.leader.fullName || 'Unnamed Overseer'}
+                          {stream.leader.fullName ||
+                            t('directory.list.unnamed', {
+                              role: t('directory.leaderTitle.overseer'),
+                            })}
                         </p>
                       </div>
                     </Link>
@@ -424,12 +470,15 @@ const AllStreamGovernorships = () => {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                          Admin
+                          {t('directory.displayChurchDetails.admin')}
                         </p>
                         <p className="truncate text-sm font-semibold text-foreground">
                           {[stream.admin.firstName, stream.admin.lastName]
                             .filter(Boolean)
-                            .join(' ') || 'Unnamed Admin'}
+                            .join(' ') ||
+                            t('directory.list.unnamed', {
+                              role: t('directory.displayChurchDetails.admin'),
+                            })}
                         </p>
                       </div>
                     </Link>
@@ -439,7 +488,7 @@ const AllStreamGovernorships = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <StatCard
-                  label="Governorships"
+                  label={t('shared.churchLevelPlural.Governorship')}
                   value={formatCount(totalGovernorships)}
                   icon={Building2}
                   accent="members"
@@ -447,7 +496,7 @@ const AllStreamGovernorships = () => {
                   loading={loading}
                 />
                 <StatCard
-                  label="Councils"
+                  label={t('shared.churchLevelPlural.Council')}
                   value={formatCount(councils.length)}
                   icon={Layers}
                   accent="members"
@@ -461,10 +510,14 @@ const AllStreamGovernorships = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search governorships or councils"
+                  placeholder={t(
+                    'directory.list.searchGovernorshipsOrCouncils'
+                  )}
                   value={search}
                   onChange={handleSearch}
-                  aria-label="Search governorships"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: t('shared.churchLevelPlural.Governorship'),
+                  })}
                 />
               </div>
             </aside>

@@ -18,6 +18,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 type ChurchLike = {
@@ -54,6 +55,7 @@ const BankingSlipList = ({
   error,
   levelSlug,
 }: BankingSlipListProps) => {
+  const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
@@ -75,13 +77,16 @@ const BankingSlipList = ({
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       <StickyPageHeader>
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Banking Slips
+          {t('services.banking.bankingSlip.title')}
         </p>
         {loading && !church ? (
           <Skeleton className="h-9 w-72" />
         ) : (
           <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-            {church?.name} <span className="text-banking">Banking Slips</span>
+            {church?.name}{' '}
+            <span className="text-banking">
+              {t('services.banking.bankingSlip.titleHighlight')}
+            </span>
           </h1>
         )}
         <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -90,13 +95,18 @@ const BankingSlipList = ({
               variant="outline"
               className="border-banking/40 bg-banking/5 font-mono text-banking"
             >
-              Banking Code · {church.bankingCode}
+              {t('services.banking.common.bankingCode', {
+                code: church.bankingCode,
+              })}
             </Badge>
           )}
           {!loading && hasServices && (
             <Badge variant="outline" className="text-muted-foreground">
-              {filledCount}/{services.length} slip
-              {services.length === 1 ? '' : 's'} filled
+              {t('services.banking.bankingSlip.slipsFilled', {
+                count: services.length,
+                filled: filledCount,
+                total: services.length,
+              })}
             </Badge>
           )}
         </div>
@@ -107,10 +117,10 @@ const BankingSlipList = ({
           <section className="space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-foreground">
-                Services awaiting banking slip
+                {t('services.banking.bankingSlip.awaitingSlip')}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Tap a service to upload its slip
+                {t('services.banking.bankingSlip.tapToUpload')}
               </p>
             </div>
 
@@ -130,10 +140,10 @@ const BankingSlipList = ({
                   </span>
                   <div className="space-y-1">
                     <p className="text-base font-medium text-foreground">
-                      Nothing to bank yet
+                      {t('services.banking.common.nothingToBank')}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      When you have a service to bank, it will show up here.
+                      {t('services.banking.bankingSlip.nothingToBankHint')}
                     </p>
                   </div>
                 </CardContent>
@@ -163,7 +173,7 @@ const BankingSlipList = ({
                             {parseDate(service.serviceDate.date)}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Offering ·{' '}
+                            {t('services.banking.common.offering')} ·{' '}
                             <span className="font-mono tabular-nums text-foreground">
                               {formatOffering(service.income, currency)}
                             </span>
@@ -175,7 +185,7 @@ const BankingSlipList = ({
                             className="border-banking/40 bg-banking/10 text-banking"
                           >
                             <CheckCircle2 className="mr-1 size-3" />
-                            Filled
+                            {t('services.banking.bankingSlip.filled')}
                           </Badge>
                         ) : (
                           <Badge
@@ -183,7 +193,7 @@ const BankingSlipList = ({
                             className="border-destructive/40 bg-destructive/10 text-destructive"
                           >
                             <XCircle className="mr-1 size-3" />
-                            Not Filled
+                            {t('services.banking.bankingSlip.notFilled')}
                           </Badge>
                         )}
                         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -205,22 +215,21 @@ const BankingSlipList = ({
                   </span>
                   <div className="space-y-0.5">
                     <h3 className="text-sm font-semibold text-foreground">
-                      About banking slips
+                      {t('services.banking.bankingSlip.aboutTitle')}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Confirm what was banked
+                      {t('services.banking.bankingSlip.aboutSubtitle')}
                     </p>
                   </div>
                 </div>
                 <p className="text-sm text-foreground">
-                  Upload a photo of the bank deposit slip for each service so
-                  the offering can be reconciled with what was banked.
+                  {t('services.banking.bankingSlip.aboutBody')}
                 </p>
                 <ol className="space-y-3 text-sm">
                   {[
-                    'Pick a service from the list.',
-                    'Snap a clear photo of the deposit slip.',
-                    'Submit — the slip is attached to the record.',
+                    t('services.banking.bankingSlip.step1'),
+                    t('services.banking.bankingSlip.step2'),
+                    t('services.banking.bankingSlip.step3'),
                   ].map((step, i) => (
                     <li key={step} className="flex items-start gap-3">
                       <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground tabular-nums">
@@ -242,23 +251,25 @@ const BankingSlipList = ({
                     </span>
                     <div className="space-y-0.5">
                       <h3 className="text-sm font-semibold text-foreground">
-                        Slip status
+                        {t('services.banking.bankingSlip.slipStatus')}
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        Across visible services
+                        {t('services.banking.bankingSlip.acrossVisible')}
                       </p>
                     </div>
                   </div>
                   <dl className="grid grid-cols-2 gap-3">
                     <div className="rounded-lg border border-border bg-muted/30 p-3">
-                      <dt className="text-xs text-muted-foreground">Filled</dt>
+                      <dt className="text-xs text-muted-foreground">
+                        {t('services.banking.bankingSlip.filled')}
+                      </dt>
                       <dd className="text-lg font-semibold tabular-nums text-banking">
                         {filledCount}
                       </dd>
                     </div>
                     <div className="rounded-lg border border-border bg-muted/30 p-3">
                       <dt className="text-xs text-muted-foreground">
-                        Outstanding
+                        {t('services.banking.bankingSlip.outstanding')}
                       </dt>
                       <dd className="text-lg font-semibold tabular-nums text-foreground">
                         {pendingCount}

@@ -1,31 +1,43 @@
+import { Trans, useTranslation } from 'react-i18next'
+
 const Sabbath = () => {
+  const { t } = useTranslation()
+
   return (
     <div className="min-h-svh bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-6">
         <div className="text-center">
+          {/* One key, not a `title` + `titleAccent` pair: splitting the
+              sentence around the accent span forced every language to put the
+              emphasis in English word order. Spanish rendered "Hoy es el
+              ¡Sábado!", stranding the inverted exclamation mid-sentence. */}
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Today is the <span className="text-brand">Sabbath!</span>
+            <Trans
+              i18nKey="shared.sabbath.title"
+              components={{ 1: <span className="text-brand" /> }}
+            />
           </h1>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-xl border border-border bg-card p-6 space-y-3">
             <p className="text-sm font-semibold text-muted-foreground">
-              Exodus 20:8-10
+              {t('shared.sabbath.reference')}
             </p>
             <p className="text-sm text-foreground leading-relaxed">
-              Remember the sabbath day, to keep it holy. Six days shalt thou
-              labour, and do all thy work: But the seventh day is the sabbath of
-              the LORD thy God: in it{' '}
-              <b className="text-destructive">thou shalt not do any work...</b>
+              {t('shared.sabbath.verse')}{' '}
+              <b className="text-destructive">
+                {t('shared.sabbath.verseEmphasis')}
+              </b>
             </p>
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6 space-y-3">
             <p className="text-sm text-foreground leading-relaxed">
-              After you are born again, you must show your respect for God by
-              honouring the Sabbath day.
+              {t('shared.sabbath.quote')}
             </p>
+            {/* A person's name — never translated, per the do-not-translate
+                list in kb/01-glossary.md. */}
             <p className="text-sm font-bold text-right text-muted-foreground">
               - Dag Heward-Mills
             </p>

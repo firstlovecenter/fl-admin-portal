@@ -2,6 +2,9 @@ import { afterEach, describe, it, expect } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
 import { ChurchContext } from 'contexts/ChurchContext'
+// ArrivalTimes renders through useTranslation now — register the real
+// instance or every label comes back as its raw key.
+import 'lib/i18n'
 import TestProvider from 'TestProvider'
 import ArrivalTimes from './ArrivalTimes'
 

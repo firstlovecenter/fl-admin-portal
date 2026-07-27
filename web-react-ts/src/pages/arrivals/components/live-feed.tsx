@@ -6,10 +6,7 @@ import { cn } from 'components/lib/utils'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
 import { useTranslation } from 'react-i18next'
 
-export const POLL_SECONDS = Math.max(
-  1,
-  Math.round(SHORT_POLL_INTERVAL / 1000)
-)
+export const POLL_SECONDS = Math.max(1, Math.round(SHORT_POLL_INTERVAL / 1000))
 
 export type StatusTone =
   | 'defaulters'
@@ -151,7 +148,10 @@ export const LiveDot = () => (
   </span>
 )
 
-const formatRelative = (t: (key: string, options?: { count: number }) => string, ms: number) => {
+const formatRelative = (
+  t: (key: string, options?: { count: number }) => string,
+  ms: number
+) => {
   if (ms < 5_000) return t('arrivals.dashboard.updatedJustNow')
   const s = Math.floor(ms / 1000)
   if (s < 60) return t('arrivals.dashboard.updatedSecondsAgo', { count: s })

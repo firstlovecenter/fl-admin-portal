@@ -1,4 +1,5 @@
 import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@apollo/client'
 import { Link } from 'react-router-dom'
 import {
@@ -28,18 +29,10 @@ import {
   formatIncomeStat,
   GraphTypes,
 } from './graphs-utils'
+import { denominationGraphOptions, getGraphPageLabels } from './graph-labels'
 
 const TREND_HISTORY_WEEKS = 24
 const WINDOW_SIZE = 4
-
-// Denomination has no individual service records — only network-wide aggregates.
-// Money here consolidates campuses across many currencies, so in practice income
-// is the USD total; the currency travels on each aggregate (see `incomeCurrency`)
-// so the label stays correct if the network ever becomes single-currency.
-const DENOMINATION_GRAPH_OPTIONS: { value: GraphTypes; label: string }[] = [
-  { value: 'serviceAggregate', label: 'All Services' },
-  { value: 'bussingAggregate', label: 'All Bussing' },
-]
 
 const formatStat = (value: string | undefined) =>
   value && value !== 'NaN'
@@ -47,6 +40,9 @@ const formatStat = (value: string | undefined) =>
     : '—'
 
 const DenominationGraphs = () => {
+  const { t } = useTranslation()
+  const labels = getGraphPageLabels(t, 'Denomination')
+  const graphOptions = useMemo(() => denominationGraphOptions(t), [t])
   const { denominationId } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const [graphs, setGraphs] = useState<GraphTypes>('serviceAggregate')
@@ -64,18 +60,20 @@ const DenominationGraphs = () => {
       getServiceGraphData(
         denomination,
         'serviceAggregate',
-        TREND_HISTORY_WEEKS
+        TREND_HISTORY_WEEKS,
+        t
       ) || [],
-    [denomination]
+    [denomination, t]
   )
   const rawBussingData = useMemo(
     () =>
       getServiceGraphData(
         denomination,
         'bussingAggregate',
-        TREND_HISTORY_WEEKS
+        TREND_HISTORY_WEEKS,
+        t
       ) || [],
-    [denomination]
+    [denomination, t]
   )
 
   const bussingData = useMemo(() => {
@@ -133,7 +131,8 @@ const DenominationGraphs = () => {
   const avgIncomeDisplay = formatIncomeStat(
     avgIncomeRaw,
     incomeTracked,
-    incomeCurrency
+    incomeCurrency,
+    t
   )
 
   const canGoOlder = windowStart > 0
@@ -156,21 +155,19 @@ const DenominationGraphs = () => {
         year: Number(d.year ?? 0),
       }))
       .filter((e) => Number.isFinite(e.week) && e.week > 0)
-    if (!validEntries.length) return 'No service data'
+    if (!validEntries.length) return labels.noServiceData
 
     const sorted = [...validEntries].sort(
       (a, b) => a.year * 100 + a.week - (b.year * 100 + b.week)
     )
     const first = sorted[0]
     const last = sorted[sorted.length - 1]
-    const formatWeekYear = (w: number, y: number) =>
-      y ? `W${w}'${String(y).slice(-2)}` : `W${w}`
 
     if (first.year === last.year) {
-      return `Weeks ${first.week} – ${last.week} (${first.year})`
+      return labels.weeksRange(first.week, last.week, first.year)
     }
-    return `${formatWeekYear(first.week, first.year)} – ${formatWeekYear(last.week, last.year)}`
-  }, [windowedData])
+    return `${labels.weekShort(first.week, first.year)} – ${labels.weekShort(last.week, last.year)}`
+  }, [windowedData, labels])
 
   const showIncomeBar =
     !isBussingTab && !!getMonthlyStatAverage(windowedData, 'income')
@@ -180,8 +177,8 @@ const DenominationGraphs = () => {
       <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
         <StickyPageHeader>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {denomination?.name ?? 'Denomination'}{' '}
-            <span className="text-churches">Trends</span>
+            {denomination?.name ?? labels.fallbackChurchName}{' '}
+            <span className="text-churches">{labels.trends}</span>
           </h1>
         </StickyPageHeader>
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -189,7 +186,7 @@ const DenominationGraphs = () => {
             <CardContent className="px-4 py-3 sm:px-5">
               <LeaderAvatar
                 leader={denomination?.leader}
-                leaderTitle="Denomination Leader"
+                leaderTitle={labels.leaderTitle}
                 loading={!denomination}
               />
             </CardContent>
@@ -202,18 +199,18 @@ const DenominationGraphs = () => {
             >
               <StatCard
                 compact
-                label="Membership"
+                label={labels.membership}
                 value={denomination?.memberCount ?? 0}
                 icon={Users}
                 accent="members"
-                hint="Tap to view"
+                hint={labels.tapToView}
                 loading={!denomination}
               />
             </Link>
 
             <StatCard
               compact
-              label="Avg Weekly Bussing"
+              label={labels.avgWeeklyBussing}
               value={avgBussing}
               icon={Bus}
               accent="defaulters"
@@ -222,7 +219,7 @@ const DenominationGraphs = () => {
 
             <StatCard
               compact
-              label="Avg Weekly Attendance"
+              label={labels.avgWeeklyAttendance}
               value={avgAttendance}
               icon={TrendingUp}
               accent="churches"
@@ -231,7 +228,7 @@ const DenominationGraphs = () => {
 
             <StatCard
               compact
-              label={`Avg Weekly Income (${incomeCurrency})`}
+              label={`${labels.avgWeeklyIncome} (${incomeCurrency})`}
               value={avgIncomeDisplay}
               icon={Wallet}
               accent="banking"
@@ -245,7 +242,7 @@ const DenominationGraphs = () => {
               `h-auto` is ignored and the 44 px pills overflow the list. */}
           <Tabs value={graphs} onValueChange={handleTabChange}>
             <TabsList className="grid h-auto w-full grid-cols-2 group-data-[orientation=horizontal]/tabs:h-auto">
-              {DENOMINATION_GRAPH_OPTIONS.map((option) => (
+              {graphOptions.map((option) => (
                 <TabsTrigger
                   key={option.value}
                   value={option.value}
@@ -275,7 +272,7 @@ const DenominationGraphs = () => {
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
                 <ChevronLeft className="size-4" />
-                Older
+                {labels.older}
               </Button>
 
               <span className="text-xs font-medium tabular-nums text-muted-foreground">
@@ -288,7 +285,7 @@ const DenominationGraphs = () => {
                 disabled={!canGoNewer}
                 className="min-h-[44px] flex-1 sm:flex-none"
               >
-                Newer
+                {labels.newer}
                 <ChevronRight className="size-4" />
               </Button>
             </div>

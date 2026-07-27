@@ -2,6 +2,7 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import SubmitButton from 'components/formik/SubmitButton'
 import { throwToSentry } from 'global-utils'
 import { getMondayThisWeek } from 'lib/date-utils'
@@ -11,6 +12,7 @@ import { Church, ChurchLevel } from 'global-types'
 import { MutationFunction } from '@apollo/client'
 import ImageUpload from 'components/formik/ImageUpload'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import { formatChurchLevel } from 'lib/scope-display'
 
 type ServiceFormProps = {
   church: Church
@@ -33,6 +35,7 @@ const ServiceForm = ({
   event,
   RecordServiceMutation,
 }: ServiceFormProps) => {
+  const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
 
@@ -49,16 +52,16 @@ const ServiceForm = ({
 
   const validationSchema = Yup.object({
     serviceDate: Yup.date()
-      .max(today, 'Service could not possibly have happened after today')
-      .min(mondayThisWeek, 'You can only fill forms for this week')
-      .required('Date is a required field'),
+      .max(today, t('services.form.dateAfterToday'))
+      .min(mondayThisWeek, t('services.form.dateThisWeekOnly'))
+      .required(t('services.form.dateRequired')),
     attendance: Yup.number()
-      .typeError('Please enter a valid number')
+      .typeError(t('services.form.validNumber'))
       .positive()
-      .integer('You cannot have attendance with decimals!')
-      .required('You cannot submit this form without entering your attendance'),
+      .integer(t('services.form.attendanceDecimals'))
+      .required(t('services.form.attendanceRequired')),
     familyPicture: Yup.string().required(
-      'Please submit a picture of your service'
+      t('services.form.familyPictureRequired')
     ),
   })
 
@@ -99,11 +102,13 @@ const ServiceForm = ({
           <StickyPageHeader>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {church?.name}{' '}
-              <span className="text-churches">{event || 'Service'}</span>
+              <span className="text-churches">
+                {event || t('services.form.service')}
+              </span>
             </h1>
             {church && (
               <p className="text-sm text-muted-foreground">
-                {church.__typename}
+                {formatChurchLevel(church.__typename, t)}
               </p>
             )}
           </StickyPageHeader>
@@ -115,18 +120,21 @@ const ServiceForm = ({
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="border-b border-border px-4 py-3">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Service Details
+                      {t('services.form.serviceDetails')}
                     </h2>
                   </div>
                   <div className="space-y-4 px-4 py-4">
                     <Input
                       name="serviceDate"
                       type="date"
-                      label="Date of Service"
+                      label={t('services.form.dateOfService')}
                       min={mondayThisWeekIso}
                       max={todayIso}
                     />
-                    <Input name="attendance" label="Attendance" />
+                    <Input
+                      name="attendance"
+                      label={t('services.form.attendance')}
+                    />
                   </div>
                 </div>
 
@@ -135,16 +143,16 @@ const ServiceForm = ({
                   <div className="overflow-hidden rounded-xl border border-border bg-card">
                     <div className="border-b border-border px-4 py-3">
                       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Photos
+                        {t('services.form.photos')}
                       </h2>
                     </div>
                     <div className="space-y-2 px-4 py-4">
                       <p className="text-sm font-medium text-foreground">
-                        Service / Family Picture
+                        {t('services.form.familyPicture')}
                       </p>
                       <ImageUpload
                         name="familyPicture"
-                        placeholder="Choose"
+                        placeholder={t('services.form.choose')}
                         setFieldValue={formik.setFieldValue}
                       />
                     </div>

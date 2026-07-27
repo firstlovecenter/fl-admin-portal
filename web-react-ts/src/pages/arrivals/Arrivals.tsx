@@ -35,7 +35,9 @@ const Arrivals = () => {
         <>
           <StickyPageHeader>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              <span className="text-arrivals">{t('arrivals.common.title')}</span>
+              <span className="text-arrivals">
+                {t('arrivals.common.title')}
+              </span>
             </h1>
             <p className="text-sm text-muted-foreground">
               {t('arrivals.home.chooseChurch')}

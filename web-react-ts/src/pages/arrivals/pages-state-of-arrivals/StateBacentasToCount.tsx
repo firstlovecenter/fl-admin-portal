@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useContext, useMemo, useState } from 'react'
 import {
   ArrowLeftRight,
@@ -81,6 +82,7 @@ const ListSkeleton = () => (
 )
 
 const StateBacentasToCount = () => {
+  const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const { roleChurchOptions, selectedScopeKey, setSelectedScopeKey } =
     useChurchRoleScope()
@@ -160,7 +162,10 @@ const StateBacentasToCount = () => {
 
   const groupByGovernorship = churchType === 'Council'
 
-  const renderBacentaWithRecords = ({ bacenta, records }: BacentaWithRecords) => (
+  const renderBacentaWithRecords = ({
+    bacenta,
+    records,
+  }: BacentaWithRecords) => (
     // onClickCapture seeds bacenta + bussing context before
     // VehicleButton's click navigates to /bacenta/vehicle-details.
     <Card
@@ -193,7 +198,8 @@ const StateBacentasToCount = () => {
     const map = new Map<string, GovernorshipGroup>()
     bacentasWithVisibleRecords.forEach((item) => {
       const id = item.bacenta.governorship?.id ?? '__unassigned'
-      const name = item.bacenta.governorship?.name ?? 'Unassigned'
+      const name =
+        item.bacenta.governorship?.name ?? t('arrivals.state.unassigned')
       const existing = map.get(id)
       if (existing) {
         existing.items.push(item)
@@ -201,9 +207,7 @@ const StateBacentasToCount = () => {
         map.set(id, { id, name, items: [item] })
       }
     })
-    return Array.from(map.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
   }, [bacentasWithVisibleRecords, groupByGovernorship])
 
   const baseEmpty = !!church && !loading && allBacentas.length === 0
@@ -223,18 +227,20 @@ const StateBacentasToCount = () => {
           <StickyPageHeader innerClassName="space-y-1.5 lg:space-y-2">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-arrivals lg:text-xs lg:tracking-[0.18em]">
               <ListChecks className="size-3.5" />
-              <span>Arrivals Counter</span>
+              <span>{t('arrivals.dashboard.arrivalsCounters')}</span>
             </div>
             {loading && !church ? (
               <Skeleton className="h-7 w-56 lg:h-9 lg:w-72" />
             ) : (
               <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {church?.name ?? churchName ?? ''}{' '}
-                <span className="text-arrivals">To Count</span>
+                <span className="text-arrivals">
+                  {t('arrivals.state.toCount.titleAccent')}
+                </span>
               </h1>
             )}
             <p className="text-xs text-muted-foreground lg:text-sm">
-              Vehicles awaiting confirmation at the centre.
+              {t('arrivals.state.toCount.subtitle')}
             </p>
             {canSwitchScope && (
               <div className="pt-2 lg:pt-3">
@@ -244,11 +250,13 @@ const StateBacentasToCount = () => {
                 >
                   <SelectTrigger
                     className="h-11 w-full max-w-sm border-arrivals/30 bg-arrivals/10 text-arrivals data-placeholder:text-arrivals/70 [&_svg]:text-arrivals"
-                    aria-label="Switch arrivals counter stream"
+                    aria-label={t('arrivals.state.toCount.switchStreamAria')}
                   >
                     <span className="flex items-center gap-2 truncate">
                       <ArrowLeftRight className="size-4 shrink-0" />
-                      <SelectValue placeholder="Switch stream" />
+                      <SelectValue
+                        placeholder={t('arrivals.state.toCount.switchStream')}
+                      />
                     </span>
                   </SelectTrigger>
                   <SelectContent align="start" className="max-h-80">
@@ -269,12 +277,14 @@ const StateBacentasToCount = () => {
                 <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">
                   <Compass className="size-7 text-warning lg:size-8" />
                   <p className="text-sm font-semibold text-foreground lg:text-base">
-                    {hasScope ? 'Pick a higher church' : 'Pick a church in focus'}
+                    {hasScope
+                      ? t('arrivals.state.pickHigherChurch')
+                      : t('arrivals.state.pickChurchInFocus')}
                   </p>
                   <p className="text-xs text-muted-foreground lg:text-sm">
                     {hasScope
-                      ? 'Counting is tracked at the Governorship, Council, Stream, or Campus level.'
-                      : 'Choose a church from the Church in Focus selector to start counting.'}
+                      ? t('arrivals.state.countingTrackedAtLevels')
+                      : t('arrivals.state.chooseFromSelectorCounting')}
                   </p>
                 </CardContent>
               </Card>
@@ -283,7 +293,7 @@ const StateBacentasToCount = () => {
             {isScopeSupported && (
               <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[1fr_280px] lg:items-start lg:gap-6">
                 <aside className="space-y-2 lg:order-2 lg:sticky lg:top-6 lg:space-y-3">
-                  <SectionLabel>Summary</SectionLabel>
+                  <SectionLabel>{t('arrivals.common.summary')}</SectionLabel>
                   <Card>
                     <CardContent className="space-y-3 p-4 lg:space-y-4 lg:p-5">
                       <div>
@@ -315,8 +325,7 @@ const StateBacentasToCount = () => {
                       )}
 
                       <p className="text-[11px] text-muted-foreground lg:text-xs">
-                        Vehicles disappear from this list once you confirm
-                        their arrival time.
+                        {t('arrivals.state.toCount.vehiclesDisappear')}
                       </p>
                     </CardContent>
                   </Card>
@@ -330,9 +339,11 @@ const StateBacentasToCount = () => {
                         type="search"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search bacentas or leaders"
+                        placeholder={t(
+                          'arrivals.state.searchBacentasOrLeaders'
+                        )}
                         className="h-11 pl-9"
-                        aria-label="Search bacentas"
+                        aria-label={t('arrivals.state.searchBacentas')}
                       />
                     </div>
 
@@ -350,7 +361,7 @@ const StateBacentasToCount = () => {
                             : 'border-arrivals/30 bg-arrivals/10 text-arrivals hover:bg-arrivals/15 hover:text-arrivals'
                         )}
                       >
-                        Sprinter & Urvan
+                        {t('arrivals.state.toCount.sprinterUrvan')}
                       </Button>
                       <Button
                         type="button"
@@ -365,13 +376,13 @@ const StateBacentasToCount = () => {
                             : 'border-arrivals/30 bg-arrivals/10 text-arrivals hover:bg-arrivals/15 hover:text-arrivals'
                         )}
                       >
-                        Car & Uber
+                        {t('arrivals.state.toCount.carUber')}
                       </Button>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <SectionLabel>Vehicles</SectionLabel>
+                    <SectionLabel>{t('arrivals.common.vehicles')}</SectionLabel>
                     {!loading && church && (
                       <span className="text-xs text-muted-foreground tabular-nums">
                         {visibleVehicleCount} pending
@@ -386,10 +397,10 @@ const StateBacentasToCount = () => {
                       <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">
                         <CheckCircle2 className="size-7 text-success lg:size-8" />
                         <p className="text-sm font-semibold text-foreground lg:text-base">
-                          Nothing to count
+                          {t('arrivals.state.toCount.emptyTitle')}
                         </p>
                         <p className="text-xs text-muted-foreground lg:text-sm">
-                          Every vehicle has been confirmed.
+                          {t('arrivals.state.toCount.emptyBody')}
                         </p>
                       </CardContent>
                     </Card>
@@ -400,10 +411,10 @@ const StateBacentasToCount = () => {
                       <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">
                         <Search className="size-7 text-muted-foreground lg:size-8" />
                         <p className="text-sm font-semibold text-foreground lg:text-base">
-                          No matches
+                          {t('arrivals.state.noMatches')}
                         </p>
                         <p className="text-xs text-muted-foreground lg:text-sm">
-                          No bacentas or leaders match your search.
+                          {t('arrivals.state.noBacentasOrLeadersMatch')}
                         </p>
                       </CardContent>
                     </Card>
@@ -414,11 +425,10 @@ const StateBacentasToCount = () => {
                       <CardContent className="flex flex-col items-center gap-2 p-6 text-center lg:p-8">
                         <Filter className="size-7 text-muted-foreground lg:size-8" />
                         <p className="text-sm font-semibold text-foreground lg:text-base">
-                          All vehicles hidden
+                          {t('arrivals.state.toCount.allHidden')}
                         </p>
                         <p className="text-xs text-muted-foreground lg:text-sm">
-                          Toggle Sprinter &amp; Urvan or Car &amp; Uber back on
-                          to see pending vehicles.
+                          {t('arrivals.state.toCount.toggleBackOn')}
                         </p>
                       </CardContent>
                     </Card>
@@ -427,7 +437,9 @@ const StateBacentasToCount = () => {
                   {bacentasWithVisibleRecords.length > 0 &&
                     !groupByGovernorship && (
                       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-                        {bacentasWithVisibleRecords.map(renderBacentaWithRecords)}
+                        {bacentasWithVisibleRecords.map(
+                          renderBacentaWithRecords
+                        )}
                       </div>
                     )}
 

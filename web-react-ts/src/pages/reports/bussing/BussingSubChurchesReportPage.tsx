@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { getHumanReadableDate } from 'global-utils'
 import ApplyBar from '../_shared/ApplyBar'
@@ -18,30 +20,52 @@ import {
   type WeeklyChurchReportEntryWithAncestors,
 } from '../_shared/report-types'
 
-const METRIC_HEADERS = [
-  { label: 'Year', key: 'year' },
-  { label: 'Week', key: 'week' },
-  { label: 'Bussing Attendance', key: 'bussingAttendance' },
-  { label: 'Bussing Leader Declaration', key: 'bussingLeaderDeclaration' },
-  { label: 'Sprinters', key: 'numberOfSprinters' },
-  { label: 'Urvans', key: 'numberOfUrvans' },
-  { label: 'Cars', key: 'numberOfCars' },
-  { label: 'Bussing Top-Up', key: 'bussingTopUp' },
-] as const
+const levelLabel = (level: string, t: TFunction) =>
+  t(`shared.churchLevel.${level}`)
 
-const decoratorHeadersFor = (level: SubChurchesTargetLevel) => [
-  { key: `${level}_name`, label: level },
-  { key: `${level}_leader`, label: `${level} Leader` },
-  { key: `${level}_phone`, label: `${level} Leader Phone` },
-]
+const metricHeaders = (t: TFunction) =>
+  [
+    { label: t('reports.shared.year'), key: 'year' },
+    { label: t('reports.shared.week'), key: 'week' },
+    {
+      label: t('reports.shared.bussingAttendance'),
+      key: 'bussingAttendance',
+    },
+    {
+      label: t('reports.shared.bussingLeaderDeclaration'),
+      key: 'bussingLeaderDeclaration',
+    },
+    { label: t('reports.shared.sprinters'), key: 'numberOfSprinters' },
+    { label: t('reports.shared.urvans'), key: 'numberOfUrvans' },
+    { label: t('reports.shared.cars'), key: 'numberOfCars' },
+    { label: t('reports.shared.bussingTopUp'), key: 'bussingTopUp' },
+  ] as const
 
-const buildHeaders = (selected: readonly SubChurchesTargetLevel[]) => {
+const decoratorHeadersFor = (level: SubChurchesTargetLevel, t: TFunction) => {
+  const label = levelLabel(level, t)
+  return [
+    { key: `${level}_name`, label },
+    {
+      key: `${level}_leader`,
+      label: t('reports.shared.levelLeader', { level: label }),
+    },
+    {
+      key: `${level}_phone`,
+      label: t('reports.shared.levelLeaderPhone', { level: label }),
+    },
+  ]
+}
+
+const buildHeaders = (
+  selected: readonly SubChurchesTargetLevel[],
+  t: TFunction
+) => {
   // Always canonical top-down order so the spreadsheet reads naturally
   // even if the user toggled in arbitrary order.
   const ordered = SUB_CHURCH_TARGETS_ORDERED.filter((l) => selected.includes(l))
   return [
-    ...ordered.flatMap(decoratorHeadersFor),
-    ...METRIC_HEADERS.map((h) => ({ key: h.key, label: h.label })),
+    ...ordered.flatMap((l) => decoratorHeadersFor(l, t)),
+    ...metricHeaders(t).map((h) => ({ key: h.key, label: h.label })),
   ]
 }
 
@@ -91,18 +115,25 @@ const buildRow = (
 // right edge — the full triplet (Name / Leader / Leader Phone) is still
 // in the downloaded CSV.
 const previewColumnsFor = (
-  selected: readonly SubChurchesTargetLevel[]
+  selected: readonly SubChurchesTargetLevel[],
+  t: TFunction
 ) => {
   const ordered = SUB_CHURCH_TARGETS_ORDERED.filter((l) => selected.includes(l))
   return [
-    ...ordered.flatMap((l) => [
-      { key: `${l}_name`, label: l },
-      { key: `${l}_leader`, label: `${l} Leader` },
-    ]),
-    { key: 'year', label: 'Year' },
-    { key: 'week', label: 'Week' },
-    { key: 'bussingAttendance', label: 'Bussing Att.' },
-    { key: 'bussingTopUp', label: 'Top-Up' },
+    ...ordered.flatMap((l) => {
+      const label = levelLabel(l, t)
+      return [
+        { key: `${l}_name`, label },
+        {
+          key: `${l}_leader`,
+          label: t('reports.shared.levelLeader', { level: label }),
+        },
+      ]
+    }),
+    { key: 'year', label: t('reports.shared.year') },
+    { key: 'week', label: t('reports.shared.week') },
+    { key: 'bussingAttendance', label: t('reports.shared.bussingAttShort') },
+    { key: 'bussingTopUp', label: t('reports.shared.topUp') },
   ]
 }
 
@@ -113,6 +144,7 @@ const levelKey = (levels: readonly SubChurchesTargetLevel[]) =>
   levels.join(',')
 
 const BussingSubChurchesReportPage = () => {
+  const { t } = useTranslation()
   const defaults = useMemo(() => defaultRangeIsoStrings(), [])
 
   // Draft state — what the user has changed locally but not yet applied.
@@ -184,8 +216,8 @@ const BussingSubChurchesReportPage = () => {
   }
 
   const headers = useMemo(
-    () => buildHeaders(appliedLevels),
-    [appliedLevels]
+    () => buildHeaders(appliedLevels, t),
+    [appliedLevels, t]
   )
   const rows = useMemo(
     () =>
@@ -199,8 +231,8 @@ const BussingSubChurchesReportPage = () => {
   // the card's `columns` useMemo and triggers a TanStack Table rebuild,
   // which in this layout was cascading into a render storm on click.
   const previewColumns = useMemo(
-    () => (appliedTarget ? previewColumnsFor(appliedLevels) : []),
-    [appliedLevels, appliedTarget]
+    () => (appliedTarget ? previewColumnsFor(appliedLevels, t) : []),
+    [appliedLevels, appliedTarget, t]
   )
 
   // Generated-on is intentionally captured once per scope-mount; without
@@ -214,14 +246,28 @@ const BussingSubChurchesReportPage = () => {
     return `${safeChurchName ? `${safeChurchName} ` : ''}${
       scope ?? ''
     } Bussing by ${appliedTarget ?? 'Sub-Church'} - ${generatedOn}.csv`
-  }, [churchName, scope, appliedTarget])
+    // `t` is in the deps purely as the language signal: getHumanReadableDate
+    // reads the active locale off the i18next singleton, which useMemo cannot
+    // see on its own — without it the filename keeps the previous locale's
+    // month name after a mid-session language switch.
+  }, [churchName, scope, appliedTarget, t])
+
+  const targetLabel = appliedTarget
+    ? levelLabel(appliedTarget, t)
+    : t('reports.shared.subChurch')
+  const byTitle = t('reports.shared.byLevel', {
+    report: t('reports.bussing.reportName'),
+    level: targetLabel,
+  })
 
   if (!scope) {
     return (
-      <ReportPageShell title="Bussing" highlightWord="Sub-Churches">
+      <ReportPageShell
+        title={t('reports.bussing.title')}
+        highlightWord={t('reports.bussing.subChurches')}
+      >
         <p className="text-sm text-muted-foreground">
-          Sub-church bussing breakdowns aren&apos;t available at your current
-          scope.
+          {t('reports.bussing.scopeUnavailable')}
         </p>
       </ReportPageShell>
     )
@@ -230,8 +276,8 @@ const BussingSubChurchesReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Bussing by Sub-Church"
-      subtitle="Pick the row level and which ancestor columns to include, then click Apply to refresh the report."
+      highlightWord={t('reports.bussing.bySubChurch')}
+      subtitle={t('reports.shared.pickerSubtitle')}
     >
       <div className="space-y-6">
         <SubChurchLevelPicker
@@ -255,10 +301,13 @@ const BussingSubChurchesReportPage = () => {
 
         <ApolloWrapper data={entries} loading={loading} error={error} placeholder>
           <WeeklyReportDownloadCard
-            title={`Bussing by ${appliedTarget ?? 'Sub-Church'}`}
-            description={`Per-week bussing aggregates at the ${
-              appliedTarget?.toLowerCase() ?? 'sub-church'
-            } level, with ancestor decoration columns for every ticked level above.`}
+            title={byTitle}
+            description={t('reports.shared.perWeekAtLevel', {
+              metric: t('reports.bussing.metricPhrase'),
+              level: appliedTarget
+                ? levelLabel(appliedTarget, t)
+                : t('reports.shared.subChurchFallback'),
+            })}
             filename={filename}
             loading={loading}
             rows={rows}
@@ -266,7 +315,7 @@ const BussingSubChurchesReportPage = () => {
             entriesCount={entries.length}
             rangeLabel={rangeLabel ?? undefined}
             previewColumns={previewColumns}
-            emptyMessage="No bussing aggregates in the selected range."
+            emptyMessage={t('reports.bussing.emptyMessage')}
           />
         </ApolloWrapper>
       </div>

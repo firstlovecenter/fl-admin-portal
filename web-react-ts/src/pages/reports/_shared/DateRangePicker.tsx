@@ -1,6 +1,7 @@
 import { Input } from 'components/ui/input'
 import { Label } from 'components/ui/label'
-import { formatWeekKey, parseDateInput, toWeekKey } from './week-utils'
+import { useTranslation } from 'react-i18next'
+import { fromWeekKey, parseDateInput, toWeekKey } from './week-utils'
 
 type DateRangePickerProps = {
   startDate: string
@@ -15,20 +16,26 @@ const DateRangePicker = ({
   onStartDateChange,
   onEndDateChange,
 }: DateRangePickerProps) => {
+  const { t } = useTranslation()
   const start = parseDateInput(startDate)
   const end = parseDateInput(endDate)
   const startWeekKey = start ? toWeekKey(start) : null
   const endWeekKey = end ? toWeekKey(end) : null
 
+  const formatWeek = (weekKey: number) => {
+    const { week, year } = fromWeekKey(weekKey)
+    return t('reports.shared.weekKey', { week, year })
+  }
+
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Date range
+        {t('reports.shared.dateRange')}
       </p>
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="report-start-date" className="text-xs">
-            From
+            {t('reports.shared.from')}
           </Label>
           <Input
             id="report-start-date"
@@ -41,7 +48,7 @@ const DateRangePicker = ({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="report-end-date" className="text-xs">
-            To
+            {t('reports.shared.to')}
           </Label>
           <Input
             id="report-end-date"
@@ -55,7 +62,10 @@ const DateRangePicker = ({
       </div>
       {startWeekKey !== null && endWeekKey !== null && (
         <p className="mt-3 text-xs text-muted-foreground">
-          Covers {formatWeekKey(startWeekKey)} → {formatWeekKey(endWeekKey)}
+          {t('reports.shared.covers', {
+            start: formatWeek(startWeekKey),
+            end: formatWeek(endWeekKey),
+          })}
         </p>
       )}
     </section>

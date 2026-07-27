@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApolloError } from '@apollo/client'
@@ -127,7 +128,10 @@ const MemberTable = ({
   loading,
   fetchingMore = false,
 }: MemberTableProps) => {
-  const { clickCard } = useContext(ChurchContext) as { clickCard: (card: GridMember) => void }
+  const { t } = useTranslation()
+  const { clickCard } = useContext(ChurchContext) as {
+    clickCard: (card: GridMember) => void
+  }
   const navigate = useNavigate()
 
   if (loading || !data) {
@@ -150,7 +154,7 @@ const MemberTable = ({
   if (error) {
     return (
       <p className="px-4 py-10 text-center text-sm text-destructive">
-        Could not load members. Please try again.
+        {t('directory.memberTable.loadError')}
       </p>
     )
   }
@@ -158,7 +162,7 @@ const MemberTable = ({
   if (!data.length && !fetchingMore) {
     return (
       <p className="px-4 py-20 text-center text-sm text-muted-foreground">
-        No members match your search
+        {t('directory.memberTable.noMatches')}
       </p>
     )
   }

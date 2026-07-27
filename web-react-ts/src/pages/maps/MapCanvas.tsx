@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useCallback, useState } from 'react'
 import {
   GoogleMap,
@@ -11,7 +12,7 @@ import { Button } from 'components/ui/button'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import InfoWindowCard from './components/InfoWindowCard'
 import { getMapIcon, getMapIconClass } from './components/map-utils'
-import { FLC_HQ, TYPENAME_LABEL } from './maps-constants'
+import { FLC_HQ, TYPENAME_LABEL_KEY } from './maps-constants'
 import type { PlaceType } from './types'
 
 type LibrariesOptions = ('places' | 'drawing' | 'geometry' | 'visualization')[]
@@ -41,7 +42,13 @@ const popupOffset = (width: number, height: number) => ({
   y: -(height + 24),
 })
 
-const MapCanvas = ({ centre, places, onMapReady, onLocate }: MapCanvasProps) => {
+const MapCanvas = ({
+  centre,
+  places,
+  onMapReady,
+  onLocate,
+}: MapCanvasProps) => {
+  const { t } = useTranslation()
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '',
     libraries: LIBRARIES,
@@ -56,15 +63,13 @@ const MapCanvas = ({ centre, places, onMapReady, onLocate }: MapCanvasProps) => 
   )
 
   if (!isLoaded) {
-    return <LoadingScreen text="Loading map…" />
+    return <LoadingScreen text={t('shared.loadingMap')} />
   }
 
   // Skip drawing the centre place a second time when it appears in `places`
   // (the original logic only filtered when it was the first index, which
   // missed all other positions).
-  const otherPlaces = centre
-    ? places.filter((p) => p.id !== centre.id)
-    : places
+  const otherPlaces = centre ? places.filter((p) => p.id !== centre.id) : places
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-muted">
@@ -90,10 +95,13 @@ const MapCanvas = ({ centre, places, onMapReady, onLocate }: MapCanvasProps) => 
           {(clusterer) => (
             <>
               {otherPlaces.map((place) => {
-                const typeLabel = TYPENAME_LABEL[place.typename]
+                const typeLabelKey = TYPENAME_LABEL_KEY[place.typename]
+                const typeLabel = typeLabelKey ? t(typeLabelKey) : ''
                 return (
                   <Marker
-                    key={place.id || `${place.position.lat}-${place.position.lng}`}
+                    key={
+                      place.id || `${place.position.lat}-${place.position.lng}`
+                    }
                     label={{
                       text: typeLabel
                         ? `${place.name} ${typeLabel}`
@@ -122,7 +130,7 @@ const MapCanvas = ({ centre, places, onMapReady, onLocate }: MapCanvasProps) => 
                 <button
                   type="button"
                   onClick={() => setActiveMarker(null)}
-                  aria-label="Close"
+                  aria-label={t('maps.close')}
                   className="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
                   <X className="size-4" />
@@ -144,7 +152,7 @@ const MapCanvas = ({ centre, places, onMapReady, onLocate }: MapCanvasProps) => 
           type="button"
           size="icon"
           variant="default"
-          aria-label="Centre map on my location"
+          aria-label={t('maps.centreOnMe')}
           className="absolute bottom-6 right-6 size-12 rounded-full bg-card text-foreground shadow-lg hover:bg-card/90"
           onClick={onLocate}
         >

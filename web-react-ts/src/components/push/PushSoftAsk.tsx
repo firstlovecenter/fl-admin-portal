@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Bell, X } from 'lucide-react'
 import { useAuth } from 'contexts/AuthContext'
@@ -42,6 +43,7 @@ const isIosWithoutInstall = (): boolean => {
  * good. Reuses the enrollment logic in usePushNotificationSettings.
  */
 const PushSoftAsk = () => {
+  const { t } = useTranslation()
   const { isAuthenticated } = useAuth()
   const { pathname } = useLocation()
   const { supported, permission, enabled, enabling, enable } =
@@ -77,20 +79,18 @@ const PushSoftAsk = () => {
     try {
       await enable()
       setVisible(false)
-      toast.success('Notifications enabled.')
+      toast.success(t('shared.pushSoftAsk.enabledToast'))
     } catch (error) {
       const reason =
         error instanceof Error ? error.message : 'registration-failed'
       if (reason === 'denied') {
-        toast.error(
-          'Notifications are blocked. You can enable them in your browser settings.'
-        )
+        toast.error(t('shared.pushSoftAsk.blockedToast'))
         handleDismiss()
       } else if (reason === 'default') {
         // User dismissed the native prompt — leave the card so they can retry.
-        toast.info('No problem — tap Enable whenever you’re ready.')
+        toast.info(t('shared.pushSoftAsk.dismissedToast'))
       } else {
-        toast.error("Couldn't enable notifications. Please try again later.")
+        toast.error(t('shared.pushSoftAsk.failedToast'))
       }
     }
   }
@@ -104,7 +104,7 @@ const PushSoftAsk = () => {
         'pb-[calc(env(safe-area-inset-bottom)+1rem)]'
       )}
       role="region"
-      aria-label="Enable notifications"
+      aria-label={t('shared.pushSoftAsk.regionLabel')}
     >
       <div className="w-full max-w-md rounded-2xl border bg-card p-4 shadow-lg">
         <div className="flex items-start gap-3">
@@ -113,17 +113,16 @@ const PushSoftAsk = () => {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-foreground">
-              Turn on notifications
+              {t('shared.pushSoftAsk.title')}
             </p>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Get reminded to record service, bank offerings, and for Sunday
-              bussing arrival times.
+              {t('shared.pushSoftAsk.body')}
             </p>
           </div>
           <button
             type="button"
             onClick={handleDismiss}
-            aria-label="Dismiss"
+            aria-label={t('shared.pushSoftAsk.dismiss')}
             className="-mr-2 -mt-2 flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
           >
             <X className="size-4" />
@@ -137,7 +136,7 @@ const PushSoftAsk = () => {
             onClick={handleDismiss}
             disabled={enabling}
           >
-            Not now
+            {t('shared.pushSoftAsk.notNow')}
           </Button>
           <Button
             type="button"
@@ -145,7 +144,9 @@ const PushSoftAsk = () => {
             onClick={handleEnable}
             disabled={enabling}
           >
-            {enabling ? 'Enabling…' : 'Enable'}
+            {enabling
+              ? t('shared.pushSoftAsk.enabling')
+              : t('shared.pushSoftAsk.enable')}
           </Button>
         </div>
       </div>

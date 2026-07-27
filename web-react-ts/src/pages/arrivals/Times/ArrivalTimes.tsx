@@ -1,7 +1,9 @@
 import { useMutation, useQuery } from '@apollo/client'
 import { Formik, Form, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { useContext, useState } from 'react'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
+import { useContext, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { parseNeoTime } from 'lib/date-utils'
 import {
@@ -53,32 +55,34 @@ type TimeSlot = {
   tone: 'mobilisation' | 'arrival'
 }
 
-const TIME_SLOTS: TimeSlot[] = [
+// Built per render rather than as a module constant: the labels and hints
+// are translated, so they have to come from the component's `t`.
+const buildTimeSlots = (t: TFunction): TimeSlot[] => [
   {
     key: 'mobilisationStartTime',
-    label: 'Mobilisation Start',
-    hint: 'Bacentas start calling members.',
+    label: t('arrivals.times.mobilisationStart'),
+    hint: t('arrivals.times.mobilisationStartHint'),
     icon: Megaphone,
     tone: 'mobilisation',
   },
   {
     key: 'mobilisationEndTime',
-    label: 'Mobilisation End',
-    hint: 'Last window to confirm passengers.',
+    label: t('arrivals.times.mobilisationEnd'),
+    hint: t('arrivals.times.mobilisationEndHint'),
     icon: BellRing,
     tone: 'mobilisation',
   },
   {
     key: 'arrivalStartTime',
-    label: 'Arrival Start',
-    hint: 'Counters open at the auditorium.',
+    label: t('arrivals.times.arrivalStart'),
+    hint: t('arrivals.times.arrivalStartHint'),
     icon: BusFront,
     tone: 'arrival',
   },
   {
     key: 'arrivalEndTime',
-    label: 'Arrival End',
-    hint: 'Last bus is counted in.',
+    label: t('arrivals.times.arrivalEnd'),
+    hint: t('arrivals.times.arrivalEndHint'),
     icon: Timer,
     tone: 'arrival',
   },
@@ -113,6 +117,8 @@ const toneClasses = {
 } as const
 
 const ArrivalTimes = () => {
+  const { t } = useTranslation()
+  const timeSlots = useMemo(() => buildTimeSlots(t), [t])
   const { streamId } = useContext(ChurchContext)
   const [editOpen, setEditOpen] = useState(false)
 
@@ -134,10 +140,10 @@ const ArrivalTimes = () => {
   }
 
   const validationSchema = Yup.object({
-    mobilisationStartTime: Yup.string().required('Required'),
-    mobilisationEndTime: Yup.string().required('Required'),
-    arrivalStartTime: Yup.string().required('Required'),
-    arrivalEndTime: Yup.string().required('Required'),
+    mobilisationStartTime: Yup.string().required(t('arrivals.times.required')),
+    mobilisationEndTime: Yup.string().required(t('arrivals.times.required')),
+    arrivalStartTime: Yup.string().required(t('arrivals.times.required')),
+    arrivalEndTime: Yup.string().required(t('arrivals.times.required')),
   })
 
   const onSubmit = async (
@@ -157,10 +163,10 @@ const ArrivalTimes = () => {
         },
       })
       await refetch()
-      toast.success('Arrival times updated')
+      toast.success(t('arrivals.times.updatedToast'))
       setEditOpen(false)
     } catch (err) {
-      throwToSentry('Could not update stream arrival times', err)
+      throwToSentry(t('arrivals.times.updateError'), err)
     } finally {
       helpers.setSubmitting(false)
     }
@@ -187,25 +193,23 @@ const ArrivalTimes = () => {
     <main className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       <StickyPageHeader>
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Stream
+          {t('shared.churchLevel.Stream')}
         </p>
         <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
           {streamName ? `${streamName} ` : ''}
-          <span className="text-arrivals">Arrival Times</span>
+          <span className="text-arrivals">{t('arrivals.times.title')}</span>
         </h1>
         <p className="max-w-prose text-sm text-muted-foreground">
-          These windows decide when mobilisation and arrival counters can
-          record bussing for this stream.
+          {t('arrivals.times.howTheseWorkBody')}
         </p>
       </StickyPageHeader>
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
         {!streamId && (
           <Alert variant="destructive">
             <AlertTriangle className="size-4" />
-            <AlertTitle>No stream in focus</AlertTitle>
+            <AlertTitle>{t('arrivals.times.noStreamInFocus')}</AlertTitle>
             <AlertDescription>
-              Open a stream from the arrivals dashboard first, then return
-              here to view or edit its arrival times.
+              {t('arrivals.times.openStreamFirst')}
             </AlertDescription>
           </Alert>
         )}
@@ -213,7 +217,7 @@ const ArrivalTimes = () => {
         {error && (
           <Alert variant="destructive">
             <AlertTriangle className="size-4" />
-            <AlertTitle>Could not load arrival times</AlertTitle>
+            <AlertTitle>{t('arrivals.times.loadError')}</AlertTitle>
             <AlertDescription>{error.message}</AlertDescription>
           </Alert>
         )}
@@ -225,25 +229,23 @@ const ArrivalTimes = () => {
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Info className="size-4" />
-                How these windows work
+                {t('arrivals.times.howTheseWork')}
               </div>
               <dl className="mt-4 space-y-4 text-sm">
                 <div>
                   <dt className="font-semibold text-foreground">
-                    Mobilisation window
+                    {t('arrivals.times.mobilisationWindow')}
                   </dt>
                   <dd className="text-muted-foreground">
-                    Bacenta leaders fill in expected passengers between these
-                    two times. The window closes automatically at the end.
+                    {t('arrivals.times.mobilisationWindowHint')}
                   </dd>
                 </div>
                 <div>
                   <dt className="font-semibold text-foreground">
-                    Arrival window
+                    {t('arrivals.times.arrivalWindow')}
                   </dt>
                   <dd className="text-muted-foreground">
-                    Arrival counters can confirm and pay for buses only between
-                    these two times. Late buses fall outside payment.
+                    {t('arrivals.times.arrivalWindowHint')}
                   </dd>
                 </div>
               </dl>
@@ -252,7 +254,7 @@ const ArrivalTimes = () => {
             <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
               Times apply to{' '}
               <span className="font-semibold text-foreground">
-                {streamName ?? 'this stream'}
+                {streamName ?? t('arrivals.times.thisStream')}
               </span>{' '}
               every Sunday until changed.
             </div>
@@ -264,7 +266,7 @@ const ArrivalTimes = () => {
               <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 lg:px-5">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Clock className="size-4" />
-                  Current Window
+                  {t('arrivals.times.currentWindow')}
                 </div>
                 <Button
                   type="button"
@@ -275,12 +277,12 @@ const ArrivalTimes = () => {
                   className="gap-2"
                 >
                   <Pencil className="size-4" />
-                  Edit Times
+                  {t('arrivals.times.editTimes')}
                 </Button>
               </div>
 
               <ul className="divide-y divide-border">
-                {TIME_SLOTS.map((slot) => {
+                {timeSlots.map((slot) => {
                   const tone = toneClasses[slot.tone]
                   const Icon = slot.icon
                   return (
@@ -317,11 +319,11 @@ const ArrivalTimes = () => {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Edit Arrival Times</DialogTitle>
+            <DialogTitle>{t('arrivals.times.editTitle')}</DialogTitle>
             <DialogDescription>
               Update the mobilisation and arrival windows for{' '}
               <span className="font-medium text-foreground">
-                {streamName ?? 'this stream'}
+                {streamName ?? t('arrivals.times.thisStream')}
               </span>
               .
             </DialogDescription>
@@ -339,23 +341,25 @@ const ArrivalTimes = () => {
               {(formik) => (
                 <Form className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {TIME_SLOTS.map((slot) => (
+                    {timeSlots.map((slot) => (
                       <FormikInput
                         key={slot.key}
                         type="time"
                         name={slot.key}
                         label={slot.label}
-                        placeholder="Pick a time"
+                        placeholder={t('arrivals.times.pickATime')}
                       />
                     ))}
                   </div>
                   <DialogFooter className="pt-2">
                     <DialogClose asChild>
                       <Button type="button" variant="outline">
-                        Cancel
+                        {t('shared.actions.cancel')}
                       </Button>
                     </DialogClose>
-                    <SubmitButton formik={formik}>Save Times</SubmitButton>
+                    <SubmitButton formik={formik}>
+                      {t('arrivals.times.saveTimes')}
+                    </SubmitButton>
                   </DialogFooter>
                 </Form>
               )}

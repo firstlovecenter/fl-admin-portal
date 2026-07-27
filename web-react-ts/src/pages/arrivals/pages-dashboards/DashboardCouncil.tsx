@@ -52,12 +52,7 @@ import {
   DropdownMenuTrigger,
 } from 'components/ui/dropdown-menu'
 import { Skeleton } from 'components/ui/skeleton'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from 'components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'components/ui/tabs'
 import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
 import {
   StickyPageHeader,
@@ -149,9 +144,7 @@ const CouncilDashboard = () => {
   )
 
   const adminValidationSchema = Yup.object({
-    adminSelect: Yup.string().required(
-      t('arrivals.dashboard.selectAdmin')
-    ),
+    adminSelect: Yup.string().required(t('arrivals.dashboard.selectAdmin')),
   })
 
   const onAdminSubmit = async (
@@ -172,7 +165,11 @@ const CouncilDashboard = () => {
         },
       })
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
+        toast.error(
+          String(
+            result.errors[0].message ?? t('arrivals.dashboard.updateFailed')
+          )
+        )
         return
       }
       toast.success(t('arrivals.dashboard.adminUpdated'))
@@ -247,7 +244,9 @@ const CouncilDashboard = () => {
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {council?.name}{' '}
-                    <span className="text-arrivals">{t('arrivals.common.title')}</span>
+                    <span className="text-arrivals">
+                      {t('arrivals.common.title')}
+                    </span>
                   </h1>
                 )}
               </div>
@@ -268,7 +267,9 @@ const CouncilDashboard = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>{t('arrivals.dashboard.settings')}</DropdownMenuLabel>
+                      <DropdownMenuLabel>
+                        {t('arrivals.dashboard.settings')}
+                      </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={() => setAdminDialogOpen(true)}
@@ -317,12 +318,12 @@ const CouncilDashboard = () => {
               const quickActionsBlock = (
                 <RoleView roles={PAYMENT_VISIBLE_ROLES}>
                   <section className="space-y-2">
-                    <SectionLabel>{t('arrivals.dashboard.quickActions')}</SectionLabel>
+                    <SectionLabel>
+                      {t('arrivals.dashboard.quickActions')}
+                    </SectionLabel>
                     <Card
                       className="cursor-pointer transition hover:border-banking/40 hover:bg-banking/5"
-                      onClick={() =>
-                        navigate('/arrivals/vehicles-to-be-paid')
-                      }
+                      onClick={() => navigate('/arrivals/vehicles-to-be-paid')}
                     >
                       <CardContent className="flex items-center gap-4 p-4">
                         <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-banking/10 text-banking">
@@ -344,10 +345,15 @@ const CouncilDashboard = () => {
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {vehiclesToBePaidCount === 0
-                              ? t('arrivals.dashboard.noVehiclesAwaitingPayment')
-                              : t('arrivals.dashboard.vehiclesAwaitingPayment', {
-                                  count: vehiclesToBePaidCount,
-                                })}
+                              ? t(
+                                  'arrivals.dashboard.noVehiclesAwaitingPayment'
+                                )
+                              : t(
+                                  'arrivals.dashboard.vehiclesAwaitingPayment',
+                                  {
+                                    count: vehiclesToBePaidCount,
+                                  }
+                                )}
                           </p>
                         </div>
                         <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
@@ -442,7 +448,9 @@ const CouncilDashboard = () => {
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        {t('arrivals.dashboard.updated', { time: updatedLabel })}
+                        {t('arrivals.dashboard.updated', {
+                          time: updatedLabel,
+                        })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
@@ -534,7 +542,9 @@ const CouncilDashboard = () => {
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>{t('arrivals.dashboard.changeAdmin')}</DialogTitle>
+                  <DialogTitle>
+                    {t('arrivals.dashboard.changeAdmin')}
+                  </DialogTitle>
                   <DialogDescription>
                     {t('arrivals.dashboard.changeAdminDescription', {
                       level: t('shared.churchLevel.Council').toLowerCase(),

@@ -1,13 +1,8 @@
 import { useQuery } from '@apollo/client'
 import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Coins,
-  Search,
-  Wallet,
-} from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Coins, Search, Wallet } from 'lucide-react'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
@@ -61,6 +56,7 @@ const ListSkeleton = () => (
 )
 
 const StateVehiclesToBePaid = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { councilId, clickCard, arrivalDate } = useContext(ChurchContext)
   const { data, loading, error, refetch } = useQuery(
@@ -119,7 +115,8 @@ const StateVehiclesToBePaid = () => {
     const map = new Map<string, GovernorshipGroup>()
     bacentasWithVisibleRecords.forEach((item) => {
       const id = item.bacenta.governorship?.id ?? 'unassigned'
-      const name = item.bacenta.governorship?.name ?? 'Unassigned'
+      const name =
+        item.bacenta.governorship?.name ?? t('arrivals.state.unassigned')
       const existing = map.get(id)
       if (existing) {
         existing.items.push(item)
@@ -127,9 +124,7 @@ const StateVehiclesToBePaid = () => {
         map.set(id, { id, name, items: [item] })
       }
     })
-    return Array.from(map.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
   }, [bacentasWithVisibleRecords])
 
   const renderBacentaWithRecords = ({
@@ -196,13 +191,13 @@ const StateVehiclesToBePaid = () => {
                 onClick={() => navigate(-1)}
               >
                 <ArrowLeft className="size-4" />
-                Back
+                {t('arrivals.state.back')}
               </Button>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-banking">
                   <Wallet className="size-3.5" />
-                  <span>Vehicle Payments</span>
+                  <span>{t('arrivals.state.vehiclePayments.title')}</span>
                 </div>
                 {loading && !church ? (
                   <Skeleton className="h-9 w-72" />
@@ -210,14 +205,16 @@ const StateVehiclesToBePaid = () => {
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {church?.name ?? ''}{' '}
                     <span className="text-banking">
-                      {seePaid ? 'Paid Vehicles' : 'Vehicles To Be Paid'}
+                      {seePaid
+                        ? t('arrivals.state.vehiclePayments.paidVehicles')
+                        : t('arrivals.dashboard.vehiclesToBePaid')}
                     </span>
                   </h1>
                 )}
                 <p className="text-sm text-muted-foreground">
                   {seePaid
-                    ? 'Vehicles that have been paid out for today.'
-                    : 'Vehicles awaiting top-up payment.'}
+                    ? t('arrivals.state.vehiclePayments.subtitlePaid')
+                    : t('arrivals.state.vehiclePayments.subtitleUnpaid')}
                 </p>
               </div>
             </div>
@@ -232,15 +229,17 @@ const StateVehiclesToBePaid = () => {
                       type="search"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search bacentas or leaders"
+                      placeholder={t('arrivals.state.searchBacentasOrLeaders')}
                       className="h-11 pl-9"
-                      aria-label="Search bacentas"
+                      aria-label={t('arrivals.state.searchBacentas')}
                     />
                   </div>
 
                   <div
                     role="tablist"
-                    aria-label="Payment status filter"
+                    aria-label={t(
+                      'arrivals.state.vehiclePayments.statusFilter'
+                    )}
                     className="grid grid-cols-2 gap-2"
                   >
                     <Button
@@ -252,7 +251,7 @@ const StateVehiclesToBePaid = () => {
                       onClick={() => setSeePaid(false)}
                       className={cn('min-h-11', seePaid && 'opacity-60')}
                     >
-                      Unpaid
+                      {t('arrivals.state.vehiclePayments.unpaid')}
                     </Button>
                     <Button
                       type="button"
@@ -263,13 +262,13 @@ const StateVehiclesToBePaid = () => {
                       onClick={() => setSeePaid(true)}
                       className={cn('min-h-11', !seePaid && 'opacity-60')}
                     >
-                      Paid
+                      {t('arrivals.state.vehiclePayments.paid')}
                     </Button>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <SectionLabel>Vehicles</SectionLabel>
+                  <SectionLabel>{t('arrivals.common.vehicles')}</SectionLabel>
                   {!loading && church && (
                     <span className="text-xs text-muted-foreground tabular-nums">
                       {visibleVehicleCount}{' '}
@@ -285,10 +284,10 @@ const StateVehiclesToBePaid = () => {
                     <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
                       <CheckCircle2 className="size-8 text-success" />
                       <p className="text-base font-semibold text-foreground">
-                        Nothing to pay
+                        {t('arrivals.state.vehiclePayments.emptyTitleUnpaid')}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        No vehicles are pending payment.
+                        {t('arrivals.state.vehiclePayments.emptyBodyUnpaid')}
                       </p>
                     </CardContent>
                   </Card>
@@ -299,10 +298,10 @@ const StateVehiclesToBePaid = () => {
                     <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
                       <Search className="size-8 text-muted-foreground" />
                       <p className="text-base font-semibold text-foreground">
-                        No matches
+                        {t('arrivals.state.noMatches')}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        No bacentas or leaders match your search.
+                        {t('arrivals.state.noBacentasOrLeadersMatch')}
                       </p>
                     </CardContent>
                   </Card>
@@ -314,13 +313,13 @@ const StateVehiclesToBePaid = () => {
                       <Wallet className="size-8 text-muted-foreground" />
                       <p className="text-base font-semibold text-foreground">
                         {seePaid
-                          ? 'No paid vehicles yet'
-                          : 'All vehicles are paid'}
+                          ? t('arrivals.state.vehiclePayments.emptyTitlePaid')
+                          : t('arrivals.state.vehiclePayments.emptyBodyPaid')}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {seePaid
-                          ? 'Switch to Unpaid to see what is still pending.'
-                          : 'Switch to Paid to see completed payouts.'}
+                          ? t('arrivals.state.vehiclePayments.switchToUnpaid')
+                          : t('arrivals.state.vehiclePayments.switchToPaid')}
                       </p>
                     </CardContent>
                   </Card>
@@ -368,7 +367,7 @@ const StateVehiclesToBePaid = () => {
               </section>
 
               <aside className="space-y-3 lg:sticky lg:top-6 lg:order-2">
-                <SectionLabel>Summary</SectionLabel>
+                <SectionLabel>{t('arrivals.common.summary')}</SectionLabel>
                 <Card>
                   <CardContent className="space-y-4 p-5">
                     <div>
@@ -393,7 +392,11 @@ const StateVehiclesToBePaid = () => {
                             number={visibleAmount}
                             className="tabular-nums"
                           />{' '}
-                          {seePaid ? 'paid out' : 'to pay out'}
+                          {seePaid
+                            ? t('arrivals.state.vehiclePayments.countLabelPaid')
+                            : t(
+                                'arrivals.state.vehiclePayments.countLabelUnpaid'
+                              )}
                         </p>
                       </div>
                     )}
@@ -413,8 +416,13 @@ const StateVehiclesToBePaid = () => {
                     )}
 
                     <p className="text-xs text-muted-foreground">
-                      Tap a vehicle to{' '}
-                      {seePaid ? 'view its payout' : 'process payment'}.
+                      {t('arrivals.state.vehiclePayments.tapAVehicleTo', {
+                        action: seePaid
+                          ? t('arrivals.state.vehiclePayments.tapToViewPayout')
+                          : t(
+                              'arrivals.state.vehiclePayments.tapToProcessPayment'
+                            ),
+                      })}
                     </p>
                   </CardContent>
                 </Card>

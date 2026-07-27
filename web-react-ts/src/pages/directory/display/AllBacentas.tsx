@@ -20,6 +20,7 @@ import { Building2, ChevronRight, Plus, Search, Users } from 'lucide-react'
 import { permitAdminArrivals } from 'permission-utils'
 import { GET_GOVERNORSHIP_BACENTAS } from 'queries/ListQueries'
 import { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { classifyBacenta } from './bacenta-classification'
 
@@ -51,6 +52,7 @@ type GovernorshipLeader = {
 const formatCount = (n: number) => n.toLocaleString('en-GH')
 
 const DisplayAllBacentas = () => {
+  const { t } = useTranslation()
   const { governorshipId, clickCard } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
 
@@ -83,19 +85,27 @@ const DisplayAllBacentas = () => {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Directory
+                {t('directory.list.eyebrow')}
               </p>
               <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {governorship?.name ? `${governorship.name} ` : ''}
-                <span className="text-members">Bacentas</span>
+                <span className="text-members">
+                  {t('shared.churchLevelPlural.Bacenta')}
+                </span>
               </h1>
             </div>
             <RoleView roles={permitAdminArrivals('Council')} directoryLock>
               <Link to="/bacenta/addbacenta" className="shrink-0">
                 <Button size="sm" className="h-11 gap-2">
                   <Plus className="size-4" />
-                  <span className="hidden sm:inline">Add Bacenta</span>
-                  <span className="sm:hidden">Add</span>
+                  <span className="hidden sm:inline">
+                    {t('directory.list.add', {
+                      level: t('shared.churchLevel.Bacenta'),
+                    })}
+                  </span>
+                  <span className="sm:hidden">
+                    {t('directory.list.addShort')}
+                  </span>
                 </Button>
               </Link>
             </RoleView>
@@ -103,10 +113,14 @@ const DisplayAllBacentas = () => {
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
               <BreadcrumbList className="text-xs">
-                <BreadcrumbItem><span>Governorship</span></BreadcrumbItem>
+                <BreadcrumbItem>
+                  <span>{t('shared.churchLevel.Governorship')}</span>
+                </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold text-members">Bacenta</BreadcrumbPage>
+                  <BreadcrumbPage className="font-semibold text-members">
+                    {t('shared.churchLevel.Bacenta')}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -118,10 +132,12 @@ const DisplayAllBacentas = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search bacenta or leader"
+                  placeholder={t('directory.list.searchBacentaOrLeader')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search bacentas"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
+                  })}
                 />
               </div>
             </div>
@@ -133,13 +149,18 @@ const DisplayAllBacentas = () => {
             <section className="order-2 space-y-4 lg:order-1">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  All Bacentas
+                  {t('directory.list.allOf', {
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
+                  })}
                 </h2>
                 <span
                   aria-live="polite"
                   className="text-xs tabular-nums text-muted-foreground"
                 >
-                  {filtered.length} of {bacentas.length}
+                  {t('directory.list.countOfTotal', {
+                    shown: filtered.length,
+                    total: bacentas.length,
+                  })}
                 </span>
               </div>
 
@@ -148,12 +169,17 @@ const DisplayAllBacentas = () => {
                   <CardContent className="flex flex-col items-center justify-center gap-2 p-8 text-center">
                     <Building2 className="size-8 text-muted-foreground" />
                     <p className="text-sm font-medium text-foreground">
-                      No bacentas found
+                      {t('directory.list.noneFound', {
+                        levelPlural: t('shared.churchLevelPlural.Bacenta'),
+                      })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {search
-                        ? 'Try a different search term.'
-                        : 'This governorship has no bacentas yet.'}
+                        ? t('directory.list.tryDifferentSearch')
+                        : t('directory.list.noneUnderYet', {
+                            parent: t('shared.churchLevel.Governorship'),
+                            levelPlural: t('shared.churchLevelPlural.Bacenta'),
+                          })}
                     </p>
                   </CardContent>
                 </Card>
@@ -174,7 +200,9 @@ const DisplayAllBacentas = () => {
                         key={bacenta.id}
                         to="/bacenta/displaydetails"
                         onClick={() => clickCard(bacenta)}
-                        aria-label={`Open ${bacenta.name}`}
+                        aria-label={t('directory.list.openChurch', {
+                          name: bacenta.name,
+                        })}
                         className="group rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
                       >
                         <div className="flex min-h-[88px] items-center gap-3 p-4">
@@ -195,13 +223,13 @@ const DisplayAllBacentas = () => {
                             <p className="truncate text-base font-semibold text-foreground">
                               {bacenta.name}{' '}
                               <span className="text-xs font-normal text-muted-foreground">
-                                Bacenta
+                                {t('shared.churchLevel.Bacenta')}
                               </span>
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
                               {bacenta.leader
                                 ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
-                                : 'No leader'}
+                                : t('directory.list.noLeader')}
                             </p>
                             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                               <Badge
@@ -218,7 +246,7 @@ const DisplayAllBacentas = () => {
                                   variant="destructive"
                                   className="px-2 py-0.5"
                                 >
-                                  Vacation
+                                  {t('directory.list.vacation')}
                                 </Badge>
                               )}
                               {category && (
@@ -244,7 +272,7 @@ const DisplayAllBacentas = () => {
               <Card>
                 <CardContent className="p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Governorship
+                    {t('shared.churchLevel.Governorship')}
                   </p>
                   <Link
                     to="/governorship/displaydetails"
@@ -286,10 +314,13 @@ const DisplayAllBacentas = () => {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Governor
+                              {t('directory.leaderTitle.governor')}
                             </p>
                             <p className="truncate text-sm font-semibold text-foreground">
-                              {displayName || 'Unnamed Governor'}
+                              {displayName ||
+                                t('directory.list.unnamed', {
+                                  role: t('directory.leaderTitle.governor'),
+                                })}
                             </p>
                           </div>
                         </Link>
@@ -300,7 +331,7 @@ const DisplayAllBacentas = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <StatCard
-                  label="Bacentas"
+                  label={t('shared.churchLevelPlural.Bacenta')}
                   value={formatCount(bacentas.length)}
                   icon={Building2}
                   accent="members"
@@ -309,7 +340,7 @@ const DisplayAllBacentas = () => {
                 />
                 <Link to="/governorship/members" className="block">
                   <StatCard
-                    label="Members"
+                    label={t('shared.churchesSummary.members')}
                     value={formatCount(governorship?.memberCount ?? 0)}
                     icon={Users}
                     accent="members"
@@ -324,10 +355,12 @@ const DisplayAllBacentas = () => {
                 <Input
                   type="search"
                   className="h-11 pl-9"
-                  placeholder="Search bacenta or leader"
+                  placeholder={t('directory.list.searchBacentaOrLeader')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search bacentas"
+                  aria-label={t('directory.list.searchAria', {
+                    levelPlural: t('shared.churchLevelPlural.Bacenta'),
+                  })}
                 />
               </div>
             </aside>

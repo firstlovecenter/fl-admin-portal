@@ -24,12 +24,14 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { throwToSentry } from 'global-utils'
 import useModal from 'hooks/useModal'
 import { Clock, Receipt, Wallet } from 'lucide-react'
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import * as Yup from 'yup'
 import { COUNCIL_ACCOUNT_DASHBOARD } from '../accountsGQL'
 import { CouncilForAccounts } from '../accounts-types'
 import { isAccountOpen } from '../accounts-utils'
+import { translateCategoryLabel } from '../accounts-i18n'
 import AccountBlockedMsg from './AccountBlockedMsg'
 import { EXPENSE_REQUEST } from './expenseGQL'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
@@ -96,6 +98,7 @@ const ResetGhostBussingOnCategoryChange = ({
 }
 
 const ExpenseForm = () => {
+  const { t } = useTranslation()
   const { councilId, clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
   const { show, handleClose, handleShow } = useModal()
@@ -122,16 +125,20 @@ const ExpenseForm = () => {
     description: '',
   }
 
-  const validationSchema = Yup.object({
-    requestedAmount: Yup.number()
-      .typeError('Please enter a valid number')
-      .required('This is a required field'),
-    category: Yup.string().required('This is a required field'),
-    description: Yup.string()
-      .trim()
-      .required('This is a required field')
-      .max(500, 'Description must be 500 characters or fewer'),
-  })
+  const validationSchema = useMemo(
+    () =>
+      Yup.object({
+        requestedAmount: Yup.number()
+          .typeError(t('accounts.common.validNumber'))
+          .required(t('accounts.common.required')),
+        category: Yup.string().required(t('accounts.common.required')),
+        description: Yup.string()
+          .trim()
+          .required(t('accounts.common.required'))
+          .max(500, t('accounts.expense.descriptionMax')),
+      }),
+    [t]
+  )
 
   const onSubmit = async (
     values: ExpenseFormValues,
@@ -175,10 +182,12 @@ const ExpenseForm = () => {
             ) : (
               <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
             )}
-            <span className="text-banking">Expense Request</span>
+            <span className="text-banking">
+              {t('accounts.expense.titleHighlight')}
+            </span>
           </h1>
           <p className="text-sm text-muted-foreground">
-            Submit a new expense for approval by the campus admin.
+            {t('accounts.expense.subtitle')}
           </p>
         </StickyPageHeader>
         <main className="mx-auto max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
@@ -195,6 +204,10 @@ const ExpenseForm = () => {
                   ? parseFloat(formik.values.ghostBussingSociety || '0')
                   : 0)
               const isHrCategory = formik.values.category === 'HR'
+              const categoryDisplay = translateCategoryLabel(
+                t,
+                formik.values.category
+              ) || t('accounts.expense.emDash')
 
               return (
                 <Form>
@@ -210,7 +223,6 @@ const ExpenseForm = () => {
                   />
 
                   <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
-                    {/* Supporting column — context. First in DOM so it sits on top on mobile. */}
                     <aside className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">
                       <Card>
                         <CardContent className="p-5">
@@ -220,7 +232,7 @@ const ExpenseForm = () => {
                             </span>
                             <div className="min-w-0">
                               <p className="text-xs text-muted-foreground">
-                                Weekday Account
+                                {t('accounts.common.weekdayAccount')}
                               </p>
                               {loading ? (
                                 <Skeleton className="mt-1 h-7 w-24" />
@@ -230,7 +242,7 @@ const ExpenseForm = () => {
                                 </p>
                               )}
                               <p className="mt-1 text-xs text-muted-foreground">
-                                Available before this request
+                                {t('accounts.expense.availableBefore')}
                               </p>
                             </div>
                           </div>
@@ -241,14 +253,12 @@ const ExpenseForm = () => {
                         <CardContent className="flex items-start gap-3 p-4">
                           <Clock className="size-4 shrink-0 text-muted-foreground" />
                           <p className="text-xs text-muted-foreground">
-                            Accounts are open from 6 a.m. to 3 p.m. daily.
-                            Requests outside these hours are blocked.
+                            {t('accounts.expense.hoursHint')}
                           </p>
                         </CardContent>
                       </Card>
                     </aside>
 
-                    {/* Primary column — the form. */}
                     <section className="lg:col-start-1 lg:row-start-1">
                       <Card>
                         <CardContent className="space-y-6 p-5">
@@ -259,13 +269,13 @@ const ExpenseForm = () => {
                               inputMode="decimal"
                               step="0.01"
                               min="0"
-                              label="Amount from weekday account (GHS)"
-                              placeholder="Enter an amount"
+                              label={t('accounts.expense.amountWeekdayLabel')}
+                              placeholder={t('accounts.common.enterAmount')}
                               readOnly={isHrCategory}
                             />
                             {isHrCategory && (
                               <p className="text-xs text-muted-foreground">
-                                Auto-filled from the HR amount on file.
+                                {t('accounts.expense.hrAutofillHint')}
                               </p>
                             )}
                           </div>
@@ -277,20 +287,29 @@ const ExpenseForm = () => {
                               inputMode="decimal"
                               step="0.01"
                               min="0"
-                              label="Amount from bussing society (GHS)"
-                              placeholder="Enter an amount"
+                              label={t('accounts.expense.amountBussingLabel')}
+                              placeholder={t('accounts.common.enterAmount')}
                             />
                           )}
 
                           <RadioButtons
                             name="category"
-                            label="Category of expense"
+                            label={t('accounts.expense.categoryLabel')}
                             options={[
-                              { key: 'Bussing', value: 'Bussing' },
-                              { key: 'HR', value: 'HR' },
-                              { key: 'Construction', value: 'Construction' },
                               {
-                                key: 'Ministry Expense',
+                                key: t('accounts.expense.categoryBussing'),
+                                value: 'Bussing',
+                              },
+                              {
+                                key: t('accounts.expense.categoryHr'),
+                                value: 'HR',
+                              },
+                              {
+                                key: t('accounts.expense.categoryConstruction'),
+                                value: 'Construction',
+                              },
+                              {
+                                key: t('accounts.expense.categoryMinistry'),
                                 value: 'Ministry Expense',
                               },
                             ]}
@@ -298,8 +317,10 @@ const ExpenseForm = () => {
 
                           <Textarea
                             name="description"
-                            label="Description"
-                            placeholder="Describe what this expense is for"
+                            label={t('accounts.common.description')}
+                            placeholder={t(
+                              'accounts.expense.descriptionPlaceholder'
+                            )}
                           />
                         </CardContent>
                       </Card>
@@ -323,7 +344,7 @@ const ExpenseForm = () => {
                           className="h-12 w-full gap-2 px-8 text-base font-semibold sm:w-auto sm:min-w-64"
                         >
                           <Receipt className="size-5" />
-                          Review &amp; Submit
+                          {t('accounts.expense.reviewSubmit')}
                         </Button>
                       </div>
                     </section>
@@ -335,17 +356,18 @@ const ExpenseForm = () => {
                   >
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Confirm expense request</DialogTitle>
+                        <DialogTitle>
+                          {t('accounts.expense.confirmTitle')}
+                        </DialogTitle>
                         <DialogDescription>
-                          Double-check the details below before submitting.
-                          You can&apos;t edit a request after it&apos;s sent.
+                          {t('accounts.expense.confirmBody')}
                         </DialogDescription>
                       </DialogHeader>
 
                       <div className="space-y-3">
                         <div className="flex items-baseline justify-between gap-3">
                           <span className="text-sm text-muted-foreground">
-                            Total amount
+                            {t('accounts.expense.totalAmount')}
                           </span>
                           <span className="text-xl font-semibold tabular-nums text-foreground">
                             {formatCurrency(totalAmount)}
@@ -354,19 +376,20 @@ const ExpenseForm = () => {
                         <Separator />
                         <div className="flex items-start justify-between gap-3">
                           <span className="text-sm text-muted-foreground">
-                            Category
+                            {t('accounts.common.category')}
                           </span>
                           <span className="text-sm font-medium text-foreground">
-                            {formik.values.category || '—'}
+                            {categoryDisplay}
                           </span>
                         </div>
                         <Separator />
                         <div className="space-y-1">
                           <span className="text-sm text-muted-foreground">
-                            Description
+                            {t('accounts.common.description')}
                           </span>
                           <p className="text-sm text-foreground">
-                            {formik.values.description || '—'}
+                            {formik.values.description ||
+                              t('accounts.expense.emDash')}
                           </p>
                         </div>
                       </div>
@@ -378,7 +401,7 @@ const ExpenseForm = () => {
                             variant="outline"
                             className="w-full sm:w-auto"
                           >
-                            Cancel
+                            {t('shared.actions.cancel')}
                           </Button>
                         </DialogClose>
                         <SubmitButton
@@ -386,7 +409,7 @@ const ExpenseForm = () => {
                           formik={formik}
                           className="w-full sm:w-auto sm:min-w-40"
                         >
-                          Confirm &amp; Submit
+                          {t('accounts.expense.confirmSubmit')}
                         </SubmitButton>
                       </DialogFooter>
                     </DialogContent>

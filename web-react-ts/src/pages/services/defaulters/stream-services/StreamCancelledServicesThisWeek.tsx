@@ -3,7 +3,9 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { getWeekNumber } from 'lib/date-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import useChurchLevel from 'hooks/useChurchLevel'
 import PullToRefresh from 'components/base-component/PullToRefresh'
@@ -17,6 +19,7 @@ import {
 } from './StreamDefaultersQueries'
 
 const StreamCancelledServicesThisWeek = () => {
+  const { t } = useTranslation()
   const [campusCancelledServices, { refetch: campusRefetch }] = useLazyQuery(
     CAMPUS_STREAM_CANCELLED_SERVICES_LIST
   )
@@ -41,21 +44,26 @@ const StreamCancelledServicesThisWeek = () => {
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
+  const week = getWeekNumber()
+  const count = church?.streamCancelledServicesThisWeek?.length ?? 0
 
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="mx-auto w-full max-w-screen-md px-4">
-          <HeadingPrimary
-            loading={!church}
-          >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
-          <HeadingSecondary>{`Cancelled Services This Week (Week ${getWeekNumber()})`}</HeadingSecondary>
+          <HeadingPrimary loading={!church}>
+            {`${church?.name} ${formatChurchLevel(church?.__typename, t)}`}
+          </HeadingPrimary>
+          <HeadingSecondary>
+            {t('services.defaulters.streamCancelled', { week })}
+          </HeadingSecondary>
 
-          <PlaceholderCustom
-            as="h6"
-            loading={!church?.streamCancelledServicesThisWeek?.length}
-          >
-            <h6>{`Number of Cancelled Services: ${church?.streamCancelledServicesThisWeek?.length}`}</h6>
+          <PlaceholderCustom as="h6" loading={!church}>
+            <h6>
+              {t('services.defaulters.streamCancelledServicesCount', {
+                count,
+              })}
+            </h6>
           </PlaceholderCustom>
 
           <div className="grid gap-3">

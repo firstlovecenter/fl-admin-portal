@@ -8,8 +8,10 @@ import { Skeleton } from 'components/ui/skeleton'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import CurrencySpan from 'components/CurrencySpan'
 import { Church, ServiceRecord } from 'global-types'
-import { parseNeoTime } from 'lib/date-utils'
+import { parseDate, parseNeoTime } from 'lib/date-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import { type ReactNode, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { VisuallyHidden } from 'radix-ui'
 import { useNavigate } from 'react-router'
 
@@ -45,12 +47,13 @@ function PhotoTile({
   label: string
   shape?: 'rect' | 'square'
 }) {
+  const { t } = useTranslation()
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button
           type="button"
-          aria-label={`Expand ${label}`}
+          aria-label={t('services.details.expandPhoto', { label })}
           className={
             shape === 'square'
               ? 'group relative aspect-square w-full overflow-hidden rounded-lg ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
@@ -87,7 +90,16 @@ const ServiceDetailsNoIncome = ({
   church,
   loading,
 }: ServiceDetailsProps) => {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+
+  const formatServiceDate = (date?: string) => {
+    if (!date) return ''
+    return parseDate(date, {
+      t,
+      locale: i18n.resolvedLanguage || i18n.language,
+    })
+  }
 
   useEffect(() => {
     if (!service && !loading) {
@@ -120,12 +132,18 @@ const ServiceDetailsNoIncome = ({
       <StickyPageHeader>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {church?.name}{' '}
-          <span className="text-churches">Service Details</span>
+          <span className="text-churches">
+            {t('services.details.serviceDetails')}
+          </span>
         </h1>
-        <p className="text-sm text-muted-foreground">{church?.__typename}</p>
+        <p className="text-sm text-muted-foreground">
+          {formatChurchLevel(church?.__typename, t)}
+        </p>
         {service?.created_by && (
           <p className="text-sm text-muted-foreground">
-            Recorded by {service.created_by.fullName}
+            {t('services.details.recordedBy', {
+              name: service.created_by.fullName,
+            })}
           </p>
         )}
       </StickyPageHeader>
@@ -134,8 +152,9 @@ const ServiceDetailsNoIncome = ({
         {service?.noServiceReason && !service?.attendance && (
           <div className="space-y-1 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
             <p className="text-sm font-semibold text-foreground">
-              Service Cancelled ·{' '}
-              {new Date(service.serviceDate.date).toDateString()}
+              {t('services.details.serviceCancelled', {
+                date: formatServiceDate(service.serviceDate.date),
+              })}
             </p>
             <p className="text-sm text-muted-foreground">
               {service.noServiceReason}
@@ -150,26 +169,26 @@ const ServiceDetailsNoIncome = ({
             <div className="overflow-hidden rounded-xl border border-border bg-card">
               <div className="border-b border-border px-4 py-3">
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Service Record
+                  {t('services.details.serviceRecord')}
                 </h2>
               </div>
               <div className="divide-y divide-border">
-                <DetailRow label="Date of Service">
-                  {new Date(service.serviceDate.date).toDateString()}
+                <DetailRow label={t('services.details.dateOfService')}>
+                  {formatServiceDate(service.serviceDate.date)}
                 </DetailRow>
-                <DetailRow label="Form Filled At">
+                <DetailRow label={t('services.details.formFilledAt')}>
                   {parseNeoTime(service.createdAt)}
                 </DetailRow>
-                <DetailRow label="Attendance">
+                <DetailRow label={t('services.details.attendance')}>
                   <span className="tabular-nums">{service.attendance}</span>
                 </DetailRow>
                 {service.onlineGiving ? (
-                  <DetailRow label="Online Giving">
+                  <DetailRow label={t('services.details.onlineGiving')}>
                     <CurrencySpan number={service.onlineGiving} />
                   </DetailRow>
                 ) : null}
                 {service.noServiceReason && (
-                  <DetailRow label="No Service Reason">
+                  <DetailRow label={t('services.details.noServiceReason')}>
                     {service.noServiceReason}
                   </DetailRow>
                 )}
@@ -178,42 +197,45 @@ const ServiceDetailsNoIncome = ({
 
             {/* RIGHT — photos (sticky on desktop) */}
             <div className="space-y-4 lg:sticky lg:top-6">
-
               {/* Photos card — height-capped */}
-              {(service.familyPicture || (service.onStagePictures?.length ?? 0) > 0) && (
+              {(service.familyPicture ||
+                (service.onStagePictures?.length ?? 0) > 0) && (
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="border-b border-border px-4 py-3">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Photos
+                      {t('services.details.photos')}
                     </h2>
                   </div>
                   <div className="divide-y divide-border">
                     {service.familyPicture && (
                       <div className="p-3">
                         <p className="mb-2 text-xs font-medium text-muted-foreground">
-                          Family Picture
+                          {t('services.details.familyPicture')}
                         </p>
                         <PhotoTile
                           src={service.familyPicture}
-                          label="Family Picture"
+                          label={t('services.details.familyPicture')}
                         />
                       </div>
                     )}
                     {(service.onStagePictures?.length ?? 0) > 0 && (
                       <div className="p-3">
                         <p className="mb-2 text-xs font-medium text-muted-foreground">
-                          On Stage
+                          {t('services.details.onStage')}
                         </p>
                         <div className="grid grid-cols-2 gap-2">
-                          {service.onStagePictures?.map((image: string, i: number) =>
-                            image ? (
-                              <PhotoTile
-                                key={i}
-                                src={image}
-                                label={`On Stage ${i + 1}`}
-                                shape="square"
-                              />
-                            ) : null
+                          {service.onStagePictures?.map(
+                            (image: string, i: number) =>
+                              image ? (
+                                <PhotoTile
+                                  key={i}
+                                  src={image}
+                                  label={t('services.details.onStageN', {
+                                    number: i + 1,
+                                  })}
+                                  shape="square"
+                                />
+                              ) : null
                           )}
                         </div>
                       </div>

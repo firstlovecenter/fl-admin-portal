@@ -9,6 +9,7 @@ import { Skeleton } from 'components/ui/skeleton'
 import { Separator } from 'components/ui/separator'
 import { cn } from 'components/lib/utils'
 import { MemberContext } from 'contexts/MemberContext'
+import { currentIntlLocale } from 'lib/intl-locale'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import {
   getMonthlyStatAverage,
@@ -27,16 +28,9 @@ import {
 } from './dashboard-shared'
 
 const TREND_HISTORY_WEEKS = 24
-const DATE_HEADER_LOCALES: Record<string, string> = {
-  en: 'en-GB',
-  fr: 'fr-FR',
-  es: 'es-ES',
-  pt: 'pt-PT',
-  de: 'de-DE',
-}
 
 const ArrivalsCounterDashboard = () => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { currentUser } = useContext(MemberContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
@@ -110,7 +104,7 @@ const ArrivalsCounterDashboard = () => {
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {new Date().toLocaleDateString(
-                DATE_HEADER_LOCALES[i18n.language] || DATE_HEADER_LOCALES.en,
+                currentIntlLocale(),
                 {
                   weekday: 'long',
                   day: 'numeric',
@@ -137,10 +131,7 @@ const ArrivalsCounterDashboard = () => {
                   variant="outline"
                   className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
                 >
-                  {formatChurchLevel(
-                    selectedScope?.churchType ?? 'Stream',
-                    t
-                  )}
+                  {formatChurchLevel(selectedScope?.churchType ?? 'Stream', t)}
                 </Badge>
                 <Badge
                   variant="outline"

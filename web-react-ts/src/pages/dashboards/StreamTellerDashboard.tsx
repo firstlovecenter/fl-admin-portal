@@ -10,6 +10,7 @@ import { Skeleton } from 'components/ui/skeleton'
 import { Separator } from 'components/ui/separator'
 import { cn } from 'components/lib/utils'
 import { MemberContext } from 'contexts/MemberContext'
+import { currentIntlLocale } from 'lib/intl-locale'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { UserJobs } from 'global-types'
 import { resolveChurchFromUserJobs } from 'pages/dashboards/dashboard-utils'
@@ -24,16 +25,9 @@ import {
 } from './dashboard-shared'
 
 const RECEIVE_BANKING_PATH = '/manual-banking/receive-banking'
-const DATE_HEADER_LOCALES: Record<string, string> = {
-  en: 'en-GB',
-  fr: 'fr-FR',
-  es: 'es-ES',
-  pt: 'pt-PT',
-  de: 'de-DE',
-}
 
 const StreamTellerDashboard = () => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const { selectedScope, roleChurchOptions } = useChurchRoleScope()
   const navigate = useNavigate()
@@ -64,8 +58,7 @@ const StreamTellerDashboard = () => {
   const stream = pendingData?.streams?.[0]
   const governorshipPending =
     stream?.governorshipBankingDefaultersThisWeek?.length ?? 0
-  const councilPending =
-    stream?.councilBankingDefaultersThisWeek?.length ?? 0
+  const councilPending = stream?.councilBankingDefaultersThisWeek?.length ?? 0
   const pendingCount = governorshipPending + councilPending
 
   const isLoading = !currentUser?.fullName
@@ -103,7 +96,7 @@ const StreamTellerDashboard = () => {
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {new Date().toLocaleDateString(
-                DATE_HEADER_LOCALES[i18n.language] || DATE_HEADER_LOCALES.en,
+                currentIntlLocale(),
                 {
                   weekday: 'long',
                   day: 'numeric',
@@ -130,10 +123,7 @@ const StreamTellerDashboard = () => {
                   variant="outline"
                   className="rounded-full px-2.5 py-0.5 text-xs font-normal text-muted-foreground"
                 >
-                  {formatChurchLevel(
-                    selectedScope?.churchType ?? 'Stream',
-                    t
-                  )}
+                  {formatChurchLevel(selectedScope?.churchType ?? 'Stream', t)}
                 </Badge>
                 <Badge
                   variant="outline"

@@ -4,6 +4,7 @@ import PullToRefresh from 'components/base-component/PullToRefresh'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { Phone, MessageCircle, Network } from 'lucide-react'
 
 import { Button } from 'components/ui/button'
@@ -17,6 +18,7 @@ import { STREAM_BY_COUNCIL } from '../DefaultersQueries'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
 import useSelectedWeek from 'hooks/useSelectedWeek'
+import { formatChurchLevel } from 'lib/scope-display'
 import {
   statClass,
   bankedClass,
@@ -26,6 +28,7 @@ import {
 } from './subchurch-shared'
 
 const StreamByCouncil = () => {
+  const { t } = useTranslation()
   const { streamId, clickCard } = useContext(ChurchContext)
   const { weekStart } = useSelectedWeek()
   const { data, loading, error, refetch } = useQuery(STREAM_BY_COUNCIL, {
@@ -59,7 +62,12 @@ const StreamByCouncil = () => {
               ) : (
                 <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                   {stream.name}{' '}
-                  <span className="text-churches">Stream By Council</span>
+                  <span className="text-churches">
+                    {t('services.defaulters.bySubchurchHighlight', {
+                      level: formatChurchLevel('Stream', t),
+                      subLevel: formatChurchLevel('Council', t),
+                    })}
+                  </span>
                 </h1>
               )}
               <StickyPageHeaderActions>
@@ -70,7 +78,7 @@ const StreamByCouncil = () => {
                   onClick={() => navigate('/services/stream-by-governorship')}
                 >
                   <Network className="h-4 w-4" />
-                  By Governorship
+                  {t('services.defaulters.byGovernorship')}
                 </Button>
               </StickyPageHeaderActions>
             </div>
@@ -99,7 +107,8 @@ const StreamByCouncil = () => {
                         >
                           <div className="border-b border-border px-4 py-3">
                             <p className="font-semibold text-foreground">
-                              {council.name} Council
+                              {council.name}{' '}
+                              {formatChurchLevel('Council', t)}
                             </p>
                             <p className="mt-0.5 text-xs text-muted-foreground">
                               {council.leader?.fullName}
@@ -107,7 +116,7 @@ const StreamByCouncil = () => {
                           </div>
                           <div className="divide-y divide-border">
                             <StatRow
-                              label="Services This Week"
+                              label={t('services.defaulters.servicesThisWeekLabel')}
                               value={council.servicesThisWeekCount}
                               valueClass={statClass(
                                 council.servicesThisWeekCount,
@@ -115,14 +124,14 @@ const StreamByCouncil = () => {
                               )}
                             />
                             <StatRow
-                              label="Form Not Filled"
+                              label={t('services.defaulters.formNotFilled')}
                               value={council.formDefaultersThisWeekCount}
                               valueClass={statClass(
                                 council.formDefaultersThisWeekCount
                               )}
                             />
                             <StatRow
-                              label="Banked This Week"
+                              label={t('services.defaulters.bankedThisWeekLabel')}
                               value={council.bankedThisWeekCount}
                               valueClass={bankedClass(
                                 council.bankedThisWeekCount,
@@ -130,14 +139,14 @@ const StreamByCouncil = () => {
                               )}
                             />
                             <StatRow
-                              label="Not Banked This Week"
+                              label={t('services.defaulters.notBankedThisWeekLabel')}
                               value={council.bankingDefaultersThisWeekCount}
                               valueClass={statClass(
                                 council.bankingDefaultersThisWeekCount
                               )}
                             />
                             <StatRow
-                              label="Cancelled Services"
+                              label={t('services.defaulters.cancelledServicesLabel')}
                               value={council.cancelledServicesThisWeekCount}
                               valueClass={statClass(
                                 council.cancelledServicesThisWeekCount
@@ -149,7 +158,7 @@ const StreamByCouncil = () => {
                         {/* Footer — admin contact (outside the clickable area) */}
                         <div className="border-t border-border bg-muted/20 px-4 py-3">
                           <p className="mb-2.5 text-xs text-muted-foreground">
-                            Admin:{' '}
+                            {t('services.defaulters.adminLabel')}{' '}
                             <span className="font-medium text-foreground">
                               {council.admin?.fullName}
                             </span>
@@ -162,7 +171,7 @@ const StreamByCouncil = () => {
                                 className="min-h-[44px] gap-1.5"
                               >
                                 <Phone className="h-4 w-4" />
-                                Call
+                                {t('services.defaulters.call')}
                               </Button>
                             </a>
                             <a
@@ -177,7 +186,7 @@ const StreamByCouncil = () => {
                                 className="min-h-[44px] gap-1.5 border-success/30 text-success hover:bg-success/10"
                               >
                                 <MessageCircle className="h-4 w-4" />
-                                WhatsApp
+                                {t('services.defaulters.whatsapp')}
                               </Button>
                             </a>
                           </div>
@@ -191,21 +200,22 @@ const StreamByCouncil = () => {
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="border-b border-border px-4 py-3">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Stream Summary
+                      {formatChurchLevel('Stream', t)}{' '}
+                      {t('arrivals.common.summary')}
                     </h2>
                   </div>
                   <div className="divide-y divide-border">
                     <SummaryRow
-                      label="Councils"
+                      label={t('shared.churchLevelPlural.Council')}
                       value={loading ? '—' : String(councils.length)}
                     />
                     <SummaryRow
-                      label="Services Filed"
+                      label={t('services.defaulters.servicesFiledLabel')}
                       value={loading ? '—' : totals.services.toLocaleString('en-GH')}
                       valueClass={totals.services ? 'text-success' : 'text-muted-foreground'}
                     />
                     <SummaryRow
-                      label="Form Defaulters"
+                      label={t('services.defaulters.formDefaultersLabel')}
                       value={loading ? '—' : totals.formDefaulters.toLocaleString('en-GH')}
                       valueClass={
                         totals.formDefaulters
@@ -214,12 +224,12 @@ const StreamByCouncil = () => {
                       }
                     />
                     <SummaryRow
-                      label="Banked"
+                      label={t('services.defaulters.banked')}
                       value={loading ? '—' : totals.banked.toLocaleString('en-GH')}
                       valueClass={totals.banked ? 'text-success' : 'text-muted-foreground'}
                     />
                     <SummaryRow
-                      label="Not Banked"
+                      label={t('services.defaulters.notBanked')}
                       value={loading ? '—' : totals.notBanked.toLocaleString('en-GH')}
                       valueClass={
                         totals.notBanked
@@ -228,7 +238,7 @@ const StreamByCouncil = () => {
                       }
                     />
                     <SummaryRow
-                      label="Cancelled"
+                      label={t('services.defaulters.cancelled')}
                       value={loading ? '—' : totals.cancelled.toLocaleString('en-GH')}
                       valueClass={
                         totals.cancelled

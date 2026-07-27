@@ -5,7 +5,8 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { FunctionReturnsVoid, Member, Stream } from 'global-types'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as Yup from 'yup'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { alertSuccess, throwToSentry } from 'global-utils'
@@ -49,6 +50,7 @@ type FormOptions = {
 }
 
 const TellerSelect = () => {
+  const { t } = useTranslation()
   const { streamId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(STREAM_BANK_TELLERS, {
     variables: { id: streamId },
@@ -90,7 +92,11 @@ const TellerSelect = () => {
           tellerId: teller.id,
         },
       })
-      alertSuccess(`${teller.fullName} Deleted Successfully`)
+      alertSuccess(
+        t('services.banking.tellerSelect.deletedSuccess', {
+          name: teller.fullName,
+        })
+      )
     } catch (error: any) {
       throwToSentry('', error)
     } finally {
@@ -104,11 +110,15 @@ const TellerSelect = () => {
     tellerSelect: '',
   }
 
-  const validationSchema = Yup.object({
-    tellerSelect: Yup.string().required(
-      'Please select a teller from the dropdown'
-    ),
-  })
+  const validationSchema = useMemo(
+    () =>
+      Yup.object({
+        tellerSelect: Yup.string().required(
+          t('services.banking.tellerSelect.tellerRequired')
+        ),
+      }),
+    [t]
+  )
 
   const onSubmit = async (
     values: FormOptions,
@@ -128,7 +138,7 @@ const TellerSelect = () => {
       }
 
       handleClose()
-      alertSuccess('Stream Teller has been added successfully')
+      alertSuccess(t('services.banking.tellerSelect.addedSuccess'))
     } catch (e: unknown) {
       throwToSentry('There was an error adding the teller', e)
     } finally {
@@ -139,11 +149,19 @@ const TellerSelect = () => {
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
-        <HeadingPrimary>{`Select ${stream?.name} Tellers`}</HeadingPrimary>
+        <HeadingPrimary>
+          {t('services.banking.tellerSelect.selectTellers', {
+            name: stream?.name ?? '',
+          })}
+        </HeadingPrimary>
         <HeadingSecondary>
-          Use the buttons below to choose tellers
+          {t('services.banking.tellerSelect.useButtons')}
         </HeadingSecondary>
-        <div>{`Number of Active Bacentas: ${stream?.activeBacentaCount}`}</div>
+        <div>
+          {t('services.banking.tellerSelect.activeBacentas', {
+            count: stream?.activeBacentaCount ?? 0,
+          })}
+        </div>
 
         <Dialog
           open={show}
@@ -151,7 +169,9 @@ const TellerSelect = () => {
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Choose a Treasurer</DialogTitle>
+              <DialogTitle>
+                {t('services.banking.tellerSelect.chooseTreasurer')}
+              </DialogTitle>
             </DialogHeader>
 
             <Formik
@@ -161,11 +181,11 @@ const TellerSelect = () => {
             >
               {(formik) => (
                 <Form>
-                  <div className="form-row">
+                  <div className="space-y-3">
                     <SearchMember
                       name="tellerSelect"
                       initialValue={initialValues?.tellerName}
-                      placeholder="Select a Name"
+                      placeholder={t('services.banking.tellerSelect.selectAName')}
                       setFieldValue={formik.setFieldValue}
                       aria-describedby="Member Search"
                       error={formik.errors.tellerSelect}
@@ -177,7 +197,7 @@ const TellerSelect = () => {
                       variant="outline"
                       onClick={handleClose}
                     >
-                      Close
+                      {t('services.banking.tellerSelect.close')}
                     </Button>
                     <ModalSubmitButton formik={formik} />
                   </DialogFooter>
@@ -193,7 +213,7 @@ const TellerSelect = () => {
             onClick={handleOpen}
             className="bg-[hsl(var(--success))] text-white hover:bg-[hsl(var(--success))]/90"
           >
-            Choose Treasurers
+            {t('services.banking.tellerSelect.chooseTreasurers')}
           </Button>
         </div>
 
@@ -209,10 +229,10 @@ const TellerSelect = () => {
                 {submitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Submitting</span>
+                    <span>{t('shared.form.submitting')}</span>
                   </>
                 ) : (
-                  'Delete'
+                  t('services.banking.tellerSelect.delete')
                 )}
               </Button>
             </div>
@@ -220,7 +240,7 @@ const TellerSelect = () => {
         ))}
 
         {!stream?.tellers?.length && (
-          <NoDataComponent text="You have no Bank Tellers at this time" />
+          <NoDataComponent text={t('services.banking.tellerSelect.noTellers')} />
         )}
 
         <AlertDialog
@@ -231,16 +251,20 @@ const TellerSelect = () => {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove this teller?</AlertDialogTitle>
+              <AlertDialogTitle>
+                {t('services.banking.tellerSelect.removeTitle')}
+              </AlertDialogTitle>
               <AlertDialogDescription>
                 {tellerToDelete
-                  ? `Do you want to delete ${tellerToDelete.fullName} as a teller?`
+                  ? t('services.banking.tellerSelect.removeBody', {
+                      name: tellerToDelete.fullName,
+                    })
                   : ''}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={submitting} className="min-h-11">
-                Cancel
+                {t('shared.actions.cancel')}
               </AlertDialogCancel>
               <AlertDialogAction
                 disabled={submitting}
@@ -250,7 +274,9 @@ const TellerSelect = () => {
                 }}
                 className="min-h-11 bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/30"
               >
-                {submitting ? 'Deleting…' : 'Delete'}
+                {submitting
+                  ? t('services.banking.tellerSelect.deleting')
+                  : t('services.banking.tellerSelect.delete')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

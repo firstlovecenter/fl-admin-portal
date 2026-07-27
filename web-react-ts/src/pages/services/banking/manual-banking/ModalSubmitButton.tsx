@@ -1,5 +1,6 @@
 import { FormikProps } from 'formik'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
 import { Button } from 'components/ui/button'
 import { cn } from 'components/lib/utils'
@@ -10,6 +11,7 @@ type SubmitButtonProps = {
 }
 
 const ModalSubmitButton = ({ formik, children }: SubmitButtonProps) => {
+  const { t } = useTranslation()
   return (
     <Button
       type="submit"
@@ -22,10 +24,10 @@ const ModalSubmitButton = ({ formik, children }: SubmitButtonProps) => {
       {formik.isSubmitting ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Submitting</span>
+          <span>{t('shared.form.submitting')}</span>
         </>
       ) : (
-        children || 'Save Changes'
+        children || t('services.banking.tellerSelect.saveChanges')
       )}
     </Button>
   )

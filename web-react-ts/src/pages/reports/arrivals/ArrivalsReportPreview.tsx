@@ -7,7 +7,17 @@ import {
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { Bus, ChevronDown, ChevronUp, ChevronsUpDown, Coins, FileSpreadsheet, Home, Users } from 'lucide-react'
+import {
+  Bus,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Coins,
+  FileSpreadsheet,
+  Home,
+  Users,
+} from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import {
   Table,
@@ -84,6 +94,7 @@ const ArrivalsReportPreview = ({
   level,
   churchId,
 }: ArrivalsReportPreviewProps) => {
+  const { t } = useTranslation()
   const detail = payload.detail ?? []
   const vehicles = payload.vehicles ?? []
   const totals = computeTotals(detail)
@@ -94,7 +105,7 @@ const ArrivalsReportPreview = ({
   const columns = useMemo(
     () => [
       columnHelper.accessor('bacenta', {
-        header: 'Bacenta',
+        header: t('shared.churchLevel.Bacenta'),
         cell: (info) => (
           <span className="font-medium">
             {info.getValue() ?? <span className="text-muted-foreground">—</span>}
@@ -102,7 +113,7 @@ const ArrivalsReportPreview = ({
         ),
       }),
       columnHelper.accessor('leader', {
-        header: 'Leader',
+        header: t('reports.shared.leader'),
         cell: (info) => (
           <span className="text-muted-foreground">
             {info.getValue() ?? <span>—</span>}
@@ -111,7 +122,7 @@ const ArrivalsReportPreview = ({
       }),
       columnHelper.accessor((row) => safeNum(row.attendance), {
         id: 'attendance',
-        header: 'Attendance',
+        header: t('reports.shared.attendance'),
         sortingFn: 'basic',
         cell: ({ getValue }) => (
           <span className="tabular-nums">{formatNumber(getValue())}</span>
@@ -122,7 +133,7 @@ const ArrivalsReportPreview = ({
           safeNum(row.sprinters) + safeNum(row.urvans) + safeNum(row.cars),
         {
           id: 'vehicleCount',
-          header: 'Vehicles',
+          header: t('reports.shared.vehicles'),
           sortingFn: 'basic',
           cell: ({ getValue }) => (
             <span className="tabular-nums">{formatNumber(getValue())}</span>
@@ -131,14 +142,14 @@ const ArrivalsReportPreview = ({
       ),
       columnHelper.accessor((row) => safeNum(row.bussingTopUp), {
         id: 'topUp',
-        header: 'Top-Up (GHS)',
+        header: t('reports.shared.topUpGhs'),
         sortingFn: 'basic',
         cell: ({ getValue }) => (
           <span className="tabular-nums">{formatNumber(getValue())}</span>
         ),
       }),
     ],
-    []
+    [t]
   )
 
   const table = useReactTable({
@@ -166,11 +177,10 @@ const ArrivalsReportPreview = ({
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-base font-semibold text-foreground">
-                Arrivals
+                {t('reports.arrivals.title')}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Bacenta detail, per-vehicle detail, and a sub-church summary
-                at Council and above.
+                {t('reports.arrivals.previewDescription')}
               </p>
             </div>
           </div>
@@ -178,22 +188,22 @@ const ArrivalsReportPreview = ({
           <dl className="mt-5 grid grid-cols-2 gap-3">
             <StatTile
               icon={<Users className="size-4" />}
-              label="Attendance"
+              label={t('reports.shared.attendance')}
               value={formatNumber(totals.attendance)}
             />
             <StatTile
               icon={<Bus className="size-4" />}
-              label="Vehicles"
+              label={t('reports.shared.vehicles')}
               value={formatNumber(totals.vehicles)}
             />
             <StatTile
               icon={<Coins className="size-4" />}
-              label="Top-Up"
+              label={t('reports.shared.topUp')}
               value={formatGhs(totals.topUp)}
             />
             <StatTile
               icon={<Home className="size-4" />}
-              label="Bussed"
+              label={t('reports.shared.bussed')}
               value={`${formatNumber(totals.bacentasBussed)} / ${formatNumber(
                 totals.bacentas
               )}`}
@@ -203,7 +213,7 @@ const ArrivalsReportPreview = ({
 
         <section className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Filename
+            {t('reports.shared.filename')}
           </p>
           <p className="mt-2 break-words font-mono text-sm text-foreground">
             {filenameStem}
@@ -223,12 +233,18 @@ const ArrivalsReportPreview = ({
       <section className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Preview
+            {t('reports.shared.preview')}
           </h3>
           <p className="text-xs text-muted-foreground tabular-nums">
             {detail.length > previewRows.length
-              ? `Showing first ${previewRows.length} of ${totalLabel}`
-              : `Showing ${detail.length} of ${totalLabel}`}
+              ? t('reports.shared.showingFirstOf', {
+                  shown: previewRows.length,
+                  total: totalLabel,
+                })
+              : t('reports.shared.showingOf', {
+                  count: detail.length,
+                  total: totalLabel,
+                })}
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -289,9 +305,9 @@ const ArrivalsReportPreview = ({
         </div>
         {vehicles.length > 0 && (
           <p className="border-t border-border bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
-            Vehicle detail ({vehicles.length.toLocaleString('en-GH')}{' '}
-            {vehicles.length === 1 ? 'row' : 'rows'}) is included as a
-            separate sheet in the download.
+            {t('reports.arrivals.vehicleDetailFootnote', {
+              count: vehicles.length,
+            })}
           </p>
         )}
       </section>

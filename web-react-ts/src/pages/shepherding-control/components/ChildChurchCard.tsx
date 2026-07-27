@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Avatar,
   AvatarFallback,
@@ -13,6 +14,7 @@ type Props = {
 }
 
 const ChildChurchCard = ({ child, onSelect }: Props) => {
+  const { t } = useTranslation()
   const initials = `${child.leader?.firstName?.[0] ?? ''}${
     child.leader?.lastName?.[0] ?? ''
   }`
@@ -42,7 +44,7 @@ const ChildChurchCard = ({ child, onSelect }: Props) => {
               {child.name}
             </p>
             <p className="mt-1 truncate text-base text-muted-foreground">
-              {child.leader?.nameWithTitle ?? 'No leader assigned'}
+              {child.leader?.nameWithTitle ?? t('shepherding.noLeaderAssigned')}
             </p>
           </div>
         </div>

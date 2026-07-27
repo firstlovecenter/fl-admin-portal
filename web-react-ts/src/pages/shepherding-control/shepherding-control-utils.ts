@@ -145,6 +145,8 @@ export const METRIC_UNIT: Record<MetricKey, MetricUnit> = {
   income: 'cedis',
 }
 
+// English canonical labels. UI must translate at display via
+// t(`shepherding.metrics.${key}`) — do not render these strings directly.
 export const METRIC_LABEL: Record<MetricKey, string> = {
   serviceAttendance: 'Service Attendance',
   bussingAttendance: 'Bussing Attendance',

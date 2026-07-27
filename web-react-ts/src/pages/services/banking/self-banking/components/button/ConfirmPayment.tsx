@@ -4,6 +4,7 @@ import { ChurchContext } from 'contexts/ChurchContext'
 import { alertMsg, alertSuccess, throwToSentry } from 'global-utils'
 import { Loader2 } from 'lucide-react'
 import { useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
 import {
   CONFIRM_OFFERING_PAYMENT,
@@ -42,6 +43,7 @@ type ButtonConfirmPaymentProps = {
 
 const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
   const { refetch, service, handleClose, disabled, className } = props
+  const { t } = useTranslation()
   const [sending, setSending] = useState(false)
   const navigate = useNavigate()
   const { bacentaId, governorshipId, councilId, ministryId, clickCard } =
@@ -120,9 +122,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               'pending'
             ) {
               navigate('/self-banking/receipt')
-              alertMsg(
-                'Your Payment is still pending please follow the manual steps for approval'
-              )
+              alertMsg(t('services.banking.confirmPayment.alertStillPending'))
               return
             }
 
@@ -131,7 +131,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               'failed'
             ) {
               navigate('/services/bacenta/self-banking')
-              alertMsg('Your Payment Failed 😞. Please try again!')
+              alertMsg(t('services.banking.confirmPayment.alertFailed'))
               return
             }
 
@@ -140,7 +140,7 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               'success'
             ) {
               navigate('/self-banking/receipt')
-              alertSuccess('Payment Confirmed Successfully 😊')
+              alertSuccess(t('services.banking.confirmPayment.alertSuccess'))
               return
             }
 
@@ -149,18 +149,14 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
               'reversed'
             ) {
               navigate('/services/bacenta/self-banking')
-              alertMsg(
-                'This payment was reversed by the mobile money provider. Please try again.'
-              )
+              alertMsg(t('services.banking.confirmPayment.alertReversed'))
               return
             }
           }
 
           if (serviceRecord.transactionStatus === 'reversed') {
             navigate('/services/bacenta/self-banking')
-            alertMsg(
-              'This payment was reversed by the mobile money provider. Please try again.'
-            )
+            alertMsg(t('services.banking.confirmPayment.alertReversed'))
             return
           }
 
@@ -168,18 +164,20 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
             ['failed', 'abandoned'].includes(serviceRecord.transactionStatus)
           ) {
             navigate('/services/bacenta/self-banking')
-            alertMsg('Your Payment Failed 😞. Please try again!')
+            alertMsg(t('services.banking.confirmPayment.alertFailed'))
             return
           }
 
           if (serviceRecord.transactionStatus === 'success') {
-            alertSuccess('Payment Confirmed Successfully 😊')
+            alertSuccess(t('services.banking.confirmPayment.alertSuccess'))
             navigate('/self-banking/receipt')
             return
           }
         } catch (error: any) {
           navigate('/services/bacenta/self-banking')
-          alertMsg(error?.message ?? 'Something went wrong 😞')
+          alertMsg(
+            error?.message ?? t('services.banking.confirmPayment.alertGeneric')
+          )
           throwToSentry('Error confirming offering payment', error)
         } finally {
           if (handleClose) {
@@ -193,7 +191,9 @@ const ButtonConfirmPayment = (props: ButtonConfirmPaymentProps) => {
       }}
     >
       {sending && <Loader2 className="size-4 animate-spin" />}
-      {sending ? 'Confirming…' : 'Confirm Transaction'}
+      {sending
+        ? t('services.banking.common.confirming')
+        : t('services.banking.confirmPayment.confirmTransaction')}
     </Button>
   )
 }

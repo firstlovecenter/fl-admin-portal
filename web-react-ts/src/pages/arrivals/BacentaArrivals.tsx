@@ -142,12 +142,15 @@ const BacentaArrivals = () => {
             ) : (
               <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {bacenta.name}{' '}
-                <span className="text-arrivals">{t('arrivals.common.title')}</span>
+                <span className="text-arrivals">
+                  {t('arrivals.common.title')}
+                </span>
               </h1>
             )}
             {date?.swell && (
               <p className="inline-flex items-center gap-2 rounded-full bg-warning/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-warning">
-                <AlertTriangle className="size-3.5" /> {t('arrivals.bacenta.swollenWeekend')}
+                <AlertTriangle className="size-3.5" />{' '}
+                {t('arrivals.bacenta.swollenWeekend')}
               </p>
             )}
           </StickyPageHeader>
@@ -175,7 +178,9 @@ const BacentaArrivals = () => {
                             variant="ghost"
                             size="icon"
                             className="size-11 shrink-0 text-muted-foreground hover:text-foreground"
-                            aria-label={t('arrivals.bacenta.showCodeFullscreen')}
+                            aria-label={t(
+                              'arrivals.bacenta.showCodeFullscreen'
+                            )}
                             onClick={() => setShowCodeFullscreen(true)}
                           >
                             <Maximize2 className="size-4" />
@@ -187,9 +192,15 @@ const BacentaArrivals = () => {
 
                   {/* Countdown — flush to card edges */}
                   {isBeforeArrivalEnd && (
-                    <div className={cn('border-border', !filledFormsToday && 'border-t')}>
+                    <div
+                      className={cn(
+                        'border-border',
+                        !filledFormsToday && 'border-t'
+                      )}
+                    >
                       <p className="flex items-center justify-center gap-2 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        <Clock className="size-3.5" /> {t('arrivals.bacenta.arrivalsCloseIn')}
+                        <Clock className="size-3.5" />{' '}
+                        {t('arrivals.bacenta.arrivalsCloseIn')}
                       </p>
                       <CountdownTimer targetDate={dateTimeToEnd} />
                     </div>
@@ -320,7 +331,9 @@ const BacentaArrivals = () => {
                 <Card>
                   <CardContent className="space-y-3 p-5">
                     <div className="flex items-center justify-between">
-                      <SectionLabel>{t('arrivals.common.vehicles')}</SectionLabel>
+                      <SectionLabel>
+                        {t('arrivals.common.vehicles')}
+                      </SectionLabel>
                       <p className="text-xs font-semibold text-warning">
                         {t('arrivals.bacenta.oneFormPerVehicle')}
                       </p>
@@ -356,7 +369,6 @@ const BacentaArrivals = () => {
                     </Button>
                   </CardContent>
                 </Card>
-
               </section>
             </div>
 
@@ -364,7 +376,9 @@ const BacentaArrivals = () => {
             <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{t('arrivals.bacenta.tooLateDialogTitle')}</DialogTitle>
+                  <DialogTitle>
+                    {t('arrivals.bacenta.tooLateDialogTitle')}
+                  </DialogTitle>
                   <DialogDescription>
                     {t('arrivals.bacenta.tooLateDialogDescription')}
                   </DialogDescription>
@@ -422,7 +436,9 @@ const BacentaArrivals = () => {
             <Dialog open={showMobPic} onOpenChange={setShowMobPic}>
               <DialogContent className="flex max-h-svh max-w-[95vw] flex-col items-center gap-4 p-4 sm:max-w-xl">
                 <DialogHeader className="sr-only">
-                  <DialogTitle>{t('arrivals.common.mobilisationPicture')}</DialogTitle>
+                  <DialogTitle>
+                    {t('arrivals.common.mobilisationPicture')}
+                  </DialogTitle>
                   <DialogDescription>
                     {t('arrivals.bacenta.submittedMobilisationPicture')}
                   </DialogDescription>

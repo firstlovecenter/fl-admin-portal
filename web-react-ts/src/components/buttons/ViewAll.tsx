@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from 'components/ui/button'
 import { ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -7,7 +8,9 @@ type ViewAllProps = {
   label?: string
 }
 
-const ViewAll = ({ to, label = 'View All' }: ViewAllProps) => {
+const ViewAll = ({ to, label }: ViewAllProps) => {
+  const { t } = useTranslation()
+  const resolvedLabel = label ?? t('directory.displayChurchDetails.viewAll')
   return (
     <Link to={to}>
       <Button
@@ -15,7 +18,7 @@ const ViewAll = ({ to, label = 'View All' }: ViewAllProps) => {
         size="sm"
         className="min-h-[44px] gap-1 px-3 text-sm font-medium text-members hover:bg-members/10 hover:text-members"
       >
-        {label}
+        {resolvedLabel}
         <ChevronRight className="size-4" />
       </Button>
     </Link>

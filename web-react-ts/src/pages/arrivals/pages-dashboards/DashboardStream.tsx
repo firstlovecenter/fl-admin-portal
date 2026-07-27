@@ -50,12 +50,7 @@ import {
   DropdownMenuTrigger,
 } from 'components/ui/dropdown-menu'
 import { Skeleton } from 'components/ui/skeleton'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from 'components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'components/ui/tabs'
 import ArrivalsDashboardMeta from '../components/ArrivalsDashboardMeta'
 import {
   StickyPageHeader,
@@ -142,9 +137,7 @@ const StreamDashboard = () => {
   )
 
   const adminValidationSchema = Yup.object({
-    adminSelect: Yup.string().required(
-      t('arrivals.dashboard.selectAdmin')
-    ),
+    adminSelect: Yup.string().required(t('arrivals.dashboard.selectAdmin')),
   })
 
   const onAdminSubmit = async (
@@ -165,7 +158,11 @@ const StreamDashboard = () => {
         },
       })
       if (result.errors?.length) {
-        toast.error(String(result.errors[0].message ?? t('arrivals.dashboard.updateFailed')))
+        toast.error(
+          String(
+            result.errors[0].message ?? t('arrivals.dashboard.updateFailed')
+          )
+        )
         return
       }
       toast.success(t('arrivals.dashboard.adminUpdated'))
@@ -239,7 +236,9 @@ const StreamDashboard = () => {
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {stream?.name}{' '}
-                    <span className="text-arrivals">{t('arrivals.common.title')}</span>
+                    <span className="text-arrivals">
+                      {t('arrivals.common.title')}
+                    </span>
                   </h1>
                 )}
               </div>
@@ -260,7 +259,9 @@ const StreamDashboard = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>{t('arrivals.dashboard.settings')}</DropdownMenuLabel>
+                      <DropdownMenuLabel>
+                        {t('arrivals.dashboard.settings')}
+                      </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={() => setAdminDialogOpen(true)}
@@ -268,9 +269,7 @@ const StreamDashboard = () => {
                         {t('arrivals.dashboard.changeAdmin')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onSelect={() =>
-                          navigate('/stream/arrivals-counters')
-                        }
+                        onSelect={() => navigate('/stream/arrivals-counters')}
                       >
                         {t('arrivals.dashboard.arrivalsCounters')}
                       </DropdownMenuItem>
@@ -280,9 +279,7 @@ const StreamDashboard = () => {
                         {t('arrivals.dashboard.arrivalTimes')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onSelect={() =>
-                          navigate('/stream/arrival-excel-data')
-                        }
+                        onSelect={() => navigate('/stream/arrival-excel-data')}
                       >
                         {t('arrivals.dashboard.downloadPaymentData')}
                       </DropdownMenuItem>
@@ -310,9 +307,10 @@ const StreamDashboard = () => {
                   admin={stream?.arrivalsAdmin}
                   loading={loading && !stream}
                   subChurch={{
-                    label: stream?.councilCount === 1
-                      ? t('shared.churchLevel.Council')
-                      : t('shared.churchLevelPlural.Council'),
+                    label:
+                      stream?.councilCount === 1
+                        ? t('shared.churchLevel.Council')
+                        : t('shared.churchLevelPlural.Council'),
                     count: stream?.councilCount,
                     to: '/arrivals/stream-by-council',
                   }}
@@ -416,7 +414,9 @@ const StreamDashboard = () => {
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        {t('arrivals.dashboard.updated', { time: updatedLabel })}
+                        {t('arrivals.dashboard.updated', {
+                          time: updatedLabel,
+                        })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
@@ -511,7 +511,9 @@ const StreamDashboard = () => {
             <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>{t('arrivals.dashboard.changeAdmin')}</DialogTitle>
+                  <DialogTitle>
+                    {t('arrivals.dashboard.changeAdmin')}
+                  </DialogTitle>
                   <DialogDescription>
                     {t('arrivals.dashboard.changeAdminDescription', {
                       level: t('shared.churchLevel.Stream').toLowerCase(),

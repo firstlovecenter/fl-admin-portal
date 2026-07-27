@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
@@ -11,6 +12,7 @@ import { ChurchContext } from '../../../contexts/ChurchContext'
 import RoleView from '../../../auth/RoleView'
 
 const DisplayAllOversights = () => {
+  const { t } = useTranslation()
   const { clickCard, denominationId } = useContext(ChurchContext)
 
   const { data, loading, error } = useQuery(GET_DENOMINATION_OVERSIGHTS, {
@@ -56,7 +58,9 @@ const DisplayAllOversights = () => {
                   clickCard(denomination?.admin)
                 }}
               >
-                <span className="text-muted-foreground">Admin :</span>{' '}
+                <span className="text-muted-foreground">
+                  {t('directory.list.adminPrefix')}
+                </span>{' '}
                 {`${denomination?.admin?.fullName}`}
               </Link>
             ) : null}
@@ -64,7 +68,11 @@ const DisplayAllOversights = () => {
           <RoleView roles={permitAdmin('Denomination')} directoryLock>
             <div className="shrink-0">
               <Button asChild variant="destructive">
-                <Link to="/oversight/addoversight">Add Oversight</Link>
+                <Link to="/oversight/addoversight">
+                  {t('directory.list.add', {
+                    level: t('shared.churchLevel.Oversight'),
+                  })}
+                </Link>
               </Button>
             </div>
           </RoleView>

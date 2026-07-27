@@ -1,3 +1,4 @@
+import { tOutsideReact } from 'lib/translate-outside-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { getValidAccessToken } from 'lib/auth-service'
@@ -41,7 +42,12 @@ export const fetchArrivalsExport = async (
   try {
     token = await getValidAccessToken()
   } catch {
-    throw new Error('Sign in expired. Please sign in again.')
+    throw new Error(
+      tOutsideReact(
+        'shared.errors.sessionExpired',
+        'Sign in expired. Please sign in again.'
+      )
+    )
   }
   const res = await fetch(
     buildDownloadUrl(level, churchId, arrivalDate, targetLevel),
@@ -55,7 +61,13 @@ export const fetchArrivalsExport = async (
       error?: string
     }
     throw new Error(
-      typeof body.error === 'string' ? body.error : `Download failed (${res.status})`
+      typeof body.error === 'string'
+        ? body.error
+        : tOutsideReact(
+            'shared.errors.downloadFailed',
+            'Download failed ({{status}})',
+            { status: res.status }
+          )
     )
   }
   return (await res.json()) as ArrivalsExportPayload

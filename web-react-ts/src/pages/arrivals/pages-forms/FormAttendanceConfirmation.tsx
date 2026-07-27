@@ -68,9 +68,7 @@ const FormAttendanceConfirmation = () => {
           return true
         }
       },
-      then: Yup.string().required(
-        t('arrivals.form.explainDifference')
-      ),
+      then: Yup.string().required(t('arrivals.form.explainDifference')),
     }),
   })
 
@@ -81,9 +79,7 @@ const FormAttendanceConfirmation = () => {
     const { setSubmitting } = onSubmitProps
 
     if (!isRecordFromToday) {
-      alertMsg(
-        t('arrivals.form.notTodayCount')
-      )
+      alertMsg(t('arrivals.form.notTodayCount'))
       return
     }
 
@@ -117,11 +113,17 @@ const FormAttendanceConfirmation = () => {
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
         <PlaceholderCustom as="h3" loading={loading}>
-          <HeadingPrimary>{t('arrivals.form.vehicleAttendance')}</HeadingPrimary>
+          <HeadingPrimary>
+            {t('arrivals.form.vehicleAttendance')}
+          </HeadingPrimary>
         </PlaceholderCustom>
         <PlaceholderCustom as="h6" loading={loading}>
           <HeadingSecondary>{`${bacenta?.name} ${bacenta?.__typename}`}</HeadingSecondary>
-          <p>{t('arrivals.form.pictureSubmittedBy', { name: vehicle?.created_by.fullName })}</p>
+          <p>
+            {t('arrivals.form.pictureSubmittedBy', {
+              name: vehicle?.created_by.fullName,
+            })}
+          </p>
         </PlaceholderCustom>
 
         {!loading && vehicle && !isRecordFromToday && (
@@ -141,7 +143,8 @@ const FormAttendanceConfirmation = () => {
               size="respond"
             />
             <div className="text-sm text-muted-foreground">
-              {t('arrivals.form.claimedAttendance')}{': '}
+              {t('arrivals.form.claimedAttendance')}
+              {': '}
               <span className="font-semibold text-[hsl(var(--maps))]">
                 {vehicle?.leaderDeclaration || 0}
               </span>

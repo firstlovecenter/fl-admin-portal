@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ExternalLink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogContent,
@@ -9,10 +10,7 @@ import {
   DialogTitle,
 } from 'components/ui/dialog'
 import { Button } from 'components/ui/button'
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from 'components/ui/radio-group'
+import { RadioGroup, RadioGroupItem } from 'components/ui/radio-group'
 import { Label } from 'components/ui/label'
 import {
   AnchorWeekYear,
@@ -21,7 +19,6 @@ import {
   SlideNode,
   WindowWeeks,
 } from '../shepherding-control-types'
-import { METRIC_LABEL } from '../shepherding-control-utils'
 
 type Props = {
   open: boolean
@@ -33,21 +30,25 @@ type Props = {
   metricB: MetricKey | null
 }
 
-const DEPTH_OPTIONS: { value: DepthChoice; label: string; hint: string }[] = [
+const DEPTH_OPTION_KEYS: {
+  value: DepthChoice
+  labelKey: string
+  hintKey: string
+}[] = [
   {
     value: 'this-level',
-    label: 'This level only',
-    hint: 'Just the current church — one page.',
+    labelKey: 'shepherding.pdfDialog.depthThisLevel',
+    hintKey: 'shepherding.pdfDialog.depthThisLevelHint',
   },
   {
     value: 'one-level-deeper',
-    label: 'One level deeper',
-    hint: 'Current church + every direct child.',
+    labelKey: 'shepherding.pdfDialog.depthOneDeeper',
+    hintKey: 'shepherding.pdfDialog.depthOneDeeperHint',
   },
   {
     value: 'full-subtree',
-    label: 'Full subtree',
-    hint: 'Every church beneath this one. May be hundreds of pages.',
+    labelKey: 'shepherding.pdfDialog.depthFullSubtree',
+    hintKey: 'shepherding.pdfDialog.depthFullSubtreeHint',
   },
 ]
 
@@ -60,6 +61,7 @@ const PdfExportDialog = ({
   metricA,
   metricB,
 }: Props) => {
+  const { t } = useTranslation()
   const [depth, setDepth] = useState<DepthChoice>('full-subtree')
 
   const handleOpen = () => {
@@ -82,23 +84,26 @@ const PdfExportDialog = ({
     onOpenChange(false)
   }
 
+  const descriptionKey = metricB
+    ? 'shepherding.pdfDialog.descriptionTwo'
+    : 'shepherding.pdfDialog.descriptionOne'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Print Shepherding Control deck</DialogTitle>
+          <DialogTitle>{t('shepherding.pdfDialog.title')}</DialogTitle>
           <DialogDescription>
-            Opens a print-ready view for{' '}
-            <span className="font-semibold text-foreground">
-              {root?.name || root?.type}
-            </span>{' '}
-            with the current week ({anchor.week}/{anchor.year}),{' '}
-            {windowWeeks}-week window, and metric{metricB ? 's' : ''}{' '}
-            <span className="font-semibold text-foreground">
-              {METRIC_LABEL[metricA]}
-            </span>
-            {metricB ? ` + ${METRIC_LABEL[metricB]}` : ''}. Use your
-            browser&apos;s print dialog to save as PDF.
+            {t(descriptionKey, {
+              name:
+                root?.name ||
+                (root ? t(`shared.churchLevel.${root.type}`) : ''),
+              week: anchor.week,
+              year: anchor.year,
+              window: windowWeeks,
+              metricA: t(`shepherding.metrics.${metricA}`),
+              metricB: metricB ? t(`shepherding.metrics.${metricB}`) : '',
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -107,7 +112,7 @@ const PdfExportDialog = ({
           onValueChange={(value) => setDepth(value as DepthChoice)}
           className="space-y-2"
         >
-          {DEPTH_OPTIONS.map((opt) => (
+          {DEPTH_OPTION_KEYS.map((opt) => (
             <Label
               key={opt.value}
               htmlFor={`depth-${opt.value}`}
@@ -120,10 +125,10 @@ const PdfExportDialog = ({
               />
               <span className="flex-1">
                 <span className="block font-medium text-foreground">
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </span>
                 <span className="block text-sm text-muted-foreground">
-                  {opt.hint}
+                  {t(opt.hintKey)}
                 </span>
               </span>
             </Label>
@@ -137,7 +142,7 @@ const PdfExportDialog = ({
             onClick={() => onOpenChange(false)}
             className="min-h-11"
           >
-            Cancel
+            {t('shepherding.pdfDialog.cancel')}
           </Button>
           <Button
             type="button"
@@ -146,7 +151,7 @@ const PdfExportDialog = ({
             className="min-h-11 gap-2"
           >
             <ExternalLink className="size-4" />
-            Open Print View
+            {t('shepherding.pdfDialog.openPrintView')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -19,7 +19,10 @@ import DetailsStream from './DetailsStream'
 
 vi.mock('@apollo/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@apollo/client')>()
-  return { ...actual, useQuery: vi.fn(() => ({ data: undefined, loading: false })) }
+  return {
+    ...actual,
+    useQuery: vi.fn(() => ({ data: undefined, loading: false })),
+  }
 })
 
 vi.mock('components/base-component/ApolloWrapper', () => ({
@@ -27,15 +30,27 @@ vi.mock('components/base-component/ApolloWrapper', () => ({
 }))
 
 vi.mock('components/DisplayChurchDetails/DisplayChurchDetails', () => ({
-  default: ({ churchId, details, leaderTitle }: { churchId: string; details: { title: string }[]; leaderTitle: string }) => (
+  default: ({
+    churchId,
+    details,
+    leaderTitle,
+  }: {
+    churchId: string
+    details: { title: string }[]
+    leaderTitle: string
+  }) => (
     <section data-testid={churchId}>
       <p>{leaderTitle}</p>
-      {details.map((detail) => <p key={detail.title}>{detail.title}</p>)}
+      {details.map((detail) => (
+        <p key={detail.title}>{detail.title}</p>
+      ))}
     </section>
   ),
 }))
 
-vi.mock('hooks/useClickCard', () => ({ default: () => ({ setChurch: vi.fn() }) }))
+vi.mock('hooks/useClickCard', () => ({
+  default: () => ({ setChurch: vi.fn() }),
+}))
 
 afterEach(async () => {
   cleanup()
@@ -57,7 +72,9 @@ function renderPages() {
   return render(
     <MemoryRouter>
       <ChurchContext.Provider value={churchContextValue as never}>
-        <MemberContext.Provider value={{ currentUser: { currency: 'GHS' } } as never}>
+        <MemberContext.Provider
+          value={{ currentUser: { currency: 'GHS' } } as never}
+        >
           <DetailsBacenta />
           <DetailsCampus />
           <DetailsCouncil />
@@ -75,25 +92,51 @@ describe('directory detail-page wrappers i18n', () => {
   it('passes English stat labels and leader titles to the shared detail view', () => {
     renderPages()
 
-    expect(screen.getByTestId('bacenta-details')).toHaveTextContent('Bacenta Leader')
+    expect(screen.getByTestId('bacenta-details')).toHaveTextContent(
+      'Bacenta Leader'
+    )
     expect(screen.getByTestId('campus-details')).toHaveTextContent('Members')
-    expect(screen.getByTestId('council-details')).toHaveTextContent('Governorships')
-    expect(screen.getByTestId('denomination-details')).toHaveTextContent('Lead Pastor')
-    expect(screen.getByTestId('governorship-details')).toHaveTextContent('Governor')
-    expect(screen.getByTestId('oversight-details')).toHaveTextContent('Oversight Leader')
-    expect(screen.getByTestId('stream-details')).toHaveTextContent('Stream Leader')
+    expect(screen.getByTestId('council-details')).toHaveTextContent(
+      'Governorships'
+    )
+    expect(screen.getByTestId('denomination-details')).toHaveTextContent(
+      'Lead Pastor'
+    )
+    expect(screen.getByTestId('governorship-details')).toHaveTextContent(
+      'Governor'
+    )
+    expect(screen.getByTestId('oversight-details')).toHaveTextContent(
+      'Oversight Leader'
+    )
+    expect(screen.getByTestId('stream-details')).toHaveTextContent(
+      'Stream Leader'
+    )
   })
 
   it('passes French labels rather than English fallback text', async () => {
     await i18n.changeLanguage('fr')
     renderPages()
 
-    expect(screen.getByTestId('bacenta-details')).toHaveTextContent(i18n.t('directory.leaderTitle.bacentaLeader'))
-    expect(screen.getByTestId('campus-details')).toHaveTextContent(i18n.t('shared.churchLevelPlural.Stream'))
-    expect(screen.getByTestId('council-details')).toHaveTextContent(i18n.t('shared.churchLevelPlural.Governorship'))
-    expect(screen.getByTestId('denomination-details')).toHaveTextContent(i18n.t('directory.leaderTitle.leadPastor'))
-    expect(screen.getByTestId('governorship-details')).toHaveTextContent(i18n.t('directory.leaderTitle.governor'))
-    expect(screen.getByTestId('oversight-details')).toHaveTextContent(i18n.t('directory.leaderTitle.oversightLeader'))
-    expect(screen.getByTestId('stream-details')).toHaveTextContent(i18n.t('directory.leaderTitle.streamLeader'))
+    expect(screen.getByTestId('bacenta-details')).toHaveTextContent(
+      i18n.t('directory.leaderTitle.bacentaLeader')
+    )
+    expect(screen.getByTestId('campus-details')).toHaveTextContent(
+      i18n.t('shared.churchLevelPlural.Stream')
+    )
+    expect(screen.getByTestId('council-details')).toHaveTextContent(
+      i18n.t('shared.churchLevelPlural.Governorship')
+    )
+    expect(screen.getByTestId('denomination-details')).toHaveTextContent(
+      i18n.t('directory.leaderTitle.leadPastor')
+    )
+    expect(screen.getByTestId('governorship-details')).toHaveTextContent(
+      i18n.t('directory.leaderTitle.governor')
+    )
+    expect(screen.getByTestId('oversight-details')).toHaveTextContent(
+      i18n.t('directory.leaderTitle.oversightLeader')
+    )
+    expect(screen.getByTestId('stream-details')).toHaveTextContent(
+      i18n.t('directory.leaderTitle.streamLeader')
+    )
   })
 })

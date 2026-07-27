@@ -1,6 +1,7 @@
 import { useLazyQuery } from '@apollo/client'
 import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   AlertTriangle,
   Banknote,
@@ -12,7 +13,6 @@ import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
-import { capitalise, plural } from 'global-utils'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
@@ -20,6 +20,7 @@ import { ChurchLevel } from 'global-types'
 import useSontaLevel from 'hooks/useSontaLevel'
 import useSelectedWeek from 'hooks/useSelectedWeek'
 import WeekSelector from 'components/WeekSelector/WeekSelector'
+import { formatChurchLevel } from 'lib/scope-display'
 
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
@@ -115,6 +116,7 @@ const TileGrid = ({ tiles, loading }: { tiles: Tile[]; loading: boolean }) => {
 }
 
 const DefaultersDashboard = () => {
+  const { t } = useTranslation()
   const { currentUser } = useContext(MemberContext)
   const { selectedScope } = useChurchRoleScope()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -183,7 +185,7 @@ const DefaultersDashboard = () => {
   const streamTiles = useMemo<Tile[]>(
     () => [
       {
-        title: 'Services This Week',
+        title: t('services.defaulters.servicesThisWeek'),
         data: church?.streamServicesThisWeekCount,
         color: church?.streamServicesThisWeekCount ? 'good' : 'bad',
         link: church?.streamServicesThisWeekCount
@@ -191,7 +193,7 @@ const DefaultersDashboard = () => {
           : '#',
       },
       {
-        title: 'Not Filled Forms',
+        title: t('services.defaulters.notFilledForms'),
         data: church?.streamFormDefaultersThisWeekCount,
         color: church?.streamFormDefaultersThisWeekCount ? 'bad' : 'good',
         link: church?.streamFormDefaultersThisWeekCount
@@ -199,7 +201,7 @@ const DefaultersDashboard = () => {
           : '#',
       },
       {
-        title: 'Have Banked',
+        title: t('services.defaulters.haveBanked'),
         data: church?.streamBankedThisWeekCount,
         color:
           safeNumber(church?.streamBankedThisWeekCount) ===
@@ -213,7 +215,7 @@ const DefaultersDashboard = () => {
           : '#',
       },
       {
-        title: 'Have Not Banked',
+        title: t('services.defaulters.haveNotBanked'),
         data: church?.streamBankingDefaultersThisWeekCount,
         color: church?.streamBankingDefaultersThisWeekCount ? 'bad' : 'good',
         link: church?.streamBankingDefaultersThisWeekCount
@@ -221,7 +223,7 @@ const DefaultersDashboard = () => {
           : '#',
       },
       {
-        title: 'Cancelled Service',
+        title: t('services.defaulters.cancelledService'),
         data: church?.streamCancelledServicesThisWeekCount,
         color: church?.streamCancelledServicesThisWeekCount ? 'bad' : 'good',
         link: church?.streamCancelledServicesThisWeekCount
@@ -229,13 +231,13 @@ const DefaultersDashboard = () => {
           : '#',
       },
     ],
-    [church, linkWith]
+    [church, linkWith, t]
   )
 
   const bacentaTiles = useMemo<Tile[]>(
     () => [
       {
-        title: 'Services This Week',
+        title: t('services.defaulters.servicesThisWeek'),
         data: church?.servicesThisWeekCount,
         color: church?.servicesThisWeekCount ? 'good' : 'bad',
         link: church?.servicesThisWeekCount
@@ -243,7 +245,7 @@ const DefaultersDashboard = () => {
           : '#',
       },
       {
-        title: 'Not Filled Forms',
+        title: t('services.defaulters.notFilledForms'),
         data: church?.formDefaultersThisWeekCount,
         color: church?.formDefaultersThisWeekCount ? 'bad' : 'good',
         link: church?.formDefaultersThisWeekCount
@@ -251,7 +253,7 @@ const DefaultersDashboard = () => {
           : '#',
       },
       {
-        title: 'Have Banked',
+        title: t('services.defaulters.haveBanked'),
         data: church?.bankedThisWeekCount,
         color:
           safeNumber(church?.bankedThisWeekCount) ===
@@ -263,7 +265,7 @@ const DefaultersDashboard = () => {
         link: church?.bankedThisWeekCount ? linkWith('/services/banked') : '#',
       },
       {
-        title: 'Have Not Banked',
+        title: t('services.defaulters.haveNotBanked'),
         data: church?.bankingDefaultersThisWeekCount,
         color: church?.bankingDefaultersThisWeekCount ? 'bad' : 'good',
         link: church?.bankingDefaultersThisWeekCount
@@ -271,7 +273,7 @@ const DefaultersDashboard = () => {
           : '#',
       },
       {
-        title: 'Cancelled Service',
+        title: t('services.defaulters.cancelledService'),
         data: church?.cancelledServicesThisWeekCount,
         color: church?.cancelledServicesThisWeekCount ? 'bad' : 'good',
         link: church?.cancelledServicesThisWeekCount
@@ -279,7 +281,7 @@ const DefaultersDashboard = () => {
           : '#',
       },
     ],
-    [church, linkWith]
+    [church, linkWith, t]
   )
 
   const jointTiles = useMemo<Tile[]>(
@@ -287,7 +289,9 @@ const DefaultersDashboard = () => {
       (
         [
           {
-            title: 'Governorship Banked',
+            title: t('services.defaulters.bankedAtLevel', {
+              level: t('shared.churchLevel.Governorship'),
+            }),
             data: church?.governorshipBankedThisWeekCount,
             color: church?.governorshipBankedThisWeekCount ? 'good' : 'bad',
             link: church?.governorshipBankedThisWeekCount
@@ -295,7 +299,9 @@ const DefaultersDashboard = () => {
               : '#',
           },
           {
-            title: 'Governorship Not Banked',
+            title: t('services.defaulters.notBankedAtLevel', {
+              level: t('shared.churchLevel.Governorship'),
+            }),
             data: church?.governorshipBankingDefaultersThisWeekCount,
             color: church?.governorshipBankingDefaultersThisWeekCount
               ? 'bad'
@@ -305,7 +311,9 @@ const DefaultersDashboard = () => {
               : '#',
           },
           {
-            title: 'Council Banked',
+            title: t('services.defaulters.bankedAtLevel', {
+              level: t('shared.churchLevel.Council'),
+            }),
             data: church?.councilBankedThisWeekCount,
             color: church?.councilBankedThisWeekCount ? 'good' : 'bad',
             link: church?.councilBankedThisWeekCount
@@ -313,7 +321,9 @@ const DefaultersDashboard = () => {
               : '#',
           },
           {
-            title: 'Council Not Banked',
+            title: t('services.defaulters.notBankedAtLevel', {
+              level: t('shared.churchLevel.Council'),
+            }),
             data: church?.councilBankingDefaultersThisWeekCount,
             color: church?.councilBankingDefaultersThisWeekCount
               ? 'bad'
@@ -324,7 +334,7 @@ const DefaultersDashboard = () => {
           },
         ] as Tile[]
       ).filter((tile) => tile.data !== undefined && tile.data !== null),
-    [church, linkWith]
+    [church, linkWith, t]
   )
 
   // Headline KPIs track the active tab so the summary always reconciles to
@@ -349,7 +359,12 @@ const DefaultersDashboard = () => {
   const outstanding =
     totalFormDefaulters + totalBankingDefaulters + totalCancelled
 
-  const activeUnitLabel = summaryUsesBacenta ? 'Active Bacentas' : 'Active Streams'
+  const activeUnitPlural = summaryUsesBacenta
+    ? t('shared.churchLevelPlural.Bacenta')
+    : t('shared.churchLevelPlural.Stream')
+  const activeUnitLabel = t('services.defaulters.activeUnits', {
+    units: activeUnitPlural,
+  })
   const activeUnitValue = summaryUsesBacenta
     ? safeNumber(church?.activeBacentaCount)
     : safeNumber(church?.activeStreamCount)
@@ -371,14 +386,14 @@ const DefaultersDashboard = () => {
     const value = (church as Record<string, unknown>)[countKey]
     if (typeof value !== 'number') return null
     return {
-      title: capitalise(plural(subChurch)),
+      title: t(`shared.churchLevelPlural.${subChurch}`),
       data: value,
       color: 'neutral',
       link: linkWith(
         `/services/${church?.__typename?.toLowerCase()}-by-${subChurch?.toLowerCase()}`
       ),
     }
-  }, [church, subChurch, linkWith])
+  }, [church, subChurch, linkWith, t])
 
   // Stream-only: second drill-down by Governorship (one level deeper than Council)
   const streamGovernorshipAggregate = useMemo<Tile | null>(() => {
@@ -386,12 +401,12 @@ const DefaultersDashboard = () => {
     const value = (church as Record<string, unknown>).governorshipCount
     if (typeof value !== 'number') return null
     return {
-      title: 'Governorships',
+      title: t('shared.churchLevelPlural.Governorship'),
       data: value,
       color: 'neutral',
       link: linkWith('/services/stream-by-governorship'),
     }
-  }, [church, level, linkWith])
+  }, [church, level, linkWith, t])
 
   const tabsCount = [
     showBacentaSection,
@@ -417,16 +432,20 @@ const DefaultersDashboard = () => {
               <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {church.name}{' '}
                 <span className="text-defaulters">
-                  {(church as HigherChurchWithDefaulters).__typename}{' '}
-                  Defaulters
+                  {formatChurchLevel(
+                    (church as HigherChurchWithDefaulters).__typename,
+                    t
+                  )}{' '}
+                  {t('services.defaulters.title')}
                 </span>
               </h1>
             ) : (
               <Skeleton className="h-9 w-72" />
             )}
             <p className="text-sm text-muted-foreground">
-              Weekly defaulter overview
-              {isCurrent ? '' : ` — ${weekLabel}`}
+              {isCurrent
+                ? t('services.defaulters.subtitle')
+                : t('services.defaulters.subtitleWithWeek', { weekLabel })}
             </p>
           </StickyPageHeader>
           <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -440,7 +459,9 @@ const DefaultersDashboard = () => {
                     navigate(activeUnitLink)
                   }}
                   disabled={!church}
-                  aria-label={`View ${activeUnitLabel.toLowerCase()} list`}
+                  aria-label={t('services.defaulters.viewUnitsListAria', {
+                    units: activeUnitPlural,
+                  })}
                   className="block h-full rounded-xl text-left outline-none transition-transform hover:scale-[1.01] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99] disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <StatCard
@@ -449,7 +470,7 @@ const DefaultersDashboard = () => {
                     value={activeUnitValue.toLocaleString('en-GH')}
                     icon={Users}
                     accent="members"
-                    hint="Tap to view list"
+                    hint={t('services.defaulters.tapToViewList')}
                     loading={!church}
                   />
                 </button>
@@ -465,7 +486,7 @@ const DefaultersDashboard = () => {
               )}
               <StatCard
                 compact
-                label="Services Filed"
+                label={t('services.defaulters.servicesFiled')}
                 value={totalServices.toLocaleString('en-GH')}
                 icon={CalendarCheck}
                 accent="churches"
@@ -473,7 +494,7 @@ const DefaultersDashboard = () => {
               />
               <StatCard
                 compact
-                label="Have Banked"
+                label={t('services.defaulters.haveBanked')}
                 value={totalBanked.toLocaleString('en-GH')}
                 icon={Banknote}
                 accent="banking"
@@ -481,11 +502,11 @@ const DefaultersDashboard = () => {
               />
               <StatCard
                 compact
-                label="Outstanding"
+                label={t('services.defaulters.outstanding')}
                 value={outstanding.toLocaleString('en-GH')}
                 icon={AlertTriangle}
                 accent="defaulters"
-                hint="Forms + banking + cancelled"
+                hint={t('services.defaulters.outstandingHint')}
                 loading={!church}
               />
             </section>
@@ -512,7 +533,7 @@ const DefaultersDashboard = () => {
                           variant="outline"
                           onClick={() => navigate(subChurchAggregate.link)}
                         >
-                          View list
+                          {t('services.defaulters.viewList')}
                         </Button>
                       </CardContent>
                     </Card>
@@ -534,7 +555,7 @@ const DefaultersDashboard = () => {
                             navigate(streamGovernorshipAggregate.link)
                           }
                         >
-                          View list
+                          {t('services.defaulters.viewList')}
                         </Button>
                       </CardContent>
                     </Card>
@@ -555,13 +576,23 @@ const DefaultersDashboard = () => {
                     }}
                   >
                     {showBacentaSection && (
-                      <TabsTrigger value="bacenta">Bacenta Services</TabsTrigger>
+                      <TabsTrigger value="bacenta">
+                        {t('services.defaulters.levelServices', {
+                          level: t('shared.churchLevel.Bacenta'),
+                        })}
+                      </TabsTrigger>
                     )}
                     {showStreamSection && (
-                      <TabsTrigger value="stream">Stream Services</TabsTrigger>
+                      <TabsTrigger value="stream">
+                        {t('services.defaulters.levelServices', {
+                          level: t('shared.churchLevel.Stream'),
+                        })}
+                      </TabsTrigger>
                     )}
                     {showJointSection && jointTiles.length > 0 && (
-                      <TabsTrigger value="joint">Joint Services</TabsTrigger>
+                      <TabsTrigger value="joint">
+                        {t('services.defaulters.jointServices')}
+                      </TabsTrigger>
                     )}
                   </TabsList>
                 )}
@@ -569,10 +600,13 @@ const DefaultersDashboard = () => {
                 {showBacentaSection && (
                   <TabsContent value="bacenta" className="space-y-3">
                     <SectionHeader
-                      title="Bacenta Services"
-                      subtitle={`${activeUnitValue.toLocaleString(
-                        'en-GH'
-                      )} active bacentas this week`}
+                      title={t('services.defaulters.levelServices', {
+                        level: t('shared.churchLevel.Bacenta'),
+                      })}
+                      subtitle={t('services.defaulters.activeUnitsThisWeek', {
+                        count: activeUnitValue.toLocaleString('en-GH'),
+                        units: t('shared.churchLevelPlural.Bacenta'),
+                      })}
                       loading={!church}
                       action={downloadAction}
                     />
@@ -583,10 +617,15 @@ const DefaultersDashboard = () => {
                 {showStreamSection && (
                   <TabsContent value="stream" className="space-y-3">
                     <SectionHeader
-                      title="Stream Services"
-                      subtitle={`${safeNumber(
-                        church?.activeStreamCount
-                      ).toLocaleString('en-GH')} active streams this week`}
+                      title={t('services.defaulters.levelServices', {
+                        level: t('shared.churchLevel.Stream'),
+                      })}
+                      subtitle={t('services.defaulters.activeUnitsThisWeek', {
+                        count: safeNumber(
+                          church?.activeStreamCount
+                        ).toLocaleString('en-GH'),
+                        units: t('shared.churchLevelPlural.Stream'),
+                      })}
                       loading={!church}
                       action={downloadAction}
                     />
@@ -597,8 +636,8 @@ const DefaultersDashboard = () => {
                 {showJointSection && jointTiles.length > 0 && (
                   <TabsContent value="joint" className="space-y-3">
                     <SectionHeader
-                      title="Joint Services"
-                      subtitle="Banking status by sub-level"
+                      title={t('services.defaulters.jointServices')}
+                      subtitle={t('services.defaulters.jointSubtitle')}
                       loading={!church}
                       action={downloadAction}
                     />

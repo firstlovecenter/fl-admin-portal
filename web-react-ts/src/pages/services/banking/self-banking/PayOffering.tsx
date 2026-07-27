@@ -38,6 +38,7 @@ import { parseDate } from 'lib/date-utils'
 import { AlertTriangle, Banknote, Info, Loader2, Wallet } from 'lucide-react'
 import { MOBILE_NETWORK_OPTIONS } from 'pages/arrivals/arrivals-utils'
 import { useContext, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import * as Yup from 'yup'
 import {
@@ -67,6 +68,7 @@ type FormOptions = {
 }
 
 const PayOffering = (props: PayOfferingProps) => {
+  const { t } = useTranslation()
   const { church } = props
   const { serviceRecordId } = useContext(ServiceContext)
   const { currentUser } = useContext(MemberContext)
@@ -113,14 +115,16 @@ const PayOffering = (props: PayOfferingProps) => {
 
   const validationSchema = Yup.object({
     mobileNumber: Yup.string()
-      .required('You must enter a mobile number')
+      .required(t('services.banking.payOffering.mobileRequired'))
       .matches(
         MOMO_NUM_REGEX,
-        'Enter a valid MoMo Number without spaces. eg. (02XXXXXXXX)'
+        t('services.banking.payOffering.mobileInvalid')
       ),
     mobileNetwork: Yup.string().when('mobileNumber', {
       is: (mobileNumber: string) => mobileNumber && mobileNumber.length > 0,
-      then: Yup.string().required('Please enter the Mobile Network'),
+      then: Yup.string().required(
+        t('services.banking.payOffering.networkRequired')
+      ),
     }),
   })
 
@@ -172,11 +176,13 @@ const PayOffering = (props: PayOfferingProps) => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Payment failed</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('services.banking.payOffering.paymentFailedTitle')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {isPoimenError
-                ? 'There was a problem with your payment.'
-                : 'Please make sure you have enough funds in your mobile wallet, and try again after 30 mins – 1 hour.'}
+                ? t('services.banking.payOffering.paymentFailedPoimen')
+                : t('services.banking.payOffering.paymentFailedFunds')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <code className="block break-words rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
@@ -189,7 +195,7 @@ const PayOffering = (props: PayOfferingProps) => {
                 navigate('/services/bacenta/self-banking')
               }}
             >
-              Okay
+              {t('shared.actions.okay')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -201,12 +207,17 @@ const PayOffering = (props: PayOfferingProps) => {
           <Skeleton className="h-8 w-64" />
         ) : (
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {church.name} <span className="text-banking">Banking</span>
+            {church.name}{' '}
+            <span className="text-banking">
+              {t('services.banking.payOffering.bankingHighlight')}
+            </span>
           </h1>
         )}
         {church?.bankingCode && (
           <p className="font-mono text-sm text-muted-foreground">
-            Banking Code: {church.bankingCode}
+            {t('services.banking.common.bankingCodeColon', {
+              code: church.bankingCode,
+            })}
           </p>
         )}
       </StickyPageHeader>
@@ -246,7 +257,7 @@ const PayOffering = (props: PayOfferingProps) => {
                           </span>
                           <div className="space-y-0.5">
                             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                              Service Date
+                              {t('services.banking.payOffering.serviceDate')}
                             </p>
                             <p className="text-base font-semibold text-foreground">
                               {parseDate(service.serviceDate.date)}
@@ -257,7 +268,7 @@ const PayOffering = (props: PayOfferingProps) => {
                         <div className="grid grid-cols-3 gap-3 rounded-lg border border-border bg-muted/30 p-4">
                           <div>
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Cash
+                              {t('services.banking.common.cash')}
                             </p>
                             <p className="mt-0.5 font-mono text-sm font-semibold tabular-nums text-foreground">
                               {service.cash} {currency}
@@ -265,7 +276,7 @@ const PayOffering = (props: PayOfferingProps) => {
                           </div>
                           <div>
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Charges
+                              {t('services.banking.payOffering.charges')}
                             </p>
                             <p className="mt-0.5 font-mono text-sm font-semibold tabular-nums text-warning">
                               {charges.toFixed(2)} {currency}
@@ -273,7 +284,7 @@ const PayOffering = (props: PayOfferingProps) => {
                           </div>
                           <div>
                             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              Total
+                              {t('services.banking.payOffering.total')}
                             </p>
                             <p className="mt-0.5 font-mono text-sm font-semibold tabular-nums text-foreground">
                               {cashAndCharges} {currency}
@@ -283,8 +294,7 @@ const PayOffering = (props: PayOfferingProps) => {
 
                         <p className="flex items-start gap-2 text-xs text-muted-foreground">
                           <Info className="mt-0.5 size-3.5 shrink-0" />
-                          The charge represents a small fee for using the
-                          self-banking feature.
+                          {t('services.banking.payOffering.chargeNote')}
                         </p>
                       </CardContent>
                     </Card>
@@ -292,14 +302,14 @@ const PayOffering = (props: PayOfferingProps) => {
                     {exceedsSelfBankingCap && (
                       <Alert variant="destructive">
                         <AlertTriangle className="size-4" />
-                        <AlertTitle>Amount too large for self-banking</AlertTitle>
+                        <AlertTitle>
+                          {t('services.banking.payOffering.amountTooLargeTitle')}
+                        </AlertTitle>
                         <AlertDescription>
-                          This offering of GHS{' '}
-                          {service.cash.toLocaleString()} is above the GHS{' '}
-                          {MAX_SELF_BANKING_CASH.toLocaleString()} self-banking
-                          limit. Please bank this offering manually (bank deposit
-                          slip or teller), or split it into separate service
-                          records. The recorded amount is not affected.
+                          {t('services.banking.payOffering.amountTooLargeBody', {
+                            cash: service.cash.toLocaleString(),
+                            limit: MAX_SELF_BANKING_CASH.toLocaleString(),
+                          })}
                         </AlertDescription>
                       </Alert>
                     )}
@@ -307,16 +317,16 @@ const PayOffering = (props: PayOfferingProps) => {
                     <Card>
                       <CardContent className="space-y-4 p-5">
                         <h2 className="text-sm font-semibold text-foreground">
-                          Mobile Money details
+                          {t('services.banking.payOffering.momoDetails')}
                         </h2>
                         <Select
                           name="mobileNetwork"
-                          label="Mobile Network"
+                          label={t('services.banking.payOffering.mobileNetwork')}
                           options={MOBILE_NETWORK_OPTIONS}
                         />
                         <Input
                           name="mobileNumber"
-                          label="MoMo Number"
+                          label={t('services.banking.payOffering.momoNumber')}
                           type="tel"
                           inputMode="tel"
                           placeholder="02XXXXXXXX"
@@ -325,7 +335,7 @@ const PayOffering = (props: PayOfferingProps) => {
                     </Card>
 
                     <SubmitButton formik={formik} disabled={exceedsSelfBankingCap}>
-                      Make Payment
+                      {t('services.banking.payOffering.makePayment')}
                     </SubmitButton>
                   </div>
 
@@ -338,7 +348,7 @@ const PayOffering = (props: PayOfferingProps) => {
                             <Wallet className="size-5 text-brand" />
                           </span>
                           <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                            You'll pay
+                            {t('services.banking.payOffering.youllPay')}
                           </p>
                         </div>
                         <p className="font-mono text-3xl font-semibold tracking-tight tabular-nums text-foreground">
@@ -348,7 +358,7 @@ const PayOffering = (props: PayOfferingProps) => {
                           </span>
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Cash + service charges
+                          {t('services.banking.payOffering.cashPlusCharges')}
                         </p>
                       </CardContent>
                     </Card>
@@ -356,12 +366,17 @@ const PayOffering = (props: PayOfferingProps) => {
                     <Card>
                       <CardContent className="space-y-2 p-5">
                         <h3 className="text-sm font-semibold text-foreground">
-                          Charges explained
+                          {t('services.banking.payOffering.chargesExplained')}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          The {charges.toFixed(2)} {currency} charge covers the
-                          mobile money network fee. Your church receives the
-                          full {service.cash} {currency} offering.
+                          {t(
+                            'services.banking.payOffering.chargesExplainedBody',
+                            {
+                              charges: charges.toFixed(2),
+                              currency,
+                              cash: service.cash,
+                            }
+                          )}
                         </p>
                       </CardContent>
                     </Card>
@@ -382,14 +397,17 @@ const PayOffering = (props: PayOfferingProps) => {
                 >
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle>Enter OTP</DialogTitle>
+                      <DialogTitle>
+                        {t('services.banking.payOffering.enterOtp')}
+                      </DialogTitle>
                       <DialogDescription>
-                        A registration token was just sent to your phone via
-                        text message. Enter it below to authorise the payment.
+                        {t('services.banking.payOffering.otpDescription')}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2">
-                      <Label htmlFor="otp">One-time code</Label>
+                      <Label htmlFor="otp">
+                        {t('services.banking.payOffering.oneTimeCode')}
+                      </Label>
                       <ShadcnInput
                         id="otp"
                         type="tel"
@@ -406,7 +424,9 @@ const PayOffering = (props: PayOfferingProps) => {
                     </div>
                     {otpError && (
                       <Alert variant="destructive">
-                        <AlertTitle>Could not submit OTP</AlertTitle>
+                        <AlertTitle>
+                          {t('services.banking.payOffering.otpSubmitError')}
+                        </AlertTitle>
                         <AlertDescription>{otpError}</AlertDescription>
                       </Alert>
                     )}
@@ -417,7 +437,9 @@ const PayOffering = (props: PayOfferingProps) => {
                       disabled={otpSent}
                       onClick={() => {
                         if (!OTP_REGEX.test(otp)) {
-                          setOtpError('Enter a valid OTP (4 or 6 digits).')
+                          setOtpError(
+                            t('services.banking.payOffering.invalidOtp')
+                          )
                           return
                         }
                         setOtpError('')
@@ -443,10 +465,10 @@ const PayOffering = (props: PayOfferingProps) => {
                       {otpSent ? (
                         <>
                           <Loader2 className="size-4 animate-spin" />
-                          Sending…
+                          {t('services.banking.payOffering.sending')}
                         </>
                       ) : (
-                        'Submit OTP'
+                        t('services.banking.payOffering.submitOtp')
                       )}
                     </Button>
                     <DialogFooter className="mt-2 flex-col gap-2 sm:flex-col sm:space-x-0">
@@ -479,7 +501,7 @@ const PayOffering = (props: PayOfferingProps) => {
                             })
                         }}
                       >
-                        Already paid? Check status
+                        {t('services.banking.payOffering.alreadyPaid')}
                       </Button>
                       <Button
                         type="button"
@@ -492,7 +514,7 @@ const PayOffering = (props: PayOfferingProps) => {
                           navigate('/self-banking/confirm-payment')
                         }}
                       >
-                        Cancel and check status later
+                        {t('services.banking.payOffering.cancelCheckLater')}
                       </Button>
                     </DialogFooter>
                   </DialogContent>

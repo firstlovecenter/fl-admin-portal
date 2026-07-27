@@ -3,9 +3,11 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { getWeekNumber } from 'lib/date-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import useChurchLevel from 'hooks/useChurchLevel'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
+import { useTranslation } from 'react-i18next'
 import DefaulterCard from '../DefaulterCard'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import { DefaultersUseChurchType } from '../defaulters-types'
@@ -16,6 +18,7 @@ import {
 } from './StreamDefaultersQueries'
 
 const StreamFormDefaulters = () => {
+  const { t } = useTranslation()
   const [campusStreamFormDefaulters, { refetch: campusRefetch }] = useLazyQuery(
     CAMPUS_STREAM_FORM_DEFAULTERS_LIST
   )
@@ -40,23 +43,24 @@ const StreamFormDefaulters = () => {
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
+  const week = getWeekNumber()
+  const count = church?.streamFormDefaultersThisWeek?.length ?? 0
 
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="mx-auto w-full max-w-screen-md px-4">
-          <HeadingPrimary
-            loading={!church}
-          >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
+          <HeadingPrimary loading={!church}>
+            {`${church?.name} ${formatChurchLevel(church?.__typename, t)}`}
+          </HeadingPrimary>
           <HeadingSecondary>
-            {`Churches That Have Not Filled The Form This Week (Week ${getWeekNumber()})`}
+            {t('services.defaulters.streamNotFilled', { week })}
           </HeadingSecondary>
 
-          <PlaceholderCustom
-            as="h6"
-            loading={!church?.streamFormDefaultersThisWeek?.length}
-          >
-            <h6>{`Number of Defaulters: ${church?.streamFormDefaultersThisWeek?.length}`}</h6>
+          <PlaceholderCustom as="h6" loading={!church}>
+            <h6>
+              {t('services.defaulters.streamDefaultersCount', { count })}
+            </h6>
           </PlaceholderCustom>
 
           <div className="grid gap-3">

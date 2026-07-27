@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from 'components/ui/button'
 import { cn } from 'components/lib/utils'
 
@@ -19,27 +20,30 @@ const SubmitButton = ({
   onClick,
   className,
   disabled,
-}: SubmitButtonProps) => (
-  <Button
-    type="submit"
-    size="lg"
-    className={cn(
-      'w-full gap-2 px-8 font-semibold sm:w-auto sm:min-w-64',
-      !formik.isValid && 'opacity-65',
-      className
-    )}
-    disabled={formik.isSubmitting || disabled}
-    onClick={onClick}
-  >
-    {formik.isSubmitting ? (
-      <>
-        <Loader2 className="size-4 animate-spin" />
-        Submitting…
-      </>
-    ) : (
-      children ?? 'Submit'
-    )}
-  </Button>
-)
+}: SubmitButtonProps) => {
+  const { t } = useTranslation()
+  return (
+    <Button
+      type="submit"
+      size="lg"
+      className={cn(
+        'w-full gap-2 px-8 font-semibold sm:w-auto sm:min-w-64',
+        !formik.isValid && 'opacity-65',
+        className
+      )}
+      disabled={formik.isSubmitting || disabled}
+      onClick={onClick}
+    >
+      {formik.isSubmitting ? (
+        <>
+          <Loader2 className="size-4 animate-spin" />
+          {t('shared.form.submitting')}
+        </>
+      ) : (
+        children ?? t('shared.form.submit')
+      )}
+    </Button>
+  )
+}
 
 export default SubmitButton

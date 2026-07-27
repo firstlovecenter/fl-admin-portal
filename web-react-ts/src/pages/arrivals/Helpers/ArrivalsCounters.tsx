@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import MemberDisplayCard from 'components/card/MemberDisplayCard'
 import { ChurchContext } from 'contexts/ChurchContext'
+import { Trans, useTranslation } from 'react-i18next'
 import { useContext, useState } from 'react'
 import * as Yup from 'yup'
 import { Form, Formik, FormikHelpers } from 'formik'
@@ -45,6 +46,7 @@ type FormOptions = {
 }
 
 const ArrivalsCounters = () => {
+  const { t } = useTranslation()
   const { streamId } = useContext(ChurchContext)
   const [addOpen, setAddOpen] = useState(false)
   const [removeTarget, setRemoveTarget] = useState<Member | null>(null)
@@ -76,9 +78,7 @@ const ArrivalsCounters = () => {
   }
 
   const validationSchema = Yup.object({
-    helperSelect: Yup.string().required(
-      'Please select a helper from the dropdown'
-    ),
+    helperSelect: Yup.string().required(t('arrivals.counters.selectHelper')),
   })
 
   const onSubmit = async (
@@ -95,7 +95,7 @@ const ArrivalsCounters = () => {
       })
       onSubmitProps.resetForm()
       setAddOpen(false)
-      toast.success('Arrivals Counter added successfully')
+      toast.success(t('arrivals.counters.addedToast'))
     } catch (e) {
       throwToSentry('', e)
     } finally {
@@ -113,7 +113,9 @@ const ArrivalsCounters = () => {
           arrivalsCounterId: removeTarget.id,
         },
       })
-      toast.success(`${removeTarget.fullName} removed successfully`)
+      toast.success(
+        t('arrivals.counters.removedToast', { name: removeTarget.fullName })
+      )
       setRemoveTarget(null)
     } catch (e) {
       throwToSentry('', e)
@@ -136,12 +138,14 @@ const ArrivalsCounters = () => {
             ) : (
               <>
                 {stream?.name}{' '}
-                <span className="text-arrivals">Arrivals Counters</span>
+                <span className="text-arrivals">
+                  {t('arrivals.counters.title')}
+                </span>
               </>
             )}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage the team that counts arrivals for this stream.
+            {t('arrivals.counters.subtitle')}
           </p>
         </StickyPageHeader>
         <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -153,7 +157,7 @@ const ArrivalsCounters = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Active counters
+                      {t('arrivals.counters.activeCounters')}
                     </p>
                     {showSkeletons ? (
                       <Skeleton className="mt-1 h-9 w-16" />
@@ -166,7 +170,7 @@ const ArrivalsCounters = () => {
                   {showSkeletons ? (
                     <div className="border-t border-border pt-4">
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Active Bacentas
+                        {t('arrivals.counters.activeBacentas')}
                       </p>
                       <Skeleton className="mt-1 h-6 w-12" />
                     </div>
@@ -174,7 +178,7 @@ const ArrivalsCounters = () => {
                     typeof stream?.activeBacentaCount === 'number' && (
                       <div className="border-t border-border pt-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Active Bacentas
+                          {t('arrivals.counters.activeBacentas')}
                         </p>
                         <p className="mt-1 text-lg font-semibold text-foreground tabular-nums">
                           {stream.activeBacentaCount}
@@ -192,7 +196,7 @@ const ArrivalsCounters = () => {
                 disabled={showSkeletons}
               >
                 <Plus className="h-5 w-5" />
-                Add Counter
+                {t('arrivals.counters.addCounter')}
               </Button>
             </aside>
 
@@ -200,13 +204,16 @@ const ArrivalsCounters = () => {
             <section className="space-y-4 lg:col-start-1 lg:row-start-1">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-foreground">
-                  Current Counters
+                  {t('arrivals.counters.currentCounters')}
                 </h2>
                 {showSkeletons ? (
                   <Skeleton className="h-4 w-16" />
                 ) : (
                   <span className="text-xs font-medium text-muted-foreground tabular-nums">
-                    {counterCount} {counterCount === 1 ? 'person' : 'people'}
+                    {counterCount}{' '}
+                    {t('arrivals.counters.personCount', {
+                      count: counterCount,
+                    })}
                   </span>
                 )}
               </div>
@@ -224,10 +231,10 @@ const ArrivalsCounters = () => {
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-foreground">
-                      No arrivals counters yet
+                      {t('arrivals.counters.emptyTitle')}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Add a counter to begin tracking arrivals for this stream.
+                      {t('arrivals.counters.emptyBody')}
                     </p>
                   </div>
                 </div>
@@ -239,7 +246,9 @@ const ArrivalsCounters = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label={`Remove ${counter.fullName}`}
+                        aria-label={t('arrivals.counters.removeAria', {
+                          name: counter.fullName,
+                        })}
                         className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full text-destructive before:absolute before:-inset-2 before:content-[''] hover:bg-destructive/10 hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -260,10 +269,11 @@ const ArrivalsCounters = () => {
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Arrivals Counter</DialogTitle>
+              <DialogTitle>
+                {t('arrivals.counters.addArrivalsCounter')}
+              </DialogTitle>
               <DialogDescription>
-                Search for the member you want to add as an arrivals counter
-                for this stream.
+                {t('arrivals.counters.dialogDescription')}
               </DialogDescription>
             </DialogHeader>
 
@@ -277,7 +287,7 @@ const ArrivalsCounters = () => {
                   <SearchMember
                     name="helperSelect"
                     initialValue={initialValues.helperName}
-                    placeholder="Search for a member"
+                    placeholder={t('arrivals.dashboard.searchMember')}
                     setFieldValue={formik.setFieldValue}
                     aria-describedby="Member Search"
                     error={formik.errors.helperSelect}
@@ -291,9 +301,11 @@ const ArrivalsCounters = () => {
                       onClick={() => setAddOpen(false)}
                       disabled={formik.isSubmitting}
                     >
-                      Cancel
+                      {t('shared.actions.cancel')}
                     </Button>
-                    <SubmitButton formik={formik}>Add Counter</SubmitButton>
+                    <SubmitButton formik={formik}>
+                      {t('arrivals.counters.addCounter')}
+                    </SubmitButton>
                   </DialogFooter>
                 </Form>
               )}
@@ -310,22 +322,22 @@ const ArrivalsCounters = () => {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove counter?</AlertDialogTitle>
+              <AlertDialogTitle>
+                {t('arrivals.counters.removeTitle')}
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to remove{' '}
-                <span className="font-semibold text-foreground">
-                  {removeTarget?.fullName}
-                </span>{' '}
-                as an arrivals counter? They will no longer be able to count
-                arrivals for this stream.
+                <Trans
+                  i18nKey="arrivals.counters.removeBody"
+                  values={{ name: removeTarget?.fullName }}
+                  components={{
+                    1: <span className="font-semibold text-foreground" />,
+                  }}
+                />
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel
-                disabled={removing}
-                className="h-11 min-h-11"
-              >
-                Cancel
+              <AlertDialogCancel disabled={removing} className="h-11 min-h-11">
+                {t('shared.actions.cancel')}
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={(e) => {
@@ -338,10 +350,10 @@ const ArrivalsCounters = () => {
                 {removing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Removing…
+                    {t('arrivals.counters.removing')}
                   </>
                 ) : (
-                  'Remove'
+                  t('arrivals.counters.remove')
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>

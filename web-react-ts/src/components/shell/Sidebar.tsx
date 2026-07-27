@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   ChevronDown,
@@ -19,6 +20,7 @@ import useAuth from 'auth/useAuth'
 import { MemberContext } from 'contexts/MemberContext'
 import { hasOnlyRolesFrom } from 'permission-utils'
 import { useTheme } from './ThemeProvider'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { LanguageSwitcherMenu } from './LanguageSwitcherMenu'
 import { ChurchRoleScopePicker } from './ChurchRoleScopePicker'
 import { ChurchScopeNavItem } from './ChurchScopeNavItem'
@@ -38,13 +40,15 @@ const SIDEBAR_TOGGLE_GUTTER_W = 28
 const TRANSITION = { duration: 0.2, ease: 'easeInOut' } as const
 
 const DesktopNavItem = ({ item, open }: { item: NavItem; open: boolean }) => {
+  const { t } = useTranslation()
   const Icon = item.icon
+  const label = t(item.nameKey)
   return (
     <NavLink
       to={item.to}
       end={item.to === '/'}
-      aria-label={item.name}
-      title={item.name}
+      aria-label={label}
+      title={label}
       className={({ isActive }) =>
         cn(
           'flex h-10 w-full items-center gap-3 rounded-lg px-2.5 text-sm font-medium transition-colors',
@@ -71,7 +75,7 @@ const DesktopNavItem = ({ item, open }: { item: NavItem; open: boolean }) => {
                 transition={{ duration: 0.12 }}
                 className="overflow-hidden whitespace-nowrap"
               >
-                {item.name}
+                {label}
               </motion.span>
             )}
           </AnimatePresence>
@@ -94,6 +98,7 @@ export const Sidebar = ({
   userImageUrl?: string
   onOpenSearch?: () => void
 }) => {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(true)
   const shortcut = isMacLike() ? '⌘K' : 'Ctrl K'
   const { logout } = useAuthContext()
@@ -101,7 +106,7 @@ export const Sidebar = ({
   const { currentUser } = useContext(MemberContext)
   const { theme, toggleTheme } = useTheme()
   const isDarkMode = theme === 'dark'
-  const accountName = userName?.trim() || 'Account'
+  const accountName = userName?.trim() || t('nav.account')
   const userRoles = currentUser?.roles
 
   // Filter upstream rather than wrapping each item in <RoleView>: hidden
@@ -138,10 +143,10 @@ export const Sidebar = ({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
+        aria-label={open ? t('nav.collapseSidebar') : t('nav.expandSidebar')}
         aria-controls="desktop-sidebar-nav"
         aria-expanded={open}
-        title={open ? 'Collapse sidebar' : 'Expand sidebar'}
+        title={open ? t('nav.collapseSidebar') : t('nav.expandSidebar')}
         onClick={() => setOpen((v) => !v)}
         className="absolute right-0 top-2 z-30 size-11 rounded-full border border-sidebar-border bg-background text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground"
       >
@@ -181,7 +186,7 @@ export const Sidebar = ({
                   Synago
                 </p>
                 <p className="whitespace-nowrap text-xs text-sidebar-foreground/60">
-                  FLC Servants Portal
+                  {t('nav.portalTagline')}
                 </p>
               </motion.div>
             )}
@@ -194,8 +199,8 @@ export const Sidebar = ({
             <button
               type="button"
               onClick={onOpenSearch}
-              aria-label="Open search"
-              title={`Search (${shortcut})`}
+              aria-label={t('nav.openSearch')}
+              title={`${t('nav.search')} (${shortcut})`}
               className={cn(
                 'mb-2 flex h-10 w-full items-center gap-3 rounded-lg px-2.5 text-sm transition-colors',
                 'border border-sidebar-border bg-sidebar-accent/40 text-sidebar-foreground/70',
@@ -212,7 +217,7 @@ export const Sidebar = ({
                     transition={{ duration: 0.12 }}
                     className="flex flex-1 items-center justify-between overflow-hidden whitespace-nowrap"
                   >
-                    <span>Search</span>
+                    <span>{t('nav.search')}</span>
                     <kbd className="ml-2 inline-block rounded border border-sidebar-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                       {shortcut}
                     </kbd>
@@ -239,12 +244,28 @@ export const Sidebar = ({
 
         {/* Footer */}
         <div className="shrink-0 border-t border-sidebar-border px-2 py-3">
+          {open ? (
+            <LanguageSwitcher
+              variant="row"
+              align="start"
+              side="top"
+              className="mb-1"
+            />
+          ) : (
+            <div className="mb-1 flex justify-center">
+              <LanguageSwitcher
+                align="start"
+                side="right"
+                className="border-sidebar-border bg-sidebar-accent/40 text-sidebar-foreground/70 shadow-none hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+              />
+            </div>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
                 className="mb-2 flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-1 text-left hover:bg-sidebar-accent/70"
-                aria-label="Open profile menu"
+                aria-label={t('nav.openProfileMenu')}
               >
                 <Avatar className="size-7 shrink-0 border border-sidebar-border/60">
                   {userImageUrl ? (
@@ -287,13 +308,13 @@ export const Sidebar = ({
                 ) : (
                   <Moon className="size-4" />
                 )}
-                {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                {isDarkMode ? t('nav.switchToLight') : t('nav.switchToDark')}
               </DropdownMenuItem>
               <LanguageSwitcherMenu />
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={logout}>
                 <LogOut className="size-4" />
-                Log out
+                {t('nav.logOut')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

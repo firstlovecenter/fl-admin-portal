@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@apollo/client'
 import { ChurchContext } from 'contexts/ChurchContext'
-import { useContext } from 'react'
+import { useContext, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
@@ -30,6 +31,7 @@ import {
 import { CouncilForAccounts } from '../accounts-types'
 
 const MakeDepositForm = () => {
+  const { t } = useTranslation()
   const { councilId, clickCard } = useContext(ChurchContext)
   const { show, handleClose, handleShow } = useModal()
   const navigate = useNavigate()
@@ -69,17 +71,21 @@ const MakeDepositForm = () => {
     weekdayBalanceDepositAmount: '',
     bussingSocietyBalance: council?.bussingSocietyBalance?.toString() ?? '',
   }
-  const validationSchema = Yup.object({
-    hrAmount: Yup.number()
-      .typeError('Please enter a valid number')
-      .required('This is a required field'),
-    weekdayBalanceDepositAmount: Yup.number()
-      .typeError('Please enter a valid number')
-      .required('This is a required field'),
-    bussingSocietyBalance: Yup.number()
-      .typeError('Please enter a valid number')
-      .required('This is a required field'),
-  })
+  const validationSchema = useMemo(
+    () =>
+      Yup.object({
+        hrAmount: Yup.number()
+          .typeError(t('accounts.common.validNumber'))
+          .required(t('accounts.common.required')),
+        weekdayBalanceDepositAmount: Yup.number()
+          .typeError(t('accounts.common.validNumber'))
+          .required(t('accounts.common.required')),
+        bussingSocietyBalance: Yup.number()
+          .typeError(t('accounts.common.validNumber'))
+          .required(t('accounts.common.required')),
+      }),
+    [t]
+  )
 
   const onSubmit = async (
     values: typeof initialValues,
@@ -161,10 +167,16 @@ const MakeDepositForm = () => {
     }
   }
 
+  const churchTypeLabel = council?.__typename
+    ? t(`shared.churchLevel.${council.__typename}`, {
+        defaultValue: council.__typename,
+      })
+    : ''
+
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
-        <HeadingPrimary>{`${council?.name} ${council?.__typename}`}</HeadingPrimary>
+        <HeadingPrimary>{`${council?.name ?? ''} ${churchTypeLabel}`.trim()}</HeadingPrimary>
         <HeadingSecondary>{council?.leader.fullName}</HeadingSecondary>
 
         <Formik
@@ -178,20 +190,20 @@ const MakeDepositForm = () => {
                 <RoleView roles={['adminCampus']}>
                   <Input
                     name="weekdayBalanceDepositAmount"
-                    label="Weekday Account Balance Deposit Amount"
-                    placeholder="Enter an amount"
+                    label={t('accounts.deposit.weekdayDepositLabel')}
+                    placeholder={t('accounts.common.enterAmount')}
                   />
                   <Input
                     name="hrAmount"
-                    label="HR Amount"
-                    placeholder="Enter an amount"
+                    label={t('accounts.deposit.hrAmountLabel')}
+                    placeholder={t('accounts.common.enterAmount')}
                   />
                 </RoleView>
                 <RoleView roles={['arrivalsAdminCampus']}>
                   <Input
                     name="bussingSocietyBalance"
-                    label="Current Bussing Society Balance"
-                    placeholder="Enter an amount"
+                    label={t('accounts.deposit.bussingBalanceLabel')}
+                    placeholder={t('accounts.common.enterAmount')}
                   />
                 </RoleView>
                 <Dialog
@@ -203,37 +215,40 @@ const MakeDepositForm = () => {
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>
-                        Please confirm the amounts to deposit
+                        {t('accounts.deposit.confirmTitle')}
                       </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-2 text-sm">
                       <p>
-                        Weekday Income Amount:{' '}
+                        {t('accounts.deposit.weekdayIncomeAmount')}{' '}
                         <span className="text-[hsl(var(--maps))]">
-                          GHS{' '}
-                          {parseFloat(
-                            formik.values.weekdayBalanceDepositAmount
-                          ).toLocaleString('en-US')}
+                          {t('accounts.deposit.ghsAmount', {
+                            amount: parseFloat(
+                              formik.values.weekdayBalanceDepositAmount
+                            ).toLocaleString('en-US'),
+                          })}
                         </span>
                       </p>
 
                       <p>
-                        HR Amount:{' '}
+                        {t('accounts.deposit.hrAmount')}{' '}
                         <span className="text-[hsl(var(--maps))]">
-                          GHS{' '}
-                          {parseFloat(formik.values.hrAmount).toLocaleString(
-                            'en-US'
-                          )}
+                          {t('accounts.deposit.ghsAmount', {
+                            amount: parseFloat(
+                              formik.values.hrAmount
+                            ).toLocaleString('en-US'),
+                          })}
                         </span>
                       </p>
 
                       <p>
-                        Bussing Society Balance:{' '}
+                        {t('accounts.deposit.bussingSocietyBalance')}{' '}
                         <span className="text-[hsl(var(--maps))]">
-                          GHS{' '}
-                          {parseFloat(
-                            formik.values.bussingSocietyBalance
-                          ).toLocaleString('en-US')}
+                          {t('accounts.deposit.ghsAmount', {
+                            amount: parseFloat(
+                              formik.values.bussingSocietyBalance
+                            ).toLocaleString('en-US'),
+                          })}
                         </span>
                       </p>
                     </div>
@@ -244,7 +259,7 @@ const MakeDepositForm = () => {
                         formik={formik}
                       />
                       <Button variant="outline" onClick={handleClose}>
-                        Close
+                        {t('accounts.common.close')}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -268,7 +283,7 @@ const MakeDepositForm = () => {
                     }}
                     className="px-8"
                   >
-                    Submit
+                    {t('shared.form.submit')}
                   </Button>
                 </div>
               </div>

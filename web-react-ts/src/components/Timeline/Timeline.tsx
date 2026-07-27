@@ -1,6 +1,8 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { parseDate, parseNeoTime } from 'lib/date-utils'
+import { translateHistoryRecord } from 'lib/translate-history-record'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { HistoryLog } from 'global-types'
 import {
@@ -30,6 +32,7 @@ const Timeline = ({
   record,
   limit,
 }: TimelineProps) => {
+  const { t, i18n } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
 
@@ -49,12 +52,15 @@ const Timeline = ({
 
       return {
         key: element.id ?? `${element.timeStamp ?? ''}-${index}`,
-        title: parseDate(element.createdAt?.date),
+        title: parseDate(element.createdAt?.date, {
+          t,
+          locale: i18n.resolvedLanguage || i18n.language || 'en',
+        }),
         dateTime: element.createdAt?.date,
         content: (
           <div className="space-y-1.5">
             <p className="text-sm leading-snug font-medium text-foreground">
-              {element.historyRecord}
+              {translateHistoryRecord(element.historyRecord, t)}
             </p>
             <p className="text-xs text-muted-foreground">
               {parseNeoTime(element.timeStamp)}

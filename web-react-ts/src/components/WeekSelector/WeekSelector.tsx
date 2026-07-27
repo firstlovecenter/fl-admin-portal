@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from 'components/ui/button'
 import { cn } from 'components/lib/utils'
@@ -9,6 +10,7 @@ type WeekSelectorProps = {
 }
 
 const WeekSelector = ({ className }: WeekSelectorProps) => {
+  const { t } = useTranslation()
   const {
     week,
     year,
@@ -28,14 +30,14 @@ const WeekSelector = ({ className }: WeekSelectorProps) => {
           size="icon"
           className="size-11 lg:size-9"
           onClick={prevWeek}
-          aria-label="Previous week"
+          aria-label={t('shared.weekSelector.previousWeek')}
         >
           <ChevronLeft />
         </Button>
 
         <div className="flex min-w-0 flex-1 flex-col items-center text-center">
           <span className="text-sm font-semibold text-foreground tabular-nums">
-            Week {week}, {year}
+            {t('shared.weekSelector.weekAndYear', { week, year })}
           </span>
           <span className="truncate text-xs text-muted-foreground">
             {rangeLabel}
@@ -49,7 +51,7 @@ const WeekSelector = ({ className }: WeekSelectorProps) => {
           className="size-11 lg:size-9"
           onClick={nextWeek}
           disabled={isCurrent}
-          aria-label="Next week"
+          aria-label={t('shared.weekSelector.nextWeek')}
         >
           <ChevronRight />
         </Button>
@@ -63,7 +65,7 @@ const WeekSelector = ({ className }: WeekSelectorProps) => {
           className="self-center text-muted-foreground"
           onClick={resetToCurrent}
         >
-          Reset to current week
+          {t('shared.weekSelector.resetToCurrent')}
         </Button>
       )}
     </div>

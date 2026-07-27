@@ -1,5 +1,6 @@
 import { useLazyQuery } from '@apollo/client'
 import { useContext, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Banknote,
   CalendarCheck,
@@ -36,6 +37,7 @@ import { isDefaultersDownloadLevel } from './utils/buildDefaultersWorkbook'
 import { DefaultersUseChurchType } from './defaulters-types'
 
 const Banked = () => {
+  const { t } = useTranslation()
   const { weekStart, week, isCurrent } = useSelectedWeek()
 
   const [governorshipBanked, { refetch: governorshipRefetch }] = useLazyQuery(
@@ -98,7 +100,7 @@ const Banked = () => {
   const totalsItems: WeekTotalItem[] = [
     {
       key: 'banked',
-      label: 'Banked',
+      label: t('services.defaulters.banked'),
       value: formatCount(total),
       accent: 'banking',
       icon: <Landmark />,
@@ -107,7 +109,7 @@ const Banked = () => {
   if (trackIncome) {
     totalsItems.push({
       key: 'income',
-      label: 'Total banked',
+      label: t('services.defaulters.totalBanked'),
       value: totalBankedIncome > 0 ? formatMoney(totalBankedIncome) : '—',
       accent: 'banking',
       icon: <Banknote />,
@@ -115,7 +117,7 @@ const Banked = () => {
   }
   totalsItems.push({
     key: 'attendance',
-    label: 'Total attendance',
+    label: t('services.defaulters.totalAttendance'),
     value: totalAttendance > 0 ? formatCount(totalAttendance) : '—',
     accent: 'members',
     icon: <Users />,
@@ -131,7 +133,9 @@ const Banked = () => {
                 {church ? (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {church.name}{' '}
-                    <span className="text-banking">Banked This Week</span>
+                    <span className="text-banking">
+                      {t('services.defaulters.bankedThisWeekTitle')}
+                    </span>
                   </h1>
                 ) : (
                   <Skeleton className="h-9 w-72" />
@@ -149,15 +153,14 @@ const Banked = () => {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarCheck className="size-3.5" />
-                  Week {week}
+                  {t('services.defaulters.weekBadge', { week })}
                 </Badge>
                 {church ? (
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {total}
-                    </span>{' '}
-                    {total === 1 ? 'bacenta has' : 'bacentas have'} banked
-                    {isCurrent ? ' this week' : ' that week'}
+                    {t('services.defaulters.bacentasBanked', { count: total })}
+                    {isCurrent
+                      ? t('services.defaulters.thisWeekSuffix')
+                      : t('services.defaulters.thatWeekSuffix')}
                   </p>
                 ) : (
                   <Skeleton className="h-4 w-48" />
@@ -196,11 +199,12 @@ const Banked = () => {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-foreground">
-                          No bacentas have banked yet
+                          {t('services.defaulters.noBacentasBankedYet')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Banking confirmations for week {week} will appear
-                          here.
+                          {t('services.defaulters.bankingConfirmationsHint', {
+                            week,
+                          })}
                         </p>
                       </div>
                     </CardContent>

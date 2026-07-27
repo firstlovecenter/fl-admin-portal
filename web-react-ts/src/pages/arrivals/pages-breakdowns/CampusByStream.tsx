@@ -2,6 +2,7 @@ import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { SHORT_POLL_INTERVAL } from 'global-utils'
+import { useTranslation } from 'react-i18next'
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router'
 import PullToRefresh from 'components/base-component/PullToRefresh'
@@ -33,6 +34,7 @@ import { HigherChurchWithArrivals } from '../arrivals-types'
 import useSetUserChurch from 'hooks/useSetUserChurch'
 
 const CampusByStream = () => {
+  const { t } = useTranslation()
   const { clickCard, campusId, arrivalDate } = useContext(ChurchContext)
   const navigate = useNavigate()
   const { setUserChurch } = useSetUserChurch()
@@ -85,7 +87,11 @@ const CampusByStream = () => {
             ) : (
               <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {campus?.name}{' '}
-                <span className="text-arrivals">Arrivals by Stream</span>
+                <span className="text-arrivals">
+                  {t('arrivals.breakdown.arrivalsByLevel', {
+                    level: t('shared.churchLevel.Stream'),
+                  })}
+                </span>
               </h1>
             )}
           </StickyPageHeader>
@@ -94,7 +100,9 @@ const CampusByStream = () => {
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start">
               {campus?.streams?.map((stream: HigherChurchWithArrivals) => {
                 const isExpanded = expandedIds.has(stream.id)
-                const initials = `${stream.leader?.firstName?.[0] ?? ''}${stream.leader?.lastName?.[0] ?? ''}`
+                const initials = `${stream.leader?.firstName?.[0] ?? ''}${
+                  stream.leader?.lastName?.[0] ?? ''
+                }`
                 const leaderName =
                   stream.leader?.nameWithTitle ||
                   [stream.leader?.firstName, stream.leader?.lastName]
@@ -110,7 +118,15 @@ const CampusByStream = () => {
                     <button
                       type="button"
                       aria-expanded={isExpanded}
-                      aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${stream.name} Stream`}
+                      aria-label={t(
+                        isExpanded
+                          ? 'arrivals.breakdown.collapseNamed'
+                          : 'arrivals.breakdown.expandNamed',
+                        {
+                          name: stream.name,
+                          level: t('shared.churchLevel.Stream'),
+                        }
+                      )}
                       className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30 active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                       onClick={() => toggle(stream.id)}
                     >
@@ -126,7 +142,7 @@ const CampusByStream = () => {
 
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-foreground">
-                          {stream.name} Stream
+                          {stream.name} {t('shared.churchLevel.Stream')}
                         </p>
                         <p className="truncate text-xs text-muted-foreground">
                           {leaderName}
@@ -135,13 +151,22 @@ const CampusByStream = () => {
 
                       {/* At-a-glance: no-activity · on-way · arrived */}
                       <div className="flex shrink-0 items-center gap-2.5 text-xs font-bold tabular-nums">
-                        <span className="text-defaulters" title="No Activity">
+                        <span
+                          className="text-defaulters"
+                          title={t('arrivals.dashboard.noActivity')}
+                        >
                           {stream.bacentasNoActivityCount ?? 0}
                         </span>
-                        <span className="text-arrivals" title="On The Way">
+                        <span
+                          className="text-arrivals"
+                          title={t('arrivals.dashboard.onTheWay')}
+                        >
                           {stream.bacentasOnTheWayCount ?? 0}
                         </span>
-                        <span className="text-success" title="Have Arrived">
+                        <span
+                          className="text-success"
+                          title={t('arrivals.dashboard.haveArrived')}
+                        >
                           {stream.bacentasHaveArrivedCount ?? 0}
                         </span>
                       </div>
@@ -159,40 +184,42 @@ const CampusByStream = () => {
                       <div className="space-y-4 border-t border-border px-4 pb-4 pt-3">
                         {/* Bacenta Status */}
                         <div className="space-y-2">
-                          <SectionLabel>Bacenta Status</SectionLabel>
+                          <SectionLabel>
+                            {t('arrivals.dashboard.bacentaStatus')}
+                          </SectionLabel>
                           <div className="grid grid-cols-3 gap-2">
                             <StatusTile
-                              label="Active"
+                              label={t('arrivals.breakdown.active')}
                               value={stream.activeBacentaCount}
                               icon={UsersRound}
                               tone="members"
                             />
                             <StatusTile
-                              label="No Activity"
+                              label={t('arrivals.dashboard.noActivity')}
                               value={stream.bacentasNoActivityCount}
                               icon={AlertOctagon}
                               tone="defaulters"
                             />
                             <StatusTile
-                              label="Mobilising"
+                              label={t('arrivals.dashboard.mobilising')}
                               value={stream.bacentasMobilisingCount}
                               icon={Megaphone}
                               tone="warning"
                             />
                             <StatusTile
-                              label="On The Way"
+                              label={t('arrivals.dashboard.onTheWay')}
                               value={stream.bacentasOnTheWayCount}
                               icon={BusFront}
                               tone="arrivals"
                             />
                             <StatusTile
-                              label="Didn't Bus"
+                              label={t('arrivals.dashboard.didNotBus')}
                               value={stream.bacentasBelow8Count}
                               icon={AlertTriangle}
                               tone="destructive"
                             />
                             <StatusTile
-                              label="Have Arrived"
+                              label={t('arrivals.dashboard.haveArrived')}
                               value={stream.bacentasHaveArrivedCount}
                               icon={CheckCircle2}
                               tone="success"
@@ -202,23 +229,25 @@ const CampusByStream = () => {
 
                         {/* Live Arrivals */}
                         <div className="space-y-2">
-                          <SectionLabel>Live Arrivals</SectionLabel>
+                          <SectionLabel>
+                            {t('arrivals.breakdown.liveArrivals')}
+                          </SectionLabel>
                           <Card className="overflow-hidden">
                             <div className="divide-y divide-border">
                               <LiveRow
-                                label="Members On The Way"
+                                label={t('arrivals.dashboard.membersOnTheWay')}
                                 value={stream.bussingMembersOnTheWayCount}
                                 icon={UsersRound}
                                 tone="warning"
                               />
                               <LiveRow
-                                label="Members Arrived"
+                                label={t('arrivals.dashboard.membersArrived')}
                                 value={stream.bussingMembersHaveArrivedCount}
                                 icon={Users}
                                 tone="success"
                               />
                               <LiveRow
-                                label="Buses Arrived"
+                                label={t('arrivals.dashboard.busesArrived')}
                                 value={stream.bussesThatArrivedCount}
                                 icon={BusFront}
                                 tone="success"
@@ -239,7 +268,9 @@ const CampusByStream = () => {
                               navigate('/arrivals/stream')
                             }}
                           >
-                            View Stream
+                            {t('arrivals.breakdown.viewLevel', {
+                              level: t('shared.churchLevel.Stream'),
+                            })}
                             <ChevronRight className="size-3.5" />
                           </Button>
                         </div>

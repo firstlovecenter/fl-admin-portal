@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { useContext } from 'react'
 import { useMutation } from '@apollo/client'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
@@ -38,12 +40,15 @@ type MemberDeleteDialogProps = {
   bacentaId?: string
 }
 
-const validationSchema = Yup.object({
-  reasonCategory: Yup.string().required('Please pick a reason category'),
-  reason: Yup.string().required(
-    "Please provide the reason you're deleting this member"
-  ),
-})
+export const buildValidationSchema = (t: TFunction) =>
+  Yup.object({
+    reasonCategory: Yup.string().required(
+      t('directory.memberDelete.reasonRequired')
+    ),
+    reason: Yup.string().required(
+      t('directory.memberDelete.reasonTextRequired')
+    ),
+  })
 
 const MemberDeleteDialog = ({
   open,
@@ -52,6 +57,7 @@ const MemberDeleteDialog = ({
   memberLastName,
   bacentaId,
 }: MemberDeleteDialogProps) => {
+  const { t } = useTranslation()
   const { memberId } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
@@ -89,7 +95,7 @@ const MemberDeleteDialog = ({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete this member?</DialogTitle>
+          <DialogTitle>{t('directory.memberDelete.title')}</DialogTitle>
           <DialogDescription>
             This will mark the member as inactive. Please tell us why
             you&apos;re deleting them — this is recorded in their history.
@@ -97,7 +103,7 @@ const MemberDeleteDialog = ({
         </DialogHeader>
         <Formik
           initialValues={{ reason: '', reasonCategory: '' }}
-          validationSchema={validationSchema}
+          validationSchema={buildValidationSchema(t)}
           onSubmit={onDelete}
         >
           {(formik) => (
@@ -148,7 +154,7 @@ const MemberDeleteDialog = ({
                   id="reason"
                   name="reason"
                   rows={3}
-                  placeholder="Add any context that helps explain this decision"
+                  placeholder={t('directory.memberDelete.notePlaceholder')}
                 />
                 <ErrorMessage name="reason">
                   {(msg) => (
@@ -167,7 +173,7 @@ const MemberDeleteDialog = ({
                   disabled={formik.isSubmitting}
                   className="min-h-[44px]"
                 >
-                  Cancel
+                  {t('shared.actions.cancel')}
                 </Button>
                 <Button
                   type="submit"

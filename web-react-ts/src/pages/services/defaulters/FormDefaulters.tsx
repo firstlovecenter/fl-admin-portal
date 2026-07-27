@@ -1,5 +1,6 @@
 import { useLazyQuery } from '@apollo/client'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   AlertOctagon,
   Ban,
@@ -36,6 +37,7 @@ import { isDefaultersDownloadLevel } from './utils/buildDefaultersWorkbook'
 import { DefaultersUseChurchType } from './defaulters-types'
 
 const FormDefaulters = () => {
+  const { t } = useTranslation()
   const { weekStart, week, isCurrent } = useSelectedWeek()
 
   const [governorshipFormDefaulters, { refetch: governorshipRefetch }] =
@@ -83,21 +85,21 @@ const FormDefaulters = () => {
   const totalsItems: WeekTotalItem[] = [
     {
       key: 'outstanding',
-      label: 'Outstanding',
+      label: t('services.defaulters.outstanding'),
       value: formatCount(total),
       accent: 'defaulters',
       icon: <AlertOctagon />,
     },
     {
       key: 'awaiting',
-      label: 'Awaiting form',
+      label: t('services.defaulters.awaitingForm'),
       value: formatCount(awaitingCount),
       accent: 'warning',
       icon: <Clock />,
     },
     {
       key: 'cancelled',
-      label: 'Cancelled',
+      label: t('services.defaulters.cancelled'),
       value: formatCount(cancelledCount),
       accent: 'destructive',
       icon: <Ban />,
@@ -114,7 +116,9 @@ const FormDefaulters = () => {
                 {church ? (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {church.name}{' '}
-                    <span className="text-defaulters">Form Defaulters</span>
+                    <span className="text-defaulters">
+                      {t('services.defaulters.formDefaultersTitle')}
+                    </span>
                   </h1>
                 ) : (
                   <Skeleton className="h-9 w-72" />
@@ -132,15 +136,14 @@ const FormDefaulters = () => {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="gap-1.5">
                   <CalendarCheck className="size-3.5" />
-                  Week {week}
+                  {t('services.defaulters.weekBadge', { week })}
                 </Badge>
                 {church ? (
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold tabular-nums text-foreground">
-                      {total}
-                    </span>{' '}
-                    {total === 1 ? 'bacenta has' : 'bacentas have'} not filled
-                    {isCurrent ? ' this week' : ' that week'}
+                    {t('services.defaulters.bacentasNotFilled', { count: total })}
+                    {isCurrent
+                      ? t('services.defaulters.thisWeekSuffix')
+                      : t('services.defaulters.thatWeekSuffix')}
                   </p>
                 ) : (
                   <Skeleton className="h-4 w-48" />
@@ -179,10 +182,12 @@ const FormDefaulters = () => {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-foreground">
-                          All bacentas filled
+                          {t('services.defaulters.allBacentasFilled')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Nothing outstanding for week {week}.
+                          {t('services.defaulters.nothingOutstandingWeek', {
+                            week,
+                          })}
                         </p>
                       </div>
                     </CardContent>

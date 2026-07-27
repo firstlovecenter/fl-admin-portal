@@ -545,6 +545,499 @@ files, no missing, no extra, no blank values**. Full suite **507 passing**
 failures**, reconfirmed untouched by this branch via
 `git diff main...HEAD -- src/lib/createApolloClient*`.
 
+## Phase 5 — branch-wide i18n audit + fixes (DONE this pass)
+
+A full sweep of the branch (locale-key parity, `t()` call-site resolution,
+hardcoded-string scan, test-suite baseline) rather than a new page group.
+Findings and what was done about each:
+
+### Defects found in already-localized code — all fixed
+
+1. **`t('shepherding.projector')` collided with a namespace.** The key already
+   existed as an *object* (`projector.titleWithName` / `.titleDefault` /
+   `.waiting`), so i18next logged a warning and handed back the key: the
+   Shepherding Control cast button rendered the literal text
+   `shepherding.projector` in all five languages. Added
+   `shepherding.projector.label` and pointed the call site at it.
+2. **Every long-form date rendered in English regardless of language.**
+   `getHumanReadableDate` / `getHumanReadableDateTime` (both the `global-utils`
+   and the `lib/date-utils` copy) hardcoded `'en-gb'`. They are called from
+   ~20 already-localized surfaces — member DOB, arrivals dates, the banking
+   receipt, and the "Generated on …" header of every weekly report. Now
+   locale-aware via a new shared `lib/intl-locale.ts`.
+3. **`parseDate`'s no-argument path never translated.** Five localized banking
+   and arrivals call sites called it bare and got English `Today` /
+   `Yesterday` / `Mon Jul 26 2026`. It now falls back to the i18next singleton.
+   Callers passing `locale: i18n.resolvedLanguage` ('en') were also getting
+   US month-first ordering; that now routes through `intlLocaleFor`.
+4. **`isToday` would have become a bug in this same commit.** It compared
+   `parseDate(date) === 'Today'`. That was correct while `parseDate` returned
+   English literals on its no-options path — nothing was broken in
+   production — but item 3 above makes `parseDate` translate by default,
+   which would have made `isToday` return false in every non-English session.
+   It gates real arrivals behaviour (`FormAttendanceConfirmation`,
+   `FormPayVehicleRecord`, `arrivals-utils`), so it was rewritten to compare
+   calendar days directly rather than left to break.
+5. **`useSelectedWeek` / `useSelectedArrivalDate` hardcoded English month and
+   weekday names** plus composed English literals (`Week 18, 2026`,
+   `Week of 4–10 May 2026`). These labels render on the defaulters dashboard,
+   the weekly report cards and the arrivals date picker — all localized pages.
+   Month/weekday names now come from `Intl` (day-first ordering deliberately
+   preserved in every language); the prefixes come from `shared.week.*`.
+6. **`DATE_HEADER_LOCALES` was copy-pasted into three dashboards.**
+   Consolidated into `lib/intl-locale.ts` as `intlLocaleFor` /
+   `currentIntlLocale`, which items 2, 3 and 5 all reuse.
+
+### Test-suite defects found — all fixed
+
+The branch was shipping **10 failing tests of its own** (the suite was 21
+failed / 558 passed; 11 of those are the documented, pre-existing
+`createApolloClient.test.tsx` MSW/AbortSignal failures on a file this branch
+never touches).
+
+- `LanguageCard.test.tsx` (4) — Radix Select died on
+  `target.hasPointerCapture is not a function`. jsdom implements no layout
+  engine and only part of the Pointer Events API. Fixed properly in
+  `src/test-utils/setup.ts` with shims for `hasPointerCapture` /
+  `setPointerCapture` / `releasePointerCapture` / `scrollIntoView`, plus
+  `ResizeObserver` and `matchMedia`. This also removes the reason
+  `LanguageSwitcherMenu.test.tsx` had to route around jsdom via keyboard nav
+  (phase 1 note).
+- `NotificationsCard.test.tsx` (2) — the component was localized but the test
+  never imported `lib/i18n`, so react-i18next warned `NO_I18NEXT_INSTANCE`
+  and every label rendered as its raw key.
+- `UpdateDenomination.test.tsx` (3) — the shared `submitForm` helper matched
+  `/submit/i`, which does not exist in the DOM after the French cases change
+  the language. Now resolves the label through i18next.
+- `ServiceDetails.test.tsx` (1) — missing `MockedProvider`; the component
+  calls `useMutation` at the top of its body even on the not-found path.
+
+Two further test files broke *because of* this pass's changes and were fixed
+alongside: `auth/Sabbath.test.tsx` and `auth/ProtectedRoute.test.tsx` both
+assert English copy on now-localized components without registering i18next.
+
+### App-wide chrome localized this pass
+
+These render above or alongside pages that were already translated, so each
+was leaking English into an otherwise fully-translated session:
+
+`auth/Sabbath.tsx`, `auth/UnauthMsg.tsx`, `pages/page-not-found/`,
+`pages/reconciliation/`, `components/base-component/ErrorScreen.tsx`,
+`components/buttons/AuthButton.tsx` (including the log-out confirmation —
+the worst offender: a confirm dialog the user cannot read),
+`components/buttons/EditButton.tsx`, `components/formik/BtnSubmitText.tsx`,
+`components/formik/ImageUpload.tsx`, `components/push/PushSoftAsk.tsx`
+(card + all four toasts), `components/Last3WeeksCard.tsx` (renders inside the
+localized `DisplayChurchDetails`), `components/AllChurchesSummary.tsx`,
+`components/ChurchSearch.tsx`, `components/WeekSelector/`,
+`components/ArrivalDateSelector/`.
+
+80 new `shared.*` keys across all five locales. Key parity, interpolation-
+placeholder parity, and `t()` call-site resolution are all now clean:
+**1923 keys × 5 languages, 0 missing, 0 extra, 0 placeholder mismatches,
+0 unresolved literal keys, 0 keys resolving to an object.**
+
+### Verification
+
+- `tsc --noEmit` clean; `eslint --max-warnings=0` clean on all 40 touched files.
+- Vitest: **11 failed / 651 passed** — down from 21 failed / 558 passed. The
+  11 remaining are the pre-existing `createApolloClient.test.tsx` failures
+  (confirmed untouched by this branch and by this pass).
+- `npm run build` (tsc + vite + PWA): green, 392 precache entries, service
+  worker generated. Note the build's final Sentry release-upload step 401s
+  locally because the `SENTRY_AUTH_TOKEN` in `.env` is expired — environmental,
+  not a code problem; the bundle emits fully either way, and it was re-run
+  with the token unset to confirm a clean exit.
+
+### Known-good-but-worth-noting
+
+- 10 locale keys are now dead (nothing references them). Left in place rather
+  than churn the diff: `accounts.common.charge`, `accounts.common.status`,
+  `directory.update.leaderChangeError`, `directory.update.updateError`,
+  `services.defaulters.streamNotBanked`, `…streamCancelledCount`,
+  `…streamNotBankedCount`, `services.graphs.options.servicesTotalUsd`,
+  `services.membershipDownload.titleHighlight`, `…filenameStem`.
+- Currency formatting deliberately stays on `en-GH` in every language — cedi
+  amounts follow Ghanaian conventions regardless of UI language. Documented
+  in `lib/intl-locale.ts`.
+
+### Still English-only after this pass (enumerated, not started)
+
+The audit's hardcoded-string scan leaves **52 files with no `useTranslation`**.
+They fall into five coherent groups:
+
+1. **Directory list pages (11 files)** — `pages/directory/display/All*.tsx`
+   plus `CouncilBacentas.tsx`. **Phase 3 recorded the directory group as done;
+   it is not.** These are high-traffic (the Bacenta list is what a Bacenta
+   leader opens constantly) and are the single biggest remaining gap.
+2. **Arrivals sub-pages (12 files)** — `pages-breakdowns/`,
+   `pages-state-of-arrivals/`, `Helpers/`, `Times/ArrivalTimes.tsx`. Same
+   story: **phase 4 recorded arrivals as done, and these were missed.**
+3. **Auth pages (2 files)** — `pages/auth/LoginPage.tsx` (unreferenced —
+   likely dead, `SimpleLogin.tsx` is the live one) and
+   `SetupPasswordPage.tsx` (live, reachable pre-auth).
+4. **Maps (6 files)** and **AI Assistant (3 files)** — the latter already
+   deliberately deferred (item 5 below).
+5. **Small leftovers** — `MemberDeleteDialog.tsx`, `MemberTitleDialog.tsx`,
+   `MemberAvatarUpload.tsx`, `MultiImageUpload.tsx`,
+   `CloseDownBacentaButton.tsx`, `CampusBacentaServicesThisWeek.tsx`,
+   `LoadingScreen`/`InitialLoading`/`SplashSreen` (each renders only the
+   untranslated brand name "Synago"). `components/Login.tsx` and
+   `sidebar-demo-2.tsx` appear dead.
+
+25 hardcoded Yup validation messages remain, all inside group 3/4 files
+(`AddVenueSheet`, `ArrivalTimes`, the auth pages, `MemberDeleteDialog`) —
+the earlier claim that Yup messages are broadly English-only is stale;
+localized pages already translate theirs.
+
+## Phase 6 — closing the directory + arrivals gaps phase 5 found (DONE this pass)
+
+Phase 5's audit found that phases 3 and 4 had recorded the directory and
+arrivals page groups as DONE while 27 files in them were still English-only.
+This phase closes those two groups.
+
+### Directory list pages (11 files)
+
+`pages/directory/display/All{Bacentas,Campuses,Councils,Streams,
+Governorships,CampusCouncils,CampusGovernorships,StreamGovernorships,
+StreamBacentas,Oversights}.tsx` + `CouncilBacentas.tsx`.
+
+82 distinct strings collapsed into a single `directory.list.*` namespace with
+the church level interpolated (`add` = "Add {{level}}", `allOf` =
+"All {{levelPlural}}", `noneUnderYet` = "This {{parent}} has no
+{{levelPlural}} yet."), so "Add Bacenta" / "Add Council" / "All Governorships"
+are one key each rather than eleven. Level words come from the existing
+`shared.churchLevel(Plural).*`; role labels from `directory.leaderTitle.*`
+(one new entry, `overseer`, plus `pastor`).
+
+### Arrivals sub-pages (13 files)
+
+`pages-state-of-arrivals/` (7), `pages-breakdowns/` (3), `Helpers/` (2),
+`Times/ArrivalTimes.tsx`.
+
+94 distinct strings, of which **30 already had keys** — phase 4's
+`arrivals.dashboard.*` covers the whole status vocabulary (No Activity,
+Mobilising, On The Way, Have Arrived, Didn't Bus, Members Arrived, Buses
+Arrived, …) and is reused rather than duplicated. 64 new keys landed under
+`arrivals.state.*`, `arrivals.breakdown.*`, `arrivals.counters.*`,
+`arrivals.payers.*` and `arrivals.times.*`.
+
+`ArrivalTimes.tsx` also held the last four hardcoded Yup `.required('Required')`
+messages in the arrivals group, and its module-scope `TIME_SLOTS` constant had
+to become a `buildTimeSlots(t)` factory — a module constant cannot call the
+component's `t`.
+
+### Three whole classes of string the earlier scans missed
+
+Worth recording, because each was found only after the previous one was fixed
+and the audit script had claimed "0 residual" in between:
+
+1. **`{value ?? 'Default'}` expressions.** Not JSX text, not an attribute.
+   This is what left the **loading screens English** — `LoadingScreen` and
+   `InitialLoading` both fell back to hardcoded copy, reported by the user
+   while this phase was running. 38 sites across the app; the in-scope ones
+   plus both loading screens are fixed, the rest (ai-assistant, maps, auth
+   pages, `lib/auth-service.ts`) are enumerated below.
+2. **Template literals** — `` `Open ${x.name} governorship` ``,
+   `` `${isExpanded ? 'Collapse' : 'Expand'} ${stream.name} Stream` ``,
+   `` `Number of Active Bacentas: ${n}` ``. 14 sites, all fixed. These matter
+   more than they look: they are mostly `aria-label`s, so the damage was
+   invisible except to screen-reader users.
+3. **Wrapped multi-line JSX text nodes.** Prettier splits a long sentence
+   across lines, which defeated the single-line `>text<` pattern.
+
+### Two self-inflicted bugs, both caught and fixed
+
+- **`repair_types.py` over-matched.** A heuristic meant to undo substitutions
+  that had landed in TypeScript type positions (`__typename: 'Bacenta'`) also
+  matched `levelPlural: t('shared.churchLevelPlural.Bacenta')`, flattening it
+  to `levelPlural: 'Bacenta'`. The pages then rendered **"All Bacenta"** and
+  **"No Bacenta found"** — English, and singular where the copy wants plural.
+  Caught by dumping the rendered DOM when a test failed; 57 interpolation
+  arguments restored across the 11 pages. It had also reverted real
+  translations in six already-localized `Details*.tsx` files, which were
+  restored from git.
+- **Church-level vocabulary drift.** The new free-text keys used words that
+  disagreed with the established `shared.churchLevel.*`: fr "flux" vs
+  **Filière**, pt "concelho"/"corrente"/"governação" vs
+  **Conselho**/**Fluxo**/**Governadoria**, de "Stream"/"Gouvernement" vs
+  **Zweig**/**Gouvernorat**. 78 values normalized so a user never sees two
+  words for the same church level on one screen.
+
+### Tests
+
+New: `directory/display/DirectoryListPages.test.tsx`,
+`arrivals/pages-state-of-arrivals/StatePages.test.tsx` and
+`CountAndPayPages.test.tsx`, `arrivals/pages-breakdowns/Breakdowns.test.tsx`,
+`arrivals/Helpers/Helpers.test.tsx`.
+
+They deliberately assert the *level-specific* output, not just shared chrome —
+a page passing the wrong church level into the shared namespace would sail
+through a chrome-only assertion. Several assert through `i18n.t(key)` where
+the point is **reuse** (that the French value comes from
+`arrivals.dashboard.*` rather than a duplicate), and through literals where
+the point is that the string is actually translated.
+
+Fixed along the way: the pre-existing `Times/ArrivalTimes.test.tsx`, which
+asserted English copy without registering i18next.
+
+### Verification
+
+- `tsc --noEmit` clean, `eslint --max-warnings=0` clean.
+- Vitest **11 failed / 694 passed** (was 11 / 659 at the end of phase 5). The
+  11 are still only `createApolloClient.test.tsx`, untouched by this branch.
+- `npm run build`: green, 392 precache entries.
+- **2106 keys × 5 languages, 0 missing / 0 extra / 0 placeholder mismatches /
+  0 unresolved `t()` keys / 0 keys resolving to an object.**
+- Residual hardcoded-string scan over both groups: **0** — but see the
+  correction in phase 7: that claim was made by a scanner that did not cover
+  module-scope constants, props passed to child components, or lowercase
+  ternaries, and 25 more strings were found afterwards.
+
+### Still English-only (unchanged from phase 5, minus the two groups above)
+
+- **Maps** (6 files) and **AI Assistant** (3, deliberately deferred).
+- **`pages/auth/SetupPasswordPage.tsx`** (live, pre-auth) and
+  `LoginPage.tsx` (unreferenced — almost certainly dead, `SimpleLogin.tsx` is
+  the live one).
+- Small leftovers: `MemberDeleteDialog`, `MemberTitleDialog`,
+  `MemberAvatarUpload`, `MultiImageUpload`, `CloseDownBacentaButton`,
+  `CampusBacentaServicesThisWeek`, `WeeklyTipCard`, `FileUpload`.
+- `lib/auth-service.ts` and `utils/s3Upload.ts` throw English `Error`
+  messages that surface in toasts.
+- `pages/arrivals/arrivals-utils.ts` holds `'In Only'` / `'In and Out'` as
+  **backend enum values**, not display copy — deliberately left alone, since
+  translating them would break the mutation payload. If those labels need
+  localizing it has to be a display-only mapping, not a rename.
+
+### Still outstanding from phase 5 (unchanged)
+
+Live-browser verification of the authenticated app, and native-speaker review
+of the greeting pool and organizational-level terms. Both remain the real
+gates on shipping to `main`; neither is code.
+
+## Phase 7 — acting on the phase-6 code review (DONE this pass)
+
+The `code-reviewer` pass over phase 6 found real defects. All are fixed.
+
+### Two bugs the codemods introduced, both fixed
+
+1. **Flattened interpolation arguments.** A repair script meant to undo
+   substitutions that landed in TypeScript type positions
+   (`__typename: 'Bacenta'`) used a `^\w+\??: ` heuristic that also matched
+   `levelPlural: t('shared.churchLevelPlural.Bacenta')`, flattening it to
+   `levelPlural: 'Bacenta'`. Pages rendered **"All Bacenta"** and
+   **"No Bacenta found"** — English, and singular where the copy wants plural.
+   57 arguments restored across the 11 directory pages. The same script had
+   reverted genuine translations in six already-localized `Details*.tsx`
+   files; those were restored from git. The reviewer independently verified
+   by diffing the multiset of `t()` literals per file against HEAD that
+   **no already-localized file lost a translation**.
+
+2. **Grammar broken by the vocabulary-normalization regex.** Normalizing the
+   church-level words swapped the noun without touching the determiner:
+   fr "**ce** filière" / "**du** filière" (filière is feminine), pt
+   "**a** fluxo" / "**esta** fluxo" / "**da** fluxo" (fluxo is masculine).
+   Fixed, plus the pre-existing pt `governorshipForm.validation.nameRequired`
+   ("do governadoria" → "da governadoria").
+
+### Interpolated level nouns can't agree with an article — design fix
+
+Rendering every `(key, level)` combination that actually occurs showed the
+one-key-per-sentence design producing wrong grammar in 4 of 5 languages:
+`Tous les Filières` (should be *Toutes*), `Este Governadoria`, `Dieses Zweig`
+(masculine), `Aucun Bacentas trouvé`, `Todos los Corrientes`.
+
+Rather than add i18next gender context (a `shared.churchLevelGender.*` map
+plus `_m`/`_f`/`_n` variants of eight keys), the eight affected values were
+**reworded to be article-free**, which is invariant by construction:
+
+| key | before (fr) | after (fr) |
+| --- | --- | --- |
+| `allOf` | Tous les {{levelPlural}} | Liste des {{levelPlural}} |
+| `noneFound` | Aucun {{levelPlural}} trouvé | {{levelPlural}} : aucun résultat |
+| `noneYet` | Aucun {{levelPlural}} pour le moment | Pas encore de {{levelPlural}} |
+| `noneUnderYet` | Ce {{parent}} n'a pas encore de… | {{parent}} — pas encore de {{levelPlural}}. |
+
+`de` keeps "Alle {{levelPlural}}" — the plural `alle`/`keine` are already
+gender-invariant. English is unchanged throughout.
+
+### 25 more residual English strings — three further classes
+
+Phase 6 claimed "0 residual" over both groups. That was wrong, and the reason
+is worth recording: **each scanner covered the shapes the previous one had
+missed, and reported zero while the next shape was still English.** The three
+classes found this pass:
+
+- **Module-scope constants.** `CouncilByGovernorship`'s `statusTiles` array
+  held five display labels — the exact bug already fixed in `ArrivalTimes`'
+  `TIME_SLOTS`, missed in its sibling. Now `buildStatusTiles(t)`.
+- **Display strings passed as props to child components.** This is what left
+  the loading screen saying **"Retrieving your church information…"** —
+  `SetPermissions.tsx` passes an explicit `text` prop, so localizing
+  `InitialLoading`'s *default* (phase 6) never touched it. Same for
+  `MapCanvas`'s `text="Loading map…"`. Both user-reported.
+- **Lowercase ternaries.** `{count === 1 ? 'person' : 'people'}` — excluded by
+  the scanner's own "lowercase means it's code" filter. Now an i18next plural.
+
+Also fixed: `ArrivalTimes`' four wrapped help paragraphs, `ArrivalsCounters`'
+remove dialog (now `<Trans>`, so the member name stays bolded inside the
+translated sentence) and its Remove button, `ArrivalsPayers`' Delete button
+and empty-list message, three `'Unassigned'` accordion headings, two toast
+messages and one aria-label that were template literals, and
+`AllGovernorships` — the one directory page the codemod barely touched
+(`'All Governorships'`, `No matches for "…"`, and the `N of M` count).
+
+### Tests strengthened
+
+The review identified the mechanical reason those bugs survived: **two test
+files never rendered the branch the bug was in.**
+
+- `Breakdowns.test.tsx` used `governorships: []`, so `GovernorshipCard` never
+  mounted — the `statusTiles` labels, both `openNamedLevel*` aria-labels and
+  the Collapse/Expand label were all untested. Fixture populated; the German
+  status tiles and the French collapse aria-label are now asserted.
+- `Helpers.test.tsx` used empty counter/payer lists, so neither destructive
+  dialog nor either Remove/Delete button rendered. Split into empty and
+  populated fixtures.
+- `DirectoryListPages.test.tsx` covered 5 of 11 pages. The six nested ones —
+  which have two or three separate `useTranslation()` scopes each and are
+  therefore the likeliest to be half-wired — now have level-pinning assertions.
+- **Tautological assertions replaced.** Several asserted
+  `getByText(i18n.t(key))`, which passes even when the key is missing (both
+  sides equal the raw key) and can never catch a bad translation. Where the
+  point was reuse, the assertion now pairs the lookup with a literal pin;
+  where it was just rendering, it is now a literal. This is specifically what
+  would have caught the "ce filière" bug.
+
+### Verification
+
+- `tsc --noEmit` clean. `eslint --max-warnings=0` clean on all **74** files
+  touched this session.
+  *Repo-wide* `eslint src` still reports 3 errors + 8 warnings, all
+  pre-existing in files this branch never touched (`RoleView.test.tsx`,
+  `ServiceForm.test.tsx`, `ProtectedRoute.test.tsx` mid-body imports;
+  `MemberDisplayCard`, `sidebar-demo-2`, `AuthContext` warnings).
+- Vitest: **11 failed / 709 passed**. The 11 are still only
+  `createApolloClient.test.tsx`. `UpdateMember.test.tsx` failed once in the
+  full run and passes in isolation — the flake the reviewer predicted from the
+  added parallel load; that file is untouched by this branch.
+- `npm run build`: green, 392 precache entries.
+- **2129 keys × 5 languages, 0 missing / 0 extra / 0 placeholder mismatches /
+  0 unresolved `t()` keys / 0 keys resolving to an object.**
+
+### Deliberately not changed
+
+- `arrivals-utils.ts`'s `'In Only'` / `'In and Out'` are **backend enum
+  values** sent in the mutation payload, not display copy. Translating them
+  would break the write. Localizing those labels needs a display-only
+  mapping, which is its own change.
+- `de` `shared.churchLevelPlural.Campus` = "Campusse" renders as "Alle
+  Campusse". Standard German prefers the invariant "Campus". Left for the
+  native-speaker review rather than guessed at.
+- ~10 changed `.tsx` files in the arrivals group are pure Prettier reflow with
+  no semantic change. Left in place; reverting them would be churn on top of
+  churn now that the earlier work is committed.
+
+## Phase 8 — everything except the AI Assistant (DONE this pass)
+
+Closes every remaining English-only surface bar the deliberately-deferred AI
+Assistant. Coverage went from **246 localized / 23 English-only** to
+**262 / 8**, and 5 of the 8 remaining are AI Assistant or dead code.
+
+### Groups localized
+
+| Group | Files | Notes |
+| --- | --- | --- |
+| **Maps** | 7 | `MapView`, `MapCanvas`, `MapPanel`, `SearchPanel`, `VenuePanel`, `AddVenueSheet`, `InfoWindowCard` + `maps-constants` — new `maps.*` namespace, including all 13 of its Yup messages |
+| **`MemberDisplayCard`** | 1 | **9 call sites**, all on already-translated pages — the highest-traffic leak left |
+| Auth | 1 | `SetupPasswordPage` (live, pre-auth) + its 7 Yup messages |
+| Directory dialogs | 3 | `MemberDeleteDialog`, `MemberTitleDialog`, `MemberAvatarUpload` |
+| Chrome | 4 | `MaintenanceMode`, `WeeklyTipCard`, `MemberTable`, `CloseDownBacentaButton` |
+| Non-component | 4 | `lib/auth-service.ts` (7), `utils/s3Upload.ts` (5), `useArrivalsExport`, `useDefaultersExport`, `DownloadMembershipList` |
+| Misc | 1 | `CampusBacentaServicesThisWeek` table + CSV headers |
+
+**148 new keys.** Locale files are now **2294 keys × 5 languages**.
+
+### `tOutsideReact` — a `t` for modules with no hook
+
+`lib/auth-service.ts`, `utils/s3Upload.ts` and the export hooks emit error text
+that lands in a toast on an otherwise-translated page, but they are plain
+modules. New `lib/translate-outside-react.ts` wraps the two hazards of
+reaching for the singleton directly: `i18next.t` returns **`undefined`** before
+`lib/i18n` runs (so an unguarded caller would show the user the literal string
+"undefined"), and a missing key renders as the raw key path. Both fall back to
+the English text the caller already had, with `{{placeholder}}` interpolation
+applied to the fallback too.
+
+Tested from both sides, in two files — the uninitialised branch is
+unreachable from any file that imports `lib/i18n`, so it needs its own.
+
+### The module-scope-constant pattern, five more times
+
+This is now the single most recurring shape on this branch: a `const` at module
+scope holding display strings, which cannot call the component's `t`. Found
+again in `VenuePanel`'s `CONFIG`, `AddVenueSheet`'s `VENUE_CONFIG`,
+`MapPanel`'s `TAB_DEFS`, `maps-constants`' `TYPENAME_LABEL`, and both dialogs'
+Yup `validationSchema`.
+
+Two fixes, chosen per case:
+- **Key paths in the constant** (`label` → `labelKey`), resolved with `t()` at
+  render. Keeps the constant static and makes the indirection
+  self-documenting. Used for the four config/label maps.
+- **Factory taking `t`** (`buildValidationSchema(t)`, `buildSchema(hasSchool, t)`).
+  Used for the Yup schemas, matching `buildTimeSlots` / `buildStatusTiles` from
+  phases 6-7.
+
+### Deliberately not translated
+
+- **HistoryLog audit text.** Every `historyRecord:` template in the reusable
+  forms, `MemberDeleteDialog`'s persisted `reason:`, and `MemberDisplay`'s
+  sticky-note records. These are stored in English on purpose and translated
+  at *display* time by `lib/translate-history-record.ts` — rewriting them
+  would mix languages across entries depending on who wrote each one.
+- **`arrivals-utils.ts`'s `'In Only'` / `'In and Out'`** — backend enum values
+  in the mutation payload.
+- **`components/members-grids/download-csv-helpers.ts`** — 14 CSV headers, but
+  the module has **zero callers**. Dead; deleting it is the right fix, which is
+  the user's call, not a rename.
+- Currency codes (`GHS`, `USD`), `title="Synago"`, and the generated-workbook
+  sheet names.
+
+### Still English-only (8 files)
+
+- **AI Assistant (3)** — `AiAssistant`, `ChatHistorySidebar`, `TodaysTipBanner`.
+  Needs the product decision plan.md flags (translate the corpus? generate
+  in-language? post-hoc?), not a `t()` pass.
+- **Dead code (3)** — `pages/auth/LoginPage.tsx` (0 refs; `SimpleLogin` is the
+  live login), `components/sidebar-demo-2.tsx` (0 refs), `components/Login.tsx`.
+  Worth **deleting** rather than translating; left alone because deletion
+  wasn't asked for.
+- **Not real copy (2)** — `SplashSreen.tsx` and `SearchBadgeIcon.tsx` render
+  only `title="Synago"` and a literal `<div>SearchBadgeIcon</div>` placeholder.
+
+### Verification
+
+- `tsc --noEmit` clean. `eslint --max-warnings=0` clean on all 33 files touched
+  this pass, bar two pre-existing warnings in `MemberDisplayCard`
+  (`BsMusicNote`, `rest` unused) confirmed present at HEAD.
+- Vitest **17 failed / 742 passed** (759). Two files:
+  - `createApolloClient.test.tsx` (11) — the documented MSW/AbortSignal
+    failures, untouched by this branch.
+  - `ServiceForm.test.tsx` (6) — **verified pre-existing**: stashing this
+    pass's changes and re-running gives the identical 6 failures at HEAD. It
+    imports nothing this pass touched.
+  - `MaintenanceMode.test.tsx` (5) *was* broken by this pass — a pre-existing
+    test asserting English on a now-localized component — and is fixed.
+    `DisplayPage.test.tsx` flaked once under load and passes in isolation.
+- `npm run build`: green, 392 precache entries.
+- **2294 keys × 5 languages, 0 missing / 0 extra / 0 placeholder mismatches.**
+
+### Unchanged, still the real gates on `main`
+
+Live-browser verification of the authenticated app, and native-speaker review
+of the greeting pool and organizational-level terms. Neither is code.
+
 ## Remaining work (not started — future phases)
 
 Roughly in priority order:

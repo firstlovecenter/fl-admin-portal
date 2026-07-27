@@ -1,4 +1,6 @@
 import { useQuery } from '@apollo/client'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { useContext, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
@@ -52,38 +54,40 @@ type StatusTileSpec = {
   read: (g: HigherChurchWithArrivals) => number | undefined
 }
 
-const statusTiles: StatusTileSpec[] = [
+// Built per render, not as a module constant: the labels are
+// translated, so they need the component's `t`.
+const buildStatusTiles = (t: TFunction): StatusTileSpec[] => [
   {
     key: 'no-activity',
-    label: 'No Activity',
+    label: t('arrivals.dashboard.noActivity'),
     icon: AlertOctagon,
     tone: 'defaulters',
     read: (g) => g.bacentasNoActivityCount,
   },
   {
     key: 'mobilising',
-    label: 'Mobilising',
+    label: t('arrivals.dashboard.mobilising'),
     icon: Megaphone,
     tone: 'warning',
     read: (g) => g.bacentasMobilisingCount,
   },
   {
     key: 'on-the-way',
-    label: 'On The Way',
+    label: t('arrivals.dashboard.onTheWay'),
     icon: BusFront,
     tone: 'arrivals',
     read: (g) => g.bacentasOnTheWayCount,
   },
   {
     key: 'didnt-bus',
-    label: "Didn't Bus",
+    label: t('arrivals.dashboard.didNotBus'),
     icon: AlertTriangle,
     tone: 'destructive',
     read: (g) => g.bacentasBelow8Count,
   },
   {
     key: 'arrived',
-    label: 'Have Arrived',
+    label: t('arrivals.dashboard.haveArrived'),
     icon: CheckCircle2,
     tone: 'success',
     read: (g) => g.bacentasHaveArrivedCount,
@@ -96,6 +100,7 @@ const sumBy = (
 ) => list.reduce((total, g) => total + (pick(g) ?? 0), 0)
 
 const CouncilByGovernorship = () => {
+  const { t } = useTranslation()
   const { clickCard, councilId, arrivalDate } = useContext(ChurchContext)
   const navigate = useNavigate()
   const { setUserChurch } = useSetUserChurch()
@@ -156,18 +161,20 @@ const CouncilByGovernorship = () => {
           <StickyPageHeader innerClassName="space-y-1.5">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               <LiveDot />
-              <span>Governorships</span>
+              <span>{t('shared.churchLevelPlural.Governorship')}</span>
             </div>
             {loading && !council ? (
               <Skeleton className="h-9 w-72" />
             ) : (
               <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                 {council?.name}{' '}
-                <span className="text-arrivals">Arrivals</span>
+                <span className="text-arrivals">{t('nav.arrivals')}</span>
               </h1>
             )}
             <p className="text-sm text-muted-foreground">
-              Tap a governorship to drill in · refreshes every {POLL_SECONDS}s
+              {t('arrivals.breakdown.tapToDrillIn', {
+                seconds: POLL_SECONDS,
+              })}
             </p>
           </StickyPageHeader>
           <main className="mx-auto w-full max-w-6xl px-4 py-5 lg:px-6 lg:py-8">
@@ -177,7 +184,7 @@ const CouncilByGovernorship = () => {
               <div className="space-y-4">
                 {!loading && governorships.length === 0 && (
                   <Card className="p-6 text-center text-sm text-muted-foreground">
-                    No governorships found under this council.
+                    {t('arrivals.breakdown.noGovernorshipsUnderCouncil')}
                   </Card>
                 )}
 
@@ -197,36 +204,40 @@ const CouncilByGovernorship = () => {
               {/* RIGHT (desktop) / TOP (mobile) — council-wide live totals */}
               <aside className="order-first space-y-6 lg:order-none lg:sticky lg:top-6">
                 <div className="space-y-3">
-                  <SectionLabel>Council Live Totals</SectionLabel>
+                  <SectionLabel>
+                    {t('arrivals.breakdown.councilLiveTotals')}
+                  </SectionLabel>
                   <Card className="overflow-hidden">
                     <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <LiveDot />
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Realtime
+                          {t('arrivals.breakdown.realtime')}
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        Updated {updatedLabel}
+                        {t('arrivals.breakdown.updatedAt', {
+                          time: updatedLabel,
+                        })}
                       </span>
                     </div>
                     <div className="divide-y divide-border">
                       <LiveRow
-                        label="Members On The Way"
+                        label={t('arrivals.dashboard.membersOnTheWay')}
                         value={totals.onTheWay}
                         icon={UsersRound}
                         tone="warning"
                         loading={loading && !council}
                       />
                       <LiveRow
-                        label="Members Arrived"
+                        label={t('arrivals.dashboard.membersArrived')}
                         value={totals.arrived}
                         icon={Users}
                         tone="success"
                         loading={loading && !council}
                       />
                       <LiveRow
-                        label="Buses Arrived"
+                        label={t('arrivals.dashboard.busesArrived')}
                         value={totals.buses}
                         icon={BusFront}
                         tone="success"
@@ -253,6 +264,8 @@ const GovernorshipCard = ({
   governorship,
   onDrillIn,
 }: GovernorshipCardProps) => {
+  const { t } = useTranslation()
+  const statusTiles = useMemo(() => buildStatusTiles(t), [t])
   const [expanded, setExpanded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -300,7 +313,7 @@ const GovernorshipCard = ({
           {governorship.name}
         </p>
         <p className="truncate text-xs text-muted-foreground">
-          {leaderName ?? 'No leader assigned'}
+          {leaderName ?? t('arrivals.breakdown.noLeaderAssigned')}
         </p>
       </div>
     </>
@@ -314,9 +327,12 @@ const GovernorshipCard = ({
         onClick={toggleExpanded}
         className="group flex w-full items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
         aria-expanded={expanded}
-        aria-label={`${expanded ? 'Collapse' : 'Expand'} ${
-          governorship.name
-        } details`}
+        aria-label={t(
+          expanded
+            ? 'arrivals.breakdown.collapseDetails'
+            : 'arrivals.breakdown.expandDetails',
+          { name: governorship.name }
+        )}
       >
         {headerInner}
         {expanded ? (
@@ -331,7 +347,10 @@ const GovernorshipCard = ({
         type="button"
         onClick={onDrillIn}
         className="group hidden w-full items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:flex"
-        aria-label={`Open ${governorship.name} governorship`}
+        aria-label={t('arrivals.breakdown.openNamedLevel', {
+          name: governorship.name,
+          level: t('shared.churchLevel.Governorship'),
+        })}
       >
         {headerInner}
         <ChevronRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -344,7 +363,7 @@ const GovernorshipCard = ({
             icon={UsersRound}
             tone="warning"
             value={governorship.bussingMembersOnTheWayCount}
-            label="on way"
+            label={t('arrivals.breakdown.miniOnWay')}
           />
           <span aria-hidden="true" className="text-muted-foreground">
             ·
@@ -353,7 +372,7 @@ const GovernorshipCard = ({
             icon={Users}
             tone="success"
             value={governorship.bussingMembersHaveArrivedCount}
-            label="arrived"
+            label={t('arrivals.breakdown.miniArrived')}
           />
           <span aria-hidden="true" className="text-muted-foreground">
             ·
@@ -362,7 +381,7 @@ const GovernorshipCard = ({
             icon={BusFront}
             tone="success"
             value={governorship.bussesThatArrivedCount}
-            label="buses"
+            label={t('arrivals.breakdown.miniBuses')}
           />
         </div>
       )}
@@ -371,7 +390,7 @@ const GovernorshipCard = ({
       <div className={expanded ? '' : 'hidden lg:block'}>
         {/* Bacenta status tiles */}
         <div className="space-y-3 p-4">
-          <SectionLabel>Bacentas</SectionLabel>
+          <SectionLabel>{t('shared.churchLevelPlural.Bacenta')}</SectionLabel>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {statusTiles.map((tile) => (
               <StatusTile
@@ -388,23 +407,25 @@ const GovernorshipCard = ({
         {/* Members + buses live rows */}
         <div className="border-t border-border">
           <div className="px-4 pt-3">
-            <SectionLabel>Members &amp; Buses</SectionLabel>
+            <SectionLabel>
+              {t('arrivals.breakdown.membersAndBuses')}
+            </SectionLabel>
           </div>
           <div className="divide-y divide-border">
             <LiveRow
-              label="Members On The Way"
+              label={t('arrivals.dashboard.membersOnTheWay')}
               value={governorship.bussingMembersOnTheWayCount}
               icon={UsersRound}
               tone="warning"
             />
             <LiveRow
-              label="Members Arrived"
+              label={t('arrivals.dashboard.membersArrived')}
               value={governorship.bussingMembersHaveArrivedCount}
               icon={Users}
               tone="success"
             />
             <LiveRow
-              label="Buses Arrived"
+              label={t('arrivals.dashboard.busesArrived')}
               value={governorship.bussesThatArrivedCount}
               icon={BusFront}
               tone="success"
@@ -419,9 +440,16 @@ const GovernorshipCard = ({
           type="button"
           onClick={onDrillIn}
           className="flex w-full items-center justify-between border-t border-border bg-muted/40 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:hidden"
-          aria-label={`Open ${governorship.name} governorship page`}
+          aria-label={t('arrivals.breakdown.openNamedLevelPage', {
+            name: governorship.name,
+            level: t('shared.churchLevel.Governorship'),
+          })}
         >
-          <span>Open Governorship</span>
+          <span>
+            {t('arrivals.breakdown.openLevel', {
+              level: t('shared.churchLevel.Governorship'),
+            })}
+          </span>
           <ChevronRight className="size-4 text-muted-foreground" />
         </button>
       )}
@@ -441,12 +469,7 @@ const summaryToneClasses: Record<SummaryStatProps['tone'], string> = {
   success: 'text-success',
 }
 
-const SummaryStat = ({
-  icon: Icon,
-  tone,
-  value,
-  label,
-}: SummaryStatProps) => (
+const SummaryStat = ({ icon: Icon, tone, value, label }: SummaryStatProps) => (
   <div className="flex items-center gap-1.5">
     <Icon className={`size-4 ${summaryToneClasses[tone]}`} />
     <span className="font-semibold tabular-nums text-foreground">

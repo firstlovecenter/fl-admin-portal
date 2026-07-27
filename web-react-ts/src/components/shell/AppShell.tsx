@@ -1,8 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
 import { BackButton } from './BackButton'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import SearchPalette from './SearchPalette'
 
 interface AppShellProps {
@@ -26,6 +28,7 @@ export const AppShell = ({
   userName,
   userImageUrl,
 }: AppShellProps) => {
+  const { t } = useTranslation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -68,19 +71,24 @@ export const AppShell = ({
         {/* PWA back button — only renders in standalone mode */}
         <BackButton className="absolute left-3 top-3 z-20 md:hidden" />
 
-        {/* Floating mobile sidebar toggle */}
-        <button
-          type="button"
-          onClick={() => setMobileOpen((v) => !v)}
-          className="absolute right-3 top-3 z-20 flex size-11 items-center justify-center rounded-full border border-sidebar-border bg-background text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
-          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
-        >
-          {mobileOpen ? (
-            <PanelLeftClose className="size-4" />
-          ) : (
-            <PanelLeftOpen className="size-4" />
-          )}
-        </button>
+        {/* Floating mobile chrome — language first (always reachable), then nav */}
+        <div className="absolute right-3 top-3 z-20 flex items-center gap-2 md:hidden">
+          <LanguageSwitcher align="end" side="bottom" />
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="flex size-11 items-center justify-center rounded-full border border-sidebar-border bg-background text-muted-foreground shadow-sm hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={
+              mobileOpen ? t('nav.closeNavigation') : t('nav.openNavigation')
+            }
+          >
+            {mobileOpen ? (
+              <PanelLeftClose className="size-4" />
+            ) : (
+              <PanelLeftOpen className="size-4" />
+            )}
+          </button>
+        </div>
 
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>

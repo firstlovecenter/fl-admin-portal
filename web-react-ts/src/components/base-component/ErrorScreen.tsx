@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
+import { Trans, useTranslation } from 'react-i18next'
 import { showUserReportDialog } from 'global-utils'
 import useModal from 'hooks/useModal'
-import {
-  AlertTriangle,
-  Bug,
-  Check,
-  Copy,
-  RefreshCcw,
-  Send,
-} from 'lucide-react'
+import { AlertTriangle, Bug, Check, Copy, RefreshCcw, Send } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -85,7 +80,10 @@ type Summary = {
   meta?: string
 }
 
-const buildSummaries = (error: ApolloError | undefined): Summary[] => {
+const buildSummaries = (
+  error: ApolloError | undefined,
+  t: TFunction
+): Summary[] => {
   if (!error) return []
   const summaries: Summary[] = []
 
@@ -94,9 +92,14 @@ const buildSummaries = (error: ApolloError | undefined): Summary[] => {
       code: extensions?.code ?? 'GRAPHQL_ERROR',
       message,
       meta: [
-        path?.length ? `Path: ${path.join(' › ')}` : null,
+        path?.length
+          ? t('shared.errorScreen.pathMeta', { path: path.join(' › ') })
+          : null,
         locations?.length
-          ? `Location: line ${locations[0].line}, column ${locations[0].column}`
+          ? t('shared.errorScreen.locationMeta', {
+              line: locations[0].line,
+              column: locations[0].column,
+            })
           : null,
       ]
         .filter(Boolean)
@@ -119,7 +122,7 @@ const buildSummaries = (error: ApolloError | undefined): Summary[] => {
         message:
           networkError.result?.errorMessage ??
           networkError.name ??
-          'Network request failed',
+          t('shared.errorScreen.networkRequestFailed'),
       })
     }
   }
@@ -128,6 +131,7 @@ const buildSummaries = (error: ApolloError | undefined): Summary[] => {
 }
 
 const ErrorScreen = ({ error }: ErrorScreenProps) => {
+  const { t } = useTranslation()
   const { show, handleShow, handleClose } = useModal()
   const [copied, setCopied] = useState(false)
 
@@ -145,14 +149,14 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
 
   const handleCopy = async () => {
     if (!navigator.clipboard) {
-      toast.error('Copy unavailable — long-press the payload to select it')
+      toast.error(t('shared.errorScreen.copyUnavailable'))
       return
     }
     try {
       await navigator.clipboard.writeText(payload)
       setCopied(true)
     } catch {
-      toast.error('Could not copy error details')
+      toast.error(t('shared.errorScreen.copyFailed'))
     }
   }
 
@@ -190,8 +194,11 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
       console.error(`[Network error]: ${JSON.stringify(networkError)}`)
   }
 
-  const summaries = buildSummaries(apolloError)
-  const headline = error?.message || apolloError?.name || 'Something went wrong'
+  const summaries = buildSummaries(apolloError, t)
+  const headline =
+    error?.message ||
+    apolloError?.name ||
+    t('shared.errorScreen.headlineFallback')
 
   return (
     <div className="flex min-h-svh items-start justify-center bg-background px-4 py-10 sm:items-center sm:py-16">
@@ -205,11 +212,14 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
               <AlertTriangle className="h-7 w-7" />
             </div>
             <CardTitle className="text-xl">
-              We couldn&apos;t load this page
+              {t('shared.errorScreen.title')}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              {apolloError?.name ?? 'Error'} — please try again. If the issue
-              persists, send a crash report so the team can investigate.
+              {t('shared.errorScreen.subtitle', {
+                name:
+                  apolloError?.name ??
+                  t('shared.errorScreen.errorFallbackName'),
+              })}
             </p>
           </CardHeader>
 
@@ -236,7 +246,7 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
             ) : (
               <Alert variant="destructive" className="text-left">
                 <Bug aria-hidden="true" />
-                <AlertTitle>Unexpected error</AlertTitle>
+                <AlertTitle>{t('shared.errorScreen.unexpected')}</AlertTitle>
                 <AlertDescription>
                   <p className="break-words text-sm">{headline}</p>
                 </AlertDescription>
@@ -251,7 +261,7 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
               className="min-h-11 w-full sm:min-h-9 sm:w-auto"
             >
               <Bug aria-hidden="true" className="h-4 w-4" />
-              Show details
+              {t('shared.errorScreen.showDetails')}
             </Button>
             <Button
               variant="outline"
@@ -259,31 +269,36 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
               className="min-h-11 w-full sm:min-h-9 sm:w-auto"
             >
               <Send aria-hidden="true" className="h-4 w-4" />
-              Send crash report
+              {t('shared.errorScreen.sendCrashReport')}
             </Button>
             <Button
               onClick={() => window.location.reload()}
               className="min-h-11 w-full sm:min-h-9 sm:w-auto"
             >
               <RefreshCcw aria-hidden="true" className="h-4 w-4" />
-              Reload page
+              {t('shared.errorScreen.reloadPage')}
             </Button>
           </CardFooter>
         </Card>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Tip: tap{' '}
-          <span className="font-medium text-foreground">Show details</span> and
-          screenshot it when you contact support.
+          <Trans
+            i18nKey="shared.errorScreen.tip"
+            components={{
+              1: <span className="font-medium text-foreground" />,
+            }}
+          />
         </p>
       </div>
 
       <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>{apolloError?.name ?? 'Error details'}</DialogTitle>
+            <DialogTitle>
+              {apolloError?.name ?? t('shared.errorScreen.detailsTitle')}
+            </DialogTitle>
             <DialogDescription>
-              Raw payload — share this with the support team.
+              {t('shared.errorScreen.detailsDescription')}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="min-w-0 max-h-[60vh] rounded-md border border-border bg-muted/40">
@@ -302,14 +317,14 @@ const ErrorScreen = ({ error }: ErrorScreenProps) => {
               ) : (
                 <Copy aria-hidden="true" className="h-4 w-4" />
               )}
-              {copied ? 'Copied' : 'Copy'}
+              {copied ? t('shared.actions.copied') : t('shared.actions.copy')}
             </Button>
             <Button
               variant="outline"
               onClick={handleClose}
               className="min-h-11 sm:min-h-9"
             >
-              Close
+              {t('shared.actions.close')}
             </Button>
           </DialogFooter>
         </DialogContent>

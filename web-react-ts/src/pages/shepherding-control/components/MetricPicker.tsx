@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Select,
   SelectContent,
@@ -5,10 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from 'components/ui/select'
-import {
-  METRIC_COLOR,
-  METRIC_LABEL,
-} from 'pages/shepherding-control/shepherding-control-utils'
+import { METRIC_COLOR } from 'pages/shepherding-control/shepherding-control-utils'
 import { MetricKey } from 'pages/shepherding-control/shepherding-control-types'
 
 const ALL_METRICS: MetricKey[] = [
@@ -27,6 +25,8 @@ type Props = {
 const NONE_VALUE = '__none__'
 
 const MetricPicker = ({ label, value, onChange, allowNone }: Props) => {
+  const { t } = useTranslation()
+
   return (
     <div className="flex flex-col gap-1">
       <span className="text-base uppercase tracking-wider text-muted-foreground">
@@ -43,10 +43,12 @@ const MetricPicker = ({ label, value, onChange, allowNone }: Props) => {
         }}
       >
         <SelectTrigger className="min-h-11 min-w-44 px-4 text-base">
-          <SelectValue placeholder="Pick a metric" />
+          <SelectValue placeholder={t('shepherding.pickMetric')} />
         </SelectTrigger>
         <SelectContent>
-          {allowNone && <SelectItem value={NONE_VALUE}>None</SelectItem>}
+          {allowNone && (
+            <SelectItem value={NONE_VALUE}>{t('shepherding.none')}</SelectItem>
+          )}
           {ALL_METRICS.map((m) => (
             <SelectItem key={m} value={m}>
               <span className="inline-flex items-center gap-2">
@@ -55,7 +57,7 @@ const MetricPicker = ({ label, value, onChange, allowNone }: Props) => {
                   className="inline-block size-3 rounded-full"
                   style={{ backgroundColor: METRIC_COLOR[m] }}
                 />
-                {METRIC_LABEL[m]}
+                {t(`shepherding.metrics.${m}`)}
               </span>
             </SelectItem>
           ))}

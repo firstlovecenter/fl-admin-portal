@@ -1,6 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown, Loader2 } from 'lucide-react'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { MemberContext } from 'contexts/MemberContext'
@@ -71,6 +72,7 @@ type SearchPaletteProps = {
 }
 
 const SearchPalette = ({ open, onOpenChange }: SearchPaletteProps) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { clickCard } = useContext(ChurchContext)
   const { currentUser } = useContext(MemberContext)
@@ -125,42 +127,42 @@ const SearchPalette = ({ open, onOpenChange }: SearchPaletteProps) => {
     return [
       {
         key: 'bacentas',
-        heading: 'Bacentas',
+        heading: t('shared.churchLevelPlural.Bacenta'),
         level: 'Bacenta',
         items: (member.bacentaSearch ?? []) as ChurchResult[],
       },
       {
         key: 'governorships',
-        heading: 'Governorships',
+        heading: t('shared.churchLevelPlural.Governorship'),
         level: 'Governorship',
         items: (member.governorshipSearch ?? []) as ChurchResult[],
       },
       {
         key: 'councils',
-        heading: 'Councils',
+        heading: t('shared.churchLevelPlural.Council'),
         level: 'Council',
         items: (member.councilSearch ?? []) as ChurchResult[],
       },
       {
         key: 'streams',
-        heading: 'Streams',
+        heading: t('shared.churchLevelPlural.Stream'),
         level: 'Stream',
         items: (member.streamSearch ?? []) as ChurchResult[],
       },
       {
         key: 'campuses',
-        heading: 'Campuses',
+        heading: t('shared.churchLevelPlural.Campus'),
         level: 'Campus',
         items: (member.campusSearch ?? []) as ChurchResult[],
       },
       {
         key: 'oversights',
-        heading: 'Oversights',
+        heading: t('shared.churchLevelPlural.Oversight'),
         level: 'Oversight',
         items: (member.oversightSearch ?? []) as ChurchResult[],
       },
     ]
-  }, [member])
+  }, [member, t])
 
   const totalResults =
     memberResults.length +
@@ -193,41 +195,43 @@ const SearchPalette = ({ open, onOpenChange }: SearchPaletteProps) => {
 
   return (
     <CommandDialog
-      title="Global search"
-      description="Search members, bacentas, councils, and more"
+      title={t('shell.search.title')}
+      description={t('shell.search.description')}
       open={open}
       onOpenChange={onOpenChange}
       shouldFilter={false}
     >
       <CommandInput
-        placeholder="Search members, bacentas, councils…"
+        placeholder={t('shell.search.placeholder')}
         value={input}
         onValueChange={setInput}
       />
       <CommandList className="max-h-[60vh]">
         {!debounced && (
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-            Start typing to search across the directory
+            {t('shell.search.startTyping')}
           </div>
         )}
         {loading && (
           <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
-            Searching…
+            {t('shell.search.searching')}
           </div>
         )}
         {showEmpty && (
-          <CommandEmpty>{`No results for "${debounced}"`}</CommandEmpty>
+          <CommandEmpty>
+            {t('shell.search.noResults', { query: debounced })}
+          </CommandEmpty>
         )}
 
         {memberResults.length > 0 && (
-          <CommandGroup heading="Members">
+          <CommandGroup heading={t('nav.members')}>
             {memberResults.map((m) => {
               const fullName =
                 m.nameWithTitle ||
                 [m.firstName, m.lastName].filter(Boolean).join(' ')
               const subtitle = m.bacenta?.name
-                ? `${m.bacenta.name} Bacenta`
+                ? t('shell.search.bacentaSubtitle', { name: m.bacenta.name })
                 : ''
               return (
                 <CommandItem
@@ -249,7 +253,7 @@ const SearchPalette = ({ open, onOpenChange }: SearchPaletteProps) => {
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">
-                      {fullName || 'Member'}
+                      {fullName || t('shell.search.memberFallback')}
                     </p>
                     {subtitle && (
                       <p className="truncate text-xs text-muted-foreground">
@@ -273,7 +277,7 @@ const SearchPalette = ({ open, onOpenChange }: SearchPaletteProps) => {
               onClick={() => setExpanded(true)}
             >
               <ChevronDown className="size-3.5" />
-              Show more results
+              {t('shell.search.showMore')}
             </Button>
           </div>
         )}
@@ -300,7 +304,8 @@ const SearchPalette = ({ open, onOpenChange }: SearchPaletteProps) => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">
-                        {church.name} {group.level}
+                        {church.name}{' '}
+                        {t(`shared.churchLevel.${group.level}`)}
                       </p>
                       {leaderName && (
                         <p className="truncate text-xs text-muted-foreground">

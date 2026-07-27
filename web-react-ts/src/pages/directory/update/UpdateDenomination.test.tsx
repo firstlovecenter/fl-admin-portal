@@ -292,9 +292,14 @@ const selectNewLeader = async () => {
   await user.click(option)
 }
 
+// Resolves the button label through i18next rather than hardcoding /submit/i:
+// the French cases below change the active language first, at which point the
+// English label no longer exists in the DOM.
 const submitForm = async () => {
   const user = userEvent.setup()
-  const submitButton = await screen.findByRole('button', { name: /submit/i })
+  const submitButton = await screen.findByRole('button', {
+    name: i18n.t('shared.form.submit'),
+  })
   await user.click(submitButton)
 }
 

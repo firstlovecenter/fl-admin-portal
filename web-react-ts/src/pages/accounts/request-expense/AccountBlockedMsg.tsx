@@ -1,17 +1,22 @@
 import { Card, CardContent } from 'components/ui/card'
 import { Lock } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 
 const AccountBlockedMsg = () => {
+  const { t } = useTranslation()
+
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
       <StickyPageHeader>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Account is{' '}
-          <span className="text-destructive">Locked</span>
+          {t('accounts.expense.blockedTitlePrefix')}{' '}
+          <span className="text-destructive">
+            {t('accounts.expense.blockedTitleHighlight')}
+          </span>
         </h1>
         <p className="text-sm text-muted-foreground">
-          Expense requests can only be submitted while accounts are open.
+          {t('accounts.expense.blockedSubtitle')}
         </p>
       </StickyPageHeader>
       <main className="mx-auto max-w-2xl px-4 py-5 lg:px-6 lg:py-8">
@@ -22,10 +27,10 @@ const AccountBlockedMsg = () => {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">
-                Accounts are open daily from 6 a.m. to 3 p.m.
+                {t('accounts.expense.blockedHours')}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Come back during those hours to submit a new expense request.
+                {t('accounts.expense.blockedComeBack')}
               </p>
             </div>
           </CardContent>

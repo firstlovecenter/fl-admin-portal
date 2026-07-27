@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@apollo/client'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import React, { useContext } from 'react'
@@ -17,6 +18,7 @@ import {
 import { CAMPUS_BACENTA_SERVICES_THIS_WEEK } from './reportsServicesThisWeek'
 
 const CampusBacentaServicesThisWeek = () => {
+  const { t } = useTranslation()
   const { campusId } = useContext(ChurchContext)
   const { data, loading, error } = useQuery(CAMPUS_BACENTA_SERVICES_THIS_WEEK, {
     variables: {
@@ -26,10 +28,10 @@ const CampusBacentaServicesThisWeek = () => {
   const campus = data?.campuses[0]
 
   const csvHeaders = [
-    { label: 'Date', key: 'date' },
+    { label: t('services.servicesThisWeek.date'), key: 'date' },
     { label: 'Bacenta Name', key: 'bacenta' },
-    { label: 'Attendance', key: 'attendance' },
-    { label: 'Income', key: 'income' },
+    { label: t('services.servicesThisWeek.attendance'), key: 'attendance' },
+    { label: t('services.servicesThisWeek.income'), key: 'income' },
   ]
 
   const csvData = campus?.servicesThisWeek.map((bacenta: Bacenta) =>
@@ -52,17 +54,19 @@ const CampusBacentaServicesThisWeek = () => {
             headers={csvHeaders}
             data={csvData}
           >
-            Export CSV
+            {t('services.servicesThisWeek.exportCsv')}
           </CSVLink>
         </Button>
 
         <Table className="border [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border [&_tr:nth-child(even)]:bg-muted/40">
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Bacenta Name</TableHead>
-              <TableHead>Attendance</TableHead>
-              <TableHead>Income</TableHead>
+              <TableHead>{t('services.servicesThisWeek.date')}</TableHead>
+              <TableHead>
+                {t('services.servicesThisWeek.bacentaName')}
+              </TableHead>
+              <TableHead>{t('services.servicesThisWeek.attendance')}</TableHead>
+              <TableHead>{t('services.servicesThisWeek.income')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

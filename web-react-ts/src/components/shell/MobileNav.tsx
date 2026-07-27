@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { ChevronDown, LogOut, Moon, Search, Sun } from 'lucide-react'
 import {
@@ -16,6 +17,7 @@ import useAuth from 'auth/useAuth'
 import { MemberContext } from 'contexts/MemberContext'
 import { hasOnlyRolesFrom } from 'permission-utils'
 import { useTheme } from './ThemeProvider'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { LanguageSwitcherMenu } from './LanguageSwitcherMenu'
 import {
   DropdownMenu,
@@ -48,16 +50,19 @@ const MobileNavItem = ({
   item: NavItem
   onClose: () => void
 }) => {
+  const { t } = useTranslation()
   const Icon = item.icon
+  const label = t(item.nameKey)
   return (
     <motion.div variants={itemVariants}>
       <NavLink
         to={item.to}
         end={item.to === '/'}
         onClick={onClose}
+        aria-label={label}
         className={({ isActive }) =>
           cn(
-            'flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors',
+            'flex min-h-11 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors',
             isActive
               ? 'bg-sidebar-accent text-sidebar-accent-foreground'
               : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
@@ -72,7 +77,7 @@ const MobileNavItem = ({
                 isActive && item.accentClass ? item.accentClass : ''
               )}
             />
-            {item.name}
+            {label}
           </>
         )}
       </NavLink>
@@ -95,12 +100,13 @@ export const MobileNav = ({
   userImageUrl,
   onOpenSearch,
 }: MobileNavProps) => {
+  const { t } = useTranslation()
   const { logout } = useAuthContext()
   const { isAuthorised } = useAuth()
   const { currentUser } = useContext(MemberContext)
   const { theme, toggleTheme } = useTheme()
   const isDarkMode = theme === 'dark'
-  const accountName = userName?.trim() || 'Account'
+  const accountName = userName?.trim() || t('nav.account')
   const initials = accountName
     .split(' ')
     .map((n) => n[0])
@@ -136,7 +142,7 @@ export const MobileNav = ({
           <SheetTitle className="text-sm font-semibold text-sidebar-foreground leading-tight">
             Synago
             <span className="block text-xs font-normal text-sidebar-foreground/60">
-              FLC Servants Portal
+              {t('nav.portalTagline')}
             </span>
           </SheetTitle>
         </SheetHeader>
@@ -145,7 +151,7 @@ export const MobileNav = ({
             If forceMount is ever added to SheetPortal/SheetContent, add
             key={String(open)} here to guarantee remount on each open. */}
         <motion.nav
-          className="flex flex-1 flex-col gap-px overflow-y-auto px-2 py-2"
+          className="flex flex-1 flex-col gap-px overflow-y-auto px-2 py-2 pb-24"
           initial="hidden"
           animate="visible"
           variants={containerVariants}
@@ -158,11 +164,11 @@ export const MobileNav = ({
                 onClose()
                 onOpenSearch()
               }}
-              aria-label="Open search"
-              className="mb-1.5 flex h-9 items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar-accent/40 px-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+              aria-label={t('nav.openSearch')}
+              className="mb-1.5 flex min-h-11 items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar-accent/40 px-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
             >
               <Search className="size-4 shrink-0" />
-              Search
+              {t('nav.search')}
             </motion.button>
           )}
 
@@ -182,6 +188,10 @@ export const MobileNav = ({
           {visibleSecondary.map((item) => (
             <MobileNavItem key={item.to} item={item} onClose={onClose} />
           ))}
+
+          <motion.div variants={itemVariants} className="mt-1.5">
+            <LanguageSwitcher variant="row" align="start" side="top" />
+          </motion.div>
         </motion.nav>
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border px-4 py-3">
@@ -190,7 +200,7 @@ export const MobileNav = ({
               <button
                 type="button"
                 className="flex w-full items-center gap-2 rounded-md px-1 py-1.5 text-left hover:bg-sidebar-accent/70"
-                aria-label="Open profile menu"
+                aria-label={t('nav.openProfileMenu')}
               >
                 <Avatar className="size-8 shrink-0 border border-sidebar-border/60">
                   {userImageUrl ? (
@@ -202,7 +212,7 @@ export const MobileNav = ({
                 </Avatar>
                 <div className="min-w-0">
                   <p className="text-xs text-sidebar-foreground/60">
-                    Signed in as
+                    {t('nav.signedInAs')}
                   </p>
                   <p className="truncate text-sm font-medium text-sidebar-foreground">
                     {accountName}
@@ -222,7 +232,7 @@ export const MobileNav = ({
                 ) : (
                   <Moon className="size-4" />
                 )}
-                {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                {isDarkMode ? t('nav.switchToLight') : t('nav.switchToDark')}
               </DropdownMenuItem>
               <LanguageSwitcherMenu />
               <DropdownMenuSeparator />
@@ -234,7 +244,7 @@ export const MobileNav = ({
                 }}
               >
                 <LogOut className="size-4" />
-                Log out
+                {t('nav.logOut')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

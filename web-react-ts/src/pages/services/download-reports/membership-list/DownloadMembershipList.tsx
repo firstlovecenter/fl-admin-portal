@@ -31,6 +31,9 @@ import {
 import { toast } from 'sonner'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
+import { formatChurchLevel } from 'lib/scope-display'
 import {
   createColumnHelper,
   flexRender,
@@ -74,37 +77,57 @@ const TICKABLE_LEVELS: ReadonlyArray<ChurchLevel> = [
 
 type ColumnDef = { key: string; label: string }
 
-const IDENTITY_COLUMNS: ReadonlyArray<ColumnDef> = [
-  { label: 'First Name', key: 'firstName' },
-  { label: 'Last Name', key: 'lastName' },
-  { label: 'Phone Number', key: 'phoneNumber' },
-  { label: 'Whatsapp Number', key: 'whatsappNumber' },
-  { label: 'Email', key: 'email' },
-  { label: 'Marital Status', key: 'maritalStatus' },
-  { label: 'Gender', key: 'gender' },
-  { label: 'Date of Birth', key: 'dateOfBirth' },
-  { label: 'Visitation Area', key: 'visitationArea' },
-  { label: 'Basonta', key: 'basonta' },
-]
+const IDENTITY_COLUMN_KEYS = [
+  'firstName',
+  'lastName',
+  'phoneNumber',
+  'whatsappNumber',
+  'email',
+  'maritalStatus',
+  'gender',
+  'dateOfBirth',
+  'visitationArea',
+  'basonta',
+] as const
+
+const identityColumnsFor = (t: TFunction): ColumnDef[] =>
+  IDENTITY_COLUMN_KEYS.map((key) => ({
+    key,
+    label: t(`services.membershipDownload.columns.${key}`),
+  }))
 
 const lowerFirst = (s: string) =>
   s.length === 0 ? s : s[0].toLowerCase() + s.slice(1)
 
-const ancestorColumnsFor = (level: ChurchLevel): ColumnDef[] => {
+const ancestorColumnsFor = (level: ChurchLevel, t: TFunction): ColumnDef[] => {
   const k = lowerFirst(level)
+  const levelLabel = formatChurchLevel(level, t)
   return [
-    { key: k, label: level },
-    { key: `${k}Leader`, label: `${level} Leader` },
-    { key: `${k}LeaderPhone`, label: `${level} Leader Phone` },
+    { key: k, label: levelLabel },
+    {
+      key: `${k}Leader`,
+      label: t('services.membershipDownload.leaderSuffix', {
+        level: levelLabel,
+      }),
+    },
+    {
+      key: `${k}LeaderPhone`,
+      label: t('services.membershipDownload.leaderPhoneSuffix', {
+        level: levelLabel,
+      }),
+    },
   ]
 }
 
-const buildPreviewHeaders = (selected: ChurchLevel[]): ColumnDef[] => {
+const buildPreviewHeaders = (
+  selected: ChurchLevel[],
+  t: TFunction
+): ColumnDef[] => {
   const set = new Set(selected)
-  const ancestors = TICKABLE_LEVELS.filter((l) => set.has(l)).flatMap(
-    ancestorColumnsFor
+  const ancestors = TICKABLE_LEVELS.filter((l) => set.has(l)).flatMap((l) =>
+    ancestorColumnsFor(l, t)
   )
-  return [...ancestors, ...IDENTITY_COLUMNS]
+  return [...ancestors, ...identityColumnsFor(t)]
 }
 
 type PreviewRow = { id: string } & Record<string, string>
@@ -219,6 +242,7 @@ type DownloadMembershipListProps = {
 }
 
 const DownloadMembershipList = (props: DownloadMembershipListProps) => {
+  const { t } = useTranslation()
   const { church, loading, error, churchType } = props
   const navigate = useNavigate()
   const [copied, setCopied] = useState(false)
@@ -251,8 +275,8 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
   const total = church?.memberCount ?? 0
   const displayFilename = buildDisplayFilename(church?.name ?? '', churchType)
   const previewHeaders = useMemo(
-    () => buildPreviewHeaders(selectedLevels),
-    [selectedLevels]
+    () => buildPreviewHeaders(selectedLevels, t),
+    [selectedLevels, t]
   )
 
   const previewTableColumns = useMemo(
@@ -294,7 +318,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
       await navigator.clipboard.writeText(displayFilename)
       setCopied(true)
     } catch {
-      toast.error('Could not copy filename')
+      toast.error(t('services.membershipDownload.copyError'))
     }
   }
 
@@ -306,7 +330,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
     try {
       token = await getValidAccessToken()
     } catch {
-      toast.error('Sign in expired. Please sign in again.')
+      toast.error(t('services.membershipDownload.signInExpired'))
       return
     }
 
@@ -320,7 +344,9 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
       )
       if (!res.ok) {
         const text = await res.text().catch(() => '')
-        throw new Error(text || `Download failed (${res.status})`)
+        throw new Error(
+          text || t('shared.errors.downloadFailed', { status: res.status })
+        )
       }
       const blob = await res.blob()
       const serverName = filenameFromContentDisposition(
@@ -329,7 +355,9 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
       triggerBlobDownload(blob, serverName ?? displayFilename)
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Could not download membership'
+        err instanceof Error
+          ? err.message
+          : t('services.membershipDownload.downloadError')
       toast.error(message)
     } finally {
       setDownloading(false)
@@ -345,18 +373,23 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
           ) : (
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {church?.name ?? '—'}{' '}
-              <span className="text-members">Members</span>
+              <span className="text-members">{t('nav.members')}</span>
             </h1>
           )}
         </div>
       </StickyPageHeader>
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-5 lg:max-w-6xl lg:px-6 lg:py-8">
-        <ApolloWrapper data={church} loading={loading} error={error} placeholder>
+        <ApolloWrapper
+          data={church}
+          loading={loading}
+          error={error}
+          placeholder
+        >
           <div className="space-y-6">
             {loading ? (
               <LoadingSkeleton />
             ) : total === 0 ? (
-              <EmptyState onBack={() => navigate(-1)} />
+              <EmptyState onBack={() => navigate(-1)} t={t} />
             ) : (
               <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start lg:gap-6">
                 {/* LEFT — action panel */}
@@ -368,11 +401,15 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <h2 className="text-base font-semibold text-foreground">
-                          Membership list ready
+                          {t('services.membershipDownload.listReady')}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                          Export the full {churchType.toLowerCase()}{' '}
-                          membership as a CSV file.
+                          {t('services.membershipDownload.exportHint', {
+                            level: formatChurchLevel(
+                              churchType,
+                              t
+                            ).toLowerCase(),
+                          })}
                         </p>
                       </div>
                     </div>
@@ -380,12 +417,12 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                     <div className="mt-5 grid grid-cols-2 gap-3">
                       <StatTile
                         icon={<Users className="size-4" />}
-                        label="Total Members"
+                        label={t('services.membershipDownload.totalMembers')}
                         value={total.toLocaleString('en-GH')}
                       />
                       <StatTile
                         icon={<Download className="size-4" />}
-                        label="Generated"
+                        label={t('services.membershipDownload.generated')}
                         value={generatedOn}
                       />
                     </div>
@@ -399,7 +436,7 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
 
                   <section className="rounded-xl border border-border bg-card p-4">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Filename
+                      {t('services.membershipDownload.filename')}
                     </p>
                     <div className="mt-2 flex items-center gap-2">
                       <p className="min-w-0 flex-1 truncate font-mono text-sm text-foreground">
@@ -411,7 +448,9 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                         size="icon"
                         onClick={copyFilename}
                         aria-label={
-                          copied ? 'Filename copied' : 'Copy filename'
+                          copied
+                            ? t('services.membershipDownload.filenameCopied')
+                            : t('services.membershipDownload.copyFilename')
                         }
                         className="size-11 shrink-0"
                       >
@@ -435,7 +474,9 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                     ) : (
                       <Download className="size-5" />
                     )}
-                    {downloading ? 'Generating…' : 'Download CSV'}
+                    {downloading
+                      ? t('services.membershipDownload.generating')
+                      : t('services.membershipDownload.downloadCsv')}
                   </Button>
                 </div>
 
@@ -443,71 +484,85 @@ const DownloadMembershipList = (props: DownloadMembershipListProps) => {
                 <section className="rounded-xl border border-border bg-card overflow-hidden">
                   <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Preview
+                      {t('reports.shared.preview')}
                     </h3>
                     <p className="text-xs text-muted-foreground tabular-nums">
                       {total > previewRows.length
-                        ? `Showing first ${previewRows.length} of ${total.toLocaleString(
-                            'en-GH'
-                          )}`
-                        : `Showing ${previewRows.length} of ${total}`}
+                        ? t('reports.shared.showingFirstOf', {
+                            shown: previewRows.length.toLocaleString('en-GH'),
+                            total: total.toLocaleString('en-GH'),
+                          })
+                        : t('reports.shared.showingOf', {
+                            count: previewRows.length,
+                            total,
+                          })}
                     </p>
                   </div>
                   <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader className="bg-muted/40">
-                      {memberTable.getHeaderGroups().map((headerGroup) => (
-                        <TableRow
-                          key={headerGroup.id}
-                          className="border-b border-border hover:bg-transparent"
-                        >
-                          {headerGroup.headers.map((header) => (
-                            <TableHead
-                              key={header.id}
-                              className="px-3 py-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                            >
-                              {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                                <button
-                                  type="button"
-                                  onClick={(e) =>
-                                    header.column.getToggleSortingHandler()?.(e)
-                                  }
-                                  className="-ml-1 flex min-h-11 items-center gap-1 rounded px-1 transition-colors hover:text-foreground"
-                                >
-                                  {flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                  )}
-                                  <SortIcon sorted={header.column.getIsSorted()} />
-                                </button>
-                              ) : (
-                                <div className="flex min-h-11 items-center">
-                                  {flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                  )}
-                                </div>
-                              )}
-                            </TableHead>
-                          ))}
-                        </TableRow>
-                      ))}
-                    </TableHeader>
-                    <TableBody>
-                      {memberTable.getRowModel().rows.map((row) => (
-                        <TableRow key={row.id} className="border-b border-border">
-                          {row.getVisibleCells().map((cell) => (
-                            <TableCell key={cell.id} className="px-3 py-3 text-sm">
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                    <Table>
+                      <TableHeader className="bg-muted/40">
+                        {memberTable.getHeaderGroups().map((headerGroup) => (
+                          <TableRow
+                            key={headerGroup.id}
+                            className="border-b border-border hover:bg-transparent"
+                          >
+                            {headerGroup.headers.map((header) => (
+                              <TableHead
+                                key={header.id}
+                                className="px-3 py-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                              >
+                                {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                                  <button
+                                    type="button"
+                                    onClick={(e) =>
+                                      header.column.getToggleSortingHandler()?.(
+                                        e
+                                      )
+                                    }
+                                    className="-ml-1 flex min-h-11 items-center gap-1 rounded px-1 transition-colors hover:text-foreground"
+                                  >
+                                    {flexRender(
+                                      header.column.columnDef.header,
+                                      header.getContext()
+                                    )}
+                                    <SortIcon
+                                      sorted={header.column.getIsSorted()}
+                                    />
+                                  </button>
+                                ) : (
+                                  <div className="flex min-h-11 items-center">
+                                    {flexRender(
+                                      header.column.columnDef.header,
+                                      header.getContext()
+                                    )}
+                                  </div>
+                                )}
+                              </TableHead>
+                            ))}
+                          </TableRow>
+                        ))}
+                      </TableHeader>
+                      <TableBody>
+                        {memberTable.getRowModel().rows.map((row) => (
+                          <TableRow
+                            key={row.id}
+                            className="border-b border-border"
+                          >
+                            {row.getVisibleCells().map((cell) => (
+                              <TableCell
+                                key={cell.id}
+                                className="px-3 py-3 text-sm"
+                              >
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext()
+                                )}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 </section>
               </div>
@@ -542,23 +597,22 @@ const LoadingSkeleton = () => (
   </>
 )
 
-const EmptyState = ({ onBack }: { onBack: () => void }) => (
+const EmptyState = ({ onBack, t }: { onBack: () => void; t: TFunction }) => (
   <section className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-12 text-center">
     <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
       <Inbox className="size-7" />
     </div>
     <div className="space-y-1">
       <h2 className="text-base font-semibold text-foreground">
-        No membership records yet
+        {t('services.membershipDownload.emptyTitle')}
       </h2>
       <p className="text-sm text-muted-foreground">
-        There&apos;s nothing to export for this church. Add members first, then
-        come back to download.
+        {t('services.membershipDownload.emptyBody')}
       </p>
     </div>
     <Button variant="outline" onClick={onBack} className="min-h-[44px] gap-2">
       <ChevronLeft className="size-4" />
-      Go back
+      {t('services.membershipDownload.goBack')}
     </Button>
   </section>
 )

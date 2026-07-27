@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
 import svgrPlugin from 'vite-plugin-svgr'
+import path from 'node:path'
 import dns from 'dns'
 import * as manifest from './public/manifest.json'
 import { version } from './package.json'
@@ -12,6 +13,8 @@ import { version } from './package.json'
 // https://vitejs.dev/config/
 
 dns.setDefaultResultOrder('verbatim')
+
+const srcDir = path.resolve(__dirname, 'src')
 
 export default defineConfig(({ command, mode }) => {
   // Load env file based on `mode` in the current working directory.
@@ -35,6 +38,39 @@ export default defineConfig(({ command, mode }) => {
       // from the released version. Referenced as __APP_VERSION__.
       __APP_VERSION__: JSON.stringify(version),
     },
+    // Windows path fallback: vite-tsconfig-paths include-glob matching can fail
+    // when `path.relative` returns backslashes, so absolute `src/` imports
+    // (baseUrl) never resolve and the prod build dies on the first one
+    // (`lib/createApolloClient`). Keep the plugin for non-Windows / happy paths;
+    // alias covers the baseUrl roots used by the app.
+    resolve: {
+      alias: [
+        {
+          find: /^((?:auth|components|contexts|hooks|lib|locales|pages|assets|queries|services|utils|test-utils)(?:\/.*)?)$/,
+          replacement: `${srcDir}/$1`,
+        },
+        {
+          find: 'permission-utils',
+          replacement: path.join(srcDir, 'permission-utils'),
+        },
+        {
+          find: 'global-utils',
+          replacement: path.join(srcDir, 'global-utils'),
+        },
+        {
+          find: 'global-types',
+          replacement: path.join(srcDir, 'global-types'),
+        },
+        {
+          find: 'AppWithContext',
+          replacement: path.join(srcDir, 'AppWithContext'),
+        },
+        {
+          find: 'TestProvider',
+          replacement: path.join(srcDir, 'TestProvider'),
+        },
+      ],
+    },
     plugins: [
       tailwindcss(),
       react(),
@@ -57,7 +93,7 @@ export default defineConfig(({ command, mode }) => {
         ? [
             sentryVitePlugin({
               org: 'first-love-center',
-              project: 'fap-frontend-fix',
+              project: 'fap-frontend-admin',
 
               // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
               // and need `project:releases` and `org:read` scopes

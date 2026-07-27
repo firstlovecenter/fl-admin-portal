@@ -1,11 +1,7 @@
 import { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import {
-  AlertTriangle,
-  ArrowLeft,
-  CheckCircle2,
-  Compass,
-} from 'lucide-react'
+import { AlertTriangle, ArrowLeft, CheckCircle2, Compass } from 'lucide-react'
 
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import PullToRefresh from 'components/base-component/PullToRefresh'
@@ -39,6 +35,7 @@ const QUERIES_BY_LEVEL = {
 }
 
 const BacentasBelow8 = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { clickCard } = useContext(ChurchContext)
   const {
@@ -77,24 +74,26 @@ const BacentasBelow8 = () => {
                 onClick={() => navigate(-1)}
               >
                 <ArrowLeft className="size-4" />
-                Back
+                {t('arrivals.state.back')}
               </Button>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-defaulters">
                   <AlertTriangle className="size-3.5" />
-                  <span>Bacenta Status</span>
+                  <span>{t('arrivals.dashboard.bacentaStatus')}</span>
                 </div>
                 {loading && !church ? (
                   <Skeleton className="h-9 w-72" />
                 ) : (
                   <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
                     {church?.name ?? churchName ?? ''}{' '}
-                    <span className="text-defaulters">Didn&apos;t Bus</span>
+                    <span className="text-defaulters">
+                      {t('arrivals.dashboard.didNotBus')}
+                    </span>
                   </h1>
                 )}
                 <p className="text-sm text-muted-foreground">
-                  Bacentas that didn&apos;t bus this week.
+                  {t('arrivals.state.below8.subtitle')}
                 </p>
               </div>
             </div>
@@ -105,12 +104,14 @@ const BacentasBelow8 = () => {
                 <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
                   <Compass className="size-8 text-warning" />
                   <p className="text-base font-semibold text-foreground">
-                    {hasScope ? 'Pick a higher church' : 'Pick a church in focus'}
+                    {hasScope
+                      ? t('arrivals.state.pickHigherChurch')
+                      : t('arrivals.state.pickChurchInFocus')}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {hasScope
-                      ? 'Bacenta status is tracked at the Governorship, Council, Stream, or Campus level.'
-                      : 'Choose a church from the Church in Focus selector to view bacenta status.'}
+                      ? t('arrivals.state.trackedAtLevels')
+                      : t('arrivals.state.chooseFromSelector')}
                   </p>
                 </CardContent>
               </Card>
@@ -120,10 +121,12 @@ const BacentasBelow8 = () => {
               <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_280px] lg:items-start">
                 <section className="space-y-3 lg:order-1">
                   <div className="flex items-center justify-between">
-                    <SectionLabel>Bacentas</SectionLabel>
+                    <SectionLabel>
+                      {t('shared.churchLevelPlural.Bacenta')}
+                    </SectionLabel>
                     {!loading && church && (
                       <span className="text-xs text-muted-foreground tabular-nums">
-                        {count} total
+                        {t('arrivals.state.countTotal', { count })}
                       </span>
                     )}
                   </div>
@@ -135,10 +138,10 @@ const BacentasBelow8 = () => {
                       <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
                         <CheckCircle2 className="size-8 text-success" />
                         <p className="text-base font-semibold text-foreground">
-                          Every bacenta bussed
+                          {t('arrivals.state.below8.emptyTitle')}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Nobody to flag — strong week.
+                          {t('arrivals.state.below8.emptyBody')}
                         </p>
                       </CardContent>
                     </Card>
@@ -151,8 +154,7 @@ const BacentasBelow8 = () => {
                       onBacentaClick={onBacentaClick}
                       renderExtra={(bacenta) => (
                         <span className="text-xs font-semibold text-defaulters tabular-nums">
-                          Attendance:{' '}
-                          {bacenta.bussingThisWeek?.attendance ?? 0}
+                          Attendance: {bacenta.bussingThisWeek?.attendance ?? 0}
                         </span>
                       )}
                     />
@@ -195,7 +197,7 @@ const BacentasBelow8 = () => {
                 </section>
 
                 <aside className="space-y-3 lg:sticky lg:top-6 lg:order-2">
-                  <SectionLabel>Summary</SectionLabel>
+                  <SectionLabel>{t('arrivals.common.summary')}</SectionLabel>
                   <Card>
                     <CardContent className="space-y-4 p-5">
                       <div>
@@ -207,7 +209,7 @@ const BacentasBelow8 = () => {
                           </p>
                         )}
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {count === 1 ? 'bacenta' : 'bacentas'} below threshold
+                          {t('arrivals.state.below8.countLabel', { count })}
                         </p>
                       </div>
 
@@ -226,8 +228,7 @@ const BacentasBelow8 = () => {
                       )}
 
                       <p className="text-xs text-muted-foreground">
-                        These bacentas either skipped bussing this week or
-                        bussed below the minimum attendance.
+                        {t('arrivals.state.below8.footnote')}
                       </p>
                     </CardContent>
                   </Card>

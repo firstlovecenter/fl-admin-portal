@@ -4,8 +4,10 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import PlaceholderCustom from 'components/Placeholder'
 import { getWeekNumber } from 'lib/date-utils'
+import { formatChurchLevel } from 'lib/scope-display'
 import useChurchLevel from 'hooks/useChurchLevel'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import DefaulterCard from '../DefaulterCard'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
@@ -17,6 +19,7 @@ import {
 } from './StreamDefaultersQueries'
 
 const StreamBanked = () => {
+  const { t } = useTranslation()
   const [campusBanked, { refetch: campusRefetch }] = useLazyQuery(
     CAMPUS_STREAM_BANKED_LIST
   )
@@ -43,23 +46,22 @@ const StreamBanked = () => {
   })
 
   const { church, loading, error, refetch } = data as DefaultersUseChurchType
+  const week = getWeekNumber()
+  const count = church?.streamBankedThisWeek?.length ?? 0
 
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={church} loading={loading} error={error} placeholder>
         <div className="mx-auto w-full max-w-screen-md px-4">
-          <HeadingPrimary
-            loading={!church}
-          >{`${church?.name} ${church?.__typename}`}</HeadingPrimary>
+          <HeadingPrimary loading={!church}>
+            {`${church?.name} ${formatChurchLevel(church?.__typename, t)}`}
+          </HeadingPrimary>
           <HeadingSecondary>
-            {`Churches That Have Banked This Week (Week ${getWeekNumber()})`}
+            {t('services.defaulters.streamBanked', { week })}
           </HeadingSecondary>
 
-          <PlaceholderCustom
-            as="h6"
-            loading={!church?.streamBankedThisWeek?.length}
-          >
-            <h6>{`Number Who Have Banked: ${church?.streamBankedThisWeek?.length}`}</h6>
+          <PlaceholderCustom as="h6" loading={!church}>
+            <h6>{t('services.defaulters.streamBankedCount', { count })}</h6>
           </PlaceholderCustom>
 
           <div className="grid gap-3">

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
 import { ChurchLevelLower } from 'global-types'
 import {
@@ -12,7 +13,6 @@ import {
   METRIC_COLOR,
   METRIC_DATAKEY,
   METRIC_DATASET,
-  METRIC_LABEL,
   METRIC_UNIT,
   sliceWindowedRecords,
 } from 'pages/shepherding-control/shepherding-control-utils'
@@ -49,6 +49,7 @@ const ProjectionChart = ({
   windowWeeks,
   loading,
 }: Props) => {
+  const { t } = useTranslation()
   // When the two metrics share the same dataKey (both attendance, both
   // income), we route metricB into the `target` slot so ChurchGraph can
   // draw a second bar without collapsing into a single key. The slot name
@@ -117,21 +118,21 @@ const ProjectionChart = ({
   const secondaryTitle = metricB
     ? sameUnit
       ? undefined
-      : 'Dual axis'
+      : t('shepherding.dualAxis')
     : undefined
 
   const legend: Array<{ key: MetricKey; color: string; label: string }> = [
     {
       key: metricA,
       color: METRIC_COLOR[metricA],
-      label: METRIC_LABEL[metricA],
+      label: t(`shepherding.metrics.${metricA}`),
     },
   ]
   if (metricB) {
     legend.push({
       key: metricB,
       color: METRIC_COLOR[metricB],
-      label: METRIC_LABEL[metricB],
+      label: t(`shepherding.metrics.${metricB}`),
     })
   }
 

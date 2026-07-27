@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { ReactNode, useMemo } from 'react'
 
 import MemberDisplayCard from 'components/card/MemberDisplayCard'
@@ -43,11 +44,12 @@ const BacentasByGovernorshipAccordion = ({
   onBacentaClick,
   renderExtra,
 }: Props) => {
+  const { t } = useTranslation()
   const groups = useMemo<Group[]>(() => {
     const map = new Map<string, Group>()
     bacentas.forEach((bacenta) => {
       const id = bacenta.governorship?.id ?? UNASSIGNED_GROUP_ID
-      const name = bacenta.governorship?.name ?? 'Unassigned'
+      const name = bacenta.governorship?.name ?? t('arrivals.state.unassigned')
       const existing = map.get(id)
       if (existing) {
         existing.bacentas.push(bacenta)
@@ -55,10 +57,8 @@ const BacentasByGovernorshipAccordion = ({
         map.set(id, { id, name, bacentas: [bacenta] })
       }
     })
-    return Array.from(map.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )
-  }, [bacentas])
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
+  }, [bacentas, t])
 
   return (
     <Accordion type="multiple" className="space-y-3">

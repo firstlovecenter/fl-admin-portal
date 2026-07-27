@@ -3,7 +3,8 @@ import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import HeadingSecondary from 'components/HeadingSecondary'
 import { ChurchContext } from 'contexts/ChurchContext'
 import useModal from 'hooks/useModal'
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { Form, Formik, FormikHelpers } from 'formik'
@@ -26,6 +27,7 @@ import { DEBIT_BUSSING_SOCIETY } from '../request-expense/expenseGQL'
 import { CouncilForAccounts } from '../accounts-types'
 
 const BussingExpenseEntry = () => {
+  const { t } = useTranslation()
   const { councilId, clickCard } = useContext(ChurchContext)
   const { show, handleClose, handleShow } = useModal()
   const navigate = useNavigate()
@@ -47,11 +49,15 @@ const BussingExpenseEntry = () => {
     amountSpent: '',
   }
 
-  const validationSchema = Yup.object({
-    amountSpent: Yup.number()
-      .typeError('Please enter a valid number')
-      .required('This is a required field'),
-  })
+  const validationSchema = useMemo(
+    () =>
+      Yup.object({
+        amountSpent: Yup.number()
+          .typeError(t('accounts.common.validNumber'))
+          .required(t('accounts.common.required')),
+      }),
+    [t]
+  )
 
   const onSubmit = async (
     values: typeof initialValues,
@@ -81,12 +87,23 @@ const BussingExpenseEntry = () => {
     }
   }
 
+  const churchTypeLabel = council?.__typename
+    ? t(`shared.churchLevel.${council.__typename}`, {
+        defaultValue: council.__typename,
+      })
+    : ''
+
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
-        <HeadingPrimary>{`${council?.name} ${council?.__typename} Expense Form`}</HeadingPrimary>
+        <HeadingPrimary>
+          {t('accounts.bussingExpense.title', {
+            name: council?.name ?? '',
+            type: churchTypeLabel,
+          })}
+        </HeadingPrimary>
         <HeadingSecondary>
-          Pls input the amount that was spent on bussing
+          {t('accounts.bussingExpense.subtitle')}
         </HeadingSecondary>
         <Formik
           initialValues={initialValues}
@@ -100,8 +117,8 @@ const BussingExpenseEntry = () => {
                   <div>
                     <Input
                       name="amountSpent"
-                      label="How much are was spent on bussing today?"
-                      placeholder="Enter an amount"
+                      label={t('accounts.bussingExpense.amountLabel')}
+                      placeholder={t('accounts.common.enterAmount')}
                     />
                   </div>
 
@@ -112,44 +129,47 @@ const BussingExpenseEntry = () => {
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>
-                          Please confirm the amount spent
+                          {t('accounts.bussingExpense.confirmTitle')}
                         </DialogTitle>
                       </DialogHeader>
                       <div className="space-y-2 text-sm">
                         <p>
-                          Amount Spent:{' '}
+                          {t('accounts.bussingExpense.amountSpent')}{' '}
                           <span className="text-[hsl(var(--maps))]">
-                            GHS{' '}
-                            {parseFloat(
-                              formik.values.amountSpent.toString()
-                            ).toLocaleString('en-US')}
+                            {t('accounts.deposit.ghsAmount', {
+                              amount: parseFloat(
+                                formik.values.amountSpent.toString()
+                              ).toLocaleString('en-US'),
+                            })}
                           </span>
                         </p>
 
                         <p>
-                          Bussing Society Balance:{' '}
+                          {t('accounts.bussingExpense.bussingSocietyBalance')}{' '}
                           <span className="text-[hsl(var(--maps))]">
-                            GHS{' '}
-                            {parseFloat(
-                              council?.bussingSocietyBalance.toString()
-                            ).toLocaleString('en-US')}
+                            {t('accounts.deposit.ghsAmount', {
+                              amount: parseFloat(
+                                council?.bussingSocietyBalance.toString()
+                              ).toLocaleString('en-US'),
+                            })}
                           </span>
                         </p>
 
                         <p>
-                          Category:{' '}
+                          {t('accounts.common.category')}:{' '}
                           <span className="text-[hsl(var(--maps))]">
-                            Bussing
+                            {t('accounts.bussingExpense.categoryBussing')}
                           </span>
                         </p>
                         {council.bussingSocietyBalance <
                           parseFloat(formik.values.amountSpent) && (
                           <span className="font-semibold text-destructive">
-                            Submitting this will send {council.name} Council
-                            balance into negative balance of{' '}
-                            {council.bussingSocietyBalance -
-                              parseFloat(formik.values.amountSpent)}{' '}
-                            GHS
+                            {t('accounts.bussingExpense.negativeWarning', {
+                              name: council.name,
+                              amount:
+                                council.bussingSocietyBalance -
+                                parseFloat(formik.values.amountSpent),
+                            })}
                           </span>
                         )}
                       </div>
@@ -160,7 +180,7 @@ const BussingExpenseEntry = () => {
                           formik={formik}
                         />
                         <Button variant="outline" onClick={handleClose}>
-                          Close
+                          {t('accounts.common.close')}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -173,7 +193,7 @@ const BussingExpenseEntry = () => {
                       disabled={formik.isSubmitting}
                       className="px-8"
                     >
-                      Submit
+                      {t('shared.form.submit')}
                     </Button>
                   </div>
                 </CardContent>

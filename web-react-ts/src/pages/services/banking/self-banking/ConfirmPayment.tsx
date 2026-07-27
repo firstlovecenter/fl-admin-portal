@@ -10,11 +10,13 @@ import { Skeleton } from 'components/ui/skeleton'
 import { ServiceContext } from 'contexts/ServiceContext'
 import { Loader2, Phone } from 'lucide-react'
 import { useContext, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { SELF_BANKING_RECEIPT } from './bankingQueries'
 import ManualApprovalSteps from './ManualApprovalSteps'
 import ButtonConfirmPayment from './components/button/ConfirmPayment'
 
 const ConfirmPayment = () => {
+  const { t } = useTranslation()
   const { serviceRecordId } = useContext(ServiceContext)
   const { data, loading, error, refetch } = useQuery(SELF_BANKING_RECEIPT, {
     variables: { id: serviceRecordId },
@@ -24,8 +26,8 @@ const ConfirmPayment = () => {
 
   useEffect(() => {
     if (countdown > 0) {
-      const t = setTimeout(() => setCountdown(countdown - 1), 1000)
-      return () => clearTimeout(t)
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+      return () => clearTimeout(timer)
     }
     return undefined
   }, [countdown])
@@ -45,11 +47,10 @@ const ConfirmPayment = () => {
             )}
             <div className="space-y-2">
               <p className="text-2xl font-bold tracking-tight text-foreground">
-                Processing!
+                {t('services.banking.confirmPayment.processing')}
               </p>
               <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-                Your transaction is being processed. Please wait for the prompt
-                on your phone to authorise the transaction.
+                {t('services.banking.confirmPayment.processingBody')}
               </p>
               {error && (
                 <p className="text-xs text-destructive">{error.message}</p>
@@ -64,7 +65,9 @@ const ConfirmPayment = () => {
               />
               {countdown > 0 ? (
                 <p className="text-sm text-muted-foreground tabular-nums">
-                  Confirm in {countdown}…
+                  {t('services.banking.confirmPayment.confirmIn', {
+                    count: countdown,
+                  })}
                 </p>
               ) : (
                 <button
@@ -72,7 +75,7 @@ const ConfirmPayment = () => {
                   className="mx-auto block min-h-11 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                   onClick={() => setManualOpen(true)}
                 >
-                  Prompt not received?
+                  {t('services.banking.confirmPayment.promptNotReceived')}
                 </button>
               )}
             </div>
@@ -88,18 +91,14 @@ const ConfirmPayment = () => {
                   <Phone className="size-5 text-banking" />
                 </span>
                 <h2 className="text-sm font-semibold text-foreground">
-                  What to expect
+                  {t('services.banking.confirmPayment.whatToExpect')}
                 </h2>
               </div>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  • Check your phone for a Mobile Money authorisation prompt.
-                </li>
-                <li>• Approve the transaction with your MoMo PIN.</li>
-                <li>• Tap "Confirm Transaction" once approved.</li>
-                <li>
-                  • If no prompt arrives, follow the manual approval steps.
-                </li>
+                <li>{t('services.banking.confirmPayment.expect1')}</li>
+                <li>{t('services.banking.confirmPayment.expect2')}</li>
+                <li>{t('services.banking.confirmPayment.expect3')}</li>
+                <li>{t('services.banking.confirmPayment.expect4')}</li>
               </ul>
             </CardContent>
           </Card>
@@ -109,7 +108,9 @@ const ConfirmPayment = () => {
       <Dialog open={manualOpen} onOpenChange={setManualOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="sr-only">
-            <DialogTitle>Manual approval steps</DialogTitle>
+            <DialogTitle>
+              {t('services.banking.confirmPayment.manualApprovalTitle')}
+            </DialogTitle>
           </DialogHeader>
           <ManualApprovalSteps close={() => setManualOpen(false)} />
         </DialogContent>

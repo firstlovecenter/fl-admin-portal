@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useMutation } from '@apollo/client'
 import { useState } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
@@ -22,6 +23,7 @@ const MemberAvatarUpload = ({
   error,
   setFieldValue,
 }: MemberAvatarUploadProps) => {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [generatePresignedUrl] = useMutation(GENERATE_PRESIGNED_URL)
@@ -51,7 +53,7 @@ const MemberAvatarUpload = ({
       <div className="relative">
         <Avatar className="h-32 w-32 ring-2 ring-border ring-offset-2 ring-offset-card">
           {value ? (
-            <AvatarImage src={value} alt="Member photo" />
+            <AvatarImage src={value} alt={t('directory.avatar.alt')} />
           ) : null}
           <AvatarFallback className="text-3xl font-semibold bg-muted">
             {initials || <Camera className="h-8 w-8 text-muted-foreground" />}
@@ -81,11 +83,11 @@ const MemberAvatarUpload = ({
           disabled={loading}
         />
         <Camera className="h-4 w-4" aria-hidden="true" />
-        {value ? 'Change Photo' : 'Upload Photo'}
+        {value ? t('directory.avatar.change') : t('directory.avatar.upload')}
       </label>
 
       <p className="text-xs text-muted-foreground text-center leading-relaxed">
-        PNG, JPG or WebP. Max 10MB.
+        {t('directory.avatar.hint')}
       </p>
 
       {showError && (

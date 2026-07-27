@@ -1,14 +1,16 @@
 import { useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { ChurchContext } from 'contexts/ChurchContext'
-import React, { useContext } from 'react'
+import { useContext } from 'react'
 import { Phone } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
 import { useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
 import PullToRefresh from 'components/base-component/PullToRefresh'
 import { Button } from 'components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from 'components/ui/card'
+import { formatChurchLevel } from 'lib/scope-display'
 import PlaceholderDefaulterList from '../PlaceholderDefaulterList'
 import { HigherChurchWithDefaulters } from '../defaulters-types'
 import { messageForAdminsOfDefaulters } from '../defaulters-utils'
@@ -16,6 +18,7 @@ import { DENOMINATION_BY_OVERSIGHT } from '../stream-services/StreamDefaultersQu
 import '../Defaulters.css'
 
 const DenominationByOversight = () => {
+  const { t } = useTranslation()
   const { denominationId, clickCard } = useContext(ChurchContext)
   const { data, loading, error, refetch } = useQuery(
     DENOMINATION_BY_OVERSIGHT,
@@ -27,13 +30,21 @@ const DenominationByOversight = () => {
   )
   const navigate = useNavigate()
 
+  const denomination = data?.denominations?.[0]
+  const pageTitle = denomination
+    ? `${denomination.name} ${t('services.defaulters.bySubchurchHighlight', {
+        level: formatChurchLevel('Denomination', t),
+        subLevel: t('shared.churchLevelPlural.Oversight'),
+      })}`
+    : ''
+
   return (
     <PullToRefresh onRefresh={refetch}>
       <ApolloWrapper data={data} loading={loading} error={error} placeholder>
         <div className="mx-auto w-full max-w-screen-md px-4">
-          <HeadingPrimary
-            loading={loading || !data?.denominations[0]?.name}
-          >{`${data?.denominations[0]?.name} Denomination By Oversights`}</HeadingPrimary>
+          <HeadingPrimary loading={loading || !denomination?.name}>
+            {pageTitle}
+          </HeadingPrimary>
 
           <div className="grid gap-3">
             {data?.denominations.length ? (
@@ -41,9 +52,13 @@ const DenominationByOversight = () => {
                 (oversight: HigherChurchWithDefaulters, i: number) => (
                   <Card key={i}>
                     <CardHeader className="font-bold">
-                      <div>{`${oversight.name} Oversight`}</div>
+                      <div>{`${oversight.name} ${formatChurchLevel(
+                        'Oversight',
+                        t
+                      )}`}</div>
                       <div className="text-muted-foreground">
-                        {oversight.leader?.fullName ?? 'No Leader'}
+                        {oversight.leader?.fullName ??
+                          t('services.defaulters.noLeader')}
                       </div>
                     </CardHeader>
                     <CardContent
@@ -63,10 +78,11 @@ const DenominationByOversight = () => {
                       className="cursor-pointer space-y-1"
                     >
                       <div className="font-bold">
-                        Active Streams {oversight.activeStreamCount}
+                        {t('services.defaulters.activeStreams')}{' '}
+                        {oversight.activeStreamCount}
                       </div>
                       <div className="good">
-                        Services This Week{' '}
+                        {t('services.defaulters.servicesThisWeekLabel')}{' '}
                         {oversight.streamServicesThisWeekCount}
                       </div>
                       <div
@@ -76,7 +92,7 @@ const DenominationByOversight = () => {
                             : 'good'
                         }
                       >
-                        Form Not Filled This Week{' '}
+                        {t('services.defaulters.formNotFilledThisWeek')}{' '}
                         {oversight.streamFormDefaultersThisWeekCount}
                       </div>
                       <div
@@ -90,7 +106,8 @@ const DenominationByOversight = () => {
                             : 'bad'
                         }
                       >
-                        Banked This Week {oversight.streamBankedThisWeekCount}
+                        {t('services.defaulters.bankedThisWeekLabel')}{' '}
+                        {oversight.streamBankedThisWeekCount}
                       </div>
                       <div
                         className={
@@ -99,7 +116,7 @@ const DenominationByOversight = () => {
                             : 'good'
                         }
                       >
-                        Not Banked This Week{' '}
+                        {t('services.defaulters.notBankedThisWeekLabel')}{' '}
                         {oversight.streamBankingDefaultersThisWeekCount}
                       </div>
                       <div
@@ -109,18 +126,21 @@ const DenominationByOversight = () => {
                             : 'good'
                         }
                       >
-                        Cancelled Services This Week{' '}
+                        {t('services.defaulters.cancelledServicesThisWeekLabel')}{' '}
                         {oversight.streamCancelledServicesThisWeekCount}
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-col items-start gap-2">
                       <div className="mb-2">
-                        Contact Admin: {oversight?.admin?.fullName}
+                        {t('services.defaulters.contactAdmin', {
+                          name: oversight?.admin?.fullName ?? '',
+                        })}
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Button asChild>
                           <a href={`tel:${oversight?.admin?.phoneNumber}`}>
-                            <Phone className="h-4 w-4" /> Call
+                            <Phone className="h-4 w-4" />{' '}
+                            {t('services.defaulters.call')}
                           </a>
                         </Button>
                         <Button
@@ -132,7 +152,8 @@ const DenominationByOversight = () => {
                               oversight?.admin?.whatsappNumber
                             }?text=${messageForAdminsOfDefaulters(oversight)}`}
                           >
-                            <FaWhatsapp className="h-4 w-4" /> WhatsApp
+                            <FaWhatsapp className="h-4 w-4" />{' '}
+                            {t('services.defaulters.whatsapp')}
                           </a>
                         </Button>
                       </div>

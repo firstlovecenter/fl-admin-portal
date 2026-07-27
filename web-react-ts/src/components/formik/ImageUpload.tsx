@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from 'formik'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from '@apollo/client'
 import { Camera, Loader2, RefreshCw, UploadCloud } from 'lucide-react'
 import TextError from './TextError/TextError'
@@ -16,6 +17,7 @@ interface ImageUploadProps extends FormikComponentProps {
 const ACCEPTED_TYPES = ['image/png', 'image/webp', 'image/jpeg']
 
 const ImageUpload = (props: ImageUploadProps) => {
+  const { t } = useTranslation()
   const {
     label,
     name,
@@ -147,7 +149,9 @@ const ImageUpload = (props: ImageUploadProps) => {
         role="button"
         tabIndex={0}
         aria-labelledby={label ? `${name}-label` : undefined}
-        aria-label={!label ? (placeholder ?? 'Upload a photo') : undefined}
+        aria-label={
+          !label ? placeholder ?? t('shared.imageUpload.prompt') : undefined
+        }
         onClick={handleZoneActivate}
         onKeyDown={handleZoneKeyDown}
         onDragEnter={handleDragEnter}
@@ -159,8 +163,8 @@ const ImageUpload = (props: ImageUploadProps) => {
           isDragging
             ? 'border-primary bg-primary/10'
             : hasImage || loading
-              ? 'border-border'
-              : 'border-border hover:border-primary hover:bg-muted/30 active:bg-muted/50',
+            ? 'border-border'
+            : 'border-border hover:border-primary hover:bg-muted/30 active:bg-muted/50',
           hasImage && !loading ? 'h-60' : 'min-h-[240px]'
         )}
       >
@@ -178,7 +182,9 @@ const ImageUpload = (props: ImageUploadProps) => {
         {loading && (
           <div className="flex flex-col items-center gap-3 p-8 text-muted-foreground">
             <Loader2 className="size-10 animate-spin text-primary" />
-            <p className="text-sm font-medium">Uploading…</p>
+            <p className="text-sm font-medium">
+              {t('shared.imageUpload.uploading')}
+            </p>
           </div>
         )}
 
@@ -187,7 +193,9 @@ const ImageUpload = (props: ImageUploadProps) => {
             <div className="flex size-14 items-center justify-center rounded-full bg-primary/20">
               <UploadCloud className="size-7 text-primary" />
             </div>
-            <p className="text-sm font-semibold text-primary">Drop to upload</p>
+            <p className="text-sm font-semibold text-primary">
+              {t('shared.imageUpload.dropToUpload')}
+            </p>
           </div>
         )}
 
@@ -195,13 +203,15 @@ const ImageUpload = (props: ImageUploadProps) => {
           <>
             <img
               src={previewSrc}
-              alt="Upload preview"
+              alt={t('shared.imageUpload.previewAlt')}
               className="h-full w-full object-cover"
             />
             {/* Always-visible overlay at rest so touch users see the re-upload affordance */}
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/40 opacity-60 transition-opacity hover:opacity-100 active:opacity-100">
               <RefreshCw className="size-6 text-white" />
-              <p className="text-sm font-semibold text-white">Change Photo</p>
+              <p className="text-sm font-semibold text-white">
+                {t('shared.imageUpload.changePhoto')}
+              </p>
             </div>
           </>
         )}
@@ -213,9 +223,11 @@ const ImageUpload = (props: ImageUploadProps) => {
             </div>
             <div className="space-y-1">
               <p className="text-sm font-semibold text-foreground">
-                {placeholder ?? 'Drag & drop or tap to upload'}
+                {placeholder ?? t('shared.imageUpload.prompt')}
               </p>
-              <p className="text-xs text-muted-foreground">JPG, PNG or WebP</p>
+              <p className="text-xs text-muted-foreground">
+                {t('shared.imageUpload.formats')}
+              </p>
             </div>
           </div>
         )}

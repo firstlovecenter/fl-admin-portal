@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Avatar,
   AvatarFallback,
@@ -12,7 +13,7 @@ import {
   SlideData,
   WindowWeeks,
 } from 'pages/shepherding-control/shepherding-control-types'
-import { childLevelLabel } from 'pages/shepherding-control/shepherding-control-utils'
+import { nextLevelFor } from 'pages/shepherding-control/shepherding-control-utils'
 import ChildChurchCard from './ChildChurchCard'
 import ProjectionChart from './ProjectionChart'
 
@@ -35,8 +36,10 @@ const ShepherdingSlide = ({
   windowWeeks,
   onSelectChild,
 }: Props) => {
+  const { t } = useTranslation()
+
   if (!slide) {
-    return <LoadingScreen text="Loading slide…" />
+    return <LoadingScreen text={t('shepherding.loadingSlide')} />
   }
 
   const leader = slide.leader
@@ -44,6 +47,13 @@ const ShepherdingSlide = ({
     leader?.lastName?.[0] ?? ''
   }`
   const showBacentaCount = slide.level !== 'Bacenta'
+  const childLevel = nextLevelFor(slide.level)
+  const childLabel =
+    childLevel == null
+      ? null
+      : slide.children.length === 1
+        ? t(`shared.churchLevel.${childLevel}`)
+        : t(`shared.churchLevelPlural.${childLevel}`)
 
   return (
     <div className="flex h-full w-full flex-col gap-8 p-8 text-foreground">
@@ -60,7 +70,7 @@ const ShepherdingSlide = ({
 
         <div className="min-w-0 flex-1">
           <p className="text-2xl uppercase tracking-[0.2em] text-muted-foreground">
-            {slide.level}
+            {t(`shared.churchLevel.${slide.level}`)}
           </p>
           <h1 className="mt-2 truncate text-6xl font-bold tracking-tight">
             {slide.name}
@@ -71,7 +81,7 @@ const ShepherdingSlide = ({
               leader ? 'text-foreground' : 'text-muted-foreground'
             )}
           >
-            {leader?.nameWithTitle ?? 'No leader assigned'}
+            {leader?.nameWithTitle ?? t('shepherding.noLeaderAssigned')}
           </p>
         </div>
 
@@ -79,13 +89,17 @@ const ShepherdingSlide = ({
           {showBacentaCount && slide.bacentaCount != null && (
             <p className="text-2xl tabular-nums">
               <span className="text-5xl font-bold">{slide.bacentaCount}</span>
-              <span className="ml-2 text-muted-foreground">Bacentas</span>
+              <span className="ml-2 text-muted-foreground">
+                {t('shepherding.bacentas')}
+              </span>
             </p>
           )}
           {slide.memberCount != null && (
             <p className="text-2xl tabular-nums">
               <span className="text-5xl font-bold">{slide.memberCount}</span>
-              <span className="ml-2 text-muted-foreground">Members</span>
+              <span className="ml-2 text-muted-foreground">
+                {t('shepherding.members')}
+              </span>
             </p>
           )}
         </div>
@@ -107,8 +121,7 @@ const ShepherdingSlide = ({
       {slide.children?.length > 0 && (
         <section className="space-y-3">
           <p className="text-2xl uppercase tracking-wider text-muted-foreground">
-            {slide.children.length}{' '}
-            {childLevelLabel(slide.level, slide.children.length)}
+            {slide.children.length} {childLabel}
           </p>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
             {slide.children.map((child) => (

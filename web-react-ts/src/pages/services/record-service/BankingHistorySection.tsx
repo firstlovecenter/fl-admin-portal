@@ -9,14 +9,7 @@ import { Card, CardContent } from 'components/ui/card'
 import { BankingHistoryLog } from 'global-types'
 import { parseDate, parseNeoTime } from 'lib/date-utils'
 import { History } from 'lucide-react'
-
-const METHOD_LABEL: Record<BankingHistoryLog['method'], string> = {
-  self: 'Self-banking',
-  recovery: 'Admin recovery',
-  webhook: 'Paystack webhook',
-  slip: 'Banking slip',
-  teller: 'Teller',
-}
+import { useTranslation } from 'react-i18next'
 
 const METHOD_TONE: Record<BankingHistoryLog['method'], string> = {
   self: 'border-banking/50 text-banking',
@@ -44,12 +37,21 @@ type Props = {
 }
 
 const BankingHistorySection = ({ bankingHistory }: Props) => {
+  const { t, i18n } = useTranslation()
+
   if (!bankingHistory || bankingHistory.length === 0) return null
 
   // Newest first.
   const ordered = [...bankingHistory].sort((a, b) =>
     a.ts < b.ts ? 1 : a.ts > b.ts ? -1 : 0
   )
+
+  const methodLabel = (method: BankingHistoryLog['method']) =>
+    t(`services.bankingHistory.methods.${method}`, {
+      defaultValue: method,
+    })
+
+  const locale = i18n.resolvedLanguage || i18n.language
 
   return (
     <Card>
@@ -60,7 +62,7 @@ const BankingHistorySection = ({ bankingHistory }: Props) => {
               <div className="flex items-center gap-3">
                 <History className="size-4 text-muted-foreground" />
                 <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Banking history
+                  {t('services.bankingHistory.title')}
                 </span>
                 <Badge variant="secondary" className="ml-1">
                   {ordered.length}
@@ -79,7 +81,7 @@ const BankingHistorySection = ({ bankingHistory }: Props) => {
                         variant="outline"
                         className={`min-w-[7rem] justify-center ${METHOD_TONE[log.method]}`}
                       >
-                        {METHOD_LABEL[log.method] ?? log.method}
+                        {methodLabel(log.method)}
                       </Badge>
                       <span
                         className={`font-mono text-xs ${statusTone(log.toStatus)}`}
@@ -95,10 +97,17 @@ const BankingHistorySection = ({ bankingHistory }: Props) => {
                     )}
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                       <span>
-                        {parseDate(log.ts)} at {parseNeoTime(log.ts)}
+                        {t('services.bankingHistory.at', {
+                          date: parseDate(log.ts, { t, locale }),
+                          time: parseNeoTime(log.ts),
+                        })}
                       </span>
                       {log.loggedBy?.fullName && (
-                        <span>by {log.loggedBy.fullName}</span>
+                        <span>
+                          {t('services.bankingHistory.by', {
+                            name: log.loggedBy.fullName,
+                          })}
+                        </span>
                       )}
                     </div>
                   </li>

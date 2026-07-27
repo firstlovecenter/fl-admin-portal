@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from 'components/ui/button'
 import {
   DropdownMenu,
@@ -8,6 +9,7 @@ import {
 } from 'components/ui/dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { ChurchLevel } from 'global-types'
+import { formatChurchLevel } from 'lib/scope-display'
 import { GraphTypes, getServiceGraphData } from './graphs-utils'
 import './GraphDropdown.css'
 
@@ -24,12 +26,31 @@ const GraphDropdown = ({
   setGraphs,
   data,
 }: GraphDropdownProps) => {
-  const [selected, setSelected] = React.useState('Select Service')
+  const { t, i18n } = useTranslation()
   const churchLevel: ChurchLevel = data?.__typename
 
+  const selected = useMemo(() => {
+    switch (graphs) {
+      case 'bussing':
+        return t('services.graphs.options.bussing')
+      case 'services':
+        return t('services.graphs.options.levelServices', {
+          level: formatChurchLevel(churchLevel, t),
+        })
+      case 'bussingAggregate':
+        return t('services.graphs.options.bussingTotal')
+      case 'serviceAggregate':
+        return t('services.graphs.options.weekdayTotal')
+      case 'serviceAggregateWithDollar':
+        return t('services.graphs.options.weekdayTotalUsd')
+      default:
+        return t('services.graphs.selectService')
+    }
+  }, [graphs, churchLevel, t, i18n.language])
+
   const churchData = useMemo(
-    () => getServiceGraphData(data, graphs),
-    [data, graphs]
+    () => getServiceGraphData(data, graphs, undefined, t),
+    [data, graphs, t]
   )
 
   useEffect(() => {
@@ -51,54 +72,51 @@ const GraphDropdown = ({
           <DropdownMenuItem
             className="py-3"
             onSelect={() => {
-              setSelected('Bussing')
               setGraphs('bussing')
             }}
           >
-            Bussing
+            {t('services.graphs.options.bussing')}
           </DropdownMenuItem>
         )}
 
         <DropdownMenuItem
           className="py-3"
           onSelect={() => {
-            setSelected('Services')
             setGraphs('services')
           }}
         >
-          {`${churchLevel} Services`}
+          {t('services.graphs.options.levelServices', {
+            level: formatChurchLevel(churchLevel, t),
+          })}
         </DropdownMenuItem>
         {churchLevel !== 'Bacenta' && (
           <DropdownMenuItem
             className="py-3"
             onSelect={() => {
-              setSelected('Bussing Total')
               setGraphs('bussingAggregate')
             }}
           >
-            Bussing Total
+            {t('services.graphs.options.bussingTotal')}
           </DropdownMenuItem>
         )}
         {!['Bacenta', 'Oversight', 'Denomination'].includes(churchLevel) && (
           <DropdownMenuItem
             className="py-3"
             onSelect={() => {
-              setSelected('Bacenta Total')
               setGraphs('serviceAggregate')
             }}
           >
-            Weekday Total
+            {t('services.graphs.options.weekdayTotal')}
           </DropdownMenuItem>
         )}
         {['Campus', 'Oversight', 'Denomination'].includes(churchLevel) && (
           <DropdownMenuItem
             className="py-3"
             onSelect={() => {
-              setSelected('Services Total (USD)')
               setGraphs('serviceAggregateWithDollar')
             }}
           >
-            Weekday Total (USD)
+            {t('services.graphs.options.weekdayTotalUsd')}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

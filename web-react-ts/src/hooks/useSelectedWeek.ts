@@ -1,22 +1,20 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import { getIsoWeek } from 'pages/reports/_shared/week-utils'
+import { currentIntlLocale } from 'lib/intl-locale'
 
-const MONTH_NAMES_SHORT = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-]
+// Month names come from Intl rather than a hardcoded English array: the
+// labels this hook returns (`weekLabel`, `rangeLabel`, `weekShortLabel`) are
+// rendered on already-localized reports and defaulters pages. Day-first
+// ordering is kept deliberately — that is the app's convention everywhere,
+// independent of the UI language. `timeZone: 'UTC'` matches the getUTC*
+// arithmetic the rest of this file does.
+const shortMonth = (date: Date, locale: string): string =>
+  new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }).format(
+    date
+  )
 
 /**
  * Monday (UTC) of the given ISO week. Mirrors the Neo4j semantics used by the
@@ -34,11 +32,11 @@ const isoWeekMonday = (week: number, year: number): Date => {
 
 const toYmd = (date: Date): string => date.toISOString().slice(0, 10)
 
-const formatRange = (monday: Date, sunday: Date): string => {
+const formatRange = (monday: Date, sunday: Date, locale: string): string => {
   const sameMonth = monday.getUTCMonth() === sunday.getUTCMonth()
   const sameYear = monday.getUTCFullYear() === sunday.getUTCFullYear()
-  const startMonth = MONTH_NAMES_SHORT[monday.getUTCMonth()]
-  const endMonth = MONTH_NAMES_SHORT[sunday.getUTCMonth()]
+  const startMonth = shortMonth(monday, locale)
+  const endMonth = shortMonth(sunday, locale)
   const year = sunday.getUTCFullYear()
   if (sameMonth) {
     return `${monday.getUTCDate()}–${sunday.getUTCDate()} ${endMonth} ${year}`
@@ -72,6 +70,7 @@ export type SelectedWeek = {
 }
 
 const useSelectedWeek = (): SelectedWeek => {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Re-evaluated on every render. A PWA stays open across midnight and across
@@ -102,9 +101,9 @@ const useSelectedWeek = (): SelectedWeek => {
   }, [monday])
 
   const weekStart = toYmd(monday)
-  const rangeLabel = formatRange(monday, sunday)
-  const weekShortLabel = `Week ${week}, ${year}`
-  const weekLabel = `Week ${week} · ${rangeLabel}`
+  const rangeLabel = formatRange(monday, sunday, currentIntlLocale())
+  const weekShortLabel = t('shared.weekSelector.weekAndYear', { week, year })
+  const weekLabel = t('shared.week.withRange', { week, range: rangeLabel })
 
   const isCurrent = week === current.week && year === current.year
 

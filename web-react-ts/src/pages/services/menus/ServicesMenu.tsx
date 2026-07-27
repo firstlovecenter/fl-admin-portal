@@ -1,6 +1,7 @@
 import { ReactNode, useContext, useMemo, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
+import { useTranslation } from 'react-i18next'
 import {
   BarChart3,
   BookOpen,
@@ -29,6 +30,7 @@ import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { cn } from 'components/lib/utils'
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import useSetUserChurch from 'hooks/useSetUserChurch'
+import { formatChurchLevel } from 'lib/scope-display'
 import { Skeleton } from 'components/ui/skeleton'
 import {
   Dialog,
@@ -44,9 +46,6 @@ import {
   LATEST_SERVICE_FOR_GOVERNORSHIP,
   LATEST_SERVICE_FOR_STREAM,
 } from 'pages/services/ServicesQueries'
-
-const formatChurchLevel = (churchType?: string) =>
-  churchType ? churchType.replace(/([a-z])([A-Z])/g, '$1 $2') : ''
 
 const SERVICE_LEVELS = ['Bacenta', 'Stream', 'Governorship', 'Council', 'Campus'] as const
 type ServiceLevel = (typeof SERVICE_LEVELS)[number]
@@ -131,6 +130,7 @@ const ServicesMenu = () => {
 }
 
 const ServicesMenuInner = () => {
+  const { t } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const { setUserChurch } = useSetUserChurch()
@@ -212,6 +212,8 @@ const ServicesMenuInner = () => {
     !navOverride && isManualBanking && churchType === 'Stream'
   const showDefaulters = !navOverride && !!churchType && churchType !== 'Bacenta'
 
+  const levelLabel = formatChurchLevel(churchType, t)
+
   const handleServiceThisWeek = () => {
     if (!latestService || !routeSlug) return
     clickCard({ __typename: 'ServiceRecord', id: latestService.id })
@@ -234,12 +236,10 @@ const ServicesMenuInner = () => {
       <StickyPageHeader>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {churchName ?? ''}{' '}
-          <span className="text-churches">Services</span>
+          <span className="text-churches">{t('services.menu.title')}</span>
         </h1>
         {churchType && (
-          <p className="text-sm text-muted-foreground">
-            {formatChurchLevel(churchType)}
-          </p>
+          <p className="text-sm text-muted-foreground">{levelLabel}</p>
         )}
       </StickyPageHeader>
       <main className="mx-auto max-w-4xl px-4 py-5 lg:px-6 lg:py-8">
@@ -252,8 +252,8 @@ const ServicesMenuInner = () => {
               <MenuCard
                 icon={<CalendarCheck className="h-5 w-5" />}
                 accent="bg-members/10 text-members"
-                title="Service This Week"
-                description="View the service you filled this week"
+                title={t('services.menu.serviceThisWeek')}
+                description={t('services.menu.serviceThisWeekDescription')}
                 onClick={handleServiceThisWeek}
               />
             ) : (
@@ -261,14 +261,18 @@ const ServicesMenuInner = () => {
                 icon={<BookOpen className="h-5 w-5" />}
                 accent="bg-members/10 text-members"
                 title={
-                  isCongregationLevel ? 'Record Service' : 'Record Joint Service'
+                  isCongregationLevel
+                    ? t('services.menu.recordService')
+                    : t('services.menu.recordJointService')
                 }
                 description={
                   isCongregationLevel
-                    ? `Fill this week's ${formatChurchLevel(churchType)} service`
-                    : `Optional — fill if a joint ${formatChurchLevel(
-                        churchType
-                      )} service was held this week`
+                    ? t('services.menu.recordServiceDescription', {
+                        level: levelLabel,
+                      })
+                    : t('services.menu.recordJointServiceDescription', {
+                        level: levelLabel,
+                      })
                 }
                 onClick={handleRecordService}
               />
@@ -277,8 +281,8 @@ const ServicesMenuInner = () => {
           <MenuCard
             icon={<BarChart3 className="h-5 w-5" />}
             accent="bg-members/10 text-members"
-            title="Trends"
-            description="Attendance and income trends"
+            title={t('services.menu.trends')}
+            description={t('services.menu.trendsDescription')}
             onClick={() => {
               if (churchId && churchType)
                 clickCard({ id: churchId, name: churchName, __typename: churchType })
@@ -290,8 +294,8 @@ const ServicesMenuInner = () => {
             <MenuCard
               icon={<FileUp className="h-5 w-5" />}
               accent="bg-banking/10 text-banking"
-              title="Banking Slips"
-              description="Upload and review banking slips"
+              title={t('services.menu.bankingSlips')}
+              description={t('services.menu.bankingSlipsDescription')}
               onClick={() => {
                 if (churchId && churchType)
                   clickCard({ id: churchId, name: churchName, __typename: churchType })
@@ -304,8 +308,8 @@ const ServicesMenuInner = () => {
             <MenuCard
               icon={<Coins className="h-5 w-5" />}
               accent="bg-banking/10 text-banking"
-              title="Self Banking"
-              description="Bank service offerings yourself"
+              title={t('services.menu.selfBanking')}
+              description={t('services.menu.selfBankingDescription')}
               onClick={() => navigate(`/services/${routeSlug}/self-banking`)}
             />
           )}
@@ -316,8 +320,8 @@ const ServicesMenuInner = () => {
                 <MenuCard
                   icon={<UserPlus className="h-5 w-5" />}
                   accent="bg-banking/10 text-banking"
-                  title="Add Stream Tellers"
-                  description="Assign tellers for midweek offerings"
+                  title={t('services.menu.addStreamTellers')}
+                  description={t('services.menu.addStreamTellersDescription')}
                   onClick={() => navigate('/manual-banking/teller-select')}
                 />
               </RoleView>
@@ -325,8 +329,10 @@ const ServicesMenuInner = () => {
                 <MenuCard
                   icon={<HandCoins className="h-5 w-5" />}
                   accent="bg-banking/10 text-banking"
-                  title="Receive Midweek Offering"
-                  description="Record offerings handed in by Bacentas"
+                  title={t('services.menu.receiveMidweekOffering')}
+                  description={t(
+                    'services.menu.receiveMidweekOfferingDescription'
+                  )}
                   onClick={() => navigate('/manual-banking/receive-banking')}
                 />
               </RoleView>
@@ -342,8 +348,8 @@ const ServicesMenuInner = () => {
               <MenuCard
                 icon={<Frown className="h-5 w-5" />}
                 accent="bg-defaulters/10 text-defaulters"
-                title="Defaulters"
-                description="Churches missing services or banking this week"
+                title={t('services.menu.defaulters')}
+                description={t('services.menu.defaultersDescription')}
                 onClick={() => {
                   // SYN-191: entering Defaulters from the menu pins the
                   // dashboard to the menu's church (home scope / nav override),
@@ -370,9 +376,9 @@ const ServicesMenuInner = () => {
       <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Record this week&apos;s service</DialogTitle>
+            <DialogTitle>{t('services.menu.dialogTitle')}</DialogTitle>
             <DialogDescription>
-              Did the service take place this week?
+              {t('services.menu.dialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2 pt-1">
@@ -389,10 +395,10 @@ const ServicesMenuInner = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground">
-                  Record Service
+                  {t('services.menu.recordService')}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  We met this week — fill the service form
+                  {t('services.menu.recordServiceOptionDescription')}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -410,10 +416,10 @@ const ServicesMenuInner = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground">
-                  I Cancelled My Service
+                  {t('services.menu.cancelledServiceOption')}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  No service this week — give a reason
+                  {t('services.menu.cancelledServiceOptionDescription')}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />

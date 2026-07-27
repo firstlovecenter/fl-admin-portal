@@ -1,4 +1,5 @@
 import { AlertTriangle, FileSpreadsheet, Inbox } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { useChurchRoleScope } from 'contexts/ChurchRoleScopeContext'
 import { Alert, AlertDescription } from 'components/ui/alert'
@@ -12,16 +13,19 @@ import useArrivalsExport from 'pages/arrivals/utils/useArrivalsExport'
 import ReportPageShell from '../_shared/ReportPageShell'
 import ArrivalsReportPreview from './ArrivalsReportPreview'
 
-const DateSection = () => (
-  <section className="rounded-xl border border-border bg-card p-4">
-    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-      Bussing date
-    </p>
-    <div className="mt-3">
-      <ArrivalDateSelector />
-    </div>
-  </section>
-)
+const DateSection = () => {
+  const { t } = useTranslation()
+  return (
+    <section className="rounded-xl border border-border bg-card p-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {t('reports.arrivals.bussingDate')}
+      </p>
+      <div className="mt-3">
+        <ArrivalDateSelector />
+      </div>
+    </section>
+  )
+}
 
 const PreviewSkeleton = () => (
   <div className="space-y-4">
@@ -35,22 +39,26 @@ type EmptyStateProps = {
   message: string
 }
 
-const EmptyState = ({ message }: EmptyStateProps) => (
-  <section className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-12 text-center">
-    <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
-      <Inbox className="size-7" />
-    </div>
-    <div className="space-y-1">
-      <h2 className="text-base font-semibold text-foreground">
-        Nothing to preview
-      </h2>
-      <p className="text-sm text-muted-foreground">{message}</p>
-    </div>
-    <FileSpreadsheet className="size-5 text-muted-foreground/60" />
-  </section>
-)
+const EmptyState = ({ message }: EmptyStateProps) => {
+  const { t } = useTranslation()
+  return (
+    <section className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-12 text-center">
+      <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Inbox className="size-7" />
+      </div>
+      <div className="space-y-1">
+        <h2 className="text-base font-semibold text-foreground">
+          {t('reports.arrivals.nothingToPreview')}
+        </h2>
+        <p className="text-sm text-muted-foreground">{message}</p>
+      </div>
+      <FileSpreadsheet className="size-5 text-muted-foreground/60" />
+    </section>
+  )
+}
 
 const ArrivalsReportPage = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   const { arrivalDate, dateLabel } = useSelectedArrivalDate()
 
@@ -70,12 +78,12 @@ const ArrivalsReportPage = () => {
   if (!selectedScope) {
     return (
       <ReportPageShell
-        title="Arrivals"
-        highlightWord="Report"
+        title={t('reports.arrivals.title')}
+        highlightWord={t('reports.arrivals.report')}
         highlightClassName="text-arrivals"
       >
         <p className="text-sm text-muted-foreground">
-          Select a church scope to preview the arrivals report.
+          {t('reports.arrivals.selectScope')}
         </p>
       </ReportPageShell>
     )
@@ -88,17 +96,15 @@ const ArrivalsReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Arrivals Report"
+      highlightWord={t('reports.arrivals.highlight')}
       highlightClassName="text-arrivals"
-      subtitle={`Preview the arrivals snapshot for any Sunday — per-Bacenta detail, per-vehicle detail, and a summary by sub-church at Council and above — then download the full workbook.`}
+      subtitle={t('reports.arrivals.subtitle')}
     >
       <div className="space-y-6">
         <DateSection />
 
         {!downloadable && (
-          <EmptyState
-            message="Arrivals download is available at Governorship, Council, Stream, and Campus scopes. Switch your church-in-focus to one of those levels to enable it."
-          />
+          <EmptyState message={t('reports.arrivals.unavailableScope')} />
         )}
 
         {downloadable && loading && <PreviewSkeleton />}
@@ -112,9 +118,10 @@ const ArrivalsReportPage = () => {
 
         {downloadable && !loading && !error && payload && !hasPayloadData && (
           <EmptyState
-            message={`No arrivals data recorded for ${
-              payload.churchName || 'this church'
-            } on ${dateLabel}. Pick a different Sunday to preview that week.`}
+            message={t('reports.arrivals.noDataForDate', {
+              church: payload.churchName || t('reports.shared.thisChurch'),
+              date: dateLabel,
+            })}
           />
         )}
 

@@ -25,7 +25,9 @@ const PreMobilisationPicture = () => {
   return (
     <ApolloWrapper loading={loading} error={error} data={data} placeholder>
       <div className="mx-auto w-full max-w-screen-md space-y-4 px-4 text-center">
-        <HeadingPrimary>{t('arrivals.common.mobilisationPicture')}</HeadingPrimary>
+        <HeadingPrimary>
+          {t('arrivals.common.mobilisationPicture')}
+        </HeadingPrimary>
         <CloudinaryImage
           className="report-picture"
           src={bussing?.mobilisationPicture}

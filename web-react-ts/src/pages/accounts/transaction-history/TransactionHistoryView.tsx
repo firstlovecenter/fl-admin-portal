@@ -1,6 +1,7 @@
 import React, { useContext, useMemo, useState } from 'react'
 import { DocumentNode } from '@apollo/client'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { CSVLink } from 'react-csv'
 import {
   Check,
@@ -35,8 +36,14 @@ import {
 } from 'components/ui/table'
 import { cn } from 'components/lib/utils'
 import CurrencySpan from 'components/CurrencySpan'
+import {
+  translateAccountLabel,
+  translateCategoryLabel,
+  translateStatusLabel,
+} from '../accounts-i18n'
 import { AccountTransaction } from './transaction-types'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import type { TFunction } from 'i18next'
 
 const INITIAL_PAGE_SIZE = 25
 const PAGE_SIZE = 25
@@ -64,18 +71,30 @@ const formatShortDate = (iso: string | undefined) =>
       })
     : '—'
 
-const StatusIcon = ({ status }: { status: string | undefined }) => {
+const StatusIcon = ({
+  status,
+  labels,
+}: {
+  status: string | undefined
+  labels: {
+    success: string
+    pending: string
+    declined: string
+  }
+}) => {
   if (status === 'success')
-    return <Check className="size-4 text-emerald-500" aria-label="success" />
+    return <Check className="size-4 text-emerald-500" aria-label={labels.success} />
   if (status === 'pending approval')
     return (
       <CircleHelp
         className="size-4 text-amber-500"
-        aria-label="pending approval"
+        aria-label={labels.pending}
       />
     )
   if (status === 'declined')
-    return <XCircle className="size-4 text-destructive" aria-label="declined" />
+    return (
+      <XCircle className="size-4 text-destructive" aria-label={labels.declined} />
+    )
   return null
 }
 
@@ -89,28 +108,31 @@ const SortIcon = ({ sorted }: { sorted: 'asc' | 'desc' | false }) => {
 
 const buildCsvData = (
   transactions: AccountTransaction[] | undefined,
-  showCouncilColumn: boolean
+  showCouncilColumn: boolean,
+  t: TFunction
 ) =>
-  (transactions ?? []).map((t) => ({
-    createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : '',
-    lastModified: t.lastModified ? new Date(t.lastModified).toISOString() : '',
+  (transactions ?? []).map((row) => ({
+    createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : '',
+    lastModified: row.lastModified
+      ? new Date(row.lastModified).toISOString()
+      : '',
     ...(showCouncilColumn
       ? {
-          council: t.council?.name ?? '',
-          leader: t.council?.leader?.fullName ?? '',
+          council: row.council?.name ?? '',
+          leader: row.council?.leader?.fullName ?? '',
         }
       : {}),
-    type: t.category,
-    account: t.account,
-    success: t.status,
-    credit: t.category === 'Deposit' ? t.amount : null,
-    debit: t.category !== 'Deposit' ? t.amount : null,
-    charge: t.charge,
-    weekdayBalance: t.weekdayBalance?.toLocaleString('en-US') ?? '',
+    type: translateCategoryLabel(t, row.category),
+    account: translateAccountLabel(t, row.account),
+    success: translateStatusLabel(t, row.status),
+    credit: row.category === 'Deposit' ? row.amount : null,
+    debit: row.category !== 'Deposit' ? row.amount : null,
+    charge: row.charge,
+    weekdayBalance: row.weekdayBalance?.toLocaleString('en-US') ?? '',
     bussingSocietyBalance:
-      t.bussingSocietyBalance?.toLocaleString('en-US') ?? '',
-    depositedBy: t.loggedBy?.fullName ?? '',
-    description: t.description,
+      row.bussingSocietyBalance?.toLocaleString('en-US') ?? '',
+    depositedBy: row.loggedBy?.fullName ?? '',
+    description: row.description,
   }))
 
 const columnHelper = createColumnHelper<AccountTransaction>()
@@ -123,6 +145,7 @@ const TransactionHistoryView = <TData,>({
   churchType,
   showCouncilColumn = false,
 }: TransactionHistoryViewProps<TData>) => {
+  const { t } = useTranslation()
   const [sorting, setSorting] = useState<SortingState>([])
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
@@ -157,10 +180,19 @@ const TransactionHistoryView = <TData,>({
   const parent = pluckParent(data)
   const parentName = parent?.name
 
+  const statusLabels = useMemo(
+    () => ({
+      success: t('accounts.history.statusSuccess'),
+      pending: t('accounts.history.statusPending'),
+      declined: t('accounts.history.statusDeclined'),
+    }),
+    [t]
+  )
+
   const columns = useMemo(
     () => [
       columnHelper.accessor('lastModified', {
-        header: 'Date',
+        header: t('accounts.history.colDate'),
         sortingFn: 'datetime',
         cell: (info) => (
           <span className="text-foreground">
@@ -172,7 +204,7 @@ const TransactionHistoryView = <TData,>({
         ? [
             columnHelper.accessor((row) => row.council?.name ?? '', {
               id: 'council',
-              header: 'Council',
+              header: t('accounts.history.colCouncil'),
               cell: (info) => (
                 <span className="truncate text-foreground">
                   {info.getValue()}
@@ -182,23 +214,25 @@ const TransactionHistoryView = <TData,>({
           ]
         : [
             columnHelper.accessor('account', {
-              header: 'Account',
+              header: t('accounts.history.colAccount'),
               cell: (info) => (
                 <span className="truncate text-foreground">
-                  {info.getValue()}
+                  {translateAccountLabel(t, info.getValue())}
                 </span>
               ),
             }),
           ]),
       columnHelper.accessor('category', {
-        header: 'Category',
+        header: t('accounts.history.colCategory'),
         cell: (info) => (
-          <span className="text-muted-foreground">{info.getValue()}</span>
+          <span className="text-muted-foreground">
+            {translateCategoryLabel(t, info.getValue())}
+          </span>
         ),
       }),
       columnHelper.accessor((row) => (row.amount ?? 0) + (row.charge ?? 0), {
         id: 'total',
-        header: 'Amount',
+        header: t('accounts.history.colAmount'),
         sortingFn: 'basic',
         cell: ({ row, getValue }) => (
           <span
@@ -219,12 +253,12 @@ const TransactionHistoryView = <TData,>({
         enableSorting: false,
         cell: (info) => (
           <span className="flex justify-center">
-            <StatusIcon status={info.getValue()} />
+            <StatusIcon status={info.getValue()} labels={statusLabels} />
           </span>
         ),
       }),
     ],
-    [showCouncilColumn]
+    [showCouncilColumn, statusLabels, t]
   )
 
   const table = useReactTable({
@@ -240,29 +274,37 @@ const TransactionHistoryView = <TData,>({
 
   const csvData = buildCsvData(
     table.getRowModel().rows.map((row) => row.original),
-    showCouncilColumn
+    showCouncilColumn,
+    t
   )
 
   const csvHeaders = [
-    { label: 'Created At', key: 'createdAt' },
-    { label: 'Last Modified', key: 'lastModified' },
+    { label: t('accounts.history.csvCreatedAt'), key: 'createdAt' },
+    { label: t('accounts.history.csvLastModified'), key: 'lastModified' },
     ...(showCouncilColumn
       ? [
-          { label: 'Council', key: 'council' },
-          { label: 'Leader', key: 'leader' },
+          { label: t('accounts.history.csvCouncil'), key: 'council' },
+          { label: t('accounts.history.csvLeader'), key: 'leader' },
         ]
       : []),
-    { label: 'Type', key: 'type' },
-    { label: 'Account', key: 'account' },
-    { label: 'Status', key: 'success' },
-    { label: 'Credit', key: 'credit' },
-    { label: 'Debit', key: 'debit' },
-    { label: 'Charge', key: 'charge' },
-    { label: 'Weekday Balance', key: 'weekdayBalance' },
-    { label: 'Bussing Society Balance', key: 'bussingSocietyBalance' },
-    { label: 'Recorded By', key: 'depositedBy' },
-    { label: 'Description', key: 'description' },
+    { label: t('accounts.history.csvType'), key: 'type' },
+    { label: t('accounts.history.csvAccount'), key: 'account' },
+    { label: t('accounts.history.csvStatus'), key: 'success' },
+    { label: t('accounts.history.csvCredit'), key: 'credit' },
+    { label: t('accounts.history.csvDebit'), key: 'debit' },
+    { label: t('accounts.history.csvCharge'), key: 'charge' },
+    { label: t('accounts.history.csvWeekdayBalance'), key: 'weekdayBalance' },
+    {
+      label: t('accounts.history.csvBussingSocietyBalance'),
+      key: 'bussingSocietyBalance',
+    },
+    { label: t('accounts.history.csvRecordedBy'), key: 'depositedBy' },
+    { label: t('accounts.history.csvDescription'), key: 'description' },
   ]
+
+  const churchTypeLabel = t(`shared.churchLevel.${churchType}`, {
+    defaultValue: churchType,
+  })
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
@@ -273,12 +315,13 @@ const TransactionHistoryView = <TData,>({
           ) : (
             <Skeleton className="mr-2 inline-block h-7 w-40 align-middle" />
           )}
-          <span className="text-banking">Transaction History</span>
+          <span className="text-banking">
+            {t('accounts.history.titleHighlight')}
+          </span>
         </h1>
         {totalCount !== undefined && (
           <p className="text-sm text-muted-foreground">
-            {totalCount} {totalCount === 1 ? 'transaction' : 'transactions'}{' '}
-            recorded.
+            {t('accounts.history.transactionCount', { count: totalCount })}
           </p>
         )}
       </StickyPageHeader>
@@ -292,17 +335,20 @@ const TransactionHistoryView = <TData,>({
               className="gap-1.5"
             >
               <Download className="size-4" />
-              Download CSV
+              {t('accounts.history.downloadCsv')}
             </Button>
           ) : (
             <Button variant="outline" size="default" asChild className="gap-1.5">
               <CSVLink
-                filename={`${parentName ?? ''} ${churchType} Transaction History.csv`}
+                filename={t('accounts.history.csvFilename', {
+                  name: parentName ?? '',
+                  churchType: churchTypeLabel,
+                })}
                 headers={csvHeaders}
                 data={csvData}
               >
                 <Download className="size-4" />
-                Download CSV
+                {t('accounts.history.downloadCsv')}
               </CSVLink>
             </Button>
           )}
@@ -317,7 +363,7 @@ const TransactionHistoryView = <TData,>({
             </div>
           ) : items.length === 0 ? (
             <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-              No transactions yet.
+              {t('accounts.history.empty')}
             </p>
           ) : (
             <Table>

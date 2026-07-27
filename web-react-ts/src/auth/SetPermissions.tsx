@@ -8,12 +8,14 @@ import { capitalise, throwToSentry } from 'global-utils'
 import { getUserServantRoles } from 'pages/dashboards/dashboard-utils'
 import { permitMe } from 'permission-utils'
 import { useContext, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from 'contexts/AuthContext'
 import useAuthPermissions from './useAuth'
 import { useLocation } from 'react-router-dom'
 import { isPublicAuthRoute } from 'lib/auth-service'
 
 const SetPermissions = ({ children }: { children: JSX.Element }) => {
+  const { t } = useTranslation()
   const { currentUser, setUserJobs, setCurrentUser } = useContext(MemberContext)
   const { doNotUse } = useContext(ChurchContext)
   const { isAuthenticated, user } = useAuth()
@@ -50,7 +52,8 @@ const SetPermissions = ({ children }: { children: JSX.Element }) => {
             ?.id
         const campusId =
           memberData?.bacenta?.governorship?.council?.stream?.campus?.id
-        const campus = memberData?.bacenta?.governorship?.council?.stream?.campus
+        const campus =
+          memberData?.bacenta?.governorship?.council?.stream?.campus
         const tellerStreamFallback = memberData?.isTellerForStream?.[0]
         const streamId =
           memberData?.bacenta?.governorship?.council?.stream?.id ??
@@ -174,7 +177,7 @@ const SetPermissions = ({ children }: { children: JSX.Element }) => {
   // Show loading while fetching member data, or while we're still unauthenticated
   // (token rotation in flight) on a protected route.
   if (loggedInLoading || !isAuthenticated) {
-    return <InitialLoading text={'Retrieving your church information...'} />
+    return <InitialLoading text={t('shared.retrievingChurch')} />
   }
 
   return (

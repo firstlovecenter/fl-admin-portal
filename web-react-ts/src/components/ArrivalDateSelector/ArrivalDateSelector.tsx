@@ -1,4 +1,5 @@
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from 'components/ui/button'
 import { cn } from 'components/lib/utils'
@@ -9,6 +10,7 @@ type ArrivalDateSelectorProps = {
 }
 
 const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
+  const { t } = useTranslation()
   const {
     arrivalDate,
     weekLabel,
@@ -37,7 +39,7 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
           className="size-11 lg:size-9"
           onClick={prevWeek}
           disabled={!hasPrev}
-          aria-label="Previous week"
+          aria-label={t('shared.weekSelector.previousWeek')}
         >
           <ChevronLeft />
         </Button>
@@ -60,7 +62,7 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
           className="size-11 lg:size-9"
           onClick={nextWeek}
           disabled={!hasNext}
-          aria-label="Next week"
+          aria-label={t('shared.weekSelector.nextWeek')}
         >
           <ChevronRight />
         </Button>
@@ -70,7 +72,7 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
         <div
           className="flex flex-wrap justify-center gap-2"
           role="group"
-          aria-label="Bussing days this week"
+          aria-label={t('shared.arrivalDateSelector.bussingDays')}
         >
           {daysInWeek.map((day) => {
             const active = day.date === arrivalDate
@@ -98,7 +100,7 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
       {weekIsEmpty && (
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed bg-muted/30 px-4 py-3 text-center">
           <span className="text-sm text-muted-foreground">
-            No bussings this week
+            {t('shared.arrivalDateSelector.noBussings')}
           </span>
           {hasNearest && (
             <Button
@@ -108,7 +110,7 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
               className="min-h-11 gap-2"
               onClick={jumpToNearest}
             >
-              Jump to nearest
+              {t('shared.arrivalDateSelector.jumpToNearest')}
               <ArrowRight className="size-4" />
             </Button>
           )}
@@ -123,7 +125,7 @@ const ArrivalDateSelector = ({ className }: ArrivalDateSelectorProps) => {
           className="min-h-11 self-center px-3 text-muted-foreground"
           onClick={resetToCurrent}
         >
-          Reset to today
+          {t('shared.arrivalDateSelector.resetToToday')}
         </Button>
       )}
     </div>

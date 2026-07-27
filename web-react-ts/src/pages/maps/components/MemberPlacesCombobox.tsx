@@ -31,7 +31,9 @@ const getName = (place: PlaceSuggestion) => {
     return `${place.typename}: ${place.name}`
   }
   if (place.firstName) {
-    return `${place.typename}: ${place.firstName} ${place.lastName ?? ''}`.trim()
+    return `${place.typename}: ${place.firstName} ${
+      place.lastName ?? ''
+    }`.trim()
   }
   return ''
 }

@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
 import { getHumanReadableDate } from 'global-utils'
 import ApplyBar from '../_shared/ApplyBar'
@@ -18,26 +20,51 @@ import {
   type WeeklyChurchReportEntryWithAncestors,
 } from '../_shared/report-types'
 
-const METRIC_HEADERS = [
-  { label: 'Year', key: 'year' },
-  { label: 'Week', key: 'week' },
-  { label: 'Service Attendance', key: 'serviceAttendance' },
-  { label: 'Number of Services', key: 'numberOfServices' },
-  { label: 'Service Income', key: 'serviceIncome' },
-  { label: 'Service Income (USD)', key: 'serviceDollarIncome' },
-] as const
+const levelLabel = (level: string, t: TFunction) =>
+  t(`shared.churchLevel.${level}`)
 
-const decoratorHeadersFor = (level: SubChurchesTargetLevel) => [
-  { key: `${level}_name`, label: level },
-  { key: `${level}_leader`, label: `${level} Leader` },
-  { key: `${level}_phone`, label: `${level} Leader Phone` },
-]
+const metricHeaders = (t: TFunction) =>
+  [
+    { label: t('reports.shared.year'), key: 'year' },
+    { label: t('reports.shared.week'), key: 'week' },
+    {
+      label: t('reports.shared.serviceAttendance'),
+      key: 'serviceAttendance',
+    },
+    {
+      label: t('reports.shared.numberOfServices'),
+      key: 'numberOfServices',
+    },
+    { label: t('reports.shared.serviceIncome'), key: 'serviceIncome' },
+    {
+      label: t('reports.shared.serviceIncomeUsd'),
+      key: 'serviceDollarIncome',
+    },
+  ] as const
 
-const buildHeaders = (selected: readonly SubChurchesTargetLevel[]) => {
+const decoratorHeadersFor = (level: SubChurchesTargetLevel, t: TFunction) => {
+  const label = levelLabel(level, t)
+  return [
+    { key: `${level}_name`, label },
+    {
+      key: `${level}_leader`,
+      label: t('reports.shared.levelLeader', { level: label }),
+    },
+    {
+      key: `${level}_phone`,
+      label: t('reports.shared.levelLeaderPhone', { level: label }),
+    },
+  ]
+}
+
+const buildHeaders = (
+  selected: readonly SubChurchesTargetLevel[],
+  t: TFunction
+) => {
   const ordered = SUB_CHURCH_TARGETS_ORDERED.filter((l) => selected.includes(l))
   return [
-    ...ordered.flatMap(decoratorHeadersFor),
-    ...METRIC_HEADERS.map((h) => ({ key: h.key, label: h.label })),
+    ...ordered.flatMap((l) => decoratorHeadersFor(l, t)),
+    ...metricHeaders(t).map((h) => ({ key: h.key, label: h.label })),
   ]
 }
 
@@ -82,18 +109,25 @@ const buildRow = (
 // right edge — the full triplet (Name / Leader / Leader Phone) is still
 // in the downloaded CSV.
 const previewColumnsFor = (
-  selected: readonly SubChurchesTargetLevel[]
+  selected: readonly SubChurchesTargetLevel[],
+  t: TFunction
 ) => {
   const ordered = SUB_CHURCH_TARGETS_ORDERED.filter((l) => selected.includes(l))
   return [
-    ...ordered.flatMap((l) => [
-      { key: `${l}_name`, label: l },
-      { key: `${l}_leader`, label: `${l} Leader` },
-    ]),
-    { key: 'year', label: 'Year' },
-    { key: 'week', label: 'Week' },
-    { key: 'serviceIncome', label: 'Income' },
-    { key: 'serviceAttendance', label: 'Attendance' },
+    ...ordered.flatMap((l) => {
+      const label = levelLabel(l, t)
+      return [
+        { key: `${l}_name`, label },
+        {
+          key: `${l}_leader`,
+          label: t('reports.shared.levelLeader', { level: label }),
+        },
+      ]
+    }),
+    { key: 'year', label: t('reports.shared.year') },
+    { key: 'week', label: t('reports.shared.week') },
+    { key: 'serviceIncome', label: t('reports.shared.income') },
+    { key: 'serviceAttendance', label: t('reports.shared.attendance') },
   ]
 }
 
@@ -101,6 +135,7 @@ const levelKey = (levels: readonly SubChurchesTargetLevel[]) =>
   levels.join(',')
 
 const WeekdaySubChurchesReportPage = () => {
+  const { t } = useTranslation()
   const defaults = useMemo(() => defaultRangeIsoStrings(), [])
 
   const [draftLevels, setDraftLevels] = useState<SubChurchesTargetLevel[]>(
@@ -163,8 +198,8 @@ const WeekdaySubChurchesReportPage = () => {
   }
 
   const headers = useMemo(
-    () => buildHeaders(appliedLevels),
-    [appliedLevels]
+    () => buildHeaders(appliedLevels, t),
+    [appliedLevels, t]
   )
   const rows = useMemo(
     () =>
@@ -177,8 +212,8 @@ const WeekdaySubChurchesReportPage = () => {
   // rebuild on every parent render. See BussingSubChurchesReportPage
   // for the full freeze-cause writeup.
   const previewColumns = useMemo(
-    () => (appliedTarget ? previewColumnsFor(appliedLevels) : []),
-    [appliedLevels, appliedTarget]
+    () => (appliedTarget ? previewColumnsFor(appliedLevels, t) : []),
+    [appliedLevels, appliedTarget, t]
   )
 
   const filename = useMemo(() => {
@@ -188,14 +223,28 @@ const WeekdaySubChurchesReportPage = () => {
     return `${safeChurchName ? `${safeChurchName} ` : ''}${
       scope ?? ''
     } Weekday by ${appliedTarget ?? 'Sub-Church'} - ${generatedOn}.csv`
-  }, [churchName, scope, appliedTarget])
+    // `t` is in the deps purely as the language signal: getHumanReadableDate
+    // reads the active locale off the i18next singleton, which useMemo cannot
+    // see on its own — without it the filename keeps the previous locale's
+    // month name after a mid-session language switch.
+  }, [churchName, scope, appliedTarget, t])
+
+  const targetLabel = appliedTarget
+    ? levelLabel(appliedTarget, t)
+    : t('reports.shared.subChurch')
+  const byTitle = t('reports.shared.byLevel', {
+    report: t('reports.weekday.reportName'),
+    level: targetLabel,
+  })
 
   if (!scope) {
     return (
-      <ReportPageShell title="Weekday" highlightWord="Sub-Churches">
+      <ReportPageShell
+        title={t('reports.weekday.title')}
+        highlightWord={t('reports.weekday.subChurches')}
+      >
         <p className="text-sm text-muted-foreground">
-          Sub-church weekday breakdowns aren&apos;t available at your current
-          scope.
+          {t('reports.weekday.scopeUnavailable')}
         </p>
       </ReportPageShell>
     )
@@ -204,8 +253,8 @@ const WeekdaySubChurchesReportPage = () => {
   return (
     <ReportPageShell
       title={churchName}
-      highlightWord="Weekday by Sub-Church"
-      subtitle="Pick the row level and which ancestor columns to include, then click Apply to refresh the report."
+      highlightWord={t('reports.weekday.bySubChurch')}
+      subtitle={t('reports.shared.pickerSubtitle')}
     >
       <div className="space-y-6">
         <SubChurchLevelPicker
@@ -229,10 +278,13 @@ const WeekdaySubChurchesReportPage = () => {
 
         <ApolloWrapper data={entries} loading={loading} error={error} placeholder>
           <WeeklyReportDownloadCard
-            title={`Weekday by ${appliedTarget ?? 'Sub-Church'}`}
-            description={`Per-week weekday attendance and income at the ${
-              appliedTarget?.toLowerCase() ?? 'sub-church'
-            } level, with ancestor decoration columns for every ticked level above.`}
+            title={byTitle}
+            description={t('reports.shared.perWeekAtLevel', {
+              metric: t('reports.weekday.metricPhrase'),
+              level: appliedTarget
+                ? levelLabel(appliedTarget, t)
+                : t('reports.shared.subChurchFallback'),
+            })}
             filename={filename}
             loading={loading}
             rows={rows}
@@ -240,7 +292,7 @@ const WeekdaySubChurchesReportPage = () => {
             entriesCount={entries.length}
             rangeLabel={rangeLabel ?? undefined}
             previewColumns={previewColumns}
-            emptyMessage="No weekday aggregates in the selected range."
+            emptyMessage={t('reports.weekday.emptyMessage')}
           />
         </ApolloWrapper>
       </div>

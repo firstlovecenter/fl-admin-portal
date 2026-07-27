@@ -6,6 +6,7 @@ import {
   MonitorPlay,
   MonitorUp,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import { MemberContext } from 'contexts/MemberContext'
 import { isAuthorised } from 'global-utils'
@@ -41,6 +42,7 @@ const DEFAULT_METRIC_A: MetricKey = 'serviceAttendance'
 const DEFAULT_METRIC_B: MetricKey = 'income'
 
 const ShepherdingControlSession = () => {
+  const { t } = useTranslation()
   const { currentUser } = useContext(MemberContext)
 
   const startingScope = useMemo<SlideNode | null>(() => {
@@ -191,20 +193,24 @@ const ShepherdingControlSession = () => {
   if (!startingScope) {
     return (
       <div className="dark flex min-h-svh flex-col items-center justify-center bg-background p-8 text-center text-foreground">
-        <h2 className="text-3xl font-semibold">No leader scope detected</h2>
+        <h2 className="text-3xl font-semibold">
+          {t('shepherding.noLeaderScopeTitle')}
+        </h2>
         <p className="mt-2 max-w-md text-xl text-muted-foreground">
-          You need to be a leader or admin from Governorship up to use
-          Shepherding Control.
+          {t('shepherding.noLeaderScopeBody')}
         </p>
       </div>
     )
   }
 
   if (!current) {
-    return <LoadingScreen text="Loading Shepherding Control…" />
+    return <LoadingScreen text={t('shepherding.loading')} />
   }
 
-  const weekLabel = `Week ${anchor.week} · ${anchor.year}`
+  const weekLabel = t('shepherding.weekLabel', {
+    week: anchor.week,
+    year: anchor.year,
+  })
   const levelIndex = SHEPHERDING_LEVELS.indexOf(current.type)
 
   return (
@@ -212,13 +218,13 @@ const ShepherdingControlSession = () => {
       {/* Edge-tap regions for touch — left/right thirds advance siblings */}
       <button
         type="button"
-        aria-label="Previous sibling"
+        aria-label={t('shepherding.previousSibling')}
         onClick={() => goSibling(-1)}
         className="pointer-events-auto absolute inset-y-0 left-0 z-10 w-1/3 cursor-w-resize bg-transparent opacity-0 focus:opacity-0"
       />
       <button
         type="button"
-        aria-label="Next sibling"
+        aria-label={t('shepherding.nextSibling')}
         onClick={() => goSibling(1)}
         className="pointer-events-auto absolute inset-y-0 right-0 z-10 w-1/3 cursor-e-resize bg-transparent opacity-0 focus:opacity-0"
       />
@@ -237,7 +243,7 @@ const ShepherdingControlSession = () => {
                     : ''
                 }
               >
-                {node.name || node.type}
+                {node.name || t(`shared.churchLevel.${node.type}`)}
               </span>
             </span>
           ))}
@@ -253,8 +259,8 @@ const ShepherdingControlSession = () => {
               className="min-h-12 gap-2 text-lg"
               title={
                 projector.isConnected
-                  ? 'Projector window open — click to focus'
-                  : 'Open a second window for projection'
+                  ? t('shepherding.projectorOpenTitle')
+                  : t('shepherding.castTitle')
               }
             >
               {projector.isConnected ? (
@@ -262,7 +268,9 @@ const ShepherdingControlSession = () => {
               ) : (
                 <MonitorUp className="size-5" />
               )}
-              {projector.isConnected ? 'Projector' : 'Cast'}
+              {projector.isConnected
+                ? t('shepherding.projector.label')
+                : t('shepherding.cast')}
             </Button>
           )}
           <Button
@@ -273,7 +281,7 @@ const ShepherdingControlSession = () => {
             className="min-h-12 gap-2 text-lg"
           >
             <FileDown className="size-5" />
-            PDF
+            {t('shepherding.pdf')}
           </Button>
         </div>
       </div>
@@ -294,12 +302,12 @@ const ShepherdingControlSession = () => {
         <div className="flex flex-wrap items-end gap-4">
           <WindowSizeToggle value={windowWeeks} onChange={setWindowWeeks} />
           <MetricPicker
-            label="Metric A"
+            label={t('shepherding.metricA')}
             value={metricA}
             onChange={(next) => next && setMetricA(next)}
           />
           <MetricPicker
-            label="Metric B"
+            label={t('shepherding.metricB')}
             value={metricB}
             onChange={setMetricB}
             allowNone
@@ -315,7 +323,7 @@ const ShepherdingControlSession = () => {
             className="min-h-12 gap-2 text-lg"
           >
             <ChevronLeft className="size-5" />
-            Older
+            {t('shepherding.older')}
           </Button>
           <span className="min-w-44 text-center text-xl tabular-nums text-muted-foreground">
             {weekLabel}
@@ -327,15 +335,19 @@ const ShepherdingControlSession = () => {
             onClick={handleNewer}
             className="min-h-12 gap-2 text-lg"
           >
-            Newer
+            {t('shepherding.newer')}
             <ChevronRight className="size-5" />
           </Button>
         </div>
 
         {siblings.length > 1 && siblingIndex >= 0 && (
           <div className="basis-full text-center text-base uppercase tracking-wider text-muted-foreground">
-            Sibling {siblingIndex + 1} of {siblings.length} · Level {levelIndex + 1}/
-            {SHEPHERDING_LEVELS.length}
+            {t('shepherding.siblingOf', {
+              current: siblingIndex + 1,
+              total: siblings.length,
+              level: levelIndex + 1,
+              levels: SHEPHERDING_LEVELS.length,
+            })}
           </div>
         )}
       </footer>
